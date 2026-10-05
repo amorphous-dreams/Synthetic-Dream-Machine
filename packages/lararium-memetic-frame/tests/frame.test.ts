@@ -6,7 +6,7 @@ import { describe, test, expect } from "vitest";
 import {
   FRAME_MARKS, frameAlt, markCode,
   frameCarrier, stampCarrier, headSigil, CARRIER_DECLARATION,
-  frameStanding, readFrame, checkSpan,
+  frameStanding, readFrame, checkSpan, verdict,
   verifyBcc, bccOf, bccOfSpan, classifyPostamble, classifyPostEot,
   matchCarrierHead, META_OPEN_CANON,
 } from "../src/index.js";
@@ -39,17 +39,30 @@ describe("the writer", () => {
     expect(st.faults).toEqual([]);
   });
 
-  test("namespace, Kapu head, attestation, prologue and postamble all land in their positions", () => {
+  test("namespace, Kapu head, prologue and postamble all land in their positions — ETB retired with $carrier-sila, no attestation slot stands", () => {
     const full = frameCarrier({
       head: { uri: URI, namespace: "⊙", kapu: true }, body: "b",
-      prologue: "above\n\n", attestation: "sila", postamble: "\n\nbelow\n",
+      prologue: "above\n\n", postamble: "\n\nbelow\n",
     });
     expect(full.startsWith(`above\n\n${CARRIER_DECLARATION}`)).toBe(true);
     expect(full).toContain(headSigil({ uri: URI, namespace: "⊙", kapu: true }));
     expect(full).toContain('<<^ code="&#x0011;" namespace="⊙" from="?" -> to="lar:///t/frame">>');
-    expect(full).toContain(`\nsila\n<<^ code="${markCode("ETB")}">>\n`);
+    expect(full).not.toContain("&#x0017;");
     expect(full.endsWith(`<<^ code="&#x0004;" -> to="?">>\nbelow\n`)).toBe(true);
     expect(verifyBcc(full)).toBe("ok");
+  });
+
+  test("RED: a carrier carrying a literal ETB mark reads as a retired spelling, torn", () => {
+    const carrier = frameCarrier({ head: { uri: URI }, body: BODY });
+    const withEtb = carrier.replace(
+      /<<\^ code="&#x0004;" -> to="\?">>/,
+      `\nsila\n<<^ code="&#x0017;">>\n<<^ code="&#x0004;" -> to="?">>`,
+    );
+    const v = verdict(withEtb);
+    expect(v.kind).toBe("torn");
+    if (v.kind === "torn") {
+      expect(v.faults.some((f) => f.kind === "retired-spelling" && f.message.includes("ETB"))).toBe(true);
+    }
   });
 
   test("declaration: null omits the line", () => {

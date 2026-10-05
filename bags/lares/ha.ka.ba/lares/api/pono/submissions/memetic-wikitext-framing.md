@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;MdMXSXVardbH6OqYcZI8OHo23LIhktQtzT029fBdWCk"
+source-check: "ni:///sha-256;CTP-qb8Q87qzE0bdHaAgk65zMvi78v6Z6ipUHBNMSck"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -379,7 +379,6 @@ parser reads both and a reader narrower than the parser refuses a sigil the wiki
 | `&#x0011;` | SOH₂ | `code` `namespace` `bearing` `uri` | the second heading form |
 | `&#x0002;` | STX | `code` | text begins |
 | `&#x0003;` | ETX | `code` `bcc` | text ends; the block check follows the mark directly |
-| `&#x0017;` | ETB | `code` `hash` | the attestation block ends |
 | `&#x0004;` | EOT | `code` `target` | transmission ends, bearing forward |
 
 ### The block check
@@ -429,13 +428,15 @@ The `bcc` slot carries a check over the framed span. Normatively:
   `pull` and not `read` verifies this check over an offering it cannot open.
 
 **ETX takes its check adjacent, per the received framing.** In character-oriented synchronous framing
-(IBM BSC, 1967) a block runs `STX -> text -> ETX|ETB -> BCC`: the terminator comes first and the check
+(IBM BSC, 1967) a block runs `STX -> text -> ETX -> BCC`: the terminator comes first and the check
 follows it directly. The `bcc` slot sits where a receiver has always looked for it.
 
-**ETB terminates the attestation block, and EOT follows it.** ETX and ETB both terminate and both take
-a check; ETX ends the final block, ETB an intermediate one. A carrier's text ends at ETX, its
-attestation block ends at ETB, and EOT closes the transmission — so ETB's "more follows" reading holds
-literally.
+**A carrier's text ends at ETX, and EOT closes the transmission.** ETB RETIRED WITH `$carrier-sila`
+(operator ruling): the attestation block it was meant to terminate was never built and its mark never
+assigned past a bare literal — so nothing stands between ETX's check and EOT today. A surviving ETB
+mark in a carrier reads as a retired spelling (torn), never as more-follows. The office stays open
+for a future re-minting, and only behind a computed, verified check when signing lands — never this
+bare literal again.
 
 ### Residency stands apart from identity — and only one name carries it
 
@@ -995,7 +996,7 @@ A TiddlyWiki `.tid` file parses its header line by line and splits the body at t
 (`boot.js`, `application/x-tiddler`). **Only `text` may carry a newline.** A value that can only survive
 inside one file format cannot travel — so a multi-line part cannot be a field anywhere, at any name.
 
-<<~ scale carriage "scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$carrier-sila` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it">>
+<<~ scale carriage "scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it">>
 
 The split runs **scalar-or-multi-line**, never reserved-or-free. A date, a slot name, a bag address:
 each stays a field, and making it a record would cost the filter surface and buy nothing.
@@ -1077,8 +1078,10 @@ SOH  = { role = "Start of Heading — opener; names the canonical URI",         
 SOH2 = { role = "Start of Heading, second form — the Kapu opener",            code = "code", byte = "0x11",               required = false }
 STX  = { role = "Start of Text — body open; bare pragma",                     code = "code", byte = "0x02",               required = true }
 ETX  = { role = "End of Text — body close; bare pragma",                      code = "code", byte = "0x03",               required = true }
-ETB  = { role = "End of Transmission Block — attestation block close",        code = "code", byte = "0x17",               required = false }
 EOT  = { role = "End of Transmission — throat close; return -> \"?\"",        code = "code", byte = "0x04",               required = true }
+# ETB (0x17) RETIRED WITH $carrier-sila (operator ruling) — the attestation block it closed was never
+# built; a surviving ETB mark now reads as a retired spelling. Re-minted only behind a computed,
+# verified check when signing lands.
 
 # Namespace resonance — prefixes the SOH opener only; EOT always bare
 # Open set: more resonance glyphs MAY register here as layers/tiers emerge.
@@ -1192,9 +1195,10 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
   open as a new capability rather than as unfinished law; whatever it admits becomes an edge the
   graph can walk.
 
-- **ETX/ETB roles (open).** Read strictly, the final block takes ETX and an intermediate one takes ETB —
-  which would put ETB on a carrier's text and ETX on its attestation. The frame above reads the other
-  way and states why. The strict reading stays named rather than dismissed.
+- **ETX/ETB roles — resolved.** ETB retired with `$carrier-sila`: the attestation block it closed was
+  never built and its mark never assigned past a bare literal, so the strict BSC reading (final block
+  takes ETX, an intermediate one takes ETB) never had a second block to arbitrate. Re-mint with a
+  computed, verified check when signing lands — never this bare literal again.
 
 - **The aka/weave rhyme (open).** A frozen `aka` transclusion inlines a target pinned at a moment,
   in-house; a woven projection does the same thing outward, across the carrier/Gaia boundary

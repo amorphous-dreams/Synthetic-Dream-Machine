@@ -285,8 +285,9 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    * instead, so a reader that drops the second code of a family still goes red without asking the
    * corpus to keep hosting a mark the corpus no longer has reason to write.
    *
-   * `&#x0017;` (ETB) stands in the declaration and no corpus carrier writes it, so it carries no
-   * floor here — an absent count states a fact, and inventing a floor for it would state a false one.
+   * `&#x0017;` (ETB) is RETIRED WITH `$carrier-sila` — the declaration no longer stands it at all, and
+   * no corpus carrier ever wrote it, so it carries no floor here and its appearance anywhere in the
+   * corpus would land in `undeclared` below and go red on its own.
    */
   test("★ the thin codes still stand — SOH2 in the corpus, EOT2 in its own fixture ★", () => {
     const tally = new Map<string, number>();

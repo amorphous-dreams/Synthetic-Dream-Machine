@@ -45,7 +45,6 @@ export const FRAME_MARKS: readonly FrameMark[] = [
   { code: "&#x0011;", name: "SOH2", slots: ["code", "namespace", "bearing", "uri"] },
   { code: "&#x0002;", name: "STX",  slots: ["code"] },
   { code: "&#x0003;", name: "ETX",  slots: ["code", "bcc"] },
-  { code: "&#x0017;", name: "ETB",  slots: ["code", "hash"] },
   { code: "&#x0004;", name: "EOT",  slots: ["code", "target"] },
 ] as const;
 

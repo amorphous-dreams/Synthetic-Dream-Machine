@@ -56,6 +56,16 @@ const SOH_HEX = new RegExp(`^(?:${frameHex("SOH")})$`);
 /** A declaration line, live — the frame's own, whatever it spells. */
 const DECLARATION_LINE_RE = /^<<!DOCTYPE[^\n]*/gm;
 
+/**
+ * ETB (`&#x0017;`), RETIRED WITH `$carrier-sila` (operator ruling, #/quoteblock-floor's sibling hand):
+ * the attestation block it closed was never built, its mark never assigned past this literal entity.
+ * `marks.ts` no longer declares it, so a surviving ETB sigil in a carrier reads here directly rather
+ * than through `FRAME_MARKS` — the one spelling this grammar now refuses outright, same family as a
+ * retired declaration or a retired head/release spelling. Re-minted later only behind a computed,
+ * verified check, never this bare literal.
+ */
+const RETIRED_ETB_RE = /<<\^(?:[^>\n]|>(?!>))*?&#x0017;(?:[^>\n]|>(?!>))*>>/g;
+
 /** Each declaration, head and release written in a spelling the canonical forms no longer read. */
 function retiredEnds(text: string, spans: ReturnType<typeof fencedSpans>): FrameFault[] {
   const faults: FrameFault[] = [];
@@ -71,6 +81,12 @@ function retiredEnds(text: string, spans: ReturnType<typeof fencedSpans>): Frame
     faults.push({
       kind: "retired-spelling",
       message: `\`${m[0]}\` is a retired frame spelling — the ends read \`code="…" from="?" -> to="…"\` and \`-> to="?"\`, quoted; nothing repairs it`,
+    });
+  }
+  for (const m of maskedExecAll(text, RETIRED_ETB_RE, spans)) {
+    faults.push({
+      kind: "retired-spelling",
+      message: `\`${m[0]}\` carries ETB — retired with \`$carrier-sila\`; re-minted only behind a computed, verified check, never this bare literal`,
     });
   }
   return faults;

@@ -58,8 +58,6 @@ export interface FrameCarrierInput {
   readonly prologue?: string;
   /** The declaration line. Defaults to {@link CARRIER_DECLARATION}; `null` omits it. */
   readonly declaration?: string | null;
-  /** An attestation block, terminated by ETB between the check and EOT. */
-  readonly attestation?: string;
   /** Bytes past EOT. Leading newlines fold into the EOT line's own, so the shore is a fixed point. */
   readonly postamble?: string;
 }
@@ -67,7 +65,7 @@ export interface FrameCarrierInput {
 /**
  * Frame a body:
  *
- *     [prologue]<declaration>\n\n<head>\n<STX>\n\n<body>\n\n<ETX><check>\n[\n<attestation>\n<ETB>\n]\n<EOT>\n[postamble]
+ *     [prologue]<declaration>\n\n<head>\n<STX>\n\n<body>\n\n<ETX><check>\n\n<EOT>\n[postamble]
  *
  * The padding is the canonical form's own (one blank line inside each bound), so a body framed here and
  * read back by the deserializer re-frames to the same bytes.
@@ -83,7 +81,6 @@ export function frameCarrier(input: FrameCarrierInput): string {
   // ETX takes its check adjacent, per the received framing (STX -> text -> ETX -> BCC).
   out += bccOfSpan(out.slice(spanStart));
   out += "\n";
-  if (input.attestation) out += `\n${input.attestation}\n<<^ code="${markCode("ETB")}">>\n`;
   out += `\n<<^ code="${markCode("EOT")}" -> to="?">>\n`;
   out += (input.postamble ?? "").replace(/^\n+/, "");
   return out;

@@ -68,8 +68,8 @@ function groupReasoned(title: string, lines: string[]): void {
 // pattern shape does not match builder.ts's makeLeaf contract — see scanner.ts's comment). Anything
 // else appearing there is an unreasoned hand-copy; anything declared reasoned but ABSENT is a
 // silently-dropped exception.
-const BOOTSTRAP_RESIDUE = new Set(["control-soh", "control-stx", "control-etx", "control-eot", "control-etb", "pranala"]);
-const FRAME_HAND_KEPT = new Set(["control-soh", "control-stx", "control-etx", "control-eot", "control-etb"]);
+const BOOTSTRAP_RESIDUE = new Set(["control-soh", "control-stx", "control-etx", "control-eot", "pranala"]);
+const FRAME_HAND_KEPT = new Set(["control-soh", "control-stx", "control-etx", "control-eot"]);
 const unreasonedInScanner: string[] = [];
 for (const name of handScanNames) {
   if (!BOOTSTRAP_RESIDUE.has(name)) unreasonedInScanner.push(`${name} — BOOTSTRAP_SCANS carries it un-reasoned; only ${[...BOOTSTRAP_RESIDUE].join("/")} belongs here`);

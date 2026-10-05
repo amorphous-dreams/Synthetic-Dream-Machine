@@ -40,7 +40,8 @@ export interface ParseEvent {
 
 // ---------------------------------------------------------------------------
 // BOOTSTRAP_SCANS — the reasoned HAND-WRITTEN residue: ASCII control-character
-// framing alone (SOH/STX/ETX/EOT/ETB + SOH's kapu-extended DC1 variant). DC4 (EOT2) is retired.
+// framing alone (SOH/STX/ETX/EOT + SOH's kapu-extended DC1 variant). DC4 (EOT2) is retired, and so is
+// ETB (0x17) — retired with `$carrier-sila`; the attestation block it closed was never built.
 //
 // Every OTHER bootstrap scan (ahu, scale, aka, kahea, pono, lele, hui/holo/puka, papalohe, toml,
 // waiho, kau, heihei/kahawai/mukuwai, huli, wehe, meme, every English alias, kumu/widget, hana/task,
@@ -62,10 +63,6 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "control-stx", regex: /<<\^(?:[^>]|>(?!>))*&#x0002;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-etx", regex: /<<\^(?:[^>]|>(?!>))*&#x0003;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0004;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
-  // ETB (&#x0017;) — the attestation block's terminator, between ETX and EOT. A cold parse must find
-  // it or a carrier that gained a seal loses it on the first write-back, silently, because nothing
-  // on the read path ever saw what went missing.
-  { sigilName: "control-etb", regex: /<<\^(?:[^>]|>(?!>))*&#x0017;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   // Kapu extended range — DC1 (&#x0011;) SOH₂ variant (the Kapu opener). EOT2 (DC4, 0x14) is
   // RETIRED: every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs
   // to a future transport envelope, not a second at-rest EOT spelling.

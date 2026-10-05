@@ -930,7 +930,6 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
     head: { uri: memeUri, namespace: str("namespace"), kapu: f["$carrier-soh"] === "0011" },
     body,
     prologue: carriageText(reader, memeUri, "prologue"),
-    attestation: str("$carrier-sila"),
     postamble: carriageText(reader, memeUri, "postamble"),
   });
 }
