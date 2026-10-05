@@ -43,7 +43,7 @@ import {
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasProjection } from "./has-island-watches.js";
-import { hasCapture } from "./has-capture.js";
+import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
