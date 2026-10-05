@@ -17,7 +17,7 @@
 // template cascade that renders it, and the ones naming a surface nothing replaced were retired. What
 // remains sits in `bags/lararium/**/docs/` and `bags/lares/**/api/`: MCP tool names, Mu/Law-of-5s table
 // constants, and pono-layer types. `ABILITY_LADDER` sits here too, and its sibling appearance in
-// `mesh/causal-island.mem` was measured the same day promising a four-level gate that never existed.
+// `mesh/causal-island.mem` promises a four-level gate that never existed.
 //
 // THE MATCH IS DELIBERATELY LOOSE — a word-boundary search across every tracked source file, not a parse.
 // It answers "does this name appear anywhere the code lives", so a symbol it flags is genuinely absent

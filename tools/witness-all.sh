@@ -27,13 +27,19 @@ declare -A HELD_OUT=(
 
 status=0
 held=()
+order=()
+declare -A exit_of=()
 declare -A seen=()
 for path in tools/*witness*.sh; do
   w="$(basename "$path" .sh)"
   seen[$w]=1
   if [ -n "${HELD_OUT[$w]:-}" ]; then held+=("$w — ${HELD_OUT[$w]}"); continue; fi
   echo "── $w ──"
-  if ! "$path"; then status=1; fi
+  "$path"
+  rc=$?
+  order+=("$w")
+  exit_of[$w]=$rc
+  [ "$rc" -gt "$status" ] && status="$rc"
 done
 # AN ENTRY POINT OUTSIDE THE GLOB IS STILL NAMED. `mesh-scenarios` carries no "witness" in its name, so
 # the glob never sees it; a held-out declared here but never listed would be a silent omission wearing
@@ -47,5 +53,16 @@ if [ "${#held[@]}" -gt 0 ]; then
   echo "── held out of this run ──"
   printf '  %s\n' "${held[@]}"
 fi
+
+# THE VERDICT TABLE IS THE COUNTABLE SURFACE. A reader who wants to know how many reds stand should
+# never have to scroll a transcript to find out — this table is the one place that count lives,
+# one line per witness that ran, each line reporting the exit code the witness itself returned.
+echo "── verdict ──"
+for w in "${order[@]}"; do
+  rc="${exit_of[$w]}"
+  if [ "$rc" -eq 0 ]; then verdict="ok "; else verdict="RED"; fi
+  printf '  %-28s %s  exit %s\n' "$w" "$verdict" "$rc"
+done
+
 [ "$status" -eq 0 ] && echo "witness-all: every witness clean"
 exit "$status"

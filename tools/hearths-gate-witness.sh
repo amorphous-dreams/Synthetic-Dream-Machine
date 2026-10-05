@@ -52,9 +52,27 @@ trailer_owning() {
     console.log((hearthsOf(process.env.QUERY_PATH, rows)[0] || {}).trailer || "");
   '
 }
+# A LITERAL PATH FROM WHICHEVER LIVE ROW IS NOT THE FIRST ARGUMENT'S TRAILER. The two arming vectors need
+# two paths under two DIFFERENT live hearths, and a hand-picked path goes stale the moment the ledger's
+# `#/holds` fence moves — exactly what happened to the path this replaced, which only a CLOSED row's globs
+# ever covered. Reading a path straight off the live fence means the probe re-aims itself every time the
+# ledger does.
+second_live_hearth_path() {
+  GATE_URL="file://$GATE" LEDGER_FILE="$1" FOUNDING_TRAILER="$2" node --input-type=module -e '
+    const { parseHolds } = await import(process.env.GATE_URL);
+    const { readFileSync } = await import("node:fs");
+    const rows = parseHolds(readFileSync(process.env.LEDGER_FILE, "utf8"));
+    for (const row of rows) {
+      if (row.trailer === process.env.FOUNDING_TRAILER) continue;
+      const literal = (row.globs || []).find((g) => !g.includes("*"));
+      if (literal) { console.log(literal); process.exit(0); }
+    }
+  '
+}
 
 HELD_BY_FOUNDING="packages/lararium-mesh/src/handle-kel.ts"
-HELD_BY_MEME="tests/harness/instance.ts"
+FOUNDING_TRAILER="$(trailer_owning "$REPO_ROOT/$LEDGER" "$HELD_BY_FOUNDING")"
+HELD_BY_SECOND_LIVE_HEARTH="$(second_live_hearth_path "$REPO_ROOT/$LEDGER" "$FOUNDING_TRAILER")"
 UNHELD="tools/a-path-no-hold-names.txt"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/hearths-gate-witness-XXXXXX")" || exit 1
@@ -91,7 +109,7 @@ fi
 use_ledger() { cp "$1" "$WORK/$LEDGER"; }
 
 OWNER_A="$(trailer_owning "$ARMED_LEDGER" "$HELD_BY_FOUNDING")"
-OWNER_B="$(trailer_owning "$ARMED_LEDGER" "$HELD_BY_MEME")"
+OWNER_B="$(trailer_owning "$ARMED_LEDGER" "$HELD_BY_SECOND_LIVE_HEARTH")"
 
 stage() { mkdir -p "$WORK/$(dirname "$1")"; date +%s%N > "$WORK/$1"; git -C "$WORK" add "$1" >/dev/null; }
 attempt() { git -C "$WORK" commit -F - > "$WORK/out.txt" 2>&1; }
@@ -100,7 +118,7 @@ echo "hearths-gate-witness — a commit may not reach into another hearth's grou
 echo "  ledger: $LEDGER"
 echo "  arming vectors read: $ARMED_WHY"
 echo "  $HELD_BY_FOUNDING → $OWNER_A"
-echo "  $HELD_BY_MEME → $OWNER_B"
+echo "  $HELD_BY_SECOND_LIVE_HEARTH → $OWNER_B"
 
 step "the arming ledger names two DIFFERENT hearths for the two paths"
 if [ -n "$OWNER_A" ] && [ -n "$OWNER_B" ] && [ "$OWNER_A" != "$OWNER_B" ]; then ok
@@ -120,12 +138,12 @@ printf 'lar:///a.b.c — the holder writes\n\nClaude-Session: https://claude.ai/
 if [ $? -eq 0 ]; then ok; else bad "the holding hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
 
 step "CONTROL: the committing hearth's OWN ground passes"
-stage "$HELD_BY_MEME"
+stage "$HELD_BY_SECOND_LIVE_HEARTH"
 printf 'lar:///a.b.c — own ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
 if [ $? -eq 0 ]; then ok; else bad "own ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
 
 step "CONTROL: a nonsense trailer owns nothing — every held path reads as a crossing"
-stage "$HELD_BY_MEME"
+stage "$HELD_BY_SECOND_LIVE_HEARTH"
 printf 'lar:///a.b.c — a stranger\n\nClaude-Session: https://claude.ai/code/session_NOBODYHOLDSTHIS\n' | attempt
 if [ $? -eq 0 ]; then bad "a stranger wrote a held file unchallenged"
 elif grep -q "REFUSED" "$WORK/out.txt"; then ok
