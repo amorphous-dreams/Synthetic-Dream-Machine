@@ -1,3 +1,31 @@
+/**
+ * @lararium/mesh — the platform-blind floor every other package composes on.
+ *
+ * WHAT STANDS HERE AFTER THE MESH-SCOPE CUT, AND WHY. The cut moved each module with exactly one
+ * reader to that reader's own package (keyhive, node, tw5, lares-cli). What remains is kept here on
+ * one of these grounds, each verified against the tree rather than assumed:
+ *
+ *   · SHARED BY TWO OR MORE PACKAGES — a module more than one package's `src/` imports has no single
+ *     reader to move to; it stays the floor they compose on.
+ *   · TRANSPORT LAW — `mu-void` states the deny-void law the transport itself must hold, true for
+ *     every platform that speaks it, never one reader's concern.
+ *   · TEST-PINNED DOMAIN SEPARATION — `keyring-envelope` carries a signing-domain split a weld test
+ *     pins directly; moving it would require moving the pin with it.
+ *   · MEME-NAMED — a canon meme already names the module as its own mesh source-file: `offering-antigen`,
+ *     `quorum-entry`, `kumu-device`, `bag-copy-plan`, `signer-class`, `cert-expiry-gauge`,
+ *     `crossroads-cry`, `holdings-witness`, `projection-registry`, `parallel-ingest`.
+ *   · SENSORIUM-DEFERRED — `bures-metric`, `rank-te`, `windowed-coupling`, `partition-monitor`,
+ *     `self-coupling`, `synthetic-drift`, `linearity-gate`, `independence-reading` carry an instrument
+ *     the Sensorium wiring has not reached yet; no package reads them as a sole consumer today.
+ *   · RULING-GATED — `contract-relation-witness` is the sole user of its own signing domain; `recipe`,
+ *     `readiness`, `reaction-graph` are pinned as the mesh source-file by their own canon memes;
+ *     `pronaos` and `offering-inspection` carry their own mesh-namespace memes. Each move waits on its
+ *     own ruling, not this cut.
+ *   · PERSONA-SELVES NAMING — `PERSONA_SELVES_PREFIX`, `personaSelfTiddlerUri` and
+ *     `handleIndexFromSelfTiddlerUri` (in `lar-uris.ts`) carry the self-tiddler naming scheme tw5's
+ *     `persona-selves`/`persona-selves-verbs` build on directly, and keyhive's ceremony core reads
+ *     the same `lar-uris` namespace constants alongside it.
+ */
 
 export {
   load as automergeLoad,
