@@ -1244,9 +1244,11 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 !! Annex — Open Items (Informative)
 
-* ''EOT targeting (open).'' `target:` on `&#x0004;` today reads `?`, the held-uncertainty mark. What
-  else it may name — the next carrier in a chain, a bag, a bearing — stands open as a new capability
-  rather than a gap; whatever it admits becomes an edge the graph can walk.
+* ''EOT targeting (resolved for today's meaning).'' `target:` on `&#x0004;` reads `?` — a DECLARED
+  UNRESOLVED bearing, the departing end of the one relation #/bearing-arrow names, never a gap in the
+  frame. What a RESOLVED target would name — the next carrier in a chain, a bag, a bearing — stands
+  open as a new capability rather than as unfinished law; whatever it admits becomes an edge the
+  graph can walk.
 
 * ''ETX/ETB roles (open).'' Read strictly, the final block takes ETX and an intermediate one takes ETB —
   which would put ETB on a carrier's text and ETX on its attestation. The frame above reads the other
@@ -1281,6 +1283,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FcP-9exfvXqYiyD0AR2MEtQWekvLhhThMQZtr-OUDuY
+<<^ code="&#x0003;">>ni:///sha-256;MdMXSXVardbH6OqYcZI8OHo23LIhktQtzT029fBdWCk
 
 <<^ code="&#x0004;" -> to="?">>
