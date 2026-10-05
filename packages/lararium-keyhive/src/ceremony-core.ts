@@ -604,8 +604,9 @@ export interface DeviceAdmitEdgeInput {
    *  walks the KEL to the head; a founding always seats an inception, so a prefix always stands). */
   personaKelPrefix:       string;
   /** The founder's persona-KEL chain SNAPSHOT — the joinee seeds its LOCAL board from it (immediate boot, no
-   *  sync wait). Optional: absent → the joinee relies on the federated board (fail-closed until sync). */
-  personaKelChain?:       readonly PersonaKelEvent[];
+   *  sync wait). REQUIRED — early alpha, no back-compat: a caller with no chain to carry names a genuine
+   *  bug upstream, never a payload `runDeviceAdmitEdge` should mint silently degraded. */
+  personaKelChain:       readonly PersonaKelEvent[];
   /** The hearth true-name (engine CID) the joinee binds TO. */
   hearthTrueName:         string;
   /** Founder sentinel oracle IDs — carried through for the founding sentinel + future affiliation layer. */
@@ -623,11 +624,13 @@ export interface DeviceAdmitEdgeInput {
   /** Automerge URL of the issuing vessel's genesis island — for peer-sync delivery. */
   islandDocUrl?:          string | null;
   /** The HEARTH's own daemon doc — the door the joinee knocks on to ask for its seat (the daemon plane never
-   *  crosses, so a joinee's own plane reaches nobody). Mirrors islandDocUrl: a founder doc the joinee resolves. */
-  hearthDaemonUrl?:       string | null;
+   *  crosses, so a joinee's own plane reaches nobody). REQUIRED (nullable): a founder with no door names
+   *  that explicitly (`null`) rather than the caller omitting the field. */
+  hearthDaemonUrl:       string | null;
   /** The founder's persona doc URL — the joinee receives it to SYNC the shared veiled identity
-   *  (the membership-sync foundation). Mirrors islandDocUrl: a founder doc the joinee syncs. */
-  personaUrl?:            string | null;
+   *  (the membership-sync foundation). REQUIRED — early alpha, no back-compat: omitting it would have the
+   *  joinee seed a fresh, unsynced persona doc (a silent re-found). */
+  personaUrl:            string;
 }
 
 /**
@@ -648,6 +651,18 @@ export async function runDeviceAdmitEdge(
   if (typeof input.personaKelPrefix !== "string" || input.personaKelPrefix.length === 0) {
     throw new Error("[ceremony] runDeviceAdmitEdge: personaKelPrefix required — the joinee pins the founder's persona-KEL identifier");
   }
+  // REQUIRED FIELDS, early alpha, no back-compat: a caller that cannot supply its own KEL chain / persona
+  // doc url / hearth door names a genuine upstream bug, never a payload this mints silently degraded (the
+  // degraded joinee would RE-FOUND rather than join). Refuse here, named, before any signing happens.
+  if (!input.personaKelChain || input.personaKelChain.length === 0) {
+    throw new Error("[ceremony] runDeviceAdmitEdge: personaKelChain required — the joinee seeds its local KEL board from it");
+  }
+  if (typeof input.personaUrl !== "string" || input.personaUrl.length === 0) {
+    throw new Error("[ceremony] runDeviceAdmitEdge: personaUrl required — the joinee syncs the founder's shared persona doc from it");
+  }
+  if (input.hearthDaemonUrl === undefined) {
+    throw new Error("[ceremony] runDeviceAdmitEdge: hearthDaemonUrl required (may be null) — state the hearth's door explicitly or name null, never omit it");
+  }
   const issuedAt  = new Date().toISOString();
   const expiresAt = new Date(Date.now() + EDGE_BACKSTOP_MS).toISOString();
   const deviceEdge = await buildDeviceDelegation({
@@ -666,7 +681,7 @@ export async function runDeviceAdmitEdge(
     kind:                   "device-admit/v1",
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
-    ...(input.personaKelChain ? { personaKelChain: input.personaKelChain } : {}),
+    personaKelChain:        input.personaKelChain,
     deviceEdge,
     hearthTrueName:         input.hearthTrueName,
     personaGroupDocIdHex:   input.personaGroupDocIdHex,
@@ -674,8 +689,8 @@ export async function runDeviceAdmitEdge(
     meshCabalDocIdHex:      input.meshCabalDocIdHex,
     syncUrl:                input.syncUrl,
     ...(input.islandDocUrl != null ? { islandDocUrl: input.islandDocUrl } : {}),
-    ...(input.hearthDaemonUrl != null ? { hearthDaemonUrl: input.hearthDaemonUrl } : {}),
-    ...(input.personaUrl   != null ? { personaUrl:   input.personaUrl }   : {}),
+    hearthDaemonUrl:        input.hearthDaemonUrl,
+    personaUrl:             input.personaUrl,
   };
 }
 
@@ -733,6 +748,18 @@ export async function runApplyAdmitPayload(
   if (!payload.signerDid || !payload.deviceEdge || !payload.hearthTrueName || !payload.personaKelPrefix) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks signerDid/deviceEdge/hearthTrueName/personaKelPrefix — refusing to admit.");
   }
+  // REQUIRED FIELDS, early alpha, no back-compat: a payload minted before these fields existed would have
+  // this vessel silently RE-FOUND (a fresh local persona doc, a federated-sync wait with no local KEL seed,
+  // a door-less seat) rather than join. Refuse by name instead of tolerating the gap.
+  if (!payload.personaKelChain || payload.personaKelChain.length === 0) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaKelChain — refusing to admit (pre-field payload would re-found, never join).");
+  }
+  if (typeof payload.personaUrl !== "string" || payload.personaUrl.length === 0) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks personaUrl — refusing to admit (pre-field payload would seed a fresh, unsynced persona doc).");
+  }
+  if (payload.hearthDaemonUrl === undefined) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
+  }
 
   const daemonHandle = seedDaemonDoc(repo);
   // THE FOUR PLANES OF THE FACE THIS VESSEL JOINS — all named off the SAME group doc id the founder used,
@@ -743,9 +770,9 @@ export async function runApplyAdmitPayload(
   const circlesHandle    = seedCirclesDoc(repo, planes.circles);
   const sessionsHandle   = seedSessionsDoc(repo, planes.sessions);
   // The persona doc: the joinee RECEIVES the founder's shared veiled-identity doc to SYNC it
-  // (the membership-sync foundation). Older payloads without it fall back to a fresh local seed.
+  // (the membership-sync foundation) — REQUIRED now (guarded above), never a fresh local seed.
   const personaBagId = planes.persona;
-  const personaUrl = payload.personaUrl ?? (seedPersonaDoc(repo, personaBagId).url as string);
+  const personaUrl = payload.personaUrl;
 
   const ceremonyTiddlers = buildCeremonyTiddlers(vesselVerifyingKey, vesselDisplayName);
   for (const t of ceremonyTiddlers) {
@@ -802,14 +829,13 @@ export async function runApplyAdmitPayload(
     };
   });
 
-  // Seed the joinee's LOCAL KEL board from the founder's chain snapshot (when the payload carried it), so the
+  // Seed the joinee's LOCAL KEL board from the founder's chain snapshot (REQUIRED, guarded above), so the
   // joinee's very first boot walks the identifier→head mapping from its OWN replica — no wait on a federated
-  // sync of the founder's board (no-global-now: a local seed, never a global lookup). Absent snapshot → the
-  // joinee relies on the federated board and boots only once it has synced the founder's inception (fail-closed).
-  if (payload.personaKelChain && payload.personaKelChain.length > 0) {
+  // sync of the founder's board (no-global-now: a local seed, never a global lookup).
+  {
     const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(input.nexusPubkey), "board:persona-kel");
     kelBoard.change((draft) => {
-      for (const event of payload.personaKelChain!) writePersonaKelEvent(draft, event);
+      for (const event of payload.personaKelChain) writePersonaKelEvent(draft, event);
     });
   }
 
@@ -873,6 +899,6 @@ export async function runApplyAdmitPayload(
     daemonUrl:      daemonHandle.url      as string,
     personaUrl,
     personaBagId,
-    hearthDaemonUrl: payload.hearthDaemonUrl ?? null,
+    hearthDaemonUrl: payload.hearthDaemonUrl,
   };
 }

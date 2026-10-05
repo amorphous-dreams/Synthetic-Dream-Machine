@@ -19,7 +19,17 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex } from "@lararium/mesh";
+import { hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
+
+/** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
+ *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
+ *  the joinee RE-FOUND rather than join, so this reads it the same way the production CLI does. */
+async function founderPersonaKelChain(founder: Awaited<ReturnType<typeof found>>) {
+  const kelBoard = await materializeSharedLarDoc(founder.repo, personaKelBoardDocUrl(founder.verifyingKey), "board:persona-kel");
+  const chain = personaKelChainForPrefix(kelBoard.doc(), founder.f.personaKelPrefix);
+  if (!chain) throw new Error("test fixture: founder seated no KEL chain for its own prefix");
+  return chain;
+}
 
 /** The verifying key a seed yields — the vessel's public half, hex, as the ceremony wants it. */
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
@@ -65,12 +75,14 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       signerSeed:         FOUNDER_SEED,
       joineeVerifyingKey: joineeKey,
       personaKelPrefix:   founder.f.personaKelPrefix,
+      personaKelChain:    await founderPersonaKelChain(founder),
       hearthTrueName:     founder.f.hearthTrueName ?? "bafyHearth",
       personaGroupDocIdHex:   founder.f.personaGroupDocIdHex,
       personaGroupAgentIdHex: founder.f.personaGroupAgentIdHex,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
       syncUrl:      null,
       islandDocUrl: null,
+      hearthDaemonUrl: founder.f.daemonUrl,
       personaUrl:   founder.f.personaUrl,
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
@@ -116,11 +128,12 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
       signerSeed:             FOUNDER_SEED,
       joineeVerifyingKey:     joineeKey,
       personaKelPrefix:       founder.f.personaKelPrefix,
+      personaKelChain:        await founderPersonaKelChain(founder),
       hearthTrueName:         "bafyHearth",
       personaGroupDocIdHex:   founder.f.personaGroupDocIdHex,
       personaGroupAgentIdHex: founder.f.personaGroupAgentIdHex,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
-      syncUrl: null, islandDocUrl: null, personaUrl: founder.f.personaUrl,
+      syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const capEvents = ["bWVtYmVyc2hpcC1vcC0x", "bWVtYmVyc2hpcC1vcC0y"];   // base64 blobs
     const payload = { ...base, capEvents };
@@ -150,11 +163,12 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
         signerSeed:         FOUNDER_SEED,
         joineeVerifyingKey: joineeKey,
         personaKelPrefix:   founder.f.personaKelPrefix,
+        personaKelChain:    await founderPersonaKelChain(founder),
         hearthTrueName:     "bafyHearth",
         personaGroupDocIdHex:   founder.f.personaGroupDocIdHex,
         personaGroupAgentIdHex: founder.f.personaGroupAgentIdHex,
         meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
-        syncUrl: null, islandDocUrl: null, personaUrl: founder.f.personaUrl,
+        syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
       } as Parameters<typeof runDeviceAdmitEdge>[0]);
       return payload;
     };

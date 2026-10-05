@@ -45,10 +45,21 @@ beforeAll(async () => {
 // REQUIRED field precisely so a caller cannot omit this the way this default quietly could; the describe
 // block below ("the readmitted edge binds the PRESENT lease epoch") is the vector that would catch a
 // caller who forgot to thread a LIVE read.
+// REQUIRED on every (re-)admit payload now (early alpha, no back-compat): `runDeviceAdmitEdge` only WRITES
+// this chain forward, it never re-verifies it cryptographically at mint time, so a minimal hand-shaped
+// inception for the root's own prefix is sufficient here (the real chain is proven elsewhere).
+const fakeKelChain = (prefix: string, opKeyDid: string) => [{
+  seq: 0, eventCid: "recovery-probe-cid-0", prefix, opKeyDid,
+  recoverySetHash: "recovery-probe-recovery-hash", nextRecoverySetHash: "recovery-probe-recovery-hash",
+  recoveryRoster: [], recoveryThreshold: 0, prevEventCid: null, provisional: false,
+  vetoOfCid: null, rotationSigs: [],
+}];
 const readmitFields = (joineeVerifyingKey: string, boundEpoch = 0) => ({
-  joineeVerifyingKey, personaKelPrefix: ROOT_PREFIX, hearthTrueName: PLACE,
+  joineeVerifyingKey, personaKelPrefix: ROOT_PREFIX,
+  personaKelChain: fakeKelChain(ROOT_PREFIX, `0x${ROOT_PREFIX}`), hearthTrueName: PLACE,
   personaGroupDocIdHex: "aa".repeat(32), personaGroupAgentIdHex: "bb".repeat(32),
   meshCabalDocIdHex: "cc".repeat(32), syncUrl: null, boundEpoch,
+  hearthDaemonUrl: null, personaUrl: "automerge:2fakeRecoveryPersonaDocUrl0000",
 });
 
 describe("recovery-keel — found → device drowns → recover → re-admit", () => {

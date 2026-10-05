@@ -284,6 +284,15 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
         kind: "device-admit/v1",
         signerDid:              edge.personaRootDid,
         personaKelPrefix:       "persona-probe",
+        // REQUIRED now (early alpha, no back-compat): a minimal inception event for the probe's own prefix —
+        // `runApplyAdmitPayload` only WRITES this to the joinee's local KEL board, it never re-verifies the
+        // chain cryptographically at apply time, so a hand-shaped inception is sufficient here.
+        personaKelChain: [{
+          seq: 0, eventCid: "probe-cid-0", prefix: "persona-probe", opKeyDid: edge.personaRootDid,
+          recoverySetHash: "probe-recovery-hash", nextRecoverySetHash: "probe-recovery-hash",
+          recoveryRoster: [], recoveryThreshold: 0, prevEventCid: null, provisional: false,
+          vetoOfCid: null, rotationSigs: [],
+        }],
         deviceEdge:             edge,
         hearthTrueName:         HEARTH,
         personaGroupDocIdHex:   "ab".repeat(16),
@@ -291,6 +300,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
         meshCabalDocIdHex:      "ef".repeat(16),
         syncUrl:                null,
         hearthDaemonUrl:        HEARTH_DOOR,
+        personaUrl:             "automerge:2fakePersonaDocUrl00000000000",
       },
     });
 

@@ -15,7 +15,10 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type DyadRecord } from "@lararium/mesh";
+import {
+  hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type DyadRecord,
+  personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix,
+} from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
@@ -36,6 +39,16 @@ async function found() {
     nexusPubkey:          verifyingKey,
   });
   return { repo, f, verifyingKey };
+}
+
+/** REQUIRED on every device-admit payload now (early alpha, no back-compat) — read the founder's own
+ *  persona-KEL chain back off the per-Nexus board the founding seated, the same way the production CLI
+ *  (`device-admit.ts`) does, rather than letting a payload mint silently degraded. */
+async function founderPersonaKelChain(founder: Awaited<ReturnType<typeof found>>) {
+  const kelBoard = await materializeSharedLarDoc(founder.repo, personaKelBoardDocUrl(founder.verifyingKey), "board:persona-kel");
+  const chain = personaKelChainForPrefix(kelBoard.doc(), founder.f.personaKelPrefix);
+  if (!chain) throw new Error("test fixture: founder seated no KEL chain for its own prefix");
+  return chain;
 }
 
 async function dyadSlotsOf(repo: Repo, daemonUrl: string): Promise<DyadRecord[]> {
@@ -71,11 +84,12 @@ describe("the ceremony mints the dyad", () => {
       signerSeed:             FOUNDER_SEED,
       joineeVerifyingKey:     joineeKey,
       personaKelPrefix:       founder.f.personaKelPrefix,
+      personaKelChain:        await founderPersonaKelChain(founder),
       hearthTrueName:         "bafyHearth",
       personaGroupDocIdHex:   founder.f.personaGroupDocIdHex,
       personaGroupAgentIdHex: founder.f.personaGroupAgentIdHex,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
-      syncUrl: null, islandDocUrl: null, personaUrl: founder.f.personaUrl,
+      syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });

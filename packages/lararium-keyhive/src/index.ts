@@ -94,8 +94,10 @@ export interface DeviceAdmitPayload {
   readonly personaKelPrefix:       string;
   /** The founder's persona-KEL chain SNAPSHOT (as of admit) — the joinee seeds its LOCAL KEL board from it so
    *  its very first boot walks to a head WITHOUT waiting on a federated sync (no-global-now: local seed, never
-   *  a global lookup). Absent on older payloads → the joinee relies on the federated board (fail-closed until sync). */
-  readonly personaKelChain?:       readonly PersonaKelEvent[];
+   *  a global lookup). REQUIRED — early alpha, no back-compat: a payload minted without it names a vessel that
+   *  would RE-FOUND rather than join, so `runApplyAdmitPayload` refuses it by a named error instead of silently
+   *  falling back to a federated-board wait. */
+  readonly personaKelChain:       readonly PersonaKelEvent[];
   /** The signed root→joinee device-delegation edge (the founder's signer signs the joinee's
    *  vessel key × hearthTrueName) — the joinee's binding, verified at its Binding Gate. No Beelay. */
   readonly deviceEdge:             DeviceDelegationTiddler;
@@ -110,9 +112,11 @@ export interface DeviceAdmitPayload {
    * The founder's persona doc URL — the joinee resolves/syncs it to receive the
    * shared veiled identity (PersonaGroup), the membership-sync foundation. The daemon bag
    * stays sovereign-per-vessel (the joinee seeds its own); the persona plane crosses by membership.
-   * Absent on older payloads; the joinee then seeds a fresh local persona doc.
+   * REQUIRED — early alpha, no back-compat: a payload minted without it would have the joinee seed a
+   * FRESH local persona doc (a silent RE-FOUND, never a join); `runApplyAdmitPayload` refuses such a
+   * payload by a named error instead.
    */
-  readonly personaUrl?:            string | null;
+  readonly personaUrl:            string;
   /**
    * OPTIONAL keyhive membership cap-events (base64 StaticEvent bytes) — the founder's PersonaGroup ops that
    * admit this vessel into the KEYHIVE group so it can DECRYPT content shared through the catalog registry (packPersonaCrossing).
@@ -139,10 +143,12 @@ export interface DeviceAdmitPayload {
    * and writing to it, with the hearth observing the change over the same crossed socket. Naming the door is
    * what was missing, never the opening of it.
    *
-   * Absent on older payloads → the joinee holds standing and can ask for nothing; its capability half waits
-   * on an operator-carried route.
+   * REQUIRED — early alpha, no back-compat: a payload minted without it would leave the joinee holding
+   * standing with no route to ask for anything; `runApplyAdmitPayload` refuses such a payload by a named
+   * error instead of silently seating it door-less. Still nullable: a founder with no door to name says
+   * so explicitly (`hearthDaemonUrl: null`), which is a stated absence, never a missing field.
    */
-  readonly hearthDaemonUrl?:       string | null;
+  readonly hearthDaemonUrl:       string | null;
 }
 
 /**

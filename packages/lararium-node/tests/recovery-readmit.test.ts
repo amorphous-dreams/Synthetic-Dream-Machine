@@ -44,15 +44,26 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
     // re-admit carries the persona's stable inception prefix over (root op-key + unarmed recovery-commit).
     const freshVK = freshDeviceKey();
     const rootDidPin = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
+    const personaKelPrefix = personaPrefixOf(rootDidPin, "");
     const payload = await runReadmitEdge({
       reconstructedRoot,
       joineeVerifyingKey: freshVK,
-      personaKelPrefix: personaPrefixOf(rootDidPin, ""),
+      personaKelPrefix,
+      // REQUIRED now (early alpha, no back-compat): `runReadmitEdge`/`runDeviceAdmitEdge` only WRITE this
+      // chain forward, never re-verify it at mint time, so a minimal hand-shaped inception suffices here.
+      personaKelChain: [{
+        seq: 0, eventCid: "readmit-probe-cid-0", prefix: personaKelPrefix, opKeyDid: rootDidPin,
+        recoverySetHash: "readmit-probe-recovery-hash", nextRecoverySetHash: "readmit-probe-recovery-hash",
+        recoveryRoster: [], recoveryThreshold: 0, prevEventCid: null, provisional: false,
+        vetoOfCid: null, rotationSigs: [],
+      }],
       hearthTrueName: PLACE,
       personaGroupDocIdHex: "aa".repeat(32),
       personaGroupAgentIdHex: "bb".repeat(32),
       meshCabalDocIdHex: "cc".repeat(32),
       syncUrl: null,
+      hearthDaemonUrl: null,
+      personaUrl: "automerge:2fakeReadmitPersonaDocUrl00000",
     });
 
     // The re-admit edge verifies against the ORIGINAL root's DID (independently derived) — the Handle's
