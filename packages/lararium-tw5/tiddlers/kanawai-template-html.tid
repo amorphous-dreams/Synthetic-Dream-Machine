@@ -1,0 +1,12 @@
+title: lar:///ha.ka.ba/lararium/templates/kanawai/html
+type: text/vnd.tiddlywiki
+
+<!-- `kanawai` PINS a target, the BINDING sibling of `aka` (operator ruling, loop 7): rendering
+     follows the TARGET's own kind ({@link lar:///ha.ka.ba/lararium/tw5/templates/pin/html}),
+     identically to `aka`, differing only in `pin-role` — binding, never informative. The SIGIL
+     decides the role, never the target. -->
+<div class="lar-kanawai" data-kanawai-uri=<<currentTiddler>>>
+<$let pin-role="binding">
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/templates/pin/html"/>
+</$let>
+</div>

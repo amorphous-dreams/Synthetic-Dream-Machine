@@ -26,3 +26,20 @@ tags: $:/tags/Stylesheet
 	background: rgba(120, 140, 170, 0.10);
 	border-bottom: 1px dotted rgba(110, 130, 160, 0.7);
 }
+
+/* lar-pin-card / lar-pin-frozen — the shared aka/kanawai pin render (templates/pin/html): a
+   reference meme's citation card, or a content slot's frozen image. lar-pin-digest marks the
+   ni: check badge a frozen image always carries. */
+.lar-pin-card,
+.lar-pin-frozen {
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 0.3em;
+	padding: 0.5em 0.75em;
+	margin: 0.5em 0;
+}
+
+.lar-pin-digest {
+	font-family: var(--lar-mono, monospace);
+	color: <<colour muted-foreground>>;
+	font-size: 0.85em;
+}

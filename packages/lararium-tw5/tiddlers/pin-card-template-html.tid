@@ -1,0 +1,36 @@
+title: lar:///ha.ka.ba/lararium/templates/pin/html
+type: text/vnd.tiddlywiki
+
+<!-- THE SHARED PIN RENDER — `aka` and `kanawai` transclude this alike, each setting `pin-role`
+     (informative/binding) before it does. `currentTiddler` here is the TARGET's own address
+     (base, or base#/slot — sigil-aka.tid/sigil-kanawai.tid already bound it before this template
+     runs), never the pin's own position: operator ruling (loop 7), rendering follows the TARGET's
+     kind, never where the pin stands, and the SIGIL — never the target — decides the role. A
+     reference meme renders a citation card; a content slot renders the frozen image: the target's
+     current bytes, pinned with its own `ni:` check as a badge. Unresolved renders a clearly marked
+     line naming the uri — never silence, never invented content. -->
+<$let _pin-kind={{{ [<currentTiddler>meme-pin[kind]] }}}>
+<$list filter="[<_pin-kind>match[reference]]" variable="_ignore">
+<div class="lar-pin-card" data-pin-role=<<pin-role>> data-pin-kind="reference" data-pin-uri=<<currentTiddler>>>
+  <div class="lar-pin-card-role">pin-role: <<pin-role>></div>
+  <div class="lar-pin-card-title"><$text text={{{ [<currentTiddler>meme-pin[title]] }}}/></div>
+  <div class="lar-pin-card-author"><$text text={{{ [<currentTiddler>meme-pin[author]] }}}/></div>
+  <div class="lar-pin-card-date"><$text text={{{ [<currentTiddler>meme-pin[date]] }}}/></div>
+  <div class="lar-pin-card-seriesinfo"><$text text={{{ [<currentTiddler>meme-pin[seriesinfo]] }}}/></div>
+  <$let _pin-target={{{ [<currentTiddler>meme-pin[target]] }}}>
+  <a class="lar-pin-card-target" href=<<_pin-target>>><$text text=<<_pin-target>>/></a>
+  </$let>
+  <$link to=<<currentTiddler>> class="lar-pin-card-self"><$text text=<<currentTiddler>>/></$link>
+</div>
+</$list>
+<$list filter="[<_pin-kind>match[content]]" variable="_ignore">
+<figure class="lar-pin-frozen" data-pin-role=<<pin-role>> data-pin-kind="content" data-pin-uri=<<currentTiddler>>>
+  <div class="lar-pin-frozen-role">pin-role: <<pin-role>></div>
+  <div class="lar-pin-frozen-body"><$transclude $tiddler=<<currentTiddler>> $mode="block"><$fill $name="ts-missing"><span class="lar-pin-empty"/></$fill></$transclude></div>
+  <figcaption class="lar-pin-digest"><$text text={{{ [<currentTiddler>meme-pin[check]] }}}/></figcaption>
+</figure>
+</$list>
+<$list filter="[<_pin-kind>match[unresolved]]" variable="_ignore">
+<div class="lar-pin-unresolved" data-pin-role=<<pin-role>>>unresolved — <$text text=<<currentTiddler>>/></div>
+</$list>
+</$let>
