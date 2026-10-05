@@ -1,11 +1,11 @@
 title: lar:///ha.ka.ba/lararium/templates/aka/html
 type: text/vnd.tiddlywiki
 
-<!-- `aka` PINS a target (operator ruling, loop 7): rendering follows the TARGET's own kind
-     ({@link lar:///ha.ka.ba/lararium/tw5/templates/pin/html}), never a live transclusion of
-     whatever currently sits at the address — that contradicted canon (api/pono/kahea.mem #/head)
-     by reading as a LIVE read where `aka` holds the PINNED pole. `pin-role` names `aka`'s own
-     posture — informative — and the SIGIL decides it, never the target. -->
+<!-- `aka` PINS a target: rendering follows the TARGET's own kind
+     ({@link lar:///ha.ka.ba/lararium/templates/pin/html}), never a live transclusion of whatever
+     currently sits at the address — `aka` holds the PINNED pole (api/pono/kahea.mem #/head) and
+     renders by target kind. `pin-role` names `aka`'s own posture — informative — and the SIGIL
+     decides it, never the target. -->
 <div class="lar-aka" data-aka-uri=<<currentTiddler>>>
 <$let pin-role="informative">
 <$transclude $tiddler="lar:///ha.ka.ba/lararium/templates/pin/html"/>

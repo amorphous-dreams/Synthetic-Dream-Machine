@@ -16,10 +16,12 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
+import { CITATION_FIELD_KEYS } from "../src/weave/index.js";
 
 const REF_URI = "lar:///t/pin-ref";
 const CONTENT_URI = "lar:///t/pin-content";
 const NOWHERE_URI = "lar:///t/pin-nowhere";
+const BARE_REF_URI = "lar:///t/pin-ref-bare";
 
 const refMeme = (uri: string): string =>
   `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
@@ -34,6 +36,21 @@ const refMeme = (uri: string): string =>
   "```\n\n" +
   "! Target body heading — must not render\n\n" +
   '<<^ code="&#x0003;">>ni:///sha-256;REFCHECK\n' +
+  '<<^ code="&#x0004;" -> to="?">>\n';
+
+// A reference meme carrying no `reference-seriesinfo`/`reference-target` — the absent-field case
+// fix 6 pins: a citation row with no data renders no row, never an empty placeholder.
+const bareRefMeme = (uri: string): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  "```toml meta\n" +
+  'reference-author = "B. Author"\n' +
+  'reference-date   = "February 2024"\n' +
+  'reference-kind   = "rfc"\n' +
+  'reference-title  = "A Bare Reference"\n' +
+  `uri-path         = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
+  "```\n\n" +
+  "! Target body heading — must not render\n\n" +
+  '<<^ code="&#x0003;">>ni:///sha-256;BARECHECK\n' +
   '<<^ code="&#x0004;" -> to="?">>\n';
 
 const contentMeme = (uri: string, slotText: string): string =>
@@ -53,6 +70,7 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
     engine = await bootTestWiki();
     face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
     await face.place(REF_URI, refMeme(REF_URI));
+    await face.place(BARE_REF_URI, bareRefMeme(BARE_REF_URI));
     await face.place(CONTENT_URI, contentMeme(CONTENT_URI, "Slot s content, version one."));
   });
 
@@ -116,6 +134,28 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
 
   test("★ (f) meme-pin — an unknown part THROWS, naming the registered parts ★", () => {
     expect(() => engine.wiki.filterTiddlers(`[[${REF_URI}]] +[meme-pin[bogus]]`)).toThrow(/meme-pin.*bogus/);
+  });
+
+  test("★ (g) meme-pin's unknown-part message names every exported CITATION_FIELD_KEYS member ★", () => {
+    let message = "";
+    try {
+      engine.wiki.filterTiddlers(`[[${REF_URI}]] +[meme-pin[bogus]]`);
+    } catch (err) {
+      message = (err as Error).message;
+    }
+    for (const key of CITATION_FIELD_KEYS) {
+      expect(message).toContain(key);
+    }
+  });
+
+  test("★ (h) a reference meme with no reference-seriesinfo/reference-target renders no placeholder row for either ★", () => {
+    const html = render(`<<~ aka "${BARE_REF_URI}">>`);
+    expect(html).toContain("lar-pin-card");
+    expect(html).toContain("A Bare Reference");
+    expect(html).toContain("B. Author");
+    expect(html).not.toContain("lar-pin-card-seriesinfo");
+    expect(html).not.toContain('href=""');
+    expect(html).not.toContain("lar-pin-card-target");
   });
 
   test("CONTROL — meme-pin[kind] answers unresolved for a target no record stands at", () => {
