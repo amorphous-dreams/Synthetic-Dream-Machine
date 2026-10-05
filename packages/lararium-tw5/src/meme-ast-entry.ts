@@ -39,7 +39,9 @@ export {
 } from "./meme-ast/index.js";
 // the declared-structure scan — the Confluence gate (place-meme) requires it off the library in-VM
 // when a re-placement compares the slots the new text declares against the group it holds.
-export { collectAhuSlots } from "./meme-ast/ahu-scan.js";
+// findAhuBalanceFaults — the child gate (meme-backstop) requires it off the library in-VM to report
+// unbalanced ahu opens/orphan closes at composed altitude.
+export { collectAhuSlots, findAhuBalanceFaults } from "./meme-ast/ahu-scan.js";
 
 export type {
   MemeAstNode,
