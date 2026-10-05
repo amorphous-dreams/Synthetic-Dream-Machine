@@ -40,6 +40,12 @@
  *   masked             a fence or a tick span swallows the sigil; the parser yields no node. THE
  *                      PARSER IS RIGHT — masking is a grammar fact no pattern carries.
  *   closer             `<<~/ahu>>` classifies for neither reader and belongs to neither census.
+ *   escaped            a sigil sitting inside a string literal of a bundle — a `.tid`'s JSON payload,
+ *                      a `.ts` module's doubly-escaped copy of that same payload — so its quotes carry
+ *                      a backslash the author never typed. The parser builds no node, because what it
+ *                      reads is the ESCAPE, not the call: a backslash immediately before a quote is a
+ *                      grammar fact a string literal stamps on, structural, true independent of which
+ *                      head wears it. THE PARSER IS RIGHT — there is no call here to perform.
  *   bare frame         `<<~ lares aim>>` speaks no address: the harvester reads no bearing, the parser
  *                      stands a node, and BOTH say the same thing about the same span.
  *
@@ -227,6 +233,11 @@ const BLOCK_OPEN = /<<~[ \t]*([A-Za-z][\w-]*)\b[^>]*>>/g;
 const CLOSER = /<<~[ \t]*\/[A-Za-z]/;
 /** A head wearing a mark the parser refuses — `<<~ward!>>` renders verbatim, and no call happens. */
 const DEGRADED_HEAD = /^<<~[ \t]*[A-Za-z][\w-]*[^\s\w->]/;
+/** A quote with a backslash immediately in front of it — the mark a string literal (JSON, or a
+ *  JS/TS source re-escaping that JSON) leaves on a sigil it carries as TEXT. No author types this
+ *  backslash; it is the bundle's own escaping, detected by the mark itself, never by which head it
+ *  sits on. */
+const ESCAPED_QUOTE = /\\["']/;
 
 /** Interiors of every block sigil — `<<~ x …>> … <<~/x>>` — whose body the parser consumes. */
 function blockInteriors(text) {
@@ -252,7 +263,7 @@ function maskedSpans(text) {
 const inAny = (spans, off) => spans.some(([a, b]) => off >= a && off < b);
 
 // ── THE MEASUREMENT ─────────────────────────────────────────────────────────────────────────────
-const classes = { "shelf-blind": [], "invented-head": [], "unquoted-positional": [], "block-interior": [], "degraded-head": [], masked: [], closer: [] };
+const classes = { "shelf-blind": [], "invented-head": [], "unquoted-positional": [], "block-interior": [], "degraded-head": [], escaped: [], masked: [], closer: [] };
 const unclassified = [];
 const keyDrift = [];
 const bearingDrift = [];
@@ -316,6 +327,7 @@ for (const turn of turns) {
     else if (inAny(blocks, off)) classes["block-interior"].push(where);
     else if (schemeShapedPositionals(body).length > 0) classes["unquoted-positional"].push(where);
     else if (DEGRADED_HEAD.test(island.raw)) classes["degraded-head"].push(where);
+    else if (ESCAPED_QUOTE.test(island.raw)) classes.escaped.push(where);
     else unclassified.push(where);
     clean = false;
   }
@@ -355,6 +367,7 @@ const NOTE = {
   "block-interior": "a block sigil consumes its body: no node, and the render emits an empty body — THE PARSER IS RIGHT about the page, the harvester about the source",
   masked: "a fence or tick span swallows the sigil — THE PARSER IS RIGHT; masking is a grammar fact no pattern carries",
   "degraded-head": "a head wearing a mark — `<<~ward!>>` — builds no node and RENDERS VERBATIM; the harvester's leading-word reader invents a head the grammar refuses — THE PARSER IS RIGHT",
+  escaped: "a backslash sits immediately before the quote — the sigil lives inside a string literal (a bundle's JSON payload, or a `.ts` copy of it) and the parser rightly builds no node for text — THE PARSER IS RIGHT",
   closer: "`<<~/x>>` closes a block and classifies for neither reader",
 };
 
