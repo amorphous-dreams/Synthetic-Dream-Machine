@@ -19,8 +19,10 @@ type = "text/x-memetic-wikitext"
 ```
 
 ````
-<<^ &#x0001; ? -> lar:///ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-liliuokalani>>
-```toml iam
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-liliuokalani">>
+<<^ code="&#x0002;">>
+
+```toml meta
 cacheable = false
 file-path = "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/kumulipo-liliuokalani.mem"
 l-space   = "stable"
@@ -33,8 +35,6 @@ tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/x-memetic-wikitext"
 uri-path  = "ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-liliuokalani"
 ```
-
-<<^ &#x0002;>>
 
 <<~ ahu #meme-header>>
 
@@ -4141,13 +4141,13 @@ KAPAAKEA.
 
 <<~/ahu>>
 
-<<^ &#x0003;>>
+<<^ code="&#x0003;">>ni:///sha-256;qOLgku7fDl_FkCp89jA_MQZoChp9SscOQQpLxfW3g0g
 
-<<^ &#x0004; -> ?>>
+<<^ code="&#x0004;" -> to="?">>
 ````
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TWXpFAo501U7tt9sNQEXfZ5DCBIoKxT8c-lr9pk2auQ
+<<^ code="&#x0003;">>ni:///sha-256;3Zcrfom-oVw2-A9Qd3r_MTmKvO2lMb_vZkFPaOh1YYY
 
 <<^ code="&#x0004;" -> to="?">>
