@@ -17,7 +17,7 @@
 // tree while I walked it."
 import { readFileSync, existsSync } from "fs";
 import { join, resolve } from "path";
-import { sourceDigest, packageStampPath, workspacePackageDirs } from "./stamp-build.mjs";
+import { sourceDigest, packageStampPath, workspacePackageDirs, globalStampPath } from "./stamp-build.mjs";
 
 let vanished = 0;
 
@@ -51,11 +51,16 @@ export function vanishedNote() {
 // never clocks. `assertDistFresh` is the one door every dist-shore boot above passes through before
 // it imports: it resolves the dist's OWNING package, walks that package's workspace dependency
 // closure, and refuses (exit 2, naming the stale package and its cure) the moment any member of that
-// closure carries a dist whose per-package stamp disagrees with what its source reads right now.
+// closure carries a dist whose stamp disagrees with what its source reads right now.
 //
-// REUSES THE ONE DIGEST. `sourceDigest` and `packageStampPath` come from `stamp-build.mjs` — the
-// same function that WRITES a package's stamp is the function that reads it back here, so the two
-// can never name different bytes "the same build".
+// TWO STAMPS, ONE INVARIANT. A fresh WORKSPACE stamp (struck by `pnpm -r build`, one digest over all
+// of `packages/`) covers every package at once, so it is checked first and short-circuits the whole
+// closure walk. A per-package stamp covers only a FILTERED build (`pnpm --filter X build`), so it is
+// the fallback once the workspace stamp itself reads stale or missing.
+//
+// REUSES THE ONE DIGEST. `sourceDigest`, `packageStampPath` and `globalStampPath` come from
+// `stamp-build.mjs` — the same functions that WRITE a stamp are the functions that read it back
+// here, so the two can never name different bytes "the same build".
 // ---------------------------------------------------------------------------
 
 /**
@@ -108,6 +113,21 @@ function workspaceClosure(repo, dir, nameToDir, seen = new Set()) {
 // answer that cannot have changed between the two calls.
 const freshnessCache = new Map();
 
+// MEMOIZED PER PROCESS, PER REPO — the workspace-wide digest is computed at most once, no matter how
+// many dists a single run opens, since the source cannot have changed bytes between those calls.
+const globalDigestCache = new Map();
+
+/** Whether `repo`'s global build stamp currently covers EVERY package — the fast, whole-tree pass. */
+function globalStampFresh(repo) {
+  if (!globalDigestCache.has(repo)) {
+    globalDigestCache.set(repo, sourceDigest(join(repo, "packages")));
+  }
+  const digest = globalDigestCache.get(repo);
+  let stamped = null;
+  try { stamped = readFileSync(globalStampPath(repo), "utf8").trim(); } catch { stamped = null; }
+  return stamped === digest;
+}
+
 function packageFreshness(repo, dir) {
   if (freshnessCache.has(dir)) return freshnessCache.get(dir);
   const distDir = join(repo, "packages", dir, "dist");
@@ -137,6 +157,7 @@ export function assertDistFresh(repo, distPath, toolName) {
   const owning = owningPackage(distPath);
   if (!owning) return;
   const absRepo = resolve(owning.repo);
+  if (globalStampFresh(absRepo)) return;
   const dir = owning.dir;
   const nameToDir = packageNameToDir(absRepo);
   for (const d of workspaceClosure(absRepo, dir, nameToDir)) {

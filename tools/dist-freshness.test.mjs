@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { stampPackage, packageStampPath } from "./stamp-build.mjs";
+import { stampPackage, packageStampPath, sourceDigest, globalStampPath } from "./stamp-build.mjs";
 
 const HERE = join(fileURLToPath(import.meta.url), "..");
 const CORPUS_READ = join(HERE, "corpus-read.mjs");
@@ -119,6 +119,45 @@ test("(v) --pkg mode restamps only the named package, leaving the global stamp u
 
     const pkgStamp = readFileSync(packageStampPath(repo, "a"), "utf8");
     assert.equal(pkgStamp.length, 64); // sha256 hex digest
+  } finally {
+    rmSync(repo, { recursive: true, force: true });
+  }
+});
+
+test("(vi) a fresh GLOBAL stamp covers a package whose own per-package stamp is stale or missing", () => {
+  const repo = makeScratchRepo();
+  try {
+    // Never stamp `a` per-package — only write the workspace-wide stamp, matching what a real
+    // `pnpm -r build` leaves (build-freshness.ts#141 writes only the global stamp).
+    const digest = sourceDigest(join(repo, "packages"));
+    const stampPath = globalStampPath(repo);
+    mkdirSync(join(repo, "node_modules", ".lares-build"), { recursive: true });
+    writeFileSync(stampPath, digest);
+
+    const result = runAssertDistFresh(repo, join(repo, "packages", "a", "dist", "x.js"));
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /fresh/);
+  } finally {
+    rmSync(repo, { recursive: true, force: true });
+  }
+});
+
+test("(vii) both the global stamp and the per-package stamp are stale: exit 2, naming the package", () => {
+  const repo = makeScratchRepo();
+  try {
+    const digest = sourceDigest(join(repo, "packages"));
+    const stampPath = globalStampPath(repo);
+    mkdirSync(join(repo, "node_modules", ".lares-build"), { recursive: true });
+    writeFileSync(stampPath, digest);
+    stampPackage(repo, "a");
+    stampPackage(repo, "b");
+    // Now edit source AFTER both stamps were struck, so both read stale.
+    appendFileSync(join(repo, "packages", "a", "src", "x.ts"), "// touched\n");
+
+    const result = runAssertDistFresh(repo, join(repo, "packages", "a", "dist", "x.js"));
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /stale build/);
+    assert.match(result.stderr, /scratch-a/);
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }

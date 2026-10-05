@@ -87,33 +87,29 @@ import { readFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { distModule } from "./corpus-read.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const TW5 = join(REPO, "packages/lararium-tw5");
-const MESH_DIST = join(REPO, "packages/lararium-mesh/dist/index.js");
+const MESH_DIST = join(REPO, "packages/lararium-mesh/dist");
 const PLUGIN = join(TW5, "plugins/lares-memetic-wikitext.json");
 
-for (const [need, cure] of [
-  [MESH_DIST, "pnpm --filter @lararium/mesh build"],
-  [join(TW5, "dist/tw5-vm.js"), "pnpm --filter @lararium/tw5 build"],
-  [join(TW5, "dist/sigil-attrs.js"), "pnpm --filter @lararium/tw5 build"],
-  [PLUGIN, "pnpm --filter @lararium/tw5 build:plugin"],
-]) {
-  if (!existsSync(need)) {
-    console.error(`[turn-parity] absent: ${need}\n  cure: ${cure}`);
-    process.exit(2);
-  }
-}
-
-const { harvestTurnGradient } = await import(MESH_DIST);
-const { schemeShapedPositionals } = await import(join(TW5, "dist/sigil-attrs.js"));
-const { TW5Engine } = await import(join(TW5, "dist/tw5-vm.js"));
-const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(TW5, "dist/generated-tw5-version.js"));
+// THE ONE DOOR. Every dist import below goes through `distModule`, which is `assertDistFresh` plus
+// the import — a stale build refuses here (exit 2, naming the cure) instead of booting an engine
+// read off bytes the current source no longer matches.
+const { harvestTurnGradient } = await distModule(MESH_DIST, "index.js", "turn-parity", "pnpm --filter @lararium/mesh build");
+const { schemeShapedPositionals } = await distModule(TW5, "dist/sigil-attrs.js", "turn-parity");
+const { TW5Engine } = await distModule(TW5, "dist/tw5-vm.js", "turn-parity");
+const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await distModule(TW5, "dist/generated-tw5-version.js", "turn-parity");
 
 const CORE = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 if (!existsSync(CORE)) {
   console.error(`[turn-parity] no TW5 core blob at ${CORE}\n  cure: pnpm --filter @lararium/tw5 build:tw5-vendor`);
+  process.exit(2);
+}
+if (!existsSync(PLUGIN)) {
+  console.error(`[turn-parity] absent: ${PLUGIN}\n  cure: pnpm --filter @lararium/tw5 build:plugin`);
   process.exit(2);
 }
 
@@ -129,7 +125,7 @@ const GRAMMAR_TAG = "lar:///ha.ka.ba/tags/SharktoothSigil";
 // THE ONE DOOR. This witness boots a wiki holding the grammar, so it asks the VM — the packed
 // plugin it loads answers the same question, and a reader that opened the other door would be
 // choosing its answer by which artifact it happened to parse.
-const { grammarHeads } = await import(join(TW5, "dist/grammar-heads.js"));
+const { grammarHeads } = await distModule(TW5, "dist/grammar-heads.js", "turn-parity");
 const SHELF = grammarHeads(wiki);
 
 // ── THE CORPUS ──────────────────────────────────────────────────────────────────────────────────

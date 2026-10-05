@@ -34,7 +34,11 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, resolve, relative } from "node:path";
 
 const REPO = resolve(process.argv[2] ?? ".");
-const STAMP = join(REPO, "node_modules", ".lares-build", "source-digest");
+
+/** The one path the workspace-wide stamp lives at, shared by every writer and every reader. */
+export function globalStampPath(repo) {
+  return join(resolve(repo), "node_modules", ".lares-build", "source-digest");
+}
 
 /** The one path a per-package stamp lives at, shared by every writer and every reader. */
 export function packageStampPath(repo, dir) {
@@ -100,8 +104,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`[stamp-build] ${dir} ${digest.slice(0, 16)}… — this package's dist now names the bytes it came from`);
   } else {
     const digest = sourceDigest(join(REPO, "packages"));
-    mkdirSync(dirname(STAMP), { recursive: true });
-    writeFileSync(STAMP, digest);
+    const stampPath = globalStampPath(REPO);
+    mkdirSync(dirname(stampPath), { recursive: true });
+    writeFileSync(stampPath, digest);
     // The CLI gate's workspace-wide stamp stands as it always has; a per-package stamp is struck
     // alongside it for every package the tree currently holds, so a full build leaves BOTH readers
     // (the global gate and any package-scoped witness) with a fresh stamp to compare against.
