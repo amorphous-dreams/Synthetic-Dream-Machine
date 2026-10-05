@@ -3,8 +3,8 @@
  *
  * READ THE DECLARATION, NEVER THE PATH. Twenty-two readers each enumerated "the corpus" with a
  * hardcoded glob, in three disagreeing answers: `bags/**\/*.mem` alone, that plus a `wikis/` tree
- * holding ZERO carriers, and that plus one `.tid` glob. The disagreement hid a real carrier — the
- * runtime kernel face at packages/lararium-tw5/tiddlers/memetic-wikitext.tid — from every gate for
+ * holding ZERO carriers, and that plus one `.tid` glob. The disagreement hid real carriers — `.tid`
+ * tiddlers outside `bags/` that declare just as validly as a `.mem` inside it — from every gate for
  * three rulings.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
@@ -98,11 +98,6 @@ describe("carrierFiles — the corpus, from the declarations that make it", () =
     expect(declaresCarrier(readFileSync(join(REPO, "README.md"), "utf8"))).toBeNull();
   });
 
-  /** The carrier the path-shaped globs hid: the runtime kernel face, outside `bags/`. */
-  test("the runtime kernel face rides in, outside bags/", () => {
-    expect(found).toContain("packages/lararium-tw5/tiddlers/memetic-wikitext.tid");
-  });
-
   /** The `bags/` corpus rides in whole. */
   test("every bags/ .mem carrier rides in", () => {
     const bags = execSync("git ls-files 'bags/**/*.mem'", { cwd: REPO, encoding: "utf8" })
@@ -136,7 +131,12 @@ describe("readCarrierFiles — every carrier declares in one of two ways", () =>
    */
   test("every carrier found declares by doctype or by type", () => {
     const forms = new Set(readCarrierFiles(REPO).map((c) => c.form));
-    expect([...forms].sort()).toEqual(["doctype", "type-field"]);
+    // The law bounds the SET from above — nothing outside these two forms — never from below. The
+    // corpus may carry zero carriers of one form at any moment (a `type-field` carrier's retirement
+    // emptied it once already) without the law itself narrowing; `declaresCarrier`'s own synthetic
+    // tests above prove each form still parses on its own.
+    expect([...forms].every((f) => f === "doctype" || f === "type-field")).toBe(true);
+    expect(forms.size, "the corpus must declare at least one real carrier").toBeGreaterThan(0);
   });
 });
 

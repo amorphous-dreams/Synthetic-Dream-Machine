@@ -6,12 +6,10 @@
  * hardcoded glob instead — in THREE disagreeing answers: `bags/(star)(star)/(star).mem` alone, that
  * plus a `wikis/` tree holding ZERO carriers, and that plus one `.tid` glob.
  *
- * Measured the day this landed: 718 tracked files DECLARE, and 700 of them sit inside the narrow
- * glob. Two of the eighteen outside it tell the whole story —
- *
- *   · packages/lararium-tw5/tiddlers/memetic-wikitext.tid, the runtime kernel face the spec names,
- *     a REAL carrier that no gate had read for three rulings;
- *   · README.md, correctly NOT a carrier, whose doctype sits inside a code fence as a lesson.
+ * A real carrier can stand outside the narrow `bags/**​/*.mem` glob — a `.tid` tiddler on its own
+ * declares just as validly as a `.mem` under `bags/`. A path-shaped reader misses that carrier or,
+ * going the other way, wrongly enrols a file that merely QUOTES a declaration — README.md, correctly
+ * NOT a carrier, whose doctype sits inside a code fence as a lesson.
  *
  * A path answers neither case. A declaration answers both.
  *

@@ -34,18 +34,35 @@ interface Shelf { file: string; name: string; example: string | null; defined: b
  * Read the shelf as it stands. A tiddler's own sigil name comes from its FILENAME, so a definition
  * named for a different sigil (`~kahea~kau` living in `sigil-kau`) counts as a helper rather than as
  * the entry this census drives.
+ *
+ * ── A MIRROR IS DEFINED WHEN WHAT IT MIRRORS IS ────────────────────────────────────────────────
+ * Some sigils (`fragment` → `ahu`) carry no `\procedure`/`\widget` of their own because a TS capture
+ * elsewhere in the render path (`wikirules/lar-sigil.ts`) lowers them straight to their mirror target
+ * before any TW5 definition would even get a look. Hand-listing that one name would drift the moment
+ * another mirror grows the same shape, so this reads `lar-mirror-of` off the tiddler and chases it:
+ * a mirror counts as defined when its target does, own `\procedure`/`\widget` or itself a mirror.
  */
 function readShelf(): Shelf[] {
-  const out: Shelf[] = [];
+  const raw: (Shelf & { mirrorOf: string | null })[] = [];
   for (const file of readdirSync(DIR).filter((n) => /^sigil-.*\.tid$/.test(n))) {
     const name = file.slice("sigil-".length, -".tid".length);
     const text = readFileSync(DIR + file, "utf8");
     const ex = /^lar-example:\s*(.*)$/m.exec(text);
     const defined = new RegExp(`\\\\(?:procedure|widget) ~${name.replace(/[-]/g, "\\-")}\\(`).test(text);
     const rn = /^lar-render:\s*(\S+)\s*$/m.exec(text);
-    out.push({ file, name, example: ex ? ex[1]!.replace(/\\n/g, "\n") : null, defined, render: rn ? rn[1]! : null });
+    const mo = /^lar-mirror-of:\s*(\S+)\s*$/m.exec(text);
+    raw.push({ file, name, example: ex ? ex[1]!.replace(/\\n/g, "\n") : null, defined, render: rn ? rn[1]! : null, mirrorOf: mo ? mo[1]! : null });
   }
-  return out;
+  const byName = new Map(raw.map((s) => [s.name, s]));
+  const resolved = new Set<string>();
+  const isDefined = (s: (typeof raw)[number], seen: Set<string> = new Set()): boolean => {
+    if (s.defined) return true;
+    if (!s.mirrorOf || seen.has(s.name)) return false;
+    const target = byName.get(s.mirrorOf);
+    return target ? isDefined(target, new Set(seen).add(s.name)) : false;
+  };
+  for (const s of raw) if (isDefined(s)) resolved.add(s.name);
+  return raw.map(({ mirrorOf, ...s }) => ({ ...s, defined: resolved.has(s.name) }));
 }
 
 /** Declared, never inferred: entries this census does not drive, each with the reason it stands out. */

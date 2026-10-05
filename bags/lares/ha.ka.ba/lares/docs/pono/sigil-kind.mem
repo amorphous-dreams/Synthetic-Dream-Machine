@@ -138,9 +138,9 @@ The body does not parse as TW5 wikitext — it delegates to the interpreter regi
 * TOML block payloads and other structured foreign bodies
 * External grammar integrations not natively available in TW5
 
-Registered guest grammars (from `memetic-wikitext.tid`):
-* `wikitext-filter` — active; native lararium filter dialect
-* `x-tiddlywiki-filter` — legacy/import; deprecated for new authoring
+Registered guest grammars (each at its own `api/pono/<key>` meme):
+* `wikitext-filter` (`lar:///ha.ka.ba/lares/api/pono/wikitext-filter`) — active; native lararium filter dialect
+* `x-tiddlywiki-filter` (`lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter`) — legacy/import; deprecated for new authoring
 
 <<~/ahu>>
 
@@ -197,6 +197,6 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1T2I-FlrprBzPksWjEr_6K2KBMPM9mgMoU07ek1t7nA
+<<^ code="&#x0003;">>ni:///sha-256;coGOMU1KgmyCX01ejdKHPJOqagkI4wHIce042WYqdQM
 
 <<^ code="&#x0004;" -> to="?">>

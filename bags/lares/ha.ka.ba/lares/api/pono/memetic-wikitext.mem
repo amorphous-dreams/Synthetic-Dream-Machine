@@ -56,9 +56,9 @@ This document holds ''submission-draft'' maturity. The lexical structure, dual-l
 
 ''Scope.'' This specification covers the surface syntax of `text/memetic-wikitext`, the parse and render processing model, the typed-edge system, and processor conformance. It governs how constructs get ''written and processed'', and stops there; meaning beyond the language lives in the ontology memes.
 
-''Out of scope.'' The epistemic ontology (the `syad` standpoints, `saptabhaṅgī` predications, and `mu` tools) lives in `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives` and `lar:///ha.ka.ba/lares/api/mu/the-four-tools`; the Law of Fives and the attention scale live in `lar:///ha.ka.ba/lares/api/mu/the-law-of-5s` and `lar:///ha.ka.ba/lares/api/pono/attention-scale`. The operational authoring discipline lives at `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`. The live sigil registry rides the SHELF itself — every tiddler tagged `lar:///ha.ka.ba/tags/SharktoothSigil`, read straight from the wiki. No TOML parse path runs; the kernel carrier documents the runtime rather than holding it.
+''Out of scope.'' The epistemic ontology (the `syad` standpoints, `saptabhaṅgī` predications, and `mu` tools) lives in `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives` and `lar:///ha.ka.ba/lares/api/mu/the-four-tools`; the Law of Fives and the attention scale live in `lar:///ha.ka.ba/lares/api/mu/the-law-of-5s` and `lar:///ha.ka.ba/lares/api/pono/attention-scale`. The operational authoring discipline lives at `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`. The live sigil registry rides the SHELF itself — every tiddler tagged `lar:///ha.ka.ba/tags/SharktoothSigil`, read straight from the wiki. No TOML parse path runs; no kernel carrier documents the runtime, because none exists to document — the SharktoothSigil tiddlers and the grammar-cache they feed ARE the runtime.
 
-''Two faces of one meme.'' This carrier holds the ''specification face'' of `memetic-wikitext`; the runtime ''kernel'' face (`…/memetic-wikitext/kernel`) reads the grammar kernel, the sigil registry, the parse rules and the boot grammar back as a node stands them. ''NEITHER FACE RUNS THE GRAMMAR'' — the sigil tiddlers do, one per word, and both faces describe what those tiddlers already say. The tiddler-format law keeps the two distinct: this `.mem` states the language, the kernel `.tid` states the runtime.
+''One face, not two.'' This carrier is the ''specification face'' of `memetic-wikitext`, and now the only face: it states the language in full, while per-sigil semantics live at each sigil's own `api/pono` meme. ''NO FACE RUNS THE GRAMMAR'' — the SharktoothSigil tiddlers do, one per word, and the spec describes what those tiddlers already say.
 
 ''Relation to the `lar:` URI specification.'' Memetic-wikitext addresses content by `lar:` URIs. The `lar:` scheme — its anatomy, path arity, and resolution discipline — forms a ''separate, sibling submission'': `lar:///ha.ka.ba/lares/api/pono/lar-uri` (Normative Reference [LAR-URI]). This document treats a `lar:` URI as an opaque content identity (see `URI-ref`, #grammar) and defers its internal structure to [LAR-URI]. That scheme's name reads as a mnemonic — ''Latent Attention Relation'' — for the naming-not-fetching posture this document keeps with it.
 
@@ -702,7 +702,6 @@ A canvas reaction wire (flow surface):
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/kernel">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
@@ -714,6 +713,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Cyt6gZ-rz0WeWMdCv2RejBkgYaCEv_qQOvzolV_71Kg
+<<^ code="&#x0003;">>ni:///sha-256;IvgLd45kFEmHQ_4HBU2S-DdpPRgETuCkM9VPlV93cDc
 
 <<^ code="&#x0004;" -> to="?">>
