@@ -6,7 +6,7 @@
  * listener leaves it (CONTROL). Driven over a fake `$tw` whose wiki fires `change` on every write.
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { startup, name, after } from "../src/modules/meme-backstop.js";
+import { startup, name, after, fenceChildBody } from "../src/modules/meme-backstop.js";
 import { placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 
@@ -118,7 +118,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(wiki.store.has(alertTitle)).toBe(false);
   });
 
-  test("a child-slot save carrying a whole pasted frame raises the alert, and the child's bytes land unchanged", async () => {
+  test("QUOTEBLOCK FLOOR: a child-slot save carrying a whole pasted frame gets FENCED, and the alert names `quoteblocked`", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
     const pasted = meme(["z"]);
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: pasted });
@@ -128,15 +128,21 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(alert?.["root"]).toBe(URI);
     expect(alert?.["child"]).toBe(`${URI}#/a`);
     expect(String(alert?.["codes"] ?? "")).toContain("frame-malformed");
-    // The child's own record — the ONE thing this listener never touches — stands exactly as written.
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(pasted);
+    expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
+    // The UNDECOMPOSABLE splice gets fenced into a quoteblock — identity (title) untouched, body
+    // replaced by a fence the frame mask recognises, so the composed root reads clean again.
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
   });
 
-  test("a child-slot save carrying a stray ETX raises the alert too", async () => {
+  test("QUOTEBLOCK FLOOR: a child-slot save carrying a stray ETX gets fenced too", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
-    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n` });
+    const stray = `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n`;
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: stray });
     await settle();
-    expect(wiki.store.has(alertTitle)).toBe(true);
+    const alert = wiki.store.get(alertTitle);
+    expect(alert).toBeDefined();
+    expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(stray));
   });
 
   /**
@@ -147,22 +153,28 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
    * named codes. A lawful nested ahu child and a clean child still raise nothing — the widening is a
    * REPORTING change, not a new refusal.
    */
-  test("a child-slot save carrying an unclosed ahu raises the alert with `ahu-unbalanced-open`", async () => {
+  test("QUOTEBLOCK FLOOR: a child-slot save carrying an unclosed ahu is fenced, codes `ahu-unbalanced-open` + `quoteblocked`", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
-    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~ ahu #/a/z>>\n\nno closer\n" });
+    const unclosed = "! a\n\n<<~ ahu #/a/z>>\n\nno closer\n";
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: unclosed });
     await settle();
     const alert = wiki.store.get(alertTitle);
     expect(alert).toBeDefined();
     expect(String(alert?.["codes"] ?? "")).toContain("ahu-unbalanced-open");
+    expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(unclosed));
   });
 
-  test("a child-slot save carrying a stray block closer raises the alert with `ahu-orphan-close`", async () => {
+  test("QUOTEBLOCK FLOOR: a child-slot save carrying a stray block closer is fenced, codes `ahu-orphan-close` + `quoteblocked`", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
-    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~/ahu>>\n\nafter\n" });
+    const orphan = "! a\n\n<<~/ahu>>\n\nafter\n";
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: orphan });
     await settle();
     const alert = wiki.store.get(alertTitle);
     expect(alert).toBeDefined();
     expect(String(alert?.["codes"] ?? "")).toContain("ahu-orphan-close");
+    expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(orphan));
   });
 
   test("a lawful nested ahu child raises no alert", async () => {
@@ -181,6 +193,50 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a CLEAN AGAIN" });
     await settle();
     expect(wiki.store.has(alertTitle)).toBe(false);
+  });
+
+  test("QUOTEBLOCK FLOOR · WRAPPER SURVIVAL: a fenced child still composes clean and still declares its slot", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: meme(["z"]) });
+    await settle();
+    // The composed root, re-read AFTER the fence lands, now reads clean — re-grading it independently
+    // (the same way `runChildGate` does) finds no error-grade and no balance fault.
+    const render = await readMeme(URI, wikiMemeSink(wiki));
+    expect(render).not.toBeNull();
+    const receipt = await (await import("../src/place-meme.js")).evaluateMeme({ uri: URI, text: render!.text }, wikiMemeSink(wiki));
+    expect(receipt.grade).not.toBe("error");
+    // The slot the child's record carries survives the fence — the `<<~ ahu #/a>>` wrapper is
+    // synthesized at render, never stored, so fencing the body cannot drop the declaration.
+    expect(render!.text).toContain("#/a");
+  });
+
+  test("QUOTEBLOCK FLOOR · ATTRIBUTION: two children save together, only the faulty one is fenced", async () => {
+    await placeMeme({ uri: URI, text: meme(["a", "b"]) }, wikiMemeSink(wiki));
+    await settle(); // let setup's own land-triggered child-gate churn settle before the real edits race it
+    // Both child saves land in ONE change batch (no microtask boundary between them).
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a CLEAN EDIT" });
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/b`)!, text: meme(["z"]) }); // the faulty splice
+    await settle();
+    const alert = wiki.store.get(alertTitle);
+    expect(alert).toBeDefined();
+    expect(alert?.["child"]).toBe(`${URI}#/b`);
+    // The clean sibling is untouched; only the faulty child is fenced.
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a CLEAN EDIT");
+    expect(String(wiki.store.get(`${URI}#/b`)!["text"])).toBe(fenceChildBody(meme(["z"])));
+  });
+
+  test("QUOTEBLOCK FLOOR · SELF-TERMINATION: the fence's own re-fire writes nothing further", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: meme(["z"]) });
+    await settle();
+    const fencedText = String(wiki.store.get(`${URI}#/a`)!["text"]);
+    const alertBefore = JSON.stringify(wiki.store.get(alertTitle));
+    // Let a further settle pass run with nothing new landing — no further write should occur, and the
+    // alert this write raised should stand exactly as it was, never clobbered by a clean-composition
+    // re-grade clearing it.
+    await settle();
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fencedText);
+    expect(JSON.stringify(wiki.store.get(alertTitle))).toBe(alertBefore);
   });
 });
 

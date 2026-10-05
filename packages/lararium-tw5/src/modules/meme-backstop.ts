@@ -48,6 +48,7 @@ module-type: startup
  */
 
 import { framedRootOf, placeMeme, evaluateMeme, readMeme, wikiMemeSink } from "../place-meme.js";
+import type { MemeSink } from "../place-meme.js";
 import { findAhuBalanceFaults } from "../meme-ast/ahu-scan.js";
 
 type Changes = Record<string, { modified?: boolean; deleted?: boolean }>;
@@ -130,6 +131,24 @@ export function surfaceChildGateAlert(wiki: BackstopWiki, root: string, finding:
   });
 }
 
+/** One composition fault found over a (simulated or real) composed-root render — the codes to report
+ *  and the prose a reader sees. `null` from the grader below means the composition reads clean. */
+interface ComposedFault { readonly codes: string[]; readonly why: string }
+
+/**
+ * Fence a child's stored body as a quoteblock the frame mask recognises — a backtick run strictly
+ * longer than any backtick run already inside the body (so the body itself can never read as the
+ * fence's own closer), with an info string so the fenced body reads as deliberately quoted rather
+ * than an accidental code sample. The child's own identity (title, every other field) is untouched by
+ * the caller — this returns only the new body text.
+ */
+export function fenceChildBody(body: string): string {
+  let maxRun = 0;
+  for (const run of body.match(/`+/g) ?? []) maxRun = Math.max(maxRun, run.length);
+  const fence = "`".repeat(Math.max(3, maxRun + 1));
+  return `${fence}text\n${body}\n${fence}`;
+}
+
 /** Lay the listener on one wiki. Titles under placement are held so a burst of changes runs each once. */
 export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void {
   const log = options.log ?? ((line: string) => { console.log(line); });
@@ -137,40 +156,89 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
   const sink = wikiMemeSink(wiki as never);
   const inFlight = new Set<string>();
   const childGateInFlight = new Set<string>();
+  // SELF-TERMINATION: the fence commit below is itself a write, which re-fires `change` on the SAME
+  // child title. Remember exactly the fenced text this rail just wrote for a child; when that child's
+  // next change event hands back that SAME text, it is this rail's own write settling, not a fresh
+  // author edit — skip re-grading so the `quoteblocked` alert this write just raised is never clobbered
+  // by the clean-composition leg clearing it a tick later. A genuine further edit (even re-fencing, even
+  // unwrapping) never matches and resumes ordinary gating.
+  const lastFenced = new Map<string, string>();
 
-  const runChildGate = (root: string, childTitle: string): void => {
+  // ONE GRADER, read twice below: once over the real composed root, once per candidate over a
+  // SIMULATED composed root (the override sink hands back a hypothetical fenced body for exactly one
+  // child, everything else reads through unchanged). Same codes, same prose, whichever altitude asks.
+  const gradeComposedRoot = async (
+    root: string, text: string, readSink: Pick<MemeSink, "titles" | "read"> = sink,
+  ): Promise<ComposedFault | null> => {
+    const receipt = await evaluateMeme({ uri: root, text }, readSink);
+    if (receipt.grade === "error") {
+      const codes = receipt.diagnostics.filter((d) => d.severity === "error").map((d) => d.code);
+      const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier no longer holds together";
+      return { codes, why };
+    }
+    // WIDENING (#/quoteblock-floor, option (iv)): the Confluence gate's NOOP-equivalence leg grades
+    // below error here even though an unclosed ahu or a stray closer corrupted the COMPOSED root —
+    // the dangling opener eats the parent's closer, or the orphan closes the parent early. The
+    // ahu-scan stack already knows both shapes; raise them on the SAME rail, at the SAME composed
+    // altitude, without touching the root door gate's own ingest grades.
+    const balanceFaults = findAhuBalanceFaults(text);
+    if (balanceFaults.length > 0) {
+      return { codes: [...new Set(balanceFaults.map((f) => f.code))], why: "the composed root's ahu blocks no longer balance" };
+    }
+    return null;
+  };
+
+  // A read-through sink that answers one child's fields as a HYPOTHETICAL fenced body, everything
+  // else exactly as the live sink reads it — lets the grader run over "what if THIS child were
+  // fenced" without writing anything until a candidate actually heals the composition.
+  const overrideOneChild = (child: string, fencedFields: Record<string, unknown>): Pick<MemeSink, "titles" | "read"> => ({
+    titles: () => sink.titles(),
+    read: (t) => (t === child ? (fencedFields as never) : sink.read(t)),
+  });
+
+  const runChildGate = (root: string, candidates: readonly string[]): void => {
     if (childGateInFlight.has(root)) return;
     childGateInFlight.add(root);
     (async () => {
       const render = await readMeme(root, sink);
       if (!render) { surfaceChildGateAlert(wiki, root, null); return; }
-      const receipt = await evaluateMeme({ uri: root, text: render.text }, sink);
-      if (receipt.grade === "error") {
-        const codes = receipt.diagnostics.filter((d) => d.severity === "error").map((d) => d.code);
-        const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier no longer holds together";
-        surfaceChildGateAlert(wiki, root, { child: childTitle, codes, why });
-        return;
-      }
-      // WIDENING (#/quoteblock-floor, option (iv)): the Confluence gate's NOOP-equivalence leg grades
-      // below error here even though an unclosed ahu or a stray closer corrupted the COMPOSED root —
-      // the dangling opener eats the parent's closer, or the orphan closes the parent early. The
-      // ahu-scan stack already knows both shapes; raise them on the SAME rail, at the SAME composed
-      // altitude, without touching the root door gate's own ingest grades.
-      const balanceFaults = findAhuBalanceFaults(render.text);
-      if (balanceFaults.length > 0) {
-        const codes = [...new Set(balanceFaults.map((f) => f.code))];
+      const fault = await gradeComposedRoot(root, render.text);
+      if (!fault) { surfaceChildGateAlert(wiki, root, null); return; }
+
+      // ATTRIBUTION: several child saves can land in one change batch. Fence only the child whose
+      // fencing HEALS the composition — evaluate the root with that one child fenced; a candidate
+      // whose fence does not heal it was never the cause and must not be written.
+      for (const child of candidates) {
+        const fields = wiki.getTiddler(child)?.fields as Record<string, unknown> | undefined;
+        if (!fields) continue;
+        const fenced = fenceChildBody(String(fields["text"] ?? ""));
+        const fencedFields = { ...fields, text: fenced };
+        const overrideSink = overrideOneChild(child, fencedFields);
+        const simRender = await readMeme(root, overrideSink);
+        if (!simRender) continue;
+        const simFault = await gradeComposedRoot(root, simRender.text, overrideSink);
+        if (simFault) continue; // this candidate's fence did not heal it — never write it
+
+        // Heals: commit the fence as the child's stored body (the record's title and every other
+        // field survive untouched; the `<<~ ahu #/slot>>` wrapper is synthesized at render by
+        // expandRefs, never stored, so fencing this body cannot lose the slot).
+        lastFenced.set(child, fenced);
+        wiki.addTiddler(fencedFields);
         surfaceChildGateAlert(wiki, root, {
-          child: childTitle,
-          codes,
-          why: "the composed root's ahu blocks no longer balance",
+          child,
+          codes: [...fault.codes, "quoteblocked"],
+          why: `${fault.why}; the body is now fenced as a quoted block, inert until the operator unwraps it`,
         });
         return;
       }
-      surfaceChildGateAlert(wiki, root, null);
+
+      // No single candidate's fence healed it — raise the finding and write nothing.
+      surfaceChildGateAlert(wiki, root, { child: candidates[candidates.length - 1] ?? root, codes: fault.codes, why: fault.why });
     })().finally(() => { childGateInFlight.delete(root); });
   };
 
   wiki.addEventListener("change", (changes) => {
+    const childrenByRoot = new Map<string, string[]>();
     for (const title of Object.keys(changes)) {
       if (!changes[title]?.modified || inFlight.has(title)) continue;
       const fields = wiki.getTiddler(title)?.fields;
@@ -183,7 +251,16 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
         // what it finds. `framedRootOf` already answered null for this title BY DESIGN (the root
         // law), so a child-slot title reaching here is exactly the hole seam (b) names.
         const childRoot = childSlotRootOf(title);
-        if (childRoot !== null) runChildGate(childRoot, title);
+        if (childRoot !== null) {
+          const settledFence = lastFenced.get(title);
+          if (settledFence !== undefined && String(fields["text"] ?? "") === settledFence) {
+            lastFenced.delete(title);
+          } else {
+            const list = childrenByRoot.get(childRoot) ?? [];
+            list.push(title);
+            childrenByRoot.set(childRoot, list);
+          }
+        }
         continue;
       }
 
@@ -200,6 +277,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
         log(`[memetic-wikitext] refused to re-stamp ${title} (landed via ${door}): ${err instanceof Error ? err.message : String(err)}`);
       }).finally(() => { inFlight.delete(title); });
     }
+    for (const [root, children] of childrenByRoot) runChildGate(root, children);
   });
 }
 
