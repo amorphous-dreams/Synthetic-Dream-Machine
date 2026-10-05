@@ -21,9 +21,10 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
-import { frameCarrier, META_OPEN_RE } from "@lararium/memetic-frame";
+import { frameCarrier } from "@lararium/memetic-frame";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { parseTaploFields } from "@lararium/tw5";
+import { metaFenceAt } from "@lararium/tw5/root-meta";
 
 /**
  * Key-aligned to a column width, so a hand-read draft looks like the `meta.mem` files an operator
@@ -52,14 +53,14 @@ export function renderCarrier(uri: string, body: string): string {
 /**
  * Read a carrier's root `toml meta` fence through tw5's OWN TOML field reader (`parseTaploFields`) —
  * the SAME parser the deserializer's meta-fence pass reads, never a second hand-rolled grammar that
- * only admits quoted strings. The fence span itself is located with `@lararium/memetic-frame`'s own
- * admitted-whitespace grammar (`META_OPEN_RE`), so a two-space `toml  meta` spelling the frame layer
- * already admits does not fall invisible here either.
+ * only admits quoted strings. The fence span itself is located with tw5's one meta-fence locator
+ * (`metaFenceAt`, root-meta.ts) FROM THE TOP: this reader also serves SLOT bodies, which carry no
+ * STX of their own, so it never routes through `rootMetaFence`'s STX-relative start.
  *
  * An absent or unlabelled fence reads EMPTY, never a throw — the caller's own fail-closed default
  * takes it from there.
  */
 export function metaFieldsFromBody(body: string): Record<string, unknown> {
-  const fence = new RegExp(`${META_OPEN_RE.source}([\\s\\S]*?)\\n\`\`\``).exec(body);
-  return fence?.[1] ? parseTaploFields(fence[1]) : {};
+  const fence = metaFenceAt(body);
+  return fence ? parseTaploFields(fence.body) : {};
 }

@@ -46,6 +46,7 @@ import {
 import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
 import { larariumDataHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
+import { metaFenceAt } from "@lararium/tw5/root-meta";
 
 /**
  * The acquired tier's home — `<lararium>/library`, which reads `~/.local/share/lararium/library`
@@ -160,9 +161,6 @@ export function readLibraryMeta(entryDir: string): LibraryEntryMeta | null {
  *  mints every entry flat, one slot per body). */
 const AHU_ENTRY_RE = /<<~\s*ahu\s+#\/([0-9a-f]{64})\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
 
-/** The slot's own leading `toml meta` fence, so its body (the JSON) can be read apart from it. */
-const TOML_META_FENCE_RE = /```toml meta[\s\S]*?```/;
-
 /**
  * Read a collection's index carrier back into entries, keyed by the SLOT ADDRESS (never by whatever cid
  * the entry's own JSON claims) — through `metaFieldsFromBody`, the SAME fence reader the root carrier
@@ -185,8 +183,10 @@ function readLibraryIndexEntries(collection: string): ReadonlyMap<string, Librar
     const slotBody = m[2]!;
     const fields   = metaFieldsFromBody(slotBody);
     if (fields["type"] !== "application/json") continue;
-    const fence    = TOML_META_FENCE_RE.exec(slotBody);
-    const jsonText = fence ? slotBody.slice(fence.index + fence[0].length) : slotBody;
+    const fence    = metaFenceAt(slotBody);
+    // `bodyEnd` is the body's own close (the `\n` before the closer); the closer itself is `\n````,
+    // four bytes, and the JSON starts past it.
+    const jsonText = fence ? slotBody.slice(fence.bodyEnd + "\n```".length) : slotBody;
     try {
       const parsed = JSON.parse(jsonText.trim()) as LibraryEntryMeta;
       if (typeof parsed?.cid === "string" && typeof parsed?.name === "string") out.set(cid, parsed);
