@@ -167,7 +167,7 @@ else bad "B's nym appears among A's own personas"; fi
 
 if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
   run_sh_a "★ A's quorum ADMITS a foreign key ★" \
-    "node '$LARES' nexus contract '$B_NYM' --sig '$B_SIG' --json | grep -q '\"memberNow\":true'"
+    "node '$LARES' nexus contract '$B_NYM' --sig '$B_SIG' --json | grep -q '\"memberHeld\":true'"
   step "A's members board folds B IN"
   if as_a nexus members --list --json 2>/dev/null | grep -q "${B_NYM#0x}"; then ok; else bad "B absent from the fold"; fi
 else
@@ -208,7 +208,7 @@ else bad "no token"; fi
 say "⑥ closing — non-renewal, never deletion"
 if [ -n "$B_NYM" ]; then
   run_sh_a "A revokes — the board SUPERSEDES" \
-    "node '$LARES' nexus revoke '$B_NYM' --json | grep -q '\"memberNow\":false'"
+    "node '$LARES' nexus revoke '$B_NYM' --json | grep -q '\"memberHeld\":false'"
 else step "A revokes"; bad "no nym"; fi
 
 say "═══ RESULT ═══"

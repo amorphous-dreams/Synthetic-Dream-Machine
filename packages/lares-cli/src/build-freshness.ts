@@ -26,6 +26,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { pathToFileURL } from "node:url";
 import { repoRoot } from "@lararium/mesh/node";
 import { udsAlive } from "./local-connector.js";
 import { VESSEL_SUBS } from "./commands/vessel.js";
@@ -82,14 +83,16 @@ const BUILD_LOCK  = join(repoRoot, "node_modules", ".lares-build", "build.lock")
  * ONE implementation: `tools/stamp-build.mjs` computes this digest to WRITE the stamp (it runs
  * before the CLI exists, so it cannot import from here); this reads it back to CHECK the stamp, by
  * importing the very function stamp-build.mjs runs — a dynamic import, since this module's own
- * callers stay synchronous-shaped elsewhere in the file but this one path now awaits. Two
- * byte-identical copies used to stand here; the twin test that watched them agree now compares a
- * function to itself, so it is retired rather than kept as a tautology (see build-freshness.ts's
- * removed `../../../tests/build-digest-lockstep.test.ts`).
+ * callers stay synchronous-shaped elsewhere in the file but this one path now awaits. The import
+ * resolves off `repoRoot` (the house's own repo-root walker, `@lararium/mesh/node`) rather than a
+ * relative `../../../` — a relative path reads differently from `src/` than from the compiled
+ * `dist/src/`, and this module runs from BOTH. `repoRoot` walks up from its OWN file regardless of
+ * which copy of itself is running, so one absolute join holds from either depth with no hard-coded
+ * climb.
  */
 export async function sourceDigest(dir: string): Promise<string> {
-  // @ts-expect-error — a plain .mjs tool, deliberately importable without a build
-  const { sourceDigest: stampSourceDigest } = await import("../../../tools/stamp-build.mjs");
+  const stampBuildUrl = pathToFileURL(join(repoRoot, "tools", "stamp-build.mjs")).href;
+  const { sourceDigest: stampSourceDigest } = await import(stampBuildUrl);
   return stampSourceDigest(dir) as string;
 }
 
