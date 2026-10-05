@@ -798,9 +798,9 @@ async function memeProject(args: ParsedArgs): Promise<number> {
 
 /**
  * `profileOf` (`@lararium/tw5/weave`) names an RFC 7764 variant or throws a plain Error; this wraps
- * that Error in `UsageError` at the CALL SITE so `--dialect foo` still exits `usage` here, exactly
- * as it did before `profileFor` moved — the CLI is the one door that turns "throws" into an exit
- * class, and the weave module (read by the filter and the verb too) has no exit classes of its own.
+ * that Error in `UsageError` at the CALL SITE so `--dialect foo` exits `usage` here — the CLI is the
+ * one door that turns a thrown Error into the `usage` exit class, and the weave module (read by the
+ * filter and the verb too) has no exit classes of its own.
  */
 function profileForCli(name: string): WeaveProfile {
   try { return profileOf(name); } catch (err) { throw new UsageError((err as Error).message); }
@@ -945,8 +945,7 @@ function projectMdCheck(args: ParsedArgs): number {
     // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair was
     // woven for — no flag at check time, the recorded sidecar IS the instruction. Absent either
     // key, the pair stays CommonMark with no tongue (the default both channels share).
-    const variant = /^variant: (\S+)$/m.exec(meta)?.[1];
-    const recordedTongue = /^tongue: (\S+)$/m.exec(meta)?.[1];
+    const { variant, tongue: recordedTongue } = recordedTargetOf(meta);
     const profile = variant ? profileForCli(variant) : PROFILES.CommonMark;
     if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
     const srcPath = join(root, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");

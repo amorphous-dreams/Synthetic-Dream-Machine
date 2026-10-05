@@ -29,6 +29,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { recordedTargetOf } from "../src/weave/index.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 const SHELF = join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/submissions");
@@ -41,7 +42,7 @@ const INSTALL_XML2RFC = "~/.venv/bin/pip install xml2rfc";
 function deriveKramdownShelf(dir: string): string[] {
   return readdirSync(dir)
     .filter((f) => f.endsWith(".md.meta"))
-    .filter((f) => readFileSync(join(dir, f), "utf8").includes("variant: kramdown-rfc2629"))
+    .filter((f) => recordedTargetOf(readFileSync(join(dir, f), "utf8")).variant === "kramdown-rfc2629")
     .map((f) => f.slice(0, -".meta".length))
     .sort();
 }

@@ -221,11 +221,11 @@ export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629"
 
 /**
  * The TARGET RECORD a projected `.md.meta` sidecar carries — `variant:`/`tongue:`, present only when
- * non-default (the placement law in {@link projectSubmission}'s header comment). Every door that
- * reads a RECORDED target back — the CLI's `--check` and its bare re-project, the `meme-project`
- * filter's recorded-default read off the wiki tiddler — reads it through this one function, over
- * whatever TEXT carries those two field lines (a `.md.meta` file's bytes, or a wiki tiddler's own
- * `text` field, which TW5 loads a `.meta` file's body into unchanged).
+ * non-default (the placement law in {@link projectSubmission}'s header comment). This reads the
+ * `variant:`/`tongue:` lines of a sidecar's RAW text (a `.md.meta` file's bytes, read off disk). A
+ * door that already holds the PARSED fields instead — the `meme-project` filter's recorded-default
+ * read off a wiki tiddler, where TW5 has parsed the `.meta` file into tiddler fields, not its text —
+ * reads the same two keys as fields directly, never through this function.
  */
 export function recordedTargetOf(metaText: string): { variant?: string; tongue?: string } {
   const variant = /^variant: (\S+)$/m.exec(metaText)?.[1];
@@ -243,9 +243,9 @@ export function submissionTitleOf(uri: string): string {
 /**
  * ONE TARGET LAW FOR EVERY DOOR: an explicit `dialect`/`tongue` wins; absent, the pair's own RECORDED
  * target (read by the caller, off whatever text carries it, through {@link recordedTargetOf}) wins;
- * absent that too, CommonMark with no tongue — today's default, unchanged. `projectMdLocal` held this
- * exact law inline before this function existed; every other door (the filter, the store-path verb)
- * now reads the SAME law rather than a hand-matching copy of it.
+ * absent that too, CommonMark with no tongue — today's default. Every door that resolves a weave
+ * target — the CLI, the filter, the store-path verb — reads the SAME law through this one function,
+ * never a hand-matching copy of it.
  */
 export function resolveWeaveTarget(opts: {
   readonly dialect?: string | null;
@@ -604,7 +604,7 @@ function isStandardRfcAnchor(anchor: string): boolean {
  * the ones PRESENT; an absent field is an absent line, never an invented placeholder. Read off the
  * flattened `reference-<key>` TOML-table keys ({@link isBcp14KeyWordsSource}'s own note), re-keyed
  * to the SHORT names the emitted YAML entry carries. */
-const CITATION_FIELD_KEYS = ["title", "author", "date", "seriesinfo", "target"] as const;
+export const CITATION_FIELD_KEYS = ["title", "author", "date", "seriesinfo", "target"] as const;
 function citationFields(meta: Readonly<Record<string, unknown>>): Record<string, string> | undefined {
   const fields: Record<string, string> = {};
   for (const k of CITATION_FIELD_KEYS) { const v = meta[`reference-${k}`]; if (typeof v === "string" && v.length > 0) fields[k] = v; }
@@ -704,7 +704,7 @@ export interface ReadPinContent {
 
 /**
  * THE ONE READ a pin's target answers, for every door that pins one: `weaveAka` here (the outward
- * markdown weave) and C2's live render alike. Resolution already happened (the caller hands the
+ * markdown weave) and the live `meme-pin` filter render alike. Resolution already happened (the caller hands the
  * TARGET'S OWN RESOLVED TEXT, never a uri); this reads that text's own root meta to tell a
  * REFERENCE meme from a CONTENT slot ({@link isReferenceMeme}), and answers the one check and (for
  * content) the one woven body either shape needs. `null` names the one failure both kinds share: a
@@ -813,8 +813,8 @@ function weaveAka(
     return { lines: [`[${anchor}]`], references: [{ anchor, category, ...(fields ? { fields } : {}) }] };
   }
 
-  // CONTENT SLOT: the frozen image, unchanged from before this loop — position never entered this
-  // decision; only the target's own meta (just read, through {@link readPin}) did.
+  // CONTENT SLOT: the frozen image — position never enters this decision; only the target's own
+  // meta (just read, through {@link readPin}) does.
   return { lines: [`<!-- ${headWord}: ${target} pinned ${pin.check} -->`, ...(pin.body ?? "").split("\n"), `<!-- /${headWord} -->`] };
 }
 

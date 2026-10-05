@@ -23,10 +23,9 @@ module-type: filteroperator
  */
 import type { TW5FilterOperator, TW5FilterSource, TW5Wiki } from "../types/tiddlywiki.js";
 import { wikiResolver } from "../meme-project.js";
-import { readPin, type ReadPinReference } from "../weave/index.js";
+import { readPin, type ReadPinReference, CITATION_FIELD_KEYS } from "../weave/index.js";
 
-const CITATION_PARTS = ["title", "author", "date", "seriesinfo", "target"] as const;
-const PARTS = new Set<string>(["kind", "check", ...CITATION_PARTS]);
+const PARTS = new Set<string>(["kind", "check", ...CITATION_FIELD_KEYS]);
 
 export function memePin(
   source: TW5FilterSource,
@@ -53,7 +52,7 @@ export function memePin(
     // Citation fields live on a REFERENCE pin alone — a content/unresolved pin answers no output,
     // never a placeholder, exactly the law an absent field already follows.
     if (pin.kind === "reference") {
-      const v = (pin as ReadPinReference).citation?.[part as (typeof CITATION_PARTS)[number]];
+      const v = (pin as ReadPinReference).citation?.[part as (typeof CITATION_FIELD_KEYS)[number]];
       if (v) results.push(v);
     }
   });
