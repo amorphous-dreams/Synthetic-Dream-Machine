@@ -30,6 +30,8 @@ export interface FrameMark {
   readonly code: string;
   /** The mark's name in the received framing. */
   readonly name: string;
+  /** The family a scan groups this mark under. A name never implies a family; this field alone does. */
+  readonly family: string;
   /** Slot names this mark carries, in order. Empty when the mark carries none. */
   readonly slots: readonly string[];
 }
@@ -41,28 +43,12 @@ export interface FrameMark {
  * tiddlers, so a mark added here and nowhere else fails rather than passing quietly.
  */
 export const FRAME_MARKS: readonly FrameMark[] = [
-  { code: "&#x0001;", name: "SOH",  slots: ["code", "namespace", "bearing", "uri"] },
-  { code: "&#x0011;", name: "SOH2", slots: ["code", "namespace", "bearing", "uri"] },
-  { code: "&#x0002;", name: "STX",  slots: ["code"] },
-  { code: "&#x0003;", name: "ETX",  slots: ["code", "bcc"] },
-  { code: "&#x0004;", name: "EOT",  slots: ["code", "target"] },
+  { code: "&#x0001;", name: "SOH",  family: "SOH", slots: ["code", "namespace", "bearing", "uri"] },
+  { code: "&#x0011;", name: "SOH2", family: "SOH", slots: ["code", "namespace", "bearing", "uri"] },
+  { code: "&#x0002;", name: "STX",  family: "STX", slots: ["code"] },
+  { code: "&#x0003;", name: "ETX",  family: "ETX", slots: ["code", "bcc"] },
+  { code: "&#x0004;", name: "EOT",  family: "EOT", slots: ["code", "target"] },
 ] as const;
-
-/**
- * Explicit family membership — NEVER a name prefix. `SOH2` is the one Kapu alias a `"SOH"` family
- * query also returns; every other mark's family is itself alone. Retiring EOT2 removed the one case
- * a `startsWith` scan used to alias correctly by accident (`"EOT2".startsWith("EOT")`) — the risk a
- * FUTURE mark named with an existing mark as its prefix would alias into that family with nothing
- * declaring it. This table is the one place that can happen, and it must be written down to happen.
- */
-const FAMILY_ALIASES: Readonly<Record<string, readonly string[]>> = {
-  SOH: ["SOH", "SOH2"],
-};
-
-/** Every mark NAME a family query returns — itself alone, unless {@link FAMILY_ALIASES} says more. */
-function familyNames(family: string): readonly string[] {
-  return FAMILY_ALIASES[family] ?? [family];
-}
 
 /** The mark a code names, or undefined where the grammar stands none. */
 export function frameMark(code: string): FrameMark | undefined {
@@ -73,15 +59,14 @@ export function frameMark(code: string): FrameMark | undefined {
 export const FRAME_CODES: readonly string[] = FRAME_MARKS.map((m) => m.code);
 
 /**
- * The hex bodies of every mark EXACTLY named by `family`'s entry in {@link FAMILY_ALIASES} —
- * `frameHex("SOH")` reads `0001|0011` because that table says so, not because `"SOH2"` happens to
- * start with `"SOH"`. A mark named with another mark's name as its prefix (the EOT2/EOT shape this
- * grammar once carried) no longer joins that family's readers unless this table is told to let it.
+ * The hex bodies of every mark whose declared `family` equals `family` — read off `FRAME_MARKS` at
+ * call time, so a mark pushed onto that array joins the family its own entry declares. A mark's
+ * NAME never implies membership; only its `family` field does, which is why a name that merely
+ * prefixes another mark's name joins nothing on that account alone.
  */
 export function frameHex(family: string): string {
-  const names = new Set(familyNames(family));
   return FRAME_MARKS
-    .filter((m) => names.has(m.name))
+    .filter((m) => m.family === family)
     .map((m) => m.code.replace(/^&#x|;$/g, ""))
     .join("|");
 }
@@ -101,6 +86,8 @@ export function frameHex(family: string): string {
 export function frameAlt(...families: readonly string[]): string {
   // NO FAMILY NAMES EVERY MARK — the alternation a line-walker stands when it asks only "is this a frame
   // sigil at all?". A walker that spelled `&#x00..;` instead read any C0 entity as frame.
-  const named = families.length === 0 ? FRAME_MARKS.map((m) => m.name) : families;
+  const named = families.length === 0
+    ? [...new Set(FRAME_MARKS.map((m) => m.family))]
+    : families;
   return `&#x(?:${named.map((f) => frameHex(f)).join("|")});`;
 }

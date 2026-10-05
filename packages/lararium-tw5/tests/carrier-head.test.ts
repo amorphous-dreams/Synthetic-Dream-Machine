@@ -107,7 +107,7 @@ describe("the codes come from the frame declaration, never from here", () => {
   // One fact, declared once. Restating the codes would let a mark added to FRAME_MARKS read correct in
   // every file while this reader quietly dropped it.
   test("★ every SOH mark the grammar stands is a mark this shore reads ★", () => {
-    const soh = FRAME_MARKS.filter((m) => m.name.startsWith("SOH"));
+    const soh = FRAME_MARKS.filter((m) => m.family === "SOH");
     expect(soh.length).toBeGreaterThan(1);
     for (const m of soh) {
       const head = `<<^ code="${m.code}" from="?" -> to="${URI}">>`;
@@ -116,13 +116,13 @@ describe("the codes come from the frame declaration, never from here", () => {
   });
 
   test("★ and every EOT mark reads as a release ★", () => {
-    for (const m of FRAME_MARKS.filter((x) => x.name.startsWith("EOT"))) {
+    for (const m of FRAME_MARKS.filter((x) => x.family === "EOT")) {
       expect(carrierReleasePattern().test(`<<^ code="${m.code}" -> to="?">>`), m.name).toBe(true);
     }
   });
 
   test("a mark that is neither names no head", () => {
-    for (const m of FRAME_MARKS.filter((x) => !/^(SOH|EOT)/.test(x.name))) {
+    for (const m of FRAME_MARKS.filter((x) => x.family !== "SOH" && x.family !== "EOT")) {
       expect(matchCarrierHead(`<<^ code="${m.code}" from="?" -> to="${URI}">>`), m.name).toBeNull();
     }
   });
@@ -347,18 +347,22 @@ describe("CONTROLS — what must NOT read as a head", () => {
 // text of any pattern: a reader may reach the answer however its own context earned, and only the
 // answer is checked. The probes ride an isolated module graph and never touch the real declaration.
 describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", () => {
-  /** Codes the grammar stands nowhere, each joining an existing family by NAME PREFIX. */
+  /** Codes the grammar stands nowhere, each joining an existing family by its declared family. */
   const PROBE_SOH = "&#x0095;";
   const PROBE_STX = "&#x0092;";
   const PROBE_ETX = "&#x0093;";
   const PROBE_EOT = "&#x0094;";
 
   const PROBES = [
-    { code: PROBE_SOH, name: "SOH3", slots: ["code", "namespace", "bearing", "uri"] },
-    { code: PROBE_STX, name: "STX2", slots: ["code"] },
-    { code: PROBE_ETX, name: "ETX2", slots: ["code", "bcc"] },
-    { code: PROBE_EOT, name: "EOT3", slots: ["code", "target"] },
+    { code: PROBE_SOH, name: "SOH3", family: "SOH", slots: ["code", "namespace", "bearing", "uri"] },
+    { code: PROBE_STX, name: "STX2", family: "STX", slots: ["code"] },
+    { code: PROBE_ETX, name: "ETX2", family: "ETX", slots: ["code", "bcc"] },
+    { code: PROBE_EOT, name: "EOT3", family: "EOT", slots: ["code", "target"] },
   ] as const;
+
+  /** A probe whose NAME prefixes an existing family but DECLARES a different one. */
+  const PROBE_PREFIX_CODE = "&#x0096;";
+  const PROBE_PREFIX = { code: PROBE_PREFIX_CODE, name: "SOHX", family: "STX", slots: ["code"] } as const;
 
   /**
    * Load a fresh module graph, stand the probes in ITS declaration, and hand the caller the readers.
@@ -379,7 +383,8 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     try {
       // The DECLARATION alone loads first, so the push lands before any scan interpolates the set.
       const fm = await import("@lararium/memetic-frame/marks");
-      (fm.FRAME_MARKS as { code: string; name: string; slots: readonly string[] }[]).push(...PROBES);
+      (fm.FRAME_MARKS as { code: string; name: string; family: string; slots: readonly string[] }[])
+        .push(...PROBES, PROBE_PREFIX);
       return await fn({
         shape:     await import("../src/carrier-shape.js"),
         frame:     await import("@lararium/memetic-frame"),
@@ -469,6 +474,15 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
       const m = shape.readCarrierShape(stranger).marks;
       expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: false, etx: false, eot: false });
       expect(frame.frameStanding(stranger).kind).toBe("absent");
+    });
+  });
+
+  // CONTROL — a name that prefixes an existing family joins NOTHING on that account alone. Only the
+  // declared `family` field admits a mark to a family's scan; a name-prefix reader would alias
+  // "SOHX" into "SOH" and this probe would then appear where it must not.
+  test("CONTROL — a name prefixing a family does not alias into it", async () => {
+    await withProbes(({ frame }) => {
+      expect(frame.frameHex("SOH").split("|")).not.toContain(PROBE_PREFIX_CODE.replace(/^&#x|;$/g, ""));
     });
   });
 
