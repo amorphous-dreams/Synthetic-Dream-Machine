@@ -61,7 +61,7 @@ describe("the writer", () => {
     const v = verdict(withEtb);
     expect(v.kind).toBe("torn");
     if (v.kind === "torn") {
-      expect(v.faults.some((f) => f.kind === "retired-spelling" && f.message.includes("ETB"))).toBe(true);
+      expect(v.faults.some((f) => f.kind === "torn-spelling" && f.message.includes("ETB"))).toBe(true);
     }
   });
 

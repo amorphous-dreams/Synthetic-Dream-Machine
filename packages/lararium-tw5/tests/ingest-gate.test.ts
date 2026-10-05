@@ -177,5 +177,19 @@ describe("ingest-gate — the Confluence triangle decides", () => {
       expect(d.kind).toBe("refuse");
       if (d.kind === "refuse") expect(d.diagnostics.some((x) => x.code === "frame-malformed" && x.severity === "error")).toBe(true);
     });
+
+    test("a literal ETB mark (torn-spelling) still refuses — the weld to the frame fault kind", () => {
+      const withEtb = source.replace(
+        '<<^ code="&#x0004;" -> to="?">>',
+        '<<^ code="&#x0017;">>\n<<^ code="&#x0004;" -> to="?">>',
+      );
+      expect(withEtb).not.toBe(source);
+      const d = decideIngest({
+        uri: URI, diskText: withEtb, diskHash: sha(withEtb),
+        syncedHash: sha(canonical), currentRenderHash: sha(canonical), hash: sha,
+      });
+      expect(d.kind).toBe("refuse");
+      if (d.kind === "refuse") expect(d.diagnostics.some((x) => x.code === "torn-spelling" && x.severity === "error")).toBe(true);
+    });
   });
 });

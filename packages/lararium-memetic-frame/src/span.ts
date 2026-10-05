@@ -90,7 +90,7 @@ export interface FrameRead {
  * of several carriers stands several STX by design, while a second ETX inside one frame never does.
  */
 export interface FrameFault {
-  readonly kind: "second-stx" | "etx-before-stx" | "second-etx" | "no-etx" | "meta-before-stx" | "retired-spelling";
+  readonly kind: "second-stx" | "etx-before-stx" | "second-etx" | "no-etx" | "meta-before-stx" | "torn-spelling";
   readonly message: string;
 }
 

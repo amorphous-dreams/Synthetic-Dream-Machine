@@ -100,7 +100,7 @@ function diagnostic(severity: DiagnosticSeverity, code: string, message: string,
 const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
   "no-etx":          "block-check-torn",
   "meta-before-stx": "meta-before-stx",
-  "retired-spelling": "retired-spelling",
+  "torn-spelling":   "torn-spelling",
   "second-stx":      "frame-malformed",
   "second-etx":      "frame-malformed",
   "etx-before-stx":  "frame-malformed",

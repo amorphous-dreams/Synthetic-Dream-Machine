@@ -86,7 +86,7 @@ describe("★ verdict(text) ★", () => {
       test(name, () => {
         expect(text).not.toBe(carrier);
         const v = verdict(text);
-        expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["retired-spelling"]);
+        expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["torn-spelling"]);
       });
     }
     test("CONTROL: the canonical head and release carry no tear", () => {
