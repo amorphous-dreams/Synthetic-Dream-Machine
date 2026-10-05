@@ -37,6 +37,8 @@ act() {
     fail "$label"
   fi
 }
+# A fresh distro carries no package lists; `apt-get install` alone answers "Unable to locate package".
+apt_install() { sudo env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -qq && apt-get install -y -qq "$@"' _ "$@"; }
 
 if ! grep -qi microsoft /proc/version; then
   echo 'not WSL2 — nothing to stand'
@@ -58,7 +60,7 @@ for package in "${base_packages[@]}"; do dpkg -s "$package" >/dev/null 2>&1 || m
 if (( ${#missing[@]} == 0 )); then
   already 'base packages present'
 else
-  act "apt install ${missing[*]}" sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${missing[@]}"
+  act "apt install ${missing[*]}" apt_install "${missing[@]}"
 fi
 
 step '2 · /etc/wsl.conf — systemd on, inherited Windows PATH off'
@@ -98,7 +100,7 @@ RESTART_NEEDED=$WSLCONF_CHANGED
 step '3 · earlyoom — keep a runaway process from freezing the VM'
 EARLYOOM_ARGS="-m 5 -s 50 -r 3600 --avoid '(^|/)(claude|codex|Xwayland|systemd)\$'"
 if dpkg -s earlyoom >/dev/null 2>&1; then already 'earlyoom installed'
-else act 'apt install earlyoom' sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq earlyoom; fi
+else act 'apt install earlyoom' apt_install earlyoom; fi
 if grep -qxF "EARLYOOM_ARGS=\"$EARLYOOM_ARGS\"" /etc/default/earlyoom 2>/dev/null; then
   already '/etc/default/earlyoom thresholds'
 else
@@ -122,12 +124,34 @@ if command -v node >/dev/null 2>&1; then node_major=$(node -p 'process.versions.
 if [[ "$node_major" =~ ^[0-9]+$ ]] && (( node_major >= 24 )); then
   already "node $(node --version)"
 else
-  need 'install Node.js 24 or newer by your approved Linux package manager, then re-run'
+  # Ubuntu's apt nodejs lags far behind 24; Microsoft's WSL guide recommends nvm (per-user, no sudo, no third-party apt repo).
+  need 'install Node.js 24 via nvm (Microsoft WSL guidance), then open a new terminal and re-run:'
+  need '  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash'
+  need '  source ~/.nvm/nvm.sh && nvm install 24 && nvm alias default 24'
 fi
 if command -v corepack >/dev/null 2>&1; then
-  if command -v pnpm >/dev/null 2>&1; then already "pnpm $(pnpm --version)"; else act 'corepack enable (exposes pnpm)' corepack enable; fi
+  if command -v pnpm >/dev/null 2>&1; then
+    # The corepack shim fetches pnpm on its first run; a read (and a dry run) must not reach the network.
+    pnpm_ver=$(COREPACK_ENABLE_NETWORK=0 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version 2>/dev/null </dev/null) || pnpm_ver='corepack shim; the first pnpm command downloads pnpm 10 (engines ask >=9)'
+    already "pnpm $pnpm_ver"
+  else act 'corepack enable (exposes pnpm)' corepack enable; fi
 else
-  need 'Corepack is absent; install a current Node.js distribution that includes it, then enable pnpm'
+  need 'Corepack is absent; Node 24 bundles it (Node 25+ dropped it) - stay on 24, or run: npm install -g corepack && corepack enable'
+fi
+
+step '5b · Docker Engine — the lararium kit runs in a container behind this distro'
+DOCKER_SOCK=/var/run/docker.sock
+if command -v docker >/dev/null 2>&1; then
+  # `docker info` blocks on a dead Docker Desktop proxy socket; bound the read.
+  if timeout 15 docker info >/dev/null 2>&1; then already "docker $(docker --version | sed 's/,.*//') reachable"
+  elif [[ -S "$DOCKER_SOCK" && ! -w "$DOCKER_SOCK" ]]; then
+    if getent group docker | grep -qw "${USER:-$(id -un)}"; then need 'the docker group joined after this shell started: open a new terminal and re-run'
+    else need 'the daemon refuses this user:  sudo usermod -aG docker "$USER"  then open a new terminal and re-run'; fi
+  elif [[ "$(systemctl is-active docker 2>/dev/null)" == active ]]; then need "docker runs but $DOCKER_SOCK did not answer in 15 s; read: journalctl -u docker -n 20"
+  elif dpkg -s docker.io >/dev/null 2>&1; then need 'docker.io is installed but its daemon sleeps:  sudo systemctl enable --now docker   (needs systemd=true; run wsl --shutdown first when step 2 changed /etc/wsl.conf)'
+  else need 'docker here is Docker Desktop'"'"'s integration and Desktop is not running: start Docker Desktop, or install the in-distro engine:  sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod -aG docker "$USER"'; fi
+else
+  need 'install Docker Engine from Ubuntu (works on Windows Home, no Docker Desktop):  sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod -aG docker "$USER"  then open a new terminal and re-run'
 fi
 
 step '6 · ~/.venv — one Python environment for sensorium and tree-sitter host'
@@ -159,9 +183,9 @@ step '8 · Windows half'
 WIN_PROFILE=$("$CMD_EXE" /c 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')
 WSLCFG=$(wslpath -u "${WIN_PROFILE:-C:\\nowhere}" 2>/dev/null)/.wslconfig
 if [[ -f "$WSLCFG" ]] && grep -qE '^[[:space:]]*memory[[:space:]]*=' "$WSLCFG" && grep -qE '^[[:space:]]*swap[[:space:]]*=' "$WSLCFG"; then
-  already '.wslconfig carries memory= and swap='
+  already ".wslconfig carries memory= and swap= ($WSLCFG - belongs to this Windows account only)"
 else
-  need 'run tools/wsl2/stand-windows.ps1 in PowerShell (writes only the owned WSL resource keys and inventories distros)'
+  need 'run tools/wsl2/stand-windows.ps1 in PowerShell as the Windows account that owns this distro (writes only the owned WSL resource keys and inventories distros)'
 fi
 if [[ -n "$PWSH_EXE" ]]; then already "PowerShell 7 at $PWSH_EXE (the runbook engine for stand-windows.ps1)"
 else need 'install PowerShell 7 on Windows: winget install --id Microsoft.PowerShell --source winget   (stand-windows.ps1 degrades to Windows PowerShell 5.1 without it)'; fi

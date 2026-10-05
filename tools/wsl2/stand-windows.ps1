@@ -8,16 +8,24 @@
   unregisters, exports, or modifies a nonselected distro.
 
   -DryRun shows the plan without writes.
-  -Distro optionally names the WSL distro whose vhdx should become sparse.
+  -Distro optionally names the WSL distro the sparse opt-in and the inventory select.
+  -Sparse opts into sparse vhdx allocation. WSL 2.5.6+ gates sparse VHDs behind --allow-unsafe
+          and prints "sparse VHD support is currently disabled due to potential data corruption";
+          without -Sparse the script neither writes sparseVhd nor runs --set-sparse.
   -NoRelaunch keeps the run in the current PowerShell even when pwsh (7+) is installed.
 
   The runbook's PowerShell is 7 (pwsh). Step 0 reads the running engine: under Windows PowerShell
   5.1 with pwsh installed it relaunches itself there once; without pwsh it reports needs-you and
   continues, since every later step tolerates 5.1. The file keeps a UTF-8 BOM and ASCII-only code
   so that 5.1 bootstrap parse holds.
+
+  Step 0b reads the host without elevation: Windows edition (WSL 2 runs on Home), the Windows
+  account (distros and .wslconfig belong to one account), the hypervisor / firmware virtualization
+  state, and the WSL engine version (inbox WSL lacks --version and --manage; 2.5.6+ carries the
+  --allow-unsafe sparse gate).
 #>
 [CmdletBinding()]
-param([switch]$DryRun, [string]$Distro = '', [switch]$NoRelaunch)
+param([switch]$DryRun, [string]$Distro = '', [switch]$NoRelaunch, [switch]$Sparse)
 
 $ErrorActionPreference = 'Stop'
 function Already($m) { Write-Host ("  {0,-10} {1}" -f 'already', $m) -ForegroundColor DarkGray }
@@ -40,6 +48,7 @@ if ($psMajor -ge 7) {
   $pwshPath = if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }
   $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath, '-NoRelaunch')
   if ($DryRun) { $forward += '-DryRun' }
+  if ($Sparse) { $forward += '-Sparse' }
   if ($Distro) { $forward += @('-Distro', $Distro) }
   Set_ "relaunching under $pwshPath (was Windows PowerShell $($PSVersionTable.PSVersion))"
   & $pwshPath @forward
@@ -50,8 +59,42 @@ if ($psMajor -ge 7) {
   Need "install PowerShell 7: winget install --id Microsoft.PowerShell --source winget   (continuing under Windows PowerShell $($PSVersionTable.PSVersion))"
 }
 
-$hostGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
-$cpus = (Get-CimInstance Win32_Processor | Measure-Object NumberOfLogicalProcessors -Sum).Sum
+# wsl.exe writes UTF-16LE to a redirected stdout; decoded as the OEM code page every letter grows a NUL and no regex matches
+function Read-Wsl([string[]]$wslArgs) {
+  $oldEnc = [Console]::OutputEncoding
+  try { [Console]::OutputEncoding = [Text.Encoding]::Unicode; (& wsl.exe @wslArgs 2>&1 | Out-String) } catch { '' } finally { [Console]::OutputEncoding = $oldEnc }
+}
+
+Step '0b | Windows host - edition, account, virtualization, WSL engine (read-only)'
+$computer = Get-CimInstance Win32_ComputerSystem
+$os = Get-CimInstance Win32_OperatingSystem
+$hostGB = [math]::Round($computer.TotalPhysicalMemory / 1GB)
+$processors = @(Get-CimInstance Win32_Processor)
+$cpus = ($processors | Measure-Object NumberOfLogicalProcessors -Sum).Sum
+Already "$($os.Caption) build $($os.BuildNumber) - WSL 2 runs on every desktop edition, Home included"
+Already "Windows account $env:USERNAME - WSL distros and $env:USERPROFILE\.wslconfig belong to this account only; another family account starts from nothing"
+if ($computer.HypervisorPresent) {
+  Already 'hypervisor running - Virtual Machine Platform active, firmware virtualization on'
+} elseif (($processors | Where-Object { $_.VirtualizationFirmwareEnabled -eq $false }).Count -gt 0) {
+  Need 'enable virtualization (Intel VT-x / AMD-V, often named SVM) in UEFI/BIOS setup; Task Manager > Performance > CPU shows "Virtualization: Disabled" until then'
+} else {
+  Need 'enable the Virtual Machine Platform: in an Administrator PowerShell run  wsl --install --no-distribution  then restart Windows'
+}
+$wslCmd = Get-Command wsl.exe -ErrorAction SilentlyContinue
+$wslVersion = $null
+if ($wslCmd) {
+  $versionText = Read-Wsl @('--version')
+  if ($versionText -match 'WSL[^\r\n]*?(\d+)\.(\d+)\.(\d+)') { $wslVersion = [version]"$($Matches[1]).$($Matches[2]).$($Matches[3])" }
+}
+if (-not $wslCmd) {
+  Need 'wsl.exe missing - in an Administrator PowerShell run  wsl --install --no-distribution  then restart Windows'
+} elseif (-not $wslVersion) {
+  Need 'wsl --version did not answer (inbox WSL) - run  wsl --update  to move to the Store build, which carries --manage and systemd support'
+} elseif ($wslVersion -lt [version]'2.5.6') {
+  Need "WSL $wslVersion - run  wsl --update  (2.5.6+ carries the --allow-unsafe sparse gate this script speaks; Docker Desktop asks for 2.1.5+)"
+} else {
+  Already "WSL $wslVersion (Store build; wsl --update keeps it current)"
+}
 $lxssRootPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss'
 $lxssRoot = Get-ItemProperty $lxssRootPath -ErrorAction SilentlyContinue
 $lxss = Get-ChildItem $lxssRootPath -ErrorAction SilentlyContinue |
@@ -75,9 +118,10 @@ $want = [ordered]@{
   }
   'experimental' = [ordered]@{
     autoMemoryReclaim = 'gradual'
-    sparseVhd = 'true'
   }
 }
+# sparse VHD stays opt-in: WSL 2.5.6+ (2025-04) gates it behind --allow-unsafe for potential data corruption.
+if ($Sparse) { $want['experimental']['sparseVhd'] = 'true' }
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $sections = [ordered]@{}; $order = @(); $preamble = @(); $cur = ''
 if (Test-Path $cfgPath) {
@@ -124,27 +168,35 @@ if ($changed -and -not $DryRun) {
   Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
 }
 
-Step '2 | selected distro vhdx - opt into sparse allocation'
+Step '2 | selected distro vhdx - sparse allocation (opt-in by -Sparse)'
+$work = @($lxss | Where-Object DistributionName -eq $Distro) | Select-Object -First 1
+$vhd = if ($work) { Join-Path ($work.BasePath -replace '^\\\\\?\\', '') 'ext4.vhdx' } else { '' }
 if (-not $Distro) {
   Need 'no non-Docker WSL distro is registered; install one with wsl --install -d <DistroName>'
+} elseif (-not $Sparse) {
+  if ($vhd -and (Test-Path $vhd) -and ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile)) {
+    Already "'$Distro' vhdx already sparse ($([math]::Round((Get-Item $vhd).Length / 1GB, 1)) GB on disk) - left as found"
+  } else {
+    $vhdLabel = if ($vhd) { $vhd } else { '<path to ext4.vhdx>' }
+    Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe: potential data corruption). Safe reclaim: wsl --shutdown, then diskpart > select vdisk file=`"$vhdLabel`" > compact vdisk"
+  }
 } else {
-  $work = @($lxss | Where-Object DistributionName -eq $Distro) | Select-Object -First 1
   if (-not $work) {
     Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
   } else {
-    $vhd = Join-Path ($work.BasePath -replace '^\\\\\?\\', '') 'ext4.vhdx'
     if (-not (Test-Path $vhd)) { Need "'$Distro' has no ext4.vhdx at its registered base path" }
     else {
       $sizeGB = [math]::Round((Get-Item $vhd).Length / 1GB, 1)
       if ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
       else {
-        # wsl.exe writes UTF-16LE to a redirected stdout; decoded as the OEM code page every letter grows a NUL and no regex matches
-        $oldEnc = [Console]::OutputEncoding
-        try { [Console]::OutputEncoding = [Text.Encoding]::Unicode; $listing = (wsl.exe -l -v | Out-String) } finally { [Console]::OutputEncoding = $oldEnc }
+        $listing = Read-Wsl @('-l', '-v')
         $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
-        if (-not $state) { Need "wsl -l -v did not list '$Distro'; inspect it before using wsl --manage '$Distro' --set-sparse true" }
-        elseif ($state -match 'Running') { Need "run wsl --shutdown, then re-run to set '$Distro' sparse ($sizeGB GB on disk)" }
-        else { Act "wsl --manage '$Distro' --set-sparse true" { wsl.exe --manage $Distro --set-sparse true | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE" } } }
+        if (-not $state) { Need "wsl -l -v did not list '$Distro'; inspect it before using wsl --manage '$Distro' --set-sparse true --allow-unsafe" }
+        elseif ($state -match 'Running') { Need "run wsl --shutdown, then re-run with -Sparse to set '$Distro' sparse ($sizeGB GB on disk)" }
+        else {
+          Need "you accepted Microsoft's warning by passing -Sparse: 'sparse VHD support is currently disabled due to potential data corruption'"
+          Act "wsl --manage '$Distro' --set-sparse true --allow-unsafe" { wsl.exe --manage $Distro --set-sparse true --allow-unsafe | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE" } }
+        }
       }
     }
   }
@@ -160,4 +212,4 @@ foreach ($d in ($lxss | Sort-Object DistributionName)) {
 
 Write-Host ''
 $selectedLabel = if ($Distro) { $Distro } else { '<none>' }
-Write-Host "host: $hostGB GB | $cpus threads | selected distro: $selectedLabel | dry-run=$DryRun"
+Write-Host "host: $hostGB GB | $cpus threads | Windows account: $env:USERNAME | selected distro: $selectedLabel | sparse opt-in=$Sparse | dry-run=$DryRun"
