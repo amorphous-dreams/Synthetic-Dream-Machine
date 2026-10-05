@@ -19,9 +19,28 @@ import path from "node:path";
 
 const packagesDir = path.resolve(new URL(".", import.meta.url).pathname, "..");
 
-/** Barrels first (a dir with `index.ts`), then `<sub>.ts`, then the bare package. */
+/**
+ * A subpath the package's own `exports` map seats somewhere other than `src/<sub>.ts` (a module living
+ * in a subdirectory, e.g. `./harvest` → `dist/capture/harvest.js`) resolves to the source twin of that
+ * export — read off package.json, so a module that moves is followed the day its export moves.
+ */
+function exportsFor(scopedName: string, dirName: string, src: string) {
+  const pkg = JSON.parse(fs.readFileSync(path.join(packagesDir, dirName, "package.json"), "utf8")) as {
+    exports?: Record<string, string | { import?: string }>;
+  };
+  return Object.entries(pkg.exports ?? {}).flatMap(([key, target]) => {
+    const dist = typeof target === "string" ? target : target.import;
+    const m = key !== "." && dist ? /^\.\/dist\/(.+)\.js$/.exec(dist) : null;
+    if (!m || m[1] === key.slice(2)) return [];
+    const srcFile = path.join(src, `${m[1]}.ts`);
+    return fs.existsSync(srcFile) ? [{ find: `@lararium/${scopedName}/${key.slice(2)}`, replacement: srcFile }] : [];
+  });
+}
+
+/** Re-seated exports first, then barrels (a dir with `index.ts`), then `<sub>.ts`, then the bare package. */
 function aliasesFor(scopedName: string, dirName: string) {
   const src = path.join(packagesDir, dirName, "src");
+  const reseated = exportsFor(scopedName, dirName, src);
   const barrels = fs
     .readdirSync(src, { withFileTypes: true })
     .filter((e) => e.isDirectory() && fs.existsSync(path.join(src, e.name, "index.ts")))
@@ -31,6 +50,7 @@ function aliasesFor(scopedName: string, dirName: string) {
     }));
 
   return [
+    ...reseated,
     ...barrels,
     { find: new RegExp(`^@lararium/${scopedName}/(.+)$`), replacement: path.join(src, "$1.ts") },
     { find: `@lararium/${scopedName}`, replacement: path.join(src, "index.ts") },
