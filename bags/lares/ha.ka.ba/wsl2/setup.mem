@@ -63,7 +63,9 @@ Complete the distro's first-launch user creation before running the Linux script
 
 !!! Containers: Docker Engine in the distro
 
-The lararium kit runs in a container behind this WSL2 instance. Ubuntu's own `docker.io` package inside the distro supplies that, runs on Windows Home, costs nothing, and needs no Windows-side program; `systemd=true` (section 4) supervises its daemon, so install it after the first Linux stand and its `wsl --shutdown`. The Linux stand reports the exact install line as `needs-you`. Docker Desktop stays optional: Docker's published requirements for its WSL 2 backend name Windows 11 Pro, Enterprise, or Education and WSL 2.1.5+, and its WSL integration places a second `docker` command inside the distro, so a household picks one engine, never both. Docker Desktop's own `docker-desktop` distributions, when present, are expected and never setup-script targets.
+The lararium kit runs in a container behind this WSL2 instance. Ubuntu's own `docker.io` package inside the distro supplies that, runs on Windows Home, costs nothing, and needs no Windows-side program; `systemd=true` (section 4) supervises its daemon, so install it after the first Linux stand and its `wsl --shutdown`. The Linux stand reports the exact install line as `needs-you`. The engine runs rootful: WSL 2.9+ breaks rootless Docker and Podman (microsoft/WSL #41492), so the `docker` group on this host reads root-equivalent; say so to whoever joins it.
+
+Microsoft's own WSL containers (`wslc`, GA in WSL 3.0.1) run single containers on Home with nothing to install, but carry no compose and no Docker socket yet, so the stack stays on the in-distro engine. Fallbacks, the Docker Desktop nuance, and the tripwire that moves the stack onto `wslc` live in [[lar:///ha.ka.ba/wsl2/containers]]. Docker Desktop's own `docker-desktop` distributions, when present, are expected and never setup-script targets.
 
 Keep repositories under the distro's ext4 filesystem, such as `~/src/Synthetic-Dream-Machine`, rather than `/mnt/c`. The mounted Windows filesystem remains useful for interchange; it is not the home for package installs, file-watch-heavy tests, or Git working trees.
 
@@ -222,5 +224,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EsUGfrvjyQQ3odXWg_9qN2UC9ltunbpqGPIo4tuxvaQ
+<<^ code="&#x0003;">>ni:///sha-256;8n5w0ARqHq7BaAoNO3W0mHlrGY6eUWBPh8fZcbBO5qQ
 <<^ code="&#x0004;" -> to="?">>

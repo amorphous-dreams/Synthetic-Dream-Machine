@@ -1,0 +1,113 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/containers">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/wsl2/containers.mem"
+l-space    = "stable"
+mana       = 13
+manao      = 14
+manaoio    = 13
+role       = "the container-engine ruling for a WSL2 host — what WSL containers (wslc) carries as of its GA, why the lararium stack still runs on Docker Engine in the distro, and the tripwire that flips it"
+status-why = "three scouts read the Microsoft record, the open WSL repository and the community signal on 2026-10-05, six days after WSL 3.0.1 shipped wslc GA; every claim below names its source grade"
+tags       = ["api/wsl2", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/wsl2/containers"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/wsl2/containers"
+```
+
+<<~ ahu #/entry>>
+
+! Containers on the WSL2 host — the ruling and its tripwire
+
+The lararium kit runs as a compose-shaped stack in containers behind the WSL2 instance ([[lar:///ha.ka.ba/wsl2/setup]]). Two engines can carry it on a Windows 11 home PC today: Docker Engine installed inside the distro, and Microsoft's own WSL containers (`wslc`), generally available since 2026-09-29. This carrier rules between them and names the condition that reverses the ruling.
+
+''Ruling (2026-10-05):'' rootful Docker Engine inside the distro carries the stack. `wslc` stays off the path until it runs a `compose.yaml` unchanged. Re-read this ruling at every `wsl --update`.
+
+<<~/ahu>>
+
+<<~ ahu #/wslc>>
+
+!! WSL containers (`wslc`) — what shipped
+
+|! fact |! reading |! grade |
+| name | "WSL containers"; Microsoft writes WSLC / WSLc; the CLI is `wslc.exe`, alias `container.exe`. No `wsl --container` verb exists. "WSL 3" names no product — 2.9.13 pre-release jumped to 3.0.1 to carry the GA | high |
+| timeline | Build 2026 (06-02) announce → public preview in WSL 2.9.3 (06-29, pre-release line) → GA in WSL 3.0.1 (09-29). The 2.7.x line never carried it; `wsl --update` moves a host to 3.0.1 | high |
+| runtime | a stock Moby stack — dockerd 25.0.3, containerd 2.2.4, runc 1.3.3 — in its own utility VM, separate from the distro VM, with its own `storage.vhdx` under `%LOCALAPPDATA%\wslc\sessions\`. Microsoft never names the engine; three independent teardowns agree | medium-high |
+| CLI | Docker-shaped: `wslc run/build/exec`, `wslc image …`, `wslc container …`, `wslc network …`, `wslc system info`, `wslc events`; release notes say "for docker parity". Images, Containerfiles and registries work | high |
+| Docker API | not exposed. No socket, no `DOCKER_HOST`. Compose, Testcontainers, Dev Containers from WSL paths, buildx and docker-in-docker cannot target it (issues #40976, #40957) | high |
+| compose | absent at GA. GA post: "Our top feature request for WSLc is adding compose support, and this will be our focus for our next iterations" — aim: `wslc compose up` on an unchanged `compose.yaml`. Tracked at #40948; a `feature/compose` branch holds a proof of concept whose parser accepts only seven keys. No date | high on intent, low on timing |
+| from inside the distro | `wslc` does not run from a WSL distro and `\\wsl.localhost` paths fail; every `-v` source resolves as a Windows path (#41105, #40957) | high |
+| capabilities | `--cap-add`, `--cap-drop`, `--read-only`, `--privileged` absent "by design … due to some security concerns but it is being actively investigated" (#41545). No `--device`, no USB | high |
+| Windows Home | no edition restriction in any Microsoft text; it rides Virtual Machine Platform like WSL 2, no Hyper-V role. The WSL lead: it "works anywhere WSL is supported today" | high by inference |
+| `.wslconfig` | no new keys. Per-session CPU, memory and storage live in `%LOCALAPPDATA%\wslc\settings.yaml` and the SDK's `SessionSettings`. "Capabilities" in the release notes means CLI feature lists | medium-high |
+| Docker Desktop | Microsoft: the third-party tools "will also all benefit from these lower level platform changes" — never "replace". Docker Inc. has published no response | high |
+| cost on a home PC | a second utility VM (`vmmemwslc-cli`, default 2 vCPU / 2 GB, 32 GB dynamic VHDX) beside the WSL 2 VM; idle teardown landed in 2.9.x | medium |
+
+The community discovered the session VM already runs stock Moby and that compose, Dev Containers and Testcontainers all work unmodified against its socket — an unofficial route Microsoft has neither blessed nor closed.
+
+<<~/ahu>>
+
+<<~ ahu #/engine-in-distro>>
+
+!! Docker Engine inside the distro — the path that carries the stack
+
+Rootful Docker Engine with the compose plugin, supervised by systemd inside Ubuntu 24.04, runs a `compose.yaml` unchanged, exposes `docker.sock` to tooling, carries Apache-2.0 licensing and no Windows-side program, and runs on Windows Home.
+
+''Two package sources; pick one, never both.''
+
+|! source |! line |! reading |
+| Ubuntu archive | `sudo apt install docker.io docker-compose-v2 docker-buildx` | one line, Canonical-maintained; 29.1.3 / compose 2.40.3 in noble-updates. ''The family default.'' |
+| Docker's apt repo | `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin` | newest engine and compose, Docker-supported on 22.04 / 24.04 / 26.04; needs the signing key and a sources file; conflicts with the archive packages, which must leave first |
+
+''Rootless stays off the table.'' WSL 2.9 moved the cgroup v2 hierarchy under `/wsl-user/distro-N/…`, so rootless Docker and rootless Podman fail on `cgroup.controllers` (microsoft/WSL #41492, open since 2026-09-01; 3.0.1 carries no fix). Rootful dockerd reads unaffected. The `docker` group therefore stays root-equivalent on this host; the runbook says so rather than hiding it.
+
+''WSL2 specifics worth knowing:'' cgroup v2 is the default; dockerd 25+ handles nft-based iptables; `-p` ports reach Windows `localhost` by default, and other LAN devices need `networkingMode=mirrored` or a `netsh portproxy`; distros are per Windows account, so a household that shares the stack shares the account.
+
+<<~/ahu>>
+
+<<~ ahu #/fallbacks>>
+
+!! Fallbacks, ranked
+
+# ''Rancher Desktop'' (moby backend) — officially lists Windows 11 Home, Apache-2.0, gives the same `docker` and `docker compose` inside the Ubuntu distro through its WSL integration, adds a GUI for a non-technical household member. Runs its own `rancher-desktop` distro beside Ubuntu; k3s can stay off.
+# ''Docker Desktop'' — its requirements page names Pro, Enterprise and Education for the WSL 2 backend, yet the same page says "Windows Home or Education editions only allow you to run Linux containers"; it installs and runs on Home in practice, and the licence (2026-08-26) grants a household free use. On paper unsupported, so no support recourse. Its WSL integration places a second `docker` inside the distro: one engine, never both.
+# ''Podman'' — rootful works; rootless hits #41492; compose fidelity reads good but short of full. Podman Desktop's WSL provider runs on Home; its own machine distro is a second VM.
+
+Not today: `wslc` (no compose, no socket); nerdctl + containerd (works, more hand assembly, no apt packaging).
+
+<<~/ahu>>
+
+<<~ ahu #/tripwire>>
+
+!! The tripwire — what reverses the ruling
+
+Any one of these moves `wslc` to the primary path and the in-distro engine to a fallback:
+
+# `wslc compose up` runs an unchanged `compose.yaml` — watch microsoft/WSL #40948 and each release note under `wsl --update`.
+# A Docker-API endpoint ships officially (#40976), so `docker compose` and tooling target the wslc session.
+# `wslc` runs from inside the distro with `\\wsl.localhost` paths (#41105), which the lararium's bind mounts need.
+
+Separately, a fix for #41492 reopens rootless Docker, which retires the root-equivalent `docker` group.
+
+When the tripwire turns: `stand-linux.sh` step 5b reads for `wslc` first and reports the in-distro engine as the fallback; `witness.sh` gains a `wslc compose` row; this carrier re-trues its ruling line and date.
+
+<<~/ahu>>
+
+<<~ ahu #/sources>>
+
+!! Sources
+
+Official: [[learn.microsoft.com/windows/wsl/wsl-container|https://learn.microsoft.com/en-us/windows/wsl/wsl-container]] · [[GA post 2026-09-29|https://blogs.windows.com/windowsdeveloper/2026/09/29/wsl-containers-now-generally-available/]] · [[architecture deep dive|https://devblogs.microsoft.com/commandline/wslc-architecture-deep-dive/]] · [[WSL 3.0.1 release|https://github.com/microsoft/WSL/releases/tag/3.0.1]] · [[WSL 2.9.3 release|https://github.com/microsoft/WSL/releases/tag/2.9.3]] · [[Docker Engine on Ubuntu|https://docs.docker.com/engine/install/ubuntu/]] · [[Docker Desktop Windows requirements|https://docs.docker.com/desktop/setup/install/windows-install/]] · [[Rancher Desktop installation|https://docs.rancherdesktop.io/getting-started/installation/]]
+
+Tracking issues: [[#40948 compose|https://github.com/microsoft/WSL/issues/40948]] · [[#40976 Docker API endpoint|https://github.com/microsoft/WSL/issues/40976]] · [[#40957 bind mounts|https://github.com/microsoft/WSL/issues/40957]] · [[#41105 wslc from a distro|https://github.com/microsoft/WSL/issues/41105]] · [[#41492 rootless cgroups|https://github.com/microsoft/WSL/issues/41492]] · [[#41545 cap flags|https://github.com/microsoft/WSL/issues/41545]]
+
+Community, most rigorous first: [[endjin — Trying out WSL containers|https://endjin.com/blog/trying-out-wsl-containers]] · [[pisinger — WSL container decoded|https://pisinger.github.io/posts/wsl-container-decoded/]] · [[Hayden Barnes — wslc|https://www.boxofcables.dev/wslc-a-native-linux-container-runtime-for-windows/]]
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;KuTy_2KsErBONLoxdBEcBvQ2VHcWyIdNKrf2cHSLmWs
+
+<<^ code="&#x0004;" -> to="?">>
