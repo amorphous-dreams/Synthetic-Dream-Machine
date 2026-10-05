@@ -156,11 +156,11 @@ async function currentRender(
   return { group, text: expandMemeRefs((t) => current.get(t), uri) ?? "" };
 }
 
-/**
- * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
- * carries the refusal; a sink verb that throws propagates.
- */
-export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+/** The Confluence gate's own verdict, read once — shared by `placeMeme` (which lands it) and
+ *  `evaluateMeme` (which never does). Internal: callers get the two typed entry points below. */
+async function evaluate(
+  input: PlaceMemeInput, sink: Pick<MemeSink, "titles" | "read">,
+): Promise<{ group: readonly string[]; decision: ReturnType<typeof decideIngest<TiddlerFields>>; currentRenderHash: string }> {
   const { uri, text } = input;
   const hash = input.hash ?? defaultHash;
   const baseHash = input.baseHash ?? null;
@@ -176,7 +176,12 @@ export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<
     currentRenderHash,
     hash,
   });
+  return { group, decision, currentRenderHash };
+}
 
+function receiptOfNonIngest(
+  uri: string, currentRenderHash: string, decision: Exclude<ReturnType<typeof decideIngest<TiddlerFields>>, { kind: "ingest" }>,
+): PlaceMemeReceipt {
   if (decision.kind === "noop") {
     return { uri, decision: "noop", grade: "clean", reason: decision.reason, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [], diagnostics: [] };
   }
@@ -184,9 +189,20 @@ export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<
   if (decision.kind === "refuse") {
     return { uri, decision: "refuse", grade, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: decision.warnings, diagnostics: decision.diagnostics };
   }
-  if (decision.kind === "conflict") {
-    return { uri, decision: "conflict", grade, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [`${uri}: records moved past the base the writer read`], diagnostics: decision.diagnostics };
-  }
+  return { uri, decision: "conflict", grade, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [`${uri}: records moved past the base the writer read`], diagnostics: decision.diagnostics };
+}
+
+/**
+ * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
+ * carries the refusal; a sink verb that throws propagates.
+ */
+export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+  const { uri } = input;
+  const hash = input.hash ?? defaultHash;
+  const { group, decision, currentRenderHash } = await evaluate(input, sink);
+
+  if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
+  const grade = gradeOf(decision.diagnostics);
 
   const landed: string[] = [];
   for (const fields of decision.records) {
@@ -203,6 +219,25 @@ export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<
     tombstoned.push(title);
   }
   return { uri, decision: "ingest", grade, landed, tombstoned, canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
+}
+
+/**
+ * Read the Confluence gate's verdict WITHOUT landing or tombstoning anything — `placeMeme`'s read
+ * half, for a caller that must grade a meme (surface an alert, refuse a save) but never write on its
+ * own account. An `ingest`-graded verdict still answers `decision: "ingest"` with its diagnostics and
+ * the canonical hash the records WOULD carry; `landed`/`tombstoned` stand empty always, because this
+ * call never reaches `sink.land`/`sink.tombstone` at all — the grading and the writing are two
+ * different acts, and a caller that wants only the first must never be handed a sink verb that writes.
+ */
+export async function evaluateMeme(
+  input: PlaceMemeInput, sink: Pick<MemeSink, "titles" | "read">,
+): Promise<PlaceMemeReceipt> {
+  const { uri } = input;
+  const hash = input.hash ?? defaultHash;
+  const { decision, currentRenderHash } = await evaluate(input, sink);
+  if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
+  const grade = gradeOf(decision.diagnostics);
+  return { uri, decision: "ingest", grade, landed: [], tombstoned: [], canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
 }
 
 /** The read half: the whole meme as text (children recomposed inline) and the canonical hash a

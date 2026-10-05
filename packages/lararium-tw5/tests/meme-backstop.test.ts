@@ -92,29 +92,93 @@ describe("★ THE TWO DOORS (c): the backstop re-stamps a framed root that lande
 });
 
 /**
- * PHASE 5 · THE LEAN COLLIDED — a root re-placed from its own records grades NOTHING.
+ * SEAM (b), THE FORWARD PATH — a child-slot save is gated too, but only to SURFACE.
  *
- * The syncer-seams roundtable planned to close the ungated child (seam (b)) by widening this listener:
- * a slot child that moved re-places its ROOT, and the whole carrier grades as one. The mechanism the
- * plan named is `placeMeme(root, readMeme(root))`, and it cannot work — not for some inputs, for ANY.
- *
- * `readMeme` IS `render(records)`. Handing it back to `placeMeme` computes `render(parse(render(r)))`
- * and compares it to `render(r)` — the canonical form's own fixed point, reached by construction. The
- * Confluence gate's equivalence reading therefore answers NOOP whatever the child holds, and the
- * gradient gate above it sees only bytes the renderer just produced, so it grades `clean` with zero
- * diagnostics. A tautology cannot report a fault.
- *
- * MEASURED over seven child edits, each re-placed through its root: a clean edit, a stray ETX, a
- * nested `ahu` block, a whole pasted carrier frame, an unclosed `ahu`, a stray closer, and a malformed
- * meta fence. Seven of seven: `decision=noop`, `grade=clean`, `0 diagnostics`, `0 records landed`,
- * the record set unmoved.
- *
- * So seam (b) stands open and its cure is not this one. A child's save can only be graded against the
- * CHILD'S OWN AUTHORED TEXT — the bytes that never passed through the renderer — and this package has
- * no congruence that reads a fragment body as a gradeable unit. That is the operator's call, not this
- * hand's, and the probe below is the measurement it should be made against.
+ * `framedRootOf` still answers null for a slot child and the listener still never lands or refuses
+ * one (the CONTROL above already proves the child's own record goes untouched). This is the OTHER
+ * half of the widening: a title shaped `root#/slot` re-grades its ROOT'S current recomposed render
+ * through `evaluateMeme` (never `placeMeme` — nothing here ever lands) and raises or clears one
+ * `$:/tags/Alert` tiddler, stable per root, naming the child, the root, and the diagnostic codes.
  */
-describe("★ PHASE 5 REFUTED: re-placing a root from its records is a fixed point, so it grades nothing ★", () => {
+describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never lands or refuses ★", () => {
+  let wiki: ReturnType<typeof fakeWiki>;
+  beforeEach(() => {
+    wiki = fakeWiki();
+    (globalThis as Record<string, unknown>)["$tw"] = { node: true, wiki, boot: { files: {} } };
+    startup({ log: () => {} });
+  });
+  afterEach(() => { delete (globalThis as Record<string, unknown>)["$tw"]; });
+
+  const alertTitle = `$:/temp/lares/alert/meme-child-gate/${URI}`;
+
+  test("a clean child-slot save raises no alert", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a EDITED" });
+    await settle();
+    expect(wiki.store.has(alertTitle)).toBe(false);
+  });
+
+  test("a child-slot save carrying a whole pasted frame raises the alert, and the child's bytes land unchanged", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    const pasted = meme(["z"]);
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: pasted });
+    await settle();
+    const alert = wiki.store.get(alertTitle);
+    expect(alert?.["tags"]).toBe("$:/tags/Alert");
+    expect(alert?.["root"]).toBe(URI);
+    expect(alert?.["child"]).toBe(`${URI}#/a`);
+    expect(String(alert?.["codes"] ?? "")).toContain("frame-malformed");
+    // The child's own record — the ONE thing this listener never touches — stands exactly as written.
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(pasted);
+  });
+
+  test("a child-slot save carrying a stray ETX raises the alert too", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n` });
+    await settle();
+    expect(wiki.store.has(alertTitle)).toBe(true);
+  });
+
+  test("fixing the child clears the alert", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: meme(["z"]) });
+    await settle();
+    expect(wiki.store.has(alertTitle)).toBe(true);
+
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a CLEAN AGAIN" });
+    await settle();
+    expect(wiki.store.has(alertTitle)).toBe(false);
+  });
+});
+
+/**
+ * PHASE 5 · RE-MEASURED 2026-10-04 — the round-trip is no longer a fixed point everywhere, so it no
+ * longer hides every fault. THE LEAN STILL GOES WRONG, just not the way the first measurement found.
+ *
+ * The syncer-seams roundtable planned to close the ungated child (seam (b)) by widening the backstop:
+ * a slot child that moved re-places its ROOT, and the whole carrier grades as one. The mechanism named
+ * is `placeMeme(root, readMeme(root))` — `readMeme` is `render(records)`, handed back to `placeMeme`,
+ * so the Confluence gate reads `render(parse(render(r)))` against `render(r)`. For FIVE of the seven
+ * shapes below that is still the canonical form's own fixed point: `decision=noop`, `grade=clean`,
+ * zero diagnostics, nothing landed, the record set unmoved — a tautology, reporting no fault because
+ * none of its three reads moved.
+ *
+ * TWO shapes now break the tautology: a child holding a stray ETX, and a child holding a whole pasted
+ * frame. Both mint a SECOND live ETX once rendered back into the root's own STX..ETX span (the root's
+ * own close, plus the child's), and the frame reader now refuses that shape before the Confluence gate
+ * ever reaches an equivalence question — `decision=refuse`, `grade=error`, diagnostics named
+ * `frame-malformed` ("2 live ETX marks follow the STX…") and, for the bare stray ETX, `postamble-content`
+ * besides. The round-trip still launders nothing it didn't already refuse at the root's own door
+ * (the CONTROL below), but it is no longer blind to these two shapes the way the first measurement
+ * found it to be.
+ *
+ * So seam (b) still stands open for the OTHER five shapes: a child's save there can only be graded
+ * against the CHILD'S OWN AUTHORED TEXT — the bytes that never passed through the renderer — and this
+ * package still carries no congruence that reads a fragment body as a gradeable unit on its own. That
+ * remains the operator's call, not this hand's; the probe below is the measurement it should be made
+ * against, re-run rather than re-assumed.
+ */
+describe("★ PHASE 5 RE-MEASURED: re-placing a root from its records catches two shapes, still misses five ★", () => {
   const sinkOf = (store: Map<string, TiddlerFields>) => ({
     allTitles: () => [...store.keys()],
     getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t)! } : undefined),
@@ -135,8 +199,15 @@ describe("★ PHASE 5 REFUTED: re-placing a root from its records is a fixed poi
     "a malformed meta fence":  "! a\n\n```toml meta\nbogus = [\n```\n",
   };
 
+  // The two shapes that mint a SECOND live ETX into the rendered root — re-measured 2026-10-04.
+  const NOW_ERROR_GRADED = new Set(["a stray ETX mark", "a whole pasted frame"]);
+
   for (const [what, text] of Object.entries(CHILD_EDITS)) {
-    test(`the re-place reads NOOP over ${what} — nothing grades, nothing lands`, async () => {
+    const errorGraded = NOW_ERROR_GRADED.has(what);
+    const title = errorGraded
+      ? `the re-place reads ERROR over ${what} — a second live ETX, caught before any equivalence question`
+      : `the re-place reads NOOP over ${what} — nothing grades, nothing lands`;
+    test(title, async () => {
       const store = new Map<string, TiddlerFields>();
       const sink = wikiMemeSink(sinkOf(store) as never);
       await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
@@ -146,12 +217,21 @@ describe("★ PHASE 5 REFUTED: re-placing a root from its records is a fixed poi
       const render = await readMeme(URI, sink);
       const receipt = await placeMeme({ uri: URI, text: render!.text }, sink);
 
-      expect(receipt.decision).toBe("noop");
-      expect(receipt.grade).toBe("clean");
-      expect(receipt.diagnostics).toEqual([]);
-      expect(receipt.landed).toEqual([]);
+      if (errorGraded) {
+        expect(receipt.decision).toBe("refuse");
+        expect(receipt.grade).toBe("error");
+        expect(receipt.diagnostics.map((d) => d.code)).toContain("frame-malformed");
+        expect(receipt.landed).toEqual([]);
+      } else {
+        expect(receipt.decision).toBe("noop");
+        expect(receipt.grade).toBe("clean");
+        expect(receipt.diagnostics).toEqual([]);
+        expect(receipt.landed).toEqual([]);
+      }
+      // Refused or noop, the store never moves — a root the gate catches stays exactly as it stood,
+      // and so does one the gate waves through.
       expect([...store.keys()].sort()).toEqual(before);
-      // And the author's bytes stand exactly as written — the one thing the plan got right.
+      // And the author's bytes stand exactly as written — the one thing the plan got right either way.
       expect(String(store.get(`${URI}#/a`)!["text"])).toBe(text);
     });
   }
