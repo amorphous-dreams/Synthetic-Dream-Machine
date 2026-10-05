@@ -1,4 +1,5 @@
-import { parsePonoLevel, digestsEqual, formatDigest, hex, IMPLICIT_ALGO } from "@lararium/mesh";
+import { digestsEqual, formatDigest, hex, IMPLICIT_ALGO } from "@lararium/mesh";
+import { parsePonoLevel } from "./pono-level.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
 // Module gate thresholds on the 0–20 Level scale: mana ≥ 18, manao ≥ 17, manaoio ≥ 17.

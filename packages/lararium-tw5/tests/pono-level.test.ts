@@ -4,7 +4,7 @@ import {
   formatPonoLevel,
   isPonoLevel,
   parsePonoLevel,
-} from "../src/index.js";
+} from "../src/pono-level.js";
 
 describe("Pono Level — SDM+ 0–20 scalar model", () => {
   test("accepts integer levels on the closed 0–20 range", () => {

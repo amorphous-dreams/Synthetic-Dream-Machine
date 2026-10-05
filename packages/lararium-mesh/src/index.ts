@@ -90,7 +90,6 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./gate-tuning.js";
-export * from "./pono-level.js";
 export * from "./lar-event-bus.js";
 export { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 export * from "./social-tiddlers.js";
