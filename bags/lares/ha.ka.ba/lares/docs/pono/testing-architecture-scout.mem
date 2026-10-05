@@ -13,7 +13,7 @@ manao             = 16
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-09-13"
+revised-on        = "2026-10-05"
 role              = "testing-architecture-scout — VERBATIM handoff of the tasked spirit Mason (2026-09-02): the whole testing architecture inventoried, the cost of moving the harness under packages/, the runners nothing invokes, and the welds that must NOT be collapsed. Held as a collision surface, the fence byte-for-byte. #/collided-2026-09-13 stands this house's own re-measurement of the three §3 CI claims BESIDE the testimony — witness-all and gate:fold-ts both run in CI, the serialization travels through the root script, and the one uninvoked runner is lararium-sensorium/scripts at 989 of 1016 collected python tests."
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout"
@@ -31,7 +31,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 
 ''Read it against us, not for us.'' It may be wrong where the field is wrong. Collide it; do not inherit it.
 
-''And the field moved.'' The testimony dates to 2026-09-02 and the tree it measured has changed under it. #/collided-2026-09-13 stands the house's own re-measurement beside the three CI claims in §3 that no longer read true. ''The fence stays byte-for-byte'' — a Testimony-Verbatim register that gets corrected in place has stopped being testimony, and the collision is the point of keeping it.
+''And the field moved.'' The testimony dates to 2026-09-02 and the tree it measured has changed under it. #/collided-2026-09-13 stands the house's own re-measurement beside the three CI claims in §3 that no longer read true; #/collided-2026-10-05 stands beside §4's "six welds" claim, re-derived against the eleven duplicate-named pairs the tree now carries. ''The fence stays byte-for-byte'' — a Testimony-Verbatim register that gets corrected in place has stopped being testimony, and the collision is the point of keeping it.
 
 <<~/ahu>>
 
@@ -52,6 +52,20 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 ⚠ ''The `#/the-handoff` fence carries other claims of the same vintage that this block does not touch'' — §1's runner table (`:53`, `:56`), §5's plan (`:161`, `:168`, `:172`), Stage 5 (`:197`). They date from 2026-09-02 and read against the same moved field; a hand acting on any of them re-measures first. This block corrects the three §3 items the 2026-09-13 sweep measured, and claims nothing about the rest.
 
 ''The downstream copy already agrees.'' `api/pono/rust-toolchain.mem#/open-loops` carries these same numbers and re-derivations, landed on free ground the same watch — the two rooms read the same tree.
+
+<<~/ahu>>
+
+<<~ ahu #/collided-2026-10-05>>
+
+!! Collided — §4's "six welds" claim, re-derived
+
+''Register: this house's own claim,'' beside the testimony rather than inside it. Every number below carries the command that re-derives it, run on 2026-10-05 against this tree.
+
+|!Mason wrote |!the tree reads, 2026-10-05 |!re-derive |
+|§4 //"All six duplicate-named test files are welds, not duplicates."// |''Eleven duplicate-named pairs stand today, not six — nine welds, two same-name/unrelated-surfaces, zero true duplicates.'' Welds: `face-join`, `genesis-startup-contract`, `nexus-offering-inspect`, `nexus-publish`, `pronaos-public-artifact`, `wiki-sense-supervision`, `wiki-sensorium-cap`, `wiki-sensorium-consistency`, `worldline-trajectory-source`. Same name, unrelated surfaces: `capture-source` (lararium-node's python-holder session shore vs lares-cli's harvest string-identity dedup) and `key-class` (lararium-mesh's closed vocabulary itself vs lararium-node's `vesselKeyCensus`/vault-carrier integration). |`git ls-files \| grep -E '\.test\.[cm]?[jt]s$' \| xargs -n1 basename \| sort \| uniq -d` (11 names); path per name via `git ls-files \| grep -F "/<name>"`; classification by reading each pair's header |
+|§4's `seal-reserve` bullet — //"mesh proves the pure crypto floor; lares-cli proves the CLI ceremony"// |''Still true, and no longer a duplicate-basename pair at all.'' `a39df8f10` (2026-10-04) moved both weld halves into `lares-cli/tests`: `seal-reserve-split.test.ts` (pure crypto floor, SLIP-0010/2-of-3) and `seal-reserve.test.ts` (CLI ceremony on disk, against `lararium-node/src/seal-reserve-store.ts`) — distinct basenames now, so the pair fell out of the `uniq -d` set above. That same commit rewrote this fence's own bullet (`:158`) to say so ''in place'' — inside a Testimony-Verbatim fence the head rules byte-for-byte at `~:34`. Restored verbatim; the correction belongs here, beside the testimony, instead. |`git show a39df8f10 -- bags/lares/ha.ka.ba/lares/docs/pono/testing-architecture-scout.mem` · `git ls-files \| grep seal-reserve` |
+
+''The law this collision leaves behind:'' a Testimony-Verbatim fence takes a correction BESIDE it, never inside it — however small the correction and however true the replacement text. `a39df8f10` corrected a real drift (the seal-reserve weld's halves had moved) but corrected it in the wrong register; the fix here reopens the fence's original line and lets this slot carry what changed and why.
 
 <<~/ahu>>
 
@@ -155,7 +169,7 @@ mesh 224 · node 140 (139 + 1 orphan under `tests/e2e/`) · tw5 80 · lares-cli 
 
 - `wiki-sensorium-consistency` (node + browser) and `wiki-sensorium-cap` (tw5 + browser) run the **identical hull** (`runWikiConsistencyWitness()` / `runWikiSensoriumWitness()` from `@lararium/tw5`) on **two substrates**. The node≡browser agreement *is* the island-isomorphism proof. Collapsing either kills the proof and leaves a green suite.
 - `wiki-sense-supervision` — tw5 proves the supervisor's hull **in-process**; browser proves the whole crossing **over a real Chromium worker wire**.
-- `seal-reserve` — both weld halves live in `lares-cli/tests` now: `seal-reserve-split.test.ts` proves the **pure crypto floor** (SLIP-0010 derivation, 2-of-3 quorum) against `lares-cli/src/seal-reserve.ts`; `seal-reserve.test.ts` proves the **CLI ceremony against a real identity home on disk**, including that the seed lands in *no* file, against the on-disk store at `lararium-node/src/seal-reserve-store.ts`.
+- `seal-reserve` — mesh proves the **pure crypto floor** (SLIP-0010 derivation, 2-of-3 quorum); lares-cli proves the **CLI ceremony against a real identity home on disk**, including that the seed lands in *no* file.
 - `capture-source` — cli tests `captureSourceFile` (a string identity); node tests `makeSourceCapture` (a python-holder shore). Same name, unrelated surfaces.
 - `worldline-trajectory-source` — mempalace against a **fake NDJSON holder**; node against the **in-VM functor composition**.
 
@@ -261,6 +275,6 @@ The canonical vocabulary and failure-state mapping live in [[mandate-activity-pr
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;yJLyLnxe_iLcj9ZtwQGHuPt1iUM4RzBbFhIgR6_GIYs
+<<^ code="&#x0003;">>ni:///sha-256;hSrDARsr3rT5v2cxasBEHthoUYpDNthcOiwS6tocZRQ
 
 <<^ code="&#x0004;" -> to="?">>
