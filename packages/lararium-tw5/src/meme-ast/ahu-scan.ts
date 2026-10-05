@@ -137,6 +137,61 @@ export function collectAhuSlots(text: string): Set<string> {
   return slots;
 }
 
+/** One balance fault the stack-pairing scanner absorbs silently today — see `findAhuBalanceFaults`. */
+export interface AhuBalanceFault {
+  /** `ahu-unbalanced-open` — an opener still on the stack at EOF; its own closer never arrived
+   *  (a nested opener below it ate the closer meant for this one instead). `ahu-orphan-close` — a
+   *  closer with nothing on the stack to match (dropped by `findTopLevelAhuBlocks`; here it closes
+   *  nothing, or, read at the composed altitude, closes an ancestor early). */
+  readonly code: "ahu-unbalanced-open" | "ahu-orphan-close";
+  /** The opener's slot, for `ahu-unbalanced-open`; empty for `ahu-orphan-close` (a closer names no slot). */
+  readonly slot: string;
+  /** Source position of the opener or closer the fault names. */
+  readonly pos: number;
+}
+
+/**
+ * Faults `findTopLevelAhuBlocks`'s balanced-bracket scanner drops on the floor rather than reports:
+ * an opener left on the stack at EOF, and a closer that arrives with nothing on the stack to match.
+ * Walks the SAME events, same fence-mask, same stack discipline — the two readers can never drift on
+ * what counts as balanced, because they are one scan read two ways.
+ *
+ * Meant to run over a COMPOSED root (a child's edited body, recomposed inline through its parent's
+ * `<<~ ahu #/slot>>…<<~/ahu>>` wrapper) — at that altitude a child's dangling opener eats the parent's
+ * own closer (surfaces here as `ahu-unbalanced-open` on the child's opener, the parent's closer simply
+ * consumed), and a child's stray closer closes the parent early, leaving the parent's own closer an
+ * orphan (surfaces here as `ahu-orphan-close` on that trailing closer). Per #/quoteblock-floor, the
+ * backstop's child gate raises these on the same alert rail `evaluateMeme`'s diagnostics use — a
+ * REPORTING widening, never a change to the root door gate's ingest grades.
+ */
+export function findAhuBalanceFaults(text: string): AhuBalanceFault[] {
+  const mask = fencedSpans(text);
+  const events: Array<{ kind: "open" | "close"; pos: number; slot: string }> = [];
+  for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
+    if (!isAhuDeclaration(m[0])) continue;
+    events.push({ kind: "open", pos: m.index, slot: m[1] ?? "#" });
+  }
+  for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
+    events.push({ kind: "close", pos: m.index, slot: "" });
+  }
+  events.sort((a, b) => a.pos - b.pos);
+
+  const faults: AhuBalanceFault[] = [];
+  const stack: Array<{ pos: number; slot: string }> = [];
+  for (const ev of events) {
+    if (ev.kind === "open") {
+      stack.push({ pos: ev.pos, slot: ev.slot });
+    } else {
+      const opener = stack.pop();
+      if (!opener) faults.push({ code: "ahu-orphan-close", slot: "", pos: ev.pos });
+    }
+  }
+  for (const opener of stack) {
+    faults.push({ code: "ahu-unbalanced-open", slot: opener.slot, pos: opener.pos });
+  }
+  return faults;
+}
+
 /**
  * Append a SINGLE leaf segment (or leaf path) under a prefix — the MINT relation, one of two that
  * used to share one function (`composeSlotPath`'s overcollapse): the other, READING an authored

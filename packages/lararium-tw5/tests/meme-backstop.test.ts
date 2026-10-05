@@ -139,6 +139,39 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(wiki.store.has(alertTitle)).toBe(true);
   });
 
+  /**
+   * WIDENING (#/quoteblock-floor, option (iv)) — an unclosed ahu and a stray block closer corrupt the
+   * COMPOSED root (the dangling opener eats the parent's closer; the orphan closes the parent early)
+   * but grade below error on `evaluateMeme`'s NOOP-equivalence leg, so they used to drop off this
+   * rail silently. The ahu-scan stack already knows both shapes; the child gate now raises them with
+   * named codes. A lawful nested ahu child and a clean child still raise nothing — the widening is a
+   * REPORTING change, not a new refusal.
+   */
+  test("a child-slot save carrying an unclosed ahu raises the alert with `ahu-unbalanced-open`", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~ ahu #/a/z>>\n\nno closer\n" });
+    await settle();
+    const alert = wiki.store.get(alertTitle);
+    expect(alert).toBeDefined();
+    expect(String(alert?.["codes"] ?? "")).toContain("ahu-unbalanced-open");
+  });
+
+  test("a child-slot save carrying a stray block closer raises the alert with `ahu-orphan-close`", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~/ahu>>\n\nafter\n" });
+    await settle();
+    const alert = wiki.store.get(alertTitle);
+    expect(alert).toBeDefined();
+    expect(String(alert?.["codes"] ?? "")).toContain("ahu-orphan-close");
+  });
+
+  test("a lawful nested ahu child raises no alert", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~ ahu #/a/z>>\n\n! z\n\n<<~/ahu>>\n" });
+    await settle();
+    expect(wiki.store.has(alertTitle)).toBe(false);
+  });
+
   test("fixing the child clears the alert", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: meme(["z"]) });

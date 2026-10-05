@@ -48,6 +48,7 @@ module-type: startup
  */
 
 import { framedRootOf, placeMeme, evaluateMeme, readMeme, wikiMemeSink } from "../place-meme.js";
+import { findAhuBalanceFaults } from "../meme-ast/ahu-scan.js";
 
 type Changes = Record<string, { modified?: boolean; deleted?: boolean }>;
 
@@ -144,10 +145,28 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
       const render = await readMeme(root, sink);
       if (!render) { surfaceChildGateAlert(wiki, root, null); return; }
       const receipt = await evaluateMeme({ uri: root, text: render.text }, sink);
-      if (receipt.grade !== "error") { surfaceChildGateAlert(wiki, root, null); return; }
-      const codes = receipt.diagnostics.filter((d) => d.severity === "error").map((d) => d.code);
-      const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier no longer holds together";
-      surfaceChildGateAlert(wiki, root, { child: childTitle, codes, why });
+      if (receipt.grade === "error") {
+        const codes = receipt.diagnostics.filter((d) => d.severity === "error").map((d) => d.code);
+        const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier no longer holds together";
+        surfaceChildGateAlert(wiki, root, { child: childTitle, codes, why });
+        return;
+      }
+      // WIDENING (#/quoteblock-floor, option (iv)): the Confluence gate's NOOP-equivalence leg grades
+      // below error here even though an unclosed ahu or a stray closer corrupted the COMPOSED root —
+      // the dangling opener eats the parent's closer, or the orphan closes the parent early. The
+      // ahu-scan stack already knows both shapes; raise them on the SAME rail, at the SAME composed
+      // altitude, without touching the root door gate's own ingest grades.
+      const balanceFaults = findAhuBalanceFaults(render.text);
+      if (balanceFaults.length > 0) {
+        const codes = [...new Set(balanceFaults.map((f) => f.code))];
+        surfaceChildGateAlert(wiki, root, {
+          child: childTitle,
+          codes,
+          why: "the composed root's ahu blocks no longer balance",
+        });
+        return;
+      }
+      surfaceChildGateAlert(wiki, root, null);
     })().finally(() => { childGateInFlight.delete(root); });
   };
 
