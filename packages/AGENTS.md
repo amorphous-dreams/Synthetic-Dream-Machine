@@ -132,7 +132,7 @@ Reverse flow needs care:
 
 ```text
 TW5 child edit
-  -> wiki-sync / LarariumCrdtSyncAdaptor
+  -> outbound-bridge.ts → IslandAdaptor.saveTiddler/deleteTiddler
   -> parent carrier reconstruction (memetic-parser + grammar-cache)
   -> bag CRDT record
   -> projection fan-out + ReactionGraph dispatch

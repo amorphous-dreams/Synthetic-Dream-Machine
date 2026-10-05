@@ -322,8 +322,8 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
 // (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`).
 //
 // WHAT REMAINS: `disk-projector` excludes `daemon` from every mirror, so the working layer reaches
-// no disk yet; and no live wiki change reaches `IslandAdaptor.saveTiddler` on ANY island (only
-// `wiki-sync` sessions and tests call it), so an anchor placement stands in `$tw.wiki` alone.
+// no disk yet; an anchor placement, like any other wiki change, reaches `IslandAdaptor.saveTiddler`
+// through `outbound-bridge.ts`'s `change` listener.
 describe("⑦ the daemon wiki, held to the laws every other wiki obeys", () => {
   test("the recipe already NAMES the slots the daemon is not granted", () => {
     // Not a gap in the model — `expandRecipe` mints the same five slots for every slug, daemon

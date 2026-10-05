@@ -146,10 +146,9 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     // resolves through the same resolver under the same binding law, late-attached above the daemon
     // bag as the default writable, and the cascade's `current-wiki-bag` re-seeds to it.
     expect(A!.bootLog()).toContain("[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working");
-    // MEASURED, not ruled: the anchor `meme put` places through the live `$tw.wiki`, and nothing in the
-    // tree carries a live wiki change OUT to `IslandAdaptor.saveTiddler` (only `wiki-sync` sessions and
-    // tests call it; `$tw.syncer` does not run) — so the placement stands in the wiki alone and `wiki
-    // which` reads no bag for it. The cascade's seat is right; the outbound bridge is owed.
+    // MEASURED, not ruled: the anchor `meme put` places through the live `$tw.wiki`, and the same
+    // `change` listener every other wiki edit rides (`outbound-bridge.ts`, wired in `sovereign-kernel.ts`)
+    // carries it OUT to `IslandAdaptor.saveTiddler`. `wiki which` below reads where it landed.
     const anchorUri = "lar:///t.witness.npc/anchor";
     const f = join(A!.root, "anchor.mem");
     writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));

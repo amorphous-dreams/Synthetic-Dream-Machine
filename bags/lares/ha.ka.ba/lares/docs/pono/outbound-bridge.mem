@@ -72,7 +72,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 | the echo guard | `packages/lararium-tw5/src/modules/nalu-engine.ts:194-196` (`isApplyingNalu`), `:113-144` (`_drain`) | a module-level flag raised for the synchronous stretch of one drain and lowered in `finally` |
 | the map fed inbound | `island-adaptor.ts:175-178` (`onUriChanged`), `:326` (`_resolveCrossBagTombstone`) | every inbound live record stamps `_slotOf[title] = change.bag` |
 | the inbound half | `onUriChanged` → `enqueueNalu` → `_drain` → `wiki.addTiddler`/`deleteTiddler` (`nalu-engine.ts:126-134`), `$origin-bag` stamped from the envelope (`:99-105`) | complete and witnessed |
-| who calls the outbound methods today | `packages/lararium-tw5/src/wiki-sync.ts:63-66` (`openVmCarrierSyncSession` — the disk→VM ingest leg) and the tests (`island-adaptor.test.ts`, `routing-totality.test.ts`, `lar-kind.test.ts`, `bag-is-user-space.test.ts`) | NO live path. `grep -rn "\.saveTiddler(\|\.deleteTiddler(" packages/*/src` reaches nothing else |
+| who calls the outbound methods today | `packages/lararium-tw5/src/outbound-bridge.ts:59,64` (the `change` listener `sovereign-kernel.ts:435` holds) and the tests (`outbound-bridge.test.ts`, `island-adaptor.test.ts`, `routing-totality.test.ts`, `lar-kind.test.ts`, `bag-is-user-space.test.ts`) | LIVE. `grep -rn "\.saveTiddler(\|\.deleteTiddler(" packages/*/src` reaches `outbound-bridge.ts` as the one production caller |
 
 ''The seam, exactly.'' `packages/lararium-tw5/src/sovereign-kernel.ts:405-410` calls `buildIslandRecipe({ tw5, composite, recipe, ready })` and DISCARDS its return `{ adaptor, stores }` (`island-recipe.ts:130`). `packages/lararium-tw5/src/tw5-vm.ts:151-163` subscribes the wiki to `tm-verse-event` alone. `packages/lararium-tw5/src/island-kernel.ts:87-105` wires verse events and nothing else. No `module-type: syncadaptor` ships in the plugin (`plugins/lares-memetic-wikitext.json` carries `nalu-engine` and `bag-paths`, no adaptor), so `startup.js:106` finds none and `$tw.syncer` never stands (`tw5-vm.ts:5` names the syncer as discarded on purpose). The wire missing reads as ONE subscription: `$tw.wiki.addEventListener("change", changes → for each title: deleted ? adaptor.deleteTiddler(title) : adaptor.saveTiddler(wiki.getTiddler(title)))`, held by the kernel's live handles and cancelled at teardown.
 
@@ -170,6 +170,6 @@ CONTROLS standing green beside them: the anchor put lands in the daemon's wiki a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yM7MJ9GyoMLAhklsylOokjRv1va4OVFfLC8zN1f_jbA
+<<^ code="&#x0003;">>ni:///sha-256;1lzgk2P8_eQ837OAjO48RNDcIMP_Kk9KiiNH_unpTcE
 
 <<^ code="&#x0004;" -> to="?">>

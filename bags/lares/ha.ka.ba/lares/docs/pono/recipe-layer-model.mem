@@ -129,9 +129,9 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 | seat | resolves the bag how | lands in | file:line |
 |---|---|---|---|
-| in-wiki edit / save | the cascade, by kind — `IslandAdaptor.saveTiddler` | per the table above | `island-adaptor.ts` `saveTiddler` / `_writeMeme` — ⚠ MEASURED: nothing in the tree carries a LIVE wiki change out to `saveTiddler`/`deleteTiddler` (only `wiki-sync` sessions and tests call them; `$tw.syncer` does not run). The seat is right; the outbound bridge is OWED |
+| in-wiki edit / save | the cascade, by kind — `IslandAdaptor.saveTiddler` | per the table above | `island-adaptor.ts` `saveTiddler` / `_writeMeme` — MEASURED: `outbound-bridge.ts`'s `change` listener (wired at `sovereign-kernel.ts:435`) carries every live wiki change out to `saveTiddler`/`deleteTiddler`; `$tw.syncer` still does not run. The seat is right and the wire stands |
 | in-wiki delete | the last-known-slot map, else the cascade's title read → `tombstoneInBag` | the bag the save landed in | `island-adaptor.ts` `deleteTiddler` |
-| `meme put` (no target) | the daemon's own `$tw.wiki` → its cascade → `current-wiki-bag` | `wikis/daemon/working` once the late-attach re-seeds the cascade (the daemon bag until then) — and stands in `$tw.wiki` alone until the outbound bridge lands (the row above) | `packages/lararium-tw5/src/meme-verbs.ts` `anchorBagOf` |
+| `meme put` (no target) | the daemon's own `$tw.wiki` → its cascade → `current-wiki-bag` | `wikis/daemon/working` once the late-attach re-seeds the cascade (the daemon bag until then), and out through the outbound bridge (the row above) like any other wiki change | `packages/lararium-tw5/src/meme-verbs.ts` `anchorBagOf` |
 | `meme put --recipe <slug>` | THE PUT LAW: the recipe RECORD's `writable-bag` = `wikis/<slug>/working`, else the top of its `bag-stack` (`designatedBagOf`, `@lararium/mesh` recipe.ts) → a mounted writable layer of the DAEMON island, else the instance slot's doc through THE ONE slot-doc resolver, else reach by catalog | the SAME working doc the wiki island mounts — the placement surfaces in the running wiki (two-vessel e2e ⑤ ★) | `meme-verbs.ts` `reachRecipeBag` / `storeOfBag` |
 | `meme get --recipe <slug>` | THE GET LAW: the whole cascade top-down (`expandRecipe(recipeFromRecord(rec))`), the first bag holding the meme LIVE; the designated bag's store when none does (a null read, never a refusal) | the stack — draft shadows canon; canon answers through `--recipe` when the drafts hold nothing | `meme-verbs.ts` `reachRecipeBag`; `tests/meme-verbs.test.ts` "READS THE STACK" |
 | `meme put --bag <slug>` | `compositeMemeSink` → `composite.put({bag})` on the daemon island | that bag's writable layer, else refuses (no shadow-up) | `meme-verbs.ts:177-179`, `composite-store.ts:218-244` |
@@ -200,7 +200,6 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 ''What remains'' (owed, named):
 
-* ''The outbound bridge.'' No live wiki change reaches `IslandAdaptor.saveTiddler` / `deleteTiddler` on any island — only `wiki-sync` sessions and tests call them, and `$tw.syncer` does not run. In-wiki edits and the anchor `meme put` stand in `$tw.wiki` alone. The cascade, the map and the seats are right; the wire from the wiki's change event to the adaptor is the act missing.
 * ''The daemon's disk mirror.'' `disk-projector` excludes `daemon`; `wikis/daemon/working` reaches no disk.
 * ''The shared oracle plane moves.'' A joiner's founding rewrote the founder's oracle-plane `bags/lares` pointer (measured: `automerge:ZqADt…` mounted, `automerge:2St9f…` after B stood). A reboot of A would mount B's lares doc. Not this carrier's to rule; named.
 * ''Disk legs for non-meme files:'' the siting cascades ride (#/tw5-surfaces); binaries under `bags/` read OPEN (talk-story).
@@ -302,6 +301,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y_7FPCqUjHj5wuvh-S_sLqjozWRiLCnmOzpvvLP8H8E
+<<^ code="&#x0003;">>ni:///sha-256;Uj_06PisUiWf3MOeOL3nSuwFeSxHiJ2qAG58BC95wV0
 
 <<^ code="&#x0004;" -> to="?">>
