@@ -835,7 +835,7 @@ export function bagsResolver(root: string): (uri: string) => string | null {
  * through its `.md.meta`'s `variant:`/`tongue:` fields — the same record `--check` reads back — so a
  * re-project with no flags reproduces what is already there rather than silently falling to CommonMark
  * and clobbering a standalone profile's frontmatter + normative list. A pair with no recorded meta (a
- * first projection) keeps today's default exactly as before this clause existed.
+ * first projection) falls to the CommonMark/no-tongue default.
  */
 function projectMdLocal(args: ParsedArgs, file: string): number {
   const out = args.options["out"];
@@ -855,7 +855,7 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
 
   const dialectFlag = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
   // BCP 47 — absent both the flag and the pair's own record, every sigil head name weaves canonical,
-  // byte-identical to before this flag existed (#/the-woven-dialect's Tongue clause).
+  // unchanged (#/the-woven-dialect's Tongue clause).
   const tongueFlag = typeof args.options["tongue"] === "string" ? args.options["tongue"] : undefined;
   let profile: WeaveProfile;
   let tongue: string | undefined;

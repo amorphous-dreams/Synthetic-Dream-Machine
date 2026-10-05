@@ -7,10 +7,9 @@ lar-default-family: observe
 lar-example: <<~ kanawai "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
-<!-- kanawai — Hawaiian: kānāwai, "law" — the BINDING pin, `aka`'s informative sibling (operator
-     ruling, lar:///sigil.grammar.lane loop 7). Own KanawaiTemplate cascade; not a delegation to
-     aka or kahea. Canon-Scribe's pono/kanawai meme states the binding/informative distinction this
-     loop; this tiddler carries the grammar alone. -->
+<!-- kanawai — Hawaiian: kānāwai, "law" — the BINDING pin, `aka`'s informative sibling. Carries its
+     own KanawaiTemplate cascade; never delegates to aka or kahea. Canon-Scribe's pono/kanawai meme
+     states the binding/informative distinction; this tiddler carries the grammar alone. -->
 
 \widget ~kanawai(p1:"" p2:"")
 <$set name="_kw-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>

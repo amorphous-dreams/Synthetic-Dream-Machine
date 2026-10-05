@@ -56,10 +56,9 @@ def test_a_text_holding_nothing_reads_as_itself():
 
 def test_hold_opens_the_root_meta_inside_stx_not_above_it():
     """The canonical writer (`@lararium/memetic-frame` `frameCarrier`) puts STX right after the head
-    and bounds ALL root metadata inside STX..ETX. `hold()` used to emit its root `toml meta` block
-    BETWEEN the head (SOH, code 0001) and STX (code 0002) — the `meta-before-stx` torn fault — so
-    this asserts the canonical order: DOCTYPE, SOH head, STX, root toml meta, the holding ahu, ETX,
-    EOT. RED on the pre-heal bytes (SOH head would be immediately followed by ```toml meta)."""
+    and bounds ALL root metadata inside STX..ETX. `hold()` matches that order: DOCTYPE, SOH head,
+    STX, root toml meta, the holding ahu, ETX, EOT — never a `toml meta` block between the head
+    (SOH, code 0001) and STX (code 0002), which reads as the `meta-before-stx` torn fault."""
     carrier = ht.hold(_TEXT, uri="x/y", file_path="x/y.mem", role="a probe", held_type="text/x-memetic-wikitext")
     lines = carrier.split("\n")
 

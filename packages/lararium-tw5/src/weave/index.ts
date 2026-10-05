@@ -288,11 +288,11 @@ const ahuAlt = [
 ].filter((s): s is string => s !== null).join("|");
 const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+#(\\S+?)(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
 const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
-// `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape it
-// always had. `aka`/`kanawai` (English mirrors `pin`/`law`) PIN an edge — rendering follows the
-// TARGET (#/weave-and-tangle's "an open rhyme"): a reference meme's pin weaves as a citation, a
-// content slot's pin inlines, pinned with the target's own `ni:` check. See `weaveAka` below for
-// the full law (LOOP 7 — role, never position, decides normative vs informative).
+// `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape.
+// `aka`/`kanawai` (English mirrors `pin`/`law`) PIN an edge — rendering follows the TARGET
+// (#/weave-and-tangle's "an open rhyme"): a reference meme's pin weaves as a citation, a content
+// slot's pin inlines, pinned with the target's own `ni:` check. See `weaveAka` below for the full
+// law — role, never position, decides normative vs informative.
 // `kahea` (a live include; `import`/`transclude` alias it, but this slice reads only the bare word's
 // one-line invoke shape — the block open/close form is declined, see the handback) weaves as a plain
 // link under the profile's own marker, since a LIVE include names no frozen moment to pin.
@@ -301,8 +301,8 @@ const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")}) ((?:[^>\\n]|
 // `aka` (English `pin`, informative) and `kanawai` (English `law`, binding/normative) are TWO
 // canonical sigils sharing one rendering mechanism — a pin's TARGET decides whether it weaves as a
 // citation or a frozen image either way; only the SIGIL decides which kramdown reference list a
-// citation folds into (operator ruling, LOOP 7 — role = WHICH SIGIL, no parameter, no position
-// rule). Both families' names derive from the table, never hand-listed.
+// citation folds into (role = WHICH SIGIL, no parameter, no position rule). Both families' names
+// derive from the table, never hand-listed.
 const AKA_NAMES = ["aka", ...mirrorsOf("aka"), "kanawai", ...mirrorsOf("kanawai")];
 const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
 
@@ -549,7 +549,7 @@ const BCP14_BOILERPLATE =
  * field name a sibling's tiddler work writes. Anything else is a CONTENT SLOT. Operator ruling:
  * `aka` PINS a `lar:` target; RENDERING FOLLOWS THE TARGET, never where the pin stands — a pin of a
  * reference meme weaves as a citation, a pin of a content slot weaves as the frozen image, in BOTH
- * carrier scope and body scope alike. Position no longer changes rendering.
+ * carrier scope and body scope alike. Position never changes rendering.
  */
 function isReferenceMeme(meta: Readonly<Record<string, unknown>>): boolean {
   return typeof meta["reference-kind"] === "string" && meta["reference-kind"].length > 0;
@@ -574,10 +574,10 @@ function isBcp14KeyWordsSource(meta: Readonly<Record<string, unknown>>): boolean
 }
 
 /**
- * THE NORMATIVE/INFORMATIVE MECHANISM — OPERATOR-RULED (LOOP 7, superseding the earlier "unruled,
- * keyed off content" interim): the category is WHICH SIGIL PINNED, never the target's content, a
- * parameter, the tongue, or where the pin stands. `aka` (English `pin`) is informative; `kanawai`
- * (English `law`, binding) is normative. One function, so a future ruling still swaps one place.
+ * THE NORMATIVE/INFORMATIVE MECHANISM: the category is WHICH SIGIL PINNED, never the target's
+ * content, a parameter, the tongue, or where the pin stands. `aka` (English `pin`) is informative;
+ * `kanawai` (English `law`, binding) is normative. One function, so a future ruling still swaps
+ * one place.
  */
 function referenceCategory(canonical: "aka" | "kanawai"): "normative" | "informative" {
   return canonical === "kanawai" ? "normative" : "informative";
@@ -737,8 +737,8 @@ export function readPin(
 
 /**
  * A FROZEN `aka` edge's TARGET decides EVERYTHING: how much it pins, AND what shape the pin weaves
- * as. Operator ruling (LOOP 7): `aka` PINS a `lar:` target; rendering follows the TARGET, never
- * where the pin stands. The target's own root toml meta decides the kind ({@link isReferenceMeme}):
+ * as. `aka` PINS a `lar:` target; rendering follows the TARGET, never where the pin stands. The
+ * target's own root toml meta decides the kind ({@link isReferenceMeme}):
  *
  *   REFERENCE meme (`reference-kind` set) → CITATION. CommonMark/GFM: one line naming the target
  *   and its pin, never inlined content. `kramdown-rfc2629`: the BCP 14 key-words source
@@ -835,10 +835,9 @@ export function transposeMarkdown(
   resolve?: (uri: string) => string | null,
   /**
    * The BCP 47 tongue to weave sigil HEAD names into (#/the-woven-dialect's Tongue clause). Absent:
-   * every head name passes through unchanged — the axis this module held before this parameter
-   * existed, so leaving it off reproduces every prior byte exactly. Present: each construct that
-   * echoes a sigil's own head word resolves it through {@link resolveHeadWord} before emitting —
-   * never touching an argument, a target, or prose.
+   * every head name passes through unchanged, byte for byte. Present: each construct that echoes
+   * a sigil's own head word resolves it through {@link resolveHeadWord} before emitting — never
+   * touching an argument, a target, or prose.
    */
   tongue?: string,
 ): { markdown: string; uri?: string; check?: string; metaFence?: string; references?: ReferenceEntry[] } {
@@ -965,8 +964,8 @@ export function transposeMarkdown(
     const aka = AKA_LINE.exec(line);
     if (aka) {
       flushProse();
-      // TARGET-KIND decides the shape now (LOOP 7) — position (carrier scope vs inside an ahu)
-      // no longer enters it; `weaveAka` reads the target's own meta.
+      // TARGET-KIND decides the shape; position (carrier scope vs inside an ahu) never enters it —
+      // `weaveAka` reads the target's own meta.
       const woven = weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve, tongue);
       out.push(...woven.lines);
       for (const ref of woven.references ?? []) references.set(ref.anchor, ref);

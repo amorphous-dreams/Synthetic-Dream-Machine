@@ -148,10 +148,10 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
   /**
    * WIDENING (#/quoteblock-floor, option (iv)) — an unclosed ahu and a stray block closer corrupt the
    * COMPOSED root (the dangling opener eats the parent's closer; the orphan closes the parent early)
-   * but grade below error on `evaluateMeme`'s NOOP-equivalence leg, so they used to drop off this
-   * rail silently. The ahu-scan stack already knows both shapes; the child gate now raises them with
-   * named codes. A lawful nested ahu child and a clean child still raise nothing — the widening is a
-   * REPORTING change, not a new refusal.
+   * but grade below error on `evaluateMeme`'s NOOP-equivalence leg, so that rail alone never surfaces
+   * them. The ahu-scan stack already knows both shapes; the child gate raises them with named codes,
+   * while a lawful nested ahu child and a clean child raise nothing — the widening is a REPORTING
+   * addition, not a new refusal.
    */
   test("QUOTEBLOCK FLOOR: a child-slot save carrying an unclosed ahu is fenced, codes `ahu-unbalanced-open` + `quoteblocked`", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
@@ -241,31 +241,27 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
 });
 
 /**
- * PHASE 5 · RE-MEASURED 2026-10-04 — the round-trip is no longer a fixed point everywhere, so it no
- * longer hides every fault. THE LEAN STILL GOES WRONG, just not the way the first measurement found.
+ * The round-trip `placeMeme(root, readMeme(root))` is not a fixed point everywhere, so it does not
+ * surface every fault a slot child's save can carry. Closing seam (b) — a slot child that moved
+ * re-places its ROOT, grading the whole carrier as one — relies on that mechanism: `readMeme` is
+ * `render(records)`, handed back to `placeMeme`, so the Confluence gate reads
+ * `render(parse(render(r)))` against `render(r)`. For FIVE of the seven shapes below that is the
+ * canonical form's own fixed point: `decision=noop`, `grade=clean`, zero diagnostics, nothing
+ * landed, the record set unmoved — a tautology, reporting no fault because none of its three reads
+ * moved.
  *
- * The syncer-seams roundtable planned to close the ungated child (seam (b)) by widening the backstop:
- * a slot child that moved re-places its ROOT, and the whole carrier grades as one. The mechanism named
- * is `placeMeme(root, readMeme(root))` — `readMeme` is `render(records)`, handed back to `placeMeme`,
- * so the Confluence gate reads `render(parse(render(r)))` against `render(r)`. For FIVE of the seven
- * shapes below that is still the canonical form's own fixed point: `decision=noop`, `grade=clean`,
- * zero diagnostics, nothing landed, the record set unmoved — a tautology, reporting no fault because
- * none of its three reads moved.
- *
- * TWO shapes now break the tautology: a child holding a stray ETX, and a child holding a whole pasted
+ * TWO shapes break the tautology: a child holding a stray ETX, and a child holding a whole pasted
  * frame. Both mint a SECOND live ETX once rendered back into the root's own STX..ETX span (the root's
- * own close, plus the child's), and the frame reader now refuses that shape before the Confluence gate
+ * own close, plus the child's), and the frame reader refuses that shape before the Confluence gate
  * ever reaches an equivalence question — `decision=refuse`, `grade=error`, diagnostics named
- * `frame-malformed` ("2 live ETX marks follow the STX…") and, for the bare stray ETX, `postamble-content`
- * besides. The round-trip still launders nothing it didn't already refuse at the root's own door
- * (the CONTROL below), but it is no longer blind to these two shapes the way the first measurement
- * found it to be.
+ * `frame-malformed` ("2 live ETX marks follow the STX…") and, for the bare stray ETX,
+ * `postamble-content` besides. The round-trip launders nothing the root's own door would not already
+ * refuse (the CONTROL below), and these two shapes surface through it rather than passing silently.
  *
- * So seam (b) still stands open for the OTHER five shapes: a child's save there can only be graded
- * against the CHILD'S OWN AUTHORED TEXT — the bytes that never passed through the renderer — and this
- * package still carries no congruence that reads a fragment body as a gradeable unit on its own. That
- * remains the operator's call, not this hand's; the probe below is the measurement it should be made
- * against, re-run rather than re-assumed.
+ * Seam (b) stands open for the OTHER five shapes: a child's save there can only be graded against
+ * the CHILD'S OWN AUTHORED TEXT — the bytes that never pass through the renderer — and this package
+ * carries no congruence that reads a fragment body as a gradeable unit on its own. That remains the
+ * operator's call; the probe below is the measurement any such instrument must answer to.
  */
 describe("★ PHASE 5 RE-MEASURED: re-placing a root from its records catches two shapes, still misses five ★", () => {
   const sinkOf = (store: Map<string, TiddlerFields>) => ({
