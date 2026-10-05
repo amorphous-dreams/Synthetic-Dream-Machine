@@ -26,7 +26,7 @@ function Need($m)    { Write-Host ("  {0,-10} {1}" -f 'needs-you', $m) -Foregrou
 function Step($m)    { Write-Host "`n$m" -ForegroundColor White }
 function Act($label, [scriptblock]$do) { if ($DryRun) { Plan $label } else { & $do; Set_ $label } }
 
-$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrators')
+$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 $hostGB  = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 $cpus    = (Get-CimInstance Win32_Processor | Measure-Object NumberOfLogicalProcessors -Sum).Sum
 
@@ -46,12 +46,16 @@ $want = [ordered]@{
     sparseVhd         = 'true'
   }
 }
-# parse the existing file into ordered sections, keeping comments and unknown keys as lines
-$sections = [ordered]@{}; $order = @(); $cur = ''
+# parse the existing file into ordered sections, keeping comments and unknown keys as lines.
+# Lines before the first [section] (a file-top comment) ride along as the preamble.
+# Read and write as UTF-8 without BOM: a superset of ASCII, so an operator's non-ASCII comment survives.
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+$sections = [ordered]@{}; $order = @(); $preamble = @(); $cur = ''
 if (Test-Path $cfgPath) {
-  foreach ($line in Get-Content $cfgPath) {
+  foreach ($line in [IO.File]::ReadAllLines($cfgPath, $utf8)) {
     if ($line -match '^\s*\[(.+?)\]\s*$') { $cur = $Matches[1]; if (-not $sections.Contains($cur)) { $sections[$cur] = @(); $order += $cur } }
     elseif ($cur) { $sections[$cur] += $line }
+    else { $preamble += $line }
   }
 }
 $changed = $false
@@ -65,14 +69,27 @@ foreach ($sec in $want.Keys) {
       if ($have -eq $v) { Already "[$sec] $k=$v"; continue }
       Act "[$sec] $k=$v (was $have)" { $sections[$sec][$idx] = "$k=$v" }.GetNewClosure()
     } else {
-      Act "[$sec] $k=$v (was unset)" { $sections[$sec] += "$k=$v" }.GetNewClosure()
+      # insert after the section's last non-blank line, so the key sits with its siblings rather than after the gap
+      Act "[$sec] $k=$v (was unset)" {
+        $b = @($sections[$sec]); $n = $b.Count
+        while ($n -gt 0 -and [string]::IsNullOrWhiteSpace($b[$n - 1])) { $n-- }
+        $head = if ($n -gt 0) { $b[0..($n - 1)] } else { @() }
+        $tail = if ($n -lt $b.Count) { $b[$n..($b.Count - 1)] } else { @() }
+        $sections[$sec] = @($head) + "$k=$v" + @($tail)
+      }.GetNewClosure()
     }
     $changed = $true
   }
 }
 if ($changed -and -not $DryRun) {
-  $out = foreach ($sec in $order) { "[$sec]"; $sections[$sec]; '' }
-  Set-Content -Path $cfgPath -Value ($out -join "`r`n") -Encoding ASCII
+  # each section ends in exactly one blank line, so repeated writes do not grow the file
+  $out = @($preamble)
+  foreach ($sec in $order) {
+    $body = @($sections[$sec]); $n = $body.Count
+    while ($n -gt 0 -and [string]::IsNullOrWhiteSpace($body[$n - 1])) { $n-- }
+    $out += "[$sec]"; if ($n -gt 0) { $out += $body[0..($n - 1)] }; $out += ''
+  }
+  [IO.File]::WriteAllText($cfgPath, (($out -join "`r`n") + "`r`n"), $utf8)
   Need "wsl --shutdown (from Windows, at a session boundary) - .wslconfig changes wait on it"
 }
 
@@ -102,9 +119,13 @@ else {
   $attrs = (Get-Item $vhd).Attributes
   if ($attrs -band [IO.FileAttributes]::SparseFile) { Already "sparse ($sizeGB GB on disk)" }
   else {
-    $state = (wsl.exe -l -v | Out-String) -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
-    if ($state -match 'Running') { Need "wsl --shutdown, then: wsl --manage $Distro --set-sparse true   ($sizeGB GB on disk, not sparse)" }
-    else { Act "wsl --manage $Distro --set-sparse true" { wsl.exe --manage $Distro --set-sparse true | Out-Null } }
+    # wsl.exe writes UTF-16LE to a redirected stdout; decoded as the OEM code page every letter grows a NUL and no regex matches
+    $oldEnc = [Console]::OutputEncoding
+    try { [Console]::OutputEncoding = [Text.Encoding]::Unicode; $listing = (wsl.exe -l -v | Out-String) } finally { [Console]::OutputEncoding = $oldEnc }
+    $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
+    if (-not $state) { Need "wsl -l -v does not list $Distro - read it by hand before: wsl --manage $Distro --set-sparse true" }
+    elseif ($state -match 'Running') { Need "wsl --shutdown, then: wsl --manage $Distro --set-sparse true   ($sizeGB GB on disk, not sparse)" }
+    else { Act "wsl --manage $Distro --set-sparse true" { wsl.exe --manage $Distro --set-sparse true | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE (needs WSL 2.0+ and a stopped distro)" } } }
   }
 }
 
