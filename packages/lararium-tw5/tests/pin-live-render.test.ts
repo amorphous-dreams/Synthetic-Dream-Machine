@@ -169,7 +169,9 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
       "utf8",
     );
     const handSpelled = CITATION_FIELD_KEYS.filter((key) => templateText.includes(`meme-pin[${key}]`));
-    expect(handSpelled.length).toBeLessThan(CITATION_FIELD_KEYS.length);
+    // target alone renders as a link and keeps its own row; every other citation part rides
+    // meme-pin[citation-keys].
+    expect(handSpelled).toEqual(["target"]);
   });
 
   test("CONTROL — meme-pin[kind] answers unresolved for a target no record stands at", () => {

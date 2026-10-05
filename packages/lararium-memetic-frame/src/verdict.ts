@@ -57,12 +57,10 @@ const SOH_HEX = new RegExp(`^(?:${frameHex("SOH")})$`);
 const DECLARATION_LINE_RE = /^<<!DOCTYPE[^\n]*/gm;
 
 /**
- * ETB (`&#x0017;`), RETIRED WITH `$carrier-sila` (operator ruling, #/quoteblock-floor's sibling hand):
- * the attestation block it closed was never built, its mark never assigned past this literal entity.
- * `marks.ts` no longer declares it, so a surviving ETB sigil in a carrier reads here directly rather
- * than through `FRAME_MARKS` — the one spelling this grammar now refuses outright, same family as a
- * retired declaration or a retired head/release spelling. Re-minted later only behind a computed,
- * verified check, never this bare literal.
+ * ETB (`&#x0017;`) is no frame mark; `FRAME_MARKS` does not declare it, so this reader matches the
+ * literal directly, and any ETB sigil in a carrier reads as a retired spelling (torn), the same fault
+ * as a retired declaration or a retired head/release spelling. A mark joins the grammar only through
+ * `FRAME_MARKS`, behind a computed, verified check.
  */
 const RETIRED_ETB_RE = /<<\^(?:[^>\n]|>(?!>))*?&#x0017;(?:[^>\n]|>(?!>))*>>/g;
 

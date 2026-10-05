@@ -45,14 +45,12 @@ describe("★ every control matcher reads the control head, and only that ★", 
   /**
    * THE FRAME LOCKS TO THE CONTROL GLYPH.
    *
-   * These matchers once accepted either head, and the reason was written into this test: a matcher
-   * pinning one head goes blind the day a head moves. That held while both heads were live. The frame
-   * has since locked to `<<^`, and the argument inverts — a matcher still admitting `<<~` accepts a
-   * malformed carrier in SILENCE, which is the same blindness aimed the other way and worse here,
-   * because an unmatched frame reroutes to text rather than throwing.
+   * The frame locks to `<<^` alone: a matcher admitting `<<~` accepts a malformed carrier in SILENCE,
+   * which is blindness, and worse here because an unmatched frame reroutes to text rather than
+   * throwing.
    *
-   * The corpus has already moved: one carrier holds the old form and the fence mask shows it quoted,
-   * a teaching example rather than a frame. The matchers have not. This test names the ones left.
+   * The corpus holds one carrier in the old form, and the fence mask shows it quoted — a teaching
+   * example, not a frame. This test names the matchers still admitting `<<~`.
    *
    * Two of them are not leftovers and want reading before they move — `ANY_OPEN_RE` matches ANY sigil
    * open by design, and the deserializer's namespace/SOH-code reads take a head's PARAMS rather than
@@ -80,8 +78,8 @@ describe("★ every control matcher reads the control head, and only that ★", 
       catch { return n; }
     }, 0);
     const scanner = [...readFileSync(resolve(PKG, "src/meme-ast/scanner.ts"), "utf8").matchAll(CONTROL_MATCHER)].length;
-    // EOT2's row is retired; SOH · SOH2 · STX · ETX · EOT remain = 5 (ETB's 0017 sits outside this
-    // matcher's range, per the comment above).
+    // SOH · SOH2 · STX · ETX · EOT = 5 (ETB's 0017 sits outside this matcher's range, per the
+    // comment above).
     expect(scanner).toBeGreaterThanOrEqual(5);
     expect(found).toBeGreaterThanOrEqual(scanner);
   });

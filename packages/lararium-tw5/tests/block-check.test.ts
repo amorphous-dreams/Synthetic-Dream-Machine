@@ -79,8 +79,8 @@ describe("classifyPostEot", () => {
     expect(classifyPostEot(frame("") )?.kind).toBe("empty");
   });
 
-  // EOT2 (&#x0014;) is retired — no mark at all stands where it once closed a transmission, so a
-  // carrier spelling only EOT2 carries no terminator the reader recognises.
+  // &#x0014; is no frame mark, so a carrier that spells only &#x0014; carries no terminator the
+  // reader recognises.
   test("a retired EOT2 mints no terminator — classifyPostEot finds none", () => {
     const eot2 = frame("").replace('code="&#x0004;"', 'code="&#x0014;"');
     expect(classifyPostEot(eot2)).toBe(null);

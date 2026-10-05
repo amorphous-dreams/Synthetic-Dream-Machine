@@ -299,17 +299,14 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    * green while a reader silently drops the second code of a family, because dropping it costs at
    * most one carrier. So the tally runs per CODE.
    *
-   * EOT2 NO LONGER STANDS IN THE CORPUS AT REST. `kapu.mem` once carried `&#x0014;` on the line below
-   * its `&#x0004;`, but operator ruling 2a623c1a2 (2026-10-04, `handback-eot2-and-typecheck-reds.mem`)
-   * closed it on a plain EOT like every other carrier — EOT2's office stays open for the relay-stream
-   * layer, not for an at-rest close, so no corpus file is lawfully left to carry the floor. The SOH2
-   * floor still reads off the corpus (several carriers write it); EOT2 reads off its OWN fixture below
-   * instead, so a reader that drops the second code of a family still goes red without asking the
-   * corpus to keep hosting a mark the corpus no longer has reason to write.
+   * EOT2 does not stand in the corpus at rest — an at-rest close reads a plain EOT like every other
+   * carrier, while EOT2's office stays open for the relay-stream layer only, so no corpus file carries
+   * the floor. The SOH2 floor still reads off the corpus (several carriers write it); EOT2 reads off
+   * its OWN fixture below instead, so a reader that drops the second code of a family still goes red
+   * without asking the corpus to host a mark it has no reason to write.
    *
-   * `&#x0017;` (ETB) is RETIRED WITH `$carrier-sila` — the declaration no longer stands it at all, and
-   * no corpus carrier ever wrote it, so it carries no floor here and its appearance anywhere in the
-   * corpus would land in `undeclared` below and go red on its own.
+   * ETB (`&#x0017;`) is not declared, so it carries no floor here and its appearance anywhere in the
+   * corpus lands in `undeclared` below and goes red on its own.
    */
   test("★ the thin codes still stand — SOH2 in the corpus, EOT2 in its own fixture ★", () => {
     const tally = new Map<string, number>();
@@ -338,10 +335,10 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
   /**
    * THE SECOND CODE OF A FAMILY, READ OVER REAL CARRIERS.
    *
-   * A fixture pins the GRAMMAR; only the CORPUS pins the READER. SOH is the one family this grammar
-   * still aliases (SOH2, `&#x0011;`) — EOT2 (`&#x0014;`) is RETIRED and carries no sibling at all, so
-   * re-spelling EOT as EOT2 is no longer a same-family substitution and does not belong in this map.
-   * This takes the corpus AS IT IS and moves one thing: every declared SOH is rewritten to SOH2. The
+   * A fixture pins the GRAMMAR; only the CORPUS pins the READER. SOH2 (`&#x0011;`) is the only
+   * same-family alias this grammar declares; `&#x0014;` is no frame mark, so re-spelling EOT as
+   * `&#x0014;` is not a same-family substitution and stays out of this map. This takes the corpus AS
+   * IT IS and moves one thing: every declared SOH is rewritten to SOH2. The
    * bytes stay a real carrier's, the reading must not move, and a scan that spells SOH by hand alone
    * goes red on every carrier this reaches.
    */

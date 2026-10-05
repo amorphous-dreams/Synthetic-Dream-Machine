@@ -180,8 +180,8 @@ describe("MemeStreamParser — EOT reads the control head only, never the speaki
     expect(events.some((e) => e.kind === "carrier-close")).toBe(true);
   });
 
-  // EOT2 (&#x0014;) is retired — `frameAlt("EOT")` matched it by NAME PREFIX while EOT2 stood as a
-  // mark named with "EOT" as a prefix. A byte never minted at rest closed a carrier the same as EOT.
+  // &#x0014; belongs to no frame family, and frameAlt("EOT") reads families from FRAME_MARKS'
+  // declared `family` field, never from a name prefix, so a &#x0014; byte never closes a carrier.
   test("a retired EOT2 byte (<<^ code=\"&#x0014;\" -> to=\"?\">>) never closes a carrier", () => {
     const uri    = "lar:///ha.ka.ba/lares/api/pono/invariant";
     const text   = `${openBody(uri)}\n<<^ code="&#x0014;" -> to="?">>`;
