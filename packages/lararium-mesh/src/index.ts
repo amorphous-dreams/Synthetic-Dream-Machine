@@ -22,7 +22,6 @@ export * from "./bag-manifest.js";
 export * from "./library-tier.js";
 // The Erisian reckoning, computed rather than shelled out for — ddate(1) ships with many machines and no
 // machine reliably, and the whole calendar fits in one function.
-export * from "./discordian-date.js";
 export * from "./vessel-identity-core.js";
 export * from "./anchor-store.js";
 export * from "./persona-vault.js";
@@ -91,7 +90,6 @@ export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
-export { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 export * from "./social-tiddlers.js";
 export * from "./automerge-doc-store.js";
 export * from "./lar-vessel.js";
@@ -181,7 +179,6 @@ export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from ".
 export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec } from "./wiki-activation.js";
-export { makeDurableMailbox, type DurableMailbox, type MailboxVerb } from "./vessel-mailbox.js";
 export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-island-pool-core.js";
 export {
   AUTH_WIRE_VERSION, AUTH_PROOF_TTL_MS,
@@ -212,7 +209,6 @@ export * from "./re-anchoring.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
 export * from "./vouch-dag.js";
-export * from "./realm-admission.js";
 export * from "./handle-card.js";
 export * from "./handle-publish.js";
 export * from "./handle-orchestration.js";
@@ -225,7 +221,6 @@ export * from "./handle-carriage.js";
 // The type-blind PERSONA-ADMISSION ceremony (airgapped device-to-device persona handoff) — the 3-hop ECDH-sealed
 // choreography + its carried QR envelopes. A photographed tabletop stays inert; the join writes per-vessel only.
 export * from "./persona-admit.js";
-export * from "./persona-admit-carriage.js";
 // STAGE 2 (A1-①): the per-Nexus convergence keyring delivered to a joinee at admission via a sealed envelope
 // (the persona-admit sealed-box shape). An admitted device opens it + reads sealed bodies; a carry-only peer cannot.
 export * from "./keyring-envelope.js";
@@ -236,13 +231,11 @@ export * from "./handle-announce.js";
 export * from "./who-face.js";
 export * from "./who-face-cap.js";
 export * from "./deterministic-doc.js";
-export * from "./realm-glamour.js";
+export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
 export * from "./cabal-realm-clock.js";
 export * from "./realm-bag.js";
-export * from "./realm-plane.js";
 export * from "./realm-index.js";
 export * from "./me-circle.js";
-export * from "./fork-realm.js";
 export * from "./veil-crossing.js";
 export * from "./veil-vouch.js";
 export * from "./veil-ladder.js";
@@ -313,7 +306,6 @@ export * from "./sensorium-lifecycle.js";
 
 export * from "./store-integrity.js";
 export * from "./archive-envelope.js";
-export * from "./ingest-tolerant.js";
 
 export * from "./doc-load-probe-contract.js";
 
@@ -346,7 +338,6 @@ export { climbNexusBoards, carryAntigenUpTheGradient, carryEdgeShadowsUpTheGradi
 export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "./persona-kel-climb.js";
 export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from "./signer-class.js";
 export { nexusScopeIndex } from "./persona-identity.js";
-export { identityHomeClosure, type IdentityHomeClosure } from "./identity-home-closure.js";
 export { bagCopyPlan, type BagCopyPlan, type TitleAtRest } from "./bag-copy-plan.js";
 export { crossingDirection, type CrossingDirection, type CrossingCost } from "./crossing-direction.js";
 export { sealImportVerdict, foreignSeats,

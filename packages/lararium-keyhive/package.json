@@ -28,6 +28,7 @@
     "@lararium/tw5": "workspace:*"
   },
   "devDependencies": {
+    "@automerge/automerge": "3.4.1",
     "vitest": "4.1.11"
   }
 }

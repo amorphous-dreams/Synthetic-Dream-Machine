@@ -35,9 +35,8 @@ import {
   feedCabalRealm,
   effectiveLeaseEpoch,
   rolledLeaseEpoch,
-  projectRealmGlamour,
-  realmGlamourSnapshot,
 } from "@lararium/mesh";
+import { projectRealmGlamour, realmGlamourSnapshot } from "../src/realm-glamour.js";
 
 const REALM_URI    = "lar:///crossroads.cabal.gathers/probe-realm";
 const SUBSTRATE_URL = "automerge:cabal-realm-substrate-probe";

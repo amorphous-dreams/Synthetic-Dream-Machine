@@ -6,8 +6,9 @@
 import { describe, test, expect } from "vitest";
 import {
   forkSurvivors, forkGenesisUri, repointToFork,
-  type CabalRealm, type RealmFork,
-} from "../src/index.js";
+  type RealmFork,
+} from "../src/fork-realm.js";
+import type { CabalRealm } from "@lararium/mesh";
 
 const OLD_ROSTER = ["0xsurvivor_a", "0xsurvivor_b", "0xcaptor"];
 

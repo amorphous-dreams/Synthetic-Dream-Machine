@@ -26,7 +26,8 @@ import * as KH from "@keyhive/keyhive/slim";
 // @ts-expect-error — keyhive's base64 .d.ts is a `declare module` augmentation, not a module
 // (TS2306); the runtime export `wasmBase64` (a base64 string) resolves fine in node + vite.
 import { wasmBase64 } from "@keyhive/keyhive/keyhive_wasm.base64.js";
-import { ingestTolerant, adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, webDigest } from "@lararium/mesh";
+import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, webDigest } from "@lararium/mesh";
+import { ingestTolerant } from "./ingest-tolerant.js";
 import { inSelfSlice } from "./event-store.js";
 import type {
   CapabilityProvider, CapabilityProviderInitOpts,

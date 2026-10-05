@@ -47,13 +47,11 @@ import {
   cabalRealmJoinGate,
   cabalRealmLeaseSlot,
   deriveCabalRealmLiveness,
-  projectRealmGlamour,
   type CabalRealm,
   type CabalRealmLiveness,
   type BagStowage,
-  type RealmGlamourMeta,
-  type RealmGlamour,
 } from "@lararium/mesh";
+import { projectRealmGlamour, type RealmGlamourMeta, type RealmGlamour } from "./realm-glamour.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 
 /**

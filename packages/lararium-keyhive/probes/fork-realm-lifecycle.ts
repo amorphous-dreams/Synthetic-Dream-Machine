@@ -21,7 +21,7 @@
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import { foundCabalRealm, openDwelling, dwellersHolding } from "../src/cabal-realm-ceremony.js";
 import { forkCabalRealm } from "../src/fork-realm-ceremony.js";
-import { repointToFork } from "@lararium/mesh";
+import { repointToFork } from "../src/fork-realm.js";
 
 const REALM_URI = "lar:///crossroads.cabal.gathers/captured";
 const SUBSTRATE = "automerge:captured-realm-substrate";

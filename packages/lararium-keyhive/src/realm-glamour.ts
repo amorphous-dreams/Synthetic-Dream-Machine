@@ -40,9 +40,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import { pinnedDoc } from "./pinned-doc.js";
-import { exportOracleSnapshot, type OracleSnapshot } from "./oracle-substrate.js";
-import type { CabalRealm } from "./cabal-realm.js";
+import { pinnedDoc, exportOracleSnapshot, type OracleSnapshot, type CabalRealm } from "@lararium/mesh";
 
 /**
  * A cabal-realm's CHARTER — its PUBLIC face, the only projection that ever crosses
