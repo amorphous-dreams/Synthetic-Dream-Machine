@@ -32,7 +32,7 @@
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
 import { utf8Bytes, ridesAsPointer, isOversizedBody, mediaTypeFromExt, SKINNY_CARRIER_THRESHOLD } from "@lararium/mesh";
 import { findTopLevelAhuBlocks } from "@lararium/tw5/meme-ast";
-import { metaFenceAt } from "@lararium/tw5/root-meta";
+import { metaFenceAt } from "@lararium/tw5";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 /** The minimal carrier view the writer reads — a subset of `ScanRow`. */
@@ -82,7 +82,9 @@ export function carrierNeedsTag(c: TagCarrier): boolean {
 function metaFenceCloseOffset(text: string, start: number, end: number): number | null {
   const fence = metaFenceAt(text.slice(start, end));
   // `bodyEnd` is the index of the `\n` before the closer; a field inserts one past it, directly
-  // above the closing backticks — the same point the prior hand-rolled offset landed on.
+  // above the closing backticks. OPENER LAW: this locator requires a CLOSED fence (content reads
+  // never guess at an unclosed one) — an ahu with no closed meta fence answers null, which the
+  // caller reports as `meme-no-meta` rather than writing past a fence that does not stand.
   return fence ? start + fence.bodyEnd + 1 : null;
 }
 

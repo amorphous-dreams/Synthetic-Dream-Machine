@@ -78,9 +78,17 @@ function metaBlock(text: string, spans: readonly MaskSpan[], from = 0): string |
   return metaFenceAt(text, from, spans)?.body ?? null;
 }
 
-/** The opener line as this file actually spells it, or null when it carries no CLOSED meta block. */
+/**
+ * The opener line as this file actually spells it, or null where no live opener stands.
+ *
+ * OPENER LAW: spelling is judged on the opener's own bytes alone, independent of whether the fence
+ * ever closes — a mid-write carrier still names its opener. A content read needs a closed span
+ * (`metaBlock`, composing `metaFenceAt`), but the spelling check does not, and must not fail silent
+ * on an unclosed fence the way a closed-fence locator rightly does.
+ */
 function metaOpenLine(text: string, spans: readonly MaskSpan[], from = 0): string | null {
-  return metaFenceAt(text, from, spans)?.openLine ?? null;
+  const open = metaOpenFrom(text, spans, from);
+  return open ? open[0].replace(/\n$/, "") : null;
 }
 
 /**

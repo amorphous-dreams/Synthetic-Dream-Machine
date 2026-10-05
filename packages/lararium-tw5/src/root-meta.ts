@@ -2,12 +2,10 @@
  * root-meta — the ONE locator every reader of a carrier's root ```toml meta fence reads.
  *
  * ── WHY ONE ─────────────────────────────────────────────────────────────────────────────────────
- * About eight readers across tw5/node/lares-cli each hand-rolled how to find the root meta fence,
- * and their semantics drifted: some started at STX, some did not; some read through the fence mask,
- * some did not; some required a closer, some read to EOF without one; one (`sync-heleuma`'s
- * `TOML_RE`) matched ANY ```toml fence anywhere, including an unlabelled teaching fence, which is a
- * BUG class (an authored example could shadow the real root meta). This module is the one locator
- * every caller composes onto, so the semantics agree by construction rather than by vigilance.
+ * Every reader of a carrier's root meta fence composes THIS locator — starting at STX, through the
+ * fence mask, requiring a closer — so their semantics agree by construction rather than by
+ * vigilance. An unlabelled ```toml teaching fence names no root meta: the mask refuses its interior,
+ * and a reader that matched ANY ```toml fence would let an authored example shadow the real one.
  *
  * ── THE ROOT META RIDES THE BODY ────────────────────────────────────────────────────────────────
  * Where a frame opens (STX stands), the carrier's identity block is the first thing in the BODY — a

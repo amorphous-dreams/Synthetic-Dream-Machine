@@ -74,19 +74,6 @@ function metaBody(text: string): string | null {
 }
 
 /**
- * One top-level toml value from a meta body. Quoted values ride `metaValueRaw`; a bare (unquoted)
- * value is admitted as a local fallback — measured against the corpus (`git grep harvest-to bags`),
- * every authored value quotes, so this fallback exists for a hand-authored carrier mid-write rather
- * than a spelling the corpus actually uses.
- */
-function metaValue(body: string, key: string): string | null {
-  const quoted = metaValueRaw(body, key);
-  if (quoted !== null) return quoted;
-  const m = new RegExp(String.raw`^[ \t]*${key}[ \t]*=[ \t]*(.*)$`, "m").exec(body);
-  return m ? m[1]!.trim() : null;
-}
-
-/**
  * Every tag a carrier writes.
  *
  * The corpus spells `tags` as a one-line toml array in all but one carrier, and that one opens the
@@ -121,7 +108,7 @@ export function readCarrierLifecycle(text: string): CarrierLifecycle {
     stage: stages.length === 1 ? stages[0]! : null,
     stages,
     kinds,
-    harvestTo: metaValue(body, "harvest-to"),
+    harvestTo: metaValueRaw(body, "harvest-to"),
   };
 }
 

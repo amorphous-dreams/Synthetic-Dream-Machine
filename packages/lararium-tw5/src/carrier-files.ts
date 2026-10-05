@@ -123,6 +123,9 @@ export function declaresCarrier(text: string, spans?: readonly MaskSpan[]): Carr
   // ```toml meta fence, so a mask applied flat would blind the finder to the very block that names
   // the type. The opener rides as a SPAN START — admitted — while a ````-quoted example of a meta
   // block sits in a span's INTERIOR and stays refused.
+  // THIS FINDER IS PATH-FREE AND POSITION-FREE: it reads from the opener to EOF when no closer
+  // stands, so a carrier mid-write still declares — a different question than `root-meta`'s
+  // closed-fence locator (@lararium/tw5/root-meta), which owns CONTENT reads and requires a close.
   const open = maskedExec(text, META_OPEN_RE, mask, true);
   if (open) {
     const span = mask.find((s) => s.start === open.index);

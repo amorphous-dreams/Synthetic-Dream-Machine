@@ -49,6 +49,22 @@ describe("declaresCarrier — a file counts as a carrier when it says so", () =>
   });
 
   /**
+   * THE FINDER IS PATH-FREE AND POSITION-FREE: it names a carrier from the first meta opener anywhere
+   * in the text, mid-write or not — unlike `root-meta`'s closed-fence locator, which this module does
+   * not compose, because a carrier arriving one byte at a time must still be found.
+   */
+  test("a declaration with an unclosed meta fence is still recognized as a carrier", () => {
+    const d = declaresCarrier(`\`\`\`toml meta\ntype      = "${CARRIER_TYPE}"\n`);
+    expect(d?.form).toBe("type-field");
+  });
+
+  /** A meta block standing above a frame's STX still declares — the finder asks nothing about STX. */
+  test("a meta block above STX still declares", () => {
+    const d = declaresCarrier(`\`\`\`toml meta\ntype = "${CARRIER_TYPE}"\n\`\`\`\n<<^ code="&#x0002;">>\n`);
+    expect(d?.form).toBe("type-field");
+  });
+
+  /**
    * A DECLARATION INSIDE A CODE FENCE DECLARES NOTHING. The spec memes teach the doctype by quoting
    * it; a finder without the mask would enrol every teaching doc into the corpus and then fail it for
    * lacking the frame the lesson never claimed to carry.

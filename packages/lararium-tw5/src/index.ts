@@ -241,6 +241,9 @@ export type {
 
 export * from "./memetic-wikitext-sensorium.js";
 export { readCarrierShape } from "./carrier-shape.js";
+// THE ONE ROOT-META LOCATOR — every reader composes onto this, so semantics agree by construction.
+export { metaFenceAt, rootMetaFence, rootMetaFields, metaValueRaw } from "./root-meta.js";
+export type { MetaFenceSpan } from "./root-meta.js";
 // THE FRAME IS ITS OWN PACKAGE. The head reader, the meta opener, the span reader and the block check
 // live in `@lararium/memetic-frame`; a consumer imports them from there, never through this barrel.
 // THE ONE FINDER of the corpus. Twenty-two readers enumerated it by hardcoded glob, in three

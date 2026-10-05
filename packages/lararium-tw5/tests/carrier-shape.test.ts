@@ -61,6 +61,28 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
   });
 
   /**
+   * THE OPENER LAW: spelling is judged on the opener's own bytes alone, independent of whether the
+   * fence ever closes. A non-canonical opener with no closer still names a carrier mid-write — the
+   * spelling fault owes nothing to the close, which `metaBlock`'s closed-fence locator owns instead.
+   */
+  test("a non-canonical opener with no closer still carries the spelling fault", () => {
+    const open = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml  meta\nuri-path = "ha.ka.ba/x/y"\n`;
+    expect(readCarrierShape(open).faults.join(" | ")).toMatch(/meta fence/i);
+  });
+
+  /** CONTROL — a canonical opener with no closer carries no spelling fault. */
+  test("CONTROL — a canonical opener with no closer carries no spelling fault", () => {
+    const open = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\n`;
+    expect(readCarrierShape(open).faults.filter((f) => /meta fence/i.test(f))).toEqual([]);
+  });
+
+  /** CONTROL — a non-canonical opener WITH a closer still carries the fault (the close never excuses it). */
+  test("CONTROL — a non-canonical opener with a closer still carries the spelling fault", () => {
+    const closed = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml  meta\nuri-path = "ha.ka.ba/x/y"\n\`\`\`\n`;
+    expect(readCarrierShape(closed).faults.join(" | ")).toMatch(/meta fence/i);
+  });
+
+  /**
    * A DECLARATION OPENS A FENCE, so its opener sits at a mask span's start and a plain masked read
    * rejects it — while a declaration quoted INSIDE a lesson must still not count.
    */

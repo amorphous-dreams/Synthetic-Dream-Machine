@@ -125,6 +125,21 @@ describe("carrier-lifecycle — the tag family carries the stage", () => {
     expect(readCarrierLifecycle(named).harvestTo).toBe("lar:///ha.ka.ba/bags/lares");
   });
 
+  /**
+   * PIN. Alpha line, no back-compat: `harvest-to` reads a QUOTED toml value alone. A bare value
+   * answers null rather than a guessed string — the carrier still owes the `harvest-to` fault.
+   */
+  test("a bare (unquoted) harvest-to reads null — quote it or the fault stands", () => {
+    const bare = carrier([
+      `harvest-to = lar:///ha.ka.ba/bags/lares`,
+      `tags       = ["lifecycle/harvest"]`,
+    ]);
+    expect(readCarrierLifecycle(bare).harvestTo).toBeNull();
+    expect(checkCarrierLifecycle(bare)).toEqual([
+      'lifecycle/harvest: no harvest-to — name the living bag, harvest-to = "lar:///ha.ka.ba/bags/<bag>"',
+    ]);
+  });
+
   /** `retiring` owes ZERO INBOUND, which only the whole shelf can answer — never this reader. */
   test("CONTROL — retiring owes nothing a single file can answer", () => {
     expect(checkCarrierLifecycle(carrier([`tags = ["lifecycle/retiring"]`]))).toEqual([]);
