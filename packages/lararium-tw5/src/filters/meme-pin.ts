@@ -17,6 +17,10 @@ module-type: filteroperator
  *               — a REFERENCE meme's citation field. Absent on the target's own meta, or asked of a
  *                 content/unresolved pin → no output, never a placeholder — the grammar-stays-tiddlers
  *                 law: this operator owns no citation field list beyond what `readPin` already reads.
+ *   citation-keys
+ *               — the {@link CITATION_FIELD_KEYS} present on a REFERENCE pin, in that one order, so a
+ *                 template drives its rows from this answer instead of hand-listing the five keys.
+ *                 Content/unresolved pin → no output.
  *
  * An operand outside this set THROWS — the same law `meme-project` holds: a filter that answered
  * empty for a typo would read exactly like a pin that resolved to nothing.
@@ -25,7 +29,7 @@ import type { TW5FilterOperator, TW5FilterSource, TW5Wiki } from "../types/tiddl
 import { wikiResolver } from "../meme-project.js";
 import { readPin, type ReadPinReference, CITATION_FIELD_KEYS } from "../weave/index.js";
 
-const PARTS = new Set<string>(["kind", "check", ...CITATION_FIELD_KEYS]);
+const PARTS = new Set<string>(["kind", "check", "citation-keys", ...CITATION_FIELD_KEYS]);
 
 export function memePin(
   source: TW5FilterSource,
@@ -49,12 +53,16 @@ export function memePin(
     }
     if (part === "kind") { results.push(pin.kind); return; }
     if (part === "check") { results.push(pin.check); return; }
-    // Citation fields live on a REFERENCE pin alone — a content/unresolved pin answers no output,
-    // never a placeholder, exactly the law an absent field already follows.
-    if (pin.kind === "reference") {
-      const v = (pin as ReadPinReference).citation?.[part as (typeof CITATION_FIELD_KEYS)[number]];
-      if (v) results.push(v);
+    // Citation fields, and the key list itself, live on a REFERENCE pin alone — a content/unresolved
+    // pin answers no output, never a placeholder, exactly the law an absent field already follows.
+    if (pin.kind !== "reference") return;
+    const citation = (pin as ReadPinReference).citation;
+    if (part === "citation-keys") {
+      for (const k of CITATION_FIELD_KEYS) if (citation?.[k]) results.push(k);
+      return;
     }
+    const v = citation?.[part as (typeof CITATION_FIELD_KEYS)[number]];
+    if (v) results.push(v);
   });
   return results;
 }

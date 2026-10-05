@@ -15,17 +15,14 @@ type: text/vnd.tiddlywiki
 <$list filter="[<_pin-kind>match[reference]]" variable="_ignore">
 <div class="lar-pin-card" data-pin-role=<<pin-role>> data-pin-kind="reference" data-pin-uri=<<currentTiddler>>>
   <div class="lar-pin-card-role">pin-role: <<pin-role>></div>
-  <$list filter="[<currentTiddler>meme-pin[title]]" variable="_v">
-  <div class="lar-pin-card-title"><$text text=<<_v>>/></div>
+  <!-- One row per key `meme-pin[citation-keys]` answers (CITATION_FIELD_KEYS, present fields only) —
+       title/author/date/seriesinfo render alike, as plain text, so one `<$list>` drives all four.
+       `target` differs — it renders as a link, not a text row — so it keeps its own row below and
+       this loop excludes it. -->
+  <$list filter="[<currentTiddler>meme-pin[citation-keys]] -[[target]]" variable="_k">
+  <$list filter="[<currentTiddler>meme-pin<_k>]" variable="_v">
+  <div class={{{ [[lar-pin-card-]addsuffix<_k>] }}}><$text text=<<_v>>/></div>
   </$list>
-  <$list filter="[<currentTiddler>meme-pin[author]]" variable="_v">
-  <div class="lar-pin-card-author"><$text text=<<_v>>/></div>
-  </$list>
-  <$list filter="[<currentTiddler>meme-pin[date]]" variable="_v">
-  <div class="lar-pin-card-date"><$text text=<<_v>>/></div>
-  </$list>
-  <$list filter="[<currentTiddler>meme-pin[seriesinfo]]" variable="_v">
-  <div class="lar-pin-card-seriesinfo"><$text text=<<_v>>/></div>
   </$list>
   <$list filter="[<currentTiddler>meme-pin[target]]" variable="_v">
   <a class="lar-pin-card-target" href=<<_v>>><$text text=<<_v>>/></a>

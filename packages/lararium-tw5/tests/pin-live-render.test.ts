@@ -1,18 +1,18 @@
 /**
- * pin-live-render — aka/kanawai RENDER BY TARGET, in a live wiki (unit C2, weave roadmap item 1).
+ * pin-live-render — aka/kanawai RENDER BY TARGET, in a live wiki.
  *
- * `aka`'s house template transcluded whatever currently sat at the pin's address, LIVE, inside a
- * `<details>` — that contradicted canon (api/pono/kahea.mem #/head: `aka` holds the PINNED pole).
- * This suite pins the fix: the shared pin template (`templates/pin/html`, reached through the
- * `meme-pin` filter operator) renders a REFERENCE meme as a citation card and a CONTENT slot as the
- * frozen image — the target's current bytes, pinned with its own `ni:` check — exactly the split
- * `readPin`/`weaveAka` already hold for the outward markdown weave (weave.test.ts's LOOP 7 suite).
- * `aka`/`kanawai` differ ONLY in `pin-role` (informative/binding) — operator ruling, loop 7: the
+ * `api/pono/kahea.mem #/head` holds `aka` to the PINNED pole: the shared pin template
+ * (`templates/pin/html`, reached through the `meme-pin` filter operator) renders a REFERENCE meme
+ * as a citation card and a CONTENT slot as the frozen image — the target's current bytes, pinned
+ * with its own `ni:` check — the same split `readPin`/`weaveAka` hold for the outward markdown
+ * weave (see weave.test.ts). `aka`/`kanawai` differ ONLY in `pin-role` (informative/binding): the
  * SIGIL decides the role, never the target.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 import { describe, test, expect, beforeAll } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
@@ -38,8 +38,8 @@ const refMeme = (uri: string): string =>
   '<<^ code="&#x0003;">>ni:///sha-256;REFCHECK\n' +
   '<<^ code="&#x0004;" -> to="?">>\n';
 
-// A reference meme carrying no `reference-seriesinfo`/`reference-target` — the absent-field case
-// fix 6 pins: a citation row with no data renders no row, never an empty placeholder.
+// A reference meme carrying no `reference-seriesinfo`/`reference-target` — the absent-field case:
+// a citation row with no data renders no row, never an empty placeholder.
 const bareRefMeme = (uri: string): string =>
   `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
   "```toml meta\n" +
@@ -156,6 +156,20 @@ describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or fr
     expect(html).not.toContain("lar-pin-card-seriesinfo");
     expect(html).not.toContain('href=""');
     expect(html).not.toContain("lar-pin-card-target");
+  });
+
+  test("★ (i) the card's citation rows derive from meme-pin[citation-keys] — one row per CITATION_FIELD_KEYS member present, never five hand-spelled rows ★", () => {
+    const html = render(`<<~ aka "${REF_URI}">>`);
+    for (const key of CITATION_FIELD_KEYS) {
+      const count = (html.match(new RegExp(`class="lar-pin-card-${key}"`, "g")) ?? []).length;
+      expect(count).toBe(1);
+    }
+    const templateText = readFileSync(
+      fileURLToPath(new URL("../tiddlers/pin-card-template-html.tid", import.meta.url)),
+      "utf8",
+    );
+    const handSpelled = CITATION_FIELD_KEYS.filter((key) => templateText.includes(`meme-pin[${key}]`));
+    expect(handSpelled.length).toBeLessThan(CITATION_FIELD_KEYS.length);
   });
 
   test("CONTROL — meme-pin[kind] answers unresolved for a target no record stands at", () => {
