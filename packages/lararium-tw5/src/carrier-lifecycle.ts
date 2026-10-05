@@ -29,8 +29,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/otakiage
  */
 
-import { fencedSpans, inMask, META_OPEN_RE } from "@lararium/memetic-frame";
+import { fencedSpans, inMask } from "@lararium/memetic-frame";
 import { SLOT_SEGMENT_SRC } from "./meme-ast/ahu-scan.js";
+import { rootMetaFence, metaValueRaw } from "./root-meta.js";
 
 /** The five standings a governed carrier holds, in order. */
 export const LIFECYCLE_STAGES = ["designed", "standing", "folded", "harvest", "retiring"] as const;
@@ -62,20 +63,27 @@ export function metaTopLevelBlock(body: string): string {
   return (head < 0 ? lines : lines.slice(0, head)).join("\n");
 }
 
-/** The toml meta fence body ABOVE its first table header, or null where the carrier writes none. */
+/**
+ * The ROOT toml meta fence body, ABOVE its first table header, or null where the carrier writes
+ * none. THE ROOT META RIDES THE BODY (`rootMetaFence`): a meta block above STX is the frame
+ * verdict's own tear, never this carrier's root.
+ */
 function metaBody(text: string): string | null {
-  const open = new RegExp(META_OPEN_RE.source).exec(text);
-  if (!open) return null;
-  const from = open.index + open[0].length;
-  const close = text.indexOf("\n```", from);
-  return metaTopLevelBlock(text.slice(from, close < 0 ? text.length : close));
+  const fence = rootMetaFence(text);
+  return fence ? metaTopLevelBlock(fence.body) : null;
 }
 
-/** One top-level toml value from a meta body, raw and unquoted. */
+/**
+ * One top-level toml value from a meta body. Quoted values ride `metaValueRaw`; a bare (unquoted)
+ * value is admitted as a local fallback — measured against the corpus (`git grep harvest-to bags`),
+ * every authored value quotes, so this fallback exists for a hand-authored carrier mid-write rather
+ * than a spelling the corpus actually uses.
+ */
 function metaValue(body: string, key: string): string | null {
+  const quoted = metaValueRaw(body, key);
+  if (quoted !== null) return quoted;
   const m = new RegExp(String.raw`^[ \t]*${key}[ \t]*=[ \t]*(.*)$`, "m").exec(body);
-  if (!m) return null;
-  return m[1]!.trim().replace(/^"(.*)"$/, "$1");
+  return m ? m[1]!.trim() : null;
 }
 
 /**

@@ -16,9 +16,10 @@
  */
 import { tagDigest, formatDigest, IMPLICIT_ALGO } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
-import { readFrame, stampCarrier, META_OPEN_RE } from "@lararium/memetic-frame";
+import { stampCarrier } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { alignMetaTomlColumns } from "../src/meme-normalize.js";
+import { rootMetaFence } from "../src/root-meta.js";
 
 /**
  * The digest the gate verifies: SHA-256 (hex) of the module record's `text`, read through the same
@@ -37,19 +38,13 @@ export function moduleBodyDigest(content: string, moduleRef: string): string | n
  */
 export function applySourceSha256Patch(content: string, sha256: string): string {
   const tagged = tagDigest(sha256);
-  const from = readFrame(content).stx?.end ?? 0;
-  const open = new RegExp(META_OPEN_RE.source, "g");
-  open.lastIndex = from;
-  const m = open.exec(content);
-  if (!m) return content;
-  const bodyStart = m.index + m[0].length;
-  const close = content.indexOf("\n```", bodyStart);
-  if (close < 0) return content;
-  const meta = content.slice(bodyStart, close);
+  const fence = rootMetaFence(content);
+  if (!fence) return content;
+  const { bodyStart, bodyEnd, body } = fence;
   const SHA_FIELD = /^source-sha256\s*=\s*"[^"]*"/m;
-  const next = SHA_FIELD.test(meta)
-    ? meta.replace(SHA_FIELD, `source-sha256 = "${tagged}"`)
-    : `${meta}\nsource-sha256 = "${tagged}"`;
+  const next = SHA_FIELD.test(body)
+    ? body.replace(SHA_FIELD, `source-sha256 = "${tagged}"`)
+    : `${body}\nsource-sha256 = "${tagged}"`;
   // The column law holds after the patch, so the anchor stays canonical under `meme check`.
-  return stampCarrier(content.slice(0, bodyStart) + alignMetaTomlColumns(next) + content.slice(close));
+  return stampCarrier(content.slice(0, bodyStart) + alignMetaTomlColumns(next) + content.slice(bodyEnd));
 }

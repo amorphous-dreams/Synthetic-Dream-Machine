@@ -166,6 +166,30 @@ describe("carrier-lifecycle — a domain field is not a carrier's own key", () =
   });
 });
 
+describe("carrier-lifecycle — the root meta rides the body, never a meta above STX", () => {
+  /**
+   * PIN. A meta fence ABOVE STX is the frame verdict's own tear (`meta-before-stx`), never the
+   * carrier's root — the real root meta stands after STX and is the one `harvest-to` answers from.
+   */
+  test("a meta block above STX never answers for the carrier — the root after STX does", () => {
+    const STX = `<<^ code="&#x0002;">>`;
+    const src = [
+      "```toml meta",
+      `harvest-to = "wrong"`,
+      "```",
+      "",
+      STX,
+      "",
+      "```toml meta",
+      `harvest-to = "right"`,
+      `tags       = ["lifecycle/harvest"]`,
+      "```",
+      "",
+    ].join("\n");
+    expect(readCarrierLifecycle(src).harvestTo).toBe("right");
+  });
+});
+
 describe("carrier-lifecycle — the fixtures declare nothing", () => {
   /** A fixture that DECLARES is a carrier to every sweep, gate and normalize run in the tree. */
   test("CONTROL — this suite is not itself corpus", () => {

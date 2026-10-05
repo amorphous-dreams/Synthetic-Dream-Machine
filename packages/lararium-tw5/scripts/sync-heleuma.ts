@@ -45,6 +45,7 @@ import { tagDigest, digestsEqual } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
 import { moduleBodyDigest, applySourceSha256Patch } from "./heleuma-digest.js";
+import { rootMetaFields } from "../src/root-meta.js";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
@@ -65,18 +66,16 @@ const SYNC_MODULES     = args.includes("--sync-modules");
 // Regex patterns
 // ---------------------------------------------------------------------------
 
-const TOML_RE        = /```toml([\s\S]*?)```/;
 const SOURCE_SLOT_RE = /<<~ ahu #\/source\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const FENCE_RE       = /```[^\n]*\n([\s\S]*?)\n```/;
 
-function parseToml(block: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const line of block.split("\n")) {
-    const m = line.match(/^([\w-]+)\s*=\s*(.+)$/);
-    if (!m) continue;
-    out[m[1]!] = m[2]!.trim().replace(/^"|"$/g, "");
-  }
-  return out;
+/**
+ * Every root-meta field this script reads is authored as a quoted scalar. `rootMetaFields` widens
+ * to `string[]` for a TOML array, which none of these fields are in the heleuma corpus — this
+ * narrows back to the scalar these call sites have always held.
+ */
+function asStr(v: string | string[] | undefined): string {
+  return typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? "") : "";
 }
 
 // ---------------------------------------------------------------------------
@@ -157,12 +156,11 @@ function runScan(): void {
   const existingUris = new Set<string>();
   for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
     if (toml["heleuma"]) {
-      const sf = toml["source-file"] ?? "";
-      const ss = toml["source-symbol"] ?? "";
+      const sf = asStr(toml["source-file"]);
+      const ss = asStr(toml["source-symbol"]);
       if (sf) existingUris.add(`${sf}::${ss}`);
     }
   }
@@ -260,13 +258,12 @@ function runScanPromote(): void {
 
   for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
     // Match by uri-path basename and by source-symbol
-    const uriBase = (toml["uri-path"] ?? "").split("/").pop() ?? "";
+    const uriBase = asStr(toml["uri-path"]).split("/").pop() ?? "";
     if (uriBase) existingNames.add(uriBase.toLowerCase());
-    const ss = toml["source-symbol"] ?? "";
+    const ss = asStr(toml["source-symbol"]);
     if (ss)   existingNames.add(ss.toLowerCase());
 
     // Also extract TOML keys from #vocab slots — these are promoted constants
@@ -405,11 +402,10 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
 
   for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
 
-    const moduleRef = toml["module-ref"];
+    const moduleRef = asStr(toml["module-ref"]);
     if (!moduleRef) continue;
 
     // Convert lar URI to file path: lar:///ha.ka.ba/lararium/tw5/{rest} -> tw5MemesRoot/{rest}.md
@@ -444,13 +440,13 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
       missing++;
       continue;
     }
-    const existingHash = toml["source-sha256"] ?? "";
+    const existingHash = asStr(toml["source-sha256"]);
     // `existingHash` rides tagged (`sha256:…`) like every carrier digest now;
     // `digestsEqual` still normalizes the canonical `:` vs legacy SRI `-` spelling.
     // Empty existing → not-equal → drift (add).
     const hashDrift    = !digestsEqual(liveHash, existingHash);
 
-    const anchorUri = toml["uri-path"] ?? mdPath;
+    const anchorUri = toml["uri-path"] !== undefined ? asStr(toml["uri-path"]) : mdPath;
 
     if (COMMIT && hashDrift) {
       const patched_content = applySourceSha256Patch(content, liveHash);
@@ -560,9 +556,8 @@ function decoratorMemeExists(decoratorFile: DecoratorFile): string | null {
 
   for (const mdPath of memeFiles) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
     if (toml["source-file"] === decoratorFile.relPath) return mdPath;
   }
   return null;
@@ -717,9 +712,8 @@ let totalPatched = 0;
 for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
   const content = readFileSync(mdPath, "utf8");
 
-  const tomlM = TOML_RE.exec(content);
-  if (!tomlM) continue;
-  const toml = parseToml(tomlM[1]!);
+  const toml = rootMetaFields(content);
+  if (Object.keys(toml).length === 0) continue;
 
   const mode = toml["heleuma"];
   if (mode !== "ha" && mode !== "ka" && mode !== "ba") continue;

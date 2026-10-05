@@ -16,6 +16,10 @@
       "import": "./dist/meme-normalize.js",
       "types": "./dist/meme-normalize.d.ts"
     },
+    "./root-meta": {
+      "import": "./dist/root-meta.js",
+      "types": "./dist/root-meta.d.ts"
+    },
     "./form-layer": {
       "import": "./dist/form-layer/index.js",
       "types": "./dist/form-layer/index.d.ts"

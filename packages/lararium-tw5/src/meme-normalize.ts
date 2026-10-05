@@ -28,8 +28,9 @@
 // THE FRAME IS ITS OWN PACKAGE, zero workspace dependencies — so this module stays bundleable into the
 // TW5 plugin (an import from the mesh would drag its automerge wasm into a bundle that cannot carry it).
 import {
-  fencedSpans, inMask, META_OPEN_RE, frameAlt, readFrame,
+  fencedSpans, inMask, frameAlt,
 } from "@lararium/memetic-frame";
+import { rootMetaFence, metaValueRaw } from "./root-meta.js";
 // GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
 // dependency-free-by-constraint file the same way the frame import above reasons about it.
 import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
@@ -54,26 +55,14 @@ function decodeEntities(s: string): string {
 }
 
 /** The ROOT toml meta fence (between the ```toml meta fences), or null if absent.
- *  THREE GROUPS, and callers index them: [1] opener, [2] body, [3] closer. The opener comes from the
- *  one spelling; the closer is this reader's own and stays as it stands.
- *
- *  THE ROOT META RIDES THE BODY. Where a frame opens, the search starts at STX (the one span reader
- *  finds it); a carrier with no STX is all body and reads from the top. A meta block above STX is the
- *  frame verdict's tear (`meta-before-stx`), never a block this writer reads. The match index stays
- *  absolute. */
-function metaFence(src: string): RegExpExecResult | null {
-  const re = new RegExp(`(${META_OPEN_RE.source})([\\s\\S]*?)(\\n\`\`\`)`, "g");
-  re.lastIndex = readFrame(src).stx?.end ?? 0;
-  return re.exec(src);
-}
-type RegExpExecResult = RegExpExecArray;
+ *  THE ROOT META RIDES THE BODY (`rootMetaFence`, root-meta.ts): where a frame opens, the search
+ *  starts at STX; a carrier with no STX is all body and reads from the top. A meta block above STX
+ *  is the frame verdict's tear (`meta-before-stx`), never a block this writer reads. */
 
 /** The meta `namespace` value (raw, possibly entity-encoded), or null if absent. */
 function metaNamespace(src: string): string | null {
-  const fence = metaFence(src);
-  if (!fence) return null;
-  const m = /^[ \t]*namespace[ \t]*=[ \t]*"([^"]*)"/m.exec(fence[2]!);
-  return m ? m[1]! : null;
+  const fence = rootMetaFence(src);
+  return fence ? metaValueRaw(fence.body, "namespace") : null;
 }
 
 /**
@@ -84,10 +73,8 @@ function metaNamespace(src: string): string | null {
  * the exact spelling (`tongue`, a bare BCP-47 tag) to the parent so canon can state it.
  */
 function metaTongue(src: string): string | null {
-  const fence = metaFence(src);
-  if (!fence) return null;
-  const m = /^[ \t]*tongue[ \t]*=[ \t]*"([^"]*)"/m.exec(fence[2]!);
-  return m ? m[1]! : null;
+  const fence = rootMetaFence(src);
+  return fence ? metaValueRaw(fence.body, "tongue") : null;
 }
 
 
@@ -607,11 +594,11 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // here and moved under the projector, so the two renders disagreed on bytes no value changed.
   // The same law re-aligns the fence here, and the two renders agree by construction.
   {
-    const fence = metaFence(seat.text);
+    const fence = rootMetaFence(seat.text);
     if (fence) {
-      const aligned = alignMetaTomlColumns(fence[2]!);
-      if (aligned !== fence[2]!) {
-        const next = seat.text.slice(0, fence.index + fence[1]!.length) + aligned + seat.text.slice(fence.index + fence[1]!.length + fence[2]!.length);
+      const aligned = alignMetaTomlColumns(fence.body);
+      if (aligned !== fence.body) {
+        const next = seat.text.slice(0, fence.bodyStart) + aligned + seat.text.slice(fence.bodyEnd);
         seat.apply("frame", next, () => "meta columns: equals-signs aligned to the longest key");
       }
     }

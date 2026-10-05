@@ -33,6 +33,7 @@ import {
   META_OPEN_CANON,
   isCanonicalMetaOpen,
 } from "@lararium/memetic-frame";
+import { metaFenceAt, metaValueRaw } from "./root-meta.js";
 
 /** One mark's presence, read through the fence mask so a teaching example never counts as a frame. */
 export interface CarrierMarks {
@@ -65,25 +66,21 @@ export interface CarrierShape {
  */
 function metaValue(text: string, spans: readonly MaskSpan[], key: string, from = 0): string | null {
   const block = metaBlock(text, spans, from);
-  const m = block === null ? null : new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(block);
-  return m ? m[1]! : null;
+  return block === null ? null : metaValueRaw(block, key);
 }
 
-/** The first meta block's TOML at or past `from`, or null. */
+/**
+ * The first meta block's TOML at or past `from`, or null. Composes the one closed-fence locator
+ * (`metaFenceAt`) — an opener with no closer names no block, same as every other reader of this
+ * fence.
+ */
 function metaBlock(text: string, spans: readonly MaskSpan[], from = 0): string | null {
-  const open = metaOpenFrom(text, spans, from);
-  if (!open) return null;
-  const start = open.index + open[0].length;
-  const close = text.indexOf("\n```", start);
-  // An opener with no closer names no block. The flat read required the closer too, and a shape
-  // reading of half a fence would be a value the file never finished stating.
-  return close < 0 ? null : text.slice(start, close);
+  return metaFenceAt(text, from, spans)?.body ?? null;
 }
 
-/** The opener line as this file actually spells it, or null when it carries no meta block. */
+/** The opener line as this file actually spells it, or null when it carries no CLOSED meta block. */
 function metaOpenLine(text: string, spans: readonly MaskSpan[], from = 0): string | null {
-  const open = metaOpenFrom(text, spans, from);
-  return open ? open[0].replace(/\n$/, "") : null;
+  return metaFenceAt(text, from, spans)?.openLine ?? null;
 }
 
 /**
