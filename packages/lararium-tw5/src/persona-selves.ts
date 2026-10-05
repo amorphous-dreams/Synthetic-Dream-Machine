@@ -24,7 +24,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-policy
  */
 
-import { personaSelfTiddlerUri, handleIndexFromSelfTiddlerUri, PERSONA_SELVES_PREFIX } from "./lar-uris.js";
+import { personaSelfTiddlerUri, handleIndexFromSelfTiddlerUri, PERSONA_SELVES_PREFIX } from "@lararium/mesh";
 
 /** The two fleet-riding names, each beside its own stamp. Absent = this vessel has read no such name. */
 export interface PersonaSelf {

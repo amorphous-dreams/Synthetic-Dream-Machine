@@ -13,7 +13,7 @@ import {
   personaSelfTiddlerUri, handleIndexFromSelfTiddlerUri, foldPersonaSelf, foldPersonaSelves,
   withPersonaSelfName, withoutPersonaSelfName, type PersonaSelfFields,
 } from "../src/persona-selves.js";
-import { PERSONA_NAMESPACE } from "../src/lar-uris.js";
+import { PERSONA_NAMESPACE } from "@lararium/mesh";
 
 const T0 = "2026-01-01T00:00:00.000Z";
 const T1 = "2026-01-02T00:00:00.000Z";

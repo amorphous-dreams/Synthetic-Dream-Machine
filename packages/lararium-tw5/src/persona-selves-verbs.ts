@@ -19,10 +19,12 @@
  */
 
 import {
-  personaSelfTiddlerUri, foldPersonaSelf, foldPersonaSelves,
+  foldPersonaSelf, foldPersonaSelves,
   withPersonaSelfName, withoutPersonaSelfName,
-  PERSONA_SELVES_PREFIX,
   type PersonaSelfFields, type PersonaSelfName,
+} from "./persona-selves.js";
+import {
+  personaSelfTiddlerUri, PERSONA_SELVES_PREFIX,
   type LarTiddlerStore, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
