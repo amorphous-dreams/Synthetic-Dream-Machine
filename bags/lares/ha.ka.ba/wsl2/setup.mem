@@ -1,0 +1,238 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/setup">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/wsl2/setup.mem"
+l-space    = "stable"
+mana       = 12
+manao      = 14
+manaoio    = 12
+role       = "the clean runbook — stand WSL2 up on Windows 11 so the Lares system runs on it and a runaway process cannot take the VM down"
+status-why = "every step here ran on the operator's Enyalios host (64 GB, 12 threads, WSL 2.7.10, kernel 6.18) on 2026-09-18 and 2026-10-04"
+tags       = ["api/wsl2", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/wsl2/setup"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/wsl2/setup"
+```
+
+<<~ ahu #/entry>>
+
+! Setting up WSL2 on Windows 11 for the Lares system
+
+Two files and one service carry the whole setup. `.wslconfig` lives on the Windows side and shapes the VM. `/etc/wsl.conf` lives inside Linux and shapes the distro. `earlyoom` runs inside Linux and keeps a runaway process from taking the VM down. Everything else follows from those three.
+
+Steps marked ''Windows'' run in an elevated PowerShell. Steps marked ''Linux'' run inside the distro. An agent working inside the VM can write `.wslconfig` (it sits on `/mnt/c`) but can run none of the Windows steps and none of the `sudo` steps without the operator.
+
+''The running state this stands up to:'' the full lararium kit runs in a container behind this WSL2 instance. The VM carries the engine, the daemon and the operator's shell; the lararium itself — vessel, wikis, their bags — runs containerised on the VM's Docker, with the WSL2 floor beneath it holding the memory guard, the sparse disk and the one venv. Standing the VM by this runbook makes that container's host; the container's own stand sits with the lararium carriers.
+
+<<~/ahu>>
+
+<<~ ahu #/scripts>>
+
+!! 0 · The scripts — idempotent by intent
+
+Three scripts under `tools/wsl2/` carry steps 1–9 so a fresh clone stands in two commands. Each step names what it ''intends'', reads what ''is'', and acts only on the difference; a second run reports every step `already`, and a run after host drift acts on the drifted steps alone. Each prints `needs-you` where only the operator can act.
+
+```sh
+tools/wsl2/stand-linux.sh --dry-run      # the plan, no writes
+tools/wsl2/stand-linux.sh                # steps 3–5, 7: sudo once; /etc/wsl.conf, earlyoom, sysctl, ~/.venv
+powershell.exe -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -DryRun
+powershell.exe -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1   # steps 2, 6: .wslconfig keys, sparse vhdx, distro inventory
+tools/wsl2/witness.sh                    # step 9; exit 1 on any drift
+```
+
+`stand-windows.ps1` derives its intents from the host: memory at 5/8 of RAM, processors at threads − 2, swap at 4 GB. Run it a second time from an elevated shell for the Defender exclusions; everything else tolerates a plain one. The `.wslconfig` writer merges key by key and keeps the networking block and comments it does not own.
+
+The steps below name what the scripts do, so a reader can run any one by hand or audit what ran.
+
+<<~/ahu>>
+
+<<~ ahu #/install>>
+
+!! 1 · Install the distro — Windows
+
+```powershell
+wsl --install -d Ubuntu-24.04
+wsl --update
+wsl --version          # expect WSL 2.7 or later; the kernel line names a 6.x kernel
+```
+
+Keep one working distro. `wsl -l -v` names them all; Docker Desktop adds its own `docker-desktop` distro, which belongs there. An old `Ubuntu` left over from an earlier install costs disk and confuses `wsl --manage`. Before removing one, read it for use — `wsl -d Ubuntu -- last -F` names every boot, `ls -la /home/*` and `du -sh /home /root /opt` name what lives there — then `wsl -t Ubuntu` to stop it again. Export before you unregister; the export costs a minute and the unregister cannot undo:
+
+```powershell
+wsl --export Ubuntu D:\wsl-backups\Ubuntu-old.tar
+wsl --unregister Ubuntu
+```
+
+The same `--export` makes the working distro's backup. Run it monthly, and always before `--set-sparse` or a `wsl --update` across a major version.
+
+<<~/ahu>>
+
+<<~ ahu #/wslconfig>>
+
+!! 2 · Shape the VM — `C:\Users\<you>\.wslconfig` — Windows
+
+```ini
+[wsl2]
+# Leave Windows a quarter of the host. On a 64 GB host: 40 GB to the VM.
+memory=40GB
+# Small on purpose. Swap buys the kernel time to thrash instead of killing;
+# earlyoom (step 4) does the killing, and 4 GB covers a short burst.
+swap=4GB
+# Leave two threads so Windows stays responsive while the VM pins its CPUs.
+processors=10
+
+networkingMode=mirrored
+dnsTunneling=false
+firewall=true
+autoProxy=true
+
+# Keep the VM alive 10 min after the last terminal closes, so the Lares daemon
+# and a `claude --resume` survive a window closed by habit. Milliseconds.
+vmIdleTimeout=600000
+
+[experimental]
+# Return freed page cache to Windows instead of pinning it inside vmmem.
+autoMemoryReclaim=gradual
+# Let the virtual disk shrink when files go away. Applies to NEW distros;
+# step 6 covers an existing one.
+sparseVhd=true
+hostAddressLoopback=true
+```
+
+Nothing here applies until `wsl --shutdown`. Run that at a session boundary, never while agents hold work.
+
+The defaults, when the file carries no `memory` or `swap` line, come out to half the host RAM and a quarter of that as swap. Writing those same numbers in changes nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/wslconf>>
+
+!! 3 · Shape the distro — `/etc/wsl.conf` — Linux, sudo
+
+```ini
+[boot]
+systemd=true
+
+[user]
+default=<you>
+
+[interop]
+enabled=true
+# false: Windows PATH entries ride 9p, the slow bridge. Each command-not-found
+# and each tab-completion walks all ~34 of them. Add back the few you use.
+appendWindowsPath=false
+```
+
+With `appendWindowsPath=false`, put the Windows tools you call by hand on `$PATH` yourself, by full path:
+
+```sh
+export PATH="$PATH:/mnt/c/Windows/System32:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:/mnt/c/Users/<you>/AppData/Local/Programs/Microsoft VS Code/bin"
+```
+
+`systemd=true` matters: `earlyoom`, the Lares daemon unit and `systemd-run` scopes all need it.
+
+<<~/ahu>>
+
+<<~ ahu #/earlyoom>>
+
+!! 4 · Install the memory guard — Linux, sudo
+
+```sh
+sudo apt install earlyoom
+sudo tee /etc/default/earlyoom >/dev/null <<'EOF'
+EARLYOOM_ARGS="-m 5 -s 50 -r 3600 --avoid '(^|/)(claude|codex|Xwayland|systemd)$'"
+EOF
+sudo systemctl enable --now earlyoom
+systemctl is-active earlyoom     # active
+```
+
+`-m 5 -s 50` reads: act when less than 5 % of RAM stays available ''and'' half the swap sits in use. `--avoid` keeps the agent sessions and the display server off the kill list; the runaway process holds the most memory anyway, so it dies first. `-r 3600` logs a memory report once an hour.
+
+Why this and not the kernel alone: see [[lar:///ha.ka.ba/wsl2/memory-guard]].
+
+<<~/ahu>>
+
+<<~ ahu #/sysctl>>
+
+!! 5 · Keep swap for emergencies — Linux, sudo
+
+```sh
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/90-wsl-swap.conf
+sudo sysctl --system
+```
+
+Applies at once; survives restarts.
+
+<<~/ahu>>
+
+<<~ ahu #/disk>>
+
+!! 6 · Let the virtual disk shrink — Windows
+
+The distro's bytes live in one file: `C:\Users\<you>\AppData\Local\wsl\{guid}\ext4.vhdx`. It grows when Linux writes and, by default, never shrinks when Linux deletes. On 2026-10-04 the operator's file stood at 118 GB while Linux reported 88 GB used.
+
+```powershell
+wsl --shutdown
+wsl --manage Ubuntu-24.04 --set-sparse true
+```
+
+Then exclude that folder and the `vmmem` process from Windows Defender real-time scanning (Windows Security → Virus & threat protection → Exclusions). Defender scanning a swapping virtual disk turns a bad minute into a worse one.
+
+<<~/ahu>>
+
+<<~ ahu #/lares>>
+
+!! 7 · The Lares system — Linux
+
+Clone the repository onto the ext4 root, never onto `/mnt/c`. The 9p bridge costs an order of magnitude on `git status`, `pnpm install` and every file watcher.
+
+```sh
+git clone <repo> ~/Synthetic-Dream-Machine
+cd ~/Synthetic-Dream-Machine
+pnpm install
+python3 -m venv ~/.venv && . ~/.venv/bin/activate && pip install -r requirements.txt
+```
+
+One venv at `~/.venv` serves every package; the sensorium and the tree-sitter host both read it.
+
+<<~/ahu>>
+
+<<~ ahu #/per-job>>
+
+!! 8 · Cap each native run — every agent, every time
+
+`earlyoom` catches the VM. A per-job cap catches the job, and reports the fault where the agent can read it:
+
+```sh
+# a C parser or anything with a native extension: address-space cap + wall-clock cap
+ulimit -v 4000000; timeout 120 <cmd>
+
+# anything that spawns node or wasm (ulimit -v breaks their virtual reservations):
+systemd-run --user --scope -p MemoryMax=8G <cmd>
+```
+
+A capped run segfaults in seconds and hands the agent a red test. An uncapped run hands the operator a frozen desktop.
+
+<<~/ahu>>
+
+<<~ ahu #/check>>
+
+!! 9 · Check the stand
+
+```sh
+free -h                          # total ≈ memory=, swap ≈ swap=
+nproc                            # = processors=
+systemctl is-active earlyoom     # active
+mount | grep ' / '               # ext4 on /dev/sdX, with discard
+echo $PATH | tr ':' '\n' | grep -c /mnt/   # small
+```
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;PeogdqqoWMp0Y0Mr5zpqKJJCQdQYjRcUzyJp1yWPzoM
+
+<<^ code="&#x0004;" -> to="?">>

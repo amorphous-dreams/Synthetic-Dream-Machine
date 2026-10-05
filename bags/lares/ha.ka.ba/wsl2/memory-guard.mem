@@ -1,0 +1,90 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/memory-guard">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/wsl2/memory-guard.mem"
+l-space    = "stable"
+mana       = 12
+manao      = 14
+manaoio    = 12
+role       = "the explainer — what each memory-guard layer does, why the kernel alone let the VM thrash, and which side of the Windows/Linux line each setting lives on"
+status-why = "written from the 2026-09-18 incident and the probes run on 2026-10-04; each tool's behaviour named here matches its man page and the observed run"
+tags       = ["api/wsl2", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/wsl2/memory-guard"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/wsl2/memory-guard"
+```
+
+<<~ ahu #/entry>>
+
+! The memory guard — why a VM thrashes, and the layers that stop it
+
+On 2026-09-18 a background test grew without bound, filled 31 GiB of RAM and 8 GiB of swap, and the kernel never killed it. The disk churned and the CPU pinned for five minutes until the operator shut WSL down by hand. [[lar:///ha.ka.ba/wsl2/incident-2026-09-18]] carries the record. This meme explains the mechanism and the tools, so the settings in [[lar:///ha.ka.ba/wsl2/setup]] read as reasons rather than incantations.
+
+<<~/ahu>>
+
+<<~ ahu #/why-no-kill>>
+
+!! Why the kernel never killed anything
+
+The kernel's own out-of-memory killer fires only when an allocation ''cannot'' succeed. As long as swap holds any free page, the kernel can always make room by writing some other process's memory out to disk, so every allocation eventually succeeds — slowly. With 8 GB of swap on a virtual disk that cost minutes of thrash before the condition ever became "cannot". The log from that boot shows fifteen `page allocation failure` warnings against `Xwayland` and not one `Killed process` line.
+
+Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens the thrash; it does not end it. Something has to decide to kill before the kernel would.
+
+<<~/ahu>>
+
+<<~ ahu #/layers>>
+
+!! The layers, strongest first
+
+|! layer |! what it watches |! what it kills |! root? |! where it lives |
+| `earlyoom` | `/proc/meminfo`, several times a second | the single process with the largest footprint | sudo, once | Linux service |
+| `systemd-oomd` | cgroup memory pressure | a whole cgroup | sudo, once | Linux service |
+| `systemd-run --scope -p MemoryMax=` | one cgroup's real memory | the command and all its children, at the cap | none | the command line |
+| `ulimit -v` | one process's address space | the process, with a segfault, at the cap | none | the command line |
+| `.wslconfig` `memory=` / `swap=` | the VM's total | nothing — it sets the ceiling the others work under | Windows file | `C:\Users\<you>\.wslconfig` |
+
+''`earlyoom`'' — a small daemon that polls available memory and available swap. When both fall under its thresholds (10 % each by default; the setup runbook tightens to `-m 5 -s 50`) it sends SIGTERM, then SIGKILL, to the process with the highest `oom_score`, which in practice means the one holding the most memory. It makes the same choice the kernel would make eventually, minutes earlier, while the desktop still responds. Its `--avoid` pattern protects named processes; `--prefer` nominates victims. On 2026-09-18 it would have killed the runaway `pytest` in under a second and touched nothing else.
+
+''`systemd-oomd`'' — systemd's answer to the same problem, driven by pressure-stall information rather than free counts. It kills a ''cgroup'', not a process. In WSL, a terminal, the Lares sessions it started and all their children usually share one slice, so one bad test could take every session with it. For a developer VM, `earlyoom`'s per-process choice fits better. Leave `oomd` off.
+
+''`systemd-run --user --scope -p MemoryMax=8G <cmd>`'' — wraps one command in a fresh cgroup with a hard limit on real memory. Children inherit the cgroup and cannot leave it. Needs no root; needs `systemd=true` in `/etc/wsl.conf`. Safe around node and wasm, which reserve vast ''virtual'' ranges they never touch.
+
+''`ulimit -v <kB>`'' — a per-process ceiling on virtual address space, inherited by children. Zero cost, no root. Counts virtual pages, not resident ones, so it cannot sit in a global profile without breaking node. Right for a C parser called from Python: a runaway scanner loop hits the cap in seconds and segfaults, which hands the agent a red test instead of a frozen host. The standing rule for native parser runs: `ulimit -v 4000000; timeout 120 <cmd>`.
+
+''`memory=` and `swap=`'' in `.wslconfig` — the VM's ceiling. Defaults: half the host RAM, and swap at a quarter of that. On a 64 GB host those defaults read 32 GB and 8 GB, which the incident VM already had; writing them in explicitly changes nothing. `memory=40GB` leaves Windows a quarter. `swap=4GB` shortens the worst-case thrash while still absorbing a brief spike; with `earlyoom` at `-s 50` the kill lands after about 2 GB of swap use.
+
+<<~/ahu>>
+
+<<~ ahu #/vm-hygiene>>
+
+!! Two settings that keep the VM honest
+
+''`autoMemoryReclaim=gradual`'' — WSL hands page cache the VM no longer needs back to Windows, a little at a time. Without it, `vmmem` holds every byte it ever touched until shutdown, and the Windows-side monitor reads the VM as full long after the work ended.
+
+''`sparseVhd=true`'' — lets `ext4.vhdx` shrink when Linux deletes. Without it the file only grows: 118 GB on disk against 88 GB in use, on the day of the probe. The flag covers distros created after it; an existing one takes `wsl --manage <distro> --set-sparse true` while shut down.
+
+<<~/ahu>>
+
+<<~ ahu #/who-sets-what>>
+
+!! Who can set what, from where
+
+|! setting |! lives |! who |! applies |
+| `memory` `swap` `processors` `autoMemoryReclaim` `sparseVhd` | `.wslconfig` (Windows, on `/mnt/c`) | an agent inside the VM can write the file | after `wsl --shutdown` |
+| `earlyoom` install + `/etc/default/earlyoom` | Linux, root | operator (`sudo`) | at once |
+| `appendWindowsPath` `systemd` | `/etc/wsl.conf`, root | operator (`sudo`) | after WSL restart |
+| `vm.swappiness` | `/etc/sysctl.d`, root | operator (`sudo`) | at once |
+| `--set-sparse` | Windows, distro stopped | operator | once |
+| Defender exclusions | Windows Security, elevated | operator; an agent cannot even read them | at once |
+| `wsl --shutdown` | Windows | operator; an agent could run `wsl.exe` from inside but would kill itself and every session | — |
+| `ulimit -v` · `systemd-run` | the command line | the agent, every run | that run |
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;H4s3IN5xMzFnaHWBLQmPOCGu4Vl7xlzpYW8QWfiIrgc
+
+<<^ code="&#x0004;" -> to="?">>
