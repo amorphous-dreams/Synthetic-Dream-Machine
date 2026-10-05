@@ -438,9 +438,17 @@ function splitRecursive(
       "$fragment-parent": enclosingUri,
       "$slot":            slot,
     });
+    // MINT ON DIFFERENCE, NEVER ON DEFAULT. The render (expandRefs below) already falls back to the
+    // canonical spelling — `<<~ ahu ${slot}>>` / `<<~/ahu>>` — whenever no worksite carriage record
+    // exists for a slot. So the split side must NOT mint one when the authored bytes already ARE that
+    // canonical spelling: a record there would be a derived value stored, re-deriving the same bytes
+    // the render would have emitted for free. Only authored bytes that DIFFER from the canonical
+    // default (alternate spacing, the `fragment`/`/fragment` spelling, …) carry content worth a record.
+    const openBytes  = text.slice(block.openStart, block.bodyStart);
+    const closeBytes = text.slice(block.bodyEnd, block.closeEnd);
     allChildren.push(
-      ...carriageRecord(childUri, "worksite-open", text.slice(block.openStart, block.bodyStart)),
-      ...carriageRecord(childUri, "worksite-close", text.slice(block.bodyEnd, block.closeEnd)),
+      ...(openBytes  === `<<~ ahu ${slot}>>` ? [] : carriageRecord(childUri, "worksite-open",  openBytes)),
+      ...(closeBytes === `<<~/ahu>>`         ? [] : carriageRecord(childUri, "worksite-close", closeBytes)),
       ...carriageRecord(childUri, "preamble",  childStructure.preamble  ?? ""),
       ...carriageRecord(childUri, "postamble", childStructure.postamble ?? ""),
     );
