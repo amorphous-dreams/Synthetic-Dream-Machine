@@ -21,9 +21,9 @@
  * ── ONE SPELLING, QUOTED ─────────────────────────────────────────────────────────────────────────
  * The framing ends are written one way: `<<^ code="&#x0001;" from="?" -> to="lar:///x">>` and
  * `<<^ code="&#x0004;" -> to="?">>`. TiddlyWiki would type an unquoted or positional end the same,
- * and that is exactly why reading them stopped: a tolerance read silently becomes the canon. A retired
- * spelling reads as no mark here, and the frame verdict names it as a tear. Every capture strips the
- * quote pair rather than carrying it into the value.
+ * and that is exactly why reading them stopped: a tolerance read silently becomes the canon. A spelling
+ * outside the frame grammar reads as no mark here, and the frame verdict names it as a tear. Every
+ * capture strips the quote pair rather than carrying it into the value.
  *
  * ── WHAT STANDS BETWEEN THE ENDS ─────────────────────────────────────────────────────────────────
  * The ARROW rides as an unnamed positional and carries the RELATION. Quoting reaches only the two
@@ -60,15 +60,15 @@ const EOT_CODES = `(?:${frameHex("EOT")})`;
 const INNER = "(?:[^>\\n]|>(?!>))*";
 /**
  * THE CODE IS NAMED, AND NAMED FIRST: `<<^ code="&#x0001;"`. A head that carried its code as a bare
- * entity — glyphs in front of it standing for a namespace — is a retired spelling, read as no mark at
- * all here and named by the frame verdict as a tear. Nothing repairs it in silence.
+ * entity — glyphs in front of it standing for a namespace — reads outside the frame grammar, as no
+ * mark at all here, and named by the frame verdict as a tear. Nothing repairs it in silence.
  */
 const CODE = (codes: string): string => `<<\\^\\s+code="&#x${codes};"`;
-/** A bearing end: `"?"`, quoted. A bare `?` is a retired spelling. */
+/** A bearing end: `"?"`, quoted. A bare `?` reads outside the frame grammar. */
 const UNK = '"\\?"';
 /**
  * A bearing target: `to="…"`, named and quoted, the pair stripped from the capture. The positional
- * (`? -> lar:///x`) and unquoted (`to=lar:///x`) spellings are retired.
+ * (`? -> lar:///x`) and unquoted (`to=lar:///x`) spellings read outside the frame grammar.
  *
  * A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS. TiddlyWiki's `reUnquotedAttribute` admits
  * `>(?!>)` inside a value, so an address carrying a bracket rides as content. A capture that excluded
