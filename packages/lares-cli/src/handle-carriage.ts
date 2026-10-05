@@ -17,8 +17,8 @@
  * verdict. WITHHOLD-not-forge: a garbled / absent / wrong-domain carriage returns `null` (the card DID NOT
  * ARRIVE — the operator re-carries it), never a throw, so a human's typo never reads as an attack.
  *
- * Platform-blind: rides ./crypto (base64url) + ./handle-card (the card shape) only. NO node imports — the CLI and
- * the browser both consume it.
+ * Platform-blind: rides @lararium/mesh's base64url helpers and `HandleCard` shape only. NO node imports — the
+ * CLI and the browser both consume it.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
