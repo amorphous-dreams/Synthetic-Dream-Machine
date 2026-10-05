@@ -6,9 +6,18 @@ module-type: parser
 /**
  * memetic-parser — WikiParser subclass for `text/memetic-wikitext+tiddlywiki`.
  *
- * Inherits the standard wikitext parser, then filters its rule arrays in
- * the constructor so the rules that mangle round-trip never instantiate
- * for memetic-typed tiddlers. Per Jermolene (TW5 GH discussion #6712):
+ * Inherits the standard wikitext parser, but filters the rule CLASS maps
+ * before `instantiateRules` runs rather than filtering rule instances
+ * after the parse. TiddlyWiki5's WikiParser constructor instantiates the
+ * pragma/block/inline rules AND runs `parsePragmas`/`parseBlocks` inside
+ * itself (core/modules/parsers/wikiparser/wikiparser.js:79-90), so a
+ * post-construction filter acts on an already-finished parse: too late to
+ * stop a denied rule from firing even once. Overriding `instantiateRules`
+ * to hand the standard constructor a filtered COPY of the class map
+ * — never the shared `WikiParser.prototype.*RuleClasses` maps every
+ * `text/vnd.tiddlywiki` parse also reads — runs before any matching or
+ * parsing happens, so a denied rule never instantiates and never has a
+ * chance to match. Per Jermolene (TW5 GH discussion #6712):
  *
  *   "The `\rules` pragma scope does not propagate through `<$transclude>`.
  *    Transcluded content reparses under its own type's full ruleset."
@@ -16,10 +25,9 @@ module-type: parser
  * Pragma injection (`\rules except codeblock dash …`) only affects the
  * outer parse — when a meme template transcludes the parent's text via
  * `{{!!text}}`, the inner content reparses fresh, the pragma evaporates,
- * and the offending rules fire. Rule-array filtering at parser
- * construction is the only mechanism that scopes per-type. The filter
- * propagates because every memetic-typed tiddler instantiates THIS
- * parser, transclude or not.
+ * and the offending rules fire. Filtering rule classes at construction
+ * is the only mechanism that scopes per-type: it propagates because every
+ * memetic-typed tiddler instantiates THIS parser, transclude or not.
  *
  * Deny list is empty — lar-sigil (block+inline) claims all
  * <<~ …>> forms; standard TW5 macro rules fire normally for <<macroname>>.
@@ -45,25 +53,18 @@ interface ParserCtor {
   call(thisArg: object, type: string, text: string, options: unknown): void;
 }
 
-interface RuleClass {
-  prototype: { name?: string };
-}
-
-interface RuleInstance {
-  name?: string;
-}
+type RuleClassMap = Record<string, unknown>;
 
 interface ParserInstance {
-  pragmaRules?: RuleInstance[];
-  blockRules?:  RuleInstance[];
-  inlineRules?: RuleInstance[];
+  memeticDenyList?: ReadonlySet<string>;
   diagnostics?: ParseDiagnostic[];
 }
 
 interface ParserPrototype {
-  pragmaRuleClasses?:  Record<string, RuleClass>;
-  blockRuleClasses?:   Record<string, RuleClass>;
-  inlineRuleClasses?:  Record<string, RuleClass>;
+  pragmaRuleClasses?:  RuleClassMap;
+  blockRuleClasses?:   RuleClassMap;
+  inlineRuleClasses?:  RuleClassMap;
+  instantiateRules: (this: ParserInstance, classes: RuleClassMap, type: string, startPos: number) => unknown;
 }
 
 interface WikiLike {
@@ -135,18 +136,10 @@ function MemeticParser(this: ParserInstance, type: string, text: string, options
   const denyList = override.length > 0
     ? new Set(override.split(/\s+/).filter(Boolean))
     : DEFAULT_RULES_EXCEPT;
+  // Non-enumerable: a sibling that iterates over `this` (e.g. a tiddler-field mapper) should never see it.
+  Object.defineProperty(this, "memeticDenyList", { value: denyList, enumerable: false, configurable: true });
 
   stdParser.call(this as object, type, text, options);
-
-  if (Array.isArray(this.pragmaRules)) {
-    this.pragmaRules = this.pragmaRules.filter((r) => !r.name || !denyList.has(r.name));
-  }
-  if (Array.isArray(this.blockRules)) {
-    this.blockRules = this.blockRules.filter((r) => !r.name || !denyList.has(r.name));
-  }
-  if (Array.isArray(this.inlineRules)) {
-    this.inlineRules = this.inlineRules.filter((r) => !r.name || !denyList.has(r.name));
-  }
 
   // The superset law: the standard parser recovered first and left its receipts here, so the sigil
   // recoveries append to them rather than overwriting them. A memetic carrier therefore reports an
@@ -160,6 +153,25 @@ function MemeticParser(this: ParserInstance, type: string, text: string, options
   }
 }
 MemeticParser.prototype = Object.create(stdParser.prototype as object) as ParserPrototype;
+
+/**
+ * Hand the standard constructor a filtered COPY of the rule-class map, never the shared
+ * `WikiParser.prototype.*RuleClasses` map every `text/vnd.tiddlywiki` parse also reads. This runs
+ * inside `stdParser.call` above, before any rule instantiates or matches, so a denied class never
+ * gets the chance to fire — and it covers every later `instantiateRules` call on this same instance.
+ */
+MemeticParser.prototype.instantiateRules = function (
+  this: ParserInstance,
+  classes: RuleClassMap,
+  type: string,
+  startPos: number,
+): unknown {
+  const denyList = this.memeticDenyList;
+  const filtered: RuleClassMap = denyList && denyList.size > 0
+    ? Object.fromEntries(Object.entries(classes).filter(([name]) => !denyList.has(name)))
+    : classes;
+  return (stdParser.prototype as ParserPrototype).instantiateRules.call(this, filtered, type, startPos);
+};
 
 // BOTH SPELLINGS EXPORT THE SAME PARSER. TW5 keys parser modules by type string, so a carrier stored
 // under the unsuffixed name needs its own export or it silently falls through to the wikitext parser.
