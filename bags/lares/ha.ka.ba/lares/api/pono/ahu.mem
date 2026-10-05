@@ -125,7 +125,7 @@ A fenced span needs no new law to keep the ahu-fidelity guard honest. Fence-mask
 
 Quoteblocking runs as a one-way demotion: every sigil inside goes inert until the operator resolves it. The surfacing rail that carries that demotion to the operator is NOT optional — a quoteblock nobody sees reads as a drop wearing a cure's face. Blast radius equals the write's grain: a per-tiddler edit never demotes the whole meme.
 
-The ingest gate's composed-root dry run surfaces composition faults — a second live ETX, `frame-malformed`, `postamble-content`, an unbalanced ahu opener/closer — on the SAME alert rail the quoteblock uses. Refusal never happens on the stock syncer path.
+A child-slot save re-grades its root through the backstop's child gate (`packages/lararium-tw5/src/modules/meme-backstop.ts`, `runChildGate`), which runs the ingest gate's READ HALF — `evaluateMeme`, never `placeMeme` — over the composed root and surfaces what it finds on the SAME alert rail the quoteblock uses: a second live ETX, `frame-malformed`, `postamble-content` at error grade, and, widened past that leg, a composed-altitude ahu balance fault (`ahu-unbalanced-open`, `ahu-orphan-close` — the dangling opener eating the parent's closer, or the orphan closing the parent early) that the gate's own NOOP-equivalence leg grades below error and would otherwise drop. This never lands or refuses anything on the stock syncer path; the root door gate's own ingest grades stand untouched.
 
 This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy]]'s panic-to-water floor from Layer 1 (the meme-ast builder, one sigil) to Layer 2 (the family split, one ahu or one whole carrier): water never regresses, never lies about structure, and composes with repair added later.
 
@@ -142,6 +142,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wv23zi9_X2Yya73QocYPz2nzyNVSWhhGVbBMqAP5kRs
+<<^ code="&#x0003;">>ni:///sha-256;VllJlnAiR-Bm4KqRBqPa0BnRU8HW3jxOIYyVoX9hO-4
 
 <<^ code="&#x0004;" -> to="?">>
