@@ -1,0 +1,126 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/er-handoff">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/er-handoff.mem"
+hydrate   = true
+l-space   = "stable"
+role      = "emergency-room handoff for the next Lares session — vitals, open wounds by priority, rulings owed, the standing law that bites, cold-start steps, and the map ahead; history lives in git and CHANGELOG"
+title     = "lar:///ha.ka.ba/lares/docs/er-handoff"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/er-handoff"
+```
+
+<<~ ahu #/vitals>>
+
+!! Vitals
+
+* ''Branch'' `feature/lararium-node-5`. Working tree clean apart from crew-held paths: `mempalace` (submodule), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`. Never commit, stash, or revert those.
+* ''Corpus'': every tracked `bags/*.mem` reads canonical under `lares meme check`; `tools/bcc-witness.sh` reads every block check `ok`; the submissions shelf (`bags/lares/ha.ka.ba/lares/api/pono/submissions/`) reads 6 pairs, 0 out of step.
+* ''Witnesses green'': `tools/turn-parity.mjs` (every divergence in a named class), `tools/head-parity.mjs`, `tools/frame-shape.mjs`, `tools/frame-parity.mjs`, `tools/grammar-table-witness.sh` (0 disagreements). Each reads built `dist/` and refuses a stale build by name — rebuild the named package, run `node tools/stamp-build.mjs`, re-run.
+* ''Typecheck'' (`tools/typecheck-witness.sh`): two reds, both crew-held — `packages/lararium-web/src/main.ts:98` and `tests/harness/scenario-action-graph.ts:175`.
+* ''Every package builds'' from clean (`pnpm -r build`).
+* ''Known test reds'' and their owners:
+** `lararium-node` `tests/bind-under-handle.test.ts` — crew: the joinee boot path never supplies `expectedEpoch` (the binding gate needs the live lease epoch, as `face-join.ts` supplies it); never revert the gate.
+** `lares-cli` `tests/help-door-meme.test.ts`, `tests/nexus-verb-reach.test.ts` — crew: `nexus offering` keeps its help text outside the command registry.
+** `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` — environmental (browser / server sockets).
+** `lararium-tw5` corpus suites fail on `bags/lares/ha.ka.ba/wsl2/setup.mem` — that carrier and its tree belong to the WSL2 host-floor work, not this lane; align or excuse it with its owner.
+** `lararium-tw5` `tests/grammar-in-a-wiki.test.ts` — a corpus-wide walk that times out at the default 5 s under load; passes alone.
+** `tests/meme-backstop.test.ts` PHASE 5 — two cases name the open backstop question in `#/wounds` P2.
+
+<<~/ahu>>
+
+<<~ ahu #/cold-start>>
+
+!! Cold start
+
+# `export LAR_BAGS=/tmp/lar-scratch-<you>` before any `lares` command or in-tree boot — a bare in-tree boot writes projection artifacts into the tracked tree.
+# `pnpm install --frozen-lockfile`, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob `head-parity` and `scripts/smoke-plugin-boot.ts` need — `pnpm -r build` does not produce it), then `node tools/stamp-build.mjs`.
+# A fresh `git worktree` holds empty submodules (`TiddlyWiki5`, `VSCode-TW5-Syntax`, `mempalace`); populate them before building there.
+# `lares-cli` `tests/pour-repave.test.ts` needs the dev-root marker (`LAR_DEV_REPO_ROOT=1` or the gitignored `lar-dev-root.json`).
+# The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) is tracked and must equal a fresh build — rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job enforces it.
+# Read `lar:///ha.ka.ba/lares/api/noosphere-boot` (the boot seed), then this carrier, then the rulings memory (`project_grammar_as_tiddlers_rulings.md`) before touching grammar, frame, or ingest code.
+
+<<~/ahu>>
+
+<<~ ahu #/wounds>>
+
+!! Open wounds, by priority
+
+''P1 — owed now, no ruling needed''
+* ''`bags/lares/ha.ka.ba/lares/docs/pono/testing-architecture-scout.mem`'' counts "six" duplicate-named test files; the tree holds ten. Re-true the count and list.
+* ''The quoteblock floor in live use.'' `packages/lararium-tw5/src/modules/meme-backstop.ts` `runChildGate` fences a child body whose splice breaks the composed root and raises `quoteblocked` on `surfaceChildGateAlert`; attribution fences only the child whose fence heals the composition. Unit-tested; not yet exercised against real concurrent browser saves — watch it, and add a test for any shape it mis-attributes.
+* ''Whole-chunk grain of the floor'' (a carrier arriving whole and partially un-decomposable → fence the whole chunk at the ingest seat) — specified in `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`, unbuilt.
+* ''The `retired-spelling` fault kind'' and `retiredEnds` name the faults by a history word; consider an invariant name (a spelling outside the frame grammar) across the six files that read it.
+
+''P2 — needs the operator''
+* ''Backstop seam (b), PHASE 5'' (`tests/meme-backstop.test.ts`): two child-edit cases the test marks as the operator's call.
+* ''Ruling-gated mesh modules'' (listed in `packages/lararium-mesh/src/index.ts`'s header): `contract-relation-witness` (sole user of signing domain `CARRIAGE_RELATION_WITNESS_DOMAIN` — retiring it retires a domain), `recipe`, `readiness`, `reaction-graph` (canon memes pin their mesh `source-file`), `pronaos`, `offering-inspection` (own mesh-namespace memes). Each moves or stays only by ruling.
+* ''The capture cell'' sits isolated for review in `packages/lararium-mesh/src/capture/`, `packages/lararium-node/src/capture/`, `packages/lararium-tw5/src/capture/`, `packages/lares-cli/src/commands/capture/`. Canon (`lar:///ha.ka.ba/lararium/api/capture-annotation-model`, the sensorium-machina S5 ruling) places capture in Python per stream with the TS @daemon coordinating only; the TS cell is the live path. Rule: retire it to Python, or re-home it.
+* ''The wild-bytes line'' — tolerate bytes the house cannot re-make (history, outside bytes), cut tolerance for state it can re-found — awaits canonizing beside the no-legacy law. `packages/lararium-mesh/src/capture/turn-harvest.ts` keeps its retired-head tolerance for old transcripts under it.
+* ''`bags/lares/ha.ka.ba/lares/docs/handoff.mem` `#/shift-2026-09-13-meme-hearth`'' (~:516) carries a suspended loop `@_:operator-rebooted-before-steering` (the watcher talk-story) — reconvene or release.
+
+''P3 — deferred by law or by the operator''
+* ''The Sensorium's logic'' (`packages/lararium-sensorium/**`, tw5 `form-layer/**`, mesh `ffz-project`, `clock-recovery`, coupling/metric modules): the measure-servo aliases in `ffz-project.ts`, one five-band ladder (Title case `ApertureBand`, the others derived), the `lar_feedback` output field name. Frames inside it stay in scope for healing at any time.
+* ''Tangle, the putback law, the tongue fold'' — gated on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` (mirror pairing, round-trip CI, Markdown injection into `hana`). The aka/weave rhyme (`memetic-wikitext-framing.mem` Annex) waits on tangle.
+* ''A relay-stream profile'' — carriers close on EOT in flight; SYN (`&#x0016;`) stays the one reserved stream mark; the profile defines batch framing and resynchronisation.
+* ''A carrier seal'' — re-mint an attestation mark with a computed, verified check when signing lands.
+* ''EOT targeting'' — what a resolved `-> to=` would name (the declared-unresolved meaning stands).
+* ''A standing whole-tree gate'' (build every package from clean, run every witness and suite) — run as a spirit pass, not built into the CLI or a trigger.
+
+<<~/ahu>>
+
+<<~ ahu #/crew>>
+
+!! Crew-held work (do not take without the crew)
+
+* The binding-gate caller in `bind-under-handle`, the two typecheck reds, the `nexus offering` help registry, the Offering lane (local adoption, grammar-scoped relation, Antigen consultation cap, the multi-vessel receipt — `tests/e2e/nexus-offering-replication.test.ts` is its first slice), Pronaos live Docker reach.
+* `bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem` closes its ETX on a spelling outside the frame grammar — theirs to align.
+* Operator forks recorded in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`: the contract-witness digest and equivocation vocabulary, the four named forks, the emission threshold and destination receipt, worker offline restart, the plane roster.
+* Hand them items through `bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem`.
+
+<<~/ahu>>
+
+<<~ ahu #/standing-law>>
+
+!! Standing law that bites (read the canon before arguing with it)
+
+* ''The frame is canon'': `@lararium/memetic-frame` — DOCTYPE → `<<^ code="&#x0001;" from="?" -> to="…">>` → `<<^ code="&#x0002;">>` → `toml meta` first in the body → body → `<<^ code="&#x0003;">>ni:///sha-256;…` → `<<^ code="&#x0004;" -> to="?">>`. Marks: SOH, SOH2 (the one kapu alias), STX, ETX, EOT; each declares its family. One span: first masked STX to first masked ETX; a second is a fault. A spelling outside the frame grammar tears the frame. See `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`.
+* ''Ingest'' = decide(parse, verdict). The deserializer is the pure meme→tiddlers function; `verdict()` (Match · Stale · Absent · Torn · Bare) lives in the frame package; checks live in `carrier-check.ts`, composed by the ingest gate; repairs live in normalize; policy lives at each door. A stale check on a human edit warns; a torn frame refuses; text with no frame is bare data, UNSTABLE, never a meme.
+* ''Never refuse on the stock syncer path''; surface on the alert rail instead.
+* ''The quoteblock floor'': `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`.
+* ''Fragments'': every `lar:` fragment is rooted (`#/…`), one raw `#`, slot names `[a-z0-9āēīōūʻ-]`, `/` nests, `$` reserved; fragment law lives in the media type (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`).
+* ''Grammar is the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` → `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` = informative pin, `kanawai` = binding pin, `kahea` = live transclusion; HUD gauges `aperture` and `ooda-ha`.
+* ''Early alpha'': no back-compat, no shims, no legacy recovery — align stale things to the current frame and grammar. Derive, don't enumerate. Beware overcollapse: one function, one relation.
+* ''Shared tree'': never `git stash`; commit only your paths with `git commit -F <msg> --only -- <paths>`; never `--no-verify`; spirits never spawn helpers and never juggle another's uncommitted hunks; exit codes read directly, never through a pipe; a zero is proved by a known positive.
+
+<<~/ahu>>
+
+<<~ ahu #/map-ahead>>
+
+!! Map ahead
+
+# Close P1, then bring each P2 to the operator as a short talk-story with its research.
+# Exercise the quoteblock floor and the child gate in the live wiki; turn every surprise into a test.
+# Rule the capture cell; then pick up the Sensorium's logic when the operator returns to it.
+# Regenerate the tree-sitter grammar whole and ship the TW5-Syntax 3.0 release — this unlocks tangle and the publication track.
+# Publication: the `text/markdown; variant=memetic-markdown` registration, the provisional `lar` scheme (after `lar-uri` gains its Security section), the vnd./prs. media type, and `draft-fontany-*` / `draft-tiddlywiki-*` (the TW5 pairs move to kramdown-rfc2629 when the community walk begins). The standalone `$:/plugins/lares/memetic-wikitext` artifact ships from `packages/lararium-tw5/plugins/standalone/`.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;sw_kPv8KzQGUagajOH4i1D_QftbixheZy513WYCqafQ
+
+<<^ code="&#x0004;" -> to="?">>
