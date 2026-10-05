@@ -12,7 +12,7 @@ manao      = 13
 manaoio    = 12
 namespace  = "&#x2299;"
 role       = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds + the held-out.yml job-env runner.temp fix (named, not applied — Codex hearth's hold) — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
-status-why = "parked until a crossing row opens to receive it; the EOT2 question stands un-ruled and the two typecheck reds stand un-closed"
+status-why = "parked until a crossing row opens to receive it; the EOT2 question stands un-ruled and the two typecheck reds stand un-closed; the held-out.yml job-env fix stands named, unapplied, for the Codex hearth"
 tags       = ["docs/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -148,6 +148,6 @@ hand did not touch `.github/workflows/held-out.yml` itself — it is held by the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hpI_XuMbxi0aj94wPHCA4mYLc5QsTyrHz7SQOELrGCo
+<<^ code="&#x0003;">>ni:///sha-256;YldMPv4ciSgW1ZiCq148ofBPnMgPzCNBOkV9oYId6Fo
 
 <<^ code="&#x0004;" -> to="?">>
