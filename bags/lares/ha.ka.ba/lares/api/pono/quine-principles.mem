@@ -188,9 +188,7 @@ fallback only (Heleuma Stage 4: meme is authoritative, TS is fallback).
 
 ''Current candidates (Stage 1):''
 * `packages/lararium-tw5/src/filters/all-memes.ts` — filter operator body is stable
-* `packages/lararium-tw5/src/filters/edge.ts` — stable
 * `packages/lararium-tw5/src/filters/toml-field.ts` — stable
-* `packages/lararium-tw5/src/filters/implementors.ts` — stable
 
 Each has a small, well-defined body (< 30 lines). Each qualifies for a Heleuma anchor.
 
@@ -271,6 +269,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eXVpXw3-1vcez9SNYz56Ghd5XnKm33T2juScBgQS1OQ
+<<^ code="&#x0003;">>ni:///sha-256;d8jEDagDRNKhQdmcIygQA6htCUXwVQP7ckNV3cNWi5Y
 
 <<^ code="&#x0004;" -> to="?">>
