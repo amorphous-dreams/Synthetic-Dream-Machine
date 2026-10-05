@@ -40,8 +40,9 @@ export interface ParseEvent {
 
 // ---------------------------------------------------------------------------
 // BOOTSTRAP_SCANS — the reasoned HAND-WRITTEN residue: ASCII control-character
-// framing alone (SOH/STX/ETX/EOT + SOH's kapu-extended DC1 variant). DC4 (EOT2) is retired, and so is
-// ETB (0x17) — retired with `$carrier-sila`; the attestation block it closed was never built.
+// framing alone (SOH/STX/ETX/EOT + SOH's kapu-extended DC1 variant). DC4 (EOT2) and ETB (0x17) carry
+// no bootstrap scan here; `$carrier-sila` mints the ETB fence only behind a computed, verified check,
+// never this hand-carried list, and no attestation block closes on either control.
 //
 // Every OTHER bootstrap scan (ahu, scale, aka, kahea, pono, lele, hui/holo/puka, papalohe, toml,
 // waiho, kau, heihei/kahawai/mukuwai, huli, wehe, meme, every English alias, kumu/widget, hana/task,

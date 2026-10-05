@@ -81,7 +81,7 @@ describe("classifyPostEot", () => {
 
   // &#x0014; is no frame mark, so a carrier that spells only &#x0014; carries no terminator the
   // reader recognises.
-  test("a retired EOT2 mints no terminator — classifyPostEot finds none", () => {
+  test("EOT2 mints no terminator — classifyPostEot finds none", () => {
     const eot2 = frame("").replace('code="&#x0004;"', 'code="&#x0014;"');
     expect(classifyPostEot(eot2)).toBe(null);
   });

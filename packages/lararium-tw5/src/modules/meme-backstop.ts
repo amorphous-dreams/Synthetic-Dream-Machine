@@ -173,7 +173,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
     const receipt = await evaluateMeme({ uri: root, text }, readSink);
     if (receipt.grade === "error") {
       const codes = receipt.diagnostics.filter((d) => d.severity === "error").map((d) => d.code);
-      const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier no longer holds together";
+      const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier does not hold together";
       return { codes, why };
     }
     // WIDENING (#/quoteblock-floor, option (iv)): the Confluence gate's NOOP-equivalence leg grades
@@ -183,7 +183,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
     // altitude, without touching the root door gate's own ingest grades.
     const balanceFaults = findAhuBalanceFaults(text);
     if (balanceFaults.length > 0) {
-      return { codes: [...new Set(balanceFaults.map((f) => f.code))], why: "the composed root's ahu blocks no longer balance" };
+      return { codes: [...new Set(balanceFaults.map((f) => f.code))], why: "the composed root's ahu blocks do not balance" };
     }
     return null;
   };

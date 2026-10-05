@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;CTP-qb8Q87qzE0bdHaAgk65zMvi78v6Z6ipUHBNMSck"
+source-check: "ni:///sha-256;eHSGl8tYNv1PW2I7HILg6MZ9-MXr6XiWe5c1I9YESt0"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -431,12 +431,11 @@ The `bcc` slot carries a check over the framed span. Normatively:
 (IBM BSC, 1967) a block runs `STX -> text -> ETX -> BCC`: the terminator comes first and the check
 follows it directly. The `bcc` slot sits where a receiver has always looked for it.
 
-**A carrier's text ends at ETX, and EOT closes the transmission.** ETB RETIRED WITH `$carrier-sila`
-(operator ruling): the attestation block it was meant to terminate was never built and its mark never
-assigned past a bare literal — so nothing stands between ETX's check and EOT today. A surviving ETB
-mark in a carrier reads as a retired spelling (torn), never as more-follows. The office stays open
-for a future re-minting, and only behind a computed, verified check when signing lands — never this
-bare literal again.
+**A carrier's text ends at ETX, and EOT closes the transmission.** ETB carries no office in this frame
+(operator ruling, under `$carrier-sila`): no attestation block stands for it to terminate, and its mark
+carries no assignment past a bare literal — so nothing stands between ETX's check and EOT. A surviving
+ETB mark in a carrier reads as a torn spelling, never as more-follows. The office stays open for a
+future minting, and only behind a computed, verified check when signing lands — never a bare literal.
 
 ### Residency stands apart from identity — and only one name carries it
 
@@ -513,7 +512,7 @@ Each kernel-tier control character carries **three simultaneous roles**, bound a
 | **kernel** | `0x01`–`0x0F` | kernel | standard | operator+ |
 | **kapu / elevated** | DC1 (`0x11`) | kapu | elevated | admin-only |
 
-SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias — a kapu-tier carrier still closes on plain EOT (`0x04`), at rest and in flight. SOH₂ is the ONLY kapu alias this grammar stands; DC4 (`0x14`, formerly EOT₂) is retired — stream/batch framing belongs to a future transport envelope, not a second at-rest EOT spelling. `&#x0016;` SYN stays the one reserved stream mark (#/the-marks-held-in-reserve).
+SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias — a kapu-tier carrier still closes on plain EOT (`0x04`), at rest and in flight. SOH₂ is the ONLY kapu alias this grammar stands; DC4 (`0x14`) carries no office — stream/batch framing belongs to a future transport envelope, not a second at-rest EOT spelling. `&#x0016;` SYN stays the one reserved stream mark (#/the-marks-held-in-reserve).
 
 <a id="authoring"></a>
 
@@ -1079,8 +1078,8 @@ SOH2 = { role = "Start of Heading, second form — the Kapu opener",            
 STX  = { role = "Start of Text — body open; bare pragma",                     code = "code", byte = "0x02",               required = true }
 ETX  = { role = "End of Text — body close; bare pragma",                      code = "code", byte = "0x03",               required = true }
 EOT  = { role = "End of Transmission — throat close; return -> \"?\"",        code = "code", byte = "0x04",               required = true }
-# ETB (0x17) RETIRED WITH $carrier-sila (operator ruling) — the attestation block it closed was never
-# built; a surviving ETB mark now reads as a retired spelling. Re-minted only behind a computed,
+# ETB (0x17) carries no office under $carrier-sila (operator ruling) — no attestation block stands
+# for it to close; a surviving ETB mark reads as a torn spelling. Minted only behind a computed,
 # verified check when signing lands.
 
 # Namespace resonance — prefixes the SOH opener only; EOT always bare
@@ -1195,10 +1194,10 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
   open as a new capability rather than as unfinished law; whatever it admits becomes an edge the
   graph can walk.
 
-- **ETX/ETB roles — resolved.** ETB retired with `$carrier-sila`: the attestation block it closed was
-  never built and its mark never assigned past a bare literal, so the strict BSC reading (final block
-  takes ETX, an intermediate one takes ETB) never had a second block to arbitrate. Re-mint with a
-  computed, verified check when signing lands — never this bare literal again.
+- **ETX/ETB roles — resolved.** ETB carries no office under `$carrier-sila`: no attestation block
+  stands for it to close, and its mark carries no assignment past a bare literal, so the strict BSC
+  reading (final block takes ETX, an intermediate one takes ETB) has no second block to arbitrate.
+  Mint with a computed, verified check when signing lands — never a bare literal.
 
 - **The aka/weave rhyme (open).** A frozen `aka` transclusion inlines a target pinned at a moment,
   in-house; a woven projection does the same thing outward, across the carrier/Gaia boundary

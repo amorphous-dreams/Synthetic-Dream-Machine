@@ -58,8 +58,8 @@ const DECLARATION_LINE_RE = /^<<!DOCTYPE[^\n]*/gm;
 
 /**
  * ETB (`&#x0017;`) is no frame mark; `FRAME_MARKS` does not declare it, so this reader matches the
- * literal directly, and any ETB sigil in a carrier reads as a retired spelling (torn), the same fault
- * as a retired declaration or a retired head/release spelling. A mark joins the grammar only through
+ * literal directly, and any ETB sigil in a carrier reads as a torn spelling, the same fault class
+ * as a torn declaration or a torn head/release spelling. A mark joins the grammar only through
  * `FRAME_MARKS`, behind a computed, verified check.
  */
 const RETIRED_ETB_RE = /<<\^(?:[^>\n]|>(?!>))*?&#x0017;(?:[^>\n]|>(?!>))*>>/g;
@@ -84,7 +84,7 @@ function retiredEnds(text: string, spans: ReturnType<typeof fencedSpans>): Frame
   for (const m of maskedExecAll(text, RETIRED_ETB_RE, spans)) {
     faults.push({
       kind: "retired-spelling",
-      message: `\`${m[0]}\` carries ETB — retired with \`$carrier-sila\`; re-minted only behind a computed, verified check, never this bare literal`,
+      message: `\`${m[0]}\` carries ETB — \`$carrier-sila\` mints the fence only behind a computed, verified check, never this bare literal`,
     });
   }
   return faults;

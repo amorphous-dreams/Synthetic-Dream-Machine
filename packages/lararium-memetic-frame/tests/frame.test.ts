@@ -39,7 +39,7 @@ describe("the writer", () => {
     expect(st.faults).toEqual([]);
   });
 
-  test("namespace, Kapu head, prologue and postamble all land in their positions — ETB retired with $carrier-sila, no attestation slot stands", () => {
+  test("namespace, Kapu head, prologue and postamble all land in their positions — no ETB, no attestation slot stands", () => {
     const full = frameCarrier({
       head: { uri: URI, namespace: "⊙", kapu: true }, body: "b",
       prologue: "above\n\n", postamble: "\n\nbelow\n",
@@ -52,7 +52,7 @@ describe("the writer", () => {
     expect(verifyBcc(full)).toBe("ok");
   });
 
-  test("RED: a carrier carrying a literal ETB mark reads as a retired spelling, torn", () => {
+  test("RED: a carrier carrying a literal ETB mark reads as a torn spelling", () => {
     const carrier = frameCarrier({ head: { uri: URI }, body: BODY });
     const withEtb = carrier.replace(
       /<<\^ code="&#x0004;" -> to="\?">>/,

@@ -24,7 +24,7 @@ import { resolve } from "node:path";
 const PKG = resolve(__dirname, "..");
 
 /** A regex literal that matches a control classifier — whatever head it happens to accept. EOT2
- *  (`0014`) is retired and carries no scan left to match here. */
+ *  (`0014`) carries no scan to match here. */
 const CONTROL_MATCHER = /\/\^?<<(\\\^|\[~\^\]|~)(?:[^\n]{0,80}?)&#x\(?:?0*(?:0001|0002|0003|0004|0011)/g;
 
 /** Every tracked source file in this package that could carry one. */

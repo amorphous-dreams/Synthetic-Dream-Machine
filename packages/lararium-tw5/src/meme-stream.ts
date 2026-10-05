@@ -11,7 +11,7 @@
  *   <<~ ahu #/slot>>...<<~/ahu>>            ahu section — incremental child event
  *
  * Kapu extended range: &#x0011; = SOH₂ (Kapu SOH variant) — the ONLY kapu alias this grammar stands.
- * EOT2 (DC4) is RETIRED: a Kapu carrier closes on plain EOT at rest, the same as every other carrier.
+ * EOT2 (DC4) carries no office: a Kapu carrier closes on plain EOT at rest, the same as every other carrier.
  *
  * MemeStreamParser uses an index-based scan (no buffer slicing mid-frame)
  * so fullText in carrier-close is always the complete SOH→ETX span.

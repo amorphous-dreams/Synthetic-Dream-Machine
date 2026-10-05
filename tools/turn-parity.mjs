@@ -103,7 +103,7 @@ const PLUGIN = join(TW5, "plugins/lares-memetic-wikitext.json");
 
 // THE ONE DOOR. Every dist import below goes through `distModule`, which is `assertDistFresh` plus
 // the import — a stale build refuses here (exit 2, naming the cure) instead of booting an engine
-// read off bytes the current source no longer matches.
+// read off bytes that do not match the current source.
 const { harvestTurnGradient } = await distModule(MESH_DIST, "index.js", "turn-parity", "pnpm --filter @lararium/mesh build");
 const { schemeShapedPositionals } = await distModule(TW5, "dist/sigil-attrs.js", "turn-parity");
 const { TW5Engine } = await distModule(TW5, "dist/tw5-vm.js", "turn-parity");
