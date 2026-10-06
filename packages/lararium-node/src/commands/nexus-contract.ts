@@ -186,10 +186,8 @@ async function resolveCarrierIn(
  * IT TOUCHES NO PERSONA. A Herm holds none by law, and this is the whole door that fact required.
  */
 export async function runNexusCarryFor(opts: {
-  sealHome: string; storageDir?: string;
+  sealHome: string;
 }): Promise<{ nym: string; sealEpochCid: string; carrierSig: string }> {
-  // `opts.storageDir` feeds no local read: identity resolves off LAR_ROOT/XDG alone. Kept on `opts` for
-  // call-site shape compatibility only.
   const roster = foundingRoster(readNexusDoc(opts.sealHome));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
@@ -305,9 +303,8 @@ export { hasContractedInto, type CarriageConsent } from "../carried-set.js";
  * vessel does not hold → REFUSE, writing nothing.
  */
 export async function runNexusAcceptCarriage(opts: {
-  handleIndex: number; sealHome: string; aid?: string; storageDir?: string;
+  handleIndex: number; sealHome: string; aid?: string;
 }): Promise<{ aid: string; nym: string; sealEpochCid: string; contractSig: string }> {
-  // `opts.storageDir` feeds no local read. Kept on `opts` for call-site shape compatibility only.
   const aid  = opts.aid ?? primaryNexusAid(opts.sealHome);
   if (!aid) {
     throw new NexusContractError("no charter stands to consent to — import the Nexus's charter (`lares nexus seal import --carry`) first.");
