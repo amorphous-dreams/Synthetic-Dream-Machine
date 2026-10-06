@@ -421,6 +421,12 @@ export class IslandAdaptor implements MemeProjection {
    * first (a child that arrived from another bag is tombstoned there, in its own change), the root's
    * bag otherwise. A bagless tombstone would land in the composite's default writable and leave the
    * orphan standing in the doc peers read.
+   *
+   * A DRAFT NEVER SPLITS. A tiddler carrying `draft.of` (the draft switch, recipe-layer-model) is an
+   * edit buffer over its target: its body persists whole, ahu blocks and all. Splitting it would
+   * rewrite its text to `kahea` refs while its children — titled under the draft, never `lar:` — land
+   * nowhere, and routing them by `draft.of` would overwrite the target's live slots before the draft
+   * is ever kept. The split happens when TW5 saves the draft back under its target's title.
    */
   private async _writeMeme(
     title:  string,
@@ -437,9 +443,11 @@ export class IslandAdaptor implements MemeProjection {
     // A slot child saved at its own address splits under the fragment it already carries: its own
     // slots compose onto that ONE path (`#/a/z`), never a second fragment (`#/a#/z`).
     const cut = title.indexOf("#");
-    const { parent, children } = cut < 0
-      ? splitBodyTiddler(title, "", bodyText, fields)
-      : splitBodyTiddler(title.slice(0, cut), title.slice(cut), bodyText, fields);
+    const { parent, children } = fields["draft.of"] !== undefined
+      ? { parent: { ...fields, title }, children: [] as Record<string, unknown>[] }
+      : cut < 0
+        ? splitBodyTiddler(title, "", bodyText, fields)
+        : splitBodyTiddler(title.slice(0, cut), title.slice(cut), bodyText, fields);
     // `$origin-bag` is the host's stamp on the wiki tiddler (nalu-engine), never a persisted field;
     // `bag` is the author's and rides through whole.
     const { "$origin-bag": _origin, ...persistedParent } = parent;

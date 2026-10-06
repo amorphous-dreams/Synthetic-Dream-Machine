@@ -700,4 +700,25 @@ describe("IslandAdaptor — the family write", () => {
     expect(await working.get(`${LAR_URI}#/old`)).toBeNull();
     expect(await fallback.get(`${LAR_URI}#/old`)).toBeNull();
   });
+
+  test("★ a draft keeps its ahu bodies whole — a draft never splits ★", async () => {
+    const DRAFT = `Draft of '${LAR_URI}' by Alice`;
+    const body = "lead\n\n<<~ ahu #/a>>\n\nalpha body\n\n<<~/ahu>>\n";
+    const store = new MemoryTiddlerStore();
+    const titles: string[] = [];
+    const put = store.put.bind(store);
+    store.put = async (rec, o, opts) => { titles.push(rec.tiddler.title); return put(rec, o, opts); };
+
+    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID);
+    adaptor.start();
+    const done = adaptor.saveTiddler({ fields: { title: DRAFT, "draft.of": LAR_URI, "draft.title": LAR_URI, text: body } });
+    await flush();
+    await done;
+    adaptor.stop();
+
+    expect(titles).toEqual([DRAFT]);
+    expect((await store.get(DRAFT))?.tiddler.text).toBe(body);
+    // The draft's would-be children never land at the target's own slots either.
+    expect(await store.get(`${LAR_URI}#/a`)).toBeNull();
+  });
 });
