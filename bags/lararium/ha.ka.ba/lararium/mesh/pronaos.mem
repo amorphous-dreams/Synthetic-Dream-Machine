@@ -183,6 +183,39 @@ local vessel enough truthful material to choose its next crossing.
 
 <<~/ahu>>
 
+<<~ ahu #/the-first-arrival>>
+
+!! The first arrival ~ the house's own origin serves the kindle (RULED)
+
+''The first arrival trusts the lararium's own origin'' (operator-ruled). A device that has never booted a
+vessel holds nothing to check bytes against; whatever origin it first reaches decides what it runs. So that
+origin MUST be the house itself: ''the lararium's own Pronaos serves the kindle'' — the arrival page, the
+worker, `genesis/seed.json`, and the seed-named CAS members. Household operators reach it through
+DNS→home-LAN integrations, so the name a household types resolves to its own house on its own network.
+
+''Hash-pinned static copies stand as MIRRORS, never as the arrival.'' Each mirror rests on ''its own origin
+per CID'', and a mirror never shares an origin with the house or with another CID's mirror. Three facts of
+the browser close the other reading:
+
+* ''A phone cannot hash-check a top-level page.'' The browser runs whatever bytes the navigated origin
+  returns; no user-held pin gates the document itself.
+* ''SRI covers subresources only'' — scripts and stylesheets a page already trusts — never the page that
+  declares the integrity attributes.
+* ''Signed Exchanges (SXG)'', the one standard that let a page's bytes prove themselves apart from their
+  origin, ended (2026-09-30). No browser path remains to make a static copy speak with the house's authority.
+
+So a mirror names a CID-checked copy a vessel already kindled may fetch and verify; it never kindles one.
+
+''The arrival descriptor stands at a well-known URI'' (RFC 8615, `/.well-known/…`) on the house's origin, so
+any client finds it without a route map. ''Content negotiation stays an extra door'' onto the same
+descriptor, never the only one, and never a second source of truth.
+
+''The arrival page answers at the floor.'' A lararium standing at its waking floor still serves its arrival
+page: liveness ⊥ readiness. A house that cannot yet open its archive stays reachable and says what it cannot
+do (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-arrival-page">>).
+
+<<~/ahu>>
+
 <<~ ahu #/refusal-and-loss>>
 
 !! Refusal and loss ~ named outward failure, detailed local witness
@@ -294,6 +327,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WPztaVMvyHEJ4SQNfIbBZrS_7JW0TkojRCQPg6q8IuU
+<<^ code="&#x0003;">>ni:///sha-256;ru4qTCXurS-fNmYuDOnl-Gsmx5zKmHCyWfQEImQCBVY
 
 <<^ code="&#x0004;" -> to="?">>

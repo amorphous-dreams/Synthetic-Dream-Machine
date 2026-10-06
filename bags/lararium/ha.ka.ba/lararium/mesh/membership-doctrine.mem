@@ -11,7 +11,7 @@ mana       = 16
 manao      = 16
 manaoio    = 15
 namespace  = "&#x2695;"
-revised-on = "2026-08-10"
+revised-on = "2026-10-06"
 role       = "the membership doctrine — the privacy invariant of the whole public-facing mesh: the Nexus tracks operator CONTRACTS, never user IDENTITIES. An operator contract carries pubkey + accepts-carriage + charter-epoch and NOTHING more; users SOFT-ATTACH and leave no roster trace; invites are sealed BURNABLE capabilities spent-on-boot that leave no record. We choose to not have the user table. Operator-ruled 2026-07-21. SECOND CONDITION ruled 2026-08-09: belonging carries TWO conditions — the contract AND agreement with the grammar vectors traded on that Nexus. Agreement rides KEYED, never audited (the MLS RFC 9420 `confirmation_tag` shape): a peer that disagrees cannot produce the binding, so no roster row is needed to record who agrees — the second condition adds NO table and lands back on the no-roster ruling."
 status-why = "operator-ruled and enforced at the members-registry"
 tags       = ["mesh/carry-contract", "mesh/identity-classes", "api/pono/persona-policy", "api/pono/cabal-realm", "api/pono/causal-islands", "lifecycle/standing"]
@@ -123,6 +123,46 @@ holds, the cut-over it owes, the subject stamp's nexus-scoped leaf, and the gate
 
 <<~/ahu>>
 
+<<~ ahu #/two-maps>>
+
+!! Two maps ~ the per-Nexus LEAF and the persona ROOT never link
+
+''No proof binding a per-Nexus LEAF to a persona ROOT ever travels on the wire'' (operator-ruled). A
+leaf exists so that one human admitted to two Nexuses reads as two unrelated subjects; a single signed
+edge from root to leaf, presented once, undoes that for every Nexus that ever sees it.
+
+The law, in four clauses:
+
+# A socket that presents a leaf admit MUST NOT present a root-signed edge. ''One socket, one face.''
+# The ''carriage membership consult'' reads the LEAF map alone. A peer enters that map only from a
+  presented admit the verifier reads HELD against its own Nexus — the deny board and the antigen
+  standing apart — together with the leaf's own proof of possession over THIS socket's challenge nonce.
+  A folded board, a raw wire key, and a root edge each fill nothing.
+# The ''realm consult'' reads a separate ROOT map, filled only by a root edge proven at the seat that
+  reads it.
+# The two maps fill INDEPENDENTLY and never link. No reader joins them, no consult falls through from
+  one to the other, and a leaf MUST NOT answer a root question (nor a root a leaf question). Where a seat
+  holds no proven root edge, the root map answers null for that peer — an honest nothing, never a leaf
+  promoted to stand in.
+
+''ROOT ⊥ LEAF stands as its own pair that must not fuse'', beside members ⊥ carriers and never folded
+into it. Carriage asks //may this face carry for this Nexus//; the realm asks //who stands behind this
+face//. A wire that answers both at once builds the correlator this doctrine exists to refuse. The
+subject stamp's nexus-scoped leaf and the gate's shape stand at
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>.
+
+!!! Prior art ~ two vindicate, one warns
+
+* ''ACDC'' issues each credential to a unique issuee AID, so two credentials held by one controller do
+  not correlate on their subject; linking stays the holder's own later act, never the wire's.
+* ''SPIFFE/SPIRE'' attests a node and a workload as two identities by two attestations; a workload SVID
+  carries no signature from the node identity, and no verifier needs one.
+* ''Matrix cross-signing'' stands as the cautionary case: the master key signs the self-signing key,
+  which signs every device, and those signatures publish — so every device a user holds links to one
+  master identity for anyone who reads the server. The leaf law refuses exactly that publication.
+
+<<~/ahu>>
+
 <<~ ahu #/the-invite>>
 
 !! The invite ~ a sealed burnable capability that leaves no record
@@ -231,6 +271,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5l6mksIkTZUmb8qp_mHA_fJHGvipcQcL9m8Pk3GF8TM
+<<^ code="&#x0003;">>ni:///sha-256;mv4kfJp69P7yd_b91cHtveZ3FHWqLlM5AMH6qzZMZQw
 
 <<^ code="&#x0004;" -> to="?">>

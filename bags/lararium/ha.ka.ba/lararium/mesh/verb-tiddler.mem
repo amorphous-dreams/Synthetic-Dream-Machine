@@ -27,6 +27,29 @@ Three lar: URIs carry one request through its life, request and result held apar
 
 <<~/ahu>>
 
+<<~ ahu #/the-record-over-the-summary>>
+
+!! The record over the summary ~ the outcome may carry a VIEW (RULED)
+
+''Consumers and tests read the authoritative RECORD.'' A verb whose act writes its own record — a signed,
+re-readable entry at an address the outcome names (a face-join grant at the outcome's `recordTitle` stands
+as the instance) — answers every question about the act from that record, never from the outcome's copy of it.
+
+''A bounded summary stands as a VIEW.'' The outcome bounds any array past its cap
+(`boundOutcomeOutput`, `packages/lararium-tw5/src/verb-vm.ts`, cap 32) to a count, tallies, a short sample,
+and the digest of the whole array. That shape keeps the durable outcome small; it stands beside the record,
+never in place of it. The view MUST carry the record's digest, so any reader can check
+the view against the record without trusting the view — the Certificate Transparency shape, where a signed
+head carries the root of the log it summarises and a client audits the log, never the head's say-so. ''The
+target shape names the record's CID'' as that digest: one content address joins view to record.
+
+''A test that reads a summary's shape measures the VIEW, not the ACT.'' Asserting a bounded field's length
+asserts where the cap fell, and it reads differently the day the act grows past 32 entries while the act
+itself stayed correct. A test of the act reads the record; a test of the view checks that the view's digest
+and count agree with the record.
+
+<<~/ahu>>
+
 <<~ ahu #/ontology-attractor>>
 
 !! The internal register (LANGUAGE-protocol frame) + the nakama boundary
@@ -59,6 +82,6 @@ Audit/ledger note: durable residency audit lives at `@<bag>/ledger/residency/<ev
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e_2lM9hMbu6CjKWj2vQJEaL8MunPcVf831uaMiPzxwg
+<<^ code="&#x0003;">>ni:///sha-256;_IilO_DNhrqKEaJ2_13gbUehc1p0urApZ11KoIHkqfc
 
 <<^ code="&#x0004;" -> to="?">>

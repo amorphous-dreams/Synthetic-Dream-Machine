@@ -1,0 +1,132 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wild-bytes">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/wild-bytes.mem"
+hydrate   = true
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x2299;"
+role      = "the wild-bytes line — the house CARRIES bytes it cannot re-make (history, outside bytes, old transcripts) UNREAD and FLAGGED, and never repair-tolerates state it can re-found. Parse, don't validate: a reader turns wild bytes into a typed reading once, at the edge, and a reading it cannot type stays carried and named, never coerced. Composes with the alpha line (no back-compat, no shims): tolerance belongs to what the house never authored; what it authored re-founds. Prior art: RFC 9413 (Maintaining Robust Protocols), Hyrum's law. Standing instance: the turn harvester keeps its retired-head tolerance for old transcripts."
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/wild-bytes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/wild-bytes"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Wild bytes ~ carry what cannot be re-made, re-found what can
+
+''Two kinds of bytes reach a reader, and the house owes them opposite treatment.'' Bytes the house can
+re-make — its own state, its own carriers, anything a rite re-founds — answer to the CURRENT grammar and
+nothing else. Bytes the house can never re-make — history, bytes from outside, a month of old transcripts —
+answer to whatever grammar wrote them, and that grammar may no longer stand.
+
+> ''The house CARRIES wild bytes UNREAD and FLAGGED, and never repair-tolerates state it can re-found.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-line>>
+
+!! The line ~ who can re-make these bytes
+
+The test runs on one question: ''could a rite make these bytes again?''
+
+| |! re-foundable state |! wild bytes |
+| examples | a carrier under `bags/`, a vessel substrate, a registration, a signing domain | an old transcript, a peer's foreign payload, history written under a retired frame |
+| the grammar it answers to | the current one, alone | the one that wrote it |
+| a reading that fails | the bytes RE-FOUND under the current grammar | the bytes stay CARRIED, unread, and FLAGGED |
+| a reader's tolerance | MUST NOT exist — a tolerated old shape keeps the old shape alive | MAY exist, scoped to that reader, named at its seat |
+
+The house MUST NOT carry a repair path, fallback, or alias for state it can re-found: re-founding costs one
+rite, and a tolerance costs every later reader a second grammar to hold.
+A reader of wild bytes MUST NOT silently coerce what it cannot type. It carries the bytes as received and
+names them flagged — a demotion the operator sees, never a drop and never a guess.
+A reader that tolerates a retired shape MUST scope that tolerance to bytes it never authored, and its
+docblock MUST name which wild source the tolerance serves.
+
+<<~/ahu>>
+
+<<~ ahu #/parse-dont-validate>>
+
+!! Parse, don't validate ~ the edge types the bytes once
+
+''A reader turns wild bytes into a typed reading at the edge, exactly once'' (Alexis King, //Parse, don't
+validate//). Everything past the edge holds the typed reading and never re-inspects the raw bytes; a
+validator that answers yes-or-no and hands the raw bytes onward leaves every later reader to re-decide, and
+each one decides a little differently.
+
+A reading the edge cannot type takes no default shape. It stays carried beside a named reason — the same
+floor the ahu quoteblock and graceful parsing hold one layer over
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>,
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy">>): water never lies about
+structure.
+
+<<~/ahu>>
+
+<<~ ahu #/the-alpha-line>>
+
+!! With the alpha line ~ one law seen from two sides
+
+''The alpha line rules no back-compat and no shims'' for anything the house authored: a ruling that obsoletes
+a shape deletes the old reading whole, and a pre-ruling carrier re-founds rather than being re-read
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional#/law">>).
+
+''Wild bytes mark the one place that line does not reach'', and the reason stays structural rather than
+lenient: no rite re-makes a transcript somebody already spoke, so "re-found it" names no act. The two laws
+partition the corpus by one question and never overlap — ''authored → re-found; wild → carry and flag''. A
+tolerance found anywhere else reads as a shim wearing this law's name.
+
+<<~/ahu>>
+
+<<~ ahu #/prior-art>>
+
+!! Prior art ~ the robustness principle, measured
+
+* ''RFC 9413, Maintaining Robust Protocols'' (Thomson & Schinazi) — the IETF's own reckoning with
+  Postel's //be liberal in what you accept//. Tolerance of malformed input does not stay tolerance: peers
+  come to depend on it, the protocol's real grammar drifts away from its written one, and the cure names
+  ACTIVE maintenance — specify the error handling, and keep the tolerated set from growing.
+* ''Hyrum's law'' — with enough consumers, every observable behaviour of an interface gets depended on.
+  A tolerance a reader extends to re-foundable state becomes, in time, a contract nobody wrote. Scoping
+  tolerance to bytes the house cannot re-make bounds what Hyrum's law can capture.
+
+<<~/ahu>>
+
+<<~ ahu #/standing-instance>>
+
+!! The standing instance ~ the turn harvester
+
+`packages/lararium-mesh/src/capture/turn-harvest.ts` reads a month of real turns written under whatever the
+frame said that week. It keeps its retired-head tolerance — a retired sigil head stays readable there —
+under this law: those transcripts form wild bytes, no rite re-makes them, and refusing a retired head would
+read a turn that fired its instrument as a turn that fired nothing. Its own docblock states the same cut:
+//a corpus states one grammar; a reader tolerates every grammar it will meet//. `bags/` carries current
+pono alone.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;oBvOF0vYSYT2dgkGFOuCvN-W8sGU3HjqJ3IDUGy98xk
+
+<<^ code="&#x0004;" -> to="?">>

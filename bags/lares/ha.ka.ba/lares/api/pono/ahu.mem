@@ -127,6 +127,18 @@ Quoteblocking runs as a one-way demotion: every sigil inside goes inert until th
 
 A child-slot save re-grades its root through the backstop's child gate (`packages/lararium-tw5/src/modules/meme-backstop.ts`, `runChildGate`), which runs the ingest gate's READ HALF — `evaluateMeme`, never `placeMeme` — over the composed root and surfaces what it finds on the SAME alert rail the quoteblock uses: a second live ETX, `frame-malformed`, `postamble-content` at error grade, and, widened past that leg, a composed-altitude ahu balance fault (`ahu-unbalanced-open`, `ahu-orphan-close` — the dangling opener eating the parent's closer, or the orphan closing the parent early) that the gate's own NOOP-equivalence leg grades below error and would otherwise drop. This never lands or refuses anything on the stock syncer path; the root door gate's own ingest grades stand untouched.
 
+!!! WHERE the floor sits ~ RULED, UNBUILT
+
+''The whole-chunk floor runs at the ingest gate, directly after the frame `verdict()`, on EVERY door'' —
+no door carries its own copy, and no door skips it. The order runs fixed:
+
+# ''Frame verdict first.'' The frame reads before any grammar does (`packages/lararium-memetic-frame/src/verdict.ts`).
+# ''A torn frame REFUSES.'' A frame that cannot be divided without choosing never reaches decomposition, and no fence repairs it: quoteblocking a torn frame would hide the tear inside a span that reads sound.
+# ''Else decompose'' — the family split runs over the framed body.
+# ''If any ERROR or MISSING node remains'' anywhere in that decomposition, ''the WHOLE chunk fences'' and the fence surfaces. A partial fence over only the faulted span stays forbidden at this grain: no family stands yet to hold the sound remainder.
+
+''The stock syncer keeps NEVER-REFUSE.'' A child-slot save on the stock syncer path lands as written and only re-grades its root (the backstop paragraph above); the WHERE above governs the ingest gate's whole-chunk door and changes nothing about that path.
+
 This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy]]'s panic-to-water floor from Layer 1 (the meme-ast builder, one sigil) to Layer 2 (the family split, one ahu or one whole carrier): water never regresses, never lies about structure, and composes with repair added later.
 
 <<~/ahu>>
@@ -142,6 +154,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VllJlnAiR-Bm4KqRBqPa0BnRU8HW3jxOIYyVoX9hO-4
+<<^ code="&#x0003;">>ni:///sha-256;YXwlIr17A3E5HBBrdGNg--ftGGr3Ye0068ptBqJFch8
 
 <<^ code="&#x0004;" -> to="?">>
