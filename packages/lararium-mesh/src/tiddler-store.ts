@@ -216,6 +216,19 @@ export interface LarTiddlerStore {
   tombstone(title: string, origin: ChangeOrigin): Promise<void>;
 
   /**
+   * Write a meme FAMILY — a root, its slot children, and the orphan children it no longer declares —
+   * as ONE atomic change, so no peer ever sees the root pointing at a tombstoned child or a child
+   * without its root. `options.bag` routes exactly as `put`'s does. A store that cannot write
+   * atomically omits this and its callers write member by member.
+   */
+  writeFamily?(
+    puts:       readonly LarTiddlerRecord[],
+    tombstones: readonly string[],
+    origin:     ChangeOrigin,
+    options?:   LarWriteOptions,
+  ): Promise<void>;
+
+  /**
    * HARD-remove a title (delete the record so `get` returns null = ABSENT),
    * distinct from `tombstone`'s kāpae hide. Absent FALLS THROUGH the cascade to
    * a lower bag (vs kāpae, which shadows it). The retract a MOVE/promotion uses

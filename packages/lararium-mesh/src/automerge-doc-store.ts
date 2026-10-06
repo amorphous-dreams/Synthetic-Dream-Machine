@@ -43,8 +43,17 @@ type MutableLarTiddlerRecord = {
   };
 };
 
+/** JSON with every map's keys sorted — the doc hands its maps back key-sorted, a caller's record
+ *  arrives in authoring order, and the two spell one content. */
+function _canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_key, v: unknown) =>
+    v !== null && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
+      : v);
+}
+
 function _contentEquals(cur: LarTiddlerRecord, rec: LarTiddlerRecord): boolean {
-  return JSON.stringify(cur) === JSON.stringify(rec);
+  return _canonicalJson(cur) === _canonicalJson(rec);
 }
 
 /** Same value in the doc's medium — a list or map compares by its JSON form. */
@@ -107,6 +116,17 @@ function _freezeRecord(raw: LarTiddlerRecord): LarTiddlerRecord {
     tiddler: Object.freeze({ ...raw.tiddler }),
     ...(raw.meta !== undefined ? { meta: Object.freeze({ ...raw.meta }) } : {}),
   });
+}
+
+/** Mark a title deleted inside a change — the kāpae tombstone, minted when no record stands. */
+function _markDeleted(tiddlers: Record<string, MutableLarTiddlerRecord>, title: string): void {
+  const existing = tiddlers[title];
+  if (existing) {
+    if (!existing.meta) existing.meta = {};
+    existing.meta.deleted = true;
+  } else {
+    tiddlers[title] = { tiddler: { title }, meta: { deleted: true } };
+  }
 }
 
 function _tombstoneRecord(title: string): LarTiddlerRecord {
@@ -248,16 +268,43 @@ export class AutomergeDocStore implements LarTiddlerStore {
     this.provider.fireImmediate({ title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
-  async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
+  /**
+   * Write a meme family in ONE `handle.change`: every put merges (or creates) its record and every
+   * tombstone marks its title deleted inside the same Automerge change, so a peer receives the root,
+   * its new children and its orphans' tombstones together or not at all. Records whose content
+   * already stands are skipped; when nothing moves, no change is made. Each member then fans out to
+   * projections exactly as a single `put`/`tombstone` would.
+   */
+  async writeFamily(
+    puts:       readonly LarTiddlerRecord[],
+    tombstones: readonly string[],
+    origin:     ChangeOrigin,
+  ): Promise<void> {
+    const current = this.handle.doc()?.tiddlers;
+    const moved = puts.filter((r) => {
+      const existing = current?.[r.tiddler.title];
+      return !(existing && _contentEquals(existing, r));
+    });
+    if (moved.length === 0 && tombstones.length === 0) return;
+
     this.handle.change((doc) => {
       const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
-      const existing = tiddlers[title];
-      if (existing) {
-        if (!existing.meta) existing.meta = {};
-        existing.meta.deleted = true;
-      } else {
-        tiddlers[title] = { tiddler: { title }, meta: { deleted: true } };
+      for (const record of moved) {
+        const title = record.tiddler.title;
+        const existing = tiddlers[title];
+        if (existing) _mergeRecord(existing, record);
+        else tiddlers[title] = _cloneRecord(record) as MutableLarTiddlerRecord;
       }
+      for (const title of tombstones) _markDeleted(tiddlers, title);
+    });
+    const bag = this.bagId !== undefined ? { bag: this.bagId } : {};
+    for (const record of moved) this.provider.fireImmediate({ title: record.tiddler.title, record, origin, ...bag });
+    for (const title of tombstones) this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...bag });
+  }
+
+  async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
+    this.handle.change((doc) => {
+      _markDeleted(doc.tiddlers as Record<string, MutableLarTiddlerRecord>, title);
     });
     this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }

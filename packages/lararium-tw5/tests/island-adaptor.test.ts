@@ -27,7 +27,7 @@ import { dirname, join } from "node:path";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { isPersonalTitle }  from "../src/filters/lar-kind.js";
-import { wikiSlotUri, VERB_URI_PREFIX, type LarTiddlerChange, type ChangeOrigin } from "@lararium/mesh";
+import { wikiSlotUri, VERB_URI_PREFIX, CompositeStore, type LarTiddlerChange, type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh";
 
 const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
 const SHIPPED_TID = join(dirname(fileURLToPath(import.meta.url)), "..", "tiddlers", "lar-bag-paths.tid");
@@ -597,5 +597,107 @@ describe("IslandAdaptor — echo-loop guard", () => {
     await adaptor.deleteTiddler(LAR_URI);
 
     expect(tombstoneCount).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The family write — a re-split lands as ONE change, in the bag its members live in
+// ---------------------------------------------------------------------------
+
+describe("IslandAdaptor — the family write", () => {
+  const WORKING = wikiSlotUri("test-wiki", "working");
+  const DEFAULT = "lar:///ha.ka.ba/bags/default-writable";
+  let tw5: FakeTW5Engine;
+
+  beforeEach(() => { vi.useFakeTimers(); tw5 = new FakeTW5Engine(); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  const flush = () => vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+
+  /** A composite whose cascade target (`working`) is NOT the default writable — a bagless write
+   *  lands in DEFAULT, so a misrouted tombstone reads plainly. */
+  function twoBagComposite(): { composite: CompositeStore; working: MemoryTiddlerStore; fallback: MemoryTiddlerStore } {
+    const working  = new MemoryTiddlerStore();
+    const fallback = new MemoryTiddlerStore();
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: WORKING, store: working,  writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: DEFAULT, store: fallback, writable: true });
+    return { composite, working, fallback };
+  }
+
+  test("★ a re-split that writes the root, adds a child and tombstones an orphan lands in ONE writeFamily ★", async () => {
+    tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
+    const store = new MemoryTiddlerStore();
+    const families: Array<{ puts: string[]; tombstones: string[]; bag: string | undefined }> = [];
+    const singles: string[] = [];
+    const s = store as unknown as Record<string, unknown>;
+    s["writeFamily"] = async (puts: LarTiddlerRecord[], tombstones: string[], _o: ChangeOrigin, opts?: { bag?: string }) => {
+      families.push({ puts: puts.map((r) => r.tiddler.title), tombstones: [...tombstones], bag: opts?.bag });
+    };
+    const put = store.put.bind(store);
+    store.put = async (rec, o, opts) => { singles.push(`put ${rec.tiddler.title}`); return put(rec, o, opts); };
+    const tomb = store.tombstone.bind(store);
+    store.tombstone = async (t, o) => { singles.push(`tombstone ${t}`); return tomb(t, o); };
+
+    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID);
+    adaptor.start();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    await flush();
+    await done;
+    adaptor.stop();
+
+    expect(singles).toEqual([]);
+    expect(families).toEqual([{ puts: [LAR_URI, `${LAR_URI}#/new`], tombstones: [`${LAR_URI}#/old`], bag: WORKING }]);
+  });
+
+  test("CONTROL — a store with no writeFamily still receives every member, one write each", async () => {
+    tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
+    const store = new MemoryTiddlerStore();
+    const adaptor = new IslandAdaptor(tw5 as never, store, INSTANCE_ID);
+    adaptor.start();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    await flush();
+    await done;
+    adaptor.stop();
+
+    expect((await store.get(`${LAR_URI}#/new`))?.tiddler.text).toBe("fresh");
+    expect((await store.get(`${LAR_URI}#/old`))?.meta?.deleted).toBe(true);
+  });
+
+  test("★ an orphan's tombstone lands in the bag the child lives in, never the default writable ★", async () => {
+    tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
+    const { composite, working, fallback } = twoBagComposite();
+    await working.put({ tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, localOrigin());
+
+    const adaptor = new IslandAdaptor(tw5 as never, composite, INSTANCE_ID);
+    adaptor.start();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    await flush();
+    await done;
+    adaptor.stop();
+
+    expect((await working.get(`${LAR_URI}#/old`))?.meta?.deleted).toBe(true);
+    expect(await fallback.get(`${LAR_URI}#/old`)).toBeNull();
+  });
+
+  test("★ an orphan that arrived from another bag is tombstoned THERE — the last-known-slot law ★", async () => {
+    const OTHER = "lar:///ha.ka.ba/bags/other-writable";
+    tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
+    const { composite, working, fallback } = twoBagComposite();
+    const other = new MemoryTiddlerStore();
+    composite.addLayer({ bagId: OTHER, store: other, writable: true, defaultWritable: false });
+
+    const adaptor = new IslandAdaptor(tw5 as never, composite, INSTANCE_ID);
+    adaptor.start();
+    // The child arrived inbound from OTHER — the envelope names its bag.
+    adaptor.onUriChanged({ title: `${LAR_URI}#/old`, record: { tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, origin: crdtRemote(), bag: OTHER });
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    await flush();
+    await done;
+    adaptor.stop();
+
+    expect((await other.get(`${LAR_URI}#/old`))?.meta?.deleted).toBe(true);
+    expect(await working.get(`${LAR_URI}#/old`)).toBeNull();
+    expect(await fallback.get(`${LAR_URI}#/old`)).toBeNull();
   });
 });

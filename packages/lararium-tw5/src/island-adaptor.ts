@@ -410,14 +410,29 @@ export class IslandAdaptor implements MemeProjection {
   }
 
   /**
-   * Write a lar: URI to the store. Splits ahu fragment-parent blocks first
-   * (Path H auto-split). Tombstones orphaned slot children.
+   * Write a saved tiddler to the store as its meme FAMILY: the root, the slot children its body
+   * splits into (Path H auto-split), and the tombstones of the children it no longer declares.
+   *
+   * ONE CHANGE. Root and children route to the ONE bag the cascade names, so they share one doc, and
+   * the family lands through `writeFamily` as a single atomic change — no peer ever sees a root
+   * pointing at a tombstoned child. A store that cannot write atomically takes the members one by one.
+   *
+   * AN ORPHAN DIES WHERE IT LIVES. A child's tombstone routes like a delete: the last-known-slot map
+   * first (a child that arrived from another bag is tombstoned there, in its own change), the root's
+   * bag otherwise. A bagless tombstone would land in the composite's default writable and leave the
+   * orphan standing in the doc peers read.
    */
   private async _writeMeme(
     title:  string,
     fields: Record<string, string>,
     origin: ChangeOrigin,
   ): Promise<void> {
+    // The in-wiki cascade (lar:///ha.ka.ba/lararium/config/bag-paths) names the bag a save lands in;
+    // null when no rule matches or an explicit-skip rule fires (e.g. $:/* system tiddlers).
+    const targetBag = this._destination(title) ?? undefined;
+    if (!targetBag) return;
+    this._slotOf.set(title, targetBag);
+
     const bodyText = fields["text"] ?? "";
     // A slot child saved at its own address splits under the fragment it already carries: its own
     // slots compose onto that ONE path (`#/a/z`), never a second fragment (`#/a#/z`).
@@ -425,16 +440,13 @@ export class IslandAdaptor implements MemeProjection {
     const { parent, children } = cut < 0
       ? splitBodyTiddler(title, "", bodyText, fields)
       : splitBodyTiddler(title.slice(0, cut), title.slice(cut), bodyText, fields);
-    // The in-wiki cascade (lar:///ha.ka.ba/lararium/config/bag-paths) names the bag a save lands in;
-    // null when no rule matches or an explicit-skip rule fires (e.g. $:/* system tiddlers).
-    const targetBag = this._destination(title) ?? undefined;
-    if (!targetBag) return;
-    this._slotOf.set(title, targetBag);
     // `$origin-bag` is the host's stamp on the wiki tiddler (nalu-engine), never a persisted field;
     // `bag` is the author's and rides through whole.
     const { "$origin-bag": _origin, ...persistedParent } = parent;
 
-    await this.store.put(toLarTiddlerRecord({ ...persistedParent, title }), origin, { bag: targetBag });
+    const puts: LarTiddlerRecord[] = [toLarTiddlerRecord({ ...persistedParent, title })];
+    const familyTombstones: string[] = [];
+    const strayTombstones: Array<{ uri: string; slot: SlotUri }> = [];
 
     if (children.length > 0) {
       const existingChildren = new Set<string>(this._childUrisOf(title));
@@ -445,12 +457,33 @@ export class IslandAdaptor implements MemeProjection {
         if (!childTitle.startsWith("lar:")) continue;
         newChildren.add(childTitle);
         const { "$origin-bag": _childOrigin, ...persistedChild } = child;
-        await this.store.put(toLarTiddlerRecord({ ...persistedChild, title: childTitle }), origin, { bag: targetBag });
+        puts.push(toLarTiddlerRecord({ ...persistedChild, title: childTitle }));
       }
 
       for (const uri of existingChildren) {
-        if (!newChildren.has(uri)) await this.store.tombstone(uri, origin);
+        if (newChildren.has(uri)) continue;
+        const slot = this._slotOf.get(uri) ?? targetBag;
+        if (slot === targetBag) familyTombstones.push(uri);
+        else strayTombstones.push({ uri, slot });
       }
     }
+
+    const store = this.store as LarTiddlerStore & {
+      tombstoneInBag?: (bag: string, title: string, origin: ChangeOrigin) => Promise<void>;
+    };
+    const tombstoneIn = (bag: string, uri: string): Promise<void> =>
+      typeof store.tombstoneInBag === "function" ? store.tombstoneInBag(bag, uri, origin) : store.tombstone(uri, origin);
+
+    if (typeof store.writeFamily === "function") {
+      await store.writeFamily(puts, familyTombstones, origin, { bag: targetBag });
+    } else {
+      for (const record of puts) await store.put(record, origin, { bag: targetBag });
+      for (const uri of familyTombstones) await tombstoneIn(targetBag, uri);
+    }
+    for (const { uri, slot } of strayTombstones) await tombstoneIn(slot, uri);
+
+    for (const record of puts.slice(1)) this._slotOf.set(record.tiddler.title, targetBag);
+    for (const uri of familyTombstones) this._slotOf.delete(uri);
+    for (const { uri } of strayTombstones) this._slotOf.delete(uri);
   }
 }

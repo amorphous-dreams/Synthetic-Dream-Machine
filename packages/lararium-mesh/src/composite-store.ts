@@ -214,35 +214,56 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: { bag?: string }): Promise<void> {
-    // Explicit-target routing — the overlayfs decision tree
-    // (wiki-layer-ontology#write-law):
-    if (options?.bag) {
-      //  a) a matching WRITABLE layer → write it (the upper). Serves only
-      //     genuinely-mounted writable layers the wiki owns — the projection
-      //     layer, the daemon bag, draft routing. Residency-target writes
-      //     into a DEEP bag no longer route here: they reach the bag's own doc
-      //     by access (catalog-accessor.storeOf) + write-then-sync, mounting
-      //     nothing (action-handler resolveBagStores; wiki-layer-ontology#write-law).
-      const writableLayer = this.layers.find((l) => l.bagId === options.bag && l.writable);
-      if (writableLayer) return writableLayer.store.put(record, origin, options);
-      //  b) a READ-ONLY layer for that bag IS mounted → shadow-up (copy-up): an
-      //     edit seen through a read-only library lands in the writable store
-      //     (Law 4 / overlayfs copy-up). Falls through below.
-      //  c) NO layer at all → an explicit write to an unmounted bag. Never guess
-      //     a default — that is the confused-deputy / silent-misroute bug. Fail
-      //     loud; the caller must reach the bag by access (registry) first
-      //     (overlayfs EROFS / git pathspec-did-not-match).
-      const hasAnyLayer = this.layers.some((l) => l.bagId === options.bag);
-      if (!hasAnyLayer) {
+    return this._writeTargetFor(options?.bag, "put").put(record, origin, options);
+  }
+
+  /**
+   * Write a meme family through the SAME routing `put` uses — the explicit bag's writable layer, a
+   * read-only bag's copy-up into the default writable, a loud refusal for an unmounted bag — and hand
+   * the whole family to that ONE layer store, so the root, its children and its orphans' tombstones
+   * share one doc. A layer store that writes atomically (`writeFamily`) takes it as one change; any
+   * other takes it member by member.
+   */
+  async writeFamily(
+    puts:       readonly LarTiddlerRecord[],
+    tombstones: readonly string[],
+    origin:     ChangeOrigin,
+    options?:   { bag?: string },
+  ): Promise<void> {
+    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, options);
+    for (const record of puts) await store.put(record, origin, options);
+    for (const title of tombstones) await store.tombstone(title, origin);
+  }
+
+  /**
+   * The layer store a write lands in — the overlayfs decision tree (wiki-layer-ontology#write-law),
+   * read by `put` and `writeFamily` alike. With an explicit target bag:
+   *  a) a matching WRITABLE layer → that layer (the upper). Serves only genuinely-mounted writable
+   *     layers the wiki owns — the projection layer, the daemon bag, draft routing. Residency-target
+   *     writes into a DEEP bag reach the bag's own doc by access (catalog-accessor.storeOf) +
+   *     write-then-sync, mounting nothing (action-handler resolveBagStores).
+   *  b) a READ-ONLY layer for that bag IS mounted → shadow-up (copy-up): an edit seen through a
+   *     read-only library lands in the default writable (Law 4 / overlayfs copy-up).
+   *  c) NO layer at all → an explicit write to an unmounted bag. Never guess a default — that is the
+   *     confused-deputy / silent-misroute bug. Fail loud; the caller must reach the bag by access
+   *     (registry) first (overlayfs EROFS / git pathspec-did-not-match).
+   * Without a target, the default writable.
+   */
+  private _writeTargetFor(bag: string | undefined, verb: string): LarTiddlerStore {
+    if (bag) {
+      const writableLayer = this.layers.find((l) => l.bagId === bag && l.writable);
+      if (writableLayer) return writableLayer.store;
+      if (!this.layers.some((l) => l.bagId === bag)) {
         throw new Error(
-          `CompositeStore.put: explicit target bag "${options.bag}" has no layer — ` +
+          `CompositeStore.${verb}: explicit target bag "${bag}" has no layer — ` +
           `reach it by access (registry) before writing, or it is unregistered. ` +
           `Refusing to fall through to the default writable (no silent misroute).`,
         );
       }
     }
     if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
-    return this.writableStore.put(record, origin, options);
+    return this.writableStore;
   }
 
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
