@@ -30,7 +30,7 @@
 import {
   fencedSpans, inMask, frameAlt,
 } from "@lararium/memetic-frame";
-import { rootMetaFence, metaValueRaw } from "./root-meta.js";
+import { rootMetaFence, metaValueRaw, metaKeyRedefinitions } from "./root-meta.js";
 // GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
 // dependency-free-by-constraint file the same way the frame import above reasons about it.
 import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
@@ -241,6 +241,18 @@ export interface NormalizeResult {
   readonly grammarNotes: readonly string[];
   /** True when a grammar-authority clause found something to propose (or applied it). */
   readonly grammarChanged: boolean;
+  /**
+   * ERROR-GRADE faults no gesture closes: the carrier reads NON-CANONICAL while any stands, and a door
+   * that stamps refuses to stamp over it. Today: a meta fence defining a key twice (`duplicate-meta-key`)
+   * — TOML forbids it, and normalize cannot choose which value the author meant.
+   */
+  readonly faults: readonly NormalizeFault[];
+}
+
+/** One error-grade fault a hand must settle, named by code. */
+export interface NormalizeFault {
+  readonly code: "duplicate-meta-key";
+  readonly message: string;
 }
 
 /** A clause's authority, stated AT THE CLAUSE that writes — never a list a caller keeps in sync. */
@@ -644,5 +656,6 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     flags,
     grammarNotes: seat.grammarNotes,
     grammarChanged: seat.grammarChanged,
+    faults: metaKeyRedefinitions(seat.text).map((r) => ({ code: "duplicate-meta-key" as const, message: r.message })),
   };
 }

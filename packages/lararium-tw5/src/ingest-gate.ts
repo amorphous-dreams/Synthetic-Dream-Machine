@@ -55,6 +55,7 @@ import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.
 import { getGrammar } from "./grammar-cache.js";
 import { headUriOf, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
 import { checkCarrier } from "./carrier-check.js";
+import { metaKeyRedefinitions } from "./root-meta.js";
 
 export type IngestDecision<R = TiddlerFields> =
   | { readonly kind: "noop"; readonly reason: "disk-matches-synced" | "canonical-equivalent" }
@@ -152,6 +153,9 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
         ...failuresToDiagnostics(failures, text.length),
         ...frameDiagnostics(uri, frame, text.length),
         ...checkCarrier(uri, text),
+        // A meta fence defining a key twice states no fields at all (TOML refuses the whole body), so the
+        // carrier refuses at error grade rather than ingesting with its identity silently emptied.
+        ...metaKeyRedefinitions(text).map((r) => diagnostic("error", "duplicate-meta-key", `${uri}: ${r.message}`, text.length)),
       ],
     };
   },

@@ -420,7 +420,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
       console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
     }
     const res = frame.kind === "bare"
-      ? { text: src, changed: false, notes: [], flags: [], grammarChanged: false, grammarNotes: [] }
+      ? { text: src, changed: false, notes: [], flags: [], grammarChanged: false, grammarNotes: [], faults: [] }
       : normalizeMemeSource(src, { grammar });
 
     // GRAMMAR-authority drift reads and reports SEPARATELY from FRAME drift — a preference named
@@ -463,6 +463,15 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // door names it and hands it to a hand.
     // A FRAME FAULT is no drift a gesture closes — a meta fence above STX, a second ETX — so the door
     // names each and hands the carrier to a hand, stamping nothing over it.
+    // AN ERROR-GRADE FAULT no gesture closes — a meta fence defining a key twice, which TOML forbids and
+    // whose meaning normalize cannot choose — reads non-canonical on both seats and stamps nothing.
+    if (res.faults.length > 0) {
+      faulted++;
+      console.log(`fault: ${f}`);
+      for (const fault of res.faults) console.log(`  ✗ ${fault.code}: ${fault.message}`);
+      continue;
+    }
+
     if (frame.kind === "torn") {
       faulted++;
       console.log(`torn: ${f}`);

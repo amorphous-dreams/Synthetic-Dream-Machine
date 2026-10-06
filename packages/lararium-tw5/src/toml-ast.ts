@@ -61,9 +61,58 @@ export function parseTaploFields(
     const decoded = smolParse(toml) as Record<string, unknown>;
     return flattenTomlValue(decoded);
   } catch (e) {
-    warnings.push(`${context} TOML parse error: ${e}`);
+    const dups = duplicateTomlKeys(toml);
+    if (dups.length > 0) {
+      for (const d of dups) warnings.push(`${context} ${duplicateKeyMessage(d)}`);
+    } else {
+      warnings.push(`${context} TOML parse error: ${e}`);
+    }
     return {};
   }
+}
+
+// ---------------------------------------------------------------------------
+// duplicateTomlKeys — the keys a TOML body defines twice.
+//
+// TOML forbids defining a key (or a table) twice. The spec parser refuses the
+// whole body at the first redefinition and names its line; this reads that
+// refusal, records the key, blanks the line and asks again, so EVERY
+// redefinition is named rather than only the first. The parser decides what a
+// redefinition is — a key inside a multi-line string, or the same key under two
+// different tables, is not one. A body that fails for any OTHER reason stops
+// the walk: that is a parse error, named by its own channel.
+// ---------------------------------------------------------------------------
+
+/** One redefinition: the key (or `[table]` header) as written, and its 1-based line in the body. */
+export interface TomlDuplicateKey {
+  readonly key:  string;
+  readonly line: number;
+}
+
+const REDEFINE = /redefine an already defined/i;
+
+export function duplicateTomlKeys(toml: string): TomlDuplicateKey[] {
+  const lines = toml.split("\n");
+  const out: TomlDuplicateKey[] = [];
+  for (let guard = 0; guard <= lines.length; guard += 1) {
+    try {
+      smolParse(lines.join("\n"));
+      return out;
+    } catch (e) {
+      const line = (e as { line?: number }).line;
+      if (!REDEFINE.test(String((e as Error)?.message ?? e)) || typeof line !== "number" || !lines[line - 1]?.trim()) return out;
+      const written = lines[line - 1]!.trim();
+      const key = written.startsWith("[") ? written.replace(/\].*$/, "]") : written.split("=")[0]!.trim();
+      out.push({ key, line });
+      lines[line - 1] = "";
+    }
+  }
+  return out;
+}
+
+/** The one wording every door names a redefinition with. */
+export function duplicateKeyMessage(d: TomlDuplicateKey): string {
+  return `duplicate key "${d.key}" (line ${d.line}) — TOML forbids defining a key twice; keep one`;
 }
 
 // ---------------------------------------------------------------------------

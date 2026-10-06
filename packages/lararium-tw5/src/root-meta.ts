@@ -30,7 +30,7 @@
 import {
   fencedSpans, maskedExecAll, readFrame, META_OPEN_RE, type MaskSpan,
 } from "@lararium/memetic-frame";
-import { parseTaploFields } from "./toml-ast.js";
+import { parseTaploFields, duplicateTomlKeys, duplicateKeyMessage } from "./toml-ast.js";
 import type { TiddlerFields } from "./deserializer.js";
 
 /** One located, closed meta fence: offsets into the ORIGINAL text, plus its parts pre-sliced. */
@@ -88,6 +88,35 @@ export function rootMetaFence(
 export function rootMetaFields(text: string): TiddlerFields {
   const fence = rootMetaFence(text);
   return fence ? parseTaploFields(fence.body) : {};
+}
+
+/** Every LIVE, closed meta fence in the text, in order — the root's and each slot's own. */
+export function metaFences(text: string, spans: readonly MaskSpan[] = fencedSpans(text)): MetaFenceSpan[] {
+  const out: MetaFenceSpan[] = [];
+  for (let at = 0; ;) {
+    const fence = metaFenceAt(text, at, spans);
+    if (!fence) return out;
+    out.push(fence);
+    at = fence.bodyEnd;
+  }
+}
+
+/** A meta fence that defines a key twice: where its body starts, and the wording naming the key. */
+export interface MetaKeyRedefinition {
+  readonly bodyStart: number;
+  readonly key: string;
+  readonly message: string;
+}
+
+/**
+ * Every key a live meta fence defines twice. TOML forbids it, and a reader handed such a body keeps
+ * neither value (the spec parser refuses the whole fence), so the carrier states no fields at all
+ * there. A ```toml teaching fence names no meta and is never read.
+ */
+export function metaKeyRedefinitions(text: string): MetaKeyRedefinition[] {
+  return metaFences(text).flatMap((fence) => duplicateTomlKeys(fence.body).map((d) => ({
+    bodyStart: fence.bodyStart, key: d.key, message: `meta fence: ${duplicateKeyMessage(d)}`,
+  })));
 }
 
 /**
