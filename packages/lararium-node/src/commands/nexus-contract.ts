@@ -39,7 +39,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
-  signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet, foldCarrierSet,
+  signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
   holdsCarriage, holdsCarrier, foundingRoster,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
   type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature,
@@ -263,12 +263,12 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     handle.change((d) => writeCarriageEntry(d, entry));
     await repo.flush();
 
-    const entries    = carriageEntriesFromBoard(handle.doc());
-    const folded     = await foldCarriageSet(entries, roster);
-    const memberHeld  = holdsCarriage(nym, folded);
-    // THE TWO FOLDS STAY TWO. A `carry` moves the carrier observation and never `memberHeld` — the structural half of the
-    // class law, reported so a caller reads which relation it actually landed.
-    const carrierHeld = holdsCarrier(nym, await foldCarrierSet(entries, roster));
+    // ONE FOLD OF THE WRITTEN BOARD, TWO PROJECTIONS. THE TWO FOLDS STAY TWO: members and carriers read as
+    // separate sets and never union. A `carry` moves the carrier observation and never `memberHeld` — the
+    // structural half of the class law, reported so a caller reads which relation it actually landed.
+    const after       = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
+    const memberHeld  = holdsCarriage(nym, after.members);
+    const carrierHeld = holdsCarrier(nym, after.carriers);
 
     return {
       action: opts.action, nym, parents, evidenceCid: carriageEntryActCid(entry),
