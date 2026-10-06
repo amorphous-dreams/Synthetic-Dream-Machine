@@ -127,8 +127,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Eight suites guard on `existsSync` of tw5-core/ and dist/ — both gitignored build output.
       # Unbuilt, they SKIP and the job still exits 0, so the run reads green while 35 tests never ran.
+      # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored
+      # because its sha256 IS the hearth's true name, so `build` refuses to render it and the bake reads
+      # the blob that stands. A runner holds none until this step renders it from the submodule.
+      - name: Render the TW5 core blob (suites guard on tw5-core/ and skip without it)
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
+      # The root `build` stamps the source digest after `pnpm -r build`; an unstamped dist reads as
+      # stale to every freshness gate and witness that compares against it.
       - name: Build (suites guard on built artifacts and silently skip without them)
-        run: pnpm -r build
+        run: pnpm build
       # THE HOLDER IS A DEPENDENCY, NOT AN OPTIONAL EXTRA. `content-palace` drives the python
       # mempalace holder live, and with no interpreter holding it the suite fails on an absent
       # dependency rather than on anything about the code. Skipping it instead would be worse:
@@ -137,6 +144,10 @@ jobs:
       # ONE VENV — `~/.venv`, the same path `spawn-resolve` probes and `lares vessel stand --install`
       # stands. A venv anywhere else is an interpreter with different powers, which is the whole
       # hazard that rule exists to close.
+      #
+      # ONE LIST. The suite's own dependencies live in `packages/lararium-sensorium/requirements.txt`,
+      # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
+      # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -145,17 +156,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml') }}
+          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
         if: steps.venv-cache.outputs.cache-hit != 'true'
         run: |
           python3 -m venv ~/.venv
           ~/.venv/bin/python3 -m pip install --upgrade pip
-          ~/.venv/bin/python3 -m pip install -e ./mempalace
+          ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
         run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
-      - name: Install the sensorium test runner in the holder venv
-        run: ~/.venv/bin/python3 -m pip install pytest
       # `pnpm test` reaches the sensorium's two TypeScript tests only.  The
       # holder suite is Python and lives beside its modules under scripts/, so
       # invoke it through the same venv that holds mempalace.  Calling bare
@@ -214,8 +223,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Four witnesses read dist/ and one founds a vessel from the built CLI. Unbuilt they refuse or
       # skip, and a skip reads green — the exact shape this job exists to close.
+      # call-reach · head-parity · sigil-parity · turn-parity read the engine blob; see the `test` job.
+      - name: Render the TW5 core blob (four witnesses read it)
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (the fleet measures the built tree)
-        run: pnpm -r build
+        run: pnpm build
       - name: Run every witness (never short-circuits; the worst exit wins)
         run: |
           set -o pipefail
@@ -250,8 +262,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Every staged vessel bakes its genesis island from the engine blob; see the `test` job.
+      - name: Render the TW5 core blob (genesis bakes from it)
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (vessels run from dist)
-        run: pnpm -r build
+        run: pnpm build
       - name: Run e2e suite
         run: pnpm test:e2e
         timeout-minutes: 10
@@ -405,6 +420,10 @@ jobs:
       - name: generate-parity — the committed parser.c stays the truth
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:generate-parity
+      # The py host's cross-language weld frame-checks a carrier through `lares meme normalize`. The
+      # bin shim stands from install, so `lares` is on PATH either way; unbuilt, it exits 1.
+      - name: Build (the weld runs the lares CLI from dist)
+        run: pnpm build
       - name: fold + golden manifest gates (py host)
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold

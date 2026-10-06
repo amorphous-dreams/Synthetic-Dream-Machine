@@ -158,7 +158,10 @@ step '6 · ~/.venv — one Python environment for sensorium and tree-sitter host
 if [[ -x "$HOME/.venv/bin/python" ]]; then already "$HOME/.venv present"
 else act 'python3 -m venv ~/.venv' python3 -m venv "$HOME/.venv"; fi
 if [[ -f "$REPO/requirements.txt" ]]; then
-  REQ_SUM=$(sha256sum "$REPO/requirements.txt" | cut -d' ' -f1)
+  # The digest covers every file the manifest `-r`-includes, so an edit to an included list repairs
+  # the venv exactly as an edit to the root one does.
+  mapfile -t REQ_FILES < <(sed -n 's/^-r[[:space:]]*//p' "$REPO/requirements.txt")
+  REQ_SUM=$( { cat "$REPO/requirements.txt"; for f in "${REQ_FILES[@]}"; do cat "$REPO/$f"; done; } | sha256sum | cut -d' ' -f1)
   REQ_MARK="$HOME/.venv/.requirements.sha256"
   if [[ -x "$HOME/.venv/bin/pip" && "$(cat "$REQ_MARK" 2>/dev/null)" == "$REQ_SUM" ]]; then
     already 'requirements.txt satisfied'
