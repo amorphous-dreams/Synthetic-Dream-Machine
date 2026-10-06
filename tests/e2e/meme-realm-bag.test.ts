@@ -19,10 +19,16 @@
  * byte-identical); C — a third operator dialing A with no contract — answers `not-found` after it too; a
  * crossroads read of the bag's meme shows no record; B's `meme put --bag lares` refuses (read tier).
  *
- * THE WIRE UNDER THE REALM. A self-founded operator's own device edge presents in the wire's CONTRACT slot
- * (never the fleet slot, which chains to the founder's KEL and anergizes a foreign root); A admits the
- * ContactCard at the cross-operator floor, proves the edge offline, and `memberNym` binds the wire's vessel
- * key to the persona-root nym `accept-carriage` contracted under. The share verdict seats on BOTH of
+ * THE WIRE UNDER THE REALM — TWO MAPS, NEVER LINKED. B boots before any contract and dials A at the
+ * cross-operator floor, presenting her own root's edge in the CONTRACT slot (never the fleet slot, which
+ * chains to the founder's KEL and anergizes a foreign root); A keeps it as untrusted input and seats nothing
+ * by it. Once A's quorum admits B's per-Nexus LEAF and B's `nexus refresh` finds that admit on her own
+ * replica of A's carriage board (A's posture stands OPEN so that board crosses to her while she is still a
+ * stranger; under PRIVATE it does not, and her admit's out-of-band door stands unbuilt), B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over
+ * A's challenge — and no root-signed edge (no proof binding a leaf to a root travels on the wire). A's seat
+ * verifies the proof and holds the admit against its deny board: B's LEAF enters A's leaf map, which the
+ * membership consult reads, while A's ROOT map stays empty. The realm co-sign signs with B's persona ROOT,
+ * so `--steward` names that root, read off B's own founding door. The share verdict seats on BOTH of
  * automerge-repo's hooks (announce AND access) and reads the admission maps AFTER they land — a stranger at
  * the floor asking for a private plane by its genesis-derived id draws nothing.
  *
@@ -77,6 +83,8 @@ let B: LarInstance | null = null;
 let C: LarInstance | null = null;
 let rootB = "";
 let rootC = "";
+/** Each operator's persona ROOT, read off its own founding door (`persona new 0 --json`). */
+const rootNymOf = new Map<string, string>();
 /** The relation's doors, as they answered — the gate on the vector. */
 let contracted = false;
 let doors = "";
@@ -122,11 +130,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
     // B: its OWN root, its own founding — a second OPERATOR, never a device of A's. C: a third, alike, that
     // never contracts.
-    const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string }>, root: string) => {
+    const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string; json: Record<string, unknown> | null }>, root: string) => {
       const clear = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
       if (clear.code !== 0) throw new Error(`${tag}: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
-      const face = await cli(["persona", "new", "0", "--name", name]);
+      const face = await cli(["persona", "new", "0", "--name", name, "--json"]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+      const vk = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
+      if (typeof vk === "string") rootNymOf.set(tag, vk.toLowerCase());
     };
     const dialA = { ...wireLog, LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
     // Sequential: `vessel clear` holds the fresh-build lock, and two clears racing refuse each other.
@@ -153,6 +163,14 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       acc = { ...(typeof data["nym"] === "string" ? { nym: data["nym"] } : {}), ...(typeof data["contractSig"] === "string" ? { contractSig: data["contractSig"] } : {}) };
       if (acc.nym && acc.contractSig) {
         contractNym = acc.nym;
+        // A OPENS ITS POSTURE. B reads her admit off her OWN replica of A's carriage board, and under PRIVATE a
+        // stranger draws nothing from A — not even that board — so the admit she must present never reaches
+        // her (measured: A's verdict on the board for B and C reads `false` on every hook). Under OPEN the
+        // public shelf, the carriage board included, crosses to a proof-carrying stranger; the realm doc and
+        // the bag still cross to a MEMBER alone, so ⑦'s non-member CONTROL keeps its meaning. A joiner under a
+        // PRIVATE Nexus needs her admit delivered out of band, as the charter is — that door stands unbuilt.
+        const posture = await A.cli(["nexus", "posture", "open", "--json"]);
+        lines.push(`A nexus posture open → ${posture.code}`);
         const contract = await A.cli(["nexus", "contract", acc.nym, "--sig", acc.contractSig, "--json"]);
         lines.push(`A nexus contract → ${contract.code}: ${said(contract).trim().slice(0, 240)}`);
         contracted = contract.code === 0;
@@ -271,8 +289,9 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toMatch(/bag +=  *"salt: 12 · barley: 40"/);
   }, 120_000);
 
-  // THE MEASURE: B's own daemon says the socket stood — the contract edge rode its own slot and A admitted it.
-  test("MEASURE: the two-operator dial STANDS — B presents the contract edge, A admits the socket", () => {
+  // THE MEASURE: B's own daemon says the socket stood — first on the contract edge at the floor, then on her
+  // LEAF admit once A's quorum admitted it, and A admitted both sockets.
+  test("MEASURE: the two-operator dial STANDS — B re-presents her LEAF admit with no root edge, A admits the socket", () => {
     const b = B!.bootLog();
     const verdict = b.split("\n").find((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l)) ?? "(no verdict line)";
     console.error(`meme-realm-bag MEASURE B dial verdict: ${verdict.trim().slice(0, 200)}`);
@@ -281,7 +300,10 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-A.log"), A!.bootLog());
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-B.log"), b);
     }
-    expect(b).toContain("[nexus-join] presenting the contract edge");
+    expect(b).toContain("[nexus-join] presenting the contract edge");          // the boot dial, before any admit
+    const leafLine = b.split("\n").find((l) => l.includes("[nexus-join] presenting the leaf admit")) ?? "";
+    console.error(`meme-realm-bag MEASURE B re-presentation: ${leafLine.trim().slice(0, 240)}`);
+    expect(leafLine).toContain("no root edge rides it");
     expect(b).not.toContain("[lar-leaf] ANERGIZED");
     expect(verdict).toContain("verdict OK — crossing open, syncing");
   });
@@ -311,14 +333,18 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   // `meme put --bag lares` resolves the REALM doc — the ford's one book — and A reads the new slot.
 
   test("⑨ A names B a steward — the record ACCRETES her name and waits on her own hand", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "lares", "--steward", contractNym, "--json"]);
+    // THE STEWARD IS B's PERSONA ROOT: the realm co-sign signs with the root, never with her per-Nexus leaf.
+    const rootB = rootNymOf.get("B") ?? "";
+    expect(rootB, "B's persona root, read off her founding door").toMatch(/^[0-9a-f]{64}$/);
+    expect(rootB).not.toBe(contractNym.toLowerCase());                            // ROOT ⊥ LEAF
+    const reg = await A!.cli(["nexus", "realm-bag", "lares", "--steward", rootB, "--json"]);
     console.error(`meme-realm-bag MEASURE A names B: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
-    expect((data["keptBy"] as string[]).map((n) => n.toLowerCase())).toContain(contractNym.toLowerCase());
+    expect((data["keptBy"] as string[]).map((n) => n.toLowerCase())).toContain(rootB);
     // n-of-n: A alone cannot seat B — the proposal names B and counts nothing until B signs.
     expect(data["counts"]).toBe(false);
-    expect((data["awaiting"] as string[]).map((n) => n.toLowerCase())).toContain(contractNym.toLowerCase());
+    expect((data["awaiting"] as string[]).map((n) => n.toLowerCase())).toContain(rootB);
     named = true;
   }, 60_000);
 
