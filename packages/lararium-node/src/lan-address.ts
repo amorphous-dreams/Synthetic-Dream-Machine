@@ -103,21 +103,69 @@ export function wsUrlForOrigin(origin: string): string {
   return origin.replace(/^http/, "ws").replace(/\/+$/, "") + "/ws";
 }
 
+/**
+ * The standing an origin composition answers for. A lararium serves relay, read (oracle), and Web; a herm
+ * is a waystone that carries for peers and informs readers, so it serves relay and read and no Web surface.
+ */
+export type OriginStanding = "lararium" | "herm";
+
 /** Explicit origin composition supplied by the operator or deployment recipe. */
 export interface ExplicitOriginComposition {
-  /** Caller-declared Web origin; absent unless `sameOrigin` explicitly names the relay origin. */
+  /** Caller-declared Web origin; absent unless `sameOrigin` explicitly names the relay origin. A herm refuses it. */
   readonly webOrigin?: string | null;
   /** Caller-declared oracle/read-face origin; never inferred from the relay or Web origin. */
   readonly oracleOrigin?: string | null;
-  /** Explicitly declare that Web, relay, and oracle share the relay face's origin. */
+  /** Explicitly declare that every surface the standing has shares the relay face's origin. */
   readonly sameOrigin?: boolean;
 }
 
-/** The three reachability strings; the values carry no cap, identity, document, or merge decisions. */
+/** A lararium's three reachability strings; the values carry no cap, identity, document, or merge decisions. */
 export interface FaceOriginComposition {
   readonly webOrigin: string;
   readonly relayOrigin: string;
   readonly oracleOrigin: string;
+}
+
+/** A herm's two reachability strings. The Web origin is absent by law: a waystone serves no arrival page. */
+export interface WaystoneOriginComposition {
+  readonly webOrigin?: never;
+  readonly relayOrigin: string;
+  readonly oracleOrigin: string;
+}
+
+/** Either standing's composition; `webOrigin` stands present exactly when the standing serves a Web surface. */
+export type StandingOriginComposition = FaceOriginComposition | WaystoneOriginComposition;
+
+/** The legible refusal a herm-standing boot raises before listen when handed a Web origin or a Pronaos input. */
+export class OriginCustodyRefusal extends Error {
+  override readonly name = "OriginCustodyRefusal";
+}
+
+const WAYSTONE_REFUSAL = "a waystone serves no arrival page; light a Pronaos on a lararium";
+
+function waystoneRefusal(input: string): OriginCustodyRefusal {
+  return new OriginCustodyRefusal(`[origin custody] herm standing refuses ${input}: ${WAYSTONE_REFUSAL}`);
+}
+
+function declaresWeb(declaration: ExplicitOriginComposition): boolean {
+  return Boolean(declaration.webOrigin?.trim());
+}
+
+/**
+ * Refuse, for a herm, every input that would hand it origin custody: a declared Web origin
+ * (`LAR_WEB_ORIGIN` / `origins.web`) or any `LAR_PRONAOS_*` input carrying a value. A lararium passes
+ * untouched. The caller runs this before listen, so a refused waystone never answers a request.
+ * Owed and unbuilt: a declared Pronaos cap served on its own origin, apart from any vessel.
+ */
+export function assertWaystoneCustody(
+  standing: OriginStanding,
+  declaration: ExplicitOriginComposition,
+  env: Readonly<Record<string, string | undefined>>,
+): void {
+  if (standing !== "herm") return;
+  if (declaresWeb(declaration)) throw waystoneRefusal("LAR_WEB_ORIGIN / origins.web");
+  const pronaos = Object.keys(env).filter((key) => key.startsWith("LAR_PRONAOS_") && env[key] !== undefined).sort();
+  if (pronaos.length > 0) throw waystoneRefusal(pronaos.join(", "));
 }
 
 function explicitOrigin(value: string | null | undefined, label: string): string {
@@ -127,20 +175,33 @@ function explicitOrigin(value: string | null | undefined, label: string): string
 }
 
 /**
- * Resolve a face's Web/relay/oracle origins from an explicit composition declaration.
+ * Resolve a face's origins for the vessel's standing from an explicit composition declaration.
  *
- * A relay face remains relay-only by default. The only legal shortcut is `sameOrigin: true`, which is
- * an operator declaration that all three surfaces share that face. Otherwise Web and oracle origins
- * must both be named independently. No port, hostname, `LAR_PUBLIC_URL`, cap, identity, document, or
- * clock value is promoted across surfaces by this helper.
+ * A lararium composes relay + read (oracle) + Web; a herm composes relay + read and returns no Web origin,
+ * and a herm handed a Web origin refuses with the waystone message. The read origin stays explicit for both
+ * standings, and a lararium's Web origin stays explicit too.
+ *
+ * THE `sameOrigin` LAW: `sameOrigin: true` declares that every surface this standing has shares the relay
+ * face's origin — relay = read for a herm, relay = read = Web for a lararium. It cannot be combined with a
+ * separately named origin. Without it, each surface must be named on its own. No port, hostname,
+ * `LAR_PUBLIC_URL`, cap, identity, document, or clock value is promoted across surfaces by this helper.
  */
-export function originCompositionForFace(face: ReachFace, declaration: ExplicitOriginComposition): FaceOriginComposition {
+export function originCompositionForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: "herm"): WaystoneOriginComposition;
+export function originCompositionForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: "lararium"): FaceOriginComposition;
+export function originCompositionForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: OriginStanding): StandingOriginComposition;
+export function originCompositionForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: OriginStanding): StandingOriginComposition {
+  if (standing === "herm" && declaresWeb(declaration)) throw waystoneRefusal("a Web origin");
   const relayOrigin = explicitOrigin(face.origin, "relay");
   if (declaration.sameOrigin === true) {
-    if (declaration.webOrigin?.trim() || declaration.oracleOrigin?.trim()) {
+    if (declaresWeb(declaration) || declaration.oracleOrigin?.trim()) {
       throw new Error("[origin composition] sameOrigin cannot be combined with separate Web/oracle origins");
     }
-    return { webOrigin: relayOrigin, relayOrigin, oracleOrigin: relayOrigin };
+    return standing === "herm"
+      ? { relayOrigin, oracleOrigin: relayOrigin }
+      : { webOrigin: relayOrigin, relayOrigin, oracleOrigin: relayOrigin };
+  }
+  if (standing === "herm") {
+    return { relayOrigin, oracleOrigin: explicitOrigin(declaration.oracleOrigin, "oracle") };
   }
   return {
     webOrigin: explicitOrigin(declaration.webOrigin, "Web"),
@@ -150,22 +211,21 @@ export function originCompositionForFace(face: ReachFace, declaration: ExplicitO
 }
 
 /**
- * The Web origin a reach-face advertises, from an explicit composition declaration.
+ * The Web origin a lararium's reach-face advertises, from an explicit composition declaration.
  *
- * `webPort` remains in this migration-shaped signature so existing callers can move to the declaration
- * without a package rename. It is deliberately never used to infer an origin; omitted declaration now
- * refuses instead of treating a declared relay face as the Web surface.
+ * Only a lararium carries a Web origin, so this reads the lararium composition. `webPort` stays in the
+ * signature and is never used to infer an origin; an omitted declaration refuses.
  */
 export function webOriginForFace(face: ReachFace, webPort: number, declaration?: ExplicitOriginComposition): string {
   if (!declaration) {
     throw new Error(`[origin composition] Web origin is undeclared; provide webOrigin or sameOrigin=true (webPort ${webPort} is not an origin declaration)`);
   }
-  return originCompositionForFace(face, declaration).webOrigin;
+  return originCompositionForFace(face, declaration, "lararium").webOrigin;
 }
 
-/** Resolve the oracle/read-face origin without deriving it from the relay or Web origin. */
-export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOriginComposition): string {
-  return originCompositionForFace(face, declaration).oracleOrigin;
+/** Resolve the oracle/read-face origin for a standing without deriving it from the relay or Web origin. */
+export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: OriginStanding): string {
+  return originCompositionForFace(face, declaration, standing).oracleOrigin;
 }
 
 /**
@@ -176,4 +236,23 @@ export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOrigin
  */
 export function crossingUrl(opts: { webOrigin: string; wsUrl: string; gateKey: string }): string {
   return `${opts.webOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}&gate=${opts.gateKey}`;
+}
+
+/**
+ * The crossing banner's lines — one crossing URL per face, tagged with the face's kind. Only a lararium
+ * speaks them: a herm serves no Web surface for a leaf to open, so a herm (or any composition without a
+ * Web origin) yields no line.
+ */
+export function crossingBannerLines(
+  standing: OriginStanding,
+  entries: readonly { readonly face: ReachFace; readonly composition: StandingOriginComposition }[],
+  gateKey: string,
+): string[] {
+  if (standing !== "lararium") return [];
+  const lines: string[] = [];
+  for (const { face, composition } of entries) {
+    if (composition.webOrigin === undefined) continue;
+    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), gateKey })}   (${face.kind})`);
+  }
+  return lines;
 }

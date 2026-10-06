@@ -15,13 +15,13 @@ describe("main's explicit origin composition weld", () => {
   test("loads the config declaration and resolves every reach face before the listener", () => {
     expect(SOURCE).toContain("originDeclaration(cfg)");
     expect(SOURCE).toContain("const originCompositions = reachFaces.map");
-    expect(SOURCE).toContain("originCompositionForFace(face, origins)");
+    expect(SOURCE).toContain("originCompositionForFace(face, origins, \"lararium\")");
     expect(SOURCE.indexOf("const originCompositions = reachFaces.map")).toBeLessThan(SOURCE.indexOf("httpServer.listen"));
   });
 
   test("the banner uses the resolved Web and relay origins independently", () => {
-    expect(SOURCE).toContain("composition.webOrigin");
-    expect(SOURCE).toContain("composition.relayOrigin");
+    expect(SOURCE).toContain("crossingBannerLines(\"lararium\", crossings, gateIdentity.verifyingKey)");
+    expect(SOURCE).toContain(".relayOrigin");
     expect(SOURCE).not.toContain("webOriginForFace(");
   });
 });

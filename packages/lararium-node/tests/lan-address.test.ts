@@ -88,14 +88,14 @@ describe("the reach-faces a vessel answers on", () => {
 
   test("a declared TLS face may explicitly declare one origin for Web + relay + oracle", () => {
     const declared: ReachFace = { kind: "declared", host: "enyalios.home.amorphousdreams.net", origin: "https://enyalios.home.amorphousdreams.net" };
-    const composition = originCompositionForFace(declared, { sameOrigin: true });
+    const composition = originCompositionForFace(declared, { sameOrigin: true }, "lararium");
     expect(composition).toEqual({
       webOrigin: "https://enyalios.home.amorphousdreams.net",
       relayOrigin: "https://enyalios.home.amorphousdreams.net",
       oracleOrigin: "https://enyalios.home.amorphousdreams.net",
     });
     expect(webOriginForFace(declared, 5173, { sameOrigin: true })).toBe("https://enyalios.home.amorphousdreams.net");
-    expect(oracleOriginForFace(declared, { sameOrigin: true })).toBe("https://enyalios.home.amorphousdreams.net");
+    expect(oracleOriginForFace(declared, { sameOrigin: true }, "lararium")).toBe("https://enyalios.home.amorphousdreams.net");
     // The relay under the SAME name carries wss (mixed-content-safe from an https page).
     expect(wsUrlForOrigin(declared.origin)).toBe("wss://enyalios.home.amorphousdreams.net/ws");
     // The whole crossing URL: web surface over https, relay over wss, one name.
@@ -108,31 +108,31 @@ describe("the reach-faces a vessel answers on", () => {
     const composition = originCompositionForFace(face, {
       webOrigin: "http://192.168.1.42:5173",
       oracleOrigin: "http://waystone.local:8081",
-    });
+    }, "lararium");
     expect(composition).toEqual({
       webOrigin: "http://192.168.1.42:5173",
       relayOrigin: "http://192.168.1.42:8080",
       oracleOrigin: "http://waystone.local:8081",
     });
-    expect(oracleOriginForFace(face, { webOrigin: "http://web.local", oracleOrigin: "http://oracle.local" }))
+    expect(oracleOriginForFace(face, { webOrigin: "http://web.local", oracleOrigin: "http://oracle.local" }, "lararium"))
       .toBe("http://oracle.local");
   });
 
   test("omitted Web/oracle declarations refuse instead of inferring equivalence from the relay", () => {
     const face: ReachFace = { kind: "declared", host: "hearth.example", origin: "https://hearth.example" };
     expect(() => webOriginForFace(face, 5173)).toThrow(/Web origin is undeclared/);
-    expect(() => originCompositionForFace(face, { oracleOrigin: "https://oracle.example" })).toThrow(/Web origin/);
-    expect(() => originCompositionForFace(face, { webOrigin: "https://web.example" })).toThrow(/oracle origin/);
-    expect(() => oracleOriginForFace(face, { webOrigin: "https://web.example" })).toThrow(/oracle origin/);
-    expect(() => originCompositionForFace(face, {})).toThrow(/Web origin/);
+    expect(() => originCompositionForFace(face, { oracleOrigin: "https://oracle.example" }, "lararium")).toThrow(/Web origin/);
+    expect(() => originCompositionForFace(face, { webOrigin: "https://web.example" }, "lararium")).toThrow(/oracle origin/);
+    expect(() => oracleOriginForFace(face, { webOrigin: "https://web.example" }, "lararium")).toThrow(/oracle origin/);
+    expect(() => originCompositionForFace(face, {}, "lararium")).toThrow(/Web origin/);
   });
 
   test("changing origins changes reachability strings only", () => {
     const declaredHttp: ReachFace = { kind: "declared", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
     const held = { caps: ["relay", "pronaos"], identity: "did:key:z6Mk", document: "lar:///family/book" };
     const before = JSON.stringify(held);
-    const first = originCompositionForFace(declaredHttp, { webOrigin: "http://web-a.local", oracleOrigin: "http://oracle-a.local" });
-    const second = originCompositionForFace(declaredHttp, { webOrigin: "http://web-b.local", oracleOrigin: "http://oracle-b.local" });
+    const first = originCompositionForFace(declaredHttp, { webOrigin: "http://web-a.local", oracleOrigin: "http://oracle-a.local" }, "lararium");
+    const second = originCompositionForFace(declaredHttp, { webOrigin: "http://web-b.local", oracleOrigin: "http://oracle-b.local" }, "lararium");
     expect(first.webOrigin).not.toBe(second.webOrigin);
     expect(first.oracleOrigin).not.toBe(second.oracleOrigin);
     expect(first.relayOrigin).toBe(second.relayOrigin);

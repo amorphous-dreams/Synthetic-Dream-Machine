@@ -251,7 +251,9 @@ export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistV
 // `lares herm` stand-up verb to print the carriage crossroads' dial URLs (host from the face, the relay's own port).
 export {
   deriveReachFaces, wsUrlForOrigin, originCompositionForFace, webOriginForFace, oracleOriginForFace,
+  assertWaystoneCustody, crossingBannerLines, OriginCustodyRefusal,
   type ReachFace, type InterfaceTable, type ExplicitOriginComposition, type FaceOriginComposition,
+  type WaystoneOriginComposition, type StandingOriginComposition, type OriginStanding,
 } from "./lan-address.js";
 // The active-persona selector — "put on a mask" at the identity layer (Plurality Pono). The persona-root
 // SET mints/loads the operator-root the `lares persona` door drives (founder-side custody).

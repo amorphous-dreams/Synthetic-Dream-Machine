@@ -21,9 +21,10 @@
  *                  Set to an isolated test dir so promote/sync writes never touch
  *                  canonical packages/ or wikis/ paths.
  *   LAR_PUBLIC_URL   — explicit relay reach face only; never promoted to Web/oracle.
- *   LAR_WEB_ORIGIN   — explicit Web-surface origin (or set origins.web in config.json).
+ *   LAR_WEB_ORIGIN   — explicit Web-surface origin (or set origins.web in config.json); a lararium's alone.
  *   LAR_ORACLE_ORIGIN — explicit oracle/read-face origin (or set origins.oracle in config.json).
- *   LAR_SAME_ORIGIN  — true/false explicit declaration that all three origins are equal.
+ *   LAR_SAME_ORIGIN  — true/false explicit declaration that every surface the standing has shares the
+ *                      relay face's origin: relay = read for a herm, relay = read = Web for a lararium.
  *
  * Bootstrap:
  *   The boot prints the catalog Automerge URL to stdout.
@@ -35,7 +36,7 @@ import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
-import { deriveReachFaces, wsUrlForOrigin, crossingUrl, originCompositionForFace, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
+import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
@@ -159,7 +160,7 @@ async function main(): Promise<void> {
   });
   const originCompositions = reachFaces.map((face) => {
     try {
-      return originCompositionForFace(face, origins);
+      return originCompositionForFace(face, origins, "lararium");
     } catch (err) {
       throw new Error(`[lararium] origin composition refused for ${face.origin}: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -401,10 +402,8 @@ async function main(): Promise<void> {
   const gateIdentity = await generateOrLoadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
-  for (const [i, f] of reachFaces.entries()) {
-    const composition = originCompositions[i]!;
-    console.log(`[lararium]   ${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
-  }
+  const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));
+  for (const line of crossingBannerLines("lararium", crossings, gateIdentity.verifyingKey)) console.log(`[lararium]   ${line}`);
   console.log("[lararium]   (a leaf still needs an ADMIT — the leaf's page shows its own key + the `lares device-admit` line to run here)");
 
   // The CLIENT dial-out (Socket A) — announced when a peer sync URL rides the config (the same-operator device
