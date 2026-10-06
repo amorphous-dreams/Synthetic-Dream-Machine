@@ -128,12 +128,12 @@ A ''conforming carrier reader'' MUST: read the frame's `code=` parameter to iden
 (#/control-set); read a leading `<<!DOCTYPE>>` before selecting a grammar (#/declaration-register);
 accept a carrier that states no frame and MINT the frame AND the declaration on projection (#/authoring);
 divide the carrier through the fence mask (#/frame-head-lock); normalize bytes once at the boundary
-(#/carrier-bytes); and report a missing block check as ''unchecked'' rather than as a failed one
+(#/carrier-bytes); and report a missing block check as ''absent'' rather than as a failed one
 (#/control-set).
 
-A ''conforming consumer'' MUST honour the verdict obligations (#/the-touchstone): surface a `mismatch`
-to its operator before any bag admission, treat `torn` as `mismatch`, and read absence as `unchecked` —
-refusing admission only under a policy it declares.
+A ''conforming consumer'' MUST honour the verdict obligations (#/the-touchstone): surface a `stale`
+to its operator before any bag admission, refuse `torn`, read absence as `absent` — refusing admission
+only under a policy it declares — and hold `bare` whole as one record, flagged UNSTABLE.
 
 <<~/ahu>>
 
@@ -354,7 +354,7 @@ frontier, honestly marked, the way a MUD room's exit to an unbuilt room reads as
 as an error.
 
 ''A declared unresolved bearing never reads as a dangling link. A dangling link names an unresolved bearing that
-lied about its resolution.'' The same cut runs through the block check (`unchecked` never `mismatch`)
+lied about its resolution.'' The same cut runs through the block check (`absent` never `stale`)
 and through the ward's infelicities (a misfire voids, an abuse rings hollow): ABSENCE DECLARED and
 ABSENCE DISCOVERED stand as different facts, and every instrument here that conflated them read useless.
 
@@ -428,7 +428,7 @@ The `bcc` slot carries a check over the framed span. Normatively:
 * ''The span binds the FRAME'S BYTE SPELLING, and that binding lets the check compute.'' The span opens on the
   STX sigil and closes on the ETX sigil, so those sigils' own bytes ride inside it. A frame migration —
   a mark gaining a named parameter, a spacing rule settling — moves them, and every check computed
-  before it would read `mismatch` over a body nobody touched, reporting corruption where a grammar
+  before it would read `stale` over a body nobody touched, reporting corruption where a grammar
   merely evolved.
 * ''The span's open and close are each a FIRST, never a choice.'' The span opens on the first unmasked
   STX and closes on the first unmasked ETX AFTER it, and that ETX MUST be the only one: a second
@@ -448,9 +448,9 @@ The `bcc` slot carries a check over the framed span. Normatively:
   TOML fields, authored prose, and nested fragment metadata all ride inside the check. A carrier whose
   parent fields change MUST receive a new check; only DOCTYPE, SOH routing, and transport carriage remain
   outside this integrity span.
-* ''A carrier holding no check reads `unchecked`, never `mismatch`.'' Absence of a check and a failed
+* ''A carrier holding no check reads `absent`, never `stale`.'' Absence of a check and a failed
   check stand as different facts (#/bearing-arrow), and a reader that collapsed them would be useless exactly
-  where it matters. The caller decides what an unchecked carrier may do; it still parses.
+  where it matters. The caller decides what a carrier with an absent check may do; it still parses.
 * ''What a relay can do with it:'' raw bytes, one scan, no parser and no canonicaliser. A relay holding
   `pull` and not `read` verifies this check over an offering it cannot open.
 
@@ -828,28 +828,35 @@ a check published wherever the artifact lives proves nothing against anyone who 
 
 ### What a verdict obliges
 
-The reading names four verdicts, and each carries its consequence — a check whose failure obliges
-nothing decorates rather than protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
+The reading names five verdicts (`packages/lararium-memetic-frame/src/verdict.ts`, the `FrameVerdict`
+union), and each carries its consequence — a check whose failure obliges nothing decorates rather than
+protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
 
-* ''ok'' — the bytes match their check. The verdict certifies bytes and nothing above them: never
+* ''match'' — the bytes match their check. The verdict certifies bytes and nothing above them: never
   meaning, standing, or authorship.
-* ''mismatch'' — the bytes disagree with the check they carry. A verifier MUST NOT report the carrier
-  as verified, and a consumer MUST surface the mismatch to its operator before admitting the carrier to
-  any bag — admission without surfacing MUST NOT occur. The conflict belongs to the humans involved;
-  the carrier still parses, as graceful parsing requires, and parses as a carrier in fault.
-* ''torn'' — STX stands and ETX does not. A torn carrier reads as a truncated transmission and MUST NOT
-  read as unchecked: conflating the two hands an adversary the cheapest strip on offer — cut a file
-  ahead of its closer and a missing check would read as lawful absence. A consumer treats torn as it
-  treats mismatch.
-* ''unchecked'' — no framed body, or a framed body carrying no check. The check stays optional and
-  absence stays legal. A consumer MAY hold a policy requiring one, and under such a policy absence
-  reads as refusal to admit — the only defense a bare digest affords against stripping, since whoever
-  can rewrite a carrier can rewrite or remove the check beside it.
+* ''stale'' — the bytes disagree with the check they carry; the verdict carries both digests, the stored
+  and the computed. A verifier MUST NOT report the carrier as verified, and a consumer MUST surface the
+  stale check to its operator before admitting the carrier to any bag — admission without surfacing MUST
+  NOT occur. A stale check on a human's edit still owes that edit a real decision (noop, ingest or
+  conflict), never a blanket refusal; the conflict belongs to the humans involved, and the carrier still
+  parses, as graceful parsing requires, as a carrier in fault.
+* ''torn'' — the frame cannot divide without choosing: STX without ETX, a second live ETX, an ETX ahead
+  of STX, a meta fence above STX, or a head or release in a torn spelling, each fault named. A torn
+  carrier reads as a truncated or broken transmission and MUST NOT read as `absent`: conflating the two
+  hands an adversary the cheapest strip on offer — cut a file ahead of its closer and a missing check
+  would read as lawful absence. A consumer refuses a torn carrier, and its bytes stay where they stand.
+* ''absent'' — a frame stands and carries no check. The check stays optional and absence stays legal. A
+  consumer MAY hold a policy requiring one, and under such a policy absence reads as refusal to admit —
+  the only defense a bare digest affords against stripping, since whoever can rewrite a carrier can
+  rewrite or remove the check beside it.
+* ''bare'' — no frame at all: no head, no STX, no ETX, no release. A consumer holds the bytes whole as
+  one record, never parses them, never refuses them, and names them UNSTABLE — bare data reads as no
+  meme, and reading it as one would invent a carrier nobody wrote.
 
 ''What the check cannot answer.'' The span opens at STX, so the declaration and SOH routing heading stand
 OUTSIDE it: a carrier's grammar selector and transport bearing can move while the check holds. The root
 TOML metadata is inside the span and therefore is covered. The verdict answers one question — did the
-document bytes survive carriage — and a reader MUST NOT take an `ok` as covering bytes the span excludes.
+document bytes survive carriage — and a reader MUST NOT take a `match` as covering bytes the span excludes.
 
 ### What stands, and what waits
 
@@ -1160,13 +1167,13 @@ in carriage'' — a truncated transfer, a mangled byte, a re-encoding that moved
 defends nothing against an adversary who can rewrite the carrier: whoever holds the bytes rewrites the
 check beside them, so the mark detects ''corruption, never forgery'', and it grants no authentication,
 no authorization, and no privacy. Authenticity belongs to an outer layer — a seal or a signature — and
-a reader that takes an `ok` for authenticity has granted the check a standing it never claimed.
+a reader that takes a `match` for authenticity has granted the check a standing it never claimed.
 
 ''What an adversary inside the model can still do, and what answers each:''
 
 * ''Rewrite the heading while the check holds.'' The span opens at STX, so the declaration and the
   heading stand outside it — a carrier's address, media type, and grammar-selector can all move
-  under an `ok`. The root identity block rides inside the span (#/control-set) and so cannot move
+  under a `match`. The root identity block rides inside the span (#/control-set) and so cannot move
   this way. This bounds what the verdict means (did the TEXT survive
   carriage) and stands as the design's accepted boundary: heading integrity rides the outer layer. A
   consumer MUST NOT treat the verdict as covering bytes the span excludes.
@@ -1174,10 +1181,10 @@ a reader that takes an `ok` for authenticity has granted the check a standing it
   first-following-ETX span the boundary rule names (#/control-set) — so a second framed body would ride
   beneath a verdict computed over the first. The grammar admits one text frame per carrier
   (#/conformance), and the gradient surfaces a second as a fault rather than letting the first frame's
-  `ok` speak for bytes it never covered.
+  `match` speak for bytes it never covered.
 * ''Cut the file ahead of its closer.'' Truncation removes ETX and the check with it, and a reader that
   filed that under absence would hand the adversary the cheapest strip on offer. A torn frame reads
-  ''torn'' — truncated transmission, never lawful absence — and a consumer treats torn as mismatch
+  ''torn'' — truncated transmission, never lawful absence — and a consumer refuses it
   (#/the-touchstone).
 * ''Strip the check.'' Absence stays legal, so stripping costs an adversary nothing against a consumer
   with no policy. The only defense a bare digest affords: a consumer MAY require a check, and under
@@ -1286,6 +1293,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eHSGl8tYNv1PW2I7HILg6MZ9-MXr6XiWe5c1I9YESt0
+<<^ code="&#x0003;">>ni:///sha-256;1MPmLZSVAw0k068PL_mmwRKpq-QBQDnmY6pOVQEbg-4
 
 <<^ code="&#x0004;" -> to="?">>
