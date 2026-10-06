@@ -147,6 +147,16 @@ describe.skipIf(wikiSkip)(
    *   Written into a carrier it fuses identity with residency, and a meme re-projected to another bag
    *   then carries its old home.
    */
+  const strandsPastEtx = (uri: string, disk: string): boolean => {
+    const { diagnostics } = memeticIngestOps.deserialize(`lar:///${uri}`, disk) as {
+      diagnostics: Array<{ code?: string }>;
+    };
+    return diagnostics.some((d) => d.code === "postamble-content");
+  };
+
+  // SIZED FROM A MEASURED RUN: the corpus-wide walk deserializes every carrier and took 5.1-5.2 s on an
+  // idle machine (over the 5 s default before any load). 60 s gives ~11x for witness-all load and still
+  // bounds a hang.
   test("no carrier strands content past ETX, and none stamps its residency into canon", () => {
     const carriers = carrierFiles(REPO);
     const stranded: string[] = [], stamped: string[] = [];
@@ -155,13 +165,25 @@ describe.skipIf(wikiSkip)(
       const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(disk)?.[1];
       if (!uri) continue;
       if (/^origin-bag\s*=/m.test(disk)) stamped.push(f);
-      const { diagnostics } = memeticIngestOps.deserialize(`lar:///${uri}`, disk) as {
-        diagnostics: Array<{ code?: string }>;
-      };
-      if (diagnostics.some((d) => d.code === "postamble-content")) stranded.push(f);
+      if (strandsPastEtx(uri, disk)) stranded.push(f);
     }
+    expect(carriers.length).toBeGreaterThan(500);
     expect(stranded).toEqual([]);
     expect(stamped).toEqual([]);
+  }, 60_000);
+
+  test("CONTROL: the walk's probe reads a planted carrier with content past ETX as stranded", () => {
+    const f = carrierFiles(REPO).find((c) => {
+      const disk = readFileSync(path.join(REPO, c), "utf8");
+      return /^uri-path\s*=/m.test(disk) && /^<<\^ code="&#x0003;">>.*$/m.test(disk);
+    });
+    expect(f).toBeDefined();
+    const disk = readFileSync(path.join(REPO, f!), "utf8");
+    const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(disk)![1]!;
+    expect(strandsPastEtx(uri, disk)).toBe(false);
+    const planted = disk.replace(/^(<<\^ code="&#x0003;">>.*)$/m, "$1\n\nProse an author wrote below the close.");
+    expect(planted).not.toBe(disk);
+    expect(strandsPastEtx(uri, planted)).toBe(true);
   });
 
   /**
