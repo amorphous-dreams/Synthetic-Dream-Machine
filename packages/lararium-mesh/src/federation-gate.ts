@@ -62,14 +62,22 @@ export interface FederationGate {
 /**
  * DeterministicFederationGate — the alpha gate.
  *
- * The federatable surface is the per-Nexus PUBLIC boards, addressed
- * deterministically from the confederation (relay-gate) key: the crossroads
- * public-plane doc + the WHO board + the Kapae-ANTIGEN board (the immune antigen
- * rides the mandatory-carry plane, carry-contract MANDATORY tier). Automerge-repo
- * does NOT auto-follow doc refs (each doc syncs independently under its own
- * sharePolicy verdict), so these board ids are the WHOLE relay surface — no
- * transitive dep-set to chase and ZERO hand-maintenance (the set is a pure
- * function of the gate key).
+ * The federatable surface is the per-island PUBLIC boards, addressed
+ * deterministically from each confederation (relay-gate) key the gate holds. For
+ * EVERY key it federates that island's five boards: the crossroads public-plane
+ * doc, the WHO board, the Kapae-ANTIGEN board (the immune antigen rides the
+ * mandatory-carry plane, carry-contract MANDATORY tier), the carriage-contracts
+ * board, and the persona-KEL board. Automerge-repo does NOT auto-follow doc refs
+ * (each doc syncs independently under its own sharePolicy verdict), so these board
+ * ids are the WHOLE relay surface — no transitive dep-set to chase and ZERO
+ * hand-maintenance (the set is a pure function of the key set).
+ *
+ * `nexusPubkey` takes one key or a carried key set. A single string federates
+ * exactly that island's five boards; an empty set federates nothing. Federating a
+ * carried set sends every carried island's PUBLIC boards to this vessel's
+ * cross-operator peers — that is CARRY, and carry ⊥ read holds: the gate admits
+ * only the derived public addresses, never a private plane (private planes carry
+ * random 16-byte ids that no derivation reaches).
  *
  * `extraBoardUrls` admits any further public board a leaf deliberately federates
  * (e.g. a WHERE/mesh board) — passed in by the composing vessel, still
@@ -78,13 +86,16 @@ export interface FederationGate {
 export class DeterministicFederationGate implements FederationGate {
   readonly #federatable: ReadonlySet<DocumentId>;
 
-  constructor(nexusPubkey: string, extraBoardUrls: readonly AutomergeUrl[] = []) {
+  constructor(nexusPubkey: string | readonly string[], extraBoardUrls: readonly AutomergeUrl[] = []) {
+    const keys: readonly string[] = typeof nexusPubkey === "string" ? [nexusPubkey] : nexusPubkey;
     const urls: AutomergeUrl[] = [
-      crossroadsDocUrl(nexusPubkey),
-      whoBoardDocUrl(nexusPubkey),
-      kapaeAntigenDocUrl(nexusPubkey),   // the immune antigen (DENY-twin) rides the always-carried plane (MANDATORY tier)
-      carriageDocUrl(nexusPubkey),        // the operator carriage-contracts board (ALLOW-twin) — quorum-signed contracts, MANDATORY tier
-      personaKelBoardDocUrl(nexusPubkey), // the persona-KEL board — PUBLIC identifier→head mapping (federates once)
+      ...keys.flatMap((key) => [
+        crossroadsDocUrl(key),
+        whoBoardDocUrl(key),
+        kapaeAntigenDocUrl(key),   // the immune antigen (DENY-twin) rides the always-carried plane (MANDATORY tier)
+        carriageDocUrl(key),        // the operator carriage-contracts board (ALLOW-twin) — quorum-signed contracts, MANDATORY tier
+        personaKelBoardDocUrl(key), // the persona-KEL board — PUBLIC identifier→head mapping (federates once)
+      ]),
       ...extraBoardUrls,
     ];
     this.#federatable = new Set(urls.map((u) => interpretAsDocumentId(u) as DocumentId));

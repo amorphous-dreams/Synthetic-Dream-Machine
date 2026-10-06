@@ -5,13 +5,19 @@
  *   - DeterministicFederationGate federates ONLY the per-Nexus public boards
  *     (crossroads + WHO board, deterministic from the gate key) + any explicit
  *     extra board; a private/random doc id is DENIED.
+ *   - over a carried key SET, the gate federates EVERY island's five public boards (crossroads,
+ *     WHO, kapae-antigen, carriage, persona-KEL); a random-id private plane and a third island's
+ *     boards stay denied, an empty set federates nothing, and a single string matches the
+ *     literal doc ids the single-key gate derives.
  *   - federationShareDecision (the vessel's sharePolicy verdict): in-process peers
  *     get everything; a same-operator relay (no gate) syncs fully; a gated relay
  *     peer gets ONLY the federatable surface — the private planes never cross.
  */
 import { describe, test, expect } from "vitest";
 import { interpretAsDocumentId, stringifyAutomergeUrl, type BinaryDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { crossroadsDocUrl, whoBoardDocUrl, deterministicDocUrl } from "../src/deterministic-doc.js";
+import {
+  crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, carriageDocUrl, personaKelBoardDocUrl, deterministicDocUrl,
+} from "../src/deterministic-doc.js";
 import { DeterministicFederationGate, federationShareDecision } from "../src/federation-gate.js";
 
 const NX = "abcdef0123456789";
@@ -48,6 +54,59 @@ describe("DeterministicFederationGate — the federatable surface", () => {
     expect(gate2.mayFederate(docIdOf(where))).toBe(true);
     // still denies a random private doc
     expect(gate2.mayFederate(randomDocId())).toBe(false);
+  });
+});
+
+/** The five public boards an island federates, derived from its key. */
+const fiveBoards = (key: string): DocumentId[] => [
+  crossroadsDocUrl(key), whoBoardDocUrl(key), kapaeAntigenDocUrl(key), carriageDocUrl(key), personaKelBoardDocUrl(key),
+].map(docIdOf);
+
+describe("DeterministicFederationGate — a carried key set", () => {
+  const A = NX;
+  const X = "fedcba9876543210";
+  const Y = "0011223344556677";
+
+  test("given [A, X], federates BOTH islands' five public boards", () => {
+    const gate = new DeterministicFederationGate([A, X]);
+    for (const id of [...fiveBoards(A), ...fiveBoards(X)]) expect(gate.mayFederate(id)).toBe(true);
+  });
+
+  test("CONTROL: a random-id private plane stays denied over a carried set", () => {
+    const gate = new DeterministicFederationGate([A, X]);
+    for (let i = 0; i < 8; i++) expect(gate.mayFederate(randomDocId())).toBe(false);
+  });
+
+  test("CONTROL: a third island Y's boards stay denied", () => {
+    const gate = new DeterministicFederationGate([A, X]);
+    for (const id of fiveBoards(Y)) expect(gate.mayFederate(id)).toBe(false);
+  });
+
+  test("CONTROL: an empty set federates nothing", () => {
+    const gate = new DeterministicFederationGate([]);
+    for (const id of [...fiveBoards(A), ...fiveBoards(X)]) expect(gate.mayFederate(id)).toBe(false);
+    expect(gate.mayFederate(randomDocId())).toBe(false);
+  });
+
+  test("CONTROL: a single string federates exactly the literal ids the single-key gate derives", () => {
+    // Fixture: the doc ids the single-key gate derives for NX, in derivation order
+    // (crossroads, WHO, kapae-antigen, carriage, persona-KEL).
+    const FIXTURE = [
+      "2YKrMmP1oUfj9tSwU4gjQvsYaH6D",
+      "2qLnbUoKqBJoLUjjJBrw9reSvFdm",
+      "3jupdHYA97djCGEwNrxSvM48bdt6",
+      "2b46DoPViN4et3KRcDiZtdZP5nwq",
+      "3JX3V9i8cQPLD8pfAXWVrM7E9qih",
+    ] as DocumentId[];
+    expect(fiveBoards(NX)).toEqual(FIXTURE);
+    const single = new DeterministicFederationGate(NX);
+    const asSet  = new DeterministicFederationGate([NX]);
+    for (const id of FIXTURE) {
+      expect(single.mayFederate(id)).toBe(true);
+      expect(asSet.mayFederate(id)).toBe(true);
+    }
+    for (const id of [...fiveBoards(X), ...fiveBoards(Y)]) expect(single.mayFederate(id)).toBe(false);
+    expect(single.mayFederate(randomDocId())).toBe(false);
   });
 });
 
