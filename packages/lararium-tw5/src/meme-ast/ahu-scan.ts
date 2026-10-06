@@ -10,6 +10,13 @@
  * One regex pair, one balanced-bracket scanner, one slot-path composer —
  * any drift between callers is a bug, so they share this module.
  *
+ * ── LAW: THE DECOMPOSER IS MACHINE, AND VOCABULARY NEVER DECOMPOSES ─────────────────────────────
+ * The family cut stands inside the engine window: hard-coded regexes under the memetic-frame fence
+ * mask, and nothing else. This module reads no `SharktoothSigil` tiddler and never calls
+ * `getGrammar`; the live vocabulary grades and renders text, it never decides where a record ends.
+ * The wire carries the records this cut makes, so a dialect edit can change how a meme reads but
+ * never how it decomposes. Weld: `tests/decomposer-machine-weld.test.ts`.
+ *
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/ahu-scan
  */
 

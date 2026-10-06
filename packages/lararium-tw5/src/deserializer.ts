@@ -394,6 +394,13 @@ function splitMemeToTiddlers(
 // The text returned for each tiddler has its own ahu blocks rewritten to
 // `<<~ kahea ahu #slot>>` references; child tiddlers hold the body bytes
 // authoritatively.
+//
+// LAW: THE DECOMPOSER IS MACHINE, AND VOCABULARY NEVER DECOMPOSES. The split
+// composes from `findTopLevelAhuBlocks` alone — engine-fixed regexes under the
+// fence mask. It reads no `SharktoothSigil` tiddler and never calls
+// `getGrammar`, so `splitRecursive`, `splitBodyTiddler` and the carrier
+// deserializer cut the same records whatever dialect the wiki holds. Weld:
+// `tests/decomposer-machine-weld.test.ts`.
 // ---------------------------------------------------------------------------
 
 function splitRecursive(
@@ -616,6 +623,9 @@ export { memeticWikitextDeserializer as "text/memetic-wikitext+tiddlywiki" };
 //
 // If no ahu blocks exist in bodyText the function returns { parent: fields,
 // children: [] } with no allocation — callers can skip the tombstone scan.
+//
+// Machine, never vocabulary: the cut is `splitRecursive`'s (see the law above
+// it) and reads no grammar.
 // ---------------------------------------------------------------------------
 
 export function splitBodyTiddler(
