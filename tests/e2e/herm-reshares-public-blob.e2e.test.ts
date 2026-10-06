@@ -142,7 +142,14 @@ let standGate = "";
 let cid = "";
 
 describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes dark — does the Herm re-share it to C? ★", () => {
+  // THIS SUITE DECLARES ITS ORIGINS. Every fleet vessel boots under a scratch LAR_ROOT that never reads the
+  // operator's config.json, so boot composes Web and oracle origins from nothing and refuses with "Web origin
+  // must be declared" (the Herm before its herm branch, which never serves them). The harness spawns inherit
+  // process.env, so the suite declares same-origin here pending the standing-aware composition, where a
+  // herm's Web origin is legally absent; once that lands this declaration goes.
+  const priorSameOrigin = process.env["LAR_SAME_ORIGIN"];
   beforeAll(async () => {
+    process.env["LAR_SAME_ORIGIN"] = "true";
     try { fleet = await openStagedFleet({ tag: "herm-reshare" }); }
     catch (err) {
       const text = err instanceof Error ? err.message : String(err);
@@ -151,7 +158,10 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     }
   }, 500_000);
 
-  afterAll(async () => { if (fleet) await fleet.stop(); });
+  afterAll(async () => {
+    try { if (fleet) await fleet.stop(); }
+    finally { if (priorSameOrigin === undefined) delete process.env["LAR_SAME_ORIGIN"]; else process.env["LAR_SAME_ORIGIN"] = priorSameOrigin; }
+  });
 
   test("①② the fleet stands: the Herm at the crossroads, A founded, C by A's signed edge — the crossing opens", () => {
     expect(fleet, standGate).not.toBeNull();
