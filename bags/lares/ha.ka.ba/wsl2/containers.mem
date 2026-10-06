@@ -73,7 +73,7 @@ Rootful Docker Engine with the compose plugin, supervised by systemd inside Ubun
 !! Fallbacks, ranked
 
 # ''Rancher Desktop'' (moby backend) — officially lists Windows 11 Home, Apache-2.0, gives the same `docker` and `docker compose` inside the Ubuntu distro through its WSL integration, adds a GUI for a non-technical household member. Runs its own `rancher-desktop` distro beside Ubuntu; k3s can stay off.
-# ''Docker Desktop'' — its requirements page names Pro, Enterprise and Education for the WSL 2 backend, yet the same page says "Windows Home or Education editions only allow you to run Linux containers"; it installs and runs on Home in practice, and the licence (2026-08-26) grants a household free use. On paper unsupported, so no support recourse. Its WSL integration places a second `docker` inside the distro: one engine, never both.
+# ''Docker Desktop'' — its requirements page (read 2026-10-06) names "Windows 11 64-bit: Enterprise, Pro, or Education version 23H2 (build 22631) or higher" and WSL 2.1.5+ for the WSL 2 backend; Home appears only in the callout "Windows Home or Education editions only allow you to run Linux containers", which the page never reconciles with its own list. It installs and runs on Home in practice, and the licence (2026-08-26) grants a household free use; on paper unsupported, so no support recourse. Its WSL integration places a second `docker` inside the distro, and while Desktop runs it restarts the WSL VM on its own (which matters to a raw vhdx backup): one engine, never both.
 # ''Podman'' — rootful works; rootless hits #41492; compose fidelity reads good but short of full. Podman Desktop's WSL provider runs on Home; its own machine distro is a second VM.
 
 Not today: `wslc` (no compose, no socket); nerdctl + containerd (works, more hand assembly, no apt packaging).
@@ -108,6 +108,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KuTy_2KsErBONLoxdBEcBvQ2VHcWyIdNKrf2cHSLmWs
+<<^ code="&#x0003;">>ni:///sha-256;LmAupgEf9_HAuh-vXiV45AeCogdexCOK-fmVXpbdL38
 
 <<^ code="&#x0004;" -> to="?">>

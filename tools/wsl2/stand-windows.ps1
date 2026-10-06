@@ -178,7 +178,7 @@ if (-not $Distro) {
     Already "'$Distro' vhdx already sparse ($([math]::Round((Get-Item $vhd).Length / 1GB, 1)) GB on disk) - left as found"
   } else {
     $vhdLabel = if ($vhd) { $vhd } else { '<path to ext4.vhdx>' }
-    Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe: potential data corruption). Safe reclaim: wsl --shutdown, then diskpart > select vdisk file=`"$vhdLabel`" > compact vdisk"
+    Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe: potential data corruption). Safe reclaim: wsl --shutdown, then (Administrator) diskpart > select vdisk file=`"$vhdLabel`" > attach vdisk readonly > compact vdisk > detach vdisk"
   }
 } else {
   if (-not $work) {

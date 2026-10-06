@@ -74,7 +74,7 @@ if [[ "$cg" == cgroup2fs ]]; then row ok "cgroup v2" "$cg"
 else row drift "cgroup v2" "${cg:-unreadable} — rootful dockerd needs the unified hierarchy"; fi
 if command -v docker >/dev/null 2>&1; then
   if cv=$(timeout 15 docker compose version 2>/dev/null); then row ok "docker compose plugin" "$cv"
-  else row drift "docker compose plugin" "docker present, compose absent — sudo apt install docker-compose-v2"; fi
+  else row drift "docker compose plugin" "docker present, compose absent — sudo apt install docker-compose-v2 (archive docker.io) or docker-compose-plugin (Docker's repo docker-ce)"; fi
 else row drift "docker compose plugin" "docker absent — see stand-linux.sh step 5b"; fi
 
 exit $rc
