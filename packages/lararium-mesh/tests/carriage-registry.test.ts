@@ -17,6 +17,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
   signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryBytes, foldCarriageSet, foldCarriageDetails, holdsCarriage,
+  carriageEntryCounts,
   CARRIAGE_ENTRY_DOMAIN, carriageEntryActCid, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import type { KahuRoster } from "../src/kapae-antigen.js";
@@ -216,6 +217,27 @@ describe("fold details — evidence for a future receiver-local relation verifie
     const unavailable = await foldCarriageDetails(undefined, r);
     expect(unavailable).toMatchObject({ charterEpochCid: EPOCH, entries: [] });
     expect(unavailable.members.size).toBe(0);
+  });
+});
+
+describe("carriageEntryCounts — the writer's self-check reads the fold's own verdict", () => {
+  test("CONTROL — a quorum-signed admit carrying its contract-in counts, and the fold counts it too", async () => {
+    const r     = await roster();
+    const entry = await admitEntry();
+    expect(await carriageEntryCounts(entry, r)).toBe(true);
+    expect((await foldCarriageDetails([entry], r)).entries[0]).toMatchObject({ counted: true });
+  });
+
+  test("a quorum-signed UNSUPPORTED action with a valid contract-in never counts — the fold rejects it too", async () => {
+    const r       = await roster();
+    const nym     = await pubOf(SEEDS.joiner);
+    const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const bogus   = await signCarriageQuorum(
+      { nym, action: "bogus" as unknown as CarriageEntry["action"], parents: [], sealEpochCid: EPOCH },
+      signers, await contractIn(SEEDS.joiner),
+    );
+    expect((await foldCarriageDetails([bogus], r)).entries[0]).toMatchObject({ counted: false, reason: "unsupported-action" });
+    expect(await carriageEntryCounts(bogus, r)).toBe(false);
   });
 });
 

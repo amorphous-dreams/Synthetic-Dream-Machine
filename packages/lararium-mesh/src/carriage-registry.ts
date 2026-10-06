@@ -224,9 +224,7 @@ async function verifyContractIn(entry: CarriageEntry): Promise<boolean> {
   const cs = entry.contractSig;
   if (!cs) return false;
   if (cs.signer.toLowerCase() !== entry.nym.toLowerCase()) return false;   // the seal MUST be the operator's own
-  const bytes = carriageContractBytes({ nym: entry.nym, sealEpochCid: entry.sealEpochCid });
-  try { return await ed25519.verifyAsync(hexToBytes(cs.sig), bytes, hexToBytes(entry.nym)); }
-  catch { return false; }
+  return verifyCarriageConsent({ nym: entry.nym, sealEpochCid: entry.sealEpochCid, contractSig: cs.sig });
 }
 
 /** Verify a PLACE's own carrier seal on a `carry` entry — the vessel-key twin of `verifyContractIn`, over
@@ -243,14 +241,13 @@ async function verifyCarrierIn(entry: CarriageEntry): Promise<boolean> {
  *   · REVOKE / UNCARRY — the kahu quorum alone (an uncooperative subject cannot veto its own removal),
  *   · ADMIT — the kahu quorum AND the OPERATOR's persona-signed accepts-carriage token,
  *   · CARRY — the kahu quorum AND the PLACE's own VESSEL-key carrier seal.
- * Anything short is ignored, never guessed into a relation. Exported so a WRITER self-verifies before landing
+ * An unreadable shape, a foreign charter epoch or an unsupported act never counts. Anything short is ignored,
+ * never guessed into a relation. It reads the fold's own per-entry verdict, so the writer and the fold never
+ * disagree. Exported so a WRITER self-verifies before landing
  * an entry (a written-but-dead act reads as enforced while granting nothing).
  */
 export async function carriageEntryCounts(entry: CarriageEntry, roster: KahuRoster): Promise<boolean> {
-  if (!(await verifyMembershipQuorum(entry, roster))) return false;
-  if (entry.action === "revoke" || entry.action === "uncarry") return true;
-  if (entry.action === "carry") return verifyCarrierIn(entry);
-  return verifyContractIn(entry);   // admit → the operator must have signed "accepts carriage"
+  return (await countReason(entry, roster)).counted;   // the fold's own verdict — one decision, never a re-dispatch
 }
 
 export type CarriageFoldWinnerState = "accepted" | "revoked" | "unsettled" | "unavailable" | "ignored";
@@ -453,11 +450,6 @@ export async function signCarriageQuorum(
 }
 
 /**
- * Mint the operator's "accepts carriage" contract-sig — the contract-in the operator signs ONCE for a charter
- * epoch. The caller supplies the operator's own signer (the module holds no key). The returned `QuorumSignature`
- * rides an admit entry's `contractSig`.
- */
-/**
  * Does a KEPT contract-in prove itself?
  *
  * A joining operator keeps the consent she signed so her vessel can read the relation it stands in
@@ -485,6 +477,11 @@ export async function verifyCarriageConsent(
   catch { return false; }
 }
 
+/**
+ * Mint the operator's "accepts carriage" contract-sig — the contract-in the operator signs ONCE for a charter
+ * epoch. The caller supplies the operator's own signer (the module holds no key). The returned `QuorumSignature`
+ * rides an admit entry's `contractSig`.
+ */
 export async function signCarriageContract(
   nym: string,
   sealEpochCid: string,
