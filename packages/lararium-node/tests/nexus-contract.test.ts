@@ -12,7 +12,8 @@
  *   · an admit for a nym the vessel does NOT hold, with NO --contract token, REFUSES (no conscription),
  *   · the members{} ∪ kahu-floor UNION: the makeNexusMembership holder reads BOTH a seated kahu AND an admitted
  *     non-kahu operator as MEMBER, off the SAME board the admit wrote (SELF-SLOT-B lit),
- *   · USER-NEVER-WRITTEN: the board carries operator-pubkey nyms only.
+ *   · USER-NEVER-WRITTEN: the board carries operator-pubkey nyms only,
+ *   · ONE ADDRESS: with a seal home passed, the admit write and the members-list read key on the SAME island.
  */
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -22,17 +23,18 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
+import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, signerClass, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError,
-  hasContractedInto, readCarriageConsent, carriageConsentPath } from "../src/commands/nexus-contract.js";
+  hasContractedInto } from "../src/commands/nexus-contract.js";
+import { readConsent, writeConsent, carriageConsentPathFor } from "../src/carried-set.js";
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
-import { writeFileSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync } from "node:fs";
+import { larSealHome } from "../src/vessel-paths.js";
 import { makeNexusMembership } from "../src/nexus-carriage.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 
@@ -143,7 +145,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     try {
       const handle = await materializeSharedLarDoc(
         repo,
-        carriageDocUrl(nodeNexusIsland({ ownVesselKey })),
+        carriageDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: sealHome() })),
         "board:carriage-contracts",
       );
       const rejected = await signCarriageQuorum(
@@ -189,6 +191,35 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const foreign = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(42)));   // not a held persona
     await expect(runNexusContract({ action: "admit", nym: foreign, sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);   // no contract-in obtainable → refuse
+  });
+
+  it("★ ONE ADDRESS — with a seal home passed, the admit write and the members list read the SAME board ★", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    expect(sealHome()).not.toBe(larSealHome());   // the passed home is NOT the default — the split's precondition
+    const joinerNym = await leafOf(3);
+
+    const res  = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const list = await runNexusMembersList({ sealHome: sealHome() });
+    expect(list.island).toBe(realmIdOfCharter(readNexusDoc(sealHome())));   // the charter's island, not the vessel key
+    expect(res.boardUrl).toBe(carriageDocUrl(list.island));
+    expect(list.members).toContain(joinerNym);
+  });
+
+  it("CONTROL — the vessel's own-key board, where the list once read, holds none of the admit", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    const ownKey = (await loadVesselVerifyingKey()).toLowerCase();
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    try {
+      const handle = await materializeSharedLarDoc(repo, carriageDocUrl(ownKey), "board:carriage-contracts");
+      expect(carriageEntriesFromBoard(handle.doc())).toHaveLength(0);
+    } finally {
+      await repo.flush().catch(() => { /* best effort */ });
+    }
   });
 
   it("★ a ROOT-nym admit with self-sign REFUSES — no held leaf matches a PersonaGroup root ★", async () => {
@@ -272,8 +303,9 @@ describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SE
     // Contract-in + admit the non-kahu operator onto the board.
     await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
 
-    // Stand the membership holder over the SAME store (its own replica, as-of-last-sync) + the SAME board.
-    const nexusPubkey = await loadVesselVerifyingKey();
+    // Stand the membership holder over the SAME store (its own replica, as-of-last-sync) + the SAME board,
+    // keyed on the island exactly as the boot keys it.
+    const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const peerMap = new Map<string, string>([
       ["peer-kahu",   `prefix:${kahuNym}`],     // a seated kahu → MEMBER (the floor)
@@ -321,51 +353,78 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     return roots.map((r) => r.verifyingKey);
   }
 
-  it("★ a signed contract-in is KEPT, bound to the epoch it consented under ★", async () => {
+  /** The AID of the charter standing at the primary path. */
+  const primaryAid = (): string => realmIdOfCharter(readNexusDoc(sealHome()))!;
+
+  /** A charter with a pre-rotated lineage, so a rotation moves the head and keeps the AID. */
+  function seatLineage(keys: string[], rotations: number): void {
+    const kahu = keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
+    const lineage = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
+    let threshold = 2;
+    for (let i = 0; i < rotations; i++) {
+      const revealed = threshold === 2 ? 3 : 2;
+      const r = rotateSealEpoch(lineage[lineage.length - 1]!, keys, revealed, sealKeySetHash(keys, threshold));
+      if (!r.ok) throw new Error(r.reason);
+      lineage.push(r.epoch);
+      threshold = revealed;
+    }
+    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: lineage[lineage.length - 1]!.epochCid, sealLineage: lineage, kahu });
+  }
+
+  it("★ a signed contract-in is KEPT per Nexus, bound to the epoch it consented under ★", async () => {
     const keys = await threeKeys();
     seatCharter(keys);
     const r = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
-    const kept = readCarriageConsent(sealHome());
+    expect(r.aid).toBe(primaryAid());   // the AID defaults to the primary charter's
+    const kept = readConsent(sealHome(), r.aid);
     expect(kept).not.toBeNull();
     expect(kept!.nym).toBe(r.nym);
     expect(kept!.sealEpochCid).toBe(r.sealEpochCid);
     expect(kept!.contractSig).toBe(r.contractSig);
+    expect(existsSync(carriageConsentPathFor(sealHome(), r.aid))).toBe(true);
+    expect(existsSync(join(sealHome(), "nexus", "carriage-consent.json"))).toBe(false);   // no single consent file
   });
 
   it("★ a vessel that consented reads that it CONTRACTED IN ★", async () => {
     const keys = await threeKeys();
     seatCharter(keys);
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
-    expect(await hasContractedInto(sealHome())).toBe(true);
+    expect(await hasContractedInto(sealHome(), primaryAid())).toBe(true);
   });
 
   it("★ a vessel that consented to NOTHING says so ★", async () => {
     seatCharter(await threeKeys());
-    expect(await hasContractedInto(sealHome())).toBe(false);
-    expect(readCarriageConsent(sealHome())).toBeNull();
+    expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);
+    expect(readConsent(sealHome(), primaryAid())).toBeNull();
   });
 
-  it("★ a consent rooted BEHIND the standing epoch grants nothing — terms have moved ★", async () => {
-    // The load-bearing case. Carriage was accepted under one charter epoch; a rotation moves the
-    // frontier, and a kept consent must not carry a relation across terms it never read.
+  it("★ a consent rooted BEHIND the standing head grants nothing — a rotation forces re-consent ★", async () => {
+    // The load-bearing case. Carriage was accepted under one seal epoch; a rotation moves the head of the
+    // SAME Nexus, and a kept consent must not carry a relation across terms it never read.
     const keys = await threeKeys();
-    seatCharter(keys);
+    seatLineage(keys, 0);
+    const aid = primaryAid();
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
-    expect(await hasContractedInto(sealHome())).toBe(true);
+    expect(await hasContractedInto(sealHome(), aid)).toBe(true);
 
-    seatCharter(keys, 3);                       // a different charter epoch stands
-    expect(await hasContractedInto(sealHome())).toBe(false);
+    seatLineage(keys, 1);
+    expect(primaryAid()).toBe(aid);                                // the same Nexus …
+    expect(await hasContractedInto(sealHome(), aid)).toBe(false);  // … at a head the consent never read
+
+    await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
+    expect(await hasContractedInto(sealHome(), aid)).toBe(true);
   });
 
   it("★ an UNSEATED charter carries no consent, however the record reads ★", async () => {
     const keys = await threeKeys();
     seatCharter(keys);
+    const aid = primaryAid();
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
     writeNexusDoc(sealHome(), {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null,
       kahu: [{ displayName: "Kahu Alpha", verifyingKey: null }],
     });
-    expect(await hasContractedInto(sealHome())).toBe(false);
+    expect(await hasContractedInto(sealHome(), aid)).toBe(false);
   });
 
 
@@ -375,10 +434,8 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     const keys = await threeKeys();
     seatCharter(keys);
     const epoch = genesisSealEpochCid(keys, 2);
-    mkdirSync(dirname(carriageConsentPath(sealHome())), { recursive: true });
-    writeFileSync(carriageConsentPath(sealHome()),
-      JSON.stringify({ nym: keys[0], sealEpochCid: epoch, contractSig: "00".repeat(64) }), "utf8");
-    expect(await hasContractedInto(sealHome())).toBe(false);
+    writeConsent(sealHome(), primaryAid(), { nym: keys[0]!, sealEpochCid: epoch, contractSig: "00".repeat(64) });
+    expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);
   });
 
   it("★ a genuine consent signed by this vessel's own ROOT is refused — the nym must be a held leaf ★", async () => {
@@ -388,9 +445,8 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     const q = await signCarriageContract(keys[0]!.toLowerCase(), epoch, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(0)));
     const consent = { nym: keys[0]!.toLowerCase(), sealEpochCid: epoch, contractSig: q.sig };
     expect(await verifyCarriageConsent(consent)).toBe(true);   // the seal is real …
-    mkdirSync(dirname(carriageConsentPath(sealHome())), { recursive: true });
-    writeFileSync(carriageConsentPath(sealHome()), JSON.stringify(consent), "utf8");
-    expect(await hasContractedInto(sealHome())).toBe(false);   // … and names a root, which no stamp carries
+    writeConsent(sealHome(), primaryAid(), consent);
+    expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);   // … and names a root, which no stamp carries
   });
 
   it("★ ANOTHER operator's genuine consent is refused — the nym must be a leaf this vessel holds ★", async () => {
@@ -402,10 +458,8 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     const foreignNym  = Buffer.from(await ed.getPublicKeyAsync(foreignSeed)).toString("hex");
     const q = await signCarriageContract(foreignNym, genesisSealEpochCid(keys, 2),
       async (b) => Buffer.from(await ed.signAsync(b, foreignSeed)).toString("hex"));
-    mkdirSync(dirname(carriageConsentPath(sealHome())), { recursive: true });
-    writeFileSync(carriageConsentPath(sealHome()),
-      JSON.stringify({ nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig }), "utf8");
+    writeConsent(sealHome(), primaryAid(), { nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig });
     expect(await verifyCarriageConsent({ nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig })).toBe(true);
-    expect(await hasContractedInto(sealHome())).toBe(false);
+    expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);
   });
 });

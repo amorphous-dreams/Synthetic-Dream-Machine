@@ -35,12 +35,10 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join, dirname } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract, verifyCarriageConsent,
+  carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet, foldCarrierSet,
   holdsCarriage, holdsCarrier, foundingRoster,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
@@ -55,6 +53,7 @@ import {
 } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, nexusLeafFor } from "../nexus-leaf.js";
+import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -252,7 +251,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   }
 
   const nexusPubkey = await loadVesselVerifyingKey();
-  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey, sealHome: opts.sealHome });
   const boardUrl    = carriageDocUrl(boardIsland);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
@@ -309,138 +308,104 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
 }
 
 /**
- * WHERE THIS VESSEL KEEPS ITS OWN CONSENT.
+ * WHERE THIS VESSEL KEEPS ITS OWN CONSENT, AND WHAT READS IT — `carried-set`.
  *
  * A relation has two sides and each holds its own evidence. The founding operator's is the admit on
- * her members board — an immune surface, and hers alone. The joining operator's is the contract-in SHE
- * signed, so it is kept here: a vessel must be able to tell itself what it has joined without holding
- * any partner's document.
- *
- * BOUND TO AN EPOCH, so it cannot outlive what it consented to. Carriage was accepted under one
- * charter epoch; a rotation moves the frontier, and a consent rooted behind it names a Nexus whose
- * terms have changed. The reader compares before it counts, so a stale record grants nothing.
+ * her members board. The joining operator's is the contract-in SHE signed, kept per Nexus at
+ * `<sealHome>/nexus/carriage-consent/<aid>.json`, so a vessel can tell itself which Nexuses it has
+ * joined without holding any partner's board. `hasContractedInto(sealHome, aid)` reads one Nexus;
+ * `carriedSet(sealHome)` reads them all.
  */
-export function carriageConsentPath(sealHome: string): string {
-  return join(sealHome, "nexus", "carriage-consent.json");
-}
-
-export interface CarriageConsent {
-  /** The per-Nexus leaf nym this vessel signed as. */
-  readonly nym:          string;
-  /** The charter epoch the consent binds to — a consent rooted elsewhere does not carry here. */
-  readonly sealEpochCid: string;
-  /** The signature handed to the founding kahu, kept so the act is reconstructible from this side. */
-  readonly contractSig:  string;
-}
-
-/** Read this vessel's kept consent, or null when it has consented to nothing. */
-export function readCarriageConsent(sealHome: string): CarriageConsent | null {
-  try {
-    const raw = JSON.parse(readFileSync(carriageConsentPath(sealHome), "utf8")) as Partial<CarriageConsent>;
-    if (typeof raw.nym !== "string" || typeof raw.sealEpochCid !== "string" || typeof raw.contractSig !== "string") return null;
-    if (raw.nym.length === 0 || raw.sealEpochCid.length === 0) return null;
-    return { nym: raw.nym.toLowerCase(), sealEpochCid: raw.sealEpochCid, contractSig: raw.contractSig };
-  } catch { return null; }
-}
+export { hasContractedInto, type CarriageConsent } from "../carried-set.js";
 
 /**
- * Whether this vessel has CONTRACTED INTO the charter now standing in its seal home.
+ * Mint the operator's "accepts carriage" contract-sig for ONE Nexus — run by the JOINING operator on its OWN
+ * vessel. `aid` names the Nexus and defaults to the primary charter's; the charter it reads is the one this
+ * vessel holds for that AID, primary or carried. Derives the held persona's per-Nexus LEAF at `handleIndex`,
+ * signs the act-independent carriage token for that charter's verified head with it, KEEPS the consent at
+ * `<sealHome>/nexus/carriage-consent/<aid>.json` (replacing any earlier consent to the same Nexus), and returns
+ * the token hex the kahu supply to `runNexusContract({ contractSig })`. The leaf IS the nym.
  *
- * THREE THINGS MUST HOLD, and the file satisfies none of them by sitting there. Disk is not a trust
- * boundary — `LAR_ROOT` names the whole seal home — so a reading that trusted the record's LOCATION
- * would report a Nexus this vessel never joined.
- *
- *   · THE EPOCH STANDS. A consent binds to the charter epoch it was given under; an unseated charter
- *     binds nothing, and a consent behind the current epoch consented to terms that have since moved.
- *   · THE SEAL IS REAL. The signature binds nym and epoch together and only the holder of that nym's
- *     seed can produce it, so a planted record fails rather than reads.
- *   · THE NYM IS OURS. Another operator's consent is GENUINE evidence that SHE joined; copied here it
- *     would let this vessel claim a relation somebody else entered. So the nym must be the leaf one of
- *     this vessel's held personas presents to this Nexus — a root nym names no stamp and reads false.
- *
- * Grants nothing either way — this answers a reading, never a capability. It is held to this standard
- * because a vessel that misreports the relation it stands in is lying to its own operator.
- */
-export async function hasContractedInto(sealHome: string): Promise<boolean> {
-  const consent = readCarriageConsent(sealHome);
-  if (!consent) return false;
-
-  const epoch = foundingRoster(readNexusDoc(sealHome)).sealEpochCid;
-  if (epoch.length === 0 || epoch !== consent.sealEpochCid) return false;
-
-  if (!(await verifyCarriageConsent(consent))) return false;
-
-  const aid = realmIdOfCharter(readNexusDoc(sealHome));
-  if (!aid) return false;
-  return (await heldNexusLeaves(aid)).some((leaf) => leaf.verifyingKey === consent.nym);
-}
-
-/**
- * Mint the operator's "accepts carriage" contract-sig — run by the JOINING operator on its OWN vessel. Derives
- * the held persona's per-Nexus LEAF at `handleIndex` for the charter standing in the seal home, signs the
- * act-independent carriage token for the current charter epoch with that leaf, and returns the token hex the
- * kahu supply to `runNexusContract({ contractSig })`. The leaf IS the nym. FAIL CLOSED: an unseated charter has
- * no epoch to bind consent to, and a persona this vessel does not hold has no leaf → REFUSE.
+ * FAIL CLOSED: no charter held for the AID, an unseated charter (no head to bind consent to), or a persona this
+ * vessel does not hold → REFUSE, writing nothing.
  */
 export async function runNexusAcceptCarriage(opts: {
-  handleIndex: number; sealHome: string; storageDir?: string;
-}): Promise<{ nym: string; sealEpochCid: string; contractSig: string }> {
+  handleIndex: number; sealHome: string; aid?: string; storageDir?: string;
+}): Promise<{ aid: string; nym: string; sealEpochCid: string; contractSig: string }> {
   // `opts.storageDir` feeds no local read. Kept on `opts` for call-site shape compatibility only.
-  const roster = foundingRoster(readNexusDoc(opts.sealHome));
+  const aid  = opts.aid ?? primaryNexusAid(opts.sealHome);
+  if (!aid) {
+    throw new NexusContractError("no charter stands to consent to — import the Nexus's charter (`lares nexus seal import --carry`) first.");
+  }
+  const home = charterHomeFor(opts.sealHome, aid);
+  if (!home) {
+    throw new NexusContractError(`this vessel holds no charter for ${aid.slice(0, 18)}… — import it (\`lares nexus seal import --carry\`) before consenting.`);
+  }
+  const roster = foundingRoster(readNexusDoc(home));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage consent to — the Nexus must seat its charter first.");
   }
   if (!(await personaRootExists(opts.handleIndex))) {
     throw new NexusContractError(`this vessel holds no persona at h${opts.handleIndex} — a contract-in signs with a held persona's leaf.`);
   }
-  const leaf = await nexusLeafFor(opts.handleIndex, nexusAidOrRefuse(opts.sealHome));
+  const leaf = await nexusLeafFor(opts.handleIndex, aid);
   const nym  = leaf.verifyingKey;
   const sig  = await signCarriageContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(leaf.seed));
   // KEEP IT. The signature travels to the founding kahu, and a copy stays here so this vessel can read
-  // its own half of the relation without a partner's document.
+  // its own half of the relation without a partner's board.
   const consent: CarriageConsent = { nym, sealEpochCid: roster.sealEpochCid, contractSig: sig.sig };
-  mkdirSync(dirname(carriageConsentPath(opts.sealHome)), { recursive: true });
-  writeFileSync(carriageConsentPath(opts.sealHome), JSON.stringify(consent, null, 2), "utf8");
+  writeConsent(opts.sealHome, aid, consent);
 
-  return consent;
+  return { aid, ...consent };
 }
 
 export interface NexusMembersListResult {
-  /** The verifying key whose carriage doc this fold read — ALWAYS this vessel's own (the immune
-   *  surface carries no partner's board). Reported so a caller never reads a local allow-set as a
-   *  roster of the Nexus. */
-  readonly boardRoot:       string;
+  /** The Nexus whose record this fold read — null for a vessel standing with no charter. */
+  readonly aid:             string | null;
+  /** The island the members board keys on — the SAME resolution the admit write uses for that charter. */
+  readonly island:          string;
   readonly sealEpochCid: string;
   readonly threshold:       number;
   readonly seatedKeys:      number;
-  /** The member nyms locally held by this fold (quorum + contract-in verified against the seated roster). */
+  /** The nyms whose admits this replica holds as counting (quorum + contract-in verified against the seated roster). */
   readonly members:         readonly string[];
   readonly entries:         ReadonlyArray<{ nym: string; action: CarriageAction; parents: readonly string[]; evidenceCid: string; signers: number; contractIn: boolean }>;
 }
 
-/** Read the locally held member set + the raw board evidence (the `--list` fold). Read-only; FAILS CLOSED
- *  to the empty set on an unseated charter. */
-export async function runNexusMembersList(opts: { sealHome: string; storageDir?: string }): Promise<NexusMembersListResult> {
+/**
+ * Read one Nexus's members board: the admits this replica holds and the member set they fold to. `aid`
+ * names the Nexus (primary or carried) and defaults to the primary charter's. Read-only; an unseated charter
+ * folds to the empty set, and an AID this vessel holds no charter for REFUSES.
+ *
+ * A PUBLIC RECORD, NEVER AUTHORITY. The board is the Nexus's shared record of the admits its kahu signed;
+ * this fold reports what that record says as of this replica's last sync. It grants nothing and decides
+ * nothing — a member here is a nym the record names, and this vessel's own carriage answers to its own
+ * consent (`carried-set`), never to this list.
+ *
+ * THE SAME BOARD THE ADMIT WROTE. The island resolves through `nodeNexusIsland` over the home that holds N's
+ * charter, exactly as `runNexusContract` resolves it over the seal home, so a write and its read never land
+ * on two addresses.
+ */
+export async function runNexusMembersList(opts: { sealHome: string; aid?: string; storageDir?: string }): Promise<NexusMembersListResult> {
   const storageDir = opts.storageDir ?? larDataDir();
-  const roster     = foundingRoster(readNexusDoc(opts.sealHome));
-
-  // THIS VESSEL'S OWN BOARD, AND ONLY EVER ITS OWN. The members registry is the Kapae-antigen's
-  // ALLOW-twin: it governs the CARRY-SPLIT — whom THIS vessel blind-transits a sealed plane for. It is
-  // an immune surface, and the immune plane carries no global roster by design, because there is no
-  // global list of devices or users to approve against and behaviour is what the daemon can observe.
-  //
-  // Folding a PARTNER's board here would hand that partner's future admits authority over this
-  // vessel's carriage: an operator consents to a Nexus at one epoch, never to every admit made
-  // afterwards, and `nexus-contract` holds that "a Nexus cannot conscript an operator into carriage".
-  // Whether two operators stand in a relation is a WHO-plane question and is answered elsewhere.
-  const ownKey      = (await loadVesselVerifyingKey()).toLowerCase();
+  let home = opts.sealHome;
+  if (opts.aid !== undefined) {
+    const held = charterHomeFor(opts.sealHome, opts.aid);
+    if (!held) throw new NexusContractError(`this vessel holds no charter for ${opts.aid.slice(0, 18)}… — there is no record to read.`);
+    home = held;
+  }
+  const doc         = readNexusDoc(home);
+  const roster      = foundingRoster(doc);
+  const ownVesselKey = await loadVesselVerifyingKey();
+  const boardIsland = nodeNexusIsland({ ownVesselKey, sealHome: home });
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
-    const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(ownKey), "board:carriage-contracts");
+    const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(boardIsland), "board:carriage-contracts");
     const entries = carriageEntriesFromBoard(handle.doc());
     const folded  = await foldCarriageSet(entries, roster);
     return {
-      boardRoot:       ownKey,
+      aid:             realmIdOfCharter(doc),
+      island:          boardIsland,
       sealEpochCid: roster.sealEpochCid,
       threshold:       roster.threshold,
       seatedKeys:      roster.keys.length,

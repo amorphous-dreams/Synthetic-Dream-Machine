@@ -214,7 +214,11 @@ export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
-  hasContractedInto, readCarriageConsent, carriageConsentPath, type CarriageConsent } from "./commands/nexus-contract.js";
+  hasContractedInto, type CarriageConsent } from "./commands/nexus-contract.js";
+// The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.
+export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, carriedSet, carriedReadings,
+  carriedCharterHome, carriageConsentPathFor, charterHomeFor, primaryNexusAid, CarriedCharterError,
+  type CarriedImportResult, type CarriedReading } from "./carried-set.js";
 export type { NexusContractOptions, NexusContractResult, NexusMembersListResult } from "./commands/nexus-contract.js";
 
 // The traceless BOOT-INVITE burn (Build-2) — mint a sealed single-use invite; decide + spend-on-boot LOCALLY.
