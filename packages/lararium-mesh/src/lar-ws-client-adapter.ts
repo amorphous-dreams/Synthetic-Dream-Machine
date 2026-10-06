@@ -46,7 +46,7 @@ export interface LarWSClientOptions {
 }
 
 export class LarWSClientAdapter extends WebSocketClientAdapter {
-  readonly #identity:   LeafIdentity;
+  #identity:            LeafIdentity;
   readonly #aud:        string;
   readonly #gatePubKey: string;
   readonly #now:        (() => string) | undefined;
@@ -63,6 +63,30 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
 
   /** The gate's refusal if this leaf has anergized, else null. A caller MAY read it to offer a vouch. */
   get anergized(): string | null { return this.#anergized; }
+
+  /** The identity the next handshake presents. */
+  get identity(): LeafIdentity { return this.#identity; }
+
+  /**
+   * RE-PRESENT under a new identity — the caller's answer to a change in what it holds (a presentable admit
+   * appeared or moved on the dialed island's board), never to a timer.
+   *
+   * The handshake runs once per socket, so a new presentation needs a new socket. An open socket CLOSES,
+   * and the parent's own close-and-reconnect path re-dials through `connect`, which presents the new
+   * identity. An ANERGIZED leaf has stood its reconnect loop down; the new identity is the changed thing
+   * anergy waits for, so the refusal clears and this dials once at the door. The parent's reconnect loop
+   * stays down after that one dial (its stand-down flag is private to it).
+   */
+  represent(identity: LeafIdentity): void {
+    this.#identity = identity;
+    if (!this.peerId) return;                       // never dialed — the first connect presents it
+    if (this.#anergized) {
+      this.#anergized = null;
+      this.connect(this.peerId, this.peerMetadata);
+      return;
+    }
+    try { this.socket?.close(1000, "re-presenting"); } catch { /* already closed — the reconnect path runs */ }
+  }
 
   override connect(peerId: PeerId, peerMetadata?: PeerMetadata): void {
     // An anergized leaf does not dial. The parent's reconnect path routes back through here, so the
@@ -109,6 +133,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       ...(this.#identity.edge ? { edge: this.#identity.edge } : {}),
       ...(this.#identity.contractEdge ? { contractEdge: this.#identity.contractEdge } : {}),
       ...(this.#identity.presentedAdmit ? { presentedAdmit: this.#identity.presentedAdmit } : {}),
+      ...(this.#identity.leafSign ? { leafSign: this.#identity.leafSign } : {}),
       ...(this.#now ? { now: this.#now } : {}),
     };
 

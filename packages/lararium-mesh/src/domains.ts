@@ -137,6 +137,11 @@ export const RELAY_GATE_INFO = frozen("relay-gate");
  *  timestamp, committed under this name so a proof can never verify as any other signed thing, nor any
  *  other signature as a proof. Ephemeral — both ends run one build, so nothing persisted rides it. */
 export const AUTH_PROOF_DOMAIN = mint("auth-proof");
+/** The LEAF'S PROOF OF POSSESSION over a presented carriage admit: the admit's own leaf signs the gate's
+ *  nonce, the gate key, the presenting vessel key and the admit's act CID under this name, binding that admit
+ *  to ONE socket. Its own name, apart from `auth-proof`: the vessel key signs that one and the leaf signs this
+ *  one, and neither signature may verify as the other. No root signs it and no root is named in it. */
+export const PRESENTED_ADMIT_LEAF_PROOF_DOMAIN = mint("presented-admit-leaf-proof");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");

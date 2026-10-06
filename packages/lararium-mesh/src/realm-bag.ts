@@ -432,14 +432,16 @@ export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration):
 /**
  * THE REALM'S OWN CONSULT — what a vessel knows, off its OWN replica, about the hand behind a wire key.
  *
- * `contractNymOfPeer` surfaces the persona-root nym the peer PROVED at this vessel's gate (the contract edge,
- * verified offline — `peerContractNymMap`); it never re-authenticates and never trusts a peer's word.
+ * `contractNymOfPeer` reads the vessel's ROOT MAP: a persona-root nym proven at its gate for that peer. It
+ * never re-authenticates, never trusts a peer's word, and never reads the LEAF MAP the membership consult
+ * reads — a leaf a socket proved is not a root, and no proof binding the two travels on the wire.
  * `holdsCharter` answers, off the vessel's OWN charter replica, whether that nym holds the named charter —
- * the CONTRACT-tier read. Neither question reaches the Nexus members board: the board answers whether a
- * SOCKET stands, and this consult answers which DOCUMENTS the realm's own registration lets cross it.
+ * the CONTRACT-tier read. Neither question reaches the membership consult: that answers whether a SOCKET
+ * stands, and this consult answers which DOCUMENTS the realm's own registration lets cross it.
  */
 export interface RealmCharterConsult {
-  /** The persona-root nym this peer proved at the wire, or null for a peer that proved none (fail-closed). */
+  /** The persona-root nym proven for this peer at the wire (the ROOT MAP), or null — fail-closed. A node that
+   *  proves no root edge at its seat returns null for every peer. Never a leaf nym. */
   contractNymOfPeer(peerId: string): string | null;
   /** Does this nym hold that charter, read off this vessel's own charter replica (as of last sync)? */
   holdsCharter(nym: string, charterId: string): boolean;

@@ -496,8 +496,9 @@ export async function signCarriageContract(
  * (kahu quorum, plus the contract-in for an admit) participate. Causal heads determine the relation; concurrent
  * contradictory heads remain unsettled and fail closed.
  *
- * The result is a plain nym set — the enforcement shore (nexus-membership → carrierShareDecision) unions it
- * with the seated-kahu floor and reads it to decide MEMBER vs STRANGER.
+ * The result is a plain nym set: what the board's RECORD says (`nexus members --list`). No enforcement shore
+ * reads it as an allow set — the membership consult seats a peer only on an admit that peer PRESENTS
+ * (`verifyPresentedAdmit`), with this board read as a deny board.
  */
 export async function foldCarriageSet(
   entries: Iterable<CarriageEntry>,
@@ -680,4 +681,58 @@ export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<
   if (kapaeUnsettled) return presentedVerdict("unsettled", "kapae-unsettled", nym);
   if (concurrent) return presentedVerdict("unsettled", "revoke-concurrent-with-admit", nym);
   return presentedVerdict("held", covered ? "held-revoke-covered-by-lineage" : "held", nym);
+}
+
+/** What a dialer presents for one nym on one board: the admit head and its closed, tight lineage. */
+export interface AdmitPresentation {
+  readonly admit:   CarriageEntry;
+  readonly lineage: readonly CarriageEntry[];
+}
+
+/**
+ * Derive the presentation a subject carries to the wire from a carriage board it holds: the counted `admit`
+ * that stands as a causal HEAD of `nym`'s member relation, plus every counted act that admit transitively
+ * cites. The lineage is CLOSED (every cited parent resolves inside it) and TIGHT (every entry is an ancestor
+ * of the admit). Pure and clockless.
+ *
+ * Returns null when no counted admit stands as a head (a revoke supersedes the last admit, or nothing was
+ * ever admitted), or when the admit's ancestry does not resolve on this board. A revoke standing CONCURRENT
+ * with the admit head does not stop the derivation: the presentation still travels, and the verifier on the
+ * other side reads it `unsettled` against its own deny board. Two concurrent admit heads present the one
+ * whose act CID sorts first.
+ */
+export async function presentedAdmitFromBoard(
+  entries: Iterable<CarriageEntry>,
+  nym: string,
+  roster: KahuRoster,
+): Promise<AdmitPresentation | null> {
+  const want = nym.toLowerCase();
+  const source = [...entries];
+  const fold = await foldCarriageDetails(source, roster);
+  // The fold's details run in source order, one per entry — zip them to recover each counted act.
+  const byCid = new Map<string, CarriageEntry>();
+  fold.entries.forEach((detail, i) => {
+    if (!detail.counted || detail.nym !== want || relationFamily(detail.action) !== "member") return;
+    if (detail.sealEpochCid !== roster.sealEpochCid) return;
+    if (!byCid.has(detail.evidenceCid)) byCid.set(detail.evidenceCid, source[i]!);
+  });
+  const cited = new Set<string>();
+  for (const entry of byCid.values()) for (const parent of entry.parents) cited.add(parent);
+  const heads = [...byCid.entries()]
+    .filter(([cid, entry]) => entry.action === "admit" && !cited.has(cid))
+    .sort(([a], [b]) => a.localeCompare(b));
+  const head = heads[0];
+  if (!head) return null;
+  const [, admit] = head;
+  const lineage = new Map<string, CarriageEntry>();
+  const todo = [...admit.parents];
+  while (todo.length) {
+    const cid = todo.pop()!;
+    if (lineage.has(cid)) continue;
+    const entry = byCid.get(cid);
+    if (!entry) return null;   // an ancestor this board does not hold — no closed lineage to present
+    lineage.set(cid, entry);
+    todo.push(...entry.parents);
+  }
+  return { admit, lineage: [...lineage.values()] };
 }
