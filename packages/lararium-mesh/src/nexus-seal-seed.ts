@@ -33,7 +33,7 @@
  *   · a second declared Handle
  *   · a third declared Handle
  *
- * THE DOC IS THE AUTHORITY. `foundingRoster`/`rosterFromNexusDoc` read a loaded `NexusDoc`, never
+ * THE DOC IS THE AUTHORITY. `foundingRoster` reads a loaded `NexusDoc`, never
  * a hardcoded key-set. Each kahu's ed25519 verifying key is that PersonaGroup's own root-derived key — the
  * operator SEATS it into the doc from the vault (`lares nexus seal seat`), never invents it here. An
  * absent doc, an unseated doc, or a doc short of `threshold` seated keys folds to an EMPTY key-set: any
@@ -167,12 +167,13 @@ export function genesisSealEpochCid(seatedKeys: readonly string[], threshold: nu
 }
 
 /**
- * Fold a loaded charter doc into the `KahuRoster` the antigen verifies against. FAILS CLOSED: an
- * absent doc, a wrong-kind doc, or a doc with no established charter epoch yields an EMPTY key-set +
- * empty epoch, so the multi-sig verifier's `keys.length < threshold` and epoch-match guards both deny.
- * Only a doc carrying a real charter epoch AND seated keys raises a live roster.
+ * The founding `KahuRoster`, folded from a loaded charter doc — the roster the antigen verifies against.
+ * The doc IS the authority home. FAILS CLOSED: an absent doc, a wrong-kind doc, or a doc with no
+ * established charter epoch yields an EMPTY key-set + empty epoch, so the multi-sig verifier's
+ * `keys.length < threshold` and epoch-match guards both deny. Only a doc carrying a real charter epoch
+ * AND seated keys raises a live roster.
  */
-export function rosterFromNexusDoc(doc: NexusDoc | null): KahuRoster {
+export function foundingRoster(doc: NexusDoc | null): KahuRoster {
   const threshold = doc && Number.isInteger(doc.threshold) && doc.threshold >= 1 ? doc.threshold : UNREADABLE_THRESHOLD_FLOOR;
   const keys = seatedKahuKeys(doc);
   const empty: KahuRoster = { keys: [], threshold, sealEpochCid: "" };
@@ -245,18 +246,9 @@ export function sealLineageHead(doc: NexusDoc | null): SealEpoch | null {
   return chain && chain.length > 0 ? chain[chain.length - 1]! : null;
 }
 
-/**
- * The founding `KahuRoster` read from the seated charter DOC (the antigen's roster source). An
- * unseated / absent doc yields an empty roster that FAILS CLOSED (the verifier ignores every entry). This
- * repoints the founding roster onto the doc — the doc IS the authority home, evergreen.
- */
-export function foundingRoster(doc: NexusDoc | null): KahuRoster {
-  return rosterFromNexusDoc(doc);
-}
-
 /** Does the seated doc carry a live quorum? True only with an established epoch AND ≥ threshold seated keys. */
 export function foundingQuorumSeated(doc: NexusDoc | null): boolean {
-  const r = rosterFromNexusDoc(doc);
+  const r = foundingRoster(doc);
   return r.sealEpochCid.length > 0 && r.keys.length >= r.threshold;
 }
 

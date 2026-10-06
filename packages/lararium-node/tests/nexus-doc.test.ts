@@ -19,7 +19,7 @@ import { join } from "node:path";
 import { verifyBcc } from "@lararium/memetic-frame";
 import { readCarrierShape } from "@lararium/tw5";
 import {
-  emptyFoundingCharterDoc, genesisSealEpochCid, rosterFromNexusDoc, foundingQuorumSeated,
+  emptyFoundingCharterDoc, genesisSealEpochCid, foundingRoster, foundingQuorumSeated,
   genesisCharterEpoch, sealKeySetHash, sealLineageHead,
   renameOwnPersona, ownPersonaPetname, declarePersonaHandle, standForKahuSeat,
   personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
@@ -46,7 +46,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("an absent doc reads null (fail closed → empty roster)", () => {
     expect(readNexusDoc(bags)).toBeNull();
-    expect(rosterFromNexusDoc(readNexusDoc(bags)).keys).toEqual([]);
+    expect(foundingRoster(readNexusDoc(bags)).keys).toEqual([]);
   });
 
   test("a seated doc writes in house form and reads back faithfully", () => {
@@ -66,7 +66,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     expect(back).toEqual(doc);
     // fail-closed math: 2 seated + epoch → quorum stands
     expect(foundingQuorumSeated(back)).toBe(true);
-    expect(rosterFromNexusDoc(back).keys.sort()).toEqual([...keys].sort());
+    expect(foundingRoster(back).keys.sort()).toEqual([...keys].sort());
   });
 
   test("★ the unseated scaffold NAMES NOBODY, and reads back exactly as an ABSENT doc does ★", () => {
@@ -82,7 +82,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     // fold to an inert roster, and neither can be mistaken for a seated one.
     writeNexusDoc(bags, scaffold);
     expect(readNexusDoc(bags)).toBeNull();
-    expect(rosterFromNexusDoc(readNexusDoc(bags)).keys).toEqual([]);
+    expect(foundingRoster(readNexusDoc(bags)).keys).toEqual([]);
     expect(foundingQuorumSeated(readNexusDoc(bags))).toBe(false);
   });
 
@@ -117,7 +117,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     const back = readNexusDoc(bags);
     expect(back).toEqual(doc);                                          // the chain survives disk byte-faithful
     expect(sealLineageHead(back)!.epoch).toBe(0);
-    expect(rosterFromNexusDoc(back).sealEpochCid).toBe(genesis.epochCid);   // antigen roots on the head
+    expect(foundingRoster(back).sealEpochCid).toBe(genesis.epochCid);   // antigen roots on the head
     expect(foundingQuorumSeated(back)).toBe(true);
   });
 
@@ -193,7 +193,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     expect(existsSync(nexusCharterDocPath(bags))).toBe(true);
     expect(back?.kahu.map((k) => k.displayName)).toEqual(handles);   // the operator's names, not the build's
     expect(back?.threshold).toBe(2);
-    expect(rosterFromNexusDoc(back).keys.length).toBe(3);
+    expect(foundingRoster(back).keys.length).toBe(3);
     expect(foundingQuorumSeated(back)).toBe(true);
   });
 });

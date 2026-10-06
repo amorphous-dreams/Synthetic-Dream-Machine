@@ -13,7 +13,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
-  rosterFromNexusDoc, foundingRoster, foundingQuorumSeated, genesisSealEpochCid,
+  foundingRoster, foundingQuorumSeated, genesisSealEpochCid,
   sealLineageHead, emptyFoundingCharterDoc, NEXUS_DOC_DOMAIN, type NexusDoc,
 } from "../src/nexus-seal-seed.js";
 import {
@@ -48,9 +48,9 @@ async function seatedDoc(seeds: Uint8Array[]): Promise<NexusDoc> {
   };
 }
 
-describe("rosterFromNexusDoc — fail-closed reads", () => {
+describe("foundingRoster — fail-closed reads", () => {
   test("a null doc folds to the empty roster", () => {
-    const r = rosterFromNexusDoc(null);
+    const r = foundingRoster(null);
     expect(r.keys).toEqual([]);
     expect(r.sealEpochCid).toBe("");
   });
@@ -65,7 +65,7 @@ describe("rosterFromNexusDoc — fail-closed reads", () => {
   test("keys present but NO epoch → fail closed (nothing roots)", async () => {
     const doc = await seatedDoc([SEEDS.guru, SEEDS.telarus]);
     const noEpoch: NexusDoc = { ...doc, sealEpochCid: null };
-    expect(rosterFromNexusDoc(noEpoch).keys).toEqual([]);
+    expect(foundingRoster(noEpoch).keys).toEqual([]);
     expect(foundingQuorumSeated(noEpoch)).toBe(false);
   });
 
@@ -76,10 +76,10 @@ describe("rosterFromNexusDoc — fail-closed reads", () => {
   });
 });
 
-describe("rosterFromNexusDoc — a seated doc raises a LIVE antigen roster", () => {
+describe("foundingRoster — a seated doc raises a LIVE antigen roster", () => {
   test("a 2-of-3 seated doc verifies a real quorum-signed antigen entry", async () => {
     const doc = await seatedDoc([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm]);
-    const roster = rosterFromNexusDoc(doc);
+    const roster = foundingRoster(doc);
     expect(roster.keys.length).toBe(3);
     expect(roster.sealEpochCid).not.toBe("");
     expect(foundingQuorumSeated(doc)).toBe(true);
@@ -96,7 +96,7 @@ describe("rosterFromNexusDoc — a seated doc raises a LIVE antigen roster", () 
 
   test("an entry rooting on a DIFFERENT epoch than the doc establishes is ignored", async () => {
     const doc = await seatedDoc([SEEDS.guru, SEEDS.telarus]);
-    const roster = rosterFromNexusDoc(doc);
+    const roster = foundingRoster(doc);
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
     const entry = await signAntigenEntry(
       { nym: VICTIM, action: "kapae", parents: [], sealEpochCid: "epoch0-someone-elses" },
@@ -106,7 +106,7 @@ describe("rosterFromNexusDoc — a seated doc raises a LIVE antigen roster", () 
   });
 });
 
-describe("rosterFromNexusDoc — the PRE-ROTATED CHAIN roots the antigen on the verified HEAD (#68)", () => {
+describe("foundingRoster — the PRE-ROTATED CHAIN roots the antigen on the verified HEAD (#68)", () => {
   /** A seated doc carrying a pre-rotated chain: genesis over `seedsA`, rotated to `seedsB` if supplied. */
   async function chainedDoc(seedsA: Uint8Array[], seedsB?: Uint8Array[]): Promise<NexusDoc> {
     const keysA = await Promise.all(seedsA.map(pubOf));
@@ -127,7 +127,7 @@ describe("rosterFromNexusDoc — the PRE-ROTATED CHAIN roots the antigen on the 
 
   test("a chain-rooted genesis doc raises a live roster on the head epoch + verifies a real quorum entry", async () => {
     const doc = await chainedDoc([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm]);
-    const roster = rosterFromNexusDoc(doc);
+    const roster = foundingRoster(doc);
     expect(roster.keys.length).toBe(3);
     expect(roster.sealEpochCid).toBe(sealLineageHead(doc)!.epochCid);
     expect(foundingQuorumSeated(doc)).toBe(true);
@@ -141,7 +141,7 @@ describe("rosterFromNexusDoc — the PRE-ROTATED CHAIN roots the antigen on the 
     const doc = await chainedDoc([SEEDS.guru, SEEDS.telarus], [SEEDS.lindwyrm, SEEDS.guru]);
     const head = sealLineageHead(doc)!;
     expect(head.epoch).toBe(1);
-    expect(rosterFromNexusDoc(doc).sealEpochCid).toBe(head.epochCid);
+    expect(foundingRoster(doc).sealEpochCid).toBe(head.epochCid);
     expect(foundingQuorumSeated(doc)).toBe(true);
   });
 
@@ -149,7 +149,7 @@ describe("rosterFromNexusDoc — the PRE-ROTATED CHAIN roots the antigen on the 
     const doc = await chainedDoc([SEEDS.guru, SEEDS.telarus]);
     const head = doc.sealLineage![0]!;
     const tampered: NexusDoc = { ...doc, sealLineage: [mintCharterEpoch({ ...head, prevEpochCid: "forged" })] };
-    expect(rosterFromNexusDoc(tampered).keys).toEqual([]);           // genesis with a non-null prev → broken lineage
+    expect(foundingRoster(tampered).keys).toEqual([]);           // genesis with a non-null prev → broken lineage
     expect(foundingQuorumSeated(tampered)).toBe(false);
   });
 
@@ -159,7 +159,7 @@ describe("rosterFromNexusDoc — the PRE-ROTATED CHAIN roots the antigen on the 
     const stranger = "f".repeat(64);
     const kahu = doc.kahu.map((k, i) => (i === 0 ? { ...k, verifyingKey: stranger } : k));
     const unbound: NexusDoc = { ...doc, kahu };
-    expect(rosterFromNexusDoc(unbound).keys).toEqual([]);
+    expect(foundingRoster(unbound).keys).toEqual([]);
     expect(foundingQuorumSeated(unbound)).toBe(false);
   });
 });

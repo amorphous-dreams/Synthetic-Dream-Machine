@@ -35,7 +35,7 @@ import {
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState,
 } from "@lararium/node";
 import {
-  emptyFoundingCharterDoc, rosterFromNexusDoc, foundingQuorumSeated, sealLineageHead,
+  emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
   defaultCryptoProvider, federationPostureFromDoc,
   type NexusDoc, type NexusCharterKahu, type SealEpoch,
@@ -678,9 +678,9 @@ function sealImport(args: ParsedArgs): number {
   let incoming = "";
   try {
     writeFileSync(join(probe, nexusCharterDocRelPath()), incomingRaw, "utf8");
-    incoming = rosterFromNexusDoc(readNexusDoc(probe)).sealEpochCid;
+    incoming = foundingRoster(readNexusDoc(probe)).sealEpochCid;
   } finally { rmSync(probe, { recursive: true, force: true }); }
-  const standing = existsSync(dest) ? rosterFromNexusDoc(readNexusDoc(sealHome)).sealEpochCid || null : null;
+  const standing = existsSync(dest) ? foundingRoster(readNexusDoc(sealHome)).sealEpochCid || null : null;
 
   const v = sealImportVerdict({ incoming, standing });
   if (!v.ok) {
@@ -727,7 +727,7 @@ function sealImportCarry(args: ParsedArgs, from: string): number {
 async function sealShow(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
   const doc = readNexusDoc(sealHome);
-  const roster = rosterFromNexusDoc(doc);
+  const roster = foundingRoster(doc);
   const quorum = foundingQuorumSeated(doc);
   const head = sealLineageHead(doc);
   const chainDepth = doc?.sealLineage?.length ?? 0;
