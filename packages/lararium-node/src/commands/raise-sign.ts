@@ -2,13 +2,19 @@
  * raise-sign — the RECOGNISER's half of the raise ceremony, and the only half that runs off-vessel.
  *
  * ── WHY THIS HALF NEEDS NO DAEMON AT ALL ────────────────────────────────────────────────────────
- * The vessel being raised emits a challenge; a recognised operator signs it on THEIR OWN machine, with
- * THEIR OWN persona root, and hands the grant back. Nothing about that touches the asking vessel — which
- * is precisely the property the design wants: the caps that arrive ride the recogniser's key, and no key
- * of theirs ever rests on the vessel they raise.
+ * The vessel being raised emits a challenge naming a Nexus by its AID; a recognised operator signs it on
+ * THEIR OWN machine and hands the grant back. Nothing about that touches the asking vessel — the caps that
+ * arrive ride the recogniser's key, and no key of theirs ever rests on the vessel they raise.
  *
- * So this reads a challenge, signs it, and returns a grant. It holds no vessel state, opens no board, and
- * writes nothing anywhere.
+ * ── IT SIGNS WITH THE LEAF, AND CARRIES THE LEAF'S ADMIT ────────────────────────────────────────
+ * The signing key is the held persona's per-Nexus LEAF for the challenge's Nexus (`heldNexusLeaves`),
+ * never the persona root: a root's signature names a key no admit names, and the asking vessel refuses it.
+ * The grant carries that leaf's admit, read off THIS vessel's own replica of the Nexus's carriage board
+ * (`presentedAdmitFromBoard`: the counted admit head and its closed, tight lineage) — the same derivation a
+ * dial presents. The board is the one `runNexusContract` writes to, resolved through `nodeNexusIsland`
+ * over the home that holds the Nexus's charter. No admit on the replica → nothing to present → refuse.
+ *
+ * It opens the board read-only and writes nothing anywhere.
  *
  * ── IT REFUSES A CHALLENGE IT CANNOT READ, RATHER THAN SIGNING A SHAPE ──────────────────────────
  * The challenge crosses from another machine as text, so it arrives untrusted. A signer that accepted a
@@ -18,12 +24,20 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor
  */
 
+import { Repo } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  signRaiseGrant, ed25519SignerFromSeed,
+  signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl, carriageEntriesFromBoard,
+  materializeSharedLarDoc, presentedAdmitFromBoard,
   type RaiseChallenge, type RaiseGrant,
 } from "@lararium/mesh";
 
-import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
+import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { larDataDir, larSealHome } from "../vessel-paths.js";
+import { charterHomeFor } from "../carried-set.js";
+import { readNexusDoc } from "../nexus-doc.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
+import { heldNexusLeaves } from "../nexus-leaf.js";
 
 export class RaiseSignError extends Error {}
 
@@ -46,16 +60,22 @@ export function readRaiseChallenge(text: string): RaiseChallenge | null {
 }
 
 /**
- * Sign a challenge with one of this operator's own persona roots.
+ * Sign a challenge as persona `handleIndex`'s LEAF for the challenge's Nexus, and attach that leaf's admit.
  *
  * `handleIndex` names WHICH compartment answers. A human holds several, and the one that signs is the one
- * whose nym the asking vessel's membership fold admits — so the choice belongs to the operator, never to a
- * default this code picks for them.
+ * whose leaf that Nexus admitted — so the choice belongs to the operator, never to a default this code
+ * picks for them.
+ *
+ * REFUSES, signing nothing, when this vessel holds no charter for the challenge's Nexus, no persona at
+ * `handleIndex`, or no counted admit for that persona's leaf on its own replica of the Nexus's board.
  */
 export async function runRaiseSign(opts: {
   challengeText: string;
   handleIndex:   number;
+  /** The data dir whose replica holds the Nexus's carriage board. Defaults to `larDataDir()`. */
   storageDir?:   string;
+  /** The seal home holding the Nexus's charter. Defaults to `larSealHome()`. */
+  sealHome?:     string;
 }): Promise<RaiseGrant> {
   const challenge = readRaiseChallenge(opts.challengeText);
   if (!challenge) {
@@ -64,12 +84,38 @@ export async function runRaiseSign(opts: {
       "and this signs nothing it cannot read whole.",
     );
   }
-  // `opts.storageDir` feeds no local read. Kept on `opts` for call-site shape compatibility only.
-  const root = await generateOrLoadPersonaGroupRoot(opts.handleIndex);
-  const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(opts.handleIndex));
+  const sealHome = opts.sealHome ?? larSealHome();
+  const aid      = challenge.nexus;
+  const home     = charterHomeFor(sealHome, aid);
+  if (!home) {
+    throw new RaiseSignError(`this vessel holds no charter for the Nexus the challenge names (${aid.slice(0, 18)}…) — import it first.`);
+  }
+  const roster = foundingRoster(readNexusDoc(home));
+  if (roster.sealEpochCid.length === 0) {
+    throw new RaiseSignError("the charter held for that Nexus reads unseated — no admit can root on it.");
+  }
+  const leaf = (await heldNexusLeaves(aid)).find((l) => l.handleIndex === opts.handleIndex);
+  if (!leaf) throw new RaiseSignError(`this vessel holds no persona at h${opts.handleIndex}.`);
+
+  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home });
+  const repo   = new Repo({ storage: new NodeFSStorageAdapter(opts.storageDir ?? larDataDir()) });
+  let presented;
+  try {
+    const handle = await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts");
+    presented = await presentedAdmitFromBoard(carriageEntriesFromBoard(handle.doc()), leaf.verifyingKey, roster);
+  } finally {
+    await repo.flush().catch(() => { /* read-only: nothing owed */ });
+  }
+  if (!presented) {
+    throw new RaiseSignError(
+      `no counted admit for persona h${opts.handleIndex}'s leaf stands on this replica of that Nexus's board — ` +
+      "a raise presents an admit, and there is none to present.",
+    );
+  }
   return signRaiseGrant({
     challenge,
-    byNym: root.verifyingKey.toLowerCase(),
-    sign,
+    byNym:          leaf.verifyingKey,
+    presentedAdmit: presented,
+    sign:           ed25519SignerFromSeed(leaf.seed),
   });
 }

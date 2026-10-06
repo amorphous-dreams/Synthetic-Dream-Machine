@@ -1,9 +1,10 @@
 /**
  * `lares raise sign <challenge-json> [--as <index>]` — the RECOGNISER's half of the raise ceremony.
  *
- * A vessel standing at the floor emits a challenge. A recognised operator signs it on their OWN machine
- * with their OWN persona root and hands the grant back; the caps that arrive at that vessel ride the
- * recogniser's key, and no key of theirs ever rests on the vessel they raise.
+ * A vessel standing at the floor emits a challenge naming a Nexus. A recognised operator signs it on their
+ * OWN machine with their persona's per-Nexus LEAF — never the root — and the grant carries that leaf's
+ * admit, read off this vessel's own replica of the Nexus's board. The asking vessel verifies the admit and
+ * raises only on `held`; the caps ride the leaf, and no key of theirs ever rests on the vessel they raise.
  *
  * ── WHY THIS VERB CARRIES NO `ask` OR `answer` YET, SAID PLAINLY ────────────────────────────────
  * Those two halves belong to the ASKING vessel, and the door that holds them lives in that vessel's
@@ -36,9 +37,9 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
   const challengeText = args.positional[1];
   if (!challengeText) return usage(args);
 
-  // WHICH COMPARTMENT ANSWERS BELONGS TO THE OPERATOR. A human holds several persona roots, and the one
-  // that signs is the one whose nym the asking vessel's membership fold admits. Defaulting to 0 names the
-  // ordinary case without hiding the choice — `--as` moves it.
+  // WHICH COMPARTMENT ANSWERS BELONGS TO THE OPERATOR. A human holds several personas, and the one that
+  // signs is the one whose leaf the challenge's Nexus admitted. Defaulting to 0 names the ordinary case
+  // without hiding the choice — `--as` moves it.
   const idxRaw = args.options["as"];
   const handleIndex = idxRaw === undefined ? 0 : Number.parseInt(idxRaw, 10);
   if (!Number.isInteger(handleIndex) || handleIndex < 0) {
@@ -50,10 +51,11 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
     const grant = await runRaiseSign({ challengeText, handleIndex });
     emit(args, {
       ok: true,
-      data: { challenge: { ...grant.challenge }, byNym: grant.byNym, sig: grant.sig },
+      data: { challenge: { ...grant.challenge }, byNym: grant.byNym, sig: grant.sig, presentedAdmit: grant.presentedAdmit },
       human: () => {
-        console.log(`raise sign — signed the challenge as persona ${handleIndex}:`);
-        console.log(`  your nym:   ${grant.byNym}`);
+        console.log(`raise sign — signed the challenge as persona ${handleIndex}'s leaf for that Nexus:`);
+        console.log(`  your leaf:  ${grant.byNym}`);
+        console.log(`  admit:      carried, with ${grant.presentedAdmit.lineage.length} lineage act(s)`);
         console.log(`  for vessel: ${grant.challenge.vesselId.slice(0, 16)}…`);
         console.log(`  at epoch:   ${grant.challenge.epoch}`);
         console.log(`  hand this grant back to that vessel:`);

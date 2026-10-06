@@ -426,14 +426,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares raise sign <challenge-json> [--as <persona-index>]",
     synopsis:
       "The RECOGNISER's half of the raise ceremony. A vessel standing at the WAKING FLOOR emits a challenge; " +
-      "`raise sign` signs it with one of YOUR persona roots and hands a grant back to it. The challenge " +
-      "comes from the vessel being raised and the grant goes back to it — no key of yours ever rests on the " +
-      "vessel you raise, and the grant stands only until that Nexus's lease epoch rolls past it.",
+      "`raise sign` signs it with your persona's LEAF for the Nexus the challenge names (never the root), " +
+      "attaches that leaf's admit read off your own replica of the Nexus's board, and hands the grant back. " +
+      "The vessel raises only on an admit it reads HELD — no key of yours ever rests on the vessel you raise, " +
+      "and the grant stands only until that Nexus's lease epoch rolls past it.",
     examples: [
-      "lares raise sign ./challenge.json           # sign with the active persona root",
-      "lares raise sign ./challenge.json --as 2    # ... with the root at handle-index 2",
+      "lares raise sign ./challenge.json           # sign as persona 0's leaf for the challenge's Nexus",
+      "lares raise sign ./challenge.json --as 2    # ... as persona 2's leaf",
     ],
-    flags: ["--as <persona-index>   which held persona root signs the grant"],
+    flags: ["--as <persona-index>   which held persona's leaf signs the grant"],
     next: ["lares persona list", "lares vessel read"],
   },
 

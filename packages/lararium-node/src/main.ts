@@ -41,8 +41,11 @@ import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-ve
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
-  standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, recognisesNoNym,
+  standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
 } from "./vessel-raise.js";
+import { readCarriedNexuses, type BoardOpener } from "./nexus-carriage.js";
+import { larSealHome } from "./vessel-paths.js";
+import { materializeSharedLarDoc } from "@lararium/mesh";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { readArchiveOpening } from "./archive-passphrase.js";
 import { faceStands } from "./commands/init.js";
@@ -292,17 +295,30 @@ async function main(): Promise<void> {
     //
     // Nothing here touches disk. A reboot drops this vessel back to its floor with nothing to resume,
     // which is what keeps SEATED ⊥ RAISED true at rest (waking-floor#the-raise-is-a-vessel-layer-act).
-    // The vessel's OWN verifying key names both sides here: it is the vessel a grant must answer for, and
-    // the Nexus whose members board it reads. A Herm carrying a foreign Nexus names that Nexus instead.
-    const selfKey = await loadVesselVerifyingKey();
+    // RECOGNITION IS THE VERIFIER'S (O9). A grant carries its recogniser's presented admit, signed by that
+    // admit's LEAF; every answer re-reads the Nexuses this vessel carries off its OWN replica and raises only
+    // on a `held` admit for the Nexus the challenge names. Carried here means either way a vessel carries:
+    // a persona's consent or seated chair (`readCarriedNexuses`, empty on a persona-less herm by class), or
+    // this PLACE's own counted carrier seal on a held charter's board (`placeCarriedNexuses`).
+    //
+    // THE CHALLENGE NAMES A NEXUS BY ITS AID — the first carried at boot, primary charter first. The vessel's
+    // own key names only the vessel a grant must answer for. The lease fence keys on that same AID. A vessel
+    // that carries no Nexus emits no challenge: no admit could count, so there is nothing to invite.
+    const selfKey  = await loadVesselVerifyingKey();
+    const sealHome = larSealHome();
+    const openRaiseBoard: BoardOpener = async (url, label) =>
+      (await materializeSharedLarDoc(herm.repo, url, label).catch(() => null))?.doc();
+    const raiseReadings = async () => unionReadings(
+      await readCarriedNexuses({ sealHome, ownVesselKey: selfKey, open: openRaiseBoard }),
+      await placeCarriedNexuses({ sealHome, ownVesselKey: selfKey, open: openRaiseBoard }),
+    );
+    const raiseNexus = (await raiseReadings())[0]?.aid ?? null;
     const raiseDoor = standRaiseDoor({
       vesselId:   selfKey,
-      nexus:      selfKey,
+      nexus:      raiseNexus ?? "",
       floor:      standing,
-      leaseEpoch: () => effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, selfKey),
-      // RECOGNITION REFUSES EVERY NYM (`recognisesNoNym`): a board's admits are not an allow roster, and
-      // the verifier route onto this door lands in round 2.
-      recognises: recognisesNoNym,
+      leaseEpoch: () => (raiseNexus ? effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus) : 0),
+      readings:   raiseReadings,
       verify:     verifyNymSignature,
       nonce:      () => randomBytes(32).toString("hex"),
     });
@@ -312,9 +328,13 @@ async function main(): Promise<void> {
     // vessel, Nexus, epoch, nonce — and carries nothing of what this vessel holds. A forged challenge buys
     // an attacker nothing either: a grant answers only the exact nonce the asking vessel still holds, and
     // an attacker holds no such vessel. One boot, one nonce, until the ask/answer verbs stand.
-    const invitation = await raiseDoor.ask();
-    console.log(`[herm] raise challenge (hand to a recognised operator; they run \`lares raise sign\`):`);
-    console.log(`[herm]   ${JSON.stringify(invitation)}`);
+    if (raiseNexus) {
+      const invitation = await raiseDoor.ask();
+      console.log(`[herm] raise challenge (hand to a recognised operator; they run \`lares raise sign\`):`);
+      console.log(`[herm]   ${JSON.stringify(invitation)}`);
+    } else {
+      console.log(`[herm] raise door: this vessel carries no Nexus — no admit could count, so no challenge stands`);
+    }
     for (const f of reachFaces) console.log(`[herm] ws:        ${wsUrlForOrigin(f.origin)}   (${f.kind})`);
 
     // The CARRIAGE CROSSROADS (Socket B) — announced when a relay port rode the config (LAR_HERM_RELAY_PORT).
