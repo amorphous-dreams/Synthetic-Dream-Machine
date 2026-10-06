@@ -443,8 +443,8 @@ export class IslandAdaptor implements MemeProjection {
     // A slot child saved at its own address splits under the fragment it already carries: its own
     // slots compose onto that ONE path (`#/a/z`), never a second fragment (`#/a#/z`).
     const cut = title.indexOf("#");
-    const { parent, children } = fields["draft.of"] !== undefined
-      ? { parent: { ...fields, title }, children: [] as Record<string, unknown>[] }
+    const { parent, children }: ReturnType<typeof splitBodyTiddler> = fields["draft.of"] !== undefined
+      ? { parent: { ...fields, title }, children: [] }
       : cut < 0
         ? splitBodyTiddler(title, "", bodyText, fields)
         : splitBodyTiddler(title.slice(0, cut), title.slice(cut), bodyText, fields);
@@ -470,7 +470,7 @@ export class IslandAdaptor implements MemeProjection {
 
       for (const uri of existingChildren) {
         if (newChildren.has(uri)) continue;
-        const slot = this._slotOf.get(uri) ?? targetBag;
+        const slot: SlotUri = this._slotOf.get(uri) ?? targetBag;
         if (slot === targetBag) familyTombstones.push(uri);
         else strayTombstones.push({ uri, slot });
       }
