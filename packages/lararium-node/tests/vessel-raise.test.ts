@@ -124,3 +124,23 @@ describe("★ nothing is written, so nothing survives ★", () => {
     expect(await second.d.raised()).toBeNull();
   });
 });
+
+// ── THE RAISE DOOR REFUSES (O9) ─────────────────────────────────────────────────────────────────────
+// A carriage board's admits are not an allow roster, so the door no longer recognises a nym folded off one.
+import { recognisesNoNym } from "../src/vessel-raise.js";
+
+describe("★ the raise door recognises no nym folded off a board ★", () => {
+  test("★ a nym the board admits is NOT recognised, and its grant raises nothing ★", async () => {
+    const boardMember = "board-admitted-leaf-nym";
+    const { d } = door({ recognises: recognisesNoNym });
+    expect(recognisesNoNym(boardMember)).toBe(false);
+    expect(await d.answer(await answerWith(await d.ask(), boardMember))).toEqual({ ok: false, why: "unrecognised" });
+    expect(await d.standing()).toBe("herm");
+  });
+
+  test("CONTROL: the same grant through a door that recognises the nym raises — the refusal is the recogniser's", async () => {
+    const boardMember = "board-admitted-leaf-nym";
+    const { d } = door({ recognises: (nym) => nym === boardMember });
+    expect((await d.answer(await answerWith(await d.ask(), boardMember))).ok).toBe(true);
+  });
+});

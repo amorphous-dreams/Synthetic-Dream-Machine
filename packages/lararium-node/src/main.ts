@@ -41,7 +41,7 @@ import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-ve
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
-  standRaiseDoor, effectiveLeaseEpochOnBoard, nexusMemberNyms, verifyNymSignature,
+  standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, recognisesNoNym,
 } from "./vessel-raise.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { readArchiveOpening } from "./archive-passphrase.js";
@@ -300,9 +300,9 @@ async function main(): Promise<void> {
       nexus:      selfKey,
       floor:      standing,
       leaseEpoch: () => effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, selfKey),
-      // Recognition BORROWS the membership fold that already stands — quorum-signed, contract-in
-      // verified. A vessel carrying no members recognises nobody, which is the fail-closed reading.
-      recognises: async (nym) => (await nexusMemberNyms(storageDir)).has(nym.toLowerCase()),
+      // RECOGNITION REFUSES EVERY NYM (`recognisesNoNym`): a board's admits are not an allow roster, and
+      // the verifier route onto this door lands in round 2.
+      recognises: recognisesNoNym,
       verify:     verifyNymSignature,
       nonce:      () => randomBytes(32).toString("hex"),
     });

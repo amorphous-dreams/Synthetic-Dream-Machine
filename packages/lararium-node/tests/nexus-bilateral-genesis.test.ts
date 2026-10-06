@@ -15,8 +15,10 @@
  *      (`runNexusContract`, quorum ∪ the supplied contract-in, self-verified to COUNT before the board write).
  *
  * Proven end-to-end, off the real verbs on real Automerge boards:
- *   · hearth A's `nexus-membership` fold names B a MEMBER, AND hearth B's fold names A a MEMBER — BOTH sides
- *     fold the OTHER operator in, each off its own local replica (no-global-now), a stranger reads STRANGER,
+ *   · hearth A's membership gate holds B's PRESENTED admit (derived off A's board, signed over the socket by
+ *     B's own leaf) as MEMBER, AND hearth B's holds A's — BOTH sides read the OTHER operator in, each off its
+ *     own local replica (no-global-now); the same nym at the wire presenting nothing, and a stranger, read
+ *     STRANGER,
  *   · NO CONSCRIPTION: `runNexusContract` REFUSES an admit for an operator that has not signed consent (no token,
  *     seed not held) — the carriage-contracts board is not the antigen; a Nexus never conscripts an operator,
  *   · REVERT-VERIFY the no-conscription bite: a quorum-signed admit that LACKS the contract-in (the entry the
@@ -51,7 +53,9 @@ import { writeNexusDoc, readNexusDoc, nexusCharterDocPath } from "../src/nexus-d
 import { importCarriedCharter, carriedSet } from "../src/carried-set.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError } from "../src/commands/nexus-contract.js";
-import { makeNexusMembership } from "../src/nexus-carriage.js";
+import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
+import { nexusLeafFor } from "../src/nexus-leaf.js";
+import { materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, presentedAdmitFromBoard, signLeafProof } from "@lararium/mesh";
 
 let rootA: string;
 let rootB: string;
@@ -126,6 +130,33 @@ async function leafAt(root: string, sealHome: string): Promise<string> {
   if (!aid) throw new Error("no charter stands to derive a leaf for");
   return asRoot(root, async () => (await deriveNexusScopedKey(
     await loadPersonaGroupRootSeed(0), 0, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase());
+}
+
+/**
+ * Stand one hearth's gate-side membership holder over its own store, and a `present` that derives a joiner's
+ * admit off THIS hearth's board (the joiner holds a replica of it) and signs the leaf proof with the joiner's
+ * own leaf seed. Run inside `asRoot(hearth.root)`.
+ */
+async function standGate(h: Hearth) {
+  const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  const ownVesselKey = await loadVesselVerifyingKey();
+  const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
+  const holder = makeNexusMembership({
+    sealHome: h.bags, repo, nexusPubkey: h.island,
+    readCarried: () => readCarriedNexuses({ sealHome: h.bags, ownVesselKey, open }),
+  });
+  await holder.refold();
+  const present = async (peerId: string, nym: string, leafSeed: Uint8Array): Promise<void> => {
+    const entries = carriageEntriesFromBoard(await open(carriageDocUrl(h.island), "board:carriage-contracts"));
+    const presented = await presentedAdmitFromBoard(entries, nym, foundingRoster(readNexusDoc(h.bags)));
+    if (!presented) throw new Error(`no admit for ${nym.slice(0, 12)}… on ${h.island.slice(0, 12)}…`);
+    const nonce = "56".repeat(32);
+    const gatePubKey = h.nexusPubkey;
+    const vesselKey = "cd".repeat(32);
+    const leafProof = await signLeafProof({ admit: presented.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leafSeed) });
+    await holder.present(peerId, { presentedAdmit: { ...presented, leafProof }, nonce, gatePubKey, vesselKey });
+  };
+  return { holder, present };
 }
 
 /** hex → bytes (test-local; the mesh keeps its own private one). */
@@ -207,19 +238,20 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     // ── The bilateral assertion — each hearth's OWN nexus-membership fold, off its OWN local replica. ──
     const strangerNym = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(123)));
 
+    // Each joiner's leaf SIGNS its own presentation, on its own side of the LAR_ROOT wall.
+    const freyjaLeafSeed = await asRoot(rootB, async () => (await nexusLeafFor(0, A.aid)).seed);
+    const joshLeafSeed   = await asRoot(rootA, async () => (await nexusLeafFor(0, B.aid)).seed);
+
     await asRoot(rootA, async () => {
-      const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-      const holder = makeNexusMembership({
-        sealHome: A.bags, nexusPubkey: A.island, repo,
-        peerIdentifierMap: new Map<string, string>([
-          ["peer-b",        `prefix:${freyjaAtA}`],       // the peer operator → MEMBER (members{} write)
-          ["peer-stranger", `prefix:${strangerNym}`],     // never admitted → STRANGER
-        ]),
-      });
-      await holder.refold();
-      expect(holder.membership.holdsCarriagePeer("peer-b")).toBe(true);        // A folds B IN
-      expect(holder.membership.holdsCarriagePeer("peer-stranger")).toBe(false);
-      holder.dispose();
+      const { holder, present } = await standGate(A);
+      try {
+        await present("peer-b", freyjaAtA, freyjaLeafSeed);                         // the peer operator PRESENTS
+        await holder.present("peer-b-silent", null);                                 // her nym at the wire, presenting nothing
+        await holder.present("peer-stranger", null);
+        expect(holder.membership.holdsCarriagePeer("peer-b")).toBe(true);            // A holds B's presented admit
+        expect(holder.membership.holdsCarriagePeer("peer-b-silent")).toBe(false);    // no presentation → STRANGER
+        expect(holder.membership.holdsCarriagePeer("peer-stranger")).toBe(false);
+      } finally { holder.dispose(); }
 
       const list = await runNexusMembersList({ sealHome: A.bags });
       expect(list.members).toContain(freyjaAtA);
@@ -230,14 +262,11 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     });
 
     await asRoot(rootB, async () => {
-      const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-      const holder = makeNexusMembership({
-        sealHome: B.bags, nexusPubkey: B.island, repo,
-        peerIdentifierMap: new Map<string, string>([["peer-a", `prefix:${joshAtB}`]]),
-      });
-      await holder.refold();
-      expect(holder.membership.holdsCarriagePeer("peer-a")).toBe(true);        // B folds A IN
-      holder.dispose();
+      const { holder, present } = await standGate(B);
+      try {
+        await present("peer-a", joshAtB, joshLeafSeed);
+        expect(holder.membership.holdsCarriagePeer("peer-a")).toBe(true);            // B holds A's presented admit
+      } finally { holder.dispose(); }
 
       const list = await runNexusMembersList({ sealHome: B.bags });
       expect(list.members).toContain(joshAtB);

@@ -45,8 +45,6 @@ import {
 } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
 
-import { runNexusMembersList } from "./commands/nexus-contract.js";
-import { larSealHome } from "./vessel-paths.js";
 
 export interface RaiseDoorOptions {
   /** This vessel's own verifying key — a grant for any other vessel answers nothing here. */
@@ -57,7 +55,8 @@ export interface RaiseDoorOptions {
   readonly floor:      VesselClass;
   /** The Nexus's effective lease epoch, read FRESH on every call. The fence, live. */
   readonly leaseEpoch: () => number | Promise<number>;
-  /** Whether this vessel's membership fold admits a nym — its own reading, as of last sync. */
+  /** Whether this vessel recognises a nym as a raiser. No board fold answers it: a carriage board's admits
+   *  reach this vessel only as what a subject PRESENTS, so the door's own verifier route decides. */
   readonly recognises: (nym: string) => boolean | Promise<boolean>;
   /** Verify a signature by a nym over bytes. Supplied so this module binds to no one crypto surface. */
   readonly verify:     (nym: string, bytes: Uint8Array, sig: string) => boolean | Promise<boolean>;
@@ -152,22 +151,12 @@ export function effectiveLeaseEpochOnBoard(handle: DocHandle<LarDoc>, resource: 
 }
 
 /**
- * The nyms this vessel's membership fold admits — quorum-signed and contract-in verified, the same set
- * `nexus members --list` reports. Recognition borrows this authority and mints none of its own.
- *
- * A vessel with no seated charter, or none admitted, answers the EMPTY set: it recognises nobody, and the
- * raise door refuses everyone. That is the fail-closed reading, and it is the correct one for a vessel
- * standing alone at a crossroads.
+ * The raise door's recogniser this round: it REFUSES every nym. A raiser is recognised by an admit it
+ * PRESENTS and a verifier reads — never by a nym folded off a carriage board, whose admits are not an allow
+ * roster. The verifier route onto this door lands in round 2; until then the door raises nobody.
  */
-export async function nexusMemberNyms(storageDir: string): Promise<ReadonlySet<string>> {
-  try {
-    const r = await runNexusMembersList({ sealHome: larSealHome(), storageDir });
-    return new Set(r.members.map((m) => m.toLowerCase()));
-  } catch {
-    // A read that cannot answer says NOBODY rather than guessing. An error here means the vessel cannot
-    // establish who it recognises, and a raise on an unestablished reading is exactly the wrong default.
-    return new Set();
-  }
+export function recognisesNoNym(_nym: string): boolean {
+  return false;
 }
 
 /** Verify an ed25519 signature by a nym over bytes. Never throws — untrusted input crosses this shore. */

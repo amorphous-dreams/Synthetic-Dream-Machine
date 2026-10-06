@@ -54,7 +54,7 @@ import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
-import { realmMaintenanceFromBoard, shareConfigOf } from "@lararium/mesh";
+import { realmMaintenanceFromBoard, shareConfigOf, carriageEntryActCid, type LeafIdentity } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -90,7 +90,11 @@ import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
-import { makeNexusMembership, makeRealmCharterConsult } from "./nexus-carriage.js";
+import {
+  makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener, dialPresentation,
+  presentationKey, dialIdentityFor,
+  type NexusMembershipHolder, type SocketBinding, type DialPresentation,
+} from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { nodeNexusStandsAt } from "./nexus-standing.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
@@ -405,10 +409,19 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // an admitted same-operator peer. A WS peer absent here (or present-but-not-same-operator) reads as the
   // stricter cross-operator class at the sharePolicy (fail-closed).
   const peerClassMap = new Map<string, PeerClass>();
-  // The CONTRACT nym map — peerId → the persona-root nym the peer's contract edge proved at the gate. Keyed in
-  // the same microtask; the membership consult reads it AHEAD of the raw wire key (the vessel key names a
-  // device, the nym an operator — `nexus-carriage.ts`). Absent for every peer that presented no contract edge.
+  // THE ROOT MAP — peerId → a persona-root nym proven at this seat. The REALM consult reads it
+  // (`contractNymOfPeer`) and nothing fills it: no witness here proves a foreign root's edge epoch, and no proof
+  // binding a leaf to a root travels on the wire. The membership consult never reads it (`nexus-carriage.ts`).
   const peerContractNymMap = new Map<string, string>();
+  // THE LEAF MAP's input — what each admitted socket PRESENTED, bound to the nonce and gate key THIS gate issued
+  // on it and the vessel key its V3 proof proved. Keyed at the seat below and handed to the membership holder,
+  // which verifies it (leaf proof · held against the carried Nexus's deny board and antigen · carried set) and
+  // alone decides whether the peer stands in the leaf map. A peer that presented no admit keys `null`.
+  const peerBindings = new Map<string, SocketBinding | null>();
+  // Forward-declared: the holder stands once the vessel's island is known, below, and replays `peerBindings`.
+  let nexusMembershipHolder: NexusMembershipHolder | null = null;
+  // The dial's re-presentation check — set once the dial stands (below); a board change or a refresh calls it.
+  let representIfMoved: (() => Promise<void>) | null = null;
   // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
   // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
@@ -421,13 +434,23 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         if (identHex) peerIdentifierMap.set(peerId, identHex);
         const cls = authGate.getClassForSocket(socket as Parameters<typeof authGate.getClassForSocket>[0]);
         if (cls) peerClassMap.set(peerId, cls);
-        /** No contract nym is proven at this seat: returns `undefined` for every socket, so nothing enters
-         *  `peerContractNymMap` and every cross-operator peer stands at the floor. */
-        const contractNymAtThisSeat = (): string | undefined => undefined;
-        const contractNym = contractNymAtThisSeat();
-        if (contractNym) peerContractNymMap.set(peerId, contractNym);
+        // THE LEAF SEAT. A presented admit binds to the values this gate issued and proved for THIS socket —
+        // never to anything the peer echoed. No gate key armed, no proved identifier, or no admit: `null`.
+        const gateSocket = socket as Parameters<typeof authGate.getPresentationForSocket>[0];
+        const presentedAdmit = authGate.getPresentationForSocket(gateSocket)?.presentedAdmit;
+        const challenge = authGate.getChallengeForSocket(gateSocket);
+        const binding: SocketBinding | null = presentedAdmit && challenge?.gatePubKey && identHex
+          ? { presentedAdmit, nonce: challenge.nonce, gatePubKey: challenge.gatePubKey, vesselKey: identHex.slice(-64).toLowerCase() }
+          : null;
+        peerBindings.set(peerId, binding);
+        void nexusMembershipHolder?.present(peerId, binding);
       }
     });
+  });
+  // A socket that closes takes its presentation with it: the next socket from the same peer presents afresh.
+  network.on("peer-disconnected", ({ peerId }: { peerId: string }) => {
+    peerBindings.delete(peerId);
+    void nexusMembershipHolder?.present(peerId, null);
   });
   // The #59 antigen ring — the live Kapae-immune consult. Forward-declared here (the sharePolicy closes
   // over it) and STOOD once the operator's own nym (its Nexus key) is loaded, below. A null ring denies
@@ -656,29 +679,34 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   });
   antigenRing = antigenHolder.ring;
 
-  // Stand the nexus-doc membership consult now the operator's own verifying key is loaded — the carry-split's
-  // member gate. It reads the SAME `bags/nexus` charter roster the antigen folds against (the seated-kahu
-  // keys as the conservative provable-member floor; see nexus-membership for the surfaced carriage-contracts board
-  // fork) and resolves a peerId → nym off the same proven `peerIdentifierMap`. FAILS CLOSED: an unseated
-  // charter → empty member set → every cross-operator STRANGER (public-read only), never a false member.
-  // Fold the members BOARD (repo + nexusPubkey) atop the kahu floor — this LIGHTS SELF-SLOT-B: a general
-  // contracted operator (members{}, not a kahu) now reads MEMBER, so the carry-split's member lane names it.
-  // Keep the HOLDER (not just its `.membership` consult): the `nexus-refresh` main verb calls its
-  // `refoldWithBoard` to re-fold the member union against an out-of-process CLI board write.
+  // Stand the membership consult — the carry-split's member gate — now the island is known. It reads the LEAF
+  // MAP alone: a peer stands MEMBER only on an admit its socket PRESENTED, proven by the admit's own leaf over
+  // this gate's nonce, held against a carried Nexus's deny board and antigen (`nexus-carriage.ts`). No board
+  // admit, kahu seat or raw wire key seats anybody. FAILS CLOSED: no carried Nexus, no proof, or any verdict
+  // short of `held` leaves the peer a STRANGER (public-read only). The `nexus-refresh` verb refolds the HOLDER.
   // RE-VERDICT. The Repo caches its share verdict per (doc, peer) at the peer's admission; every live change to
   // what that verdict reads — the member set, the posture, the antigen, a realm registration — must ask the Repo
   // to read it again, or a member contracted AFTER its socket stood keeps drawing DENIED (measured: B's realm doc
   // arrived empty while A's board named her). `shareConfigChanged` re-evaluates every doc for every peer.
   const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
-  const nexusMembershipHolder = makeNexusMembership({
+  // THE CARRIED NEXUSES' BOARDS, read off this vessel's own live replica: every Nexus in the carried set, each
+  // island resolved over its own charter home. A change on any of them — a revoke arriving by sync — refolds
+  // the leaf map; the dialed island's board also re-checks what this vessel presents when it dials.
+  const carriedBoards = liveBoardOpener(repo, () => {
+    void nexusMembershipHolder?.refold();
+    void representIfMoved?.();
+  });
+  const membershipHolder: NexusMembershipHolder = makeNexusMembership({
     sealHome,
-    peerIdentifierMap,
-    peerContractNymMap,
     repo,
     nexusPubkey,
-    onRefold:          reverdict,
+    readCarried: () => readCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open }),
+    onRefold:    reverdict,
   });
-  nexusMembership = nexusMembershipHolder.membership;
+  nexusMembershipHolder = membershipHolder;
+  nexusMembership = membershipHolder.membership;
+  // Replay every socket that presented before the holder stood.
+  for (const [peerId, binding] of peerBindings) void membershipHolder.present(peerId, binding);
 
   // Read the federation POSTURE off the nexus doc (as-of-last-sync). Default PRIVATE (fail-closed):
   // a cross-Nexus foreign operator co-federates ONLY when the operator flips the Nexus open. A live flip needs
@@ -758,13 +786,14 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           fedGate:    selfSlotFedGate,
         },
         ...(opts.carriagePollIntervalMs !== undefined ? { pollIntervalMs: opts.carriagePollIntervalMs } : {}),
-        // HEAL — on a RE-connect after a drop, re-fold the antigen + members boards + posture the vessel read
-        // as-of-its-last-sync (a peer's bans/admits that landed during the partition). The SAME refold the
+        // HEAL — on a RE-connect after a drop, re-fold the antigen + carried deny boards + posture the vessel read
+        // as-of-its-last-sync (a peer's bans/revokes that landed during the partition). The SAME refold the
         // `nexus-refresh` verb runs; here it fires automatically when the carriage transport re-dials.
         onReconnect:  async () => {
           await runNexusRefresh({
             storageDir, sealHome, nexusPubkey,
-            antigen: antigenHolder, membership: nexusMembershipHolder,
+            ownVesselKey: vesselIdentity.verifyingKey, repo,
+            antigen: antigenHolder, membership: membershipHolder,
             setPosture: (p) => { federationPosture = p; },
           });
           await realmPlane?.refresh(readNexusDoc(sealHome));
@@ -1260,8 +1289,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"),
         membership:       nexusMembership,
         base:             selfSlotFedGate,
-        // THE REALM LEG: the realm's own registration answers which documents cross — the proven contract nym
-        // behind a wire key, the charter this vessel itself holds, and the hearth it dialed that charter from.
+        // THE REALM LEG: the realm's own registration answers which documents cross — the ROOT MAP (empty: no
+        // root edge is proven at this seat), the charter this vessel itself holds, and the hearth it dialed that
+        // charter from. A peer the realm leg does not name falls to the membership consult (the LEAF MAP).
         charter:          makeRealmCharterConsult({ sealHome, peerContractNymMap, charterHearthPeers }),
         // THE LEASE: a registration's `expiry` reads against the realm's own pace in rolls (0 = cannot judge).
         pace:             () => (realmPaceCell.read() > 0 ? realmPaceCell.read() : null),
@@ -1282,24 +1312,42 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // board reads the settled verdict, never the doc — measured as a fatal `slot bags/crossroads unavailable —
     // the peer answered WITHOUT doc` on a cross-operator dial (a foreign hearth answers a stranger fast). The
     // dial follows the boards, so no peer can answer for a doc this vessel mints itself.
-    // WHICH SLOT THE EDGE RIDES. The self edge is one signed object read two ways. Signed by a root THIS
-    // vessel does not hold, it is an ADMIT — a hearth's root licensed this device — and it presents in the
-    // FLEET slot, where the peer's keyholder chains it to its pinned KEL and vouches `same-operator`. Signed by
-    // a root this vessel HOLDS, it is the vessel's own founding — a fleet credential for a fleet it never dials
-    // (a hearth dials none of its own leaves) — and presenting it in the fleet slot to another operator's hearth
-    // draws "operator is not the pinned root" and anergizes the socket whole. That edge presents in the
-    // CONTRACT slot instead: the peer admits the ContactCard at the cross-operator floor, proves the edge
-    // offline, and its membership consult binds the wire key to the nym `accept-carriage` contracted under.
+    // WHAT THE DIAL PRESENTS — one face per socket, and three shapes:
+    //   · A LEAF ADMIT. When this vessel's own replica of the DIALED island's carriage board holds a counted
+    //     admit for one of its held personas' leaves (`dialPresentation`: the island resolves over the primary
+    //     charter exactly as the admit writer resolves it), the dial presents that admit, its closed lineage and
+    //     the leaf's proof over the gate's challenge — and NO root-signed edge in either slot. No proof binding a
+    //     leaf to a root travels on the wire. Only the dialed island's admit presents, never the carried set.
+    //   · THE FLEET EDGE. A self edge signed by a root this vessel does NOT hold is an ADMIT — a hearth's root
+    //     licensed this device — and presents in the FLEET slot, where the peer's keyholder chains it to its
+    //     pinned KEL and vouches `same-operator`. A fleet dial never looks for a leaf admit.
+    //   · THE CONTRACT EDGE. A self edge signed by a root this vessel HOLDS presents in the CONTRACT slot when no
+    //     leaf admit stands: the peer admits the ContactCard at the cross-operator floor and keeps the edge as
+    //     untrusted input. With no self edge, the ContactCard presents alone.
+    // RE-PRESENTATION follows the board, never a timer: a change on the dialed island's board, or a
+    // `nexus-refresh`, re-derives the presentation, and a moved one re-dials through the adapter's own
+    // close-and-reconnect path.
     if (joinSyncUrl) {
       try {
         const leafIdentity = await loadLeafIdentity();
         const selfEdge = wornMount?.deviceEdge ?? (daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined);
         const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
+        const fleet = selfEdge !== undefined && !selfSigned;
+        const presentationNow = (): Promise<DialPresentation | null> => fleet
+          ? Promise.resolve(null)
+          : dialPresentation({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open });
+        const identityFor = (presented: DialPresentation | null): LeafIdentity =>
+          dialIdentityFor(leafIdentity, presented, selfEdge ? { edge: selfEdge, selfSigned } : null);
+        const describe = (presented: DialPresentation | null): string => presented
+          ? `the leaf admit ${carriageEntryActCid(presented.admit).slice(0, 16)}… for leaf ${presented.leaf.verifyingKey.slice(0, 16)}… on island ${presented.island.slice(0, 16)}… (lineage ${presented.lineage.length}; no root edge rides it)`
+          : !selfEdge  ? "the ContactCard alone (no self edge — cross-operator floor)"
+          : selfSigned ? "the contract edge (this vessel's own root signed it — cross-operator; no leaf admit stands on the dialed island)"
+          :              "the device-delegation edge (fleet)";
+        const presented = await presentationNow();
+        let presentedKey = presentationKey(presented);
         nexusDial = maybeStartNexusClientDial({
           repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey,
-          identity: selfEdge
-            ? (selfSigned ? { ...leafIdentity, contractEdge: selfEdge } : { ...leafIdentity, edge: selfEdge })
-            : leafIdentity,
+          identity: identityFor(presented),
           ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
           onLog: (line) => console.log(`[nexus-join] ${line}`),
           // THE RETURN ON SOCKET A — the same re-fold the carriage's own `onReconnect` runs on Socket B.
@@ -1309,23 +1357,36 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           onReconnect: async () => {
             await runNexusRefresh({
               storageDir, sealHome, nexusPubkey,
-              antigen: antigenHolder, membership: nexusMembershipHolder,
+              ownVesselKey: vesselIdentity.verifyingKey, repo,
+              antigen: antigenHolder, membership: membershipHolder,
               setPosture: (p) => { federationPosture = p; },
             });
             await realmPlane?.refresh(readNexusDoc(sealHome));
             reverdict();
           },
         });
+        // Re-derive what this dial presents; re-dial only when it MOVED. Serialized, so two board changes
+        // landing together re-dial once.
+        let representing: Promise<void> = Promise.resolve();
+        representIfMoved = () => {
+          representing = representing.then(async () => {
+            if (!nexusDial) return;
+            const next = await presentationNow();
+            const key = presentationKey(next);
+            if (key === presentedKey) return;
+            presentedKey = key;
+            console.log(`[nexus-join] presenting ${describe(next)} — re-dialing to re-present`);
+            nexusDial.adapter.represent(identityFor(next));
+          }).catch((e) => { console.log(`[nexus-join] re-presentation skipped: ${e instanceof Error ? e.message : String(e)}`); });
+          return representing;
+        };
         // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
         try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => {
           charterHearthPeers.add(peerId);
           console.log(`[realm] the charter's hearth stands at peer ${peerId} — the realm's registered books federate back to it`);
         }); }
         catch { /* an adapter without the event names no hearth — the realm leg simply never opens that lane */ }
-        console.log(`[nexus-join] presenting ${
-          !selfEdge   ? "the ContactCard alone (no self edge — cross-operator floor)"
-          : selfSigned ? "the contract edge (this vessel's own root signed it — cross-operator; the peer's board binds the nym)"
-          :              "the device-delegation edge (fleet)"}`);
+        console.log(`[nexus-join] presenting ${describe(presented)}`);
       } catch (e) {
         console.log(`[nexus-join] dial-out skipped — leaf identity unavailable (run \`lares vessel found\`): ${e instanceof Error ? e.message : String(e)}`);
       }
@@ -1838,26 +1899,28 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
 
-    // nexus-refresh — the LIVE-refold of the three nexus-doc authorities the boot read once: the federation
-    // POSTURE (a disk-charter re-read → reassigns the sharePolicy's live `federationPosture`), the antigen
-    // Kapae'd DENY set, and the contracted MEMBER set (both re-folded off freshly-materialized boards). The
-    // shore an OUT-OF-PROCESS CLI edit (`lares nexus posture` / `kapae` / `admit`, each writing its own repo)
-    // needs to reach this running node — NodeFS carries no cross-process change bus, so a peer's WS-sync
-    // refold never fires for a same-operator CLI write beside it. DISTINCT from the worldline `kapae`
-    // branch-mute; this touches the mesh immune/federation surface, never a worldline branch.
+    // nexus-refresh — the LIVE refold an OUT-OF-PROCESS CLI edit (`lares nexus posture` / `kapae` / `contract`,
+    // each writing its own repo) needs to reach this running node, since NodeFS carries no cross-process change
+    // bus. It re-reads the disk POSTURE, merges the flushed carriage + antigen boards of this vessel's own island
+    // and every carried Nexus into the running Repo, refolds the antigen, re-verifies every presented admit
+    // against the carried deny boards, and — on a dialer — re-presents when the admit it holds for the dialed
+    // island appeared or moved. DISTINCT from the worldline `kapae` branch-mute.
     registry.register("nexus-refresh", async () => {
       const r = await runNexusRefresh({
         storageDir,
         sealHome,
         nexusPubkey,
         antigen:     antigenHolder,
-        membership:  nexusMembershipHolder,
+        ownVesselKey: vesselIdentity.verifyingKey,
+        repo,
+        membership:  membershipHolder,
         // Reassign the live posture the sharePolicy closure reads each call (fail-closed PRIVATE on a torn read).
         setPosture:  (p) => { federationPosture = p; },
       });
       // A charter imported after boot names a realm this vessel never stood — stand it now (idempotent).
       await realmPlane?.refresh(readNexusDoc(sealHome));
       reverdict();
+      await representIfMoved?.();
       return { verb: "nexus-refresh", ...r, realm: realmPlane?.realmId() ?? null, realmDoc: realmPlane?.realmUrl() ?? null };
     });
 

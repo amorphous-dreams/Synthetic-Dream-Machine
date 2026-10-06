@@ -23,9 +23,11 @@
  *   2. The Repo's sharePolicy should call getIdentifierForSocket() to build
  *      PeerId → identifierHex entries when the adapter emits "peer-candidate".
  *   3. The PRESENTATION riding the lar:auth — the CONTRACT edge (`contractEdge`, a cross-operator's own
- *      persona-root-signed edge over its own vessel key) and the PRESENTED ADMIT (`presentedAdmit`, the dialed
- *      island's quorum-signed admit of that operator plus its causal lineage) — is kept per socket as UNTRUSTED
- *      input, read back by getPresentationForSocket(). The gate decides nothing by it: admission stays the
+ *      persona-root-signed edge over its own vessel key) OR the PRESENTED ADMIT (`presentedAdmit`, the dialed
+ *      island's quorum-signed admit of that operator's leaf, its causal lineage and the leaf's proof over this
+ *      socket; never both) — is kept per socket as UNTRUSTED input, read back by getPresentationForSocket(),
+ *      beside the nonce and gate key this gate issued (getChallengeForSocket()), which the seat verifies the
+ *      leaf proof against. The gate decides nothing by any of it: admission stays the
  *      worker's verdict, no class or nym is lifted from it, and a peer that presents nothing stands at the
  *      cross-operator floor exactly as one that presents. The contract edge never reaches the keyholder's
  *      fleet verifier — that slot chains to the pinned KEL and a foreign root would anergize the socket whole.
@@ -66,6 +68,16 @@ export interface SocketPresentation {
   readonly presentedAdmit?: PresentedAdmit;
 }
 
+/**
+ * The challenge THIS gate issued on a socket: the single-use nonce and the gate key it advertised. Trusted —
+ * the gate minted both — so a seat reads a presented admit's leaf proof against these values and never
+ * against anything the peer echoed. `gatePubKey` is absent when the gate was armed without one.
+ */
+export interface SocketChallenge {
+  readonly nonce:       string;
+  readonly gatePubKey?: string;
+}
+
 const AUTH_TIMEOUT_MS       = 5_000;
 const MAX_PENDING           = 50;     // max concurrent unauthenticated connections
 const MAX_CONTACT_CARD_BYTES = 64_000; // 64 KB — generous for a self-certifying identity packet
@@ -101,6 +113,8 @@ export class DaemonAuthGate extends EventEmitter {
   private readonly socketToClass = new WeakMap<WebSocket, PeerClass>();
   /** socket → the untrusted presentation an admitted peer carried (see the header, step 3). */
   private readonly socketToPresentation = new WeakMap<WebSocket, SocketPresentation>();
+  /** socket → the challenge this gate issued on it (kept for every admitted socket, beside the presentation). */
+  private readonly socketToChallenge = new WeakMap<WebSocket, SocketChallenge>();
 
   constructor(realWss: WSSType) {
     super();
@@ -147,6 +161,14 @@ export class DaemonAuthGate extends EventEmitter {
    */
   getPresentationForSocket(socket: WebSocket): SocketPresentation | undefined {
     return this.socketToPresentation.get(socket);
+  }
+
+  /**
+   * The nonce and gate key this gate issued on an admitted socket — the values a presented admit's leaf
+   * proof must verify against. The gate decides nothing by them; the seat does.
+   */
+  getChallengeForSocket(socket: WebSocket): SocketChallenge | undefined {
+    return this.socketToChallenge.get(socket);
   }
 
   private async _handleConnection(socket: WebSocket, req: unknown): Promise<void> {
@@ -269,6 +291,7 @@ export class DaemonAuthGate extends EventEmitter {
     this.socketToIdentifier.set(socket, result.identHex);
     if (result.peerClass !== undefined) this.socketToClass.set(socket, result.peerClass);
     if (result.presentation !== undefined) this.socketToPresentation.set(socket, result.presentation);
+    this.socketToChallenge.set(socket, { nonce, ...(gatePubKey ? { gatePubKey } : {}) });
     this._send(socket, mkLarAuthOk());
     this.clients.add(socket);
     socket.once("close", () => this.clients.delete(socket));

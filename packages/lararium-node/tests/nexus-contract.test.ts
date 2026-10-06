@@ -1,6 +1,6 @@
 /**
  * nexus-contract.test.ts — the CONTRACT side of the operator MEMBERS-registry, end-to-end through the node
- * command, and the members{} ∪ kahu-floor UNION the sharePolicy member gate reads.
+ * command, and the presented-admit gate the sharePolicy member gate reads.
  *
  * Proven, against a SYNTHETIC seated roster on a temp LAR_ROOT (real vessel identity, real founder persona-roots,
  * a real Automerge board on disk):
@@ -10,8 +10,9 @@
  *   · a SUB-QUORUM admit REFUSES (nothing written),
  *   · an UNSEATED charter REFUSES,
  *   · an admit for a nym the vessel does NOT hold, with NO --contract token, REFUSES (no conscription),
- *   · the members{} ∪ kahu-floor UNION: the makeNexusMembership holder reads BOTH a seated kahu AND an admitted
- *     non-kahu operator as MEMBER, off the SAME board the admit wrote (SELF-SLOT-B lit),
+ *   · the PRESENTED-ADMIT gate: an admitted leaf that presents its admit (derived off the SAME board the admit
+ *     wrote) with a leaf proof reads MEMBER; a seated kahu and the admitted nym's raw wire key, presenting
+ *     nothing, read STRANGER — the kahu floor and the board fold are retired from the consult,
  *   · USER-NEVER-WRITTEN: the board carries operator-pubkey nyms only,
  *   · ONE ADDRESS: with a seal home passed, the admit write and the members-list read key on the SAME island.
  */
@@ -35,7 +36,9 @@ import { readConsent, writeConsent, carriageConsentPathFor } from "../src/carrie
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
 import { existsSync } from "node:fs";
 import { larSealHome } from "../src/vessel-paths.js";
-import { makeNexusMembership } from "../src/nexus-carriage.js";
+import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
+import { nexusLeafFor } from "../src/nexus-leaf.js";
+import { presentedAdmitFromBoard, signLeafProof, foundingRoster } from "@lararium/mesh";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 
 let root: string;
@@ -314,45 +317,64 @@ describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup 
   });
 });
 
-describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SELF-SLOT-B lit)", () => {
-  it("the holder reads a seated kahu AND an admitted non-kahu operator as MEMBER (no-global-now: off the local replica)", async () => {
+describe("the presented-admit gate — the sharePolicy member gate reads what a subject PRESENTS", () => {
+  /** The member holder over the SAME store and board the admit wrote, as the boot stands it. */
+  async function standHolder() {
+    const ownVesselKey = await loadVesselVerifyingKey();
+    const nexusPubkey = nodeNexusIsland({ ownVesselKey, sealHome: sealHome() });
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
+    const holder = makeNexusMembership({
+      sealHome: sealHome(), repo, nexusPubkey,
+      readCarried: () => readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open }),
+    });
+    await holder.refold();
+    return { holder, repo, nexusPubkey };
+  }
+
+  it("an admitted leaf that PRESENTS its admit with a leaf proof reads MEMBER; a seated kahu and the admitted nym presenting nothing read STRANGER", async () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const kahuNym   = roots[0]!.verifyingKey.toLowerCase();
     const joinerNym = await leafOf(3);
-
-    // Contract-in + admit the non-kahu operator onto the board.
     await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
 
-    // Stand the membership holder over the SAME store (its own replica, as-of-last-sync) + the SAME board,
-    // keyed on the island exactly as the boot keys it.
-    const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-    const peerMap = new Map<string, string>([
-      ["peer-kahu",   `prefix:${kahuNym}`],     // a seated kahu → MEMBER (the floor)
-      ["peer-joiner", `prefix:${joinerNym}`],   // an admitted non-kahu operator → MEMBER (members{}) — SELF-SLOT-B
-      ["peer-foreign", `prefix:${"ab".repeat(32)}`],  // never admitted → STRANGER
-    ]);
-    const holder = makeNexusMembership({ sealHome: sealHome(), peerIdentifierMap: peerMap, repo, nexusPubkey });
-    await holder.refold();   // fold the members board atop the kahu floor
+    const { holder, repo, nexusPubkey } = await standHolder();
+    try {
+      // The joiner derives what it presents off a board it holds — here the same board the admit wrote.
+      const entries = carriageEntriesFromBoard((await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc());
+      const presented = await presentedAdmitFromBoard(entries, joinerNym, foundingRoster(readNexusDoc(sealHome())));
+      expect(presented).not.toBeNull();
+      const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+      const leaf = await nexusLeafFor(3, aid);
+      const nonce = "34".repeat(32);
+      const gatePubKey = "ee".repeat(32);
+      const vesselKey = "cd".repeat(32);
+      const leafProof = await signLeafProof({ admit: presented!.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leaf.seed) });
+      await holder.present("peer-joiner", { presentedAdmit: { ...presented!, leafProof }, nonce, gatePubKey, vesselKey });
+      await holder.present("peer-kahu", null);
+      await holder.present("peer-wire-nym", null);
 
-    expect(holder.membership.holdsCarriagePeer("peer-kahu")).toBe(true);      // kahu floor
-    expect(holder.membership.holdsCarriagePeer("peer-joiner")).toBe(true);    // members{} — the light that flips SELF-SLOT-B
-    expect(holder.membership.holdsCarriagePeer("peer-foreign")).toBe(false);  // fail-closed stranger
-    holder.dispose();
+      expect(holder.membership.holdsCarriagePeer("peer-joiner")).toBe(true);   // presented, proven, held, carried
+      expect(holder.leafNymOf("peer-joiner")).toBe(joinerNym);
+      expect(holder.membership.holdsCarriagePeer("peer-kahu")).toBe(false);    // the kahu floor is RETIRED
+      expect(holder.membership.holdsCarriagePeer("peer-wire-nym")).toBe(false); // no raw wire key reads as a nym
+      void kahuNym;
+    } finally { holder.dispose(); }
   });
 
   it("no-global-now — an EMPTY local replica (unsynced board, unseated charter) reads NOBODY member (fail-closed-stale)", async () => {
     await generateOrLoadVesselIdentity();
-    const roots = await Promise.all([0, 1].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    await Promise.all([0, 1].map((i) => generateOrLoadPersonaGroupRoot(i)));
     // No seatCharter, no admit — the local replica is blank (as-of-a-sync-that-never-happened).
-    const nexusPubkey = await loadVesselVerifyingKey();
+    const ownVesselKey = await loadVesselVerifyingKey();
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-    const peerMap = new Map<string, string>([["peer-kahu", `prefix:${roots[0]!.verifyingKey.toLowerCase()}`]]);
-    const holder = makeNexusMembership({ sealHome: sealHome(), peerIdentifierMap: peerMap, repo, nexusPubkey });
+    const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
+    const holder = makeNexusMembership({ sealHome: sealHome(), repo, nexusPubkey: ownVesselKey,
+      readCarried: () => readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open }) });
     await holder.refold();
-    expect(holder.membership.holdsCarriagePeer("peer-kahu")).toBe(false);   // no charter, no board → nobody member
+    expect(holder.readings()).toEqual([]);                                     // no charter → no carried Nexus
     holder.dispose();
   });
 });

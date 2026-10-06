@@ -1,7 +1,11 @@
 /**
- * nexus-refresh.test.ts — the LIVE-refold shore (D2 posture-flip + E2 out-of-process board write).
+ * nexus-refresh.test.ts — the LIVE-refold shore (D2 posture-flip + E2 out-of-process board write + the
+ * per-Nexus deny-board refold).
  *
  * Proven:
+ *   · PER CARRIED NEXUS — a revoke written out of process onto a carried Nexus's board is merged into the running
+ *     Repo, the held presentation re-verifies against it and drops to STRANGER, and the report names that
+ *     Nexus with its deny entries and held count (before: held 1; after: held 0).
  *   · POSTURE — an out-of-process `nexus posture open` disk write, then a refresh, reassigns the live posture
  *     (the setter fires with "open"); a torn/absent charter reads PRIVATE (fail-closed).
  *   · BOARD — a real 2-of-3 ban written through a SEPARATE repo on the same storage dir (the CLI's own repo)
@@ -23,7 +27,7 @@ import {
   type KapaeAntigenEntry, type NexusDoc, type FederationPosture,
 } from "@lararium/mesh";
 import { makeAntigenRingHolder } from "../src/antigen-ring.js";
-import { makeNexusMembership } from "../src/nexus-carriage.js";
+import { makeNexusMembership, readCarriedNexuses, liveBoardOpener } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusRefresh } from "../src/nexus-refresh.js";
 
@@ -61,47 +65,49 @@ async function banEntry(nym: string, epoch: string): Promise<KapaeAntigenEntry> 
   return signAntigenEntry({ nym, action: "kapae", parents: [], sealEpochCid: epoch }, signers);
 }
 
+const OWN_VESSEL_KEY = "ab".repeat(32);
+
 /** Stand the two live holders on a repo carrying NO storage — a cold in-memory board (the "just booted" state). */
 function standHolders(bags: string) {
   const repo = new Repo({});
   const peerMap = new Map<string, string>();
   const antigen = makeAntigenRingHolder({ repo, nexusPubkey: NEXUS_PUBKEY, sealHome: bags, peerIdentifierMap: peerMap });
-  const membership = makeNexusMembership({ sealHome: bags, peerIdentifierMap: peerMap, repo, nexusPubkey: NEXUS_PUBKEY });
-  return { antigen, membership, peerMap, dispose: () => { antigen.dispose(); membership.dispose(); } };
+  let membership: ReturnType<typeof makeNexusMembership> | null = null;
+  const boards = liveBoardOpener(repo, () => { void membership?.refold(); });
+  membership = makeNexusMembership({
+    sealHome: bags, repo, nexusPubkey: NEXUS_PUBKEY,
+    readCarried: () => readCarriedNexuses({ sealHome: bags, ownVesselKey: OWN_VESSEL_KEY, open: boards.open }),
+  });
+  const deps = { repo, ownVesselKey: OWN_VESSEL_KEY };
+  return { antigen, membership, peerMap, deps, dispose: () => { antigen.dispose(); membership?.dispose(); boards.dispose(); } };
 }
 
-describe("nexus-refresh — the members board is ALWAYS this vessel's own", () => {
+describe("nexus-refresh — the own-board report names this vessel's own island", () => {
   let bags: string;
   let storage: string;
   beforeEach(() => { bags = mkdtempSync(join(tmpdir(), "lares-refresh-bags-")); storage = mkdtempSync(join(tmpdir(), "lares-refresh-store-")); });
   afterEach(async () => { await drainStorageThrottle(); rmSync(bags, { recursive: true, force: true }); rmSync(storage, { recursive: true, force: true }); });
 
-  // ── WHY THIS IS PINNED, AND NOT AN OMISSION ───────────────────────────────────────────────────
-  // The members registry is the Kapae-antigen's ALLOW-twin: it governs the CARRY-SPLIT — whom THIS
-  // vessel blind-transits a sealed plane for. The immune plane holds no global roster by design,
-  // because the mesh has no global list of devices or users to approve against; the daemon reads
-  // BEHAVIOUR it can observe instead.
-  //
-  // So a refresh folds this vessel's OWN board and no other. Folding a partner's would let their
-  // future admits widen this vessel's carriage: an operator consents to a Nexus at ONE epoch, never
-  // to every admit made afterwards, and `nexus-contract` holds that "a Nexus cannot conscript an
-  // operator into carriage". Whether two operators stand in a relation is a WHO-plane question,
-  // answered on the read-open oracle plane where a Handle announces — never on an immune surface.
+  // ── WHY THIS IS PINNED ─────────────────────────────────────────────────────────────────────────
+  // The own-board report names THIS vessel's island, and nothing in a charter a partner hands over can
+  // redirect it. The carried Nexuses' boards the refresh also reads are DENY boards: only their counted
+  // revokes reach the verdict, and an admit reaches the membership consult only as what its own subject
+  // PRESENTS at the wire — so no partner's board can widen this vessel's carriage.
 
-  test("★ a refresh folds THIS vessel's board, and reports which one so no caller assumes ★", async () => {
+  test("★ a refresh reports this vessel's own island, so no caller assumes ★", async () => {
     const keys = await Promise.all(SEEDS.map(pubOf));
     const holders = standHolders(bags);
     try {
       writeNexusDoc(bags, seatedCharter(keys));
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
       });
       expect(r.boardRoot).toBe(NEXUS_PUBKEY.toLowerCase());
     } finally { holders.dispose(); }
   });
 
-  test("★ nothing in the charter can redirect it — a partner cannot widen this vessel's carriage ★", async () => {
+  test("★ nothing in the charter can redirect the own-board report ★", async () => {
     // The charter is material a PARTNER hands over. If anything in it could name the board this
     // vessel folds, importing a charter would hand its author authority over this vessel's carry-split.
     const keys = await Promise.all(SEEDS.map(pubOf));
@@ -110,7 +116,7 @@ describe("nexus-refresh — the members board is ALWAYS this vessel's own", () =
       writeNexusDoc(bags, { ...seatedCharter(keys), boardRoot: "f".repeat(64) } as never);
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
       });
       expect(r.boardRoot).toBe(NEXUS_PUBKEY.toLowerCase());
     } finally { holders.dispose(); }
@@ -132,7 +138,7 @@ describe("nexus-refresh — POSTURE re-read (D2)", () => {
       writeNexusDoc(bags, seatedCharter(keys, "open"));
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        antigen: holders.antigen, membership: holders.membership, setPosture: (p) => { live = p; },
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: (p) => { live = p; },
       });
       expect(r.posture).toBe("open");
       expect(live).toBe("open");   // the sharePolicy's live posture reassigned — no bounce
@@ -145,7 +151,7 @@ describe("nexus-refresh — POSTURE re-read (D2)", () => {
     try {
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        antigen: holders.antigen, membership: holders.membership, setPosture: (p) => { live = p; },
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: (p) => { live = p; },
       });
       expect(r.posture).toBe("private");
       expect(live).toBe("private");
@@ -187,7 +193,7 @@ describe("nexus-refresh — out-of-process BOARD write (E2)", () => {
       // The refresh re-materializes the board off storage and re-folds → the victim now stands Kapae'd.
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
       });
       expect(r.antigenEntries).toBe(1);
       expect(holders.antigen.ring.kapaed.has(victim)).toBe(true);
@@ -196,5 +202,86 @@ describe("nexus-refresh — out-of-process BOARD write (E2)", () => {
       const noRelay = new Set<string>();
       expect(await carryContractShareDecision(noRelay, null, holders.antigen.ring, null, "peer-victim", undefined)).toBe(false);
     } finally { holders.dispose(); }
+  });
+});
+
+// ── PER CARRIED NEXUS ──────────────────────────────────────────────────────────────────────────────────
+import { signCarriageQuorum, signCarriageContract, signLeafProof, carriageEntryActCid, carriageDocUrl, writeCarriageEntry } from "@lararium/mesh";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
+
+describe("nexus-refresh — the deny board of EVERY carried Nexus refolds, and the report names each", () => {
+  let root: string;
+  let storage: string;
+  let prior: string | undefined;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), "lares-refresh-carried-"));
+    storage = mkdtempSync(join(tmpdir(), "lares-refresh-carried-store-"));
+    prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+  });
+  afterEach(async () => {
+    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+    await drainStorageThrottle();
+    rmSync(root, { recursive: true, force: true });
+    rmSync(storage, { recursive: true, force: true });
+  });
+
+  test("a revoke written out of process reaches the running replica; the held presentation drops; the report counts per N", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const keys  = roots.map((r) => r.verifyingKey);
+    const bags  = join(root, "state", "nexus");
+    const charter = seatedCharter(keys);
+    writeNexusDoc(bags, charter);   // seated by this vessel's own roots → this Nexus stands in the carried set
+    const ownVesselKey = await loadVesselVerifyingKey();
+    const island = nodeNexusIsland({ ownVesselKey, sealHome: bags });
+    const epoch  = charter.sealEpochCid!;
+
+    // A joining operator's leaf, admitted by two of the seated roots.
+    const leafSeed = new Uint8Array(32).fill(44);
+    const leaf     = await pubOf(leafSeed);
+    const quorum   = await Promise.all([0, 1].map(async (i) => ({ signer: keys[i]!, sign: signerOf(await loadPersonaGroupRootSeed(i)) })));
+    const admit    = await signCarriageQuorum({ nym: leaf, action: "admit", parents: [], sealEpochCid: epoch }, quorum,
+      await signCarriageContract(leaf, epoch, signerOf(leafSeed)));
+    const revoke   = await signCarriageQuorum({ nym: leaf, action: "revoke", parents: [carriageEntryActCid(admit)], sealEpochCid: epoch }, quorum);
+
+    const live = new Repo({});
+    const antigen = makeAntigenRingHolder({ repo: live, nexusPubkey: island, sealHome: bags, peerIdentifierMap: new Map() });
+    let membership: ReturnType<typeof makeNexusMembership> | null = null;
+    const boards = liveBoardOpener(live, () => { void membership?.refold(); });
+    membership = makeNexusMembership({
+      sealHome: bags, repo: live, nexusPubkey: island,
+      readCarried: () => readCarriedNexuses({ sealHome: bags, ownVesselKey, open: boards.open }),
+    });
+    const deps = { storageDir: storage, sealHome: bags, nexusPubkey: island, ownVesselKey, repo: live, antigen, membership, setPosture: () => {} };
+    try {
+      const gate = "ee".repeat(32);
+      const nonce = "12".repeat(32);
+      const vesselKey = await pubOf(new Uint8Array(32).fill(45));
+      const leafProof = await signLeafProof({ admit, nonce, gatePubKey: gate, vesselKey, sign: signerOf(leafSeed) });
+      await membership.refold();
+      await membership.present("peer-b", { presentedAdmit: { admit, lineage: [], leafProof }, nonce, gatePubKey: gate, vesselKey });
+      expect(membership.membership.holdsCarriagePeer("peer-b")).toBe(true);
+
+      const before = await runNexusRefresh(deps);
+      expect(before.nexuses).toHaveLength(1);
+      expect(before.nexuses[0]).toMatchObject({ island, denyEntries: 0, held: 1 });
+
+      // The kahu's revoke lands through the CLI's OWN repo on the same storage dir.
+      const writer = new Repo({ storage: new NodeFSStorageAdapter(storage) });
+      const board  = await materializeSharedLarDoc(writer, carriageDocUrl(island), "board:carriage-contracts");
+      board.change((d) => writeCarriageEntry(d, revoke));
+      await writer.flush();
+      await writer.shutdown();
+
+      // CONTROL: the running replica never saw the out-of-process write — the peer still stands.
+      await membership.refold();
+      expect(membership.membership.holdsCarriagePeer("peer-b")).toBe(true);
+
+      const after = await runNexusRefresh(deps);
+      expect(after.nexuses[0]).toMatchObject({ island, denyEntries: 1, held: 0 });
+      expect(membership.membership.holdsCarriagePeer("peer-b")).toBe(false);
+    } finally { antigen.dispose(); membership.dispose(); boards.dispose(); }
   });
 });

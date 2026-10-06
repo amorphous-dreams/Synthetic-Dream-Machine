@@ -155,6 +155,7 @@ export type { ComposeStreamOptions } from "./sense-stream.js";
 
 export { LarDiskProjector } from "./disk-projector.js";
 export { DaemonAuthGate } from "./daemon-auth-gate.js";
+export type { SocketPresentation, SocketChallenge } from "./daemon-auth-gate.js";
 export { openNodeVessel } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
@@ -227,13 +228,19 @@ export {
   bootInviteBurnPath, bootInviteId,
 } from "./boot-invite-burn.js";
 
-// The nexus-doc MEMBERSHIP consult holder (Build-2) — the carry-split's member gate: kahu floor ∪ folded members{}.
-export { makeNexusMembership } from "./nexus-carriage.js";
-export type { NexusMembershipHolder } from "./nexus-carriage.js";
-// The `nexus-refresh` LIVE-refold shore — re-reads the disk posture + re-folds the antigen / members boards from
-// storage into the live holders, so an out-of-process CLI edit reaches a running node without a bounce.
+// The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
+export {
+  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
+  dialIdentityFor,
+} from "./nexus-carriage.js";
+export type {
+  NexusMembershipHolder, SocketBinding, CarriedNexusReading, LeafStanding, BoardOpener, DialPresentation,
+} from "./nexus-carriage.js";
+// The `nexus-refresh` LIVE-refold shore — re-reads the disk posture, merges the flushed carriage + antigen boards of
+// every carried Nexus into the running Repo, and re-verifies every presented admit, so an out-of-process CLI edit
+// reaches a running node without a bounce.
 export { runNexusRefresh } from "./nexus-refresh.js";
-export type { NexusRefreshDeps, NexusRefreshResult } from "./nexus-refresh.js";
+export type { NexusRefreshDeps, NexusRefreshResult, NexusRefreshPerNexus } from "./nexus-refresh.js";
 // The cad seal's key custody (per-Nexus convergence secrets, minted-per-epoch, persisted read-all) + its FIRST
 // live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
 export { standNexusKeyring, loadNexusKeyring, installDeliveredKeyring } from "./nexus-convergence-secret-store.js";
