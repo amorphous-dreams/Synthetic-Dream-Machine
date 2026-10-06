@@ -32,7 +32,7 @@ import { readCarrier } from "./corpus-read.mjs";
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** The debt's floor. RATCHET: this number may only ever come DOWN. */
-const CEILING = 37;
+const CEILING = 34;
 
 /** Placeholders a carrier writes where it names no single export. */
 const NOT_A_SYMBOL = /^([*]|<.*>|~.*)$/;
