@@ -28,11 +28,11 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 
 ''Inbound (projection).'' It forwards each `LarTiddlerChange` to `$tw.lares.enqueueNalu()` and stops there. Initial replay flows the same road: `emitInitialReplay()` fires one immediate change per existing tiddler, the fan-out reaches `onUriChanged`, and the next frame drains the lot inside one `wiki.transact()`.
 
-''Outbound (TW5 edits).'' `saveTiddler` and `deleteTiddler` route through the bag-path cascade to `store.put` or `store.tombstone`, under a 400 ms capture debounce.
+''Outbound (TW5 edits).'' The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`) carries each live wiki `change` to `saveTiddler` / `deleteTiddler`; they route through the bag-path cascade to `store.put`, or tombstone in the last-known slot, under a 400 ms capture debounce.
 
 ''Cross-bag tombstone resolution stays in TS,'' because it needs an async `getLive` on the composite.
 
-''The echo guard belongs to the wiki.'' The adaptor asks `$tw.lares.isApplyingNalu()`; the wiki owns the apply lifetime, so one authority answers when a change is its own echo.
+''The echo law rides a SET.'' The adaptor asks `$tw.lares.isApplyingNalu()` for a synchronous caller, but TW5 dispatches `change` on `nextTick`, after the drain lowered that flag; so the bridge fills the adaptor's inbound SET at `enqueueNalu`'s door (`noteInbound`) and skips a title `consumeInbound` names, once.
 
 <<~/ahu>>
 
@@ -86,6 +86,6 @@ The map stays volatile: one adaptor, one session.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p1y69qAyzYGQakbqSh76bYprb_UQOeWs644i-s85hmQ
+<<^ code="&#x0003;">>ni:///sha-256;CJy138vE97iiUQvSRmchADyG7iBSpFizW4q64ziLdvA
 
 <<^ code="&#x0004;" -> to="?">>

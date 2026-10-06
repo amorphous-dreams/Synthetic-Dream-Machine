@@ -11,7 +11,7 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "TS shore between CompositeStore and the wiki's in-process nalu engine — forwards CRDT-remote changes, owns outbound saveTiddler/deleteTiddler, delegates apply-time echo guard to $tw.lares.isApplyingNalu"
+role      = "TS shore between CompositeStore and the wiki's in-process nalu engine — forwards CRDT-remote changes, owns outbound saveTiddler/deleteTiddler, routes them by the bag-path cascade and the last-known-slot map; the outbound bridge carries the wiki's change events to it and holds the inbound echo SET, while $tw.lares.isApplyingNalu guards a synchronous caller"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/api/island-adaptor"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -112,6 +112,6 @@ its seed state synchronously before `behavior.onEa` runs.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LfBgXb5vk_o92o_0KWCDhQCjb1MG7DlaWpOt8sK15Bg
+<<^ code="&#x0003;">>ni:///sha-256;uNz_oT4yKe3i36JYG_eZrlTaXiPZrHJ6aBUabVBzNSU
 
 <<^ code="&#x0004;" -> to="?">>

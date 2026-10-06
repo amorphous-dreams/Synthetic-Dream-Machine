@@ -54,13 +54,15 @@ routes the following TW5 title patterns to @temp:
 | `$:/HistoryList` | Navigation back-stack (one entry per back-button click) | Per-device interaction history; meaningless across devices |
 | `$:/state/*` | UI fold/expand state, selected tabs, popup open-state | Per-device UI state. The cascade routes the cross-device viewing subset (`$:/state/folded/*`, `$:/state/tab-*`, `$:/StoryList`, `$:/palette`) to the per-wiki personal layer; the rest — genuinely per-device UI state — stays in temp. |
 
-''No catch-all rule.'' The cascade only enumerates patterns it knows the
-destination for. Writes whose title matches nothing in the cascade fall out
-the bottom with no route — `IslandAdaptor.saveTiddler` skips them. This
-leaves the `$:/plugins/*` / `$:/themes/*` / `$:/languages/*` namespaces open
-for ceremony-level routing (drag-and-drop plugin install passes an explicit
-`bag` override; a future `@personal`-routed plugin install rule fits the
-"install once, refresh everywhere" use case the operator wants preserved).
+''The catch-all routes; only a named rule withholds.'' The cascade
+(`packages/lararium-tw5/tiddlers/lar-bag-paths.tid`) ends on `[regexp[.]]` →
+`current-wiki-bag`, so a `$:/plugins/*` / `$:/themes/*` / `$:/languages/*`
+write lands at the write layer like any other title; only a rule that names
+its subject with an empty operand (`$:/core`, `$:/library/sjcl.js`) withholds.
+A title no rule reaches reads as a cascade bug: `IslandAdaptor._destination`
+writes it to the write layer and warns, never drops it. No field names a bag;
+a `@personal`-routed plugin install rule ("install once, refresh everywhere")
+would ride the cascade as one more named rule.
 
 <<~/ahu>>
 
@@ -139,6 +141,6 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;30GWd-qahc0gvqvbFWF4ShfmmYAHrSYAkqmTCgJDtJI
+<<^ code="&#x0003;">>ni:///sha-256;dIzhC53bm0Mf4cyiqANNlllR4RLsHwn-4fRLY7CKphw
 
 <<^ code="&#x0004;" -> to="?">>
