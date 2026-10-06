@@ -674,7 +674,16 @@ function sealImport(args: ParsedArgs): number {
   // seal fence would drift from `readNexusDoc` exactly when the doc shape moves, and this decision
   // gates a destructive write.
   const incoming = foundingRoster(parseNexusDoc(incomingRaw)).sealEpochCid;
-  const standing = existsSync(dest) ? foundingRoster(readNexusDoc(sealHome)).sealEpochCid || null : null;
+  // A charter that STANDS but reads torn is a founding to recover, never a vacancy: reading it as absent
+  // would let any incoming charter replace the founding its bytes still name.
+  const standingDoc = nexusCharterStands(sealHome) ? readNexusDoc(sealHome) : null;
+  if (nexusCharterStands(sealHome) && standingDoc === null) {
+    const why = `the standing charter at ${dest} reads torn — recover it before importing. Nothing was written.`;
+    emit(args, { ok: false, error: { code: "refused", message: why },
+                 data: { from, dest }, human: () => console.error(`lares nexus seal import: ${why}`) });
+    return 3;
+  }
+  const standing = foundingRoster(standingDoc).sealEpochCid || null;
 
   const v = sealImportVerdict({ incoming, standing });
   if (!v.ok) {

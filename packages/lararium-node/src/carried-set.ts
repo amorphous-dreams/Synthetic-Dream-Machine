@@ -137,7 +137,15 @@ export function importCarriedCharter(sealHome: string, raw: string): CarriedImpo
   const path = join(home, nexusCharterDocRelPath());
   let outcome: CarriedImportResult["outcome"] = "landed";
   if (existsSync(path)) {
-    const heldHead = foundingRoster(readNexusDoc(home)).sealEpochCid;
+    // A held charter that reads torn is a charter to recover, never an absent one: landing over it would
+    // replace a lineage this vessel can no longer check the incoming against.
+    const heldDoc = readNexusDoc(home);
+    if (heldDoc === null) {
+      throw new CarriedCharterError(
+        `the held carried charter for ${aid.slice(0, 18)}… reads torn — recover it before importing. Nothing was written.`,
+      );
+    }
+    const heldHead = foundingRoster(heldDoc).sealEpochCid;
     if (heldHead.length > 0) {
       if (!lineageExtends(doc, head, heldHead)) {
         throw new CarriedCharterError(

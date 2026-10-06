@@ -22,7 +22,7 @@ import {
   realmIdOfCharter, type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
-import { renderNexusDoc, writeNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
+import { renderNexusDoc, writeNexusDoc, nexusCharterDocPath, parseNexusDoc } from "../src/nexus-doc.js";
 import {
   importCarriedCharter, readCarriedCharters, readConsent, writeConsent, carriedSet, carriedReadings,
   carriageConsentPathFor, carriedCharterHome, hasContractedInto, CarriedCharterError,
@@ -273,6 +273,18 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
     mkdirSync(`${n.path}.incoming`);
     expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(CarriedCharterError);
     expect(readFileSync(n.path).equals(held)).toBe(true);
+  });
+
+  it("★ a re-import over a TORN held carried charter refuses and leaves the torn bytes ★", async () => {
+    await standJoiner();
+    const keys = await foreignKeys(10);
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const whole = readFileSync(n.path, "utf8");
+    writeFileSync(n.path, whole.slice(0, Math.floor(whole.length / 2)), "utf8");
+    expect(parseNexusDoc(readFileSync(n.path, "utf8"))).toBeNull();
+    const torn = readFileSync(n.path);
+    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(/reads torn/);
+    expect(readFileSync(n.path).equals(torn)).toBe(true);
   });
 
   it("CONTROL — a torn or unseated charter refuses and writes nothing", async () => {

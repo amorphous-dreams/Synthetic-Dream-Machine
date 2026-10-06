@@ -27,6 +27,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
+  parseNexusDoc,
 } from "@lararium/node";
 import {
   NEXUS_DOC_DOMAIN, hex, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, realmIdOfCharter, type NexusDoc,
@@ -251,6 +252,32 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
     expect((r.out["error"] as { code?: string })?.code).toBe("refused");
     expect(readFileSync(path).equals(before)).toBe(true);
     expect(strayTemps(home)).toEqual([]);
+  });
+
+  // ── A TORN STANDING CHARTER IS NOT AN ABSENT ONE ──────────────────────────────────────────────
+  //
+  // A primary that stands but reads torn is a founding whose bytes need recovering, never a vacancy: landing
+  // any incoming charter over it would replace the founding the torn bytes still name.
+  it("★ a plain import over a TORN standing charter refuses (code 3) and leaves the torn bytes ★", async () => {
+    const keys = await found();
+    const dest = nexusCharterDocPath(larSealHome());
+    const whole = readFileSync(dest, "utf8");
+    writeFileSync(dest, whole.slice(0, Math.floor(whole.length / 2)), "utf8");
+    expect(parseNexusDoc(readFileSync(dest, "utf8"))).toBeNull();
+    const torn = readFileSync(dest);
+
+    const r = await run(verb(["seal", "import", partnerFile(charter(keys))]));
+    expect(r.code).toBe(3);
+    expect(String((r.out["error"] as { message?: string })?.message)).toMatch(/reads torn/);
+    expect(readFileSync(dest).equals(torn)).toBe(true);
+    expect(strayTemps(larSealHome())).toEqual([]);
+  });
+
+  it("CONTROL — a truly absent primary still lands", async () => {
+    const dest = nexusCharterDocPath(larSealHome());
+    expect(existsSync(dest)).toBe(false);
+    expect((await run(verb(["seal", "import", partnerFile(charter(await foreignKeys(10)))]))).code).toBe(0);
+    expect(parseNexusDoc(readFileSync(dest, "utf8"))).not.toBeNull();
   });
 
   it("CONTROL — accept-carriage and members --list for an AID this vessel holds no charter for refuse", async () => {
