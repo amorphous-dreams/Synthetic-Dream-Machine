@@ -41,6 +41,7 @@ import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAI
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import type { QuorumSignature, KahuRoster } from "./kapae-antigen.js";
+import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
 
 /** The domain a CarriageEntry's quorum signs over — a signature is meaningless without its domain. */
 export { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
@@ -534,4 +535,154 @@ export async function foldCarrierSet(
 /** Does this PLACE's vessel key stand a contracted carrier in the folded carrier set? */
 export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): boolean {
   return carrierSet.has(nym.toLowerCase());
+}
+
+// ── presented-admit verifier ─────────────────────────────────────────────────────────────────────────────
+// The subject PRESENTS its own quorum-signed admit and that admit's causal lineage; the gate checks the
+// presentation against a DENY-only board and the Kapae antigen. Nothing here folds an allow roster.
+
+/**
+ * The verdict on one presented admit:
+ *   · `held`        — the admit counts, its lineage chains, and no counted denial closes it or stands concurrent.
+ *   · `denied`      — a counted revoke descends from the admit, or the antigen holds a kapae on its nym.
+ *   · `superseded`  — RESERVED for the gate. A newer admit lives only in a presentation, never on the deny
+ *                     board, so this pure verifier holds no evidence that would emit it.
+ *   · `unsettled`   — a counted revoke stands concurrent with the admit (or its ancestry does not resolve
+ *                     here), or the antigen's verdict on the nym is contradictory. Refuses: a contradiction
+ *                     never grants.
+ *   · `wrong-epoch` — the admit, or an act in its lineage, roots on a charter epoch other than the roster's
+ *                     head. Admits fail closed at a seal roll.
+ *   · `rejected`    — no admit was presented, the presented act is not an admit, it does not count, or its
+ *                     lineage does not chain.
+ */
+export type PresentedAdmitState = "held" | "denied" | "superseded" | "unsettled" | "wrong-epoch" | "rejected";
+
+export interface PresentedAdmitVerdict {
+  readonly state:  PresentedAdmitState;
+  /** A named local reason; never a timestamp. */
+  readonly reason: string;
+  /** The presented admit's nym, lowercased; empty when no readable admit was presented. */
+  readonly nym:    string;
+}
+
+export interface PresentedAdmitInput {
+  /** The subject's own quorum-signed admit. REQUIRED: the verifier never looks an admit up anywhere. */
+  readonly admit:           CarriageEntry;
+  /**
+   * The admit's causal lineage — every act the admit transitively cites, each a counted admit or revoke on
+   * the same nym at the roster's head epoch. The set must be CLOSED (every cited parent resolves inside it)
+   * and TIGHT (every entry is an ancestor of the admit). Order does not matter. A genesis admit presents
+   * an empty lineage.
+   */
+  readonly lineage:         readonly CarriageEntry[];
+  /** The membership kahu roster at the charter head. */
+  readonly roster:          KahuRoster;
+  /** The shared deny board. Only counted `revoke` acts on the admit's nym are read; every other act is skipped. */
+  readonly denyBoard:       Iterable<CarriageEntry>;
+  /** The Kapae antigen entries. */
+  readonly antigen:         Iterable<KapaeAntigenEntry>;
+  /** The ANTIGEN quorum's roster — held apart from the membership roster. */
+  readonly antigenRoster:   KahuRoster;
+  /** The antigen quorum verifier — held apart from the membership quorum check. */
+  readonly antigenVerifier: QuorumVerifier;
+}
+
+function presentedVerdict(state: PresentedAdmitState, reason: string, nym: string): PresentedAdmitVerdict {
+  return { state, reason, nym };
+}
+
+/**
+ * Verify a PRESENTED admit against the deny board and the antigen. Pure and clockless: every ordering it
+ * reads is causal lineage by CID, and every epoch it reads is a seal-epoch CID.
+ *
+ * Steps, each fail-closed:
+ *   1. The presented act must be a readable `admit` (a `carry`, `revoke` or `uncarry` is `rejected`).
+ *   2. The admit must root on the roster's head epoch (else `wrong-epoch`) and count — the kahu quorum plus
+ *      the operator's own accepts-carriage seal (else `rejected`).
+ *   3. Every lineage act must name the same nym, sit in the member family, root on the head epoch (else
+ *      `wrong-epoch`), and count; the lineage must be closed and tight by CID (else `rejected`).
+ *   4. Only counted `revoke` acts on the nym are read from the board. Against the admit, each one is:
+ *        · a DESCENDANT of the admit — it closes the admit → `denied`;
+ *        · an ANCESTOR of the admit (the lineage covers it: re-admit after revoke) — superseded, no effect;
+ *        · neither, or its ancestry does not resolve here — concurrent → `unsettled`.
+ *   5. The antigen folds through its OWN verifier and roster. A `held` kapae on the nym → `denied`; an
+ *      `un_kapae` head lifts it; any contradictory or unresolvable antigen verdict → `unsettled`.
+ *   `denied` outranks `unsettled`, which outranks `held`.
+ *
+ * The verifier checks the LEAF NYM only. A kapae closing carry may name either the admit's leaf nym or the
+ * wire vessel key; matching the wire vessel key belongs to the gate, which holds that key.
+ */
+export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<PresentedAdmitVerdict> {
+  const { admit, roster } = input;
+  if (admit === undefined || admit === null || typeof admit !== "object") {
+    return presentedVerdict("rejected", "no-presented-admit", "");
+  }
+  if (!entryShapeIsReadable(admit)) return presentedVerdict("rejected", "malformed-admit", "");
+  const nym = admit.nym.toLowerCase();
+  if (admit.kind !== CARRIAGE_ENTRY_DOMAIN) return presentedVerdict("rejected", "wrong-entry-kind", nym);
+  if (admit.action !== "admit") return presentedVerdict("rejected", `not-an-admit:${admit.action}`, nym);
+  if (admit.sealEpochCid !== roster.sealEpochCid) return presentedVerdict("wrong-epoch", "admit-not-at-head-epoch", nym);
+  const admitCount = await countReason(admit, roster);
+  if (!admitCount.counted) return presentedVerdict("rejected", `admit-${admitCount.reason}`, nym);
+  const admitCid = carriageEntryActCid(admit);
+
+  // The lineage: every act counts on the same relation at the head epoch, and the set chains by CID.
+  if (!Array.isArray(input.lineage)) return presentedVerdict("rejected", "malformed-lineage", nym);
+  const graph = new Map<string, CarriageEntry>();
+  for (const entry of input.lineage) {
+    if (entry === null || typeof entry !== "object" || !entryShapeIsReadable(entry)) {
+      return presentedVerdict("rejected", "lineage-malformed-entry", nym);
+    }
+    if (entry.nym.toLowerCase() !== nym) return presentedVerdict("rejected", "lineage-foreign-nym", nym);
+    if (relationFamily(entry.action) !== "member") return presentedVerdict("rejected", "lineage-foreign-family", nym);
+    if (entry.sealEpochCid !== roster.sealEpochCid) return presentedVerdict("wrong-epoch", "lineage-not-at-head-epoch", nym);
+    const counted = await countReason(entry, roster);
+    if (!counted.counted) return presentedVerdict("rejected", `lineage-${counted.reason}`, nym);
+    graph.set(carriageEntryActCid(entry), entry);
+  }
+  if (graph.has(admitCid)) return presentedVerdict("rejected", "lineage-contains-admit", nym);
+  for (const node of [admit, ...graph.values()]) {
+    if (node.parents.some((parent) => !graph.has(parent))) return presentedVerdict("rejected", "lineage-broken-chain", nym);
+  }
+  graph.set(admitCid, admit);
+  for (const lineageCid of graph.keys()) {
+    if (lineageCid !== admitCid && !isCarriageDescendant(admitCid, lineageCid, graph)) {
+      return presentedVerdict("rejected", "lineage-unchained-entry", nym);
+    }
+  }
+
+  // The deny board: counted revokes on this nym only. An admit on the board is never read.
+  const revokes: Array<{ cid: string; entry: CarriageEntry }> = [];
+  for (const entry of input.denyBoard) {
+    if (entry === null || typeof entry !== "object" || !entryShapeIsReadable(entry)) continue;
+    if (entry.action !== "revoke" || entry.nym.toLowerCase() !== nym) continue;
+    if (!(await countReason(entry, roster)).counted) continue;
+    revokes.push({ cid: carriageEntryActCid(entry), entry });
+  }
+  const causal = new Map<string, { readonly parents: readonly string[] }>(graph);
+  for (const r of revokes) if (!causal.has(r.cid)) causal.set(r.cid, r.entry);
+  let closing = false;
+  let concurrent = false;
+  let covered = false;
+  for (const r of revokes) {
+    if (isCarriageDescendant(admitCid, r.cid, causal)) covered = true;
+    else if (isCarriageDescendant(r.cid, admitCid, causal)) closing = true;
+    else concurrent = true;
+  }
+
+  // The antigen: its own fold, its own verifier, its own roster.
+  const antigenVerdicts = await foldAntigenVerdicts(input.antigen, input.antigenRoster, input.antigenVerifier);
+  let kapaeHeld = false;
+  let kapaeUnsettled = false;
+  for (const [antigenNym, verdict] of antigenVerdicts) {
+    if (antigenNym.toLowerCase() !== nym) continue;
+    if (verdict === "held") kapaeHeld = true;
+    else if (verdict !== "withdrawn") kapaeUnsettled = true;
+  }
+
+  if (kapaeHeld) return presentedVerdict("denied", "kapae-held", nym);
+  if (closing) return presentedVerdict("denied", "revoke-descends-from-admit", nym);
+  if (kapaeUnsettled) return presentedVerdict("unsettled", "kapae-unsettled", nym);
+  if (concurrent) return presentedVerdict("unsettled", "revoke-concurrent-with-admit", nym);
+  return presentedVerdict("held", covered ? "held-revoke-covered-by-lineage" : "held", nym);
 }
