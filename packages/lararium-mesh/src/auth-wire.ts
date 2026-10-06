@@ -30,10 +30,7 @@ import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import type { CarriageEntry } from "./carriage-registry.js";
-import { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
-
-export const AUTH_WIRE_VERSION = "1" as const;
-export type AuthWireVersion = typeof AUTH_WIRE_VERSION;
+import { AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
 
 /** Gate → Peer: start of auth exchange. */
 export interface LarChallengeMsg {
@@ -46,7 +43,6 @@ export interface LarChallengeMsg {
    * once the peer transport (C) + enforcement flip (D) land it becomes load-bearing.
    */
   gatePubKey?: string;
-  version: AuthWireVersion;
 }
 
 /**
@@ -148,20 +144,17 @@ export interface LarAuthMsg {
    * Outside the proof signature; the gate keeps it per socket as untrusted input and decides nothing by it.
    */
   presentedAdmit?: PresentedAdmit;
-  version:     AuthWireVersion;
 }
 
 /** Gate → Peer: auth passed, Automerge join may proceed. */
 export interface LarAuthOkMsg {
   type:    "lar:auth-ok";
-  version: AuthWireVersion;
 }
 
 /** Gate → Peer: auth failed, ws.close(4003) follows immediately. */
 export interface LarAuthDeniedMsg {
   type:    "lar:auth-denied";
   reason:  string;
-  version: AuthWireVersion;
 }
 
 export type LarAuthWireMsg =
@@ -212,7 +205,6 @@ export function mkLarChallenge(nonce: string, gatePubKey?: string): LarChallenge
   return {
     type: "lar:challenge", nonce,
     ...(gatePubKey ? { gatePubKey } : {}),
-    version: AUTH_WIRE_VERSION,
   };
 }
 
@@ -221,15 +213,15 @@ export function mkLarAuth(
   nonce: string,
   sig: string,
 ): LarAuthMsg {
-  return { type: "lar:auth", contactCard, nonce, sig, version: AUTH_WIRE_VERSION };
+  return { type: "lar:auth", contactCard, nonce, sig };
 }
 
 export function mkLarAuthOk(): LarAuthOkMsg {
-  return { type: "lar:auth-ok", version: AUTH_WIRE_VERSION };
+  return { type: "lar:auth-ok" };
 }
 
 export function mkLarAuthDenied(reason: string): LarAuthDeniedMsg {
-  return { type: "lar:auth-denied", reason, version: AUTH_WIRE_VERSION };
+  return { type: "lar:auth-denied", reason };
 }
 
 // ── Proof-of-possession (V3 — challenge-response) ───────────────────────────
@@ -244,6 +236,10 @@ export function mkLarAuthDenied(reason: string): LarAuthDeniedMsg {
  * the gate identity), the peer's claimed pubkey, the target bag `aud`, and a
  * timestamp (bounds the replay window). The verifier — the keyholder worker —
  * checks the Ed25519 signature against the ContactCard's verifying key.
+ *
+ * The bytes open on `AUTH_PROOF_DOMAIN`, so a proof never verifies as any other
+ * signed thing and no other signature verifies as a proof — the name separates,
+ * and no version field rides beside it.
  *
  * Canonical JSON (stable key order) so sign and verify produce identical bytes.
  * NEVER sign the nonce alone.
@@ -262,7 +258,7 @@ export function authProofBytes(parts: {
   ts:          string;  // ISO timestamp — bounds the replay window
 }): Uint8Array {
   return canonicalJsonBytes({
-    v:          AUTH_WIRE_VERSION,
+    domain:     AUTH_PROOF_DOMAIN,
     nonce:      parts.nonce,
     gatePubKey: parts.gatePubKey,
     peerPubKey: parts.peerPubKey,
@@ -437,7 +433,6 @@ export async function buildAuthResponse(parts: {
     ...(parts.edge ? { edge: parts.edge } : {}),
     ...(parts.contractEdge ? { contractEdge: parts.contractEdge } : {}),
     ...(parts.presentedAdmit ? { presentedAdmit: parts.presentedAdmit } : {}),
-    version:     AUTH_WIRE_VERSION,
   };
 }
 

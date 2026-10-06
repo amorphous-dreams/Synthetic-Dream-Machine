@@ -162,7 +162,7 @@ describe("THE LIVE DOMAINS — each protocol's constant pinned by LITERAL, from 
   const PERSONA_GRANT_SEAL_INFO = utf8Bytes(PERSONA_ADMIT_SEAL_INFO);
   const KEYRING_ENVELOPE_INFO   = utf8Bytes(KEYRING_ENVELOPE_SEAL_INFO);
 
-  test("the keyring envelope derives under `lar-keyring-envelope/v2` and NOT under the grant-seal domain", () => {
+  test("the keyring envelope derives under KEYRING_ENVELOPE_SEAL_INFO and NOT under the grant-seal domain", () => {
     const { recipientSecret, recipientPubkey } = mintKeyringRecipient();
     const env = sealKeyringEnvelope([{ epoch: 0, secretHex: "ab".repeat(32) }], recipientPubkey);
     const box = {
@@ -174,7 +174,7 @@ describe("THE LIVE DOMAINS — each protocol's constant pinned by LITERAL, from 
     expect(openFromSender({ recipientSecret, ...box, info: PERSONA_GRANT_SEAL_INFO })).toBeNull();
   });
 
-  test("the persona grant derives under `lar-persona-admit/v2/grant-seal` and NOT under the keyring domain", async () => {
+  test("the persona grant derives under PERSONA_ADMIT_SEAL_INFO and NOT under the keyring domain", async () => {
     const deviceSeed = new Uint8Array(32).fill(9);
     const targetVesselId = hex(await ed.getPublicKeyAsync(deviceSeed));
     const { offer, secret } = mintEnrollmentOffer({ targetVesselId });

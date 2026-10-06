@@ -13,6 +13,11 @@ import { DOMAIN_ROOT } from "../src/domains.js";
 
 const ROOT = `${DOMAIN_ROOT}/`;
 
+/** The frozen set, measured before the helper split: 47 names, sha256 over their sorted `EXPORT=string` rows.
+ *  A move here re-keys live signatures and seals — it never reads as a refactor. */
+const FROZEN_COUNT = 47;
+const FROZEN_WELD = "36c9310b8ea3d162af1e38ff3cf74a1cd92befe04d341895698c2cfbde06f26d";
+
 describe("the domain registry", () => {
   const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
 
@@ -28,8 +33,38 @@ describe("the domain registry", () => {
     }
   });
 
-  test("every separation mints under the registry root, versioned", () => {
-    for (const [k, v] of named) expect(v, k).toMatch(new RegExp(`^${ROOT.replace(/[/.]/g, "\\$&")}[a-z0-9-]+/v\\d+$`));
+  /** The NAME LAW: a separation is a well-formed name under the root — lowercase kebab segments, nothing
+   *  else. A frozen string keeps its opaque `/v1` tail; a new one carries no suffix at all. */
+  const NAME = new RegExp(`^${ROOT.replace(/[/.]/g, "\\$&")}[a-z0-9-]+(/[a-z0-9-]+)*$`);
+
+  test("every separation mints under the registry root as a well-formed name", () => {
+    for (const [k, v] of named) expect(v, k).toMatch(NAME);
+  });
+
+  test("a version tail appears only on the FROZEN strings, and only as the one opaque `/v1`", () => {
+    const tailed = named.filter(([, v]) => /\/v\d+$/.test(v));
+    for (const [k, v] of tailed) expect(v.endsWith("/v1"), `${k} carries a counter other than the frozen /v1`).toBe(true);
+    // Every frozen string signs or derives live material, so the set may only shrink. A new domain that
+    // grew a tail would raise this count; a new domain mints bare.
+    expect(tailed.length).toBeLessThanOrEqual(FROZEN_COUNT);
+  });
+
+  test("a NEW domain mints bare — the auth proof carries no version suffix", () => {
+    expect(domains.AUTH_PROOF_DOMAIN).toBe(`${DOMAIN_ROOT}/auth-proof`);
+    expect(domains.AUTH_PROOF_DOMAIN).not.toMatch(/\/v\d+$/);
+  });
+
+  test("WELD: the frozen strings hold byte-identical through the helper split", async () => {
+    const { createHash } = await import("node:crypto");
+    const frozenRows = named.filter(([, v]) => v.endsWith("/v1")).map(([k, v]) => `${k}=${v}`).sort();
+    expect(frozenRows.length).toBe(FROZEN_COUNT);
+    expect(createHash("sha256").update(frozenRows.join("\n")).digest("hex")).toBe(FROZEN_WELD);
+  });
+
+  test("CONTROL: the name law refuses a malformed address", () => {
+    expect(`${ROOT}Bad_Name`).not.toMatch(NAME);
+    expect(`${ROOT}trailing/`).not.toMatch(NAME);
+    expect("lar:///elsewhere/auth-proof").not.toMatch(NAME);
   });
 
   /** CONTROL: the seed-wrap info the browser imports reads as one of these, not a string of its own. */

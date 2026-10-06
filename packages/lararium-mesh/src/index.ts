@@ -203,14 +203,13 @@ export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-island-pool-core.js";
 export {
-  AUTH_WIRE_VERSION, AUTH_PROOF_TTL_MS,
+  AUTH_PROOF_TTL_MS,
   mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
   isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg, isPresentedAdmit,
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
 } from "./auth-wire.js";
 export type {
-  AuthWireVersion,
   LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarAuthDeniedMsg, LarAuthWireMsg,
   AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit,
 } from "./auth-wire.js";

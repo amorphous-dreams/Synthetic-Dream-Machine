@@ -14,14 +14,15 @@
  * goes stale when that epoch rolls past it (coordinator-free; the epoch is a LEASE, not a
  * targeted revoker — api/pono/convergent-mesh).
  *
- * Canonical signed string (domain + version tagged for separation; every field strict-
- * charset so no `|` can shift a boundary):
- *   lar-device-delegation/v2|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{issuedAt}|{expiresAt}|{boundEpoch}
+ * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — a FROZEN
+ * registry name, read whole: its `/v1` tail names nothing and no successor will exist;
+ * every field strict-charset so no `|` can shift a boundary):
+ *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{issuedAt}|{expiresAt}|{boundEpoch}
  *
  * Trust rides the SIGNATURE + the PINNED root, never a doc's write-ACL (confused-deputy
  * guard). Hardened against untrusted input: never throws on
  * untrusted input · mandatory operator-root pin · exp/freshness · canonical lowercase DIDs
- * · strict ZIP215-off verify · domain/version separation. Reuses the mesh's bare-Ed25519
+ * · strict ZIP215-off verify · domain separation. Reuses the mesh's bare-Ed25519
  * surface (@noble/ed25519 v3 + ./crypto hex).
  */
 
