@@ -29,7 +29,7 @@ import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, carr
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
-import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError,
+import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   hasContractedInto } from "../src/commands/nexus-contract.js";
 import { readConsent, writeConsent, carriageConsentPathFor } from "../src/carried-set.js";
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
@@ -115,6 +115,26 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const res = await runNexusContract({ action: "admit", nym: token.nym, contractSig: token.contractSig, sealHome: sealHome() });
     expect(res.contractIn).toBe("supplied");
     expect(res.memberHeld).toBe(true);
+  });
+
+  it("★ THE TWO FOLDS STAY TWO — a carry lands carrierHeld alone, an admit lands memberHeld alone ★", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+
+    // The place signs its own carrier seal with its VESSEL key (this vessel stands in for the place).
+    const seal  = await runNexusCarryFor({ sealHome: sealHome() });
+    const carry = await runNexusContract({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, sealHome: sealHome() });
+    expect(carry.carrierHeld).toBe(true);
+    expect(carry.memberHeld).toBe(false);
+
+    // An admit after the carry, on the SAME board: the operator stands a member, never a carrier, and the
+    // place stays out of the member set however the board is folded.
+    const joinerNym = await leafOf(3);
+    const admit = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    expect(admit.memberHeld).toBe(true);
+    expect(admit.carrierHeld).toBe(false);
+    expect((await runNexusMembersList({ sealHome: sealHome() })).members).not.toContain(seal.nym);
   });
 
   it("REVOKE as a causal descendant drops membership", async () => {
