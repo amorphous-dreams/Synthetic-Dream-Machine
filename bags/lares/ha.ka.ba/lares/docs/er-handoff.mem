@@ -18,11 +18,11 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Vitals
 
-* ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Crew-held dirt in the tree: `mempalace` (submodule), `tests/harness/instance.ts`, `tests/harness/scenario-action-graph.ts` and its test (uncommitted), untracked `tests/e2e/nexus-offering-replication.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
+* ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Crew-held dirt in the tree: `mempalace` (submodule), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts` and `packages/lararium-node/tests/origin-standing.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
 * ''Corpus'': every tracked `bags/*.mem` reads canonical under `lares meme check`; `tools/bcc-witness.sh` reads every block check `ok`.
 * ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. Two of 32 read red after a fresh build: `vessel-parity-witness` (`makePersonaGroupIdentityRing` composes on node only — the browser side is owed) and `round-trip-witness` (`lararium-tw5` `tests/grammar-in-a-wiki.test.ts` runs past the default 5 s under load; it passes alone at a 60 s timeout). Every other witness reads ok, `contract-witness` among them (on the fold, `#/wounds` P1); `symbol-anchor-witness` holds at its ceiling of 34; `unbuilt-laws-witness` reads 12 declared, 12 still red. Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too.
-* ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects, with the uncommitted `scenario-action-graph.ts` fix in the tree; HEAD alone carries that one red at `tests/harness/scenario-action-graph.ts:175` (`#/wounds` P2).
-* ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. Its reds and what answers each in the unpushed commits: Typecheck (`OraclePointer.version`, answered by the oracle panel's act CID), Grammar artifact gates (the wasm built after the TS host read it, answered by the build order), the Sensorium suite (the meme-tools fixture's socket path, answered by pytest's tmp; `test_structure_router` stays red — `#/wounds` P1), Witnesses (`typecheck`, `unbuilt-laws` reading an escape-coloured summary — answered — and `vessel-parity`, which stands), and E2E (runs out its ceiling — `#/wounds` P1). Build + generated freshness, Pristine upstream and Boot budget read green. `.github/workflows/held-out.yml` fails validation at 0s on every push (`#/wounds` P2). The next push is the witness for the answers.
+* ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
+* ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. Its reds and what answers each in the unpushed commits: Typecheck (`OraclePointer.version`, answered by the oracle panel's act CID), Grammar artifact gates (the wasm built after the TS host read it, answered by the build order), the Sensorium suite (the meme-tools fixture's socket path, answered by pytest's tmp; `test_structure_router` stays red — `#/wounds` P1), Witnesses (`typecheck`, `unbuilt-laws` reading an escape-coloured summary — answered — and `vessel-parity`, which stands), and E2E (runs out its ceiling — `#/wounds` P1). Build + generated freshness, Pristine upstream and Boot budget read green. `.github/workflows/held-out.yml` failed validation at 0s on that push; the unpushed tree resolves its evidence path inside the run step. The next push is the witness for the answers.
 * ''The tree is shared'': a parallel lane edits `bags/lares/ha.ka.ba/wsl2/**` and `tools/wsl2/**` and re-stamps after editing — a witness run mid-edit reads its carriers as drifted for a minute. Re-run before believing a red there.
 * ''Known test reds'' and their owners:
 ** `lararium-node` `tests/bind-under-handle.test.ts` — crew: the joinee boot path never supplies `expectedEpoch` (the binding gate needs the live lease epoch, as `face-join.ts` supplies it); never revert the gate.
@@ -61,7 +61,6 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 * ''A Sensorium red.'' `packages/lararium-sensorium/scripts/test_structure_router.py::test_ahu_block_nests_inner_sigils` reads one inner sigil where it asserts two — red on the desk and in CI.
 
 ''P2 — needs the operator''
-* ''Three classifier-refused edits.'' `tests/harness/scenario-action-graph.ts:175` — its fix sits uncommitted in the tree and makes typecheck fully clean; `.github/workflows/held-out.yml` — the job-level `env:` reads `runner.temp`, which that scope does not offer, so the workflow fails validation at 0s on every push (`lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds` `#/held-out-workflow`; the glob stands ceded from the Codex hold); `tools/mesh-scenarios.sh:769` — a grep the classifier refused.
 * ''The herm's Web surface, decisions 1–5'' — #3, the standing-aware origin composition, gates the e2e red above.
 * ''Parallel drafts: does a loser persist durably?''
 * ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
@@ -92,7 +91,7 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 !! Crew-held work (do not take without the crew)
 
 * The binding-gate caller in `bind-under-handle`, the `nexus offering` help registry, the Offering lane (local adoption, grammar-scoped relation, Antigen consultation cap, the multi-vessel receipt — `tests/e2e/nexus-offering-replication.test.ts` is its first slice), Pronaos live Docker reach.
-* The uncommitted hunks in `tests/harness/instance.ts`, `tests/harness/scenario-action-graph.ts` and its test, and the `mempalace` submodule pointer — another hand's; never commit, stash or revert them.
+* The uncommitted hunks in `tests/harness/instance.ts`, the untracked `packages/lararium-node/tests/origin-standing.test.ts`, and the `mempalace` submodule pointer — another hand's; never commit, stash or revert them.
 * The Codex Lares hearth holds every Codex glob but `.github/workflows/held-out.yml` and `tools/mesh-scenarios.sh`, which it ceded for the parked patches (`lar:///ha.ka.ba/lares/docs/pono/hearths`).
 * `bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem` closes its ETX on a spelling outside the frame grammar — theirs to align.
 * Operator forks recorded in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`: the contract-witness digest and equivocation vocabulary, the four named forks, the emission threshold and destination receipt, worker offline restart, the plane roster.
@@ -140,6 +139,6 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PvhQYdDjeN-iKUR6KZlhTT5t0NKC2rg4JMBOmPjwJkA
+<<^ code="&#x0003;">>ni:///sha-256;vC_5p16hAL2Fbqa14FyiEQ8cKMEAVXLUNlm924tsSMw
 
 <<^ code="&#x0004;" -> to="?">>
