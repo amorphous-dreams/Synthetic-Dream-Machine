@@ -51,6 +51,47 @@ const PORT = 8231;
 
 let root = "";
 
+/** How long a stop may hold the port, and a stand may take to reach live with its verb door bound. */
+const STOP_DEADLINE_MS  = 30_000;
+const STAND_DEADLINE_MS = 150_000;
+
+/**
+ * THE VERB VECTORS' BUDGETS, and the hang guard each derives from its own.
+ *
+ * A verb's OUTCOME is the readiness predicate: the daemon resolves a call when its outcome lands in the daemon doc,
+ * so a caller waits on that event and on nothing else. The ceiling below only bounds a hang — it is the vector's
+ * own budget less what the vector spends elsewhere and a margin for the assertion to report, so a slow-but-live
+ * daemon spends the whole budget on its answer, and a cutoff never fires on a machine that is merely loaded.
+ */
+const VERB_MARGIN_MS = 5_000;
+const R3_BUDGET_MS = 60_000;
+const R4_BUDGET_MS = 90_000;
+const R5_BUDGET_MS = 240_000;
+/** R3 asks one verb. */
+const R3_CEILING_MS = R3_BUDGET_MS - VERB_MARGIN_MS;
+/** R4 asks two in sequence, so each takes half of what the margin leaves. */
+const R4_CEILING_MS = (R4_BUDGET_MS - VERB_MARGIN_MS) / 2;
+/** R5 stops the vessel and stands it again before it asks. */
+const R5_CEILING_MS = R5_BUDGET_MS - STOP_DEADLINE_MS - STAND_DEADLINE_MS - VERB_MARGIN_MS;
+
+/** The tail of the vessel's own log, for a failure to carry what the daemon was doing when it failed. */
+function standLogTail(r: string): string {
+  const p = join(substrateDir(r), "stand.log");
+  return existsSync(p) ? readFileSync(p, "utf8").slice(-1200) : "(no stand.log)";
+}
+
+/**
+ * Ask the vessel ONE verb over its UDS door and return the answer as text — the outcome, or the error that came
+ * back instead. The wait is the outcome itself; `ceilingMs` bounds a hang and nothing else.
+ */
+async function askVerb(verb: string, args: Record<string, unknown>, ceilingMs: number): Promise<string> {
+  const dir = sockStands(root) ? substrateDir(root) : null;
+  const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
+  const r = await invokeLocal(verb, args, await operatorDid(root), { dataDir: dir, timeoutMs: ceilingMs })
+    .catch((e: Error) => ({ error: e.message }));
+  return JSON.stringify(r);
+}
+
 /** A herm's own root: the tracked genesis, and nothing else. No face is ever lit here. */
 function standHermRoot(): string {
   const r = mkdtempSync(join(tmpdir(), "lares-herm-"));
@@ -77,7 +118,7 @@ async function stopVessel(): Promise<void> {
   const pid = portPid();
   if (!pid) return;
   try { process.kill(Number(pid)); } catch { /* already gone */ }
-  const deadline = Date.now() + 30_000;
+  const deadline = Date.now() + STOP_DEADLINE_MS;
   while (Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, 250));
     if (!portPid()) return;
@@ -100,16 +141,20 @@ async function standHerm(r: string): Promise<{ live: boolean; log: string }> {
   // answers instantly for a vessel that never came back up — the lift vector then reports a hearth that
   // stood when nothing did, and reaches for a socket no process holds.
   rmSync(standLog, { force: true });
-  const child = spawn(process.execPath, [CLI, "vessel", "stand"], {
+  const child = spawn(process.execPath, [CLI, "vessel", "stand", "--skip-build"], {
     env: { ...process.env, LAR_ROOT: r, LAR_PORT: String(PORT) }, cwd: REPO,
   });
   let launcher = "";
   child.stdout.on("data", (b) => { launcher += String(b); });
   child.stderr.on("data", (b) => { launcher += String(b); });
-  const deadline = Date.now() + 150_000;
+  const deadline = Date.now() + STAND_DEADLINE_MS;
   for (;;) {
     const log = (existsSync(standLog) ? readFileSync(standLog, "utf8") : "") + launcher;
-    if (/phase → live/.test(log)) return { live: true, log };
+    // LIVE, AND THE VERB DOOR BOUND. `phase → live` prints before the vessel binds its UDS channel, so a vessel
+    // read at that line can stand with no socket yet — and a vector sampling the socket once reads "no door"
+    // for a door a beat away. The channel's own listen callback prints `uds verb-channel on …`; that line is
+    // the event a caller's first verb needs, so the stand resolves on both.
+    if (/phase → live/.test(log) && /uds verb-channel on /.test(log)) return { live: true, log };
     // FAIL FAST ONLY ON A FAULT THIS VESSEL RAISED. A bare /Error:/ also matches the keyhive wasm's own
     // DEBUG stream ("Error: Some(ReceiveCgkaOpError(UnknownInvitePrekey…))") — a line a healthy boot prints
     // on its way to `live`, which cuts the watch short and reports a hearth that stood as one that died.
@@ -147,7 +192,7 @@ afterAll(async () => {
 describe("the herm — the floor of the lararium cap stack", () => {
   test("R1 — a herm reaches live: found, stood, and NO face ever lit", async () => {
     root = standHermRoot();
-    execFileSync(process.execPath, [CLI, "vessel", "found"], {
+    execFileSync(process.execPath, [CLI, "vessel", "found", "--skip-build"], {
       env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
     });
     const { live, log } = await standHerm(root);
@@ -175,30 +220,28 @@ describe("the herm — the floor of the lararium cap stack", () => {
   test("R3 — a herm carries: its verb channel answers a caller", async () => {
     const dir = sockStands(root) ? substrateDir(root) : null;
     expect(dir, "no UDS door — a herm that carries nothing has no floor under anything").not.toBeNull();
-    const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
     // A WELL-FORMED call. `where` requires `args.tiddler`; an empty payload earns "args.tiddler is
     // required" — the channel answering correctly, which a vector reading only `status` scores as a floor
     // that does not carry.
-    const r = await invokeLocal("where", { tiddler: "$:/lares/oracle" }, await operatorDid(root), { dataDir: dir, timeoutMs: 20_000 });
-    expect(JSON.stringify(r), "the verb channel never answered a well-formed call").toMatch(/"status":"done"/);
-  }, 60_000);
+    const r = await askVerb("where", { tiddler: "$:/lares/oracle" }, R3_CEILING_MS);
+    expect(r, `the verb channel never answered a well-formed \`where\`:\n${r.slice(0, 400)}\n${standLogTail(root)}`).toMatch(/"status":"done"/);
+  }, R3_BUDGET_MS);
 
   test("R4 — a herm refuses a hearth-scoped act LEGIBLY, never by stack trace", async () => {
-    const dir = sockStands(root) ? substrateDir(root) : null;
-    const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
-    const r = await invokeLocal("persona-selves", {}, await operatorDid(root), { dataDir: dir, timeoutMs: 20_000 })
-      .catch((e: Error) => ({ error: e.message }));
-    // Either an unknown verb or a named refusal — both say "light a face". Neither may be a raw throw.
-    expect(JSON.stringify(r)).toMatch(/light a face|unknown verb|no face|waking floor/i);
+    // Either an unknown verb or a named refusal — both say "light a face". Neither may be a raw throw, and
+    // neither may be the hang guard firing: a cutoff names no lift, so a refusal that never arrived reads red.
+    const r = await askVerb("persona-selves", {}, R4_CEILING_MS);
+    expect(r, `\`persona-selves\` on the floor did not refuse by naming the lift:\n${r.slice(0, 400)}\n${standLogTail(root)}`)
+      .toMatch(/light a face|unknown verb|no face|waking floor/i);
 
     // EVERY face-scoped verb, not just the persona ones. The circles plane arrives with the FACE — a PLACE
     // bootstrap carries the daemon bag alone — so a follow verb on this floor must name the lift too. Answering
     // "circles-<tag> unresolved: the oracle registry names no such plane" is true and useless: it reads
     // as a broken registry to the one human who could fix it by lighting a face.
-    const c = await invokeLocal("circle-list", { circle: "following" }, await operatorDid(root), { dataDir: dir, timeoutMs: 20_000 })
-      .catch((e: Error) => ({ error: e.message }));
-    expect(JSON.stringify(c), "a follow verb on the floor refused in registry-fault language").toMatch(/light a face|unknown verb|no face|waking floor/i);
-  }, 90_000);
+    const c = await askVerb("circle-list", { circle: "following" }, R4_CEILING_MS);
+    expect(c, `\`circle-list\` on the floor refused in registry-fault language:\n${c.slice(0, 400)}\n${standLogTail(root)}`)
+      .toMatch(/light a face|unknown verb|no face|waking floor/i);
+  }, R4_BUDGET_MS);
 
   test("R5 — a herm LIFTS into a lararium: light the face, re-wake, the hearth verbs stand", async () => {
     execFileSync(process.execPath, [CLI, "persona", "new", "0", "--name", "the lift"], {
@@ -213,8 +256,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
 
     const dir = sockStands(root) ? substrateDir(root) : null;
     expect(dir, "the lifted hearth bound no UDS door — nothing to ask, and no fallback that would be this hearth").not.toBeNull();
-    const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
-    const r = await invokeLocal("persona-selves", {}, await operatorDid(root), { dataDir: dir, timeoutMs: 20_000 });
-    expect(JSON.stringify(r), "the lifted hearth still refuses its own face-scoped verb").toMatch(/"status":"done"/);
-  }, 240_000);
+    const r = await askVerb("persona-selves", {}, R5_CEILING_MS);
+    expect(r, `the lifted hearth still refuses its own face-scoped \`persona-selves\`:\n${r.slice(0, 400)}\n${standLogTail(root)}`).toMatch(/"status":"done"/);
+  }, R5_BUDGET_MS);
 });
