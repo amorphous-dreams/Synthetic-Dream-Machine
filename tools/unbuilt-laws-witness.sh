@@ -37,12 +37,29 @@ if [ "$declared" -eq 0 ]; then
   exit 1
 fi
 
-out=$(cd packages/lararium-mesh && npx vitest run "tests/$(basename "$TMP")" --reporter=verbose 2>&1)
+# PLAIN TEXT, whatever the host. Under `CI=true` vitest colours its summary, the `Tests` line then opens
+# with an escape byte instead of whitespace, the grep below matches nothing, and an unread summary
+# counts as zero reds: every law reports GREENED on a run where all of them failed. NO_COLOR asks for
+# plain text and the sed strips any escape that still slips through.
+out=$(cd packages/lararium-mesh && NO_COLOR=1 FORCE_COLOR=0 npx vitest run "tests/$(basename "$TMP")" --reporter=verbose 2>&1 \
+  | sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g')
 # THE `Tests` SUMMARY LINE, never the first "N failed" in the stream — `Test Files  1 failed` matches
 # that pattern too, and reading it reported one red standing where seventeen did.
 summary=$(printf '%s' "$out" | grep -E "^\s+Tests " | tail -1)
 failed=$(printf '%s' "$summary" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+')
+passed=$(printf '%s' "$summary" | grep -oE '[0-9]+ passed' | grep -oE '[0-9]+')
 failed=${failed:-0}
+passed=${passed:-0}
+
+# EVERY TEST IN THE REGISTER RAN, OR THE COUNT MEANS NOTHING. A suite that failed to import reports
+# `Tests  no tests`, an unread summary reports nothing at all, and both read as zero reds. The verdict
+# below is only a verdict when the reds and the floor together account for every test declared.
+if [ $((failed + passed)) -ne $((declared + floor)) ]; then
+  echo "unbuilt-laws: the register did not run — $((declared + floor)) test(s) declared, ${failed} failed + ${passed} passed read"
+  echo "  summary: ${summary:-<no Tests line in the vitest output>}"
+  printf '%s\n' "$out" | tail -30 | sed 's/^/  /'
+  exit 1
+fi
 
 if [ "$failed" -lt "$declared" ]; then
   echo "unbuilt-laws: $declared red(s) declared · $failed still red · $((declared - failed)) GREENED"
