@@ -30,6 +30,7 @@ import {
 import { readCasBlobFromFs } from "./node-cas.js";
 import { buildBulb, type BulbArtifact, type BulbBlob, type BulbManifest } from "./bulb.js";
 import type { OracleReadFace } from "./oracle-read-face.js";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 /** The public-CAS shore the read-face re-shares from: the bytes a cid names, and whether a PUBLIC pointer names it. */
 export interface PublicCasShore {
@@ -170,10 +171,13 @@ export async function mountBulbReadFace(args: {
   readonly httpServer: Server;
   readonly bulb:       BulbArtifact;
   readonly onLog?:     (line: string) => void;
+  /** The vessel's one request listener. Present, the face CLAIMS `/bulb` and `/cas` before its asynchronous
+   *  public-tier read, so the dispatcher's terminal refusal never answers a request this face then answers too. */
+  readonly dispatcher?: HttpFaceDispatcher;
   /** The Herm re-share shore; absent, `/cas/<cid>` answers the bulb's 404 for every cid. */
   readonly publicCas?: PublicCasShore;
 }): Promise<OracleReadFace> {
-  const { httpServer, bulb, onLog, publicCas } = args;
+  const { httpServer, bulb, onLog, publicCas, dispatcher } = args;
   const { manifest, blobs } = buildBulb(bulb);
   const manifestBytes = utf8Bytes(JSON.stringify(manifest));
   const manifestCid   = sha256HexBytesSync(manifestBytes);
@@ -186,6 +190,7 @@ export async function mountBulbReadFace(args: {
     "access-control-allow-headers": "*",
   };
   const refuse = (res: ServerResponse): void => {
+    if (res.headersSent || res.writableEnded) return;
     res.writeHead(404, { ...CORS, "content-type": "text/plain" }); res.end("unknown or stale bulb cid");
   };
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
@@ -219,9 +224,18 @@ export async function mountBulbReadFace(args: {
     }
     refuse(res);
   };
-  httpServer.on("request", onRequest);
+  const unregister = dispatcher?.register({
+    name: "bulb",
+    routeKeys: [`bulb:${BULB_ROUTE_PREFIX}`, `cas:${CAS_ROUTE_PREFIX}`],
+    owns: (req) => {
+      const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+      return pathname.startsWith(BULB_ROUTE_PREFIX) || pathname.startsWith(CAS_ROUTE_PREFIX);
+    },
+    handle: onRequest,
+  });
+  if (!unregister) httpServer.on("request", onRequest);
 
-  return { dispose: () => { httpServer.off("request", onRequest); } };
+  return { dispose: () => { if (unregister) unregister(); else httpServer.off("request", onRequest); } };
 }
 
 /** The bulb manifest a puller GETs first (re-exported so the kindle transport speaks the same type). */

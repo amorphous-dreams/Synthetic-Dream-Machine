@@ -22,6 +22,7 @@ import {
 } from "@lararium/mesh";
 import { mountBulbReadFace, publicCasShore } from "../src/bulb-read-face.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
+import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import type { BulbArtifact } from "../src/bulb.js";
 
 function fixtureBulb(): BulbArtifact {
@@ -103,5 +104,62 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     await mountBulbReadFace({ httpServer, bulb });
     const r = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
     expect(r.status).toBe(404);
+  });
+
+  test("THE DISPATCHED VESSEL: a face the dispatcher owns answers /cas and /bulb once, and the vessel survives the read", async () => {
+    // A booted vessel mounts ONE request listener (`mountHttpFaceDispatcher`) that answers every unclaimed
+    // request with a terminal 404. A face that listens beside it instead of registering is unclaimed: the
+    // dispatcher answers first, and the face's own asynchronous answer then writes headers a second time —
+    // a throw inside a promise whose catch writes them a third, which kills the process.
+    const bulb = fixtureBulb();
+    const storageDir = mkdtempSync(join(tmpdir(), "lr-herm-reshare-")); dirs.push(storageDir);
+    const casDir = join(storageDir, "cas");
+    const likeness = utf8Bytes("a public png the dispatcher must route"); const likenessCid = sha256HexBytesSync(likeness);
+    writeCasEntriesFs([...bulb.casEntries, { cid: likenessCid, bytes: likeness }], casDir);
+    const publicCas = publicCasShore({
+      casDir,
+      references: async () => [pointer(PUBLIC_BAG, "lar:///t.w.b/likeness", likenessCid)],
+      bagTier: (bagUrl) => (bagUrl === PUBLIC_BAG ? "public" : null),
+    });
+
+    const faults: unknown[] = [];
+    const onFault = (err: unknown): void => { faults.push(err); };
+    process.on("unhandledRejection", onFault);
+    process.on("uncaughtException", onFault);
+    try {
+      const httpServer = createServer(); servers.push(httpServer);
+      const dispatcher = mountHttpFaceDispatcher(httpServer);
+      await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
+      const port = (httpServer.address() as { port: number }).port;
+      const face = await mountBulbReadFace({ httpServer, bulb, publicCas, dispatcher });
+
+      const pub = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
+      expect(pub.status).toBe(200);
+      expect(sha256HexBytesSync(new Uint8Array(await pub.arrayBuffer()))).toBe(likenessCid);
+      const manifest = await fetch(`http://127.0.0.1:${port}/bulb/manifest`);
+      expect(manifest.status).toBe(200);
+      const bootCid = bulb.casEntries[0]!.cid;
+      const boot = await fetch(`http://127.0.0.1:${port}/bulb/${bootCid}.bin`);
+      expect(boot.status).toBe(200);
+      const ghost = await fetch(`http://127.0.0.1:${port}/cas/${"0".repeat(64)}`);
+      expect(ghost.status).toBe(404);
+      expect(await ghost.text()).toBe("unknown or stale bulb cid");
+      // CONTROL: a route no face claims still draws the dispatcher's own terminal refusal.
+      const undeclared = await fetch(`http://127.0.0.1:${port}/undeclared`);
+      expect(undeclared.status).toBe(404);
+      expect(await undeclared.text()).toBe("route unavailable");
+
+      // Disposed, the face releases its routes: /cas falls to the dispatcher's refusal.
+      face.dispose();
+      const after = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
+      expect(after.status).toBe(404);
+      expect(await after.text()).toBe("route unavailable");
+      await new Promise((r) => setTimeout(r, 50));
+      expect(faults, "a request faulted the process").toEqual([]);
+      dispatcher.dispose();
+    } finally {
+      process.off("unhandledRejection", onFault);
+      process.off("uncaughtException", onFault);
+    }
   });
 });
