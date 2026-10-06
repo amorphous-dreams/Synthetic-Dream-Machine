@@ -76,7 +76,7 @@ wrote'' — which names the cure as ''move the load-bearing artifact somewhere i
 its author'', never as authoring more carefully.
 
 ''AND A LIVING GRAMMAR MAKES DRIFT INVISIBLE UNTIL IT HAS HAPPENED.'' Grammar drift
-separates no Nexus — the engine binds membership — so two groups of hearths drift apart in
+separates no Nexus — the engine window binds membership — so two groups of hearths drift apart in
 use, each still reading itself fluently, ''each still computing itself one Nexus'', and
 nothing anywhere reports how far their dialects stand apart. The absent roster — a shelter property everywhere else — costs
 exactly this: ''no instrument surfaces a fork.'' A lag distribution across the carriage
@@ -92,10 +92,11 @@ protects nothing against a cadence shipping correctly to a mesh that cannot keep
 
 !!! The engine cadence stands its own joint ~ never carriage, never the admission quorum
 
-''THE ENGINE BINDS MEMBERSHIP.'' TW5 core plus the house code, by CID, names the hearth true-name
-(`hearthTrueName` = `engineCid`), and every device-delegation edge signs it. ''A Nexus's engine
-cadence comes OFFERED by a cadence threshold seated apart from its admission quorum'', held by those
-who run its hearths. ''Each device moves only by its own adoption'' — a reboot onto the offered
+''THE ENGINE BINDS MEMBERSHIP, through a rolling WINDOW.'' TW5 core plus the house code, by CID,
+names a hearth's true-name (`hearthTrueName` = `engineCid`), and every device-delegation edge signs
+it. A Nexus admits a rolling window of engine epochs, never one engine CID, so its hearths need not
+all run one engine. ''A Nexus's engine cadence comes OFFERED by a cadence threshold seated apart from
+its admission quorum'', held by those who run its hearths, and that threshold advances the window. ''Each device moves only by its own adoption'' — a reboot onto the offered
 engine — and no act moves it for it. ''Carrying never counts'': a lamplighter runs infrastructure by
 contract, carries sealed bytes it cannot read, presents and never condemns, and carrying confers no
 share in any Nexus's cadence.
@@ -112,6 +113,7 @@ that rolls it.
 
 ''Still open'', each unruled:
 
+* how the engine window bounds and ages without a clock — owed to the regime research;
 * who stands eligible for a cadence share;
 * whether a Nexus can deny a specific engine CID;
 * whether one daemon may host islands at two engine epochs;
@@ -279,6 +281,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D40JpydELGafpPBJuvqbs2drq-m8TjYCiHRIH0QbfrY
+<<^ code="&#x0003;">>ni:///sha-256;v3Re5XKUIFnXBchzqbvYcSZZBwqXGIJXeREt-PGdueM
 
 <<^ code="&#x0004;" -> to="?">>
