@@ -10,7 +10,7 @@ l-space   = "lararium"
 mana      = 17
 manao     = 16
 manaoio   = 16
-role      = "protocol governance concept: kahu as ONE role at TWO scales — DreamNet corpus-kahu author the shared grammar; a Nexus's kahu quorum holds admit, kapae and seal for that Nexus — with the admission quorum and the grammar/engine cadence kept as separate joints"
+role      = "protocol governance concept: kahu as ONE role at TWO scales — DreamNet corpus-kahu curate the living grammar; a Nexus's kahu quorum holds admit, kapae and seal for that Nexus — with the admission quorum and the engine cadence kept as separate joints"
 title     = "lar:///ha.ka.ba/lararium/mesh/kahu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/kahu"
@@ -23,21 +23,23 @@ Cares for without owning. Honored for responsibility, not for power.
 
 In the DreamNet protocol layer, ''kahu'' names ONE role at TWO scales.
 
-* ''DreamNet scale — the corpus-kahu.'' The Amorphous Dreams Cabal holds kahu over the
-  protocol grammar and corpus bags (`lararium`, `lares`, the genesis artifact).
+* ''DreamNet scale — the corpus-kahu.'' The Amorphous Dreams Cabal curates the living
+  grammar and holds kahu over the corpus bags (`lararium`, `lares`, the genesis artifact).
 * ''Nexus scale — the kahu quorum.'' Each Nexus seats its own k-of-n kahu quorum, which
   holds ''admit, kapae and seal'' for that Nexus and nothing beyond it (#/nexus-scale).
 
 At DreamNet scale the role differs from every other capability level in one way: the
-corpus-kahu authored the grammar itself, then stepped back. The grammar now enforces
-itself — through register collapse detection, the ABILITY_LADDER, and each vessel's own
-founding ceremony. No living authority tells a vessel what to do. The treaty does.
+corpus-kahu CURATE a grammar they never legislate. The grammar holds no versions; it lives
+and drifts by use, like a natural language. The corpus-kahu lift lived constructions into
+the formal register (`sigil-*.tid`) as lexicographers, and nothing ratifies a lift. The
+grammar enforces itself — through register collapse detection, the ABILITY_LADDER, and each
+vessel's own founding ceremony. No living authority tells a vessel what to do. The treaty does.
 
 <<~ ahu #/contract>>
 
 !! The Treaty Model
 
-The corpus bags are the written grammar of DreamNet:
+The corpus bags hold the written record of DreamNet's grammar:
 
 * `lararium` — the engine and protocol package definitions
 * `lares` — the API grammar and canonical meme vocabulary
@@ -50,14 +52,20 @@ A kahu guardian holds `cap=admin` on these bags specifically. That capability ru
 the same one any operator could receive on their own vessel's bags — the distinction
 is //which bag// carries the grant, not a new rung on the ABILITY_LADDER.
 
-The Cabal authors a grammar revision. The revision lands in the corpus bags via a
-founding or upgrade ceremony. A vessel that syncs those bags inherits the change via
-CRDT propagation — not via a command from the Cabal. The Cabal authors; the protocol
-distributes; the vessels enforce.
+''Use leads, and the record follows.'' Hearths speak the grammar, and what use entrenches the
+corpus-kahu lift into the corpus bags as curation. A vessel that syncs those bags inherits the
+record via CRDT propagation — never via a command from the Cabal. Speakers lead; the kahu
+record; the protocol distributes; the vessels enforce
+(<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/three-registers">>).
 
-!!! The cadence reads as the highest-risk lever in the whole design
+''Intelligibility between hearths runs GRADED, like dialects.'' Graceful parsing and the
+quoteblock floor carry whatever a reader does not know, so a construction one hearth lacks
+degrades to legible text rather than refusing
+(<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>).
 
-''A VERSION CADENCE STANDS AS THE ONE INSTRUMENT A CORPUS-KAHU ACTUALLY HOLDS, and the record
+!!! The engine cadence reads as the highest-risk lever in the whole design
+
+''AN ENGINE CADENCE STANDS AS THE ONE VERSIONED INSTRUMENT ANY HAND HOLDS, and the record
 shows it stranding federations rather than governing them.'' The worked case runs exact:
 a founding node rewrote its own protocol, the network it had convened did not follow,
 and a fork formed to keep the abandoned grammar alive.
@@ -67,35 +75,47 @@ grammar into a standards body, and ''that grammar outlived every implementation 
 wrote'' — which names the cure as ''move the load-bearing artifact somewhere it survives
 its author'', never as authoring more carefully.
 
-''AND BEHAVIOURAL MEMBERSHIP MAKES THE SCHISM INVISIBLE UNTIL IT HAS HAPPENED.'' A Nexus
-that computes membership from //who parses this grammar identically// holds no roster to
-show a split against. Two groups drift a revision apart, each still parsing itself
-identically, ''each still computing itself a Nexus'', and nothing anywhere reports that
-they stopped being one. The absent roster — a shelter property everywhere else — costs
+''AND A LIVING GRAMMAR MAKES DRIFT INVISIBLE UNTIL IT HAS HAPPENED.'' Grammar drift
+separates no Nexus — the engine binds membership — so two groups of hearths drift apart in
+use, each still reading itself fluently, ''each still computing itself one Nexus'', and
+nothing anywhere reports how far their dialects stand apart. The absent roster — a shelter property everywhere else — costs
 exactly this: ''no instrument surfaces a fork.'' A lag distribution across the carriage
 board reads as the nearest available proxy and nobody has built it.
 
-''What the treaty model therefore owes'': a revision that a vessel MAY decline while
+''What the engine cadence therefore owes'': an engine epoch that a vessel MAY decline while
 staying reachable and syncing — the partial-conformance seat the identity plane already
 names (//not a member, not an exile, a member with reduced sovereignty//) — so the
-cadence bends rather than strands. ''Forkability protects against a drifting kahu; it
-protects nothing against a kahu shipping correctly to a mesh that cannot keep up.''
+cadence bends rather than strands. ''Forkability protects against a drifting cadence; it
+protects nothing against a cadence shipping correctly to a mesh that cannot keep up.''
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-gauge">>
 
-!!! The engine/grammar ratchet stands its own joint ~ never carriage, never the admission quorum
+!!! The engine cadence stands its own joint ~ never carriage, never the admission quorum
 
-''Ratcheting the engine epoch (`hearthTrueName` = `engineCid`) and choosing the grammar rejim are
-governance/authoring acts'', never carriage. ''The cadence runs HYBRID'': the corpus-kahu AUTHOR a
-revision, infrastructure operators RATIFY it for the infrastructure they run, and device users ADOPT
-it. A lamplighter runs infrastructure by contract and presents, never condemns; it carries sealed bytes
-it cannot read, and ''carrying confers no say in any Nexus's cadence''.
+''THE ENGINE BINDS MEMBERSHIP.'' TW5 core plus the house code, by CID, names the hearth true-name
+(`hearthTrueName` = `engineCid`), and every device-delegation edge signs it. ''A Nexus's engine
+cadence comes OFFERED by a cadence threshold seated apart from its admission quorum'', held by those
+who run its hearths. ''Each device moves only by its own adoption'' — a reboot onto the offered
+engine — and no act moves it for it. ''Carrying never counts'': a lamplighter runs infrastructure by
+contract, carries sealed bytes it cannot read, presents and never condemns, and carrying confers no
+share in any Nexus's cadence.
+
+''The grammar holds no ratchet.'' `grammarCid`, the grammar epoch and `kahuli grammar` stand marked
+to RETIRE in code, owed pending a scout's measurement of their consumers
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-five">>).
 
 ''The cadence never fuses with the admission quorum.'' The hands that admit, kapae and seal for a
 Nexus (#/nexus-scale) roll no engine by holding that seat, and a cadence act never moves the admission
 price — two joints, two thresholds, two rates (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/six-joints">>).
-''And it is PER-NEXUS: the NEXUS fences, never the cabal'' — an epoch means nothing outside the island
+''And it runs PER-NEXUS: the NEXUS fences, never the cabal'' — an epoch means nothing outside the island
 that rolls it.
+
+''Still open'', each unruled:
+
+* who stands eligible for a cadence share;
+* whether a Nexus can deny a specific engine CID;
+* whether one daemon may host islands at two engine epochs;
+* whether partial conformance must land before `kahuli engine` un-holds.
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/welded">>
 
@@ -113,8 +133,8 @@ over the seated keys plus the threshold — and seats the first kahu quorum. The
 ''The quorum holds three acts for its one Nexus'': ''admit'' (counter-signing a contract-in),
 ''kapae'' (the quorum-signed antigen, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen">>)
 and ''seal'' (the k-of-n rotation of the seal lineage). A Kahu face therefore carries one cap — the
-Nexus-scale `quorum-share`. The grammar cadence rides a separate joint (#/contract), and the corpus-kahu
-stand at DreamNet scale.
+Nexus-scale `quorum-share`. The engine cadence rides a separate threshold (#/contract), and the corpus-kahu
+curate at DreamNet scale.
 
 !!! ★ THE SUBJECT PRESENTS ITS ADMIT ★
 
@@ -153,16 +173,17 @@ comes as the Nexus grows, never as the price of founding it.
 
 `cap=admin` names a ''capability rung'' — what a given actor may do to a given bag.
 
-//Kahu// names a ''role'' — who carries the covenant responsibility for the grammar layer
-across the whole DreamNet.
+//Kahu// names a ''role'' — who carries the curatorial responsibility for the living grammar
+across the whole DreamNet, or the admission acts for one Nexus.
 
 These two live in separate registers:
 
 | Register | Term | Meaning |
 |---|---|---|
 | ABILITY_LADDER | `cap=admin` | may touch lower bag layers; may MOVE tiddlers into corpus; may grant/revoke |
-| Role / governance, DreamNet scale | corpus-kahu | guardian of the protocol grammar; held by the Amorphous Dreams Cabal |
+| Role / governance, DreamNet scale | corpus-kahu | curator of the living grammar — a lexicographer, never a legislator; held by the Amorphous Dreams Cabal |
 | Role / governance, Nexus scale | kahu quorum | admit · kapae · seal for ONE Nexus; k-of-n over that Nexus's seal lineage |
+| Role / governance, Nexus scale | cadence threshold | offers ONE Nexus's engine cadence; seated apart from the kahu quorum, held by those who run its hearths |
 
 An operator may hold `cap=admin` on their own cabalGroup's infrastructure bags. That
 does not make them kahu of DreamNet. Corpus-kahu attaches to the //corpus// specifically —
@@ -178,8 +199,8 @@ Nexus's seal lineage alone.
 The Cabal holds kahu over DreamNet's protocol corpus. In practice this means:
 
 * They hold `cap=admin` on the `lararium` and `lares` Keyhive bag docs.
-* Grammar revisions (new sigil tiddlers, new protocol invariants, new ABILITY_LADDER rungs)
-  arrive via ceremony, not dispatch.
+* Curated lifts (new sigil tiddlers, new protocol invariants, new ABILITY_LADDER rungs)
+  land in the corpus bags as a record of use, never as dispatch.
 * No vessel obeys a live command from the Cabal. Vessels enforce their own founding
   proofs and capability gates.
 * The Cabal cannot reach inside an operator's vessel. Their admin grant on corpus bags
@@ -195,7 +216,7 @@ construction, so a drifting kahu gets forked away from rather than obeyed.
 the steward-not-ruler doctrine, and the bounded break-glass / repair authority live at
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>.
 
-The grammar is a treaty. The Cabal signs it. The vessels hold it.
+The grammar lives in its speakers. The Cabal keeps its record. The vessels speak it.
 
 <<~/ahu>>
 
@@ -248,6 +269,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eJPws3gMEYFu7T0LQMdyIkkiLX0fChT9wR4AeLUWtY0
+<<^ code="&#x0003;">>ni:///sha-256;1uqOUFhdWOUmYDndqEl7JZrZaKW-sbwmMvRMLIEMexI
 
 <<^ code="&#x0004;" -> to="?">>

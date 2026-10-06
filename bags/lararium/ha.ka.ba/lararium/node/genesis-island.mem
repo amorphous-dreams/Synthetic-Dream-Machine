@@ -75,7 +75,7 @@ The build prints and lands three CIDs, and they are not three tiers of one thing
 
 |!Region |!What it folds |!What advancing it means |
 |`engineCid` |the TW5 core — the hearth true-name |the SLOW ratchet; it re-binds membership mesh-wide and rides inside every signed device-delegation preimage |
-|`grammarCid` |the required grammar ALONE |kāhuli's FAST ratchet — an overturn the mesh takes together |
+|`grammarCid` |the required grammar ALONE |marked to RETIRE — the grammar holds no versions (kahu#/contract); retirement owed in code, pending a scout's measurement of its consumers |
 |`pluginsCid` |this operator's own collection |a REGION, never a kāhuli tier — any operator offers their own, and plugin drift is not grammar drift |
 
 ''The engine's preimage is not a region fold.'' `computeEngineCid` takes `(version, sha)` and excludes
@@ -109,6 +109,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;LZOA-uoKIsLryY7drqwS4eK_OB0xuPMuRIhR5Z5lL58
+<<^ code="&#x0003;">>ni:///sha-256;y-AS1toQFUgI7L_uPj4aZQ2x_eFV0i4TrO1S1pk4PQI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -309,7 +309,7 @@ desc  = "The deterministic oracle DocUrl derives from materializing the immutabl
 ```toml #GEN_3_IMMUTABLE_SEED
 id    = "GEN_3_IMMUTABLE_SEED"
 label = "Genesis bytes are immutable; updates produce a new genesis"
-desc  = "The genesis artifact stays immutable. A grammar version bump, tiddler update, or blob change MUST produce a new build with a new CID. Signed migration receipts (see grammar-pattern-integrities.md Pattern-Integrity 6) gate any future in-place upgrade path."
+desc  = "The genesis artifact stays immutable. An engine bump, a parser rebuild, a tiddler update, or a blob change MUST produce a new build with a new CID. Signed migration receipts (see grammar-pattern-integrities.md Pattern-Integrity 6) gate any future in-place upgrade path."
 ```
 
 ```toml #GEN_4_QUINE_PROPERTY
@@ -358,6 +358,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FLf-MWw3LDo2SaI5-taJyMbbK52tKcWhJsXpj-isioY
+<<^ code="&#x0003;">>ni:///sha-256;M56x6bxUqvSyfGPnVeK9MU_2XNlTB9_DB0EcR8jkeEw
 
 <<^ code="&#x0004;" -> to="?">>
