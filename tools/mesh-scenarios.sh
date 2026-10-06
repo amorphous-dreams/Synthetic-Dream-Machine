@@ -766,7 +766,7 @@ run_realm_crossing() {
     bad "B still reads a SEED — her own kept consent did not reach the phase"
     printf '      B reads: %s\n' "$(printf '%s' "$BPHASE" | grep -oE '"phase":\{"phase":"[a-z]+"' | head -1)"
     printf '      B board: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus members --list --json 2>&1 \
-        | grep -oE '"boardRoot":"[a-f0-9]*"|"members":\[[^]]*\]' | tr '\n' ' ')"
+        | grep -oE '"island":"[^"]*"|"members":\[[^]]*\]' | tr '\n' ' ')"
   fi
 
   # AND SHE NEVER CLAIMS THE ROSTER. A joiner sees her own relation; how many others joined is not

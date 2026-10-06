@@ -33,7 +33,6 @@ jobs:
     env:
       NODE_VERSION: "24"
       PNPM_VERSION: "11"
-      ARTIFACT_DIR: ${{ runner.temp }}/held-out/${{ matrix.driver }}
 
     steps:
       - uses: actions/checkout@v4
@@ -46,8 +45,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
+      # The runner context is unreadable in a job-level env block; the path is computed where it is.
       - name: Prepare held-out evidence directory
-        run: mkdir -p "$ARTIFACT_DIR"
+        run: |
+          dir="$RUNNER_TEMP/held-out/${{ matrix.driver }}"
+          mkdir -p "$dir"
+          echo "ARTIFACT_DIR=$dir" >> "$GITHUB_ENV"
       - name: Install workspace
         run: pnpm install --frozen-lockfile
       # The Docker files bind-mount this checkout and explicitly trust its host-built dist/. The
