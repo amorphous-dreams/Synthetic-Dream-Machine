@@ -103,8 +103,8 @@ nobody's grammar. Built at `@lararium/mesh` · `plugin-offering` · `offering-an
 ''An office attaches to the PLACE, never to the person.'' Rome's ''vicomagistri'' held a college seat at a ''compitum''; the office belonged to the vicus, the person rotated through, and the shrine kept standing.
 
 <<~ has Office Grant "what/a-quorum-countersigns subject/the-vessel's-PLACE-DID requires/the-vessel's-own-contractSig ~ bilateral; a Nexus conscripts nobody">>
-<<~ has Office Fence "what/boundEpoch >= effectiveLeaseEpoch scope/per-Nexus ~ the same comparison device-delegation already makes">>
-<<~ has Office Ending "how/non-renewal ~ nobody exercises a lowering act; a newer grant binds higher and the frontier rolls past the old">>
+<<~ has Office Fence "what/boundEpoch >= effectiveLeaseEpoch scope/per-PLACE writer/the-place-alone ~ the same comparison device-delegation makes, on the place's own lease resource (#/welded)">>
+<<~ has Office Ending "how/non-renewal-of-the-place's-lease ~ a seal roll asks only the holder to re-consent; only a quorum act on the deny board ends an office on purpose (#/welded)">>
 <<~ has Office Exception "when/a-malicious-self-renew rides/convergent-removal + kapae ~ never the counter">>
 
 !!! ★ THE KULEANA FACE RUNS TWO HALVES, AT TWO ADDRESSES ★
@@ -126,7 +126,7 @@ nobody's grammar. Built at `@lararium/mesh` · `plugin-offering` · `offering-an
 
 > ''a quorum gates the rare, slow, high-power act, and automation carries the frequent, fast, low-power one. A quorum placed in the renewal path gets bypassed inside one outage, and the bypass becomes permanent.''
 
-So the quorum ''seats'' an office (rare) and the ''renewal rides the lease-epoch roll'' (frequent), which any writer advances in its own per-writer slot. Rome ran it the same way: the election seats the magistri; tending the compitum daily needs no college.
+So the quorum ''seats'' an office (rare) and the ''renewal rides the place's own lease'' (frequent), which the place alone advances (#/welded). Rome ran it the same way: the election seats the magistri; tending the compitum daily needs no college.
 
 !!! And the office reaches NO archive
 
@@ -187,18 +187,28 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 <<~ set drift-ward="? · the fork between a cheap BILATERAL divergence instrument (shipped elsewhere, honest, already-solved) and a union-scale SCHISM sensor (structurally capped, blind where it matters most) belongs to the operator.">>
 
-!!! ⚠ AND THE OFFICE CANNOT END THE WAY THIS CARRIER SAYS IT ENDS
+!!! ★ THE OFFICE KEYS ON ITS PLACE ~ road (iii) ★
 
-''Both halves of `Office Fence` and `Office Ending` fail against the built mechanism.'' One lease fence carries ''every raise and every device edge''; `lease-rekey` states in its own header that rolling an epoch ''STALES every outstanding grant on that resource at once''; and `rolledLeaseEpoch` writes `effective + 1` into a NAMED WRITER's slot — so ''the roll IS a lowering act, and it carries a signer''.
+''The built fence refuses both naive keyings.'' One lease fence carries ''every raise and every device edge''; `lease-rekey` states in its own header that rolling an epoch ''STALES every outstanding grant on that resource at once''; and `rolledLeaseEpoch` writes `effective + 1` into a NAMED WRITER's slot — so ''the roll IS a lowering act, and it carries a signer''. Keyed per Nexus, non-renewal mass-stales the whole island; keyed per office with the holder in a writer slot, the holder self-renews forever.
 
-<<~moves office-ending -> UNRESOLVED on/the-built-fence if/scoped-per-Nexus do/non-renewal-mass-stales-the-whole-island>>
-<<~moves office-ending -> UNRESOLVED on/the-built-fence if/scoped-per-office do/the-holder-holds-a-writer-slot-and-self-renews-forever>>
+''Road (iii) splits the two halves an office carries, and gives each its own carrier.''
 
-''No third position stands in the mechanism as built.'' The fork turns on ONE unruled value — which `resourceId` an office grant passes to `leaseEpochPrefix` — and this carrier declines to pick it.
+<<~moves office/fence -> the-PLACE's-own-lease on/the-built-fence do/the-place-alone-writes-and-mints-it>>
+<<~moves office/seating -> the-Nexus's-seal-lineage if/the-issuing-seal-epoch-stands-an-ancestor-of-the-head do/the-seating-carries-across-the-roll>>
 
-''The consent ruling leaves this fork standing.'' Consent to a Nexus binds to its SEAL epoch, and a roll there forces re-consent (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-three-tiers">>); the office fence rides the LEASE epoch, and the two epochs never fuse (below). So the ruling settles when a contract-in lapses and says nothing about how an office ends.
+''The fence keys on the PLACE.'' The lease resource reads `office/<nexusId>/<placeDid>`, and the place stands as its sole writer and sole minter. No holder holds a slot in it, so no holder self-renews; no Nexus-wide roll touches it, so no island-wide mass-stale reaches it.
 
-''What the epoch rulings DO settle, and they hold firm'': the LEASE epoch (a scalar per-writer max-register) ''fences''; the SEAL epoch (a CID chain) ''records lineage''; ''the two never fuse''; the rolling-window reading stands ''STRUCK'' — a set answers //is this listed// and never //is this newer//, and a list of markers reads as a roster of moments; and ''the NEXUS fences, never the cabal'' — an epoch means nothing outside the island that rolls it.
+''The seating rides LINEAGE, never the head.'' The quorum's half carries across a seal roll by ancestry: the seal epoch it issued under MUST stand an ancestor of the current head. The holder re-consents over the new head. A seating rooted on a forked or non-ancestor branch dies.
+
+''Three endings, and only one on purpose.'' The place's lease ends an office by non-renewal; a seal roll asks only the holder to re-consent; a quorum act on the deny board — revoke, uncarry or kapae — ends it on purpose. ''Road (iv), forced re-seating, answers a change in the quorum's MEMBERSHIP'', never a routine key rotation.
+
+> ''INVARIANT —'' //An office is fenced by its place and seated by its Nexus's lineage: the place's lease ends it by non-renewal, a seal roll asks only the holder to re-consent, and only a quorum act on the deny board ends it on purpose.//
+
+''Owed in code.'' The carriage registry ends every office and every admit at every roll: its entry count compares an entry's `sealEpochCid` to the roster head by EQUALITY and refuses with `wrong-charter-epoch` (`packages/lararium-mesh/src/carriage-registry.ts`). The ruled shape owes an ancestry walk over the seal lineage for a seating, and the place-keyed lease resource for the fence. An admit fails closed at a roll, with no window; whether admits take the same ancestry rule stays a follow-up.
+
+''The field ships the split.'' KERI anchors an issuance in the key event log, and the issuance survives a later rotation. Canon law c.184 §2 keeps an office standing when the conferrer's authority lapses. The Demise of the Crown Act 1901 keeps an office held under the Crown from vacating on the sovereign's death. Viewstamped Replication and Vertical Paxos carry committed state across a view or configuration change rather than ending it. And Kleppmann's fencing tokens site the fence AT THE RESOURCE, which the place-keyed lease reproduces.
+
+''What the epoch rulings settle, and road (iii) honours'': the LEASE epoch (a scalar per-writer max-register) ''fences''; the SEAL epoch (a CID chain) ''records lineage''; ''the two never fuse''; the rolling-window reading stands ''STRUCK'' — a set answers //is this listed// and never //is this newer//, and a list of markers reads as a roster of moments; and ''the NEXUS fences, never the cabal'' — an epoch means nothing outside the island that rolls it.
 
 <<~/ahu>>
 
@@ -410,6 +420,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TC3ZhaLT5k6IH_KqZs1MI1neZTFz2cegkIfVAqezXYw
+<<^ code="&#x0003;">>ni:///sha-256;RsMnX4OasVHV4sPYPF6ATZYrX2X6QQVx3FzDVLb9v08
 
 <<^ code="&#x0004;" -> to="?">>
