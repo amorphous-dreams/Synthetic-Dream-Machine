@@ -14,18 +14,13 @@ projection target the island renders.
 import asyncio
 import json
 import os
-import shutil
 import socket
-import tempfile
 import threading
 
 import pytest
 
 import lares_uds as uds
 from lares_mcp import MEME_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat_of
-
-# Temp sockets live under the job's own tmp, never /tmp (the operator's ruling for this witness).
-_TMP = "/home/joshu/.claude/jobs/a3afb6c8/tmp"
 
 _URI = "lar:///ha.ka.ba/lares/api/pono/meme"
 _PUT_OUTPUT = {"uri": _URI, "decision": "ingest", "grade": "ok", "landed": [_URI], "tombstoned": [],
@@ -80,9 +75,10 @@ class _FakeDaemon:
 
 
 @pytest.fixture
-def daemon(monkeypatch):
-    os.makedirs(_TMP, exist_ok=True)
-    d = tempfile.mkdtemp(prefix="meme-uds-", dir=_TMP)
+def daemon(monkeypatch, tmp_path_factory):
+    # The socket sits in pytest's own per-run tmp, which every host can write. A short `mktemp` name keeps
+    # the path under the AF_UNIX limit (108 bytes) where a per-test `tmp_path` named after the test may not.
+    d = tmp_path_factory.mktemp("uds")
     fake = _FakeDaemon(os.path.join(d, "daemon.sock"))
     monkeypatch.setattr(uds, "socket_path", lambda: fake.path)
     monkeypatch.setattr(uds, "operator_did", lambda: "0xwitness")
@@ -90,7 +86,6 @@ def daemon(monkeypatch):
         yield fake
     finally:
         fake.close()
-        shutil.rmtree(d, ignore_errors=True)
 
 
 def _tools():
