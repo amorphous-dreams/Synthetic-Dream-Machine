@@ -251,21 +251,9 @@ export class AutomergeDocStore implements LarTiddlerStore {
     return automergeGetHeads(doc) as readonly string[];
   }
 
+  /** A put is a family of one: same skip-when-standing, same single change, same single fire. */
   async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    const title = record.tiddler.title;
-    const existing = this.handle.doc()?.tiddlers?.[title];
-    if (existing && _contentEquals(existing, record)) return;
-
-    this.handle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
-      const current = tiddlers[title];
-      if (current) {
-        _mergeRecord(current, record);
-        return;
-      }
-      tiddlers[title] = _cloneRecord(record) as MutableLarTiddlerRecord;
-    });
-    this.provider.fireImmediate({ title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
+    return this.writeFamily([record], [], origin);
   }
 
   /**
@@ -302,11 +290,9 @@ export class AutomergeDocStore implements LarTiddlerStore {
     for (const title of tombstones) this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...bag });
   }
 
+  /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */
   async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
-    this.handle.change((doc) => {
-      _markDeleted(doc.tiddlers as Record<string, MutableLarTiddlerRecord>, title);
-    });
-    this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
+    return this.writeFamily([], [title], origin);
   }
 
   /** HARD-remove: delete the key so `get` returns null (ABSENT — falls through

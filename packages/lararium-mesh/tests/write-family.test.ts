@@ -72,3 +72,35 @@ describe("★ a meme family lands as ONE change ★", () => {
     await expect(composite.writeFamily([rec(ROOT, "r")], [], origin, { bag: "bag-unmounted" })).rejects.toThrow(/no layer/);
   });
 });
+
+describe("a single put or tombstone is a family of one", () => {
+  test("put and tombstone each make one change and fire once; a standing put does neither", async () => {
+    const { store, changes } = await seeded();
+    const seen: string[] = [];
+    store.subscribe((c) => seen.push(`${c.record?.meta?.deleted ? "tombstone" : "put"} ${c.title}`));
+
+    let before = changes();
+    await store.put(rec(`${ROOT}#/old`, "old"), origin);   // content already stands
+    expect(changes()).toBe(before);
+    expect(seen).toEqual([]);
+
+    before = changes();
+    await store.put(rec(`${ROOT}#/a`, "a"), origin);
+    expect(changes() - before).toBe(1);
+
+    before = changes();
+    await store.tombstone(`${ROOT}#/old`, origin);
+    expect(changes() - before).toBe(1);
+
+    expect(seen).toEqual([`put ${ROOT}#/a`, `tombstone ${ROOT}#/old`]);
+  });
+
+  test("CONTROL — remove stays a hard delete: the key is absent and the fire carries no record", async () => {
+    const { store, doc } = await seeded();
+    const seen: Array<string | null> = [];
+    store.subscribe((c) => seen.push(c.record === null ? null : c.title));
+    await store.remove(`${ROOT}#/old`, origin);
+    expect(doc().tiddlers[`${ROOT}#/old`]).toBeUndefined();
+    expect(seen).toEqual([null]);
+  });
+});
