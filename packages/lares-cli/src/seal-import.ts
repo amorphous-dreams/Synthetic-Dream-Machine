@@ -1,5 +1,5 @@
 /**
- * seal-import — whether a partner's charter may land here.
+ * seal-import — whether a charter may land at the PRIMARY path.
  *
  * ── WHY THE PLACEMENT IS LOAD-BEARING ───────────────────────────────────────────────────────────
  * An operator cannot consent to a charter she has never seen, so the founding operator's public
@@ -12,8 +12,10 @@
  * no charter to lose — which is why nothing has met this yet.
  *
  * ── THE RULE ────────────────────────────────────────────────────────────────────────────────────
- * A charter arrives where none stands, or it refuses. Re-importing the same charter passes, because
- * an operator who repeats a step should not be punished for it, and repeating destroys nothing.
+ * At the PRIMARY path a charter arrives where none stands, or it refuses. Re-importing the same charter
+ * passes, because an operator who repeats a step should not be punished for it, and repeating destroys
+ * nothing. A partner's charter takes `--carry` instead and lands BESIDE the primary
+ * (`@lararium/node` `importCarriedCharter`), where a re-import moves forward along its own seal lineage.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/founding-runbook
  */
@@ -47,7 +49,8 @@ export function sealImportVerdict(at: { incoming: string; standing: string | nul
            why: `a DIFFERENT charter already stands here (${at.standing.slice(0, 12)}…), and this write would `
               + `replace it with ${at.incoming.slice(0, 12)}… — that destroys your own founding, and every `
               + "contract-in you signed afterwards would bind to the wrong epoch. A partner's charter belongs "
-              + "beside yours, never over it: point the import at a seal home this vessel did not found in." };
+              + "beside yours, never over it: `lares nexus seal import --carry <file>` lands it under its own "
+              + "Nexus AID and leaves this one standing." };
 }
 
 /** One chair as a charter carries it — seated when it holds a key, declared when it does not. */

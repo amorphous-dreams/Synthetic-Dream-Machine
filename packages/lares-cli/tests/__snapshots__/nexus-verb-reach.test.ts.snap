@@ -28,8 +28,10 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
                                             VESSEL-key seal. It NEVER enters the member set; its whole grant is
                                             the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)
   uncarry <place-vessel-key>                end a carrier contract (quorum-only)
-  members --list                            read the currently-admitted member set (the fold)
-  accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in
+  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never
+                                            authority (default: the primary charter's Nexus)
+  accept-carriage [--index N] [--nexus <aid>]  (joining operator) mint + keep the 'accepts carriage' contract-in
+                                            for one Nexus (default: the primary charter's)
   carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel
                                             key — reads no persona, because a crossroads holds none
   posture [private | open]                  read / flip the cross-Nexus federation posture
@@ -62,7 +64,10 @@ usage: lares nexus seal <seat | reserve | rotate | commit | show | export | impo
           --next-key-commit <digest-of-the-FOLLOWING-key-set>
           [--threshold <k>]  the quorum rule for the new roster (default: majority)
   commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>
-  show    read the current founding-kahu roster + chain head + quorum verdict
+  show    read the current founding-kahu roster + chain head + quorum verdict + the carried set
+  import <file>          land a charter at the primary path — only where none stands, or the same one
+  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
+                         that AID lands only when its seal lineage extends the held head
   reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:
           reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the
                           --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]

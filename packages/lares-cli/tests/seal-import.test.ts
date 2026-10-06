@@ -13,10 +13,24 @@
  * carries the file with `cp`, on a vessel that had no charter to lose, so nothing has ever met this.
  *
  * ── THE RULE ────────────────────────────────────────────────────────────────────────────────────
- * A charter arrives where none stands, or it refuses. Re-importing the SAME charter is not a
- * destruction and passes — an operator who runs a step twice should not be punished for it.
+ * At the PRIMARY path a charter arrives where none stands, or it refuses. Re-importing the SAME charter
+ * is not a destruction and passes — an operator who runs a step twice should not be punished for it.
+ * A partner's charter takes `--carry` and lands BESIDE the primary, under its own Nexus AID.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import * as ed from "@noble/ed25519";
+import { cmdNexus } from "../src/commands/nexus.js";
+import type { ParsedArgs } from "../src/parse-args.js";
+import { larSealHome } from "../src/env.js";
+import {
+  generateOrLoadPersonaGroupRoot, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
+} from "@lararium/node";
+import {
+  NEXUS_DOC_DOMAIN, hex, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, realmIdOfCharter, type NexusDoc,
+} from "@lararium/mesh";
 import { sealImportVerdict } from "../src/seal-import.js";
 
 const A = "epoch0-" + "a".repeat(64);
@@ -48,5 +62,135 @@ describe("seal-import — a charter arrives where none stands", () => {
   it("★ the refusal says where the charter SHOULD go, not only that it stopped ★", () => {
     const v = sealImportVerdict({ incoming: A, standing: B });
     expect(v.why.length).toBeGreaterThan(60);
+  });
+});
+
+// ── THE VERBS, in process over a real seal home ──────────────────────────────────────────────────
+//
+// `seal import --carry` lands a partner charter BESIDE the primary; plain `seal import` keeps the primary
+// rule; `accept-carriage --nexus` consents to one Nexus; `seal show` reports the carried set.
+
+const verb = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
+  ({ command: "nexus", positional, options, flags: { json: true, ...flags } });
+
+/** A charter over `keys` with a pre-rotated lineage `rotations` epochs past genesis. */
+function charter(keys: string[], rotations = 0): NexusDoc {
+  const lineage = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
+  let threshold = 2;
+  for (let i = 0; i < rotations; i++) {
+    const revealed = threshold === 2 ? 3 : 2;
+    const r = rotateSealEpoch(lineage[lineage.length - 1]!, keys, revealed, sealKeySetHash(keys, threshold));
+    if (!r.ok) throw new Error(r.reason);
+    lineage.push(r.epoch);
+    threshold = revealed;
+  }
+  return { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: lineage[lineage.length - 1]!.epochCid, sealLineage: lineage,
+           kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })) };
+}
+
+async function foreignKeys(salt: number): Promise<string[]> {
+  return Promise.all([1, 2, 3].map(async (i) => hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(salt + i)))));
+}
+
+/** Capture the one JSON payload a verb emits. */
+async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, unknown> }> {
+  const lines: string[] = [];
+  const log = vi.spyOn(console, "log").mockImplementation(() => {});
+  const err = vi.spyOn(console, "error").mockImplementation(() => {});
+  const out = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { lines.push(String(chunk)); return true; });
+  try {
+    const code = await cmdNexus(a);
+    const json = lines.find((l) => l.trim().startsWith("{"));
+    return { code, out: json ? JSON.parse(json) as Record<string, unknown> : {} };
+  } finally { log.mockRestore(); err.mockRestore(); out.mockRestore(); }
+}
+
+describe("lares nexus seal import --carry · accept-carriage --nexus · seal show (in process)", () => {
+  let root: string;
+  let prior: string | undefined;
+  let scratch: string;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), "lares-carry-cli-"));
+    scratch = mkdtempSync(join(tmpdir(), "lares-carry-src-"));
+    prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+  });
+  afterEach(() => {
+    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+    rmSync(root, { recursive: true, force: true });
+    rmSync(scratch, { recursive: true, force: true });
+  });
+
+  /** This vessel's own founding: three held roots seated at the primary path. */
+  async function found(): Promise<string[]> {
+    const keys = (await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)))).map((r) => r.verifyingKey);
+    writeNexusDoc(larSealHome(), charter(keys));
+    return keys;
+  }
+
+  function partnerFile(doc: NexusDoc, name = "partner.mem"): string {
+    const path = join(scratch, name);
+    writeFileSync(path, renderNexusDoc(doc), "utf8");
+    return path;
+  }
+
+  it("★ seal import --carry lands a partner charter BESIDE the primary and leaves its bytes identical ★", async () => {
+    await found();
+    const before = readFileSync(nexusCharterDocPath(larSealHome()));
+    const partner = charter(await foreignKeys(10));
+    const aid = realmIdOfCharter(partner)!;
+
+    const r = await run(verb(["seal", "import"], { carry: partnerFile(partner) }));
+    expect(r.code).toBe(0);
+    expect(r.out["data"]).toMatchObject({ aid, outcome: "landed" });
+    expect(readFileSync(nexusCharterDocPath(larSealHome())).equals(before)).toBe(true);
+    expect(existsSync(join(carriedCharterHome(larSealHome(), aid), "founding-roster.mem"))).toBe(true);
+  });
+
+  it("CONTROL — a plain seal import of a DIFFERENT charter over the standing primary still refuses", async () => {
+    await found();
+    const before = readFileSync(nexusCharterDocPath(larSealHome()));
+    const r = await run(verb(["seal", "import", partnerFile(charter(await foreignKeys(10)))]));
+    expect(r.code).toBe(3);
+    expect(String((r.out["error"] as { message?: string })?.message)).toMatch(/--carry/);
+    expect(readFileSync(nexusCharterDocPath(larSealHome())).equals(before)).toBe(true);
+  });
+
+  it("CONTROL — seal import --carry of a charter that does not extend the held head refuses", async () => {
+    await found();
+    const keys = await foreignKeys(10);
+    expect((await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 1), "head.mem") }))).code).toBe(0);
+    const r = await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 0), "behind.mem") }));
+    expect(r.code).toBe(3);
+    expect((r.out["error"] as { code?: string })?.code).toBe("refused");
+  });
+
+  it("★ accept-carriage --nexus consents to one Nexus, and seal show reports the carried set ★", async () => {
+    const keys = await found();
+    const primary = realmIdOfCharter(charter(keys))!;
+    const partner = charter(await foreignKeys(10));
+    const aid = realmIdOfCharter(partner)!;
+    await run(verb(["seal", "import"], { carry: partnerFile(partner) }));
+
+    const before = await run(verb(["seal", "show"]));
+    const carriedBefore = (before.out["data"] as { carried: Array<{ aid: string; carried: boolean }> }).carried;
+    expect(carriedBefore.map((c) => [c.aid, c.carried])).toEqual([[primary, true], [aid, false]]);   // seated · not consented
+
+    const c = await run(verb(["accept-carriage"], { nexus: aid }));
+    expect(c.code).toBe(0);
+    expect(c.out["data"]).toMatchObject({ aid, sealEpochCid: partner.sealEpochCid });
+    expect(readConsent(larSealHome(), aid)).not.toBeNull();
+
+    const after = await run(verb(["seal", "show"]));
+    const data = after.out["data"] as { carried: Array<{ aid: string; carried: boolean; consented: boolean }>; phase: { contractedInto?: boolean } };
+    expect(data.carried.map((x) => [x.aid, x.carried, x.consented])).toEqual([[primary, true, false], [aid, true, true]]);
+  });
+
+  it("CONTROL — accept-carriage and members --list for an AID this vessel holds no charter for refuse", async () => {
+    await found();
+    const ghost = "epoch0-" + "e".repeat(64);
+    expect((await run(verb(["accept-carriage"], { nexus: ghost }))).code).not.toBe(0);
+    expect((await run(verb(["members"], { nexus: ghost }, { list: true }))).code).not.toBe(0);
+    expect(readConsent(larSealHome(), ghost)).toBeNull();
   });
 });

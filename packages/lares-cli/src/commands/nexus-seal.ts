@@ -31,7 +31,7 @@
 import {
   readNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath, nexusCharterDocRelPath,
   listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
-  loadPersonaGroupRootSeed, runNexusMembersList, hasContractedInto,
+  loadPersonaGroupRootSeed, runNexusMembersList, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState,
 } from "@lararium/node";
 import {
@@ -78,7 +78,10 @@ const SEAL_USAGE: readonly string[] = [
   "          --next-key-commit <digest-of-the-FOLLOWING-key-set>",
   "          [--threshold <k>]  the quorum rule for the new roster (default: majority)",
   "  commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>",
-  "  show    read the current founding-kahu roster + chain head + quorum verdict",
+  "  show    read the current founding-kahu roster + chain head + quorum verdict + the carried set",
+  "  import <file>          land a charter at the primary path — only where none stands, or the same one",
+  "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
+  "                         that AID lands only when its seal lineage extends the held head",
   "  reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:",
   "          reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the",
   "                          --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]",
@@ -646,17 +649,20 @@ function sealExport(args: ParsedArgs): number {
 }
 
 /**
- * `lares nexus seal import <file>` — place a partner's charter, and refuse to destroy your own.
+ * `lares nexus seal import <file>` — place a charter at the PRIMARY path, and refuse to destroy your own.
+ * `lares nexus seal import --carry <file>` — place a PARTNER's charter BESIDE the primary.
  *
- * `accept-carriage` signs a contract-in against whatever charter stands in the seal home it reads, so
- * dropping a partner's roster over your own does not add a file — it REPLACES a founding, and every
- * contract-in signed afterwards binds to the wrong epoch. The crossing witness carries this file with
- * `cp` onto a vessel that had no charter to lose, which is why nothing has met the destructive case.
+ * The primary path holds the one charter the realm plane and the board climb read, so a plain import lands
+ * only where none stands or where the same charter already stands: dropping a partner's roster there would
+ * REPLACE a founding. A partner charter takes `--carry`, which lands it at `carried/<aid>/` and leaves the
+ * primary's bytes untouched; `accept-carriage --nexus <aid>` then consents to it.
  */
 function sealImport(args: ParsedArgs): number {
+  const carry = args.options["carry"];
+  if (carry !== undefined) return sealImportCarry(args, carry);
   const from = args.positional[2] ?? "";
   if (!from) {
-    console.error("usage: lares nexus seal import <path-to-founding-roster.mem>");
+    console.error("usage: lares nexus seal import <path-to-founding-roster.mem> | --carry <path>");
     return 2;
   }
   let incomingRaw: string;
@@ -689,6 +695,35 @@ function sealImport(args: ParsedArgs): number {
   return 0;
 }
 
+/**
+ * `seal import --carry <file>` — land a partner charter beside the primary, under its Nexus AID. Refuses,
+ * writing nothing, when the charter carries no verified head, names this vessel's own Nexus, or — for an AID
+ * already held — does not extend the held seal lineage.
+ */
+function sealImportCarry(args: ParsedArgs, from: string): number {
+  let raw: string;
+  try { raw = readFileSync(from, "utf8"); }
+  catch { console.error(`lares nexus seal import --carry: cannot read ${from}`); return 4; }
+  try {
+    const r = importCarriedCharter(larSealHome(), raw);
+    emit(args, {
+      ok: true, data: { from, dest: r.path, aid: r.aid, epoch: r.sealEpochCid, outcome: r.outcome },
+      human: () => {
+        console.log(`carried → ${r.path}`);
+        console.log(`  nexus:  ${r.aid}`);
+        console.log(`  head:   ${r.sealEpochCid} (${r.outcome})`);
+        console.log(`  your primary charter is untouched. Consent with: lares nexus accept-carriage --nexus ${r.aid}`);
+      },
+    });
+    return 0;
+  } catch (err) {
+    if (!(err instanceof CarriedCharterError)) throw err;
+    emit(args, { ok: false, error: { code: "refused", message: err.message },
+                 data: { from }, human: () => console.error(`lares nexus seal import --carry: ${err.message}`) });
+    return 3;
+  }
+}
+
 async function sealShow(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
   const doc = readNexusDoc(sealHome);
@@ -701,8 +736,12 @@ async function sealShow(args: ParsedArgs): Promise<number> {
   // members read as none, which keeps the phase honest rather than optimistic.
   let contracted = 0;
   try { contracted = (await runNexusMembersList({ sealHome })).members.length; } catch { contracted = 0; }
-  // This vessel's own consent, bound to the epoch that stands — a stale one grants nothing.
-  const joined = await hasContractedInto(sealHome);
+  // THE CARRIED SET. One reading per charter this vessel holds, primary first. A Nexus stands in the set by a
+  // consent verified at its held head or by a seated chair; a consent behind the head counts for nothing.
+  const carried = await carriedReadings(sealHome);
+  // This vessel's own consent to SOME Nexus — the joining half of a relation. A seated chair is a founding,
+  // not a joining, so only a consent moves the phase here.
+  const joined = carried.some((c) => c.consented);
 
   emit(args, {
     ok: true,
@@ -727,11 +766,22 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       // seed forever, unable to see the relation it is standing in.
       phase: nexusPhase({ seatedKeys: roster.keys.length, contractedOperators: contracted, contractedInto: joined }),
       kahu: (doc?.kahu ?? []).map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey) })),
+      carried: carried.map((c) => ({ aid: c.aid, primary: c.primary, sealEpochCid: c.sealEpochCid || null,
+                                     consented: c.consented, seated: c.seated, carried: c.carried })),
     },
     human: () => {
+      const printCarried = (): void => {
+        const inSet = carried.filter((c) => c.carried);
+        console.log(`  carried:    ${inSet.length} Nexus(es) of ${carried.length} charter(s) held`);
+        for (const c of carried) {
+          const why = c.seated && c.consented ? "seated + consented" : c.seated ? "seated chair" : c.consented ? "consented" : "NOT carried — no consent at the held head";
+          console.log(`    ${c.carried ? "●" : "○"} ${c.aid.slice(0, 24)}…  ${c.primary ? "primary" : "carried"} · ${why}`);
+        }
+      };
       if (!doc) {
         console.log(`no nexus doc — run \`lares nexus seal seat\` (the antigen stays inert until a quorum stands).`);
         console.log(`  expected at: ${nexusCharterDocPath(sealHome)}`);
+        if (carried.length > 0) printCarried();
         return;
       }
       console.log(`nexus seal (${nexusCharterDocPath(sealHome)}):`);
@@ -755,6 +805,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       }
       console.log(`  posture:    ${federationPostureFromDoc(doc)} (cross-Nexus federation — default private)`);
       const reserve = readCharterReserveState();
+      printCarried();
       console.log(`  reserve:    ${reserve ? `commit ${reserve.nextKeyCommit.slice(0, 16)}… (epoch ${reserve.reserveEpoch}, guardians ${reserve.guardianA ?? "unassigned"}/${reserve.guardianB ?? "unassigned"})` : "(none — run `lares nexus seal reserve` to custody the pre-rotation)"}`);
     },
   });

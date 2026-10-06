@@ -71,8 +71,10 @@ const NEXUS_USAGE: readonly string[] = [
   "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
   "                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)",
   "  uncarry <place-vessel-key>                end a carrier contract (quorum-only)",
-  "  members --list                            read the currently-admitted member set (the fold)",
-  "  accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in",
+  "  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never",
+  "                                            authority (default: the primary charter's Nexus)",
+  "  accept-carriage [--index N] [--nexus <aid>]  (joining operator) mint + keep the 'accepts carriage' contract-in",
+  "                                            for one Nexus (default: the primary charter's)",
   "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
   "                                            key — reads no persona, because a crossroads holds none",
   "  posture [private | open]                  read / flip the cross-Nexus federation posture",
@@ -332,25 +334,32 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
   }
 }
 
-/** `lares nexus members --list` folds the currently-admitted operator member set off the members board. */
+/**
+ * `lares nexus members --list [--nexus <aid>]` folds one Nexus's members board — the public RECORD of the
+ * admits its kahu signed, as this replica last synced it. It grants nothing. `--nexus` names a Nexus this
+ * vessel holds a charter for (primary or carried); the default is the primary charter's.
+ */
 async function cmdMembers(args: ParsedArgs): Promise<number> {
   if (!args.flags["list"]) {
-    console.error("usage: lares nexus members --list");
+    console.error("usage: lares nexus members --list [--nexus <aid>]");
     return 2;
   }
+  const aid = args.options["nexus"];
   try {
-    const r = await runNexusMembersList({ sealHome: larSealHome() });
+    const r = await runNexusMembersList({ sealHome: larSealHome(), ...(aid !== undefined ? { aid } : {}) });
     emit(args, {
       ok: true,
       data: {
         sealEpochCid: r.sealEpochCid || null, threshold: r.threshold,
         // WHOSE board this fold read. A members list is meaningless without it: the board is a shared
-        // doc addressed by a key, so the same command on two vessels can fold two different Nexuses.
-        boardRoot: r.boardRoot,
+        // doc addressed by the island, so the same command on two vessels can fold two different Nexuses.
+        aid: r.aid, island: r.island,
         seatedKeys: r.seatedKeys, members: r.members, entries: r.entries,
       },
       human: () => {
-        console.log(`nexus members — the carriage-contracts board fold:`);
+        console.log(`nexus members — the carriage-contracts board, a public record of admits (never authority):`);
+        console.log(`  nexus:      ${r.aid ?? "(no charter — a private nexus of one)"}`);
+        console.log(`  island:     ${r.island}`);
         console.log(`  epoch:      ${r.sealEpochCid || "(unseated — the registry stays inert)"}`);
         console.log(`  quorum:     ${r.threshold}-of-N · seated keys: ${r.seatedKeys}`);
         // "as of last sync" rides the label, never the reader's assumption. An EMPTY fold especially: a
@@ -372,9 +381,11 @@ async function cmdMembers(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares nexus accept-carriage [--index N]` — run by the JOINING operator on their OWN vessel: mint the
- * "accepts carriage" contract-in token the kahu supply to `nexus contract --sig <hex>`. The consent-first
- * seal (track contracts, never identities): the operator signs its pubkey + the charter epoch, nothing more.
+ * `lares nexus accept-carriage [--index N] [--nexus <aid>]` — run by the JOINING operator on their OWN vessel:
+ * mint the "accepts carriage" contract-in token the kahu supply to `nexus contract --sig <hex>`, and keep a
+ * copy for that one Nexus. The consent-first seal (track contracts, never identities): the operator signs its
+ * per-Nexus leaf + that charter's head epoch, nothing more. `--nexus` names a charter this vessel holds,
+ * primary or carried (`seal import --carry`); the default is the primary charter's Nexus.
  */
 async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
   const idxRaw = args.options["index"];
@@ -384,12 +395,14 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
     return 2;
   }
   try {
-    const r = await runNexusAcceptCarriage({ handleIndex, sealHome: larSealHome() });
+    const aid = args.options["nexus"];
+    const r = await runNexusAcceptCarriage({ handleIndex, sealHome: larSealHome(), ...(aid !== undefined ? { aid } : {}) });
     emit(args, {
       ok: true,
-      data: { nym: r.nym, sealEpochCid: r.sealEpochCid, contractSig: r.contractSig },
+      data: { aid: r.aid, nym: r.nym, sealEpochCid: r.sealEpochCid, contractSig: r.contractSig },
       human: () => {
         console.log(`nexus accept-carriage — signed the 'accepts carriage' contract-in (persona index ${handleIndex}):`);
+        console.log(`  nexus:        ${r.aid}`);
         console.log(`  your nym:     ${r.nym}`);
         console.log(`  epoch:        ${r.sealEpochCid}`);
         console.log(`  contract-sig: ${r.contractSig}`);
