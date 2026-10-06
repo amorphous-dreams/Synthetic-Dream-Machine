@@ -58,7 +58,6 @@ export interface KeyhiveIdentitySlotOpts {
  * audience ingests over the federation transport.
  */
 interface KeyhiveTokenPayload {
-  readonly v: 1;
   readonly delegationId: string;
   readonly audience:     string;
   readonly bagUrl:       string;
@@ -119,7 +118,6 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
       access:   accessFor(ability),
     });
     const payload: KeyhiveTokenPayload = {
-      v:            1,
       delegationId: result.delegationId,
       audience:     toDid,
       bagUrl:       docUrl,
@@ -153,7 +151,7 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
     } catch {
       return false;                     // unparseable token = deny
     }
-    if (payload.v !== 1)          return false;
+    if (typeof payload !== "object" || payload === null) return false;   // a body that names nothing = deny
     if (payload.bagUrl !== docUrl) return false;   // token scoped to another bag
     if (payload.expiresAtMs !== null && Date.now() > payload.expiresAtMs) return false;
 

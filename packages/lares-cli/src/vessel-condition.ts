@@ -36,14 +36,6 @@ export type VesselState =
   /** Not serving. */
   | "down";
 
-/**
- * Machine envelope version, carried from the first day rather than retrofitted.
- *
- * Terraform's two rules ride with it: ignore unknown properties within a major, reject an unsupported
- * major. A payload two independent readers already parse costs an order of magnitude more to version later.
- */
-export const CONDITION_FORMAT_VERSION = "1.0";
-
 /** Partial success — the vessel moved, and did not arrive. Distinct from both 0 and 1. */
 export const EXIT_PARTIAL = 3;
 
@@ -59,7 +51,6 @@ export interface VesselCondition {
   readonly reason:        string;
   /** What a human READS. Never the thing code keys on. */
   readonly message:       string;
-  readonly formatVersion: string;
 }
 
 /**
@@ -88,7 +79,6 @@ export function vesselCondition(
     state:         input.state,
     reason:        input.reason,
     message:       input.message,
-    formatVersion: CONDITION_FORMAT_VERSION,
   });
 }
 

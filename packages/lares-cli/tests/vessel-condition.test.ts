@@ -151,13 +151,18 @@ describe("exit codes carry the same four states outward", () => {
   });
 });
 
-describe("the machine envelope carries a version from its first day", () => {
-  test("every condition names a format version", () => {
-    // Terraform's two rules, adopted before a second reader exists: ignore unknown properties within a
-    // major, reject an unsupported major. Retrofitting this after a browser and an MCP client both parse
-    // the payload costs an order of magnitude more than carrying it now.
+describe("the machine envelope carries its shape and no counter", () => {
+  test("a condition holds exactly state, reason and message", () => {
+    // A version field claims an ordering of shapes that no two readers share, and nothing ever read this
+    // one. A reader keys on the fields it knows and ignores the rest; a new shape adds a field, never a
+    // number. The `ok` reading stays derived, so it never rides the envelope either.
     const c = vesselCondition({ state: "standing", reason: "accepting", message: "m" });
-    expect(c.formatVersion).toMatch(/^\d+\.\d+$/);
+    expect(Object.keys(c).sort()).toEqual(["message", "reason", "state"]);
+  });
+
+  test("CONTROL: the envelope still carries what a caller branches on", () => {
+    const c = vesselCondition({ state: "rising", reason: "socket-silent", message: "m" });
+    expect([c.state, c.reason, c.message]).toEqual(["rising", "socket-silent", "m"]);
   });
 });
 
