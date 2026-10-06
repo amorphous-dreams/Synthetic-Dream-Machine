@@ -38,6 +38,7 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   hex, genesisSealEpochCid, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
+  deriveNexusScopedKey, realmIdOfCharter, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc, type KahuRoster, type CarriageEntry,
 } from "@lararium/mesh";
 import {
@@ -110,6 +111,17 @@ async function standHearth(root: string, threshold = 2): Promise<Hearth> {
   });
 }
 
+/**
+ * The leaf persona h0 of the hearth at `root` presents to the Nexus whose charter stands in `sealHome` —
+ * derived straight off the mesh primitive, so the expectation never borrows the code under test.
+ */
+async function leafAt(root: string, sealHome: string): Promise<string> {
+  const aid = realmIdOfCharter(readNexusDoc(sealHome));
+  if (!aid) throw new Error("no charter stands to derive a leaf for");
+  return asRoot(root, async () => (await deriveNexusScopedKey(
+    await loadPersonaGroupRootSeed(0), 0, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase());
+}
+
 /** hex → bytes (test-local; the mesh keeps its own private one). */
 function hexToBytes(h: string): Uint8Array {
   const clean = h.toLowerCase();
@@ -152,12 +164,18 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     expect(A.epoch).not.toBe(B.epoch);
 
     // ── Direction 1: Freyja (B) accepts carriage into A's nexus; Josh's (A) kahu admit her onto board A. ──
+    // Each operator presents a per-Nexus LEAF of her persona — never the PersonaGroup root, and a
+    // different key to each island she stamps into.
+    const freyjaAtA = await leafAt(rootB, A.bags);
+    const joshAtB   = await leafAt(rootA, B.bags);
+    expect(freyjaAtA).not.toBe(B.operatorNym);
+
     const tokenF = await asRoot(rootB, () => runNexusAcceptCarriage({ handleIndex: 0, sealHome: A.bags }));
-    expect(tokenF.nym).toBe(B.operatorNym);        // signed with Freyja's own seed
+    expect(tokenF.nym).toBe(freyjaAtA);            // signed with Freyja's own leaf for A's island
     expect(tokenF.sealEpochCid).toBe(A.epoch);  // bound to the OTHER hearth's charter epoch (the wax-stamp)
 
     const admitF = await asRoot(rootA, () =>
-      runNexusContract({ action: "admit", nym: B.operatorNym, contractSig: tokenF.contractSig, sealHome: A.bags }));
+      runNexusContract({ action: "admit", nym: freyjaAtA, contractSig: tokenF.contractSig, sealHome: A.bags }));
     expect(admitF.contractIn).toBe("supplied");            // the joiner's out-of-band consent, not a self-sign
     expect(admitF.sealEpochCid).toBe(A.epoch);          // the entry binds A's epoch cid (provenance)
     expect(admitF.signers).toHaveLength(2);                // exactly the 2-of-3 founding-kahu quorum
@@ -165,11 +183,11 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
 
     // ── Direction 2: Josh (A) accepts carriage into B's nexus; Freyja's (B) kahu admit him onto board B. ──
     const tokenJ = await asRoot(rootA, () => runNexusAcceptCarriage({ handleIndex: 0, sealHome: B.bags }));
-    expect(tokenJ.nym).toBe(A.operatorNym);
+    expect(tokenJ.nym).toBe(joshAtB);
     expect(tokenJ.sealEpochCid).toBe(B.epoch);
 
     const admitJ = await asRoot(rootB, () =>
-      runNexusContract({ action: "admit", nym: A.operatorNym, contractSig: tokenJ.contractSig, sealHome: B.bags }));
+      runNexusContract({ action: "admit", nym: joshAtB, contractSig: tokenJ.contractSig, sealHome: B.bags }));
     expect(admitJ.contractIn).toBe("supplied");
     expect(admitJ.memberHeld).toBe(true);
 
@@ -181,7 +199,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
       const holder = makeNexusMembership({
         sealHome: A.bags, nexusPubkey: A.nexusPubkey, repo,
         peerIdentifierMap: new Map<string, string>([
-          ["peer-b",        `prefix:${B.operatorNym}`],   // the peer operator → MEMBER (members{} write)
+          ["peer-b",        `prefix:${freyjaAtA}`],       // the peer operator → MEMBER (members{} write)
           ["peer-stranger", `prefix:${strangerNym}`],     // never admitted → STRANGER
         ]),
       });
@@ -191,7 +209,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
       holder.dispose();
 
       const list = await runNexusMembersList({ sealHome: A.bags });
-      expect(list.members).toContain(B.operatorNym);
+      expect(list.members).toContain(freyjaAtA);
       expect(list.members).not.toContain(strangerNym);
     });
 
@@ -199,14 +217,14 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
       const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
       const holder = makeNexusMembership({
         sealHome: B.bags, nexusPubkey: B.nexusPubkey, repo,
-        peerIdentifierMap: new Map<string, string>([["peer-a", `prefix:${A.operatorNym}`]]),
+        peerIdentifierMap: new Map<string, string>([["peer-a", `prefix:${joshAtB}`]]),
       });
       await holder.refold();
       expect(holder.membership.holdsCarriagePeer("peer-a")).toBe(true);        // B folds A IN
       holder.dispose();
 
       const list = await runNexusMembersList({ sealHome: B.bags });
-      expect(list.members).toContain(A.operatorNym);
+      expect(list.members).toContain(joshAtB);
     });
   });
 

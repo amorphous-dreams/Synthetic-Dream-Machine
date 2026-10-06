@@ -22,10 +22,12 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed, type NexusDoc } from "@lararium/mesh";
+import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
+  deriveNexusScopedKey, realmIdOfCharter, signerClass, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, PERSONA_GLAMOUR_CONTEXT,
+  type NexusDoc } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
-import { writeNexusDoc } from "../src/nexus-doc.js";
+import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError,
   hasContractedInto, readCarriageConsent, carriageConsentPath } from "../src/commands/nexus-contract.js";
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
@@ -53,6 +55,17 @@ afterEach(async () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+/**
+ * The per-Nexus leaf a held persona presents to the charter standing in the seal home — derived here
+ * straight off the mesh primitive, so the expectation never borrows the code under test.
+ */
+async function leafOf(handleIndex: number): Promise<string> {
+  const aid = realmIdOfCharter(readNexusDoc(sealHome()));
+  if (!aid) throw new Error("no charter stands to derive a leaf for");
+  const seed = await loadPersonaGroupRootSeed(handleIndex);
+  return (await deriveNexusScopedKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase();
+}
+
 function seatCharter(keys: string[], threshold = 2): void {
   const doc: NexusDoc = {
     kind: NEXUS_DOC_DOMAIN, threshold,
@@ -72,9 +85,11 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     // The vessel holds 4 persona-roots: 0-2 are the founding kahu; 3 is the joining operator it self-contracts.
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
-    const joinerNym = roots[3]!.verifyingKey.toLowerCase();
+    const joinerNym = await leafOf(3);   // the persona's per-Nexus leaf, never its PersonaGroup root
+    expect(joinerNym).not.toBe(roots[3]!.verifyingKey.toLowerCase());
 
     const res = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    expect(res.nym).toBe(joinerNym);
     expect(res.parents).toEqual([]);
     expect(res.evidenceCid).toMatch(/^[0-9a-f]{64}$/);
     expect(res.signers).toHaveLength(2);       // exactly the 2-of-3 quorum
@@ -94,6 +109,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     // The joiner mints its 'accepts carriage' token (index 3 on this same vessel stands in for the joiner's vessel).
     const token = await runNexusAcceptCarriage({ handleIndex: 3, sealHome: sealHome() });
+    expect(token.nym).toBe(await leafOf(3));
     const res = await runNexusContract({ action: "admit", nym: token.nym, contractSig: token.contractSig, sealHome: sealHome() });
     expect(res.contractIn).toBe("supplied");
     expect(res.memberHeld).toBe(true);
@@ -103,7 +119,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
-    const joinerNym = roots[3]!.verifyingKey.toLowerCase();
+    const joinerNym = await leafOf(3);
 
     await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const rev = await runNexusContract({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
@@ -119,7 +135,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
-    const joinerNym = roots[3]!.verifyingKey.toLowerCase();
+    const joinerNym = await leafOf(3);
 
     const first = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const ownVesselKey = await loadVesselVerifyingKey();
@@ -174,6 +190,75 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     await expect(runNexusContract({ action: "admit", nym: foreign, sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);   // no contract-in obtainable → refuse
   });
+
+  it("★ a ROOT-nym admit with self-sign REFUSES — no held leaf matches a PersonaGroup root ★", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    await expect(runNexusContract({ action: "admit", nym: roots[3]!.verifyingKey, sealHome: sealHome() }))
+      .rejects.toBeInstanceOf(NexusContractError);
+    expect((await runNexusMembersList({ sealHome: sealHome() })).entries).toHaveLength(0);
+  });
+});
+
+describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup root", () => {
+  async function standKahu(): Promise<string[]> {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    return roots.map((r) => r.verifyingKey);
+  }
+
+  it("★ one persona at two Nexus AIDs presents two nyms ★", async () => {
+    const keys = await standKahu();
+    seatCharter(keys, 2);
+    const atA = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
+    seatCharter(keys, 3);                       // a different genesis — a different island
+    const atB = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
+    expect(atA.sealEpochCid).not.toBe(atB.sealEpochCid);
+    expect(atA.nym).not.toBe(atB.nym);
+  });
+
+  it("★ one Nexus across a seal ROTATION keeps one nym — the AID is the genesis epoch ★", async () => {
+    const keys = await standKahu();
+    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3));
+    const kahu = keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
+    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu });
+    const before = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
+
+    const rotated = rotateSealEpoch(genesis, keys, 3, sealKeySetHash(keys, 2));
+    if (!rotated.ok) throw new Error(rotated.reason);
+    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 3, sealEpochCid: rotated.epoch.epochCid,
+      sealLineage: [genesis, rotated.epoch], kahu });
+    const after = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
+
+    expect(after.sealEpochCid).not.toBe(before.sealEpochCid);   // the frontier moved …
+    expect(after.nym).toBe(before.nym);                         // … and the island kept its leaf
+  });
+
+  it("★ accept-carriage emits a nym signerClass reads as NEXUS-SCOPED: publishable, linking nothing ★", async () => {
+    const keys = await standKahu();
+    seatCharter(keys);
+    const token = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
+    const reading = signerClass(token.nym, {
+      personaGroupRoots: keys, veiledHandles: [], vesselKeys: [await loadVesselVerifyingKey()],
+      nexusScopedKeys: [await leafOf(0)],
+    });
+    expect(reading.klass).toBe("nexus-scoped");
+    expect(reading.publishable).toBe(true);
+    expect(reading.crossCircleLinkable).toBe(false);
+  });
+
+  it("★ a self-sign admit of a held persona lands the LEAF as the member ★", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    const leaf = await leafOf(3);
+    const res = await runNexusContract({ action: "admit", nym: leaf, sealHome: sealHome() });
+    expect(res.contractIn).toBe("self");
+    const list = await runNexusMembersList({ sealHome: sealHome() });
+    expect(list.members).toContain(leaf);
+    expect(list.members).not.toContain(roots[3]!.verifyingKey.toLowerCase());
+  });
 });
 
 describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SELF-SLOT-B lit)", () => {
@@ -182,7 +267,7 @@ describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SE
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const kahuNym   = roots[0]!.verifyingKey.toLowerCase();
-    const joinerNym = roots[3]!.verifyingKey.toLowerCase();
+    const joinerNym = await leafOf(3);
 
     // Contract-in + admit the non-kahu operator onto the board.
     await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
@@ -296,7 +381,19 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     expect(await hasContractedInto(sealHome())).toBe(false);
   });
 
-  it("★ ANOTHER operator's genuine consent is refused — the nym must be a root this vessel holds ★", async () => {
+  it("★ a genuine consent signed by this vessel's own ROOT is refused — the nym must be a held leaf ★", async () => {
+    const keys = await threeKeys();
+    seatCharter(keys);
+    const epoch = genesisSealEpochCid(keys, 2);
+    const q = await signCarriageContract(keys[0]!.toLowerCase(), epoch, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(0)));
+    const consent = { nym: keys[0]!.toLowerCase(), sealEpochCid: epoch, contractSig: q.sig };
+    expect(await verifyCarriageConsent(consent)).toBe(true);   // the seal is real …
+    mkdirSync(dirname(carriageConsentPath(sealHome())), { recursive: true });
+    writeFileSync(carriageConsentPath(sealHome()), JSON.stringify(consent), "utf8");
+    expect(await hasContractedInto(sealHome())).toBe(false);   // … and names a root, which no stamp carries
+  });
+
+  it("★ ANOTHER operator's genuine consent is refused — the nym must be a leaf this vessel holds ★", async () => {
     // The half that verification alone misses. The seal is real; it just names somebody else's hand,
     // and copying it here would claim a relation another party entered.
     const keys = await threeKeys();

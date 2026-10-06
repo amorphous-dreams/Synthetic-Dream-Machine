@@ -7,8 +7,18 @@
  * TWO WAX-SEALS ride an ADMIT (membership-doctrine):
  *   · the OPERATOR's own "accepts carriage" contract-sig (the contract-in). Either the joining operator produced
  *     it out-of-band (`lares nexus accept-carriage` → a token supplied via `contractSig`), OR — the a-multitude-
- *     of-one ceremony — the vessel HOLDS the admitted nym's persona seed and self-signs it. FAIL CLOSED: no valid
- *     contract-in → REFUSE. A Nexus cannot conscript an operator into carriage; the operator consents first.
+ *     of-one ceremony — the vessel HOLDS a persona whose per-Nexus leaf IS the admitted nym and self-signs with
+ *     that leaf. FAIL CLOSED: no valid contract-in → REFUSE. A Nexus cannot conscript an operator into
+ *     carriage; the operator consents first.
+ *
+ * THE SUBJECT IS A PER-NEXUS LEAF, never a PersonaGroup root (`nexus-leaf`). The members board travels, so
+ * the nym it carries is published; a leaf presents a different key to each Nexus and the same key to one
+ * Nexus across a seal rotation, where a root would name the human's device-group on every island at once.
+ *
+ * THE ONE EXCEPTION, NAMED AND OWED: the kahu quorum signs with the persona-ROOTS seated in the charter,
+ * because the charter seats roots and a quorum signature counts only against seated keys. The charter
+ * therefore still publishes those roots; moving its seats onto leaves re-founds the charter epoch, which is
+ * a founding act rather than a wiring one.
  *   · ≥ threshold founding-kahu quorum signatures (the steward act — identical to the antigen's).
  * A REVOKE needs the kahu quorum ONLY (an uncooperative member cannot veto its own removal).
  *
@@ -33,17 +43,18 @@ import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract, verifyCarriageConsent,
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet, foldCarrierSet,
   holdsCarriage, holdsCarrier, foundingRoster,
-  carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
+  carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
   type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
 
 import {
-  listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
+  listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, personaRootExists,
   loadVesselVerifyingKey, loadVesselSigningSeed,
 } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
+import { heldNexusLeaves, nexusLeafFor } from "../nexus-leaf.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -55,7 +66,7 @@ export interface NexusContractOptions {
   readonly action:     CarriageAction;
   readonly nym:        string;
   /** The joining operator's "accepts carriage" contract-sig hex (from `nexus accept-carriage`). Admit only;
-   *  optional when the vessel holds the nym's own persona seed (multitude-of-one self-sign). */
+   *  optional when the nym is a per-Nexus leaf of a persona this vessel holds (multitude-of-one self-sign). */
   readonly contractSig?: string;
   /** The joining PLACE's carrier seal hex, signed by its own device-minted VESSEL key (`nexus carry-for` on
    *  that place). `carry` only, and REQUIRED there: this path reads NO persona seed and mints NO root, so
@@ -99,6 +110,15 @@ function seatedRosterOrRefuse(sealHome: string): KahuRoster {
   return roster;
 }
 
+/** The Nexus AID a subject's leaf derives under — the charter's genesis epoch, fixed across rotation. */
+function nexusAidOrRefuse(sealHome: string): string {
+  const aid = realmIdOfCharter(readNexusDoc(sealHome));
+  if (!aid) {
+    throw new NexusContractError("no seated charter to name the Nexus by — a per-Nexus leaf derives from the charter's genesis epoch.");
+  }
+  return aid;
+}
+
 /**
  * Resolve the ≥ threshold HELD persona-roots that sit IN the seated roster — the kahu signers the operator can
  * bring to this quorum. FAIL CLOSED: fewer than `threshold` matching held roots REFUSES (no sub-quorum admit is
@@ -131,7 +151,8 @@ async function selectHeldQuorumSigners(
 /**
  * Obtain the operator's "accepts carriage" contract-sig for an ADMIT. Two paths, fail-closed:
  *   · a `--contract <hex>` token supplied out-of-band → wrap it { signer: nym, sig } (the fold verifies it).
- *   · else, if the vessel HOLDS the nym's persona seed (multitude-of-one) → self-sign the carriage token.
+ *   · else, if the nym is the per-Nexus leaf of a persona this vessel HOLDS (multitude-of-one) → self-sign the
+ *     carriage token with that leaf. A root nym matches no leaf, so it never self-signs.
  * Neither → REFUSE (never admit an operator that has not consented to carriage).
  */
 async function resolveContractIn(
@@ -140,19 +161,16 @@ async function resolveContractIn(
   if (opts.contractSig) {
     return { contractSig: { signer: nym, sig: opts.contractSig.trim().toLowerCase() }, how: "supplied" };
   }
-  // multitude-of-one: does this vessel hold the admitted nym's seed? Then self-sign the carriage token.
-  for (const handleIndex of await listPersonaRoots()) {
-    const root = await generateOrLoadPersonaGroupRoot(handleIndex);
-    if (root.verifyingKey.toLowerCase() !== nym) continue;
-    const contractSig = await signCarriageContract(
-      nym, sealEpochCid, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)),
-    );
+  // multitude-of-one: is the admitted nym one of this vessel's leaves for this Nexus? Then self-sign with it.
+  for (const leaf of await heldNexusLeaves(nexusAidOrRefuse(opts.sealHome))) {
+    if (leaf.verifyingKey !== nym) continue;
+    const contractSig = await signCarriageContract(nym, sealEpochCid, ed25519SignerFromSeed(leaf.seed));
     return { contractSig, how: "self" };
   }
   throw new NexusContractError(
     "admit REFUSED (fail-closed): no operator contract-in. The joining operator must sign 'accepts carriage' " +
-    "(`lares nexus accept-carriage` on their vessel) and supply the token via --contract, OR this vessel must " +
-    "hold the admitted persona's own seed. A Nexus never conscripts an operator into carriage.",
+    "(`lares nexus accept-carriage` on their vessel) and supply the token via --contract, OR the nym must be the " +
+    "per-Nexus leaf of a persona this vessel holds. A Nexus never conscripts an operator into carriage.",
   );
 }
 
@@ -244,6 +262,8 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     const boardFold = await foldCarriageDetails(boardEntries, roster);
     const parents = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
 
+    // The quorum signs with the seated persona-ROOTS: a quorum signature counts only against keys the charter
+    // seats, and the charter seats roots until a re-found moves its seats onto leaves.
     const signers = await Promise.all(selected.map(async (s) => ({
       signer: s.verifyingKey,
       sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
@@ -289,12 +309,6 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
 }
 
 /**
- * Mint the operator's "accepts carriage" contract-sig — run by the JOINING operator on its OWN vessel. Reads the
- * held persona seed at `handleIndex`, signs the act-independent carriage token for the current charter epoch,
- * and returns the token hex the kahu supply to `runNexusContract({ contractSig })`. FAIL CLOSED: an unseated charter
- * has no epoch to bind consent to → REFUSE.
- */
-/**
  * WHERE THIS VESSEL KEEPS ITS OWN CONSENT.
  *
  * A relation has two sides and each holds its own evidence. The founding operator's is the admit on
@@ -311,7 +325,7 @@ export function carriageConsentPath(sealHome: string): string {
 }
 
 export interface CarriageConsent {
-  /** The persona-root nym this vessel signed as. */
+  /** The per-Nexus leaf nym this vessel signed as. */
   readonly nym:          string;
   /** The charter epoch the consent binds to — a consent rooted elsewhere does not carry here. */
   readonly sealEpochCid: string;
@@ -341,8 +355,8 @@ export function readCarriageConsent(sealHome: string): CarriageConsent | null {
  *   · THE SEAL IS REAL. The signature binds nym and epoch together and only the holder of that nym's
  *     seed can produce it, so a planted record fails rather than reads.
  *   · THE NYM IS OURS. Another operator's consent is GENUINE evidence that SHE joined; copied here it
- *     would let this vessel claim a relation somebody else entered. So the nym must be a persona root
- *     this vessel actually holds.
+ *     would let this vessel claim a relation somebody else entered. So the nym must be the leaf one of
+ *     this vessel's held personas presents to this Nexus — a root nym names no stamp and reads false.
  *
  * Grants nothing either way — this answers a reading, never a capability. It is held to this standard
  * because a vessel that misreports the relation it stands in is lying to its own operator.
@@ -356,13 +370,18 @@ export async function hasContractedInto(sealHome: string): Promise<boolean> {
 
   if (!(await verifyCarriageConsent(consent))) return false;
 
-  for (const index of await listPersonaRoots()) {
-    const key = await loadPersonaGroupRootVerifyingKey(index);
-    if (key && key.toLowerCase() === consent.nym) return true;
-  }
-  return false;
+  const aid = realmIdOfCharter(readNexusDoc(sealHome));
+  if (!aid) return false;
+  return (await heldNexusLeaves(aid)).some((leaf) => leaf.verifyingKey === consent.nym);
 }
 
+/**
+ * Mint the operator's "accepts carriage" contract-sig — run by the JOINING operator on its OWN vessel. Derives
+ * the held persona's per-Nexus LEAF at `handleIndex` for the charter standing in the seal home, signs the
+ * act-independent carriage token for the current charter epoch with that leaf, and returns the token hex the
+ * kahu supply to `runNexusContract({ contractSig })`. The leaf IS the nym. FAIL CLOSED: an unseated charter has
+ * no epoch to bind consent to, and a persona this vessel does not hold has no leaf → REFUSE.
+ */
 export async function runNexusAcceptCarriage(opts: {
   handleIndex: number; sealHome: string; storageDir?: string;
 }): Promise<{ nym: string; sealEpochCid: string; contractSig: string }> {
@@ -371,11 +390,12 @@ export async function runNexusAcceptCarriage(opts: {
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage consent to — the Nexus must seat its charter first.");
   }
-  const root = await generateOrLoadPersonaGroupRoot(opts.handleIndex);
-  const nym  = root.verifyingKey.toLowerCase();
-  const sig  = await signCarriageContract(
-    nym, roster.sealEpochCid, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(opts.handleIndex)),
-  );
+  if (!(await personaRootExists(opts.handleIndex))) {
+    throw new NexusContractError(`this vessel holds no persona at h${opts.handleIndex} — a contract-in signs with a held persona's leaf.`);
+  }
+  const leaf = await nexusLeafFor(opts.handleIndex, nexusAidOrRefuse(opts.sealHome));
+  const nym  = leaf.verifyingKey;
+  const sig  = await signCarriageContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(leaf.seed));
   // KEEP IT. The signature travels to the founding kahu, and a copy stays here so this vessel can read
   // its own half of the relation without a partner's document.
   const consent: CarriageConsent = { nym, sealEpochCid: roster.sealEpochCid, contractSig: sig.sig };
