@@ -45,17 +45,21 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/lar-uri
  */
 
-/** The one path every domain rides. A change here re-keys every signature in the house. */
-/** The one root every separation mints under; exported so a witness reads it instead of re-spelling it. */
+/** The one root every separation mints under. A change here re-keys every signature in the house; it is
+ *  exported so a witness reads it instead of re-spelling it. */
 export const DOMAIN_ROOT = "lar:///ha.ka.ba/lares/domain";
+
+/** Every address `mint` and `frozen` build, in declaration order — the source `ALL_DOMAINS` derives from. */
+const declared: string[] = [];
+const declare = (address: string): string => { declared.push(address); return address; };
 
 /** Mint a NEW domain address — the name alone, no suffix. Kept private: a domain must be DECLARED below,
  *  never built at a call site. */
-const mint = (name: string): string => `${DOMAIN_ROOT}/${name}`;
+const mint = (name: string): string => declare(`${DOMAIN_ROOT}/${name}`);
 
 /** Reproduce a FROZEN domain address — a string already signing or deriving live material, kept byte-for-
  *  byte. Its `/v1` tail belongs to an opaque name and versions nothing. Never use it for a new domain. */
-const frozen = (name: string): string => `${DOMAIN_ROOT}/${name}/v1`;
+const frozen = (name: string): string => declare(`${DOMAIN_ROOT}/${name}/v1`);
 
 // ── IDENTITY + DELEGATION ───────────────────────────────────────────────────────────────────────
 /** A device delegation: an operator root vouching one device into a PersonaGroup. */
@@ -196,21 +200,8 @@ export const RAISE_CHALLENGE_DOMAIN = frozen("raise-challenge");
 export const PROMOTION_RECEIPT_DOMAIN = frozen("promotion-receipt");
 
 /**
- * Every domain this house mints. The witness folds THIS — so a domain added above and forgotten here
- * still cannot hide: the witness also refuses any domain literal written outside this file.
+ * Every domain this house mints, in declaration order. DERIVED: each `mint` and `frozen` call above lands
+ * here, so a declared domain cannot be left out of the table. The witness also refuses any domain literal
+ * written outside this file.
  */
-export const ALL_DOMAINS: readonly string[] = [
-  DEVICE_DELEGATION_DOMAIN, PERSONA_KEL_DOMAIN, HANDLE_CARD_DOMAIN, HANDLE_KEL_DOMAIN, FLEET_PROOF_DOMAIN, DYAD_ID_DOMAIN, DYAD_BINDING_DOMAIN,
-  PERSONA_ENROLL_DOMAIN, PERSONA_GRANT_DOMAIN, PERSONA_SEALED_DOMAIN, PERSONA_JOIN_DOMAIN,
-  PERSONA_ADMIT_SEAL_INFO, BOOT_INVITE_DOMAIN, CABAL_INVITE_DOMAIN,
-  NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,
-  CARRIAGE_CARRIER_DOMAIN,
-  MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
-  PLUGIN_OFFERING_DOMAIN, PLUGIN_OFFERING_ANNOUNCE_DOMAIN, OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN,
-  GUARDIAN_CONFIRM_DOMAIN, GUARDIAN_REGISTRATION_DOMAIN, RESERVE_TRANSITION_DOMAIN,
-  KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO, AUTH_PROOF_DOMAIN,
-  REALM_BAG_DOMAIN, REALM_BAG_ANNOUNCE_DOMAIN, SEED_WRAP_PRF_INFO,
-  PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO, PERSONA_SELF_RECOVERY_INFO,
-  ORACLE_POINTER_DOMAIN, PLUGIN_ATTESTATION_DOMAIN, MU_VOID_DOMAIN, RAISE_CHALLENGE_DOMAIN,
-  PROMOTION_RECEIPT_DOMAIN,
-];
+export const ALL_DOMAINS: readonly string[] = Object.freeze([...declared]);

@@ -67,6 +67,22 @@ describe("the domain registry", () => {
     expect("lar:///elsewhere/auth-proof").not.toMatch(NAME);
   });
 
+  /** The TABLE derives from the declarations: every `mint`/`frozen` call lands in `ALL_DOMAINS`, in the
+   *  order the registry declares it, so no declaration can be forgotten from the table. */
+  test("ALL_DOMAINS holds every declared separation, in declaration order", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "domains.ts"), "utf8");
+    const declared = [...src.matchAll(/^export const (\w+) = (?:mint|frozen)\("[a-z0-9-]+"\);/gm)].map((m) => m[1]!);
+    expect(declared.length).toBe(named.length);
+    expect(domains.ALL_DOMAINS).toEqual(declared.map((k) => (domains as Record<string, unknown>)[k]));
+  });
+
+  test("CONTROL: ALL_DOMAINS and the exported separations name one set", () => {
+    expect(new Set(domains.ALL_DOMAINS)).toEqual(new Set(named.map(([, v]) => v)));
+    expect(domains.ALL_DOMAINS.length).toBe(named.length);
+  });
+
   /** CONTROL: the seed-wrap info the browser imports reads as one of these, not a string of its own. */
   test("the seed-wrap info is a registry name", () => {
     expect(named.some(([k]) => k === "SEED_WRAP_PRF_INFO")).toBe(true);

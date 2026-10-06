@@ -11,7 +11,8 @@
 #   · WELL-FORMED — every tag reads `lar:///ha.ka.ba/lares/domain/<name>`, one ontology. The NAME does all
 #                   the separating. A NEW domain mints bare through `mint`; the FROZEN set, reproduced
 #                   through `frozen`, keeps an opaque `/v1` tail that versions nothing, and may only shrink.
-#   · LISTED      — every declared domain sits in `ALL_DOMAINS`, the table the registry claims to be.
+#   · LISTED      — `ALL_DOMAINS` derives from the `mint`/`frozen` declarations, and no separation is
+#                   exported around those helpers, so the table is the registry the file declares.
 #   · REGISTERED  — no domain literal is written outside `domains.ts`. A tag typed at a call site is a
 #                   tag nothing can audit, and it is how the two spellings arose in the first place. The
 #                   scan reads TypeScript, JavaScript and Python, in double, single, backtick and `b"…"`
@@ -83,14 +84,17 @@ FROZEN_CEILING = 47
 if len(frozen_names) > FROZEN_CEILING:
     fail.append(f"{len(frozen_names)} frozen domains exceed the ceiling of {FROZEN_CEILING} — a NEW domain mints through `mint`, bare")
 
-# ── LISTED — the table holds every declaration ──────────────────────────────────────────────────
-table = re.search(r"export const ALL_DOMAINS[^=]*=\s*\[(.*?)\];", src, re.S)
-listed = set(re.findall(r"\b([A-Z][A-Z0-9_]+)\b", table.group(1))) if table else set()
-unlisted = [e for e, _n in names if e not in listed]
-if not table:
-    fail.append("no ALL_DOMAINS table found in the registry")
-elif unlisted:
-    fail.append("declared but missing from ALL_DOMAINS: " + ", ".join(unlisted))
+# ── LISTED — the table derives from the declarations ────────────────────────────────────────────
+# `ALL_DOMAINS` is built from what `mint` and `frozen` record, so any domain declared through them sits in
+# it. Two ways remain to slip past the table, and both read here: a hand-kept list returning in place of
+# the derived one, and a separation exported WITHOUT the helpers (it would never be recorded).
+if not re.search(r"^export const ALL_DOMAINS: readonly string\[\] = Object\.freeze\(\[\.\.\.declared\]\);", src, re.M):
+    fail.append("ALL_DOMAINS no longer derives from the `mint`/`frozen` declarations")
+exported = re.findall(r"^export const (\w+_(?:DOMAIN|INFO))\b", src, re.M)
+declared_exports = {e for e, _n in names}
+bypassed = [e for e in exported if e not in declared_exports]
+if bypassed:
+    fail.append("exported without `mint`/`frozen`, so absent from the derived ALL_DOMAINS: " + ", ".join(bypassed))
 
 # ── REGISTERED — no literal outside this file ───────────────────────────────────────────────────
 # A NEGATIVE test on FOREIGN tags stays legal: `lar-some-other-board/v1` and `lar-test/*` exist to prove
