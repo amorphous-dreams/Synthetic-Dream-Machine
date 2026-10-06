@@ -104,7 +104,7 @@ The grammar is self-hosted: a tiddler tagged `lar:///ha.ka.ba/tags/SharktoothSig
 parser a word (grammar-cache.ts reads `lar-*` fields → SigilRule; 97 sigil tiddlers today). The
 AST (meme-ast) parses the DOCUMENT sigils (ahu · pranala · edge-sugar · control · guest-grammar …).
 
-''THE TURN SIGILS STAND REGISTERED'' (2026-09-08). `lares` · `set` · `stance` · `mu` · `aperture` ·
+''THE TURN SIGILS STAND REGISTERED.'' `lares` · `set` · `stance` · `mu` · `aperture` ·
 `ooda-ha` · `drift-ward` · `oracle` · `persona` · `carry` — each carries a tiddler, and each renders
 its own definition rather than falling to water. The turn frame the boot seed declares now stands on
 the shelf beside the document sigils, so the VM reads a TURN the way it reads a document, and
@@ -188,6 +188,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HekLUBUS-Iu-U10c47AuyGUoosY0VLhuOqFaOHyqYO8
+<<^ code="&#x0003;">>ni:///sha-256;d-ENzSZ871-kuSNvUaMk7SoEFhBTFk2_IQcrYHEkgcA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -78,7 +78,7 @@ without rAF fall back to setTimeout transparently.
 including synchronous reactions fired by widgets observing the change. IslandAdaptor's
 outbound `saveTiddler` / `deleteTiddler` check `isApplyingNalu()` before writing —
 suppresses a synchronous echo that would re-enter the store. TW5 dispatches `change` on `nextTick`,
-after the drain's `finally` lowered the flag, so the outbound bridge (`outbound-bridge.ts`) carries
+after the drain's `finally` lowers the flag, so the outbound bridge (`outbound-bridge.ts`) carries
 its own echo law: it wraps `enqueueNalu` so every inbound title enters the adaptor's SET
 (`noteInbound`) and skips a title `consumeInbound` names, once
 ([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]] #/island-holds).
@@ -160,6 +160,6 @@ transact per frame (crest). WITNESSED: the queue (`nalu-engine.ts`) + the shore 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rtFwrZ68-c2VcDBknIjoY_UF1q_zm7yVHi-NDkb537Y
+<<^ code="&#x0003;">>ni:///sha-256;qEWsEwfB9h6jqY_t7AYZjEPKU7mq15usyR0t5kv3xbc
 
 <<^ code="&#x0004;" -> to="?">>

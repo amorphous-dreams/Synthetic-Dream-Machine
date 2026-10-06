@@ -208,7 +208,7 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 !! The daemon wiki ~ the first one built, and no exception (operator ruling, 2026-09-02)
 
-''`@daemon` predates the ontology that grew around it''. ''The ruling: it behaves like any other.'' It takes foreground sometimes, it will likely seed a canon-bag layer of its own, and the ordinary shape — instance mounts above, a write layer, a canon bag below — names the shape it should wear.
+''The ruling: `@daemon` behaves like any other wiki.'' It takes foreground sometimes, it will likely seed a canon-bag layer of its own, and the ordinary shape — instance mounts above, a write layer, a canon bag below — names the shape it should wear.
 
 !!! Its role, and why it must land on disk
 
@@ -341,6 +341,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Is4QpHxvZL17kx9zG0OOS_wBY3OQw6gdynp4Kyx7Mhs
+<<^ code="&#x0003;">>ni:///sha-256;cLtiJvNOU0qvgKOCw0ZhXdicnskNwRdRn2GuHLOdsiQ
 
 <<^ code="&#x0004;" -> to="?">>

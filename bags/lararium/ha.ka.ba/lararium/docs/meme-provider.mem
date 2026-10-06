@@ -41,7 +41,7 @@ owns on top of it.
 patch, so the same implementation runs in Node and in a browser without a platform branch.
 # ''The document reads at FIRE time, never at patch time.'' A debounce that captured state on arrival
 would deliver a value the doc has already moved past; reading at the flush delivers the latest.
-# ''Eligibility should bind to the save cascade, and today it binds to two prefixes.'' A key enters
+# ''Eligibility should bind to the save cascade; the provider binds it to two prefixes.'' A key enters
 the fan-out on `lar:` or `Draft of ` and on nothing else (`packages/lararium-mesh/src/meme-provider.ts`).
 The save cascade admits more (`lar-bag-paths.tid`): `$:/temp/*` lands in the device-only temp store,
 but the `personal` kind (`$:/StoryList`, `$:/state/folded/*`, …) reaches a CRDT slot, a draft routes by
@@ -87,6 +87,6 @@ the reference, and the law below it stays the part a reader needs anyway.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction">>
 
-<<^ code="&#x0003;">>ni:///sha-256;_9Ps2L7aSfF5BuiujMY97rTkLQGY7Cq8TBG7G6wNoVQ
+<<^ code="&#x0003;">>ni:///sha-256;gcMxtibTpil0pQZ-P8lOB0YWgji4IXKTfSnvsWnW60M
 
 <<^ code="&#x0004;" -> to="?">>

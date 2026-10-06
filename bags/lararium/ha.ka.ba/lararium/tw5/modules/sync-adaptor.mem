@@ -32,7 +32,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 
 ''Cross-bag tombstone resolution stays in TS,'' because it needs an async `getLive` on the composite.
 
-''The echo law rides a SET.'' The adaptor asks `$tw.lares.isApplyingNalu()` for a synchronous caller, but TW5 dispatches `change` on `nextTick`, after the drain lowered that flag; so the bridge fills the adaptor's inbound SET at `enqueueNalu`'s door (`noteInbound`) and skips a title `consumeInbound` names, once.
+''The echo law rides a SET.'' The adaptor asks `$tw.lares.isApplyingNalu()` for a synchronous caller, but TW5 dispatches `change` on `nextTick`, after the drain lowers that flag; so the bridge fills the adaptor's inbound SET at `enqueueNalu`'s door (`noteInbound`) and skips a title `consumeInbound` names, once.
 
 <<~/ahu>>
 
@@ -86,6 +86,6 @@ The map stays volatile: one adaptor, one session.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CJy138vE97iiUQvSRmchADyG7iBSpFizW4q64ziLdvA
+<<^ code="&#x0003;">>ni:///sha-256;2oQiiFF5DHkeO99LQqgRcCc57JGTgn9afFD530Ci-7g
 
 <<^ code="&#x0004;" -> to="?">>

@@ -94,7 +94,7 @@ draft slot (`wikis/{slug}/draft`, a CRDT layer that follows the operator's fleet
 and MUST NOT be silently dropped. The in-wiki bag-paths cascade carries the rule
 (`[is[draft]then{…/current-wiki-draft}]`), read against TW5's `draft.of` FIELD,
 never the title; the matching delete routes by the last-known-slot map
-(`_slotOf`), since the field is gone by then. No guard in `saveTiddler` withholds a
+(`_slotOf`), since the field has gone by then. No guard in `saveTiddler` withholds a
 draft. The cascade names its withholdings (`$:/core`, `$:/library/sjcl.js`) and
 ends in a catch-all — a title no rule reaches lands at the write layer and says
 so (wiki-layer-ontology#/totality-law). The measured routing table rides
@@ -165,6 +165,6 @@ after `stop()`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GOimu-yTs6FKNGxvMJwQblczXDZwtXiC69Q5a_nSsLI
+<<^ code="&#x0003;">>ni:///sha-256;VqNh7kP_4samCYWvnw1XqSi9qZFAhGI2gVN6u_-TvZc
 
 <<^ code="&#x0004;" -> to="?">>
