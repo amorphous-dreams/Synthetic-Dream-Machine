@@ -15,10 +15,10 @@
  * the nym it carries is published; a leaf presents a different key to each Nexus and the same key to one
  * Nexus across a seal rotation, where a root would name the human's device-group on every island at once.
  *
- * THE ONE EXCEPTION, NAMED AND OWED: the kahu quorum signs with the persona-ROOTS seated in the charter,
- * because the charter seats roots and a quorum signature counts only against seated keys. The charter
- * therefore still publishes those roots; moving its seats onto leaves re-founds the charter epoch, which is
- * a founding act rather than a wiring one.
+ * THE ONE EXCEPTION, NAMED: the kahu quorum signs with the persona-ROOTS seated in the charter, because
+ * the charter seats roots and a quorum signature counts only against seated keys. The charter therefore
+ * publishes those roots; moving its seats onto leaves re-founds the charter epoch, which is a founding act
+ * rather than a wiring one.
  *   · ≥ threshold founding-kahu quorum signatures (the steward act — identical to the antigen's).
  * A REVOKE needs the kahu quorum ONLY (an uncooperative member cannot veto its own removal).
  *
@@ -262,7 +262,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     const parents = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
 
     // The quorum signs with the seated persona-ROOTS: a quorum signature counts only against keys the charter
-    // seats, and the charter seats roots until a re-found moves its seats onto leaves.
+    // seats, and the charter seats roots; only a re-found moves its seats onto leaves.
     const signers = await Promise.all(selected.map(async (s) => ({
       signer: s.verifyingKey,
       sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
@@ -377,7 +377,7 @@ export interface NexusMembersListResult {
  * names the Nexus (primary or carried) and defaults to the primary charter's. Read-only; an unseated charter
  * folds to the empty set, and an AID this vessel holds no charter for REFUSES.
  *
- * A PUBLIC RECORD, NEVER AUTHORITY. The board is the Nexus's shared record of the admits its kahu signed;
+ * A PUBLIC RECORD, NEVER AUTHORITY. The board holds the Nexus's shared record of the admits its kahu signed;
  * this fold reports what that record says as of this replica's last sync. It grants nothing and decides
  * nothing — a member here is a nym the record names, and this vessel's own carriage answers to its own
  * consent (`carried-set`), never to this list.

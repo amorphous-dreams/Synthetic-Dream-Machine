@@ -77,7 +77,7 @@ if not root.startswith("lar:///ha.ka.ba/"):
 for _export, name in names:
     if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
         fail.append(f"domain name {name!r} is not lowercase-kebab")
-# The frozen set signs and derives live material; it shrinks when a stage re-founds a name, and never
+# The frozen set signs and derives live material; it shrinks when a re-found re-mints a name, and never
 # grows. A new domain that reached for `frozen` would mint a counter that versions nothing.
 FROZEN_CEILING = 47
 if len(frozen_names) > FROZEN_CEILING:
@@ -105,21 +105,21 @@ LITERAL = re.compile(OPEN + SHAPE + r'(?=["\'`|])')
 LEGAL_FOREIGN = re.compile(r"lar-some-other-|lar-test/")
 COMMENT = re.compile(r"^\s*(?:\*|/\*|//|#)")
 
-# The known strays: (path, literal prefix) → the stage that registers it. Each signs live material under
+# The known strays: (path, literal prefix) → the act that registers it. Each signs live material under
 # its present spelling, so moving it re-keys that material — the re-found's work, not a lint fix.
 ALLOW = {
     ("packages/lararium-keyhive/src/face-grant-record.ts",    "lares/face-join-grant/v1"):
-        "Stage R — the face-join grant record's signing domain registers with the re-found",
+        "the face-join grant record's signing domain registers with the re-found",
     ("packages/lararium-mesh/src/cabal-realm-clock.ts",        "lar/realm-feed"):
-        "Stage R — the realm-roll seal's domain registers with the re-found",
+        "the realm-roll seal's domain registers with the re-found",
     ("packages/lararium-mesh/src/wax-stamp.ts",                "lar-wax-stamp/v1|"):
-        "Stage R — the wax-stamp signing preimage registers with the re-found",
+        "the wax-stamp signing preimage registers with the re-found",
     ("packages/lararium-mesh/src/holder-continuity.ts",        "lar-holder-continuity/v1|"):
-        "Stage R — the holder-continuity signing preimage registers with the re-found",
+        "the holder-continuity signing preimage registers with the re-found",
     ("packages/lararium-mesh/src/persistence-keel.ts",         "lar-witness/v1|"):
-        "Stage R — the keel witness signing preimage registers with the re-found",
+        "the keel witness signing preimage registers with the re-found",
     ("packages/lararium-sensorium/scripts/worldline_veil.py",  "lar:worldline-root:v1"):
-        "Stage R — the worldline-root HMAC tag crosses into Python; it registers with the re-found",
+        "the worldline-root HMAC tag crosses into Python; it registers with the re-found",
 }
 
 stray, allowed = [], []
@@ -158,7 +158,7 @@ if unused:
 
 print(f"[domain-registry] {len(names)} domains ({len(frozen_names)} frozen, {len(names) - len(frozen_names)} bare), all under {root}")
 if allowed:
-    print(f"  {len(allowed)} KNOWN STRAY literal(s) outside the registry, allowed until their stage registers them:")
+    print(f"  {len(allowed)} KNOWN STRAY literal(s) outside the registry, allowed until the re-found registers them:")
     for x in allowed:
         print(f"    {x}")
 if stray:

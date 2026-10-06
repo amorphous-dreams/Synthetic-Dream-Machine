@@ -27,9 +27,9 @@
  * — the stable `ha.ka.ba` root, one path for the whole family, and a NAME that does all the separating.
  *
  * ── A NAME, NEVER A VERSION ─────────────────────────────────────────────────────────────────────
- * A version digit that carries separation fuses on the first reset. `keyring-envelope` once carried `/v1`
- * as its SIGNING domain and `/v2` as its HKDF `info` — two purposes told apart by a digit, so a naive reset
- * would have fused them. Each carries its own NAME instead: separation belongs to the name alone. A change
+ * A version digit that carries separation fuses on the first reset: two purposes told apart by `/v1` and
+ * `/v2` collapse the moment a reset renumbers them. So `keyring-envelope`'s SIGNING domain and its HKDF
+ * `info` each carry their own NAME, and separation belongs to the name alone. A change
  * of protocol mints a NEW name; it never bumps a counter, because a counter claims an ordering — a global
  * now — that no two vessels share.
  *
@@ -54,7 +54,7 @@ export const DOMAIN_ROOT = "lar:///ha.ka.ba/lares/domain";
 const mint = (name: string): string => `${DOMAIN_ROOT}/${name}`;
 
 /** Reproduce a FROZEN domain address — a string already signing or deriving live material, kept byte-for-
- *  byte. Its `/v1` tail is part of an opaque name and versions nothing. Never use it for a new domain. */
+ *  byte. Its `/v1` tail belongs to an opaque name and versions nothing. Never use it for a new domain. */
 const frozen = (name: string): string => `${DOMAIN_ROOT}/${name}/v1`;
 
 // ── IDENTITY + DELEGATION ───────────────────────────────────────────────────────────────────────

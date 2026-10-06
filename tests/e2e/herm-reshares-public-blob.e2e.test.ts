@@ -145,8 +145,8 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   // THIS SUITE DECLARES ITS ORIGINS. Every fleet vessel boots under a scratch LAR_ROOT that never reads the
   // operator's config.json, so boot composes Web and oracle origins from nothing and refuses with "Web origin
   // must be declared" (the Herm before its herm branch, which never serves them). The harness spawns inherit
-  // process.env, so the suite declares same-origin here pending the standing-aware composition, where a
-  // herm's Web origin is legally absent; once that lands this declaration goes.
+  // process.env, and the origin composition reads no standing, so the suite declares same-origin; a
+  // standing-aware composition holds a herm's Web origin legally absent and needs no declaration.
   const priorSameOrigin = process.env["LAR_SAME_ORIGIN"];
   beforeAll(async () => {
     process.env["LAR_SAME_ORIGIN"] = "true";

@@ -172,7 +172,7 @@ export function nexusScopeIndex(nexusAid: string): number {
  * a Nexus and a circle hang under separate MAC domains so neither derives into the other.
  *
  * The same persona presents a different key to each island, and the same island always receives the
- * same key: the AID a caller passes is the island's genesis epoch, which a seal rotation leaves fixed.
+ * same key: the AID a caller passes names the island's genesis epoch, which a seal rotation leaves fixed.
  * Every level hardens, so neither the persona root nor the face at `m / handle' / context'` reveals
  * which leaves descend from it.
  */

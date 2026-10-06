@@ -6,7 +6,7 @@
  * also carry for any number of partner Nexuses. Each partner charter lands BESIDE the primary, at
  * `<sealHome>/carried/<aid>/founding-roster.mem`, and this module never writes the primary path.
  *
- * THE AID NAMES THE NEXUS. It is `realmIdOfCharter(doc)`, the genesis epoch, which a seal rotation leaves
+ * THE AID NAMES THE NEXUS. `realmIdOfCharter(doc)` reads it: the genesis epoch, which a seal rotation leaves
  * fixed. The same AID keys the carried charter's directory, the kept consent, and the per-Nexus leaf.
  *
  * ── WHAT PUTS A NEXUS IN THE SET ────────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@
  * The incoming bytes are read by `readNexusDoc` over a throwaway probe home, the same parser every other
  * reader uses, so this decision and every later read agree on what the file says.
  *
- * Nothing here grants capability. The set is a reading of this vessel's own consents and seats.
+ * Nothing here grants capability. The set reads this vessel's own consents and seats, and nothing else.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
@@ -84,7 +84,7 @@ export function charterHomeFor(sealHome: string, aid: string): string | null {
 
 export interface CarriedImportResult {
   readonly aid:          string;
-  /** The verified head the carried charter now stands at. */
+  /** The verified head the carried charter stands at. */
   readonly sealEpochCid: string;
   /** `landed` — first charter for this AID · `same` — the held head already · `extended` — moved forward. */
   readonly outcome:      "landed" | "same" | "extended";

@@ -65,7 +65,7 @@ export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-poss
  * dials, with the admit's causal LINEAGE: the counted acts it cites for this nym and epoch. A dialer presents
  * only the dialed island's admit, never its whole set.
  *
- * The bundle is public: every entry is already a signed act on the Nexus's carriage board, so the bundle rides
+ * The bundle carries only public bytes: every entry already stands as a signed act on the Nexus's carriage board, so it rides
  * OUTSIDE the V3 proof signature and binds to the socket through the vessel-key edge beside it. It grants
  * nothing on arrival — the receiver folds it against its own carriage frontier before reading any relation.
  */

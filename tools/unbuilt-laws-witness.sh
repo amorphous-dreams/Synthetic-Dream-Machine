@@ -53,7 +53,7 @@ passed=${passed:-0}
 
 # EVERY TEST IN THE REGISTER RAN, OR THE COUNT MEANS NOTHING. A suite that failed to import reports
 # `Tests  no tests`, an unread summary reports nothing at all, and both read as zero reds. The verdict
-# below is only a verdict when the reds and the floor together account for every test declared.
+# below counts as a verdict only when the reds and the floor together account for every test declared.
 if [ $((failed + passed)) -ne $((declared + floor)) ]; then
   echo "unbuilt-laws: the register did not run — $((declared + floor)) test(s) declared, ${failed} failed + ${passed} passed read"
   echo "  summary: ${summary:-<no Tests line in the vitest output>}"

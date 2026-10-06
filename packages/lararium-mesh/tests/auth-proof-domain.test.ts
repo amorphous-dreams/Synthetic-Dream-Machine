@@ -1,10 +1,9 @@
 /**
  * auth-proof-domain — the V3 proof of possession signs inside a NAMED domain.
  *
- * A signature means nothing without the purpose it was made for. The proof once carried no domain at all:
- * a version field stood in as its only separator, and a version digit separates nothing from a second
- * protocol that happens to spell the same canonical JSON. The proof now commits to `AUTH_PROOF_DOMAIN`,
- * so bytes signed for any other purpose — or for no purpose — never clear `verifyAuthProof`.
+ * A signature means nothing without the purpose it was made for. A version digit separates nothing from
+ * a second protocol that happens to spell the same canonical JSON, so the proof commits to a NAME —
+ * `AUTH_PROOF_DOMAIN` — and bytes signed for any other purpose, or for none, never clear `verifyAuthProof`.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/auth-wire
  */

@@ -52,9 +52,9 @@ const PORT = 8231;
 /**
  * THIS SUITE DECLARES ITS ORIGINS. A scratch LAR_ROOT reads its own (absent) config.json and never the
  * operator's, so boot composes the Web and oracle origins for every face from nothing and refuses with
- * "Web origin must be declared", before the herm branch that never serves them. Same-origin is declared
- * here pending the standing-aware composition, where a herm's Web origin is legally absent; once that
- * lands this declaration goes, and the herm must boot without it.
+ * "Web origin must be declared", before the herm branch that never serves them. The origin composition
+ * reads no standing, so this suite declares same-origin; a standing-aware composition holds a herm's Web
+ * origin legally absent and boots the herm with no declaration at all.
  */
 const SUITE_ORIGINS = { LAR_SAME_ORIGIN: "true" } as const;
 let root = "";

@@ -1,9 +1,9 @@
 /**
  * nexus-leaf — the key a held persona presents to ONE Nexus.
  *
- * A stamp that travels into a Nexus names its subject publicly, so the subject is never the PersonaGroup
+ * A stamp that travels into a Nexus names its subject publicly, so it never names the PersonaGroup
  * root: that key binds one human's own devices, and publishing it names the device-group and correlates
- * every island it appears in. The subject is the persona's per-Nexus LEAF instead,
+ * every island it appears in. The stamp names the persona's per-Nexus LEAF,
  * `m / handle' / context' / nexus-scope'`, derived from the persona's root seed under the NEXUS scope
  * domain (`deriveNexusScopedKey`).
  *

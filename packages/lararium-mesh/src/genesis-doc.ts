@@ -452,7 +452,7 @@ export function oracleGenesisDocUrl(): AutomergeUrl {
  * the digest makes a pure RE-TAG — identical bytes, `5.5.0-prerelease` renamed `5.5.0` — mint a fresh
  * true-name, which manufactures a schism out of an editorial act. The sha256 already binds every byte
  * the label could describe; the label adds a false difference and no true one. So the function takes
- * the digest alone: a label it cannot receive is a label it cannot fold. `coreVersion` still rides the
+ * the digest alone: a label it cannot receive is a label it cannot fold. `coreVersion` rides the
  * blob DESCRIPTOR for a human to read, where a wrong label misleads nobody's identity.
  */
 export function computeEngineCid(coreSha256: string): string {

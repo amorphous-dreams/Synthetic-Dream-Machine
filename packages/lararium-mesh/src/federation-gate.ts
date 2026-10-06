@@ -62,15 +62,15 @@ export interface FederationGate {
 /**
  * DeterministicFederationGate — the alpha gate.
  *
- * The federatable surface is the per-island PUBLIC boards, addressed
+ * The federatable surface spans the per-island PUBLIC boards, addressed
  * deterministically from each confederation (relay-gate) key the gate holds. For
  * EVERY key it federates that island's five boards: the crossroads public-plane
  * doc, the WHO board, the Kapae-ANTIGEN board (the immune antigen rides the
  * mandatory-carry plane, carry-contract MANDATORY tier), the carriage-contracts
  * board, and the persona-KEL board. Automerge-repo does NOT auto-follow doc refs
  * (each doc syncs independently under its own sharePolicy verdict), so these board
- * ids are the WHOLE relay surface — no transitive dep-set to chase and ZERO
- * hand-maintenance (the set is a pure function of the key set).
+ * ids name the WHOLE relay surface — no transitive dep-set to chase and ZERO
+ * hand-maintenance (the key set alone derives the set).
  *
  * `nexusPubkey` takes one key or a carried key set. A single string federates
  * exactly that island's five boards; an empty set federates nothing. Federating a
