@@ -267,9 +267,13 @@ jobs:
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (vessels run from dist)
         run: pnpm build
+      # MEASURED, NOT GUESSED. The whole set reads ~1540s (~26 min) on an operator desk, and files run
+      # one at a time (`fileParallelism: false`), so the wall clock grows with every suite added. The
+      # ceiling leaves the hosted runner ~1.7x that reading; a hung daemon still dies here, not at the
+      # job's six-hour default.
       - name: Run e2e suite
         run: pnpm test:e2e
-        timeout-minutes: 10
+        timeout-minutes: 45
 
   # ─── boot budget (cache-stable boot ceiling) ───────────────────────────────
   boot-budget:
@@ -427,12 +431,15 @@ jobs:
       - name: fold + golden manifest gates (py host)
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold
+      # THE TS HOST LOADS THE WASM, SO THE WASM BUILDS FIRST. `*.wasm` is gitignored in this package;
+      # a runner holds none until `build:wasm` emits it. The pinned tree-sitter CLI fetches its own
+      # wasi-sdk clang and wasm-opt on first use, so the build needs neither emscripten nor docker.
+      - name: wasm builds under the pinned CLI
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run build:wasm
       # TWO HOSTS, TWO GATES. `gates` chains all three with `&&`; this job named two of them and the
       # TS host's fold + parity ran nowhere. Kept as its own step rather than folded into the chain,
       # so a red in the py host cannot hide a red here.
       - name: fold + parity gates (ts host)
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold-ts
-      - name: wasm builds under the pinned CLI
-        working-directory: packages/tree-sitter-memetic-wikitext
-        run: pnpm run build:wasm
