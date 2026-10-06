@@ -25,7 +25,7 @@ import {
   personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
 } from "@lararium/mesh";
 import {
-  readNexusDoc, writeNexusDoc, nexusCharterDocPath,
+  readNexusDoc, writeNexusDoc, nexusCharterDocPath, renderNexusDoc, parseNexusDoc,
   writeNexusSeal, writeNexusKahu, writeNexusPractice,
 } from "../src/nexus-doc.js";
 import {
@@ -67,6 +67,26 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     // fail-closed math: 2 seated + epoch → quorum stands
     expect(foundingQuorumSeated(back)).toBe(true);
     expect(foundingRoster(back).keys.sort()).toEqual([...keys].sort());
+  });
+
+  test("parseNexusDoc reads charter BYTES with no home — the round-trip, and torn bytes fail closed", () => {
+    const keys = ["c".repeat(64), "d".repeat(64)];
+    const doc: NexusDoc = {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2,
+      sealEpochCid: genesisSealEpochCid(keys, 2),
+      kahu: [
+        { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
+        { displayName: "Kahu Beta",  verifyingKey: keys[1]! },
+      ],
+    };
+    const body = renderNexusDoc(doc);
+    expect(parseNexusDoc(body)).toEqual(doc);
+    // The disk read and the bytes read agree: one parser, two front doors.
+    writeNexusDoc(bags, doc);
+    expect(parseNexusDoc(readFileSync(nexusCharterDocPath(bags), "utf8"))).toEqual(readNexusDoc(bags));
+    // CONTROL: torn bytes read null, never a partial guess.
+    expect(parseNexusDoc(body.slice(0, Math.floor(body.length / 2)))).toBeNull();
+    expect(parseNexusDoc("")).toBeNull();
   });
 
   test("★ the unseated scaffold NAMES NOBODY, and reads back exactly as an ABSENT doc does ★", () => {

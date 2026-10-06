@@ -192,11 +192,6 @@ function readBody(bagsDir: string): string | null {
 }
 
 /**
- * Read the `nexus` doc into a composed `NexusDoc`, or null (FAIL CLOSED) when it stands absent, carries no
- * seal or kahu block, or either reads torn. The caller folds a null through `foundingRoster(null)` to the
- * empty (inert) roster — never a guess.
- */
-/**
  * Does a charter doc STAND at this home, whatever it reads as?
  *
  * `readNexusDoc` answers null for two unlike facts — no charter here, and a charter here that reads torn —
@@ -210,10 +205,24 @@ export function nexusCharterStands(bagsDir: string): boolean {
   return existsSync(nexusCharterDocPath(bagsDir));
 }
 
+/**
+ * Parse charter BYTES into a composed `NexusDoc`, or null (FAIL CLOSED) when they carry no seal or kahu
+ * block, or either reads torn. The one parser: the disk read below and every door holding bytes in hand
+ * (an import, a carry) read through it, so a decision on incoming bytes and every later read of the file
+ * agree on what it says.
+ */
+export function parseNexusDoc(body: string): NexusDoc | null {
+  return composeDoc(readFence(body, SEAL_BLOCK), readFence(body, KAHU_BLOCK), readFence(body, PRACTICE_BLOCK));
+}
+
+/**
+ * Read the `nexus` doc into a composed `NexusDoc`, or null (FAIL CLOSED) when it stands absent or its
+ * bytes fail `parseNexusDoc`. The caller folds a null through `foundingRoster(null)` to the empty (inert)
+ * roster — never a guess.
+ */
 export function readNexusDoc(bagsDir: string): NexusDoc | null {
   const body = readBody(bagsDir);
-  if (body === null) return null;
-  return composeDoc(readFence(body, SEAL_BLOCK), readFence(body, KAHU_BLOCK), readFence(body, PRACTICE_BLOCK));
+  return body === null ? null : parseNexusDoc(body);
 }
 
 // ── render ────────────────────────────────────────────────────────────────────────────────────────

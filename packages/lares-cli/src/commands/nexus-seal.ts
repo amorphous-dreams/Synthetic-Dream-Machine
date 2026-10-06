@@ -29,7 +29,7 @@
  * a clean parent-to-child split into a cycle.
  */
 import {
-  readNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath, nexusCharterDocRelPath,
+  readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath,
   listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, runNexusMembersList, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState,
@@ -53,9 +53,8 @@ import {
   reserveTransitionBytes, transitionSignerFromSeed,
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "../reserve-transition.js";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { larSealHome } from "../env.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
@@ -673,13 +672,8 @@ function sealImport(args: ParsedArgs): number {
   const dest = nexusCharterDocPath(sealHome);
   // READ THE INCOMING THROUGH THE CANONICAL PARSER, never a second one. A hand-rolled read of the
   // seal fence would drift from `readNexusDoc` exactly when the doc shape moves, and this decision
-  // gates a destructive write. A throwaway home costs one file and keeps one parser.
-  const probe = mkdtempSync(join(tmpdir(), "lares-seal-probe-"));
-  let incoming = "";
-  try {
-    writeFileSync(join(probe, nexusCharterDocRelPath()), incomingRaw, "utf8");
-    incoming = foundingRoster(readNexusDoc(probe)).sealEpochCid;
-  } finally { rmSync(probe, { recursive: true, force: true }); }
+  // gates a destructive write.
+  const incoming = foundingRoster(parseNexusDoc(incomingRaw)).sealEpochCid;
   const standing = existsSync(dest) ? foundingRoster(readNexusDoc(sealHome)).sealEpochCid || null : null;
 
   const v = sealImportVerdict({ incoming, standing });
@@ -688,8 +682,11 @@ function sealImport(args: ParsedArgs): number {
                  data: { from, dest }, human: () => console.error(`lares nexus seal import: ${v.why}`) });
     return 3;
   }
+  // A sibling temp file and a rename, so a reader sees the old charter or the new one and never a torn file.
   mkdirSync(sealHome, { recursive: true });
-  writeFileSync(dest, incomingRaw, "utf8");
+  const tmp = `${dest}.incoming`;
+  writeFileSync(tmp, incomingRaw, "utf8");
+  renameSync(tmp, dest);
   emit(args, { ok: true, data: { from, dest, epoch: incoming },
                human: () => { console.log(`imported → ${dest}`); console.log(`  ${v.why}`); } });
   return 0;

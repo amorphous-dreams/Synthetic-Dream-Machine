@@ -24,19 +24,18 @@
  * from its head reaches the held head. A charter for a different Nexus has a different AID and lands in
  * its own directory; a charter that forks, rewinds, or tears is refused and the held bytes stay.
  *
- * The incoming bytes are read by `readNexusDoc` over a throwaway probe home, the same parser every other
- * reader uses, so this decision and every later read agree on what the file says.
+ * The incoming bytes are read by `parseNexusDoc`, the same parser every other reader uses, so this
+ * decision and every later read agree on what the file says.
  *
  * Nothing here grants capability. The set reads this vessel's own consents and seats, and nothing else.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { foundingRoster, realmIdOfCharter, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
-import { readNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
+import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 
@@ -91,17 +90,6 @@ export interface CarriedImportResult {
   readonly path:         string;
 }
 
-/** Parse charter bytes through `readNexusDoc` on a throwaway home — the one parser every reader uses. */
-function parseCharter(raw: string): NexusDoc | null {
-  const probe = mkdtempSync(join(tmpdir(), "lares-carry-probe-"));
-  try {
-    writeFileSync(join(probe, nexusCharterDocRelPath()), raw, "utf8");
-    return readNexusDoc(probe);
-  } finally {
-    rmSync(probe, { recursive: true, force: true });
-  }
-}
-
 /**
  * Whether `incoming`'s verified lineage reaches `heldHead` by walking back from its own head. Equal heads
  * extend trivially. A chain that does not name the held head, or names it only off the walk, does not.
@@ -128,7 +116,7 @@ function lineageExtends(incoming: NexusDoc, incomingHead: string, heldHead: stri
  * or the new one and never a torn file.
  */
 export function importCarriedCharter(sealHome: string, raw: string): CarriedImportResult {
-  const doc  = parseCharter(raw);
+  const doc  = parseNexusDoc(raw);
   const head = foundingRoster(doc).sealEpochCid;
   if (!doc || head.length === 0) {
     throw new CarriedCharterError(
