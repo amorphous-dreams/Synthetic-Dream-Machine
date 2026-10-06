@@ -421,7 +421,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         if (identHex) peerIdentifierMap.set(peerId, identHex);
         const cls = authGate.getClassForSocket(socket as Parameters<typeof authGate.getClassForSocket>[0]);
         if (cls) peerClassMap.set(peerId, cls);
-        const contractNym = authGate.getContractNymForSocket(socket as Parameters<typeof authGate.getContractNymForSocket>[0]);
+        /** No contract nym is proven at this seat: returns `undefined` for every socket, so nothing enters
+         *  `peerContractNymMap` and every cross-operator peer stands at the floor. */
+        const contractNymAtThisSeat = (): string | undefined => undefined;
+        const contractNym = contractNymAtThisSeat();
         if (contractNym) peerContractNymMap.set(peerId, contractNym);
       }
     });
