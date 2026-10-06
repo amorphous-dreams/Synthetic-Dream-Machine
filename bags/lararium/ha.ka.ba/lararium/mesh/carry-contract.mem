@@ -117,7 +117,7 @@ routing. So #59's identity ring stands NOT as a second peer-gate (that lives, li
 DaemonAuthGate); it enforces ''carry-per-the-contract, deny a Kapae'd presenter with Mu.'' The
 subject PRESENTS its quorum-signed admit, and the ring reads it against the deny-only antigen board —
 never a folded allow roster (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>, which
-carries the code still owed).
+carries what the code holds and the cut-over it owes).
 
 <<~/ahu>>
 
@@ -195,6 +195,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GxyfyQcCNp6aQ_7zsE0ciARNyCJSfkIVdJf4UAfpIYo
+<<^ code="&#x0003;">>ni:///sha-256;8cqw57dzk1PEvnHbcDd2IzP2df_T5bEV-wj0-cNQ-ts
 
 <<^ code="&#x0004;" -> to="?">>

@@ -102,7 +102,7 @@ contract, carries sealed bytes it cannot read, presents and never condemns, and 
 share in any Nexus's cadence.
 
 ''The grammar holds no ratchet.'' `grammarCid`, the grammar epoch and `kahuli grammar` stand marked
-to RETIRE in code, owed pending a scout's measurement of their consumers
+to RETIRE in code; a scout's measurement of their consumers gates that cut
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-five">>).
 
 ''The cadence never fuses with the admission quorum.'' The hands that admit, kapae and seal for a
@@ -111,11 +111,17 @@ price — two joints, two thresholds, two rates (<<~ loulou "lar:///ha.ka.ba/lar
 ''And it runs PER-NEXUS: the NEXUS fences, never the cabal'' — an epoch means nothing outside the island
 that rolls it.
 
+''The window reads as a FRONTIER over a signed offer lineage.'' The cadence threshold signs offer
+events, each linked by `prev` to the one before; an engine stands while its offer sits within k hops
+of the head a hearth holds and no release-deny names it. ''k rides each offer'', owned by the cadence
+joint, never by canon or the charter. The window advances and ages only by offers — never by time,
+never by counting who runs what — and a release-deny drops an engine mid-window, monotone. Below the
+floor an edge lapses by non-renewal, and the device re-mints once it adopts. ''A Nexus offers only
+engines the corpus-kahu lineage contains'': Nexuses choose WHEN, never WHAT.
+
 ''Still open'', each unruled:
 
-* how the engine window bounds and ages without a clock — owed to the regime research;
 * who stands eligible for a cadence share;
-* whether a Nexus can deny a specific engine CID;
 * whether one daemon may host islands at two engine epochs;
 * whether partial conformance must land before `kahuli engine` un-holds.
 
@@ -146,24 +152,30 @@ set that only tightens. ''No folded allow roster gates carriage, at any scope'':
 belongs is the one register the laws forbid (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
 The quorum's admits stay a shared contract RECORD; the gate never folds that record into an allow set.
 
-''Owed in code.'' The daemon still folds the members board into an allow set
-(`foldCarriageSet` → `nexus-carriage.ts`), and the federation gate reads that fold. Under this
-ruling the fold retires as the gate, and the build stands owed
+''What the code holds.'' `verifyPresentedAdmit` (`carriage-registry.ts`) reads a presented admit and
+its causal lineage against the deny-only board and the kapae antigen; it folds no allow roster and
+reads no clock. The wire carries the presentation (`auth-wire.ts`, `presentedAdmit`) outside the proof
+signature, and the daemon gate keeps it per socket as untrusted input, deciding nothing. A vessel
+carries a SET of Nexuses (`carried-set.ts`). No relation witness and no signing domain of its own
+stand beside the gate: an admit proves itself by its quorum signatures and its lineage.
+
+''Owed in code — the cut-over.'' The daemon's carriage decision reads the folded members board
+(`foldCarriageSet` → `nexus-carriage.ts`), and the federation gate reads that fold. The cut-over moves
+the decision onto the verifier and retires the fold as the gate
 (<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>).
 
-''PREREQUISITE — the subject stamp re-keys first.'' An admit signed by a PersonaGroup ROOT correlates
-one human across every Nexus that admits them, so the subject stamp re-keys to a leaf in the ''NEXUS
-scope domain'' (`nexusScopeIndex`), never the circle domain, before any presented admit travels. The
-chairs re-key at the next re-found.
+''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
+human across every Nexus that admits them, so the subject stamp signs with a leaf in the ''NEXUS scope
+domain'' (`nexusScopeIndex`, `nexus-leaf.ts`), never the circle domain. The quorum's chairs sign with
+the seated roots; the re-found moves the charter's seats onto leaves.
 
-''The gate's shape, ruled and owed in code'':
+''The gate's shape, ruled'':
 
 * a presentation carries its lineage, and the admit travels as a carried bundle;
 * a dialer presents only the dialed island's admit;
 * a seated chair implies its Nexus stands in the carried set;
 * an unsettled deny refuses;
-* a reader learns a rotation only by re-import;
-* `contract-relation-witness` and its signing domain retire.
+* a reader learns a rotation only by re-import.
 
 !!! The guardian stands a face apart
 
@@ -281,6 +293,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v3Re5XKUIFnXBchzqbvYcSZZBwqXGIJXeREt-PGdueM
+<<^ code="&#x0003;">>ni:///sha-256;ulHl1kyGjdr-TXa1bgruS328QgjsyXd8HVrAYEEb4Us
 
 <<^ code="&#x0004;" -> to="?">>
