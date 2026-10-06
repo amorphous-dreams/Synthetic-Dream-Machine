@@ -290,10 +290,9 @@ The grammar accepts all five families equally. The parse result for a Hawaiian s
 The tag lives in the `lar:///` namespace, not the `$:/` system namespace that requires code-side registration. The migration from `$:/` to `lar:///` namespaces across all
 owned tags is the companion sprint to this one.
 
-When the TOML monolith (`memetic-wikitext.tid`) reaches families-only state — when the 7 remaining
-`[[sigils]]` blocks (concurrency cluster + toml data fence) have migrated to SharktoothSigil tiddlers
-— the grammar becomes fully self-hosted. The parser reads nothing from hardcoded tables. Every rule
-lives in a tiddler.
+The TOML monolith (the kernel `memetic-wikitext.tid`) has retired, and the grammar self-hosts:
+every rule lives in a `sigil-*.tid` tiddler (`packages/lararium-tw5/tiddlers/`), and the code's tables
+derive from those tiddlers, held to them by `tools/sigil-parity-witness.sh`.
 
 <<~/ahu>>
 
@@ -314,6 +313,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wSBgwTwH78fsbyZtUCEcejG4oD0Y3_fCZicUTcrNq1c
+<<^ code="&#x0003;">>ni:///sha-256;KdVCk0Xk2PVLXCdDeJvJBB3_CqMpUJUwHOFuxsv0Mzk
 
 <<^ code="&#x0004;" -> to="?">>

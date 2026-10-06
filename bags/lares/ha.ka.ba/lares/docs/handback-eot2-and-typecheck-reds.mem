@@ -12,7 +12,7 @@ manao      = 13
 manaoio    = 12
 namespace  = "&#x2299;"
 role       = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds + the held-out.yml job-env runner.temp fix (named, not applied — Codex hearth's hold) — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
-status-why = "parked until a crossing row opens to receive it; the EOT2 question stands un-ruled and the two typecheck reds stand un-closed; the held-out.yml job-env fix stands named, unapplied, for the Codex hearth"
+status-why = "parked until a crossing row opens to receive it; the EOT2 question closed by ruling — EOT2 retired and every carrier closes on plain EOT (`memetic-wikitext-framing`; `kapu.mem` closes on `&#x0004;`), so its section below stands as the record of the question — and the two typecheck reds stand un-closed; the held-out.yml job-env fix stands named, unapplied, for the Codex hearth"
 tags       = ["docs/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -38,6 +38,8 @@ next crossing) folds in on its own schedule.
 <<~ ahu #/eot2-question>>
 
 !! EOT2 on `kapu.mem` — an open question, not a ruling
+
+''Closed beside the record:'' EOT2 has retired; every carrier closes on plain EOT, kapu-tier included (`memetic-wikitext-framing.mem`, the SOH₂ paragraph), and `kapu.mem` closes on `&#x0004;`. The question below stands as asked.
 
 ''Context, not law — stated once so the question reads clean.'' The relay/stream ontology stands
 mid-refactor; the operator's working frame reads EOT2 as transport framing: EOT2 serves STREAMED text or
@@ -148,6 +150,6 @@ hand did not touch `.github/workflows/held-out.yml` itself — it is held by the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YldMPv4ciSgW1ZiCq148ofBPnMgPzCNBOkV9oYId6Fo
+<<^ code="&#x0003;">>ni:///sha-256;tQSRBxFOE3r6bWf04Iofk10jSn1ORfca3UACXUZHV08
 
 <<^ code="&#x0004;" -> to="?">>
