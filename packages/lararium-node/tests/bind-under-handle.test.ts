@@ -18,7 +18,7 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
-  runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents,
+  runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents, readLeaseFrontier,
 } from "@lararium/keyhive";
 import { deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, hexToBytes } from "@lararium/mesh";
 import {
@@ -46,12 +46,15 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
   const chain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!chain) throw new Error(`no persona-KEL chain for ${personaKelPrefix} on this vessel's board`);
+  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN daemon layer.
+  const lease = await readLeaseFrontier(composite, pg.docIdHex);
+  if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
     seed: s, eventStore: new DaemonEventStore({ daemon: composite }),
     vesselVerifyingKey: verifyingKey,
     personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, meshCabalDocIdHex: mesh,
     registerBags: [DAEMON_BAG_ID], signerDid, personaKel: { prefix: personaKelPrefix, chain },
-    deviceEdge: deviceEdge as never,
+    deviceEdge: deviceEdge as never, expectedEpoch: lease.n,
     ...(archiveBytes ? { archiveBytes } : {}),
   });
 }
@@ -94,7 +97,7 @@ describe("two vessels bind under one Handle", () => {
       signerSeed: FOUNDER_SEED, joineeVerifyingKey: joineeKey, hearthTrueName: "bafyHearth",
       personaKelPrefix: cer.personaKelPrefix, personaKelChain: founderKelChain,
       personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, meshCabalDocIdHex: cer.meshCabalDocIdHex,
-      syncUrl: null, islandDocUrl: null, personaUrl: cer.personaUrl,
+      syncUrl: null, islandDocUrl: null, personaUrl: cer.personaUrl, hearthDaemonUrl: null,
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const payload = { ...base, capEvents: bundle.capEvents };
 
