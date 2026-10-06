@@ -149,9 +149,19 @@ The quorum's admits stay a shared contract RECORD; the gate never folds that rec
 ruling the fold retires as the gate, and the build stands owed
 (<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>).
 
-''PREREQUISITE — the stamp re-keys first.'' An admit signed by a PersonaGroup ROOT correlates one
-human across every Nexus that admits them, so the admit stamp re-keys to a ''circle-scoped leaf''
-before any presented admit travels.
+''PREREQUISITE — the subject stamp re-keys first.'' An admit signed by a PersonaGroup ROOT correlates
+one human across every Nexus that admits them, so the subject stamp re-keys to a leaf in the ''NEXUS
+scope domain'' (`nexusScopeIndex`), never the circle domain, before any presented admit travels. The
+chairs re-key at the next re-found.
+
+''The gate's shape, ruled and owed in code'':
+
+* a presentation carries its lineage, and the admit travels as a carried bundle;
+* a dialer presents only the dialed island's admit;
+* a seated chair implies its Nexus stands in the carried set;
+* an unsettled deny refuses;
+* a reader learns a rotation only by re-import;
+* `contract-relation-witness` and its signing domain retire.
 
 !!! The guardian stands a face apart
 
@@ -269,6 +279,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1uqOUFhdWOUmYDndqEl7JZrZaKW-sbwmMvRMLIEMexI
+<<^ code="&#x0003;">>ni:///sha-256;D40JpydELGafpPBJuvqbs2drq-m8TjYCiHRIH0QbfrY
 
 <<^ code="&#x0004;" -> to="?">>

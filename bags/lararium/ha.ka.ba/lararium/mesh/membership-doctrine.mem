@@ -119,7 +119,7 @@ holds about a contracting operator.''
 ''The admit travels with its subject.'' The subject PRESENTS its quorum-signed entry at the wire, and
 the gate reads it against the deny-only `blocked{}` — never `members{}` folded into an allow roster
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>, which also carries the code owed and
-the re-key to a circle-scoped leaf that comes first).
+the re-key to a nexus-scoped leaf that comes first, and the gate's shape as owed in code).
 
 <<~/ahu>>
 
@@ -231,6 +231,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kiEUK_yEqCnklPS5_Lo2qqSx3Gz-hiTaUlqRpDuFhp0
+<<^ code="&#x0003;">>ni:///sha-256;f43GB6n3WA3j7Ts1WMJ5OpHsXh-nvYNbN2jKM9l7_ic
 
 <<^ code="&#x0004;" -> to="?">>
