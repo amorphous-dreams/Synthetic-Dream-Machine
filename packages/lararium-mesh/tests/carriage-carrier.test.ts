@@ -19,14 +19,14 @@
  * law, unmoved); a nonsense-domain seal verifies as neither carrier nor member.
  */
 import { describe, test, expect } from "vitest";
-import * as ed from "@noble/ed25519";
-import { hex, canonicalJsonBytes } from "../src/crypto.js";
+import { canonicalJsonBytes } from "../src/crypto.js";
 import {
   signCarriageQuorum, signCarriageContract, signCarrierContract, verifyCarrierContract, carriageEntryActCid,
   foldCarriageSet, foldCarrierSet, holdsCarriage, holdsCarrier,
   type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import type { KahuRoster } from "../src/kapae-antigen.js";
+import { signerOf, pubOf, kahuRoster, kahuSigners, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
 
@@ -38,12 +38,8 @@ const SEEDS = {
   herm:     new Uint8Array(32).fill(9),   // a PLACE — its device-minted vessel key, no persona anywhere
   stranger: new Uint8Array(32).fill(7),
 };
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-
-async function roster(threshold = 2): Promise<KahuRoster> {
-  const keys = await Promise.all([pubOf(SEEDS.guru), pubOf(SEEDS.telarus), pubOf(SEEDS.lindwyrm)]);
-  return { keys, threshold, sealEpochCid: EPOCH };
+function roster(threshold = 2): Promise<KahuRoster> {
+  return kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], threshold, EPOCH);
 }
 
 /** A `carry` / `uncarry` entry: the kahu quorum, plus (for a carry) the PLACE's own vessel-key seal. */
@@ -53,12 +49,10 @@ async function carryEntry(
   carrierSig?: QuorumSignature,
   placeSeed: Uint8Array = SEEDS.herm,
 ): Promise<CarriageEntry> {
-  const nym     = await pubOf(placeSeed);
-  const epoch   = over.sealEpochCid ?? EPOCH;
-  const action  = over.action ?? "carry";
-  const signers = await Promise.all(kahu.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  const seal    = carrierSig ?? (action === "carry" ? await signCarrierContract(nym, epoch, signerOf(placeSeed)) : undefined);
-  return signCarriageQuorum({ nym, action, parents: over.parents ?? [], sealEpochCid: epoch }, signers, seal);
+  return carriageAct(placeSeed, over.action ?? "carry", {
+    kahu, epoch: over.sealEpochCid ?? EPOCH, parents: over.parents ?? [],
+    ...(carrierSig ? { seal: carrierSig } : {}),
+  });
 }
 
 describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becomes a member", () => {
@@ -88,7 +82,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
   test("a carry with NO seal at all is ignored — a Nexus never conscripts a place either", async () => {
     const r = await roster();
     const nym = await pubOf(SEEDS.herm);
-    const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const signers = await kahuSigners([SEEDS.guru, SEEDS.telarus]);
     const bare = await signCarriageQuorum({ nym, action: "carry", parents: [], sealEpochCid: EPOCH }, signers);
     expect(holdsCarrier(nym, await foldCarrierSet([bare], r))).toBe(false);
   });
@@ -102,7 +96,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
     expect(await verifyCarrierContract({ nym, sealEpochCid: EPOCH, sig: memberSeal.sig })).toBe(false);
     // And the carrier seal, carried onto a member ADMIT, leaves the admit uncounted.
     const r = await roster();
-    const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const signers = await kahuSigners([SEEDS.guru, SEEDS.telarus]);
     const crossed = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, signers, carrierSeal);
     expect(holdsCarriage(nym, await foldCarriageSet([crossed], r))).toBe(false);
   });
@@ -132,9 +126,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
   test("CONTROL: a member ADMIT still needs its persona-signed contract-in and still reads MEMBER", async () => {
     const r = await roster();
     const nym = await pubOf(SEEDS.joiner);
-    const seal = await signCarriageContract(nym, EPOCH, signerOf(SEEDS.joiner));
-    const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const admit = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, signers, seal);
+    const admit = await carriageAct(SEEDS.joiner, "admit", { kahu: [SEEDS.guru, SEEDS.telarus], epoch: EPOCH });
     expect(holdsCarriage(nym, await foldCarriageSet([admit], r))).toBe(true);
     // …and it is not thereby a carrier.
     expect(holdsCarrier(nym, await foldCarrierSet([admit], r))).toBe(false);
@@ -148,7 +140,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
     const sig = await signerOf(SEEDS.herm)(bytes);
     expect(await verifyCarrierContract({ nym, sealEpochCid: EPOCH, sig })).toBe(false);
     const r = await roster();
-    const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const signers = await kahuSigners([SEEDS.guru, SEEDS.telarus]);
     const entry = await signCarriageQuorum({ nym, action: "carry", parents: [], sealEpochCid: EPOCH }, signers, { signer: nym, sig });
     expect(holdsCarrier(nym, await foldCarrierSet([entry], r))).toBe(false);
   });

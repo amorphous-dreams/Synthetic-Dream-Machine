@@ -9,24 +9,18 @@
  *   · extra smuggled fields (a fake "email") are DROPPED on read — only the operator-contract floor survives.
  */
 import { describe, test, expect } from "vitest";
-import * as ed from "@noble/ed25519";
-import { hex } from "../src/crypto.js";
 import { carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey } from "../src/carriage-board.js";
-import { signCarriageQuorum, signCarriageContract, signCarrierContract, CARRIAGE_ENTRY_DOMAIN } from "../src/carriage-registry.js";
+import { CARRIAGE_ENTRY_DOMAIN } from "../src/carriage-registry.js";
 import { mutableLarRecord, type LarDoc } from "../src/base-doc.js";
+import { carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
 const KAHU  = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2)];
 const JOIN  = new Uint8Array(32).fill(5);
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const emptyBoard = (): LarDoc => ({ tiddlers: {} }) as LarDoc;
 
-async function admitEntry() {
-  const nym     = await pubOf(JOIN);
-  const signers = await Promise.all(KAHU.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  const cs      = await signCarriageContract(nym, EPOCH, signerOf(JOIN));
-  return signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, signers, cs);
+function admitEntry() {
+  return carriageAct(JOIN, "admit", { kahu: KAHU, epoch: EPOCH });
 }
 
 describe("members-board — write/read roundtrip + fail-closed extraction", () => {
@@ -42,10 +36,7 @@ describe("members-board — write/read roundtrip + fail-closed extraction", () =
   });
 
   test("carrier acts use the same causal board parser and remain carrier actions", async () => {
-    const nym = await pubOf(JOIN);
-    const signers = await Promise.all(KAHU.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const entry = await signCarriageQuorum({ nym, action: "carry", parents: [], sealEpochCid: EPOCH }, signers,
-      await signCarrierContract(nym, EPOCH, signerOf(JOIN)));
+    const entry = await carriageAct(JOIN, "carry", { kahu: KAHU, epoch: EPOCH });
     const board = emptyBoard();
     writeCarriageEntry(board, entry);
     expect(carriageEntriesFromBoard(board)[0]).toMatchObject({ action: "carry", parents: [] });

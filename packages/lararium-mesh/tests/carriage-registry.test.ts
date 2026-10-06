@@ -13,14 +13,13 @@
  *     · charter-epoch); no name/email/device/behavior field can ride the signed bytes.
  */
 import { describe, test, expect } from "vitest";
-import * as ed from "@noble/ed25519";
-import { hex } from "../src/crypto.js";
 import {
-  signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryBytes, foldCarriageSet, foldCarriageDetails, holdsCarriage,
+  signCarriageQuorum, carriageEntryBytes, foldCarriageSet, foldCarriageDetails, holdsCarriage,
   carriageEntryCounts,
   CARRIAGE_ENTRY_DOMAIN, carriageEntryActCid, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import type { KahuRoster } from "../src/kapae-antigen.js";
+import { pubOf, kahuRoster, kahuSigners, contractIn, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
 
@@ -32,31 +31,18 @@ const SEEDS = {
   joiner:   new Uint8Array(32).fill(5),   // the operator being admitted
   stranger: new Uint8Array(32).fill(7),
 };
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-
-async function roster(threshold = 2): Promise<KahuRoster> {
-  const keys = await Promise.all([pubOf(SEEDS.guru), pubOf(SEEDS.telarus), pubOf(SEEDS.lindwyrm)]);
-  return { keys, threshold, sealEpochCid: EPOCH };
-}
-
-/** The joining operator's "accepts carriage" contract-in for the current epoch. */
-async function contractIn(seed: Uint8Array, epoch = EPOCH): Promise<QuorumSignature> {
-  const nym = await pubOf(seed);
-  return signCarriageContract(nym, epoch, signerOf(seed));
+function roster(threshold = 2): Promise<KahuRoster> {
+  return kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], threshold, EPOCH);
 }
 
 async function admitEntry(over: Partial<Pick<CarriageEntry, "action" | "parents" | "sealEpochCid">> = {},
                           kahu: Uint8Array[] = [SEEDS.guru, SEEDS.telarus],
                           contract: QuorumSignature | undefined = undefined,
                           joinerSeed: Uint8Array = SEEDS.joiner): Promise<CarriageEntry> {
-  const nym     = await pubOf(joinerSeed);
-  const signers = await Promise.all(kahu.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  const cs      = contract ?? (over.action === "revoke" ? undefined : await contractIn(joinerSeed, over.sealEpochCid ?? EPOCH));
-  return signCarriageQuorum(
-    { nym, action: over.action ?? "admit", parents: over.parents ?? [], sealEpochCid: over.sealEpochCid ?? EPOCH },
-    signers, cs,
-  );
+  return carriageAct(joinerSeed, over.action ?? "admit", {
+    kahu, epoch: over.sealEpochCid ?? EPOCH, parents: over.parents ?? [],
+    ...(contract ? { seal: contract } : {}),
+  });
 }
 
 describe("the members fold — admit needs BOTH the kahu quorum AND the operator contract-in", () => {
@@ -88,7 +74,7 @@ describe("the members fold — admit needs BOTH the kahu quorum AND the operator
     const r = await roster();
     const nym = await pubOf(SEEDS.joiner);
     // The stranger signs a carriage token but claims the joiner's nym as signer → verify fails (signer≠nym or bad sig).
-    const forged = await contractIn(SEEDS.stranger);
+    const forged = await contractIn(SEEDS.stranger, EPOCH);
     const misattributed: QuorumSignature = { signer: nym, sig: forged.sig };   // wrong sig under the joiner's nym
     const entry = await admitEntry({}, [SEEDS.guru, SEEDS.telarus], misattributed);
     const set = await foldCarriageSet([entry], r);
@@ -187,14 +173,9 @@ describe("fold details — evidence for a future receiver-local relation verifie
     const memberAdmit = await admitEntry();
     const memberRevoke = await admitEntry({ action: "revoke" });
     const placeNym = await pubOf(SEEDS.stranger);
-    const kahu = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (seed) => ({ signer: await pubOf(seed), sign: signerOf(seed) })));
-    const carry = await signCarriageQuorum(
-      { nym: placeNym, action: "carry", parents: [], sealEpochCid: EPOCH }, kahu,
-      await signCarrierContract(placeNym, EPOCH, signerOf(SEEDS.stranger)),
-    );
-    const uncarry = await signCarriageQuorum(
-      { nym: placeNym, action: "uncarry", parents: [carriageEntryActCid(carry)], sealEpochCid: EPOCH }, kahu,
-    );
+    const kahu = [SEEDS.guru, SEEDS.telarus];
+    const carry = await carriageAct(SEEDS.stranger, "carry", { kahu, epoch: EPOCH });
+    const uncarry = await carriageAct(SEEDS.stranger, "uncarry", { kahu, epoch: EPOCH, parents: [carriageEntryActCid(carry)] });
     const mixed = [memberAdmit, memberRevoke, carry, uncarry];
     const legacy = await foldCarriageSet(mixed, r);
     const detailed = await foldCarriageDetails(mixed, r);
@@ -231,10 +212,9 @@ describe("carriageEntryCounts — the writer's self-check reads the fold's own v
   test("a quorum-signed UNSUPPORTED action with a valid contract-in never counts — the fold rejects it too", async () => {
     const r       = await roster();
     const nym     = await pubOf(SEEDS.joiner);
-    const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
     const bogus   = await signCarriageQuorum(
       { nym, action: "bogus" as unknown as CarriageEntry["action"], parents: [], sealEpochCid: EPOCH },
-      signers, await contractIn(SEEDS.joiner),
+      await kahuSigners([SEEDS.guru, SEEDS.telarus]), await contractIn(SEEDS.joiner, EPOCH),
     );
     expect((await foldCarriageDetails([bogus], r)).entries[0]).toMatchObject({ counted: false, reason: "unsupported-action" });
     expect(await carriageEntryCounts(bogus, r)).toBe(false);
@@ -254,7 +234,7 @@ describe("TRACK CONTRACTS, NEVER IDENTITIES — the signed payload is the operat
   });
 
   test("the contract-in the operator signs carries ONLY nym + charter-epoch (independent of causal acts)", async () => {
-    const cs = await contractIn(SEEDS.joiner);
+    const cs = await contractIn(SEEDS.joiner, EPOCH);
     const nym = await pubOf(SEEDS.joiner);
     expect(cs.signer).toBe(nym);   // the seal is the operator's OWN — proves consent, names no human
   });

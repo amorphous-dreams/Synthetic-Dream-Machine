@@ -17,15 +17,15 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import * as ed from "@noble/ed25519";
-import { hex, hexToBytes } from "../src/crypto.js";
+import { hexToBytes } from "../src/crypto.js";
 import {
-  signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid, carriageEntryCounts,
+  signCarriageQuorum, carriageEntryActCid, carriageEntryCounts,
   verifyPresentedAdmit, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import {
   signAntigenEntry, makeMultiSigQuorumVerifier, type KahuRoster, type KapaeAntigenEntry,
 } from "../src/kapae-antigen.js";
+import { pubOf, kahuRoster, kahuSigners as signersOf, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH      = "epoch-cid-genesis";
 const NEXT_EPOCH = "epoch-cid-after-roll";
@@ -41,21 +41,17 @@ const SEEDS = {
   warden1:   new Uint8Array(32).fill(11),
   warden2:   new Uint8Array(32).fill(12),
 };
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-
-async function roster(sealEpochCid = EPOCH): Promise<KahuRoster> {
-  const keys = await Promise.all([pubOf(SEEDS.guru), pubOf(SEEDS.telarus), pubOf(SEEDS.lindwyrm)]);
-  return { keys, threshold: 2, sealEpochCid };
+function roster(sealEpochCid = EPOCH): Promise<KahuRoster> {
+  return kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], 2, sealEpochCid);
 }
 
-async function antigenRoster(): Promise<KahuRoster> {
-  const keys = await Promise.all([pubOf(SEEDS.warden1), pubOf(SEEDS.warden2)]);
-  return { keys, threshold: 2, sealEpochCid: EPOCH };
+/** The antigen roster stands on the wardens' own keys, never the membership quorum's. */
+function antigenRoster(): Promise<KahuRoster> {
+  return kahuRoster([SEEDS.warden1, SEEDS.warden2], 2, EPOCH);
 }
 
-async function kahuSigners(seeds: Uint8Array[] = [SEEDS.guru, SEEDS.telarus]) {
-  return Promise.all(seeds.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+function kahuSigners(seeds: Uint8Array[] = [SEEDS.guru, SEEDS.telarus]) {
+  return signersOf(seeds);
 }
 
 async function act(
@@ -63,13 +59,10 @@ async function act(
   parents: readonly string[] = [],
   opts: { subject?: Uint8Array; epoch?: string; contract?: QuorumSignature } = {},
 ): Promise<CarriageEntry> {
-  const subject = opts.subject ?? SEEDS.joiner;
-  const epoch   = opts.epoch ?? EPOCH;
-  const nym     = await pubOf(subject);
-  const consent = action === "admit"
-    ? (opts.contract ?? await signCarriageContract(nym, epoch, signerOf(subject)))
-    : undefined;
-  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch }, await kahuSigners(), consent);
+  return carriageAct(opts.subject ?? SEEDS.joiner, action, {
+    kahu: [SEEDS.guru, SEEDS.telarus], epoch: opts.epoch ?? EPOCH, parents,
+    ...(action === "admit" && opts.contract ? { seal: opts.contract } : {}),
+  });
 }
 
 async function kapae(action: "kapae" | "un_kapae", parents: readonly string[] = [],
@@ -243,10 +236,7 @@ describe("verifyPresentedAdmit — controls", () => {
   });
 
   test("CONTROL — a place `carry` entry never satisfies an admit", async () => {
-    const placeNym = await pubOf(SEEDS.place);
-    const seal  = await signCarrierContract(placeNym, EPOCH, signerOf(SEEDS.place));
-    const carry = await signCarriageQuorum(
-      { nym: placeNym, action: "carry", parents: [], sealEpochCid: EPOCH }, await kahuSigners(), seal);
+    const carry = await carriageAct(SEEDS.place, "carry", { kahu: [SEEDS.guru, SEEDS.telarus], epoch: EPOCH });
     expect(await carriageEntryCounts(carry, await roster())).toBe(true);   // it counts on its own fold
     expect(await verify({ admit: carry })).toMatchObject({ state: "rejected" });
   });

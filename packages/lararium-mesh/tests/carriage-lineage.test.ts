@@ -1,15 +1,12 @@
 import { describe, expect, test } from "vitest";
-import * as ed from "@noble/ed25519";
-import { hex } from "../src/crypto.js";
 import {
   carriageEntryActCid,
   foldCarriageDetails,
   foldCarriageSet,
-  signCarriageContract,
-  signCarriageQuorum,
   type CarriageEntry,
 } from "../src/carriage-registry.js";
 import type { KahuRoster } from "../src/kapae-antigen.js";
+import { kahuRoster, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
 const SEEDS = {
@@ -17,29 +14,16 @@ const SEEDS = {
   telarus: new Uint8Array(32).fill(2),
   joiner: new Uint8Array(32).fill(5),
 };
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 
-async function roster(): Promise<KahuRoster> {
-  return {
-    keys: await Promise.all([pubOf(SEEDS.guru), pubOf(SEEDS.telarus)]),
-    threshold: 2,
-    sealEpochCid: EPOCH,
-  };
+function roster(): Promise<KahuRoster> {
+  return kahuRoster([SEEDS.guru, SEEDS.telarus], 2, EPOCH);
 }
 
-async function act(
+function act(
   action: "admit" | "revoke",
   parents: readonly string[] = [],
 ): Promise<CarriageEntry> {
-  const nym = await pubOf(SEEDS.joiner);
-  const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (seed) => ({
-    signer: await pubOf(seed), sign: signerOf(seed),
-  })));
-  const consent = action === "admit"
-    ? await signCarriageContract(nym, EPOCH, signerOf(SEEDS.joiner))
-    : undefined;
-  return signCarriageQuorum({ nym, action, parents, sealEpochCid: EPOCH }, signers, consent);
+  return carriageAct(SEEDS.joiner, action, { kahu: [SEEDS.guru, SEEDS.telarus], epoch: EPOCH, parents });
 }
 
 describe("causal carriage evidence", () => {

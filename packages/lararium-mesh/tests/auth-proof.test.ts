@@ -12,8 +12,9 @@ import {
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isPresentedAdmit,
 } from "../src/auth-wire.js";
 import { canonicalJsonBytes, hex } from "../src/crypto.js";
-import { carriageEntryActCid, signCarriageContract, signCarriageQuorum } from "../src/carriage-registry.js";
+import { carriageEntryActCid } from "../src/carriage-registry.js";
 import type { LarAuthMsg, PresentedAdmit } from "../src/auth-wire.js";
+import { carriageAct } from "./fixtures/carriage.js";
 
 const base = {
   nonce:      "ab12cd",
@@ -25,19 +26,12 @@ const base = {
 
 // A real quorum-signed admit and the counted acts it cites — the subject's own presentation at the wire.
 const EPOCH = "epoch-cid-genesis";
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed25519.signAsync(bytes, seed).then(hex);
-const pubOf = (seed: Uint8Array) => ed25519.getPublicKeyAsync(seed).then(hex);
 async function presentedAdmitFixture(): Promise<PresentedAdmit> {
-  const kahu = await Promise.all([1, 2].map(async (n) => {
-    const seed = new Uint8Array(32).fill(n);
-    return { signer: await pubOf(seed), sign: signerOf(seed) };
-  }));
+  const kahu = [1, 2].map((n) => new Uint8Array(32).fill(n));
   const subject = new Uint8Array(32).fill(5);
-  const nym = await pubOf(subject);
-  const consent = await signCarriageContract(nym, EPOCH, signerOf(subject));
-  const first = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, kahu, consent);
-  const revoke = await signCarriageQuorum({ nym, action: "revoke", parents: [carriageEntryActCid(first)], sealEpochCid: EPOCH }, kahu);
-  const admit = await signCarriageQuorum({ nym, action: "admit", parents: [carriageEntryActCid(revoke)], sealEpochCid: EPOCH }, kahu, consent);
+  const first = await carriageAct(subject, "admit", { kahu, epoch: EPOCH });
+  const revoke = await carriageAct(subject, "revoke", { kahu, epoch: EPOCH, parents: [carriageEntryActCid(first)] });
+  const admit = await carriageAct(subject, "admit", { kahu, epoch: EPOCH, parents: [carriageEntryActCid(revoke)] });
   return { admit, lineage: [first, revoke] };
 }
 
