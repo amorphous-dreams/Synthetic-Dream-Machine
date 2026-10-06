@@ -18,12 +18,21 @@
  * V1's `regranted` assertion is the one that cannot be inferred: membership WITHOUT reach looks identical to a
  * healthy join from every other angle — admitted, re-keyed, events flowing — and only the count says so.
  *
+ * THE RECORD OVER THE SUMMARY. The verb's outcome is a bounded VIEW: past the outcome cap its `capEvents` fold to
+ * `{boundedArrayCount, tallies, sha256, sample}`. The act is the signed `face-join-grant/v1` record the verb writes
+ * to the PersonaGroup plane, so V1–V3 read THAT record back through `face-grant-get` — the same store the join
+ * wrote, so the read follows the join causally — verify its signature under the root that signed the joinee's
+ * edge, and assert on it. The view is held to the record as a CONTROL: its digest and count match the record's
+ * array, or, unbounded, its array equals the record's.
+ *
  * None of these vectors asserts RECOVERY. A summons returns a seat and public ops, never prekey secrets, so a
  * vessel that lost its store restores from its archive; the pair test holds that boundary.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
+import { verifyFaceGrantRecord, type FaceGrantRecord } from "../../packages/lararium-keyhive/src/face-grant-record.js";
+import { canonicalJsonBytes, sha256HexBytesSync } from "../../packages/lararium-mesh/src/crypto.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 import type { DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 
@@ -41,6 +50,39 @@ async function summon(body: Record<string, unknown>): Promise<Record<string, unk
     `0x${"0".repeat(64)}`, { dataDir, timeoutMs: 30_000 });
   return (r as { results?: { summary?: { output?: Record<string, unknown> } } })
     .results?.summary?.output ?? (r as unknown as Record<string, unknown>);
+}
+
+/**
+ * The grant RECORD a join wrote, read back through the daemon's own store, verified, and held against the view.
+ *
+ * Returns the record so a vector asserts on the act. Fails when no record stands, when its signature fails under
+ * the root that signed the joinee's edge, or when the outcome's view disagrees with the record it summarises.
+ */
+async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecord> {
+  const r = await invokeLocal("face-grant-get", { joinee: g["joineeAgentIdHex"] },
+    `0x${"0".repeat(64)}`, { dataDir, timeoutMs: 30_000 });
+  const out = (r as { results?: { summary?: { output?: Record<string, unknown> } } }).results?.summary?.output
+    ?? (r as unknown as Record<string, unknown>);
+  expect(out["title"], `the read names another title than the join wrote:\n${JSON.stringify(r).slice(0, 600)}`).toBe(g["recordTitle"]);
+  const rec = out["record"] as FaceGrantRecord | null;
+  expect(rec, `no grant record stands at ${String(g["recordTitle"])}:\n${JSON.stringify(r).slice(0, 600)}`).not.toBeNull();
+  const verdict = await verifyFaceGrantRecord(rec, {
+    personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupDocIdHex: rec!.groupDocIdHex,
+  });
+  expect(verdict, "the grant record does not verify as signed under the hearth's root").toEqual({ ok: true });
+  expect(rec!.capEvents.length).toBeGreaterThan(0);
+
+  // CONTROL — the view carries the record's digest. A bounded summary names the record's array by its sha256 over
+  // canonical JSON and by its count; an unbounded one IS the record's array.
+  const view = g["capEvents"];
+  if (Array.isArray(view)) {
+    expect(view).toEqual(rec!.capEvents);
+  } else {
+    const bounded = view as { boundedArrayCount: number; sha256: string };
+    expect(bounded.sha256).toBe(sha256HexBytesSync(canonicalJsonBytes(rec!.capEvents)));
+    expect(bounded.boundedArrayCount).toBe(rec!.capEvents.length);
+  }
+  return rec!;
 }
 
 beforeAll(async () => {
@@ -74,28 +116,30 @@ describe("e2e/face-join — the join against a live hearth", () => {
   test("V1 — a licensed edge seats the joinee AND re-grants the hearth's standing bags", async () => {
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge });
     expect(g["admitted"]).toBe(true);
-    expect(g["reKeyed"]).toBe(true);
-    expect((g["capEvents"] as string[]).length).toBeGreaterThan(0);
     expect(typeof g["founderCard"]).toBe("string");
+    const rec = await recordedGrant(g);
+    expect(rec.reKeyed).toBe(true);
     // THE VECTOR THAT CANNOT BE INFERRED — a seat that re-grants nothing reaches nothing.
-    expect(g["regranted"] as number).toBeGreaterThan(0);
+    expect(rec.regranted).toBeGreaterThan(0);
   }, 120_000);
 
   test("V2 — a repeat hands the seat back and moves no epoch", async () => {
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge });
     expect(g["admitted"]).toBe(true);
-    expect(g["reKeyed"]).toBe(false);
-    expect(g["regranted"]).toBe(0);
-    // Events still flow, and that is membership rather than recovery: a vessel whose store was wiped mints
-    // fresh prekeys and opens none of the group's sealed material from these. Its keel is the archive.
-    expect((g["capEvents"] as string[]).length).toBeGreaterThan(0);
+    // Events still flow (the record's own `capEvents.length > 0`), and that is membership rather than recovery:
+    // a vessel whose store was wiped mints fresh prekeys and opens none of the group's sealed material from
+    // these. Its keel is the archive.
+    const rec = await recordedGrant(g);
+    expect(rec.reKeyed).toBe(false);
+    expect(rec.regranted).toBe(0);
   }, 120_000);
 
   test("V3 — force re-keys a seated device and re-grants again", async () => {
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge, force: true });
     expect(g["admitted"]).toBe(true);
-    expect(g["reKeyed"]).toBe(true);
-    expect(g["regranted"] as number).toBeGreaterThan(0);
+    const rec = await recordedGrant(g);
+    expect(rec.reKeyed).toBe(true);
+    expect(rec.regranted).toBeGreaterThan(0);
   }, 120_000);
 
   test("V5 — a hearth refuses to seat ITSELF, so one summons never draws two writers", async () => {
