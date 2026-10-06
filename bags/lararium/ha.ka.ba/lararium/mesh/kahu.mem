@@ -140,6 +140,11 @@ quorum-share.'' A quorum-share signs today's acts; a reserve share rebuilds tomo
 object holding both hands a single breach the present AND the future of a Nexus
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/reserve-custody">>).
 
+''One human MAY hold both faces.'' The separation lives in the OBJECTS, never in the person: a
+reserve share and a quorum-share stay two keys in two custodies, so one stolen object never opens
+both. A Nexus can begin with one operator holding every share; spreading the faces across humans
+comes as the Nexus grows, never as the price of founding it.
+
 <<~/ahu>>
 
 <<~ ahu #/distinction>>
@@ -243,6 +248,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hOYBQ27wuLCKvCY6gJzioaWkAR32EOQWzGCAYA43mII
+<<^ code="&#x0003;">>ni:///sha-256;eJPws3gMEYFu7T0LQMdyIkkiLX0fChT9wR4AeLUWtY0
 
 <<^ code="&#x0004;" -> to="?">>
