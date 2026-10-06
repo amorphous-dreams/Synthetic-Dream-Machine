@@ -7,73 +7,79 @@
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/codex-crew-emergency-handoff.mem"
 l-space    = "lares"
-mana       = 17
-manao      = 17
-manaoio    = 17
-role       = "emergency-room transfer for the parallel Codex Astra research and Terra main-work hearths; records only the observed work boundary, immediate triage, uncommitted surface, and decision forks"
-status-why = "an emergency-room transfer stands until the receiving hearth reads it and triages the forks named here; not retired until that hand-off closes"
+mana       = 18
+manao      = 18
+manaoio    = 18
+role       = "emergency-room transfer for the Codex crew; records the observed repository boundary, current wounds, committed repairs, operator-held forks, and a cold-start triage order"
+status-why = "re-trued at 28e66b79e after the first 2026-10-04 transfer; it distinguishes committed repairs from live uncommitted lanes and from receipts not yet rerun at their repaired boundary"
 tags       = ["docs/handoff", "lifecycle/standing", "triage/emergency-room", "mesh/offering-antigen"]
 title      = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
-written    = "2026-10-04"
+updated    = "2026-10-06"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/read-first>>
 
-! Emergency-room handoff — Codex Astra + Terra crew
+! Emergency-room handoff — Codex crew, re-trued 2026-10-06
 
-''Purpose.'' This carrier transfers a shared tree to two new Codex hearths: Astra holds bounded research and design collision; Terra holds the main production thread. It records observed boundaries, never a universal present. Each new hearth reads its own checkout, `git status`, and the shift/hearth ledgers before declaring a hold.
+''Scope.'' This carrier is a local reading at `28e66b79e`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
 
 ''Read in this order.''
 
-# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> — house law, personas, OODA-HA, and yield form.
+# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> — house law, OODA-HA, personas, and yield form.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> — red-first procedure and shared-tree hazards.
-# <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> — live crossings and owners; do not inherit a closed crew's identity.
-# <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">> — roadmap, completed receipts, and open work.
-# This carrier — immediate triage only.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> — active crossings and held paths.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> — whole-tree vitals, P1 wounds, and cold-start build rules.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">> — the longer Codex roadmap and operator-held forks.
+# This carrier — the bounded Codex offering/admission transfer below.
 
-''Crew composition.'' Astra researches and writes separate evidence carriers. Terra integrates only a policy that remains explicit after collision, then makes the smallest red-first production cut. Neither role means an authority rank; both are peer observations offered to the operator.
+''Working agreement.'' Research hands publish evidence separately. An enactment hand turns only a selected policy into the smallest red-first cut. A commit names its files, its receipts, and what it does not prove. An unresolved CRDT or policy conflict goes to Talk Story; no hand picks its semantic result.
 
 <<~/ahu>>
 
 <<~ ahu #/red-board>>
 
-! Red board — do not cross these lines
+! Red board — present shared-tree boundary
 
-|!condition |!required response |
+|!condition observed in this checkout |!required response |
 |---|---|
-|Uncommitted TW5/memetic-frame work from other hands |Do not rebuild generated TW5 artifacts, normalize their carriers, stage them, or use `git add -A`. Claim exact files in `hearths` before touching shared ground.|
-|Uncommitted offering witness files |Treat `tests/harness/instance.ts` and `tests/e2e/nexus-offering-replication.test.ts` as one bounded WIP. Preserve their diff until its red is understood or deliberately retired.|
-|Binding Gate failure |Do not default a missing lease frontier to `0`, weaken the gate, or replace a causal check with wall time.|
-|Offering Antigen scope |Do not add `nexusScopeCid`, treat `sealEpochCid` as final scope, or implement enforcement until the operator sees the collision report.|
-|Generic offering receipt |Do not invent a generic durable `take`/`stage` record. Local CAS possession already has a receiver observation; adoption needs a named target relation.|
-|Any semantic CRDT disagreement |Retain its heads and surface it through Talk Story. No actor chooses its result silently.|
+|Current admission/cut-over lane |Dirty Mesh (`auth-wire`, `lar-ws-client-adapter`, `raise-challenge`, Pronaos/CAS seams), Node daemon/carriage/raise paths, CLI nexus/raise paths, `tools/contract-witness.sh`, and `tests/e2e/meme-realm-bag.test.ts` belong to another active healing lane. Do not build generated outputs from them, stage them, revert them, or use `git add -A`. Read their exact diff and the `hearths` hold before touching a nearby seam.|
+|New untracked admission seam |`packages/lararium-node/src/admit-bundle.ts` and its test have no committed baseline. Preserve their ownership boundary; do not fold them into this handoff or its offering witness.|
+|Uncommitted receiver-witness seam |`tests/harness/instance.ts` and untracked `tests/e2e/nexus-offering-replication.test.ts` remain one bounded offering WIP. Preserve them until the repaired boot boundary receives a fresh receipt.|
+|Concurrent TW5 source edits |`packages/lararium-tw5/**` has live source/test edits. Do not normalize, regenerate, or stage another hand's artifacts while this source lane remains live.|
+|Submodules and worktree directories |`mempalace`, `VSCode-TW5-Syntax`, `.worktrees/`, and `.claude/worktrees/` carry independent state. Do not clean them as aftermath for this handoff.|
+|Offering Antigen scope |Do not add `nexusScopeCid`, declare `sealEpochCid` the final answer, or wire enforcement before the research collision reaches the operator.|
+|Generic offering adoption |Do not mint generic `take` or `stage` evidence. A local CAS observation already says what it knows. Adoption waits for an explicit receiver-owned recipe/staging target relation.|
 
-The working tree observed at transfer contains roughly forty-five unrelated dirty paths, notably `packages/lararium-memetic-frame`, `packages/lararium-tw5`, generated standalone plugin artifacts, and `mempalace`. They are not Terra's cleanup opportunity.
-
-<<~/ahu>>
-
-<<~ ahu #/green-receipts>>
-
-! Green receipts — committed ground
-
-* `507e9c391` creates immutable, signed `PluginOffering` publication. A complete offering CID names the record; a public announcement remains an additive carriage projection. Publishing changes no grammar, install, adoption, or Antigen verdict.
-* `9f9395307` adds exact local receiver inspection: Mesh verifies the complete offering before injected local-CAS reads and returns `inspectable`, `pending`, `corrupt`, or `refused`. Node and CLI inspect the deterministic local Crossroads document, fetch nothing, and return `adoption: not-requested` with Antigen `unavailable/not-configured`.
-* `17c99b6c6` records the reader boundary and its receipts in the roadmap.
-* Before later unrelated carrier work, focused receipts passed: Mesh inspection/Offering suites 40 tests, Node suite 7, CLI suite 8; affected Mesh, Node, and CLI typechecks/builds passed.
-
-Those receipts prove source publication and local evidence. They do not prove byte transport, adoption, grammar admission, Antigen enforcement, a Docker mesh, or cross-Nexus authority.
+The safety laws remain: no wall-clock authority substitute, no ambient global currentness, no board location mistaken for authority, no foreign copied act deciding local policy, and no grammar ratchet implied by an offering.
 
 <<~/ahu>>
 
-<<~ ahu #/active-red>>
+<<~ ahu #/healed-ground>>
 
-! Active red — receiver witness must discriminate a product boundary
+! Healed ground — the change since the first transfer
 
-The uncommitted witness lets B request A's deterministic Crossroads document through Socket A rather than the default Lararium document. It exercises three receiver-local readings:
+* `fdc21ea52` repairs the receiver witness's formerly blocking lease-frontier failure. `readLeaseFrontier` reads the island composite's daemon layer, the document scope that actually holds the lease; a readable empty slot set yields epoch `0`, while a missing layer, missing group, or read fault yields named `unavailable`. The gate still refuses unavailable evidence. `fdc21ea52` supplies the Keyhive implementation and its tests; `889187db1` adds the independent Node owned-layer control in `packages/lararium-node/tests/lease-frontier-owned-layer.test.ts`.
+* `a59d9a9b5` makes the staged boot fixture read the same frontier from its own daemon layer before supplying `expectedEpoch`; it also makes the admit edge state `hearthDaemonUrl: null` explicitly.
+* `2ed97c057` makes the staged-e2e configuration declare same-origin once, instead of leaving ordinary scratch-root vessels to fail an unrelated origin composition before the test reaches its subject.
+* `0730dd41b` cuts membership consultation toward a socket-bound presented leaf admit. The leaf map and the root contract map remain separate; a refresh re-verifies against the local deny board and antigen. This is committed architecture, while related uncommitted follow-on edits remain another lane's work.
+* `099d2f88b` makes face-join return the canonical grant-record CID and causal heads, then tests a fresh local read of that exact record. It retires the broad full-record read door rather than treating a bounded view as the authority receipt.
+* The surrounding healing wave also hardened carrier/frame law, origin custody, charter parsing, cross-Nexus carriage, causal record evidence, and test witnesses. Those receipts constrain the offering slice; they are not evidence that offering enforcement is complete.
+
+''This carrier supersedes the old pre-repair lease/origin diagnosis in the linked Codex and ER handoffs. Those historic paragraphs remain until their owning hands re-true them; do not revive them as live causes.
+
+''Source offering and local receiver inspection remain green ground.'' `507e9c391` creates immutable signed `PluginOffering` publication; `9f9395307` certifies exact local receiver inspection; `17c99b6c6` recorded their first boundary. Publishing changes no grammar, install, adoption, or Antigen verdict. Inspection fetches no remote byte and reports `adoption: not-requested` plus Antigen `unavailable/not-configured`.
+
+<<~/ahu>>
+
+<<~ ahu #/receiver-witness>>
+
+! Receiver witness — next verification, no longer the old diagnosis
+
+The uncommitted e2e makes B request A's deterministic Crossroads document through Socket A. It then tests B's local evidence only:
 
 ```text
 board row present + exact byte absent    -> partial / pending
@@ -81,79 +87,86 @@ board row present + exact byte held      -> complete / inspectable
 board row present + altered local byte   -> invalid / corrupt
 ```
 
-It also asserts that inspection fetches no byte, makes no Genesis or non-CAS write, and refuses unknown offering CIDs and foreign islands. The valid local byte is a custody control, never generic byte transport.
+It asserts no remote byte fetch, no Genesis/non-CAS authority write, refusal for an unknown offering CID, and refusal under a deliberately blank/unrelated `LAR_ROOT` with a different own-vessel key. That last case proves unavailable or unrelated local state refuses; it does not yet witness a live second-Nexus mismatch. Its deliberate local good-byte write is a custody control, not generic byte carriage.
 
-The focused command is run from `tests/`:
+The old `beforeAll` refusal — `current lease frontier unavailable` — is no longer an open explanation: the layer-selection repair above landed with dedicated tests. The offering witness has not yet been rerun against that repaired boundary in a settled, built checkout. Its next receipt is therefore a verification task, not a license to change the gate again.
+
+''Triage.'' After owners settle the current shared source edits, use an isolated `LAR_ROOT`/worktree, build only the required package outputs, and run from `tests/`:
 
 ```text
 pnpm exec vitest run e2e/nexus-offering-replication.test.ts --reporter=verbose
 ```
 
-The last observed run failed in `beforeAll`, leaving the tests skipped. The named refusal was:
+The e2e imports `runNexusInspectOffering` from Node source, but its staged harness starts the lares CLI and Node daemon from `packages/lares-cli/dist/...` and `packages/lararium-node/dist/...`. It deliberately passes `--skip-build`; a test must never rebuild the shared tree. In an isolated worktree, after source settles, use the ordinary build/stamp preparation (`pnpm -r build`, then `node tools/stamp-build.mjs .`) before this focused run. Do not launch that broad generated-output write in the shared checkout.
 
-```text
-[daemon-keyhive] Binding Gate:
-current lease frontier unavailable — refusing persona-bound boot
-```
-
-A preceding trace materialized the Oracle/genesis and then failed to obtain the lease frontier while Keyhive ingested `UnknownDocument` material. The best present hypothesis is a causal-closure/wiring defect at the worker boundary — `grants.islandUrl` reaches the sovereign kernel as `oracleUrl`, but the gate's `readLeaseEpoch(repo, ctx.oracleUrl)` may see absent or unresolved context. It remains a hypothesis, not a repair order.
-
-''Triage order.'' First allow the concurrent TW5 producer to settle and build the exact relevant Node/TW5 outputs. Rerun the one witness in an isolated `LAR_ROOT`. If the same red remains, add a test-only, non-secret diagnostic that proves the exact context and document URL seen at the gate. Then write the smallest red boundary test for the proved missing wire and repair that wire only. An empty lease set may honestly read `0`; an unreadable/missing Oracle must remain unavailable.
+If it passes, commit the harness option and e2e file alone with their focused receipt. If it fails, retain the exact first refusal and add the smallest test-only observation that separates fixture setup, build drift, causal carriage, and product behavior. Do not reopen the resolved lease semantics without a new discriminating red.
 
 <<~/ahu>>
 
-<<~ ahu #/policy-fork>>
+<<~ ahu #/antigen-scope>>
 
-! Policy fork — Offering Antigen scope
+! Offering Antigen scope — genuine operator-held fork
 
-The future Offering Antigen enforcement must distinguish carriage from authority. Two internal reports disagree about the cryptographic subject of an act:
+Both local studies agree that board address selects a receiver's causal rendezvous, while signed charter evidence selects who may decide. They disagree over whether the existing signed field also carries enough stable island identity:
 
-|!report |!recommendation |!strength |!unsettled tension |
-|---|---|---|---|
-|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>|Board resolution selects the receiving relation; existing signed `sealEpochCid` remains the sole charter binding. Do not add a duplicate field yet.|Avoids two drifting identity roots; a torn charter refuses and foreign acts cannot fold under a mismatched local roster.|A rotating epoch may describe authorization generation more directly than durable island identity.|
-|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>|Board resolution selects rendezvous; signed `nexusScopeCid` derived from the stable charter genesis binds the island; `sealEpochCid` separately binds the rotating quorum lineage.|A copied row cannot silently change which Nexus it purports to address; historical acts remain attached to one island across charter rotation.|Adds another signed identity field and a new migration surface.|
+|!report |!reading |
+|---|---|
+|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>|Keep board scope as the receiving relation and use existing signed `sealEpochCid` as the one cryptographic charter binding. Avoid a second field that can drift from the charter root.|
+|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>|Keep board scope for carriage, add a stable charter-genesis `nexusScopeCid` to the signed act, and retain rotating `sealEpochCid` for the signing quorum lineage.|
 
-Both agree on these non-negotiables: per-Nexus local board consultation, local causal fold, no global registry/currentness, no wall clock, foreign bytes remain auditable but cannot decide locally, torn/own/anchor scope cannot silently stand in for a charter, and Antigen never implies adoption or a grammar ratchet.
+Neither report has authority alone. Both now carry canonical frame spelling in this checkout. The repository evidence in this audit does not establish whether the external prior-art pair, exchange, and second research wave finished; treat that as an explicit coordination question, not a repository-derived claim.
 
-''Outstanding research protocol.'' The requested two internet scouts, the exchange of each scout's one-ahu report, and their second research wave did not launch before transfer. Astra SHALL complete that bounded research/collision first. It shall compare did:key/DID or capability-scope patterns, signed revocation/allow-list practice, content-addressed federation, and CRDT authority boundaries against the local law; it must state where each analogy breaks. It shall hand the operator a short decision memorandum with red-test matrix. Terra waits for the ruling before production enforcement.
-
-<<~/ahu>>
-
-<<~ ahu #/next-seats>>
-
-! Work allocation after orientation
-
-!! Astra — research seat
-
-# Finish the eight-launch scope-research protocol as independent reports with exactly one named ahu each, then a collision carrier. Preserve A/B disagreement until evidence materially resolves it.
-# Read the DreamNet, causal-island, carry-contract, lamplighters, nexus-identity, offering-antigen, and Kapae carriers before importing outside terminology.
-# Return a decision memo that names whether cryptographic binding is redundant, complementary, or necessary; include copied-act, charter-rotation, same-Nexus replica, torn-charter, wrong-roster, and foreign-board controls.
-# Do not change offering production code while researching.
-
-!! Terra — main-work seat
-
-# Re-seat in the ledger, isolate a worktree or obtain the current file owner before rerunning the active e2e witness.
-# Stabilize the Binding Gate witness by evidence. Build only after the concurrent producer settles; inspect the exact worker context before changing authority semantics.
-# If the witness becomes green, commit its harness and e2e seam separately with its narrow package receipts. If it exposes a real wire defect, commit the red test and repair in a distinct second cut.
-# Leave generic adoption deferred. A later receiver action needs a named recipe/staging relation and its own capability, target, receipt, and refusal states.
-# Ask the operator for the Antigen policy ruling after Astra's collision, then implement only the selected contract red-first.
-
-''Coordination rule.'' Astra may hand evidence to Terra; Terra may request a narrower fact. Neither changes the other hand's held files. A commit names its owned paths, its test receipt, and what it does not prove.
+''Required collision.'' First repair/read both local reports as valid carriers. Then compare content-addressed federation, capability scope, signature-bound revocation, and causal authority patterns to DreamNet's no-global-now and identity-as-relation law. The decision memo must test copied foreign acts, same-Nexus replica carriage, charter rotation, torn charter, wrong roster, own/anchor scope, and concurrent heads. It must state where each outside analogy breaks. The operator chooses the contract before enforcement code exists.
 
 <<~/ahu>>
 
-<<~ ahu #/future-queue>>
+<<~ ahu #/seats>>
 
-! Queue beyond the emergency
+! Next seats
 
-# Complete and commit the exact local receiver witness or record the proved product blocker.
-# Decide Offering Antigen scope through the operator after research collision.
-# Add receiver-local Antigen consultation/enforcement with typed `held`, `withdrawn`, `unsettled`, `unavailable`, and absent readings. It must not turn unavailable into acceptance.
-# Design a separate grammar-scoped offering relation before any Kahuli import route.
-# Build a reserved Docker multi-vessel scenario only after the process/context boundary can inventory and clean its own resources. Its scenario covers partial replication, partition/rejoin, local custody, and named refusals; it does not confer authority.
-# Keep D-VR-C physical custody, contract-frontier lift, Pronaos household reach, and boundary-record/agent-worldline work as independent roadmap lanes. Do not merge their evidence into the offering claim.
+!! Research seat
+
+# Establish whether the external/local collision protocol completed, then deliver a short operator decision memo plus a red-test matrix.
+# Keep Offering Antigen enforcement unimplemented while the scope choice remains open.
+
+!! Enactment seat
+
+# Respect the active presented-admit and frame/TW5 file holds.
+# Obtain the fresh offering receiver-witness receipt against the committed lease-frontier/origin fixes, or retain its new red with exact evidence.
+# Keep generic adoption deferred. A future receiver action needs an explicit target relation, capable actor, durable receipt, and refusal vocabulary.
+# After the scope ruling, add a receiver-local Antigen consultation cap that preserves `held`, `withdrawn`, `unsettled`, `unavailable`, and absent. It must never turn unavailable into acceptance.
+# Design a separate grammar-scoped offering relation before any Kahuli import path.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VBH9WS8JY_JFSDyi2Ngd5NhyT5CIt9DaPxTomXQvvzQ
+<<~ ahu #/bounded-forward>>
+
+! Bounded forward map
+
+# Finish the current presented-admit cut-over and its contract/e2e witness on its owner’s ground; its two-map distinction must survive every cleanup.
+# Re-run and commit the offering receiver e2e only after the source/build boundary is stable.
+# Bring the Antigen scope decision to the operator after collision; implement the selected contract red-first.
+# Build the multi-vessel/Docker receipt only from a runner that can inventory and tear down its own resources. It proves partial replication, partition/rejoin, custody, and named refusals; it never grants authority.
+# Keep D-VR-C custody, contract-frontier evidence, Pronaos reach, agent-worldline boundaries, live quoteblock behavior, and parallel-draft projection as distinct roadmap lanes. A green in one does not close another.
+
+<<~/ahu>>
+
+<<~ ahu #/audit-receipt>>
+
+! Blind-reader receipt
+
+A context-free reviewer read this carrier against the repository at `28e66b79e` without editing source or running a build. The review confirmed the committed lease, boot, presented-admit, face-join, and receiver-inspection claims; it also corrected the owned-layer test provenance, the local Antigen report framing, the unproven external-research status, the receiver refusal scope, and the source-versus-`dist` test boundary. A later hand repeats that procedure at its own revision before treating this carrier as current.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;CjzlLdxpvs3-KQJX2pUKFoGLO5xrJ5NsAEH8kVhop4Y
 <<^ code="&#x0004;" -> to="?">>
