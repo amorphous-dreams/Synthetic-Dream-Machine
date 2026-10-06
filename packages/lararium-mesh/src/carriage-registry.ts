@@ -545,8 +545,6 @@ export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): bool
  * The verdict on one presented admit:
  *   · `held`        — the admit counts, its lineage chains, and no counted denial closes it or stands concurrent.
  *   · `denied`      — a counted revoke descends from the admit, or the antigen holds a kapae on its nym.
- *   · `superseded`  — RESERVED for the gate. A newer admit lives only in a presentation, never on the deny
- *                     board, so this pure verifier holds no evidence that would emit it.
  *   · `unsettled`   — a counted revoke stands concurrent with the admit (or its ancestry does not resolve
  *                     here), or the antigen's verdict on the nym is contradictory. Refuses: a contradiction
  *                     never grants.
@@ -555,7 +553,7 @@ export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): bool
  *   · `rejected`    — no admit was presented, the presented act is not an admit, it does not count, or its
  *                     lineage does not chain.
  */
-export type PresentedAdmitState = "held" | "denied" | "superseded" | "unsettled" | "wrong-epoch" | "rejected";
+export type PresentedAdmitState = "held" | "denied" | "unsettled" | "wrong-epoch" | "rejected";
 
 export interface PresentedAdmitVerdict {
   readonly state:  PresentedAdmitState;

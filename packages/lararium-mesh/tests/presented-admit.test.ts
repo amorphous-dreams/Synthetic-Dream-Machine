@@ -256,6 +256,20 @@ describe("verifyPresentedAdmit — controls", () => {
     expect(await verify({ admit: revoke })).toMatchObject({ state: "rejected" });
   });
 
+  test("★ THE TYPE PROMISES ONLY WHAT THE CODE RETURNS — declared states ≡ returned states ★", () => {
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "carriage-registry.ts"), "utf8");
+    const decl = /export type PresentedAdmitState\s*=\s*([^;]+);/.exec(src);
+    expect(decl, "the state union moved — re-aim this pin").not.toBeNull();
+    const declared = new Set([...decl![1]!.matchAll(/"([a-z-]+)"/g)].map((m) => m[1]!));
+    const region = src.slice(src.indexOf("// ── presented-admit verifier"));
+    const returned = new Set([...region.matchAll(/presentedVerdict\("([a-z-]+)"/g)].map((m) => m[1]!));
+    // CONTROL: both readers found states, so the equality below is not two empty sets.
+    expect(declared.size).toBeGreaterThan(0);
+    expect(returned.size).toBeGreaterThan(0);
+    expect([...declared].sort()).toEqual([...returned].sort());
+    expect([...returned].sort()).toEqual(["denied", "held", "rejected", "unsettled", "wrong-epoch"]);
+  });
+
   test("★ NO CLOCK — the verifier region names no Date, now, performance or setTimeout ★", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "carriage-registry.ts"), "utf8");
     const marker = "// ── presented-admit verifier";
