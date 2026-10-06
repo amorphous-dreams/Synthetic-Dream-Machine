@@ -451,10 +451,11 @@ export function oracleGenesisDocUrl(): AutomergeUrl {
  * THE VERSION LABEL RIDES NOWHERE NEAR THIS PREIMAGE, deliberately. Folding a version string in beside
  * the digest makes a pure RE-TAG — identical bytes, `5.5.0-prerelease` renamed `5.5.0` — mint a fresh
  * true-name, which manufactures a schism out of an editorial act. The sha256 already binds every byte
- * the label could describe; the label adds a false difference and no true one. `coreVersion` still
- * rides the blob DESCRIPTOR for a human to read, where a wrong label misleads nobody's identity.
+ * the label could describe; the label adds a false difference and no true one. So the function takes
+ * the digest alone: a label it cannot receive is a label it cannot fold. `coreVersion` still rides the
+ * blob DESCRIPTOR for a human to read, where a wrong label misleads nobody's identity.
  */
-export function computeEngineCid(_coreVersion: string, coreSha256: string): string {
+export function computeEngineCid(coreSha256: string): string {
   return cidV1Sha256(utf8Bytes(`engine/v1\ncore-sha256:${coreSha256}`));
 }
 
@@ -631,7 +632,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
 
   // Region content-CID witnesses — THREE rhythms, never one bucket: the engine's true-name (slow), the
   // required grammar's epoch (kāhuli's fast ratchet), and this operator's own plugin collection.
-  const engineCid  = computeEngineCid(coreVersion, coreSha);
+  const engineCid  = computeEngineCid(coreSha);
   const grammarCid = computeGrammarCid(inputs.plugins);
   const pluginsCid = computePluginsCid(inputs.plugins);
   tiddlers[GENESIS_CID_ENGINE_TIDDLER] = {
@@ -695,14 +696,13 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
  */
 export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
   const coreSha     = inputs.coreSha256 ?? sha256HexBytesSync(inputs.coreBlob);
-  const coreVersion = inputs.coreVersion;
 
   const seed   = buildGenesisSeed(inputs, coreSha);
   const bytes  = materializeGenesisDoc(seed);
   const sha256 = sha256HexBytesSync(bytes);
   const cid    = cidV1Sha256(bytes);
 
-  const engineCid  = computeEngineCid(coreVersion, coreSha);
+  const engineCid  = computeEngineCid(coreSha);
   const grammarCid = computeGrammarCid(inputs.plugins);
   const pluginsCid = computePluginsCid(inputs.plugins);
 
@@ -756,7 +756,7 @@ export function verifyGenesisArtifact(
   const storedGrammarCid = readWitness(GENESIS_CID_GRAMMAR_TIDDLER);
   const storedPluginsCid = readWitness(GENESIS_CID_PLUGINS_TIDDLER);
 
-  const recomputedEngineCid = computeEngineCid(core.version, core.sha256);
+  const recomputedEngineCid = computeEngineCid(core.sha256);
   if (recomputedEngineCid !== storedEngineCid || recomputedEngineCid !== artifact.engineCid) {
     throw new Error(
       `[genesis] verify FAILED: engineCid (hearth true-name) mismatch — ` +

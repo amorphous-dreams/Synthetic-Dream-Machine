@@ -23,15 +23,19 @@ describe("genesis region content-CIDs — bytes name the region, labels never do
   ];
 
   it("engineCid runs deterministic and moves with the core BYTES", () => {
-    expect(computeEngineCid("5.3.0", "abcd")).toBe(computeEngineCid("5.3.0", "abcd"));
-    expect(computeEngineCid("5.3.0", "abcd")).not.toBe(computeEngineCid("5.3.0", "ef01"));
+    expect(computeEngineCid("abcd")).toBe(computeEngineCid("abcd"));
+    expect(computeEngineCid("abcd")).not.toBe(computeEngineCid("ef01"));
   });
 
-  it("★ a pure RE-TAG never moves the engineCid — the false-schism cure ★", () => {
-    // Identical bytes, a new label. A digest that moved here would excommunicate every peer over an
-    // editorial act, and no reader could tell that apart from a real change.
-    expect(computeEngineCid("5.5.0-prerelease", "abcd")).toBe(computeEngineCid("5.5.0", "abcd"));
-    expect(computeEngineCid("", "abcd")).toBe(computeEngineCid("whatever-a-packager-called-it", "abcd"));
+  it("★ the engineCid preimage holds byte-identical — the core's sha256 alone names the engine ★", () => {
+    // The true-name is a pinned value, never a recomputation: a preimage that grew a label (a version, a
+    // packager's tag) would move these digests, and every hearth named under the old preimage would split
+    // off over an editorial act. The label takes no part in the signature at all, so no re-tag can reach it.
+    expect(computeEngineCid("abcd")).toBe("bafkreiahzs2gva32i6kuci2midrmljm33g3zvmctg4azcddsuwkhydpqku");
+    expect(computeEngineCid("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
+      .toBe("bafkreiczv56ip2lrydcie7bsfz5hz6fgku7b3atfenhpu3ws7t2xubkfyu");
+    // CONTROL: the pin is not a constant — other core bytes name another engine.
+    expect(computeEngineCid("abce")).not.toBe("bafkreiahzs2gva32i6kuci2midrmljm33g3zvmctg4azcddsuwkhydpqku");
   });
 
   it("pluginsCid stays order-independent (sorted by id) and deterministic", () => {
@@ -48,10 +52,10 @@ describe("genesis region content-CIDs — bytes name the region, labels never do
   });
 
   it("a plugin change NEVER perturbs the engineCid — the true-name holds through composition", () => {
-    const engineBefore = computeEngineCid("5.3.0", "abcd");
+    const engineBefore = computeEngineCid("abcd");
     const rebuilt = plugins.map((p) => (p.id === "lar:///plugins/a" ? { ...p, sha256: "zz" } : p));
     expect(computePluginsCid(rebuilt)).not.toBe(computePluginsCid(plugins));
-    expect(computeEngineCid("5.3.0", "abcd")).toBe(engineBefore);
+    expect(computeEngineCid("abcd")).toBe(engineBefore);
   });
 
   it("an ADDED plugin moves the composition — the pair names WHAT composed, never WHO belongs", () => {
