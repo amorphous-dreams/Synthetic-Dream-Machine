@@ -17,7 +17,9 @@
  *     record instead);
  *   - `lar-conflict-actor`  — the Automerge actor that wrote these values;
  *   - `lar-conflict-fields` — the conflicted field names, space-separated (`*` for a whole record);
- *   - `lar-conflict-live`   — `yes` when every conflicted value of this actor is the one reading live.
+ *   - `lar-conflict-live`   — the conflicted fields whose live value is THIS actor's, space-separated
+ *     (`*` when its whole record reads live; empty when none does). Last-writer-wins resolves each
+ *     key on its own, so the live record can be a mosaic of several actors' values.
  * `<who>` reads the actor's own `modifier` value when it wrote one, else the actor id; two drafts that
  * would share a `<who>` both carry the actor prefix, so a title never names two drafts.
  */
@@ -66,7 +68,7 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
   const record = map[title];
   if (!record) return [];
 
-  type Draft = { actor: string; fields: Record<string, unknown>; conflicted: string[]; live: boolean };
+  type Draft = { actor: string; fields: Record<string, unknown>; conflicted: string[]; live: string[] };
   const byActor = new Map<string, Draft>();
 
   // A whole-record conflict: two actors created this title concurrently, each map a separate value.
@@ -79,7 +81,7 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
         actor: actorOf(opId),
         fields: { ...(v?.tiddler ?? {}) },
         conflicted: ["*"],
-        live: same(v, liveRecord),
+        live: same(v, liveRecord) ? ["*"] : [],
       });
     }
   } else if (record.tiddler && typeof record.tiddler === "object") {
@@ -95,11 +97,11 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
       if (values.every((v) => same(v, values[0]))) continue;
       for (const [opId, value] of Object.entries(ops)) {
         const actor = actorOf(opId);
-        const draft = byActor.get(actor) ?? { actor, fields: { ...liveFields }, conflicted: [], live: true };
+        const draft = byActor.get(actor) ?? { actor, fields: { ...liveFields }, conflicted: [], live: [] };
         const v = plain(value);
         draft.fields[field] = v;
         draft.conflicted.push(field);
-        if (!same(v, liveFields[field])) draft.live = false;
+        if (same(v, liveFields[field])) draft.live.push(field);
         byActor.set(actor, draft);
       }
     }
@@ -125,7 +127,7 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
         "draft.title": title,
         "lar-conflict-actor": d.actor,
         "lar-conflict-fields": d.conflicted.join(" "),
-        "lar-conflict-live": d.live ? "yes" : "no",
+        "lar-conflict-live": d.live.join(" "),
       }),
     });
   });

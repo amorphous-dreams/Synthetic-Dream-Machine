@@ -59,8 +59,10 @@ describe("★ a concurrent edit surfaces as attributed parallel drafts ★", () 
       expect(String(d.tiddler["lar-conflict-actor"])).toMatch(/^[0-9a-f]+$/);
       expect(String(d.tiddler["lar-conflict-fields"]).split(" ")).toEqual(expect.arrayContaining(["text", "modifier"]));
     }
-    // Exactly one draft carries the value that reads live; the other is the loser, kept.
-    expect(drafts.filter((d) => d.tiddler["lar-conflict-live"] === "yes").map((d) => d.tiddler.text)).toEqual([live]);
+    // Exactly one draft's `text` reads live; the other is the loser, kept. (Each key resolves on its
+    // own, so `lar-conflict-live` names the fields per draft rather than one winner per record.)
+    const liveFieldsOf = (d: LarTiddlerRecord) => String(d.tiddler["lar-conflict-live"]).split(" ");
+    expect(drafts.filter((d) => liveFieldsOf(d).includes("text")).map((d) => d.tiddler.text)).toEqual([live]);
     expect(drafts[0]!.tiddler["lar-conflict-actor"]).not.toBe(drafts[1]!.tiddler["lar-conflict-actor"]);
 
     // The merge raised the surface once, naming this bag and title.
