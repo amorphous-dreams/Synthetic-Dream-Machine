@@ -242,7 +242,7 @@ Each board carries a distinct read/write posture, and a climb between Nexuses (#
 
 ''"Degrades gracefully" was the wrong reading for two of the seven'' — persona-KEL and antigen fail closed rather than thinning (nexus-identity.ts:244-247, quote license, ''landed'' — `nexus-board-climb`, `persona-kel-climb`). Crossroads re-announces rather than copies (no signature survives a copy). WHO, carriage, and vouch stay ''deliberately neither carried nor re-announced'' on a climb — each crossing a line the design refuses to cross by accident (disclosure, membership-roster, and federation-scope, respectively).
 
-''The carriage gate: what the code folds, and the ruled shape it owes.'' In code, `foldCarriageSet` (`packages/lararium-mesh/src/carriage-registry.ts`) folds quorum-countersigned ADMIT/REVOKE entries into a member set, and the carry-split gates on that fold. The ruled shape reads otherwise and stands UNBUILT: the subject PRESENTS its admit at the wire, quorum-signed by its Nexus; the carrier's contract-in names the NEXUS, so a daemon holds a SET of carried Nexus ids (one contract-in per Nexus); and the gate checks the presented admit against that set and the shared DENY-only board (`blocked{}`, the kapae antigen), never a folded allow roster (`kahu.mem` `#/nexus-scale`, `membership-doctrine.mem` `#/the-operator-contract`). Before any presented admit travels, the subject stamp re-keys to a leaf in the NEXUS scope domain (`nexusScopeIndex`): an admit signed with the PersonaGroup ROOT correlates a human across Nexuses.
+''The carriage gate: what the code folds, and the ruled shape it cuts over to.'' In code, `foldCarriageSet` (`packages/lararium-mesh/src/carriage-registry.ts`) folds quorum-countersigned ADMIT/REVOKE entries into a member set, and the carry-split gates on that fold. The ruled shape reads otherwise: the subject PRESENTS its admit at the wire, quorum-signed by its Nexus; the carrier's contract-in names the NEXUS, so a daemon holds a SET of carried Nexus ids (one contract-in per Nexus); and the gate checks the presented admit against that set and the shared DENY-only board (`blocked{}`, the kapae antigen), never a folded allow roster (`kahu.mem` `#/nexus-scale`, `membership-doctrine.mem` `#/the-operator-contract`). Its parts stand — `verifyPresentedAdmit`, the wire's `presentedAdmit`, the carried set (`carried-set.ts`), and the subject stamp signing with a leaf in the NEXUS scope domain (`nexusScopeIndex`), since an admit signed with the PersonaGroup ROOT correlates a human across Nexuses. The cut-over that moves the carry-split off the fold stands owed.
 
 !!! Realm bags — CABAL ⊥ REALM ⊥ NEXUS, never fused
 
@@ -613,6 +613,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P89YDItrx_IznlPxoYtLyEPVEEO7HJEOfe-JkkfKWDM
+<<^ code="&#x0003;">>ni:///sha-256;eTSmwtzlshY-B4Eo4ZKJv8hWqBVOKo1gbDfExLCAgOU
 
 <<^ code="&#x0004;" -> to="?">>
