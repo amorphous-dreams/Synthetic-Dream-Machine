@@ -73,7 +73,7 @@ describe("Pronaos Node composition", () => {
 
   test("does not mount without both explicit inputs", () => {
     const server = createServer(); servers.push(server);
-    expect(composePronaosFromEnv({ httpServer: server, genesisDir: "/never-read", env: {} })).toBeNull();
+    expect(composePronaosFromEnv({ httpServer: server, genesisDir: "/never-read", standing: "lararium", env: {} })).toBeNull();
   });
 
   test("refuses a stale artifact record before mounting", () => {
@@ -81,13 +81,13 @@ describe("Pronaos Node composition", () => {
     const server = createServer(); servers.push(server);
     const env = envFor(f);
     writeFileSync(join(f.web, "assets/wiki.worker-def.js"), "tampered");
-    expect(() => composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, env })).toThrow(/artifact receipt/);
+    expect(() => composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "lararium", env })).toThrow(/artifact receipt/);
   });
 
   test("mounts only exact Pronaos routes and leaves the Oracle face reachable", async () => {
     const f = fixture();
     const server = createServer(); servers.push(server);
-    const composition = composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, env: envFor(f) });
+    const composition = composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "lararium", env: envFor(f) });
     expect(composition?.projection.routeInventory.routes.map((route) => route.path)).toEqual([
       "/", "/manifest.webmanifest", "/genesis/seed.json", "/assets/wiki.worker-def.js", `/genesis/cas/${f.cid}`,
     ]);
@@ -118,6 +118,18 @@ describe("Pronaos Node composition", () => {
     expect(await privatePath.text()).toBe("fallback");
     const wsPath = await fetch(`${origin}/ws`);
     expect(wsPath.status).toBe(404);
+    composition?.dispose();
+  });
+  test("a herm never mounts the Pronaos: any Pronaos input refuses with the waystone message", () => {
+    const f = fixture();
+    const server = createServer(); servers.push(server);
+    const waystone = /a waystone serves no arrival page; light a Pronaos on a lararium/;
+    expect(() => composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "herm", env: envFor(f) })).toThrow(waystone);
+    expect(() => composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "herm", env: { LAR_PRONAOS_WEB_ROOT: f.web } })).toThrow(waystone);
+    expect(composePronaosFromEnv({ httpServer: server, genesisDir: "/never-read", standing: "herm", env: {} })).toBeNull();
+    // CONTROL: the same inputs on a lararium compose the Pronaos.
+    const composition = composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "lararium", env: envFor(f) });
+    expect(composition).not.toBeNull();
     composition?.dispose();
   });
 });

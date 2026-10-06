@@ -36,7 +36,7 @@ import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
-import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
+import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
@@ -136,6 +136,10 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
 
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  // ORIGIN CUSTODY STAYS WITH A PRESENT KEEPER. A herm is a waystone: it carries for peers, informs
+  // readers, and serves no arrival page, so a Web origin or a Pronaos input handed to it refuses here,
+  // before any face listens.
+  assertWaystoneCustody(askedStanding, origins, process.env);
 
   // Mesh standing — derived ONCE for either cap-stack, shared by the herm + lararium
   // branches. Every vessel stands a node on the routing chart: LAR_PUBLIC_URL = its REACHABLE http
@@ -175,9 +179,9 @@ async function main(): Promise<void> {
   // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.
   const readinessState = createReadinessState();
   const readinessFace = mountReadinessFace({ httpServer, state: readinessState, dispatcher });
-  // The Pronaos lights only from two explicit operator inputs. No build-dir
+  // The Pronaos lights only from two explicit operator inputs, and only on a lararium. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
-  const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher });
+  const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding });
 
   httpServer.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -534,6 +538,10 @@ function isSerdeSkewFault(err: unknown): boolean {
 }
 
 main().catch((err) => {
+  if (err instanceof OriginCustodyRefusal) {
+    console.error(`[lararium] ${err.message}`);
+    process.exit(1);
+  }
   if (isSerdeSkewFault(err)) {
     console.error("[lararium] STORED-BYTES SERDE SKEW — the vessel could not deserialize the stored genesis engine.");
     console.error("[lararium]   Cause: stored bytes predate a dependency bump (keyhive / automerge / beelay / TW5).");

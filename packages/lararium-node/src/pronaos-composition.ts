@@ -18,6 +18,7 @@ import {
   mountPronaosReadFace,
 } from "./pronaos-adapter.js";
 import { buildPronaosProjection, type PronaosProjectionInputs } from "./pronaos-projection.js";
+import { assertWaystoneCustody, type OriginStanding } from "./lan-address.js";
 
 const WEB_ROOT = "LAR_PRONAOS_WEB_ROOT";
 const ARTIFACT_RECORD = "LAR_PRONAOS_ARTIFACT_RECORD";
@@ -62,15 +63,24 @@ function readArtifactRecord(pathname: string): PronaosArtifactRecord {
 
 /**
  * Compose the prepared Pronaos onto an existing Node HTTP server.
- * A missing pair leaves the current Node faces untouched.
+ * A missing pair leaves the current Node faces untouched. Only a lararium mounts it: a herm handed any
+ * `LAR_PRONAOS_*` input refuses with the waystone message, and a herm without one composes nothing.
  */
 export function composePronaosFromEnv(args: {
   readonly httpServer: Server;
   readonly genesisDir: string;
+  readonly standing: OriginStanding;
   readonly dispatcher?: HttpFaceDispatcher;
   readonly env?: Readonly<Record<string, unknown>>;
 }): PronaosComposition | null {
-  const config = parsePronaosCompositionConfig(args.env ?? process.env);
+  const env = args.env ?? process.env;
+  if (args.standing === "herm") {
+    assertWaystoneCustody("herm", {}, Object.fromEntries(
+      Object.entries(env).map(([key, value]) => [key, value === undefined ? undefined : String(value)]),
+    ));
+    return null;
+  }
+  const config = parsePronaosCompositionConfig(env);
   if (!config) return null;
   const artifactRecord = readArtifactRecord(config.artifactRecordPath);
   const inputs: PronaosProjectionInputs = {
