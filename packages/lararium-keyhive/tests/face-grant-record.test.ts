@@ -15,7 +15,7 @@ import {
   deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
   type PersonaKelEvent,
 } from "@lararium/mesh";
-import { faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
+import { faceGrantTitle, faceGrantRecordCid, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
 
 const ROOT_SEED    = new Uint8Array(32).fill(7);
 const OTHER_ROOT   = new Uint8Array(32).fill(9);
@@ -106,6 +106,26 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     expect((await verifyFaceGrantRecord(other, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, now: NOW })).ok).toBe(false);
     const wrongGroup = await grantFor({ groupDocIdHex: "cd".repeat(16) });
     expect((await verifyFaceGrantRecord(wrongGroup, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, now: NOW })).ok).toBe(false);
+  });
+
+  // ── THE RECORD'S CONTENT ADDRESS ──────────────────────────────────────────────────────────────────────
+  // The join outcome names the record by `recordCid`: sha256 over the record's canonical bytes, tagged. A reader
+  // holding the record recomputes it, so ANY byte that moves — a field, an event, the signature — moves the CID.
+  test("★ the record's CID is tagged sha256 over its canonical bytes, and moves when any byte moves ★", async () => {
+    const rec = await grantFor();
+    const cid = faceGrantRecordCid(rec);
+    expect(cid).toMatch(/^sha256:[0-9a-f]{64}$/);
+    // CONTROL: the same record, its keys inserted in another order, names the same CID (canonical bytes).
+    const reordered = Object.fromEntries(Object.entries(rec).reverse()) as unknown as FaceGrantRecord;
+    expect(faceGrantRecordCid(reordered)).toBe(cid);
+    const moved: Array<[string, FaceGrantRecord]> = [
+      ["one more cap event", { ...rec, capEvents: [...rec.capEvents, "Zm9yZ2Vk"] }],
+      ["regranted",          { ...rec, regranted: rec.regranted + 1 }],
+      ["issuedAt",           { ...rec, issuedAt: "2026-09-11T11:00:00.001Z" }],
+      ["the signature",      { ...rec, sig: `${rec.sig.slice(0, -1)}${rec.sig.endsWith("0") ? "1" : "0"}` }],
+      ["the joinee",         { ...rec, joineeAgentIdHex: `0x${"5".repeat(64)}` }],
+    ];
+    for (const [what, m] of moved) expect(faceGrantRecordCid(m), `moving ${what} left the CID standing`).not.toBe(cid);
   });
 
   // ── THE VERIFY WALKS THE KEL HEAD ─────────────────────────────────────────────────────────────────────

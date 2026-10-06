@@ -20,7 +20,7 @@
  */
 
 import {
-  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, verifyDeviceDelegation, verifyEdgeAgainstPersonaKel,
+  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, sha256HexBytesSync, formatDigest, verifyDeviceDelegation, verifyEdgeAgainstPersonaKel,
   type DeviceDelegationTiddler, type PersonaKelEvent,
 } from "@lararium/mesh";
 
@@ -54,6 +54,15 @@ export type UnsignedFaceGrantRecord = Omit<FaceGrantRecord, "sig">;
 /** The record's title on the plane — one per (group, joinee); a re-join overwrites its own. */
 export function faceGrantTitle(groupDocIdHex: string, joineeAgentIdHex: string): string {
   return `${FACE_GRANT_PREFIX}${groupDocIdHex}/${joineeAgentIdHex.replace(/^0x/i, "").toLowerCase()}`;
+}
+
+/**
+ * The record's content address: sha256 over the canonical JSON of the WHOLE record (signature included), in the
+ * house's tagged form `sha256:<hex>`. The join outcome names the record by it, so a reader that reads the record
+ * off the plane recomputes it and holds the two equal; any byte that moves moves the CID.
+ */
+export function faceGrantRecordCid(rec: FaceGrantRecord): string {
+  return formatDigest("sha256", sha256HexBytesSync(canonicalJsonBytes(rec)));
 }
 
 /** The bytes the signature covers: the domain, then the canonical JSON of the record without its `sig`. */

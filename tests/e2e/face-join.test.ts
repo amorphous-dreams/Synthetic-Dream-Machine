@@ -20,19 +20,27 @@
  *
  * THE RECORD OVER THE SUMMARY. The verb's outcome is a bounded VIEW: past the outcome cap its `capEvents` fold to
  * `{boundedArrayCount, tallies, sha256, sample}`. The act is the signed `face-join-grant/v1` record the verb writes
- * to the PersonaGroup plane, so V1–V3 read THAT record back through `face-grant-get` — the same store the join
- * wrote, so the read follows the join causally — verify its signature under the root that signed the joinee's
- * edge, and assert on it. The view is held to the record as a CONTROL: its digest and count match the record's
- * array, or, unbounded, its array equals the record's.
+ * to the PersonaGroup plane, and the outcome NAMES it without carrying it: `recordTitle`, `recordCid` (tagged
+ * sha256 over the record's canonical bytes) and `recordHeads` (the plane's heads just after the write). V1–V3 read
+ * THAT record off the vessel's own storage through a throwaway repo: the catalog names the plane, and the read
+ * waits CAUSALLY — until the stored plane's history holds `recordHeads` — then reads the record AS OF those heads,
+ * so a later join's overwrite never answers for an earlier one. The record must verify under the root that
+ * signed the joinee's edge, and its recomputed CID must equal `recordCid`. The view is held to the record as a
+ * CONTROL: its digest and count match the record's array, or, unbounded, its array equals the record's.
  *
  * None of these vectors asserts RECOVERY. A summons returns a seat and public ops, never prekey secrets, so a
  * vessel that lost its store restores from its archive; the pair test holds that boundary.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir } from "../harness/instance.js";
+import { Repo, type AutomergeUrl, type UrlHeads } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
-import { verifyFaceGrantRecord, type FaceGrantRecord } from "../../packages/lararium-keyhive/src/face-grant-record.js";
+import {
+  verifyFaceGrantRecord, faceGrantRecordCid, faceGrantTitle, FACE_GRANT_PREFIX, type FaceGrantRecord,
+} from "../../packages/lararium-keyhive/src/face-grant-record.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "../../packages/lararium-mesh/src/crypto.js";
+import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 import type { DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 
@@ -52,20 +60,64 @@ async function summon(body: Record<string, unknown>): Promise<Record<string, unk
     .results?.summary?.output ?? (r as unknown as Record<string, unknown>);
 }
 
+type PlaneDoc = { tiddlers?: Record<string, { tiddler?: { text?: string }; meta?: { deleted?: boolean } }> };
+
 /**
- * The grant RECORD a join wrote, read back through the daemon's own store, verified, and held against the view.
+ * Read the record at `title` off the vessel's OWN storage, as of `heads`, through a throwaway repo.
  *
- * Returns the record so a vector asserts on the act. Fails when no record stands, when its signature fails under
- * the root that signed the joinee's edge, or when the outcome's view disagrees with the record it summarises.
+ * The catalog names the PersonaGroup plane's doc; the stored plane is read only once its history holds every one
+ * of `heads` (each a change the stored doc can decode), so the wait is causal: it ends when the write the join
+ * reported has reached disk, never on a guessed delay. Each attempt opens a fresh repo, because one repo loads a
+ * doc's storage once. The bound guards a hang; the answer is the heads.
+ */
+async function recordOffPlane(title: string, group: string, heads: UrlHeads): Promise<{ rec: FaceGrantRecord | null; why: string }> {
+  const catalogUrl = bootDocUrl(lar, "catalog");
+  if (!catalogUrl) return { rec: null, why: "the boot log names no catalog doc" };
+  let why = "never attempted";
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
+    try {
+      const cat = await repo.find<PlaneDoc>(catalogUrl as AutomergeUrl);
+      const planeUrl = cat.doc()?.tiddlers?.[personaBagIdFor(group)]?.tiddler?.text;
+      if (!planeUrl) { why = `the catalog names no plane for ${personaBagIdFor(group)}`; }
+      else {
+        const plane = await repo.find<PlaneDoc>(planeUrl as AutomergeUrl);
+        const missing = heads.filter((h) => plane.metadata(h) === undefined);
+        if (missing.length > 0) throw new Error(`${missing.length} of ${heads.length} head(s) not yet in the stored history`);
+        const row = plane.view(heads).doc()?.tiddlers?.[title];
+        const text = row && !row.meta?.deleted ? row.tiddler?.text : undefined;
+        return { rec: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null, why: "read at the reported heads" };
+      }
+    } catch (err) {
+      why = `the stored plane does not yet hold the reported heads (${err instanceof Error ? err.message : String(err)})`;
+    } finally {
+      await repo.shutdown().catch(() => {});
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return { rec: null, why };
+}
+
+/**
+ * The grant RECORD a join wrote, read off the PersonaGroup plane as of the heads the join reported, verified, its
+ * CID recomputed, and held against the view.
+ *
+ * Returns the record so a vector asserts on the act. Fails when no record stands, when its CID differs from the
+ * outcome's `recordCid`, when its signature fails under the root that signed the joinee's edge, or when the
+ * outcome's view disagrees with the record it summarises.
  */
 async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecord> {
-  const r = await invokeLocal("face-grant-get", { joinee: g["joineeAgentIdHex"] },
-    `0x${"0".repeat(64)}`, { dataDir, timeoutMs: 30_000 });
-  const out = (r as { results?: { summary?: { output?: Record<string, unknown> } } }).results?.summary?.output
-    ?? (r as unknown as Record<string, unknown>);
-  expect(out["title"], `the read names another title than the join wrote:\n${JSON.stringify(r).slice(0, 600)}`).toBe(g["recordTitle"]);
-  const rec = out["record"] as FaceGrantRecord | null;
-  expect(rec, `no grant record stands at ${String(g["recordTitle"])}:\n${JSON.stringify(r).slice(0, 600)}`).not.toBeNull();
+  const title = String(g["recordTitle"] ?? "");
+  expect(title.startsWith(FACE_GRANT_PREFIX), `the join outcome names no record:\n${JSON.stringify(g).slice(0, 600)}`).toBe(true);
+  expect(g["recordCid"]).toMatch(/^sha256:[0-9a-f]{64}$/);
+  expect(Array.isArray(g["recordHeads"]) && (g["recordHeads"] as unknown[]).length > 0).toBe(true);
+  // The outcome carries the act's NAME, never its body.
+  expect(g["record"]).toBeUndefined();
+  const group = title.slice(FACE_GRANT_PREFIX.length).split("/")[0] ?? "";
+  expect(faceGrantTitle(group, String(g["joineeAgentIdHex"]))).toBe(title);
+  const { rec, why } = await recordOffPlane(title, group, g["recordHeads"] as UrlHeads);
+  expect(rec, `no grant record stands at ${title}: ${why}`).not.toBeNull();
+  expect(faceGrantRecordCid(rec!), "the record read off the plane is not the record the outcome names").toBe(g["recordCid"]);
   const verdict = await verifyFaceGrantRecord(rec, {
     personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupDocIdHex: rec!.groupDocIdHex,
   });

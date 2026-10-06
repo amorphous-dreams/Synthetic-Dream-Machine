@@ -67,7 +67,7 @@ import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
-import { faceGrantTitle, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { base64ToBytes } from "./bytes-base64.js";
 import { ed25519SignerFromSeed, type LarTiddlerRecord } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
@@ -577,11 +577,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // membership — signed under this vessel's device key and carrying this vessel's root-signed edge, so
             // the joinee's own kit verifies it offline against the root it pinned and takes the seat by its own
             // act. The grant still returns to the caller; a plane that cannot be written is said, never fatal.
+            //
+            // THE OUTCOME NAMES THE RECORD, IT NEVER CARRIES IT. The outcome is a bounded view; the record is the act.
+            // So the outcome names where the record stands (`recordTitle`), what it is (`recordCid`, its tagged
+            // sha256 content address) and the plane's heads just after the write (`recordHeads`). A caller that
+            // must know what the join granted reads the record off the PersonaGroup plane once that plane's
+            // history holds those heads — a causal wait — and recomputes the CID.
             let recordTitle: string | null = null;
+            let recordCid: string | null = null;
+            let recordHeads: readonly string[] | null = null;
             if (outcome.ok && facePlane) {
               try {
-                const store = await facePlane.storeOf(personaBagIdFor(faceGroup()));
-                if (!store) throw new Error("the PersonaGroup plane is unresolved");
+                const planeHandle = await facePlane.find(personaBagIdFor(faceGroup()));
+                if (!planeHandle) throw new Error("the PersonaGroup plane is unresolved");
+                const store = new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup()));
                 const { kind: _grantKind, ...grantBody } = outcome.grant;
                 void _grantKind;
                 const rec = await signFaceGrantRecord({
@@ -593,37 +602,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                   { tiddler: { title: recordTitle, text: JSON.stringify(rec), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
                   { kind: "lares-verb", requestId: `face-grant-${rec.sig.slice(0, 12)}` },
                 );
+                recordCid = faceGrantRecordCid(rec);
+                recordHeads = [...planeHandle.heads()];
                 console.log(`[daemon] face-join: grant record written to the PersonaGroup plane (${recordTitle.slice(-16)}) — the joinee's kit takes the seat on its next present`);
               } catch (err) {
                 console.log(`[daemon] face-join: grant record NOT written (${(err as Error)?.message ?? err}) — the grant returns to the caller alone`);
-                recordTitle = null;
+                recordTitle = null; recordCid = null; recordHeads = null;
               }
             }
             return outcome.ok
-              ? { verb: "face-join", admitted: true,  ...outcome.grant, ...(recordTitle ? { recordTitle } : {}) }
+              ? { verb: "face-join", admitted: true,  ...outcome.grant, ...(recordTitle ? { recordTitle, recordCid, recordHeads } : {}) }
               : { verb: "face-join", admitted: false, reason: outcome.reason };
-          });
-
-          // `face-grant-get` — THE RECORD, read back through the store `face-join` wrote it to.
-          //
-          // A `face-join` outcome is a bounded VIEW: past the outcome cap its `capEvents` fold to a count and a
-          // digest. The grant record on the PersonaGroup plane is the authoritative act, so a caller that must
-          // know what the join granted reads the record. This reads the SAME store the write above reaches, in
-          // this worker, so a read after a returned join sees that join's record — the disk copy settles later.
-          // It reads one title for THIS vessel's group and judges nothing: the reader verifies the signature
-          // against the root it pinned (`verifyFaceGrantRecord`).
-          registry.register("face-grant-get", async (args) => {
-            const joinee = typeof args["joinee"] === "string" ? args["joinee"] : "";
-            if (!/^(0x)?[0-9a-f]+$/i.test(joinee)) {
-              throw new Error("[daemon] face-grant-get: args.joinee is required — the joinee's agent id hex, as the join outcome names it.");
-            }
-            if (!facePlane) throw new Error("[daemon] face-grant-get: this island carries no catalog plane — the PersonaGroup plane has no registry to resolve from");
-            const store = await facePlane.storeOf(personaBagIdFor(faceGroup()));
-            if (!store) throw new Error("[daemon] face-grant-get: the PersonaGroup plane is unresolved");
-            const title = faceGrantTitle(faceGroup(), joinee);
-            const held = await store.get(title);
-            const text = held && !held.meta?.deleted ? held.tiddler?.text : undefined;
-            return { verb: "face-grant-get", title, record: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null };
           });
         }
       }
