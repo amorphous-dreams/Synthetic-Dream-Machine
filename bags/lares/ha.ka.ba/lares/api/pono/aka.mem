@@ -68,10 +68,10 @@ moment the weave runs, so the source carries a pin rather than a subscription. N
 the other: `aka` names its own sigil, its own family-contract row (`propagation:none` against
 `kahea`'s `propagation:push-forward`), and its own English weave name.
 
-''Weave slice, built.'' The projection render pass emits frozen `aka` references at the wiki→disk
-boundary (`lar:///ha.ka.ba/lares/api/pono/render-pipeline#/three-render-modes`); the general
-inline-weave slice that stands `aka` up as a first-class content-substitution pass, distinct from
-that projection-render special case, stands built — `weaveAka` (weave/index.ts) pins the target's
+''Weave slice, built.'' A frozen read renders through each child-slot sigil's `~aka~<sigil>`
+procedure and its AkaTemplate cascade (`lar:///ha.ka.ba/lares/api/pono/render-pipeline#/render-posture`); the general
+inline-weave slice that stands `aka` up as a first-class content-substitution pass
+stands built — `weaveAka` (weave/index.ts) pins the target's
 current text, pinned with the target's own `ni:` check, whole-carrier or `#/slot`-scoped.
 
 <<~/ahu>>
@@ -171,6 +171,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l_7NC1p5ERg2vBFCFKBL3Hm6d_qDiLuHpv4tB8sXJ0M
+<<^ code="&#x0003;">>ni:///sha-256;F8vJqJTU_BZGzyw867dUIcWVIY0ecdWU7RlaPUQ2mL4
 
 <<^ code="&#x0004;" -> to="?">>

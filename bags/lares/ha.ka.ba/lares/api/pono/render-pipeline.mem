@@ -11,8 +11,8 @@ mana          = 17
 manao         = 17
 manaoio       = 16
 namespace     = "&#x2299;"
-role          = "render pipeline law: render axes (stage/surface/mode/engine), three render modes, lar-render-mode dispatch, template cascade, causal island boundary, meme-ast in @lararium/tw5"
-source-symbol = "RenderMode RENDER_MODES RENDER_MODE_REACTION_WIRE"
+role          = "render pipeline law: render axes (stage/surface/posture/engine), render posture (live/frozen by sigil, through the template cascade) and the five project targets, causal island boundary, meme-ast in @lararium/tw5"
+source-symbol = "ProjectTarget PROJECT_TARGETS MEME_TEMPLATE"
 tags          = ["api/pono/meme", "api/pono/memetic-wikitext"]
 title         = "lar:///ha.ka.ba/lares/api/pono/render-pipeline"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -31,7 +31,7 @@ Render pipeline law names how a memetic object moves from disk surface to render
 
 Two distinct engines carry render work:
 
-# ''TW5 render engine'' — runs inside the TW5 VM; the `lar-render-mode` variable drives mode dispatch; the template cascade selects the rendering tiddler per sigil
+# ''TW5 render engine'' — runs inside the TW5 VM; the sigil's own procedure picks live (`kahea`) or frozen (`aka`) and the template cascade selects the rendering tiddler per sigil (#/render-posture)
 # ''Isomorphic parse engine'' — `@lararium/tw5/meme-ast`; emits typed `MemeAstNode[]` and `PranalaEdge[]` for the island adaptor, deserializer, and TW5 module consumers; compiles to TW5 JS via Vite; web3-native
 
 Both engines consume the same `text/memetic-wikitext` surface. The isomorphic parse engine lives in `@lararium/tw5` as a TS design surface (Vite → TW5 JS module). All consumers route through `@lararium/tw5`, not `@lararium/mesh`.
@@ -61,11 +61,11 @@ Two cameras read the ''one shared'' wiki world graph and render into ''separate'
 
 The stage pipeline runs once per camera over the shared graph; only the DOM-tree target (which fakeDom) differs. ''World graph shared; render surfaces separate.''
 
-!!! Mode axis — render posture (`lar-render-mode`)
+!!! Posture axis — live, frozen, and the projected form
 
-Orthogonal to surface: `""` (live), `carrier` (disk export), `projection` (frozen snapshot). A mode picks the output //form//, never the camera. Detailed at `#/three-render-modes`.
+Orthogonal to surface: a sigil renders live (`kahea`) or frozen (`aka`) through its template cascade, and a meme root projects to a target form (`mem` · `md` · `html` · `tid` · `json`). Posture picks the output //form//, never the camera. Detailed at #/render-posture.
 
-''Composition:'' a //stage// renders the shared graph onto a //surface// (camera) under a //mode//, driven by an //engine//. Four axes, freely combined — none collapses into another.
+''Composition:'' a //stage// renders the shared graph onto a //surface// (camera) under a //posture//, driven by an //engine//. Four axes, freely combined — none collapses into another.
 
 <<~/ahu>>
 
@@ -77,49 +77,41 @@ Orthogonal to surface: `""` (live), `carrier` (disk export), `projection` (froze
 disk (.md / .tid)
   ↓ deserializer
 wiki (TW5 live tiddlers — kahea-live refs + authoritative child tiddlers)
-  ↓ carrier render   (lar-render-mode = "carrier")
+  ↓ project → mem    (meme-project.ts, expandMemeRefs)
 disk (definition form, round-trip fidelity)
-  ↓ projection render (lar-render-mode = "projection")
+  ↓ aka weave         (weaveAka — pins the target's text and ni: check)
 snapshot (aka-frozen sigil refs, human-readable carrier wikitext)
 ```
 
 The boundary separates:
 * ''disk → wiki'' (deserializer expands flat carrier text into a meme, the expanded record set)
-* ''wiki → disk'' (carrier render collapses the meme back to flat carrier text)
-* ''wiki → snapshot'' (projection render emits frozen `aka` references)
+* ''wiki → disk'' (the `mem` projection collapses the meme back to flat carrier text)
+* ''wiki → snapshot'' (the `aka` weave pins frozen references)
 
-Every render pass MUST declare its mode before it crosses the boundary.
+Every pass that crosses the boundary MUST name its target.
 
 <<~/ahu>>
 
-<<~ ahu #/three-render-modes>>
+<<~ ahu #/render-posture>>
 
-!! Three Render Modes
+!! Render Posture ~ the sigil chooses, the cascade renders, the target projects
 
-`lar-render-mode` threads as a TW5 variable through the widget tree. All child-slot sigil widgets (`ahu`, `kau`, and any future `lar-kind: child-slot` sigil) participate in mode dispatch.
+No render-mode variable threads the widget tree. Posture rides two places, and each names its own seat.
 
-```toml
-[[render_modes]]
-name        = ""
-label       = "HTML (default)"
-description = "story river rendering; child-slot widgets transclude child tiddler into DOM"
+''Live and frozen ride the SIGIL.'' A child-slot sigil (`lar-kind: child-slot`) ships two procedures: `~kahea~<sigil>` transcludes the child live, `~aka~<sigil>` reads it frozen (`packages/lararium-tw5/tiddlers/sigil-ahu.tid`: //"Render posture lives in the template cascade, not in the sigil procedure"//). Each resolves its template through a CASCADE: the first tiddler tagged `lar:///ha.ka.ba/tags/<sigil>-template` whose text names a template wins, falling back to the house html template (`ahu-cascade-html.tid` → `lar:///ha.ka.ba/lararium/templates/ahu/html`; eight `*-cascade-html.tid` ship). An operator re-skins a sigil by adding one tagged tiddler; no JS moves.
 
-[[render_modes]]
-name        = "carrier"
-label       = "Disk export"
-description = "each child-slot widget reads child body from wiki and emits inline definition sigil"
-trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'carrier' } })"
+''Output form rides the PROJECT TARGET.'' `packages/lararium-tw5/src/meme-project.ts` (`ProjectTarget`, `PROJECT_TARGETS`, `MEME_TEMPLATE`) names five targets, each a template rendered with `currentTiddler` = the meme root, the same one the CLI `--render`, the in-VM face (`$tw.lares.meme.project`) and the Export dropdown reach:
 
-[[render_modes]]
-name        = "projection"
-label       = "Frozen projection"
-description = "each child-slot widget emits aka (likeness/frozen-image) sigil; content frozen at projection time"
-trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'projection' } })"
-```
+| target | what it renders | seat |
+|---|---|---|
+| `mem` | the recomposed carrier — children spliced whole, the block check adjacent | `templates/meme/mem` → `meme-project[mem]` (`expandMemeRefs` over the carrier TEXT; needs no wiki) |
+| `md` | the submission pair, a markdown body and its `.md.meta` sidecar | `templates/meme/md` (+ `md.meta`) |
+| `html` | the house static render of the root's title and body alone | `templates/meme/html` |
+| `tid` · `json` | TiddlyWiki's own serializers over the root record | `$:/core/templates/tid-tiddler` · `json-tiddler` |
 
-''Round-trip fidelity:'' carrier render MUST produce output that, when fed back through the deserializer, reproduces an equivalent meme. No layer should silently overwrite canonical field identity.
+''Round-trip fidelity:'' the `mem` projection MUST produce a carrier that, fed back through the deserializer, reproduces an equivalent meme. No layer silently overwrites canonical field identity.
 
-''Extending to new child-slot sigils:'' tag a tiddler `lar:///ha.ka.ba/tags/<sigil>-template`, define `\widget ~<sigil>(p1:"")` in the SharktoothSigil tiddler. No JS needed — the three-mode dispatch inherits automatically.
+''A frozen pin on disk'' rides the `aka` weave (`weaveAka`, `packages/lararium-tw5/src/weave/index.ts`), which pins the target's current text with its `ni:` check; no render pass rewrites live references into `aka` on its own.
 
 <<~/ahu>>
 
@@ -258,6 +250,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M4-uN8g-SB3mRBTaXxRw0A7qSJWZzz1fvRP9CmOIK-g
+<<^ code="&#x0003;">>ni:///sha-256;zzLoITsKJEUdLMH8Xg5crmyQ-7BMg2vF7li5ih73neo
 
 <<^ code="&#x0004;" -> to="?">>
