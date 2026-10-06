@@ -9,6 +9,7 @@
 import { describe, test, expect } from "vitest";
 import {
   deriveVeiledUserKey,
+  deriveNexusScopedKey,
   personaPathIndices,
   PERSONA_SEED_BYTES,
 } from "../src/persona-identity.js";
@@ -50,3 +51,21 @@ describe("deriveVeiledUserKey — deterministic + unlinkable-by-distinctness", (
   });
 });
 
+describe("deriveNexusScopedKey — a hardened grandchild of the face, one per Nexus", () => {
+  const seed = fakeRandomBytes(PERSONA_SEED_BYTES);
+  const AID  = "epoch0-" + "c".repeat(64);
+
+  test("the leaf derives deterministically and differs from the face at the same [handle, context]", async () => {
+    const a = await deriveNexusScopedKey(seed, 0, 0, AID);
+    const b = await deriveNexusScopedKey(seed, 0, 0, AID);
+    expect(a).toEqual(b);
+    expect(a.verifyingKey).toHaveLength(64);
+    expect(a.verifyingKey).not.toBe((await deriveVeiledUserKey(seed, 0, 0)).verifyingKey);
+  });
+
+  test("a different context places the leaf under a different face", async () => {
+    const a = await deriveNexusScopedKey(seed, 0, 0, AID);
+    const b = await deriveNexusScopedKey(seed, 0, 1, AID);
+    expect(a.verifyingKey).not.toBe(b.verifyingKey);
+  });
+});

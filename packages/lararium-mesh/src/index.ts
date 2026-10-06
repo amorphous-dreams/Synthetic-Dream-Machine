@@ -357,7 +357,7 @@ export { climbNexusBoards, carryAntigenUpTheGradient, carryEdgeShadowsUpTheGradi
 // housed HERE rather than on a shore, so the platform-blindness vow every shore composes it.
 export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "./persona-kel-climb.js";
 export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from "./signer-class.js";
-export { nexusScopeIndex } from "./persona-identity.js";
+export { nexusScopeIndex, deriveNexusScopedKey } from "./persona-identity.js";
 export { bagCopyPlan, type BagCopyPlan, type TitleAtRest } from "./bag-copy-plan.js";
 export { crossingDirection, type CrossingDirection, type CrossingCost } from "./crossing-direction.js";
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";

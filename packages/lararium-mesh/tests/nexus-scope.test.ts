@@ -19,8 +19,9 @@
  * every island it stands in.
  */
 import { describe, it, expect } from "vitest";
-import { nexusScopeIndex } from "../src/persona-identity.js";
+import { nexusScopeIndex, deriveNexusScopedKey, deriveCircleScopedKey, deriveVeiledUserKey } from "../src/persona-identity.js";
 import { circleScopeIndex } from "../src/persona-identity.js";
+import { derivePersonaKeypair } from "../src/persona-hd.js";
 
 const AID_A = "epoch0-" + "a".repeat(64);
 const AID_B = "epoch0-" + "b".repeat(64);
@@ -50,5 +51,41 @@ describe("nexus-scope — one leaf per island, and none of them meet", () => {
 
   it("★ case in the AID never splits one island into two leaves ★", () => {
     expect(nexusScopeIndex(AID_A.toUpperCase())).toBe(nexusScopeIndex(AID_A));
+  });
+});
+
+const SEED = new Uint8Array(32).map((_, i) => (i * 11 + 5) & 0xff);
+
+describe("deriveNexusScopedKey — the persona's per-Nexus leaf", () => {
+  it("★ one persona at two islands presents two keys ★", async () => {
+    const a = await deriveNexusScopedKey(SEED, 0, 0, AID_A);
+    const b = await deriveNexusScopedKey(SEED, 0, 0, AID_B);
+    expect(a.verifyingKey).not.toBe(b.verifyingKey);
+    expect(a.signingKey).not.toBe(b.signingKey);
+  });
+
+  it("★ one island always gets the same leaf ★", async () => {
+    expect(await deriveNexusScopedKey(SEED, 0, 0, AID_A)).toEqual(await deriveNexusScopedKey(SEED, 0, 0, AID_A));
+    expect((await deriveNexusScopedKey(SEED, 0, 0, AID_A.toUpperCase())).verifyingKey)
+      .toBe((await deriveNexusScopedKey(SEED, 0, 0, AID_A)).verifyingKey);
+  });
+
+  it("★ the leaf sits at m/handle'/context'/nexus-scope' — one hardened level past the face ★", async () => {
+    const leaf = await deriveNexusScopedKey(SEED, 2, 0, AID_A);
+    expect(leaf).toEqual(await derivePersonaKeypair(SEED, [2, 0, nexusScopeIndex(AID_A)]));
+  });
+
+  it("★ the leaf is neither the face it hangs under nor the circle leaf over the same material ★", async () => {
+    const leaf   = await deriveNexusScopedKey(SEED, 0, 0, AID_A);
+    const face   = await deriveVeiledUserKey(SEED, 0, 0);
+    const circle = await deriveCircleScopedKey(SEED, 0, 0, AID_A);
+    expect(leaf.verifyingKey).not.toBe(face.verifyingKey);
+    expect(leaf.verifyingKey).not.toBe(circle.verifyingKey);
+  });
+
+  it("★ two handles at one island share no leaf ★", async () => {
+    const h0 = await deriveNexusScopedKey(SEED, 0, 0, AID_A);
+    const h1 = await deriveNexusScopedKey(SEED, 1, 0, AID_A);
+    expect(h0.verifyingKey).not.toBe(h1.verifyingKey);
   });
 });

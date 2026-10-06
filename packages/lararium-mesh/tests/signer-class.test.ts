@@ -28,8 +28,10 @@ const ROOT   = "a".repeat(64);
 const VEILED = "b".repeat(64);
 const VESSEL = "c".repeat(64);
 const SCOPED = "e".repeat(64);
+const NEXUS  = "f".repeat(64);
 const held = {
   personaGroupRoots: [ROOT], veiledHandles: [VEILED], vesselKeys: [VESSEL], circleScopedKeys: [SCOPED],
+  nexusScopedKeys: [NEXUS],
 };
 
 describe("signer-class — what may hang outside, and what stays in the household", () => {
@@ -91,6 +93,20 @@ describe("signer-class — what may hang outside, and what stays in the househol
     expect(r.reading).toMatch(/scope|circle|unlinkab/i);
   });
 
+  it("★ a NEXUS-SCOPED leaf publishes and links nothing — the key a stamp into one Nexus wants ★", () => {
+    const r = signerClass(NEXUS, held);
+    expect(r.klass).toBe("nexus-scoped");
+    expect(r.publishable).toBe(true);
+    expect(r.crossCircleLinkable).toBe(false);
+    expect(r.reading).toMatch(/nexus|island/i);
+  });
+
+  it("★ a key held as root AND nexus leaf reads as the root — the stricter reading wins ★", () => {
+    const r = signerClass(ROOT, { ...held, nexusScopedKeys: [ROOT] });
+    expect(r.klass).toBe("persona-group-root");
+    expect(r.publishable).toBe(false);
+  });
+
   it("★ a bare Handle publishes, but LINKS across circles — the trap named ★", () => {
     const r = signerClass(VEILED, held);
     expect(r.publishable).toBe(true);
@@ -105,7 +121,7 @@ describe("signer-class — what may hang outside, and what stays in the househol
   });
 
   it("★ every reading says which class it found and why that answers ★", () => {
-    for (const k of [VEILED, ROOT, VESSEL, SCOPED, "d".repeat(64)]) {
+    for (const k of [VEILED, ROOT, VESSEL, SCOPED, NEXUS, "d".repeat(64)]) {
       expect(signerClass(k, held).reading.length).toBeGreaterThan(40);
     }
   });

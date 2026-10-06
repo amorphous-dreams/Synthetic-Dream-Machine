@@ -164,6 +164,27 @@ export function nexusScopeIndex(nexusAid: string): number {
   return u32 & 0x7fffffff;
 }
 
+/**
+ * deriveNexusScopedKey — the persona's per-Nexus LEAF, the key it presents to ONE island.
+ *
+ * Extends the persona tree one hardened level under the NEXUS domain: `m / handle' / context' /
+ * nexus-scope'`, where nexus-scope' = nexusScopeIndex(nexusAid). It reads the circle domain nowhere —
+ * a Nexus and a circle hang under separate MAC domains so neither derives into the other.
+ *
+ * The same persona presents a different key to each island, and the same island always receives the
+ * same key: the AID a caller passes is the island's genesis epoch, which a seal rotation leaves fixed.
+ * Every level hardens, so neither the persona root nor the face at `m / handle' / context'` reveals
+ * which leaves descend from it.
+ */
+export async function deriveNexusScopedKey(
+  seed: Uint8Array,
+  handleIndex: number,
+  contextIndex: number,
+  nexusAid: string,
+): Promise<{ signingKey: string; verifyingKey: string }> {
+  return derivePersonaKeypair(seed, [handleIndex, contextIndex, nexusScopeIndex(nexusAid)]);
+}
+
 // ── The founder's SELF-RECOVERY key — no prefix incepts unarmed ─────────────────────────────────
 
 const SELF_RECOVERY_HMAC_KEY = new TextEncoder().encode(PERSONA_SELF_RECOVERY_INFO);

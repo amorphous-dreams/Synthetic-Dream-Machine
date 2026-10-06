@@ -28,7 +28,7 @@
  */
 
 /** The key classes a vessel can tell apart from the material it holds. */
-export type SignerClass = "circle-scoped" | "veiled-handle" | "persona-group-root" | "vessel-key" | "unknown";
+export type SignerClass = "circle-scoped" | "nexus-scoped" | "veiled-handle" | "persona-group-root" | "vessel-key" | "unknown";
 
 export interface SignerReading {
   readonly klass:       SignerClass;
@@ -53,6 +53,8 @@ export interface HeldKeys {
   readonly vesselKeys:        readonly string[];
   /** Leaves of `m/handle'/context'/circle-scope'` — one per circle, from HMAC(circleDocId). */
   readonly circleScopedKeys?: readonly string[];
+  /** Leaves of `m/handle'/context'/nexus-scope'` — one per Nexus, from HMAC(the island's genesis AID). */
+  readonly nexusScopedKeys?:  readonly string[];
 }
 
 const has = (list: readonly string[], key: string): boolean =>
@@ -87,6 +89,14 @@ export function signerClass(key: string, held: HeldKeys): SignerReading {
                     + "each circle it joins, so a host seeing this human in two circles reads no shared "
                     + "key. The scope index derives from the circle's own doc id, so rejoining the same "
                     + "circle returns the same key. This is what a per-circle stamp wants." };
+  }
+  if (has(held.nexusScopedKeys ?? [], k)) {
+    return { klass: "nexus-scoped", publishable: true, crossCircleLinkable: false,
+             reading: "this key is a nexus-scope leaf — the same persona presenting a DIFFERENT key to "
+                    + "each Nexus it stamps into, so an observer reading two islands finds no shared key. "
+                    + "The scope index derives from the island's genesis AID, which a seal rotation leaves "
+                    + "fixed, so the same Nexus always receives the same key. This is what a stamp into "
+                    + "one Nexus wants." };
   }
   if (has(held.veiledHandles, k)) {
     return { klass: "veiled-handle", publishable: true, crossCircleLinkable: true,
