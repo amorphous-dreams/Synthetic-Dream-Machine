@@ -158,8 +158,12 @@ function findById<T extends { readonly id: string }>(values: readonly T[], id: s
   return values.find((value) => value.id === id);
 }
 
-function cloneEvidence(evidence: ScenarioEvidence | undefined): ScenarioEvidence | undefined {
-  return evidence ? { ...evidence } : undefined;
+/** Copy the evidence a crossing carries. An absent field stays absent, never a key holding undefined. */
+function cloneCrossingEvidence(record: ScenarioBoundaryCrossing): Pick<ScenarioBoundaryCrossing, "capabilityEvidence" | "signatureEvidence"> {
+  return {
+    ...(record.capabilityEvidence ? { capabilityEvidence: { ...record.capabilityEvidence } } : {}),
+    ...(record.signatureEvidence ? { signatureEvidence: { ...record.signatureEvidence } } : {}),
+  };
 }
 
 /** Validate and copy pure graph data. Missing references remain representable for `unavailable`. */
@@ -174,8 +178,7 @@ export function defineScenarioActionGraph(input: ScenarioActionGraph): ScenarioA
     attestations: input.attestations.map((record) => ({ ...record })),
     crossings: input.crossings.map((record) => ({
       ...record,
-      capabilityEvidence: cloneEvidence(record.capabilityEvidence),
-      signatureEvidence: cloneEvidence(record.signatureEvidence),
+      ...cloneCrossingEvidence(record),
       causalParents: [...record.causalParents],
     })),
   };

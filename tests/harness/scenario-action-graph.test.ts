@@ -324,6 +324,25 @@ describe("ScenarioActionGraph — separate agency records and local appraisal", 
     expect(result.crossings[0]!.signatureEvidence?.ref).toBe("sig-1");
   });
 
+  test("absent crossing evidence stays absent in the copy, never a key holding undefined", () => {
+    const result = defined({
+      crossings: [{
+        id: "crossing-no-evidence",
+        mandateId: "mandate-1",
+        activityId: "activity-1",
+        delegationId: "delegation-1",
+        rootPrincipal: "alice",
+        immediateDelegator: "alice",
+        actingProcess: "agent-a",
+        sourceVessel: "alice-node",
+        causalParents: [],
+      }],
+    });
+
+    expect("capabilityEvidence" in result.crossings[0]!).toBe(false);
+    expect("signatureEvidence" in result.crossings[0]!).toBe(false);
+  });
+
   test("returns unavailable for missing crossing evidence or causal parents", () => {
     const missingEvidence = appraiseScenarioActivity(defined({
       crossings: [{
