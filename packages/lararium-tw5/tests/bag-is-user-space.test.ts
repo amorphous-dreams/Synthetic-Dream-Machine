@@ -11,6 +11,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { toWikiFields } from "../src/modules/nalu-engine.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import { placeMeme } from "../src/place-meme.js";
@@ -97,7 +98,7 @@ describe("★ the outbound adaptor ★", () => {
       puts.push({ fields: rec.tiddler as Record<string, unknown>, bag: options?.bag });
       return orig(rec, origin);
     };
-    adaptor = new IslandAdaptor(new FakeEngine() as never, store, "witness", ORIGIN_BAG);
+    adaptor = new IslandAdaptor(new FakeEngine() as never, asIslandStore(store), "witness", ORIGIN_BAG);
     adaptor.start();
   });
   afterEach(() => { adaptor.stop(); vi.useRealTimers(); });

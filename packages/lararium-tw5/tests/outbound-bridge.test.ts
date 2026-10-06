@@ -28,6 +28,7 @@
 import { describe, test, expect, beforeAll, afterEach } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -85,7 +86,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
       ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", SLOTS.personal],
     ] as const) wiki.addTiddler(new Tiddler({ title, text }));
     store   = new RecordingStore();
-    adaptor = new IslandAdaptor(engine, store, "outbound-bridge");
+    adaptor = new IslandAdaptor(engine, asIslandStore(store), "outbound-bridge");
     // The projection registers — the INBOUND half — and the OUTBOUND BRIDGE (Road B) stands over it, the SAME
     // call the kernel makes after `buildIslandRecipe`: one `change` listener, the echo law read off the
     // adaptor's inbound set.

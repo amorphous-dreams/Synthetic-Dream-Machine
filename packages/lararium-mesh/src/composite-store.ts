@@ -283,17 +283,20 @@ export class CompositeStore implements LarTiddlerStore {
    * Throws when the named bag is absent or not writable.
    */
   async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
-    const layer = this.layers.find((l) => l.bagId === bagId && l.writable);
-    if (!layer) throw new Error(`CompositeStore: no writable layer for bag "${bagId}"`);
-    return layer.store.tombstone(title, origin);
+    return this._writableLayerOf(bagId).tombstone(title, origin);
   }
 
   /** HARD-remove a title from one bag (ABSENT — falls through), distinct from
    *  tombstoneInBag's kāpae hide. The retract a MOVE/promotion uses on its source. */
   async removeInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
-    const layer = this.layers.find((l) => l.bagId === bagId && l.writable);
-    if (!layer) throw new Error(`CompositeStore: no writable layer for bag "${bagId}"`);
-    return layer.store.remove(title, origin);
+    return this._writableLayerOf(bagId).remove(title, origin);
+  }
+
+  /** The bag's WRITABLE layer store, or a throw naming the bag — a residency action, never a copy-up. */
+  private _writableLayerOf(bagId: string): LarTiddlerStore {
+    const store = this.writableStoreForBag(bagId);
+    if (!store) throw new Error(`CompositeStore: no writable layer for bag "${bagId}"`);
+    return store;
   }
 
   /** True when a writable layer for the given bag is registered. */

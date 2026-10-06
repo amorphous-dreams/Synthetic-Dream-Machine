@@ -33,6 +33,7 @@ import path from "node:path";
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import { CompositeStore } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { asIslandStore } from "./island-store-double.js";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "../src/bag-cascade.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -188,7 +189,7 @@ describe.skipIf(wikiSkip)(`routing totality — the adaptor persists what it rou
       ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", "lar:///ha.ka.ba/wikis/test/personal"],
     ] as const) wiki.addTiddler(new Tiddler({ title, text }));
     const store = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(engine, store, "routing-totality");
+    const adaptor = new IslandAdaptor(engine, asIslandStore(store), "routing-totality");
     return { adaptor, store };
   };
 

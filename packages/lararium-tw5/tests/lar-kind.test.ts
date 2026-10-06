@@ -32,6 +32,7 @@ import path from "node:path";
 
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { PERSONAL_TITLE_PREFIXES } from "../src/filters/lar-kind.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -203,7 +204,7 @@ describe.skipIf(wikiSkip)(`lar-kind — the adaptor lands a draft where the fiel
       ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", SLOT_PERSONAL],
     ] as const) wiki.addTiddler(new Tiddler({ title, text }));
     const store = new SlotRecordingStore();
-    return { adaptor: new IslandAdaptor(engine, store, "lar-kind"), store, wiki };
+    return { adaptor: new IslandAdaptor(engine, asIslandStore(store), "lar-kind"), store, wiki };
   };
 
   test("★ a save carrying `draft.of` lands in the draft slot ★", async () => {

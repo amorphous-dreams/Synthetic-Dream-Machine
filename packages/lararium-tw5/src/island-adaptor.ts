@@ -24,6 +24,7 @@
  */
 
 import type {
+  CompositeStore,
   LarTiddlerStore,
   LarTiddlerRecord,
   LarTiddlerChange,
@@ -39,6 +40,13 @@ import { splitBodyTiddler } from "./deserializer.js";
 
 /** The wiki's live write layer — where a save the cascade cannot route still lands. */
 const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
+
+/**
+ * The store the adaptor writes through: one that lands a family, and a tombstone, in the bag the
+ * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
+ * store that could only write to its own default would land a routed save in a bag no rule chose.
+ */
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag">;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -96,7 +104,7 @@ export class IslandAdaptor implements MemeProjection {
 
   constructor(
     private readonly tw5:   TW5Engine,
-    private readonly store: LarTiddlerStore,
+    private readonly store: IslandStore,
     readonly instanceId:    string,
   ) {}
 
@@ -325,12 +333,7 @@ export class IslandAdaptor implements MemeProjection {
     if (slot === null) return Promise.resolve();
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
-    const store = this.store as LarTiddlerStore & { tombstoneInBag?: (bag: string, title: string, origin: ChangeOrigin) => Promise<void> };
-    const landed = typeof store.tombstoneInBag === "function"
-      ? store.tombstoneInBag(slot, title, origin)
-      : store.tombstone(title, origin);
-
-    return landed.then(() => {
+    return this.store.tombstoneInBag(slot, title, origin).then(() => {
       this._slotOf.delete(title);
       this._removeSlotChildren(title);
     });
@@ -382,7 +385,7 @@ export class IslandAdaptor implements MemeProjection {
    *
    * ONE CHANGE. Root and children route to the ONE bag the cascade names, so they share one doc, and
    * the family lands through `writeFamily` as a single atomic change — no peer ever sees a root
-   * pointing at a tombstoned child. A store that cannot write atomically takes the members one by one.
+   * pointing at a tombstoned child.
    *
    * AN ORPHAN DIES WHERE IT LIVES. A child's tombstone routes like a delete: the last-known-slot map
    * first (a child that arrived from another bag is tombstoned there, in its own change), the root's
@@ -443,19 +446,8 @@ export class IslandAdaptor implements MemeProjection {
       }
     }
 
-    const store = this.store as LarTiddlerStore & {
-      tombstoneInBag?: (bag: string, title: string, origin: ChangeOrigin) => Promise<void>;
-    };
-    const tombstoneIn = (bag: string, uri: string): Promise<void> =>
-      typeof store.tombstoneInBag === "function" ? store.tombstoneInBag(bag, uri, origin) : store.tombstone(uri, origin);
-
-    if (typeof store.writeFamily === "function") {
-      await store.writeFamily(puts, familyTombstones, origin, { bag: targetBag });
-    } else {
-      for (const record of puts) await store.put(record, origin, { bag: targetBag });
-      for (const uri of familyTombstones) await tombstoneIn(targetBag, uri);
-    }
-    for (const { uri, slot } of strayTombstones) await tombstoneIn(slot, uri);
+    await this.store.writeFamily(puts, familyTombstones, origin, { bag: targetBag });
+    for (const { uri, slot } of strayTombstones) await this.store.tombstoneInBag(slot, uri, origin);
 
     for (const record of puts.slice(1)) this._slotOf.set(record.tiddler.title, targetBag);
     for (const uri of familyTombstones) this._slotOf.delete(uri);
