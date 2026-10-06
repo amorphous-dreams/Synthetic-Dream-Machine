@@ -17,7 +17,10 @@ import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY } from "@lararium
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
-import { larDataDir } from "../src/vessel-paths.js";
+import { larDataDir, larSealHome } from "../src/vessel-paths.js";
+import { writeNexusDoc, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
+import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 
@@ -146,5 +149,27 @@ describe("cabal join — the crossing, and what it refuses", () => {
     // instead of trusting a graph that came back quietly shorter than the invites handed in.
     expect(v.capped).toBeDefined();
     expect(Array.isArray(v.capped)).toBe(true);
+  });
+
+  it("★ a CLIMBED vessel's join reads the board its vouch wrote — both key on the NEXUS island ★", async () => {
+    // A charter seated at the seal home moves the island off the vessel key to the genesis AID. The vouch
+    // writes the island's board; a join keyed on the vessel key reads a board nobody wrote.
+    const charter = `epoch0-${"7c".repeat(32)}`;
+    writeNexusDoc(larSealHome(), {
+      kind: NEXUS_DOC_DOMAIN,
+      threshold: 1,
+      sealEpochCid: charter,
+      kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+    });
+    const vesselKey = await loadVesselVerifyingKey();
+    // CONTROL: the rig moved the island, or the assertion below greens on the defect.
+    expect(nodeNexusIsland({ ownVesselKey: vesselKey })).not.toBe(vesselKey);
+
+    const joiner = await foreignNym(18);
+    await runCabalVouch({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    const v = await runCabalJoin({ realm: REALM, applicant: joiner, now: NOW });
+
+    expect(v.refusal).toBeUndefined();
+    expect(v.admitted).toBe(true);
   });
 });

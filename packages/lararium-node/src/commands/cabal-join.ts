@@ -23,6 +23,7 @@ import {
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
 
@@ -145,7 +146,11 @@ export async function runCabalJoin(
   const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   let issued: CabalInvite[];
   try {
-    const handle = await materializeSharedLarDoc(repo, vouchBoardDocUrl(vesselKey), "board:vouch-registry");
+    // THE BOARD KEYS ON THE NEXUS, never the vessel key — the same island `cabal vouch` writes. On a
+    // vessel standing under a charter the island is the genesis AID, and a vessel-keyed read finds a
+    // board nobody wrote.
+    const boardIsland = nodeNexusIsland({ ownVesselKey: vesselKey });
+    const handle = await materializeSharedLarDoc(repo, vouchBoardDocUrl(boardIsland), "board:vouch-registry");
     // THE VERIFYING READ, the only read that stands. An unverified board carries edges whose
     // signatures never cleared, and the fold would price a lineage partly made of noise.
     issued = await verifiedVouchesFromBoard(handle.doc(), realm, verifyOffline);
