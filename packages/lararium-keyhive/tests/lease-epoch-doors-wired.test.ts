@@ -34,14 +34,15 @@ describe("the lease-epoch fence's wiring", () => {
   test("★ operator-daemon-behavior.ts threads expectedEpoch into verifyPeer's device-delegation door (:814-ish) ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
     // The live admission path reads a fresh lease epoch and forwards it into the SAME KEL-walk primitive.
-    expect(src).toMatch(/const expectedEpoch\s*=\s*await readLeaseEpoch\(epochCtx\.repo,\s*epochCtx\.oracleUrl\)/);
+    expect(src).toMatch(/const lease\s*=\s*await readLeaseEpoch\(epochCtx\.composite\)/);
+    expect(src).toMatch(/const expectedEpoch\s*=\s*lease\.n;/);
     expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(edge,\s*kel\.chain,\s*\{\s*expectedEpoch\s*\}/);
   });
 
   test("★ an unavailable lease frontier cannot become a successful device mutation ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
     expect(src).toContain("device-delegation pending: current lease frontier unavailable");
-    expect(src).toMatch(/if \(expectedEpoch === null\) \{[\s\S]{0,220}current lease frontier unavailable/);
+    expect(src).toMatch(/if \(lease\.kind === "unavailable"\) \{[\s\S]{0,220}current lease frontier unavailable/);
   });
 
   test("★ live daemon proof uses connection-bound nonce evidence, never Date.now ★", () => {
@@ -59,8 +60,8 @@ describe("the lease-epoch fence's wiring", () => {
 
   test("★ operator-daemon-behavior.ts ALSO threads it into the boot-time bootDaemonKeyhive call (Binding Gate door) ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toMatch(/bindingGateExpectedEpoch\s*=\s*await readLeaseEpoch/);
-    expect(src).toMatch(/bindingGateExpectedEpoch\s*!==\s*null\s*\?\s*\{\s*expectedEpoch:\s*bindingGateExpectedEpoch/);
+    expect(src).toMatch(/bindingGateLease\s*=\s*await readLeaseEpoch\(ctx\.composite\)/);
+    expect(src).toMatch(/bindingGateLease\.kind\s*===\s*"epoch"\s*\?\s*\{\s*expectedEpoch:\s*bindingGateLease\.n/);
   });
 
   test("★ operator-daemon-behavior.ts threads it into the joinee's grant-take (verifyFaceGrantRecord) ★", () => {
@@ -70,14 +71,15 @@ describe("the lease-epoch fence's wiring", () => {
 
   test("★ an unavailable lease frontier cannot make a face-grant record mutate the joinee ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    const start = src.indexOf("const expectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl)");
+    const start = src.indexOf("const lease = await readLeaseEpoch(ctx.composite)");
     const end = src.indexOf("const verdict = await verifyFaceGrantRecord", start);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
     const grantTake = src.slice(start, end);
-    expect(grantTake).toMatch(/if \(expectedEpoch === null\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}current lease frontier unavailable/);
+    expect(grantTake).toMatch(/if \(lease\.kind === "unavailable"\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}current lease frontier unavailable/);
     expect(grantTake).not.toMatch(/expectedEpoch !== null \? \{ expectedEpoch \}/);
-    expect(grantTake.indexOf("if (expectedEpoch === null)")).toBeLessThan(grantTake.indexOf("judgedGrants.add(rec.sig)"));
+    expect(grantTake.indexOf('if (lease.kind === "unavailable")')).toBeGreaterThanOrEqual(0);
+    expect(grantTake.indexOf('if (lease.kind === "unavailable")')).toBeLessThan(grantTake.indexOf("judgedGrants.add(rec.sig)"));
   });
 
   test("★ face-grant-record.ts forwards ctx.expectedEpoch into BOTH the KEL-head and pinned-root verify paths ★", () => {

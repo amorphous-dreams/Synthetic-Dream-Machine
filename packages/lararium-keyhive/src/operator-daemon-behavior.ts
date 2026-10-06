@@ -29,7 +29,7 @@ import {
   makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, leaseEpochPrefix, effectiveLeaseEpoch, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
 
@@ -64,6 +64,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
+import { readLeaseFrontier, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
 import { faceGrantTitle, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
@@ -104,10 +105,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
   // Captured at `verifierFactory` boot time (the only site this behavior sees an `IslandContext`) so the
-  // lease read below stays reachable from doors that boot supplies no ctx to (`verifyPeer`). Only the
-  // (repo, oracleUrl) PAIR is cached — never a snapshot of the epoch itself — so every read below is FRESH
-  // as of the moment it runs, never a stale boot-time number (a roll after boot must still bite immediately).
-  let epochCtx: { repo: IslandContext["repo"]; oracleUrl: IslandContext["oracleUrl"] } | null = null;
+  // lease read below stays reachable from doors that boot supplies no ctx to (`verifyPeer`). Only the island's
+  // COMPOSITE is cached — never a snapshot of the epoch itself — so every read below is FRESH as of the moment
+  // it runs, never a stale boot-time number (a roll after boot must still bite immediately).
+  let epochCtx: { composite: IslandContext["composite"] } | null = null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -149,12 +150,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // (readLeaseEpoch, shared). An unavailable frontier is a pending mutation, never a reason to
       // let the signature and soft wall-clock window license the ingest. Keep the record unjudged so
       // a later live attempt can retry after the causal shore returns.
-      const expectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl);
+      const lease = await readLeaseEpoch(ctx.composite);
       if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
-      if (expectedEpoch === null) {
-        console.log(`[daemon] face-join grant pending (${title.slice(-16)}): current lease frontier unavailable — no binding moves`);
+      if (lease.kind === "unavailable") {
+        console.log(`[daemon] face-join grant pending (${title.slice(-16)}): current lease frontier unavailable (${lease.why}) — no binding moves`);
         continue;
       }
+      const expectedEpoch = lease.n;
       judgedGrants.add(rec.sig);
       const verdict = await verifyFaceGrantRecord(rec, {
         personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group,
@@ -257,34 +259,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     return id;
   };
 
-  // THE LEASE READ every device-delegation admission door shares — off the live daemon replica, the SAME
-  // per-writer slots `gateFaceJoin` folds by max (leaseEpochPrefix/effectiveLeaseEpoch, :502-509 below). A
-  // device edge's `boundEpoch` checks against the epoch a FRESH join would license against — read fresh on
-  // every call, never cached, so a roll after boot bites at the very next admission attempt, not just the
-  // next reboot. Returns null (never a fabricated 0) when the epoch cannot be read — no PersonaGroup pinned,
-  // no oracle plane reachable, or a store fault. A mutation gate MUST name that unavailable frontier rather
-  // than silently licensing from the signature and wall-clock window alone.
-  const readLeaseEpoch = async (
-    repo: IslandContext["repo"], oracleUrl: IslandContext["oracleUrl"],
-  ): Promise<number | null> => {
-    const group = daemonAuth.personaGroupDocIdHex;
-    if (!group || !oracleUrl) return null;
-    try {
-      const store = await makeCatalogAccessor(repo, oracleUrl).storeOf(DAEMON_BAG_ID);
-      if (!store) return null;
-      const prefix = leaseEpochPrefix(group);
-      const slots: string[] = [];
-      for (const title of await store.listVisible()) {
-        if (!title.startsWith(prefix)) continue;
-        const record = await store.get(title);
-        const text = (record as { tiddler?: { text?: unknown } } | null)?.tiddler?.text;
-        if (typeof text === "string") slots.push(text);
-      }
-      return effectiveLeaseEpoch(slots);
-    } catch {
-      return null;
-    }
-  };
+  // THE LEASE READ every device-delegation admission door shares — off the island's OWN daemon layer (its
+  // composite holds the daemon doc on every platform; under an owned document the main repo DENIES it, so no
+  // registry walk over `ctx.repo` reaches it), the SAME per-writer slots `gateFaceJoin` folds by max. A device
+  // edge's `boundEpoch` checks against the epoch a FRESH join would license against — read fresh on every call,
+  // never cached, so a roll after boot bites at the very next admission attempt, not just the next reboot.
+  // TWO VERDICTS (`lease-frontier.ts`): an empty, readable slot set reads 0, the founding epoch; no group pinned,
+  // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
+  // silently licensing from the signature and wall-clock window alone.
+  const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
+    readLeaseFrontier(composite, daemonAuth.personaGroupDocIdHex);
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)
@@ -541,15 +525,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 reason: "this vessel IS the joinee — a summons is answered by the hearth that holds the face, never by the device asking to join it.",
               };
             }
-            // The lease read, off the live daemon replica: every slot under this group's prefix, folded by max.
-            const store = await resolveDaemonStore();
-            const prefix = leaseEpochPrefix(faceGroup());
-            const slots: string[] = [];
-            for (const title of await store.listVisible()) {
-              if (!title.startsWith(prefix)) continue;
-              const record = await store.get(title);
-              const text = (record as { tiddler?: { text?: unknown } } | undefined)?.tiddler?.text;
-              if (typeof text === "string") slots.push(text);
+            // The lease read, off the island's own daemon layer: every slot under this group's prefix, folded
+            // by max — the SAME read every admission door shares. An unavailable frontier seats nobody.
+            const lease = await readLeaseEpoch(ctx.composite);
+            if (lease.kind === "unavailable") {
+              throw new Error(`[daemon] face-join: current lease frontier unavailable (${lease.why}) — no seat moves`);
             }
 
             // THE TWO-HANDED JOIN: the VEIL seats (it holds the group), the VESSEL re-grants its own
@@ -583,7 +563,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               hearthTrueName:         ownEdge.hearthTrueName,
               personaGroupDocIdHex:   faceGroup(),
               personaGroupAgentIdHex: faceAgent(),
-              leaseEpoch:             effectiveLeaseEpoch(slots),
+              leaseEpoch:             lease.n,
               // The bags this vessel ALREADY delegated to its own face, re-granted so a fresh seat reaches them.
               // Naming only what we granted, at the access we granted, widens nobody's reach — it refreshes the
               // epoch on grants that already stand. `registerBags` IS that set, and `FACE_SEATS_AND_UNSEATS` IS the
@@ -678,12 +658,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
     },
     verifierFactory: async (ctx: IslandContext) => {
-      // Cache (repo, oracleUrl) for the FRESH per-call lease reads below (verifyPeer, the joinee grant-take) —
+      // Cache the composite for the FRESH per-call lease reads below (verifyPeer, the joinee grant-take) —
       // never the epoch itself, which must be read live at each door.
-      epochCtx = { repo: ctx.repo, oracleUrl: ctx.oracleUrl };
+      epochCtx = { composite: ctx.composite };
       // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
-      // boot, so a single read at this moment is exactly as fresh as the gate itself).
-      const bindingGateExpectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl);
+      // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
+      // threads no epoch, and the gate refuses a persona-bound boot on it.
+      const bindingGateLease = await readLeaseEpoch(ctx.composite);
+      if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupDocIdHex) {
+        console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
+      }
       const { keyhive, did } = await bootDaemonKeyhive({
         seed:                  daemonAuth.seed,
         eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
@@ -696,7 +680,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
         ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
         ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
-        ...(bindingGateExpectedEpoch !== null ? { expectedEpoch: bindingGateExpectedEpoch } : {}),
+        ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
         ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
       });
       kh = keyhive;
@@ -868,10 +852,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (!epochCtx) {
           return { ok: false, identifier: id, proofVerified, reason: "device-delegation pending: current lease frontier unavailable" };
         }
-        const expectedEpoch = await readLeaseEpoch(epochCtx.repo, epochCtx.oracleUrl);
-        if (expectedEpoch === null) {
-          return { ok: false, identifier: id, proofVerified, reason: "device-delegation pending: current lease frontier unavailable" };
+        const lease = await readLeaseEpoch(epochCtx.composite);
+        if (lease.kind === "unavailable") {
+          return { ok: false, identifier: id, proofVerified, reason: `device-delegation pending: current lease frontier unavailable (${lease.why})` };
         }
+        const expectedEpoch = lease.n;
         const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, { expectedEpoch });
         const deviceMatches = edge.deviceDid === id;
         if (delegation.ok && deviceMatches && proofVerified) {
