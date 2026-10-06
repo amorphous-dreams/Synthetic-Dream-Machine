@@ -90,6 +90,13 @@ describe("the lease-epoch fence's wiring", () => {
     expect(src).toMatch(/verifyDeviceDelegation\(r\.founderEdge,\s*ctx\.personaRootDid,\s*freshnessOpts\)/);
   });
 
+  test("★ ONE ROAD: every lease read goes through the island's own daemon layer, never the oracle registry ★", () => {
+    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
+    expect(src).toMatch(/readLeaseFrontier\(composite,\s*daemonAuth\.personaGroupDocIdHex\)/);
+    expect(src).not.toMatch(/storeOf\(DAEMON_BAG_ID\)/);
+    expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = daemonLayerOf\(ctx\.composite\)/);
+  });
+
   test("CONTROL — the assertions are not vacuous: every symbol they grep for is real", () => {
     expect(KEYHIVE_SRC("boot-daemon-keyhive.ts")).toContain("export async function bootDaemonKeyhive");
     expect(KEYHIVE_SRC("operator-daemon-behavior.ts")).toContain("verifyPeer:");

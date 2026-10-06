@@ -64,7 +64,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
-import { readLeaseFrontier, type LeaseFrontier } from "./lease-frontier.js";
+import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
 import { faceGrantTitle, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
@@ -376,7 +376,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // is reachable here, the never-federates wall made structural. `ctx.tw5` lets a mutation/list re-render
       // the daemon follow surface (a browser paints it; a headless node daemon rests the temp tiddler).
       if (ctx.oracleUrl) {
-        const sysPlane = makeCatalogAccessor(ctx.repo, ctx.oracleUrl);
         // The registry a FACE's planes answer to — the persona, circles, identities and sessions planes all share one
         // tag and one home. Built once so the two verb families below cannot drift onto different planes.
         const facePlane = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
@@ -474,9 +473,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // writer's own slot — the offering a realm lives by; `realm-clock` reads every slot back and reports
         // who feeds and how deep, VERDICT-FREE (what spread counts as capture stays the operator's
         // calibration, and mechanizing it here would recreate the root a realm exists without).
+        // The slots live in the island's OWN daemon layer — the composite holds it on every platform, and under
+        // an owned document the main repo denies the daemon doc, so no registry walk over `ctx.repo` reaches it.
         const resolveDaemonStore = async () => {
-          const store = await sysPlane.storeOf(DAEMON_BAG_ID);
-          if (!store) throw new Error("cabal-realm-verb: daemon bag unresolved — the oracle registry names no DAEMON_BAG_ID");
+          const store = daemonLayerOf(ctx.composite);
+          if (!store) throw new Error("cabal-realm-verb: daemon bag unresolved — the daemon layer is absent from this island's composite");
           return store;
         };
         const realmReactors = makeCabalRealmReactors({ resolveStore: resolveDaemonStore });
