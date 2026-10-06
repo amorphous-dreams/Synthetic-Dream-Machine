@@ -49,14 +49,6 @@ const REPO = new URL("../..", import.meta.url).pathname;
 const CLI  = join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
 const PORT = 8231;
 
-/**
- * THIS SUITE DECLARES ITS ORIGINS. A scratch LAR_ROOT reads its own (absent) config.json and never the
- * operator's, so boot composes the Web and oracle origins for every face from nothing and refuses with
- * "Web origin must be declared", before the herm branch that never serves them. The origin composition
- * reads no standing, so this suite declares same-origin; a standing-aware composition holds a herm's Web
- * origin legally absent and boots the herm with no declaration at all.
- */
-const SUITE_ORIGINS = { LAR_SAME_ORIGIN: "true" } as const;
 let root = "";
 
 /** A herm's own root: the tracked genesis, and nothing else. No face is ever lit here. */
@@ -109,7 +101,7 @@ async function standHerm(r: string): Promise<{ live: boolean; log: string }> {
   // stood when nothing did, and reaches for a socket no process holds.
   rmSync(standLog, { force: true });
   const child = spawn(process.execPath, [CLI, "vessel", "stand"], {
-    env: { ...process.env, ...SUITE_ORIGINS, LAR_ROOT: r, LAR_PORT: String(PORT) }, cwd: REPO,
+    env: { ...process.env, LAR_ROOT: r, LAR_PORT: String(PORT) }, cwd: REPO,
   });
   let launcher = "";
   child.stdout.on("data", (b) => { launcher += String(b); });
@@ -156,7 +148,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
   test("R1 — a herm reaches live: found, stood, and NO face ever lit", async () => {
     root = standHermRoot();
     execFileSync(process.execPath, [CLI, "vessel", "found"], {
-      env: { ...process.env, ...SUITE_ORIGINS, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
+      env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
     });
     const { live, log } = await standHerm(root);
     // The failure carries the next reach-for-a-face by name — that is what this vector is for.
@@ -167,7 +159,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // different verdict on a hearth. A rig that quietly lit a face would turn R5's LIFT green by
     // having nothing to lift — the shape `founding-witness` already refuses on the place half.
     const held = execFileSync(process.execPath, [CLI, "persona", "list", "--json"], {
-      env: { ...process.env, ...SUITE_ORIGINS, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
+      env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
     });
     expect(held, `a face stands on the floor rig — every vector below measures a hearth, not a floor:\n${held.slice(0, 400)}`)
       .not.toMatch(/"index"\s*:\s*\d/);
@@ -210,7 +202,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
 
   test("R5 — a herm LIFTS into a lararium: light the face, re-wake, the hearth verbs stand", async () => {
     execFileSync(process.execPath, [CLI, "persona", "new", "0", "--name", "the lift"], {
-      env: { ...process.env, ...SUITE_ORIGINS, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
+      env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
     });
     await stopVessel();
     const { live, log } = await standHerm(root);
