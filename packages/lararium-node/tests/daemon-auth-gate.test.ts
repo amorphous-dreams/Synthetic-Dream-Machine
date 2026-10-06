@@ -349,58 +349,101 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     expect(gate.clients.size).toBe(0);
   });
 
-  // ── THE CONTRACT SLOT — a cross-operator's persona-root-signed edge over its OWN vessel key ─────────────
-  // It never reaches the fleet verifier (that slot chains to THIS hearth's KEL and would anergize the socket
-  // whole). With no contract-board frontier armed, the edge remains pending and the gate keeps no nym.
-  test("a lar:auth carrying a contractEdge without a frontier: the gate keeps the strict floor; the shore sees NO fleet edge", async () => {
-    const { buildDeviceDelegation } = await import("@lararium/mesh");
+  // ── THE PRESENTATION — the contract edge and the presented admit, recorded per socket, deciding nothing ──
+  // The contract edge never reaches the fleet verifier (that slot chains to THIS hearth's KEL and would
+  // anergize the socket whole). The gate keeps what the peer presented, untrusted, for a later reader.
+  const TS = "2026-06-07T00:00:00.000Z";
+  const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+
+  async function presentation() {
+    const { buildDeviceDelegation, signCarriageContract, signCarriageQuorum, carriageEntryActCid } = await import("@lararium/mesh");
     const ed = await import("@noble/ed25519");
-    const rootSeed   = new Uint8Array(32).fill(21);
-    const vesselSeed = new Uint8Array(32).fill(22);
-    const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
-    const rootKey   = toHex(await ed.getPublicKeyAsync(rootSeed));
-    const vesselKey = toHex(await ed.getPublicKeyAsync(vesselSeed));
-    const now = new Date();
+    const signerOf = (seed: Uint8Array) => async (bytes: Uint8Array) => toHex(await ed.signAsync(bytes, seed));
+    const rootSeed  = new Uint8Array(32).fill(21);
+    const nym       = toHex(await ed.getPublicKeyAsync(rootSeed));
+    const vesselKey = toHex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(22)));
     const contractEdge = await buildDeviceDelegation({
       personaRootSeed: rootSeed, deviceVerifyingKey: vesselKey, hearthTrueName: "",
-      issuedAt: new Date(now.getTime() - 60_000).toISOString(), expiresAt: new Date(now.getTime() + 3_600_000).toISOString(), boundEpoch: 0,
+      issuedAt: TS, expiresAt: "2026-06-08T00:00:00.000Z", boundEpoch: 0,
     });
+    const kahu = await Promise.all([1, 2].map(async (n) => {
+      const seed = new Uint8Array(32).fill(n);
+      return { signer: toHex(await ed.getPublicKeyAsync(seed)), sign: signerOf(seed) };
+    }));
+    const consent = await signCarriageContract(nym, "epoch-cid", signerOf(rootSeed));
+    const first  = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: "epoch-cid" }, kahu, consent);
+    const revoke = await signCarriageQuorum({ nym, action: "revoke", parents: [carriageEntryActCid(first)], sealEpochCid: "epoch-cid" }, kahu);
+    const admit  = await signCarriageQuorum({ nym, action: "admit", parents: [carriageEntryActCid(revoke)], sealEpochCid: "epoch-cid" }, kahu, consent);
+    return { vesselKey, contractEdge, presentedAdmit: { admit, lineage: [first, revoke] } };
+  }
+
+  test("a presented admit round-trips byte-identical into the gate's per-socket record; the shore sees NO fleet edge", async () => {
+    const { vesselKey, contractEdge, presentedAdmit } = await presentation();
     const { shore, calls } = makeCapturingShore(`prefix:${vesselKey}`);
     gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
     const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
 
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: now.toISOString(), contractEdge }));
-    await nextMessage(ws); // auth-ok
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, contractEdge, presentedAdmit }));
+    expect(isLarAuthOkMsg(await nextMessage(ws))).toBe(true);
     const serverSocket = await admitted;
 
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.edge).toBeUndefined();                                  // CONTROL: the fleet slot stays empty
-    expect(gate.getContractNymForSocket(serverSocket)).toBeUndefined();      // no relation witness: pending, never authorized
+    expect(calls[0]!.edge).toBeUndefined();                                  // CONTROL: the fleet slot never sees the contract edge
+    const kept = gate.getPresentationForSocket(serverSocket);
+    expect(JSON.stringify(kept?.presentedAdmit)).toBe(JSON.stringify(presentedAdmit));
+    expect(JSON.stringify(kept?.contractEdge)).toBe(JSON.stringify(contractEdge));
     expect(gate.getIdentifierForSocket(serverSocket)).toBe(`prefix:${vesselKey}`);
+    expect(gate.getClassForSocket(serverSocket)).toBeUndefined();            // the presentation lifts no class
     ws.close();
   });
 
-  test("CONTROL: a contractEdge naming ANOTHER vessel key keeps no nym — the socket still admits at the floor", async () => {
-    const { buildDeviceDelegation } = await import("@lararium/mesh");
-    const ed = await import("@noble/ed25519");
-    const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
-    const otherKey = toHex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(23)));
-    const now = new Date();
-    const contractEdge = await buildDeviceDelegation({
-      personaRootSeed: new Uint8Array(32).fill(21), deviceVerifyingKey: otherKey, hearthTrueName: "",
-      issuedAt: new Date(now.getTime() - 60_000).toISOString(), expiresAt: new Date(now.getTime() + 3_600_000).toISOString(), boundEpoch: 0,
-    });
-    const { shore } = makeCapturingShore("prefix:" + "ab".repeat(32));
+  test("a malformed presented admit is denied like any malformed lar:auth — 4003, and the shore is never asked", async () => {
+    const { contractEdge, presentedAdmit } = await presentation();
+    const { shore, calls } = makeCapturingShore();
+    gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
+    let admittedAny = false;
+    gate.once("connection", () => { admittedAny = true; });
+
+    const ws   = await connect(serverInfo.port);
+    const chal = await nextMessage(ws) as { nonce: string };
+    const closed = nextClose(ws);
+    const bad = { ...presentedAdmit, lineage: [{ ...presentedAdmit.lineage[0]!, nym: "ab".repeat(32) }] }; // a lineage act for ANOTHER nym
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, contractEdge, presentedAdmit: bad }));
+    const denied = await nextMessage(ws);
+    expect(isLarAuthDeniedMsg(denied)).toBe(true);
+    expect((denied as { reason: string }).reason).toBe("expected lar:auth message");
+    expect((await closed).code).toBe(4003);
+    expect(calls).toHaveLength(0);
+    expect(admittedAny).toBe(false);
+  });
+
+  test("CONTROL: a peer presenting nothing admits at the floor exactly as before, with no presentation kept", async () => {
+    const { shore, calls } = makeCapturingShore("prefix:" + "ab".repeat(32));
     gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
     const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: now.toISOString(), contractEdge }));
-    const ok = await nextMessage(ws);
-    expect(isLarAuthOkMsg(ok)).toBe(true);
-    expect(gate.getContractNymForSocket(await admitted)).toBeUndefined();
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS }));
+    expect(isLarAuthOkMsg(await nextMessage(ws))).toBe(true);
+    const serverSocket = await admitted;
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.edge).toBeUndefined();
+    expect(gate.getPresentationForSocket(serverSocket)).toBeUndefined();
+    expect(gate.getIdentifierForSocket(serverSocket)).toBe("prefix:" + "ab".repeat(32));
     ws.close();
+  });
+
+  test("CONTROL: the presentation decides nothing — a shore denial still denies a well-presented peer", async () => {
+    const { contractEdge, presentedAdmit } = await presentation();
+    gate.arm(makeStubShore({ receiveResult: { id: "0xaabbcc" }, verifyResult: { ok: false, reason: "insufficient capability" } }));
+    const ws   = await connect(serverInfo.port);
+    const chal = await nextMessage(ws) as { nonce: string };
+    const closed = nextClose(ws);
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, contractEdge, presentedAdmit }));
+    expect(isLarAuthDeniedMsg(await nextMessage(ws))).toBe(true);
+    expect((await closed).code).toBe(4003);
+    expect(gate.clients.size).toBe(0);
   });
 });

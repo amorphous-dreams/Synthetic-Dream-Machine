@@ -22,12 +22,15 @@
  *   1. socketToIdentifier WeakMap records socket → identifierHex.
  *   2. The Repo's sharePolicy should call getIdentifierForSocket() to build
  *      PeerId → identifierHex entries when the adapter emits "peer-candidate".
- *   3. A CONTRACT edge riding the lar:auth (`contractEdge` — a cross-operator's own persona-root-signed edge over
- *      its own vessel key) is eligible for `contractNymOf`, but this gate has no contract-board frontier and
- *      therefore records no nym. It never reaches the keyholder's fleet verifier — that slot chains to the pinned
- *      KEL and a foreign root would anergize the socket whole. The gate still decides nothing by it: admission
- *      stays the worker's verdict; an invalid or unwitnessed contract edge records no nym and the peer stands at
- *      the cross-operator floor exactly as before.
+ *   3. The PRESENTATION riding the lar:auth — the CONTRACT edge (`contractEdge`, a cross-operator's own
+ *      persona-root-signed edge over its own vessel key) and the PRESENTED ADMIT (`presentedAdmit`, the dialed
+ *      island's quorum-signed admit of that operator plus its causal lineage) — is kept per socket as UNTRUSTED
+ *      input, read back by getPresentationForSocket(). The gate decides nothing by it: admission stays the
+ *      worker's verdict, no class or nym is lifted from it, and a peer that presents nothing stands at the
+ *      cross-operator floor exactly as one that presents. The contract edge never reaches the keyholder's
+ *      fleet verifier — that slot chains to the pinned KEL and a foreign root would anergize the socket whole.
+ *      A presented admit that fails its structural guard fails `isLarAuthMsg`, so the socket is denied like
+ *      any malformed lar:auth.
  *
  * Security posture (alpha):
  *   - V3 proof-of-possession (ENFORCED): the gate emits its gate-binding key in
@@ -52,7 +55,16 @@ import {
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg,
   DAEMON_BAG_ID,
 } from "@lararium/mesh";
-import type { AuthVerifierShore, PeerClass } from "@lararium/mesh";
+import type { AuthVerifierShore, DeviceDelegationTiddler, PeerClass, PresentedAdmit } from "@lararium/mesh";
+
+/**
+ * What a peer presented on its lar:auth beyond its card and proof, exactly as it arrived. UNTRUSTED: nothing
+ * here is verified at the gate, and its presence or absence changes no admission.
+ */
+export interface SocketPresentation {
+  readonly contractEdge?:   DeviceDelegationTiddler;
+  readonly presentedAdmit?: PresentedAdmit;
+}
 
 const AUTH_TIMEOUT_MS       = 5_000;
 const MAX_PENDING           = 50;     // max concurrent unauthenticated connections
@@ -87,8 +99,8 @@ export class DaemonAuthGate extends EventEmitter {
    *  same-operator admit; ABSENT for any admit the worker could not positively vouch — the
    *  sharePolicy reads that absence as the stricter cross-operator class (fail-closed). */
   private readonly socketToClass = new WeakMap<WebSocket, PeerClass>();
-  /** socket → the persona-root nym the peer's CONTRACT edge proved (see the header, step 3). */
-  private readonly socketToContractNym = new WeakMap<WebSocket, string>();
+  /** socket → the untrusted presentation an admitted peer carried (see the header, step 3). */
+  private readonly socketToPresentation = new WeakMap<WebSocket, SocketPresentation>();
 
   constructor(realWss: WSSType) {
     super();
@@ -129,13 +141,12 @@ export class DaemonAuthGate extends EventEmitter {
   }
 
   /**
-   * The persona-root nym the peer's CONTRACT edge proved for this socket — undefined for a peer that presented
-   * none, one that failed to prove, or one whose contract frontier was unavailable. Key it into the sharePolicy's
-   * `peerContractNymMap` from the same "peer-candidate" listener only when defined; the membership consult pins
-   * it against the contracted member set. `undefined` is pending/refusal, never authorization.
+   * The contract edge and presented admit an admitted peer carried on its lar:auth, as received — undefined for
+   * a peer that presented neither. UNTRUSTED: the gate verified none of it, so a reader folds it against its own
+   * carriage frontier before reading any relation from it.
    */
-  getContractNymForSocket(socket: WebSocket): string | undefined {
-    return this.socketToContractNym.get(socket);
+  getPresentationForSocket(socket: WebSocket): SocketPresentation | undefined {
+    return this.socketToPresentation.get(socket);
   }
 
   private async _handleConnection(socket: WebSocket, req: unknown): Promise<void> {
@@ -156,7 +167,7 @@ export class DaemonAuthGate extends EventEmitter {
     this._send(socket, mkLarChallenge(nonce, gatePubKey));
 
     const result = await new Promise<
-      { ok: true; identHex: string; peerClass?: PeerClass; contractNym?: string } | { ok: false; reason: string }
+      { ok: true; identHex: string; peerClass?: PeerClass; presentation?: SocketPresentation } | { ok: false; reason: string }
     >((resolve) => {
       const timer = setTimeout(
         () => { socket.off("close", onClose); resolve({ ok: false, reason: "auth timeout" }); },
@@ -220,14 +231,19 @@ export class DaemonAuthGate extends EventEmitter {
           if (!verdict.ok || !verdict.identifier) {
             resolve({ ok: false, reason: verdict.reason ?? (verdict.ok ? "verify-proxy returned no identifier" : "insufficient capability") });
           } else {
-            // The gate has no contract-board frontier of its own. Do not invent one from a wall clock:
-            // without the relation's accepted lease witness, the edge stays pending and grants no nym.
-            const contractNym = null;
+            // Keep the presentation as received; it rides beside the verdict and changes none of it.
+            const presentation: SocketPresentation | undefined =
+              parsed.contractEdge !== undefined || parsed.presentedAdmit !== undefined
+                ? {
+                    ...(parsed.contractEdge !== undefined ? { contractEdge: parsed.contractEdge } : {}),
+                    ...(parsed.presentedAdmit !== undefined ? { presentedAdmit: parsed.presentedAdmit } : {}),
+                  }
+                : undefined;
             // Carry the self-slot class the keyholder vouched (absent → cross-operator at the gate).
             resolve({
               ok: true, identHex: verdict.identifier,
               ...(verdict.peerClass !== undefined ? { peerClass: verdict.peerClass } : {}),
-              ...(contractNym ? { contractNym } : {}),
+              ...(presentation ? { presentation } : {}),
             });
           }
         } catch (err) {
@@ -252,7 +268,7 @@ export class DaemonAuthGate extends EventEmitter {
 
     this.socketToIdentifier.set(socket, result.identHex);
     if (result.peerClass !== undefined) this.socketToClass.set(socket, result.peerClass);
-    if (result.contractNym !== undefined) this.socketToContractNym.set(socket, result.contractNym);
+    if (result.presentation !== undefined) this.socketToPresentation.set(socket, result.presentation);
     this._send(socket, mkLarAuthOk());
     this.clients.add(socket);
     socket.once("close", () => this.clients.delete(socket));

@@ -17,8 +17,7 @@
  *   · SENSORIUM-DEFERRED — `bures-metric`, `rank-te`, `windowed-coupling`, `partition-monitor`,
  *     `self-coupling`, `synthetic-drift`, `linearity-gate`, `independence-reading` carry an instrument
  *     the Sensorium wiring has not reached yet; no package reads them as a sole consumer today.
- *   · RULING-GATED — `contract-relation-witness` is the sole user of its own signing domain; `recipe`,
- *     `readiness`, `reaction-graph` are pinned as the mesh source-file by their own canon memes;
+ *   · RULING-GATED — `recipe`, `readiness`, `reaction-graph` are pinned as the mesh source-file by their own canon memes;
  *     `pronaos` and `offering-inspection` carry their own mesh-namespace memes. Each move waits on its
  *     own ruling, not this cut.
  *   · PERSONA-SELVES NAMING — `PERSONA_SELVES_PREFIX`, `personaSelfTiddlerUri` and
@@ -79,7 +78,6 @@ export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
-export * from "./contract-relation-witness.js";
 export * from "./authority-verdict.js";
 export * from "./oracle-substrate.js";
 export * from "./oracle-read-client.js";
@@ -206,14 +204,14 @@ export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-isla
 export {
   AUTH_WIRE_VERSION, AUTH_PROOF_TTL_MS,
   mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
-  isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg,
+  isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg, isPresentedAdmit,
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
 } from "./auth-wire.js";
 export type {
   AuthWireVersion,
   LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarAuthDeniedMsg, LarAuthWireMsg,
-  AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence,
+  AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit,
 } from "./auth-wire.js";
 export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions } from "./lar-ws-client-adapter.js";

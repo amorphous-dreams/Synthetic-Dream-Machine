@@ -29,6 +29,8 @@ import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
+import type { CarriageEntry } from "./carriage-registry.js";
+import { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
 
 export const AUTH_WIRE_VERSION = "1" as const;
 export type AuthWireVersion = typeof AUTH_WIRE_VERSION;
@@ -62,34 +64,54 @@ export interface AuthProofWire {
 
 export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-possession">;
 
-/** A transient carriage relation presentation; it grants no authority until the receiver verifies its local fold. */
-export interface ContractRelationWitness {
-  readonly kind: "contract-relation-witness/causal-lineage";
-  readonly relation: "carriage";
-  readonly relationResource: string;
-  readonly targetNexusPubkey: string;
-  readonly sealEpochCid: string;
-  /** Content-addressed semantic carriage act that supplied the sender's local evidence. */
-  readonly memberEvidenceCid: string;
-  readonly personaRootDid: string;
-  readonly vesselVerifyingKey: string;
-  readonly deviceEdgeDigest: string;
-  readonly signature: string;
+/**
+ * PresentedAdmit — the subject's own quorum-signed carriage ADMIT, presented at the wire for the island it
+ * dials, with the admit's causal LINEAGE: the counted acts it cites for this nym and epoch. A dialer presents
+ * only the dialed island's admit, never its whole set.
+ *
+ * The bundle is public: every entry is already a signed act on the Nexus's carriage board, so the bundle rides
+ * OUTSIDE the V3 proof signature and binds to the socket through the vessel-key edge beside it. It grants
+ * nothing on arrival — the receiver folds it against its own carriage frontier before reading any relation.
+ */
+export interface PresentedAdmit {
+  readonly admit:   CarriageEntry;
+  readonly lineage: readonly CarriageEntry[];
 }
 
-/** Structural guard only; signature and local charter/board authority remain unwired here. */
-export function isContractRelationWitness(v: unknown): v is ContractRelationWitness {
+function isQuorumSignatureShape(v: unknown): boolean {
   if (typeof v !== "object" || v === null) return false;
   const x = v as Record<string, unknown>;
-  return x["kind"] === "contract-relation-witness/causal-lineage" && x["relation"] === "carriage" &&
-    typeof x["relationResource"] === "string" && x["relationResource"].length > 0 &&
-    typeof x["targetNexusPubkey"] === "string" && x["targetNexusPubkey"].length > 0 &&
+  return typeof x["signer"] === "string" && typeof x["sig"] === "string";
+}
+
+function isCarriageEntryShape(v: unknown): v is CarriageEntry {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
+  const x = v as Record<string, unknown>;
+  return x["kind"] === CARRIAGE_ENTRY_DOMAIN &&
+    typeof x["nym"] === "string" && /^[0-9a-fA-F]{64}$/.test(x["nym"]) &&
+    (x["action"] === "admit" || x["action"] === "revoke" || x["action"] === "carry" || x["action"] === "uncarry") &&
+    Array.isArray(x["parents"]) && x["parents"].every((p) => typeof p === "string") &&
     typeof x["sealEpochCid"] === "string" && x["sealEpochCid"].length > 0 &&
-    typeof x["memberEvidenceCid"] === "string" && /^[0-9a-f]{64}$/.test(x["memberEvidenceCid"]) &&
-    typeof x["personaRootDid"] === "string" && x["personaRootDid"].length > 0 &&
-    typeof x["vesselVerifyingKey"] === "string" && x["vesselVerifyingKey"].length > 0 &&
-    typeof x["deviceEdgeDigest"] === "string" && x["deviceEdgeDigest"].length > 0 &&
-    typeof x["signature"] === "string" && x["signature"].length > 0;
+    Array.isArray(x["signatures"]) && x["signatures"].every(isQuorumSignatureShape) &&
+    (x["contractSig"] === undefined || isQuorumSignatureShape(x["contractSig"]));
+}
+
+/**
+ * Structural guard for a presented admit: an `admit` act, and a lineage of operator acts (admit/revoke) on the
+ * SAME nym under the SAME charter epoch. Shape only — no signature, quorum, ancestry or frontier is read here.
+ */
+export function isPresentedAdmit(v: unknown): v is PresentedAdmit {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
+  const x = v as Record<string, unknown>;
+  const admit = x["admit"];
+  const lineage = x["lineage"];
+  if (!isCarriageEntryShape(admit) || admit.action !== "admit" || !Array.isArray(lineage)) return false;
+  const nym = admit.nym.toLowerCase();
+  return lineage.every((entry) =>
+    isCarriageEntryShape(entry) &&
+    (entry.action === "admit" || entry.action === "revoke") &&
+    entry.nym.toLowerCase() === nym &&
+    entry.sealEpochCid === admit.sealEpochCid);
 }
 
 /** Peer → Gate: identity assertion. */
@@ -116,13 +138,16 @@ export interface LarAuthMsg {
   /**
    * OPTIONAL CONTRACT edge — a CROSS-OPERATOR's own persona-root-signed edge over its OWN vessel key, the
    * credential the face carries (membership-doctrine #/the-carried-cap). Never the fleet slot above: that
-   * one chains to the gate's pinned KEL and a foreign root anergizes the socket whole. The gate proves this
-   * one offline and keeps the nym beside the identifier; the membership consult pins that nym against the
-   * contracted member set. A peer that sends none behaves exactly as before.
+   * one chains to the gate's pinned KEL and a foreign root anergizes the socket whole. Outside the proof
+   * signature; the gate keeps it per socket as untrusted input beside `presentedAdmit` and decides nothing by
+   * it. A peer that sends none behaves exactly as before.
    */
   contractEdge?: DeviceDelegationTiddler;
-  /** OPTIONAL transient relation witness; transport only until a local board verifier is wired. */
-  contractWitness?: ContractRelationWitness;
+  /**
+   * OPTIONAL presented admit — the dialed island's quorum-signed admit of this subject plus its causal lineage.
+   * Outside the proof signature; the gate keeps it per socket as untrusted input and decides nothing by it.
+   */
+  presentedAdmit?: PresentedAdmit;
   version:     AuthWireVersion;
 }
 
@@ -163,8 +188,8 @@ export function isLarAuthMsg(v: unknown): v is LarAuthMsg {
     typeof (v as Record<string, unknown>)["nonce"] === "string"
   );
   if (!ok) return false;
-  const witness = (v as Record<string, unknown>)["contractWitness"];
-  return witness === undefined || isContractRelationWitness(witness);
+  const presented = (v as Record<string, unknown>)["presentedAdmit"];
+  return presented === undefined || isPresentedAdmit(presented);
 }
 
 export function isLarAuthOkMsg(v: unknown): v is LarAuthOkMsg {
@@ -392,8 +417,8 @@ export async function buildAuthResponse(parts: {
   edge?:       DeviceDelegationTiddler;
   /** OPTIONAL contract edge — the cross-operator credential, in its own slot. */
   contractEdge?: DeviceDelegationTiddler;
-  /** OPTIONAL transient relation witness, carried beside `contractEdge`; transport grants no authority. */
-  contractWitness?: ContractRelationWitness;
+  /** OPTIONAL presented admit, carried beside `contractEdge` and outside the signed proof bytes. */
+  presentedAdmit?: PresentedAdmit;
 }): Promise<LarAuthMsg> {
   const proof = authProofBytes({
     nonce:      parts.nonce,
@@ -411,7 +436,7 @@ export async function buildAuthResponse(parts: {
     ts:          parts.ts,
     ...(parts.edge ? { edge: parts.edge } : {}),
     ...(parts.contractEdge ? { contractEdge: parts.contractEdge } : {}),
-    ...(parts.contractWitness ? { contractWitness: parts.contractWitness } : {}),
+    ...(parts.presentedAdmit ? { presentedAdmit: parts.presentedAdmit } : {}),
     version:     AUTH_WIRE_VERSION,
   };
 }
@@ -442,8 +467,8 @@ export interface PeerHandshake {
   edge?:       DeviceDelegationTiddler;
   /** OPTIONAL contract edge — a contracted operator presents its own root's edge over its vessel key. */
   contractEdge?: DeviceDelegationTiddler;
-  /** OPTIONAL transient carriage relation witness, presented beside `contractEdge`. */
-  contractWitness?: ContractRelationWitness;
+  /** OPTIONAL presented admit — the dialed island's admit only, beside `contractEdge`. */
+  presentedAdmit?: PresentedAdmit;
   /** Clock for the response timestamp (default: now, ISO). */
   now?:        () => string;
 }
@@ -468,7 +493,7 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean;
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
     ...(h.contractEdge ? { contractEdge: h.contractEdge } : {}),
-    ...(h.contractWitness ? { contractWitness: h.contractWitness } : {}),
+    ...(h.presentedAdmit ? { presentedAdmit: h.presentedAdmit } : {}),
   });
   h.send(auth);
   const verdict = await h.recv();
@@ -495,6 +520,6 @@ export interface LeafIdentity {
   /** OPTIONAL contract edge — a self-founded operator presents its OWN root's edge over its vessel key to a
    *  hearth it contracted with; the fleet slot above stays empty on that dial. */
   contractEdge?: DeviceDelegationTiddler;
-  /** OPTIONAL transient carriage relation witness; the receiving gate must verify locally before use. */
-  contractWitness?: ContractRelationWitness;
+  /** OPTIONAL presented admit for the ONE island this identity dials — never the dialer's whole admit set. */
+  presentedAdmit?: PresentedAdmit;
 }

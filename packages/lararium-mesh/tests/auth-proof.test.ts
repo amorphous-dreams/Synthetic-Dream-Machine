@@ -9,10 +9,11 @@ import * as ed25519 from "@noble/ed25519";
 import {
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   ed25519SignerFromSeed, AUTH_PROOF_TTL_MS,
-  mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isContractRelationWitness,
+  mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isPresentedAdmit,
 } from "../src/auth-wire.js";
-import { hex } from "../src/crypto.js";
-import type { ContractRelationWitness, LarAuthMsg } from "../src/auth-wire.js";
+import { canonicalJsonBytes, hex } from "../src/crypto.js";
+import { carriageEntryActCid, signCarriageContract, signCarriageQuorum } from "../src/carriage-registry.js";
+import type { LarAuthMsg, PresentedAdmit } from "../src/auth-wire.js";
 
 const base = {
   nonce:      "ab12cd",
@@ -22,13 +23,23 @@ const base = {
   ts:         "2026-06-07T00:00:00Z",
 };
 
-const relationWitness: ContractRelationWitness = {
-  kind: "contract-relation-witness/causal-lineage", relation: "carriage",
-  relationResource: "lar:///nexus/carriage/00", targetNexusPubkey: "00".repeat(32),
-  sealEpochCid: "sha256-epoch", memberEvidenceCid: "aa".repeat(32),
-  personaRootDid: "0x" + "11".repeat(32), vesselVerifyingKey: "22".repeat(32),
-  deviceEdgeDigest: "sha256-edge", signature: "33".repeat(64),
-};
+// A real quorum-signed admit and the counted acts it cites — the subject's own presentation at the wire.
+const EPOCH = "epoch-cid-genesis";
+const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed25519.signAsync(bytes, seed).then(hex);
+const pubOf = (seed: Uint8Array) => ed25519.getPublicKeyAsync(seed).then(hex);
+async function presentedAdmitFixture(): Promise<PresentedAdmit> {
+  const kahu = await Promise.all([1, 2].map(async (n) => {
+    const seed = new Uint8Array(32).fill(n);
+    return { signer: await pubOf(seed), sign: signerOf(seed) };
+  }));
+  const subject = new Uint8Array(32).fill(5);
+  const nym = await pubOf(subject);
+  const consent = await signCarriageContract(nym, EPOCH, signerOf(subject));
+  const first = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, kahu, consent);
+  const revoke = await signCarriageQuorum({ nym, action: "revoke", parents: [carriageEntryActCid(first)], sealEpochCid: EPOCH }, kahu);
+  const admit = await signCarriageQuorum({ nym, action: "admit", parents: [carriageEntryActCid(revoke)], sealEpochCid: EPOCH }, kahu, consent);
+  return { admit, lineage: [first, revoke] };
+}
 
 describe("authProofBytes (V3 proof-of-possession)", () => {
   test("deterministic over the same parts", () => {
@@ -69,17 +80,74 @@ describe("buildAuthResponse (V3 peer half)", () => {
     expect(cap[0]).not.toEqual(cap[1]);
   });
 
-  test("carries a transient contract witness without interpreting authority", async () => {
+  test("CONTROL: the proof signature does NOT cover the presented admit — the bundle is public and binds to the socket through the vessel-key edge", async () => {
+    const presentedAdmit = await presentedAdmitFixture();
     let plainSigned: Uint8Array | undefined;
-    let witnessedSigned: Uint8Array | undefined;
+    let presentedSigned: Uint8Array | undefined;
     await buildAuthResponse({ ...parts, sign: (bytes) => { plainSigned = bytes; return "x"; } });
-    await buildAuthResponse({ ...parts, contractWitness: relationWitness, sign: (bytes) => { witnessedSigned = bytes; return "x"; } });
-    expect(witnessedSigned).toEqual(plainSigned); // relation evidence is not folded into daemon PoP
-    const msg = await buildAuthResponse({ ...parts, contractWitness: relationWitness, sign: () => "x" });
-    expect(msg.contractWitness).toEqual(relationWitness);
-    expect(isContractRelationWitness(msg.contractWitness)).toBe(true);
+    await buildAuthResponse({ ...parts, presentedAdmit, sign: (bytes) => { presentedSigned = bytes; return "x"; } });
+    expect(presentedSigned).toEqual(plainSigned);
+    expect(presentedSigned).toEqual(authProofBytes(base));
+  });
+
+  test("a presented admit round-trips byte-identical through build, the wire and the guard", async () => {
+    const presentedAdmit = await presentedAdmitFixture();
+    const msg = await buildAuthResponse({ ...parts, presentedAdmit, sign: () => "x" });
+    const wire = JSON.parse(JSON.stringify(msg)) as unknown;
+    expect(isLarAuthMsg(wire)).toBe(true);
+    const carried = (wire as LarAuthMsg).presentedAdmit;
+    expect(isPresentedAdmit(carried)).toBe(true);
+    expect(canonicalJsonBytes(carried)).toEqual(canonicalJsonBytes(presentedAdmit));
+    expect(JSON.stringify(carried)).toBe(JSON.stringify(presentedAdmit));
+    // TAMPER PROBE: one moved signature byte in the lineage moves the decoded bytes; the structural guard
+    // still passes it, because the guard reads shape and leaves every signature to the receiver's fold.
+    const cited = presentedAdmit.lineage[1]!;
+    const sig0 = cited.signatures[0]!;
+    const tampered: PresentedAdmit = {
+      ...presentedAdmit,
+      lineage: [presentedAdmit.lineage[0]!, {
+        ...cited,
+        signatures: [{ ...sig0, sig: (sig0.sig[0] === "0" ? "1" : "0") + sig0.sig.slice(1) }, ...cited.signatures.slice(1)],
+      }],
+    };
+    expect(canonicalJsonBytes(tampered)).not.toEqual(canonicalJsonBytes(presentedAdmit));
+    expect(isPresentedAdmit(tampered)).toBe(true);
+  });
+
+  test("CONTROL: a lar:auth presenting nothing carries no presentedAdmit key", async () => {
+    const msg = await buildAuthResponse({ ...parts, sign: () => "x" });
+    expect("presentedAdmit" in msg).toBe(false);
     expect(isLarAuthMsg(JSON.parse(JSON.stringify(msg)))).toBe(true);
-    expect(isLarAuthMsg({ ...msg, contractWitness: { ...relationWitness, memberEvidenceCid: "bad" } })).toBe(false);
+  });
+
+  test("a malformed presented admit fails the guard, and the whole lar:auth with it", async () => {
+    const good = await presentedAdmitFixture();
+    const msg = await buildAuthResponse({ ...parts, presentedAdmit: good, sign: () => "x" });
+    const { admit, lineage } = good;
+    const malformed: unknown[] = [
+      null, "bundle", [], {},
+      { admit },                                                              // no lineage
+      { lineage },                                                            // no admit
+      { admit, lineage: "not-an-array" },
+      { admit: { ...admit, action: "revoke" }, lineage },                     // the presented act must be an admit
+      { admit: { ...admit, kind: "carriage-entry" }, lineage },               // wrong domain
+      { admit: { ...admit, nym: "zz".repeat(32) }, lineage },                 // nym not hex
+      { admit: { ...admit, parents: "p" }, lineage },
+      { admit: { ...admit, parents: [7] }, lineage },
+      { admit: { ...admit, sealEpochCid: "" }, lineage },
+      { admit: { ...admit, signatures: [{ signer: 1, sig: "x" }] }, lineage },
+      { admit: { ...admit, contractSig: { signer: admit.nym } }, lineage },
+      { admit, lineage: [...lineage, null] },
+      { admit, lineage: [{ ...lineage[0]!, nym: "ab".repeat(32) }] },         // a lineage act for ANOTHER nym
+      { admit, lineage: [{ ...lineage[0]!, sealEpochCid: "other-epoch" }] },  // a lineage act under ANOTHER epoch
+      { admit, lineage: [{ ...lineage[0]!, action: "carry" }] },              // a place act never sits in an operator lineage
+    ];
+    for (const bad of malformed) {
+      expect(isPresentedAdmit(bad), JSON.stringify(bad)?.slice(0, 80)).toBe(false);
+      expect(isLarAuthMsg({ ...msg, presentedAdmit: bad })).toBe(false);
+    }
+    expect(isPresentedAdmit(good)).toBe(true);                                // CONTROL: the well-formed bundle passes
+    expect(isPresentedAdmit({ admit, lineage: [] })).toBe(true);              // CONTROL: a genesis admit cites no lineage
   });
 });
 
@@ -106,6 +174,13 @@ describe("runPeerHandshake (platform-blind V3 peer half)", () => {
     expect(s.sent[0]!.type).toBe("lar:auth");
     expect(s.sent[0]!.sig).toBe("sig-hex");
     expect(s.sent[0]!.nonce).toBe("n1");
+  });
+
+  test("forwards the dialed island's presented admit onto the lar:auth", async () => {
+    const presentedAdmit = await presentedAdmitFixture();
+    const s = { ...shore([mkLarChallenge("n1"), mkLarAuthOk()]), presentedAdmit };
+    expect((await runPeerHandshake(s)).ok).toBe(true);
+    expect(s.sent[0]!.presentedAdmit).toEqual(presentedAdmit);
   });
 
   test("auth-denied ⇒ { ok:false, reason }", async () => {
