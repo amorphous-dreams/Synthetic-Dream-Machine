@@ -76,6 +76,30 @@ carries nothing, so belongs in no roster'' — the node that boot-seeds a user h
 entry for it. A user turns operator by adding a node vessel and contracting; the stack shifts with
 the pool.
 
+!!! The faces ~ four cap stacks that compose on a persona
+
+''A face names a cap stack, and four stand'':
+
+| face | caps |
+|---|---|
+| ''end user'' | `walk` — //an operator KEEPS a hearth; a user WALKS the road// |
+| ''Lamplighter'' | `carry` · `tend/island` · `tend/reach` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/reach">>) |
+| ''Kahu'' | the Nexus-scale `quorum-share`; the grammar cadence rides a separate joint, and the corpus-kahu stand at DreamNet scale (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
+| ''Guardian'' | the pre-rotation reserve share — never fused with a kahu quorum-share |
+
+''Founding names an ACT, never a face'': it seats the first kahu quorum, and the founder then holds
+a Kahu seat in that Nexus.
+
+''Cap stacks COMPOSE on a persona — combined by default, split only by the holder's own act.'' A solo
+operator holds one persona for all their local infrastructure, and every cap they hold rides it; no
+face model makes a persona split the price of a second cap stack. ''At first contract-in with other
+humans the system OFFERS a split and never forces one'', since that contract-in is where correlation
+across faces first starts to cost. Personas multiply for the holder's own purposes, most of them
+nothing to do with mesh upkeep.
+
+''The target scale model is the SMALL CLAN'': a family of several operators and several users, each
+holding several personas. The design scales up from the clan, never down from the civic.
+
 <<~/ahu>>
 
 <<~ ahu #/the-operator-contract>>
@@ -91,6 +115,11 @@ allow-twin, `blocked{}` ⊥ `members{}`, #carry-contract) — the operator signs
 ≥k kahu counter-sign it against the charter epoch; per-Nexus, causal-island-local, read as-of-last-
 sync (no global now, #causal-islands), revocable by Kapae. ''This is the maximum the system ever
 holds about a contracting operator.''
+
+''The admit travels with its subject.'' The subject PRESENTS its quorum-signed entry at the wire, and
+the gate reads it against the deny-only `blocked{}` — never `members{}` folded into an allow roster
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>, which also carries the code owed and
+the re-key to a circle-scoped leaf that comes first).
 
 <<~/ahu>>
 
@@ -202,6 +231,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OodHnt_kabq_vnlC0TZKnkhPuqYhuNZab38BKN7YtM0
+<<^ code="&#x0003;">>ni:///sha-256;CD0Rsu71fKaE5esrettfz9P0NbICJh_CKg--js2-hR0
 
 <<^ code="&#x0004;" -> to="?">>

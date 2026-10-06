@@ -135,7 +135,7 @@ The ruling names three, and they differ by ''what holds the presenting key'', ne
 # ''A distinct DOMAIN.'' `CARRIAGE_CARRIER_DOMAIN`, minted beside `CARRIAGE_ENTRY_DOMAIN` and `CARRIAGE_CONTRACT_DOMAIN` in the registry (`packages/lararium-mesh/src/domains.ts:96-97`). An HKDF/HMAC `info` IS the separation (memory `project_crypto_spine_and_safety_ledger.md`), so a carrier seal can never present as a member's.
 # ''Signed by the VESSEL key, and the carrier is the place.'' The signer equals the Place DID the entry names, exactly as `verifyContractIn` requires the member's seal be the member's own (`carriage-registry.ts:139-147`). No persona root is read, loaded, or minted anywhere on the path.
 # ''Counter-signed by the founder's kahu quorum'' — the same k-of-n over the same charter epoch the member entry already verifies (`verifyMembershipQuorum`, `carriage-registry.ts:117-136`). A carrier still enters by consent of the house, and by its OWN consent: both seals, as the doctrine requires.
-# ''It NEVER enters `members{}`.'' `foldCarriageSet` returns the member nym set the enforcement shore unions with the kahu floor (`carriage-registry.ts:236-257`); a carrier folds into a ''separate'' set and `holdsCarriagePeer` stays false for it (`packages/lararium-node/src/nexus-carriage.ts:213-217`). That reads as the CONTROL, and it keeps the doctrine whole: the members board is "the maximum the system ever holds about a contracting operator" (`membership-doctrine.mem` #/the-operator-contract) — a place is not an operator and does not belong in it.
+# ''It NEVER enters `members{}`.'' `foldCarriageSet` returns the member nym set the enforcement shore unions with the kahu floor (`carriage-registry.ts:236-257`); a carrier folds into a ''separate'' set and `holdsCarriagePeer` stays false for it (`packages/lararium-node/src/nexus-carriage.ts:213-217`). (That allow fold describes the build; under the presented-admit ruling it retires as the gate — <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>.) That reads as the CONTROL, and it keeps the doctrine whole: the members board is "the maximum the system ever holds about a contracting operator" (`membership-doctrine.mem` #/the-operator-contract) — a place is not an operator and does not belong in it.
 # ''Its grant is exactly PUBLIC-by-hash.'' Not CONTRACT, not a read cap. The tier chain already names the ceiling: PUBLIC = `{world}` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">> #/the-chain), and a realm-bag registration already declares PUBLIC "for a book the Herm carries BY HASH (the pointer travels; the doc still crosses on the realm's own lane)" (`realm-bag.ts:107-109`, quote license).
 
 !!! What a PUBLIC registration grants such a card — follow and serve, never read
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ze0PwtOMruHH5pMcqFTWE-UM--GNjF8YyzcfKMMBTy4
+<<^ code="&#x0003;">>ni:///sha-256;LVp51W0Sq8dW5np5OF2aA6gRa_JjETF5ZKmrKjjz6_I
 
 <<^ code="&#x0004;" -> to="?">>

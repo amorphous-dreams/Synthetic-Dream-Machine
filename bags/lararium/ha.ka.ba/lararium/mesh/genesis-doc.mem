@@ -66,7 +66,7 @@ The `@oracle` docId derives from the FOUNDING vessel's `@daemon` identity-root (
 <<~ scale coupling "origin@keep -> governance@disperse -> liveness@pluralize">>
 
 * ''Origin (docId derivation) — KEEP.'' Born from the home `@daemon` identity yet names no host; once minted it outlives the home node (a DID, not an ActivityPub URL). Record the derivation publicly so anyone re-verifies genesis without the founder.
-* ''Governance (write authority) — DISPERSE.'' A sole home-root retains the UCAN reach-back revocation veto — //that// is the central authority. Keeper-phase ladder: founder (n=1, genesis) -> founder-multisig (a 2nd keeper contracts in → write delegates to a GROUP; the group, not the original key, becomes root) -> k-of-n quorum (admission/eviction by quorum). After phase 2 the home key can vanish and keepers still govern — no reach-back, no single revoker. A DECLARED sunset, not implicit trust.
+* ''Governance (write authority) — DISPERSE.'' A sole home-root retains the UCAN reach-back revocation veto — //that// is the central authority. Keeper-phase ladder: the founding ACT seats the first kahu quorum (n=1 at genesis — the founder holds its one seat, an act and never a founder face) -> multisig (a 2nd keeper contracts in → write delegates to a GROUP; the group, not the original key, becomes root) -> k-of-n quorum (admission/eviction by quorum, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). After phase 2 the home key can vanish and keepers still govern — no reach-back, no single revoker. A DECLARED sunset, not implicit trust.
 * ''Liveness (discovery) — PLURALIZE.'' "Learn the board from the home node" is the libp2p-hardcoded-bootstrap / ActivityPub-source-must-be-online trap. The content-addressed docId means ANY peer syncing the board can serve it; newcomers learn by petname/TOFU introduction along the trust edge; a plural swappable bootstrap set (home listed, never required).
 
 ''Backstop — exit/fork.'' `@oracle` is a synced CRDT with a host-independent docId → the net can fork it and continue at zero loss. A founder who CAN be forked cannot rule — a property, not a promise. The rhizome forbids a //filiation//, not a //seed//; a seed that becomes one alliance-point among many is fully rhizomatic.
@@ -208,6 +208,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RogvBdxt1GQu21XIm1hBcvl1zRsok-UmzDGNoxFoJn4
+<<^ code="&#x0003;">>ni:///sha-256;oLBARYKk4N4SLcy71KU82AIN6u-9Gmk70tjny3tvmhY
 
 <<^ code="&#x0004;" -> to="?">>

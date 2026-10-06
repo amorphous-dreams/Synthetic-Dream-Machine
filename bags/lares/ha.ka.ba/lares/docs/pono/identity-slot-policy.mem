@@ -44,7 +44,7 @@ The slot is absent from this stack entirely.
 # ''the deterministic set'' (`federation-gate.ts:78-96`) — a pure function of the Nexus gate pubkey: crossroads · WHO · Kapae-antigen · carriage · persona-KEL boards, plus caller-supplied extras. Set membership, nothing else.
 # ''the peer ring'' (`:108-118`) — an in-process island peer syncs whole; a same-operator relay peer syncs whole; a doc-less ask denies.
 # ''the antigen ring'' (`:205-224`) — the quorum-signed Kapae denylist against the presenter's resolved nym. Additive deny only.
-# ''the members board'' (`nexus-carriage.ts:219-225`) — the folded carriage contracts, keyed on the PROVEN contract nym ahead of the raw wire key. Fail-closed: unknown reads STRANGER.
+# ''the members board'' (`nexus-carriage.ts:219-225`) — the folded carriage contracts, keyed on the PROVEN contract nym ahead of the raw wire key. Fail-closed: unknown reads STRANGER. This ring folds an allow set, and the presented-admit ruling retires it as the gate — the subject presents its quorum-signed admit against the deny-only antigen ring — with the build owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
 # ''the plane seal'' (`:295-298`) — provable ciphertext, fail-closed.
 # ''the realm leg'' (`realm-bag.ts:490-512`) — the charter's own hearth · the registration's `keptBy` stewards · `holdsCharter(nym, charterId)` at CONTRACT · a faceless carrier PLACE at `readTier === "public"` alone · else the members board.
 # ''the posture'' (`:405-424`) — `private` by default; `open` admits cross-operator.
@@ -133,6 +133,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9ws-ZlZ4DhtNLL_YLAT62ao286-dTfXaIatnvlFRxxg
+<<^ code="&#x0003;">>ni:///sha-256;sZOdsBRt3bFFxo5VRzGcogc5jkSFuOMC6KJ-YW9wOIY
 
 <<^ code="&#x0004;" -> to="?">>

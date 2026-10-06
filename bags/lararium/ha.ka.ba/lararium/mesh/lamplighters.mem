@@ -35,6 +35,8 @@ written   = "2026-08-14"
 
 ''The Union answers both with many hands and no owner.'' Lamplighters patrol, notice, and repair. They hold no read-cap, no persona, and no verdict.
 
+''The Lamplighter face holds three caps'': `carry`, `tend/island`, `tend/reach` (#/reach). Like every face it composes on its holder's persona beside any other the holder wears (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>).
+
 !!! The myth carried it, warning included
 
 Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freedmen and slaves — and the Senate suppressed them, because a network of people who keep neighbourhood infrastructure alive holds real power. Athens learned the other half in 415 BC: the ''Mutilation of the Herms'' turned on the fact that herms stood everywhere ''unguarded'' — belonging to everyone, watched by no one. Both particulars ride memory rather than an opened source; the design reading survives either way, and the historical claim wants a citation before it hardens.
@@ -48,7 +50,9 @@ Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freed
 
 ''The faction canon states the Union holds infrastructure BEYOND ANY ONE NEXUS, and that agrees with the fence rather than straining it.'' The Union spans the mesh SOCIALLY; every grant it produces binds to exactly ONE Nexus, because an epoch means nothing outside the island that rolls it. So a walker tending crossroads in three Nexuses holds ''three'' grants, each countersigned in its own island, each lapsing on its own roll, none reading the others. ''Social span ⊥ authority scope'' — and a bad walker therefore cannot be swept from the whole mesh by one act, nor carry a seating from one island into another.
 
-''And carriage ⊥ the engine ratchet.'' A walker carries sealed bytes it cannot read and ''cannot ratchet the engine epoch or choose the grammar rejim'' of any Nexus — those are KAHU caps (governance/authoring), held by a cabal a walker joins or not; founding its own Nexus, it wears the kahu hat there (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>).
+''Multi-Nexus carriage reads as a SET of separate contract-ins on one daemon.'' Each contract-in names its one Nexus, and the carried set names ''Nexus ids, never member nyms'' — so a daemon carrying for three Nexuses holds three consents and no list of anybody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-three-tiers">>).
+
+''And carriage ⊥ the cadence.'' A walker carries sealed bytes it cannot read, and carrying confers ''no say in the engine epoch or the grammar rejim'' of any Nexus — the cadence stands its own joint, authored by the corpus-kahu, ratified by infrastructure operators, adopted by device users (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). ''Founding reads as an ACT, never a face'': a walker who founds a Nexus holds a kahu seat in THAT Nexus alone, and its grants elsewhere gain nothing from it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
 
 ''Their ledger names DARK STRETCHES, never tenders.'' A record of places wanting light holds no roster of who may light them, so it crosses the no-roster law untouched.
 
@@ -192,6 +196,8 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 ''No third position stands in the mechanism as built.'' The fork turns on ONE unruled value — which `resourceId` an office grant passes to `leaseEpochPrefix` — and this carrier declines to pick it.
 
+''The consent ruling leaves this fork standing.'' Consent to a Nexus binds to its SEAL epoch, and a roll there forces re-consent (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-three-tiers">>); the office fence rides the LEASE epoch, and the two epochs never fuse (below). So the ruling settles when a contract-in lapses and says nothing about how an office ends.
+
 ''What the epoch rulings DO settle, and they hold firm'': the LEASE epoch (a scalar per-writer max-register) ''fences''; the SEAL epoch (a CID chain) ''records lineage''; ''the two never fuse''; the rolling-window reading stands ''STRUCK'' — a set answers //is this listed// and never //is this newer//, and a list of markers reads as a roster of moments; and ''the NEXUS fences, never the cabal'' — an epoch means nothing outside the island that rolls it.
 
 <<~/ahu>>
@@ -309,7 +315,7 @@ RFC 2693 §7 rules the ordinary ending: //"under SPKI one does not declare a key
 
 ''Counting N distinct presenters needs a tender set, and a tender set reads as a ROSTER.'' "Three tenders agreed" presupposes an agreed set at an agreed moment — a roster ''and'' a global now, both forbidden. Weighting does not merely risk capture here: ''it costs leverage no observer can price''.
 
-⚠ ''A draft called this a STRUCTURAL impossibility, and that reads FALSE against the substrate.'' `nexus-carriage` already folds a per-island contracted-operator set, and `lares nexus members list` prints it sorted — ''N stands well-defined and island-local'', pono, no global now. The security leg above survives untouched; the impossibility leg does not. ''Naming a policy choice a theorem means the next reader never re-opens it when the security argument shifts.''
+⚠ ''A draft called this a STRUCTURAL impossibility, and that reads FALSE against the substrate.'' `nexus-carriage` already folds a per-island contracted-operator set, and `lares nexus members list` prints it sorted — ''N stands well-defined and island-local'', pono, no global now. The security leg above survives untouched; the impossibility leg does not. The presented-admit ruling retires that fold as the carriage GATE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) and leaves the quorum's signed admits standing as an island-local record, so N stays countable and the correction holds. ''Naming a policy choice a theorem means the next reader never re-opens it when the security argument shifts.''
 
 ''What holds the threshold out reads as DOCTRINE, never arithmetic'': `membership-doctrine`'s ''un-thresholded attestor bundle'' — members sign independently, the count crosses, and ''the sufficiency rule stays structurally absent''. The threshold never went homeless; the house ''deliberately declines to seat one''.
 
@@ -393,7 +399,7 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 !!! Also owed
 
 * ''The grammar half of belonging stands UNBUILT.'' A node belongs to a Nexus by ''contract'' AND by ''agreeing with the grammar vectors traded on it''; every grant this carrier designs rides the contract half alone, and //contract without grammar-agreement reads as a signature over an unread page//.
-* ''Cross-Nexus gossip DEFERRED to post-founding'' (operator ruling). Keys run per-Nexus and no //act as a visitor// path stands, so a tender walking to another Nexus arrives carrying nothing and contracts in from zero.
+* ''Cross-Nexus gossip DEFERRED to post-founding'' (operator ruling). Keys run per-Nexus and no //act as a visitor// path stands, so a tender walking to another Nexus arrives carrying nothing and contracts in from zero; that contract-in joins its daemon's carried set as one more Nexus id (#/head).
 * ''Nothing in the field welds place-anchored authority to term-bounded office.'' The nearest misses: CT's `previous_operators` (resolves the office-holder ''at the time of the act'', yet only to attribute), Kubernetes bound ServiceAccount tokens (term = the life of a place, no succession), DNSSEC root TCRs (real term-bounded office, ''procedural and legal, never cryptographic''), and SPKI §7.7 (held the whole vocabulary in 1999, shipped nothing).
 
 <<~/ahu>>
@@ -404,6 +410,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m4k_Rl8HMymdy1TUq1kDfLjsUXm1t5Ar-4-uolnl2Fw
+<<^ code="&#x0003;">>ni:///sha-256;TC3ZhaLT5k6IH_KqZs1MI1neZTFz2cegkIfVAqezXYw
 
 <<^ code="&#x0004;" -> to="?">>

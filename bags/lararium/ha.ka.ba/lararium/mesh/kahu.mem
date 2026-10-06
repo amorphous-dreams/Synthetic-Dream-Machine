@@ -10,7 +10,7 @@ l-space   = "lararium"
 mana      = 17
 manao     = 16
 manaoio   = 16
-role      = "protocol governance concept: kahu as grammar-guardian role in DreamNet topology"
+role      = "protocol governance concept: kahu as ONE role at TWO scales — DreamNet corpus-kahu author the shared grammar; a Nexus's kahu quorum holds admit, kapae and seal for that Nexus — with the admission quorum and the grammar/engine cadence kept as separate joints"
 title     = "lar:///ha.ka.ba/lararium/mesh/kahu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/kahu"
@@ -21,12 +21,17 @@ uri-path  = "ha.ka.ba/lararium/mesh/kahu"
 //Kahu// — Hawaiian: guardian of a field of knowledge.
 Cares for without owning. Honored for responsibility, not for power.
 
-In the DreamNet protocol layer, ''kahu'' names the role the Amorphous Dreams Cabal
-occupies with respect to the protocol grammar and corpus bags. It differs from every
-other capability level in one way: kahu guardians authored the grammar itself, then
-stepped back. The grammar now enforces itself — through register collapse detection,
-the ABILITY_LADDER, and each vessel's own founding ceremony. No living authority
-tells a vessel what to do. The treaty does.
+In the DreamNet protocol layer, ''kahu'' names ONE role at TWO scales.
+
+* ''DreamNet scale — the corpus-kahu.'' The Amorphous Dreams Cabal holds kahu over the
+  protocol grammar and corpus bags (`lararium`, `lares`, the genesis artifact).
+* ''Nexus scale — the kahu quorum.'' Each Nexus seats its own k-of-n kahu quorum, which
+  holds ''admit, kapae and seal'' for that Nexus and nothing beyond it (#/nexus-scale).
+
+At DreamNet scale the role differs from every other capability level in one way: the
+corpus-kahu authored the grammar itself, then stepped back. The grammar now enforces
+itself — through register collapse detection, the ABILITY_LADDER, and each vessel's own
+founding ceremony. No living authority tells a vessel what to do. The treaty does.
 
 <<~ ahu #/contract>>
 
@@ -52,7 +57,7 @@ distributes; the vessels enforce.
 
 !!! The cadence reads as the highest-risk lever in the whole design
 
-''A VERSION CADENCE STANDS AS THE ONE INSTRUMENT A KAHU ACTUALLY HOLDS, and the record
+''A VERSION CADENCE STANDS AS THE ONE INSTRUMENT A CORPUS-KAHU ACTUALLY HOLDS, and the record
 shows it stranding federations rather than governing them.'' The worked case runs exact:
 a founding node rewrote its own protocol, the network it had convened did not follow,
 and a fork formed to keep the abandoned grammar alive.
@@ -78,16 +83,62 @@ protects nothing against a kahu shipping correctly to a mesh that cannot keep up
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-gauge">>
 
-!!! The engine/grammar ratchet is a kahu cap, never a lamplighter cap
+!!! The engine/grammar ratchet stands its own joint ~ never carriage, never the admission quorum
 
 ''Ratcheting the engine epoch (`hearthTrueName` = `engineCid`) and choosing the grammar rejim are
-governance/authoring acts'' — the cabal's kahu hold, never carriage. A lamplighter runs infrastructure
-by contract and presents, never condemns; it carries sealed bytes it cannot read and ''cannot ratchet
-the engine of a Nexus whose kahu-cabal it has not joined'' (found your own Nexus and you wear the kahu
-hat there). ''And it is PER-NEXUS: the NEXUS fences, never the cabal'' — an epoch means nothing outside
-the island that rolls it.
+governance/authoring acts'', never carriage. ''The cadence runs HYBRID'': the corpus-kahu AUTHOR a
+revision, infrastructure operators RATIFY it for the infrastructure they run, and device users ADOPT
+it. A lamplighter runs infrastructure by contract and presents, never condemns; it carries sealed bytes
+it cannot read, and ''carrying confers no say in any Nexus's cadence''.
+
+''The cadence never fuses with the admission quorum.'' The hands that admit, kapae and seal for a
+Nexus (#/nexus-scale) roll no engine by holding that seat, and a cadence act never moves the admission
+price — two joints, two thresholds, two rates (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/six-joints">>).
+''And it is PER-NEXUS: the NEXUS fences, never the cabal'' — an epoch means nothing outside the island
+that rolls it.
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/welded">>
+
+<<~/ahu>>
+
+<<~ ahu #/nexus-scale>>
+
+!! The Nexus scale ~ a kahu quorum holds admit, kapae and seal
+
+''FOUNDING READS AS AN ACT, NEVER A FACE.'' The founding mints the Nexus's name — the genesis AID
+over the seated keys plus the threshold — and seats the first kahu quorum. The founder then holds a
+''kahu seat in THAT Nexus'', and nothing more: no founder face and no `found` cap outlives the act.
+`vessel found` stays a rite verb every operator runs (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found">>).
+
+''The quorum holds three acts for its one Nexus'': ''admit'' (counter-signing a contract-in),
+''kapae'' (the quorum-signed antigen, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen">>)
+and ''seal'' (the k-of-n rotation of the seal lineage). A Kahu face therefore carries one cap — the
+Nexus-scale `quorum-share`. The grammar cadence rides a separate joint (#/contract), and the corpus-kahu
+stand at DreamNet scale.
+
+!!! ★ THE SUBJECT PRESENTS ITS ADMIT ★
+
+''The admit travels WITH its subject.'' At the wire the subject PRESENTS its quorum-signed admit, and
+the carriage gate checks it against the shared ''DENY-only'' board — the kapae antigen, monotone, a
+set that only tightens. ''No folded allow roster gates carriage, at any scope'': a roster of who
+belongs is the one register the laws forbid (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
+The quorum's admits stay a shared contract RECORD; the gate never folds that record into an allow set.
+
+''Owed in code.'' The daemon still folds the members board into an allow set
+(`foldCarriageSet` → `nexus-carriage.ts`), and the federation gate reads that fold. Under this
+ruling the fold retires as the gate, and the build stands owed
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>).
+
+''PREREQUISITE — the stamp re-keys first.'' An admit signed by a PersonaGroup ROOT correlates one
+human across every Nexus that admits them, so the admit stamp re-keys to a ''circle-scoped leaf''
+before any presented admit travels.
+
+!!! The guardian stands a face apart
+
+''The pre-rotation reserve shares ride the GUARDIAN face, and it never fuses with the kahu
+quorum-share.'' A quorum-share signs today's acts; a reserve share rebuilds tomorrow's keys. One
+object holding both hands a single breach the present AND the future of a Nexus
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/reserve-custody">>).
 
 <<~/ahu>>
 
@@ -105,11 +156,13 @@ These two live in separate registers:
 | Register | Term | Meaning |
 |---|---|---|
 | ABILITY_LADDER | `cap=admin` | may touch lower bag layers; may MOVE tiddlers into corpus; may grant/revoke |
-| Role / governance | kahu | guardian of the protocol grammar; held by the Amorphous Dreams Cabal |
+| Role / governance, DreamNet scale | corpus-kahu | guardian of the protocol grammar; held by the Amorphous Dreams Cabal |
+| Role / governance, Nexus scale | kahu quorum | admit · kapae · seal for ONE Nexus; k-of-n over that Nexus's seal lineage |
 
 An operator may hold `cap=admin` on their own cabalGroup's infrastructure bags. That
-does not make them kahu of DreamNet. Kahu attaches to the //corpus// specifically —
-`lararium`, `lares`, and the genesis artifact.
+does not make them kahu of DreamNet. Corpus-kahu attaches to the //corpus// specifically —
+`lararium`, `lares`, and the genesis artifact — and a Nexus's kahu seat attaches to that
+Nexus's seal lineage alone.
 
 <<~/ahu>>
 
@@ -190,6 +243,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LE03h9CHMwyqCrVyn8O6V8w8nT4phQbexi1-Q0knJ8c
+<<^ code="&#x0003;">>ni:///sha-256;hOYBQ27wuLCKvCY6gJzioaWkAR32EOQWzGCAYA43mII
 
 <<^ code="&#x0004;" -> to="?">>
