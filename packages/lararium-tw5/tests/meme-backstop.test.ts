@@ -241,6 +241,75 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
 });
 
 /**
+ * THE FENCE IS A WRITE, AND A HEARTH WRITES ONLY WHERE IT KEEPS. A child that arrived through the
+ * envelope from a bag this hearth's cascade does not route it to (`$origin-bag` names that bag) is a
+ * peer's record on a bag this hearth does not keep: fencing it would copy it up over the peer's own
+ * and shadow every later edit there. So the gate surfaces `quoteblocked` and writes nothing. A
+ * child this hearth wrote itself (no envelope stamp, or the stamp names the bag the cascade routes
+ * it to) is still fenced.
+ */
+describe("★ the child gate writes only on a bag this hearth keeps ★", () => {
+  const KEPT    = "lar:///ha.ka.ba/bags/test-wiki/working";
+  const MOUNTED = "lar:///ha.ka.ba/bags/peer-library";
+  const BAG_PATHS = "lar:///ha.ka.ba/lararium/config/bag-paths";
+  let wiki: ReturnType<typeof fakeWiki> & {
+    getTiddlerText: (t: string, fallback?: string) => string;
+    filterTiddlers: (filter: string, widget?: unknown, source?: unknown) => string[];
+  };
+  const alertTitle = `$:/temp/lares/alert/meme-child-gate/${URI}`;
+
+  beforeEach(() => {
+    // The cascade this hearth's saves route by: every `lar:` title lands in KEPT.
+    wiki = Object.assign(fakeWiki(), {
+      getTiddlerText: (t: string, fallback = "") => (t === BAG_PATHS ? `[prefix[lar:]then[${KEPT}]]` : fallback),
+      filterTiddlers: (filter: string, _w?: unknown, source?: unknown) => {
+        let title = "";
+        (source as ((fn: (t: unknown, ti: string) => void) => void) | undefined)?.((_t, ti) => { title = ti; });
+        return filter === `[prefix[lar:]then[${KEPT}]]` && title.startsWith("lar:") ? [KEPT] : [];
+      },
+    });
+    (globalThis as Record<string, unknown>)["$tw"] = { node: true, wiki, boot: { files: {} } };
+    startup({ log: () => {} });
+  });
+  afterEach(() => { delete (globalThis as Record<string, unknown>)["$tw"]; });
+
+  test("★ an inbound peer change on a bag this hearth does not keep raises `quoteblocked` and writes no fence ★", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    const pasted = meme(["z"]);
+    const writes: string[] = [];
+    const add = wiki.addTiddler;
+    wiki.addTiddler = (f) => { writes.push(String(f.title)); add(f); };
+    // The nalu lands a peer's child with the envelope's bag stamped on it.
+    add({ ...wiki.store.get(`${URI}#/a`)!, text: pasted, "$origin-bag": MOUNTED });
+    await settle();
+
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(pasted);
+    expect(writes.filter((t) => t !== alertTitle)).toEqual([]);
+    const alert = wiki.store.get(alertTitle);
+    expect(alert?.["child"]).toBe(`${URI}#/a`);
+    expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
+    expect(String(alert?.["text"] ?? "")).toContain(MOUNTED);
+  });
+
+  test("CONTROL — an own write (stamped with the bag the cascade routes it to) is still fenced", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    const pasted = meme(["z"]);
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: pasted, "$origin-bag": KEPT });
+    await settle();
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
+    expect(String(wiki.store.get(alertTitle)?.["codes"] ?? "")).toContain("quoteblocked");
+  });
+
+  test("CONTROL — an own write with no envelope stamp is still fenced", async () => {
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    const pasted = meme(["z"]);
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: pasted });
+    await settle();
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
+  });
+});
+
+/**
  * The round-trip `placeMeme(root, readMeme(root))` is not a fixed point everywhere, so it does not
  * surface every fault a slot child's save can carry. Closing seam (b) — a slot child that moved
  * re-places its ROOT, grading the whole carrier as one — relies on that mechanism: `readMeme` is

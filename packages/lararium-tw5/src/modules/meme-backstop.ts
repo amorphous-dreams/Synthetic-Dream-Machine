@@ -45,6 +45,17 @@ module-type: startup
  * composed root for unbalanced `ahu` openers/closers the Confluence gate today only drops as
  * info/warning. One root, one coalesced alert, one rail: both checks raise or clear it through this
  * function rather than each growing a parallel notice.
+ *
+ * ── THE FENCE IS A WRITE, AND A HEARTH WRITES ONLY WHERE IT KEEPS ─────────────────────────────────
+ * Fencing commits the child's body back into the wiki, and the outbound shore carries that write into
+ * the bag the cascade routes the child to. A child that arrived through the envelope from a bag this
+ * hearth does not keep — `$origin-bag` (the nalu's stamp) names a bag the cascade never routes it to,
+ * such as a read-only mounted library — is a peer's record: a fence over it would copy it up into
+ * this hearth's own bag and shadow every later edit the peer makes there. So on such a child the
+ * gate SURFACES only (the `quoteblocked` alert, naming that bag) and writes nothing; the fence waits
+ * on the bag's keeper. A child this hearth wrote itself — no envelope stamp, or a stamp naming the
+ * bag the cascade routes it to — is fenced as before. A wiki with no readable cascade cannot say
+ * where it keeps anything, so a stamped child there surfaces only too.
  */
 
 import { framedRootOf, placeMeme, evaluateMeme, readMeme, wikiMemeSink } from "../place-meme.js";
@@ -55,6 +66,9 @@ type Changes = Record<string, { modified?: boolean; deleted?: boolean }>;
 
 interface BackstopWiki {
   allTitles(): readonly string[];
+  /** The cascade read (`keepsChild`): present on a real TW5 wiki, absent on a bare change bus. */
+  getTiddlerText?(title: string, fallback?: string): string;
+  filterTiddlers?(filter: string, widget?: unknown, source?: unknown): string[];
   getTiddler(title: string): { fields?: Record<string, unknown> } | undefined;
   addTiddler(fields: Record<string, unknown>): void;
   deleteTiddler(title: string): void;
@@ -129,6 +143,39 @@ export function surfaceChildGateAlert(wiki: BackstopWiki, root: string, finding:
     codes,
     ts: new Date().toISOString(),
   });
+}
+
+/** The in-wiki bag-paths cascade — the rules this hearth's own saves route by. */
+const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
+
+/**
+ * The bag the cascade routes `title` to — the same walk the island adaptor's `_routeBag` makes:
+ * newline-separated filters over a single-tiddler source, first non-empty result wins. Null when the
+ * wiki exposes no cascade, no rule reaches the title, or a rule withholds it.
+ */
+function cascadeBagOf(wiki: BackstopWiki, title: string): string | null {
+  if (typeof wiki.getTiddlerText !== "function" || typeof wiki.filterTiddlers !== "function") return null;
+  const config = wiki.getTiddlerText(BAG_PATHS_CONFIG, "");
+  if (!config) return null;
+  const source = (fn: (t: unknown, ti: string) => void): void => fn(wiki.getTiddler(title), title);
+  for (const filter of config.split("\n").map((l) => l.trim()).filter((l) => l.length > 0)) {
+    const result = wiki.filterTiddlers(filter, undefined, source);
+    if (result.length === 0) continue;
+    return result[0] ? result[0] : null;
+  }
+  return null;
+}
+
+/**
+ * Does this hearth keep the bag a child stands in? A child carrying no `$origin-bag` never arrived
+ * through an envelope: this hearth wrote it. A stamped child is kept when the cascade routes its
+ * title to that same bag — anywhere else, a write over it would copy it up into a bag of this
+ * hearth's own. Answers the stamped bag when it is NOT kept, null when it is.
+ */
+function unkeptBagOf(wiki: BackstopWiki, child: string, fields: Record<string, unknown>): string | null {
+  const stamped = fields["$origin-bag"];
+  if (typeof stamped !== "string" || stamped === "") return null;
+  return cascadeBagOf(wiki, child) === stamped ? null : stamped;
 }
 
 /** One composition fault found over a (simulated or real) composed-root render — the codes to report
@@ -218,6 +265,19 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
         if (!simRender) continue;
         const simFault = await gradeComposedRoot(root, simRender.text, overrideSink);
         if (simFault) continue; // this candidate's fence did not heal it — never write it
+
+        // Heals — but a fence is a write, and a peer's child on a bag this hearth does not keep is not
+        // this hearth's to write: surface the finding with the bag named, and leave the body standing.
+        const unkept = unkeptBagOf(wiki, child, fields);
+        if (unkept !== null) {
+          surfaceChildGateAlert(wiki, root, {
+            child,
+            codes: [...fault.codes, "quoteblocked"],
+            why: `${fault.why}; fencing the body would heal it, but it stands in ${unkept}, a bag this hearth ` +
+                 `does not keep — nothing was written, the fence waits on that bag's keeper`,
+          });
+          return;
+        }
 
         // Heals: commit the fence as the child's stored body (the record's title and every other
         // field survive untouched; the `<<~ ahu #/slot>>` wrapper is synthesized at render by
