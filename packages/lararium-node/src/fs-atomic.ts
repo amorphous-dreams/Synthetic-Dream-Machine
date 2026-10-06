@@ -48,9 +48,12 @@ export async function atomicWriteFile(path: string, data: string | Uint8Array): 
   }
 }
 
-/** Atomically + durably write `data` to `path` (temp → fsync → rename → fsync-dir). */
-export function atomicWriteFileSync(path: string, data: string | Uint8Array): void {
-  const tmp = `${path}.${process.pid}.tmp`;
+/**
+ * Atomically + durably write `data` to `path` (temp → fsync → rename → fsync-dir). `tmp` names the sibling
+ * temp when a caller's temp spelling is part of its contract; it must sit in `path`'s directory. On any fault
+ * the temp is removed and the WRITE's error rethrows, so `path` keeps its prior bytes and nothing strands.
+ */
+export function atomicWriteFileSync(path: string, data: string | Uint8Array, tmp = `${path}.${process.pid}.tmp`): void {
   try {
     writeFileSync(tmp, data);
     // fsync the FILE: flush the payload to disk BEFORE the rename exposes it.
@@ -65,7 +68,9 @@ export function atomicWriteFileSync(path: string, data: string | Uint8Array): vo
       try { fsyncSync(dfd); } finally { closeSync(dfd); }
     } catch { /* platform without dir-fsync — rename durability handled by the fs */ }
   } catch (err) {
-    rmSync(tmp, { force: true }); // never leave a stranded temp on failure
+    // Never leave a stranded temp on failure. A temp the remove itself cannot clear (a directory planted at
+    // the path) stays, and the write's own error still surfaces rather than the remove's.
+    try { rmSync(tmp, { force: true }); } catch { /* the write's error is the one owed */ }
     throw err;
   }
 }

@@ -32,7 +32,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { atomicWriteFileSync } from "./fs-atomic.js";
 import { dirname, join } from "node:path";
 import { foundingRoster, realmIdOfCharter, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
 import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
@@ -148,10 +149,17 @@ export function importCarriedCharter(sealHome: string, raw: string): CarriedImpo
     }
   }
 
-  mkdirSync(home, { recursive: true });
-  const tmp = `${path}.incoming`;
-  writeFileSync(tmp, raw, "utf8");
-  renameSync(tmp, path);
+  // A sibling temp, fsync, and a rename: a reader sees the held charter or the new one, never a torn file.
+  // A write that faults removes its temp and refuses; the held bytes stand.
+  try {
+    mkdirSync(home, { recursive: true });
+    atomicWriteFileSync(path, raw, `${path}.incoming`);
+  } catch (err) {
+    const why = (err as NodeJS.ErrnoException).code ?? (err instanceof Error ? err.message : String(err));
+    throw new CarriedCharterError(
+      `the carried charter for ${aid.slice(0, 18)}… could not be written (${why}) — nothing landed, and any held charter stands unchanged.`,
+    );
+  }
   return { aid, sealEpochCid: head, outcome, path };
 }
 

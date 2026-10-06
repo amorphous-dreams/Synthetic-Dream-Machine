@@ -32,7 +32,7 @@ import {
   readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath,
   listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, runNexusMembersList, importCarriedCharter, carriedReadings, CarriedCharterError,
-  sealReserveMineShare, writeCharterReserveState, readCharterReserveState,
+  sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead,
@@ -53,7 +53,7 @@ import {
   reserveTransitionBytes, transitionSignerFromSeed,
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "../reserve-transition.js";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { larSealHome } from "../env.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
@@ -682,11 +682,18 @@ function sealImport(args: ParsedArgs): number {
                  data: { from, dest }, human: () => console.error(`lares nexus seal import: ${v.why}`) });
     return 3;
   }
-  // A sibling temp file and a rename, so a reader sees the old charter or the new one and never a torn file.
-  mkdirSync(sealHome, { recursive: true });
-  const tmp = `${dest}.incoming`;
-  writeFileSync(tmp, incomingRaw, "utf8");
-  renameSync(tmp, dest);
+  // A sibling temp, fsync, and a rename, so a reader sees the old charter or the new one and never a torn
+  // file. A write that faults removes its temp and refuses; the standing bytes stay.
+  try {
+    mkdirSync(sealHome, { recursive: true });
+    atomicWriteFileSync(dest, incomingRaw, `${dest}.incoming`);
+  } catch (err) {
+    const why = (err as NodeJS.ErrnoException).code ?? (err instanceof Error ? err.message : String(err));
+    const message = `the charter could not be written to ${dest} (${why}) — nothing landed, and any standing charter is unchanged.`;
+    emit(args, { ok: false, error: { code: "error", message }, data: { from, dest },
+                 human: () => console.error(`lares nexus seal import: ${message}`) });
+    return exitFor("error");
+  }
   emit(args, { ok: true, data: { from, dest, epoch: incoming },
                human: () => { console.log(`imported → ${dest}`); console.log(`  ${v.why}`); } });
   return 0;

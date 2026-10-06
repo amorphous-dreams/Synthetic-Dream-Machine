@@ -18,7 +18,7 @@
  * A partner's charter takes `--carry` and lands BESIDE the primary, under its own Nexus AID.
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -184,6 +184,73 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
     const after = await run(verb(["seal", "show"]));
     const data = after.out["data"] as { carried: Array<{ aid: string; carried: boolean; consented: boolean }>; phase: { contractedInto?: boolean } };
     expect(data.carried.map((x) => [x.aid, x.carried, x.consented])).toEqual([[primary, true, false], [aid, true, true]]);
+  });
+
+  // ── A FAILED WRITE LEAVES NO TEMP AND THROWS NOTHING ───────────────────────────────────────────
+  //
+  // The write rides a sibling temp (`<dest>.incoming`) and a rename. A write that faults must leave neither
+  // a stranded temp nor a changed primary, and must answer with a refusal. Two planted faults: a DIRECTORY
+  // at the temp path (EISDIR, nothing written), and a symlink to /dev/full there (ENOSPC mid-write — the
+  // shape that strands a partial temp on a full disk).
+  const strayTemps = (dir: string): string[] => readdirSync(dir).filter((n) => /\.incoming$|\.tmp$/.test(n));
+  const hasDevFull = existsSync("/dev/full");
+
+  /** This vessel's founding, plus the SAME charter in different bytes — it passes the verdict, so the write is reached. */
+  async function foundAndSameBytes(): Promise<{ dest: string; before: Buffer; same: string }> {
+    const keys = await found();
+    const dest = nexusCharterDocPath(larSealHome());
+    const same = partnerFile(charter(keys), "same.mem");
+    writeFileSync(same, readFileSync(same, "utf8") + "\n", "utf8");
+    return { dest, before: readFileSync(dest), same };
+  }
+
+  it("★ a primary land leaves no temp file beside the charter ★", async () => {
+    const r = await run(verb(["seal", "import", partnerFile(charter(await foreignKeys(10)))]));
+    expect(r.code).toBe(0);
+    expect(existsSync(nexusCharterDocPath(larSealHome()))).toBe(true);
+    expect(strayTemps(larSealHome())).toEqual([]);
+  });
+
+  it("★ a primary write that faults (directory at the temp) returns non-zero without throwing; the standing bytes stay ★", async () => {
+    const { dest, before, same } = await foundAndSameBytes();
+    mkdirSync(`${dest}.incoming`);
+    const r = await run(verb(["seal", "import", same]));
+    expect(r.code).not.toBe(0);
+    expect(r.out["ok"]).toBe(false);
+    expect(readFileSync(dest).equals(before)).toBe(true);
+  });
+
+  it.skipIf(!hasDevFull)("★ a primary write that hits ENOSPC strands no temp and leaves the standing bytes ★", async () => {
+    const { dest, before, same } = await foundAndSameBytes();
+    symlinkSync("/dev/full", `${dest}.incoming`);
+    const r = await run(verb(["seal", "import", same]));
+    expect(r.code).not.toBe(0);
+    expect(r.out["ok"]).toBe(false);
+    expect(readFileSync(dest).equals(before)).toBe(true);
+    expect(strayTemps(larSealHome())).toEqual([]);
+  });
+
+  it("CONTROL — the same re-import with no planted fault lands its bytes and strands nothing", async () => {
+    const { dest, same } = await foundAndSameBytes();
+    expect((await run(verb(["seal", "import", same]))).code).toBe(0);
+    expect(readFileSync(dest, "utf8")).toBe(readFileSync(same, "utf8"));
+    expect(strayTemps(larSealHome())).toEqual([]);
+  });
+
+  it.skipIf(!hasDevFull)("★ a carried write that hits ENOSPC refuses, strands no temp, and leaves the held charter ★", async () => {
+    await found();
+    const keys = await foreignKeys(10);
+    expect((await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 0), "held.mem") }))).code).toBe(0);
+    const home = carriedCharterHome(larSealHome(), realmIdOfCharter(charter(keys, 0))!);
+    const path = join(home, "founding-roster.mem");
+    const before = readFileSync(path);
+    symlinkSync("/dev/full", `${path}.incoming`);
+
+    const r = await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 1), "next.mem") }));
+    expect(r.code).toBe(3);
+    expect((r.out["error"] as { code?: string })?.code).toBe("refused");
+    expect(readFileSync(path).equals(before)).toBe(true);
+    expect(strayTemps(home)).toEqual([]);
   });
 
   it("CONTROL — accept-carriage and members --list for an AID this vessel holds no charter for refuse", async () => {

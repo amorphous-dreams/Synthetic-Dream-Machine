@@ -13,7 +13,7 @@
  *   · the primary's own charter, or a torn one, refuses to land as a carried charter.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -246,6 +246,33 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
     const keys = await standFounding();
     expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc))).toThrow(CarriedCharterError);
     expect(existsSync(join(sealHome(), "carried"))).toBe(false);
+  });
+
+  it("★ a carried land leaves no temp file beside the charter ★", async () => {
+    await standJoiner();
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
+    expect(readdirSync(dirname(n.path)).filter((f) => /\.incoming$|\.tmp$/.test(f))).toEqual([]);
+  });
+
+  it.skipIf(!existsSync("/dev/full"))("★ a carried write that hits ENOSPC refuses with CarriedCharterError, strands no temp, and the held bytes stand ★", async () => {
+    await standJoiner();
+    const keys = await foreignKeys(10);
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const held = readFileSync(n.path);
+    symlinkSync("/dev/full", `${n.path}.incoming`);              // the temp write faults mid-write (ENOSPC)
+    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(CarriedCharterError);
+    expect(readFileSync(n.path).equals(held)).toBe(true);
+    expect(readdirSync(dirname(n.path)).filter((f) => /\.incoming$|\.tmp$/.test(f))).toEqual([]);
+  });
+
+  it("★ a carried write that faults on a directory at the temp refuses with CarriedCharterError ★", async () => {
+    await standJoiner();
+    const keys = await foreignKeys(10);
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const held = readFileSync(n.path);
+    mkdirSync(`${n.path}.incoming`);
+    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(CarriedCharterError);
+    expect(readFileSync(n.path).equals(held)).toBe(true);
   });
 
   it("CONTROL — a torn or unseated charter refuses and writes nothing", async () => {
