@@ -603,6 +603,28 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               ? { verb: "face-join", admitted: true,  ...outcome.grant, ...(recordTitle ? { recordTitle } : {}) }
               : { verb: "face-join", admitted: false, reason: outcome.reason };
           });
+
+          // `face-grant-get` — THE RECORD, read back through the store `face-join` wrote it to.
+          //
+          // A `face-join` outcome is a bounded VIEW: past the outcome cap its `capEvents` fold to a count and a
+          // digest. The grant record on the PersonaGroup plane is the authoritative act, so a caller that must
+          // know what the join granted reads the record. This reads the SAME store the write above reaches, in
+          // this worker, so a read after a returned join sees that join's record — the disk copy settles later.
+          // It reads one title for THIS vessel's group and judges nothing: the reader verifies the signature
+          // against the root it pinned (`verifyFaceGrantRecord`).
+          registry.register("face-grant-get", async (args) => {
+            const joinee = typeof args["joinee"] === "string" ? args["joinee"] : "";
+            if (!/^(0x)?[0-9a-f]+$/i.test(joinee)) {
+              throw new Error("[daemon] face-grant-get: args.joinee is required — the joinee's agent id hex, as the join outcome names it.");
+            }
+            if (!facePlane) throw new Error("[daemon] face-grant-get: this island carries no catalog plane — the PersonaGroup plane has no registry to resolve from");
+            const store = await facePlane.storeOf(personaBagIdFor(faceGroup()));
+            if (!store) throw new Error("[daemon] face-grant-get: the PersonaGroup plane is unresolved");
+            const title = faceGrantTitle(faceGroup(), joinee);
+            const held = await store.get(title);
+            const text = held && !held.meta?.deleted ? held.tiddler?.text : undefined;
+            return { verb: "face-grant-get", title, record: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null };
+          });
         }
       }
 
