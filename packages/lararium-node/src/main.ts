@@ -162,9 +162,13 @@ async function main(): Promise<void> {
     declaredUrl: process.env["LAR_PUBLIC_URL"] ?? null,
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
   });
-  const originCompositions = reachFaces.map((face) => {
+  // The composition reads the asked standing, so it runs only where its origins are read. A lararium
+  // composes relay + read + Web per face before listen, because its crossing banner speaks all three.
+  // A herm's boot reads no composed origin (it serves no Web surface and prints no crossing), so it
+  // composes none here and an undeclared read origin cannot hold a waystone off its listen.
+  const originCompositions = askedStanding !== "lararium" ? null : reachFaces.map((face) => {
     try {
-      return originCompositionForFace(face, origins, "lararium");
+      return originCompositionForFace(face, origins, askedStanding);
     } catch (err) {
       throw new Error(`[lararium] origin composition refused for ${face.origin}: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -367,6 +371,9 @@ async function main(): Promise<void> {
     process.on("SIGTERM", () => void hermShutdown("SIGTERM"));
     return;
   }
+
+  // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
+  if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
 
   // A Lararium also stands a first-class mesh-node: it carries the FLOW-map (meshpalace+carriage) from the SAME
   // derived meshSelf — a hearth that navigates the mesh, not a destination beside the roads.
