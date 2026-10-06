@@ -624,8 +624,9 @@ export { memeticWikitextDeserializer as "text/memetic-wikitext+tiddlywiki" };
 // If no ahu blocks exist in bodyText the function returns { parent: fields,
 // children: [] } with no allocation — callers can skip the tombstone scan.
 //
-// Machine, never vocabulary: the cut is `splitRecursive`'s (see the law above
-// it) and reads no grammar.
+// Machine, never vocabulary: `splitRecursive` cuts every ahu block at every
+// depth into its own tiddler, from the engine-fixed block finder under the
+// fence mask alone, and reads no grammar tiddler.
 // ---------------------------------------------------------------------------
 
 export function splitBodyTiddler(

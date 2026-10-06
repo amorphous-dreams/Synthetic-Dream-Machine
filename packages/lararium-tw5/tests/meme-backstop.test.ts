@@ -307,6 +307,35 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
     await settle();
     expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
   });
+
+  /**
+   * A WITHHOLDING IS NOT A KEEP. The cascade's empty-operand form (`[match[x]then[]]`) routes the child
+   * nowhere, so no bag of this hearth's holds it — a stamped child there reads UNKEPT exactly as a
+   * gap does, and the gate surfaces without writing. The adaptor reads the same verdict as "withhold
+   * the save"; the two hands share one walk, never two that could drift.
+   */
+  test("★ a stamped child whose only matching rule WITHHOLDS it surfaces and writes nothing ★", async () => {
+    const child = `${URI}#/a`;
+    const withhold = `[match[${child}]then[]]`;
+    wiki.getTiddlerText = (t: string, fallback = "") => (t === BAG_PATHS ? withhold : fallback);
+    wiki.filterTiddlers = (filter: string, _w?: unknown, source?: unknown) => {
+      let title = "";
+      (source as ((fn: (t: unknown, ti: string) => void) => void) | undefined)?.((_t, ti) => { title = ti; });
+      return filter === withhold && title === child ? [""] : [];
+    };
+    await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
+    const pasted = meme(["z"]);
+    const writes: string[] = [];
+    const add = wiki.addTiddler;
+    wiki.addTiddler = (f) => { writes.push(String(f.title)); add(f); };
+    add({ ...wiki.store.get(child)!, text: pasted, "$origin-bag": KEPT });
+    await settle();
+
+    expect(String(wiki.store.get(child)!["text"])).toBe(pasted);
+    expect(writes.filter((t) => t !== alertTitle)).toEqual([]);
+    expect(String(wiki.store.get(alertTitle)?.["codes"] ?? "")).toContain("quoteblocked");
+    expect(String(wiki.store.get(alertTitle)?.["text"] ?? "")).toContain(KEPT);
+  });
 });
 
 /**

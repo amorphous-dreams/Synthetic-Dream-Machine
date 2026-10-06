@@ -32,19 +32,13 @@ import type {
   SlotUri,
 } from "@lararium/mesh";
 import { toLarTiddlerRecord, isVolatileVmUri } from "@lararium/mesh";
-
-/** Cascade config tiddler — newline-separated filter expressions; first non-empty result wins. */
-const BAG_PATHS_CONFIG   = "lar:///ha.ka.ba/lararium/config/bag-paths";
-const CURRENT_WIKI_BAG   = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
-
-/** What the cascade did with a title. A withholding and a gap both stop a write and mean opposite things. */
-type RouteVerdict =
-  | { readonly kind: "slot";     readonly uri:  SlotUri }
-  | { readonly kind: "withheld"; readonly rule: string }
-  | { readonly kind: "gap";      readonly why:  string };
+import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler } from "./deserializer.js";
+
+/** The wiki's live write layer — where a save the cascade cannot route still lands. */
+const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -107,44 +101,17 @@ export class IslandAdaptor implements MemeProjection {
   ) {}
 
   /**
-   * Walk the in-wiki bag-path cascade to pick a target slot URI.
+   * Walk the in-wiki bag-path cascade (`bag-cascade.routeBag`) over this engine's wiki.
    *
    * ── THE CASCADE ROUTES; IT DOES NOT DECIDE WHETHER TO WRITE ───────────────────────────────────
    * Everything a hand edits and saves — memes, `.tid`s, and every other TW5 filetype — travels
    * through the CRDT and round-trips. The cascade answers WHICH slot; the only thing that may
-   * withhold a write is a rule that NAMES what it withholds.
-   *
-   * Mirrors TW5's `$:/config/FileSystemPaths` pattern: newline-separated filter expressions
-   * evaluated against a single-tiddler source, first non-empty result wins. And it takes TW5's
-   * OTHER shape too — `$:/config/SyncFilter` is total (`[is[tiddler]]`) minus a named exclusion
-   * list, so the shipped cascade ends in a catch-all and opens with the exclusions.
-   *
-   * ⚠ THE THREE OUTCOMES ARE NOT ONE. A rule may route a title, a rule may withhold it, or no rule
-   * may reach it at all — and the third is a ROUTER GAP rather than a decision. Read as one, a gap
-   * drops the write in silence: the promise resolves, the wiki shows the edit, nothing persists, and
-   * the tiddler is gone on the next boot. So the walk reports which of the three happened and the
-   * callers act differently on each.
+   * withhold a write is a rule that NAMES what it withholds. A gap read as a withholding drops the
+   * write in silence — the promise resolves, the wiki shows the edit, nothing persists, and the
+   * tiddler is gone on the next boot — so `_destination` acts on the three verdicts apart.
    */
   private _routeBag(title: string): RouteVerdict {
-    const wiki = this.tw5.$tw.wiki;
-    if (typeof wiki.getTiddlerText !== "function" || typeof wiki.filterTiddlers !== "function") {
-      return { kind: "gap", why: "the wiki exposes no filter engine" };
-    }
-    const config = wiki.getTiddlerText(BAG_PATHS_CONFIG, "");
-    if (!config) return { kind: "gap", why: `no cascade at ${BAG_PATHS_CONFIG}` };
-    const filters = config.split("\n").map((s: string) => s.trim()).filter((s: string) => s.length > 0);
-    // Single-tiddler iterator — equivalent to TW5's wiki.makeTiddlerIterator([title]).
-    const source = (fn: (t: unknown, ti: string) => void): void => fn(wiki.getTiddler(title), title);
-    for (const filter of filters) {
-      const result = wiki.filterTiddlers(filter, undefined, source as never);
-      if (result.length === 0) continue;
-      const first = result[0] ?? "";
-      // An empty operand is the WITHHOLDING form, and it is only lawful from a rule that names its
-      // subject — the cascade carries `[[$:/core]then[]]`, never a bare `[…]then[]` standing for
-      // "whatever fell this far".
-      return first === "" ? { kind: "withheld", rule: filter } : { kind: "slot", uri: first };
-    }
-    return { kind: "gap", why: "no rule reached this title — the cascade lost its catch-all" };
+    return routeBag(this.tw5.$tw.wiki, title);
   }
 
   /**

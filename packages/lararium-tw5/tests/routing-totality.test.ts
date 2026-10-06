@@ -33,6 +33,7 @@ import path from "node:path";
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import { CompositeStore } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "../src/bag-cascade.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
@@ -63,6 +64,7 @@ const ENGINE_BYTES = ["$:/core", "$:/library/sjcl.js"] as const;
 describe.skipIf(wikiSkip)(`routing totality — the cascade routes, it does not decide${skipNote}`, () => {
   let engine: TW5Engine;
   let route: (title: string) => string | null;
+  let verdict: (title: string) => RouteVerdict;
 
   beforeAll(async () => {
     engine = await bootTestWiki();
@@ -80,16 +82,12 @@ describe.skipIf(wikiSkip)(`routing totality — the cascade routes, it does not 
       ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", "SLOT/personal"],
     ] as const) wiki.addTiddler(new Tiddler({ title, text }));
 
-    // The adaptor's own walk (`island-adaptor._routeBag`), driven here over the shipped rules.
+    // The shipped rules, driven through the ONE walk every caller reads (`bag-cascade.routeBag`).
+    wiki.addTiddler(new Tiddler({ title: BAG_PATHS_CONFIG, text: shippedCascade().join("\n") }));
+    verdict = (title: string): RouteVerdict => routeBag(wiki as never, title);
     route = (title: string): string | null => {
-      const source = (fn: (t: unknown, ti: string) => void): void => fn(wiki.getTiddler(title), title);
-      for (const f of shippedCascade()) {
-        const r = wiki.filterTiddlers(f, undefined, source as never);
-        if (r.length === 0) continue;
-        const first = r[0] ?? "";
-        return first === "" ? null : first;
-      }
-      return null;
+      const v = verdict(title);
+      return v.kind === "slot" ? v.uri : null;
     };
   }, 120_000);
 
@@ -110,7 +108,7 @@ describe.skipIf(wikiSkip)(`routing totality — the cascade routes, it does not 
   test("engine build-output is refused BY A RULE THAT NAMES IT, never by a gap", () => {
     const rules = shippedCascade().join("\n");
     for (const t of ENGINE_BYTES) {
-      expect(route(t), `${t} must not travel into a bag`).toBeNull();
+      expect(verdict(t).kind, `${t} must not travel into a bag, and only a rule may say so`).toBe("withheld");
       expect(rules, `${t} is dropped by silence — no rule mentions it`).toContain(t);
     }
   });

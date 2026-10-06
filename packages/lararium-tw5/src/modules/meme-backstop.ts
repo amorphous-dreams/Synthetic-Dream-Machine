@@ -54,13 +54,15 @@ module-type: startup
  * this hearth's own bag and shadow every later edit the peer makes there. So on such a child the
  * gate SURFACES only (the `quoteblocked` alert, naming that bag) and writes nothing; the fence waits
  * on the bag's keeper. A child this hearth wrote itself — no envelope stamp, or a stamp naming the
- * bag the cascade routes it to — is fenced as before. A wiki with no readable cascade cannot say
- * where it keeps anything, so a stamped child there surfaces only too.
+ * bag the cascade routes it to — is fenced: the fence commits as its stored body. Only a SLOT verdict
+ * keeps: a stamped child the cascade withholds, or reaches by no rule, or a wiki with no readable
+ * cascade at all, surfaces only.
  */
 
 import { framedRootOf, placeMeme, evaluateMeme, readMeme, wikiMemeSink } from "../place-meme.js";
 import type { MemeSink } from "../place-meme.js";
 import { findAhuBalanceFaults } from "../meme-ast/ahu-scan.js";
+import { routeBag } from "../bag-cascade.js";
 
 type Changes = Record<string, { modified?: boolean; deleted?: boolean }>;
 
@@ -145,25 +147,15 @@ export function surfaceChildGateAlert(wiki: BackstopWiki, root: string, finding:
   });
 }
 
-/** The in-wiki bag-paths cascade — the rules this hearth's own saves route by. */
-const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
-
 /**
- * The bag the cascade routes `title` to — the same walk the island adaptor's `_routeBag` makes:
- * newline-separated filters over a single-tiddler source, first non-empty result wins. Null when the
- * wiki exposes no cascade, no rule reaches the title, or a rule withholds it.
+ * The bag the cascade routes `title` to, or null when it routes it nowhere. A withholding and a gap
+ * both answer null here, and rightly: either way no bag of this hearth's holds the title, so a
+ * stamped child reads UNKEPT. (The island adaptor fills a gap at the write layer so a save never
+ * vanishes; that rescue belongs to a save, never to this keep-check.)
  */
 function cascadeBagOf(wiki: BackstopWiki, title: string): string | null {
-  if (typeof wiki.getTiddlerText !== "function" || typeof wiki.filterTiddlers !== "function") return null;
-  const config = wiki.getTiddlerText(BAG_PATHS_CONFIG, "");
-  if (!config) return null;
-  const source = (fn: (t: unknown, ti: string) => void): void => fn(wiki.getTiddler(title), title);
-  for (const filter of config.split("\n").map((l) => l.trim()).filter((l) => l.length > 0)) {
-    const result = wiki.filterTiddlers(filter, undefined, source);
-    if (result.length === 0) continue;
-    return result[0] ? result[0] : null;
-  }
-  return null;
+  const v = routeBag(wiki, title);
+  return v.kind === "slot" ? v.uri : null;
 }
 
 /**
