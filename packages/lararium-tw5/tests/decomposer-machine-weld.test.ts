@@ -1,3 +1,5 @@
+// vm-grammar-boundary: exempt — the weld of ahu-scan.ts's own law: its subject IS the family scanner, read
+// directly to prove it reads no vocabulary.
 /**
  * THE DECOMPOSER IS MACHINE, AND VOCABULARY NEVER DECOMPOSES — the weld.
  *
