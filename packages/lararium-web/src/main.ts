@@ -95,7 +95,8 @@ async function readOracle(): Promise<void> {
       const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
       const oracleEl = $("oracle"); oracleEl.replaceChildren();
       row(oracleEl, "status", "✓ verified + loaded", "ok");
-      row(oracleEl, "version", `v${r.pointer.version}`);
+      row(oracleEl, "act", r.pointer.actCid.slice(0, 16) + "…");
+      row(oracleEl, "parents", String(r.pointer.parents.length));
       row(oracleEl, "tiddlers", String(n));
       row(oracleEl, "cid", r.cid ?? "—");
       row(oracleEl, "publisher", r.pointer.pub.slice(0, 16) + "…");
