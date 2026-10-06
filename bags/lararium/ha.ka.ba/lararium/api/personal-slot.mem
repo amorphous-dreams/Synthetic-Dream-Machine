@@ -152,23 +152,25 @@ resolves to a fresh MemoryTiddlerStore at boot).
 
 !! Cascade rules that route to the personal layer
 
-The default `lar:///ha.ka.ba/lararium/config/bag-paths` cascade routes by prefix to
+The default `lar:///ha.ka.ba/lararium/config/bag-paths` cascade (`packages/lararium-tw5/tiddlers/lar-bag-paths.tid`) routes by prefix and kind to
 per-wiki config values (`current-wiki-*`), which the island seeds to the mounted wiki's
 own slots at boot — so a rule never hardcodes a wiki's identity:
 
 ```
+[match[$:/core]then[]]
+[match[$:/library/sjcl.js]then[]]
 [prefix[$:/temp/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [prefix[$:/status/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [prefix[$:/boot/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [prefix[$:/HistoryList]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
-[prefix[$:/StoryList]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
-[prefix[$:/state/folded/]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
-[prefix[$:/state/tab-]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
-[prefix[$:/palette]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
+[lar-kind[]match[personal]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
 [prefix[$:/state/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
-[prefix[Draft of ]then{lar:///ha.ka.ba/lararium/config/current-wiki-draft}]
+[is[draft]then{lar:///ha.ka.ba/lararium/config/current-wiki-draft}]
 [prefix[lar:]then{lar:///ha.ka.ba/lararium/config/current-wiki-bag}]
+[regexp[.]then{lar:///ha.ka.ba/lararium/config/current-wiki-bag}]
 ```
+
+The personal layer takes what `lar-kind[]` calls `personal` (the cross-device viewing state: `$:/StoryList`, `$:/state/folded/*`, `$:/state/tab-*`, `$:/palette`); a draft routes by TW5's `draft.of` field (`is[draft]`), never its title; the `[regexp[.]]` catch-all lands anything else at the write layer, and only the two named empty-operand rules withhold.
 
 `island-recipe.ts` seeds `current-wiki-{temp,draft,personal,bag}` to the mounted wiki's
 own per-wiki slots (`wikis/{slug}/{temp,draft,personal}` and its working/canon write
@@ -506,6 +508,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kDHoFUOOPMhn-w7N1b9bqeeKZ5egI5YhXHzVnvsL55Y
+<<^ code="&#x0003;">>ni:///sha-256;y-B9X3LbCWwCk8-rQafi6X7J-7JN7q5cCqsOEA7SSSE
 
 <<^ code="&#x0004;" -> to="?">>

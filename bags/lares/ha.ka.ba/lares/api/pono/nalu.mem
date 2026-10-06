@@ -162,7 +162,8 @@ The TS layer is the minimal shore around it — only what TW5 cannot do from ins
 
 ''Inside the wiki (`module-type: startup`):''
 * `nalu-engine` — unified `LarTiddlerChange[]` queue across all bags + frame-aligned drain
-  + one `wiki.transact()` per frame + apply-time echo guard (`$tw.lares.isApplyingNalu`)
+  + one `wiki.transact()` per frame + apply-time echo guard (`$tw.lares.isApplyingNalu`, for a
+  synchronous caller; a `change` listener reads the outbound bridge's inbound SET instead)
 * `reaction-router` — `wiki.addEventListener("change")` listener that fires `tm-verse-event`
   for `lar:` tiddlers whose papalohe bindings name a listenable
 
@@ -281,6 +282,6 @@ edges encoded with FRU orientation assumptions need migration. See `uefn-scene.m
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uhIOjsv2BhWR4kyR0Ol3D1sDC8I-8HCkbSKwmWWGeCA
+<<^ code="&#x0003;">>ni:///sha-256;SGdRqc2Br1PyMnDqIdmxVUJKPcWR1XH2zOuIrvRuXRQ
 
 <<^ code="&#x0004;" -> to="?">>

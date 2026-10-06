@@ -43,7 +43,7 @@ into the Automerge store. Without hygiene here, sustained editing produces:
 * ''Noisy projection state'' — parse-warning tiddlers, `$:/state/*` fragments,
   and boot-splash signals accumulate in the wiki. Some carry `lar:` URIs and
   could bleed into the store without guards.
-* ''Draft routing confusion'' — `"Draft of …"` tiddlers from TW5 editing UX
+* ''Draft routing confusion'' — draft tiddlers from TW5 editing UX
   should reach the per-wiki draft bag, not get silently dropped.
 
 <<~/ahu>>
@@ -58,10 +58,11 @@ into the Automerge store. Without hygiene here, sustained editing produces:
 
 * While the timer runs, subsequent saves for the same title cancel the
   prior timer and restart it with the latest fields.
-* The callback fires exactly once per debounce window — at flush time, not
-  at call time. Callers MUST tolerate asynchronous callbacks.
-* `stop()` MUST cancel all pending timers and drop pending callbacks without
-  firing them.
+* The returned promise settles once per debounce window — at flush time, not
+  at call time; a superseded save's promise resolves when the next one takes
+  its place. Callers MUST tolerate asynchronous settlement.
+* `stop()` MUST cancel all pending timers and drop pending writes without
+  flushing them.
 
 Rationale: human keystroke rate typically runs 3–8 chars/sec. A 400 ms window
 coalesces a full word or short phrase into a single store write. Stays below
@@ -69,12 +70,17 @@ perceived lag threshold (< 1 s).
 
 !!! SP-2 — Ephemeral Truncation
 
-Tiddlers at `lar:///ha.ka.ba/lararium/parse-warning/…` and
-`lar:///ha.ka.ba/state/…` MUST NOT reach the Automerge store via `saveTiddler`.
+The VOLATILE VM PLANE (`lar:///lararium.local.vm/…`, `VOLATILE_VM_PREFIX` in
+`packages/lararium-mesh/src/lar-uris.ts`) MUST NOT reach the Automerge store.
+`saveTiddler` and `deleteTiddler` refuse it by `isVolatileVmUri`, ahead of the
+cascade, so no cascade edit can lift the refusal (`island-adaptor.ts`).
 
-These get written directly into TW5 via `wiki.addTiddler()` (not through
-`saveTiddler`), so this invariant holds naturally. No explicit title guard
-needed in the save path — document it here to prevent a future regression.
+Every OTHER title a wiki write touches reaches `saveTiddler`: the outbound
+bridge carries each live `change`, whichever door wrote it, and the cascade's
+`[prefix[lar:]]` rule routes a `lar:` title to `current-wiki-bag`. So wiki
+scratch that must stay off the store lives under the volatile plane; a scratch
+title spelled anywhere else (`lar:///ha.ka.ba/state/…`, a parse-warning title)
+persists like any authored tiddler.
 
 Auto-truncate sweep: a separate sweeper (outside this adaptor) MAY scan the
 TW5 wiki on a low-frequency timer (≥ 30 s idle) and delete stale
@@ -83,11 +89,12 @@ TW5 startup module.
 
 !!! SP-3 — Draft Routing
 
-`"Draft of …"` tiddlers from TW5 editing UX MUST route to the wiki's per-wiki
+Draft tiddlers from TW5 editing UX (a `draft.of` field standing) MUST route to the wiki's per-wiki
 draft slot (`wikis/{slug}/draft`, a CRDT layer that follows the operator's fleet)
 and MUST NOT be silently dropped. The in-wiki bag-paths cascade carries the rule
-(`[prefix[Draft of ]then{…/current-wiki-draft}]`), read against the TITLE so the
-matching delete routes to the same slot; no guard in `saveTiddler` withholds a
+(`[is[draft]then{…/current-wiki-draft}]`), read against TW5's `draft.of` FIELD,
+never the title; the matching delete routes by the last-known-slot map
+(`_slotOf`), since the field is gone by then. No guard in `saveTiddler` withholds a
 draft. The cascade names its withholdings (`$:/core`, `$:/library/sjcl.js`) and
 ends in a catch-all — a title no rule reaches lands at the write layer and says
 so (wiki-layer-ontology#/totality-law). The measured routing table rides
@@ -104,7 +111,7 @@ OPTION (`store.put(record, origin, { bag })`) — never on the record — and a
 bag with no writable layer refuses loud rather than falling through to the
 default writable (wiki-layer-ontology#/write-law).
 
-Live TW5 edits without an explicit bag field route to `this.targetBag`.
+Live TW5 edits route by the cascade: `_destination(title)` names the slot, and the put carries it as the `{ bag }` option.
 
 !!! SP-5 — Single Parser Law
 
@@ -119,16 +126,16 @@ site.
 !! Debounce Design
 
 ```
-saveTiddler(tiddler, callback)
-  → guards (echo · the cascade's named withholdings)
-  → cancel pending timer for title
-  → store { fields, callback } in _pending map
-  → set new timer(400ms) → _flush(title)
+saveTiddler(tiddler): Promise<void>
+  → guards (echo · the volatile VM plane · the cascade's named withholdings)
+  → cancel pending timer for title; resolve the superseded promise
+  → store { fields, resolve, reject, origin } in _pending map
+  → set new timer(400ms) → _flushPending(title)
 
-_flush(title)
+_flushPending(title)
   → retrieve + delete from _pending
   → call _writeMeme(title, fields, origin)
-  → fire callback on resolve/reject
+  → settle the promise on resolve/reject
 ```
 
 State held on the adaptor:
@@ -140,11 +147,12 @@ State held on the adaptor:
 
 `PendingWrite`:
 ```ts
-{ fields: Record<string, string>; callback: SaveCallback; origin: ChangeOrigin }
+{ fields: Record<string, string>; resolve: () => void; reject: (err: Error) => void; origin: ChangeOrigin }
 ```
 
-On `stop()`: iterate `_debounce`, clearTimeout each, clear both maps.
-No callbacks fire after `stop()`.
+On `stop()`: iterate `_debounce`, clearTimeout each, clear both maps and the
+inbound echo SET, and unsubscribe from the projection bus. No write flushes
+after `stop()`.
 
 <<~/ahu>>
 
@@ -157,6 +165,6 @@ No callbacks fire after `stop()`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gk5RZJFZS8h_Krq20H_SQIEkwPw33laoznNv63Q_jHw
+<<^ code="&#x0003;">>ni:///sha-256;GOimu-yTs6FKNGxvMJwQblczXDZwtXiC69Q5a_nSsLI
 
 <<^ code="&#x0004;" -> to="?">>

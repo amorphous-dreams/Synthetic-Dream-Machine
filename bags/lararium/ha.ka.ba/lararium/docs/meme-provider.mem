@@ -41,9 +41,13 @@ owns on top of it.
 patch, so the same implementation runs in Node and in a browser without a platform branch.
 # ''The document reads at FIRE time, never at patch time.'' A debounce that captured state on arrival
 would deliver a value the doc has already moved past; reading at the flush delivers the latest.
-# ''Eligibility binds to the save cascade.'' A key enters the fan-out on `lar:` or `Draft of ` and on
-nothing else — `$:/temp/` and `$:/` system tiddlers never enter the store, so fanning them out would
-announce changes to records that do not exist. Whatever the adaptor writes, the provider carries.
+# ''Eligibility should bind to the save cascade, and today it binds to two prefixes.'' A key enters
+the fan-out on `lar:` or `Draft of ` and on nothing else (`packages/lararium-mesh/src/meme-provider.ts`).
+The save cascade admits more (`lar-bag-paths.tid`): `$:/temp/*` lands in the device-only temp store,
+but the `personal` kind (`$:/StoryList`, `$:/state/folded/*`, …) reaches a CRDT slot, a draft routes by
+its `draft.of` field under any title, and `[regexp[.]]` lands every other title at the write layer.
+A record stored outside the two prefixes reaches no fan-out — OWED to the provider: whatever the
+adaptor writes, the provider carries.
 # ''Sync-complete binds to an ISLAND, never to the provider.'' `markSyncComplete(islandId)` stays
 idempotent per island; a single-doc vessel uses the default id, and each handle in a multi-bag vessel
 calls with its own once ready.
@@ -83,6 +87,6 @@ the reference, and the law below it stays the part a reader needs anyway.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction">>
 
-<<^ code="&#x0003;">>ni:///sha-256;rPfxqZgn6QUxRTt5DxrsPhpHIO_KlyFg0-8Dbg2_-Cc
+<<^ code="&#x0003;">>ni:///sha-256;_9Ps2L7aSfF5BuiujMY97rTkLQGY7Cq8TBG7G6wNoVQ
 
 <<^ code="&#x0004;" -> to="?">>
