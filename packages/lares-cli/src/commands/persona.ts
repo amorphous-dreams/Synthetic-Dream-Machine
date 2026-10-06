@@ -52,7 +52,7 @@ function usage(args: ParsedArgs, typed?: string): number {
 /**
  * This vessel's persona-slot ceiling. A hearth or leaf carries an operator dial; a Herm carries none — a
  * faceless vessel stands CONTRACTED and mints no root through this verb. The class reads off the same dial
- * the daemon boots by (`LAR_RECIPE`, `main.ts`): measured 2026-09-12, a hard-coded `"hearth"` here let the
+ * the daemon boots by (`LAR_RECIPE`, `main.ts`): a hard-coded `"hearth"` here would let the
  * refusal `personaSlotCeiling("herm") === 0` exist in mesh and never fire at the one door that mints a root.
  * `LAR_PERSONA_SLOTS` is the dial — a human holds a multitude, and the code decides no part of how large.
  */
