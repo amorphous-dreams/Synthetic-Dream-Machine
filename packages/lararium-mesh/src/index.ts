@@ -114,6 +114,7 @@ export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
 export * from "./automerge-doc-store.js";
+export * from "./parallel-drafts.js";
 export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";
 export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js";

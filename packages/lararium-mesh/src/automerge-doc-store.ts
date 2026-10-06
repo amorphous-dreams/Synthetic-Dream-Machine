@@ -15,6 +15,13 @@
  *
  * FPI-3 (synergy): same mutation/subscription API runs on every vessel.
  * Local-first Ideal 1 (fast): get/listVisible read from the in-memory doc.
+ *
+ * TALK-STORY SURFACING: a merge that leaves concurrent values on a record (two actors set one field,
+ * or created one title, concurrently) raises `onParallelDrafts` listeners with every concurrent value
+ * as an attributed TW5 draft (`parallel-drafts.ts`), and `parallelDrafts(title)` answers them on
+ * demand. The value Automerge merged stays live; the others stay reachable; the store decides nothing.
+ * A put assigns only the fields whose value moved, so a writer re-saving the live value never
+ * supersedes a concurrent value it has not seen.
  */
 
 import type { DocHandle } from "@automerge/automerge-repo";
@@ -23,6 +30,7 @@ import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin 
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
+import { readParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
@@ -39,13 +47,27 @@ function _contentEquals(cur: LarTiddlerRecord, rec: LarTiddlerRecord): boolean {
   return JSON.stringify(cur) === JSON.stringify(rec);
 }
 
+/** Same value in the doc's medium — a list or map compares by its JSON form. */
+function _sameValue(current: unknown, next: unknown): boolean {
+  if (current === next) return true;
+  if (current === null || next === null || typeof current !== "object" || typeof next !== "object") return false;
+  return JSON.stringify(current) === JSON.stringify(next);
+}
+
+/**
+ * Merge a record into the doc's copy field by field. A field whose value did not move is left
+ * unassigned: an assignment supersedes every concurrent op on that key, so re-sending the live value
+ * would erase a concurrent value this writer never saw.
+ */
 function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord): void {
   const t = target.tiddler;
   for (const key of Object.keys(t)) {
     if (!(key in record.tiddler)) delete t[key];
   }
-  for (const [key, value] of Object.entries(record.tiddler)) {
-    t[key] = value instanceof Date ? value.toISOString() : value;
+  for (const [key, raw] of Object.entries(record.tiddler)) {
+    const value = raw instanceof Date ? raw.toISOString() : raw;
+    if (key in t && _sameValue(t[key], value)) continue;
+    t[key] = value;
   }
 
   const nextMeta = record.meta ?? {};
@@ -95,6 +117,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;
+  private readonly _draftListeners = new Set<(change: ParallelDraftsChange) => void>();
 
   constructor(handle: DocHandle<LarDoc>, bagId?: string) {
     this.handle  = handle;
@@ -114,7 +137,40 @@ export class AutomergeDocStore implements LarTiddlerStore {
         .filter((p) => Array.isArray(p.path) && p.path[0] === "tiddlers")
         .map((p) => ({ ...p, path: (p.path as unknown[]).slice(1) }));
       this.provider.handleChange(remapped, remoteOrigin);
+      this._surfaceConflicts(remapped);
     });
+  }
+
+  /**
+   * Every concurrent value standing on `title`, one attributed draft per writing actor
+   * (`parallel-drafts.ts`). Empty when the record carries no conflict. Reads only.
+   */
+  parallelDrafts(title: string): LarTiddlerRecord[] {
+    return readParallelDrafts(this.handle.doc()?.tiddlers, title);
+  }
+
+  /** Listen for a change that leaves concurrent values on a record. Returns the unsubscribe. */
+  onParallelDrafts(fn: (change: ParallelDraftsChange) => void): () => void {
+    this._draftListeners.add(fn);
+    return () => { this._draftListeners.delete(fn); };
+  }
+
+  /** A patch Automerge marks as a conflict (`action: "conflict"`, or a put carrying `conflict: true`)
+   *  names a record where a concurrent value just landed — read its drafts and raise them. */
+  private _surfaceConflicts(patches: ReadonlyArray<{ action?: unknown; path: unknown[]; conflict?: unknown }>): void {
+    if (this._draftListeners.size === 0) return;
+    const titles = new Set<string>();
+    for (const p of patches) {
+      if (p.action !== "conflict" && p.conflict !== true) continue;
+      const title = p.path[0];
+      if (typeof title === "string") titles.add(title);
+    }
+    for (const title of titles) {
+      const drafts = this.parallelDrafts(title);
+      if (drafts.length === 0) continue;
+      const change: ParallelDraftsChange = { title, bag: this.bagId, drafts };
+      for (const fn of this._draftListeners) fn(change);
+    }
   }
 
   addProjection(p: MemeProjection): () => void {
