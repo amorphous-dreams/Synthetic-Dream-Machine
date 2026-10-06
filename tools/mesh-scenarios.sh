@@ -1013,7 +1013,7 @@ run_meme() {
   if printf '%s' "$LD" | grep -q '"ok":true'; then ok
   else bad "the LOAD refused"; printf '%s\n' "$LD" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
-  # THE REALM BAG (realm-bag-brief, ruled 2026-09-11). Both sides re-fold the relation they just stood — A's
+  # THE REALM BAG (realm-bag-brief). Both sides re-fold the relation they just stood — A's
   # running node folds the admit its CLI wrote beside it, B stands the realm the imported charter names — and
   # A registers her `lares` on the realm's shared CRDT: steward-signed, read at CONTRACT, @crossroads naming
   # only that it exists and who keeps it.
@@ -1059,7 +1059,7 @@ run_meme() {
   # over the public read-face and verifies `sha256(bytes) == cid` before it trusts a byte. This step
   # LOADs a `.png` on A (bytes into A's `cid/`, a pointer into A's bag) and asks the one content-addressed
   # public read-face the mesh stands — the Herm's bulb, `GET /bulb/<cid>.bin` — for that cid.
-  # MEASURED 2026-09-11 (`bulb-serves-boot-cas-alone.test.ts`): the bulb answers the GENESIS manifest's
+  # MEASURED (`bulb-serves-boot-cas-alone.test.ts`): the bulb answers the GENESIS manifest's
   # blobs alone (`bulb-read-face.ts` builds `blobByCid` off `buildBulb(bulb)`), so a hearth's staged blob
   # draws 404 — and no hearth ever hands its `cid/` to a Herm. The bytes-door this needs: a public-floor
   # `GET /cas/<cid>.bin` served off the holder's `cid/` tier (verify-on-pull like the bulb), reached by
@@ -1196,9 +1196,9 @@ run_meme_browser() {
 # Seating a charter re-keys that board to the charter's genesis epoch, and the Binding Gate refuses
 # rather than degrades — `open-node-vessel.ts:1174`.
 #
-# ⚠ THIS SCENARIO STANDS GREEN TODAY, AND THAT IS THE MEASUREMENT RATHER THAN A GAP IN IT.
+# ⚠ THIS SCENARIO STANDS GREEN, AND THAT IS THE MEASUREMENT RATHER THAN A GAP IN IT.
 # `carryPersonaKelUpTheGradient` runs BEFORE the gate walks (open-node-vessel.ts:1168) and moves the
-# pinned chain onto the island this boot resolved. Walked in a container 2026-09-13: the vessel
+# pinned chain onto the island this boot resolved. Walked in a container: the vessel
 # answered 15s after the restart, `restarts=0`, and the halt string appeared ZERO times. So this is
 # a regression guard on a cure that landed, never a repro of a live brick.
 #
@@ -1424,7 +1424,7 @@ run_seal() {
 }
 
 # ── ③ THE USERINFO TITLE — ENFORCEMENT, NOT DISCOVERY ───────────────────────────────────────────
-# THE OPERATOR RULED (2026-09-13, spec 8d69076af): `lar://host/path` titles stand; userinfo-bearing
+# THE OPERATOR RULED (spec 8d69076af): `lar://host/path` titles stand; userinfo-bearing
 # titles are FORBIDDEN. So this stops asking whether the leak exists and asks whether the enforcement
 # the spec now names can actually be performed.
 #
@@ -1742,7 +1742,7 @@ run_conflict() {
 # `deterministicDocUrl`, so A and B derive the same address "alike by every holder and belonging to
 # no operator" without exchanging it.
 #
-# ⚠ THE HEADLINE AND ITS SHARPEST NEGATIVE BOTH STAND GREEN, MEASURED 2026-09-13 in a container:
+# ⚠ THE HEADLINE AND ITS SHARPEST NEGATIVE BOTH STAND GREEN, MEASURED in a container:
 # a charter torn at its epoch produced `[lararium] fatal: Error: [nexus] the island reads TORN, so no
 # board may be addressed`, the vessel exhausted `restart: on-failure:8` and stayed exited, and the
 # floor reading `(own)` appeared ZERO times. So the separation survives and the refusal is real.
