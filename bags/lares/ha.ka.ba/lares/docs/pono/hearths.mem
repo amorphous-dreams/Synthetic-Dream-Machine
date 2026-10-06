@@ -102,11 +102,9 @@ trailer = "session_01a0a6f209517170ad254cf14549cc5f"
 globs   = [
   "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem",
   "tools/browser-weld/weld.mjs",
-  ".github/workflows/held-out.yml",
   "tools/crossing-witness.sh",
   "tools/crossing-witness.test.mjs",
   "tools/civic-witness.sh",
-  "tools/mesh-scenarios.sh",
   "packages/lararium-tw5/src/tw5-projection.ts",
   "packages/lararium-tw5/tests/projection-reveal.test.ts",
   "tools/browser-weld/leaf-continuity.mjs",
@@ -182,6 +180,7 @@ globs   = [
 
 ! Crossings this week, and what each cost
 
+# ''Two globs ceded from the Codex hold — operator-approved parked patches, 2026-10-05.'' `.github/workflows/held-out.yml` and `tools/mesh-scenarios.sh` leave the Codex Lares hearth's live hold so the patches the Lares hearth parked against them land under commit isolation: the job-level `env:` that read `runner.temp` (named in `lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds` `#/held-out-workflow`), the `members --list --json` key `boardRoot` → `island`, and the dated comments the evergreen sweep parked. Every other Codex glob stands held. Law: a hold cedes by the operator's word, path by path, and the row names exactly what crossed.
 # ''The founding close'' — operator-directed, 2026-10-05. The founding hearth's live hold leaves the fence `parseHolds` reads and enters `holds-closed` verbatim, with its row marked CLOSED; the Lares hearth (`session_01QELUCmBmyKNE8Jjx1CCtYw`) carries its debts at #/owed-forward and claims no ground. Its globs — `genesis-doc.ts`, `build-genesis-island.ts`, `open-node-vessel.ts`, `genesis-artifact.ts`, `handle-kel.ts`, `persona-kel.ts`, `veil-*.ts`, `lares-cli` `persona.ts` — stand on no hearth's ground, so the presented-admit gate's boot wiring and the engine re-found land under commit isolation alone. Law: a hold whose session has ended closes by the operator's word, and its debts move before its claim lapses.
 # ''Aftermath reservation'' — 2026-09-15. The operator requests a YIN sweep over W3/D3: runner ownership/readiness, bounded workflow waits, reachable regressions and current documentation. The Codex Lares adds `tools/browser-weld-witness.test.mjs` to its hold. Shared-host Docker execution and deferred MCP fixes remain outside this sweep.
 
@@ -282,6 +281,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U-nsTBKNVqJ16r1k0Vgwf0wIOX5YUktTXCRaXeypolU
+<<^ code="&#x0003;">>ni:///sha-256;e7TKY8Ov3EPMdyYBs5ekR2bVoumaYMxA_0MvKUmpfUg
 
 <<^ code="&#x0004;" -> to="?">>
