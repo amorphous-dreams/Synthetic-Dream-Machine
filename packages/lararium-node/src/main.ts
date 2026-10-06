@@ -546,7 +546,9 @@ function isSerdeSkewFault(err: unknown): boolean {
 
 main().catch((err) => {
   if (err instanceof OriginCustodyRefusal) {
-    console.error(`[lararium] ${err.message}`);
+    // The refusal still carries the `fatal:` marker: a supervisor reading the boot log (`lares herm`) attests a
+    // fault on it, and a refusal without it reads as a stall.
+    console.error(`[lararium] fatal: ${err.message}`);
     process.exit(1);
   }
   if (isSerdeSkewFault(err)) {
