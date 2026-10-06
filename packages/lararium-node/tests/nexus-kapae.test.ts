@@ -148,8 +148,10 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
     const stranger2 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
     seatCharter([held.verifyingKey, stranger1, stranger2]);
 
-    await expect(runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() }))
-      .rejects.toBeInstanceOf(NexusKapaeError);
+    const refused = runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
+    await expect(refused).rejects.toBeInstanceOf(NexusKapaeError);
+    // The shared selector refuses in THIS door's words: it names the antigen act, never the membership one.
+    await expect(refused).rejects.toThrow(/holds 1 seated persona-root\(s\), but a valid antigen act carries 2/);
 
     // Fail-closed: nothing landed on the board.
     const list = await runNexusKapaeList({ sealHome: sealHome() });

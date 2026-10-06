@@ -7,7 +7,7 @@
  * Node-specific shores (only these belong here):
  *   - Repo + NodeFSStorageAdapter over the vessel store (the offline board-doc access, mirroring device-admit)
  *   - readNexusDoc off `bags/nexus` (the roster's authority home) → foundingRoster
- *   - listPersonaRoots / generateOrLoadPersonaGroupRoot / loadPersonaGroupRootSeed (founder-held signing seeds)
+ *   - the held-quorum selector (`held-quorum`) + loadPersonaGroupRootSeed (founder-held signing seeds)
  *   - loadVesselVerifyingKey (the node's own gate key — the board's per-island deterministic address seed)
  *
  * The signing, the quorum SHAPE, the fold/verify, and the board tiddler shape stay in @lararium/mesh
@@ -36,10 +36,8 @@ import {
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
-import {
-  listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
-  loadVesselVerifyingKey,
-} from "../node-vessel-identity.js";
+import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 
 /** A ban target reads clean only at the exact ed25519 verifying-key length — a stray value never bans. */
@@ -93,35 +91,11 @@ function seatedRosterOrRefuse(sealHome: string): KahuRoster {
   return roster;
 }
 
-/**
- * Resolve the ≥ threshold HELD persona-roots that sit IN the seated roster — the signers the operator can
- * actually bring to this quorum. FAIL CLOSED: fewer than `threshold` matching held roots REFUSES (no
- * sub-quorum entry is ever minted). Returns the selected `{ handleIndex, verifyingKey }` set (exactly
- * threshold, distinct signers).
- */
-async function selectHeldQuorumSigners(
-  roster: KahuRoster,
-): Promise<Array<{ handleIndex: number; verifyingKey: string }>> {
-  const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
-  const indices    = await listPersonaRoots();
-  const candidates: Array<{ handleIndex: number; verifyingKey: string }> = [];
-  const seen       = new Set<string>();
-  for (const handleIndex of indices) {
-    const root = await generateOrLoadPersonaGroupRoot(handleIndex);   // loads a HELD root; never mints here (founder-side)
-    const vk   = root.verifyingKey.toLowerCase();
-    if (!rosterKeys.has(vk) || seen.has(vk)) continue;   // only a seated, not-yet-counted key counts toward quorum
-    seen.add(vk);
-    candidates.push({ handleIndex, verifyingKey: vk });
-    if (candidates.length >= roster.threshold) break;
-  }
-  if (candidates.length < roster.threshold) {
-    throw new NexusKapaeError(
-      `sub-quorum REFUSED (fail-closed): the vessel holds ${candidates.length} seated persona-root(s), but a valid antigen act carries ${roster.threshold} distinct founding-kahu signatures. ` +
-      `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
-    );
-  }
-  return candidates;
-}
+/** The antigen door's sub-quorum refusal — it names the act a short quorum would have minted. */
+const subQuorum = (held: number, k: number): NexusKapaeError => new NexusKapaeError(
+  `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seated persona-root(s), but a valid antigen act carries ${k} distinct founding-kahu signatures. ` +
+  `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
+);
 
 /**
  * Raise a ban (`kapae`) or mint a lift (`un_kapae`) on `nym` — sign a causal antigen entry with ≥ threshold
@@ -138,7 +112,7 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
   }
 
   const roster   = seatedRosterOrRefuse(opts.sealHome);
-  const selected = await selectHeldQuorumSigners(roster);
+  const selected = await selectHeldQuorumSigners(roster, subQuorum);
 
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });

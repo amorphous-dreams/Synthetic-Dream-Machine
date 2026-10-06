@@ -171,8 +171,10 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     seatCharter([held.verifyingKey, s1, s2]);
     const joiner = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(9)));
 
-    await expect(runNexusContract({ action: "admit", nym: joiner, contractSig: "00".repeat(64), sealHome: sealHome() }))
-      .rejects.toBeInstanceOf(NexusContractError);
+    const refused = runNexusContract({ action: "admit", nym: joiner, contractSig: "00".repeat(64), sealHome: sealHome() });
+    await expect(refused).rejects.toBeInstanceOf(NexusContractError);
+    // The shared selector refuses in THIS door's words: it names the membership act, never the antigen one.
+    await expect(refused).rejects.toThrow(/holds 1 seated persona-root\(s\), but a valid membership act carries 2/);
     const list = await runNexusMembersList({ sealHome: sealHome() });
     expect(list.entries).toHaveLength(0);
   });

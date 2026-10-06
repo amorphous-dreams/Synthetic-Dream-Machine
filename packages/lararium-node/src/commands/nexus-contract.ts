@@ -48,9 +48,9 @@ import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
 
 import {
-  listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, personaRootExists,
-  loadVesselVerifyingKey, loadVesselSigningSeed,
+  loadPersonaGroupRootSeed, personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed,
 } from "../node-vessel-identity.js";
+import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, nexusLeafFor } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
@@ -111,41 +111,16 @@ function seatedRosterOrRefuse(sealHome: string): KahuRoster {
 
 /** The Nexus AID a subject's leaf derives under — the charter's genesis epoch, fixed across rotation. */
 function nexusAidOrRefuse(sealHome: string): string {
-  const aid = realmIdOfCharter(readNexusDoc(sealHome));
-  if (!aid) {
-    throw new NexusContractError("no seated charter to name the Nexus by — a per-Nexus leaf derives from the charter's genesis epoch.");
-  }
-  return aid;
+  const aid = primaryNexusAid(sealHome);
+  if (aid) return aid;
+  throw new NexusContractError("no seated charter to name the Nexus by — a per-Nexus leaf derives from the charter's genesis epoch.");
 }
 
-/**
- * Resolve the ≥ threshold HELD persona-roots that sit IN the seated roster — the kahu signers the operator can
- * bring to this quorum. FAIL CLOSED: fewer than `threshold` matching held roots REFUSES (no sub-quorum admit is
- * ever minted). Mirrors nexus-kapae `selectHeldQuorumSigners`.
- */
-async function selectHeldQuorumSigners(
-  roster: KahuRoster,
-): Promise<Array<{ handleIndex: number; verifyingKey: string }>> {
-  const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
-  const indices    = await listPersonaRoots();
-  const candidates: Array<{ handleIndex: number; verifyingKey: string }> = [];
-  const seen       = new Set<string>();
-  for (const handleIndex of indices) {
-    const root = await generateOrLoadPersonaGroupRoot(handleIndex);   // loads a HELD root; never mints here
-    const vk   = root.verifyingKey.toLowerCase();
-    if (!rosterKeys.has(vk) || seen.has(vk)) continue;
-    seen.add(vk);
-    candidates.push({ handleIndex, verifyingKey: vk });
-    if (candidates.length >= roster.threshold) break;
-  }
-  if (candidates.length < roster.threshold) {
-    throw new NexusContractError(
-      `sub-quorum REFUSED (fail-closed): the vessel holds ${candidates.length} seated persona-root(s), but a valid membership act carries ${roster.threshold} distinct founding-kahu signatures. ` +
-      `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
-    );
-  }
-  return candidates;
-}
+/** The membership door's sub-quorum refusal — it names the act a short quorum would have minted. */
+const subQuorum = (held: number, k: number): NexusContractError => new NexusContractError(
+  `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seated persona-root(s), but a valid membership act carries ${k} distinct founding-kahu signatures. ` +
+  `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
+);
 
 /**
  * Obtain the operator's "accepts carriage" contract-sig for an ADMIT. Two paths, fail-closed:
@@ -239,7 +214,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   }
 
   const roster   = seatedRosterOrRefuse(opts.sealHome);
-  const selected = await selectHeldQuorumSigners(roster);
+  const selected = await selectHeldQuorumSigners(roster, subQuorum);
 
   // The subject's own wax-seal — an ADMIT takes the operator's persona-signed contract-in, a CARRY takes the
   // place's vessel-signed carrier seal, and a REVOKE / UNCARRY takes none.
