@@ -26,7 +26,25 @@
 # What this does not walk is a NETWORK carry, nor two machines with two clocks. `herm-mesh-witness` and
 # the container harness cover the wire; this one covers CUSTODY.
 #
-# Exit 0 = the door opened for a foreign key, refused three forgeries, and closed by supersession.
+# ── THE PRESENTED ADMIT (S6), AND THE RAISE DOOR THAT READS IT ───────────────────────────────────────
+# Once A admits B, B's admit is a PRESENTATION: the counted admit head for B's leaf and its closed, tight
+# lineage, derived off A's board by `presentedAdmitFromBoard` — the same derivation a dial presents after
+# sync. A small node helper (written to the transfer dir, importing the BUILT dist of @lararium/mesh and
+# @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
+# after a descending revoke, WRONG-EPOCH after the charter rolls. It checks that only B's leaf proves the
+# admit to a socket, and that the wire guard refuses the admit beside a root edge. The raise door then
+# walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
+# `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
+#
+# ── THE EPOCH ROLL ARMS WITH THE KEY-SET IT REVEALS ─────────────────────────────────────────────────────
+# `seal rotate` reveals the personas STANDING in the vault, and the reveal must hash to the head's
+# pre-commitment. The reserve's commit names three keys derived off a separate reserve seed, and no verb
+# provisions those keys into the vault, so a genesis armed with the reserve's commit can never rotate.
+# The witness arms with `seal commit` over the roster it will reveal, and says so.
+#
+# Exit 0 = the door opened for a foreign key, refused every forgery, the presented admit read held, denied
+# and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, and the board closed
+# by supersession.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 REPO_ROOT=$(pwd)
@@ -87,13 +105,28 @@ if [ "$FAILED" -ne 0 ]; then
   say "ABANDONED — A's founding failed; every check below would measure an unfounded vessel."
   exit "$FAILED"
 fi
-run_a "A mints kahu 0"                  persona new 0 --name adc-0 --handle 'Kahu Alpha' --seat
-run_a "A mints kahu 1"                  persona new 1 --name adc-1 --handle 'Kahu Beta'  --seat
-run_a "A mints kahu 2"                  persona new 2 --name adc-2 --handle 'Kahu Gamma' --seat
+KAHU_KEYS=""
+for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
+  IFS=: read -r idx name handle <<<"$spec"
+  step "A mints kahu $idx"
+  if MINT=$(as_a persona new "$idx" --name "$name" --handle "$handle" --seat --json 2>&1); then
+    ok; KAHU_KEYS="$KAHU_KEYS${KAHU_KEYS:+,}$(printf '%s' "$MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)"
+  else bad "$?"; printf '%s\n' "$MINT" | tail -4 | sed 's/^/      /'; fi
+done
 step "A forges the pre-rotation reserve"
-if RESERVE=$(as_a nexus seal reserve --guardian-a 'guardian-a' --guardian-b 'guardian-b' 2>&1); then
-  ok; COMMIT=$(printf '%s' "$RESERVE" | grep -oE '[0-9a-f]{64}' | head -1)
-else bad "$?"; printf '%s\n' "$RESERVE" | tail -4 | sed 's/^/      /'; COMMIT=""; fi
+if RESERVE=$(as_a nexus seal reserve --guardian-a 'guardian-a' --guardian-b 'guardian-b' --json 2>&1); then
+  ok; RESERVE_COMMIT=$(printf '%s' "$RESERVE" | grep -oE '"nextKeyCommit":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+else bad "$?"; printf '%s\n' "$RESERVE" | tail -4 | sed 's/^/      /'; RESERVE_COMMIT=""; fi
+# ARM WITH WHAT THE ROTATE WILL REVEAL. The rotate reveals the three kahu standing in A's vault at the
+# majority threshold; the commit names exactly that set (see the header).
+step "A commits to the key-set the rotate will reveal"
+if COMMIT=$(as_a nexus seal commit --keys "$KAHU_KEYS" --threshold 2 --json 2>&1 | grep -oE '"digest":"[0-9a-f]{64}"' | cut -d'"' -f4) && [ -n "$COMMIT" ]; then
+  ok
+  if [ "$COMMIT" != "$RESERVE_COMMIT" ]; then
+    note "measured: the reserve's commit (${RESERVE_COMMIT:0:16}…) ≠ the standing roster's (${COMMIT:0:16}…)"
+    note "— a genesis armed with the reserve's commit fails the rotate's reveal."
+  fi
+else bad "no digest"; COMMIT=""; fi
 if [ -n "$COMMIT" ]; then
   run_a "A seats the genesis epoch"     nexus seal seat --next-key-commit "$COMMIT"
 else step "A seats the genesis epoch"; bad "no commit from reserve"; fi
@@ -174,8 +207,128 @@ else
   step "A's quorum admits a foreign key"; bad "no token captured"
 fi
 
-# ── ⑤ THE REFUSALS ───────────────────────────────────────────────────────────────────────────────
-say "⑤ the refusals — a gate only shown saying yes is no gate"
+# ── THE S6 HELPER — public reads over the BUILT dist, run inside one vessel's environment ─────────────
+# Written to the transfer dir, which links the node package's dependency tree so the bare specifiers
+# resolve to the same builds the binary runs. Every mode READS a vessel's replica and seal home; none writes.
+ln -s "$REPO_ROOT/packages/lararium-node/node_modules" "$XFER/node_modules"
+S6="$XFER/s6.mjs"
+cat > "$S6" <<'JSEOF'
+import { randomBytes } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
+import * as M from "@lararium/mesh";
+import { Repo } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+const D = `${process.env.REPO_ROOT}/packages/lararium-node/dist/src`;
+const { larSealHome, larDataDir } = await import(`${D}/vessel-paths.js`);
+const { readNexusDoc }            = await import(`${D}/nexus-doc.js`);
+const { nodeNexusIsland }         = await import(`${D}/nexus-standing.js`);
+const { heldNexusLeaves }         = await import(`${D}/nexus-leaf.js`);
+const { loadVesselVerifyingKey }  = await import(`${D}/node-vessel-identity.js`);
+
+/** This vessel's reading of the Nexus at its primary charter: roster head, board as deny board, antigen. */
+async function reading() {
+  const sealHome = larSealHome();
+  const doc    = readNexusDoc(sealHome);
+  const roster = M.foundingRoster(doc);
+  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome });
+  const repo   = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  try {
+    const board   = await M.materializeSharedLarDoc(repo, M.carriageDocUrl(island), "board:carriage-contracts");
+    const antigen = await M.materializeSharedLarDoc(repo, M.kapaeAntigenDocUrl(island), "board:kapae-antigen");
+    return { aid: M.realmIdOfCharter(doc), roster, denyBoard: M.carriageEntriesFromBoard(board.doc()),
+             antigen: M.antigenEntriesFromBoard(antigen.doc()), antigenRoster: roster };
+  } finally { await repo.flush().catch(() => {}); }
+}
+const verdictOf = async (p, r) => M.verifyPresentedAdmit({ admit: p.admit, lineage: p.lineage, roster: r.roster,
+  denyBoard: r.denyBoard, antigen: r.antigen, antigenRoster: r.antigenRoster, antigenVerifier: M.makeMultiSigQuorumVerifier() });
+const json = (f) => JSON.parse(readFileSync(f, "utf8"));
+const hex32 = () => randomBytes(32).toString("hex");
+
+const [mode, a1, a2] = process.argv.slice(2);
+switch (mode) {
+  case "present": {            // the presentation a nym's admit head makes off this replica
+    const r = await reading();
+    const p = await M.presentedAdmitFromBoard(r.denyBoard, a1, r.roster);
+    if (!p) { console.log("none"); process.exit(1); }
+    writeFileSync(a2, JSON.stringify(p));
+    console.log("captured");
+    break;
+  }
+  case "verdict": {            // verifyPresentedAdmit against this replica, as of now
+    console.log((await verdictOf(json(a1), await reading())).state);
+    break;
+  }
+  case "leafproof": {          // only the admit's own leaf proves it to a socket
+    const p = json(a1);
+    const aid = M.realmIdOfCharter(readNexusDoc(larSealHome()));
+    const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
+    if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
+    const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };
+    const proof = async (seed) => M.signLeafProof({ admit: p.admit, ...bind, sign: M.ed25519SignerFromSeed(seed) });
+    const honest = await M.verifyLeafProof({ presentedAdmit: { ...p, leafProof: await proof(leaf.seed) }, ...bind });
+    const forged = await M.verifyLeafProof({ presentedAdmit: { ...p, leafProof: await proof(randomBytes(32)) }, ...bind });
+    console.log(`honest=${honest} forged=${forged}`);
+    break;
+  }
+  case "wire": {               // one socket, one face: the admit never rides beside a root edge
+    const p = json(a1);
+    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), presentedAdmit: p };
+    console.log(`alone=${M.isLarAuthMsg(base)} beside-edge=${M.isLarAuthMsg({ ...base, edge: { deviceVerifyingKey: hex32() } })}`);
+    break;
+  }
+  case "challenge": {          // what a herm carrying this Nexus would emit
+    const r = await reading();
+    console.log(JSON.stringify(M.mintRaiseChallenge({ vesselId: hex32(), nexus: r.aid, epoch: 0, nonce: hex32() })));
+    break;
+  }
+  case "raise": {              // the door's verifier route over this replica's reading
+    const live = json(a1);
+    const grant = json(a2);
+    const r = await M.verifyRaiseGrant({ grant, live, readings: [await reading()],
+      verify: (nym, bytes, sig) => M.ed25519VerifyHex(sig, bytes, nym) });
+    console.log(r.ok ? `raised by=${r.caps.byNym}` : `refused ${r.why} ${r.detail}`);
+    break;
+  }
+  case "stranger-grant": {     // the same admit, carried by a key that is not its leaf
+    const live = json(a1);
+    const grant = json(a2);
+    const seed = randomBytes(32);
+    const byNym = M.hex(await (await import("@noble/ed25519")).getPublicKeyAsync(seed));
+    writeFileSync(a2 + ".stranger", JSON.stringify(await M.signRaiseGrant({
+      challenge: live, byNym, presentedAdmit: grant.presentedAdmit, sign: M.ed25519SignerFromSeed(seed) })));
+    console.log("written");
+    break;
+  }
+  default: console.error(`s6: unknown mode ${mode}`); process.exit(2);
+}
+JSEOF
+s6_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT=8097 LARES_ARCHIVE_PASSPHRASE_NEW="witness-A" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+s6_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT=8098 LARES_ARCHIVE_PASSPHRASE_NEW="witness-B" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+PRESENTED="$XFER/presented-admit.json"
+
+# ── ⑤ S6 — B's admit as a PRESENTATION ───────────────────────────────────────────────────────────────
+say "⑤ S6 — B's admit, presented"
+note "the presentation derives off A's board (presentedAdmitFromBoard) — what B presents once it holds the board"
+step "B's admit head and lineage derive off A's replica"
+if [ -n "$B_NYM" ] && out=$(s6_a present "$B_NYM" "$PRESENTED" 2>&1) && [ "$out" = "captured" ]; then ok
+else bad "${out:-no nym}"; fi
+
+step "★ (1) B's presented admit reads HELD at A ★"
+if [ -s "$PRESENTED" ] && [ "$(s6_a verdict "$PRESENTED" 2>&1)" = "held" ]; then ok
+else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
+
+step "★ (2) a leaf proof by ANOTHER key refuses — B's own leaf proves ★"
+# CONTROL inside the check: the honest proof by B's own leaf (derived in B's environment) must verify,
+# or a refusing forged proof would measure a verifier that refuses everything.
+LP=$(s6_b leafproof "$PRESENTED" 2>&1)
+if [ "$LP" = "honest=true forged=false" ]; then ok; else bad "$LP"; fi
+
+step "★ (5) the admit beside a root edge fails the wire guard ★"
+WG=$(s6_a wire "$PRESENTED" 2>&1)
+if [ "$WG" = "alone=true beside-edge=false" ]; then ok; else bad "$WG"; fi
+
+# ── ⑥ THE REFUSALS ───────────────────────────────────────────────────────────────────────────────
+say "⑥ the refusals — a gate only shown saying yes is no gate"
 step "a foreign nym with NO contract-in refuses"
 if as_a nexus contract 1111111111111111111111111111111111111111111111111111111111111111 --json 2>&1 | grep -q '"ok":true'; then
   bad "admitted without consent"; else ok; fi
@@ -187,33 +340,76 @@ if [ -n "$B_NYM" ]; then
     bad "a forged contract-in verified"; else ok; fi
 else bad "no nym"; fi
 
-step "★ a REPLAY across an epoch roll refuses ★"
-# The sharpest property: a contract-in binds to the epoch it consented under. Roll A's charter and the
-# old token must stop verifying — consent to one epoch is not consent to the next.
-if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
-  if ROT=$(as_a nexus seal rotate --json 2>&1); then
-    if as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"ok":true'; then
-      bad "a contract-in signed under the PRIOR epoch still verified"
-    else ok; fi
-  else
-    # A SKIP MUST CARRY THE REFUSAL IT ACTUALLY MET. A reason this harness invented would read as
-    # measured when nobody measured it — the same fabrication a vague suspension reason commits.
-    printf '\033[33mSKIPPED\033[0m\n'
-    note "the replay leg goes unwalked. The rotate refused with:"
-    printf '%s\n' "$ROT" | grep -oE '"message":"[^"]+"' | head -1 | cut -c12- | sed 's/"$//' | sed 's/^/      \x1b[90m/;s/$/\x1b[0m/'
-  fi
-else bad "no token"; fi
+# ── ⑦ THE RAISE DOOR (O9) — the verifier reads the presented admit ───────────────────────────────────
+say "⑦ the raise door — a leaf raises through its presented admit"
+note "A's kahu-0 consents as its own LEAF and A's quorum admits it, so A's replica holds a leaf admit to sign with"
+step "A's kahu-0 leaf is admitted on A's board"
+if SELF=$(as_a nexus accept-carriage --index 0 --json 2>&1); then
+  A_LEAF=$(printf '%s' "$SELF" | grep -oE '"nym":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  A_LEAF_SIG=$(printf '%s' "$SELF" | grep -oE '"contractSig":"[0-9a-f]+"' | head -1 | cut -d'"' -f4)
+  if as_a nexus contract "$A_LEAF" --sig "$A_LEAF_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
+  else bad "the leaf admit did not land"; fi
+else bad "$?"; A_LEAF=""; fi
 
-# ── ⑥ SUPERSESSION ───────────────────────────────────────────────────────────────────────────────
-say "⑥ closing — non-renewal, never deletion"
+CHALLENGE="$XFER/raise-challenge.json"; GRANT="$XFER/raise-grant.json"
+step "a challenge names A's Nexus by its AID"
+if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok; else bad "$(tail -1 "$CHALLENGE")"; fi
+
+step "lares raise sign signs as the LEAF, carrying its admit"
+if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2>&1 \
+   && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
+   && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
+else bad "$(tail -c 300 "$XFER/raise-sign.out")"; fi
+
+step "★ the door RAISES the leaf's grant ★"
+RAISE=$(s6_a raise "$CHALLENGE" "$GRANT" 2>&1)
+if [ "$RAISE" = "raised by=$A_LEAF" ]; then ok; else bad "$RAISE"; fi
+
+step "★ CONTROL: a stranger carrying the same admit refuses ★"
+if s6_a stranger-grant "$CHALLENGE" "$GRANT" >/dev/null 2>&1; then
+  STRANGER=$(s6_a raise "$CHALLENGE" "$GRANT.stranger" 2>&1)
+  case "$STRANGER" in "refused rejected signer-is-not-the-admit-leaf") ok ;; *) bad "$STRANGER" ;; esac
+else bad "no stranger grant"; fi
+
+# ── ⑧ SUPERSESSION ───────────────────────────────────────────────────────────────────────────────
+say "⑧ closing — non-renewal, never deletion"
 if [ -n "$B_NYM" ]; then
   run_sh_a "A revokes — the board SUPERSEDES" \
     "node '$LARES' nexus revoke '$B_NYM' --json | grep -q '\"memberHeld\":false'"
 else step "A revokes"; bad "no nym"; fi
 
+step "★ (3) a revoke descending from the admit reads DENIED ★"
+VD=$(s6_a verdict "$PRESENTED" 2>&1)
+if [ "$VD" = "denied" ]; then ok; else bad "$VD"; fi
+
+# ── ⑨ THE EPOCH ROLL ─────────────────────────────────────────────────────────────────────────────
+say "⑨ the epoch roll — consent to one epoch is not consent to the next"
+# THE CONTROL FIRST: before the roll, B's same token re-admits, so the refusal after the roll is the roll's.
+step "CONTROL: before the roll, B's token re-admits"
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
+else bad "the token did not re-admit before the roll"; fi
+
+step "A rotates the charter (the armed reveal)"
+if ROT=$(as_a nexus seal rotate --next-key-commit "$COMMIT" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
+
+step "★ a REPLAY across an epoch roll refuses ★"
+# The sharpest property: a contract-in binds to the epoch it consented under. Roll A's charter and the
+# old token must stop verifying — consent to one epoch is not consent to the next.
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
+  if as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"ok":true'; then
+    bad "a contract-in signed under the PRIOR epoch still verified"
+  else ok; fi
+else bad "no token"; fi
+
+step "★ (4) after the roll, the old admit reads WRONG-EPOCH ★"
+VE=$(s6_a verdict "$PRESENTED" 2>&1)
+if [ "$VE" = "wrong-epoch" ]; then ok; else bad "$VE"; fi
+
 say "═══ RESULT ═══"
 if [ "$FAILED" -eq 0 ]; then
-  echo "  the door opened for a key A never held, refused every forgery, and closed by supersession."
+  echo "  the door opened for a key A never held, refused every forgery, read the presented admit held,"
+  echo "  denied and wrong-epoch, raised a leaf through it, and closed by supersession."
   # THE CARRY NOW STANDS WALKED. `herm-mesh-witness` carries a dial across three hops between four
   # containers, pointer-signed and hash-matched at the last — so naming it unwalked here would send a
   # reader to build an instrument that already passes. What this witness still does NOT reach is the
