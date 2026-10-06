@@ -32,7 +32,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/syncer-back-parity"
 
 ''Register: Model-Standing.'' Every row below names the wire exchange it read — the request line the page issued and the status it got back. A row without one names itself as inference.
 
-The operator's words that opened this, verbatim: "we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there." <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> scouts the ISLAND side — the wire that never got built, where `$tw.syncer` never stands at all. This carrier scouts the other side: the stock syncer standing WHOLE, driving a stock `tiddlyweb` syncadaptor, against a plain `tiddlywiki --listen` that carries the packed plugin. <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">> holds the doors; this holds the LOOP that knocks on them.
+The operator's words that opened this, verbatim: "we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there." <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> holds the ISLAND side — one direct `change` listener (Road B, `packages/lararium-tw5/src/outbound-bridge.ts`), where `$tw.syncer` never stands at all. This carrier scouts the other side: the stock syncer standing WHOLE, driving a stock `tiddlyweb` syncadaptor, against a plain `tiddlywiki --listen` that carries the packed plugin. <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">> holds the doors; this holds the LOOP that knocks on them.
 
 ''The lab.'' The `meme-api-surface` lab plus the client/server sync pair a stock wiki folder carries:
 
@@ -192,6 +192,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1Z32slY_xDFGTStATcnKDhMgNLEUaj-ysWZJDsn4KQ8
+<<^ code="&#x0003;">>ni:///sha-256;MUmf4VmRFYPb7tZ90ooumHShaW0nQkNtrD33NB6vKn8
 
 <<^ code="&#x0004;" -> to="?">>

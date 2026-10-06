@@ -301,7 +301,7 @@ Every shrine on the Hebros road has a rule for this, and they are not the same r
 
 * ''RED (unit):'' `tests/meme-backstop.test.ts` — a slot child modified on the `change` bus, whose `$fragment-parent` names a standing root, causes the ROOT to re-place; a child whose parent does not stand causes nothing.
 * ''CURE:'' `src/modules/meme-backstop.ts:66` widens from "a record `framedRootOf` names" to "a record `framedRootOf` names, OR a record whose `$fragment-parent` names a standing root" — the latter re-placing the ROOT. Node-only, which is where every browser client's saves land, so the law reaches every client (`#/charm-reach`).
-* ''THE RISK, NAMED BEFORE IT IS BUILT:'' the re-place writes the children, `change` fires for them, and the backstop fires again. The existing `inFlight` set (`meme-backstop.ts:60`) is per-title and cleared in `finally` — it does not stop this. An echo law is REQUIRED, and it must be a SET or a COUNT, never a flag: `outbound-bridge.mem:78` measured that `change` dispatches AFTER the applying guard lowers, and `syncer.js:254-264` is stock's own answer (stamp the changeCount in the same synchronous stretch). The rhyme to copy is `recordLandedPacks` (`packages/lares-cli/src/ingest-core.ts:201`).
+* ''THE RISK, NAMED BEFORE IT IS BUILT:'' the re-place writes the children, `change` fires for them, and the backstop fires again. The existing `inFlight` set (`meme-backstop.ts:60`) is per-title and cleared in `finally` — it does not stop this. An echo law is REQUIRED, and it must be a SET or a COUNT, never a flag: `outbound-bridge.mem` `#/island-holds` measured that `change` dispatches AFTER the applying guard lowers, and `syncer.js:254-264` is stock's own answer (stamp the changeCount in the same synchronous stretch). The rhyme to copy is `recordLandedPacks` (`packages/lares-cli/src/ingest-core.ts:201`).
 * ''CONTROL (three, the third is the whole phase):'' a plain tiddler's change fires nothing; a child under an absent root fires nothing; ''the re-place's OWN writes fire nothing'' — a vector that counts backstop invocations across one child save and asserts exactly one.
 * ''WITNESS:'' unit; then e2e vector (b) at `:203` tightened — after a child save the server log carries exactly ONE `[memetic-wikitext]` line and the root's record re-cut.
 
@@ -349,7 +349,7 @@ Total: ''17.0 spirit-hours.''
 * ''No client law where a server law reaches.'' `syncer-back-parity.mem` `#/charm-reach`. This eats (d′-4) and holds (b′-5) unbuilt. The charm gains nothing in this plan but a narrower root law it already shares.
 * ''No invented bytes on a member's death.'' `deserializer.ts:1013` and <<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">> both rule AUGMENT + WRAP. Phase 4 adds a reading; it removes no authored line, unless the operator rules otherwise.
 * ''No grammar binding minted inside a plumbing cure.'' `<<~?` stays unbound until it is ruled on its own. A register that gains its first binding as a side effect of a delete-door fix has been defined by an accident.
-* ''No backstop widening without an echo law FIRST.'' `outbound-bridge.mem:78` measured the trap; Phase 5's third CONTROL is the phase.
+* ''No backstop widening without an echo law FIRST.'' `outbound-bridge.mem` `#/island-holds` measured the trap; Phase 5's third CONTROL is the phase.
 * ''No docker leg on any of these.'' Every seam here is one server and one browser; the docker mesh witnesses multi-node carriage and would witness nothing new. Naming the refusal so a later reader does not read its absence as an oversight.
 * ''No `$:/StoryList` work.'' Seam (f) is stock's own posture inherited whole and reads as a defect only when a plain server serves more than one reader. Out of scope; named so the first multi-reader lab does not read it as ours.
 
@@ -410,6 +410,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TPD6-dwpCtJkUC5ly8uP-2wX6zhEex4nJVljLGxmF3g
+<<^ code="&#x0003;">>ni:///sha-256;gkRTkQrPrBF5usfxg0ySekJuXXQb7YucuaJwS2iZzTQ
 
 <<^ code="&#x0004;" -> to="?">>

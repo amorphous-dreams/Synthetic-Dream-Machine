@@ -208,15 +208,15 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 !! The daemon wiki ~ the first one built, and no exception (operator ruling, 2026-09-02)
 
-''`@daemon` predates the ontology that grew around it'', and it stands today as the one wiki exempt from the laws every other wiki obeys. ''The ruling: it behaves like any other.'' It takes foreground sometimes, it will likely seed a canon-bag layer of its own, and the ordinary shape — instance mounts above, a write layer, a canon bag below — names the shape it should wear.
+''`@daemon` predates the ontology that grew around it''. ''The ruling: it behaves like any other.'' It takes foreground sometimes, it will likely seed a canon-bag layer of its own, and the ordinary shape — instance mounts above, a write layer, a canon bag below — names the shape it should wear.
 
-!!! Its role, and why the exemption costs something
+!!! Its role, and why it must land on disk
 
-''`@daemon` HOLDS THE WORKING-MEMORY STAGE'': the surface an operator and an agent share, belonging to ''no other composed knowledge domain''. Every other wiki concerns something; this one holds the place two minds leave things for each other before either knows where they belong. That precisely explains why the exemption costs rather than merely looking untidy — ''the one place work crosses between hands lands nothing on disk to read, diff or commit''.
+''`@daemon` HOLDS THE WORKING-MEMORY STAGE'': the surface an operator and an agent share, belonging to ''no other composed knowledge domain''. Every other wiki concerns something; this one holds the place two minds leave things for each other before either knows where they belong. That explains why an exemption would cost rather than merely look untidy — ''the one place work crosses between hands must land on disk to read, diff or commit''.
 
-!!! What the exemption actually amounts to
+!!! How it stands
 
-The recipe holds no gap. `expandRecipe` mints the same five slots for every slug, `daemon` included; the slots ''prune for want of a handle'' because the vessel grants the daemon `islandUrl`, `wikiUrl` and `catalogUrl` and no instance slots. So the write layer falls back to the daemon's OWN bag — the one arrangement #write-law names a degraded act everywhere else — and the mirror config excludes `daemon` outright.
+The recipe holds no gap. `expandRecipe` mints the same five slots for every slug, `daemon` included; at open the draft, working and personal slots ''prune for want of a handle'' because the vessel grants the daemon `islandUrl`, `wikiUrl` and `catalogUrl` alone. The daemon's own behavior then LATE-ATTACHES `wikis/daemon/working` (`attachDaemonWorking`, `packages/lararium-keyhive/src/operator-daemon-behavior.ts`) as the default writable, so the write layer leaves the daemon's OWN bag behind (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>, `#/as-mounted`). On a node the working layer projects to `wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors` ← `daemonWorkingMirror`, mounted by `node-daemon-island.ts`'s `onBoot`; witness `packages/lararium-node/tests/daemon-working-mirror.test.ts`), while `bags/daemon` carries no mirror.
 
 !!! What closing it must respect
 
@@ -341,6 +341,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YLpVXS5ffn8rAUh57LW-KZ8I1WL0i4KjK7XkeJxPtCI
+<<^ code="&#x0003;">>ni:///sha-256;Is4QpHxvZL17kx9zG0OOS_wBY3OQw6gdynp4Kyx7Mhs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -36,7 +36,7 @@ This module is the in-wiki embodiment of the nalu wave.
 |---|---|---|
 | `enqueueNalu(change)` | IslandAdaptor (per inbound LarTiddlerChange) | Push onto the shared queue, schedule next-frame drain |
 | `flushNalu(budget?)` | `buildIslandRecipe` (after initial replay), tests | Drain synchronously up to `budget` (default 200) |
-| `isApplyingNalu()` | IslandAdaptor (outbound `saveTiddler` / `deleteTiddler`) | True while the engine holds the apply-time mutex; outbound guards skip |
+| `isApplyingNalu()` | IslandAdaptor (outbound `saveTiddler` / `deleteTiddler`) | True while the engine holds the apply-time mutex; a SYNCHRONOUS outbound call skips. A `change` listener never reads it raised — see N-4 |
 | `naluPending()` | tests, observability | Current queue depth |
 
 !! Position in the stack
@@ -77,7 +77,11 @@ without rAF fall back to setTimeout transparently.
 `_applying` is `true` for the duration of one `_drain` call's `wiki.transact()` block,
 including synchronous reactions fired by widgets observing the change. IslandAdaptor's
 outbound `saveTiddler` / `deleteTiddler` check `isApplyingNalu()` before writing —
-suppresses any cascade echo that would re-enter the store.
+suppresses a synchronous echo that would re-enter the store. TW5 dispatches `change` on `nextTick`,
+after the drain's `finally` lowered the flag, so the outbound bridge (`outbound-bridge.ts`) carries
+its own echo law: it wraps `enqueueNalu` so every inbound title enters the adaptor's SET
+(`noteInbound`) and skips a title `consumeInbound` names, once
+([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]] #/island-holds).
 
 ''N-5 Tiddler fields = record.tiddler + bag.''
 For a non-tombstone change, the engine constructs the wiki fields from
@@ -156,6 +160,6 @@ transact per frame (crest). WITNESSED: the queue (`nalu-engine.ts`) + the shore 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xoUg1Y6icgaWYUqAE5wpE3R9j0nxf_3O8IilZGe8CtU
+<<^ code="&#x0003;">>ni:///sha-256;rtFwrZ68-c2VcDBknIjoY_UF1q_zm7yVHi-NDkb537Y
 
 <<^ code="&#x0004;" -> to="?">>

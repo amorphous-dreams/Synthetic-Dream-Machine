@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lararium/api/island-adaptor"
 
 `IslandAdaptor` provides the narrow TS shore between `CompositeStore` and the wiki.
 It implements `MemeProjection` (inbound) and exposes `saveTiddler` / `deleteTiddler` (outbound).
-It does NOT implement the TW5 `syncadaptor` module contract — `$tw.syncer` does not run.
+It does NOT implement the TW5 `syncadaptor` module contract — `$tw.syncer` does not run. The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`, stood per island in `sovereign-kernel.ts`) carries every live `$tw.wiki` `change` to `saveTiddler` / `deleteTiddler` ([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]]).
 
 Under the yin-collapse law (lar:///ha.ka.ba/lares/api/pono/nalu), the wiki IS the
 reactive engine. The adaptor's responsibility collapsed to shore work that TW5 cannot
@@ -41,9 +41,11 @@ edits to `store.put` / `store.tombstone`.
 | Cross-bag tombstone resolution (`store.getLive` across recipe layers) | IslandAdaptor |
 | Forward inbound `LarTiddlerChange` → `$tw.lares.enqueueNalu` | IslandAdaptor |
 | Unified queue + per-frame `wiki.transact()` drain | nalu-engine (in-wiki) |
-| Outbound `saveTiddler` (400 ms debounce + Path-H auto-split) → `store.put` | IslandAdaptor |
-| Outbound `deleteTiddler` → `store.tombstone` | IslandAdaptor |
-| Echo guard for outbound during drain | `$tw.lares.isApplyingNalu()` |
+| Carry a live wiki `change` to `saveTiddler` / `deleteTiddler` | the outbound bridge (`outbound-bridge.ts`) |
+| Outbound `saveTiddler` (400 ms debounce + Path-H auto-split) → `store.put` in the bag the cascade names | IslandAdaptor |
+| Outbound `deleteTiddler` → `tombstoneInBag` in the last-known slot | IslandAdaptor |
+| Echo law for a `change` that an inbound apply fired | the inbound SET: `noteInbound` (filled at `enqueueNalu`'s door) · `consumeInbound` · `endInboundBurst` |
+| Echo guard for a synchronous caller during a drain | `$tw.lares.isApplyingNalu()` |
 
 !! Wiring — One Projection, Not Two
 
@@ -74,12 +76,12 @@ Every inbound change — `crdt-remote`, `canon-hydrate`, `lares-verb` — flows 
 applies one `wiki.transact()` per frame regardless of origin mix.
 
 ''I-4 Outbound guards — saveTiddler.''
-Skip if: `$tw.lares.isApplyingNalu()` || `$:/temp/` || `$:/` || `Draft of ` || not `lar:` prefix.
-All other `lar:` URIs reach `store.put()` via the Path-H auto-split (`splitBodyTiddler`).
+Skip if: `$tw.lares.isApplyingNalu()` || the title names the volatile VM plane (`isVolatileVmUri`, refused ahead of any cascade edit) || the bag-paths cascade withholds it (`_destination` answers `null`).
+Everything else routes BY KIND through the cascade (`lar-bag-paths.tid`): a `draft.of` tiddler to the draft slot, `$:/temp/*` and most `$:/state/*` to the temp store, the catch-all to `current-wiki-bag`; the write reaches `store.put()` via the Path-H auto-split (`splitBodyTiddler`) and feeds the last-known-slot map (`_slotOf`).
 
 ''I-5 Outbound guards — deleteTiddler.''
-Skip if: `$tw.lares.isApplyingNalu()` || `$:/temp/` || `$:/` || not `lar:` prefix.
-On a passing delete: `store.tombstone()` fires, then ahu fragment-parent children
+Skip if: `$tw.lares.isApplyingNalu()` || the title names the volatile VM plane || neither `_slotOf` nor the cascade names a slot.
+A delete routes LIKE A SAVE: the last-known-slot map answers first (the tiddler has gone, so no field can be read), the cascade's title read second; the tombstone lands in that slot (`tombstoneInBag`), then ahu fragment-parent children
 get removed from the wiki directly (outbound housekeeping, not a drain operation).
 
 ''I-6 onSyncComplete is observability-only.''
@@ -110,6 +112,6 @@ its seed state synchronously before `behavior.onEa` runs.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PwKMalkOeuD7qbUaQe1JjDQ97R-zACLyRJ4O5mHO9kQ
+<<^ code="&#x0003;">>ni:///sha-256;LfBgXb5vk_o92o_0KWCDhQCjb1MG7DlaWpOt8sK15Bg
 
 <<^ code="&#x0004;" -> to="?">>
