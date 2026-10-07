@@ -8,7 +8,7 @@
   unregisters, exports, or modifies a nonselected distro.
 
   -DryRun shows the plan without writes.
-  -Distro optionally names the WSL distro the sparse opt-in and the inventory select.
+  -Distro optionally names the WSL distro the sparse opt-in selects.
   -Sparse opts into sparse vhdx allocation. WSL 2.5.6+ gates sparse VHDs behind --allow-unsafe
           and prints "sparse VHD support is currently disabled due to potential data corruption";
           without -Sparse the script neither writes sparseVhd nor runs --set-sparse.
@@ -48,7 +48,7 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
   & $pwsh @forward
   exit $LASTEXITCODE
 } elseif ($pwsh) {
-  Already "pwsh present at $pwsh; staying in $($PSVersionTable.PSVersion) because this run has no script path to hand over (dot-sourced or piped)"
+  Already "pwsh present; staying in $($PSVersionTable.PSVersion) (no script path to relaunch)"
 } else {
   Need "install PowerShell 7: winget install --id Microsoft.PowerShell --source winget   (continuing under Windows PowerShell $($PSVersionTable.PSVersion))"
 }
@@ -65,7 +65,7 @@ $hostGB = [math]::Round($computer.TotalPhysicalMemory / 1GB)
 $processors = @(Get-CimInstance Win32_Processor)
 $cpus = ($processors | Measure-Object NumberOfLogicalProcessors -Sum).Sum
 if ($computer.HypervisorPresent) {
-  Already 'hypervisor running - Virtual Machine Platform active, firmware virtualization on'
+  Already 'hypervisor present'
 } elseif (($processors | Where-Object { $_.VirtualizationFirmwareEnabled -eq $false }).Count -gt 0) {
   Need 'enable virtualization (Intel VT-x / AMD-V, often named SVM) in UEFI/BIOS setup; Task Manager > Performance > CPU shows "Virtualization: Disabled" until then'
 } else {
@@ -81,10 +81,8 @@ if (-not $wslCmd) {
   Need 'wsl.exe missing - in an Administrator PowerShell run  wsl --install --no-distribution  then restart Windows'
 } elseif (-not $wslVersion) {
   Need 'wsl --version did not answer (inbox WSL) - run  wsl --update  to move to the Store build, which carries --manage and systemd support'
-} elseif ($wslVersion -lt [version]'2.5.6') {
-  Need "WSL $wslVersion - run  wsl --update  (2.5.6+ carries the --allow-unsafe sparse gate this script speaks; Docker Desktop asks for 2.1.5+)"
 } else {
-  Already "WSL $wslVersion (Store build; wsl --update keeps it current)"
+  Already "WSL $wslVersion"
 }
 $lxssRootPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss'
 $lxssRoot = Get-ItemProperty $lxssRootPath -ErrorAction SilentlyContinue
@@ -92,7 +90,7 @@ $lxss = Get-ChildItem $lxssRootPath -ErrorAction SilentlyContinue |
   ForEach-Object { Get-ItemProperty $_.PSPath } |
   Where-Object { $_.DistributionName -and $_.BasePath }
 
-# The selection is the registered default or the -Distro name, never a guess from the inventory.
+# The selection is the registered default or the -Distro name, never a guess from the registry listing.
 if (-not $Distro) {
   $defaultGuid = [string]$lxssRoot.DefaultDistribution
   $selected = @($lxss | Where-Object { $_.PSChildName -eq $defaultGuid }) | Select-Object -First 1
@@ -117,11 +115,12 @@ $utf8 = New-Object System.Text.UTF8Encoding($false)
 $sections = [ordered]@{}; $order = @(); $preamble = @(); $cur = ''; $linkTarget = ''
 if (Test-Path -LiteralPath $cfgPath) {
   # A symlink (some dotfiles managers keep one) reads through to its target, but the move below would replace the
-  # link with a plain file and the manager's next sync would drop these keys again; the writer refuses it.
-  $linkTarget = [string](Get-Item -LiteralPath $cfgPath -Force).Target
-  if ($linkTarget) {
-    Need "$cfgPath is a link to $linkTarget; the writer would replace the link with a plain file - apply the plan to the target by hand, or make .wslconfig a plain file, then re-run"
-    if (-not $DryRun) { throw "$cfgPath is a link; stopping before the write (run with -DryRun for the plan)" }
+  # link with a plain file and the manager's next sync would drop these keys again; a read-only file marks an
+  # operator's hold the writer must not clear. The writer refuses both.
+  $cfgItem = Get-Item -LiteralPath $cfgPath -Force
+  if ([string]$cfgItem.Target -or ($cfgItem.Attributes -band [IO.FileAttributes]::ReadOnly)) {
+    Need "$cfgPath is a link or read-only; the writer will not follow or clear it - apply the plan by hand, or change it, then re-run"
+    if (-not $DryRun) { throw "$cfgPath is a link or read-only; stopping before the write (run with -DryRun for the plan)" }
   }
   foreach ($line in [IO.File]::ReadAllLines($cfgPath, $utf8)) {
     # ReadAllLines honors a UTF-16 byte-order mark; without one every letter grows a NUL, every key reads unset, and ours would be appended to the wreck.
@@ -130,6 +129,13 @@ if (Test-Path -LiteralPath $cfgPath) {
     elseif ($cur) { $sections[$cur] += $line }
     else { $preamble += $line }
   }
+}
+# Trailing blank lines of every section fall away once here; the writer puts one blank after each section back.
+foreach ($sec in @($sections.Keys)) {
+  $body = @($sections[$sec]); $n = $body.Count
+  while ($n -gt 0 -and [string]::IsNullOrWhiteSpace($body[$n - 1])) { $n-- }
+  # assigned as @(...) on each branch: an if-expression would hand a one-line body back as a string
+  if ($n -gt 0) { $sections[$sec] = @($body[0..($n - 1)]) } else { $sections[$sec] = @() }
 }
 $changed = $false
 foreach ($sec in $want.Keys) {
@@ -152,36 +158,24 @@ foreach ($sec in $want.Keys) {
       }
     } else {
       $changed = $true
-      Act "[$sec] $key=$value (was unset)" {
-        $body = @($sections[$sec]); $n = $body.Count
-        while ($n -gt 0 -and [string]::IsNullOrWhiteSpace($body[$n - 1])) { $n-- }
-        $head = if ($n -gt 0) { $body[0..($n - 1)] } else { @() }
-        $tail = if ($n -lt $body.Count) { $body[$n..($body.Count - 1)] } else { @() }
-        $sections[$sec] = @($head) + "$key=$value" + @($tail)
-      }
+      Act "[$sec] $key=$value (was unset)" { $sections[$sec] += "$key=$value" }
     }
   }
 }
 if ($changed -and -not $DryRun) {
   $out = @($preamble)
-  foreach ($sec in $order) {
-    $body = @($sections[$sec]); $n = $body.Count
-    while ($n -gt 0 -and [string]::IsNullOrWhiteSpace($body[$n - 1])) { $n-- }
-    $out += "[$sec]"
-    if ($n -gt 0) { $out += $body[0..($n - 1)] }
-    $out += ''
-  }
+  foreach ($sec in $order) { $out += "[$sec]"; $out += @($sections[$sec]); $out += '' }
   # The text lands on a sibling temp file first; the previous file is copied to .wslconfig.bak, then the temp moves
-  # into place. A failure before the move (a read-only .bak included) leaves .wslconfig as it was and takes the temp with it.
+  # into place. A failure before the move leaves .wslconfig as it was and takes the temp with it.
   $tmp = "$cfgPath.tmp"; $bak = "$cfgPath.bak"
   try {
     [IO.File]::WriteAllText($tmp, (($out -join "`r`n") + "`r`n"), $utf8)
-    if (Test-Path -LiteralPath $cfgPath) { [IO.File]::Copy($cfgPath, $bak, $true) }
+    if (Test-Path -LiteralPath $cfgPath) { Copy-Item -LiteralPath $cfgPath -Destination $bak -Force }
     Move-Item -LiteralPath $tmp -Destination $cfgPath -Force
     Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file, if any, kept as $bak)"
   } catch {
     # The set lines above were printed as the plan was merged; a failed copy or move leaves the file as it was.
-    Need "$cfgPath kept as it was; the set lines above did not land - $($_.Exception.Message) (a read-only $bak or $cfgPath blocks it)"
+    Need "$cfgPath kept as it was; the set lines above did not land"
     throw
   } finally {
     if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
@@ -195,13 +189,16 @@ if (-not $Distro) {
   Need 'no default WSL distro is registered; install one with wsl --install -d <DistroName>, or name one with -Distro'
 } elseif (-not $work) {
   # A -Distro name the registry does not carry reads needs-you with or without -Sparse: a typo must not pass as already.
-  Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
-} elseif ($Distro -like 'docker-desktop*') {
-  # Docker Desktop owns its distros; the inventory names them Docker-managed, and -Distro does not override that. The
-  # check sits ahead of the -Sparse gate so a Docker-managed default is never offered diskpart compact on Desktop's disk.
-  Need "'$Distro' is Docker-managed; this runbook sets no Docker Desktop distro sparse - name the Linux distro with -Distro, or wsl --set-default <name>"
+  $registered = @($lxss | Sort-Object DistributionName | ForEach-Object { [string]$_.DistributionName }) -join ', '
+  Need "distro '$Distro' is not registered (registered: $registered); pass -Distro with an exact name"
+} elseif ($Distro -match '^(docker-desktop|rancher-desktop|podman-machine)') {
+  # A desktop tool owns its distros, and -Distro does not override that. The check sits ahead of the -Sparse gate so a
+  # tool-managed default is never set sparse under the tool's feet.
+  Need "'$Distro' is tool-managed; this runbook sets no tool-managed distro sparse - name the Linux distro with -Distro, or wsl --set-default <name>"
 } elseif (-not $Sparse) {
-  Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe) - $vhd left as found; the safe reclaim is diskpart compact, see the runbook"
+  Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe) - $vhd left as found"
+} elseif ($Sparse -and (-not $wslVersion -or $wslVersion -lt [version]'2.5.6')) {
+  Need "sparse needs WSL 2.5.6 or later (wsl --update); nothing run"
 } elseif (-not (Test-Path -LiteralPath $vhd)) {
   # -LiteralPath: a base path holding [ or ] would otherwise read as a wildcard and the vhdx as absent.
   Need "'$Distro' has no ext4.vhdx at its registered base path"
@@ -209,10 +206,9 @@ if (-not $Distro) {
   $sizeGB = [math]::Round((Get-Item -LiteralPath $vhd).Length / 1GB, 1)
   if ((Get-Item -LiteralPath $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
   else {
-    $listing = Read-Wsl @('-l', '-v')
-    $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
-    if (-not $state) { Need "wsl -l -v did not list '$Distro'; inspect it before using wsl --manage '$Distro' --set-sparse true --allow-unsafe" }
-    elseif ($state -match 'Running') { Need "run wsl --shutdown, then re-run with -Sparse to set '$Distro' sparse ($sizeGB GB on disk)" }
+    # `--running -q` lists names alone, locale-free; the registry already proved registration, so an exact-name match decides.
+    $running = @((Read-Wsl @('-l', '--running', '-q')) -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($running -contains $Distro) { Need "run wsl --shutdown, then re-run with -Sparse to set '$Distro' sparse ($sizeGB GB on disk)" }
     else {
       Need "you accepted Microsoft's warning by passing -Sparse: 'sparse VHD support is currently disabled due to potential data corruption'"
       Act "wsl --manage '$Distro' --set-sparse true --allow-unsafe" { wsl.exe --manage $Distro --set-sparse true --allow-unsafe | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE" } }
@@ -220,14 +216,5 @@ if (-not $Distro) {
   }
 }
 
-Step '3 | registered distros - inventory only'
-foreach ($d in ($lxss | Sort-Object DistributionName)) {
-  $name = [string]$d.DistributionName
-  if ($name -eq $Distro) { Already "$name (selected)" }
-  elseif ($name -like 'docker-desktop*') { Already "$name (Docker-managed)" }
-  else { Already "$name (left untouched)" }
-}
-
 Write-Host ''
-$selectedLabel = if ($Distro) { $Distro } else { '<none>' }
-Write-Host "host: $hostGB GB | $cpus threads | Windows account: $env:USERNAME | selected distro: $selectedLabel | sparse opt-in=$Sparse | dry-run=$DryRun"
+Write-Host "host: $hostGB GB | $cpus threads | Windows account: $env:USERNAME | selected distro: $(if ($Distro) { $Distro } else { '<none>' })"

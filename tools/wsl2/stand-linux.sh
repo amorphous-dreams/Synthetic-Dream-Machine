@@ -55,8 +55,8 @@ apt_install() { sudo env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -q
 # argument, never inside the shell text.
 own_file() { sudo sh -c 'mkdir -p "${1%/*}" && printf "%s\n" "$2" > "$1"' _ "$1" "$2"; }
 
-if ! grep -qi microsoft /proc/version; then
-  echo 'not WSL2 — nothing to stand'
+if ! grep -q 'microsoft-standard' /proc/version; then
+  echo 'not WSL2 — nothing to stand (a WSL 1 distro? from Windows: wsl --set-version <DistroName> 2)'
   exit 0
 fi
 if ! command -v apt-get >/dev/null; then
@@ -141,11 +141,22 @@ want_ini() {
   WSLCONF_CHANGED=1
   act "[$sec] $key=$val (was '$was')" sudo python3 -c "$INI_PY" "$WSLCONF" "$sec" "$key" "$val" write
 }
-want_ini boot systemd true
-# `id -un` names the account the kernel runs this shell as; $USER is an inherited string any profile may reset.
-want_ini user default "$(id -un)"
-want_ini interop enabled true
-want_ini interop appendWindowsPath false
+if [[ -r "$WSLCONF" || ! -e "$WSLCONF" ]]; then
+  want_ini boot systemd true
+  # `id -un` names the account the kernel runs this shell as; $USER is an inherited string any profile may reset.
+  # A [user] default that already names another account is a login choice this stand does not reassign.
+  me=$(id -un)
+  cur_default=$(python3 -c "$INI_PY" "$WSLCONF" user default "$me" read)
+  if [[ "$cur_default" != unset && "$cur_default" != "$me" ]]; then
+    need "[user] default=$cur_default names another account; this stand does not reassign the login user — run as $cur_default, or change [user] default by hand"
+  else
+    want_ini user default "$me"
+  fi
+  want_ini interop enabled true
+  want_ini interop appendWindowsPath false
+else
+  need "$WSLCONF is not readable by $(id -un); the stand reads it unprivileged — chmod 644, then re-run"
+fi
 
 step '3 · earlyoom — keep a runaway process from freezing the VM'
 if pkg_installed earlyoom; then already 'earlyoom installed'
@@ -161,7 +172,7 @@ earlyoom_apply() { own_file "$EARLYOOM_DROPIN" "$EARLYOOM_UNIT" && sudo systemct
 # The file alone does not prove the thresholds: a restart that failed after the write leaves the daemon on
 # the old line, so an active daemon must also show `-m 5` on its command line before the step reads already.
 earlyoom_live_ok() {
-  [[ "$(systemctl is-active earlyoom 2>/dev/null)" == active ]] || return 0
+  [[ "$earlyoom_active" == active ]] || return 0
   tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom 2>/dev/null)"/cmdline 2>/dev/null | grep -q -- '-m 5 '
 }
 # Without systemd as PID 1 (/run/systemd/system absent: the first run before step 2's wsl --shutdown) every
@@ -169,59 +180,66 @@ earlyoom_live_ok() {
 # only the operator can end.
 if [[ ! -d /run/systemd/system ]]; then
   need 'systemd is not running this distro yet: wsl --shutdown from Windows, then re-run — the earlyoom service and its thresholds wait on it'
-elif [[ "$(cat "$EARLYOOM_DROPIN" 2>/dev/null)" == "$EARLYOOM_UNIT" ]] && earlyoom_live_ok; then
-  already "earlyoom thresholds ($EARLYOOM_DROPIN)"
 else
-  act "earlyoom thresholds (-m 5 -s 50) via $EARLYOOM_DROPIN" earlyoom_apply
+  earlyoom_active=$(systemctl is-active earlyoom 2>/dev/null)
+  if [[ "$(cat "$EARLYOOM_DROPIN" 2>/dev/null)" == "$EARLYOOM_UNIT" ]]; then
+    if earlyoom_live_ok; then
+      already "earlyoom thresholds ($EARLYOOM_DROPIN)"
+    # Our drop-in is in place and the daemon still runs the old line: one restart; a line that still lacks
+    # -m 5 names a later-sorting drop-in that overrides ExecStart, which a rewrite of ours would never change.
+    elif (( DRY )); then
+      plan 'systemctl restart earlyoom (drop-in in place, running line lacks -m 5)'
+    elif sudo systemctl daemon-reload && sudo systemctl restart earlyoom && earlyoom_live_ok; then
+      set_ 'earlyoom thresholds (restarted)'
+    else
+      need "the drop-in is in place but earlyoom still runs without -m 5; a later drop-in overrides ExecStart:  systemctl cat earlyoom"
+    fi
+  else
+    act "earlyoom thresholds (-m 5 -s 50) via $EARLYOOM_DROPIN" earlyoom_apply
+  fi
+  if [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$earlyoom_active" == active ]]; then
+    already 'earlyoom enabled + active'
+  else act 'systemctl enable --now earlyoom' sudo systemctl enable --now earlyoom; fi
 fi
-if [[ ! -d /run/systemd/system ]]; then :
-elif [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
-  already 'earlyoom enabled + active'
-else act 'systemctl enable --now earlyoom' sudo systemctl enable --now earlyoom; fi
 
 step '4 · vm.swappiness=10 — reserve swap for a short recovery window'
 SYSCTL=/etc/sysctl.d/90-wsl-swap.conf
 SYSCTL_LINE='vm.swappiness=10'
-sysctl_apply() { own_file "$SYSCTL" "$SYSCTL_LINE" && sudo sysctl -q --system; }
-swappiness=$(sysctl -n vm.swappiness 2>/dev/null)
-if [[ "$swappiness" == 10 && "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]; then
+# The file is written only when its content differs; the re-apply runs either way, since without systemd
+# nothing applies sysctl.d at boot. A dry run cannot re-apply, so it plans rather than sending the operator
+# after an override that may not exist; a live value that still differs after the apply names one.
+sysctl_apply() {
+  { [[ "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]] || own_file "$SYSCTL" "$SYSCTL_LINE"; } && sudo sysctl -q --system >/dev/null 2>&1
+}
+if [[ "$(sysctl -n vm.swappiness 2>/dev/null)" == 10 && "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]; then
   already "vm.swappiness=10 ($SYSCTL)"
-elif [[ "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]; then
-  # Our file is in place and still loses. Without systemd nothing applies sysctl.d at boot, so one re-apply
-  # comes first; a value that still differs names a later sysctl.d file or /etc/sysctl.conf. A rewrite would change nothing.
-  # A dry run cannot re-apply, so it plans the re-apply rather than sending the operator after an override that may not exist.
-  if (( DRY )); then
-    plan "sysctl --system (re-apply $SYSCTL; vm.swappiness reads ${swappiness:-unreadable})"
-  elif sudo sysctl -q --system >/dev/null 2>&1 && [[ "$(sysctl -n vm.swappiness 2>/dev/null)" == 10 ]]; then
-    set_ "vm.swappiness=10 (re-applied $SYSCTL)"
-  else
-    need "vm.swappiness reads ${swappiness:-unreadable} though $SYSCTL asks for 10; find the override:  grep -rn swappiness /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d"
-  fi
 else
   act "vm.swappiness=10 via $SYSCTL" sysctl_apply
+  if (( ! DRY )) && [[ "$(sysctl -n vm.swappiness 2>/dev/null)" != 10 ]]; then
+    need "vm.swappiness still reads $(sysctl -n vm.swappiness 2>/dev/null || echo unreadable) though $SYSCTL asks for 10; find the override:  grep -rn swappiness /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d"
+  fi
 fi
 
 step '5 · Node and pnpm — repository toolchain'
-node_major=0
-if command -v node >/dev/null 2>&1; then node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0); fi
+node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null)
 nvm_unloaded=0
 if [[ "$node_major" =~ ^[0-9]+$ ]] && (( node_major >= 24 )); then
   already "node $(node --version)"
-elif [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]]; then
+elif [[ -z "$node_major" && -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]]; then
   # A hook or non-login shell carries no nvm PATH, so node reads absent on a machine that has it; the stand
   # stays a reader of the shell it was given rather than sourcing nvm.sh itself.
   nvm_unloaded=1
   need "nvm is installed (${NVM_DIR:-$HOME/.nvm}) but this shell did not load it: re-run from a login shell, or one that sourced ~/.nvm/nvm.sh, with Node 24 as nvm's default"
 else
   # Ubuntu's apt nodejs lags far behind 24; Microsoft's WSL guide recommends nvm (per-user, no sudo, no third-party apt repo).
-  need 'install Node.js 24 via nvm (Microsoft WSL guidance), then open a new terminal and re-run:'
+  need 'Node 24+ does not answer here; install it via nvm (Microsoft WSL guidance):'
   need '  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash'
-  need '  source ~/.nvm/nvm.sh && nvm install 24 && nvm alias default 24'
+  need '  source ~/.nvm/nvm.sh && nvm install 24 && nvm alias default 24, then open a new terminal and re-run'
 fi
 if command -v corepack >/dev/null 2>&1; then
   if command -v pnpm >/dev/null 2>&1; then
     # The corepack shim fetches pnpm on its first run; a read (and a dry run) must not reach the network.
-    pnpm_ver=$(COREPACK_ENABLE_NETWORK=0 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version 2>/dev/null </dev/null) || pnpm_ver='corepack shim; the first pnpm command downloads pnpm 10 (engines ask >=9)'
+    pnpm_ver=$(COREPACK_ENABLE_NETWORK=0 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version 2>/dev/null </dev/null) || pnpm_ver='via corepack shim (fetched on first use)'
     already "pnpm $pnpm_ver"
   else act 'corepack enable (exposes pnpm)' corepack enable; fi
 elif (( ! nvm_unloaded )); then
@@ -234,11 +252,9 @@ if command -v docker >/dev/null 2>&1; then
   # `docker info` blocks on a dead Docker Desktop proxy socket; bound the read.
   if timeout 15 docker info >/dev/null 2>&1; then already "docker $(docker --version | sed 's/,.*//') reachable"
   elif [[ -S "$DOCKER_SOCK" && ! -w "$DOCKER_SOCK" ]]; then
-    # The member list is read whole-name: `grep -w jo` would also pass on `jo-admin`, and $USER is any profile's string.
-    if getent group docker | cut -d: -f4 | tr ',' '\n' | grep -qxF -- "$(id -un)"; then need 'the docker group joined after this shell started: open a new terminal and re-run'
-    else need 'the daemon refuses this user:  sudo usermod -aG docker "$USER"  then open a new terminal and re-run'; fi
+    need 'the daemon refuses this user:  sudo usermod -aG docker "$USER"  (a no-op if already a member) then open a new terminal and re-run'
   elif [[ "$(systemctl is-active docker 2>/dev/null)" == active ]]; then need "docker runs but $DOCKER_SOCK did not answer in 15 s; read: journalctl -u docker -n 20"
-  elif pkg_installed docker.io; then need 'docker.io is installed but its daemon sleeps:  sudo systemctl enable --now docker   (needs systemd=true; run wsl --shutdown first when step 2 changed /etc/wsl.conf)'
+  elif pkg_installed docker.io || pkg_installed docker-ce; then need 'docker.io is installed but its daemon sleeps:  sudo systemctl enable --now docker   (needs systemd=true; run wsl --shutdown first when step 2 changed /etc/wsl.conf)'
   else need 'docker here is Docker Desktop'"'"'s integration and Desktop is not running: start Docker Desktop, or install the in-distro engine:  sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod -aG docker "$USER"'; fi
 else
   need 'install Docker Engine from Ubuntu (works on Windows Home, no Docker Desktop):  sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod -aG docker "$USER"  then open a new terminal and re-run'
@@ -267,10 +283,11 @@ if [[ -f "$REPO/requirements.txt" ]]; then
 fi
 
 step '7 · witness'
-# The Windows half (memory=, swap=, pwsh) reads through the witness alone; its exit code carries the drift,
-# and any FAILED step above: a hook that gates on 0 must not start agents over a step that printed FAILED
-# and a witness that happened to read green.
-(( WSLCONF_CHANGED )) && need 'run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'
+# The Windows half (memory=, swap=, pwsh) reads through the witness alone.
+if (( WSLCONF_CHANGED )); then
+  if (( DRY )); then plan 'wsl --shutdown after the write'
+  else need 'run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'; fi
+fi
 bash "$SELF_DIR/witness.sh"; witness_rc=$?
 (( FAILED_N )) && { printf '\n%d step(s) FAILED above\n' "$FAILED_N" >&2; exit 1; }
 exit $witness_rc

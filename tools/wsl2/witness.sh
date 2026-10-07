@@ -13,18 +13,15 @@ row() { # row <ok|drift> <intent> <reading>
 }
 gb() { awk -v kb="$1" 'BEGIN{printf "%.0f", kb/1048576}'; }
 
-grep -qi microsoft /proc/version || { echo "not WSL2"; exit 0; }
+grep -q 'microsoft-standard' /proc/version || { echo "not WSL2 (a WSL 1 distro? from Windows: wsl --set-version <DistroName> 2)"; exit 0; }
 
 mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo); swap_kb=$(awk '/SwapTotal/{print $2}' /proc/meminfo)
 # Windows binaries by absolute path: appendWindowsPath=false (our intent) takes them off $PATH.
 # pwsh (PowerShell 7) is the runbook engine; the host read goes through Windows PowerShell 5.1, which every Windows carries.
 PWSH_EXE="/mnt/c/Program Files/PowerShell/7/pwsh.exe"
 PS_EXE=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
-# Each host read is bounded: a wedged interop or a slow first pwsh start must not hang a pre-session hook.
-if [[ -x "$PWSH_EXE" ]]; then
-  # The file proves the install; the version is a courtesy read, so a timeout names itself rather than leaving the cell blank.
-  pwsh_ver=$(timeout 30 "$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')
-  row ok "PowerShell 7 (pwsh) on the host" "${pwsh_ver:-present; the version read did not answer in 30 s}"
+# The host read is bounded: a wedged interop must not hang a pre-session hook.
+if [[ -x "$PWSH_EXE" ]]; then row ok "PowerShell 7 (pwsh) on the host" "$PWSH_EXE"
 else row drift "PowerShell 7 (pwsh) on the host" "absent — winget install --id Microsoft.PowerShell; stand-windows.ps1 runs degraded under 5.1"; fi
 host_kb=$(timeout 30 "$PS_EXE" -NoProfile -Command '[int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB)' 2>/dev/null | tr -d '\r' | cut -d. -f1)
 if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
@@ -41,14 +38,16 @@ else
   row drift "swap= ≤ 4 GB" "$(gb "$swap_kb") GB — buys the kernel time to thrash"
 fi
 
-if [[ "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
+s=$(systemctl is-active earlyoom 2>/dev/null)
+if [[ $s == active ]]; then
+  # cmdline is NUL-separated, so every argument ends in a space once translated: `-m 50` must not pass as `-m 5`.
   args=$(tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom)"/cmdline 2>/dev/null)
-  if [[ "$args" == *"-m 5"* || "$args" == *"-m5"* ]]; then
+  if [[ "$args" == *"-m 5 "* || "$args" == *"-m5 "* ]]; then
     row ok "earlyoom active, -m 5" "$args"
   else
     row drift "earlyoom active, -m 5" "running with: $args"
   fi
-else s=$(systemctl is-active earlyoom 2>/dev/null); row drift "earlyoom active" "${s:-not-installed}"; fi
+else row drift "earlyoom active" "$s"; fi
 
 sw=$(sysctl -n vm.swappiness 2>/dev/null)
 if (( ${sw:-999} <= 10 )); then row ok "vm.swappiness ≤ 10" "$sw"

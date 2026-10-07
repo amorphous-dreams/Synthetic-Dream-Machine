@@ -101,7 +101,9 @@ tools/wsl2/witness.sh                          # writes nothing; nonzero means d
 
 The Linux stand installs only ordinary apt packages, writes `/etc/wsl.conf`, configures `earlyoom` and `vm.swappiness`, maintains `~/.venv` from `requirements.txt`, and checks Node/pnpm and Docker Engine. It reports `needs-you` with the exact commands when Node 24+ or Docker is absent rather than running a third-party installer on the operator's behalf. The repository's own dependencies stay the operator's line: `pnpm install --frozen-lockfile` in the clone, after Node lands.
 
-The Windows stand reads the host first without elevation (edition, Windows account, hypervisor and firmware virtualization state, WSL engine version) and reports each gap as `needs-you`. It then merges only `memory`, `swap`, `processors`, and `autoMemoryReclaim`, plus `sparseVhd` when `-Sparse` opts in. It preserves other `.wslconfig` content, including network/VPN settings and comments. It inspects other registered distros but leaves them untouched.
+Two refusals the Linux stand holds on a shared PC: it never reassigns `[user] default` — when `/etc/wsl.conf` already names another Linux account, it reports `needs-you` and leaves the login user as found; and when a later-sorting hand drop-in overrides `earlyoom`'s `ExecStart`, it restarts the daemon once, then reports `needs-you` with `systemctl cat earlyoom` rather than rewriting on every run.
+
+The Windows stand reads the host first without elevation (edition, Windows account, hypervisor and firmware virtualization state, WSL engine version) and reports each gap as `needs-you`. It then merges only `memory`, `swap`, `processors`, and `autoMemoryReclaim`, plus `sparseVhd` when `-Sparse` opts in. It preserves other `.wslconfig` content, including network/VPN settings and comments. It leaves other registered distros untouched.
 
 <<~/ahu>>
 
@@ -180,7 +182,7 @@ pnpm install --frozen-lockfile
 
 Open a new terminal tab between the Docker line and the stand: group membership and the nvm shell hook both land at the next login. The Linux stand reads for Node 24+, Corepack, and a reachable Docker daemon and prints these same lines as `needs-you` while any one stays absent; it runs none of them for you. The stand's own `corepack enable` exposes `pnpm`; the first `pnpm` command then fetches pnpm 10, which satisfies the repository's `engines` (pnpm 9 or later).
 
-The script creates one `~/.venv` and records the digest of `requirements.txt` only after a successful install. A changed requirements file causes the next stand to repair that venv. The workspace install stays opt-in because it may fetch packages and materialize a large `node_modules`; its lockfile makes the intended dependency graph explicit.
+The script creates one `~/.venv` and records the digest of `requirements.txt` only after a successful install. A changed requirements file causes the next stand to repair that venv. The repository's own dependencies stay the operator's line.
 
 For individual native or resource-heavy commands, retain a local resource boundary:
 
@@ -210,13 +212,14 @@ A witness drift states the local condition it could not verify. Repair only that
 
 <<~ ahu #/troubleshooting>>
 
-!! 7 · The six errors a household meets
+!! 7 · The seven errors a household meets
 
 |! you see |! it means |! do this |
 | `WslRegisterDistribution failed with error: 0x80370102` or `HCS_E_HYPERV_NOT_INSTALLED` | the hypervisor cannot start: firmware virtualization off, or Virtual Machine Platform absent | Task Manager → Performance → CPU: when `Virtualization: Disabled`, enable VT-x / AMD-V (SVM) in UEFI setup. Then, as Administrator: `wsl --install --no-distribution`, restart. If it persists, `bcdedit /enum | findstr -i hypervisorlaunchtype` should read `Auto`; set it with `bcdedit /set hypervisorlaunchtype Auto` and restart |
 | `Installation failed with error 0x80070003` | WSL installs only on the system drive; Microsoft lists this code for firmware virtualization off as well | Settings → System → Storage → Advanced storage settings → Where new content is saved → set new apps to `C:` and retry; still failing, follow the row above |
 | `wsl --version` prints the whole help text; `systemd` never starts; `wsl --manage` unknown | the inbox WSL that shipped with Windows, not the Store build | `wsl --update` (open the Microsoft Store if it asks), then `wsl --shutdown` and reopen the distro |
 | `'wsl' is not recognized as the name of a cmdlet` | no WSL on this PC yet | as Administrator: `wsl --install --no-distribution`, restart, then section 1 from the top |
+| `tools/wsl2/stand-linux.sh` exits at once: `not WSL2 (a WSL 1 distro? …)`; `uname -r` ends in `-Microsoft` | the distro runs under WSL 1, which has no systemd and no cgroups; nothing in this runbook applies there | from PowerShell: `wsl --set-version <DistroName> 2` (minutes; keeps the files), then re-run the stand |
 | `Temporary failure in name resolution` inside the distro | DNS stopped reaching the Windows side, usually after a network change, sleep, or a VPN coming up | `wsl --shutdown` from PowerShell, wait eight seconds, reopen. A home router needs nothing more; a VPN or third-party firewall that keeps breaking it belongs to the network choices this runbook leaves to the operator |
 | `apt`, `git`, or `pnpm` complain about certificates or dates; `date` inside WSL lags Windows | the VM clock stopped while the PC slept or hibernated | `sudo hwclock -s` inside the distro, or `wsl --shutdown` and reopen. Windows Fast Startup counts as a hibernate for this purpose |
 
@@ -224,5 +227,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iBpeBVWC050_tRzJkLQnpQrjsmMGdFlrN_i0-bk8WmQ
+<<^ code="&#x0003;">>ni:///sha-256;mLpkRwrfFGJcpYohFJ8jYwb6R3xsuLtz9XuzHrpnydc
 <<^ code="&#x0004;" -> to="?">>
