@@ -1,0 +1,96 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/e2e-offering-run-topology.mem"
+l-space   = "lares"
+mana      = 16
+manao     = 16
+manaoio   = 15
+role      = "static QA topology audit and deterministic run-order receipt for the focused Offering receiver E2E"
+status    = "scouted at 92865ca0a; no suite or build executed"
+tags      = ["research/qa", "tests/e2e", "mesh/offering", "build/stamp", "causal-island"]
+title     = "lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/e2e-offering-run-topology"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/scope>>
+
+! Offering receiver E2E — run topology audit
+
+!! Snapshot and method
+
+This is a static reading of the checkout at `92865ca0a`. No tests, builds, Docker commands, or service probes were run. The worktree was already carrying concurrent Mesh, Node, Keyhive, CLI, and harness edits plus an untracked Offering E2E. This report records executable boundaries and resources visible in source; it does not assert that the current built artifacts match those edits.
+
+The handoff's run command and source-versus-`dist` distinction are confirmed by the actual test and harness. The test is `tests/e2e/nexus-offering-replication.test.ts`; the harness package declares `test:e2e: vitest run` and its config is `tests/vitest.config.ts`.
+
+!! What this witness reads and writes
+
+* The test imports `runNexusInspectOffering` and `NexusOfferingInspectError` from Node **source** (`tests/e2e/nexus-offering-replication.test.ts`, import at line 14). The helper it calls, `openStagedJoinee`, imports `rendezvousPath` from Mesh source (`tests/harness/instance.ts`, line 23).
+* `openStagedJoinee` boots two staged vessels, A and B, with distinct roots and OS-assigned ports. It founds A, copies A's `genesis/` into B's root, mints B's key, runs A's device-admit, and starts both daemons (`tests/harness/instance.ts`, lines 471–548). The Offering test seats three Kahu faces, rites A's cabal, publishes an offering before B boots, then gives B the deterministic Crossroads board URL (`tests/e2e/nexus-offering-replication.test.ts`, lines 60–97).
+* The daemon is `packages/lararium-node/dist/src/main.js`; each CLI operation launches `packages/lares-cli/dist/src/bin/lares.js` (`tests/harness/instance.ts`, lines 44–47, 79–95, 182–183). Thus one run intentionally mixes direct Node source for the local inspector with **built CLI and Node daemon** for process behavior. It is not a source-only test.
+* The witness removes the matching plugin byte from B's staged cleartext CAS, inspects the local Crossroads evidence as partial, writes the exact source byte into B's CAS as an explicit custody control, then overwrites it with corrupt bytes and expects invalid. It compares the Genesis seed and non-CAS files before and after. It also runs an unknown-record refusal and temporarily swaps `process.env.LAR_ROOT` for a wrong-root check (`tests/e2e/nexus-offering-replication.test.ts`, lines 101–154). It does not exercise generic plugin-byte carriage: the byte is explicitly seeded by the test.
+
+!! Build and stamp boundary
+
+`tests/harness/instance.ts` uses `--skip-build` when clearing/founding staged roots. Its comment documents why: the vessel freshness gate otherwise rebuilds the whole workspace when package source differs from the stamp, writing shared `dist` while a witness runs (lines 147–153). Therefore the E2E itself does not repair stale artifacts.
+
+The root `build` script is `pnpm -r build && node tools/stamp-build.mjs .`; the root `test:e2e` delegates to the harness. The stamp script writes a workspace digest and one digest per package, with `dist`, `node_modules`, and `.git` excluded from source hashing (`package.json`, `tools/stamp-build.mjs`, lines 19–29 and 93–114). Filtered builds need matching package stamps; they do not refresh the workspace stamp (`tools/stamp-build.mjs`, lines 93–104). Because the harness invokes both CLI and Node dist, and those packages depend on workspace outputs, the supported clean receipt is a workspace build followed by the stamp, performed only in the isolated checkout.
+
+The CLI and Node Vitest configs declare package-local isolation and test globs. The top-level harness config declares isolated files, `fileParallelism: false`, and a 180-second test/hook budget (`packages/lares-cli/vitest.config.ts`, `packages/lararium-node/vitest.config.ts`, `tests/vitest.config.ts`). That serialization applies within the harness Vitest run. It does not serialize separate test processes, package suites, or Docker projects against one another.
+
+!! Resources and collision surface
+
+|!resource |!focused Offering E2E |!collision reading |
+|---|---|---|
+|Roots and storage |Two temporary staged roots, normally under OS temp or `LAR_STAGE_DIR`; the test also makes one `lares-wrong-island-*` directory under OS temp. Roots are stopped and removed by `fleet.stop()` and the test's `finally` (`tests/harness/instance.ts`, lines 115–123, 471–488; test lines 99, 141–152).|Separate roots isolate stores. A caller-supplied `LAR_STAGE_DIR` must be unique to the isolated run if simultaneous runs should be easy to inventory.|
+|Ports and sockets |A and B each ask the OS for a free loopback port. The harness itself documents the small time-of-check/time-of-use gap between releasing the reservation and daemon bind (`tests/harness/instance.ts`, lines 99–112, 471–473). Rendezvous paths derive from the vessel storage root and uid (`tests/harness/instance.ts`, lines 228–244).|No fixed HTTP port is declared by this harness. Parallel separate runs usually get distinct ports and roots, but the port handoff has an explicit race window; serialize the focused E2E with other high-load daemon suites for a clean diagnostic receipt.|
+|Processes |Each run starts two Node daemon children and invokes the real CLI as subprocesses (`tests/harness/instance.ts`, lines 79–95, 182–183, 471–548).|Do not run overlapping staged E2E processes against a changing build. Resource exhaustion or a stale artifact can obscure the first causal failure.|
+|Docker ports and volumes |None are declared by this test or `openStagedJoinee`.|`docker-compose.mesh.yml` has the fixed Compose project `dreamnet-mesh`, published ports including 18090–18094, and named `lararium-a-data`, `lararium-b-data`, `herm-source-data`, `herm-relay-data`, and `herm-relay-2-data` volumes (compose lines 26, 67, 100, 159–195, 202–207). `tools/mesh-scenarios.sh` runs `docker compose -f docker-compose.mesh.yml down -v` during scenario cleanup (lines 57–78, 87–90). Do not run this scenario runner in parallel with another owner using that same fixed project: its cleanup removes the named volumes and network. The Offering E2E itself has no Docker teardown path.|
+|Timeout observation |The test polls offering state with `Date.now()` and a 45-second default deadline, sleeping 500 ms between CLI reads (`tests/e2e/nexus-offering-replication.test.ts`, lines 36–50); hooks/tests have 180/120/60-second budgets (lines 60–97, 102–154).|These are test observation bounds, not signed authority or product ordering. They are still wall-clock dependent and can expire under a starved host. A timeout alone does not distinguish slow build, failed daemon, or missing causal evidence; preserve the last CLI JSON and daemon log.|
+
+The top-level Node package Vitest config has a serial `heavy` project for listener, nested-island, and Python-holder suites, with the remaining files in a capped parallel project (`packages/lararium-node/vitest.config.ts`, `THRASHERS` and `projects`). The harness E2E has its own config and owns two live daemons. Do not infer that package-level test serialization also reserves resources against this separate E2E process.
+
+!! Minimum clean-worktree receipt after hot edits land
+
+Use a fresh detached worktree at the settled commit. Keep the dirty shared checkout and its active worktrees untouched. Example from the repository:
+
+```sh
+git worktree add --detach /tmp/lares-offering-e2e <settled-commit>
+cd /tmp/lares-offering-e2e
+git submodule update --init --recursive
+pnpm install --frozen-lockfile
+pnpm -r build
+node tools/stamp-build.mjs .
+mkdir -p /tmp/lares-offering-stage-<run-label>
+LAR_STAGE_DIR=/tmp/lares-offering-stage-<run-label> pnpm --filter @lares/harness exec vitest run e2e/nexus-offering-replication.test.ts --reporter=verbose
+```
+
+Run this one focused file alone in the isolated checkout, with no concurrent workspace build or `dreamnet-mesh` scenario. `LAR_TARGET` should remain unset so the harness uses its staged mode. The test removes its staged vessel roots; the named parent stage directory can be removed after the runner exits. Record the settled commit, build/stamp completion, focused command and full output, first refusal if any, and cleanup status as the receipt.
+
+This is the minimum **reproducible** preparation established by repository wiring, not a claim that the current E2E passes. `pnpm -r build` may expose source failures from the landed edits; if so, report that build boundary before invoking Vitest. A green focused E2E would prove only the listed board replication and local CAS inspection vectors, not generic plugin-byte carriage, Antigen policy, Docker mesh behavior, or production deployment.
+
+!! Source anchors
+
+* `tests/e2e/nexus-offering-replication.test.ts`
+* `tests/harness/instance.ts`
+* `tests/vitest.config.ts`
+* `tests/package.json`
+* `tests/TEST-ARCHITECTURE.md`
+* `packages/lararium-node/vitest.config.ts`
+* `packages/lares-cli/vitest.config.ts`
+* `package.json`
+* `tools/stamp-build.mjs`
+* `docker-compose.mesh.yml`
+* `tools/mesh-scenarios.sh`
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;A6gCOQMXwGpBPm9gtnJPnLuN970Z1u1p1fPOVXRL2oc
+<<^ code="&#x0004;" -> to="?">>
