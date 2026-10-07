@@ -198,10 +198,9 @@ those movements silently changes which Nexus the record speaks for.
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-identity">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/offering-antigen">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/antigen-board">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kapae-antigen">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-keying-spine">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/offering">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
@@ -210,6 +209,6 @@ those movements silently changes which Nexus the record speaks for.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i2xtHzLzJUQNhpELSebTngOURjppcWjq_NCsd-rzCNE
+<<^ code="&#x0003;">>ni:///sha-256;ewInCe97iXfH3VMAhZJpLj1XZdvyA2JR1R5y5qj-Ec4
 
 <<^ code="&#x0004;" -> to="?">>

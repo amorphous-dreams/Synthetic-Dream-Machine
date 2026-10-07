@@ -103,6 +103,6 @@ describe("carrier-edges — every address a carrier points at", () => {
     // `live-equivocation.mem` names `elyncia/characters/primary-characters/telarus`,
     // `lararium/mesh/ahi-ka` and `lares/api/pono/recovery-registration`, carriers nobody has written
     // yet. A FORWARD REFERENCE IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(172);
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(170);
   });
 });
