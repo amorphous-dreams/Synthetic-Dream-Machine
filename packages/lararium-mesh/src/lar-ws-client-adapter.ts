@@ -43,6 +43,8 @@ export interface LarWSClientOptions {
   gatePubKey: string;
   /** Optional clock for the proof timestamp (default: now, ISO). */
   now?:       () => string;
+  /** The parent's reconnect delay (ms) after a socket closes. Defaults to the parent's own. */
+  retryInterval?: number;
 }
 
 export class LarWSClientAdapter extends WebSocketClientAdapter {
@@ -52,9 +54,11 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   readonly #now:        (() => string) | undefined;
   /** The gate's refusal, once it has come. A leaf that holds one has ANERGIZED and does not re-present. */
   #anergized: string | null = null;
+  /** Set by `disconnect()` — the caller stood this transport down, and nothing below re-dials it. */
+  #stopped = false;
 
   constructor(opts: LarWSClientOptions) {
-    super(opts.url);
+    super(opts.url, opts.retryInterval);
     this.#identity   = opts.identity;
     this.#aud        = opts.aud;
     this.#gatePubKey = opts.gatePubKey;
@@ -69,17 +73,18 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
 
   /**
    * RE-PRESENT under a new identity — the caller's answer to a change in what it holds (a presentable admit
-   * appeared or moved on the dialed island's board), never to a timer.
+   * appeared or moved on the dialed island's board, or an admit bundle was taken), never to a timer.
    *
    * The handshake runs once per socket, so a new presentation needs a new socket. An open socket CLOSES,
    * and the parent's own close-and-reconnect path re-dials through `connect`, which presents the new
-   * identity. An ANERGIZED leaf has stood its reconnect loop down; the new identity is the changed thing
-   * anergy waits for, so the refusal clears and this dials once at the door. The parent's reconnect loop
-   * stays down after that one dial (its stand-down flag is private to it).
+   * identity. An ANERGIZED leaf refuses at its own door (`connect`) and holds no socket; the new identity is
+   * the changed thing anergy waits for, so the refusal clears and this dials at the door. Anergy never stood
+   * the parent's reconnect loop down, so every later close of that socket re-dials on the parent's path
+   * exactly as before the refusal. A transport the caller stopped (`disconnect`) stays stopped.
    */
   represent(identity: LeafIdentity): void {
     this.#identity = identity;
-    if (!this.peerId) return;                       // never dialed — the first connect presents it
+    if (!this.peerId || this.#stopped) return;      // never dialed (the first connect presents it), or stopped
     if (this.#anergized) {
       this.#anergized = null;
       this.connect(this.peerId, this.peerMetadata);
@@ -88,11 +93,21 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     try { this.socket?.close(1000, "re-presenting"); } catch { /* already closed — the reconnect path runs */ }
   }
 
+  override disconnect(): void {
+    this.#stopped = true;
+    super.disconnect();
+  }
+
   override connect(peerId: PeerId, peerMetadata?: PeerMetadata): void {
     // An anergized leaf does not dial. The parent's reconnect path routes back through here, so the
-    // state must refuse at the DOOR — standing down the timer once, and then re-dialing on the next tick,
-    // would restore the flood with an extra step.
+    // state refuses at the DOOR: the one reconnect the refused socket's close schedules lands here and
+    // opens nothing, and with no socket open no further close schedules another.
     if (this.#anergized) return;
+    // ONE SOCKET AT A TIME. A reconnect the parent scheduled before a re-presentation dialed finds that
+    // dial's socket CONNECTING or OPEN, and opens no second one beside it.
+    const current = this.socket;
+    if (current && (current.readyState === WebSocket.CONNECTING || current.readyState === WebSocket.OPEN)) return;
+    this.#stopped = false;
 
     this.peerId       = peerId;
     this.peerMetadata = peerMetadata ?? {};
@@ -131,7 +146,6 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       aud:         this.#aud,
       sign:        this.#identity.sign,
       ...(this.#identity.edge ? { edge: this.#identity.edge } : {}),
-      ...(this.#identity.contractEdge ? { contractEdge: this.#identity.contractEdge } : {}),
       ...(this.#identity.presentedAdmit ? { presentedAdmit: this.#identity.presentedAdmit } : {}),
       ...(this.#identity.leafSign ? { leafSign: this.#identity.leafSign } : {}),
       ...(this.#now ? { now: this.#now } : {}),
@@ -159,7 +173,8 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       //
       // Anergy is a STATE, never a longer timer. Nothing about re-dialing sooner or later supplies the
       // second signal, so the leaf stops dialing until something changes — a vouch, a delegation edge, a
-      // gate key it did not have. `disconnect()` stands down the parent's reconnect loop.
+      // gate key it did not have. The state refuses at `connect`, so the reconnect the close below
+      // schedules opens nothing; the parent's loop stays armed for the socket a re-presentation opens.
       this.#anergized = verdict.reason ?? "auth denied";
       try {
         console.warn(
@@ -169,7 +184,6 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
         );
       } catch { /* a console is a courtesy, never a dependency */ }
       try { socket.close(4003, verdict.reason ?? "auth denied"); } catch { /* closed */ }
-      try { this.disconnect(); } catch { /* the parent may already have stood down */ }
       return;
     }
 

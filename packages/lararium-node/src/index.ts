@@ -221,6 +221,12 @@ export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, c
   carriedCharterHome, carriageConsentPathFor, charterHomeFor, primaryNexusAid, CarriedCharterError,
   type CarriedImportResult, type CarriedReading } from "./carried-set.js";
 export type { NexusContractOptions, NexusContractResult, NexusMembersListResult } from "./commands/nexus-contract.js";
+// The CARRIED admit — a joinee takes the bundle `nexus contract` emits, keeps it per Nexus, and presents it at the
+// hearth that wrote it (the dial ties a gate key to a Nexus through it).
+export {
+  takeAdmitBundle, readKeptAdmitBundle, readKeptAdmitBundles, admitBundlePathFor, admitBundleHolds, dialedNexusAid,
+  isAdmitBundle, AdmitBundleError, type AdmitBundle, type AdmitTakeResult,
+} from "./admit-bundle.js";
 
 // The traceless BOOT-INVITE burn (Build-2) — mint a sealed single-use invite; decide + spend-on-boot LOCALLY.
 export {

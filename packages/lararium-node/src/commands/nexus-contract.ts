@@ -40,7 +40,7 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
-  holdsCarriage, holdsCarrier, foundingRoster,
+  holdsCarriage, holdsCarrier, foundingRoster, presentedAdmitFromBoard,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
   type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature,
 } from "@lararium/mesh";
@@ -54,6 +54,7 @@ import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, nexusLeafFor } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
+import type { AdmitBundle } from "../admit-bundle.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -96,6 +97,13 @@ export interface NexusContractResult {
   readonly memberHeld:      boolean;
   /** Whether this receiver locally observes the nym as a held carrier after the write folds. */
   readonly carrierHeld:      boolean;
+  /**
+   * The CARRIED admit (an `admit` only; null for every other act): the entry just signed, its closed, tight
+   * lineage off the board just written (`presentedAdmitFromBoard` for the nym), the Nexus AID, and THIS
+   * vessel's gate key — the hearth the joinee dials to present it. Public bytes only. The joinee takes it by
+   * hand (`lares nexus admit-take`), so it reaches her under a PRIVATE posture, where no board crosses.
+   */
+  readonly bundle:          AdmitBundle | null;
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root an admit on. */
@@ -264,16 +272,31 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     // ONE FOLD OF THE WRITTEN BOARD, TWO PROJECTIONS. THE TWO FOLDS STAY TWO: members and carriers read as
     // separate sets and never union. A `carry` moves the carrier observation and never `memberHeld` — the
     // structural half of the class law, reported so a caller reads which relation it actually landed.
-    const after       = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
+    const written     = carriageEntriesFromBoard(handle.doc());
+    const after       = await foldCarriageDetails(written, roster);
     const memberHeld  = holdsCarriage(nym, after.members);
     const carrierHeld = holdsCarrier(nym, after.carriers);
+
+    // THE BUNDLE. The admit just signed cites every causal head for the nym, so it stands as the board's one
+    // admit head for that nym; its lineage is read off the board it landed on. A head that reads otherwise
+    // (nothing presents, or another act heads the relation) emits no bundle rather than a different admit.
+    let bundle: AdmitBundle | null = null;
+    if (opts.action === "admit") {
+      const presented = await presentedAdmitFromBoard(written, nym, roster);
+      if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
+        bundle = {
+          aid: nexusAidOrRefuse(opts.sealHome), gatePubKey: nexusPubkey.toLowerCase(),
+          admit: presented.admit, lineage: presented.lineage,
+        };
+      }
+    }
 
     return {
       action: opts.action, nym, parents, evidenceCid: carriageEntryActCid(entry),
       sealEpochCid: roster.sealEpochCid, threshold: roster.threshold,
       signers: selected.map((s) => s.verifyingKey),
       contractIn: contract ? contract.how : "n/a",
-      boardUrl, memberHeld, carrierHeld,
+      boardUrl, memberHeld, carrierHeld, bundle,
     };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });

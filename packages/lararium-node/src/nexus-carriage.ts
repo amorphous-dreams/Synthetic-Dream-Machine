@@ -20,8 +20,9 @@
  *     `unsettled`, `wrong-epoch`, `denied` and `rejected` all leave the peer a STRANGER. The nym written is the
  *     verdict's own — the admit's leaf — and nothing from any root.
  *   · the ROOT MAP (`peerContractNymMap`) — what the REALM consult reads (`contractNymOfPeer`). Nothing fills
- *     it: no witness here proves a foreign root's edge epoch, and linking a leaf to a root would carry the
- *     forbidden binding. The membership consult never reads it.
+ *     it: no root-signed edge travels on any socket (the lar:auth contract slot is retired), and linking a leaf
+ *     to a root would carry the forbidden binding. The seat stays for the realm doc's write side to fill. The
+ *     membership consult never reads it.
  *
  * No admit is folded into an allow set and no raw wire key is read as a nym: a peer whose wire key equals a
  * nym the board admits, presenting nothing, stays a STRANGER. The carriage board's admits reach this vessel
@@ -35,6 +36,10 @@
  * Three steps, swapped whole: re-read the carried Nexuses' deny boards and antigens, re-verify every standing
  * presentation against them, replace the leaf map, fire `onRefold` (the caller re-verdicts its Repo). A
  * revoke descending from a presented admit drops that peer to STRANGER on the refold that reads it.
+ *
+ * ONE CHAIN. Every `present()` and `refold()` runs through one serial chain, in call order, so no write to
+ * the leaf map lands from readings older than a write already landed: a presentation judged on the readings
+ * before a revoke never re-seats a peer after the refold that read the revoke.
  *
  * NO GLOBAL NOW: every reading is this vessel's own replica as of its last sync, and the gate's single-use
  * nonce is the only freshness the leaf proof carries.
@@ -66,39 +71,15 @@ import {
   type AdmitPresentation,
 } from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { verifyDeviceDelegation, verifyingKeyFromDid, type DeviceDelegationTiddler } from "@lararium/mesh";
+import type { DeviceDelegationTiddler } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
-import { carriedSet, charterHomeFor, primaryNexusAid } from "./carried-set.js";
+import { carriedSet, charterHomeFor } from "./carried-set.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";
+import { admitBundleHolds, dialedNexusAid, readKeptAdmitBundle } from "./admit-bundle.js";
 
 /** A verifying-key nym reads clean only at the exact ed25519 length — a stray value never seats a member. */
 const NYM_RE = /^[0-9a-f]{64}$/;
-
-/**
- * The persona-root nym a CONTRACT edge proves for the vessel key at the wire — or null. The edge must name the
- * presented vessel key (`deviceVerifyingKey` = the Identifier's raw-key tail), verify under the root that signed
- * it, and stand at the caller's supplied contract lease frontier. No ambient clock is a witness here: the
- * contract names the RELATION and the edge names the VESSEL; the hearth × lease binding belongs to the fleet
- * credential. A caller without the relation frontier receives no nym and must keep the peer at the floor.
- * The root this answers is NOT yet trusted — the consult pins it against the contracted member set.
- */
-export async function contractNymOf(
-  edge: DeviceDelegationTiddler,
-  presentedIdentHex: string,
-  witness: { readonly expectedEpoch: number },
-): Promise<string | null> {
-  if (!Number.isSafeInteger(witness.expectedEpoch) || witness.expectedEpoch < 0) return null;
-  const vesselKey = presentedIdentHex.slice(-64).toLowerCase();
-  if (!NYM_RE.test(vesselKey)) return null;
-  if (typeof edge?.deviceVerifyingKey !== "string" || edge.deviceVerifyingKey.toLowerCase() !== vesselKey) return null;
-  if (typeof edge.personaRootDid !== "string") return null;
-  const r = await verifyDeviceDelegation(edge, edge.personaRootDid, { expectedEpoch: witness.expectedEpoch });
-  if (!r.ok) return null;
-  let nym: string;
-  try { nym = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return null; }
-  return NYM_RE.test(nym) ? nym : null;
-}
 
 /**
  * What a socket presented, bound to the values THIS vessel's gate holds for it: the nonce it issued, its own
@@ -230,31 +211,57 @@ export interface DialPresentation extends AdmitPresentation {
 }
 
 /**
- * The admit this vessel presents when it dials, or null (it presents as it did before: no admit).
+ * The admit this vessel presents when it dials `gatePubKey`, or null (it presents no admit).
  *
- * THE DIALED ISLAND ONLY. The island resolves over the PRIMARY charter exactly as `runNexusContract` resolves
- * the board an admit lands on (`nodeNexusIsland` over the seal home), and the board is read off this
- * vessel's own replica through `open`. Each held persona's leaf for that Nexus is tried in roster order; the
- * first with a counted admit head presents it with its closed, tight lineage (`presentedAdmitFromBoard`).
- * An admit this vessel holds on any OTHER carried Nexus's board never presents here.
+ * THE DIALED NEXUS ONLY. The Nexus is the one POSITIVELY tied to the dialed gate key (`dialedNexusAid`: a kept
+ * bundle the hearth at that key wrote, or the hearth pin's charter island). No tie → null: the primary charter
+ * is never assumed, so an admit for any other Nexus never presents at this gate. That Nexus's board is read
+ * off this vessel's own replica through `open`, at the island the admit writer resolves over its charter home.
+ *
+ * KEPT vs BOARD. When a bundle is kept for the Nexus, its admit must still hold at the charter head and its nym
+ * must be a held leaf; the board's counted admit head for that leaf then presents ONLY when it descends from
+ * the kept admit (the kept admit is the head or sits in the head's lineage) — both are counted acts, and the
+ * board's head wins only by extending the kept one. Otherwise the kept bundle presents as it was taken. With
+ * no holding kept bundle, each held leaf's counted board head is tried in roster order, as before.
  *
  * A charter that reads unseated, an island that will not resolve, or leaves that cannot be read all answer null.
  */
 export async function dialPresentation(opts: {
-  readonly sealHome:     string;
-  readonly ownVesselKey: string;
-  readonly open:         BoardOpener;
+  readonly sealHome:       string;
+  readonly ownVesselKey:   string;
+  /** The gate key this dial commits its proof to — the dial target. */
+  readonly gatePubKey:     string | null;
+  readonly open:           BoardOpener;
   /** The leaves this vessel's held personas present to a Nexus. Defaults to the persona vault's. */
-  readonly leaves?:      (aid: string) => Promise<readonly NexusLeaf[]>;
+  readonly leaves?:        (aid: string) => Promise<readonly NexusLeaf[]>;
+  /** The bootstrap the hearth pin rides in. Defaults to this vessel's own. */
+  readonly bootstrapPath?: string;
 }): Promise<DialPresentation | null> {
   try {
-    const aid = primaryNexusAid(opts.sealHome);
+    const aid = dialedNexusAid({
+      sealHome: opts.sealHome, gatePubKey: opts.gatePubKey,
+      ...(opts.bootstrapPath ? { bootstrapPath: opts.bootstrapPath } : {}),
+    });
     if (!aid) return null;
-    const roster = foundingRoster(readNexusDoc(opts.sealHome));
+    const home = charterHomeFor(opts.sealHome, aid);
+    if (!home) return null;
+    const roster = foundingRoster(readNexusDoc(home));
     if (roster.sealEpochCid.length === 0) return null;
-    const island = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: opts.sealHome });
+    const island = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
+    const held = await (opts.leaves ?? heldNexusLeaves)(aid);
     const entries = carriageEntriesFromBoard(await opts.open(carriageDocUrl(island), "board:carriage-contracts"));
-    for (const leaf of await (opts.leaves ?? heldNexusLeaves)(aid)) {
+
+    const kept = readKeptAdmitBundle(opts.sealHome, aid);
+    const keptLeaf = kept ? held.find((l) => l.verifyingKey.toLowerCase() === kept.admit.nym.toLowerCase()) : undefined;
+    if (kept && keptLeaf && (await admitBundleHolds(kept, roster))) {
+      const head = await presentedAdmitFromBoard(entries, keptLeaf.verifyingKey, roster);
+      const keptCid = carriageEntryActCid(kept.admit);
+      const extends_ = head !== null &&
+        (carriageEntryActCid(head.admit) === keptCid || head.lineage.some((e) => carriageEntryActCid(e) === keptCid));
+      const pick: AdmitPresentation = extends_ ? head! : { admit: kept.admit, lineage: kept.lineage };
+      return { ...pick, aid, island, leaf: keptLeaf };
+    }
+    for (const leaf of held) {
       const presented = await presentedAdmitFromBoard(entries, leaf.verifyingKey, roster);
       if (presented) return { ...presented, aid, island, leaf };
     }
@@ -263,15 +270,15 @@ export async function dialPresentation(opts: {
 }
 
 /**
- * The identity a dial presents — ONE FACE PER SOCKET. A leaf admit presents with its leaf signer and NO
- * root-signed edge in either slot (the fleet `edge` and the `contractEdge` both stay home). Without one, the
- * self edge presents as before: in the fleet slot when a root this vessel does not hold signed it, in the
- * contract slot when this vessel's own root did; with no self edge, the ContactCard alone.
+ * The identity a dial presents — ONE FACE PER VESSEL PER NEXUS. A leaf admit presents with its leaf signer and
+ * no root-signed edge. Without one, the FLEET edge (`fleetEdge`: a self edge a root this vessel does NOT hold
+ * signed — a hearth's admit of this device) presents in its slot; with none, the ContactCard alone. A
+ * self-founded vessel's own root-signed edge never presents: no slot carries it.
  */
 export function dialIdentityFor(
   base: LeafIdentity,
   presented: DialPresentation | null,
-  selfEdge: { readonly edge: DeviceDelegationTiddler; readonly selfSigned: boolean } | null,
+  fleetEdge: DeviceDelegationTiddler | null,
 ): LeafIdentity {
   if (presented) {
     return {
@@ -280,8 +287,7 @@ export function dialIdentityFor(
       leafSign: leafSignerOf(presented),
     };
   }
-  if (!selfEdge) return base;
-  return selfEdge.selfSigned ? { ...base, contractEdge: selfEdge.edge } : { ...base, edge: selfEdge.edge };
+  return fleetEdge ? { ...base, edge: fleetEdge } : base;
 }
 
 /** The identity of a presentation: its admit's act CID and its lineage's, so a re-dial fires only on a move. */
@@ -381,7 +387,15 @@ export function makeNexusMembership(opts: {
     return next;
   };
 
-  const refold = async (): Promise<void> => {
+  // ONE CHAIN — every present() and refold() runs here, in call order, and a fault never breaks the chain.
+  let chain: Promise<void> = Promise.resolve();
+  const serial = (step: () => Promise<void>): Promise<void> => {
+    const run = chain.then(step);
+    chain = run.catch(() => { /* the caller sees its own fault; the chain runs on */ });
+    return run;
+  };
+
+  const refoldNow = async (): Promise<void> => {
     const readings = await readCurrent();
     const next = await verifyAll(readings);
     // THE OTHER FOLD, off this vessel's own board: the places. Never unioned into the leaf map.
@@ -395,7 +409,7 @@ export function makeNexusMembership(opts: {
     onRefold?.();
   };
 
-  const present = async (peerId: string, binding: SocketBinding | null): Promise<void> => {
+  const presentNow = async (peerId: string, binding: SocketBinding | null): Promise<void> => {
     const before = leafMap.get(peerId)?.nym ?? null;
     if (binding) bindings.set(peerId, binding); else bindings.delete(peerId);
     if (!binding && before === null) return;            // nothing presented, nothing standing — no move
@@ -406,6 +420,9 @@ export function makeNexusMembership(opts: {
     leafMap = next;
     if ((standing?.nym ?? null) !== before) onRefold?.();
   };
+
+  const refold = (): Promise<void> => serial(refoldNow);
+  const present = (peerId: string, binding: SocketBinding | null): Promise<void> => serial(() => presentNow(peerId, binding));
 
   if (repo && nexusPubkey) void refold();
 
@@ -441,7 +458,7 @@ export function makeNexusMembership(opts: {
  * decides which DOCUMENTS cross it). It answers the realm's questions and never the membership question:
  *
  *   · `contractNymOfPeer` reads the ROOT MAP (`peerContractNymMap`) and returns null for every peer: no root
- *     edge is proven at this seat, so nothing fills that map. It never reads the LEAF MAP — a leaf a socket
+ *     edge travels on any socket, so nothing fills that map. It never reads the LEAF MAP — a leaf a socket
  *     proved is not a root, and routing one here would link the two on this vessel's behalf.
  *   · `holdsCharter` reads this vessel's OWN charter on disk: the charter names a realm (its genesis epoch),
  *     and a hand SEATED in that charter's founding-kahu roster holds it. Any other nym, and any charter this
@@ -455,12 +472,14 @@ export function makeNexusMembership(opts: {
  */
 export function makeRealmCharterConsult(opts: {
   readonly sealHome:            string;
+  /** THE ROOT MAP — peerId → a persona-root nym. Nothing fills it today: no root-signed edge travels on any
+   *  socket. The seat stands for the realm doc's write side to fill; `contractNymOfPeer` reads it alone. */
   readonly peerContractNymMap:  ReadonlyMap<string, string>;
   /** Peers on a socket this vessel dialed to the charter's hearth (filled by the dial; empty until it stands). */
   readonly charterHearthPeers?: ReadonlySet<string>;
-  /** peerId → the Identifier hex the DaemonAuthGate proved at the wire. A faceless PLACE presents NO contract
-   *  edge (it holds no persona root to sign one), so its WIRE KEY is the only nym it ever has — and that key
-   *  IS the nym its carrier contract names. Read here, and nowhere else, for exactly that reason. */
+  /** peerId → the Identifier hex the DaemonAuthGate proved at the wire. A faceless PLACE holds no persona root,
+   *  so its WIRE KEY is the only nym it ever has — and that key IS the nym its carrier contract names. Read
+   *  here, and nowhere else, for exactly that reason. */
   readonly peerIdentifierMap?:  ReadonlyMap<string, string>;
   /** The contracted CARRIER set, read live off this vessel's own board fold (`NexusMembershipHolder.carriers`). */
   readonly carrierSet?:         () => ReadonlySet<string>;
@@ -483,8 +502,8 @@ export function makeRealmCharterConsult(opts: {
     },
     carrierPeer(peerId: string): boolean {
       if (!carrierSet || !peerIdentifierMap) return false;               // unwired → answers exactly as before
-      // A place that presented a CONTRACT edge is not a place — it brought a persona root, which the class
-      // forbids. Refuse rather than fall through: the carrier lane is for the faceless alone.
+      // A peer the ROOT MAP names stands behind a persona root, which the class forbids a place. Refuse rather
+      // than fall through: the carrier lane is for the faceless alone. A place never presents a root.
       if (peerContractNymMap.has(peerId)) return false;
       const identHex = peerIdentifierMap.get(peerId);
       if (identHex === undefined) return false;                          // unauthenticated → never a carrier

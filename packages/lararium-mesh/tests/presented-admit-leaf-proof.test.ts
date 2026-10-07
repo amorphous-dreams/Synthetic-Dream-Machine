@@ -7,8 +7,11 @@
  *   · CONTROLS: another nonce, gate key, vessel key or admit reads false; a signer other than `admit.nym`
  *     reads false, and so does a proof the persona ROOT signs;
  *   · `runPeerHandshake` signs the proof over the challenge it received, with the leaf signer alone;
- *   · ONE SOCKET, ONE FACE: a lar:auth carrying a presented admit beside a root-signed edge fails the wire
+ *   · ONE SOCKET, ONE FACE: a lar:auth carrying a presented admit beside the fleet edge fails the wire
  *     guard, and `buildAuthResponse` refuses to build one;
+ *   · the CONTRACT slot is retired (Q1, strict): a lar:auth carrying `contractEdge` fails the guard whether or
+ *     not it carries an admit — a vessel that presents a leaf to a Nexus presents no root-signed edge to it on
+ *     any socket;
  *   · `presentedAdmitFromBoard` derives the admit head and a closed, tight lineage from a board with a
  *     re-admit after a revoke; CONTROL: with a concurrent revoke the presentation still derives and the
  *     verifier reads it `unsettled`; a board whose last act is a revoke presents nothing.
@@ -139,25 +142,33 @@ describe("the handshake signs the leaf proof over the challenge it received", ()
 });
 
 describe("ONE SOCKET, ONE FACE — a presented admit never travels beside a root-signed edge", () => {
-  const edge = { kind: "x" } as unknown as LarAuthMsg["contractEdge"];
+  const edge = { kind: "x" } as unknown as LarAuthMsg["edge"];
 
-  test("the wire guard refuses a lar:auth carrying both", async () => {
+  test("the wire guard refuses a lar:auth carrying an admit beside the fleet edge", async () => {
     const presentedAdmit = await proven(await act("admit"));
     const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, sig: "00" } as const;
     expect(isLarAuthMsg({ ...base, presentedAdmit })).toBe(true);                       // control
-    expect(isLarAuthMsg({ ...base, contractEdge: edge })).toBe(true);                   // control
-    expect(isLarAuthMsg({ ...base, presentedAdmit, contractEdge: edge })).toBe(false);
+    expect(isLarAuthMsg({ ...base, edge })).toBe(true);                                 // control
     expect(isLarAuthMsg({ ...base, presentedAdmit, edge })).toBe(false);
   });
 
-  test("buildAuthResponse refuses to build one", async () => {
+  test("the CONTRACT slot is retired — a lar:auth carrying `contractEdge` fails the guard, admit or no admit", async () => {
+    const presentedAdmit = await proven(await act("admit"));
+    const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, sig: "00" } as const;
+    expect(isLarAuthMsg(base)).toBe(true);                                              // control: the card alone
+    expect(isLarAuthMsg({ ...base, contractEdge: edge })).toBe(false);
+    expect(isLarAuthMsg({ ...base, presentedAdmit, contractEdge: edge })).toBe(false);
+  });
+
+  test("buildAuthResponse refuses to build an admit beside the fleet edge, and never names a contract slot", async () => {
     const presentedAdmit = await proven(await act("admit"));
     const parts = {
       contactCard: "{}", nonce: NONCE, gatePubKey: "a".repeat(64), peerPubKey: "b".repeat(64), aud: "lar:///x",
       ts: "2026-10-06T00:00:00.000Z", sign: signerOf(SEEDS.vessel),
     };
-    await expect(buildAuthResponse({ ...parts, presentedAdmit })).resolves.toMatchObject({ presentedAdmit });   // control
-    await expect(buildAuthResponse({ ...parts, presentedAdmit, contractEdge: edge })).rejects.toThrow(/one socket, one face/);
+    const built = await buildAuthResponse({ ...parts, presentedAdmit });
+    expect(built).toMatchObject({ presentedAdmit });                                    // control
+    expect("contractEdge" in built).toBe(false);
     await expect(buildAuthResponse({ ...parts, presentedAdmit, edge })).rejects.toThrow(/one socket, one face/);
   });
 });

@@ -27,7 +27,6 @@ import {
 } from "@lararium/mesh";
 import { hex, hexToBytes } from "@lararium/mesh/crypto";
 import { admitToRealm } from "../src/realm-admission.js";
-import { contractNymOf } from "../src/nexus-carriage.js";
 
 type AuditRow = {
   relation: string;
@@ -122,21 +121,6 @@ describe("P1 authority relations — characterization witness", () => {
     expect(staleClock).toMatchObject({ ok: false, reason: "proof outside freshness window" });
   });
 
-  test("records the contract edge relation at the node gate", async () => {
-    const edge = await delegation();
-    const deviceKey = await pubOf(deviceSeed);
-    const presentedIdentifier = `identifier:${deviceKey}`;
-    const nym = await contractNymOf(edge, presentedIdentifier, { expectedEpoch: 0 });
-    const wrongVessel = await contractNymOf(edge, `identifier:${await pubOf(peerSeed)}`, { expectedEpoch: 0 });
-    auditRows.push({
-      relation: "contract-edge",
-      inputs: { presentedVesselKey: deviceKey, boundEpoch: edge.boundEpoch, gateNow: now },
-      outcome: { matchingVessel: nym, wrongVessel, authority: "offline signature + local freshness; membership pin remains downstream" },
-    });
-    expect(nym).toBe(await pubOf(opSeed));
-    expect(wrongVessel).toBeNull();
-  });
-
   test("records persona admission as a local KEL-head relation with carried expiry", async () => {
     const persona = new Uint8Array(32).fill(34);
     const device = await pubOf(deviceSeed);
@@ -219,11 +203,10 @@ describe("P1 authority relations — characterization witness", () => {
   });
 
   test("keeps the audit rows machine-readable and relation-scoped", () => {
-    expect(auditRows).toHaveLength(6);
+    expect(auditRows).toHaveLength(5);
     expect(auditRows.map((row) => row.relation)).toEqual([
       "device-face-delegation",
       "daemon-proof-of-possession",
-      "contract-edge",
       "persona-admission",
       "handle-recognition",
       "cabal-vouch-admission",

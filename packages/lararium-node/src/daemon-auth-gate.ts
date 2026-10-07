@@ -22,17 +22,15 @@
  *   1. socketToIdentifier WeakMap records socket → identifierHex.
  *   2. The Repo's sharePolicy should call getIdentifierForSocket() to build
  *      PeerId → identifierHex entries when the adapter emits "peer-candidate".
- *   3. The PRESENTATION riding the lar:auth — the CONTRACT edge (`contractEdge`, a cross-operator's own
- *      persona-root-signed edge over its own vessel key) OR the PRESENTED ADMIT (`presentedAdmit`, the dialed
- *      island's quorum-signed admit of that operator's leaf, its causal lineage and the leaf's proof over this
- *      socket; never both) — is kept per socket as UNTRUSTED input, read back by getPresentationForSocket(),
- *      beside the nonce and gate key this gate issued (getChallengeForSocket()), which the seat verifies the
- *      leaf proof against. The gate decides nothing by any of it: admission stays the
- *      worker's verdict, no class or nym is lifted from it, and a peer that presents nothing stands at the
- *      cross-operator floor exactly as one that presents. The contract edge never reaches the keyholder's
- *      fleet verifier — that slot chains to the pinned KEL and a foreign root would anergize the socket whole.
+ *   3. The PRESENTATION riding the lar:auth — the PRESENTED ADMIT (`presentedAdmit`, the dialed island's
+ *      quorum-signed admit of that operator's leaf, its causal lineage and the leaf's proof over this socket) —
+ *      is kept per socket as UNTRUSTED input, read back by getPresentationForSocket(), beside the nonce and
+ *      gate key this gate issued (getChallengeForSocket()), which the seat verifies the leaf proof against.
+ *      The gate decides nothing by it: admission stays the worker's verdict, no class or nym is lifted from
+ *      it, and a peer that presents nothing stands at the cross-operator floor exactly as one that presents.
  *      A presented admit that fails its structural guard fails `isLarAuthMsg`, so the socket is denied like
- *      any malformed lar:auth.
+ *      any malformed lar:auth — and so is a lar:auth carrying the retired `contractEdge` slot: no root-signed
+ *      edge over a cross-operator's vessel key travels on any socket (membership-doctrine #/two-maps).
  *
  * Security posture (alpha):
  *   - V3 proof-of-possession (ENFORCED): the gate emits its gate-binding key in
@@ -57,15 +55,14 @@ import {
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg,
   DAEMON_BAG_ID,
 } from "@lararium/mesh";
-import type { AuthVerifierShore, DeviceDelegationTiddler, PeerClass, PresentedAdmit } from "@lararium/mesh";
+import type { AuthVerifierShore, PeerClass, PresentedAdmit } from "@lararium/mesh";
 
 /**
- * What a peer presented on its lar:auth beyond its card and proof, exactly as it arrived. UNTRUSTED: nothing
- * here is verified at the gate, and its presence or absence changes no admission.
+ * What a peer presented on its lar:auth beyond its card, proof and fleet edge, exactly as it arrived.
+ * UNTRUSTED: nothing here is verified at the gate, and its presence or absence changes no admission.
  */
 export interface SocketPresentation {
-  readonly contractEdge?:   DeviceDelegationTiddler;
-  readonly presentedAdmit?: PresentedAdmit;
+  readonly presentedAdmit: PresentedAdmit;
 }
 
 /**
@@ -155,9 +152,9 @@ export class DaemonAuthGate extends EventEmitter {
   }
 
   /**
-   * The contract edge and presented admit an admitted peer carried on its lar:auth, as received — undefined for
-   * a peer that presented neither. UNTRUSTED: the gate verified none of it, so a reader folds it against its own
-   * carriage frontier before reading any relation from it.
+   * The presented admit an admitted peer carried on its lar:auth, as received — undefined for a peer that
+   * presented none. UNTRUSTED: the gate verified none of it, so a reader folds it against its own carriage
+   * frontier before reading any relation from it.
    */
   getPresentationForSocket(socket: WebSocket): SocketPresentation | undefined {
     return this.socketToPresentation.get(socket);
@@ -255,12 +252,7 @@ export class DaemonAuthGate extends EventEmitter {
           } else {
             // Keep the presentation as received; it rides beside the verdict and changes none of it.
             const presentation: SocketPresentation | undefined =
-              parsed.contractEdge !== undefined || parsed.presentedAdmit !== undefined
-                ? {
-                    ...(parsed.contractEdge !== undefined ? { contractEdge: parsed.contractEdge } : {}),
-                    ...(parsed.presentedAdmit !== undefined ? { presentedAdmit: parsed.presentedAdmit } : {}),
-                  }
-                : undefined;
+              parsed.presentedAdmit !== undefined ? { presentedAdmit: parsed.presentedAdmit } : undefined;
             // Carry the self-slot class the keyholder vouched (absent → cross-operator at the gate).
             resolve({
               ok: true, identHex: verdict.identifier,

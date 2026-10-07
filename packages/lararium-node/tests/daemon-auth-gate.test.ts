@@ -349,9 +349,9 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     expect(gate.clients.size).toBe(0);
   });
 
-  // ── THE PRESENTATION — the contract edge and the presented admit, recorded per socket, deciding nothing ──
-  // The contract edge never reaches the fleet verifier (that slot chains to THIS hearth's KEL and would
-  // anergize the socket whole). The gate keeps what the peer presented, untrusted, for a later reader.
+  // ── THE PRESENTATION — the presented admit, recorded per socket, deciding nothing ──────────────────────────
+  // The gate keeps what the peer presented, untrusted, for a later reader. The CONTRACT slot is retired: a
+  // vessel that presents a leaf to a Nexus presents no root-signed edge to it on any socket (Q1, strict).
   const TS = "2026-06-07T00:00:00.000Z";
   const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
 
@@ -362,7 +362,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const rootSeed  = new Uint8Array(32).fill(21);
     const nym       = toHex(await ed.getPublicKeyAsync(rootSeed));
     const vesselKey = toHex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(22)));
-    const contractEdge = await buildDeviceDelegation({
+    const rootEdge = await buildDeviceDelegation({
       personaRootSeed: rootSeed, deviceVerifyingKey: vesselKey, hearthTrueName: "",
       issuedAt: TS, expiresAt: "2026-06-08T00:00:00.000Z", boundEpoch: 0,
     });
@@ -374,7 +374,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const first  = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: "epoch-cid" }, kahu, consent);
     const revoke = await signCarriageQuorum({ nym, action: "revoke", parents: [carriageEntryActCid(first)], sealEpochCid: "epoch-cid" }, kahu);
     const admit  = await signCarriageQuorum({ nym, action: "admit", parents: [carriageEntryActCid(revoke)], sealEpochCid: "epoch-cid" }, kahu, consent);
-    return { vesselKey, contractEdge, presentedAdmit: { admit, lineage: [first, revoke] } };
+    return { vesselKey, rootEdge, presentedAdmit: { admit, lineage: [first, revoke] } };
   }
 
   test("a presented admit round-trips byte-identical into the gate's per-socket record, beside the challenge the gate issued", async () => {
@@ -394,7 +394,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     expect(calls[0]!.edge).toBeUndefined();                                  // CONTROL: the fleet slot sees nothing
     const kept = gate.getPresentationForSocket(serverSocket);
     expect(JSON.stringify(kept?.presentedAdmit)).toBe(JSON.stringify(proven));
-    expect(kept?.contractEdge).toBeUndefined();
+    expect(Object.keys(kept ?? {})).toEqual(["presentedAdmit"]);
     // THE GATE RECORDS WHAT IT ISSUED — the nonce and gate key the seat reads the leaf proof against.
     expect(gate.getChallengeForSocket(serverSocket)).toEqual({ nonce: chal.nonce, gatePubKey: "00".repeat(32) });
     expect(gate.getIdentifierForSocket(serverSocket)).toBe(`prefix:${vesselKey}`);
@@ -402,8 +402,8 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     ws.close();
   });
 
-  test("ONE SOCKET, ONE FACE — a presented admit beside a root-signed contract edge is denied 4003, and the shore is never asked", async () => {
-    const { contractEdge, presentedAdmit } = await presentation();
+  test("ONE SOCKET, ONE FACE — a presented admit beside a root-signed fleet edge is denied 4003, and the shore is never asked", async () => {
+    const { rootEdge, presentedAdmit } = await presentation();
     const { shore, calls } = makeCapturingShore();
     gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
     let admittedAny = false;
@@ -411,24 +411,40 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
     const closed = nextClose(ws);
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, contractEdge, presentedAdmit }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, edge: rootEdge, presentedAdmit }));
     expect(isLarAuthDeniedMsg(await nextMessage(ws))).toBe(true);
     expect((await closed).code).toBe(4003);
     expect(calls).toHaveLength(0);
     expect(admittedAny).toBe(false);
   });
 
-  test("CONTROL: a contract edge alone still admits at the floor, kept beside the challenge", async () => {
-    const { vesselKey, contractEdge } = await presentation();
+  test("the CONTRACT slot is retired — a lar:auth carrying `contractEdge` is denied 4003, and the shore is never asked", async () => {
+    const { rootEdge } = await presentation();
+    const { shore, calls } = makeCapturingShore();
+    gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
+    let admittedAny = false;
+    gate.once("connection", () => { admittedAny = true; });
+    const ws   = await connect(serverInfo.port);
+    const chal = await nextMessage(ws) as { nonce: string };
+    const closed = nextClose(ws);
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, contractEdge: rootEdge }));
+    expect(isLarAuthDeniedMsg(await nextMessage(ws))).toBe(true);
+    expect((await closed).code).toBe(4003);
+    expect(calls).toHaveLength(0);
+    expect(admittedAny).toBe(false);
+  });
+
+  test("CONTROL: the ContactCard alone admits at the floor, with no presentation kept beside the challenge", async () => {
+    const { vesselKey } = await presentation();
     const { shore } = makeCapturingShore(`prefix:${vesselKey}`);
     gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
     const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS, contractEdge }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: TS }));
     expect(isLarAuthOkMsg(await nextMessage(ws))).toBe(true);
     const serverSocket = await admitted;
-    expect(JSON.stringify(gate.getPresentationForSocket(serverSocket)?.contractEdge)).toBe(JSON.stringify(contractEdge));
+    expect(gate.getPresentationForSocket(serverSocket)).toBeUndefined();
     expect(gate.getChallengeForSocket(serverSocket)?.nonce).toBe(chal.nonce);
     ws.close();
   });

@@ -13,7 +13,8 @@
  *   · a concurrent revoke (unsettled) and an admit at another epoch (wrong-epoch) stay STRANGER;
  *   · ROOT ⊥ LEAF — a held leaf leaves `contractNymOfPeer` null, and a root-map entry naming a board member
  *     seats nobody in the leaf map;
- *   · `contractNymOf` (the root-edge prover) answers only the edge over THIS vessel key.
+ *   · ONE CHAIN — a `present()` reading old readings and a `refold()` landing a descending revoke, interleaved,
+ *     end STRANGER; CONTROL: the same interleaving with no revoke ends MEMBER.
  */
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
@@ -220,37 +221,45 @@ describe("CONTROL B on the real carried set — a held charter this vessel never
   });
 });
 
-// ── THE ROOT-EDGE PROVER ─────────────────────────────────────────────────────────────────────────────────
-// `contractNymOf` proves a persona-root-signed edge over a vessel key. No seat fills the root map with it this
-// round (no witness proves a foreign root's edge epoch); it stays the prover that map would read.
-import { buildDeviceDelegation } from "@lararium/mesh";
-import { contractNymOf } from "../src/nexus-carriage.js";
+// ── ONE CHAIN — present() and refold() never interleave their writes to the leaf map ─────────────────────────
+// A `present()` that read its readings before a revoke landed must not write its standing AFTER the refold that
+// read the revoke: the later write would re-seat a peer the deny board already closed.
 
-describe("contractNymOf — the root-edge prover answers only the edge over THIS vessel key", () => {
-  let bags: string;
-  beforeEach(() => { bags = mkdtempSync(join(tmpdir(), "lares-nexus-contract-edge-")); });
-  afterEach(() => { rmSync(bags, { recursive: true, force: true }); });
+/** A promise the test resolves by hand, so one reading can be held back while another lands. */
+function deferred<T>(): { promise: Promise<T>; resolve: (v: T) => void } {
+  let resolve!: (v: T) => void;
+  const promise = new Promise<T>((r) => { resolve = r; });
+  return { promise, resolve };
+}
 
-  const edgeFor = async (rootSeed: Uint8Array, vesselKey: string) => buildDeviceDelegation({
-    personaRootSeed: rootSeed, deviceVerifyingKey: vesselKey, hearthTrueName: "",
-    issuedAt: "2026-09-12T11:00:00Z", expiresAt: "2026-09-13T11:00:00Z", boundEpoch: 0,
+describe("ONE CHAIN — a stale present() never outlives the refold that read a revoke", () => {
+  async function race(withRevoke: boolean): Promise<boolean> {
+    const roster = await rosterAt();
+    const admit  = await act("admit", [], roster.sealEpochCid);
+    const revoke = await act("revoke", [carriageEntryActCid(admit)], roster.sealEpochCid);
+    // The first reading (the present's) is held back and carries the OLD board; every later one carries the new.
+    const old = deferred<readonly CarriedNexusReading[]>();
+    let calls = 0;
+    const holder = makeNexusMembership({
+      readCarried: async () => {
+        calls += 1;
+        return calls === 1 ? old.promise : [reading("N", roster, withRevoke ? [revoke] : [])];
+      },
+    });
+    const presenting = holder.present("peer-b", await bind(admit));           // reads the held-back OLD readings
+    const refolding  = holder.refold();                                         // lands the revoke concurrently
+    // Give the refold every chance to finish first — unserialized, it does, and the stale present then writes last.
+    await Promise.race([refolding, new Promise((r) => setTimeout(r, 200))]);
+    old.resolve([reading("N", roster)]);
+    await Promise.all([presenting, refolding]);
+    return holder.membership.holdsCarriagePeer("peer-b");
+  }
+
+  test("★ a present() on old readings and a concurrent descending revoke end STRANGER ★", async () => {
+    expect(await race(true)).toBe(false);
   });
 
-  test("contractNymOf — the edge the contracted root signed over THIS vessel key answers the nym", async () => {
-    const keys      = await Promise.all(SEEDS.map(pubOf));
-    const vesselKey = await pubOf(VESSEL_SEED);
-    const edge      = await edgeFor(SEEDS[0]!, vesselKey);
-    expect(await contractNymOf(edge, `prefix:${vesselKey}`, { expectedEpoch: 0 })).toBe(keys[0]);
-  });
-
-  test("CONTROL — an edge naming ANOTHER vessel key, a tampered signature, an expired edge: no nym", async () => {
-    const vesselKey = await pubOf(VESSEL_SEED);
-    const otherKey  = await pubOf(OTHER_VESSEL_SEED);
-    const edge      = await edgeFor(SEEDS[0]!, vesselKey);
-    expect(await contractNymOf(edge, `prefix:${otherKey}`, { expectedEpoch: 0 })).toBeNull();       // names another vessel
-    const flipped   = edge.signature.slice(0, -2) + (edge.signature.endsWith("00") ? "01" : "00");
-    expect(edge.signature).not.toBe(flipped);                                                        // the bytes MOVED
-    expect(await contractNymOf({ ...edge, signature: flipped }, `prefix:${vesselKey}`, { expectedEpoch: 0 })).toBeNull();
-    expect(await contractNymOf(edge, `prefix:${vesselKey}`, { expectedEpoch: 1 })).toBeNull();
+  test("CONTROL: the same interleaving with no revoke ends MEMBER", async () => {
+    expect(await race(false)).toBe(true);
   });
 });

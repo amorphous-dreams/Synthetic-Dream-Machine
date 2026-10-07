@@ -3,10 +3,11 @@
  *
  * Proven:
  *   · with TWO carried Nexuses whose boards both hold an admit for this vessel's leaves, the dial presents the
- *     DIALED island's admit (the primary charter's, resolved as the admit writer resolves it) and never the other;
- *   · CONTROL: a dialed board holding no admit presents nothing, though another carried board holds one;
- *   · a dial that presents a leaf admit carries no root-signed edge in either slot — and the wire would refuse one;
- *   · CONTROL: with no admit, the self edge presents as before (contract slot for a held root, fleet slot otherwise);
+ *     DIALED Nexus's admit — the one the kept bundle ties to the dialed gate key — and never reads the other board;
+ *   · CONTROL: a kept bundle for the OTHER carried Nexus, dialed at this hearth, presents nothing;
+ *   · a dial that presents a leaf admit carries no root-signed edge — and the wire would refuse one;
+ *   · ONE FACE PER VESSEL PER NEXUS: with no admit, the fleet edge presents in its slot; a self-founded vessel
+ *     presents the ContactCard alone, and no identity a dial builds names a contract slot;
  *   · `presentationKey` moves when the admit moves, so re-presentation fires on a board change and only then.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -20,6 +21,7 @@ import {
   type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
 } from "@lararium/mesh";
 import { dialPresentation, dialIdentityFor, presentationKey } from "../src/nexus-carriage.js";
+import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
@@ -68,6 +70,9 @@ describe("the dial presents the DIALED island's admit only", () => {
   const C_KAHU = [seed(4), seed(5), seed(6)];
   const LEAF_AT = new Map<string, Uint8Array>();
 
+  const GATE_P = "a1".repeat(32);
+  const GATE_C = "c3".repeat(32);
+
   async function stand(opts: { primaryAdmit: boolean }) {
     const sealHome = join(root, "nexus");
     const primary = await charter(P_KAHU);
@@ -92,12 +97,16 @@ describe("the dial presents the DIALED island's admit only", () => {
     ]);
     const asked: string[] = [];
     const open = async (url: string) => { asked.push(url); return boards.get(url); };
-    return { sealHome, aidP, aidC, admitP, admitC, leaves, open, asked };
+    const take = (aid: string, gatePubKey: string, admit: CarriageEntry) =>
+      takeAdmitBundle({ sealHome, raw: JSON.stringify({ aid, gatePubKey, admit, lineage: [] }), leaves });
+    return { sealHome, aidP, aidC, admitP, admitC, leaves, open, asked, take };
   }
 
   test("with two carried Nexuses, the presentation names only the dialed one's admit", async () => {
     const w = await stand({ primaryAdmit: true });
-    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), open: w.open, leaves: w.leaves });
+    await w.take(w.aidP, GATE_P, w.admitP);
+    await w.take(w.aidC, GATE_C, w.admitC);
+    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves });
     expect(p).not.toBeNull();
     expect(p!.aid).toBe(w.aidP);
     expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(w.admitP));
@@ -105,24 +114,27 @@ describe("the dial presents the DIALED island's admit only", () => {
     expect(w.asked).toEqual([carriageDocUrl(w.aidP)]);                 // the other carried board is never read
   });
 
-  test("CONTROL: the dialed board holds no admit → nothing presents, though another carried board holds one", async () => {
+  test("CONTROL: a kept bundle for the OTHER carried Nexus, dialed at this hearth, presents nothing", async () => {
     const w = await stand({ primaryAdmit: false });
-    expect(await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), open: w.open, leaves: w.leaves })).toBeNull();
+    await w.take(w.aidC, GATE_C, w.admitC);
+    expect(await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves })).toBeNull();
+    expect(w.asked).toEqual([]);
   });
 
   test("presentationKey moves when the admit moves, and only then", async () => {
     const w = await stand({ primaryAdmit: true });
-    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), open: w.open, leaves: w.leaves });
-    const again = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), open: w.open, leaves: w.leaves });
+    await w.take(w.aidP, GATE_P, w.admitP);
+    const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves });
+    const again = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: "ab".repeat(32), gatePubKey: GATE_P, open: w.open, leaves: w.leaves });
     expect(presentationKey(p)).toBe(presentationKey(again));
     expect(presentationKey(null)).toBe("");
     expect(presentationKey(p)).not.toBe("");
   });
 });
 
-describe("one face per socket — a dial that presents an admit carries no root-signed edge", () => {
+describe("one face per vessel per Nexus — a dial carries no contract slot", () => {
   const base: LeafIdentity = { contactCard: "{}", peerPubKey: "cd".repeat(32), sign: signerOf(seed(30)) };
-  const selfEdge = { kind: "self-edge" } as unknown as DeviceDelegationTiddler;
+  const fleetEdge = { kind: "fleet-edge" } as unknown as DeviceDelegationTiddler;
 
   async function presented() {
     const doc = await charter([seed(1), seed(2), seed(3)]);
@@ -133,26 +145,26 @@ describe("one face per socket — a dial that presents an admit carries no root-
     };
   }
 
-  test("with an admit: no contractEdge, no fleet edge — whatever self edge the vessel holds", async () => {
+  test("with an admit: no fleet edge rides it, and the leaf signer is the admit's own key", async () => {
     const p = await presented();
-    for (const selfSigned of [true, false]) {
-      const id = dialIdentityFor(base, p, { edge: selfEdge, selfSigned });
-      expect(id.contractEdge).toBeUndefined();
-      expect(id.edge).toBeUndefined();
-      expect(id.presentedAdmit?.admit).toBe(p.admit);
-      expect(typeof id.leafSign).toBe("function");
-      // The wire accepts it — and the leaf signer is the admit's own key.
-      const msg = await buildAuthResponse({ contactCard: id.contactCard, nonce: "00".repeat(32), gatePubKey: "ee".repeat(32),
-        peerPubKey: id.peerPubKey, aud: "lar:///x", ts: "2026-10-06T00:00:00.000Z", sign: id.sign, presentedAdmit: id.presentedAdmit! });
-      expect(msg.contractEdge).toBeUndefined();
-      const sig = await id.leafSign!(new Uint8Array([1, 2, 3]));
-      expect(await ed.verifyAsync(hexToBytes(sig), new Uint8Array([1, 2, 3]), hexToBytes(p.leaf.verifyingKey))).toBe(true);
-    }
+    const id = dialIdentityFor(base, p, fleetEdge);
+    expect(id.edge).toBeUndefined();
+    expect("contractEdge" in id).toBe(false);
+    expect(id.presentedAdmit?.admit).toBe(p.admit);
+    expect(typeof id.leafSign).toBe("function");
+    const msg = await buildAuthResponse({ contactCard: id.contactCard, nonce: "00".repeat(32), gatePubKey: "ee".repeat(32),
+      peerPubKey: id.peerPubKey, aud: "lar:///x", ts: "2026-10-06T00:00:00.000Z", sign: id.sign, presentedAdmit: id.presentedAdmit! });
+    expect("contractEdge" in msg).toBe(false);
+    expect(msg.edge).toBeUndefined();
+    const sig = await id.leafSign!(new Uint8Array([1, 2, 3]));
+    expect(await ed.verifyAsync(hexToBytes(sig), new Uint8Array([1, 2, 3]), hexToBytes(p.leaf.verifyingKey))).toBe(true);
   });
 
-  test("CONTROL: with no admit, the self edge presents as before", () => {
-    expect(dialIdentityFor(base, null, { edge: selfEdge, selfSigned: true }).contractEdge).toBe(selfEdge);
-    expect(dialIdentityFor(base, null, { edge: selfEdge, selfSigned: false }).edge).toBe(selfEdge);
-    expect(dialIdentityFor(base, null, null)).toBe(base);
+  test("CONTROL: with no admit, the fleet edge presents in its slot; a self-founded vessel presents the ContactCard alone", () => {
+    expect(dialIdentityFor(base, null, fleetEdge).edge).toBe(fleetEdge);
+    const alone = dialIdentityFor(base, null, null);
+    expect(alone).toBe(base);
+    expect("contractEdge" in alone).toBe(false);
+    expect(alone.edge).toBeUndefined();
   });
 });

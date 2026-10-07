@@ -138,3 +138,111 @@ describe("LarWSClientAdapter — V3 peer transport handshake", () => {
     expect(handoff).toBe("timeout"); // no Automerge join after a denial
   });
 });
+
+// ── RE-PRESENTATION AFTER ANERGY — a new identity restores the reconnect loop, not one dial ───────────────────
+// The gate below scripts each connection by its ordinal: deny, accept, and drop the accepted socket once after
+// the Automerge handoff. It counts every socket the adapter opens, so a dial that never comes reads as a count
+// that never moves.
+
+interface ScriptedGate {
+  port:        number;
+  connections: () => number;
+  /** Resolves once the gate has seen `n` connections, or with false after `ms`. */
+  until:       (n: number, ms: number) => Promise<boolean>;
+  close:       () => Promise<void>;
+}
+
+function makeScriptedGate(opts: {
+  gatePubKey: string;
+  accept:     (ordinal: number) => boolean;
+  dropAfterHandoff: (ordinal: number) => boolean;
+}): Promise<ScriptedGate> {
+  return new Promise((resolve) => {
+    const http: Server = createServer();
+    const wss = new WebSocketServer({ server: http });
+    let count = 0;
+    const waiters: Array<{ n: number; done: (v: boolean) => void }> = [];
+    wss.on("connection", (ws: WsSocket) => {
+      count += 1;
+      const ordinal = count;
+      for (const w of waiters.splice(0)) { if (count >= w.n) w.done(true); else waiters.push(w); }
+      ws.send(JSON.stringify(mkLarChallenge(randomBytes(32).toString("hex"), opts.gatePubKey)));
+      let dropped = false;
+      ws.on("message", (data: Buffer, isBinary: boolean) => {
+        if (isBinary) {
+          if (!dropped && opts.dropAfterHandoff(ordinal)) { dropped = true; ws.close(1001, "gate drops the socket once"); }
+          return;
+        }
+        let parsed: unknown;
+        try { parsed = JSON.parse(data.toString("utf8")); } catch { return; }
+        if (!isLarAuthMsg(parsed)) return;
+        ws.send(JSON.stringify(opts.accept(ordinal) ? mkLarAuthOk() : mkLarAuthDenied("no vouch")));
+      });
+    });
+    http.listen(0, "127.0.0.1", () => {
+      const addr = http.address();
+      if (!addr || typeof addr === "string") throw new Error("bad address");
+      resolve({
+        port: addr.port,
+        connections: () => count,
+        until: (n, ms) => count >= n ? Promise.resolve(true) : new Promise<boolean>((done) => {
+          const w = { n, done };
+          waiters.push(w);
+          setTimeout(() => { const i = waiters.indexOf(w); if (i >= 0) waiters.splice(i, 1); done(false); }, ms);
+        }),
+        close: () => new Promise<void>((res) => {
+          for (const c of wss.clients) c.terminate();
+          wss.close(() => http.close(() => res()));
+        }),
+      });
+    });
+  });
+}
+
+describe("LarWSClientAdapter — re-presentation after anergy restores the reconnect loop", () => {
+  let gate: ScriptedGate | null = null;
+  let adapter: LarWSClientAdapter | null = null;
+  const RETRY_MS = 50;
+
+  afterEach(async () => {
+    try { adapter?.disconnect(); } catch { /* not connected */ }
+    adapter = null;
+    await gate?.close();
+    gate = null;
+  });
+
+  test("★ anergize, re-present with a new identity, the gate drops the socket once → the adapter re-dials on its own ★", async () => {
+    const gatePub = genKey().pub;
+    gate = await makeScriptedGate({ gatePubKey: gatePub, accept: (n) => n >= 2, dropAfterHandoff: (n) => n === 2 });
+    const first = makeLeaf();
+    adapter = new LarWSClientAdapter({
+      url: `ws://127.0.0.1:${gate.port}`, identity: first.identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS,
+    });
+    adapter.connect("anergy-peer" as PeerId);
+    // ① denied → ANERGIZED, and the door stays shut across several retry intervals.
+    const anergized = await (async () => {
+      for (let i = 0; i < 100 && !adapter!.anergized; i++) await new Promise((r) => setTimeout(r, 10));
+      return adapter!.anergized;
+    })();
+    expect(anergized).toBe("no vouch");
+    // ② re-present under a new identity (a presentable admit appeared) → the second socket, accepted.
+    adapter.represent(makeLeaf().identity);
+    expect(await gate.until(2, 2_000)).toBe(true);
+    expect(adapter.anergized).toBeNull();
+    // ③ the gate drops that socket once; the parent's reconnect path dials a third socket with no further call.
+    expect(await gate.until(3, 2_000)).toBe(true);
+  });
+
+  test("CONTROL: an anergized adapter given NO new identity stays down", async () => {
+    const gatePub = genKey().pub;
+    gate = await makeScriptedGate({ gatePubKey: gatePub, accept: () => false, dropAfterHandoff: () => false });
+    const leaf = makeLeaf();
+    adapter = new LarWSClientAdapter({
+      url: `ws://127.0.0.1:${gate.port}`, identity: leaf.identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS,
+    });
+    adapter.connect("anergy-peer" as PeerId);
+    expect(await gate.until(2, RETRY_MS * 12)).toBe(false);                  // a dozen retry intervals, one socket
+    expect(gate.connections()).toBe(1);
+    expect(adapter.anergized).toBe("no vouch");
+  });
+});

@@ -409,9 +409,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // an admitted same-operator peer. A WS peer absent here (or present-but-not-same-operator) reads as the
   // stricter cross-operator class at the sharePolicy (fail-closed).
   const peerClassMap = new Map<string, PeerClass>();
-  // THE ROOT MAP — peerId → a persona-root nym proven at this seat. The REALM consult reads it
-  // (`contractNymOfPeer`) and nothing fills it: no witness here proves a foreign root's edge epoch, and no proof
-  // binding a leaf to a root travels on the wire. The membership consult never reads it (`nexus-carriage.ts`).
+  // THE ROOT MAP — peerId → a persona-root nym. The REALM consult reads it (`contractNymOfPeer`) and nothing
+  // fills it: no root-signed edge travels on any socket, and no proof binding a leaf to a root travels on the
+  // wire. The seat stands for the realm doc's write side. The membership consult never reads it.
   const peerContractNymMap = new Map<string, string>();
   // THE LEAF MAP's input — what each admitted socket PRESENTED, bound to the nonce and gate key THIS gate issued
   // on it and the vessel key its V3 proof proved. Keyed at the seat below and handed to the membership holder,
@@ -1312,37 +1312,36 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // board reads the settled verdict, never the doc — measured as a fatal `slot bags/crossroads unavailable —
     // the peer answered WITHOUT doc` on a cross-operator dial (a foreign hearth answers a stranger fast). The
     // dial follows the boards, so no peer can answer for a doc this vessel mints itself.
-    // WHAT THE DIAL PRESENTS — one face per socket, and three shapes:
-    //   · A LEAF ADMIT. When this vessel's own replica of the DIALED island's carriage board holds a counted
-    //     admit for one of its held personas' leaves (`dialPresentation`: the island resolves over the primary
-    //     charter exactly as the admit writer resolves it), the dial presents that admit, its closed lineage and
-    //     the leaf's proof over the gate's challenge — and NO root-signed edge in either slot. No proof binding a
-    //     leaf to a root travels on the wire. Only the dialed island's admit presents, never the carried set.
+    // WHAT THE DIAL PRESENTS — one face per vessel per Nexus, and three shapes:
+    //   · A LEAF ADMIT, for the Nexus POSITIVELY tied to the dialed gate key (`dialPresentation`: a bundle the
+    //     hearth at that key wrote and this vessel took, or the hearth pin's charter island). The kept bundle
+    //     presents, or the board's admit head when it descends from the kept admit; the dial carries its closed
+    //     lineage and the leaf's proof over the gate's challenge — and NO root-signed edge. No tie → no admit.
     //   · THE FLEET EDGE. A self edge signed by a root this vessel does NOT hold is an ADMIT — a hearth's root
     //     licensed this device — and presents in the FLEET slot, where the peer's keyholder chains it to its
     //     pinned KEL and vouches `same-operator`. A fleet dial never looks for a leaf admit.
-    //   · THE CONTRACT EDGE. A self edge signed by a root this vessel HOLDS presents in the CONTRACT slot when no
-    //     leaf admit stands: the peer admits the ContactCard at the cross-operator floor and keeps the edge as
-    //     untrusted input. With no self edge, the ContactCard presents alone.
-    // RE-PRESENTATION follows the board, never a timer: a change on the dialed island's board, or a
-    // `nexus-refresh`, re-derives the presentation, and a moved one re-dials through the adapter's own
-    // close-and-reconnect path.
+    //   · THE CONTACTCARD ALONE. A self-founded vessel (its self edge signed by a root it HOLDS, or no self edge)
+    //     with no admit for the dialed Nexus presents its card and nothing else. Its own root-signed edge never
+    //     rides any socket: the vessel key is one key across every Nexus, so a root edge to N would link the
+    //     root to the leaf the same vessel presents (or will present) to N.
+    // RE-PRESENTATION follows what this vessel holds, never a timer: a change on the dialed island's board, a
+    // `nexus-refresh`, or an `admit-take` (which drives the refresh) re-derives the presentation, and a moved
+    // one re-dials through the adapter's own close-and-reconnect path.
     if (joinSyncUrl) {
       try {
         const leafIdentity = await loadLeafIdentity();
         const selfEdge = wornMount?.deviceEdge ?? (daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined);
         const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
-        const fleet = selfEdge !== undefined && !selfSigned;
-        const presentationNow = (): Promise<DialPresentation | null> => fleet
+        const fleetEdge = selfEdge !== undefined && !selfSigned ? selfEdge : null;
+        const presentationNow = (): Promise<DialPresentation | null> => fleetEdge
           ? Promise.resolve(null)
-          : dialPresentation({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open });
+          : dialPresentation({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, gatePubKey: joinGatePubKey, open: carriedBoards.open });
         const identityFor = (presented: DialPresentation | null): LeafIdentity =>
-          dialIdentityFor(leafIdentity, presented, selfEdge ? { edge: selfEdge, selfSigned } : null);
+          dialIdentityFor(leafIdentity, presented, fleetEdge);
         const describe = (presented: DialPresentation | null): string => presented
           ? `the leaf admit ${carriageEntryActCid(presented.admit).slice(0, 16)}… for leaf ${presented.leaf.verifyingKey.slice(0, 16)}… on island ${presented.island.slice(0, 16)}… (lineage ${presented.lineage.length}; no root edge rides it)`
-          : !selfEdge  ? "the ContactCard alone (no self edge — cross-operator floor)"
-          : selfSigned ? "the contract edge (this vessel's own root signed it — cross-operator; no leaf admit stands on the dialed island)"
-          :              "the device-delegation edge (fleet)";
+          : fleetEdge  ? "the device-delegation edge (fleet)"
+          :              "the ContactCard alone (no admit for the dialed Nexus — a self-founded vessel presents no root edge)";
         const presented = await presentationNow();
         let presentedKey = presentationKey(presented);
         nexusDial = maybeStartNexusClientDial({

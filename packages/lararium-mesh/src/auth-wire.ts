@@ -69,8 +69,9 @@ export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-poss
  * board. The bundle rides OUTSIDE the V3 proof signature. It binds to THIS socket through `leafProof` — the
  * admit's own LEAF signing the gate's nonce, the gate key, the presenting vessel key and the admit's act CID
  * (`leafProofBytes`). No root signs anything in it and no root is named in it: a socket that presents a leaf
- * admit carries no root-signed edge (`isLarAuthMsg` refuses one that tries). It grants nothing on arrival —
- * the receiver checks the proof and folds the admit against its own deny board before reading any relation.
+ * admit carries no root-signed edge (`isLarAuthMsg` refuses one beside the fleet `edge`, and refuses the
+ * retired contract slot outright). It grants nothing on arrival — the receiver checks the proof and folds the
+ * admit against its own deny board before reading any relation.
  */
 export interface PresentedAdmit {
   readonly admit:      CarriageEntry;
@@ -140,18 +141,15 @@ export interface LarAuthMsg {
    */
   edge?:       DeviceDelegationTiddler;
   /**
-   * OPTIONAL CONTRACT edge — a CROSS-OPERATOR's own persona-root-signed edge over its OWN vessel key, the
-   * credential the face carries (membership-doctrine #/the-carried-cap). Never the fleet slot above: that
-   * one chains to the gate's pinned KEL and a foreign root anergizes the socket whole. Outside the proof
-   * signature; the gate keeps it per socket as untrusted input and decides nothing by it. Never on the same
-   * message as `presentedAdmit`. A peer that sends none behaves exactly as before.
-   */
-  contractEdge?: DeviceDelegationTiddler;
-  /**
    * OPTIONAL presented admit — the dialed island's quorum-signed admit of this subject, its causal lineage and
    * the leaf's proof over this socket. Outside the proof signature; the gate keeps it per socket as untrusted
    * input beside the nonce and gate key it issued, and decides nothing by it. A message carrying it beside
-   * `edge` or `contractEdge` fails `isLarAuthMsg`.
+   * `edge` fails `isLarAuthMsg`.
+   *
+   * NO CONTRACT SLOT. A cross-operator's own persona-root-signed edge over its vessel key never rides a
+   * lar:auth: the vessel key is one key across every Nexus, so a root edge on any socket links that root to
+   * every leaf the same vessel presents (membership-doctrine #/two-maps). `isLarAuthMsg` refuses a message
+   * carrying a `contractEdge` field at all.
    */
   presentedAdmit?: PresentedAdmit;
 }
@@ -192,11 +190,14 @@ export function isLarAuthMsg(v: unknown): v is LarAuthMsg {
   );
   if (!ok) return false;
   const x = v as Record<string, unknown>;
+  // THE CONTRACT SLOT IS RETIRED. A root-signed edge over a cross-operator's vessel key binds that root to the
+  // vessel key every leaf of the same vessel rides, so it travels on no socket at all.
+  if ("contractEdge" in x) return false;
   const presented = x["presentedAdmit"];
   if (presented === undefined) return true;
-  // ONE SOCKET, ONE FACE. A presented leaf admit travels with no root-signed edge in either slot: carrying
-  // both on one socket would bind the leaf to the root on the wire.
-  if (x["contractEdge"] !== undefined || x["edge"] !== undefined) return false;
+  // ONE SOCKET, ONE FACE. A presented leaf admit travels with no root-signed edge: carrying the fleet edge
+  // beside it would bind the leaf to the root on the wire.
+  if (x["edge"] !== undefined) return false;
   return isPresentedAdmit(presented);
 }
 
@@ -491,12 +492,10 @@ export async function buildAuthResponse(parts: {
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge ridden alongside the proof. */
   edge?:       DeviceDelegationTiddler;
-  /** OPTIONAL contract edge — the cross-operator credential, in its own slot. */
-  contractEdge?: DeviceDelegationTiddler;
-  /** OPTIONAL presented admit, outside the signed proof bytes. Never beside `edge` or `contractEdge`. */
+  /** OPTIONAL presented admit, outside the signed proof bytes. Never beside `edge`. */
   presentedAdmit?: PresentedAdmit;
 }): Promise<LarAuthMsg> {
-  if (parts.presentedAdmit && (parts.edge || parts.contractEdge)) {
+  if (parts.presentedAdmit && parts.edge) {
     throw new Error("a presented leaf admit travels with no root-signed edge — one socket, one face");
   }
   const proof = authProofBytes({
@@ -514,7 +513,6 @@ export async function buildAuthResponse(parts: {
     sig,
     ts:          parts.ts,
     ...(parts.edge ? { edge: parts.edge } : {}),
-    ...(parts.contractEdge ? { contractEdge: parts.contractEdge } : {}),
     ...(parts.presentedAdmit ? { presentedAdmit: parts.presentedAdmit } : {}),
   };
 }
@@ -543,8 +541,6 @@ export interface PeerHandshake {
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge — a device-admitted leaf rides its edge to the gate. */
   edge?:       DeviceDelegationTiddler;
-  /** OPTIONAL contract edge — a contracted operator presents its own root's edge over its vessel key. */
-  contractEdge?: DeviceDelegationTiddler;
   /** OPTIONAL presented admit — the dialed island's admit only, and never beside a root-signed edge. */
   presentedAdmit?: PresentedAdmit;
   /** The admit's LEAF signer, used for the leaf proof over the challenge and nothing else. Without it a
@@ -583,7 +579,6 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean;
     ts:          (h.now ?? (() => new Date().toISOString()))(),
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
-    ...(h.contractEdge ? { contractEdge: h.contractEdge } : {}),
     ...(presentedAdmit ? { presentedAdmit } : {}),
   });
   h.send(auth);
@@ -606,13 +601,11 @@ export interface LeafIdentity {
   peerPubKey:  string;
   /** Bare-Ed25519 signer over the operator seed → hex. No keyhive. */
   sign:        (bytes: Uint8Array) => Promise<string>;
-  /** OPTIONAL device-delegation edge — a device-admitted leaf presents its edge to admit. */
+  /** OPTIONAL device-delegation edge — a device-admitted leaf presents its edge to admit. A root this vessel
+   *  does NOT hold signed it (the fleet slot); a self-founded vessel's own root never signs one onto the wire. */
   edge?:       DeviceDelegationTiddler;
-  /** OPTIONAL contract edge — a self-founded operator presents its OWN root's edge over its vessel key to a
-   *  hearth it contracted with; the fleet slot above stays empty on that dial. */
-  contractEdge?: DeviceDelegationTiddler;
   /** OPTIONAL presented admit for the ONE island this identity dials — never the dialer's whole admit set,
-   *  and never beside `edge` or `contractEdge`. */
+   *  and never beside `edge`. */
   presentedAdmit?: PresentedAdmit;
   /** The presented admit's LEAF signer (the admit's nym), used for the leaf proof alone. */
   leafSign?:      (bytes: Uint8Array) => Promise<string>;

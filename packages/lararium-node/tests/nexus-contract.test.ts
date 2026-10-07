@@ -14,7 +14,9 @@
  *     wrote) with a leaf proof reads MEMBER; a seated kahu and the admitted nym's raw wire key, presenting
  *     nothing, read STRANGER — the kahu floor and the board fold are retired from the consult,
  *   · USER-NEVER-WRITTEN: the board carries operator-pubkey nyms only,
- *   · ONE ADDRESS: with a seal home passed, the admit write and the members-list read key on the SAME island.
+ *   · ONE ADDRESS: with a seal home passed, the admit write and the members-list read key on the SAME island,
+ *   · THE CARRIED ADMIT: an admit emits a bundle (entry · lineage · AID · this vessel's gate key) the joinee's
+ *     take verifies offline and keeps; a revoke emits none.
  */
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -40,6 +42,8 @@ import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.j
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { presentedAdmitFromBoard, signLeafProof, foundingRoster } from "@lararium/mesh";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
+import { takeAdmitBundle, readKeptAdmitBundle } from "../src/admit-bundle.js";
+import { carriageEntryActCid } from "@lararium/mesh";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -154,6 +158,34 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     const list = await runNexusMembersList({ sealHome: sealHome() });
     expect(list.members).not.toContain(joinerNym);
+  });
+
+  it("★ ADMIT emits the CARRIED bundle — the entry, its lineage, the AID and this vessel's gate key; the take keeps it ★", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    const joinerNym = await leafOf(3);
+
+    const first = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const aid = realmIdOfCharter(readNexusDoc(sealHome()));
+    expect(first.bundle).not.toBeNull();
+    expect(first.bundle!.aid).toBe(aid);
+    expect(first.bundle!.gatePubKey).toBe((await loadVesselVerifyingKey()).toLowerCase());
+    expect(carriageEntryActCid(first.bundle!.admit)).toBe(first.evidenceCid);
+    expect(first.bundle!.lineage).toEqual([]);
+    // Public bytes only: no seed, no signing key rides the bundle.
+    expect(JSON.stringify(first.bundle)).not.toMatch(/seed|signingKey|secret/i);
+
+    // A revoke emits none; the re-admit after it carries the admit and the revoke as its lineage.
+    const rev = await runNexusContract({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
+    expect(rev.bundle).toBeNull();
+    const again = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    expect(again.bundle!.lineage.map(carriageEntryActCid).sort()).toEqual([first.evidenceCid, rev.evidenceCid].sort());
+
+    // The joinee's door (here the same vessel, which holds leaf 3): the take verifies offline and keeps it.
+    const took = await takeAdmitBundle({ sealHome: sealHome(), raw: JSON.stringify(again.bundle) });
+    expect(took.nym).toBe(joinerNym);
+    expect(readKeptAdmitBundle(sealHome(), aid!)?.admit).toEqual(again.bundle!.admit);
   });
 
   it("does not parent a new act to policy-rejected same-nym evidence", async () => {
