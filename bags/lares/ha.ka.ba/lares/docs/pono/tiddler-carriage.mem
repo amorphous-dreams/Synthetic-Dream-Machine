@@ -61,9 +61,9 @@ uri-path          = "ha.ka.ba/lares/docs/pono/tiddler-carriage"
 * Verdict: `Tests 5 passed | 1 expected fail (6)` — the vector "the BYTES follow the pointer: B's cid/ holds the blob a fetch door carried" holds as `test.fails`; the day a door lands it reads "expected to fail" and retires.
 * A side-measure, reported for the two-vessel seat and NOT ruled here: a pointer LOADed into `bags/lares` on A BEFORE B dials reads `wiki which → lar:///ha.ka.ba/bags/lares` at once, and `(not found)` on A itself once B has stood (three runs); the same LOAD issued after B stands lands and crosses.
 
-''Step 2 — THE CROSS-OPERATOR CROSSING.'' The bulb stands as the one content-addressed public read-face the house serves (`GET /bulb/<cid>.bin`, `packages/lararium-node/src/bulb-read-face.ts`), and it answers off `blobByCid` built from `buildBulb(bulb)` — the genesis manifest's blobs alone (`bulb-read-face.ts:52-55`); a hearth's `cid/` never reaches a Herm.
+''Step 2 — THE CROSS-OPERATOR CROSSING.'' The bulb stands as the one content-addressed public read-face the house serves (`GET /bulb/<cid>.bin`, `packages/lararium-node/src/bulb-read-face.ts`), and it answers off `blobByCid` built from `buildBulb(bulb)` — the seed and its seed-derived inventory alone (`bulb-read-face.ts:188-189`); a hearth's `cid/` never reaches a Herm.
 
-* `packages/lararium-node/tests/bulb-serves-boot-cas-alone.test.ts` (green first run): a genesis cid → `200` with bytes that re-hash to the cid (CONTROL); a cid written into the SAME vessel's `cid/` dir but absent from the manifest → `404 unknown or stale bulb cid`.
+* `packages/lararium-node/tests/bulb-serves-boot-cas-alone.test.ts` (green first run): a genesis cid → `200` with bytes that re-hash to the cid (CONTROL); a cid written into the SAME vessel's `cid/` dir but absent from the seed-derived inventory → the closed door, one indistinguishable `404 route unavailable`.
 * `tools/mesh-scenarios.sh run_meme` gained one step, gated behind the bag seam it already reports. Run 2026-09-11 (`bash tools/mesh-scenarios.sh meme`, exit 0, every container down): A LOADs the same `.png` inside the mesh; `A staged: blobs 5 · referenced 1 · unreferenced 4 · pending 0 · bytes 3308699 · protected (genesis) 4`; `herm-source GET /bulb/497790947d466676….bin → 404` — GAP "the bulb serves the boot CAS alone — A's blob draws 404; no public-floor cid door stands". The fetch step behind it reads GAP "unwalkable until the crossing stands — B holds no pointer to fetch for". The scenario's own finding stands unchanged: two contracted operators hold two `lares` docs (`automerge:FVGJY9…` on A, `automerge:enPoFp…` on B) and the relation carries no bag between them.
 
 ''Step 3 — PIN AND RELEASE'' — built red-first; #/pin-and-release carries the reds and the code.
@@ -136,6 +136,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;B8Sp7Ylga9_fjhk0U6aBcuQPJiKL4tSp7c2npTclNsc
+<<^ code="&#x0003;">>ni:///sha-256;VyDPobQ-WmhZmVds68KfLwuH02LzdmqKoksggvWFw3I
 
 <<^ code="&#x0004;" -> to="?">>
