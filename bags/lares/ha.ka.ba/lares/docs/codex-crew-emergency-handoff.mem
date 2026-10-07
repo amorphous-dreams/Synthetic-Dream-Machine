@@ -11,7 +11,7 @@ mana       = 18
 manao      = 18
 manaoio    = 18
 role       = "emergency-room transfer for the Codex crew; records the observed repository boundary, current wounds, committed repairs, operator-held forks, and a cold-start triage order"
-status-why = "re-trued at 28e66b79e after the first 2026-10-04 transfer; it distinguishes committed repairs from live uncommitted lanes and from receipts not yet rerun at their repaired boundary"
+status-why = "re-trued at af40104b2 after the first 2026-10-04 transfer; it distinguishes committed repairs, hot shared-tree lanes, and receipts not yet rerun at their repaired boundary"
 tags       = ["docs/handoff", "lifecycle/standing", "triage/emergency-room", "mesh/offering-antigen"]
 title      = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -25,7 +25,7 @@ updated    = "2026-10-06"
 
 ! Emergency-room handoff — Codex crew, re-trued 2026-10-06
 
-''Scope.'' This carrier is a local reading at `28e66b79e`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
+''Scope.'' This carrier is a local reading at `af40104b2`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
 
 ''Read in this order.''
 
@@ -46,10 +46,10 @@ updated    = "2026-10-06"
 
 |!condition observed in this checkout |!required response |
 |---|---|
-|Current admission/cut-over lane |Dirty Mesh (`auth-wire`, `lar-ws-client-adapter`, `raise-challenge`, Pronaos/CAS seams), Node daemon/carriage/raise paths, CLI nexus/raise paths, `tools/contract-witness.sh`, and `tests/e2e/meme-realm-bag.test.ts` belong to another active healing lane. Do not build generated outputs from them, stage them, revert them, or use `git add -A`. Read their exact diff and the `hearths` hold before touching a nearby seam.|
-|New untracked admission seam |`packages/lararium-node/src/admit-bundle.ts` and its test have no committed baseline. Preserve their ownership boundary; do not fold them into this handoff or its offering witness.|
-|Uncommitted receiver-witness seam |`tests/harness/instance.ts` and untracked `tests/e2e/nexus-offering-replication.test.ts` remain one bounded offering WIP. Preserve them until the repaired boot boundary receives a fresh receipt.|
-|Concurrent TW5 source edits |`packages/lararium-tw5/**` has live source/test edits. Do not normalize, regenerate, or stage another hand's artifacts while this source lane remains live.|
+|Current admission/carriage lane |Dirty Mesh carriage/auth/raise seams; Node carriage, contract, admit-bundle, and raise seams; `tools/contract-witness.sh`; and their tests belong to a live healing lane. Do not build generated outputs from them, stage them, revert them, or use `git add -A`. Read their exact diff and the `hearths` hold before touching a nearby seam.|
+|Uncommitted receiver-witness seam |`tests/harness/instance.ts` and untracked `tests/e2e/nexus-offering-replication.test.ts` remain one bounded offering WIP. Their daemon launches use committed `dist` while the witness imports Node source, so a receipt waits for a settled source/build boundary.|
+|Concurrent TW5 and projection lane |`packages/lararium-tw5/**`, its generated plugin artifacts, `packages/lares-cli/src/commands/meme.ts`, and their tests carry live parser, weave, ingest, projection, and submission work. Do not normalize, regenerate, or stage another hand's artifacts while this lane remains live.|
+|Pronaos/arrival follow-on |`Pronaos`, arrival, Kindle, and smoke receipts landed at `37de22092` and `af40104b2`; any remaining dirty extension belongs to its landing hand. Keep arrival evidence separate from Offering transport/adoption claims.|
 |Submodules and worktree directories |`mempalace`, `VSCode-TW5-Syntax`, `.worktrees/`, and `.claude/worktrees/` carry independent state. Do not clean them as aftermath for this handoff.|
 |Offering Antigen scope |Do not add `nexusScopeCid`, declare `sealEpochCid` the final answer, or wire enforcement before the research collision reaches the operator.|
 |Generic offering adoption |Do not mint generic `take` or `stage` evidence. A local CAS observation already says what it knows. Adoption waits for an explicit receiver-owned recipe/staging target relation.|
@@ -67,6 +67,9 @@ The safety laws remain: no wall-clock authority substitute, no ambient global cu
 * `2ed97c057` makes the staged-e2e configuration declare same-origin once, instead of leaving ordinary scratch-root vessels to fail an unrelated origin composition before the test reaches its subject.
 * `0730dd41b` cuts membership consultation toward a socket-bound presented leaf admit. The leaf map and the root contract map remain separate; a refresh re-verifies against the local deny board and antigen. This is committed architecture, while related uncommitted follow-on edits remain another lane's work.
 * `099d2f88b` makes face-join return the canonical grant-record CID and causal heads, then tests a fresh local read of that exact record. It retires the broad full-record read door rather than treating a bounded view as the authority receipt.
+* `1f84c85e8` moves the Nexus and Nexus Offering refusal menus into `COMMAND_HELP`, preserves their full sub-door detail there, and expands the reach test over every dispatcher verb. The focused help/reach suite passes 39 tests and CLI typecheck passes.
+* `5eba52830` commits the two canonical local Offering Antigen scope studies. Their disagreement remains an operator-held contract decision; the commit preserves evidence and adds no enforcement.
+* `37de22092` provides the Pronaos first-arrival descriptor and Kindle verification surface; `af40104b2` makes smoke wait on causal vessel/oracle evidence rather than an incidental immediate read. These are committed arrival/boot receipts, not Offering adoption or authority receipts.
 * The surrounding healing wave also hardened carrier/frame law, origin custody, charter parsing, cross-Nexus carriage, causal record evidence, and test witnesses. Those receipts constrain the offering slice; they are not evidence that offering enforcement is complete.
 
 ''This carrier supersedes the old pre-repair lease/origin diagnosis in the linked Codex and ER handoffs. Those historic paragraphs remain until their owning hands re-true them; do not revive them as live causes.
@@ -114,9 +117,19 @@ Both local studies agree that board address selects a receiver's causal rendezvo
 |<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>|Keep board scope as the receiving relation and use existing signed `sealEpochCid` as the one cryptographic charter binding. Avoid a second field that can drift from the charter root.|
 |<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>|Keep board scope for carriage, add a stable charter-genesis `nexusScopeCid` to the signed act, and retain rotating `sealEpochCid` for the signing quorum lineage.|
 
-Neither report has authority alone. Both now carry canonical frame spelling in this checkout. The repository evidence in this audit does not establish whether the external prior-art pair, exchange, and second research wave finished; treat that as an explicit coordination question, not a repository-derived claim.
+Neither report has authority alone. `5eba52830` preserves both as canonical carriers. The repository evidence in this audit does not establish whether the external prior-art pair, exchange, and second research wave finished; treat that as an explicit coordination question, not a repository-derived claim.
 
 ''Required collision.'' First repair/read both local reports as valid carriers. Then compare content-addressed federation, capability scope, signature-bound revocation, and causal authority patterns to DreamNet's no-global-now and identity-as-relation law. The decision memo must test copied foreign acts, same-Nexus replica carriage, charter rotation, torn charter, wrong roster, own/anchor scope, and concurrent heads. It must state where each outside analogy breaks. The operator chooses the contract before enforcement code exists.
+
+<<~/ahu>>
+
+<<~ ahu #/vessel-parity>>
+
+! Vessel parity — a real browser design debt
+
+`tools/vessel-parity-witness.sh` now reads `makePersonaGroupIdentityRing` on the Node shore but not the Browser shore. This does not name dead code: `open-node-vessel.ts` composes the ring into its live self-slot federation gate, source-weld tests pin that composition, and `persona-ring-cross-operator-admit.test.ts` exercises the Node crossing. Do not delete or disable the Node ring merely to make the parity weld green.
+
+The owed cut needs a Browser-local analogue that reads a browser-held face grant, a browser-held persona-KEL chain, and a peer proof without inventing an inbound WebSocket-server capability. First write the browser red matrix: grant-holder, stranger, absent/torn KEL, foreign plane, own hand, and a proof that the browser opener actually composes the resulting identity ring. Then decide the browser transport/peer-proof adapter and implement it red-first. The existing Browser `IdentityRing | null` parameter names a seam, not a completed composition.
 
 <<~/ahu>>
 
@@ -128,6 +141,7 @@ Neither report has authority alone. Both now carry canonical frame spelling in t
 
 # Establish whether the external/local collision protocol completed, then deliver a short operator decision memo plus a red-test matrix.
 # Keep Offering Antigen enforcement unimplemented while the scope choice remains open.
+# Independently scope the Browser identity-ring parity cut; it needs a capability/transport design and its own red matrix, not a deletion or a blind Node import.
 
 !! Enactment seat
 
@@ -146,6 +160,7 @@ Neither report has authority alone. Both now carry canonical frame spelling in t
 # Finish the current presented-admit cut-over and its contract/e2e witness on its owner’s ground; its two-map distinction must survive every cleanup.
 # Re-run and commit the offering receiver e2e only after the source/build boundary is stable.
 # Bring the Antigen scope decision to the operator after collision; implement the selected contract red-first.
+# Keep Pronaos first-arrival, Offering carriage, local inspection, adoption, grammar admission, and Antigen enforcement as separate receipts.
 # Build the multi-vessel/Docker receipt only from a runner that can inventory and tear down its own resources. It proves partial replication, partition/rejoin, custody, and named refusals; it never grants authority.
 # Keep D-VR-C custody, contract-frontier evidence, Pronaos reach, agent-worldline boundaries, live quoteblock behavior, and parallel-draft projection as distinct roadmap lanes. A green in one does not close another.
 
@@ -155,7 +170,7 @@ Neither report has authority alone. Both now carry canonical frame spelling in t
 
 ! Blind-reader receipt
 
-A context-free reviewer read this carrier against the repository at `28e66b79e` without editing source or running a build. The review confirmed the committed lease, boot, presented-admit, face-join, and receiver-inspection claims; it also corrected the owned-layer test provenance, the local Antigen report framing, the unproven external-research status, the receiver refusal scope, and the source-versus-`dist` test boundary. A later hand repeats that procedure at its own revision before treating this carrier as current.
+A context-free reviewer read the preceding revision of this carrier against the repository at `28e66b79e` without editing source or running a build. The review confirmed the committed lease, boot, presented-admit, face-join, and receiver-inspection claims; it also corrected the owned-layer test provenance, the local Antigen report framing, the unproven external-research status, the receiver refusal scope, and the source-versus-`dist` test boundary. A later hand repeats that procedure at its own revision before treating this carrier as current.
 
 <<~/ahu>>
 
@@ -168,5 +183,5 @@ A context-free reviewer read this carrier against the repository at `28e66b79e` 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CjzlLdxpvs3-KQJX2pUKFoGLO5xrJ5NsAEH8kVhop4Y
+<<^ code="&#x0003;">>ni:///sha-256;wSmE73g_4tbXVpl0lCapqDGAED_BXkrfa6k44APBxWU
 <<^ code="&#x0004;" -> to="?">>
