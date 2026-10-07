@@ -24,13 +24,14 @@ describe("★ the deserializer mints no // title ★", () => {
   test("★ a genuinely nested child (its own full path) joins with ONE slash ★", () => {
     expect(fragments(nested("#/parent", "#/parent/child"))).toContain("/parent/child");
   });
-  // ONE SLOT, ONE ADDRESS (src/deserializer.ts:415) — the scanner admits the rooted spelling only.
-  // An unrooted `#parent` opens no slot at all, so it mints no title and nests nothing beneath it;
-  // its body text is scanned at the ENCLOSING level, where the rooted `#/child` floats to the root.
-  test("an unrooted parent opens no slot — a rooted child beneath it floats to the root", () => {
-    const found = fragments(nested("#parent", "#/child"));
-    expect(found).toContain("/child");
-    expect(found).not.toContain("/parent/child");
+  // ONE SLOT, ONE ADDRESS — the scanner admits the rooted spelling only. An unrooted `#parent` opens no
+  // slot at all, so its closer closes nothing: the family split leaves an ERROR, and the quoteblock
+  // floor (`ahu.mem#/quoteblock-floor`) fences the whole chunk. No title is minted at any depth.
+  test("an unrooted parent opens no slot — its closer closes nothing, so the whole chunk fences", () => {
+    const records = memeticWikitextDeserializer(nested("#parent", "#/child"), { title: URI });
+    expect(records.map((r) => r.title)).toEqual([URI]);
+    expect(String(records[0]!.text)).toMatch(/^```text\n<<~ ahu #parent>>/);
+    expect(String(records[0]!["$quoteblocked"])).toContain("ahu-orphan-close");
   });
   test("CONTROL: two unrooted opens mint no slot at either depth", () => {
     expect(fragments(nested("#parent", "#child"))).toEqual([]);

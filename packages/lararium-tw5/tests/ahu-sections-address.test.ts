@@ -116,6 +116,10 @@ describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.
   });
 });
 
+/** A walk that deserializes every corpus carrier scales with the corpus; measured ~2.7 s alone, past
+ *  the 5 s default under the full suite's parallel load. */
+const CORPUS_WALK_MS = 30_000;
+
 describe("★ every named ahu section addresses ★", () => {
   test("① every ahu open carries a close", () => {
     const drift: string[] = [];
@@ -158,5 +162,5 @@ describe("★ every named ahu section addresses ★", () => {
       if (lost.length) drift.push(`${f}: ${lost.length} unaddressable — ${lost.slice(0, 4).join(" ")}`);
     }
     expect(drift).toEqual([]);
-  });
+  }, CORPUS_WALK_MS);
 });

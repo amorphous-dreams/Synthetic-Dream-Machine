@@ -64,10 +64,14 @@ describe("★ root metadata before STX is a frame fault, never recovered ★", (
     expect(diagnostics.filter((d) => d.severity === "error").map((d) => d.code)).toEqual(["meta-before-stx"]);
   });
 
-  test("the parser lifts no field from it — the SOH..STX bytes ride verbatim as `header-text`", () => {
-    const map = records(preStx);
-    expect(map.get(URI)!["custom"]).toBeUndefined();
-    expect(map.get(URI)!["uri-path"]).toBeUndefined();
-    expect(map.get(`${URI}#/$header-text`)?.text).toMatch(/^```toml meta\n[\s\S]*custom   = "root-authority"[\s\S]*```\s*$/);
+  test("the deserializer lifts no field from it — the torn carrier holds verbatim as ONE flagged record", () => {
+    const held = memeticWikitextDeserializer(preStx, { title: URI });
+    expect(held).toHaveLength(1);
+    expect(held[0]!.title).toBe(URI);
+    expect(held[0]!.text).toBe(preStx);
+    expect(held[0]!.type).toBe("text/plain");
+    expect(held[0]!["custom"]).toBeUndefined();
+    expect(held[0]!["uri-path"]).toBeUndefined();
+    expect(String(held[0]!["$torn"])).toContain("toml meta fence stands before STX");
   });
 });

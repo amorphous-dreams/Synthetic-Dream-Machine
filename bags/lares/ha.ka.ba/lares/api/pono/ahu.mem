@@ -129,15 +129,31 @@ A child-slot save re-grades its root through the backstop's child gate (`package
 
 !!! WHERE the floor sits ~ BUILT
 
-''The whole-chunk floor runs at the ingest gate, directly after the frame `verdict()`, on EVERY door'' —
-no door carries its own copy, and no door skips it. The order runs fixed:
+''The whole-chunk floor runs inside the deserializer, directly after the frame `verdict()`'' — a pure,
+idempotent text transform, so every door that reads a carrier fences by construction. No door carries
+its own copy, and no door skips it. The order runs fixed:
 
 # ''Frame verdict first.'' The frame reads before any grammar does (`packages/lararium-memetic-frame/src/verdict.ts`).
-# ''A torn frame REFUSES.'' A frame that cannot be divided without choosing never reaches decomposition, and no fence repairs it: quoteblocking a torn frame would hide the tear inside a span that reads sound.
+# ''A torn frame never decomposes.'' TiddlyWiki's deserializer contract runs synchronous, fields out, with no refuse channel — so the deserializer holds a torn carrier verbatim as ONE record (`text/plain`, the frame's faults on `$torn`), and the Confluence gate refuses it on the frame's own error grade. No fence repairs a tear: quoteblocking a torn frame would hide the tear inside a span that reads sound.
 # ''Else decompose'' — the family split runs over the framed body.
 # ''If any ERROR or MISSING node remains'' anywhere in that decomposition, ''the WHOLE chunk fences'' and the fence surfaces. A partial fence over only the faulted span stays forbidden at this grain: no family stands yet to hold the sound remainder.
 
-''The seat.'' `wholeChunkFloor` (`packages/lararium-tw5/src/ingest-gate.ts`) reads each carrier's framed body through the family split's own machine reader — `findAhuBalanceFaults` over the fence mask, never the grammar — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The memetic congruence holds it (`memeticIngestOps.deserialize` and `declaredStructure`), so `decideIngest` on every door, and `canonicalizeCarrierText` on the projecting leg, read one fence: the head, the frame and the root meta stay outside it, and a check that matched re-stamps over the fenced body. The finding rides the diagnostics channel as `quoteblocked` (warning), the placement receipt's warnings on every door, and — where the sink holds a wiki — the one alert rail (`surfaceMemeAlert`, `packages/lararium-tw5/src/place-meme.ts`) the child gate shares. Witness: `packages/lararium-tw5/tests/quoteblock-floor-ingest.test.ts`.
+''The seat.'' `quoteblockFloor` (`packages/lararium-tw5/src/deserializer.ts`), laid by `memeticWikitextDeserializer` itself, reads each carrier's framed body through the family split's own machine reader — `findAhuBalanceFaults` over the fence mask, never the grammar — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The head, the frame and the root meta stay outside the fence, a check that matched re-stamps over the fenced body, and the fenced root record carries `$quoteblocked` — the floor's own account of what it fenced and why (`$`-opening, so it never re-emits into the meta fence or moves the canonical render). A fenced body masks every sigil it holds, so a second pass finds nothing left to fence.
+
+''Every door, one fence.'' Each reads the carrier through that deserializer:
+
+* the Confluence gate (`decideIngest`, through `deserializeCarrier`), and with it `placeMeme` on every door that places — the meme face, the `/memes/` routes, the syncer INGEST, the backstop — and `canonicalizeCarrierText` on the projecting leg;
+* the bag doors: LOAD, a native single-carrier INGEST and each pack member, whenever TiddlyWiki's registry hands the bytes to the memetic type;
+* TiddlyWiki's own doors — import, drag-drop, paste and the boot-folder load — through the registered `text/memetic-wikitext+tiddlywiki` deserializer.
+
+''Every door, surfaced.'' A fence nobody sees reads as a drop wearing a cure's face:
+
+* ''a wiki sink'' raises the one alert rail (`surfaceMemeAlert`, `packages/lararium-tw5/src/place-meme.ts`) the child gate shares;
+* ''a bag door'' holds no rail, so its receipt carries the warning: LOAD's summary, the syncer INGEST's `ingest` receipt, a native INGEST's receipt and each pack member's own receipt — and a torn hold names its tear there too;
+* ''import, drop and paste'' stage every record in `$:/Import` for the operator, and the `import-floor-upgrader` module (`packages/lararium-tw5/src/modules/import-floor-upgrader.ts`) speaks beside each fenced or torn title in that listing — it unchecks nothing and edits nothing;
+* ''the boot-folder load'' stages nothing for review; its fence and its torn hold surface on the record itself, through `$quoteblocked` and `$torn`.
+
+Witness: `packages/lararium-tw5/tests/quoteblock-floor-ingest.test.ts` (the gate, the projecting leg, the backstop) and `packages/lararium-tw5/tests/quoteblock-floor-doors.test.ts` (the deserializer contract, every bag door, the import listing, a booted wiki).
 
 ''The stock syncer keeps NEVER-REFUSE.'' A child-slot save on the stock syncer path lands as written and only re-grades its root (the backstop paragraph above); the WHERE above governs the ingest gate's whole-chunk door and changes nothing about that path.
 
@@ -156,6 +172,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RnMRB3YUpxg130J-4VsbBd34X1gqq907VMcbBHTSz_Q
+<<^ code="&#x0003;">>ni:///sha-256;KFSjqfzaGAKQksY_h-Mhjk_nYh3AhockbFvEUg27tcM
 
 <<^ code="&#x0004;" -> to="?">>

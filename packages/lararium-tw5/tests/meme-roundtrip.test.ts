@@ -151,12 +151,12 @@ describe("Kapu SOH variant survives the round trip", () => {
   const KAPU = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="${"&#x0011;"}" namespace="⊙" from="?" -> to="${KAPU_URI}">>
+<<^ code="${"&#x0002;"}">>
+
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/memory/kapu-carrier"
 type     = "text/memetic-wikitext+tiddlywiki"
 \`\`\`
-
-<<^ code="${"&#x0002;"}">>
 
 kapu body.
 

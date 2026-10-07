@@ -402,10 +402,10 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   const carrier = (soh: string, stx: string, etx: string, eot: string): string =>
     `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n`
     + `<<^ code="${soh}" from="?" -> to="${URI}">>\n`
+    + `<<^ code="${stx}">>\n\n`
     + '```toml meta\n'
     + `uri-path  = "ha.ka.ba/lares/api/pono/example"\n`
     + '```\n\n'
-    + `<<^ code="${stx}">>\n\n`
     + `! Entry\n\nthe body stands here.\n\n`
     + `<<^ code="${etx}">>ni:///sha-256;probe\n\n`
     + `<<^ code="${eot}" -> to="?">>\n`;

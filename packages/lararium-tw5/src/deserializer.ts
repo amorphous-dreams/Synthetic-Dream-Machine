@@ -42,12 +42,15 @@ import {
   frameHex,
   readFrame,
   frameCarrier,
+  stampCarrier,
+  verdict,
   type FrameRead,
 } from "@lararium/memetic-frame";
 import { renderMetaTomlLine } from "./meme-normalize.js";
 import { lendHostGlobals } from "./host-globals-lend.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
+  findAhuBalanceFaults,
   findTopLevelAhuBlocks,
   KAHEA_REF_RE,
 } from "./meme-ast/ahu-scan.js";
@@ -95,6 +98,20 @@ export function memeticWikitextDeserializer(
   text:   string,
   fields: Record<string, unknown>,
 ): TiddlerFields[] {
+  return deserializeCarrier(text, fields).records;
+}
+
+/** A carrier read at the shore: its records, and the floor the read laid (null where nothing fenced). */
+export interface CarrierReading {
+  readonly records: TiddlerFields[];
+  readonly floor: QuoteblockFloor | null;
+}
+
+/** The deserializer with its floor in hand — for a reader (the Confluence gate) that grades the fence too. */
+export function deserializeCarrier(
+  text:   string,
+  fields: Record<string, unknown>,
+): CarrierReading {
   // A plain server's sandbox lends no TextEncoder; the hashing below needs one whichever path reached
   // here, startup module or not.
   lendHostGlobals(globalThis, typeof process === "undefined" ? undefined : process);
@@ -105,12 +122,26 @@ export function memeticWikitextDeserializer(
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
   const baseUri = String(fields?.["title"] ?? "");
+  // THE FRAME READS FIRST, AND THE QUOTEBLOCK FLOOR SITS RIGHT BEHIND IT (`ahu.mem#/quoteblock-floor`).
+  // Every door that reads a carrier — the bag doors, the Confluence gate, and TW5's own import, drop,
+  // paste and boot-folder load through this registered deserializer — reads the same fence, because the
+  // fence is laid here. TW5's contract is synchronous fields-out with no refuse channel, so a torn frame
+  // holds verbatim as ONE flagged record (a gate above refuses it on its own grade), and a fence carries
+  // a field that names it on the record the operator reviews.
+  const frame = verdict(text);
+  if (frame.kind === "torn") return { records: [heldTorn(baseUri, text, fields, frame.faults.map((f) => f.message))], floor: null };
+  let stream = readStream(text);
+  const floor = frame.kind === "bare" ? null : layFloor(baseUri, text, carriersOf(stream, baseUri, text), frame.kind === "match");
+  if (floor) {
+    text = floor.text;
+    stream = readStream(text);
+  }
   const result: TiddlerFields[] = [];
   // The file-level carriage — the prologue above the head and the bytes past the frame — hangs on the
   // FIRST and LAST carrier respectively, so it is gathered here and joined once every close is read.
   const carriage: TiddlerFields[] = [];
 
-  const { closes, prologue, postamble, slotText } = readStream(text);
+  const { closes, prologue, postamble, slotText } = stream;
   for (const ev of closes) {
     const uri      = ev.uri || baseUri;
     // MemeStreamParser's fullText extends past the ETX in single-meme
@@ -158,7 +189,112 @@ export function memeticWikitextDeserializer(
   }
 
   result.push(...carriage);
-  return result;
+  if (floor) {
+    for (const r of result) if (floor.fenced.has(String(r.title))) r[QUOTEBLOCKED_FIELD] = floor.message;
+  }
+  return { records: result, floor };
+}
+
+// ---------------------------------------------------------------------------
+// THE QUOTEBLOCK FLOOR, whole-chunk grain — a pure, idempotent text transform
+// ---------------------------------------------------------------------------
+
+/** The quoteblock floor's code — on the diagnostics channel, and on the alert rail it surfaces on. */
+export const QUOTEBLOCKED_CODE = "quoteblocked";
+
+/** The field a fenced carrier's root record carries: the floor's own account of what it fenced and why.
+ *  `$`-opening, so it never re-emits into the meta fence and never moves the canonical render. */
+export const QUOTEBLOCKED_FIELD = "$quoteblocked";
+
+/** The field a torn carrier's held record carries: every fault the frame named, joined. */
+export const TORN_FIELD = "$torn";
+
+/** The type bytes are held under when no frame reads them as a meme: the bytes, unread. */
+export const BARE_DATA_TYPE = "text/plain";
+
+/**
+ * A torn frame, held: ONE record carrying the bytes verbatim — no meta lifted, no slot split, the frame's
+ * faults on the record. Division would mean choosing where the text ends, and no reader chooses in
+ * silence; a gate above refuses the carrier on the frame's own grade.
+ */
+function heldTorn(uri: string, text: string, fields: Record<string, unknown>, faults: readonly string[]): TiddlerFields {
+  return { ...asStringFields(fields), title: uri, type: BARE_DATA_TYPE, text, [TORN_FIELD]: faults.join("; ") };
+}
+
+/**
+ * Fence a body as a quoteblock the frame mask recognises — a backtick run strictly longer than any run
+ * already inside the body (so the body can never read as the fence's own closer), with an info string
+ * so the fenced body reads as deliberately quoted rather than an accidental code sample. Every sigil
+ * inside goes inert (fence-mask) until the operator unwraps it. Both grains of the floor fence through
+ * this one function: the whole chunk here, one ahu body in the backstop's child gate.
+ */
+export function quoteblockFence(body: string): string {
+  let maxRun = 0;
+  for (const run of body.match(/`+/g) ?? []) maxRun = Math.max(maxRun, run.length);
+  const fence = "`".repeat(Math.max(3, maxRun + 1));
+  return `${fence}text\n${body}\n${fence}`;
+}
+
+/** What the floor laid: the fenced text, the carrier roots it fenced, and its account of why. */
+export interface QuoteblockFloor {
+  readonly text: string;
+  readonly fenced: ReadonlySet<string>;
+  readonly message: string;
+}
+
+/**
+ * THE QUOTEBLOCK FLOOR, whole-chunk grain (`ahu.mem#/quoteblock-floor`). Runs the family split's own
+ * reader — the machine `ahu-scan` stack, under the fence mask, never the grammar — over each carrier's
+ * framed body. Where that decomposition leaves an ERROR (`ahu-orphan-close`: a closer that closes
+ * nothing) or a MISSING (`ahu-unbalanced-open`: an opener whose closer never arrives), the carrier's
+ * WHOLE body (everything after its root meta, up to ETX) fences as one quoteblock: no family stands yet
+ * to hold a sound remainder, so the carrier is the only grain. The frame, the head and the root meta
+ * stay outside the fence, so the record keeps its address and fields; `restamp` re-stamps a check that
+ * matched the arriving body over the fenced one.
+ *
+ * Pure and idempotent: a fenced body masks every sigil it holds, so a second pass finds no fault and
+ * answers null. Null as well when every carrier decomposes. The caller reads the frame first — a torn
+ * frame never reaches this read, because a fence over a tear would hide it inside a span that reads
+ * sound. Vocabulary never reaches it either: a dialect edit can change how a meme reads, never whether
+ * it fences.
+ */
+export function quoteblockFloor(uri: string, text: string, restamp: boolean): QuoteblockFloor | null {
+  // The deserializer's tolerant read, folded once here too, so the offsets below index the bytes it reads.
+  let folded = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  if (folded.includes("\r")) folded = folded.replace(/\r\n?/g, "\n");
+  return layFloor(uri, folded, carrierTexts(folded, uri), restamp);
+}
+
+/** The floor over a folded text and the carriers already read from it. */
+function layFloor(uri: string, folded: string, carriers: readonly CarrierText[], restamp: boolean): QuoteblockFloor | null {
+  let out = "";
+  let cursor = 0;
+  const named: string[] = [];
+  const fenced = new Set<string>();
+  for (const carrier of carriers) {
+    const division = divideCarrier(carrier.text);
+    const faults = findAhuBalanceFaults(division.body);
+    if (faults.length === 0 || division.body === "") continue;
+    const at = folded.indexOf(carrier.text, cursor);
+    if (at < 0) continue;
+    // The body opens after STX (or after the head, where no STX stands) and past the root meta.
+    const headLength = carrier.text.length - division.noSoh.length;
+    const opens = headLength + (division.frame.stx ? division.frame.stx.end : 0);
+    const bodyAt = carrier.text.indexOf(division.body, opens);
+    if (bodyAt < 0) continue;
+    out += folded.slice(cursor, at + bodyAt) + quoteblockFence(division.body);
+    cursor = at + bodyAt + division.body.length;
+    fenced.add(carrier.uri);
+    named.push(...faults.map((f) => f.code === "ahu-unbalanced-open" ? `${f.code} ${f.slot}` : f.code));
+  }
+  if (named.length === 0) return null;
+  const joined = out + folded.slice(cursor);
+  return {
+    text: restamp ? stampCarrier(joined) : joined,
+    fenced,
+    message: `${uri}: the family split cannot decompose this carrier (${[...new Set(named)].join(", ")}) — the whole ` +
+      `chunk is fenced as one quoteblock, inert until the operator unwraps it`,
+  };
 }
 
 type CarrierClose = Extract<MemeStreamEvent, { kind: "carrier-close" }>;
@@ -254,7 +390,12 @@ export interface CarrierText {
 export function carrierTexts(text: string, baseUri: string): CarrierText[] {
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
-  const { closes, postamble } = readStream(text);
+  return carriersOf(readStream(text), baseUri, text);
+}
+
+/** The carriers one stream reading divides a (folded) text into. */
+function carriersOf(stream: StreamReading, baseUri: string, text: string): CarrierText[] {
+  const { closes, postamble } = stream;
   const out = closes.map((ev) => ({ uri: ev.uri || baseUri, text: ownText(ev, closes, postamble) }));
   return out.length === 0 && text.trim() ? [{ uri: baseUri, text }] : out;
 }

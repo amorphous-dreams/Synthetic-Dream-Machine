@@ -35,8 +35,9 @@
  *      nothing) or a MISSING (an opener whose closer never arrives) fences its WHOLE body as one
  *      quoteblock — a one-way demotion, never a drop — and carries a `quoteblocked` warning that the
  *      placement surfaces on the alert rail. A torn frame never reaches the floor: it refuses at 2.
- *      The memetic congruence holds the floor (`memeticIngestOps.deserialize`), so every door that
- *      reads the gate — and `canonicalizeCarrierText`, the projecting leg — reads one fence.
+ *      The deserializer lays the floor (`quoteblockFloor`, inside `memeticWikitextDeserializer`), so
+ *      every door that reads a carrier — this gate, `canonicalizeCarrierText` on the projecting leg,
+ *      and TW5's own import doors through the registered deserializer — reads one fence.
  *   2. the parse grades error    → REFUSE (the carrier stopped round-tripping)
  *      anything milder            → carry the diagnostics forward, never drop the bytes
  *      (native ops never grade error — a native deserialize throws — so the refuse
@@ -54,13 +55,13 @@
 // PURE subpath (no Automerge) — the barrel drags wasm the plugin build cannot bundle.
 import { digestsEqual } from "@lararium/mesh/agile-digest";
 import type { TiddlerFields } from "./deserializer.js";
-import { memeticWikitextDeserializer, expandMemeRefs, carrierTexts, divideCarrier } from "./deserializer.js";
-import { collectAhuSlots, findAhuBalanceFaults } from "./meme-ast/ahu-scan.js";
+import { deserializeCarrier, expandMemeRefs, quoteblockFloor, QUOTEBLOCKED_CODE, BARE_DATA_TYPE } from "./deserializer.js";
+import { collectAhuSlots } from "./meme-ast/ahu-scan.js";
 import { parseMemeText } from "./meme-ast/parse.js";
 import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
-import { headUriOf, stampCarrier, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
+import { headUriOf, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
 import { checkCarrier } from "./carrier-check.js";
 import { metaKeyRedefinitions } from "./root-meta.js";
 
@@ -91,9 +92,6 @@ export interface IngestOps<R = TiddlerFields> {
   grade(diagnostics: readonly MemeDiagnostic[]): DiagnosticSeverity | "clean";
   frame?(text: string): FrameVerdict;
 }
-
-/** The type bare data is held under: the bytes, unread. */
-export const BARE_DATA_TYPE = "text/plain";
 
 /** Bare data, held: one record carrying the bytes verbatim — no meta lifted, no slot split. */
 function bareRecord(uri: string, text: string): TiddlerFields {
@@ -143,69 +141,8 @@ export function frameDiagnostics(uri: string, v: FrameVerdict, length: number): 
   }
 }
 
-/** The quoteblock floor's code — on the diagnostics channel, and on the alert rail it surfaces on. */
-export const QUOTEBLOCKED_CODE = "quoteblocked";
-
-/**
- * Fence a body as a quoteblock the frame mask recognises — a backtick run strictly longer than any run
- * already inside the body (so the body can never read as the fence's own closer), with an info string
- * so the fenced body reads as deliberately quoted rather than an accidental code sample. Every sigil
- * inside goes inert (fence-mask) until the operator unwraps it. Both grains of the floor fence through
- * this one function: the whole chunk here, one ahu body in the backstop's child gate.
- */
-export function quoteblockFence(body: string): string {
-  let maxRun = 0;
-  for (const run of body.match(/`+/g) ?? []) maxRun = Math.max(maxRun, run.length);
-  const fence = "`".repeat(Math.max(3, maxRun + 1));
-  return `${fence}text\n${body}\n${fence}`;
-}
-
-/**
- * THE QUOTEBLOCK FLOOR, whole-chunk grain (`ahu.mem#/quoteblock-floor`). Runs the family split's own
- * reader — the machine `ahu-scan` stack, under the fence mask, never the grammar — over each carrier's
- * framed body. Where that decomposition leaves an ERROR (`ahu-orphan-close`: a closer that closes
- * nothing) or a MISSING (`ahu-unbalanced-open`: an opener whose closer never arrives), the carrier's
- * WHOLE body (everything after its root meta, up to ETX) fences as one quoteblock: no family stands yet
- * to hold a sound remainder, so the carrier is the only grain. The frame, the head and the root meta
- * stay outside the fence, so the record keeps its address and fields; a check that matched the
- * arriving body is re-stamped over the fenced one.
- *
- * Answers the fenced text and the `quoteblocked` warning naming every fault, or null when every
- * carrier decomposes. Vocabulary never reaches this read: a dialect edit can change how a meme reads,
- * never whether it fences.
- */
-export function wholeChunkFloor(uri: string, text: string): { text: string; diagnostic: MemeDiagnostic } | null {
-  // The deserializer's tolerant read, folded once here too, so the offsets below index the bytes it reads.
-  let folded = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
-  if (folded.includes("\r")) folded = folded.replace(/\r\n?/g, "\n");
-  let out = "";
-  let cursor = 0;
-  const named: string[] = [];
-  for (const carrier of carrierTexts(folded, uri)) {
-    const division = divideCarrier(carrier.text);
-    const faults = findAhuBalanceFaults(division.body);
-    if (faults.length === 0 || division.body === "") continue;
-    const at = folded.indexOf(carrier.text, cursor);
-    if (at < 0) continue;
-    // The body opens after STX (or after the head, where no STX stands) and past the root meta.
-    const headLength = carrier.text.length - division.noSoh.length;
-    const opens = headLength + (division.frame.stx ? division.frame.stx.end : 0);
-    const bodyAt = carrier.text.indexOf(division.body, opens);
-    if (bodyAt < 0) continue;
-    out += folded.slice(cursor, at + bodyAt) + quoteblockFence(division.body);
-    cursor = at + bodyAt + division.body.length;
-    named.push(...faults.map((f) => f.code === "ahu-unbalanced-open" ? `${f.code} ${f.slot}` : f.code));
-  }
-  if (named.length === 0) return null;
-  const fenced = out + folded.slice(cursor);
-  const restamped = verdict(text).kind === "match" ? stampCarrier(fenced) : fenced;
-  return {
-    text: restamped,
-    diagnostic: diagnostic("warning", QUOTEBLOCKED_CODE,
-      `${uri}: the family split cannot decompose this carrier (${[...new Set(named)].join(", ")}) — the whole ` +
-      `chunk is fenced as one quoteblock, inert until the operator unwraps it`, text.length),
-  };
-}
+/** The floor's vocabulary is the deserializer's own (the floor is laid there); the gate speaks it. */
+export { QUOTEBLOCKED_CODE, quoteblockFence } from "./deserializer.js";
 
 /**
  * The memetic-wikitext ops — the DEFAULT congruence. `decideIngest` reads these
@@ -217,13 +154,14 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
   deserialize(uri, text) {
     const frame = verdict(text);
     if (frame.kind === "bare") return { records: [bareRecord(uri, text)], diagnostics: frameDiagnostics(uri, frame, text.length) };
-    // The floor reads AFTER the frame verdict and never under a torn one: a tear refuses below, and a
-    // fence over it would hide the tear inside a span that reads sound.
-    const floor = frame.kind === "torn" ? null : wholeChunkFloor(uri, text);
+    // The deserializer lays the floor right behind the frame verdict, and never under a torn one: a
+    // tear refuses below, and a fence over it would hide the tear inside a span that reads sound. The
+    // reads below stand on the text the records were split from — the fenced one, where a fence stands.
+    const { records, floor } = deserializeCarrier(text, { title: uri });
     const read = floor?.text ?? text;
     const failures = parseMemeText(uri, read, getGrammar() ?? undefined).failures;
     return {
-      records: memeticWikitextDeserializer(read, { title: uri }),
+      records,
       diagnostics: [
         ...failuresToDiagnostics(failures, read.length),
         // The frame the bytes ARRIVED in is the one graded; the fence re-stamps a check that matched.
@@ -232,7 +170,7 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
         // A meta fence defining a key twice states no fields at all (TOML refuses the whole body), so the
         // carrier refuses at error grade rather than ingesting with its identity silently emptied.
         ...metaKeyRedefinitions(read).map((r) => diagnostic("error", "duplicate-meta-key", `${uri}: ${r.message}`, read.length)),
-        ...(floor ? [floor.diagnostic] : []),
+        ...(floor ? [diagnostic("warning", QUOTEBLOCKED_CODE, floor.message, text.length)] : []),
       ],
     };
   },
@@ -244,7 +182,7 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
   // zero slots (fence-mask), so the ahu-fidelity guard passes by construction and the fence can never
   // mint a phantom slot or a false conflict.
   declaredStructure(text) {
-    return collectAhuSlots(wholeChunkFloor("", text)?.text ?? text);
+    return collectAhuSlots(quoteblockFloor("", text, false)?.text ?? text);
   },
   grade(diagnostics) {
     return gradeOf(diagnostics);

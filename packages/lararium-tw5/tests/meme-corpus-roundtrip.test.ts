@@ -69,6 +69,10 @@ function carriers(): Array<{ rel: string; src: string; uri: string }> {
   return out;
 }
 
+/** A walk that deserializes every corpus carrier twice scales with the corpus; measured ~4.3 s alone,
+ *  past the 5 s default under the full suite's parallel load. */
+const CORPUS_WALK_MS = 30_000;
+
 describe("corpus round-trip — the lens laws over every lares-bag carrier", () => {
   const all = carriers();
 
@@ -97,5 +101,5 @@ describe("corpus round-trip — the lens laws over every lares-bag carrier", () 
       if (out2 !== out) { failures.push(`${rel}: not idempotent`); continue; }
     }
     expect(failures, failures.join("\n")).toEqual([]);
-  });
+  }, CORPUS_WALK_MS);
 });

@@ -52,7 +52,7 @@ import {
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
-import { memeticWikitextDeserializer } from "./deserializer.js";
+import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { frameAlt } from "@lararium/memetic-frame";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
@@ -686,6 +686,27 @@ async function landSkinnyHandle(
   await writeIn(access, toBag, { tiddler, meta: { changeId } }, o);
 }
 
+/**
+ * What the shore said about the records it handed a bag door — the quoteblock floor's account of a
+ * fence it laid (`ahu.mem#/quoteblock-floor`) and the faults a torn frame was held verbatim under. A bag
+ * holds no alert rail, so the door's receipt carries them: a fence nobody sees reads as a drop.
+ */
+function shoreWarnings(records: ReadonlyArray<Record<string, unknown>>): string[] {
+  const out: string[] = [];
+  for (const r of records) {
+    for (const field of [QUOTEBLOCKED_FIELD, TORN_FIELD]) {
+      const v = r[field];
+      if (typeof v === "string" && v !== "") out.push(field === TORN_FIELD ? `${String(r["title"])}: torn frame held verbatim — ${v}` : v);
+    }
+  }
+  return out;
+}
+
+/** The warnings key, present only where the shore spoke — a clean receipt keeps its shape. */
+function withWarnings(receipt: Record<string, unknown>, warnings: readonly string[]): Record<string, unknown> {
+  return warnings.length === 0 ? receipt : { ...receipt, warnings: [...warnings] };
+}
+
 async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const carriers = action.carriers ?? [];
   if (carriers.length === 0) {
@@ -695,6 +716,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     );
   }
   const titles: string[] = [];
+  const warnings: string[] = [];
   for (const carrier of carriers) {
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never entering the CRDT (nor RAM here — the gesture flags it, so we honor the flag
@@ -745,6 +767,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
         fieldsList[0] = { ...fieldsList[0], ...metaFields };
       }
     }
+    warnings.push(...shoreWarnings(fieldsList));
     for (const fields of fieldsList) {
       const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
       const title = own || (carrier.title ?? "");
@@ -757,7 +780,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       titles.push(title);
     }
   }
-  return { sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId, count: titles.length, titles };
+  return withWarnings({ sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId, count: titles.length, titles }, warnings);
 }
 
 
@@ -892,8 +915,10 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         { uri, text: carrierText, baseHash: carrier.syncedHash, hash: renderHash },
         bagMemeSink(access, action.toBag, action.changeId, o),
       );
+      // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence
+      // it laid, which a bag sink has no rail to raise.
       results.push(
-        placed.decision === "ingest"  ? { uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned } :
+        placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned }, placed.warnings) :
         placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason } :
         placed.decision === "refuse"  ? { uri, decision: "refuse", grade: placed.grade, warnings: [...placed.warnings] } :
                                         { uri, decision: "conflict", grade: placed.grade },
@@ -1018,7 +1043,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
           }
           // ingest — the member's disk edit applies cleanly; land it under the changeId.
           await landInBag(access, action.toBag, { tiddler: member as LarTiddlerRecord["tiddler"], meta: {} }, action.changeId, o);
-          memberResults.push({ title, decision: "ingest" });
+          memberResults.push(withWarnings({ title, decision: "ingest" }, shoreWarnings([member])));
           nextMemberHashes[title] = memberDiskHash;
           landedCount++;
         }
@@ -1101,7 +1126,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;
-      receipt = { uri, decision: "ingest", filetype: carrier.ext || "text/plain" };
+      receipt = withWarnings({ uri, decision: "ingest", filetype: carrier.ext || "text/plain" }, shoreWarnings(freshRecords));
     }
 
     const freshTitles = new Set<string>();

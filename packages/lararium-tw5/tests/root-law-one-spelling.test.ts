@@ -28,7 +28,7 @@ const declared = (text: string): ReadonlySet<string> => memeticIngestOps.declare
 
 /** A framed carrier declaring one `ahu` block per name. */
 const carrier = (uri: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n\`\`\`toml meta\nuri-path = "t/a"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/a"\n\`\`\`\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
@@ -91,8 +91,8 @@ describe("Phase 0 · the leans collided", () => {
   test("a call standing BEFORE a block no longer eats its pairing — the slot still lands as a child record", () => {
     // The call used to push onto the pairing stack, so the real block's closer popped at depth 1, the
     // block never emitted as top-level, and the slot's body landed in NO child at all.
-    const text = carrier(URI, []).replace("<<^ code=\"&#x0002;\">>\n\n",
-      "<<^ code=\"&#x0002;\">>\n\n<<~ kahea ahu #/b>>\n\n<<~ ahu #/b>>\n\n! b\n\n<<~/ahu>>\n\n");
+    const text = carrier(URI, []).replace("uri-path = \"t/a\"\n```\n\n",
+      "uri-path = \"t/a\"\n```\n\n<<~ kahea ahu #/b>>\n\n<<~ ahu #/b>>\n\n! b\n\n<<~/ahu>>\n\n");
     const records = recordsOf(URI, text);
     expect([...records.keys()]).toContain(`${URI}#/b`);
     expect(String(records.get(`${URI}#/b`)!["text"])).toContain("! b");
