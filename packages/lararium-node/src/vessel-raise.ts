@@ -173,8 +173,9 @@ export function effectiveLeaseEpochOnBoard(handle: DocHandle<LarDoc>, resource: 
  * charters in AID order) whose carriage board, read through `open`, counts a `carry` for `ownVesselKey`
  * at that charter's head. Each is read exactly as `readCarriedNexuses` reads a carried Nexus — the island
  * through `nodeNexusIsland` over the charter's home, the carriage board as a deny board, the antigen with
- * the charter roster as its quorum roster. A charter that reads unseated, or whose island will not resolve,
- * is left out. Never throws; an unreadable charter set reads empty.
+ * the charter roster as its quorum roster, the charter's epoch lineage beside it. Each reading names `via`
+ * `carrier-seal`. A charter that reads unseated, or whose island will not resolve, is left out. Never throws;
+ * an unreadable charter set reads empty.
  */
 export async function placeCarriedNexuses(opts: {
   readonly sealHome:     string;
@@ -193,19 +194,24 @@ export async function placeCarriedNexuses(opts: {
     try {
       const home = charterHomeFor(opts.sealHome, aid);
       if (!home) continue;
-      const roster = foundingRoster(readNexusDoc(home));
+      const doc = readNexusDoc(home);
+      const roster = foundingRoster(doc);
       if (roster.sealEpochCid.length === 0) continue;
       const island    = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
       const denyBoard = carriageEntriesFromBoard(await opts.open(carriageDocUrl(island), "board:carriage-contracts"));
       if (!(await foldCarrierSet(denyBoard, roster)).has(self)) continue;
       const antigen = antigenEntriesFromBoard(await opts.open(kapaeAntigenDocUrl(island), "board:kapae-antigen"));
-      out.push({ aid, island, roster, denyBoard, antigen, antigenRoster: roster });
+      out.push({
+        aid, via: "carrier-seal", island, roster, sealLineage: doc?.sealLineage ?? [],
+        denyBoard, antigen, antigenRoster: roster,
+      });
     } catch { continue; }
   }
   return out;
 }
 
-/** Two reading sets as one, first-seen per AID — a Nexus carried both ways reads once. */
+/** Two reading sets as one, first-seen per AID — a Nexus carried both ways reads once, and keeps the `via` of
+ *  the set that named it first. */
 export function unionReadings(...sets: ReadonlyArray<readonly CarriedNexusReading[]>): readonly CarriedNexusReading[] {
   const seen = new Set<string>();
   const out: CarriedNexusReading[] = [];

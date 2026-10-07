@@ -31,10 +31,17 @@
 # lineage, derived off A's board by `presentedAdmitFromBoard` — the same derivation a dial presents after
 # sync. A small node helper (written to the transfer dir, importing the BUILT dist of @lararium/mesh and
 # @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
-# after a descending revoke, WRONG-EPOCH after the charter rolls. It checks that only B's leaf proves the
+# after a descending revoke. It checks that only B's leaf proves the
 # admit to a socket, and that the wire guard refuses the admit beside a root edge. The raise door then
 # walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
 # `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
+#
+# ── ANCHORED ANCESTRY (Q3) ─────────────────────────────────────────────────────────────────────────────
+# The rotate lands a ROLL ANCHOR on A's board before the charter moves: the new quorum signs the closing
+# epoch, its key-set and the board's causal heads. B's admit stood in those heads, so the presentation
+# derived after the roll carries the anchor and reads HELD at the new head. CONTROL: an admit the closing
+# keys mint at the closed epoch AFTER the anchor stands in no anchor's past and reads WRONG-EPOCH; the
+# presentation captured before the roll, carrying no anchor, reads WRONG-EPOCH too.
 #
 # ── THE EPOCH ROLL ARMS WITH THE KEY-SET IT REVEALS ─────────────────────────────────────────────────────
 # `seal rotate` reveals the personas STANDING in the vault, and the reveal must hash to the head's
@@ -43,8 +50,8 @@
 # The witness arms with `seal commit` over the roster it will reveal, and says so.
 #
 # Exit 0 = the door opened for a foreign key, refused every forgery, the presented admit read held, denied
-# and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, and the board closed
-# by supersession.
+# and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, the board closed by
+# supersession, and an admit in the roll anchor's past read held at the new head.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 REPO_ROOT=$(pwd)
@@ -223,7 +230,7 @@ const { larSealHome, larDataDir } = await import(`${D}/vessel-paths.js`);
 const { readNexusDoc }            = await import(`${D}/nexus-doc.js`);
 const { nodeNexusIsland }         = await import(`${D}/nexus-standing.js`);
 const { heldNexusLeaves }         = await import(`${D}/nexus-leaf.js`);
-const { loadVesselVerifyingKey }  = await import(`${D}/node-vessel-identity.js`);
+const { loadVesselVerifyingKey, loadPersonaGroupRootSeed } = await import(`${D}/node-vessel-identity.js`);
 
 /** This vessel's reading of the Nexus at its primary charter: roster head, board as deny board, antigen. */
 async function reading() {
@@ -235,12 +242,15 @@ async function reading() {
   try {
     const board   = await M.materializeSharedLarDoc(repo, M.carriageDocUrl(island), "board:carriage-contracts");
     const antigen = await M.materializeSharedLarDoc(repo, M.kapaeAntigenDocUrl(island), "board:kapae-antigen");
-    return { aid: M.realmIdOfCharter(doc), roster, denyBoard: M.carriageEntriesFromBoard(board.doc()),
+    // The anchors are the PRESENTER's read; the verdict reads the board as a deny board and nothing more.
+    return { aid: M.realmIdOfCharter(doc), roster, sealLineage: doc?.sealLineage ?? [],
+             denyBoard: M.carriageEntriesFromBoard(board.doc()), anchors: M.rollAnchorsFromBoard(board.doc()),
              antigen: M.antigenEntriesFromBoard(antigen.doc()), antigenRoster: roster };
   } finally { await repo.flush().catch(() => {}); }
 }
 const verdictOf = async (p, r) => M.verifyPresentedAdmit({ admit: p.admit, lineage: p.lineage, roster: r.roster,
-  denyBoard: r.denyBoard, antigen: r.antigen, antigenRoster: r.antigenRoster, antigenVerifier: M.makeMultiSigQuorumVerifier() });
+  sealLineage: r.sealLineage, denyBoard: r.denyBoard, antigen: r.antigen, antigenRoster: r.antigenRoster,
+  antigenVerifier: M.makeMultiSigQuorumVerifier() });
 const json = (f) => JSON.parse(readFileSync(f, "utf8"));
 const hex32 = () => randomBytes(32).toString("hex");
 
@@ -248,7 +258,7 @@ const [mode, a1, a2] = process.argv.slice(2);
 switch (mode) {
   case "present": {            // the presentation a nym's admit head makes off this replica
     const r = await reading();
-    const p = await M.presentedAdmitFromBoard(r.denyBoard, a1, r.roster);
+    const p = await M.presentedAdmitFromBoard(r.denyBoard, a1, r.roster, r.anchors);
     if (!p) { console.log("none"); process.exit(1); }
     writeFileSync(a2, JSON.stringify(p));
     console.log("captured");
@@ -256,6 +266,27 @@ switch (mode) {
   }
   case "verdict": {            // verifyPresentedAdmit against this replica, as of now
     console.log((await verdictOf(json(a1), await reading())).state);
+    break;
+  }
+  case "anchored": {           // how many roll anchors a captured presentation carries
+    console.log(json(a1).lineage.filter((e) => M.isRollAnchor(e)).length);
+    break;
+  }
+  case "late-admit": {         // the CLOSING keys mint an admit at the closed epoch AFTER the roll's anchor
+    const [nym, contractSig, out] = [a1, a2, process.argv[5]];
+    const r = await reading();
+    const closed = r.sealLineage.length >= 2 ? r.sealLineage[r.sealLineage.length - 2].epochCid : null;
+    if (!closed) { console.log("no-roll"); process.exit(1); }
+    const signers = await Promise.all([0, 1].map(async (i) => {
+      const seed = await loadPersonaGroupRootSeed(i);
+      const signer = M.hex(await (await import("@noble/ed25519")).getPublicKeyAsync(seed));
+      return { signer, sign: M.ed25519SignerFromSeed(seed) };
+    }));
+    const late = await M.signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: closed }, signers,
+      { signer: nym, sig: contractSig });
+    const anchors = r.anchors.filter((a) => a.sealEpochCid === r.roster.sealEpochCid);
+    writeFileSync(out, JSON.stringify({ admit: late, lineage: anchors }));
+    console.log(`minted anchors=${anchors.length}`);
     break;
   }
   case "leafproof": {          // only the admit's own leaf proves it to a socket
@@ -393,6 +424,10 @@ step "A rotates the charter (the armed reveal)"
 if ROT=$(as_a nexus seal rotate --next-key-commit "$COMMIT" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
+step "the rotate landed a ROLL ANCHOR on A's board"
+if printf '%s' "$ROT" | grep -qE '"rollAnchor":\{"cid":"[0-9a-f]{64}"'; then ok
+else bad "no anchor in the rotate's report"; fi
+
 step "★ a REPLAY across an epoch roll refuses ★"
 # The sharpest property: a contract-in binds to the epoch it consented under. Roll A's charter and the
 # old token must stop verifying — consent to one epoch is not consent to the next.
@@ -402,14 +437,39 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
   else ok; fi
 else bad "no token"; fi
 
-step "★ (4) after the roll, the old admit reads WRONG-EPOCH ★"
+# ── ⑩ ANCHORED ANCESTRY (Q3) ─────────────────────────────────────────────────────────────────────────
+say "⑩ anchored ancestry — an admit in the roll anchor's past carries to the new head"
+ANCHORED="$XFER/presented-after-roll.json"
+step "B's admit head re-derives off A's replica after the roll"
+if [ -n "$B_NYM" ] && out=$(s6_a present "$B_NYM" "$ANCHORED" 2>&1) && [ "$out" = "captured" ]; then ok
+else bad "${out:-no nym}"; fi
+
+step "the presentation carries the roll anchor"
+NA=$(s6_a anchored "$ANCHORED" 2>&1)
+if [ "$NA" = "1" ]; then ok; else bad "anchors=$NA"; fi
+
+step "★ (4) an admit in the anchor's past reads HELD at the new head ★"
+VH=$(s6_a verdict "$ANCHORED" 2>&1)
+if [ "$VH" = "held" ]; then ok; else bad "$VH"; fi
+
+step "★ CONTROL: an admit minted at the closed epoch AFTER the anchor reads WRONG-EPOCH ★"
+# The closing keys still sign at the closed epoch — the act counts there, and stands in no anchor's past.
+# CONTROL inside the check: it carries the same anchor the held presentation carries.
+LATE="$XFER/late-admit.json"
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && LM=$(s6_a late-admit "$B_NYM" "$B_SIG" "$LATE" 2>&1) && [ "$LM" = "minted anchors=1" ]; then
+  VL=$(s6_a verdict "$LATE" 2>&1)
+  if [ "$VL" = "wrong-epoch" ]; then ok; else bad "$VL"; fi
+else bad "${LM:-no token}"; fi
+
+step "★ CONTROL: the pre-roll presentation, carrying no anchor, reads WRONG-EPOCH ★"
 VE=$(s6_a verdict "$PRESENTED" 2>&1)
 if [ "$VE" = "wrong-epoch" ]; then ok; else bad "$VE"; fi
 
 say "═══ RESULT ═══"
 if [ "$FAILED" -eq 0 ]; then
   echo "  the door opened for a key A never held, refused every forgery, read the presented admit held,"
-  echo "  denied and wrong-epoch, raised a leaf through it, and closed by supersession."
+  echo "  denied and wrong-epoch, raised a leaf through it, closed by supersession, and carried an admit"
+  echo "  in the roll anchor's past to the new head."
   # THE CARRY NOW STANDS WALKED. `herm-mesh-witness` carries a dial across three hops between four
   # containers, pointer-signed and hash-matched at the last — so naming it unwalked here would send a
   # reader to build an instrument that already passes. What this witness still does NOT reach is the

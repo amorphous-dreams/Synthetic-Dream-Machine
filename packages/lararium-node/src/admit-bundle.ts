@@ -10,18 +10,22 @@
  *
  * ── WHAT A BUNDLE HOLDS — public bytes only ───────────────────────────────────────────────────────
  *   · `admit`      — the quorum-signed admit entry (the board's admit head for the nym, just written);
- *   · `lineage`    — its closed, tight causal lineage (`presentedAdmitFromBoard`);
+ *   · `lineage`    — its closed, tight causal lineage (`presentedAdmitFromBoard`), with the roll anchors
+ *                    that carry it to the head when its epoch has rolled;
  *   · `aid`        — the Nexus the admit belongs to (the charter's genesis epoch);
- *   · `gatePubKey` — the gate key of the hearth that wrote it: the key the joinee's dial commits its proof to,
- *                    exactly as the admit payload's hearth pin carries it (`hearth-dial-pin.ts`).
+ *   · `gatePubKey` — the gate key the bundle NAMES as the hearth that wrote it: the key the joinee's dial
+ *                    commits its proof to, exactly as the admit payload's hearth pin carries it
+ *                    (`hearth-dial-pin.ts`). Nothing in the bundle proves that hearth holds it; the take
+ *                    trusts the operator's hand that carried the file for this one value.
  * Every byte already stands on the Nexus's board or on the wire at that hearth's challenge. No key travels.
  *
  * ── THE TAKE ──────────────────────────────────────────────────────────────────────────────────────
  * `takeAdmitBundle` refuses, writing nothing, unless all of these hold:
  *   · the bundle parses whole (`isPresentedAdmit` over admit + lineage, a path-safe AID, a 64-hex gate key);
  *   · this vessel holds a charter for the AID, and `verifyPresentedAdmit` reads the admit HELD against that
- *     charter's head roster with an EMPTY deny board and antigen — the admit counts, its lineage chains, and
- *     it roots on the head epoch (offline: no board is consulted);
+ *     charter's head roster and epoch lineage with an EMPTY deny board and antigen — the admit counts, its
+ *     lineage chains, and it roots on the head epoch or on an ancestor its roll anchors carry to the head
+ *     (offline: no board is consulted);
  *   · the admit's nym is one of this vessel's OWN leaves for that AID.
  * It then writes the bundle atomically at `<sealHome>/nexus/carriage-admit/<aid>.json`, beside the kept
  * consent. The write touches no sealed carrier.
@@ -45,7 +49,7 @@ import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   foundingRoster, isPresentedAdmit, verifyPresentedAdmit, makeMultiSigQuorumVerifier, carriageEntryActCid,
-  realmIdOfCharter, type CarriageEntry, type KahuRoster,
+  realmIdOfCharter, type CarriageEntry, type KahuRoster, type PresentedLineageAct, type SealEpoch,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readNexusDoc } from "./nexus-doc.js";
@@ -62,7 +66,7 @@ export interface AdmitBundle {
   readonly aid:        string;
   readonly gatePubKey: string;
   readonly admit:      CarriageEntry;
-  readonly lineage:    readonly CarriageEntry[];
+  readonly lineage:    readonly PresentedLineageAct[];
 }
 
 /** An AID addresses a file, so only a plain token passes — never a separator or a dot-segment. */
@@ -113,13 +117,15 @@ function normalized(b: AdmitBundle): AdmitBundle {
 
 /**
  * Does the bundle's admit hold at `roster` on its own: counted, its lineage closed and tight, rooted on the
- * head epoch? Read with an EMPTY deny board and antigen — an offline check of the act itself, never of any
- * standing. Never throws.
+ * head epoch or on an ancestor of it in `sealLineage` that its roll anchors carry to the head? Read with an
+ * EMPTY deny board and antigen — an offline check of the act itself, never of any standing. Never throws.
  */
-export async function admitBundleHolds(bundle: AdmitBundle, roster: KahuRoster): Promise<boolean> {
+export async function admitBundleHolds(
+  bundle: AdmitBundle, roster: KahuRoster, sealLineage: readonly SealEpoch[],
+): Promise<boolean> {
   try {
     const verdict = await verifyPresentedAdmit({
-      admit: bundle.admit, lineage: bundle.lineage, roster,
+      admit: bundle.admit, lineage: bundle.lineage, roster, sealLineage,
       denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(),
     });
     return verdict.state === "held";
@@ -158,11 +164,12 @@ export async function takeAdmitBundle(opts: {
   if (!home || realmIdOfCharter(readNexusDoc(home)) !== bundle.aid) {
     throw new AdmitBundleError(`this vessel holds no charter for ${bundle.aid.slice(0, 18)}… — import it (\`lares nexus seal import\`) before taking its admit.`);
   }
-  const roster = foundingRoster(readNexusDoc(home));
-  if (roster.sealEpochCid.length === 0 || !(await admitBundleHolds(bundle, roster))) {
+  const doc = readNexusDoc(home);
+  const roster = foundingRoster(doc);
+  if (roster.sealEpochCid.length === 0 || !(await admitBundleHolds(bundle, roster, doc?.sealLineage ?? []))) {
     throw new AdmitBundleError(
       "the admit does not hold at the charter this vessel holds — it does not count under the seated quorum, its " +
-      "lineage does not chain, or it roots on another epoch. Nothing was kept.",
+      "lineage does not chain, or it roots on an epoch no roll anchor it carries reaches the head from. Nothing was kept.",
     );
   }
   const nym = bundle.admit.nym.toLowerCase();

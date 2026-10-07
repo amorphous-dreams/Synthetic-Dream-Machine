@@ -33,7 +33,8 @@ import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPerso
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
-  hasContractedInto } from "../src/commands/nexus-contract.js";
+  hasContractedInto, runNexusRollAnchor } from "../src/commands/nexus-contract.js";
+import { rollAnchorsFromBoard, rollAnchorCid, isRollAnchor } from "@lararium/mesh";
 import { readConsent, writeConsent, carriageConsentPathFor } from "../src/carried-set.js";
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
 import { existsSync } from "node:fs";
@@ -537,5 +538,95 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     writeConsent(sealHome(), primaryAid(), { nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig });
     expect(await verifyCarriageConsent({ nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig })).toBe(true);
     expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);
+  });
+});
+
+describe("Q3 — the rotate's ROLL ANCHOR carries an admit in its past across the seal roll", () => {
+  /** A pre-rotated genesis over roots 0-2, armed with roots 4-6, and the roll that reveals them. */
+  async function foundAndArm() {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const oldKeys = roots.slice(0, 3).map((r) => r.verifyingKey);
+    const newKeys = roots.slice(4, 7).map((r) => r.verifyingKey);
+    const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
+    const kahu = (keys: string[]) => keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
+    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: kahu(oldKeys) });
+    const rolled = rotateSealEpoch(e0, newKeys, 2, "");
+    if (!rolled.ok) throw new Error(rolled.reason);
+    const roll = (): void => writeNexusDoc(sealHome(), {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: rolled.epoch.epochCid, sealLineage: [e0, rolled.epoch], kahu: kahu(newKeys),
+    });
+    const opened = { keys: newKeys, threshold: 2, sealEpochCid: rolled.epoch.epochCid };
+    return { roots, e0, opened, roll };
+  }
+
+  async function boardNow() {
+    const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const doc = (await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc();
+    await repo.flush();
+    return { entries: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc) };
+  }
+
+  it("★ an admit in the anchor's past reads MEMBER at the new head; one minted after the anchor reads STRANGER ★", async () => {
+    const { opened, roll } = await foundAndArm();
+    const joinerNym = await leafOf(3);
+    const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+    const admitted = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+
+    const closing = foundingRoster(readNexusDoc(sealHome()));
+    const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    expect(landed.parents).toContain(admitted.evidenceCid);
+    roll();
+    expect(realmIdOfCharter(readNexusDoc(sealHome()))).toBe(aid);   // the AID survives the roll
+
+    // AFTER the anchor, the CLOSED keys mint an admit at the closed epoch — it counts there, in no anchor's past.
+    const lateNym = await leafOf(0);
+    const lateQuorum = await Promise.all([0, 1].map(async (i) => ({
+      signer: (await generateOrLoadPersonaGroupRoot(i)).verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) })));
+    const late = await signCarriageQuorum(
+      { nym: lateNym, action: "admit", parents: [], sealEpochCid: closing.sealEpochCid }, lateQuorum,
+      await signCarriageContract(lateNym, closing.sealEpochCid, ed25519SignerFromSeed((await nexusLeafFor(0, aid)).seed)));
+    {
+      const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
+      const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+      const handle = await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts");
+      handle.change((d) => writeCarriageEntry(d, late));
+      await repo.flush();
+    }
+
+    const { entries, anchors } = await boardNow();
+    expect(anchors.map(rollAnchorCid)).toEqual([landed.anchorCid]);
+    const head = foundingRoster(readNexusDoc(sealHome()));
+    const ownVesselKey = await loadVesselVerifyingKey();
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
+    const holder = makeNexusMembership({ readCarried: () => readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open }) });
+    try {
+      await holder.refold();
+      expect(holder.readings().map((r) => [r.via, r.sealLineage.length])).toEqual([["seat", 2]]);
+      const nonce = "34".repeat(32), gatePubKey = "ee".repeat(32), vesselKey = "cd".repeat(32);
+      const presentAs = async (peer: string, nym: string, idx: number, strip = false) => {
+        const p = await presentedAdmitFromBoard(entries, nym, head, anchors);
+        expect(p).not.toBeNull();
+        const lineage = strip ? p!.lineage.filter((e) => !isRollAnchor(e)) : p!.lineage;
+        const leafProof = await signLeafProof({ admit: p!.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed((await nexusLeafFor(idx, aid)).seed) });
+        await holder.present(peer, { presentedAdmit: { admit: p!.admit, lineage, leafProof }, nonce, gatePubKey, vesselKey });
+      };
+      await presentAs("peer-joiner", joinerNym, 3);
+      await presentAs("peer-stripped", joinerNym, 3, true);
+      await presentAs("peer-late", lateNym, 0);
+      expect(holder.membership.holdsCarriagePeer("peer-joiner")).toBe(true);     // in the anchor's past → held
+      expect(holder.membership.holdsCarriagePeer("peer-stripped")).toBe(false);  // CONTROL: no anchor → wrong-epoch
+      expect(holder.membership.holdsCarriagePeer("peer-late")).toBe(false);      // CONTROL: after the anchor → wrong-epoch
+    } finally { holder.dispose(); await repo.flush(); }
+  });
+
+  it("CONTROL: a roll whose NEW quorum this vessel does not hold REFUSES and lands no anchor", async () => {
+    const { opened } = await foundAndArm();
+    const closing = foundingRoster(readNexusDoc(sealHome()));
+    const foreign = { ...opened, keys: ["ab".repeat(32), "cd".repeat(32), "ef".repeat(32)] };
+    await expect(runNexusRollAnchor({ sealHome: sealHome(), closing, opened: foreign })).rejects.toBeInstanceOf(NexusContractError);
+    expect((await boardNow()).anchors).toEqual([]);
   });
 });

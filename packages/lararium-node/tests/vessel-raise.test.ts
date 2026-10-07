@@ -241,6 +241,7 @@ describe("★ a PLACE carries a Nexus by its own counted carrier seal ★", () =
     const { sealHome, place, open } = await held([await carry(PLACE_SEED), admit]);
     const readings = await placeCarriedNexuses({ sealHome, ownVesselKey: place, open });
     expect(readings).toHaveLength(1);
+    expect(readings[0]!.via).toBe("carrier-seal");
     expect(readings[0]!.roster.sealEpochCid).toBe((await roster()).sealEpochCid);
     expect(readings[0]!.denyBoard.map(carriageEntryActCid)).toContain(carriageEntryActCid(admit));
   });
@@ -268,9 +269,9 @@ describe("★ a PLACE carries a Nexus by its own counted carrier seal ★", () =
 describe("unionReadings", () => {
   test("a Nexus carried both ways reads once, first set first", async () => {
     const r = await roster();
-    const a: CarriedNexusReading = { aid: "n", island: "i-1", roster: r, denyBoard: [], antigen: [], antigenRoster: r };
-    const b: CarriedNexusReading = { ...a, island: "i-2" };
-    const c: CarriedNexusReading = { ...a, aid: "q" };
-    expect(unionReadings([a], [b, c]).map((x) => [x.aid, x.island])).toEqual([["n", "i-1"], ["q", "i-1"]]);
+    const a: CarriedNexusReading = { aid: "n", via: "consent", island: "i-1", roster: r, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: r };
+    const b: CarriedNexusReading = { ...a, via: "carrier-seal", island: "i-2" };
+    const c: CarriedNexusReading = { ...a, via: "carrier-seal", aid: "q" };
+    expect(unionReadings([a], [b, c]).map((x) => [x.aid, x.island, x.via])).toEqual([["n", "i-1", "consent"], ["q", "i-1", "carrier-seal"]]);
   });
 });

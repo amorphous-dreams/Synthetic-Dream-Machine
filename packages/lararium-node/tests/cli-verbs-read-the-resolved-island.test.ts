@@ -17,9 +17,10 @@
  * this test measures the SOURCE STRUCTURE (the same class of proof the device-admit weld already
  * trusts) rather than driving each verb's full ceremony.
  *
- * `nexus-contract.ts` carries TWO `carriageDocUrl(` calls - the admit WRITE (`runNexusContract`) and the
- * members-list READ (`runNexusMembersList`). Both read the resolved island over the home holding the
- * charter, so the write and its read land on one board; a bare vessel key at either one splits them.
+ * `nexus-contract.ts` carries THREE `carriageDocUrl(` calls - the admit WRITE (`runNexusContract`), the
+ * roll-anchor WRITE (`runNexusRollAnchor`) and the members-list READ (`runNexusMembersList`). All read the
+ * resolved island over the home holding the charter, so the writes and the read land on one board; a bare
+ * vessel key at any one splits them.
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
@@ -42,7 +43,7 @@ const SITES: Array<{ file: string; door: RegExp; count: number }> = [
   { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 2 },
   { file: "commands/cabal-vouch.ts",    door: /vouchBoardDocUrl\(([^)]*)\)/g,      count: 1 },
   { file: "commands/edge-kapae-cmd.ts", door: /edgeKapaeBoardDocUrl\(([^)]*)\)/g,  count: 1 },
-  { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 2 },
+  { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 3 },
 ];
 
 
@@ -75,12 +76,12 @@ describe("the 12 CLI-verb sites resolve the island the boot resolved, not the ra
   });
 
   test("CONTROL - nexus-contract.ts reads the vessel key once per board feed and once for the carry-for nym", () => {
-    // Two reads FEED the island resolution (the admit write, the members-list read); one is the carry-for
-    // nym, a bystander that names a place rather than a board. Pinned so a refactor that adds a bare read
-    // updates this test rather than silently drifting the count.
+    // Three reads FEED the island resolution (the admit write, the roll-anchor write, the members-list read);
+    // one is the carry-for nym, a bystander that names a place rather than a board. Pinned so a refactor that
+    // adds a bare read updates this test rather than silently drifting the count.
     const code = stripComments(read("commands/nexus-contract.ts"));
     const bareReads = [...code.matchAll(/loadVesselVerifyingKey\(\)/g)];
-    expect(bareReads.length, "nexus-contract.ts's bare loadVesselVerifyingKey count drifted from the 3 expected (two board feeds + carry-for nym)").toBe(3);
+    expect(bareReads.length, "nexus-contract.ts's bare loadVesselVerifyingKey count drifted from the 4 expected (three board feeds + carry-for nym)").toBe(4);
     // No vessel-key variable survives as a board address.
     expect(code).not.toMatch(/carriageDocUrl\(\s*ownKey\s*\)/);
   });

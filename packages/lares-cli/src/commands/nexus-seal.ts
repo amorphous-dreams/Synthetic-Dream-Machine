@@ -33,12 +33,13 @@ import {
   listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, runNexusMembersList, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
+  runNexusRollAnchor, NexusContractError, type NexusRollAnchorResult,
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
   defaultCryptoProvider, federationPostureFromDoc,
-  type NexusDoc, type NexusCharterKahu, type SealEpoch,
+  type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuRoster,
   type QuorumSignature,
 } from "@lararium/mesh";
 import {
@@ -568,6 +569,31 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const sealLineage: SealEpoch[] = [...(doc.sealLineage ?? []), result.epoch];
   const sealEpochCid = result.epoch.epochCid;
   const next: NexusDoc = { kind: doc.kind, threshold, sealEpochCid, sealLineage, kahu };
+
+  // THE ROLL ANCHOR LANDS FIRST. The new quorum signs the closing head, its key-set and the board's causal
+  // heads, so an admit already in those heads carries across the roll; one the closing keys mint afterwards
+  // does not. It lands BEFORE the charter moves: a roll whose anchor cannot land writes nothing, and an anchor
+  // whose head never lands names an epoch no lineage holds. A closing head that roots no roster (an inert
+  // charter) counted no act, so it has nothing to carry and writes no anchor.
+  const closing = foundingRoster(doc);
+  const opened: KahuRoster = { keys: seatedKeys, threshold, sealEpochCid };
+  let anchored: NexusRollAnchorResult | null = null;
+  if (closing.sealEpochCid.length > 0) {
+    try {
+      anchored = await runNexusRollAnchor({ sealHome, closing, opened });
+    } catch (err) {
+      if (!(err instanceof NexusContractError)) throw err;
+      emit(args, {
+        ok: false,
+        error: { code: "error", message: `rotation REFUSED (fail-closed): ${err.message}` },
+        human: () => {
+          console.error(`nexus seal rotate REFUSED (fail-closed): ${err.message}`);
+          console.error(`  the chain stays at epoch ${head.epoch}; nothing written.`);
+        },
+      });
+      return exitFor("error");
+    }
+  }
   // A rotation reaches the SEAL joint always, and the KAHU joint only when the roster actually moved — so an
   // ordinary re-key never rewrites a roster it did not touch.
   const path = writeNexusSeal(sealHome, { kind: next.kind, sealEpochCid, sealLineage }, next);
@@ -582,12 +608,16 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       path, epoch: result.epoch.epoch, sealEpochCid, prevEpochCid: result.epoch.prevEpochCid,
       chainDepth: sealLineage.length, rotationArmed: armed, nextKeyCommit: nextKeyCommit || null,
       quorumSeated: foundingQuorumSeated(next),
+      rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
     },
     human: () => {
       console.log(`nexus seal ROTATED → epoch ${result.epoch.epoch} (chain depth ${sealLineage.length}) → ${path}`);
       console.log(`  reveal VERIFIED against the prior epoch's pre-commitment.`);
       console.log(`  head epoch: ${sealEpochCid}`);
       console.log(`  prev link:  ${result.epoch.prevEpochCid}`);
+      console.log(anchored
+        ? `  anchor:     ${anchored.anchorCid.slice(0, 16)}… over ${anchored.parents.length} board head(s) — admits in its past carry to the new head`
+        : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);
       console.log(`  rotation:   ${armed ? "ARMED (next key-set pre-committed)" : "UNARMED — the next rotate refuses until you supply --next-key-commit"}`);
     },
   });

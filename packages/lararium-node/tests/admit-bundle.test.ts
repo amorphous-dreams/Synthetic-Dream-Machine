@@ -22,6 +22,7 @@ import * as ed from "@noble/ed25519";
 import {
   NEXUS_DOC_DOMAIN, hex, genesisSealEpochCid, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, signLeafProof, foundingRoster,
+  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
 import { takeAdmitBundle, readKeptAdmitBundle, admitBundlePathFor, dialedNexusAid, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
@@ -203,7 +204,8 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const nonce = "cd".repeat(32);
     // THE HEARTH's side: P carried (its own charter), its deny board empty. No board ever crosses to the joinee.
     const hearthReading: CarriedNexusReading = {
-      aid: w.aidP, island: w.aidP, roster: foundingRoster(w.P), denyBoard: [], antigen: [], antigenRoster: foundingRoster(w.P),
+      aid: w.aidP, via: "seat", island: w.aidP, roster: foundingRoster(w.P), sealLineage: [], denyBoard: [], antigen: [],
+      antigenRoster: foundingRoster(w.P),
     };
     const hearth = makeNexusMembership({ readCarried: async () => [hearthReading] });
     await hearth.refold();
@@ -223,5 +225,56 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     await hearth.present("joinee", await bindingOf());
     expect(hearth.membership.holdsCarriagePeer("joinee")).toBe(true);
     expect(hearth.leafNymOf("joinee")).toBe(await pubOf(LEAF_P));
+  });
+});
+
+describe("Q3 — a bundle taken across a seal roll carries the anchor, and the dial presents it", () => {
+  let root: string;
+  let prior: string | undefined;
+  beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-admit-roll-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
+  afterEach(() => { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
+
+  const OLD = [seed(41), seed(42), seed(43)];
+  const NEW = [seed(51), seed(52), seed(53)];
+  const LEAF = seed(54);
+  const GATE = "c4".repeat(32);
+
+  test("★ an anchored bundle takes and presents at the new head; CONTROL: the same bundle without its anchor refuses ★", async () => {
+    const [oldKeys, newKeys] = await Promise.all([Promise.all(OLD.map(pubOf)), Promise.all(NEW.map(pubOf))]);
+    const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
+    const r = rotateSealEpoch(e0, newKeys, 2, "");
+    if (!r.ok) throw new Error(r.reason);
+    const kahu = newKeys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
+    const rolled: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [e0, r.epoch], kahu };
+    const sealHome = join(root, "nexus");
+    writeNexusDoc(sealHome, rolled);
+    const aid = realmIdOfCharter(rolled)!;
+    expect(aid).toBe(e0.epochCid);
+    const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
+      a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
+
+    const atE0: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, kahu };
+    const admit = await act(atE0, OLD, LEAF, "admit");
+    const anchor = await signRollAnchor(
+      { prevEpochCid: e0.epochCid, sealEpochCid: r.epoch.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents: [carriageEntryActCid(admit)] },
+      await Promise.all(NEW.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))),
+    );
+
+    // CONTROL: the bundle as taken BEFORE the roll — no anchor — no longer holds at the new head.
+    await expect(takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: GATE, admit, lineage: [] }), leaves }))
+      .rejects.toThrow(AdmitBundleError);
+    expect(existsSync(admitBundlePathFor(sealHome, aid))).toBe(false);
+    const taken = await takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: GATE, admit, lineage: [anchor] }), leaves });
+    expect(taken.admitCid).toBe(carriageEntryActCid(admit));
+
+    // The dial off the board: the anchored admit presents, its anchor riding the lineage.
+    const board = emptyLarDoc();
+    writeCarriageEntry(board, admit);
+    writeRollAnchor(board, anchor);
+    const p = await dialPresentation({ sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE,
+      open: async (url) => (url === carriageDocUrl(aid) ? board : undefined), leaves });
+    expect(p).not.toBeNull();
+    expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(admit));
+    expect(p!.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([rollAnchorCid(anchor)]);
   });
 });

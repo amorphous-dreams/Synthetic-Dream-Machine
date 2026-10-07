@@ -215,7 +215,7 @@ export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
-  hasContractedInto, type CarriageConsent } from "./commands/nexus-contract.js";
+  runNexusRollAnchor, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
 // The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.
 export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, carriedSet, carriedReadings,
   carriedCharterHome, carriageConsentPathFor, charterHomeFor, primaryNexusAid, CarriedCharterError,
@@ -240,7 +240,7 @@ export {
   dialIdentityFor,
 } from "./nexus-carriage.js";
 export type {
-  NexusMembershipHolder, SocketBinding, CarriedNexusReading, LeafStanding, BoardOpener, DialPresentation,
+  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
 } from "./nexus-carriage.js";
 // The `nexus-refresh` LIVE-refold shore — re-reads the disk posture, merges the flushed carriage + antigen boards of
 // every carried Nexus into the running Repo, and re-verifies every presented admit, so an out-of-process CLI edit

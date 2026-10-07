@@ -42,7 +42,8 @@ import {
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
   holdsCarriage, holdsCarrier, foundingRoster, presentedAdmitFromBoard,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
-  type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature,
+  rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
+  type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature, type RollAnchor,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -282,7 +283,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     // (nothing presents, or another act heads the relation) emits no bundle rather than a different admit.
     let bundle: AdmitBundle | null = null;
     if (opts.action === "admit") {
-      const presented = await presentedAdmitFromBoard(written, nym, roster);
+      const presented = await presentedAdmitFromBoard(written, nym, roster, rollAnchorsFromBoard(handle.doc()));
       if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
         bundle = {
           aid: nexusAidOrRefuse(opts.sealHome), gatePubKey: nexusPubkey.toLowerCase(),
@@ -298,6 +299,70 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
       contractIn: contract ? contract.how : "n/a",
       boardUrl, memberHeld, carrierHeld, bundle,
     };
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
+
+/** What a landed roll anchor reports: the anchor, its act CID, the heads it cites, and the board it rides. */
+export interface NexusRollAnchorResult {
+  readonly anchor:    RollAnchor;
+  readonly anchorCid: string;
+  readonly parents:   readonly string[];
+  readonly boardUrl:  string;
+}
+
+/**
+ * Land a seal roll's ANCHOR on this Nexus's carriage board — called by the rotate BEFORE it writes the new
+ * head, so a roll whose anchor cannot land writes nothing at all. The anchor names the epoch `closing` heads
+ * and the epoch `opened` heads, carries `closing`'s public key-set, cites the board's causal heads at the roll
+ * (`rollAnchorParents`: the acts and anchors that count at the closing epoch and nothing cites), and is signed
+ * by `opened`'s quorum out of the held persona-roots it seats. The closing keys never sign it.
+ *
+ * FAIL CLOSED, before any write: fewer than `opened.threshold` held roots seated in `opened` → REFUSE; an
+ * anchor that does not count under `opened` → REFUSE. An anchor that lands for a head the rotate then fails
+ * to write names an epoch no charter lineage holds, and no verifier walks it.
+ */
+export async function runNexusRollAnchor(opts: {
+  readonly sealHome:    string;
+  /** The roster at the head the roll closes. */
+  readonly closing:     KahuRoster;
+  /** The roster the roll seats, rooted on the new head's epoch cid. */
+  readonly opened:      KahuRoster;
+  readonly storageDir?: string;
+}): Promise<NexusRollAnchorResult> {
+  const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new NexusContractError(
+    `roll anchor REFUSED (fail-closed): the vessel holds ${held} persona-root(s) the new roster seats, but the anchor ` +
+    `carries ${k} distinct signatures of the NEW quorum — the closing keys never sign it.`,
+  ));
+  // The board keys on the charter's genesis island — a rotating vessel holds a charter, and a charter outranks
+  // every lower rung of the gradient. The vessel key rides in only as that gradient's floor, so a seal home
+  // whose vessel holds no key of its own still anchors on its charter's board.
+  const ownVesselKey = await loadVesselVerifyingKey().catch(() => "");
+  const boardIsland  = nodeNexusIsland({ ownVesselKey, sealHome: opts.sealHome });
+  const boardUrl     = carriageDocUrl(boardIsland);
+  const repo         = new Repo({ storage: new NodeFSStorageAdapter(opts.storageDir ?? larDataDir()) });
+  try {
+    const handle  = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
+    const parents = await rollAnchorParents(
+      carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), opts.closing);
+    const signers = await Promise.all(selected.map(async (s) => ({
+      signer: s.verifyingKey,
+      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
+    })));
+    const anchor = await signRollAnchor({
+      prevEpochCid:  opts.closing.sealEpochCid,
+      sealEpochCid:  opts.opened.sealEpochCid,
+      prevKeys:      opts.closing.keys,
+      prevThreshold: opts.closing.threshold,
+      parents,
+    }, signers);
+    if (!(await rollAnchorCounts(anchor, opts.opened))) {
+      throw new NexusContractError("refusing to write: the roll anchor does not count under the new roster (fail-closed).");
+    }
+    handle.change((d) => writeRollAnchor(d, anchor));
+    await repo.flush();
+    return { anchor, anchorCid: rollAnchorCid(anchor), parents, boardUrl };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
