@@ -11,7 +11,7 @@ mana      = 16
 manao     = 16
 manaoio   = 15
 role      = "static QA topology audit and deterministic run-order receipt for the focused Offering receiver E2E"
-status    = "scouted at 92865ca0a; no suite or build executed"
+status    = "repo topology first scouted at 92865ca0a; prior-art collision refreshed at 02e1693b3; no suite or build executed"
 tags      = ["research/qa", "tests/e2e", "mesh/offering", "build/stamp", "causal-island"]
 title     = "lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -57,6 +57,31 @@ The CLI and Node Vitest configs declare package-local isolation and test globs. 
 
 The top-level Node package Vitest config has a serial `heavy` project for listener, nested-island, and Python-holder suites, with the remaining files in a capped parallel project (`packages/lararium-node/vitest.config.ts`, `THRASHERS` and `projects`). The harness E2E has its own config and owns two live daemons. Do not infer that package-level test serialization also reserves resources against this separate E2E process.
 
+!! Prior-art collision — what it changes here
+
+This section collides official tool documentation with the repository facts above. The sources describe useful constraints and mechanisms; the recommendations below are an application to this one witness, not claims that this repository implements a hermetic build service.
+
+* **Integration isolation is declared-input isolation, not “no network.”** Bazel's test execution specification defines hermetic tests as using declared dependencies and limits results to source, declared build products, and stable runner-provided resources. Its temp-directory guidance calls out unique paths and cleanup when tests must write to `/tmp` (Bazel Test Encyclopedia: https://bazel.build/reference/test-encyclopedia). This Offering witness intentionally exercises two live local peers, so its causal-island boundary includes loopback sockets, two private roots, the checked-out repository's build outputs, and the package/toolchain installation. It does not require public Internet services by its visible code. Call it a **bounded local integration test**, not a fully sandboxed/hermetic test: Vitest alone does not restrict its process environment, filesystem, or network.
+* **Vitest's isolation scope stops at its own run.** Vitest documents independent file workers, `fileParallelism: false` for tests sharing external resources, and separate controls for file-level versus in-file concurrency (https://vitest.dev/guide/parallelism; https://vitest.dev/guide/recipes/parallel-sequential.html). The repo's harness sets `fileParallelism: false`, and this test has shared `beforeAll`/`afterAll` state and mutates B's CAS in sequence. That serializes files inside this harness invocation. It does not reserve host CPU, ports, `/tmp`, `dist`, or Docker resources against a second Vitest process. The explicit detached worktree and a single focused command supply the missing cross-process boundary.
+* **Port zero is safest when the eventual server owns the bind.** Node documents that `server.listen(0)` lets the OS choose a free port and exposes the chosen port after `listening` (https://nodejs.org/api/net.html#serverlistenport-host-backlog-callback). The current helper briefly binds port zero, reads the number, closes the reservation, and later gives the number to a different daemon. This contains a TOCTOU interval; Node's port-zero guarantee does not eliminate it. For this witness, serialized invocation and a clear `EADDRINUSE`/startup failure receipt are the minimum. A later harness improvement could let the daemon bind port zero and return its actual dial, or transfer a pre-bound socket, but that changes the admission setup order and needs its own design/red test.
+* **Compose project names scope resources, while published host ports remain shared.** Docker says distinct Compose project names isolate containers, networks, and related project resources; project name can be overridden by `-p`/`COMPOSE_PROJECT_NAME` (https://docs.docker.com/compose/how-tos/project-name/; https://docs.docker.com/compose/intro/compose-application-model/). Docker documents `HOST_PORT:CONTAINER_PORT` as a host mapping, and Compose can allocate a host port when only a container port is supplied (https://docs.docker.com/reference/compose-file/services/#ports). Here the Compose file pins `name: dreamnet-mesh` and host ports `18090`–`18094`; the scenario script hardcodes container/network names and executes `down -v`. Merely overriding project name would not free the fixed ports, and the script's hardcoded cleanup observations also need to become project-aware. Current safe rule: serialize that runner and any peer using its fixed project/ports/volumes. Future parallelization needs all three: unique project name, dynamic or run-scoped published host ports, and cleanup/query names derived from that same project identity.
+* **A source digest is not build provenance.** SLSA's provenance model tracks artifacts back to source and the build process; it describes builder, build definition, inputs/materials, and outputs (https://slsa.dev/spec/v1.2/provenance). This repo's stamp is a useful freshness sentinel: it recomputes a digest over selected package source files and compares it before build-gated operations. The stamp writer does not hash the emitted `dist` files or attest who/what builder produced them. It therefore detects source drift relative to the last recorded build input but, by itself, cannot prove that a particular dist byte was built from those inputs or remained unchanged afterward. Do not call it SLSA provenance or an artifact signature.
+* **Workspace dependency order is real, but concurrency remains a knob.** pnpm documents that recursive `run` follows workspace dependency order by default and that `--workspace-concurrency` limits simultaneous scripts (https://pnpm.io/cli/recursive). The top-level `pnpm -r build` therefore respects dependency edges but can run unrelated package builds concurrently. On a shared, resource-starved WSL host, use `pnpm -r --workspace-concurrency=1 build` for the receipt build, then run `node tools/stamp-build.mjs .`; this is slower and easier to diagnose. A separate worktree prevents writes from touching the hot checkout, while serialization limits build-internal resource pressure.
+
+!! Minimal reliable receipt protocol — recommendation
+
+This protocol names a causal relation among one committed source tree, generated outputs, a test invocation, and its result. It uses no global clock or mutable “latest” build identity.
+
+1. **Freeze the input relation.** After owners land the hot edits, select their commit and create a detached worktree. Confirm its source tree has no edits before building. Record the full commit and submodule gitlink state; install only from the committed lockfile (`pnpm install --frozen-lockfile`). No concurrent source edits or build may write into this worktree.
+2. **Build the actual process artifacts.** Run `pnpm -r --workspace-concurrency=1 build` in that worktree, then `node tools/stamp-build.mjs .`. The recursive build follows workspace dependency order. Record toolchain (`node --version`, `pnpm --version`), command exit status/output, and resulting workspace/package stamp values. This describes the build action; the repo stamp alone is only the freshness check described above.
+3. **Name both sides of the mixed boundary.** Record that the test imports Node inspector source and Mesh rendezvous source, while staged daemons and CLI subprocesses load Node/CLI `dist`. Compute and retain SHA-256 digests for at least the launched `packages/lararium-node/dist/src/main.js`, `packages/lares-cli/dist/src/bin/lares.js`, and the source inspector file. This adds direct artifact-byte evidence to the source digest. It is a local receipt, not a signed provenance claim.
+4. **Run one focused local crossing.** Keep `LAR_TARGET` unset. Set a unique, empty `LAR_STAGE_DIR` for this run and invoke only `e2e/nexus-offering-replication.test.ts`. No shared-worktree build may overlap it. Preserve the exact command, process exit status, full Vitest output, first refusal and the last diagnostic JSON/log when red. The witness itself owns and removes the two vessel roots; remove the empty parent stage directory only after Vitest exits.
+5. **Close the receipt.** Confirm no staged daemon/process remains, inspect the isolated worktree diff/status, and record the result as attached to the same source commit and dist digests. If any source input changed between build and test, discard that reading and rebuild from the settled tree; do not repair it by mutating the hot checkout.
+
+This is deliberately a local evidence packet rather than a new versioned entity: commit/tree identity plus content digests name bytes; the test result is an observation attached to those bytes. Operators can exchange the receipt across peers without asserting a planetary “current build.”
+
+''Evidence versus recommendation.'' The repo-specific facts and source anchors are measured in the preceding sections. External sources establish the general patterns listed here. The isolated, serialized, content-digest receipt is the recommended local procedure; it has not been executed in this scout and does not establish that this E2E passes.
+
 !! Minimum clean-worktree receipt after hot edits land
 
 Use a fresh detached worktree at the settled commit. Keep the dirty shared checkout and its active worktrees untouched. Example from the repository:
@@ -90,7 +115,16 @@ This is the minimum **reproducible** preparation established by repository wirin
 * `docker-compose.mesh.yml`
 * `tools/mesh-scenarios.sh`
 
+!! Prior-art sources
+
+* Bazel, Test Encyclopedia — hermetic test inputs, runner environment, private temp paths and cleanup: https://bazel.build/reference/test-encyclopedia
+* Vitest, Parallelism and Parallel/Sequential Test Files — isolation and shared-resource scheduling: https://vitest.dev/guide/parallelism · https://vitest.dev/guide/recipes/parallel-sequential.html
+* Node.js `net.Server.listen` — OS-assigned port behavior: https://nodejs.org/api/net.html#serverlistenport-host-backlog-callback
+* Docker Compose project names and services `ports` — project resource isolation and host/container port mapping: https://docs.docker.com/compose/how-tos/project-name/ · https://docs.docker.com/compose/intro/compose-application-model/ · https://docs.docker.com/reference/compose-file/services/#ports
+* pnpm recursive commands — dependency topology and workspace concurrency: https://pnpm.io/cli/recursive
+* SLSA v1.2 Provenance — build outputs, materials, and process provenance: https://slsa.dev/spec/v1.2/provenance
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A6gCOQMXwGpBPm9gtnJPnLuN970Z1u1p1fPOVXRL2oc
+<<^ code="&#x0003;">>ni:///sha-256;d_1Jwr7mOlYAaIfDQoTQ0a_f3336mrHBtMcrz8A0INU
 <<^ code="&#x0004;" -> to="?">>
