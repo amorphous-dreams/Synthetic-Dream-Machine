@@ -113,6 +113,10 @@ export const CARRIAGE_CONTRACT_DOMAIN = frozen("carriage-contract");
  *  member's accepts-carriage token, nor that token as a carrier's, so the separation rides the name
  *  (heraldry#/the-herm-card). */
 export const CARRIAGE_CARRIER_DOMAIN = frozen("carriage-carrier");
+/** A SEAL ROLL's anchor on the carriage board: the NEW epoch's quorum names the epoch it closes, that epoch's
+ *  public key-set, and the board's causal heads at the roll, so an admit already in those heads carries
+ *  across the roll. Its own name: an anchor must never verify as a carriage act, nor an act as an anchor. */
+export const CARRIAGE_ROLL_ANCHOR_DOMAIN = mint("carriage-roll-anchor");
 export const MEMBERSHIP_RELAY_DOMAIN = frozen("membership-relay");
 /** The kāpae raised over one RELATIONSHIP rather than over a party. */
 export const EDGE_KAPAE_DOMAIN = frozen("edge-kapae");

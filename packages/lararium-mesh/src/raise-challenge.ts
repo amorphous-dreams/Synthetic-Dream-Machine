@@ -40,7 +40,10 @@
 
 import { RAISE_CHALLENGE_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes } from "./crypto.js";
-import { verifyPresentedAdmit, type CarriageEntry, type PresentedAdmitState } from "./carriage-registry.js";
+import {
+  verifyPresentedAdmit, type CarriageEntry, type PresentedAdmitState, type PresentedLineageAct,
+} from "./carriage-registry.js";
+import type { SealEpoch } from "./wax-stamp.js";
 import { makeMultiSigQuorumVerifier, type KahuRoster, type KapaeAntigenEntry } from "./kapae-antigen.js";
 import type { RaisedCaps } from "./vessel-standing.js";
 
@@ -64,10 +67,11 @@ export interface RaiseChallenge {
 }
 
 /** The recogniser's own admit for the challenge's Nexus, as it would present it at the wire: the counted
- *  admit head for its leaf and that admit's closed, tight causal lineage. Public bytes only. */
+ *  admit head for its leaf and that admit's closed, tight causal lineage, with the roll anchors that carry
+ *  an admit at a rolled epoch to the head. Public bytes only. */
 export interface RaisePresentedAdmit {
   readonly admit:   CarriageEntry;
-  readonly lineage: readonly CarriageEntry[];
+  readonly lineage: readonly PresentedLineageAct[];
 }
 
 /** A recogniser's answer: their LEAF for the challenge's Nexus, over this exact challenge, with its admit. */
@@ -96,6 +100,9 @@ export interface RaiseNexusReading {
   readonly antigen:       readonly KapaeAntigenEntry[];
   /** The ANTIGEN quorum's roster, held apart from the membership roster. */
   readonly antigenRoster: KahuRoster;
+  /** The charter's epoch lineage, genesis first — what an admit at a rolled epoch is walked against. Absent →
+   *  only an admit at the head reads held. */
+  readonly sealLineage?:  readonly SealEpoch[];
 }
 
 /**
@@ -190,8 +197,9 @@ export async function verifyRaiseGrant(args: {
   try {
     verdict = await verifyPresentedAdmit({
       admit:           admit as CarriageEntry,
-      lineage:         presented?.lineage as readonly CarriageEntry[],
+      lineage:         presented?.lineage as readonly PresentedLineageAct[],
       roster:          reading.roster,
+      ...(reading.sealLineage ? { sealLineage: reading.sealLineage } : {}),
       denyBoard:       reading.denyBoard,
       antigen:         reading.antigen,
       antigenRoster:   reading.antigenRoster,

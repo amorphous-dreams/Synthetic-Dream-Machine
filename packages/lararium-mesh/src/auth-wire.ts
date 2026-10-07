@@ -29,7 +29,7 @@ import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
-import { carriageEntryActCid, type CarriageEntry } from "./carriage-registry.js";
+import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
 import { AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_ADMIT_LEAF_PROOF_DOMAIN } from "./domains.js";
 
 /** Gate → Peer: start of auth exchange. */
@@ -62,8 +62,9 @@ export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-poss
 
 /**
  * PresentedAdmit — the subject's own quorum-signed carriage ADMIT, presented at the wire for the island it
- * dials, with the admit's causal LINEAGE: the counted acts it cites for this nym and epoch. A dialer presents
- * only the dialed island's admit, never its whole set.
+ * dials, with the admit's causal LINEAGE: the counted acts it cites for this nym and epoch, and — for an admit
+ * at an epoch the charter has since rolled past — the roll anchors that carry it to the head. A dialer
+ * presents only the dialed island's admit, never its whole set.
  *
  * The admit and lineage are public bytes: every entry already stands as a signed act on the Nexus's carriage
  * board. The bundle rides OUTSIDE the V3 proof signature. It binds to THIS socket through `leafProof` — the
@@ -75,7 +76,8 @@ export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-poss
  */
 export interface PresentedAdmit {
   readonly admit:      CarriageEntry;
-  readonly lineage:    readonly CarriageEntry[];
+  /** The admit's causal acts at its own epoch, and the roll anchors carrying that epoch to the head. */
+  readonly lineage:    readonly PresentedLineageAct[];
   /** The leaf's Ed25519 signature (hex) over `leafProofBytes` for this socket. Absent → the admit binds to no
    *  socket and the receiver reads the presenter as a stranger. */
   readonly leafProof?: string;
@@ -101,7 +103,8 @@ function isCarriageEntryShape(v: unknown): v is CarriageEntry {
 
 /**
  * Structural guard for a presented admit: an `admit` act, and a lineage of operator acts (admit/revoke) on the
- * SAME nym under the SAME charter epoch. Shape only — no signature, quorum, ancestry or frontier is read here.
+ * SAME nym under the admit's OWN charter epoch, beside the roll anchors (`isRollAnchor`) that carry that epoch
+ * to the head. Shape only — no signature, quorum, ancestry, anchor chain or frontier is read here.
  */
 export function isPresentedAdmit(v: unknown): v is PresentedAdmit {
   if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
@@ -112,11 +115,11 @@ export function isPresentedAdmit(v: unknown): v is PresentedAdmit {
   const leafProof = x["leafProof"];
   if (leafProof !== undefined && (typeof leafProof !== "string" || !/^[0-9a-fA-F]{128}$/.test(leafProof))) return false;
   const nym = admit.nym.toLowerCase();
-  return lineage.every((entry) =>
+  return lineage.every((entry) => isRollAnchor(entry) || (
     isCarriageEntryShape(entry) &&
     (entry.action === "admit" || entry.action === "revoke") &&
     entry.nym.toLowerCase() === nym &&
-    entry.sealEpochCid === admit.sealEpochCid);
+    entry.sealEpochCid === admit.sealEpochCid));
 }
 
 /** Peer → Gate: identity assertion. */

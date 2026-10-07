@@ -37,11 +37,12 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
+import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import type { QuorumSignature, KahuRoster } from "./kapae-antigen.js";
 import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
+import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
 
 /** The domain a CarriageEntry's quorum signs over — a signature is meaningless without its domain. */
 export { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
@@ -197,11 +198,18 @@ async function verifyMembershipQuorum(entry: CarriageEntry, roster: KahuRoster):
   if (roster.threshold < 1)                              return false;
   if (roster.keys.length < roster.threshold)             return false;   // unbound / short roster → deny
   if (entry.sealEpochCid !== roster.sealEpochCid)  return false;   // roots on an unknown epoch → deny
+  return quorumSignaturesCount(carriageEntryBytes(entry), entry.signatures, roster);
+}
 
+/** ≥ threshold distinct roster keys whose signature verifies over `bytes`. A non-roster signer, a repeat
+ *  signer and a malformed signature each count as no signature; a short roster meets no threshold. */
+async function quorumSignaturesCount(
+  bytes: Uint8Array, signatures: readonly QuorumSignature[], roster: KahuRoster,
+): Promise<boolean> {
+  if (roster.threshold < 1 || roster.keys.length < roster.threshold) return false;
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
-  const bytes      = carriageEntryBytes(entry);
   const counted    = new Set<string>();
-  for (const s of entry.signatures) {
+  for (const s of signatures) {
     const signer = s.signer.toLowerCase();
     if (counted.has(signer))     continue;   // a signer pads the quorum at most once
     if (!rosterKeys.has(signer)) continue;   // a non-roster signer never counts
@@ -535,9 +543,137 @@ export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): bool
   return carrierSet.has(nym.toLowerCase());
 }
 
+// ── the roll anchor ──────────────────────────────────────────────────────────────────────────────────────────
+// A seal roll changes the roster every carriage act counts under. An admit minted at the closed epoch still
+// counts there, and the anchor is how it carries across: the NEW epoch's quorum signs the closed epoch's cid,
+// that epoch's public key-set, and the board's causal heads at the roll. An admit standing in those heads was
+// minted BEFORE the roll; one minted under the closed keys afterwards sits in no anchor's past.
+
+/**
+ * RollAnchor — one seal roll, recorded on the carriage board.
+ *
+ *   · `prevEpochCid` / `sealEpochCid` — the epoch the roll closes and the epoch it opens.
+ *   · `prevKeys` / `prevThreshold`    — the CLOSED epoch's seated key-set: public charter material that the
+ *                                       charter lineage already binds (`sealKeySetHash` = that epoch's
+ *                                       `keySetHash`), carried so a verifier can count the closed epoch's acts.
+ *   · `parents`                       — the board's causal heads at the roll (`rollAnchorParents`).
+ *   · `signatures`                    — the OPENED epoch's quorum. The closed keys never sign the anchor: they
+ *                                       may be the reason for the roll.
+ *
+ * Its act CID sits in the same 64-hex space as a carriage act's, so a later anchor cites it as a parent.
+ */
+export interface RollAnchor {
+  readonly kind:          typeof CARRIAGE_ROLL_ANCHOR_DOMAIN;
+  readonly prevEpochCid:  string;
+  readonly sealEpochCid:  string;
+  readonly prevKeys:      readonly string[];
+  readonly prevThreshold: number;
+  readonly parents:       readonly string[];
+  readonly signatures:    readonly QuorumSignature[];
+}
+
+/** The domain a roll anchor's quorum signs over — its own name, apart from every carriage act. */
+export { CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
+
+/** The canonical bytes the opened epoch's quorum signs: everything but the signatures, keys and parents
+ *  sorted and de-duplicated so the CID is stable across gossip order. */
+export function rollAnchorBytes(anchor: Omit<RollAnchor, "signatures">): Uint8Array {
+  return canonicalJsonBytes({
+    kind:          anchor.kind,
+    prevEpochCid:  anchor.prevEpochCid,
+    sealEpochCid:  anchor.sealEpochCid,
+    prevKeys:      [...new Set(anchor.prevKeys.map((k) => k.toLowerCase()))].sort(),
+    prevThreshold: anchor.prevThreshold,
+    parents:       [...new Set(anchor.parents)].sort(),
+  });
+}
+
+/** The anchor's act CID — 64-hex, citable as a causal parent. Signatures are evidence, not identity. */
+export function rollAnchorCid(anchor: Omit<RollAnchor, "signatures"> | RollAnchor): string {
+  return sha256HexBytesSync(rollAnchorBytes(anchor));
+}
+
+/** Shape only: the anchor domain, two epoch cids, a key-set, 64-hex parents and signature records. */
+export function isRollAnchor(v: unknown): v is RollAnchor {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
+  const x = v as Record<string, unknown>;
+  return x["kind"] === CARRIAGE_ROLL_ANCHOR_DOMAIN &&
+    typeof x["prevEpochCid"] === "string" && x["prevEpochCid"].length > 0 &&
+    typeof x["sealEpochCid"] === "string" && x["sealEpochCid"].length > 0 &&
+    Array.isArray(x["prevKeys"]) && x["prevKeys"].every((k) => typeof k === "string" && /^[0-9a-fA-F]{64}$/.test(k)) &&
+    typeof x["prevThreshold"] === "number" && Number.isInteger(x["prevThreshold"]) && x["prevThreshold"] >= 1 &&
+    Array.isArray(x["parents"]) && x["parents"].every((p) => typeof p === "string" && /^[0-9a-f]{64}$/.test(p)) &&
+    Array.isArray(x["signatures"]) && x["signatures"].every((s) =>
+      typeof s === "object" && s !== null &&
+      typeof (s as Record<string, unknown>)["signer"] === "string" &&
+      typeof (s as Record<string, unknown>)["sig"] === "string");
+}
+
+/** Sign a roll anchor with the OPENED epoch's quorum. The module holds no key; each kahu supplies a signer. */
+export async function signRollAnchor(
+  parts: Omit<RollAnchor, "kind" | "signatures">,
+  signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
+): Promise<RollAnchor> {
+  const unsigned: Omit<RollAnchor, "signatures"> = {
+    kind:          CARRIAGE_ROLL_ANCHOR_DOMAIN,
+    prevEpochCid:  parts.prevEpochCid,
+    sealEpochCid:  parts.sealEpochCid,
+    prevKeys:      [...new Set(parts.prevKeys.map((k) => k.toLowerCase()))].sort(),
+    prevThreshold: parts.prevThreshold,
+    parents:       [...new Set(parts.parents)].sort(),
+  };
+  const bytes = rollAnchorBytes(unsigned);
+  const signatures: QuorumSignature[] = [];
+  for (const s of signers) signatures.push({ signer: s.signer, sig: await s.sign(bytes) });
+  return { ...unsigned, signatures };
+}
+
+/**
+ * Does the anchor count under `opened` — the roster of the epoch it OPENS? It must name that epoch and carry a
+ * quorum of that roster's keys over its bytes. Exported so the writer self-verifies before landing an anchor.
+ */
+export async function rollAnchorCounts(anchor: RollAnchor, opened: KahuRoster): Promise<boolean> {
+  if (!isRollAnchor(anchor)) return false;
+  if (anchor.sealEpochCid !== opened.sealEpochCid) return false;
+  return quorumSignaturesCount(rollAnchorBytes(anchor), anchor.signatures, opened);
+}
+
+/**
+ * The board's causal heads at a roll that CLOSES `closing`'s epoch: every act that counts under `closing`, and
+ * every anchor that opened `closing`'s epoch and counts there, that no other of them cites. Acts at any other
+ * epoch are left out, so an act a stale key minted at an older epoch never enters the roll's past. Sorted.
+ */
+export async function rollAnchorParents(
+  entries: Iterable<CarriageEntry>,
+  anchors: Iterable<RollAnchor>,
+  closing: KahuRoster,
+): Promise<string[]> {
+  const nodes = new Map<string, readonly string[]>();
+  for (const entry of entries) {
+    if (!entryShapeIsReadable(entry) || entry.sealEpochCid !== closing.sealEpochCid) continue;
+    if (!(await countReason(entry, closing)).counted) continue;
+    nodes.set(carriageEntryActCid(entry), entry.parents);
+  }
+  for (const anchor of anchors) {
+    if (!(await rollAnchorCounts(anchor, closing))) continue;
+    nodes.set(rollAnchorCid(anchor), anchor.parents);
+  }
+  const cited = new Set<string>();
+  for (const parents of nodes.values()) for (const p of parents) cited.add(p);
+  return [...nodes.keys()].filter((cid) => !cited.has(cid)).sort();
+}
+
 // ── presented-admit verifier ─────────────────────────────────────────────────────────────────────────────
 // The subject PRESENTS its own quorum-signed admit and that admit's causal lineage; the gate checks the
 // presentation against a DENY-only board and the Kapae antigen. Nothing here folds an allow roster.
+
+/** One act a presentation's lineage carries: a carriage act on the admit's relation, or a roll anchor. */
+export type PresentedLineageAct = CarriageEntry | RollAnchor;
+
+/** The act CID of a lineage act, whichever kind it is. */
+export function presentedActCid(act: PresentedLineageAct): string {
+  return isRollAnchor(act) ? rollAnchorCid(act) : carriageEntryActCid(act as CarriageEntry);
+}
 
 /**
  * The verdict on one presented admit:
@@ -546,8 +682,11 @@ export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): bool
  *   · `unsettled`   — a counted revoke stands concurrent with the admit (or its ancestry does not resolve
  *                     here), or the antigen's verdict on the nym is contradictory. Refuses: a contradiction
  *                     never grants.
- *   · `wrong-epoch` — the admit, or an act in its lineage, roots on a charter epoch other than the roster's
- *                     head. Admits fail closed at a seal roll.
+ *   · `wrong-epoch` — the admit roots on an epoch that no counted chain of roll anchors carries to the
+ *                     roster's head: an epoch off the charter lineage, a missing or uncounted anchor, or an
+ *                     admit (or lineage act) outside an anchor's causal past — minted after its epoch rolled.
+ *                     An admit at an ancestor epoch carries across the roll only when it stood in the board's
+ *                     causal past at every roll since.
  *   · `rejected`    — no admit was presented, the presented act is not an admit, it does not count, or its
  *                     lineage does not chain.
  */
@@ -566,13 +705,20 @@ export interface PresentedAdmitInput {
   readonly admit:           CarriageEntry;
   /**
    * The admit's causal lineage — every act the admit transitively cites, each a counted admit or revoke on
-   * the same nym at the roster's head epoch. The set must be CLOSED (every cited parent resolves inside it)
-   * and TIGHT (every entry is an ancestor of the admit). Order does not matter. A genesis admit presents
-   * an empty lineage.
+   * the same nym at the ADMIT's epoch, plus — when that epoch is an ancestor of the head — the roll anchors
+   * that carry it there, one per roll. The acts must be CLOSED (every cited parent resolves inside them) and
+   * TIGHT (every act is an ancestor of the admit). Order does not matter. A genesis admit at the head
+   * presents an empty lineage.
    */
-  readonly lineage:         readonly CarriageEntry[];
+  readonly lineage:         readonly PresentedLineageAct[];
   /** The membership kahu roster at the charter head. */
   readonly roster:          KahuRoster;
+  /**
+   * The charter's epoch lineage, genesis first, its last epoch the roster's head. Read only for an admit at
+   * an ancestor epoch: the anchors are walked against it by `prevEpochCid`. Absent → such an admit reads
+   * `wrong-epoch`.
+   */
+  readonly sealLineage?:    readonly SealEpoch[];
   /** The shared deny board. Only counted `revoke` acts on the admit's nym are read; every other act is skipped. */
   readonly denyBoard:       Iterable<CarriageEntry>;
   /** The Kapae antigen entries. */
@@ -587,24 +733,86 @@ function presentedVerdict(state: PresentedAdmitState, reason: string, nym: strin
   return { state, reason, nym };
 }
 
+/** The rosters a counted anchor chain resolves, keyed by epoch cid, and the anchors oldest-first. */
+interface AnchoredChain {
+  readonly rosters: ReadonlyMap<string, KahuRoster>;
+  readonly anchors: readonly RollAnchor[];
+}
+
+/**
+ * Walk the anchors from the head back to `admitEpoch` along the charter lineage. Each step: the anchor that
+ * OPENS lineage[j] must name lineage[j-1] as the epoch it closes, count under lineage[j]'s roster, carry a
+ * key-set that hashes to lineage[j-1]'s `keySetHash` (which becomes lineage[j-1]'s roster), and be cited by
+ * the anchor that opens lineage[j+1]. Every presented anchor must sit on the walk. A string names the
+ * wrong-epoch reason; a `{ rejected }` names a malformed presentation.
+ */
+async function resolveAnchoredChain(
+  admitEpoch: string,
+  head: KahuRoster,
+  sealLineage: readonly SealEpoch[] | undefined,
+  anchors: readonly RollAnchor[],
+): Promise<AnchoredChain | string | { rejected: string }> {
+  if (anchors.length === 0) return "admit-not-at-head-epoch";   // nothing presented carries it across a roll
+  if (!sealLineage || sealLineage.length === 0 || !verifySealLineage(sealLineage)) return "no-charter-lineage";
+  const last = sealLineage.length - 1;
+  if (sealLineage[last]!.epochCid !== head.sealEpochCid) return "charter-lineage-not-at-roster-head";
+  const at = sealLineage.findIndex((e) => e.epochCid === admitEpoch);
+  if (at < 0) return "admit-epoch-not-an-ancestor";
+
+  const opens = new Map<string, RollAnchor>();
+  for (const anchor of anchors) {
+    if (opens.has(anchor.sealEpochCid)) return { rejected: "lineage-duplicate-anchor" };
+    opens.set(anchor.sealEpochCid, anchor);
+  }
+
+  const rosters = new Map<string, KahuRoster>([[head.sealEpochCid, head]]);
+  const walked: RollAnchor[] = [];
+  let opened = head;
+  let later: RollAnchor | null = null;
+  for (let j = last; j > at; j--) {
+    const anchor = opens.get(sealLineage[j]!.epochCid);
+    if (!anchor) return "anchor-missing";
+    const closed = sealLineage[j - 1]!;
+    if (anchor.prevEpochCid !== closed.epochCid) return "anchor-off-the-charter-lineage";
+    if (!(await rollAnchorCounts(anchor, opened))) return "anchor-not-counted";
+    if (sealKeySetHash(anchor.prevKeys, anchor.prevThreshold) !== closed.keySetHash) return "anchor-key-set-unbound";
+    if (later && !later.parents.includes(rollAnchorCid(anchor))) return "anchor-chain-broken";
+    opened = { keys: [...anchor.prevKeys], threshold: anchor.prevThreshold, sealEpochCid: closed.epochCid };
+    rosters.set(closed.epochCid, opened);
+    walked.unshift(anchor);
+    later = anchor;
+  }
+  if (walked.length !== anchors.length) return { rejected: "lineage-unchained-anchor" };   // an anchor off the walk
+  return { rosters, anchors: walked };
+}
+
 /**
  * Verify a PRESENTED admit against the deny board and the antigen. Pure and clockless: every ordering it
  * reads is causal lineage by CID, and every epoch it reads is a seal-epoch CID.
  *
  * Steps, each fail-closed:
  *   1. The presented act must be a readable `admit` (a `carry`, `revoke` or `uncarry` is `rejected`).
- *   2. The admit must root on the roster's head epoch (else `wrong-epoch`) and count — the kahu quorum plus
- *      the operator's own accepts-carriage seal (else `rejected`).
- *   3. Every lineage act must name the same nym, sit in the member family, root on the head epoch (else
- *      `wrong-epoch`), and count; the lineage must be closed and tight by CID (else `rejected`).
- *   4. Only counted `revoke` acts on the nym are read from the board. Against the admit, each one is:
+ *   2. The admit's epoch E resolves a roster. E = the head: the roster itself. E an ancestor: a chain of
+ *      roll anchors E→…→head, each counted under the roster of the epoch it opens, walked against the
+ *      charter lineage by `prevEpochCid`, each carrying the key-set its closed epoch's `keySetHash` binds,
+ *      each cited by the next. No such chain → `wrong-epoch`.
+ *   3. The admit must count under E's roster — the kahu quorum plus the operator's own accepts-carriage seal
+ *      (else `rejected`).
+ *   4. Every lineage act must name the same nym, sit in the member family, root on E (else `wrong-epoch`),
+ *      and count; the acts must be closed and tight by CID (else `rejected`).
+ *   5. Only counted `revoke` acts on the nym are read from the board, each counted under the roster of its
+ *      own epoch on the chain (a revoke at any epoch E…head closes). Against the admit, each one is:
  *        · a DESCENDANT of the admit — it closes the admit → `denied`;
  *        · an ANCESTOR of the admit (the lineage covers it: re-admit after revoke) — superseded, no effect;
  *        · neither, or its ancestry does not resolve here — concurrent → `unsettled`.
- *   5. The antigen folds through its OWN verifier and roster. A `held` kapae on the nym → `denied`; an
+ *   6. Every anchor on the chain must hold the admit in its causal past, read over the presented acts, the
+ *      anchors and the counted revokes — an admit minted under E's keys after E rolled is in no anchor's
+ *      past → `wrong-epoch`.
+ *   7. The antigen folds through its OWN verifier and roster. A `held` kapae on the nym → `denied`; an
  *      `un_kapae` head lifts it; any contradictory or unresolvable antigen verdict → `unsettled`.
  *   `denied` outranks `unsettled`, which outranks `held`.
  *
+ * The board stays deny-only: every anchor reaches this verifier inside the PRESENTATION, never read off a board.
  * The verifier checks the LEAF NYM only. A kapae closing carry may name either the admit's leaf nym or the
  * wire vessel key; matching the wire vessel key belongs to the gate, which holds that key.
  */
@@ -617,22 +825,47 @@ export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<
   const nym = admit.nym.toLowerCase();
   if (admit.kind !== CARRIAGE_ENTRY_DOMAIN) return presentedVerdict("rejected", "wrong-entry-kind", nym);
   if (admit.action !== "admit") return presentedVerdict("rejected", `not-an-admit:${admit.action}`, nym);
-  if (admit.sealEpochCid !== roster.sealEpochCid) return presentedVerdict("wrong-epoch", "admit-not-at-head-epoch", nym);
-  const admitCount = await countReason(admit, roster);
+  if (!Array.isArray(input.lineage)) return presentedVerdict("rejected", "malformed-lineage", nym);
+
+  // Split the lineage: the relation's own acts, and the roll anchors that carry its epoch to the head.
+  const acts: CarriageEntry[] = [];
+  const anchors: RollAnchor[] = [];
+  for (const act of input.lineage) {
+    if (act !== null && typeof act === "object" && (act as { kind?: unknown }).kind === CARRIAGE_ROLL_ANCHOR_DOMAIN) {
+      if (!isRollAnchor(act)) return presentedVerdict("rejected", "lineage-malformed-anchor", nym);
+      anchors.push(act);
+    } else {
+      acts.push(act as CarriageEntry);
+    }
+  }
+
+  // The admit's epoch resolves a roster: the head's own, or the one an anchor chain carries back to it.
+  let rosters: ReadonlyMap<string, KahuRoster> = new Map([[roster.sealEpochCid, roster]]);
+  let chain: readonly RollAnchor[] = [];
+  if (admit.sealEpochCid !== roster.sealEpochCid) {
+    const resolved = await resolveAnchoredChain(admit.sealEpochCid, roster, input.sealLineage, anchors);
+    if (typeof resolved === "string") return presentedVerdict("wrong-epoch", resolved, nym);
+    if ("rejected" in resolved) return presentedVerdict("rejected", resolved.rejected, nym);
+    rosters = resolved.rosters;
+    chain = resolved.anchors;
+  } else if (anchors.length > 0) {
+    return presentedVerdict("rejected", "lineage-unchained-anchor", nym);   // an admit at the head needs none
+  }
+  const admitRoster = rosters.get(admit.sealEpochCid)!;
+  const admitCount = await countReason(admit, admitRoster);
   if (!admitCount.counted) return presentedVerdict("rejected", `admit-${admitCount.reason}`, nym);
   const admitCid = carriageEntryActCid(admit);
 
-  // The lineage: every act counts on the same relation at the head epoch, and the set chains by CID.
-  if (!Array.isArray(input.lineage)) return presentedVerdict("rejected", "malformed-lineage", nym);
+  // The lineage acts: every act counts on the same relation at the admit's epoch, and the set chains by CID.
   const graph = new Map<string, CarriageEntry>();
-  for (const entry of input.lineage) {
+  for (const entry of acts) {
     if (entry === null || typeof entry !== "object" || !entryShapeIsReadable(entry)) {
       return presentedVerdict("rejected", "lineage-malformed-entry", nym);
     }
     if (entry.nym.toLowerCase() !== nym) return presentedVerdict("rejected", "lineage-foreign-nym", nym);
     if (relationFamily(entry.action) !== "member") return presentedVerdict("rejected", "lineage-foreign-family", nym);
-    if (entry.sealEpochCid !== roster.sealEpochCid) return presentedVerdict("wrong-epoch", "lineage-not-at-head-epoch", nym);
-    const counted = await countReason(entry, roster);
+    if (entry.sealEpochCid !== admit.sealEpochCid) return presentedVerdict("wrong-epoch", "lineage-not-at-admit-epoch", nym);
+    const counted = await countReason(entry, admitRoster);
     if (!counted.counted) return presentedVerdict("rejected", `lineage-${counted.reason}`, nym);
     graph.set(carriageEntryActCid(entry), entry);
   }
@@ -647,16 +880,26 @@ export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<
     }
   }
 
-  // The deny board: counted revokes on this nym only. An admit on the board is never read.
+  // The deny board: counted revokes on this nym, each under the roster of its own epoch on the chain.
   const revokes: Array<{ cid: string; entry: CarriageEntry }> = [];
   for (const entry of input.denyBoard) {
     if (entry === null || typeof entry !== "object" || !entryShapeIsReadable(entry)) continue;
     if (entry.action !== "revoke" || entry.nym.toLowerCase() !== nym) continue;
-    if (!(await countReason(entry, roster)).counted) continue;
+    const at = rosters.get(entry.sealEpochCid);
+    if (!at || !(await countReason(entry, at)).counted) continue;
     revokes.push({ cid: carriageEntryActCid(entry), entry });
   }
   const causal = new Map<string, { readonly parents: readonly string[] }>(graph);
   for (const r of revokes) if (!causal.has(r.cid)) causal.set(r.cid, r.entry);
+  for (const anchor of chain) causal.set(rollAnchorCid(anchor), anchor);
+
+  // Every anchor on the chain holds the admit in its causal past — so the lineage acts, its ancestors, too.
+  for (const anchor of chain) {
+    if (!isCarriageDescendant(rollAnchorCid(anchor), admitCid, causal)) {
+      return presentedVerdict("wrong-epoch", "admit-not-in-anchor-past", nym);
+    }
+  }
+
   let closing = false;
   let concurrent = false;
   let covered = false;
@@ -686,36 +929,66 @@ export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<
 /** What a dialer presents for one nym on one board: the admit head and its closed, tight lineage. */
 export interface AdmitPresentation {
   readonly admit:   CarriageEntry;
-  readonly lineage: readonly CarriageEntry[];
+  readonly lineage: readonly PresentedLineageAct[];
 }
 
 /**
  * Derive the presentation a subject carries to the wire from a carriage board it holds: the counted `admit`
  * that stands as a causal HEAD of `nym`'s member relation, plus every counted act that admit transitively
- * cites. The lineage is CLOSED (every cited parent resolves inside it) and TIGHT (every entry is an ancestor
- * of the admit). Pure and clockless.
+ * cites. The acts are CLOSED (every cited parent resolves inside them) and TIGHT (every act is an ancestor of
+ * the admit). Pure and clockless.
  *
- * Returns null when no counted admit stands as a head (a revoke supersedes the last admit, or nothing was
- * ever admitted), or when the admit's ancestry does not resolve on this board. A revoke standing CONCURRENT
- * with the admit head does not stop the derivation: the presentation still travels, and the verifier on the
- * other side reads it `unsettled` against its own deny board. Two concurrent admit heads present the one
- * whose act CID sorts first.
+ * THE EPOCH IT READS. The head epoch first. When `nym`'s relation holds no counted act there, the walk steps
+ * back one roll at a time through `anchors` (the board's roll anchors): the anchor that opens the epoch in
+ * hand and counts under its roster names the epoch it closed and that epoch's key-set, which counts the acts
+ * there. The first epoch holding a counted act for `nym` decides; an admit head found below the head epoch
+ * presents with the anchors that carry it, one per roll. The presenter trusts nothing it carries: the
+ * verifier re-walks the chain against the charter lineage and the admit's place in every anchor's past.
+ *
+ * Returns null when no counted admit stands as a head at that epoch (a revoke supersedes the last admit, or
+ * nothing was ever admitted), or when the admit's ancestry does not resolve on this board. A revoke standing
+ * CONCURRENT with the admit head does not stop the derivation: the presentation still travels, and the
+ * verifier on the other side reads it `unsettled` against its own deny board. Two concurrent admit heads
+ * present the one whose act CID sorts first.
  */
 export async function presentedAdmitFromBoard(
   entries: Iterable<CarriageEntry>,
   nym: string,
   roster: KahuRoster,
+  anchors: Iterable<RollAnchor> = [],
 ): Promise<AdmitPresentation | null> {
   const want = nym.toLowerCase();
   const source = [...entries];
-  const fold = await foldCarriageDetails(source, roster);
-  // The fold's details run in source order, one per entry — zip them to recover each counted act.
-  const byCid = new Map<string, CarriageEntry>();
-  fold.entries.forEach((detail, i) => {
-    if (!detail.counted || detail.nym !== want || relationFamily(detail.action) !== "member") return;
-    if (detail.sealEpochCid !== roster.sealEpochCid) return;
-    if (!byCid.has(detail.evidenceCid)) byCid.set(detail.evidenceCid, source[i]!);
-  });
+  const anchorList = [...anchors];
+  const carried: RollAnchor[] = [];
+  const visited = new Set<string>();
+  let at: KahuRoster | null = roster;
+  while (at && !visited.has(at.sealEpochCid)) {
+    visited.add(at.sealEpochCid);
+    const fold = await foldCarriageDetails(source, at);
+    // The fold's details run in source order, one per entry — zip them to recover each counted act.
+    const byCid = new Map<string, CarriageEntry>();
+    const epoch = at.sealEpochCid;
+    fold.entries.forEach((detail, i) => {
+      if (!detail.counted || detail.nym !== want || relationFamily(detail.action) !== "member") return;
+      if (detail.sealEpochCid !== epoch) return;
+      if (!byCid.has(detail.evidenceCid)) byCid.set(detail.evidenceCid, source[i]!);
+    });
+    if (byCid.size > 0) return presentationAt(byCid, carried);
+    // No act for this nym at this epoch: step back through the anchor that opened it.
+    const opening: RollAnchor[] = [];
+    for (const anchor of anchorList) if (await rollAnchorCounts(anchor, at)) opening.push(anchor);
+    opening.sort((a, b) => rollAnchorCid(a).localeCompare(rollAnchorCid(b)));
+    const step = opening[0];
+    if (!step) return null;
+    carried.unshift(step);
+    at = { keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid };
+  }
+  return null;
+}
+
+/** The admit head among one epoch's counted acts for a nym, its closed lineage, and the carrying anchors. */
+function presentationAt(byCid: ReadonlyMap<string, CarriageEntry>, carried: readonly RollAnchor[]): AdmitPresentation | null {
   const cited = new Set<string>();
   for (const entry of byCid.values()) for (const parent of entry.parents) cited.add(parent);
   const heads = [...byCid.entries()]
@@ -734,5 +1007,5 @@ export async function presentedAdmitFromBoard(
     lineage.set(cid, entry);
     todo.push(...entry.parents);
   }
-  return { admit, lineage: [...lineage.values()] };
+  return { admit, lineage: [...lineage.values(), ...carried] };
 }

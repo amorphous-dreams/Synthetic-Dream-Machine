@@ -8,7 +8,8 @@
  * STORAGE CONVENTION (mirrors antigen-board): each carriage entry rides ONE tiddler whose `text` carries the
  * entry's JSON (`CarriageEntry`). The extractor walks every tiddler, parses its text, and keeps only the
  * ones that structurally coerce to an entry — a foreign / torn / non-carriage tiddler is SKIPPED, never
- * guessed. Extraction is permissive on purpose: it never adjudicates trust (an entry it surfaces still faces
+ * guessed. A seal roll's ANCHOR rides the same board under its own sub-namespace (`rollAnchorKey`) and reads
+ * back through `rollAnchorsFromBoard` alone; the entry extractor skips it. Extraction is permissive on purpose: it never adjudicates trust (an entry it surfaces still faces
  * the kahu quorum + contract-in verify in `foldCarriageSet`, which IGNORES anything that does not count). So
  * a malformed or forged entry that slips through extraction costs nothing — it dies at the fold. FAIL CLOSED
  * end-to-end: an absent / empty board surfaces NO entries, the fold yields the empty carrier set, and NOBODY
@@ -28,8 +29,11 @@ import { mutableLarRecord, tiddlerText } from "./base-doc.js";
 import {
   CARRIAGE_ENTRY_DOMAIN,
   carriageEntryActCid,
+  isRollAnchor,
+  rollAnchorCid,
   type CarriageEntry,
   type CarriageAction,
+  type RollAnchor,
 } from "./carriage-registry.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 
@@ -125,4 +129,47 @@ export function carriageEntriesFromBoard(doc: LarDoc | undefined | null): Carria
     if (entry !== null) entries.push(entry);
   }
   return entries;
+}
+
+// ── roll anchors — the seal rolls the board records beside its acts ───────────────────────────────────
+
+/** The tiddler key a roll anchor rides under — keyed by its act CID in its own sub-namespace, so an anchor
+ *  accretes beside the carriage acts and never overwrites one. */
+export function rollAnchorKey(anchor: RollAnchor): string {
+  return `${CARRIAGE_ENTRY_PREFIX}roll/${rollAnchorCid(anchor)}`;
+}
+
+/**
+ * Land a signed roll anchor onto a board draft, as a namespaced tiddler whose `text` carries the anchor JSON
+ * (the shape `rollAnchorsFromBoard` reads back). Call INSIDE a `handle.change()` callback. The stamp carries
+ * the epoch the anchor opens — provenance only.
+ */
+export function writeRollAnchor(draft: LarDoc, anchor: RollAnchor): void {
+  const key = rollAnchorKey(anchor);
+  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(anchor) }, anchor.sealEpochCid);
+}
+
+/**
+ * Extract every well-formed roll anchor the board carries. Shape only, exactly as the entry extractor is: a
+ * PRESENTER reads these to carry its admit across a roll (`presentedAdmitFromBoard`), and the verifier counts
+ * the anchors a presentation carries. No gate reads an anchor off a board — the board stays deny-only.
+ * Extra fields a forged tiddler smuggled in are dropped.
+ */
+export function rollAnchorsFromBoard(doc: LarDoc | undefined | null): RollAnchor[] {
+  const tiddlers = doc?.tiddlers;
+  if (!tiddlers) return [];
+  const anchors: RollAnchor[] = [];
+  for (const record of Object.values(tiddlers)) {
+    const text = tiddlerText(record);
+    if (text === null) continue;
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { continue; }
+    if (!isRollAnchor(parsed)) continue;
+    anchors.push({
+      kind: parsed.kind, prevEpochCid: parsed.prevEpochCid, sealEpochCid: parsed.sealEpochCid,
+      prevKeys: [...parsed.prevKeys], prevThreshold: parsed.prevThreshold, parents: [...parsed.parents],
+      signatures: parsed.signatures.map((sig) => ({ signer: sig.signer, sig: sig.sig })),
+    });
+  }
+  return anchors;
 }
