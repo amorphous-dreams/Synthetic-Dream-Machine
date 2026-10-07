@@ -17,9 +17,9 @@
  * Local-first Ideal 1 (fast): get/listVisible read from the in-memory doc.
  *
  * TALK-STORY SURFACING: a merge that leaves concurrent values on a record (two actors set one field,
- * or created one title, concurrently) raises `onParallelDrafts` listeners with every concurrent value
- * as an attributed TW5 draft (`parallel-drafts.ts`), and `parallelDrafts(title)` answers them on
- * demand. The value Automerge merged stays live; the others stay reachable; the store decides nothing.
+ * or created one title, concurrently) raises `onParallelDrafts` listeners — and every registered
+ * projection that reads drafts — with every concurrent value as an attributed TW5 draft
+ * (`parallel-drafts.ts`), and `parallelDrafts(title)` answers them on demand. The value Automerge merged stays live; the others stay reachable; the store decides nothing.
  * A put assigns only the fields whose value moved, so a writer re-saving the live value never
  * supersedes a concurrent value it has not seen.
  */
@@ -30,7 +30,7 @@ import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin 
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
-import { readParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
+import { readParallelDrafts, readsParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
@@ -193,8 +193,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
     }
   }
 
+  /** Register a projection. One that reads surfaced drafts (`ParallelDraftsReader`) hears this store's
+   *  surfacings too, under the same unsubscribe. */
   addProjection(p: MemeProjection): () => void {
-    return this.provider.addProjection(p);
+    const off = this.provider.addProjection(p);
+    if (!readsParallelDrafts(p)) return off;
+    const offDrafts = this.onParallelDrafts((change) => p.onParallelDrafts(change));
+    return () => { off(); offDrafts(); };
   }
 
   markSyncComplete(): void {

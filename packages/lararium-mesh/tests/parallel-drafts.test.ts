@@ -13,7 +13,7 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import type { ChangeOrigin, LarTiddlerRecord } from "../src/tiddler-store.js";
-import type { ParallelDraftsChange } from "../src/parallel-drafts.js";
+import { draftsOffLive, type ParallelDraftsChange } from "../src/parallel-drafts.js";
 
 const TITLE = "lar:///t/story";
 const origin: ChangeOrigin = { kind: "tw-local", instanceId: "test" };
@@ -112,5 +112,48 @@ describe("★ a concurrent edit surfaces as attributed parallel drafts ★", () 
     expect((await a.get(TITLE))!.tiddler.text).toBe("from Bob");
     expect(a.parallelDrafts(TITLE)).toEqual([]);
     expect(seen).toEqual([]);
+  });
+
+  test("a projection that reads drafts hears the store's surfacing through `addProjection`; `draftsOffLive` keeps only the loser", async () => {
+    const { a, b, ha, hb } = twoPeers();
+    await a.put(rec("base", "Root"), origin);
+    hb.merge(ha);
+    const heard: ParallelDraftsChange[] = [];
+    const off = a.addProjection({ onUriChanged: () => {}, onParallelDrafts: (c: ParallelDraftsChange) => { heard.push(c); } } as never);
+
+    await a.put(rec("from Alice", "Alice", "20261005000000001"), origin);
+    await b.put(rec("from Bob", "Bob", "20261005000000002"), origin);
+    ha.merge(hb);
+    expect(heard.length).toBeGreaterThan(0);
+    const live = (await a.get(TITLE))!.tiddler;
+    const kept = draftsOffLive(heard.at(-1)!.drafts);
+    // The `text` loser is always kept; last-writer-wins resolves each key on its own, so in a mosaic
+    // the other actor's draft carries an off-live value too — and every kept draft carries one.
+    expect(kept.map((d) => d.tiddler.text)).toContain(live.text === "from Alice" ? "from Bob" : "from Alice");
+    for (const d of kept) {
+      const fields = String(d.tiddler["lar-conflict-fields"]).split(" ");
+      expect(fields.some((f) => d.tiddler[f] !== live[f])).toBe(true);
+    }
+    const dropped = heard.at(-1)!.drafts.filter((d) => !kept.includes(d));
+    for (const d of dropped) {
+      for (const f of String(d.tiddler["lar-conflict-fields"]).split(" ")) expect(d.tiddler[f]).toBe(live[f]);
+    }
+
+    // The unsubscribe the projection holds silences its draft hearing too.
+    off();
+    const before = heard.length;
+    await a.put(rec("Alice again", "Alice", "20261005000000003"), origin);
+    await b.put(rec("Bob again", "Bob", "20261005000000004"), origin);
+    ha.merge(hb);
+    expect(heard.length).toBe(before);
+  });
+
+  test("CONTROL — a plain projection (no draft reader) registers exactly as before", async () => {
+    const { a } = twoPeers();
+    const seen: string[] = [];
+    const off = a.addProjection({ onUriChanged: (c) => { seen.push(c.title); } });
+    await a.put(rec("base", "Root"), origin);
+    expect(seen).toContain(TITLE);
+    off();
   });
 });

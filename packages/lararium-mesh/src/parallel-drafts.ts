@@ -11,6 +11,13 @@
  * stays exactly what the CRDT merged; nothing here writes, refuses, or picks. The operators — or
  * their agents, through Talk Story — read the drafts and author the resolving edit.
  *
+ * Automerge drops a conflict from `getConflicts` on the next write to that property, so a surfaced
+ * draft lives only until then unless a reader keeps it. The READING wiki keeps it (operator ruling Q4):
+ * its island adaptor, registered as a `ParallelDraftsReader`, persists every draft off the live value
+ * into the wiki's draft bag, where it stands as a quiet badge until a human discards it. A parallel
+ * draft never fuses with the projector's disk-conflict surface: one reads concurrent CRDT values, the
+ * other reads disk against records.
+ *
  * A draft's fields:
  *   - every field of the live record, overlaid with THIS actor's value for each conflicted field
  *     (a whole-record conflict — two actors creating one title concurrently — takes the actor's whole
@@ -32,6 +39,32 @@ export interface ParallelDraftsChange {
   readonly title:  string;
   readonly bag:    string | undefined;
   readonly drafts: readonly LarTiddlerRecord[];
+}
+
+/**
+ * A reader that persists or shows surfaced drafts. A projection that carries `onParallelDrafts` and
+ * registers on a doc store (`AutomergeDocStore.addProjection`) hears every surfacing that store raises.
+ */
+export interface ParallelDraftsReader {
+  onParallelDrafts(change: ParallelDraftsChange): void;
+}
+
+/** Does this projection read surfaced drafts? */
+export function readsParallelDrafts(p: object): p is ParallelDraftsReader {
+  return typeof (p as Partial<ParallelDraftsReader>).onParallelDrafts === "function";
+}
+
+/**
+ * The drafts that carry a value the live record does NOT — the ones the next write to that property
+ * would erase from `getConflicts`. A draft whose every conflicted field reads live IS the live record,
+ * so keeping it adds nothing; this reads the merge's own result and picks nothing.
+ */
+export function draftsOffLive(drafts: readonly LarTiddlerRecord[]): LarTiddlerRecord[] {
+  return drafts.filter((d) => {
+    const conflicted = String(d.tiddler["lar-conflict-fields"] ?? "").split(" ").filter(Boolean);
+    const live = new Set(String(d.tiddler["lar-conflict-live"] ?? "").split(" ").filter(Boolean));
+    return conflicted.some((f) => !live.has(f));
+  });
 }
 
 /** The draft title TW5 itself mints for a user's draft — the shape canon names for a parallel draft. */
