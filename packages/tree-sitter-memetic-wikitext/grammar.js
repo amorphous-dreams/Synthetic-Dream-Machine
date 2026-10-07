@@ -7,8 +7,11 @@
  * exist, their arg shapes, their semantics — lives as DATA in the wiki's own
  * shadow tiddlers (the live registry), attached downstream at the fold.
  * An unregistered sigil parses cleanly here and surfaces as a vocabulary
- * diagnostic, never a parse error. Ahu open/close pair by FORM; the fold
- * checks the names match (a mismatch reads as a diagnostic, not an ERROR).
+ * diagnostic, never a parse error. A paired block opens only on a sigil whose
+ * own closing form `<<~/name>>` follows under the fence mask, and closes only
+ * on that name — a FORM check, the way an HTML tag stack pairs `<x>` with
+ * `</x>` without knowing any tag. An opener nothing closes reads as a lone
+ * sigil; a closer nothing opened reads as a lone sigil too.
  *
  * The TW5 rich forms ride the same carrier discipline, line/block-grained:
  * transclusions, macrocall lines, tables, pragmas (paired with `\end` by
@@ -23,16 +26,27 @@ module.exports = grammar({
 
   extras: _ => [],
 
-  // Fence-length counting is context-sensitive (a close must match a run
-  // AT LEAST as long as its opener — the CommonMark rule `fence-mask`
-  // already keeps in the TS mask). A regex token cannot carry that count
-  // across lines, so the three ``` tokens ride an external scanner
-  // (src/scanner.c) that remembers the opener's run length.
-  externals: $ => [$._fence_open_tok, $._fence_line_tok, $._fence_close_tok],
+  // Two context-sensitive counts ride the external scanner (src/scanner.c),
+  // because no regex token carries state across lines:
+  //   - fence length: a ``` close must match a run AT LEAST as long as its
+  //     opener's (the CommonMark rule `fence-mask` keeps in the TS mask);
+  //   - sigil pairing: every speaking tooth `<<~` comes from the scanner,
+  //     which reads the whole sigil before it answers. `_pair_open` opens a
+  //     sigil whose own `<<~/name>>` follows; `_pair_close` opens a closing
+  //     form naming the innermost open pair; `_sigil_open` opens every other
+  //     sigil, a lone opener or a lone closer alike. The scanner reads the
+  //     name as FORM — the first word between the teeth — never as
+  //     vocabulary. A line whose teeth never close emits no tooth at all, so
+  //     it reads as the `text_line` it is rather than as a broken sigil.
+  // `_error_sentinel` is never emitted: it is valid only during error
+  // recovery, where the scanner stands aside.
+  externals: $ => [
+    $._fence_open_tok, $._fence_line_tok, $._fence_close_tok,
+    $._sigil_open, $._pair_open, $._pair_close,
+    $._error_sentinel,
+  ],
 
   conflicts: $ => [
-    // an opening sigil stands alone when no closing form ever arrives
-    [$._block, $.ahu_block],
     // a block-form pragma stands alone when no `\end` ever arrives
     [$._block, $.pragma_block],
   ],
@@ -68,17 +82,27 @@ module.exports = grammar({
       $.text_line,
     ),
 
-    // A paired span: an opening sigil whose body runs to the matching
-    // closing form `<<~/ ...>>`. Name agreement is the fold's job.
-    ahu_block: $ => prec.right(seq(
-      field('open', $.sigil),
+    // A paired span: an opening sigil whose body runs to the closing form
+    // `<<~/name>>` of the SAME name. The scanner admits the pair only when
+    // that close follows, so an opener nothing closes stays a lone `sigil`
+    // and a close naming another pair stays a lone `sigil` inside the body.
+    ahu_block: $ => seq(
+      field('open', alias($._paired_sigil, $.sigil)),
       repeat($._block),
       field('close', $.sigil_close),
-    )),
+    ),
+
+    // The opener of a pair: a `sigil` in the tree, told apart only by the
+    // tooth the scanner handed it.
+    _paired_sigil: $ => seq(
+      alias($._pair_open, '<<~'),
+      optional(field('body', $.sigil_body)),
+      '>>',
+    ),
 
     // `<<~ name args…>>` — the SPEAKING set, any vocabulary.
     sigil: $ => seq(
-      '<<~',
+      alias($._sigil_open, '<<~'),
       optional(field('body', $.sigil_body)),
       '>>',
     ),
@@ -99,15 +123,17 @@ module.exports = grammar({
       // The tooth stands at ONE dispatch position: `<<~`, then LWSP, then the command
       // word — and a close word carries its own slash. Both spellings reach the same
       // word, matching the plain register's `<<fragment …>>` / `<</fragment>>`.
-      // A single token, so the lexer prefers it over the bare `<<~` a sigil opens on.
-      // It stops at the slash: whatever follows belongs to the body, as it always did.
-      alias(token(prec(2, /<<~[ \t]*\//)), '<<~/'),
+      // The scanner hands the tooth only to a close naming the innermost open pair;
+      // the slash follows as its own token, and whatever follows it belongs to the body.
+      alias($._pair_close, '<<~'),
+      alias(token(/[ \t]*\//), '/'),
       optional(field('body', $.sigil_body)),
       '>>',
     ),
 
-    // Everything between the teeth, single token: no `>>` inside.
-    sigil_body: _ => token(prec(1, /([^>\n]|>[^>])+/)),
+    // Everything between the teeth, single token, on one line: no `>>`
+    // inside, and a lone `>` never carries the body across a newline.
+    sigil_body: _ => token(prec(1, /([^>\n]|>[^>\n])+/)),
 
     // ``` fenced blocks — the info string, then lines that never close the
     // fence, then a close whose backtick run is AT LEAST as long as the
@@ -150,7 +176,7 @@ module.exports = grammar({
       alias(token(/"""[ \t]*\r?\n?/), $.hard_break_close),
     ),
 
-    // Definition-family pragmas pair with `\end` by FORM (the ahu pattern):
+    // Definition-family pragmas pair with `\end` by FORM, `\end` naming no pragma:
     // the block form opens only when the line ends at its parameter list —
     // a one-line definition carries its body on the same line and rides
     // `pragma_line` whole.

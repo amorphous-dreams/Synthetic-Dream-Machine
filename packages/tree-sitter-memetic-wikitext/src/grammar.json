@@ -119,42 +119,82 @@
       ]
     },
     "ahu_block": {
-      "type": "PREC_RIGHT",
-      "value": 0,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "FIELD",
-            "name": "open",
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "open",
+          "content": {
+            "type": "ALIAS",
             "content": {
               "type": "SYMBOL",
-              "name": "sigil"
-            }
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "_block"
-            }
-          },
-          {
-            "type": "FIELD",
-            "name": "close",
-            "content": {
-              "type": "SYMBOL",
-              "name": "sigil_close"
-            }
+              "name": "_paired_sigil"
+            },
+            "named": true,
+            "value": "sigil"
           }
-        ]
-      }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_block"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "close",
+          "content": {
+            "type": "SYMBOL",
+            "name": "sigil_close"
+          }
+        }
+      ]
+    },
+    "_paired_sigil": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_pair_open"
+          },
+          "named": false,
+          "value": "<<~"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "sigil_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ">>"
+        }
+      ]
     },
     "sigil": {
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_sigil_open"
+          },
+          "named": false,
           "value": "<<~"
         },
         {
@@ -214,18 +254,23 @@
         {
           "type": "ALIAS",
           "content": {
+            "type": "SYMBOL",
+            "name": "_pair_close"
+          },
+          "named": false,
+          "value": "<<~"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
             "type": "TOKEN",
             "content": {
-              "type": "PREC",
-              "value": 2,
-              "content": {
-                "type": "PATTERN",
-                "value": "<<~[ \\t]*\\/"
-              }
+              "type": "PATTERN",
+              "value": "[ \\t]*\\/"
             }
           },
           "named": false,
-          "value": "<<~/"
+          "value": "/"
         },
         {
           "type": "CHOICE",
@@ -256,7 +301,7 @@
         "value": 1,
         "content": {
           "type": "PATTERN",
-          "value": "([^>\\n]|>[^>])+"
+          "value": "([^>\\n]|>[^>\\n])+"
         }
       }
     },
@@ -660,10 +705,6 @@
   "conflicts": [
     [
       "_block",
-      "ahu_block"
-    ],
-    [
-      "_block",
       "pragma_block"
     ]
   ],
@@ -680,6 +721,22 @@
     {
       "type": "SYMBOL",
       "name": "_fence_close_tok"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_sigil_open"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_pair_open"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_pair_close"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_error_sentinel"
     }
   ],
   "inline": [],

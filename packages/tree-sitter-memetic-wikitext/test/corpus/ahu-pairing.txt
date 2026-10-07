@@ -1,0 +1,230 @@
+========================================
+an opener pairs with the close of its own name, and the sigils between nest inside (CONTROL)
+========================================
+<<~ ahu #/a>>
+prose
+<<~ confidence Canon 18/20>>
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (text_line)
+    (sigil
+      body: (sigil_body))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+an opener no close names stays a lone sigil inside the pair that does close (RED)
+========================================
+<<~ ahu #/a>>
+<<~ kanawai x>>
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (sigil
+      body: (sigil_body))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+a close naming another pair stays a lone sigil and closes nothing (RED)
+========================================
+<<~ ahu #/a>>
+<<~/kue>>
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (sigil
+      body: (sigil_body))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+pairs of one name nest like a tag stack (CONTROL)
+========================================
+<<~ ahu #/a>>
+<<~ ahu #/a/b>>
+<<~/ahu>>
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (ahu_block
+      open: (sigil
+        body: (sigil_body))
+      (blank_line)
+      close: (sigil_close
+        body: (sigil_body)))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+a close quoted inside a fence closes nothing (RED)
+========================================
+<<~ ahu #/a>>
+```
+<<~/ahu>>
+```
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (fenced_block
+      info: (fence_open)
+      line: (fence_line)
+      (fence_close))
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+a close quoted inside a quote block closes nothing (RED)
+========================================
+<<~ ahu #/a>>
+<<<
+<<~/ahu>>
+<<<
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (quote_block
+      info: (quote_open)
+      (quote_line)
+      (quote_close))
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+pairs never cross: an outer opener whose close lands inside an inner pair stays lone (RED)
+========================================
+<<~ x>>
+<<~ ahu #/a>>
+<<~/x>>
+<<~/ahu>>
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (sigil
+      body: (sigil_body))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+a close with nothing open reads as a lone sigil (CONTROL)
+========================================
+<<~/ahu>>
+---
+
+(document
+  (sigil
+    body: (sigil_body)))
+
+========================================
+a pair may open and close on one line (CONTROL)
+========================================
+<<~ ahu #/a>><<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+a lone `>` never carries a sigil body across a newline (RED)
+========================================
+<<~ a ->
+b>>
+---
+
+(document
+  (text_line)
+  (text_line))
+
+========================================
+teeth that never close on their line read as text, never as a broken sigil (RED)
+========================================
+<<~ set a="b
+c">>
+---
+
+(document
+  (text_line)
+  (text_line))
+
+========================================
+an opener whose only close stands quoted in a fence stays a lone sigil (RED)
+========================================
+<<~ ahu #/a>>
+```
+<<~/ahu>>
+```
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (fenced_block
+    info: (fence_open)
+    line: (fence_line)
+    (fence_close)))
+
+========================================
+an opener whose only close stands quoted in a quote block stays a lone sigil (RED)
+========================================
+<<~ ahu #/a>>
+<<<
+<<~/ahu>>
+<<<
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (quote_block
+    info: (quote_open)
+    (quote_line)
+    (quote_close)))
