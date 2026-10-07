@@ -185,7 +185,7 @@ local vessel enough truthful material to choose its next crossing.
 
 <<~ ahu #/the-first-arrival>>
 
-!! The first arrival ~ the house's own origin serves the kindle (RULED)
+!! The first arrival ~ the house's own origin serves the kindle (RULED, BUILT but the floor's announcement)
 
 ''The first arrival trusts the lararium's own origin'' (operator-ruled). A device that has never booted a
 vessel holds nothing to check bytes against; whatever origin it first reaches decides what it runs. So that
@@ -213,6 +213,21 @@ descriptor, never the only one, and never a second source of truth.
 ''The arrival page answers at the floor.'' A lararium standing at its waking floor still serves its arrival
 page: liveness ⊥ readiness. A house that cannot yet open its archive stays reachable and says what it cannot
 do (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-arrival-page">>).
+
+''Built.'' The descriptor answers at `/.well-known/lar` — `lar` names the namespace, so the one name covers every
+vessel — as `application/vnd.lar.arrival+json`, canonical JSON derived from the route receipt alone: the arrival
+page, the seed and its CID, each worker asset and seed-named CAS member, and the mirrors by CID. A request for `/`
+naming that media type reaches the identical bytes; a wildcard or an HTML navigation still reads the page
+(`lararium-node/src/pronaos-adapter.ts`). A mirror list (`LAR_PRONAOS_MIRRORS`) refuses before mount when a mirror
+names a CID the receipt does not, stands on any origin the house answers on, or shares its origin with another
+entry (`pronaos-composition.ts`, fed every reach, Web, relay and oracle origin by `main.ts`). The kindle reads the
+descriptor, the seed and every seed-named member off the house's own origin, verifies each against its CID, never
+dials a mirror, and mints the device's own key (`kindle.ts#pullArrival`). The composition reads no standing and no
+archive and runs before the boot reads either, so a house at its waking floor serves all of it.
+
+''Owed.'' The floor's announcement of what it cannot yet do. The waking floor's //Announce// law requires that
+announcement to SIGN, and the signing domain it needs has no mint yet; until it does, the descriptor states no
+standing at all, and the bytes a floor serves equal the bytes a raised hearth serves.
 
 <<~/ahu>>
 
@@ -327,6 +342,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ru4qTCXurS-fNmYuDOnl-Gsmx5zKmHCyWfQEImQCBVY
+<<^ code="&#x0003;">>ni:///sha-256;LcsfM1CR_pb2JVxjKYsO0zJFDCV0pgeIcfkc4xa-XjM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -8,12 +8,20 @@
  *
  * `/ws`, `/oracle`, and `/bulb` remain other read faces. A static byte shore
  * cannot become their authority by falling through to it.
+ *
+ * THE ARRIVAL DESCRIPTOR (pronaos#/the-first-arrival). The same face answers one RFC 8615 well-known name,
+ * `/.well-known/lar`, with a descriptor derived from the route receipt alone: the arrival page, the seed and
+ * its CID, every worker asset and seed-named CAS member, and any hash-pinned MIRRORS by CID. A request for `/`
+ * that names the descriptor's media type reaches the SAME bytes; that negotiated door adds a way in and never
+ * a second source of truth. The descriptor reads nothing of the vessel's standing or archive, so a house at
+ * its waking floor answers it exactly as a raised hearth does.
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 import {
+  canonicalJsonBytes,
   DEFAULT_PRONAOS_REFUSALS,
   deliverPublicArtifact,
   niUriSha256FromHex,
@@ -61,13 +69,124 @@ const CAS_ROUTE = /^\/genesis\/cas\/([0-9a-f]{64})$/;
 // choose a winner.
 const PRONAOS_PROJECTION_ROUTE_KEY = "pronaos:projection";
 
+/** The arrival descriptor's RFC 8615 well-known name. `lar` names the namespace, so every vessel shares it. */
+export const ARRIVAL_WELL_KNOWN_ROUTE = "/.well-known/lar";
+/** The descriptor's media type; a request for `/` naming it negotiates onto the same descriptor bytes. */
+export const ARRIVAL_MEDIA_TYPE = "application/vnd.lar.arrival+json";
+/** The descriptor format tag — a name, never a version; a reader refuses any other. */
+export const ARRIVAL_FORMAT = "lar-arrival";
+
+/**
+ * One hash-pinned copy of one receipt CID, standing on an origin of its own. A mirror serves a vessel that
+ * has already kindled and can verify the bytes; it never kindles one.
+ */
+export interface ArrivalMirror {
+  readonly cid: string;
+  readonly origin: string;
+}
+
+/** What the house declares at its well-known name. Every field derives from the route receipt or the mirror list. */
+export interface ArrivalDescriptor {
+  readonly format: typeof ARRIVAL_FORMAT;
+  /** The arrival page's path on the house's own origin. */
+  readonly arrival: "/";
+  /** The exact route receipt the Pronaos serves. */
+  readonly routes: readonly PronaosRoute[];
+  /** Hash-pinned mirrors by CID, each on an origin no other mirror and no house face shares. */
+  readonly mirrors: readonly ArrivalMirror[];
+}
+
+/** Deployment inputs the descriptor reads beside the prepared projection. */
+export interface ArrivalOptions {
+  /** Every origin the house itself answers on (Web, relay, oracle, each reach face). A mirror may hold none of them. */
+  readonly houseOrigins: readonly string[];
+  readonly mirrors?: readonly ArrivalMirror[];
+}
+
+function exactOrigin(value: string, label: string): string {
+  let url: URL;
+  try { url = new URL(value); }
+  catch { throw new Error(`[pronaos] mirror ${label} is not a URL: ${value}`); }
+  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(`[pronaos] mirror ${label} must be http(s): ${value}`);
+  if (url.origin !== value) throw new Error(`[pronaos] mirror ${label} must be an exact origin, without path or slash: ${value}`);
+  return url.origin;
+}
+
+function receiptCids(routes: readonly PronaosRoute[]): ReadonlySet<string> {
+  const cids = new Set<string>();
+  for (const route of routes) {
+    if (route.kind === "web-artifact") cids.add(route.artifactCid);
+    else if (route.kind === "genesis-seed") cids.add(route.seedCid);
+    else if (route.kind === "genesis-member") cids.add(route.cid);
+  }
+  return cids;
+}
+
+/**
+ * Validate the mirror list against the receipt and the house. Each mirror names a CID the receipt names, and
+ * stands on an exact origin that no house face holds and no other mirror entry holds, so one origin carries one
+ * CID's copy and nothing a mirror serves can speak with the house's authority.
+ */
+export function validateArrivalMirrors(
+  routes: readonly PronaosRoute[],
+  options: ArrivalOptions,
+): readonly ArrivalMirror[] {
+  const house = new Set(options.houseOrigins.map((origin) => {
+    try { return new URL(origin).origin; } catch { return origin; }
+  }));
+  const named = receiptCids(routes);
+  const taken = new Set<string>();
+  const mirrors: ArrivalMirror[] = [];
+  for (const mirror of options.mirrors ?? []) {
+    if (!named.has(mirror.cid)) throw new Error(`[pronaos] mirror names a CID the route receipt does not: ${mirror.cid}`);
+    if (house.has(mirror.origin) || house.has(mirror.origin.replace(/\/+$/, ""))) {
+      throw new Error(`[pronaos] mirror origin is the house's own: ${mirror.origin}`);
+    }
+    const origin = exactOrigin(mirror.origin, "origin");
+    if (taken.has(origin)) throw new Error(`[pronaos] mirror origin carries a second copy: ${origin}`);
+    taken.add(origin);
+    mirrors.push({ cid: mirror.cid, origin });
+  }
+  return mirrors.sort((a, b) => a.cid.localeCompare(b.cid) || a.origin.localeCompare(b.origin));
+}
+
+/** The descriptor's exact bytes: canonical JSON over the receipt and the validated mirrors. */
+export function arrivalDescriptorBytes(projection: PronaosProjection, options: ArrivalOptions): Uint8Array {
+  const descriptor: ArrivalDescriptor = {
+    format: ARRIVAL_FORMAT,
+    arrival: "/",
+    routes: projection.routeInventory.routes,
+    mirrors: validateArrivalMirrors(projection.routeInventory.routes, options),
+  };
+  return canonicalJsonBytes(descriptor);
+}
+
+/**
+ * Whether a request's Accept header names the descriptor's media type itself. A wildcard never does, so an
+ * ordinary navigation keeps reading the arrival page.
+ */
+function acceptsDescriptor(req: IncomingMessage): boolean {
+  const accept = req.headers.accept;
+  if (typeof accept !== "string") return false;
+  return accept.split(",").some((range) => {
+    const [type, ...params] = range.split(";").map((part) => part.trim().toLowerCase());
+    if (type !== ARRIVAL_MEDIA_TYPE) return false;
+    const q = params.find((param) => param.startsWith("q="));
+    return q === undefined || Number(q.slice(2)) > 0;
+  });
+}
+
 function refuse(res: ServerResponse, message = "Pronaos member unavailable"): void {
   res.writeHead(404, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
   res.end(message);
 }
 
-function serve(res: ServerResponse, file: PronaosFile, method: string, cacheControl: string): void {
+function serve(
+  res: ServerResponse, file: PronaosFile, method: string, cacheControl: string,
+  extra: Readonly<Record<string, string>> = {},
+): void {
   res.writeHead(200, {
+    ...extra,
     "content-type": file.contentType,
     "cache-control": cacheControl,
   });
@@ -193,10 +312,18 @@ function validateProjection(projection: PronaosProjection): void {
   }
 }
 
+/** The exact paths this face claims: the receipt's own routes and the one well-known name. */
+function ownsPath(pathname: string): boolean {
+  return pathname === INDEX_ROUTE || pathname === MANIFEST_ROUTE || pathname === SEED_ROUTE ||
+    pathname === ARRIVAL_WELL_KNOWN_ROUTE || pathname.startsWith("/assets/") || pathname.startsWith("/genesis/cas/");
+}
+
 export function pronaosRequestHandler(
   projection: PronaosProjection,
+  arrival: ArrivalOptions = { houseOrigins: [] },
 ): (req: IncomingMessage, res: ServerResponse) => boolean {
   validateProjection(projection);
+  const descriptor: PronaosFile = { bytes: arrivalDescriptorBytes(projection, arrival), contentType: ARRIVAL_MEDIA_TYPE };
   return (req, res): boolean => {
     const rawUrl = req.url ?? "/";
     // Reject encoded or literal traversal before URL pathname normalization can
@@ -207,15 +334,18 @@ export function pronaosRequestHandler(
       return true;
     }
     const pathname = new URL(rawUrl, "http://localhost").pathname;
-    const owns = pathname === INDEX_ROUTE || pathname === MANIFEST_ROUTE || pathname === SEED_ROUTE ||
-      pathname.startsWith("/assets/") || pathname.startsWith("/genesis/cas/");
-    if (!owns) return false;
+    if (!ownsPath(pathname)) return false;
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405, { "content-type": "text/plain; charset=utf-8", allow: "GET, HEAD" });
       res.end("method not allowed");
       return true;
     }
-    if (pathname === INDEX_ROUTE) { serve(res, projection.index, req.method, "no-store"); return true; }
+    if (pathname === ARRIVAL_WELL_KNOWN_ROUTE) { serve(res, descriptor, req.method, "no-store"); return true; }
+    if (pathname === INDEX_ROUTE) {
+      // The negotiated door: the same descriptor bytes, reached by media type; the page stays the default.
+      serve(res, acceptsDescriptor(req) ? descriptor : projection.index, req.method, "no-store", { vary: "accept" });
+      return true;
+    }
     if (pathname === MANIFEST_ROUTE && projection.manifest) { serve(res, projection.manifest, req.method, "no-store"); return true; }
     if (pathname === SEED_ROUTE) { serve(res, projection.genesisSeed, req.method, "no-store"); return true; }
     const asset = pathname.match(ASSET_ROUTE);
@@ -240,8 +370,9 @@ export function mountPronaosReadFace(
   httpServer: Server,
   projection: PronaosProjection,
   dispatcher?: HttpFaceDispatcher,
+  arrival?: ArrivalOptions,
 ): PronaosMount {
-  const onRequest = pronaosRequestHandler(projection);
+  const onRequest = pronaosRequestHandler(projection, arrival);
   const listener = (req: IncomingMessage, res: ServerResponse): void => {
     void onRequest(req, res);
   };
@@ -250,10 +381,7 @@ export function mountPronaosReadFace(
     if (/%2e|%2f|%5c|%25/i.test(rawUrl) || rawUrl.includes("..")) {
       return !(rawUrl === "/ws" || rawUrl.startsWith("/oracle") || rawUrl.startsWith("/bulb"));
     }
-    const pathname = new URL(rawUrl, "http://localhost").pathname;
-    return pathname === "/" || pathname === "/manifest.webmanifest" ||
-      pathname === "/genesis/seed.json" || pathname.startsWith("/assets/") ||
-      pathname.startsWith("/genesis/cas/");
+    return ownsPath(new URL(rawUrl, "http://localhost").pathname);
   };
   const unregister = dispatcher?.register({
     name: "pronaos",

@@ -96,7 +96,7 @@ accepting pre-signed material accepts a bearer credential that replays forever (
 
 <<~ ahu #/the-arrival-page>>
 
-!! The arrival page ~ the floor still answers the door (RULED)
+!! The arrival page ~ the floor still answers the door (RULED, BUILT but the announcement)
 
 ''A lararium standing at its waking floor still serves its arrival page.'' Liveness ⊥ readiness: the house
 answering at its own origin names one fact, the house able to open its archive names another, and the
@@ -111,6 +111,12 @@ decides what a fresh device runs. The floor serving its own arrival page keeps t
 At the floor the page kindles nothing that needs a secret the floor does not hold. Where it announces the
 house standing unraised, that announcement answers to the floor's own //Announce// and //Stamp// law
 (#/the-shape).
+
+''Built.'' The Pronaos composes before the boot reads the archive or the face (`lararium-node/src/main.ts`), from
+the public genesis and the prepared Web artifact alone, so a lararium at its floor serves its arrival page, worker,
+seed, seed-named CAS members and its `/.well-known/lar` descriptor exactly as a raised hearth does.
+''Owed:'' the signed announcement. Until its signing domain mints, the floor announces nothing, and its descriptor
+carries no standing.
 
 <<~/ahu>>
 
@@ -363,6 +369,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q1Tdr1s8A3JFoHcbBGsFvyXRrfqBb0TTV0F5Aj_o7mM
+<<^ code="&#x0003;">>ni:///sha-256;W8d8dpIhx_g2PhWJsduogd2ptHaRhcSQGqtENTUe4Xs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -78,6 +78,7 @@ export const heavy = [
   "tests/http-face-integration.test.ts",
   "tests/pronaos-adapter.test.ts",
   "tests/pronaos-composition.test.ts",
+  "tests/pronaos-kindle.test.ts",
   "tests/pronaos-public-artifact.test.ts",
   "tests/readiness-face.test.ts",
 ];

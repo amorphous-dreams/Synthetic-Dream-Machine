@@ -132,4 +132,31 @@ describe("Pronaos Node composition", () => {
     expect(composition).not.toBeNull();
     composition?.dispose();
   });
+
+  test("the descriptor answers at /.well-known/lar with the configured mirrors; a mirror on a house origin refuses before mount", async () => {
+    const f = fixture();
+    const server = createServer(); servers.push(server);
+    const house = ["http://localhost:4321", "http://192.168.1.20:4321"];
+    const mirrorsPath = join(roots[0]!, "mirrors.json");
+    writeFileSync(mirrorsPath, JSON.stringify([{ cid: f.cid, origin: "https://cas-one.mirror.example" }]));
+    const env = { ...envFor(f), LAR_PRONAOS_MIRRORS: mirrorsPath };
+    const composition = composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, standing: "lararium", env, houseOrigins: house });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("composition test did not bind");
+    const response = await fetch(`http://127.0.0.1:${address.port}/.well-known/lar`);
+    expect(response.status).toBe(200);
+    const descriptor = await response.json() as { mirrors: { cid: string; origin: string }[] };
+    expect(descriptor.mirrors).toEqual([{ cid: f.cid, origin: "https://cas-one.mirror.example" }]);
+    composition?.dispose();
+
+    // CONTROL: the same list naming a house origin refuses, and nothing mounts.
+    writeFileSync(mirrorsPath, JSON.stringify([{ cid: f.cid, origin: house[1] }]));
+    const other = createServer(); servers.push(other);
+    expect(() => composePronaosFromEnv({ httpServer: other, genesisDir: f.genesis, standing: "lararium", env, houseOrigins: house }))
+      .toThrow(/mirror origin is the house's own/);
+    expect(other.listenerCount("request")).toBe(0);
+    // CONTROL: a mirror list without the Pronaos pair names nothing to mirror.
+    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_MIRRORS: mirrorsPath })).toThrow(/LAR_PRONAOS_MIRRORS/);
+  });
 });

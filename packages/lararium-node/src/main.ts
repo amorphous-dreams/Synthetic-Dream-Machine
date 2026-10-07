@@ -188,7 +188,18 @@ async function main(): Promise<void> {
   const readinessFace = mountReadinessFace({ httpServer, state: readinessState, dispatcher });
   // The Pronaos lights only from two explicit operator inputs, and only on a lararium. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
-  const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding });
+  //
+  // THE FIRST ARRIVAL ANSWERS BEFORE THE ARCHIVE IS READ (pronaos#/the-first-arrival, waking-floor#/the-arrival-page).
+  // The composition runs here, before `readArchiveOpening` and `standAs` below, and reads only the public genesis
+  // dir and the prepared Web artifact — no key, no archive, no face. So a lararium at its waking floor serves its
+  // arrival page, worker, seed, seed-named CAS members and the `/.well-known/lar` descriptor exactly as a raised
+  // hearth does: liveness ⊥ readiness. Every origin this house answers on is handed in, so the descriptor refuses a
+  // mirror that would share an origin with the house.
+  const houseOrigins = originCompositions === null ? [] : [...new Set([
+    ...reachFaces.map((face) => face.origin),
+    ...originCompositions.flatMap((c) => [c.webOrigin, c.relayOrigin, c.oracleOrigin]),
+  ])];
+  const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding, houseOrigins });
 
   httpServer.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -302,8 +313,14 @@ async function main(): Promise<void> {
     // this PLACE's own counted carrier seal on a held charter's board (`placeCarriedNexuses`).
     //
     // THE CHALLENGE NAMES A NEXUS BY ITS AID — the first carried at boot, primary charter first. The vessel's
-    // own key names only the vessel a grant must answer for. The lease fence keys on that same AID. A vessel
-    // that carries no Nexus emits no challenge: no admit could count, so there is nothing to invite.
+    // own key names only the vessel a grant must answer for. A vessel that carries no Nexus emits no challenge:
+    // no admit could count, so there is nothing to invite.
+    //
+    // THE RAISE FENCE'S LEASE RESOURCE IS THE CHALLENGE NEXUS'S AID. `leaseEpoch` reads
+    // `effectiveLeaseEpochOnBoard(daemonHandle, raiseNexus)`, so the epoch a raise must match is the one leased under
+    // that AID on this vessel's own daemon board — never the vessel's key, never a wiki, never a second Nexus it also
+    // carries. A `nexus-rekey` that advances the lease for that AID drops every raise standing against the old epoch;
+    // a rekey under any other Nexus leaves this door's fence where it stood.
     const selfKey  = await loadVesselVerifyingKey();
     const sealHome = larSealHome();
     const openRaiseBoard: BoardOpener = async (url, label) =>

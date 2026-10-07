@@ -12,6 +12,12 @@
  * forbids it (no key rides the bulb to supply). So two devices kindling the SAME bulb become two DISTINCT sovereigns
  * (distinct did:keys), never one conscripted identity.
  *
+ * TWO DOORS, ONE FIRE. `pullBulb` reads a Herm's HELD bulb; `pullArrival` reads a LARARIUM's own Pronaos — the
+ * arrival descriptor at `/.well-known/lar`, then `genesis/seed.json` and every seed-named CAS member off the same
+ * origin. The first arrival trusts the lararium's own origin (pronaos#/the-first-arrival), so `pullArrival` reads
+ * only the origin it was handed: a mirror the descriptor lists never kindles, and this path never dials one.
+ * Both doors yield the same fire (seed + CAS), and `kindleFromBulb` mints the device's own key over either.
+ *
  * OPEN PATH (bulb ⊥ stolon). Kindle births a STRANGER's own sovereign hearth (permissionless growth) — distinct from
  * the stolon, which invites a device into YOUR fleet (the closed path). Kindle joins no fleet: it seeds a FRESH
  * social plane (its own identities and circles docs), never the Herm's.
@@ -27,11 +33,13 @@
 
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import { BULB_MANIFEST_ROUTE, bulbBlobRoute } from "./bulb-routes.js";
+import { ARRIVAL_FORMAT, ARRIVAL_WELL_KNOWN_ROUTE, type ArrivalDescriptor } from "./pronaos-adapter.js";
 import {
+  genesisCasManifestFromSeed, sha256HexBytesSync,
   materializeGenesisDoc, materializeGenesisIsland, validateGenesisBytes,
   buildCeremonyTiddlers, didKeyFromVerifyingKey,
   emptyLarDoc, IDENTITIES_NAMESPACE,
-  type LarDoc,
+  type GenesisSeed, type LarDoc,
 } from "@lararium/mesh";
 import { assembleBulb, bulbSeedInventory, type BulbArtifact, type BulbManifest } from "./bulb.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
@@ -59,6 +67,50 @@ export async function pullBulb(transport: BulbPullTransport): Promise<BulbArtifa
     if (!cache.has(cid)) cache.set(cid, await transport.getBytes(bulbBlobRoute(cid)));
   }
   return assembleBulb(manifest, (cid) => cache.get(cid) ?? null);
+}
+
+/** The fire a kindle burns: the genesis seed and its exact seed-named CAS bytes. Either door supplies it. */
+export type KindleFire = Pick<BulbArtifact, "seed" | "casEntries">;
+
+function arrivalRefusal(message: string): Error {
+  return new Error(`[kindle] arrival ${message}`);
+}
+
+function contentAddressed(bytes: Uint8Array, cid: string, label: string): Uint8Array {
+  if (sha256HexBytesSync(bytes) !== cid) throw arrivalRefusal(`${label} fails content-address (cid ${cid})`);
+  return bytes;
+}
+
+/**
+ * PULL the fire off a lararium's own Pronaos. Reads the arrival descriptor at its well-known name, fetches the seed
+ * at the path the descriptor names and checks it against the descriptor's seed CID, derives the CAS inventory from
+ * that verified seed, refuses unless the descriptor's members equal that inventory exactly, then fetches and
+ * re-verifies each member. Nothing here reads the descriptor's mirrors.
+ */
+export async function pullArrival(transport: BulbPullTransport): Promise<KindleFire> {
+  const descriptor = await transport.getJson(ARRIVAL_WELL_KNOWN_ROUTE) as ArrivalDescriptor;
+  if (!descriptor || descriptor.format !== ARRIVAL_FORMAT || !Array.isArray(descriptor.routes)) {
+    throw arrivalRefusal(`descriptor format unknown — refusing`);
+  }
+  const seedRoutes = descriptor.routes.filter((route) => route.kind === "genesis-seed");
+  const seedRoute = seedRoutes[0];
+  if (seedRoutes.length !== 1 || !seedRoute || seedRoute.kind !== "genesis-seed") throw arrivalRefusal("descriptor names no single genesis seed");
+  const seedBytes = contentAddressed(await transport.getBytes(seedRoute.path), seedRoute.seedCid, "seed");
+  let seed: GenesisSeed;
+  try { seed = JSON.parse(new TextDecoder().decode(seedBytes)) as GenesisSeed; }
+  catch (error) { throw arrivalRefusal(`seed is not valid JSON: ${error instanceof Error ? error.message : String(error)}`); }
+  const inventory = genesisCasManifestFromSeed(seed).blobs.map((blob) => blob.cid);
+  const members = descriptor.routes.flatMap((route) => route.kind === "genesis-member" ? [route] : []);
+  const named = new Set(members.map((route) => route.cid));
+  if (named.size !== members.length || named.size !== inventory.length || inventory.some((cid) => !named.has(cid))) {
+    throw arrivalRefusal("members differ from the seed-derived inventory");
+  }
+  const casEntries: { cid: string; bytes: Uint8Array }[] = [];
+  for (const cid of inventory) {
+    const route = members.find((member) => member.cid === cid)!;
+    casEntries.push({ cid, bytes: contentAddressed(await transport.getBytes(route.path), cid, "member") });
+  }
+  return { seed, casEntries };
 }
 
 /** A real-HTTP transport over a Herm base url (`http://host:port`). Uses the runtime `fetch`. */
@@ -101,7 +153,7 @@ export interface KindleResult {
  * @param storageDir       the device's storage root (the runtime CAS + the identity home both site under it).
  */
 export async function kindleFromBulb(args: {
-  readonly bulb:        BulbArtifact;
+  readonly bulb:        KindleFire;
   readonly repo:        Repo;
   readonly storageDir:  string;
   readonly displayName?: string;

@@ -1,8 +1,10 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import {
-  mountPronaosReadFace, pronaosRouteInventoryForProjection,
+  mountPronaosReadFace, pronaosRouteInventoryForProjection, arrivalDescriptorBytes,
+  ARRIVAL_WELL_KNOWN_ROUTE, ARRIVAL_MEDIA_TYPE, ARRIVAL_FORMAT,
   type PronaosFile, type PronaosPreparedProjection, type PronaosProjection,
+  type ArrivalOptions, type ArrivalDescriptor, type ArrivalMirror,
 } from "../src/pronaos-adapter.js";
 import { sha256HexBytesSync } from "@lararium/mesh";
 
@@ -120,5 +122,84 @@ describe("Pronaos adapter — prepared Herm/Lararium projection", () => {
     const candidate = createServer();
     expect(() => mountPronaosReadFace(candidate, bad)).toThrow(/does not match prepared projection bytes/);
     candidate.close();
+  });
+});
+
+describe("Pronaos arrival descriptor — /.well-known/lar (pronaos#/the-first-arrival)", () => {
+  const HOUSE = "http://house.lan:8080";
+  const seedCid = sha256HexBytesSync(prepared.genesisSeed.bytes);
+
+  async function startWith(arrival: ArrivalOptions): Promise<string> {
+    server = createServer();
+    const mount = mountPronaosReadFace(server, projection, undefined, arrival);
+    dispose = mount.dispose;
+    server.on("request", (_req, res) => { if (!res.writableEnded) { res.writeHead(404); res.end("fallback"); } });
+    await new Promise<void>((resolve) => server!.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("test server did not bind");
+    return `http://127.0.0.1:${address.port}`;
+  }
+
+  test("the descriptor answers at the well-known name and derives from the route receipt alone", async () => {
+    expect(ARRIVAL_WELL_KNOWN_ROUTE).toBe("/.well-known/lar");
+    const origin = await startWith({ houseOrigins: [HOUSE] });
+    const response = await fetch(`${origin}${ARRIVAL_WELL_KNOWN_ROUTE}`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe(ARRIVAL_MEDIA_TYPE);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    const descriptor = await response.json() as ArrivalDescriptor;
+    expect(descriptor.format).toBe(ARRIVAL_FORMAT);
+    expect(descriptor.arrival).toBe("/");
+    expect(descriptor.routes).toEqual(JSON.parse(JSON.stringify(projection.routeInventory.routes)));
+    expect(descriptor.routes.find((route) => route.kind === "genesis-seed")).toMatchObject({ seedCid });
+    expect(descriptor.mirrors).toEqual([]);
+    // CONTROL: the face claims the one well-known name it serves, never the whole RFC 8615 prefix.
+    const other = await fetch(`${origin}/.well-known/other`);
+    expect(other.status).toBe(404);
+    expect(await other.text()).toBe("fallback");
+  });
+
+  test("CONTROL: the negotiated door onto / returns the descriptor's identical bytes; HTML stays the page", async () => {
+    const origin = await startWith({ houseOrigins: [HOUSE] });
+    const wellKnown = new Uint8Array(await (await fetch(`${origin}${ARRIVAL_WELL_KNOWN_ROUTE}`)).arrayBuffer());
+    const negotiated = await fetch(`${origin}/`, { headers: { accept: `${ARRIVAL_MEDIA_TYPE}, text/html;q=0.5` } });
+    expect(negotiated.status).toBe(200);
+    expect(negotiated.headers.get("content-type")).toBe(ARRIVAL_MEDIA_TYPE);
+    expect(negotiated.headers.get("vary")).toMatch(/accept/i);
+    expect(Buffer.from(new Uint8Array(await negotiated.arrayBuffer())).equals(Buffer.from(wellKnown))).toBe(true);
+    expect(Buffer.from(wellKnown).equals(Buffer.from(arrivalDescriptorBytes(projection, { houseOrigins: [HOUSE] })))).toBe(true);
+    // CONTROL: a browser's ordinary navigation (and a wildcard) still reads the arrival page.
+    for (const accept of ["text/html,application/xhtml+xml,*/*;q=0.8", "*/*"]) {
+      const page = await fetch(`${origin}/`, { headers: { accept } });
+      expect(page.headers.get("content-type"), accept).toContain("text/html");
+      expect(page.headers.get("vary"), accept).toMatch(/accept/i);
+      expect(await page.text(), accept).toBe("<!doctype html><title>web</title>");
+    }
+  });
+
+  test("CONTROL: no mirror origin equals the house origin or another mirror's, and a mirror names a receipt CID", async () => {
+    const assetCid = projection.routeInventory.routes.find((route) => route.kind === "web-artifact" && route.path === "/assets/wiki.worker-def.js");
+    if (!assetCid || assetCid.kind !== "web-artifact") throw new Error("fixture names no worker asset");
+    const mirrors = [
+      { cid: CID, origin: "https://m1.mirror.example" },
+      { cid: assetCid.artifactCid, origin: "https://m2.mirror.example" },
+    ];
+    const descriptor = JSON.parse(new TextDecoder().decode(arrivalDescriptorBytes(projection, { houseOrigins: [HOUSE], mirrors }))) as ArrivalDescriptor;
+    const origins = descriptor.mirrors.map((mirror) => mirror.origin);
+    expect(new Set(origins).size).toBe(origins.length);
+    expect(origins).not.toContain(HOUSE);
+    expect(descriptor.mirrors).toHaveLength(2);
+
+    const refuse = (houseOrigins: readonly string[], bad: readonly ArrivalMirror[]): void => {
+      expect(() => arrivalDescriptorBytes(projection, { houseOrigins, mirrors: bad })).toThrow(/\[pronaos\] mirror/);
+    };
+    refuse([HOUSE], [{ cid: CID, origin: HOUSE }]);                                   // the house's own origin
+    refuse([HOUSE], [{ cid: CID, origin: `${HOUSE}/` }]);                             // spelled with a slash
+    refuse([HOUSE], [mirrors[0]!, { cid: assetCid.artifactCid, origin: mirrors[0]!.origin }]); // two CIDs, one origin
+    refuse([HOUSE], [mirrors[0]!, mirrors[0]!]);                                      // one origin twice
+    refuse([HOUSE], [{ cid: "c".repeat(64), origin: "https://m3.mirror.example" }]);  // a CID no receipt names
+    refuse([HOUSE], [{ cid: CID, origin: "https://m4.mirror.example/path" }]);       // not an origin
+    // CONTROL: the very same mirror stands once its origin is no longer the house's.
+    expect(() => arrivalDescriptorBytes(projection, { houseOrigins: ["http://other.lan"], mirrors: [{ cid: CID, origin: HOUSE }] })).not.toThrow();
   });
 });

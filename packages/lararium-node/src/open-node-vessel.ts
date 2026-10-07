@@ -1982,6 +1982,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // hazard), so two hearths rekeying the same resource concurrently both climb, never drop. This is the
     // NON-RENEWAL half of revocation (a lease stales; it never re-derives a secret) — targeted key-material
     // rotation rides keyhive CGKA, NEVER this lease. A live board write → the roll rides WS-sync to replicas.
+    // THE RAISE DOOR'S FENCE READS ONE RESOURCE: the AID of the Nexus its challenge names (main.ts, the raise door).
+    // Rolling `resource = <that AID>` stales every raise granted against the old epoch; a roll under any other
+    // resource id leaves the raise fence untouched.
     registry.register("nexus-rekey", async (args) => {
       const resource = typeof args["resource"] === "string" ? (args["resource"] as string) : "";
       if (!resource) throw new Error("nexus-rekey: `resource` required (the lease resource id to roll)");
