@@ -22,7 +22,9 @@ PWSH_EXE="/mnt/c/Program Files/PowerShell/7/pwsh.exe"
 PS_EXE=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
 # Each host read is bounded: a wedged interop or a slow first pwsh start must not hang a pre-session hook.
 if [[ -x "$PWSH_EXE" ]]; then
-  row ok "PowerShell 7 (pwsh) on the host" "$(timeout 30 "$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')"
+  # The file proves the install; the version is a courtesy read, so a timeout names itself rather than leaving the cell blank.
+  pwsh_ver=$(timeout 30 "$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')
+  row ok "PowerShell 7 (pwsh) on the host" "${pwsh_ver:-present; the version read did not answer in 30 s}"
 else row drift "PowerShell 7 (pwsh) on the host" "absent — winget install --id Microsoft.PowerShell; stand-windows.ps1 runs degraded under 5.1"; fi
 host_kb=$(timeout 30 "$PS_EXE" -NoProfile -Command '[int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB)' 2>/dev/null | tr -d '\r' | cut -d. -f1)
 if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
@@ -31,7 +33,7 @@ if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
   half_kb=$(( host_kb / 2 ))
   if (( mem_kb * 8 <= host_kb * 5 + host_kb / 20 )) && ! (( mem_kb > half_kb - half_kb / 20 && mem_kb < half_kb + half_kb / 20 )); then
     row ok "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host"
-  else row drift "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host (default = half) — stand-windows.ps1 as the owning Windows account, then wsl --shutdown"; fi
+  else row drift "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host (default = half) — stand-windows.ps1 as the owning Windows account, then wsl --shutdown (a stand that reads already means the shutdown is still owed)"; fi
 else row drift "memory= set, not the default half" "host RAM unreadable via $PS_EXE — is [interop] enabled=true?"; fi
 if (( swap_kb <= 4300000 )); then
   row ok "swap= ≤ 4 GB" "$(gb "$swap_kb") GB"

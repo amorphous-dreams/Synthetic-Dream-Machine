@@ -114,9 +114,18 @@ $want = [ordered]@{
 # sparse VHD stays opt-in: WSL 2.5.6+ (2025-04) gates it behind --allow-unsafe for potential data corruption.
 if ($Sparse) { $want['experimental']['sparseVhd'] = 'true' }
 $utf8 = New-Object System.Text.UTF8Encoding($false)
-$sections = [ordered]@{}; $order = @(); $preamble = @(); $cur = ''
+$sections = [ordered]@{}; $order = @(); $preamble = @(); $cur = ''; $linkTarget = ''
 if (Test-Path -LiteralPath $cfgPath) {
+  # A symlink (some dotfiles managers keep one) reads through to its target, but the move below would replace the
+  # link with a plain file and the manager's next sync would drop these keys again; the writer refuses it.
+  $linkTarget = [string](Get-Item -LiteralPath $cfgPath -Force).Target
+  if ($linkTarget) {
+    Need "$cfgPath is a link to $linkTarget; the writer would replace the link with a plain file - apply the plan to the target by hand, or make .wslconfig a plain file, then re-run"
+    if (-not $DryRun) { throw "$cfgPath is a link; stopping before the write (run with -DryRun for the plan)" }
+  }
   foreach ($line in [IO.File]::ReadAllLines($cfgPath, $utf8)) {
+    # ReadAllLines honors a UTF-16 byte-order mark; without one every letter grows a NUL, every key reads unset, and ours would be appended to the wreck.
+    if ($line -match "`0") { throw "$cfgPath holds NUL bytes (UTF-16 without a byte-order mark?); re-save it as UTF-8 and re-run" }
     if ($line -match '^\s*\[(.+?)\]\s*$') { $cur = $Matches[1]; if (-not $sections.Contains($cur)) { $sections[$cur] = @(); $order += $cur } }
     elseif ($cur) { $sections[$cur] += $line }
     else { $preamble += $line }
@@ -170,6 +179,10 @@ if ($changed -and -not $DryRun) {
     if (Test-Path -LiteralPath $cfgPath) { [IO.File]::Copy($cfgPath, $bak, $true) }
     Move-Item -LiteralPath $tmp -Destination $cfgPath -Force
     Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file, if any, kept as $bak)"
+  } catch {
+    # The set lines above were printed as the plan was merged; a failed copy or move leaves the file as it was.
+    Need "$cfgPath kept as it was; the set lines above did not land - $($_.Exception.Message) (a read-only $bak or $cfgPath blocks it)"
+    throw
   } finally {
     if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
   }
@@ -183,11 +196,12 @@ if (-not $Distro) {
 } elseif (-not $work) {
   # A -Distro name the registry does not carry reads needs-you with or without -Sparse: a typo must not pass as already.
   Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
+} elseif ($Distro -like 'docker-desktop*') {
+  # Docker Desktop owns its distros; the inventory names them Docker-managed, and -Distro does not override that. The
+  # check sits ahead of the -Sparse gate so a Docker-managed default is never offered diskpart compact on Desktop's disk.
+  Need "'$Distro' is Docker-managed; this runbook sets no Docker Desktop distro sparse - name the Linux distro with -Distro, or wsl --set-default <name>"
 } elseif (-not $Sparse) {
   Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe) - $vhd left as found; the safe reclaim is diskpart compact, see the runbook"
-} elseif ($Distro -like 'docker-desktop*') {
-  # Docker Desktop owns its distros; the inventory names them Docker-managed, and -Distro does not override that.
-  Need "'$Distro' is Docker-managed; this runbook sets no Docker Desktop distro sparse"
 } elseif (-not (Test-Path -LiteralPath $vhd)) {
   # -LiteralPath: a base path holding [ or ] would otherwise read as a wildcard and the vhdx as absent.
   Need "'$Distro' has no ext4.vhdx at its registered base path"

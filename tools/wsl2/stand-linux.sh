@@ -4,6 +4,9 @@
 # Each step names what it intends, reads what is, and changes only drift. It never changes the
 # Windows host, unregisters a distro, chooses a Docker policy, or installs the repository's own
 # dependencies — `pnpm install` stays the operator's line.
+#
+# Exit 1 on any FAILED step or on witness drift. Under --dry-run no step can FAIL, so the exit carries the
+# witness alone: a hook that gates on the VM's state runs witness.sh; a would-set here does not fail the exit.
 set -uo pipefail
 
 DRY=0
@@ -161,12 +164,18 @@ earlyoom_live_ok() {
   [[ "$(systemctl is-active earlyoom 2>/dev/null)" == active ]] || return 0
   tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom 2>/dev/null)"/cmdline 2>/dev/null | grep -q -- '-m 5 '
 }
-if [[ "$(cat "$EARLYOOM_DROPIN" 2>/dev/null)" == "$EARLYOOM_UNIT" ]] && earlyoom_live_ok; then
+# Without systemd as PID 1 (/run/systemd/system absent: the first run before step 2's wsl --shutdown) every
+# systemctl call answers "has not been booted with systemd" and both actions would read FAILED for a wait
+# only the operator can end.
+if [[ ! -d /run/systemd/system ]]; then
+  need 'systemd is not running this distro yet: wsl --shutdown from Windows, then re-run — the earlyoom service and its thresholds wait on it'
+elif [[ "$(cat "$EARLYOOM_DROPIN" 2>/dev/null)" == "$EARLYOOM_UNIT" ]] && earlyoom_live_ok; then
   already "earlyoom thresholds ($EARLYOOM_DROPIN)"
 else
   act "earlyoom thresholds (-m 5 -s 50) via $EARLYOOM_DROPIN" earlyoom_apply
 fi
-if [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
+if [[ ! -d /run/systemd/system ]]; then :
+elif [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
   already 'earlyoom enabled + active'
 else act 'systemctl enable --now earlyoom' sudo systemctl enable --now earlyoom; fi
 
@@ -180,7 +189,10 @@ if [[ "$swappiness" == 10 && "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]
 elif [[ "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]; then
   # Our file is in place and still loses. Without systemd nothing applies sysctl.d at boot, so one re-apply
   # comes first; a value that still differs names a later sysctl.d file or /etc/sysctl.conf. A rewrite would change nothing.
-  if (( ! DRY )) && sudo sysctl -q --system >/dev/null 2>&1 && [[ "$(sysctl -n vm.swappiness 2>/dev/null)" == 10 ]]; then
+  # A dry run cannot re-apply, so it plans the re-apply rather than sending the operator after an override that may not exist.
+  if (( DRY )); then
+    plan "sysctl --system (re-apply $SYSCTL; vm.swappiness reads ${swappiness:-unreadable})"
+  elif sudo sysctl -q --system >/dev/null 2>&1 && [[ "$(sysctl -n vm.swappiness 2>/dev/null)" == 10 ]]; then
     set_ "vm.swappiness=10 (re-applied $SYSCTL)"
   else
     need "vm.swappiness reads ${swappiness:-unreadable} though $SYSCTL asks for 10; find the override:  grep -rn swappiness /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d"
@@ -192,8 +204,14 @@ fi
 step '5 · Node and pnpm — repository toolchain'
 node_major=0
 if command -v node >/dev/null 2>&1; then node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0); fi
+nvm_unloaded=0
 if [[ "$node_major" =~ ^[0-9]+$ ]] && (( node_major >= 24 )); then
   already "node $(node --version)"
+elif [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]]; then
+  # A hook or non-login shell carries no nvm PATH, so node reads absent on a machine that has it; the stand
+  # stays a reader of the shell it was given rather than sourcing nvm.sh itself.
+  nvm_unloaded=1
+  need "nvm is installed (${NVM_DIR:-$HOME/.nvm}) but this shell did not load it: re-run from a login shell, or one that sourced ~/.nvm/nvm.sh, with Node 24 as nvm's default"
 else
   # Ubuntu's apt nodejs lags far behind 24; Microsoft's WSL guide recommends nvm (per-user, no sudo, no third-party apt repo).
   need 'install Node.js 24 via nvm (Microsoft WSL guidance), then open a new terminal and re-run:'
@@ -206,7 +224,7 @@ if command -v corepack >/dev/null 2>&1; then
     pnpm_ver=$(COREPACK_ENABLE_NETWORK=0 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version 2>/dev/null </dev/null) || pnpm_ver='corepack shim; the first pnpm command downloads pnpm 10 (engines ask >=9)'
     already "pnpm $pnpm_ver"
   else act 'corepack enable (exposes pnpm)' corepack enable; fi
-else
+elif (( ! nvm_unloaded )); then
   need 'Corepack is absent; Node 24 bundles it (Node 25+ dropped it) - stay on 24, or run: npm install -g corepack && corepack enable'
 fi
 
