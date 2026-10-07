@@ -18,10 +18,11 @@ mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo); swap_kb=$(awk '/SwapTotal/{p
 # pwsh (PowerShell 7) is the runbook engine; Windows PowerShell 5.1 serves as the read-only fallback.
 PWSH_EXE=$(command -v pwsh.exe 2>/dev/null || { [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]] && echo "/mnt/c/Program Files/PowerShell/7/pwsh.exe"; })
 PS_EXE=${PWSH_EXE:-$(command -v powershell.exe 2>/dev/null || echo /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe)}
+# Each host read is bounded: a wedged interop or a slow first pwsh start must not hang a pre-session hook.
 if [[ -n "$PWSH_EXE" ]]; then
-  row ok "PowerShell 7 (pwsh) on the host" "$("$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')"
+  row ok "PowerShell 7 (pwsh) on the host" "$(timeout 30 "$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')"
 else row drift "PowerShell 7 (pwsh) on the host" "absent — winget install --id Microsoft.PowerShell; stand-windows.ps1 runs degraded under 5.1"; fi
-host_kb=$("$PS_EXE" -NoProfile -Command '[int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB)' 2>/dev/null | tr -d '\r' | cut -d. -f1)
+host_kb=$(timeout 30 "$PS_EXE" -NoProfile -Command '[int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB)' 2>/dev/null | tr -d '\r' | cut -d. -f1)
 if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
   # intent: VM holds at most ~5/8 of the host (Windows keeps a quarter-plus) AND is not sitting at the default half.
   # MemTotal runs 1-3% under the configured ceiling, so "the default half" is a band of ±5% around host/2, never an equality.

@@ -37,11 +37,11 @@ function Act($label, [scriptblock]$do) { if ($DryRun) { Plan $label } else { & $
 
 Step '0 | PowerShell 7 - the runbook engine'
 $psMajor = $PSVersionTable.PSVersion.Major
-$pwsh = Get-Command pwsh.exe -ErrorAction SilentlyContinue
-if (-not $pwsh) {
-  $candidate = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
-  if (Test-Path $candidate) { $pwsh = Get-Item $candidate }
-}
+# The machine-wide install under Program Files comes first; a pwsh.exe found on a user-writable PATH entry serves only as the fallback.
+$pwsh = $null
+$candidate = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
+if (Test-Path $candidate) { $pwsh = Get-Item $candidate }
+if (-not $pwsh) { $pwsh = Get-Command pwsh.exe -ErrorAction SilentlyContinue }
 if ($psMajor -ge 7) {
   Already "pwsh $($PSVersionTable.PSVersion) running"
 } elseif ($pwsh -and -not $NoRelaunch) {
@@ -136,13 +136,20 @@ foreach ($sec in $want.Keys) {
   if (-not $sections.Contains($sec)) { $sections[$sec] = @(); $order += $sec }
   foreach ($key in $want[$sec].Keys) {
     $value = $want[$sec][$key]
-    $idx = -1
-    for ($i = 0; $i -lt $sections[$sec].Count; $i++) { if ($sections[$sec][$i] -match "^\s*$([regex]::Escape($key))\s*=") { $idx = $i; break } }
-    if ($idx -ge 0) {
-      $have = ($sections[$sec][$idx] -split '=', 2)[1].Trim()
-      if ($have -eq $value) { Already "[$sec] $key=$value"; continue }
+    # Every line carrying the key counts: a duplicate left behind could win at WSL load while the first reads satisfied.
+    $hits = @()
+    for ($i = 0; $i -lt $sections[$sec].Count; $i++) { if ($sections[$sec][$i] -match "^\s*$([regex]::Escape($key))\s*=") { $hits += $i } }
+    if ($hits.Count -gt 0) {
+      $haves = @($hits | ForEach-Object { ($sections[$sec][$_] -split '=', 2)[1].Trim() })
+      if (@($haves | Where-Object { $_ -ne $value }).Count -eq 0) { Already "[$sec] $key=$value"; continue }
       $changed = $true
-      Act "[$sec] $key=$value (was $have)" { $sections[$sec][$idx] = "$key=$value" }.GetNewClosure()
+      Act "[$sec] $key=$value (was $($haves -join ', '))" {
+        foreach ($i in $hits) {
+          # the operator's spelling of the key stays; a trailing comment on that one line does not survive the rewrite
+          $spelled = if ($sections[$sec][$i] -match '^\s*([^=\s]+)') { $Matches[1] } else { $key }
+          $sections[$sec][$i] = "$spelled=$value"
+        }
+      }.GetNewClosure()
     } else {
       $changed = $true
       Act "[$sec] $key=$value (was unset)" {
@@ -164,8 +171,17 @@ if ($changed -and -not $DryRun) {
     if ($n -gt 0) { $out += $body[0..($n - 1)] }
     $out += ''
   }
-  [IO.File]::WriteAllText($cfgPath, (($out -join "`r`n") + "`r`n"), $utf8)
-  Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
+  # The text lands on a sibling temp file first; File.Replace swaps it in atomically and keeps the previous file as .wslconfig.bak
+  # (File.Move for a first write). A failure mid-write leaves .wslconfig as it was.
+  $tmp = "$cfgPath.tmp"
+  [IO.File]::WriteAllText($tmp, (($out -join "`r`n") + "`r`n"), $utf8)
+  if (Test-Path $cfgPath) {
+    [IO.File]::Replace($tmp, $cfgPath, "$cfgPath.bak")
+    Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file kept as $cfgPath.bak)"
+  } else {
+    [IO.File]::Move($tmp, $cfgPath)
+    Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
+  }
 }
 
 Step '2 | selected distro vhdx - sparse allocation (opt-in by -Sparse)'

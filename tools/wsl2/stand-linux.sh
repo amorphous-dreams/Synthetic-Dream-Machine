@@ -15,6 +15,12 @@ for arg in "$@"; do
     *) printf 'usage: %s [--dry-run] [--with-project]\n' "$0" >&2; exit 2 ;;
   esac
 done
+# Under `sudo ./stand-linux.sh` $USER reads root and $HOME reads /root: [user] default would name root
+# and the venv would land in /root. The script calls sudo itself; a plain root login (no SUDO_USER) still passes.
+if (( EUID == 0 )) && [[ -n "${SUDO_USER:-}" ]]; then
+  printf 'run %s as the distro user, not under sudo; it asks for sudo on the steps that need it\n' "$0" >&2
+  exit 2
+fi
 SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$SELF_DIR/../.." && pwd)"
 WINDIR=/mnt/c/Windows
@@ -38,7 +44,31 @@ act() {
   fi
 }
 # A fresh distro carries no package lists; `apt-get install` alone answers "Unable to locate package".
-apt_install() { sudo env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -qq && apt-get install -y -qq "$@"' _ "$@"; }
+# `--no-remove` aborts instead of letting `-y` consent to a removal the resolver proposes.
+apt_install() { sudo env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -qq && apt-get install -y -qq --no-remove "$@"' _ "$@"; }
+# set_line FILE PATTERN LINE: every line matching PATTERN (case-insensitive) becomes LINE, else LINE is appended;
+# comments and other lines stay; the write lands on a temp file in the same directory and renames into place.
+set_line() { sudo python3 - "$@" <<'PY'
+import os, re, sys, tempfile
+p, pat, new = sys.argv[1:]
+try:
+    with open(p, newline="") as f: lines = f.read().splitlines()
+except FileNotFoundError:
+    lines = []
+rx = re.compile(pat, re.I)
+hits = [i for i, line in enumerate(lines) if rx.match(line)]
+for i in hits: lines[i] = new
+if not hits: lines.append(new)
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p) or ".", prefix=os.path.basename(p) + ".")
+try:
+    with os.fdopen(fd, "w") as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
+    try: os.chmod(tmp, os.stat(p).st_mode & 0o7777)
+    except FileNotFoundError: os.chmod(tmp, 0o644)
+    os.replace(tmp, p)
+except BaseException:
+    os.unlink(tmp); raise
+PY
+}
 
 if ! grep -qi microsoft /proc/version; then
   echo 'not WSL2 — nothing to stand'
@@ -66,27 +96,52 @@ fi
 step '2 · /etc/wsl.conf — systemd on, inherited Windows PATH off'
 WSLCONF=/etc/wsl.conf
 WSLCONF_CHANGED=0
+# The read and the write agree on one grammar: section and key match case-insensitively, a trailing CR
+# (a Windows editor's CRLF) reads as whitespace, and the first matching line answers. The write touches
+# only the matching key lines (every duplicate, so no stale twin can win at WSL load) or inserts one
+# line after the section's last non-blank line; every other line, comment included, stays as found.
 want_ini() {
   local sec="$1" key="$2" val="$3" cur
   cur=$(awk -v s="$sec" -v k="$key" '
-    /^[ \t]*\[/ { in_s = ($0 ~ "^[ \t]*\\[" s "\\][ \t]*$") ; next }
-    in_s && $0 ~ "^[ \t]*" k "[ \t]*=" { sub(/^[^=]*=[ \t]*/, ""); sub(/[ \t]+$/, ""); print; exit }' "$WSLCONF" 2>/dev/null)
+    /^[ \t]*\[/ { in_s = (tolower($0) ~ "^[ \t]*\\[" tolower(s) "\\][ \t\r]*$") ; next }
+    in_s && tolower($0) ~ "^[ \t]*" tolower(k) "[ \t]*=" { sub(/^[^=]*=[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' "$WSLCONF" 2>/dev/null)
   if [[ "$cur" == "$val" ]]; then already "[$sec] $key=$val"; return; fi
   WSLCONF_CHANGED=1
   act "[$sec] $key=$val (was '${cur:-unset}')" sudo python3 - "$WSLCONF" "$sec" "$key" "$val" <<'PY'
-import configparser, io, sys
+import os, re, sys, tempfile
 p, sec, key, val = sys.argv[1:]
-c = configparser.ConfigParser(interpolation=None, strict=False); c.optionxform = str
 try:
-    with open(p) as f: c.read_string("".join(line.lstrip() for line in f))
+    with open(p, newline="") as f: lines = f.read().splitlines()
 except FileNotFoundError:
-    pass
-except configparser.MissingSectionHeaderError:
-    sys.exit(f"{p} carries keys before any [section]; move them into a section, then re-run")
-if not c.has_section(sec): c.add_section(sec)
-c[sec][key] = val
-out = io.StringIO(); c.write(out, space_around_delimiters=False)
-open(p, "w").write(out.getvalue())
+    lines = []
+head = re.compile(r"^[ \t]*\[(.+?)\][ \t]*$")
+kv = re.compile(r"^[ \t]*" + re.escape(key) + r"[ \t]*=", re.I)
+in_s = False; hits = []; first = -1; last = -1
+for i, line in enumerate(lines):
+    m = head.match(line)
+    if m:
+        in_s = m.group(1).strip().lower() == sec.lower()
+        if in_s and first < 0: first = i
+        continue
+    if in_s:
+        if kv.match(line): hits.append(i)
+        if line.strip(): last = i
+new = f"{key}={val}"
+if hits:
+    for i in hits: lines[i] = new
+elif first >= 0:
+    lines.insert((last if last > first else first) + 1, new)
+else:
+    if lines and lines[-1].strip(): lines.append("")
+    lines += [f"[{sec}]", new]
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p) or ".", prefix=os.path.basename(p) + ".")
+try:
+    with os.fdopen(fd, "w") as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
+    try: os.chmod(tmp, os.stat(p).st_mode & 0o7777)
+    except FileNotFoundError: os.chmod(tmp, 0o644)
+    os.replace(tmp, p)
+except BaseException:
+    os.unlink(tmp); raise
 PY
 }
 want_ini boot systemd true
@@ -101,12 +156,13 @@ step '3 · earlyoom — keep a runaway process from freezing the VM'
 EARLYOOM_ARGS="-m 5 -s 50 -r 3600 --avoid '(^|/)(claude|codex|Xwayland|systemd)\$'"
 if dpkg -s earlyoom >/dev/null 2>&1; then already 'earlyoom installed'
 else act 'apt install earlyoom' apt_install earlyoom; fi
-if grep -qxF "EARLYOOM_ARGS=\"$EARLYOOM_ARGS\"" /etc/default/earlyoom 2>/dev/null; then
+EARLYOOM_LINE="EARLYOOM_ARGS=\"$EARLYOOM_ARGS\""
+# The package conffile carries the operator-facing examples as comments; only the EARLYOOM_ARGS line changes.
+earlyoom_apply() { set_line /etc/default/earlyoom '^[ \t]*EARLYOOM_ARGS[ \t]*=' "$EARLYOOM_LINE" && sudo systemctl restart earlyoom; }
+if grep -qxF "$EARLYOOM_LINE" /etc/default/earlyoom 2>/dev/null; then
   already '/etc/default/earlyoom thresholds'
 else
-  # The inner shell receives $1 deliberately; it avoids evaluating the configured regex in this shell.
-  # shellcheck disable=SC2016
-  act '/etc/default/earlyoom thresholds (-m 5 -s 50)' sudo bash -c 'printf "EARLYOOM_ARGS=\"%s\"\n" "$1" > /etc/default/earlyoom && systemctl restart earlyoom' _ "$EARLYOOM_ARGS"
+  act '/etc/default/earlyoom thresholds (-m 5 -s 50)' earlyoom_apply
 fi
 if [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
   already 'earlyoom enabled + active'
