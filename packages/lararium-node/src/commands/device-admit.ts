@@ -178,7 +178,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // ── CARRY ON READ — a store-direct door names its own sources rather than trusting a boot to have run ──
   // `open-node-vessel.ts` carries the pinned chain onto the resolved island right before its OWN board
   // read, at every boot. This door NEVER boots (module docblock above: it opens the store directly and
-  // exits), so the ordinary walk `vessel found` → `persona new 0` → `nexus rite cabal` → `device-admit`
+  // exits), so the ordinary walk `vessel found` → `persona new 0` → `nexus rite quorum` → `device-admit`
   // reaches this line with no daemon restart between the climb and the call. Composing the carry HERE,
   // fed by `nodeNexusIslandsBelow` off the identical resolution `admitBoardIsland` above already ran,
   // lets a sound climbed founding admit with no restart owed — the resolution names one ranking,

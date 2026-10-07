@@ -118,15 +118,15 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const face = await cliA(["persona", "new", "0", "--name", "spider-steward"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       // A FOUNDS THE NEXUS, so it seats the founding kahu who tend it — three chairs, a majority of two —
-      // and `rite cabal` seats the charter, all BEFORE the daemon stands (tools/lararium-container-boot.sh:101-111).
+      // and `rite quorum` seats the charter, all BEFORE the daemon stands (tools/lararium-container-boot.sh:101-111).
       let i = 1;
       for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
         const k = await cliA(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
         if (k.code !== 0) throw new Error(`A: kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
         i += 1;
       }
-      const rite = await cliA(["nexus", "rite", "cabal"]);
-      if (rite.code !== 0) throw new Error(`A: rite cabal failed (${rite.code})\n${said(rite).slice(-800)}`);
+      const rite = await cliA(["nexus", "rite", "quorum"]);
+      if (rite.code !== 0) throw new Error(`A: rite quorum failed (${rite.code})\n${said(rite).slice(-800)}`);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
     const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";

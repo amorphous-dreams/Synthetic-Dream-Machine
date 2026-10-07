@@ -2,7 +2,7 @@
  * nexus-bilateral-genesis.test.ts — LIVE-WIRE B4: the bilateral cross-operator CONTRACT (headless proof).
  *
  * TWO INDEPENDENTLY-FOUNDED sovereign hearths stand on one machine — Josh's Enyalios and Freyja's machine, two
- * DISTINCT operators, each rooting its OWN vessel identity, its OWN founding-kahu roster, and its OWN seated
+ * DISTINCT operators, each rooting its OWN vessel identity, its OWN kahu quorum's seats, and its OWN seated
  * genesis charter epoch. Isolation rides the `LAR_ROOT` lever: the persona vault + vessel substrate + charter
  * home all resolve under it, so toggling it between the two roots stands two operators that share no key
  * material, no board, no identity home (`asRoot`).

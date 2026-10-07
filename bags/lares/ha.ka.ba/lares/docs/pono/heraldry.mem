@@ -192,7 +192,7 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 !!! Step 4 · The e2e flip ~ 4 spirit-hours
 
-* ''RED'': ⑦ in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` (today `test.fails`). `openStagedFleet` gains, after A founds: A seats a charter (`nexus rite cabal`), exports it, the Herm imports it, A carries the Herm by its vessel key, the Herm dials A's `/ws`, and A registers `bags/lares --tier public`.
+* ''RED'': ⑦ in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` (today `test.fails`). `openStagedFleet` gains, after A founds: A seats a charter (`nexus rite quorum`), exports it, the Herm imports it, A carries the Herm by its vessel key, the Herm dials A's `/ws`, and A registers `bags/lares --tier public`.
 * ''CURE'': the harness lines above (`tests/harness/instance.ts:311-349`) plus a `LAR_JOIN_SYNC` on the Herm's daemonEnv. No product change beyond steps 1–3.
 * ''CONTROL'': the file's three standing CONTROLs hold unchanged — a ghost cid draws the byte-identical 404, the boot CAS still serves at `/bulb/<cid>.bin`, C's ghost fetch reads `held:false` and writes nothing. ''Plus one new'': a CONTRACT-tier registration's pointer draws 404 through the same Herm in the same run.
 
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U2DehITcRF6POZakaJ3wnVuBbg24yJKlC4RKAiCNVFw
+<<^ code="&#x0003;">>ni:///sha-256;G1pcRhdpermxN4KYV7Ewzx2SpG-6aR7XHs3rzrxqJFI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -44,7 +44,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | refresh | realm-bag | realm-bags | offering>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
-      "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
+      "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony",
       "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
       "  kapae --list                              read the currently-Kapae'd set (the fold)",
       "  un_kapae <nym>                            mint a quorum-signed causal lift",
@@ -81,7 +81,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  realm-bags                                the bags the realm carries, and who keeps each",
     ],
     examples: [
-      "lares nexus rite cabal",
+      "lares nexus rite quorum",
       "lares nexus contract <operator-pubkey> --json",
       "lares nexus admit-take ./admit-bundle.json",
       "lares nexus offering inspect sha256:<offering-cid>",

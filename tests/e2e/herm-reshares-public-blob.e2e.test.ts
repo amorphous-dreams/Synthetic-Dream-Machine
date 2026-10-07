@@ -17,7 +17,7 @@
  * in ONE REALM. ⑦ still stands as `test.fails`, and its seam has narrowed to a single line of product law.
  *
  * The fleet now performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
- * `nexus rite cabal`; A exports the charter and the Herm imports it; the Herm signs `nexus carry-for` with
+ * `nexus rite quorum`; A exports the charter and the Herm imports it; the Herm signs `nexus carry-for` with
  * its OWN vessel key (a place holds no face — `personaSlotCeiling("herm") === 0`); A seats that seal with
  * `nexus carry <key> --carrier <hex>`; the Herm RE-STANDS carrying `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` for A
  * (the dial is a boot reading, and no running verb seats one); A registers the book with

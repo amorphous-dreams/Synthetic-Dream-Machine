@@ -1,7 +1,7 @@
 /**
  * A DOOR RETURNS A CODE. IT DOES NOT THROW PAST ITS OWN DISPATCHER.
  *
- * `cmdSeal` catches `UsageError` and renders it as a refusal; `runCabalRite` calls the same seal steps
+ * `cmdSeal` catches `UsageError` and renders it as a refusal; `runQuorumRite` calls the same seal steps
  * directly and had no catch of its own, so a rite reaching an unseatable charter threw straight out of
  * `cmdNexus` to the caller. The exit-code vocabulary exists precisely so a caller never has to catch.
  *
@@ -40,9 +40,9 @@ describe("a nexus rite answers with a code", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("★ `nexus rite cabal` on a vessel with no chairs REFUSES with a code, never a thrown error ★", async () => {
+  test("★ `nexus rite quorum` on a vessel with no chairs REFUSES with a code, never a thrown error ★", async () => {
     // No persona ever stood for a chair here, so the seat step refuses — the question is HOW it refuses.
-    const code = await cmdNexus(args(["rite", "cabal"]));
+    const code = await cmdNexus(args(["rite", "quorum"]));
     expect(typeof code, "a door hands back a code").toBe("number");
     expect(code, "and a refusal is non-zero").not.toBe(0);
   });

@@ -73,7 +73,6 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 * ''R1/R2 — multi-carrier files.'' C2b, the `MemeStreamParser` deletion, waits on it.
 * ''User-face standing'' (d): the gate withholds a user-face inviter until it rules (lean: the hosting hearth countersigns over the invite nonce — `lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite`).
 * ''Quieting the hearths-gate pass note.''
-* ''`rite cabal` → `rite quorum`'': the crew's `tests/harness/instance.ts` calls the verb by name, so the rename waits on the harness.
 
 ''Needs the operator''
 * ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
@@ -147,6 +146,6 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BFA-ktr3bmLRr-TN0Iz-PBPmb5WBDs45oYIkYSaWtzc
+<<^ code="&#x0003;">>ni:///sha-256;klsGBqoyYIu7twd0zgGXCI0dM2WmEgtCpZFZiY5FjM0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1228,7 +1228,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
       // A founding seats this inception on the board keyed by the island resolved AT THAT MOMENT, which
       // for an unconnected hearth is its OWN key. Seating a charter later re-keys the board, and this
-      // gate REFUSES rather than degrades — so the walk `vessel found` → use → `nexus rite cabal` →
+      // gate REFUSES rather than degrades — so the walk `vessel found` → use → `nexus rite quorum` →
       // restart left a vessel that never booted again, its only remedy a re-found. The carry moves the
       // pinned chain onto the island this boot resolved, reading only the islands BELOW it
       // (`nexusIslandsBelow` is empty at the bottom and empty when torn, so nothing ever descends).

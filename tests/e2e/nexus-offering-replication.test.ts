@@ -93,8 +93,8 @@ beforeAll(async () => {
         if (kahu.code !== 0) throw new Error(`source: kahu ${i} failed (${kahu.code})\n${kahu.stderr.slice(-800)}`);
         i += 1;
       }
-      const rite = await source(["nexus", "rite", "cabal"]);
-      if (rite.code !== 0) throw new Error(`source: rite cabal failed (${rite.code})\n${rite.stderr.slice(-800)}`);
+      const rite = await source(["nexus", "rite", "quorum"]);
+      if (rite.code !== 0) throw new Error(`source: rite quorum failed (${rite.code})\n${rite.stderr.slice(-800)}`);
       // Publishing signs in a held persona's name, and an unset selector refuses rather than choosing h0:
       // the source wears its founding face explicitly before its daemon reads it.
       const wear = await source(["persona", "wear", "0"]);

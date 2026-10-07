@@ -16,7 +16,7 @@
  * Binding Gate REFUSES a boot whose pinned identifier reaches no head, so an ordinary walk leaves a vessel
  * that never boots again.
  *
- *   · on a NODE: `vessel found` → use → `nexus rite cabal` → restart (measured live: island
+ *   · on a NODE: `vessel found` → use → `nexus rite quorum` → restart (measured live: island
  *     `079da8bf0e1efce59d…` (own) at founding, `epoch0-0790f04d937…` (charter) after, and the halt every
  *     boot thereafter).
  *   · on a LEAF: found offline at a PRIVATE NEXUS OF ONE → the operator configures the hearth it dials →

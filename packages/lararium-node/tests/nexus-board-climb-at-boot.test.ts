@@ -83,7 +83,7 @@ function sealHomeAt(): string {
   return home;
 }
 
-/** Seat a readable charter whose genesis epoch names the island — what `nexus rite cabal` leaves on disk. */
+/** Seat a readable charter whose genesis epoch names the island — what `nexus rite quorum` leaves on disk. */
 async function seatCharter(sealHome: string): Promise<void> {
   writeNexusDoc(sealHome, {
     kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER,
@@ -134,7 +134,7 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
       { edgeId: "edge-set-aside", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
     (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
 
-    // ② `nexus rite cabal` seats a charter. The next boot reads a DIFFERENT island off the same disk.
+    // ② `nexus rite quorum` seats a charter. The next boot reads a DIFFERENT island off the same disk.
     await seatCharter(home);
     const at     = bootStandsAt(home, ownKey);
     const island = nexusScopeOrThrow(nexusIdentity(at));

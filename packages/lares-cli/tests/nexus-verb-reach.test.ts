@@ -99,11 +99,11 @@ describe("lares nexus — every verb reaches its door", () => {
 
   /**
    * CONTROL — the rites resolve. `NEXUS_RITES` holds its two handlers by REFERENCE, and the split puts
-   * both behind a module boundary (`runCabalRite` into the seal door, `runKahuliRite` into kāhuli). An
+   * both behind a module boundary (`runQuorumRite` into the seal door, `runKahuliRite` into kāhuli). An
    * import that failed to resolve, or a rite dropped from the table while usage still advertised it,
    * reads exactly like an unknown petname — so both are named here, never counted.
    */
-  test.each(["cabal", "kahuli"])("the rite `%s` is registered and reaches its handler", async (rite) => {
+  test.each(["quorum", "kahuli"])("the rite `%s` is registered and reaches its handler", async (rite) => {
     const out = await run(["rite", rite]);
     expect(out, `the rite \`${rite}\` was not registered`).not.toMatch(/unknown rite/i);
     expect(out).not.toMatch(/unknown verb/i);
@@ -113,8 +113,14 @@ describe("lares nexus — every verb reaches its door", () => {
   /** CONTROL — an unknown petname still refuses, or the assertion above proves nothing. */
   test("an unknown rite petname refuses and names the rites that exist", async () => {
     const out = await run(["rite", "not-a-rite"], { json: false });
-    expect(out).toMatch(/cabal/);
+    expect(out).toMatch(/quorum/);
     expect(out).toMatch(/kahuli/);
+  });
+
+  /** The rite seats the kahu QUORUM — the seats, never the people of the kahu CABAL — and keeps no alias. */
+  test("the people's word names no rite", async () => {
+    const out = await run(["rite", "cabal"], { json: false });
+    expect(out).toMatch(/unknown rite "cabal"/);
   });
 
   /**

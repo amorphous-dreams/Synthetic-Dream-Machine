@@ -105,9 +105,9 @@ elif [ -n "${LAR_STAND_KAHU:-}" ]; then
       || echo "[boot] kahu $_i ('$_handle') did NOT stand — the roster will read short"
     _i=$((_i + 1))
   done
-  # `rite cabal` composes seal reserve · seal seat · seal show — the reserve arms the next epoch, the
+  # `rite quorum` composes seal reserve · seal seat · seal show — the reserve arms the next epoch, the
   # seat writes the roster from what stood, and the threshold derives majority over it.
-  LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus rite cabal \
+  LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus rite quorum \
     || echo "[boot] the cabal did NOT seat (see above) — this hearth carries but does not tend"
 fi
 

@@ -75,7 +75,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 !! 3 · The smallest red
 
-`tests/e2e/meme-realm-bag.test.ts` — over the two-vessel harness with A and B founded as DIFFERENT operators (no admit edge; B dials A at the cross-operator floor): A seats its charter (`nexus rite cabal`), the charter crosses by its own doors, B signs its contract-in, A's quorum admits her; A LOADs a carrier into `bags/lares`; the vector reads B's `meme get --bag lares <uri>`. It stands as `test.fails` gated on the contract having landed: a refusal at a contract door skips the vector rather than reading as the seam. The day the realm carries the bag, the vector reads "expected to fail" and the hold retires — the same law `blob-follows-pointer` and ⑨ rode.
+`tests/e2e/meme-realm-bag.test.ts` — over the two-vessel harness with A and B founded as DIFFERENT operators (no admit edge; B dials A at the cross-operator floor): A seats its charter (`nexus rite quorum`), the charter crosses by its own doors, B signs its contract-in, A's quorum admits her; A LOADs a carrier into `bags/lares`; the vector reads B's `meme get --bag lares <uri>`. It stands as `test.fails` gated on the contract having landed: a refusal at a contract door skips the vector rather than reading as the seam. The day the realm carries the bag, the vector reads "expected to fail" and the hold retires — the same law `blob-follows-pointer` and ⑨ rode.
 
 <<~/ahu>>
 
@@ -91,6 +91,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WfUOZbemZCk8jRCa8C13JDB7fISREeWOPGGieVOZ4Kg
+<<^ code="&#x0003;">>ni:///sha-256;vC5bd1aBDrqQPJdAdOM4jkiAjLth5DeFmj_htdsDAnQ
 
 <<^ code="&#x0004;" -> to="?">>

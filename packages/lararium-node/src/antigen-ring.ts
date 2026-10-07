@@ -9,7 +9,7 @@
  *     `id.slice(-64)`), the exact `nym` the charter roster + antigen entries key on. An unresolved /
  *     unauthenticated peer → null (fail-closed: a denylist that cannot name a peer never falsely denies it).
  *   · kapaed — the currently-Kapae'd nym set, FOLDED (kapae-antigen `foldAntigenSet` + the multi-sig quorum
- *     verifier) from the always-carried antigen BOARD entries AND the founding-kahu roster read off disk
+ *     verifier) from the always-carried antigen BOARD entries AND the kahu quorum's seats read off disk
  *     (`readNexusDoc(sealHome)` → `foundingRoster`). Re-folded on every board-doc change so a ban
  *     propagated across the mesh takes on the next sync (the immune system saturates by carry-contract).
  *

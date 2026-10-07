@@ -153,7 +153,7 @@ export function makeRealmPlane(opts: {
       return foldRealmBags(realmHandle.doc(), realmId);
     },
     async register({ bagUri, docUrl, readTier, charters, expiry, signers, propose }) {
-      if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — seat a charter (`lares nexus rite cabal`) or import one (`lares nexus seal import`) and `lares nexus refresh`");
+      if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — seat a charter (`lares nexus rite quorum`) or import one (`lares nexus seal import`) and `lares nexus refresh`");
       if (signers.length === 0) throw new Error("realm-bag: a bag is kept by a named steward — no signer supplied");
       const parts = {
         realmId, bagUri, docUrl, readTier: readTier ?? "contract" as CapTier,

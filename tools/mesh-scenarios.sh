@@ -1190,7 +1190,7 @@ run_meme_browser() {
 # ════════════════════════════════════════════════════════════════════════════════════════════════
 
 # ── ① THE BRICKING CLIMB ────────────────────────────────────────────────────────────────────────
-# THE WALK: `vessel found` → a face → USE IT → `nexus rite cabal` → restart. The founding face's
+# THE WALK: `vessel found` → a face → USE IT → `nexus rite quorum` → restart. The founding face's
 # inception seats on the persona-KEL board keyed by the island resolved AT THAT MOMENT, which for an
 # unconnected hearth is its OWN key (`personaKelBoardDocUrl(nexusPubkey)`, deterministic-doc.ts:95).
 # Seating a charter re-keys that board to the charter's genesis epoch, and the Binding Gate refuses
@@ -1242,14 +1242,14 @@ run_climb() {
   if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the climb has no inception to strand"; fi
 
-  # THE RE-KEYING ACT. `rite cabal` composes seal reserve · seal seat · seal show; the seat writes the
+  # THE RE-KEYING ACT. `rite quorum` composes seal reserve · seal seat · seal show; the seat writes the
   # roster and `sealEpochCid` becomes the island every later boot resolves.
   step "the charter seats AFTER the face — the board re-keys"
   local i EPOCH
   for i in 0 1 2; do
     $COMPOSE exec -T lararium-a $LARES persona new "$i" --name "kahu-$i" --handle "Kahu $i" --seat >/dev/null 2>&1 || true
   done
-  $COMPOSE exec -T lararium-a $LARES nexus rite cabal >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES nexus rite quorum >/dev/null 2>&1
   EPOCH=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
           | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$EPOCH" ]; then ok; else bad "no charter seated — nothing re-keyed, so the climb never happened"; clear_all; return; fi

@@ -362,8 +362,8 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
           if (k.code !== 0) throw new Error(`A: kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
           i += 1;
         }
-        const rite = await cliA(["nexus", "rite", "cabal"]);
-        if (rite.code !== 0) throw new Error(`A: rite cabal failed (${rite.code})\n${rite.stderr.slice(-800)}`);
+        const rite = await cliA(["nexus", "rite", "quorum"]);
+        if (rite.code !== 0) throw new Error(`A: rite quorum failed (${rite.code})\n${rite.stderr.slice(-800)}`);
       },
       // ── THE CARRIAGE CROSSING, run while A stands live and C has not yet booted ──────────────────────
       // A Herm holds no face by class (`personaSlotCeiling("herm") === 0`), so it enters a Nexus by the
@@ -441,7 +441,7 @@ export interface JoineeOptions {
    */
   readonly joinDocUrl?: string | ((A: LarInstance) => string | null | Promise<string | null>);
   /** A's own rite BEYOND place-and-face, run while NO daemon stands — where a suite seats a founding
-   *  quorum (`persona new <i> --seat` ×3 · `nexus rite cabal`). A charter seats before the daemon reads it. */
+   *  quorum (`persona new <i> --seat` ×3 · `nexus rite quorum`). A charter seats before the daemon reads it. */
   readonly riteA?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
   /** How B learns A's dial: `"env"` (LAR_JOIN_SYNC/GATE/DOC off A's log and registry) or `"pin"`
    *  (nothing — B boots by the hearth its signed edge names). Default `"env"`. */

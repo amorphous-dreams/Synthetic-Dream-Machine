@@ -58,7 +58,7 @@ import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
 import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
-import { cmdSeal, runCabalRite } from "./nexus-seal.js";
+import { cmdSeal, runQuorumRite } from "./nexus-seal.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 export async function cmdNexus(args: ParsedArgs): Promise<number> {
@@ -95,7 +95,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
  * primitive for namespace. The primitives keep every behaviour; a rite only orders them.
  */
 const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly run: (a: ParsedArgs) => Promise<number> }>> = {
-  cabal:  { composes: "seal reserve · seal seat · seal show", run: runCabalRite },
+  quorum: { composes: "seal reserve · seal seat · seal show", run: runQuorumRite },
   kahuli: { composes: "kahuli grammar (· kahuli engine — held)", run: runKahuliRite },
 };
 
@@ -255,7 +255,7 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
     if (petname) console.error(`lares nexus rite: unknown rite "${petname}"\n`);
     console.error("lares nexus rite <petname> — the pet-named procedures over the nexus primitives\n");
     for (const [name, r] of Object.entries(NEXUS_RITES)) console.error(`  ${name.padEnd(7)} ${r.composes}`);
-    console.error("\n  cabal seats the founding quorum on THIS node — the kahu stand, the epoch arms, and the");
+    console.error("\n  quorum seats the kahu quorum on THIS node — the seats stand, the epoch arms, and the");
     console.error("  Nexus becomes ready to contract carriage with other operators.");
     return petname ? 2 : 0;
   }

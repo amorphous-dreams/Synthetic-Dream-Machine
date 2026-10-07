@@ -8,9 +8,9 @@
  * boot, which `lares device-admit` never runs: `device-admit.ts`'s own docblock says it opens the
  * store directly and exits (Node adapter, no daemon boot). So the ordinary walk —
  *
- *     lares vessel found → lares persona new 0 → lares nexus rite cabal → lares device-admit
+ *     lares vessel found → lares persona new 0 → lares nexus rite quorum → lares device-admit
  *
- * — with NO daemon ever booted in between (nothing here starts one; `nexus rite cabal` and
+ * — with NO daemon ever booted in between (nothing here starts one; `nexus rite quorum` and
  * `device-admit` both run as store-direct doors, exactly like the fleet harness's `found:` callback in
  * `tests/harness/instance.ts:478-495`) reaches the charter board with nothing ever carried onto it,
  * and `device-admit` throws "persona-KEL chain … absent from the local board — run
@@ -72,7 +72,7 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
   return { repo, ownKey, cer };
 }
 
-/** `nexus rite cabal`'s own effect on disk — a charter seated at the seal home. */
+/** `nexus rite quorum`'s own effect on disk — a charter seated at the seal home. */
 function climb(charter: string): void {
   writeNexusDoc(larSealHome(), {
     kind: NEXUS_DOC_DOMAIN,

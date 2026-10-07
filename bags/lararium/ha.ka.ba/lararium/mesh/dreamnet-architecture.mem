@@ -284,7 +284,7 @@ Every bag declares its sealing posture as self-describing, tighten-only data ove
 
 !!! What landed, 2026-09-18
 
-The A1 sweep wired all 12 CLI-verb board-read sites through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring `device-admit.ts`'s worked example (`0b085461c`, red-first, WELD sweep 8→10 green); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). Behind it, `ac9a645ba` cured a real product gap the board-keying fork exposed once measured: the only KEL-chain migration (`carryPersonaKelUpTheGradient`) ran only at daemon boot, so a store-direct sequence (`persona new 0` then `nexus rite cabal` with no restart) left `admitBoardIsland` reading a charter-island board nothing had written. The cure carries ''ON READ'' at device-admit's own seam, reusing the boot's own idempotent climb (`lares-opus-roadmap.mem` #/the-board-keying-fork, 2026-09-18).
+The A1 sweep wired all 12 CLI-verb board-read sites through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring `device-admit.ts`'s worked example (`0b085461c`, red-first, WELD sweep 8→10 green); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). Behind it, `ac9a645ba` cured a real product gap the board-keying fork exposed once measured: the only KEL-chain migration (`carryPersonaKelUpTheGradient`) ran only at daemon boot, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) left `admitBoardIsland` reading a charter-island board nothing had written. The cure carries ''ON READ'' at device-admit's own seam, reusing the boot's own idempotent climb (`lares-opus-roadmap.mem` #/the-board-keying-fork, 2026-09-18).
 
 <<~/ahu>>
 
@@ -615,6 +615,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CBryFHq1z40fo2t32YFheYGjq2cqLP2xtarEEapZSnc
+<<^ code="&#x0003;">>ni:///sha-256;tRWxv_wk0674JtA0mB7vwKh19W5iXEowo8KAxLHI8Fg
 
 <<^ code="&#x0004;" -> to="?">>

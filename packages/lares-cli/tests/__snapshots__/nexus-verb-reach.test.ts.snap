@@ -20,7 +20,7 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
-  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony
+  seal <seat | reserve | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony
   kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
   kapae --list                              read the currently-Kapae'd set (the fold)
   un_kapae <nym>                            mint a quorum-signed causal lift
@@ -57,7 +57,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   realm-bags                                the bags the realm carries, and who keeps each
 
 Examples:
-  lares nexus rite cabal
+  lares nexus rite quorum
   lares nexus contract <operator-pubkey> --json
   lares nexus admit-take ./admit-bundle.json
   lares nexus offering inspect sha256:<offering-cid>
@@ -79,7 +79,7 @@ usage: lares nexus seal <seat | reserve | rotate | commit | show | export | impo
           --next-key-commit <digest-of-the-FOLLOWING-key-set>
           [--threshold <k>]  the quorum rule for the new roster (default: majority)
   commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>
-  show    read the current founding-kahu roster + chain head + quorum verdict + the carried set
+  show    read the kahu quorum's seats + chain head + quorum verdict + the carried set
   import <file>          land a charter at the primary path — only where none stands, or the same one
   import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
                          that AID lands only when its seal lineage extends the held head

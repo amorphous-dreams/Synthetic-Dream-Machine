@@ -112,7 +112,7 @@ export function nodeNexusIsland(opts: Parameters<typeof nodeNexusStandsAt>[0]): 
  *
  * WHY A DOOR NEEDS THIS AT ALL: `carryPersonaKelUpTheGradient` (and `climbNexusBoards`) run at BOOT,
  * over `nexusIslandsBelow`, before the gate reads. A door like `device-admit` never boots — it opens
- * the store directly and exits — so an in-session climb (`nexus rite cabal` then `device-admit`, no
+ * the store directly and exits — so an in-session climb (`nexus rite quorum` then `device-admit`, no
  * daemon restart between) never runs that carry. Composing the SAME `nexusIslandsBelow` here lets a
  * door carry ON READ, at the one seam it already names, rather than sprinkling a carry at every rite
  * that can move an island (the ruling's own objection to a rite-time hook).

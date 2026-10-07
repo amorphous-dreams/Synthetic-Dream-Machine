@@ -392,7 +392,7 @@ export function larIdentityDir(): string {
 }
 
 /**
- * The Nexus SEAL home — the founding-kahu roster + its epoch lineage, at `<lares>/nexus`.
+ * The Nexus SEAL home — the kahu quorum's seats + their epoch lineage, at `<lares>/nexus`.
  *
  * WHY IT SITS HERE AND NOT IN THE BAGS TREE. The seal reads as a FILE rather than a bag: an operator
  * backs it up, hands it to a peer, and reads it with their own eyes. A bag would give it fleet-sync it

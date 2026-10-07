@@ -17,8 +17,8 @@
  * Splitting them further would put an invariant on one side of an import and its enforcement on the
  * other.
  *
- * ── THE CABAL RITE SITS HERE, NOT WITH THE RITES ────────────────────────────────────────────────
- * `runCabalRite` is registered in the parent's `NEXUS_RITES` table but composes three functions that
+ * ── THE QUORUM RITE SITS HERE, NOT WITH THE RITES ───────────────────────────────────────────────
+ * `runQuorumRite` is registered in the parent's `NEXUS_RITES` table but composes three functions that
  * live here — reserve, seat, show — and nothing else. Leaving it in the parent would force this
  * module to export its seat/show/reserve internals just to be called back into, widening the surface
  * from two symbols to five and pointing the dependency both ways. It travels with the code it drives,
@@ -79,7 +79,7 @@ export function readCharterSeal(sealHome: string): { doc: NexusDoc | null; state
 function noSealHeadWhy(state: Exclude<CharterSealReading, "sealed">, act: string): string {
   switch (state) {
     case "absent":
-      return `no charter stands here — nothing to ${act}. Found one first: \`lares nexus rite cabal\``;
+      return `no charter stands here — nothing to ${act}. Found one first: \`lares nexus rite quorum\``;
     case "torn":
       return `the charter stands but reads TORN — nothing can ${act} until it is repaired or moved aside.`;
     case "unsealed":
@@ -110,7 +110,7 @@ const SEAL_USAGE: readonly string[] = [
   "          --next-key-commit <digest-of-the-FOLLOWING-key-set>",
   "          [--threshold <k>]  the quorum rule for the new roster (default: majority)",
   "  commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>",
-  "  show    read the current founding-kahu roster + chain head + quorum verdict + the carried set",
+  "  show    read the kahu quorum's seats + chain head + quorum verdict + the carried set",
   "  import <file>          land a charter at the primary path — only where none stands, or the same one",
   "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
   "                         that AID lands only when its seal lineage extends the held head",
@@ -122,7 +122,7 @@ const SEAL_USAGE: readonly string[] = [
 ];
 
 /**
- * The cabal rite — forge the pre-rotation, seat the roster it arms, and read the verdict.
+ * The quorum rite — forge the pre-rotation, seat the kahu quorum it arms, and read the verdict.
  *
  * ── WHY IT DOES NOT MINT THE PERSONAS ───────────────────────────────────────────────────────────
  * A chair joins on a DECLARED HANDLE, and a handle is a name a human chooses and announces. A rite that
@@ -137,10 +137,10 @@ const SEAL_USAGE: readonly string[] = [
  * it. A digest copied by hand is a digest that can be copied wrong, and a wrong one seats a pre-commitment
  * no future rotate can ever satisfy.
  */
-export async function runCabalRite(args: ParsedArgs): Promise<number> {
+export async function runQuorumRite(args: ParsedArgs): Promise<number> {
   const rest = { ...args, positional: args.positional.slice(2) };
   try {
-    return await cabalRiteSteps(rest);
+    return await quorumRiteSteps(rest);
   } catch (err) {
     // A DOOR RETURNS A CODE. `cmdSeal` renders these as refusals, and this rite calls the very same seal
     // steps WITHOUT going through it — so a `UsageError` (an unseatable charter, a threshold past the
@@ -149,15 +149,15 @@ export async function runCabalRite(args: ParsedArgs): Promise<number> {
     // where a reading belongs. Same shape and same verdicts as `cmdSeal`, so the two cannot diverge.
     const msg  = err instanceof Error ? err.message : String(err);
     const code = err instanceof UsageError ? "usage" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus rite cabal: ${msg}`) });
+    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus rite quorum: ${msg}`) });
     return exitFor(code);
   }
 }
 
-async function cabalRiteSteps(rest: ParsedArgs): Promise<number> {
+async function quorumRiteSteps(rest: ParsedArgs): Promise<number> {
   const reserved = await sealReserveProvision(rest, "provision");
   if (reserved !== 0) {
-    console.error("lares nexus rite cabal: halted at `seal reserve` — nothing seated, nothing written.");
+    console.error("lares nexus rite quorum: halted at `seal reserve` — nothing seated, nothing written.");
     return reserved;
   }
 
@@ -166,14 +166,14 @@ async function cabalRiteSteps(rest: ParsedArgs): Promise<number> {
   const state = readCharterReserveState();
   const commit = state?.nextKeyCommit;
   if (!commit) {
-    console.error("lares nexus rite cabal: the reserve wrote no next-key commit — refusing to seat unarmed.");
+    console.error("lares nexus rite quorum: the reserve wrote no next-key commit — refusing to seat unarmed.");
     console.error("  an unarmed genesis epoch cannot pre-commit its successor, so the chain could never rotate.");
     return 1;
   }
 
   const seated = await sealSeat({ ...rest, options: { ...rest.options, "next-key-commit": commit } });
   if (seated !== 0) {
-    console.error("lares nexus rite cabal: halted at `seal seat`. The reserve stands; re-run after seating");
+    console.error("lares nexus rite quorum: halted at `seal seat`. The reserve stands; re-run after seating");
     console.error("  personas that declared a Handle AND stood for a chair (`persona new <i> --handle … --seat`).");
     return seated;
   }
@@ -702,8 +702,8 @@ function sealExport(args: ParsedArgs): number {
   const path = nexusCharterDocPath(sealHome);
   const raw = existsSync(path) ? readFileSync(path, "utf8") : null;
   if (raw === null) {
-    emit(args, { ok: false, error: { code: "not-found", message: `no charter at ${path} — seat one first: \`lares nexus rite cabal\`` },
-                 human: () => console.error(`lares nexus seal export: no charter at ${path} — seat one first: \`lares nexus rite cabal\``) });
+    emit(args, { ok: false, error: { code: "not-found", message: `no charter at ${path} — seat one first: \`lares nexus rite quorum\`` },
+                 human: () => console.error(`lares nexus seal export: no charter at ${path} — seat one first: \`lares nexus rite quorum\``) });
     return 4;
   }
   emit(args, {

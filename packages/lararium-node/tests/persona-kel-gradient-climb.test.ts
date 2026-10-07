@@ -8,7 +8,7 @@
  *
  *     [nexus] island 079da8bf0e1efce59d… (own) — this vessel holds no charter and dials no anchor…
  *
- * `lares nexus rite cabal` then seats a charter. The next boot resolves the island through the charter's
+ * `lares nexus rite quorum` then seats a charter. The next boot resolves the island through the charter's
  * genesis epoch — a DIFFERENT board — and the same run printed:
  *
  *     [nexus] island epoch0-0790f04d937… (charter, shared)
