@@ -16,9 +16,11 @@ for arg in "$@"; do
   esac
 done
 # Under `sudo ./stand-linux.sh` $USER reads root and $HOME reads /root: [user] default would name root
-# and the venv would land in /root. The script calls sudo itself; a plain root login (no SUDO_USER) still passes.
-if (( EUID == 0 )) && [[ -n "${SUDO_USER:-}" ]]; then
-  printf 'run %s as the distro user, not under sudo; it asks for sudo on the steps that need it\n' "$0" >&2
+# and the venv would land in /root. The script calls sudo itself. A root shell that carries no SUDO_USER
+# (`su -`, `wsl -u root`) would write the same wrong lines, so root passes only on a distro that holds
+# no login user at all (a fresh install whose user step was skipped).
+if (( EUID == 0 )) && { [[ -n "${SUDO_USER:-}" ]] || getent passwd | awk -F: '$3 >= 1000 && $3 < 60000 { found = 1 } END { exit !found }'; }; then
+  printf 'run %s as the distro user, not as root; it asks for sudo on the steps that need it\n' "$0" >&2
   exit 2
 fi
 SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -48,21 +50,27 @@ act() {
 apt_install() { sudo env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -qq && apt-get install -y -qq --no-remove "$@"' _ "$@"; }
 # set_line FILE PATTERN LINE: every line matching PATTERN (case-insensitive) becomes LINE, else LINE is appended;
 # comments and other lines stay; the write lands on a temp file in the same directory and renames into place.
+# Both editors share one read/write discipline: a symlink is followed so the target changes and the link
+# stays; bytes outside UTF-8 round-trip untouched (surrogateescape); a leading BOM reads as nothing and
+# does not come back; the temp file takes the original's mode and owner; a failure unlinks the temp.
 set_line() { sudo python3 - "$@" <<'PY'
 import os, re, sys, tempfile
 p, pat, new = sys.argv[1:]
+p = os.path.realpath(p)
+enc = dict(encoding="utf-8", errors="surrogateescape")
 try:
-    with open(p, newline="") as f: lines = f.read().splitlines()
+    with open(p, newline="", **enc) as f: lines = f.read().splitlines()
 except FileNotFoundError:
     lines = []
+if lines: lines[0] = lines[0].lstrip("﻿")
 rx = re.compile(pat, re.I)
 hits = [i for i, line in enumerate(lines) if rx.match(line)]
 for i in hits: lines[i] = new
 if not hits: lines.append(new)
 fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p) or ".", prefix=os.path.basename(p) + ".")
 try:
-    with os.fdopen(fd, "w") as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
-    try: os.chmod(tmp, os.stat(p).st_mode & 0o7777)
+    with os.fdopen(fd, "w", **enc) as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
+    try: st = os.stat(p); os.chmod(tmp, st.st_mode & 0o7777); os.chown(tmp, st.st_uid, st.st_gid)
     except FileNotFoundError: os.chmod(tmp, 0o644)
     os.replace(tmp, p)
 except BaseException:
@@ -97,12 +105,14 @@ step '2 · /etc/wsl.conf — systemd on, inherited Windows PATH off'
 WSLCONF=/etc/wsl.conf
 WSLCONF_CHANGED=0
 # The read and the write agree on one grammar: section and key match case-insensitively, a trailing CR
-# (a Windows editor's CRLF) reads as whitespace, and the first matching line answers. The write touches
-# only the matching key lines (every duplicate, so no stale twin can win at WSL load) or inserts one
-# line after the section's last non-blank line; every other line, comment included, stays as found.
+# (a Windows editor's CRLF) reads as whitespace, a leading BOM (the same editor's) reads as nothing, and
+# the first matching line answers. The write touches only the matching key lines (every duplicate, so no
+# stale twin can win at WSL load) or inserts one line after the section's last non-blank line; every
+# other line, comment included, stays as found.
 want_ini() {
   local sec="$1" key="$2" val="$3" cur
   cur=$(awk -v s="$sec" -v k="$key" '
+    NR == 1 { sub(/^\357\273\277/, "") }
     /^[ \t]*\[/ { in_s = (tolower($0) ~ "^[ \t]*\\[" tolower(s) "\\][ \t\r]*$") ; next }
     in_s && tolower($0) ~ "^[ \t]*" tolower(k) "[ \t]*=" { sub(/^[^=]*=[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' "$WSLCONF" 2>/dev/null)
   if [[ "$cur" == "$val" ]]; then already "[$sec] $key=$val"; return; fi
@@ -110,10 +120,13 @@ want_ini() {
   act "[$sec] $key=$val (was '${cur:-unset}')" sudo python3 - "$WSLCONF" "$sec" "$key" "$val" <<'PY'
 import os, re, sys, tempfile
 p, sec, key, val = sys.argv[1:]
+p = os.path.realpath(p)
+enc = dict(encoding="utf-8", errors="surrogateescape")
 try:
-    with open(p, newline="") as f: lines = f.read().splitlines()
+    with open(p, newline="", **enc) as f: lines = f.read().splitlines()
 except FileNotFoundError:
     lines = []
+if lines: lines[0] = lines[0].lstrip("﻿")
 head = re.compile(r"^[ \t]*\[(.+?)\][ \t]*$")
 kv = re.compile(r"^[ \t]*" + re.escape(key) + r"[ \t]*=", re.I)
 in_s = False; hits = []; first = -1; last = -1
@@ -136,8 +149,8 @@ else:
     lines += [f"[{sec}]", new]
 fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p) or ".", prefix=os.path.basename(p) + ".")
 try:
-    with os.fdopen(fd, "w") as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
-    try: os.chmod(tmp, os.stat(p).st_mode & 0o7777)
+    with os.fdopen(fd, "w", **enc) as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
+    try: st = os.stat(p); os.chmod(tmp, st.st_mode & 0o7777); os.chown(tmp, st.st_uid, st.st_gid)
     except FileNotFoundError: os.chmod(tmp, 0o644)
     os.replace(tmp, p)
 except BaseException:
@@ -145,7 +158,8 @@ except BaseException:
 PY
 }
 want_ini boot systemd true
-want_ini user default "${USER:-$(id -un)}"
+# `id -un` names the account the kernel runs this shell as; $USER is an inherited string any profile may reset.
+want_ini user default "$(id -un)"
 want_ini interop enabled true
 want_ini interop appendWindowsPath false
 RESTART_NEEDED=$WSLCONF_CHANGED
@@ -159,7 +173,13 @@ else act 'apt install earlyoom' apt_install earlyoom; fi
 EARLYOOM_LINE="EARLYOOM_ARGS=\"$EARLYOOM_ARGS\""
 # The package conffile carries the operator-facing examples as comments; only the EARLYOOM_ARGS line changes.
 earlyoom_apply() { set_line /etc/default/earlyoom '^[ \t]*EARLYOOM_ARGS[ \t]*=' "$EARLYOOM_LINE" && sudo systemctl restart earlyoom; }
-if grep -qxF "$EARLYOOM_LINE" /etc/default/earlyoom 2>/dev/null; then
+# The file alone does not prove the thresholds: a restart that failed after the write leaves the daemon on
+# the old line, so an active daemon must also show `-m 5` on its command line before the step reads already.
+earlyoom_live_ok() {
+  [[ "$(systemctl is-active earlyoom 2>/dev/null)" == active ]] || return 0
+  tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom 2>/dev/null)"/cmdline 2>/dev/null | grep -q -- '-m 5 '
+}
+if grep -qxF "$EARLYOOM_LINE" /etc/default/earlyoom 2>/dev/null && earlyoom_live_ok; then
   already '/etc/default/earlyoom thresholds'
 else
   act '/etc/default/earlyoom thresholds (-m 5 -s 50)' earlyoom_apply
@@ -170,9 +190,17 @@ else act 'systemctl enable --now earlyoom' sudo systemctl enable --now earlyoom;
 
 step '4 · vm.swappiness=10 — reserve swap for a short recovery window'
 SYSCTL=/etc/sysctl.d/90-wsl-swap.conf
-if [[ "$(sysctl -n vm.swappiness 2>/dev/null)" == 10 && -f "$SYSCTL" ]]; then
+SYSCTL_LINE='vm.swappiness=10'
+swappiness=$(sysctl -n vm.swappiness 2>/dev/null)
+if [[ "$swappiness" == 10 && -f "$SYSCTL" ]]; then
   already "vm.swappiness=10 ($SYSCTL)"
-else act "vm.swappiness=10 via $SYSCTL" sudo bash -c "printf '%s\\n' 'vm.swappiness=10' > '$SYSCTL' && sysctl -q --system"; fi
+elif grep -qxF "$SYSCTL_LINE" "$SYSCTL" 2>/dev/null; then
+  # Our file is in place and still loses: a later sysctl.d file or /etc/sysctl.conf names another value. A rewrite would change nothing.
+  need "vm.swappiness reads ${swappiness:-unreadable} though $SYSCTL asks for 10; find the override:  grep -rn swappiness /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d"
+else
+  # The path travels as an argument, never inside the shell text.
+  act "vm.swappiness=10 via $SYSCTL" sudo sh -c 'printf "%s\n" "$1" > "$2" && sysctl -q --system' _ "$SYSCTL_LINE" "$SYSCTL"
+fi
 
 step '5 · Node and pnpm — repository toolchain'
 node_major=0
@@ -211,7 +239,9 @@ else
 fi
 
 step '6 · ~/.venv — one Python environment for sensorium and tree-sitter host'
-if [[ -x "$HOME/.venv/bin/python" ]]; then already "$HOME/.venv present"
+# pip lands last in venv creation, so python-without-pip marks a torn venv; `python3 -m venv` on that
+# directory re-provisions it in place.
+if [[ -x "$HOME/.venv/bin/python" && -x "$HOME/.venv/bin/pip" ]]; then already "$HOME/.venv present"
 else act 'python3 -m venv ~/.venv' python3 -m venv "$HOME/.venv"; fi
 if [[ -f "$REPO/requirements.txt" ]]; then
   # The digest covers every file the manifest `-r`-includes, so an edit to an included list repairs

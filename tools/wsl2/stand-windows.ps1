@@ -44,7 +44,7 @@ if (Test-Path $candidate) { $pwsh = Get-Item $candidate }
 if (-not $pwsh) { $pwsh = Get-Command pwsh.exe -ErrorAction SilentlyContinue }
 if ($psMajor -ge 7) {
   Already "pwsh $($PSVersionTable.PSVersion) running"
-} elseif ($pwsh -and -not $NoRelaunch) {
+} elseif ($pwsh -and -not $NoRelaunch -and $PSCommandPath) {
   $pwshPath = if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }
   $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath, '-NoRelaunch')
   if ($DryRun) { $forward += '-DryRun' }
@@ -54,7 +54,8 @@ if ($psMajor -ge 7) {
   & $pwshPath @forward
   exit $LASTEXITCODE
 } elseif ($pwsh) {
-  Already "pwsh present at $(if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }); staying in $($PSVersionTable.PSVersion) by -NoRelaunch"
+  $stay = if ($NoRelaunch) { 'by -NoRelaunch' } else { 'because this run has no script path to hand over (dot-sourced or piped)' }
+  Already "pwsh present at $(if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }); staying in $($PSVersionTable.PSVersion) $stay"
 } else {
   Need "install PowerShell 7: winget install --id Microsoft.PowerShell --source winget   (continuing under Windows PowerShell $($PSVersionTable.PSVersion))"
 }
@@ -172,15 +173,26 @@ if ($changed -and -not $DryRun) {
     $out += ''
   }
   # The text lands on a sibling temp file first; File.Replace swaps it in atomically and keeps the previous file as .wslconfig.bak
-  # (File.Move for a first write). A failure mid-write leaves .wslconfig as it was.
-  $tmp = "$cfgPath.tmp"
-  [IO.File]::WriteAllText($tmp, (($out -join "`r`n") + "`r`n"), $utf8)
-  if (Test-Path $cfgPath) {
-    [IO.File]::Replace($tmp, $cfgPath, "$cfgPath.bak")
-    Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file kept as $cfgPath.bak)"
-  } else {
-    [IO.File]::Move($tmp, $cfgPath)
-    Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
+  # (File.Move for a first write). A failure mid-write leaves .wslconfig as it was and takes the temp file with it.
+  # ReplaceFile has no answer on a redirected (UNC) profile and refuses a read-only .bak; that .bak is this runbook's
+  # own leftover, so the fallback clears its read-only bit, copies the current file over it, then moves the new text in.
+  $tmp = "$cfgPath.tmp"; $bak = "$cfgPath.bak"
+  try {
+    [IO.File]::WriteAllText($tmp, (($out -join "`r`n") + "`r`n"), $utf8)
+    if (Test-Path $cfgPath) {
+      try { [IO.File]::Replace($tmp, $cfgPath, $bak) }
+      catch {
+        if (Test-Path $bak) { (Get-Item -LiteralPath $bak).IsReadOnly = $false }
+        [IO.File]::Copy($cfgPath, $bak, $true)
+        Move-Item -LiteralPath $tmp -Destination $cfgPath -Force
+      }
+      Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file kept as $bak)"
+    } else {
+      [IO.File]::Move($tmp, $cfgPath)
+      Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
+    }
+  } finally {
+    if (Test-Path $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
   }
 }
 
@@ -189,6 +201,9 @@ $work = @($lxss | Where-Object DistributionName -eq $Distro) | Select-Object -Fi
 $vhd = if ($work) { Join-Path ($work.BasePath -replace '^\\\\\?\\', '') 'ext4.vhdx' } else { '' }
 if (-not $Distro) {
   Need 'no non-Docker WSL distro is registered; install one with wsl --install -d <DistroName>'
+} elseif (-not $work) {
+  # A -Distro name the registry does not carry reads needs-you with or without -Sparse: a typo must not pass as already.
+  Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
 } elseif (-not $Sparse) {
   if ($vhd -and (Test-Path $vhd) -and ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile)) {
     Already "'$Distro' vhdx already sparse ($([math]::Round((Get-Item $vhd).Length / 1GB, 1)) GB on disk) - left as found"
@@ -196,24 +211,19 @@ if (-not $Distro) {
     $vhdLabel = if ($vhd) { $vhd } else { '<path to ext4.vhdx>' }
     Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe: potential data corruption). Safe reclaim: wsl --shutdown, then (Administrator) diskpart > select vdisk file=`"$vhdLabel`" > attach vdisk readonly > compact vdisk > detach vdisk"
   }
+} elseif (-not (Test-Path $vhd)) {
+  Need "'$Distro' has no ext4.vhdx at its registered base path"
 } else {
-  if (-not $work) {
-    Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
-  } else {
-    if (-not (Test-Path $vhd)) { Need "'$Distro' has no ext4.vhdx at its registered base path" }
+  $sizeGB = [math]::Round((Get-Item $vhd).Length / 1GB, 1)
+  if ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
+  else {
+    $listing = Read-Wsl @('-l', '-v')
+    $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
+    if (-not $state) { Need "wsl -l -v did not list '$Distro'; inspect it before using wsl --manage '$Distro' --set-sparse true --allow-unsafe" }
+    elseif ($state -match 'Running') { Need "run wsl --shutdown, then re-run with -Sparse to set '$Distro' sparse ($sizeGB GB on disk)" }
     else {
-      $sizeGB = [math]::Round((Get-Item $vhd).Length / 1GB, 1)
-      if ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
-      else {
-        $listing = Read-Wsl @('-l', '-v')
-        $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
-        if (-not $state) { Need "wsl -l -v did not list '$Distro'; inspect it before using wsl --manage '$Distro' --set-sparse true --allow-unsafe" }
-        elseif ($state -match 'Running') { Need "run wsl --shutdown, then re-run with -Sparse to set '$Distro' sparse ($sizeGB GB on disk)" }
-        else {
-          Need "you accepted Microsoft's warning by passing -Sparse: 'sparse VHD support is currently disabled due to potential data corruption'"
-          Act "wsl --manage '$Distro' --set-sparse true --allow-unsafe" { wsl.exe --manage $Distro --set-sparse true --allow-unsafe | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE" } }
-        }
-      }
+      Need "you accepted Microsoft's warning by passing -Sparse: 'sparse VHD support is currently disabled due to potential data corruption'"
+      Act "wsl --manage '$Distro' --set-sparse true --allow-unsafe" { wsl.exe --manage $Distro --set-sparse true --allow-unsafe | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE" } }
     }
   }
 }
