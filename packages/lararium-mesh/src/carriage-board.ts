@@ -186,14 +186,47 @@ export function rollAnchorsFromBoard(doc: LarDoc | undefined | null): RollAnchor
  * THE ONE PRESENTER. Read a nym's presentation off ONE board doc: its carriage acts AND its roll anchors,
  * extracted together, so no caller can derive a presentation from the acts while forgetting the anchors that
  * carry an admit across a roll. Every door that presents — the dial, the bundle a contract writes, the raise a
- * recogniser signs — reads through here.
+ * recogniser signs — reads through here, and every one hears every fork the board holds (`forksOnBoard`),
+ * informational and never a refusal.
  */
 export async function presentationFromBoardDoc(
   doc: LarDoc | undefined | null,
   nym: string,
   roster: KahuQuorumSeats,
 ): Promise<BoardPresentation> {
-  return readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, rollAnchorsFromBoard(doc));
+  const anchors = rollAnchorsFromBoard(doc);
+  return {
+    presentation: await readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, anchors),
+    findings:     await forksOnBoard(anchors, roster),
+  };
+}
+
+/**
+ * EVERY FORK ON THE BOARD, read off the anchors the presenter already holds — the watcher's reading, never
+ * the walk's. From the head epoch back, each epoch's COUNTED opening anchors are gathered (an anchor counts
+ * under the roster of the epoch it opens, which the anchor before it names); two or more opening one epoch
+ * name a fork. Every epoch the counted anchors reach is read, whatever path one nym's admit walks, so a
+ * signer whose own admit stands at the head still sees a roll that landed twice below it. An anchor that
+ * counts under no reached roster names nothing: a forged tiddler cannot raise a fork.
+ */
+async function forksOnBoard(anchors: readonly RollAnchor[], roster: KahuQuorumSeats): Promise<PresentationFinding[]> {
+  const findings: PresentationFinding[] = [];
+  const seen = new Set<string>([roster.sealEpochCid]);
+  const todo: KahuQuorumSeats[] = [roster];
+  while (todo.length > 0) {
+    const at = todo.shift()!;
+    const opening: RollAnchor[] = [];
+    for (const anchor of anchors) if (await rollAnchorCounts(anchor, at)) opening.push(anchor);
+    if (opening.length > 1) {
+      findings.push({ kind: "anchors-open-one-epoch", epochCid: at.sealEpochCid, anchorCids: opening.map(rollAnchorCid).sort() });
+    }
+    for (const step of opening) {
+      if (seen.has(step.prevEpochCid)) continue;
+      seen.add(step.prevEpochCid);
+      todo.push({ keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid });
+    }
+  }
+  return findings;
 }
 
 /**
@@ -211,8 +244,8 @@ export async function presentationFromBoardDoc(
  * EVERY OPENING ANCHOR IS TRIED. When several anchors open one epoch, the walk tries each in act-CID order and
  * presents through the first whose chain holds the admit in every anchor's causal past — the reading the
  * verifier makes. An orphan anchor (an earlier attempt at the same roll) therefore never turns a carried admit
- * into `wrong-epoch`; the fork itself surfaces as a `PresentationFinding`. The presenter trusts nothing it
- * carries: the verifier re-walks the chain against the charter lineage.
+ * into `wrong-epoch`. The presenter trusts nothing it carries: the verifier re-walks the chain against the
+ * charter lineage.
  *
  * `presentation` is null when no counted admit stands as a head at the deciding epoch (a revoke supersedes the
  * last admit, or nothing was ever admitted), when the admit's ancestry does not resolve on this board, or when
@@ -225,12 +258,10 @@ async function readBoardPresentation(
   nym: string,
   roster: KahuQuorumSeats,
   anchors: readonly RollAnchor[],
-): Promise<BoardPresentation> {
+): Promise<AdmitPresentation | null> {
   const want = nym.toLowerCase();
   const source = [...entries];
   const anchorList = anchors;
-  const findings: PresentationFinding[] = [];
-  const forked = new Set<string>();
 
   const walk = async (at: KahuQuorumSeats, carried: readonly RollAnchor[], path: ReadonlySet<string>): Promise<AdmitPresentation | null> => {
     const fold = await foldCarriageDetails(source, at);
@@ -249,10 +280,6 @@ async function readBoardPresentation(
     const opening: RollAnchor[] = [];
     for (const anchor of anchorList) if (await rollAnchorCounts(anchor, at)) opening.push(anchor);
     opening.sort((a, b) => rollAnchorCid(a).localeCompare(rollAnchorCid(b)));
-    if (opening.length > 1 && !forked.has(at.sealEpochCid)) {
-      forked.add(at.sealEpochCid);
-      findings.push({ kind: "anchors-open-one-epoch", epochCid: at.sealEpochCid, anchorCids: opening.map(rollAnchorCid) });
-    }
     for (const step of opening) {
       if (path.has(step.prevEpochCid)) continue;   // a cycle through the anchors carries nothing
       const prior: KahuQuorumSeats = { keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid };
@@ -262,8 +289,7 @@ async function readBoardPresentation(
     return null;
   };
 
-  const presentation = await walk(roster, [], new Set([roster.sealEpochCid]));
-  return { presentation, findings };
+  return walk(roster, [], new Set([roster.sealEpochCid]));
 }
 
 /** Does every carried anchor hold the admit in its causal past, read over the presentation's own acts? */

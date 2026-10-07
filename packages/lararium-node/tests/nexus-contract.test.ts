@@ -677,10 +677,10 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     } finally { await repo.flush(); }
   });
 
-  /** Land an ORPHAN anchor for the same roll by hand: the opened quorum signs it, and it cites nothing. */
+  /** Land an ORPHAN anchor for the same roll by hand: the opened quorum signs it, and it cites no act this board holds. */
   async function landOrphanAnchor(closing: ReturnType<typeof foundingRoster>, opened: { keys: string[]; threshold: number; sealEpochCid: string }) {
     const orphan = await signRollAnchor(
-      { prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold, parents: [] },
+      { prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold, parents: ["00".repeat(32)] },
       (await heldHands(opened.keys)).slice(0, opened.threshold),
     );
     const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
@@ -707,14 +707,26 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     }]);
   });
 
-  it("the contract reports the presenter's findings beside the bundle — its own fresh admit stands at the head, so it walks no fork", async () => {
+  it("★ the contract signer at the head hears a fork that stands off its own walk ★", async () => {
     const { opened, roll } = await foundAndArm();
     const closing = foundingRoster(readNexusDoc(sealHome()));
-    await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
-    await landOrphanAnchor(closing, opened);
+    const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    const orphan = await landOrphanAnchor(closing, opened);
     roll();
-    // The admit this act signs lands at the head epoch, and the presenter reads it there: it steps back
-    // through no anchor, so even a forked roll leaves this door nothing to report.
+    // The admit this act signs lands at the head epoch, so its own presentation steps back through no anchor —
+    // and the presenter still names the roll that landed twice below it, beside a bundle it never withholds.
+    const res = await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    expect(res.bundle).not.toBeNull();
+    expect(res.bundle!.lineage.filter(isRollAnchor)).toEqual([]);
+    expect(res.findings).toEqual([{
+      kind: "anchors-open-one-epoch", epochCid: opened.sealEpochCid, anchorCids: [landed.anchorCid, rollAnchorCid(orphan)].sort(),
+    }]);
+  });
+
+  it("CONTROL: a roll that landed once leaves the contract signer nothing to hear", async () => {
+    const { opened, roll } = await foundAndArm();
+    await runNexusRollAnchor({ sealHome: sealHome(), closing: foundingRoster(readNexusDoc(sealHome())), opened });
+    roll();
     const res = await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     expect(res.bundle).not.toBeNull();
     expect(res.findings).toEqual([]);

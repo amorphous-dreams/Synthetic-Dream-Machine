@@ -938,7 +938,8 @@ export interface AdmitPresentation {
  *
  *   · `anchors-open-one-epoch` — two or more counted roll anchors open the same epoch. A rotate retried over
  *     one commitment lands a second anchor for the same new head; the earlier one is an orphan. Both stand
- *     on the board, and the presenter walks each in turn.
+ *     on the board. The presenter names every such fork the board holds, whatever path the nym's own admit
+ *     walks, so every door that presents watches the whole board.
  */
 export interface PresentationFinding {
   readonly kind:       "anchors-open-one-epoch";
@@ -954,7 +955,7 @@ export function presentationFindingLine(finding: PresentationFinding): string {
   const short = (cid: string): string => `${cid.slice(0, 16)}…`;
   return `${finding.anchorCids.length} roll anchors open epoch ${short(finding.epochCid)} ` +
     `(${finding.anchorCids.map(short).join(", ")}) — a roll landed more than once; ` +
-    "the presentation walked each and went ahead";
+    "the presentation went ahead";
 }
 
 /** A board's presentation for one nym, and what the presenter noticed deriving it. */

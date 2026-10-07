@@ -277,6 +277,29 @@ describe("the orphan anchor — two anchors open one epoch", () => {
     void orphan;
   });
 
+  test("★ a fork OFF the walk still surfaces — an admit at the head walks no anchor, and the board's fork is named ★", async () => {
+    const { c, board, orphan, retry } = await retriedRoll();
+    const atHead = await carriageAct(seed(9), "admit", { kahu: MID.slice(0, 2), epoch: c.r1.sealEpochCid });
+    writeCarriageEntry(board, atHead);
+    const read = await presentationFromBoardDoc(board, await pubOf(seed(9)), c.r1);
+    expect(read.presentation!.lineage.filter(isRollAnchor)).toEqual([]);   // its own walk crossed no roll
+    expect(read.findings).toEqual([{
+      kind: "anchors-open-one-epoch", epochCid: c.r1.sealEpochCid,
+      anchorCids: [rollAnchorCid(orphan), rollAnchorCid(retry)].sort(),
+    }]);
+    // A nym the board never admitted presents nothing, and hears the same fork.
+    expect((await presentationFromBoardDoc(board, await pubOf(seed(11)), c.r1)).findings).toHaveLength(1);
+  });
+
+  test("CONTROL — an anchor that counts under no reached roster raises no fork", async () => {
+    const { c, board } = await retriedRoll();
+    const fresh = emptyLarDoc();
+    for (const a of rollAnchorsFromBoard(board).slice(0, 1)) writeRollAnchor(fresh, a);
+    // A second anchor for the same epoch, signed by hands the opened roster never seats.
+    writeRollAnchor(fresh, await anchor(c.r0, c.lineage[1]!, ["00".repeat(32)], FORK));
+    expect((await presentationFromBoardDoc(fresh, await pubOf(JOINER), c.r1)).findings).toEqual([]);
+  });
+
   test("CONTROL — one anchor per epoch surfaces no finding", async () => {
     const c = await charter(1);
     const board = emptyLarDoc();
