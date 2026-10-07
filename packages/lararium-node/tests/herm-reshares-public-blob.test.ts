@@ -23,7 +23,8 @@ import {
 import { mountBulbReadFace, publicCasShore } from "../src/bulb-read-face.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
-import { bulbCid, type BulbArtifact } from "../src/bulb.js";
+import { type BulbArtifact } from "../src/bulb.js";
+import { genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 
 function fixtureBulb(): BulbArtifact {
@@ -34,7 +35,7 @@ function fixtureBulb(): BulbArtifact {
     plugins: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0", sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob }],
   };
   const a = buildGenesisDoc(inputs);
-  return { seed: a.seed, casEntries: a.casEntries };
+  return { seedBytes: genesisSeedFileBytes(a.seed), casEntries: a.casEntries };
 }
 
 const PUBLIC_BAG  = "lar:///ha.ka.ba/bags/crossroads";
@@ -137,7 +138,7 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
       const pub = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
       expect(pub.status).toBe(200);
       expect(sha256HexBytesSync(new Uint8Array(await pub.arrayBuffer()))).toBe(likenessCid);
-      const seed = await fetch(`http://127.0.0.1:${port}/bulb/${bulbCid(bulb.seed)}.bin`);
+      const seed = await fetch(`http://127.0.0.1:${port}/bulb/${genesisSeedCid(bulb.seedBytes)}.bin`);
       expect(seed.status).toBe(200);
       const bootCid = bulb.casEntries[0]!.cid;
       const boot = await fetch(`http://127.0.0.1:${port}/bulb/${bootCid}.bin`);

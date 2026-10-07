@@ -41,6 +41,7 @@ export const heavy = [
   "tests/herm-reshares-public-blob.test.ts",
   "tests/herm-cas-transit.test.ts",
   "tests/herm-rungs.test.ts",
+  "tests/one-seed-one-cid.test.ts",
   // nested worker_threads islands booting the full TW5 kernel off dist
   "tests/blob-sovereignty.test.ts",
   "tests/event-routing.test.ts",

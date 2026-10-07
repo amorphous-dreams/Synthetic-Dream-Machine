@@ -39,9 +39,10 @@ import {
   materializeGenesisDoc, materializeGenesisIsland, validateGenesisBytes,
   buildCeremonyTiddlers, didKeyFromVerifyingKey,
   emptyLarDoc, IDENTITIES_NAMESPACE,
-  type GenesisSeed, type LarDoc,
+  type LarDoc,
 } from "@lararium/mesh";
-import { assembleBulb, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
+import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
+import { parseGenesisSeed } from "./genesis-artifact.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 
@@ -92,9 +93,8 @@ export async function pullArrival(transport: BulbPullTransport): Promise<BulbArt
   const seedRoute = seedRoutes[0];
   if (seedRoutes.length !== 1 || !seedRoute || seedRoute.kind !== "genesis-seed") throw arrivalRefusal("descriptor names no single genesis seed");
   const seedBytes = contentAddressed(await transport.getBytes(seedRoute.path), seedRoute.seedCid, "seed");
-  let seed: GenesisSeed;
-  try { seed = JSON.parse(new TextDecoder().decode(seedBytes)) as GenesisSeed; }
-  catch (error) { throw arrivalRefusal(`seed is not valid JSON: ${error instanceof Error ? error.message : String(error)}`); }
+  const seed = parseGenesisSeed(seedBytes);
+  if (!seed) throw arrivalRefusal("seed bytes are not a genesis seed");
   const inventory = genesisCasManifestFromSeed(seed).blobs.map((blob) => blob.cid);
   const members = descriptor.routes.flatMap((route) => route.kind === "genesis-member" ? [route] : []);
   const named = new Set(members.map((route) => route.cid));
@@ -106,7 +106,7 @@ export async function pullArrival(transport: BulbPullTransport): Promise<BulbArt
     const route = members.find((member) => member.cid === cid)!;
     casEntries.push({ cid, bytes: contentAddressed(await transport.getBytes(route.path), cid, "member") });
   }
-  return { seed, casEntries };
+  return { seedBytes, casEntries };
 }
 
 /** A real-HTTP transport over a base url (`http://host:port`). Uses the runtime `fetch`. */
@@ -155,16 +155,17 @@ export async function kindleFromBulb(args: {
   readonly displayName?: string;
 }): Promise<KindleResult> {
   const { bulb, repo, storageDir } = args;
+  const seed = bulbSeed(bulb);
 
   // 1. VALIDATE the genesis the bulb carries (Automerge-loadable, TW5 core + packed Lares plugin present).
-  const bytes = materializeGenesisDoc(bulb.seed);
+  const bytes = materializeGenesisDoc(seed);
   validateGenesisBytes(bytes, "kindle");
 
   // Mirror the FIRE bytes (engine + plugins) into the device's runtime CAS so its island boots on them.
   writeCasEntriesFs(bulb.casEntries, casDirForStorage(storageDir));
 
   // 2. MATERIALIZE the oracle island fresh from the seed, under its deterministic id (the engine + genesis).
-  const island = await materializeGenesisIsland(repo, bulb.seed, "kindle");
+  const island = await materializeGenesisIsland(repo, seed, "kindle");
 
   // 3. the DEVICE mints its OWN Ed25519 — HERE, on the cold device. The Herm never sees this key (serve fire, never
   //    key). A fresh storageDir → a fresh keypair → a NEW sovereign; the bulb supplies NO key to source it from.

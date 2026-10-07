@@ -25,11 +25,11 @@ import {
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, utf8Bytes,
   type GenesisInputs, type LarDoc,
 } from "@lararium/mesh";
-import { readBulbArtifact, buildBulb, assembleBulb, bulbCid, type BulbArtifact } from "../src/bulb.js";
+import { readBulbArtifact, buildBulb, assembleBulb, bulbSeed, type BulbArtifact } from "../src/bulb.js";
 import { mountBulbReadFace } from "../src/bulb-read-face.js";
 import { pullBulb, kindleFromBulb, httpBulbTransport, type KindleResult } from "../src/kindle.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
-import { readGenesisSeed, genesisCasDir } from "../src/genesis-artifact.js";
+import { readGenesisSeed, genesisCasDir, genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
 
 /** A fixture bulb — a fake core blob + a plugin under the Lares plugin id (validateGenesisBytes requires both). */
 function fixtureBulb(actorSeed = "abc123"): BulbArtifact {
@@ -43,7 +43,7 @@ function fixtureBulb(actorSeed = "abc123"): BulbArtifact {
     }],
   };
   const artifact = buildGenesisDoc(inputs);
-  return { seed: artifact.seed, casEntries: artifact.casEntries };
+  return { seedBytes: genesisSeedFileBytes(artifact.seed), casEntries: artifact.casEntries };
 }
 
 describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire, never key)", () => {
@@ -74,21 +74,21 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     const genesisDir = mkDir("gd");
     const bulb = fixtureBulb();
     mkdirSync(genesisCasDir(genesisDir), { recursive: true });
-    writeFileSync(join(genesisDir, "seed.json"),  JSON.stringify(bulb.seed));
+    writeFileSync(join(genesisDir, "seed.json"), bulb.seedBytes);
     writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
 
     const read = readBulbArtifact(genesisDir);
     expect(read).not.toBeNull();
-    expect(Object.keys(read!).sort()).toEqual(["casEntries", "seed"]);
-    expect(readGenesisSeed(genesisDir)?.format).toBe(bulb.seed.format);
+    expect(Object.keys(read!).sort()).toEqual(["casEntries", "seedBytes"]);
+    expect(readGenesisSeed(genesisDir)?.format).toBe(bulbSeed(bulb).format);
 
     // buildBulb → assembleBulb re-verifies every blob against its cid.
     const { cid, blobs } = buildBulb(read!);
-    expect(cid).toBe(bulbCid(bulb.seed));
+    expect(cid).toBe(genesisSeedCid(bulb.seedBytes));
     const byCid = new Map(blobs.map((b) => [b.cid, b.bytes]));
     const back = (c: string): Uint8Array | null => byCid.get(c) ?? null;
     const reassembled = assembleBulb(cid, back);
-    expect(reassembled.seed.actorSeed).toBe(bulb.seed.actorSeed);
+    expect(bulbSeed(reassembled).actorSeed).toBe(bulbSeed(bulb).actorSeed);
     expect(reassembled.casEntries.length).toBe(bulb.casEntries.length);
 
     // The seed is the only CAS inventory authority: a partial or widened fire never builds.
@@ -111,7 +111,7 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
       const genesisDir = mkDir(tag);
       const bulb = fixtureBulb();
       mkdirSync(genesisCasDir(genesisDir), { recursive: true });
-      writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(bulb.seed));
+      writeFileSync(join(genesisDir, "seed.json"), bulb.seedBytes);
       writeFileSync(join(genesisDir, "social-bootstrap.json"), JSON.stringify(bootstrap));
       writeFileSync(join(genesisDir, "charter-head"), epoch);
       writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
@@ -127,7 +127,7 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     // CONTROL: a different genesis seed names a different bulb.
     const other = fixtureBulb("def456");
     expect(buildBulb(other).cid).not.toBe(buildBulb(a).cid);
-    expect(bulbCid(other.seed)).toBe(buildBulb(other).cid);
+    expect(genesisSeedCid(other.seedBytes)).toBe(buildBulb(other).cid);
   });
 
   test("SERVE + PULL + KINDLE: a cold device kindles a sovereign hearth; did:key derives from its OWN key", async () => {
@@ -139,9 +139,9 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     await mountBulbReadFace({ httpServer, bulb });
 
     // PULL over real HTTP by the bulb CID the traveler brings — assembleBulb re-verifies every blob.
-    const pulled = await pullBulb(httpBulbTransport(`http://127.0.0.1:${port}`), bulbCid(bulb.seed));
-    expect(pulled.seed.actorSeed).toBe(bulb.seed.actorSeed);
-    expect(Object.keys(pulled).sort()).toEqual(["casEntries", "seed"]);
+    const pulled = await pullBulb(httpBulbTransport(`http://127.0.0.1:${port}`), genesisSeedCid(bulb.seedBytes));
+    expect(bulbSeed(pulled).actorSeed).toBe(bulbSeed(bulb).actorSeed);
+    expect(Object.keys(pulled).sort()).toEqual(["casEntries", "seedBytes"]);
 
     // KINDLE — the cold device mints its OWN key; the ceremony builds on it.
     process.env["LAR_ROOT"] = mkDir("root-serve");
@@ -173,7 +173,7 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     // The bulb carries NO signing-key material — the placement guarantee is structural, not conventional.
     expect(Object.keys(bulb)).not.toContain("signerSeed");
     expect(Object.keys(bulb)).not.toContain("readCap");
-    expect(JSON.stringify(bulb.seed)).not.toContain(kA.deviceVerifyingKey);
-    expect(JSON.stringify(bulb.seed)).not.toContain(kB.deviceVerifyingKey);
+    expect(new TextDecoder().decode(bulb.seedBytes)).not.toContain(kA.deviceVerifyingKey);
+    expect(new TextDecoder().decode(bulb.seedBytes)).not.toContain(kB.deviceVerifyingKey);
   }, 30_000);
 });

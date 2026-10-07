@@ -27,6 +27,8 @@ import {
   materializeGenesisIsland,
   genesisCasManifestFromSeed,
   GENESIS_SEED_FORMAT,
+  sha256HexBytesSync,
+  utf8Bytes,
   type GenesisCasManifest,
   type GenesisSeed,
 } from "@lararium/mesh";
@@ -53,19 +55,48 @@ function genesisArtifactPaths(genesisDir?: string): {
 }
 
 /**
- * Read the plain-data genesis seed (seed.json) — the oracle doc's initial
- * state the boot MATERIALIZES fresh (slice 2: the genesis is data, not a baked
- * binary). Returns null when absent or malformed (a pre-slice-2 genesis).
+ * The seed.json bytes the genesis build publishes: the ONE serialization of a seed. The build writes these bytes,
+ * and every in-memory seed that stands for a published one serializes through here.
  */
-export function readGenesisSeed(genesisDir?: string): GenesisSeed | null {
-  const { seed } = genesisArtifactPaths(genesisDir);
+export function genesisSeedFileBytes(seed: GenesisSeed): Uint8Array {
+  return utf8Bytes(JSON.stringify(seed, null, 2) + "\n");
+}
+
+/**
+ * ONE SEED, ONE CID: sha256 over the seed.json bytes AS PUBLISHED. A herm hands the bulb over under this CID
+ * (`/bulb/<cid>.bin`), and a lararium's Pronaos names the same bytes `seedCid` at `/genesis/seed.json`, so a
+ * traveler holding the stock seed CID finds the same coal at either door. A CID over a re-serialization of the
+ * parsed seed would name the one seed twice.
+ */
+export function genesisSeedCid(seedBytes: Uint8Array): string {
+  return sha256HexBytesSync(seedBytes);
+}
+
+/** Parse seed bytes as a genesis seed, or null when they are not JSON or not a genesis seed. */
+export function parseGenesisSeed(seedBytes: Uint8Array): GenesisSeed | null {
   try {
-    const parsed = JSON.parse(readFileSync(seed, "utf8")) as GenesisSeed;
-    if (parsed?.format !== GENESIS_SEED_FORMAT) return null;
-    return parsed;
+    const parsed = JSON.parse(new TextDecoder().decode(seedBytes)) as GenesisSeed;
+    return parsed?.format === GENESIS_SEED_FORMAT ? parsed : null;
   } catch {
     return null;
   }
+}
+
+/** The seed.json bytes exactly as published, or null when absent or not a genesis seed. */
+export function readGenesisSeedBytes(genesisDir?: string): Uint8Array | null {
+  const { seed } = genesisArtifactPaths(genesisDir);
+  let bytes: Uint8Array;
+  try { bytes = new Uint8Array(readFileSync(seed)); } catch { return null; }
+  return parseGenesisSeed(bytes) ? bytes : null;
+}
+
+/**
+ * Read the plain-data genesis seed (seed.json) — the oracle doc's initial state the boot MATERIALIZES fresh.
+ * Returns null when absent or malformed.
+ */
+export function readGenesisSeed(genesisDir?: string): GenesisSeed | null {
+  const bytes = readGenesisSeedBytes(genesisDir);
+  return bytes ? parseGenesisSeed(bytes) : null;
 }
 
 /** The genesis CAS dir (genesis/cas) — the content-addressed byte SOURCE. */

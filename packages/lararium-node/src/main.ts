@@ -66,7 +66,8 @@ import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares
 import { composePronaosFromEnv } from "./pronaos-composition.js";
 import { houseOriginsOf } from "./pronaos-adapter.js";
 import { mountHermWaymark } from "./bulb-read-face.js";
-import { readBulbArtifact, bulbCid } from "./bulb.js";
+import { readBulbArtifact } from "./bulb.js";
+import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace } from "./readiness-face.js";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
@@ -209,7 +210,7 @@ async function main(): Promise<void> {
     if (askedStanding !== "herm") throw new Error("[lararium] herm.waymark names a herm's rung — a lararium's arrival rides its own Pronaos");
     const bulb = readBulbArtifact(genesisDir);
     if (!bulb) throw new Error(`[lararium] herm.waymark declared and no genesis bulb at ${genesisDir} — a waymark names a bulb this herm serves`);
-    mountHermWaymark({ httpServer, dispatcher, bulbCid: bulbCid(bulb.seed) });
+    mountHermWaymark({ httpServer, dispatcher, bulbCid: genesisSeedCid(bulb.seedBytes) });
   }
 
   httpServer.on("upgrade", (req, socket, head) => {

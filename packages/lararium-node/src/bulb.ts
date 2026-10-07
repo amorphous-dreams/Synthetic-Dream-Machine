@@ -14,6 +14,11 @@
  * CLOSED (crypto-spine ledger #1: the cad seal ⊥ the ECDH box). Bulb ⊥ stolon: the bulb is the OPEN path (a stranger
  * births their own sovereign hearth); the stolon is the CLOSED path (invite a device into YOUR fleet).
  *
+ * ONE SEED, ONE CID. The bulb CID is sha256 over the seed.json bytes AS PUBLISHED (`genesisSeedCid`), and the bulb
+ * carries those exact bytes, never a re-serialization of the parsed seed. A herm's `/bulb/<cid>.bin` and a lararium
+ * Pronaos's `/genesis/seed.json` therefore serve one byte string under one name, and a traveler who brings the stock
+ * seed CID finds the same coal at either door.
+ *
  * CONTENT-ADDRESSED. The puller fetches the seed by its CID, derives the CAS inventory from that verified seed, and
  * re-verifies `sha256(bytes) == cid` on every named blob before it trusts a byte. No second inventory artifact can
  * widen or narrow the fire.
@@ -24,17 +29,17 @@
 import {
   genesisCasManifestFromSeed,
   sha256HexBytesSync,
-  utf8Bytes,
   type GenesisSeed,
   type GenesisCasManifest,
 } from "@lararium/mesh";
-import { readGenesisSeed, readGenesisCasManifest, genesisCasDir } from "./genesis-artifact.js";
+import { readGenesisSeedBytes, parseGenesisSeed, genesisSeedCid, genesisCasDir } from "./genesis-artifact.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 
-/** The bulb — the genesis seed and its exact seed-named CAS bytes. NO KEY, no house, no Nexus. */
+/** The bulb — the genesis seed's published bytes and its exact seed-named CAS bytes. NO KEY, no house, no Nexus. */
 export interface BulbArtifact {
-  /** The plain-data oracle genesis seed — the boot MATERIALIZES the oracle CRDT fresh from it. */
-  readonly seed:       GenesisSeed;
+  /** The seed.json bytes as published — the bulb CID names exactly these; the boot MATERIALIZES the oracle from
+   *  the seed they parse to (`bulbSeed`). */
+  readonly seedBytes:  Uint8Array;
   /** Every CAS-bound blob's {cid, bytes} (engine + plugins) — the FIRE bytes a fresh hearth boots on. */
   readonly casEntries: readonly { readonly cid: string; readonly bytes: Uint8Array }[];
 }
@@ -42,24 +47,24 @@ export interface BulbArtifact {
 /** One content-addressed bulb blob served by cid over the public floor. */
 export interface BulbBlob { readonly cid: string; readonly bytes: Uint8Array; }
 
-const jsonBytes = (v: unknown): Uint8Array => utf8Bytes(JSON.stringify(v));
-
-/** The bulb's CID: sha256 over the seed's JSON — the same bytes served at the seed's own CID. */
-export function bulbCid(seed: GenesisSeed): string {
-  return sha256HexBytesSync(jsonBytes(seed));
+/** The plain-data genesis seed a bulb carries, parsed off its published bytes. Throws on bytes that are no seed. */
+export function bulbSeed(bulb: Pick<BulbArtifact, "seedBytes">): GenesisSeed {
+  const seed = parseGenesisSeed(bulb.seedBytes);
+  if (!seed) throw new Error("[bulb] seed bytes are not a genesis seed");
+  return seed;
 }
 
 /**
- * Content-address a bulb into its CID + the flat blob set the read-face serves by cid: the seed under the bulb
- * CID, then each seed-named CAS entry under its own. The inventory derives from the seed at this boundary, so a
- * caller cannot silently offer a partial or widened fire. NO signer, NO key — integrity rides the content-address.
+ * Content-address a bulb into its CID + the flat blob set the read-face serves by cid: the published seed bytes
+ * under the bulb CID, then each seed-named CAS entry under its own. The inventory derives from the seed at this
+ * boundary, so a caller cannot silently offer a partial or widened fire. NO signer, NO key — integrity rides the
+ * content-address.
  */
 export function buildBulb(a: BulbArtifact): { cid: string; blobs: BulbBlob[] } {
-  const inventory = genesisCasManifestFromSeed(a.seed);
+  const inventory = genesisCasManifestFromSeed(bulbSeed(a));
   const entries = exactCasEntries(inventory, a.casEntries, "build");
-  const seedBytes = jsonBytes(a.seed);
-  const cid = sha256HexBytesSync(seedBytes);
-  return { cid, blobs: [{ cid, bytes: seedBytes }, ...entries] };
+  const cid = genesisSeedCid(a.seedBytes);
+  return { cid, blobs: [{ cid, bytes: a.seedBytes }, ...entries] };
 }
 
 function verified(cid: string, label: string, getBlob: (cid: string) => Uint8Array | null): Uint8Array {
@@ -73,14 +78,11 @@ function verified(cid: string, label: string, getBlob: (cid: string) => Uint8Arr
 export function bulbSeedInventory(
   cid: string,
   getBlob: (cid: string) => Uint8Array | null,
-): { readonly seed: GenesisSeed; readonly inventory: GenesisCasManifest } {
-  let seed: GenesisSeed;
-  try { seed = JSON.parse(new TextDecoder().decode(verified(cid, "seed", getBlob))) as GenesisSeed; }
-  catch (error) {
-    if (error instanceof Error && error.message.startsWith("[bulb]")) throw error;
-    throw new Error(`[bulb] seed is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
-  }
-  try { return { seed, inventory: genesisCasManifestFromSeed(seed) }; }
+): { readonly seedBytes: Uint8Array; readonly seed: GenesisSeed; readonly inventory: GenesisCasManifest } {
+  const seedBytes = verified(cid, "seed", getBlob);
+  const seed = parseGenesisSeed(seedBytes);
+  if (!seed) throw new Error("[bulb] seed bytes are not a genesis seed");
+  try { return { seedBytes, seed, inventory: genesisCasManifestFromSeed(seed) }; }
   catch (error) { throw new Error(`[bulb] seed-derived CAS inventory refuses: ${error instanceof Error ? error.message : String(error)}`); }
 }
 
@@ -110,28 +112,29 @@ function exactCasEntries(
  * puller runs — content-address integrity, secret-free.
  */
 export function assembleBulb(cid: string, getBlob: (cid: string) => Uint8Array | null): BulbArtifact {
-  const { seed, inventory } = bulbSeedInventory(cid, getBlob);
+  const { seedBytes, inventory } = bulbSeedInventory(cid, getBlob);
   const casEntries = exactCasEntries(
     inventory,
     inventory.blobs.map((blob) => ({ cid: blob.cid, bytes: verified(blob.cid, "cas", getBlob) })),
     "assembled",
   );
-  return { seed, casEntries };
+  return { seedBytes, casEntries };
 }
 
 /**
- * Read the bulb a Herm serves off its genesis dir: the plain-data seed (seed.json), its derived logical CAS
+ * Read the bulb a Herm serves off its genesis dir: the seed.json bytes exactly as published, its derived logical CAS
  * inventory, and every genesis/cas/<cid> blob. Returns null when the genesis is absent/malformed (nothing to serve).
  */
 export function readBulbArtifact(genesisDir: string): BulbArtifact | null {
-  const seed        = readGenesisSeed(genesisDir);
-  const casManifest = readGenesisCasManifest(genesisDir);
-  if (!seed || !casManifest) return null;
+  const seedBytes = readGenesisSeedBytes(genesisDir);
+  if (!seedBytes) return null;
+  let casManifest: GenesisCasManifest;
+  try { casManifest = genesisCasManifestFromSeed(bulbSeed({ seedBytes })); } catch { return null; }
   const casDir = genesisCasDir(genesisDir);
   const casEntries = casManifest.blobs.map((b) => {
     const bytes = readCasBlobFromFs(b.cid, casDir);
     if (!bytes) throw new Error(`[bulb] genesis CAS blob absent for cid ${b.cid} — re-run build:genesis`);
     return { cid: b.cid, bytes };
   });
-  return { seed, casEntries };
+  return { seedBytes, casEntries };
 }

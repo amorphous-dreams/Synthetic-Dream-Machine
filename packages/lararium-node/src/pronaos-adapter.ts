@@ -19,6 +19,7 @@
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
+import { genesisSeedCid } from "./genesis-artifact.js";
 
 import {
   canonicalJsonBytes,
@@ -299,8 +300,8 @@ export function pronaosRouteInventoryForProjection(
     routeForProjection("/", projection.index, "no-store"),
     {
       kind: "genesis-seed", path: "/genesis/seed.json",
-      seedCid: sha256HexBytesSync(projection.genesisSeed.bytes),
-      integrity: niUriSha256FromHex(sha256HexBytesSync(projection.genesisSeed.bytes)),
+      seedCid: genesisSeedCid(projection.genesisSeed.bytes),
+      integrity: niUriSha256FromHex(genesisSeedCid(projection.genesisSeed.bytes)),
       cache: "no-store", refusal: "integrity",
     },
   ];

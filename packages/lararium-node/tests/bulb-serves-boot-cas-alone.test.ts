@@ -21,6 +21,7 @@ import { mountBulbReadFace } from "../src/bulb-read-face.js";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { writeCasEntriesFs, readCasBlobFromFs } from "../src/node-cas.js";
 import type { BulbArtifact } from "../src/bulb.js";
+import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
 
 function fixtureBulb(): BulbArtifact {
   const coreBlob   = utf8Bytes("fake-tw5-core-for-bulb");
@@ -30,7 +31,7 @@ function fixtureBulb(): BulbArtifact {
     plugins: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0", sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob }],
   };
   const a = buildGenesisDoc(inputs);
-  return { seed: a.seed, casEntries: a.casEntries };
+  return { seedBytes: genesisSeedFileBytes(a.seed), casEntries: a.casEntries };
 }
 
 describe("the bulb read-face serves the BOOT CAS alone — an operator's staged blob draws 404", () => {

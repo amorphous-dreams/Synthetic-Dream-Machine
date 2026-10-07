@@ -389,7 +389,7 @@ export { listSealedCids } from "./cas-reshare.js";
 // floor; and the two library doors (`pullBulb` by a bulb CID, `pullArrival` off a lararium's own Pronaos) that pull
 // it + kindle a NEW SOVEREIGN hearth (the device mints its OWN key — serve fire, never key). All-public OPEN path
 // (bulb ⊥ stolon).
-export { buildBulb, assembleBulb, readBulbArtifact, bulbCid } from "./bulb.js";
+export { buildBulb, assembleBulb, readBulbArtifact, bulbSeed } from "./bulb.js";
 export type { BulbArtifact, BulbBlob } from "./bulb.js";
 export { mountBulbReadFace, mountHermWaymark, hermWaymarkBytes, WAYMARK_FORMAT } from "./bulb-read-face.js";
 export type { HermWaymark } from "./bulb-read-face.js";
@@ -442,6 +442,6 @@ export { vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers 
 export type { VaultCarrier } from "./vault-carriers.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
-export { readGenesisCasManifest, genesisProtectSet, genesisCasDir,
+export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";

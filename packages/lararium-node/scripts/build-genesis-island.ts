@@ -38,6 +38,7 @@ import {
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
+import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -280,12 +281,10 @@ async function main(): Promise<void> {
   mkdirSync(genesisDir, { recursive: true });
 
   // The PLAIN-DATA oracle seed — THE boot artifact. The boot materializes the
-  // oracle CRDT fresh from this JSON under the deterministic doc id.
-  writeFileSync(
-    join(genesisDir, "seed.json"),
-    JSON.stringify(artifact.seed, null, 2) + "\n",
-    "utf8",
-  );
+  // oracle CRDT fresh from this JSON under the deterministic doc id. These bytes
+  // ARE the published seed: its CID (genesisSeedCid) names the bulb a herm serves
+  // and the seed a lararium's Pronaos names.
+  writeFileSync(join(genesisDir, "seed.json"), genesisSeedFileBytes(artifact.seed));
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 

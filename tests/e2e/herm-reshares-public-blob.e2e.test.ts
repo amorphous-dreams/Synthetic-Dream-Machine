@@ -265,9 +265,10 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   }, 30_000);
 
   test("CONTROL: the Herm serves its bulb at /bulb/<bulb cid>.bin, and refuses the staged cid there", async () => {
-    // The bulb CID re-derives from the genesis the Herm booted on; a silent herm lists nothing to read it from.
+    // The bulb CID is the seed CID: sha256 over the seed.json bytes the Herm booted on, as published. A silent herm
+    // lists nothing to read it from.
     const seedPath = [join(fleet!.herm.root, "genesis", "seed.json"), join(REPO_ROOT, "genesis", "seed.json")].find((p) => existsSync(p))!;
-    const bulbCid = sha(Buffer.from(JSON.stringify(JSON.parse(readFileSync(seedPath, "utf8"))), "utf8"));
+    const bulbCid = sha(new Uint8Array(readFileSync(seedPath)));
     const boot = await fetch(`${fleet!.hermShore}/bulb/${bulbCid}.bin`);
     expect(boot.status, `the herm served no bulb under ${bulbCid} (seed read from ${seedPath})`).toBe(200);
     expect(sha(new Uint8Array(await boot.arrayBuffer()))).toBe(bulbCid);

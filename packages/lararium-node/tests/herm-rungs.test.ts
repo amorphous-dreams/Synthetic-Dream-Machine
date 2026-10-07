@@ -22,7 +22,8 @@ import {
 } from "@lararium/mesh";
 import { mountBulbReadFace, mountHermWaymark, hermWaymarkBytes, publicCasShore, WAYMARK_FORMAT } from "../src/bulb-read-face.js";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
-import { bulbCid, type BulbArtifact } from "../src/bulb.js";
+import { type BulbArtifact } from "../src/bulb.js";
+import { genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { pullBulb, kindleFromBulb, httpBulbTransport } from "../src/kindle.js";
 import {
@@ -39,7 +40,7 @@ function fixtureBulb(): BulbArtifact {
     plugins: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0", sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob }],
   };
   const a = buildGenesisDoc(inputs);
-  return { seed: a.seed, casEntries: a.casEntries };
+  return { seedBytes: genesisSeedFileBytes(a.seed), casEntries: a.casEntries };
 }
 
 /** One answer as a stranger sees it: status, every header but the date, and the body bytes. */
@@ -84,7 +85,7 @@ async function standHerm(opts: { waymark?: boolean } = {}): Promise<{ origin: st
     httpServer: server, bulb, dispatcher,
     publicCas: publicCasShore({ casDir: join(storageDir, "cas"), references: () => [], bagTier: () => null }),
   });
-  if (opts.waymark) mountHermWaymark({ httpServer: server, dispatcher, bulbCid: bulbCid(bulb.seed) });
+  if (opts.waymark) mountHermWaymark({ httpServer: server, dispatcher, bulbCid: genesisSeedCid(bulb.seedBytes) });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
   return { origin: `http://127.0.0.1:${(server.address() as { port: number }).port}`, bulb, server, dispatcher };
 }
@@ -92,7 +93,7 @@ async function standHerm(opts: { waymark?: boolean } = {}): Promise<{ origin: st
 describe("SILENT — the herm hands over its bulb by CID and describes nothing", () => {
   test("every unknown, withheld or refused request draws one closed door, byte-identical to the dispatcher's", async () => {
     const { origin, bulb } = await standHerm();
-    const known = bulbCid(bulb.seed);
+    const known = genesisSeedCid(bulb.seedBytes);
     const wrong = sha256HexBytesSync(utf8Bytes("a cid this herm never held"));
 
     // The reference: a path no face claims, answered by the dispatcher itself.
@@ -120,11 +121,11 @@ describe("SILENT — the herm hands over its bulb by CID and describes nothing",
 
   test("CONTROL: a traveler who brings the bulb CID pulls the bulb and kindles a sovereign of its own", async () => {
     const { origin, bulb } = await standHerm();
-    const served = await ask(origin, `/bulb/${bulbCid(bulb.seed)}.bin`);
+    const served = await ask(origin, `/bulb/${genesisSeedCid(bulb.seedBytes)}.bin`);
     expect(served.status).toBe(200);
 
-    const pulled = await pullBulb(httpBulbTransport(origin), bulbCid(bulb.seed));
-    expect(pulled.seed).toEqual(bulb.seed);
+    const pulled = await pullBulb(httpBulbTransport(origin), genesisSeedCid(bulb.seedBytes));
+    expect(pulled.seedBytes).toEqual(bulb.seedBytes);
     process.env["LAR_ROOT"] = mkdtempSync(join(tmpdir(), "lr-herm-rungs-root-")); dirs.push(process.env["LAR_ROOT"]);
     const storageDir = mkdtempSync(join(tmpdir(), "lr-herm-rungs-device-")); dirs.push(storageDir);
     const repo = new Repo({ sharePolicy: async () => true }); repos.push(repo);
@@ -143,11 +144,11 @@ describe("WAYMARK — an opt-in, unsigned descriptor naming the bulb CID", () =>
     const { origin, bulb } = await standHerm({ waymark: true });
     const answer = await ask(origin, "/.well-known/lar");
     expect(answer.status).toBe(200);
-    expect(answer.body).toBe(new TextDecoder().decode(hermWaymarkBytes(bulbCid(bulb.seed))));
+    expect(answer.body).toBe(new TextDecoder().decode(hermWaymarkBytes(genesisSeedCid(bulb.seedBytes))));
     const waymark = JSON.parse(answer.body) as Record<string, unknown>;
     expect(Object.keys(waymark).sort()).toEqual(["bulb", "format", "routes"]);
     expect(waymark["format"]).toBe(WAYMARK_FORMAT);
-    expect(waymark["bulb"]).toBe(bulbCid(bulb.seed));
+    expect(waymark["bulb"]).toBe(genesisSeedCid(bulb.seedBytes));
     expect(waymark["routes"]).toEqual(["/bulb/<cid>.bin", "/cas/<cid>"]);
 
     // A wrong method on the waymark draws the same closed door as any unknown path.
@@ -165,7 +166,7 @@ describe("WAYMARK — an opt-in, unsigned descriptor naming the bulb CID", () =>
     const server = createServer(); servers.push(server);
     const dispatcher = mountHttpFaceDispatcher(server);
     mountPronaosReadFace(server, { ...prepared, routeInventory: pronaosRouteInventoryForProjection(prepared) }, dispatcher);
-    expect(() => mountHermWaymark({ httpServer: server, dispatcher, bulbCid: bulbCid(fixtureBulb().seed) }))
+    expect(() => mountHermWaymark({ httpServer: server, dispatcher, bulbCid: genesisSeedCid(fixtureBulb().seedBytes) }))
       .toThrow(/route key already owned: well-known:lar/);
   });
 

@@ -118,11 +118,13 @@ TEMPLE    lararium only    its own Pronaos: the arrival page and the arrival des
 ```
 
 ''SILENT.'' The traveler brings the name. The bulb names itself by its genesis seed's CID, which re-derives from
-the published build, so a traveler arrives already knowing it, and most Nexuses start from the stock bulb. No
-route lists, indexes or describes what the herm holds; a listing answers only a CID the client names. Every
-unknown, withheld or refused request — a path no face claims, a CID the herm never held, a wrong method, the
-well-known name itself — draws ''one indistinguishable closed door'': the same status, headers and body, carrying
-no text that names what answered.
+the published build, so a traveler arrives already knowing it, and most Nexuses start from the stock bulb.
+''One seed, one CID'': the CID hashes the `seed.json` bytes as the genesis build publishes them, the herm hands over
+those exact bytes at `/bulb/<cid>.bin`, and a temple names the same bytes `seedCid` at `/genesis/seed.json`, so a
+traveler holding the stock seed CID finds the same coal at either door. No route lists, indexes or describes what
+the herm holds; a listing answers only a CID the client names. Every unknown, withheld or refused request — a
+path no face claims, a CID the herm never held, a wrong method, the well-known name itself — draws ''one
+indistinguishable closed door'': the same status, headers and body, carrying no text that names what answered.
 
 ''WAYMARK.'' A herm that chooses to be found sets `herm.waymark` in its node config
 (`~/.lares/config.json`) and serves one minimal descriptor: its format, its route shapes and its bulb CID. It names
@@ -385,6 +387,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h0JV1VD2859Bg26wtZnUgAadWzOGJ7YIxLcDBbi4bWw
+<<^ code="&#x0003;">>ni:///sha-256;DHciqTf_eZ0psfzk1BRKU1Zs0f3V9DgOQEDwXyLGm14
 
 <<^ code="&#x0004;" -> to="?">>
