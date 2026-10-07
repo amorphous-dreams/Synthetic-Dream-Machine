@@ -357,7 +357,7 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
  * `postamble-content` besides. The round-trip launders nothing the root's own door would not already
  * refuse (the CONTROL below), and these two shapes surface through it rather than passing silently.
  *
- * TWO MORE shapes now fence: an unclosed ahu and a stray block closer leave the rendered root
+ * Two further shapes fence: an unclosed ahu and a stray block closer leave the rendered root
  * un-decomposable, and the quoteblock floor's whole-chunk grain (`ahu.mem#/quoteblock-floor`) reads the
  * re-placed root as a whole carrier arriving — `decision=ingest`, `grade=warning`, `quoteblocked` named,
  * the whole body fenced into the root, the slot child retired into that fence (its bytes kept inside

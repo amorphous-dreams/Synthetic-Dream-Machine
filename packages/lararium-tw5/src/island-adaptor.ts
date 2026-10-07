@@ -6,7 +6,7 @@
  *   - outbound (TW5 edits)  → saveTiddler() / deleteTiddler() → store.put/tombstone
  *   - cross-bag tombstone resolution stays in TS (needs async getLive on composite)
  *   - echo guard delegates to $tw.lares.isApplyingNalu() (wiki owns apply lifetime)
- *   - a surfaced parallel draft persists into THIS wiki's draft bag (operator ruling Q4)
+ *   - a surfaced parallel draft persists into THIS wiki's draft bag (operator ruling)
  *
  * The TW5 module nalu-engine owns (not this adaptor):
  *   - the per-island buffer — initial replay flows through enqueueNalu
@@ -241,7 +241,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   // ---------------------------------------------------------------------------
-  // ParallelDraftsReader — a surfaced parallel draft persists (operator ruling Q4)
+  // ParallelDraftsReader — a surfaced parallel draft persists (operator ruling)
   // ---------------------------------------------------------------------------
 
   /**

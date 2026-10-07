@@ -541,7 +541,7 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
   });
 });
 
-describe("Q3 — the rotate's ROLL ANCHOR carries an admit in its past across the seal roll", () => {
+describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal roll", () => {
   /** A pre-rotated genesis over roots 0-2, armed with roots 4-6, and the roll that reveals them. */
   async function foundAndArm() {
     await generateOrLoadVesselIdentity();

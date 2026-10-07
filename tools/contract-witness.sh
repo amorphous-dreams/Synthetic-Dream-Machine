@@ -36,7 +36,7 @@
 # walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
 # `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
 #
-# ── ANCHORED ANCESTRY (Q3) ─────────────────────────────────────────────────────────────────────────────
+# ── ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────────
 # The rotate lands a ROLL ANCHOR on A's board before the charter moves: the new quorum signs the closing
 # epoch, its key-set and the board's causal heads. B's admit stood in those heads, so the presentation
 # derived after the roll carries the anchor and reads HELD at the new head. CONTROL: an admit the closing
@@ -437,7 +437,7 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
   else ok; fi
 else bad "no token"; fi
 
-# ── ⑩ ANCHORED ANCESTRY (Q3) ─────────────────────────────────────────────────────────────────────────
+# ── ⑩ ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────
 say "⑩ anchored ancestry — an admit in the roll anchor's past carries to the new head"
 ANCHORED="$XFER/presented-after-roll.json"
 step "B's admit head re-derives off A's replica after the roll"

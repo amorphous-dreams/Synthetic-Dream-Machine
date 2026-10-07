@@ -12,7 +12,7 @@
  * their agents, through Talk Story — read the drafts and author the resolving edit.
  *
  * Automerge drops a conflict from `getConflicts` on the next write to that property, so a surfaced
- * draft lives only until then unless a reader keeps it. The READING wiki keeps it (operator ruling Q4):
+ * draft lives only until then unless a reader keeps it. The READING wiki keeps it (operator ruling):
  * its island adaptor, registered as a `ParallelDraftsReader`, persists every draft off the live value
  * into the wiki's draft bag, where it stands as a quiet badge until a human discards it. A parallel
  * draft never fuses with the projector's disk-conflict surface: one reads concurrent CRDT values, the

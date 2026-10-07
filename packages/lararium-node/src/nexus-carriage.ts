@@ -244,9 +244,9 @@ export interface DialPresentation extends AdmitPresentation {
  * must be a held leaf; the board's counted admit head for that leaf then presents ONLY when it descends from
  * the kept admit (the kept admit is the head or sits in the head's lineage) — both are counted acts, and the
  * board's head wins only by extending the kept one. Otherwise the kept bundle presents as it was taken. With
- * no holding kept bundle, each held leaf's counted board head is tried in roster order, as before. The board's
+ * no holding kept bundle, each held leaf's counted board head is tried in roster order. The board's
  * roll anchors ride every board read, so an admit at an epoch the charter has rolled past presents with the
- * anchors that carry it to the head; a kept bundle taken before the roll no longer holds at the head on its
+ * anchors that carry it to the head; a kept bundle taken before the roll does not hold at the head on its
  * own, and the board's anchored head presents instead.
  *
  * A charter that reads unseated, an island that will not resolve, or leaves that cannot be read all answer null.

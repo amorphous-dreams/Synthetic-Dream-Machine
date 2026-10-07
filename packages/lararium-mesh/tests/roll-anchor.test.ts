@@ -1,5 +1,5 @@
 /**
- * roll-anchor.test.ts — Q3, ANCHORED ANCESTRY: an admit carries across a seal roll only if it stood in the
+ * roll-anchor.test.ts — ANCHORED ANCESTRY: an admit carries across a seal roll only if it stood in the
  * board's causal past at the roll.
  *
  * Proven:
@@ -78,7 +78,7 @@ async function verify(admit: CarriageEntry, lineage: PresentedLineageAct[], head
   });
 }
 
-describe("Q3 — an admit in the anchor's past carries across the roll", () => {
+describe("an admit in the anchor's past carries across the roll", () => {
   test("★ an admit in the anchor's past reads HELD at the new head ★", async () => {
     const c = await charter(1);
     const admit = await admitAt(c.r0.sealEpochCid, OLD);
@@ -158,7 +158,7 @@ describe("Q3 — an admit in the anchor's past carries across the roll", () => {
   });
 });
 
-describe("Q3 — a chain of rolls", () => {
+describe("a chain of rolls", () => {
   test("two rolls carry an epoch-0 admit HELD; a missing or unchained link reads WRONG-EPOCH", async () => {
     const c = await charter(2);
     const admit = await admitAt(c.r0.sealEpochCid, OLD);

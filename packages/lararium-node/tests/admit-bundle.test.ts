@@ -228,7 +228,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
   });
 });
 
-describe("Q3 — a bundle taken across a seal roll carries the anchor, and the dial presents it", () => {
+describe("a bundle taken across a seal roll carries the anchor, and the dial presents it", () => {
   let root: string;
   let prior: string | undefined;
   beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-admit-roll-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
@@ -260,7 +260,7 @@ describe("Q3 — a bundle taken across a seal roll carries the anchor, and the d
       await Promise.all(NEW.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))),
     );
 
-    // CONTROL: the bundle as taken BEFORE the roll — no anchor — no longer holds at the new head.
+    // CONTROL: the bundle as taken BEFORE the roll — no anchor — does not hold at the new head.
     await expect(takeAdmitBundle({ sealHome, raw: bundleText({ aid, gatePubKey: GATE, admit, lineage: [] }), leaves }))
       .rejects.toThrow(AdmitBundleError);
     expect(existsSync(admitBundlePathFor(sealHome, aid))).toBe(false);

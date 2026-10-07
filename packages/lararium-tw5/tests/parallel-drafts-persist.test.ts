@@ -1,5 +1,5 @@
 /**
- * Q4 (operator ruling) — A SURFACED PARALLEL DRAFT PERSISTS INTO THE READING WIKI'S DRAFT BAG.
+ * (operator ruling) A SURFACED PARALLEL DRAFT PERSISTS INTO THE READING WIKI'S DRAFT BAG.
  *
  * Two actors set one field of a shared record concurrently. The merge keeps one value live and the
  * other only as a conflict op, which Automerge drops from `getConflicts` on the NEXT write to that
@@ -100,7 +100,7 @@ function stand() {
 
 const settle = () => new Promise((res) => setTimeout(res, 10));
 
-describe("★ Q4: a surfaced parallel draft persists into the reading wiki's draft bag ★", () => {
+describe("★ a surfaced parallel draft persists into the reading wiki's draft bag ★", () => {
   test("two actors set one field concurrently, a third write lands, and the loser's draft persists in the draft bag", async () => {
     const { ha, hb, shared, peer, drafts, enqueued } = stand();
     await shared.put(rec("base", "Root", "20261005000000000"), peerOrigin);
