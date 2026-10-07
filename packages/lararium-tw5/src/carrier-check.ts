@@ -14,9 +14,9 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
-import { classifyPostamble, fencedSpans, frameAlt, markCode, maskedExec, maskedExecAll, readFrame } from "@lararium/memetic-frame";
-import { SOH_PREFIX_RE, carrierTexts, divideCarrier, findMetaFence } from "./deserializer.js";
-import { findTopLevelAhuBlocks } from "./meme-ast/ahu-scan.js";
+import { classifyPostamble, fencedSpans, frameAlt, markCode } from "@lararium/memetic-frame";
+import { findMetaFence, type CarrierRead, type CarrierReading } from "./deserializer.js";
+import { findTopLevelAhuBlocks, type AhuBlock } from "./meme-ast/ahu-scan.js";
 import { MEMETIC_SOURCE, shoreDiagnostic, type MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { parseTaploFields } from "./toml-ast.js";
 
@@ -37,17 +37,12 @@ function error(code: string, message: string, length: number): MemeDiagnostic {
  * is the NAK the original protocol answered with. The LAST carrier owns the file's tail, so the slot
  * read is that carrier's own.
  */
-function strandedPastEtx(text: string): MemeDiagnostic[] {
-  if (!maskedExec(text, SOH_PREFIX_RE)) return [];
-  const lastSoh = maskedExecAll(text, new RegExp(SOH_PREFIX_RE.source, "g")).at(-1);
-  const from = lastSoh ? lastSoh.index : 0;
-  const tail = readFrame(text.slice(from));
-  if (!tail.etx || !tail.eot) return [];
-  const slot = classifyPostamble(text.slice(from + tail.etx.end, from + tail.eot.index));
+function strandedPastEtx(reading: CarrierReading): MemeDiagnostic[] {
+  const slot = classifyPostamble(reading.slotText);
   if (slot.kind !== "foreign") return [];
   return [error("postamble-content",
     `${slot.lines} line(s) stand between ETX and EOT. The text ends at ETX; that slot `
-    + `carries the block check alone. Move the content above the \`<<^ code="${ETX_CODE}">>\` close.`, text.length)];
+    + `carries the block check alone. Move the content above the \`<<^ code="${ETX_CODE}">>\` close.`, reading.text.length)];
 }
 
 /**
@@ -85,11 +80,11 @@ const tomlOf = (fence: { readonly content: string } | null): Record<string, unkn
  * verbatim, never `childUri`'s MINT composition (which would double a shared segment under a deeper
  * `parent`).
  */
-function slotTextKeys(rootUri: string, text: string, out: string[]): void {
-  for (const block of findTopLevelAhuBlocks(text)) {
+function slotTextKeys(rootUri: string, text: string, blocks: readonly AhuBlock[], out: string[]): void {
+  for (const block of blocks) {
     const child = rootUri + block.slot;
     const body = text.slice(block.bodyStart, block.bodyEnd);
-    slotTextKeys(rootUri, body, out);
+    slotTextKeys(rootUri, body, findTopLevelAhuBlocks(body), out);
     const meta = findMetaFence(body, false);
     if (meta && body.slice(0, meta.start).trim() === "" && "text" in tomlOf(meta)) out.push(TEXT_KEY(child));
   }
@@ -109,8 +104,10 @@ function isStrictDescendant(slot: string, parent: string): boolean {
   return slot !== parent && slot.startsWith(`${parent}/`);
 }
 
-function nestedSlotOutsideParent(uri: string, text: string, enclosing: string | null, out: MemeDiagnostic[]): void {
-  for (const block of findTopLevelAhuBlocks(text)) {
+function nestedSlotOutsideParent(
+  uri: string, text: string, blocks: readonly AhuBlock[], enclosing: string | null, out: MemeDiagnostic[],
+): void {
+  for (const block of blocks) {
     if (enclosing !== null && !isStrictDescendant(block.slot, enclosing)) {
       out.push(error("nested-slot-outside-parent",
         `${uri}: nested slot "${block.slot}" is not a strict descendant of its enclosing slot `
@@ -118,7 +115,7 @@ function nestedSlotOutsideParent(uri: string, text: string, enclosing: string | 
         + `Run normalize to rewrite the authored form into the full-path nested chain.`, text.length));
     }
     const body = text.slice(block.bodyStart, block.bodyEnd);
-    nestedSlotOutsideParent(uri, body, block.slot, out);
+    nestedSlotOutsideParent(uri, body, findTopLevelAhuBlocks(body), block.slot, out);
   }
 }
 
@@ -127,9 +124,9 @@ function nestedSlotOutsideParent(uri: string, text: string, enclosing: string | 
  * still settle: a closer swallowed by a fence, a root `title`/`uri-path` naming another address than
  * the head, a `text` key the body overrides. (Root meta above STX is the frame verdict's tear.)
  */
-function advisories(uri: string, text: string): string[] {
+function advisories(read: CarrierRead): string[] {
+  const { uri, division: d } = read;
   const out: string[] = [];
-  const d = divideCarrier(text);
   out.push(...swallowedEtx(uri, d.noSoh, d.frame.etx !== null));
   const root = tomlOf(d.bodyMeta);
   if ("text" in root) out.push(TEXT_KEY(uri));
@@ -142,21 +139,21 @@ function advisories(uri: string, text: string): string[] {
       out.push(`${uri}: root TOML uri-path "${String(root["uri-path"])}" does not match SOH target path "${expected}"`);
     }
   }
-  slotTextKeys(uri, d.body, out);
+  slotTextKeys(uri, d.body, read.scan.blocks, out);
   return out;
 }
 
 /** Every check a carrier's bytes owe beyond the frame verdict, on the shared diagnostics channel. */
-export function checkCarrier(uri: string, text: string): MemeDiagnostic[] {
-  // THE SAME TOLERANT READ THE DESERIALIZER TAKES: a leading BOM and foreign line endings fold once,
-  // so a check reads the bytes the records were built from.
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
-  if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
-  const out = strandedPastEtx(text);
-  for (const carrier of carrierTexts(text, uri)) {
-    for (const line of advisories(carrier.uri, carrier.text)) out.push(shoreDiagnostic(line, text.length));
-    const d = divideCarrier(carrier.text);
-    nestedSlotOutsideParent(carrier.uri, d.body, null, out);
+/**
+ * Every check a carrier's bytes owe beyond the frame verdict, on the shared diagnostics channel — read
+ * off the deserializer's own reading, so a check judges exactly the division, scan and slot the records
+ * were built from and never reads the bytes a second time.
+ */
+export function checkCarrier(reading: CarrierReading): MemeDiagnostic[] {
+  const out = strandedPastEtx(reading);
+  for (const read of reading.reads) {
+    for (const line of advisories(read)) out.push(shoreDiagnostic(line, reading.text.length));
+    nestedSlotOutsideParent(read.uri, read.division.body, read.scan.blocks, null, out);
   }
   return out;
 }

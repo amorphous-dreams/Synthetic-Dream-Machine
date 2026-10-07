@@ -13,6 +13,7 @@
 import { describe, expect, test } from "vitest";
 import { duplicateTomlKeys, parseTaploFields } from "../src/toml-ast.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
+import { verdict } from "@lararium/memetic-frame";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 
 const URI = "lar:///ha.ka.ba/lares/docs/dup-probe";
@@ -45,7 +46,7 @@ const BASE = ['role     = "probe"', 'uri-path = "ha.ka.ba/lares/docs/dup-probe"'
 const DUP  = ['role     = "probe"', 'role     = "second"', 'uri-path = "ha.ka.ba/lares/docs/dup-probe"'];
 
 const dupCodes = (text: string) =>
-  memeticIngestOps.deserialize(URI, text).diagnostics.filter((d) => d.code === "duplicate-meta-key");
+  memeticIngestOps.deserialize(URI, text, verdict(text)).diagnostics.filter((d) => d.code === "duplicate-meta-key");
 
 describe("toml-ast — a key defined twice is named", () => {
   test("a duplicate top-level key names the key and its second line", () => {
@@ -88,7 +89,7 @@ describe("normalize + ingest — a duplicate meta key reads non-canonical", () =
     const diags = dupCodes(text);
     expect(diags).toHaveLength(1);
     expect(diags[0]!.severity).toBe("error");
-    expect(memeticIngestOps.grade(memeticIngestOps.deserialize(URI, text).diagnostics)).toBe("error");
+    expect(memeticIngestOps.grade(memeticIngestOps.deserialize(URI, text, verdict(text)).diagnostics)).toBe("error");
   });
 
   test("a duplicate inside a slot's own meta fence faults too", () => {

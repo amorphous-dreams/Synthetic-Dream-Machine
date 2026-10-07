@@ -33,6 +33,7 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { verdict } from "@lararium/memetic-frame";
 import { expandMemeRefs, memeticWikitextDeserializer } from "../src/deserializer.js";
 import { parseTaploFields } from "../src/toml-ast.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
@@ -148,7 +149,7 @@ describe.skipIf(wikiSkip)(
    *   then carries its old home.
    */
   const strandsPastEtx = (uri: string, disk: string): boolean => {
-    const { diagnostics } = memeticIngestOps.deserialize(`lar:///${uri}`, disk) as {
+    const { diagnostics } = memeticIngestOps.deserialize(`lar:///${uri}`, disk, verdict(disk)) as {
       diagnostics: Array<{ code?: string }>;
     };
     return diagnostics.some((d) => d.code === "postamble-content");

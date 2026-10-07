@@ -138,7 +138,9 @@ its own copy, and no door skips it. The order runs fixed:
 # ''Else decompose'' — the family split runs over the framed body.
 # ''If any ERROR or MISSING node remains'' anywhere in that decomposition, ''the WHOLE chunk fences'' and the fence surfaces. A partial fence over only the faulted span stays forbidden at this grain: no family stands yet to hold the sound remainder.
 
-''The seat.'' `quoteblockFloor` (`packages/lararium-tw5/src/deserializer.ts`), laid by `memeticWikitextDeserializer` itself, reads each carrier's framed body through the family split's own machine reader — `findAhuBalanceFaults` over the fence mask, never the grammar — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The head, the frame and the root meta stay outside the fence, a check that matched re-stamps over the fenced body, and the fenced root record carries `$quoteblocked` — the floor's own account of what it fenced and why (`$`-opening, so it never re-emits into the meta fence or moves the canonical render). A fenced body masks every sigil it holds, so a second pass finds nothing left to fence.
+''The seat.'' `quoteblockFloor` (`packages/lararium-tw5/src/deserializer.ts`), laid by `memeticWikitextDeserializer` itself, reads each carrier's framed body through the family split's own machine reader — `scanAhu` over the fence mask, never the grammar: ONE stack whose top-level blocks the split cuts and whose balance faults the floor fences on — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The head, the frame and the root meta stay outside the fence, a check that matched re-stamps over the fenced body, and the fenced root record carries `$quoteblocked` — the floor's own account of what it fenced and why (`$`-opening, so it never re-emits into the meta fence or moves the canonical render). A fenced body masks every sigil it holds, so a second pass finds nothing left to fence.
+
+''One reading.'' The deserializer reads the frame's shape (`frameShape`) and takes its digest only where a fence lands, to decide whether a matching check re-stamps. Each carrier is divided and its ahu stack scanned ONCE, and that reading (`CarrierReading`) is what the floor, the split and the carrier check (`checkCarrier`) all read. The Confluence gate reads the frame verdict once and hands it to the family's `deserialize`, and reads the structure the disk declares off the text the floor already laid, never laying it twice.
 
 ''Every door, one fence.'' Each reads the carrier through that deserializer:
 
@@ -172,6 +174,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KFSjqfzaGAKQksY_h-Mhjk_nYh3AhockbFvEUg27tcM
+<<^ code="&#x0003;">>ni:///sha-256;M8_tvv8uzAHkwPMtoDBnb8vQT5NG4RV9ORO9peVyRzs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -75,18 +75,26 @@ export type IngestDecision<R = TiddlerFields> =
  * The per-family congruence the gate reads through — the `≈` that decides what
  * counts as "the same carrier." A family (memetic-wikitext by default, a native
  * filetype otherwise) supplies:
- *   - `deserialize` — disk bytes → records + the fault diagnostics,
+ *   - `deserialize` — disk bytes (and the frame verdict the gate already read, null for a family that
+ *                     frames nothing) → records, the fault diagnostics, and the structure the read
+ *                     declares,
  *   - `render`      — records → the canonical text the gate hashes (the `≈` seat:
  *                     two disks that render equal read as framing-only),
- *   - `declaredStructure` — the structural surface a faithful round-trip preserves
- *                     (ahu slots for memetic; ∅ for native, opting out of the guard),
+ *   - `declaredStructure` — the structural surface a faithful round-trip preserves, read off a text
+ *                     (the render); ahu slots for memetic, ∅ for native, opting out of the guard,
  *   - `grade`       — the fault severity; `error` refuses.
  *   - `frame`       — the frame verdict, for a family that frames its carriers (memetic). The gate
- *                     reads it itself, so no caller of the family's default ops can skip it.
+ *                     reads it ONCE, itself, and hands it to `deserialize`, so no caller of the
+ *                     family's default ops can skip it and none reads it twice.
  * The hash itself rides `IngestGateInput.hash` — the gate compares, never digests.
  */
 export interface IngestOps<R = TiddlerFields> {
-  deserialize(uri: string, text: string): { records: readonly R[]; diagnostics: readonly MemeDiagnostic[] };
+  deserialize(uri: string, text: string, frame: FrameVerdict | null): {
+    records: readonly R[];
+    diagnostics: readonly MemeDiagnostic[];
+    /** The structure the text the records were split from declares — `declaredStructure` over that read. */
+    declared: ReadonlySet<string>;
+  };
   render(uri: string, records: readonly R[]): string;
   declaredStructure(text: string): ReadonlySet<string>;
   grade(diagnostics: readonly MemeDiagnostic[]): DiagnosticSeverity | "clean";
@@ -153,22 +161,29 @@ export { QUOTEBLOCKED_CODE, quoteblockFence } from "./deserializer.js";
  * channel, render through `expandMemeRefs`, guard fidelity on the ahu slot-set.
  */
 export const memeticIngestOps: IngestOps<TiddlerFields> = {
-  deserialize(uri, text) {
-    const frame = verdict(text);
-    if (frame.kind === "bare") return { records: [bareRecord(uri, text)], diagnostics: frameDiagnostics(uri, frame, text.length) };
+  deserialize(uri, text, frame) {
+    // A framed family never reads without its frame: the gate hands over the verdict it already read,
+    // and a caller outside the gate reads `verdict(text)` and passes it. Absent is a wiring fault.
+    if (frame === null) throw new Error(`${uri}: the memetic congruence deserializes only over a frame verdict`);
+    if (frame.kind === "bare") {
+      return { records: [bareRecord(uri, text)], diagnostics: frameDiagnostics(uri, frame, text.length), declared: new Set<string>() };
+    }
     // The deserializer lays the floor right behind the frame verdict, and never under a torn one: a
     // tear refuses below, and a fence over it would hide the tear inside a span that reads sound. The
     // reads below stand on the text the records were split from — the fenced one, where a fence stands.
-    const { records, floor } = deserializeCarrier(text, { title: uri });
+    const reading = deserializeCarrier(text, { title: uri });
+    const { records, floor } = reading;
     const read = floor?.text ?? text;
     const failures = parseMemeText(uri, read, getGrammar() ?? undefined).failures;
     return {
       records,
+      // The floor is laid already; the structure the read declares is read off it, never re-laid.
+      declared: collectAhuSlots(read),
       diagnostics: [
         ...failuresToDiagnostics(failures, read.length),
         // The frame the bytes ARRIVED in is the one graded; the fence re-stamps a check that matched.
         ...frameDiagnostics(uri, frame, text.length),
-        ...checkCarrier(uri, read),
+        ...checkCarrier(reading),
         // A meta fence defining a key twice states no fields at all (TOML refuses the whole body), so the
         // carrier refuses at error grade rather than ingesting with its identity silently emptied.
         ...metaKeyRedefinitions(read).map((r) => diagnostic("error", "duplicate-meta-key", `${uri}: ${r.message}`, read.length)),
@@ -245,14 +260,14 @@ export function decideIngest<R = TiddlerFields>(
   // 1½ — bare data: the frame verdict reads no frame at all. The bytes are held as they stand —
   // never parsed as a meme (a toml fence in bare data lifts into no field), never refused as a broken
   // one — and the hold IS the canonical text, flagged UNSTABLE.
-  const frame = congruence.frame?.(diskText);
+  const frame = congruence.frame?.(diskText) ?? null;
   if (frame?.kind === "bare") {
     if (hash(diskText) === currentRenderHash) return { kind: "noop", reason: "canonical-equivalent" };
     const held = [bareRecord(uri, diskText)] as unknown as readonly R[];
     return settle(input, held, diskText, frameDiagnostics(uri, frame, diskText.length));
   }
 
-  const { records, diagnostics } = congruence.deserialize(uri, diskText);
+  const { records, diagnostics, declared } = congruence.deserialize(uri, diskText, frame);
   if (congruence.grade(diagnostics) === "error") {
     return {
       kind: "refuse",
@@ -277,7 +292,6 @@ export function decideIngest<R = TiddlerFields>(
   // (the native filetypes) skips the guard by construction — nothing to drop.
   const candidateHash = hash(canonicalText);
   if (candidateHash === currentRenderHash) {
-    const declared = congruence.declaredStructure(diskText);
     const rendered = congruence.declaredStructure(canonicalText);
     const dropped = [...declared].filter((s) => !rendered.has(s));
     if (dropped.length === 0) {

@@ -1001,7 +1001,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
           // The member's OWN single-carrier congruence: it deserializes to itself, renders
           // through the shared native render, declares ∅ structure, never grades.
           const memberOps: IngestOps<Record<string, unknown>> = {
-            deserialize: () => ({ records: [member], diagnostics: [] }),
+            deserialize: () => ({ records: [member], diagnostics: [], declared: new Set<string>() }),
             render: nativeRender,
             declaredStructure: () => new Set<string>(),
             grade: () => "clean",
@@ -1091,7 +1091,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // but native GAINS the conflict leg that forbids a silent last-write-wins overwrite over
       // a wiki-side edit.
       const nativeOps: IngestOps<Record<string, unknown>> = {
-        deserialize: () => ({ records: freshRecords as ReadonlyArray<Record<string, unknown>>, diagnostics: [] }),
+        deserialize: () => ({ records: freshRecords as ReadonlyArray<Record<string, unknown>>, diagnostics: [], declared: new Set<string>() }),
         render: nativeRender,
         declaredStructure: () => new Set<string>(),
         grade: () => "clean",

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
-import { bccOfSpan, checkSpan } from "@lararium/memetic-frame";
+import { bccOfSpan, checkSpan, verdict } from "@lararium/memetic-frame";
 import { expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 
@@ -46,7 +46,7 @@ describe("root metadata is authored body", () => {
     // ADJACENT: the check follows the ETX sigil with nothing between.
     expect(rendered.slice(span.end).startsWith(bccOfSpan(good))).toBe(true);
     const mutated = rendered.replace("root-authority", "root-mutated");
-    const diagnostic = memeticIngestOps.deserialize(URI, mutated).diagnostics;
+    const diagnostic = memeticIngestOps.deserialize(URI, mutated, verdict(mutated)).diagnostics;
     // GRADED A WARNING, never an error: a stale check on a human's disk edit is an edit, never
     // tampering (ingest law (a)) — it still surfaces on the shared diagnostics channel.
     expect(diagnostic.some((d) => d.code === "block-check-mismatch" && d.severity === "warning")).toBe(true);
@@ -60,7 +60,7 @@ describe("★ root metadata before STX is a frame fault, never recovered ★", (
   ).replace('```\n\nRoot prose', '```\n\n<<^ code="&#x0002;">>\n\nRoot prose');
 
   test("the gate refuses it on the frame fault `meta-before-stx`", () => {
-    const diagnostics = memeticIngestOps.deserialize(URI, preStx).diagnostics;
+    const diagnostics = memeticIngestOps.deserialize(URI, preStx, verdict(preStx)).diagnostics;
     expect(diagnostics.filter((d) => d.severity === "error").map((d) => d.code)).toEqual(["meta-before-stx"]);
   });
 

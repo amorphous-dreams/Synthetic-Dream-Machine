@@ -30,7 +30,7 @@ import type { LaresMemeFace, LaresTw5Extension } from "../types/lares-globals.js
 import type { TW5Instance } from "../types/tiddlywiki.js";
 import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink } from "../place-meme.js";
 import { normalizeMemeSource, readCarrierEdges, readCarrierShape } from "../meme-laws.js";
-import { bccOf, headUriOf, verifyBcc } from "@lararium/memetic-frame";
+import { bccOf, headUriOf, verdict, verifyBcc } from "@lararium/memetic-frame";
 import { projectMeme, recomposeMeme } from "../meme-project.js";
 import { parseMemeText } from "../meme-ast/index.js";
 import { gradeOf } from "../meme-ast/diagnostics.js";
@@ -56,7 +56,7 @@ export function memeFaceOf(wiki: TW5Instance["wiki"]): LaresMemeFace {
     // ONE TEXT, ONE GRADE. The grade rides the gate's own deserialize — the parse under the wiki's
     // grammar plus the shore's faults — so `check` and `place` never read one carrier two ways.
     check: (text) => {
-      const { diagnostics } = memeticIngestOps.deserialize(headUriOf(text) ?? "", text);
+      const { diagnostics } = memeticIngestOps.deserialize(headUriOf(text) ?? "", text, verdict(text));
       return {
         shape: readCarrierShape(text),
         check: verifyBcc(text),

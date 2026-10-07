@@ -42,7 +42,7 @@ function carrierHashOf(text: string): string {
 
 // The identity congruence: the disk text IS the canonical render (native shape).
 const identityOps: IngestOps<{ text: string }> = {
-  deserialize: (_uri, text) => ({ records: [{ text }], diagnostics: [] }),
+  deserialize: (_uri, text) => ({ records: [{ text }], diagnostics: [], declared: new Set<string>() }),
   render: (_uri, records) => records[0]!.text,
   declaredStructure: () => new Set<string>(),
   grade: () => "clean",

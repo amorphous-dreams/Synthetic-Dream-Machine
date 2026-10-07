@@ -63,7 +63,7 @@ import {
 // SOH PREFIX stops at `&` so a namespace written as entities is never read AS the code. Only the entity
 // alternation travels between them.
 /** `<<^` then anything but an entity, then a SOH code — the prefix that stops at `&`. */
-export const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
+const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
 /** The SOH variant a head names through its `code=` binding, captured. */
 const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
 import { parseTaploFields } from "./toml-ast.js";
@@ -108,6 +108,13 @@ export function memeticWikitextDeserializer(
 export interface CarrierReading {
   readonly records: TiddlerFields[];
   readonly floor: QuoteblockFloor | null;
+  /** The bytes the records were split from: folded once (BOM, CRLF), and fenced where the floor stood. */
+  readonly text: string;
+  /** Each carrier as the stream divides it — its division and its ahu scan. A torn frame's records hold
+   *  verbatim, but its reading still stands for the carrier check. */
+  readonly reads: readonly CarrierRead[];
+  /** What a headed text's last carrier wrote between end-of-text and end-of-transmission; "" where none stands. */
+  readonly slotText: string;
 }
 
 /** The deserializer with its floor in hand — for a reader (the Confluence gate) that grades the fence too. */
@@ -134,11 +141,16 @@ export function deserializeCarrier(
   // The SHAPE is all a decomposing carrier needs; the digest answers only whether a fence must re-stamp
   // a check that matched the arriving body, so it runs where a fence lands and nowhere else.
   const shape = frameShape(text);
-  if (shape.kind === "torn") return { records: [heldTorn(baseUri, text, fields, shape.faults.map((f) => f.message))], floor: null };
-  const arrived = text;
   let stream = readStream(text);
-  // Each carrier is divided and its ahu stack scanned ONCE; the floor and the split read that one reading.
+  // Each carrier is divided and its ahu stack scanned ONCE; the floor, the split and the carrier check
+  // read that one reading. A torn frame splits no records — they hold verbatim — but its reading still
+  // stands as the evidence a check names (a close swallowed by a fence, content stranded past ETX).
   let reads = readCarriers(carriersOf(stream, baseUri, text));
+  if (shape.kind === "torn") {
+    const held = heldTorn(baseUri, text, fields, shape.faults.map((f) => f.message));
+    return { records: [held], floor: null, text, reads, slotText: stream.headed ? stream.slotText : "" };
+  }
+  const arrived = text;
   const floor = shape.kind === "bare"
     ? null
     : layFloor(baseUri, text, reads, () => verdictOf(arrived, shape).kind === "match");
@@ -200,7 +212,7 @@ export function deserializeCarrier(
   if (floor) {
     for (const r of result) if (floor.fenced.has(String(r.title))) r[QUOTEBLOCKED_FIELD] = floor.message;
   }
-  return { records: result, floor };
+  return { records: result, floor, text, reads, slotText: stream.headed ? slotText : "" };
 }
 
 // ---------------------------------------------------------------------------
@@ -314,6 +326,8 @@ interface StreamReading {
   readonly postamble: string;
   /** What the last carrier wrote between end-of-text and end-of-transmission. */
   readonly slotText: string;
+  /** Whether a live heading stands at all — the slot belongs to a carrier only where one does. */
+  readonly headed: boolean;
 }
 
 function readStream(text: string): StreamReading {
@@ -370,7 +384,7 @@ function readStream(text: string): StreamReading {
   const postamble = (closes.length > 0 && frameEnd >= 0 && frameEnd < text.length)
     ? text.slice(frameEnd)
     : "";
-  return { closes, prologue, postamble, slotText };
+  return { closes, prologue, postamble, slotText, headed: sohM !== null };
 }
 
 /**

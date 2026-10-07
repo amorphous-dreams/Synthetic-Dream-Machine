@@ -9,7 +9,7 @@
  */
 import { describe, test, expect } from "vitest";
 
-import { memeticWikitextDeserializer } from "../src/deserializer.js";
+import { deserializeCarrier, memeticWikitextDeserializer } from "../src/deserializer.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 import { parseMemeText } from "../src/meme-ast/parse.js";
 import { checkCarrier } from "../src/carrier-check.js";
@@ -60,7 +60,7 @@ describe("the rooted ahu slot law", () => {
   });
 
   test("a RELATIVE nested open names a CHECK fault — nested-slot-outside-parent", () => {
-    const diagnostics = checkCarrier(URI, relative);
+    const diagnostics = checkCarrier(deserializeCarrier(relative, { title: URI }));
     const fault = diagnostics.find((d) => d.code === "nested-slot-outside-parent");
     expect(fault).toBeTruthy();
     expect(fault?.severity).toBe("error");
@@ -68,7 +68,7 @@ describe("the rooted ahu slot law", () => {
 
   test("an address equal to its parent faults too — a collision, not a resolution", () => {
     const equal = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
-    const diagnostics = checkCarrier(URI, equal);
+    const diagnostics = checkCarrier(deserializeCarrier(equal, { title: URI }));
     expect(diagnostics.some((d) => d.code === "nested-slot-outside-parent")).toBe(true);
   });
 });

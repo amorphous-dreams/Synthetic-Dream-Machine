@@ -26,6 +26,7 @@
  * nothing here touches the filesystem, a clock, or a hash.
  */
 
+import { verdict } from "@lararium/memetic-frame";
 import { memeticIngestOps } from "./ingest-gate.js";
 
 /**
@@ -57,11 +58,10 @@ import { memeticIngestOps } from "./ingest-gate.js";
  * Pure: no I/O, no clock, no hashing. The caller hashes what comes back.
  */
 export function canonicalizeCarrierText(uri: string, diskText: string): string | null {
-  const { records, diagnostics } = memeticIngestOps.deserialize(uri, diskText);
+  const { records, diagnostics, declared } = memeticIngestOps.deserialize(uri, diskText, verdict(diskText));
   if (memeticIngestOps.grade(diagnostics) === "error") return null;
   const canonical = memeticIngestOps.render(uri, records);
   if (canonical === "") return null;
-  const declared = memeticIngestOps.declaredStructure(diskText);
   const rendered = memeticIngestOps.declaredStructure(canonical);
   for (const slot of declared) if (!rendered.has(slot)) return null;
   return canonical;

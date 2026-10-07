@@ -68,7 +68,7 @@ That refutation names the shape any new proposal must survive. ''A cure that han
 
 !! Which field the grading reads
 
-''None of them.'' The grading path reads ''`text`'' and nothing else — `memeticIngestOps.deserialize(uri, text)` (`ingest-gate.ts:85-92`) takes a URI for addressing and the text for parsing; the diagnostics come off the parse and the shore. Measured (#/measured rows 5-6): the same bytes grade identically under a root URI and under a child URI. ''The grade reads bytes, never records, never parentage, never address.''
+''None of them.'' The grading path reads ''`text`'' and nothing else — `memeticIngestOps.deserialize(uri, text, frame)` (`ingest-gate.ts`) takes a URI for addressing, the text for parsing and the frame verdict read over that same text; the diagnostics come off the parse and the shore. Measured (#/measured rows 5-6): the same bytes grade identically under a root URI and under a child URI. ''The grade reads bytes, never records, never parentage, never address.''
 
 The fields that DO decide things decide ADDRESS, not grade: `isMemeRoot` (`place-meme.ts:234-236`) reads `type` + no `#` in title + no `$fragment-parent`, and `framedRootOf` (`place-meme.ts:123-129`) reads that predicate first and a SOH head second. Those choose a DOOR. The Confluence gate chooses a VERDICT. `syncer-seams-roundtable.mem` `#/refusals` already forbids fusing them.
 
@@ -126,7 +126,7 @@ Traced end to end for a slot child's save from a stock browser:
 
 !! Fork A — a child's save GRADES against its own authored text
 
-''The shape.'' Somewhere on the child's path — the backstop widened, or a skin on the native door — the child's `text` runs through `memeticIngestOps.deserialize(childUri, childText)` and the resulting band goes somewhere a person can read.
+''The shape.'' Somewhere on the child's path — the backstop widened, or a skin on the native door — the child's `text` runs through `memeticIngestOps.deserialize(childUri, childText, verdict(childText))` and the resulting band goes somewhere a person can read.
 
 ''Its strongest case.'' A section is where authors actually write. The root's own body is `kahea` calls and nothing else, so ''the root's door — the only door that grades today — guards a surface no human types into.'' Every keystroke of a long carrier lands through the ungated path. A gate that guards the empty room and leaves the occupied one open reads as an accident of implementation order, not a law.
 
@@ -169,7 +169,7 @@ Both leave the ROOT's door exactly as it stands, both leave the address law (`is
 
 `meme-face.ts:56-66` binds `$tw.lares.meme.check(text)`, which calls `memeticIngestOps.deserialize` and answers `{ shape, check, bcc, edges, grade, diagnostics }`. Its own comment: //ONE TEXT, ONE GRADE. The grade rides the gate's own deserialize … so `check` and `place` never read one carrier two ways.// `tests/grammar-in-a-wiki.test.ts:142` already calls the ops bundle directly for diagnostics.
 
-''So Fork A needs no new congruence, no new gate, no placement, no hash and no merge base.'' `memeticIngestOps.deserialize(childUri, childText)` + `grade` reads a fragment body today and answers a band (#/measured rows 1-2, 5-6). What the fixed point refuted was not the possibility of grading a child — it was ''one particular INPUT'', and that input was never necessary.
+''So Fork A needs no new congruence, no new gate, no placement, no hash and no merge base.'' `memeticIngestOps.deserialize(childUri, childText, verdict(childText))` + `grade` reads a fragment body today and answers a band (#/measured rows 1-2, 5-6). What the fixed point refuted was not the possibility of grading a child — it was ''one particular INPUT'', and that input was never necessary.
 
 ''One gap to name'': `check` passes `headUriOf(text) ?? ""` as the URI, so a headless child body grades under the empty string. The band comes out identical (#/measured row 5 against row 1); what goes missing is the diagnostic naming ''which record'' carries the fault. A caller passing the child's own title fixes it in one argument.
 
@@ -399,6 +399,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8mW-k1OxAlRqPXEIfC00LJPWkJHMhLe4uf-kF_QFJEc
+<<^ code="&#x0003;">>ni:///sha-256;N0kUGE97pQIcF5NcmLpdaefVMy4qSuSYMf6YTedSyXI
 
 <<^ code="&#x0004;" -> to="?">>

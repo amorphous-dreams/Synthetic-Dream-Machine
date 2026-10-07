@@ -8,16 +8,17 @@
 import { describe, test, expect } from "vitest";
 import { frameCarrier } from "@lararium/memetic-frame";
 import { checkCarrier } from "../src/carrier-check.js";
+import { deserializeCarrier } from "../src/deserializer.js";
 
 const URI = "lar:///t/check";
 const carrier = frameCarrier({ head: { uri: URI }, body: "```toml meta\nuri-path = \"t/check\"\n```\n\nbody" });
-const codes = (text: string): string[] => checkCarrier(URI, text).map((d) => `${d.code}:${d.severity}`);
+const codes = (text: string): string[] => checkCarrier(deserializeCarrier(text, { title: URI })).map((d) => `${d.code}:${d.severity}`);
 
-describe("★ checkCarrier(uri, text) ★", () => {
+describe("★ checkCarrier(reading) ★", () => {
   test("content between ETX and EOT is an error, read from the bytes", () => {
     const stranded = carrier.replace(/(ni:\/\/\/sha-256;[A-Za-z0-9_-]+)\n/, "$1\n<<~ ahu #/edges>>\n\n* a link\n\n<<~/ahu>>\n");
     expect(codes(stranded)).toEqual(["postamble-content:error"]);
-    expect(checkCarrier(URI, stranded)[0]!.message).toMatch(/^6 line\(s\) stand between ETX and EOT/);
+    expect(checkCarrier(deserializeCarrier(stranded, { title: URI }))[0]!.message).toMatch(/^6 line\(s\) stand between ETX and EOT/);
   });
 
   test("CONTROL: a canonical carrier carries nothing to check", () => {
