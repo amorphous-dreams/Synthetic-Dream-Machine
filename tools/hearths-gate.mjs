@@ -34,8 +34,9 @@ import { join } from "node:path";
 const LEDGER = "bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem";
 
 /** The `holds` fence, read as rows. Deliberately narrow: `[[hold]]` tables of scalar strings plus one
- *  `globs` array. A shape the fence does not carry reads as no rows, which fails OPEN with a note — a
- *  ledger this gate cannot parse must not block a tree. */
+ *  `globs` array. A shape the fence does not carry reads as no rows and fails OPEN: a ledger with no
+ *  fence at all earns a note, while a fence that holds no rows passes in silence — a ledger this gate
+ *  cannot parse must not block a tree. */
 export function parseHolds(text) {
   const fence = /```toml holds\n([\s\S]*?)\n```/.exec(text);
   if (!fence) return [];
