@@ -55,7 +55,7 @@ import { existsSync } from "node:fs";
 import { larSealHome } from "../src/vessel-paths.js";
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
-import { presentedAdmitFromBoard, signLeafProof, foundingRoster, type AdmitPresentation } from "@lararium/mesh";
+import { presentationFromBoardDoc, signLeafProof, foundingRoster, type AdmitPresentation } from "@lararium/mesh";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runRaiseSign } from "../src/commands/raise-sign.js";
 import { mintRaiseChallenge, verifyRaiseGrant } from "@lararium/mesh";
@@ -392,8 +392,8 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
     const { holder, repo, nexusPubkey } = await standHolder();
     try {
       // The joiner derives what it presents off a board it holds — here the same board the admit wrote.
-      const entries = carriageEntriesFromBoard((await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc());
-      const presented = await presentedAdmitFromBoard(entries, joinerNym, foundingRoster(readNexusDoc(sealHome())));
+      const board = (await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc();
+      const { presentation: presented } = await presentationFromBoardDoc(board, joinerNym, foundingRoster(readNexusDoc(sealHome())));
       expect(presented).not.toBeNull();
       const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
       const leaf = await nexusLeafFor(3, aid);
@@ -581,7 +581,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const doc = (await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc();
     await repo.flush();
-    return { entries: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc) };
+    return { doc, entries: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc) };
   }
 
   it("★ an admit in the anchor's past reads MEMBER at the new head; one minted after the anchor reads STRANGER ★", async () => {
@@ -611,7 +611,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       await repo.flush();
     }
 
-    const { entries, anchors } = await boardNow();
+    const { doc: boardDoc, anchors } = await boardNow();
     expect(anchors.map(rollAnchorCid)).toEqual([landed.anchorCid]);
     const head = foundingRoster(readNexusDoc(sealHome()));
     const ownVesselKey = await loadVesselVerifyingKey();
@@ -623,7 +623,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       expect(holder.readings().map((r) => [r.via, r.sealLineage.length])).toEqual([["seat", 2]]);
       const nonce = "34".repeat(32), gatePubKey = "ee".repeat(32), vesselKey = "cd".repeat(32);
       const presentAs = async (peer: string, nym: string, idx: number, strip = false, by?: AdmitPresentation) => {
-        const p = by ?? await presentedAdmitFromBoard(entries, nym, head, anchors);
+        const p = by ?? (await presentationFromBoardDoc(boardDoc, nym, head)).presentation;
         expect(p).not.toBeNull();
         const lineage = strip ? p!.lineage.filter((e) => !isRollAnchor(e)) : p!.lineage;
         const leafProof = await signLeafProof({ admit: p!.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed((await nexusLeafFor(idx, aid)).seed) });
@@ -632,7 +632,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       await presentAs("peer-joiner", joinerNym, 3);
       await presentAs("peer-stripped", joinerNym, 3, true);
       // The presenter carries nothing it cannot carry: no anchor holds the late admit in its past.
-      expect(await presentedAdmitFromBoard(entries, lateNym, head, anchors)).toBeNull();
+      expect((await presentationFromBoardDoc(boardDoc, lateNym, head)).presentation).toBeNull();
       // Presented by hand through the anchor anyway, the verifier refuses it.
       await presentAs("peer-late", lateNym, 0, false, { admit: late, lineage: anchors });
       expect(holder.membership.holdsCarriagePeer("peer-joiner")).toBe(true);     // in the anchor's past → held

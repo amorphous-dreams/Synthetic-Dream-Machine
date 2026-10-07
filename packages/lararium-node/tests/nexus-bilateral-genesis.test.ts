@@ -55,7 +55,7 @@ import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError } from "../src/commands/nexus-contract.js";
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
-import { materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, presentedAdmitFromBoard, signLeafProof } from "@lararium/mesh";
+import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc, signLeafProof } from "@lararium/mesh";
 
 let rootA: string;
 let rootB: string;
@@ -147,8 +147,8 @@ async function standGate(h: Hearth) {
   });
   await holder.refold();
   const present = async (peerId: string, nym: string, leafSeed: Uint8Array): Promise<void> => {
-    const entries = carriageEntriesFromBoard(await open(carriageDocUrl(h.island), "board:carriage-contracts"));
-    const presented = await presentedAdmitFromBoard(entries, nym, foundingRoster(readNexusDoc(h.bags)));
+    const board = await open(carriageDocUrl(h.island), "board:carriage-contracts");
+    const { presentation: presented } = await presentationFromBoardDoc(board, nym, foundingRoster(readNexusDoc(h.bags)));
     if (!presented) throw new Error(`no admit for ${nym.slice(0, 12)}… on ${h.island.slice(0, 12)}…`);
     const nonce = "56".repeat(32);
     const gatePubKey = h.nexusPubkey;

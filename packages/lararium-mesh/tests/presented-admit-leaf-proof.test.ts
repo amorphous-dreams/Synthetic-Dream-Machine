@@ -12,7 +12,7 @@
  *   · the CONTRACT slot is retired (Q1, strict): a lar:auth carrying `contractEdge` fails the guard whether or
  *     not it carries an admit — a vessel that presents a leaf to a Nexus presents no root-signed edge to it on
  *     any socket;
- *   · `presentedAdmitFromBoard` derives the admit head and a closed, tight lineage from a board with a
+ *   · the one presenter (`presentationFromBoardDoc`) derives the admit head and a closed, tight lineage from a board with a
  *     re-admit after a revoke; CONTROL: with a concurrent revoke the presentation still derives and the
  *     verifier reads it `unsettled`; a board whose last act is a revoke presents nothing.
  */
@@ -22,8 +22,10 @@ import {
   mkLarChallenge, mkLarAuthOk, authOkBytes, type PresentedAdmit, type LarAuthMsg,
 } from "../src/auth-wire.js";
 import {
-  carriageEntryActCid, presentedAdmitFromBoard, verifyPresentedAdmit, type CarriageEntry,
+  carriageEntryActCid, verifyPresentedAdmit, type CarriageEntry,
 } from "../src/carriage-registry.js";
+import { presentationFromBoardDoc, writeCarriageEntry } from "../src/carriage-board.js";
+import { emptyLarDoc } from "../src/base-doc.js";
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
 import { PRESENTED_ADMIT_LEAF_PROOF_DOMAIN, AUTH_PROOF_DOMAIN } from "../src/domains.js";
 import { pubOf, signerOf, kahuRoster, carriageAct } from "./fixtures/carriage.js";
@@ -179,7 +181,13 @@ describe("ONE SOCKET, ONE FACE — a presented admit never travels beside a root
   });
 });
 
-describe("presentedAdmitFromBoard — the dialer derives its presentation from a board it holds", () => {
+describe("the one presenter — the dialer derives its presentation from a board it holds", () => {
+  /** The presentation off a board doc carrying exactly these acts. */
+  const presentOff = async (acts: readonly CarriageEntry[]) => {
+    const doc = emptyLarDoc();
+    for (const a of acts) writeCarriageEntry(doc, a);
+    return (await presentationFromBoardDoc(doc, await pubOf(SEEDS.leaf), await roster())).presentation;
+  };
   const verify = async (p: { admit: CarriageEntry; lineage: readonly CarriageEntry[] }, denyBoard: CarriageEntry[]) =>
     verifyPresentedAdmit({
       admit: p.admit, lineage: p.lineage, roster: await roster(), denyBoard, antigen: [],
@@ -192,7 +200,7 @@ describe("presentedAdmitFromBoard — the dialer derives its presentation from a
     const readmit = await act("admit", [cid(revoke)]);
     const stranger = await act("admit", [], SEEDS.other);   // another nym's act never joins the lineage
     const board = [stranger, readmit, first, revoke];
-    const p = await presentedAdmitFromBoard(board, await pubOf(SEEDS.leaf), await roster());
+    const p = await presentOff(board);
     expect(p).not.toBeNull();
     expect(cid(p!.admit)).toBe(cid(readmit));
     expect(p!.lineage.map(cid).sort()).toEqual([cid(first), cid(revoke)].sort());
@@ -203,7 +211,7 @@ describe("presentedAdmitFromBoard — the dialer derives its presentation from a
     const admit      = await act("admit");
     const concurrent = await act("revoke", []);   // cites nothing — neither ancestor nor descendant
     const board = [admit, concurrent];
-    const p = await presentedAdmitFromBoard(board, await pubOf(SEEDS.leaf), await roster());
+    const p = await presentOff(board);
     expect(p).not.toBeNull();
     expect(cid(p!.admit)).toBe(cid(admit));
     expect((await verify(p!, board)).state).toBe("unsettled");
@@ -212,10 +220,10 @@ describe("presentedAdmitFromBoard — the dialer derives its presentation from a
   test("CONTROL: a board whose last act is a revoke presents nothing; an uncounted admit presents nothing", async () => {
     const admit  = await act("admit");
     const revoke = await act("revoke", [cid(admit)]);
-    expect(await presentedAdmitFromBoard([admit, revoke], await pubOf(SEEDS.leaf), await roster())).toBeNull();
+    expect(await presentOff([admit, revoke])).toBeNull();
     // An admit at another epoch does not count against this roster.
     const foreign = await carriageAct(SEEDS.leaf, "admit", { kahu: KAHU, epoch: "another-epoch" });
-    expect(await presentedAdmitFromBoard([foreign], await pubOf(SEEDS.leaf), await roster())).toBeNull();
-    expect(await presentedAdmitFromBoard([], await pubOf(SEEDS.leaf), await roster())).toBeNull();
+    expect(await presentOff([foreign])).toBeNull();
+    expect(await presentOff([])).toBeNull();
   });
 });

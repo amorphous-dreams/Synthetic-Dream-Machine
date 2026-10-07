@@ -16,7 +16,7 @@
  */
 import { describe, test, expect } from "vitest";
 import {
-  carriageEntryActCid, verifyPresentedAdmit, presentedAdmitFromBoard, readBoardPresentation, signRollAnchor, rollAnchorCid,
+  carriageEntryActCid, verifyPresentedAdmit, signRollAnchor, rollAnchorCid,
   rollAnchorCounts, rollAnchorParents, isRollAnchor, CARRIAGE_ROLL_ANCHOR_DOMAIN,
   type CarriageEntry, type RollAnchor, type PresentedLineageAct,
 } from "../src/carriage-registry.js";
@@ -177,7 +177,7 @@ describe("a chain of rolls", () => {
 });
 
 describe("the presenter, the wire guard, and the board", () => {
-  test("presentedAdmitFromBoard carries the anchor; the wire guard accepts it; HELD end-to-end", async () => {
+  test("the one presenter carries the anchor; the wire guard accepts it; HELD end-to-end", async () => {
     const c = await charter(1);
     const admit = await admitAt(c.r0.sealEpochCid, OLD);
     const board = emptyLarDoc();
@@ -186,14 +186,14 @@ describe("the presenter, the wire guard, and the board", () => {
     expect(parents).toEqual([carriageEntryActCid(admit)]);
     const roll = await anchor(c.r0, c.lineage[1]!, parents, MID);
     expect(await rollAnchorCounts(roll, c.r1)).toBe(true);
+    // CONTROL: before the board carries the anchor, the presenter finds nothing at the new head.
+    expect((await presentationFromBoardDoc(board, await pubOf(JOINER), c.r1)).presentation).toBeNull();
     writeRollAnchor(board, roll);
     // The entry extractor skips the anchor; the anchor extractor reads it whole.
     expect(carriageEntriesFromBoard(board)).toHaveLength(1);
     expect(rollAnchorsFromBoard(board).map(rollAnchorCid)).toEqual([rollAnchorCid(roll)]);
 
-    // CONTROL: without the board's anchors the presenter finds nothing at the new head.
-    expect(await presentedAdmitFromBoard(carriageEntriesFromBoard(board), await pubOf(JOINER), c.r1)).toBeNull();
-    const p = await presentedAdmitFromBoard(carriageEntriesFromBoard(board), await pubOf(JOINER), c.r1, rollAnchorsFromBoard(board));
+    const { presentation: p } = await presentationFromBoardDoc(board, await pubOf(JOINER), c.r1);
     expect(p).not.toBeNull();
     expect(p!.lineage.filter(isRollAnchor)).toHaveLength(1);
     expect(isPresentedAdmit({ admit: p!.admit, lineage: p!.lineage })).toBe(true);
@@ -253,9 +253,9 @@ describe("the orphan anchor — two anchors open one epoch", () => {
     expect(await rollAnchorCounts(orphan, c.r1)).toBe(true);
     expect(await rollAnchorCounts(retry, c.r1)).toBe(true);
     const nym = await pubOf(JOINER);
-    // Either anchor may sort first; the presentation never depends on it. Feed both orders.
-    for (const anchors of [[orphan, retry], [retry, orphan]]) {
-      const { presentation, findings } = await readBoardPresentation(carriageEntriesFromBoard(board), nym, c.r1, anchors);
+    // The orphan sorts first, and the presentation still never depends on it.
+    {
+      const { presentation, findings } = await presentationFromBoardDoc(board, nym, c.r1);
       expect(presentation, "an orphan anchor hid a carried admit").not.toBeNull();
       expect(presentation!.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([rollAnchorCid(retry)]);
       expect(await verify(presentation!.admit, [...presentation!.lineage], c.r1, c.lineage)).toMatchObject({ state: "held" });
