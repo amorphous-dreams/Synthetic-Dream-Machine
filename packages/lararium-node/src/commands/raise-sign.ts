@@ -92,7 +92,9 @@ export async function runRaiseSign(opts: {
   }
   const roster = foundingRoster(readNexusDoc(home));
   if (roster.sealEpochCid.length === 0) {
-    throw new RaiseSignError("the charter held for that Nexus reads unseated — no admit can root on it.");
+    // An UNSEALED charter names no AID, so it never answers `charterHomeFor`; a charter reached here carries a
+    // genesis and still yields no head — its lineage or its seated keys do not verify.
+    throw new RaiseSignError("the charter held for that Nexus carries no verified seal head — its lineage does not verify against the seated keys, so no admit can root on it.");
   }
   const leaf = (await heldNexusLeaves(aid)).find((l) => l.handleIndex === opts.handleIndex);
   if (!leaf) throw new RaiseSignError(`this vessel holds no persona at h${opts.handleIndex}.`);

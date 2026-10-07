@@ -36,11 +36,11 @@ import {
   runNexusRollAnchor, NexusContractError, type NexusRollAnchorResult,
 } from "@lararium/node";
 import {
-  emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead,
+  emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
   defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuRoster,
-  type QuorumSignature,
+  type QuorumSignature, type CharterSealState,
 } from "@lararium/mesh";
 import {
   generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed,
@@ -63,6 +63,38 @@ import type { ParsedArgs } from "../parse-args.js";
 
 /** A refusal the operator can fix by retyping — rendered as `usage`, never as an internal error. */
 class UsageError extends Error {}
+
+/**
+ * The charter's seal reading off disk — the mesh reading plus the one only the disk can name: `torn`, a
+ * charter that STANDS and will not parse. Each reading takes its own path, so none folds into another.
+ */
+export type CharterSealReading = CharterSealState | "torn";
+export function readCharterSeal(sealHome: string): { doc: NexusDoc | null; state: CharterSealReading } {
+  const doc = readNexusDoc(sealHome);
+  if (doc === null && nexusCharterStands(sealHome)) return { doc, state: "torn" };
+  return { doc, state: charterSealState(doc) };
+}
+
+/** What the operator does next from a charter that holds no seal head — said per reading, never as one. */
+function noSealHeadWhy(state: Exclude<CharterSealReading, "sealed">, act: string): string {
+  switch (state) {
+    case "absent":
+      return `no charter stands here — nothing to ${act}. Found one first: \`lares nexus rite cabal\``;
+    case "torn":
+      return `the charter stands but reads TORN — nothing can ${act} until it is repaired or moved aside.`;
+    case "unsealed":
+      return `the charter stands UNSEALED — its roster is written and no seal epoch is seated, so there is nothing to ${act} yet. ` +
+             "Seat the epoch once a quorum stands: `lares nexus seal seat --next-key-commit <digest>`";
+  }
+}
+
+/** The sealed charter and its head, or a refusal naming WHICH empty reading stood in the way. */
+function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; head: SealEpoch } {
+  const { doc, state } = readCharterSeal(sealHome);
+  const head = sealLineageHead(doc);
+  if (state !== "sealed" || !doc || !head) throw new UsageError(noSealHeadWhy(state === "sealed" ? "unsealed" : state, act));
+  return { doc, head };
+}
 
 const SEAL_USAGE: readonly string[] = [
   "usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>",
@@ -432,12 +464,10 @@ function seatedKeysOf(doc: { kahu: readonly { verifyingKey: string | null }[] })
 async function sealGrow(args: ParsedArgs): Promise<number> {
   const step = args.positional[2];
   const sealHome = larSealHome();
-  const doc = readNexusDoc(sealHome);
-  const head = sealLineageHead(doc);
 
   switch (step) {
     case "open": {
-      if (!doc || !head) throw new UsageError("no charter chain stands — seat one before a crossing can open");
+      const { doc, head } = sealedCharterOrRefuse(sealHome, "open a crossing from");
       if (readPending()) throw new UsageError("a crossing already stands open — seal it or remove transition-pending.json deliberately");
       writePending({
         fromEpochCid: head.epochCid,
@@ -451,7 +481,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
     case "bind": {
       const p = readPending();
       if (!p) throw new UsageError("no crossing stands open — `grow open` before the rotate");
-      if (!doc || !head) throw new UsageError("no charter chain stands");
+      const { doc, head } = sealedCharterOrRefuse(sealHome, "bind a crossing to");
       if (head.epochCid === p.fromEpochCid) throw new UsageError("the chain has not moved — rotate the succession in before binding the far side");
       if (p.toEpochCid) throw new UsageError("the crossing is already bound — sign, witness, and seal it");
       writePending({ ...p, toEpochCid: head.epochCid, newKeys: seatedKeysOf(doc), newThreshold: doc.threshold });
@@ -525,11 +555,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
 
 async function sealRotate(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
-  const doc = readNexusDoc(sealHome);
-  const head = sealLineageHead(doc);
-  if (!doc || !head) {
-    throw new UsageError("no genesis charter chain to rotate — establish one with `lares nexus seal seat` first");
-  }
+  const { doc, head } = sealedCharterOrRefuse(sealHome, "rotate");
   const depth = doc.sealLineage?.length ?? 0;
 
   // REVEAL: the operator has provisioned the pre-committed next key-set into the vault; seating from the
@@ -784,7 +810,7 @@ function sealImportCarry(args: ParsedArgs, from: string): number {
 
 async function sealShow(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
-  const doc = readNexusDoc(sealHome);
+  const { doc, state: seal } = readCharterSeal(sealHome);
   const roster = foundingRoster(doc);
   const quorum = foundingQuorumSeated(doc);
   const head = sealLineageHead(doc);
@@ -806,6 +832,9 @@ async function sealShow(args: ParsedArgs): Promise<number> {
     data: {
       path: nexusCharterDocPath(sealHome),
       present: doc !== null,
+      // THE SEAL READING, named: an absent charter, a torn one, an UNSEALED one (roster written, no epoch
+      // seated) and a sealed one each take a different next step.
+      seal,
       threshold: roster.threshold,
       sealEpochCid: roster.sealEpochCid || null,
       chainDepth,
@@ -837,14 +866,17 @@ async function sealShow(args: ParsedArgs): Promise<number> {
         }
       };
       if (!doc) {
-        console.log(`no nexus doc — run \`lares nexus seal seat\` (the antigen stays inert until a quorum stands).`);
-        console.log(`  expected at: ${nexusCharterDocPath(sealHome)}`);
+        console.log(seal === "torn"
+          ? `the nexus doc stands but reads TORN — repair or move it aside; a seat refuses over it.`
+          : `no nexus doc — run \`lares nexus seal seat\` (the antigen stays inert until a quorum stands).`);
+        console.log(`  ${seal === "torn" ? "stands at:  " : "expected at:"} ${nexusCharterDocPath(sealHome)}`);
         if (carried.length > 0) printCarried();
         return;
       }
       console.log(`nexus seal (${nexusCharterDocPath(sealHome)}):`);
       for (const k of doc.kahu) console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}`);
       console.log(`  threshold:  ${roster.threshold} · seated keys: ${roster.keys.length}`);
+      console.log(`  seal:       ${seal === "sealed" ? "SEALED" : "UNSEALED — the roster stands and no seal epoch is seated; seat one once a quorum stands"}`);
       console.log(`  chain:      ${chainDepth > 0 ? `${chainDepth} epoch(s), head at seq ${chainDepth - 1}` : "(none — no epoch established)"}`);
       console.log(`  head epoch: ${roster.sealEpochCid || "(unestablished)"}`);
       console.log(`  rotation:   ${head && head.nextKeyCommit.length > 0 ? "ARMED" : "UNARMED"}`);

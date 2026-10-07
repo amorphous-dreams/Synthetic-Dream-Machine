@@ -246,6 +246,21 @@ export function sealLineageHead(doc: NexusDoc | null): SealEpoch | null {
   return chain && chain.length > 0 ? chain[chain.length - 1]! : null;
 }
 
+/**
+ * Where a charter stands on its seal, as a reading a caller can ACT on:
+ *   · `absent`   — no charter doc to read; there is nothing to seat onto, and the founding has not begun;
+ *   · `unsealed` — the charter STANDS (its roster is written) and no seal epoch is seated; the operator seats one;
+ *   · `sealed`   — a seal lineage stands, with a head to rotate from.
+ * The two empty readings take different paths, so they never fold together. `null` here means "no doc
+ * parsed"; a caller holding the disk tells a TORN charter (one that stands and will not read) apart from an
+ * absent one before it asks. `sealed` names a lineage present, never one verified — `foundingRoster` verifies.
+ */
+export type CharterSealState = "absent" | "unsealed" | "sealed";
+export function charterSealState(doc: NexusDoc | null): CharterSealState {
+  if (!doc) return "absent";
+  return sealLineageHead(doc) ? "sealed" : "unsealed";
+}
+
 /** Does the seated doc carry a live quorum? True only with an established epoch AND ≥ threshold seated keys. */
 export function foundingQuorumSeated(doc: NexusDoc | null): boolean {
   const r = foundingRoster(doc);
