@@ -26,7 +26,7 @@ import {
   type OfferingKapaeEntry,
 } from "../src/offering-antigen.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN, KAPAE_ANTIGEN_DOMAIN } from "../src/domains.js";
-import type { KahuRoster } from "../src/kapae-antigen.js";
+import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const keyOf = async (n: number): Promise<string> => hex(await ed.getPublicKeyAsync(seedOf(n)));
@@ -34,7 +34,7 @@ const signWith = (n: number) => async (b: Uint8Array): Promise<string> => hex(aw
 const OFFERING_CID = "bafyOfferingRegion";
 const EPOCH = "epoch-cid-0";
 
-async function roster(threshold: number): Promise<KahuRoster> {
+async function roster(threshold: number): Promise<KahuQuorumSeats> {
   return { keys: [await keyOf(1), await keyOf(2), await keyOf(3)], threshold, sealEpochCid: EPOCH };
 }
 
@@ -100,7 +100,7 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
   });
 
   test("CONTROL — an UNBOUND roster condemns nothing, however many signatures arrive", async () => {
-    const unbound: KahuRoster = { keys: [], threshold: 2, sealEpochCid: EPOCH };
+    const unbound: KahuQuorumSeats = { keys: [], threshold: 2, sealEpochCid: EPOCH };
     expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([await kapae([1, 2, 3])], unbound))).toBe(false);
   });
 

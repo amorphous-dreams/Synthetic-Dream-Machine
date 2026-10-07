@@ -10,7 +10,7 @@
  * the antigen quorum and the membership quorum stay two relations that happen to select alike.
  */
 
-import type { KahuRoster } from "@lararium/mesh";
+import type { KahuQuorumSeats } from "@lararium/mesh";
 import { listPersonaRoots, generateOrLoadPersonaGroupRoot } from "./node-vessel-identity.js";
 
 export interface HeldQuorumSigner {
@@ -23,7 +23,7 @@ export interface HeldQuorumSigner {
  * throws `refuse(held, threshold)`, so no sub-quorum act is ever minted.
  */
 export async function selectHeldQuorumSigners(
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
   refuse: (held: number, k: number) => Error,
 ): Promise<HeldQuorumSigner[]> {
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));

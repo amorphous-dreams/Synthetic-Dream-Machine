@@ -49,7 +49,7 @@
 
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type {
-  NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit, CarriageEntry, KapaeAntigenEntry, KahuRoster,
+  NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit, CarriageEntry, KapaeAntigenEntry, KahuQuorumSeats,
   LeafIdentity, SealEpoch,
 } from "@lararium/mesh";
 import {
@@ -109,7 +109,7 @@ export interface CarriedNexusReading {
   /** The island N's per-Nexus boards key on. */
   readonly island:        string;
   /** N's membership roster at the head of the charter this vessel holds for N. */
-  readonly roster:        KahuRoster;
+  readonly roster:        KahuQuorumSeats;
   /** The epoch lineage of that charter, genesis first, its last epoch the roster's head — what an admit at a
    *  rolled epoch is walked against (`verifyPresentedAdmit`). Empty for a charter with no pre-rotated chain. */
   readonly sealLineage:   readonly SealEpoch[];
@@ -119,7 +119,7 @@ export interface CarriedNexusReading {
   readonly antigen:       readonly KapaeAntigenEntry[];
   /** The ANTIGEN quorum's roster, passed as its own input. `readCarriedNexuses` reads it off N's charter
    *  roster, exactly as the antigen ring folds its own board. */
-  readonly antigenRoster: KahuRoster;
+  readonly antigenRoster: KahuQuorumSeats;
 }
 
 /** Opens a per-Nexus board by url on whatever replica the caller reads, returning its doc. */

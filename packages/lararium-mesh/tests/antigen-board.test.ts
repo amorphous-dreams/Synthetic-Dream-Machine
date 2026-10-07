@@ -17,7 +17,7 @@ import { hex } from "../src/crypto.js";
 import { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey } from "../src/antigen-board.js";
 import {
   signAntigenEntry, foldAntigenSet, foldAntigenVerdicts, makeMultiSigQuorumVerifier,
-  KAPAE_ANTIGEN_DOMAIN, type KapaeAntigenEntry, type KahuRoster,
+  KAPAE_ANTIGEN_DOMAIN, type KapaeAntigenEntry, type KahuQuorumSeats,
 } from "../src/kapae-antigen.js";
 import { carryContractShareDecision, type AntigenRing } from "../src/federation-gate.js";
 import { muVoidBytes, syncCompleteVoid, kapaeDeniedVoid } from "../src/mu-void.js";
@@ -33,7 +33,7 @@ const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const verifier = makeMultiSigQuorumVerifier();
 
-async function roster(): Promise<KahuRoster> {
+async function roster(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all([pubOf(SEEDS.guru), pubOf(SEEDS.telarus), pubOf(SEEDS.lindwyrm)]);
   return { keys, threshold: 2, sealEpochCid: EPOCH };
 }

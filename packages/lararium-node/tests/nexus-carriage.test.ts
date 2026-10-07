@@ -25,7 +25,7 @@ import * as ed from "@noble/ed25519";
 import {
   hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, carriageEntryActCid, signLeafProof,
   makeMultiSigQuorumVerifier, signAntigenEntry,
-  type NexusDoc, type CarriageEntry, type KahuRoster, type KapaeAntigenEntry,
+  type NexusDoc, type CarriageEntry, type KahuQuorumSeats, type KapaeAntigenEntry,
 } from "@lararium/mesh";
 import {
   makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, leafStandingFor,
@@ -43,7 +43,7 @@ const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes
 const GATE  = "ee".repeat(32);
 const NONCE = "ab".repeat(32);
 
-async function rosterAt(): Promise<KahuRoster> {
+async function rosterAt(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(SEEDS.map(pubOf));
   return { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
 }
@@ -55,7 +55,7 @@ async function act(action: "admit" | "revoke", parents: readonly string[], epoch
   const seal = action === "admit" ? await signCarriageContract(nym, epoch, signerOf(LEAF_SEED)) : undefined;
   return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch }, await kahu(), seal);
 }
-function reading(aid: string, roster: KahuRoster, denyBoard: CarriageEntry[] = [], antigen: KapaeAntigenEntry[] = []): CarriedNexusReading {
+function reading(aid: string, roster: KahuQuorumSeats, denyBoard: CarriageEntry[] = [], antigen: KapaeAntigenEntry[] = []): CarriedNexusReading {
   return { aid, via: "consent", island: `island-${aid}`, roster, sealLineage: [], denyBoard, antigen, antigenRoster: roster };
 }
 async function bind(admit: CarriageEntry, opts: { lineage?: CarriageEntry[]; signer?: Uint8Array; vessel?: Uint8Array; wireVessel?: Uint8Array } = {}): Promise<SocketBinding> {
@@ -95,7 +95,7 @@ describe("the leaf map — a presented, proven, HELD admit for a carried Nexus r
 
   test("CONTROL B: an admit for a Nexus outside the carried readings reads STRANGER", async () => {
     const roster = await rosterAt();
-    const other: KahuRoster = { ...roster, sealEpochCid: "another-nexus-epoch" };
+    const other: KahuQuorumSeats = { ...roster, sealEpochCid: "another-nexus-epoch" };
     const admitElsewhere = await act("admit", [], other.sealEpochCid);
     const carried = makeNexusMembership({ readCarried: async () => [reading("N", roster)] });
     await carried.refold();

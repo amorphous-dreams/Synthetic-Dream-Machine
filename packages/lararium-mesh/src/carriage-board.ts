@@ -37,7 +37,7 @@ import {
   type CarriageAction,
   type RollAnchor,
 } from "./carriage-registry.js";
-import type { KahuRoster, QuorumSignature } from "./kapae-antigen.js";
+import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
 
 /**
  * The tiddler-key prefix every carriage entry rides under — namespaced apart from the board's other content.
@@ -185,7 +185,7 @@ export function rollAnchorsFromBoard(doc: LarDoc | undefined | null): RollAnchor
 export async function presentationFromBoardDoc(
   doc: LarDoc | undefined | null,
   nym: string,
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
 ): Promise<BoardPresentation> {
   return readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, rollAnchorsFromBoard(doc));
 }

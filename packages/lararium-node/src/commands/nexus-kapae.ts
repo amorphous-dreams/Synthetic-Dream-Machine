@@ -32,7 +32,7 @@ import {
   antigenEntriesFromBoard, antigenActCid, writeAntigenEntry, signAntigenEntry,
   makeMultiSigQuorumVerifier, foldAntigenSet, isKapaed, foundingRoster,
   kapaeAntigenDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
-  type KapaeAction, type KapaeAntigenEntry, type KahuRoster,
+  type KapaeAction, type KapaeAntigenEntry, type KahuQuorumSeats,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -81,7 +81,7 @@ export interface NexusKapaeListResult {
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root a ban on. */
-function seatedRosterOrRefuse(sealHome: string): KahuRoster {
+function seatedRosterOrRefuse(sealHome: string): KahuQuorumSeats {
   const roster = foundingRoster(readNexusDoc(sealHome));
   if (roster.sealEpochCid.length === 0 || roster.keys.length < roster.threshold) {
     throw new NexusKapaeError(

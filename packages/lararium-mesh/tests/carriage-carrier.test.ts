@@ -25,7 +25,7 @@ import {
   foldCarriageSet, foldCarrierSet, holdsCarriage, holdsCarrier,
   type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
-import type { KahuRoster } from "../src/kapae-antigen.js";
+import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { signerOf, pubOf, kahuRoster, kahuSigners, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
@@ -38,7 +38,7 @@ const SEEDS = {
   herm:     new Uint8Array(32).fill(9),   // a PLACE — its device-minted vessel key, no persona anywhere
   stranger: new Uint8Array(32).fill(7),
 };
-function roster(threshold = 2): Promise<KahuRoster> {
+function roster(threshold = 2): Promise<KahuQuorumSeats> {
   return kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], threshold, EPOCH);
 }
 

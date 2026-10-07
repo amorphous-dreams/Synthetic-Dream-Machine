@@ -49,7 +49,7 @@ import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   foundingRoster, isPresentedAdmit, verifyPresentedAdmit, makeMultiSigQuorumVerifier, carriageEntryActCid,
-  realmIdOfCharter, type CarriageEntry, type KahuRoster, type PresentedLineageAct, type SealEpoch,
+  realmIdOfCharter, type CarriageEntry, type KahuQuorumSeats, type PresentedLineageAct, type SealEpoch,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readNexusDoc } from "./nexus-doc.js";
@@ -121,7 +121,7 @@ function normalized(b: AdmitBundle): AdmitBundle {
  * EMPTY deny board and antigen — an offline check of the act itself, never of any standing. Never throws.
  */
 export async function admitBundleHolds(
-  bundle: AdmitBundle, roster: KahuRoster, sealLineage: readonly SealEpoch[],
+  bundle: AdmitBundle, roster: KahuQuorumSeats, sealLineage: readonly SealEpoch[],
 ): Promise<boolean> {
   try {
     const verdict = await verifyPresentedAdmit({

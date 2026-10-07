@@ -40,7 +40,7 @@
 import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
-import type { QuorumSignature, KahuRoster } from "./kapae-antigen.js";
+import type { QuorumSignature, KahuQuorumSeats } from "./kapae-antigen.js";
 import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
 import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
 
@@ -193,7 +193,7 @@ export async function verifyCarrierContract(
  * twice counts once; a signature that does not verify over the entry bytes does not count; the entry MUST root
  * on the roster's charter epoch. An unbound / short roster meets no threshold → false.
  */
-async function verifyMembershipQuorum(entry: CarriageEntry, roster: KahuRoster): Promise<boolean> {
+async function verifyMembershipQuorum(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<boolean> {
   if (entry.kind !== CARRIAGE_ENTRY_DOMAIN)             return false;
   if (roster.threshold < 1)                              return false;
   if (roster.keys.length < roster.threshold)             return false;   // unbound / short roster → deny
@@ -204,7 +204,7 @@ async function verifyMembershipQuorum(entry: CarriageEntry, roster: KahuRoster):
 /** ≥ threshold distinct roster keys whose signature verifies over `bytes`. A non-roster signer, a repeat
  *  signer and a malformed signature each count as no signature; a short roster meets no threshold. */
 async function quorumSignaturesCount(
-  bytes: Uint8Array, signatures: readonly QuorumSignature[], roster: KahuRoster,
+  bytes: Uint8Array, signatures: readonly QuorumSignature[], roster: KahuQuorumSeats,
 ): Promise<boolean> {
   if (roster.threshold < 1 || roster.keys.length < roster.threshold) return false;
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
@@ -254,7 +254,7 @@ async function verifyCarrierIn(entry: CarriageEntry): Promise<boolean> {
  * disagree. Exported so a WRITER self-verifies before landing
  * an entry (a written-but-dead act reads as enforced while granting nothing).
  */
-export async function carriageEntryCounts(entry: CarriageEntry, roster: KahuRoster): Promise<boolean> {
+export async function carriageEntryCounts(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<boolean> {
   return (await countReason(entry, roster)).counted;   // the fold's own verdict — one decision, never a re-dispatch
 }
 
@@ -290,7 +290,7 @@ function entryShapeIsReadable(entry: CarriageEntry): boolean {
     typeof entry.sealEpochCid === "string" && Array.isArray(entry.signatures);
 }
 
-async function countReason(entry: CarriageEntry, roster: KahuRoster): Promise<{ counted: boolean; reason: string }> {
+async function countReason(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<{ counted: boolean; reason: string }> {
   if (!entryShapeIsReadable(entry)) return { counted: false, reason: "malformed-entry" };
   if (entry.sealEpochCid !== roster.sealEpochCid) return { counted: false, reason: "wrong-charter-epoch" };
   if (entry.action !== "admit" && entry.action !== "revoke" && entry.action !== "carry" && entry.action !== "uncarry") {
@@ -340,7 +340,7 @@ export function isCarriageDescendant(
  */
 export async function foldCarriageDetails(
   entries: Iterable<CarriageEntry> | undefined,
-  roster: KahuRoster | undefined,
+  roster: KahuQuorumSeats | undefined,
 ): Promise<CarriageFoldDetails> {
   if (entries === undefined || roster === undefined) {
     return { charterEpochCid: roster?.sealEpochCid ?? null, members: new Set<string>(), carriers: new Set<string>(), entries: [] };
@@ -510,7 +510,7 @@ export async function signCarriageContract(
  */
 export async function foldCarriageSet(
   entries: Iterable<CarriageEntry>,
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
 ): Promise<ReadonlySet<string>> {
   return (await foldCarriageDetails(entries, roster)).members;
 }
@@ -533,7 +533,7 @@ export function holdsCarriage(nym: string, memberSet: ReadonlySet<string>): bool
  */
 export async function foldCarrierSet(
   entries: Iterable<CarriageEntry>,
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
 ): Promise<ReadonlySet<string>> {
   return (await foldCarriageDetails(entries, roster)).carriers;
 }
@@ -632,7 +632,7 @@ export async function signRollAnchor(
  * Does the anchor count under `opened` — the roster of the epoch it OPENS? It must name that epoch and carry a
  * quorum of that roster's keys over its bytes. Exported so the writer self-verifies before landing an anchor.
  */
-export async function rollAnchorCounts(anchor: RollAnchor, opened: KahuRoster): Promise<boolean> {
+export async function rollAnchorCounts(anchor: RollAnchor, opened: KahuQuorumSeats): Promise<boolean> {
   if (!isRollAnchor(anchor)) return false;
   if (anchor.sealEpochCid !== opened.sealEpochCid) return false;
   return quorumSignaturesCount(rollAnchorBytes(anchor), anchor.signatures, opened);
@@ -646,7 +646,7 @@ export async function rollAnchorCounts(anchor: RollAnchor, opened: KahuRoster): 
 export async function rollAnchorParents(
   entries: Iterable<CarriageEntry>,
   anchors: Iterable<RollAnchor>,
-  closing: KahuRoster,
+  closing: KahuQuorumSeats,
 ): Promise<string[]> {
   const nodes = new Map<string, readonly string[]>();
   for (const entry of entries) {
@@ -712,7 +712,7 @@ export interface PresentedAdmitInput {
    */
   readonly lineage:         readonly PresentedLineageAct[];
   /** The membership kahu roster at the charter head. */
-  readonly roster:          KahuRoster;
+  readonly roster:          KahuQuorumSeats;
   /**
    * The charter's epoch lineage, genesis first, its last epoch the roster's head. Read only for an admit at
    * an ancestor epoch: the anchors are walked against it by `prevEpochCid`. Absent → such an admit reads
@@ -724,7 +724,7 @@ export interface PresentedAdmitInput {
   /** The Kapae antigen entries. */
   readonly antigen:         Iterable<KapaeAntigenEntry>;
   /** The ANTIGEN quorum's roster — held apart from the membership roster. */
-  readonly antigenRoster:   KahuRoster;
+  readonly antigenRoster:   KahuQuorumSeats;
   /** The antigen quorum verifier — held apart from the membership quorum check. */
   readonly antigenVerifier: QuorumVerifier;
 }
@@ -735,7 +735,7 @@ function presentedVerdict(state: PresentedAdmitState, reason: string, nym: strin
 
 /** The rosters a counted anchor chain resolves, keyed by epoch cid, and the anchors oldest-first. */
 interface AnchoredChain {
-  readonly rosters: ReadonlyMap<string, KahuRoster>;
+  readonly rosters: ReadonlyMap<string, KahuQuorumSeats>;
   readonly anchors: readonly RollAnchor[];
 }
 
@@ -748,7 +748,7 @@ interface AnchoredChain {
  */
 async function resolveAnchoredChain(
   admitEpoch: string,
-  head: KahuRoster,
+  head: KahuQuorumSeats,
   sealLineage: readonly SealEpoch[] | undefined,
   anchors: readonly RollAnchor[],
 ): Promise<AnchoredChain | string | { rejected: string }> {
@@ -765,7 +765,7 @@ async function resolveAnchoredChain(
     opens.set(anchor.sealEpochCid, anchor);
   }
 
-  const rosters = new Map<string, KahuRoster>([[head.sealEpochCid, head]]);
+  const rosters = new Map<string, KahuQuorumSeats>([[head.sealEpochCid, head]]);
   const walked: RollAnchor[] = [];
   let opened = head;
   let later: RollAnchor | null = null;
@@ -840,7 +840,7 @@ export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<
   }
 
   // The admit's epoch resolves a roster: the head's own, or the one an anchor chain carries back to it.
-  let rosters: ReadonlyMap<string, KahuRoster> = new Map([[roster.sealEpochCid, roster]]);
+  let rosters: ReadonlyMap<string, KahuQuorumSeats> = new Map([[roster.sealEpochCid, roster]]);
   let chain: readonly RollAnchor[] = [];
   if (admit.sealEpochCid !== roster.sealEpochCid) {
     const resolved = await resolveAnchoredChain(admit.sealEpochCid, roster, input.sealLineage, anchors);
@@ -979,7 +979,7 @@ export interface BoardPresentation {
 export async function readBoardPresentation(
   entries: Iterable<CarriageEntry>,
   nym: string,
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
   anchors: Iterable<RollAnchor> = [],
 ): Promise<BoardPresentation> {
   const want = nym.toLowerCase();
@@ -988,7 +988,7 @@ export async function readBoardPresentation(
   const findings: PresentationFinding[] = [];
   const forked = new Set<string>();
 
-  const walk = async (at: KahuRoster, carried: readonly RollAnchor[], path: ReadonlySet<string>): Promise<AdmitPresentation | null> => {
+  const walk = async (at: KahuQuorumSeats, carried: readonly RollAnchor[], path: ReadonlySet<string>): Promise<AdmitPresentation | null> => {
     const fold = await foldCarriageDetails(source, at);
     // The fold's details run in source order, one per entry — zip them to recover each counted act.
     const byCid = new Map<string, CarriageEntry>();
@@ -1011,7 +1011,7 @@ export async function readBoardPresentation(
     }
     for (const step of opening) {
       if (path.has(step.prevEpochCid)) continue;   // a cycle through the anchors carries nothing
-      const prior: KahuRoster = { keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid };
+      const prior: KahuQuorumSeats = { keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid };
       const found = await walk(prior, [step, ...carried], new Set([...path, step.prevEpochCid]));
       if (found) return found;
     }
@@ -1029,7 +1029,7 @@ export async function readBoardPresentation(
 export async function presentedAdmitFromBoard(
   entries: Iterable<CarriageEntry>,
   nym: string,
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
   anchors: Iterable<RollAnchor> = [],
 ): Promise<AdmitPresentation | null> {
   return (await readBoardPresentation(entries, nym, roster, anchors)).presentation;

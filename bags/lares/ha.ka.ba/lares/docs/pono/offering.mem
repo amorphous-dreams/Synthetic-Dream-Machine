@@ -320,7 +320,7 @@ Run the registry filter mechanically (memory `project_registry_filter_law.md`): 
 
 !!! ★ THE TWO OBJECTIONS, ANSWERED ★
 
-''"But the antigen reads a `KahuRoster`."'' It does — and a `KahuRoster` is ''the charter's own declared signer set, bound to its `sealEpochCid`''. The charter announces its own signers; nothing compiles a claim about third parties. It passes the filter as carriage, and it fences per-Nexus, so ''no mesh-wide list exists to seize''.
+''"But the antigen reads the `KahuQuorumSeats`."'' It does — and `KahuQuorumSeats` names ''the charter's own declared signer set, bound to its `sealEpochCid`''. The charter announces its own signers; nothing compiles a claim about third parties. It passes the filter as carriage, and it fences per-Nexus, so ''no mesh-wide list exists to seize''.
 
 ''"But a reader could walk the crossroads plane and build the list themselves."'' Yes — and that is the permitted shape, not a leak. The law forbids the house from ''compiling'' one; it does not pretend public announcements are private. `handle-kel.ts:41-43` draws the line where it belongs: the module //"exposes NO surface accepting a collection of others' Handles"//. A Herm publishing its own offering passes; a Herm compiling the offerings it relayed does not (`heraldry.mem` #/what-it-never-becomes).
 
@@ -463,6 +463,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mgo0-lbly5L-Pb-3eBkfnxiX3JnPG_Sc7GdKV5z-Gbc
+<<^ code="&#x0003;">>ni:///sha-256;R7N_vl3OTbROoxVobZxDmsncMFRoejMfc5wfSYCofX4
 
 <<^ code="&#x0004;" -> to="?">>

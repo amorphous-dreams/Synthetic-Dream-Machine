@@ -37,7 +37,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN } from "./domains.js";
-import type { KahuRoster, QuorumSignature } from "./kapae-antigen.js";
+import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
 
 // ── THE INNATE LAYER: a tender presents ─────────────────────────────────────────────────────────
 
@@ -191,7 +191,7 @@ export function normalizeOfferingKapaeEntry(raw: unknown): {
  */
 export async function foldOfferingAntigenVerdicts(
   entries: readonly OfferingKapaeEntry[],
-  roster:  KahuRoster,
+  roster:  KahuQuorumSeats,
 ): Promise<ReadonlyMap<string, OfferingAntigenVerdict>> {
   const grouped = new Map<string, OfferingKapaeEntry[]>();
   for (const e of entries) {
@@ -247,7 +247,7 @@ export async function foldOfferingAntigenVerdicts(
  * surface `rejectedActCids` to an operator.
  */
 export async function auditOfferingAntigen(
-  entries: readonly OfferingKapaeEntry[], roster: KahuRoster,
+  entries: readonly OfferingKapaeEntry[], roster: KahuQuorumSeats,
 ): Promise<ReadonlyMap<string, OfferingAntigenAudit>> {
   const verdicts = await foldOfferingAntigenVerdicts(entries, roster);
   const grouped = new Map<string, string[]>();
@@ -296,7 +296,7 @@ export async function auditOfferingAntigen(
 }
 
 export async function foldOfferingAntigen(
-  entries: readonly OfferingKapaeEntry[], roster: KahuRoster,
+  entries: readonly OfferingKapaeEntry[], roster: KahuQuorumSeats,
 ): Promise<Set<string>> {
   const aside = new Set<string>();
   for (const [pluginsCid, verdict] of await foldOfferingAntigenVerdicts(entries, roster)) {
@@ -315,7 +315,7 @@ export async function foldOfferingAntigen(
  * this subject: fail-closed on a short or unbound roster, a foreign epoch, a stranger's signature, or a
  * signer counted twice. Each of those has its own CONTROL in `offering-antigen.test.ts`.
  */
-async function verifyOfferingQuorum(entry: OfferingKapaeEntry, roster: KahuRoster): Promise<boolean> {
+async function verifyOfferingQuorum(entry: OfferingKapaeEntry, roster: KahuQuorumSeats): Promise<boolean> {
   if (roster.threshold < 1)                        return false;
   if (roster.keys.length < roster.threshold)       return false;   // unbound/short roster → deny
   if (entry.sealEpochCid !== roster.sealEpochCid)  return false;   // roots on an unknown epoch → deny

@@ -270,13 +270,17 @@ forges a shared reserve seed split across guardian cards
 
 * ''The vessel key signs for three relations'' — the place's carrier seal, the wire's proof and the boot
   invite — where each relation wants its own face. The per-Nexus wire key rides the re-found.
-* ''`KahuRoster`'' names a seated key-set and its threshold — the quorum's seats, never a roster of who
-  belongs — and owes a rename toward its seats.
-* ''`lares nexus rite cabal`'' seats the kahu QUORUM under the word for the kahu CABAL — the people who
-  fill the seats, never the seats themselves.
-* ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) — the Keyhive membership document of the kahu,
-  each seated as a PersonaGroup; whether it names the cabal or the quorum's seats stays owed a check,
-  and a stable URI that signed material names renames only by a deliberate re-key.
+* ''`lares nexus rite cabal`'' seats the kahu QUORUM — it forges the reserve and seats the genesis epoch,
+  and mints no person — under the word for the kahu CABAL, the people who fill the seats. It owes
+  `rite quorum`; the e2e harness calls the verb by name, so the rename lands with the harness.
+
+The cabal ⊥ quorum split stands in code where it can:
+
+* ''`KahuQuorumSeats`'' names the quorum's seats — a seated key-set, its threshold and the charter epoch
+  it authorizes. Keys, never people.
+* ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) names the CABAL: a Keyhive membership document
+  whose members are PersonaGroups, with no threshold, AID or succession. Its digest seeds the document's
+  Keyhive ChangeId and rides Keyhive's signed events, so it renames only by a deliberate re-key.
 
 <<~/ahu>>
 
@@ -384,6 +388,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UDYz8aQ5lJNbcqYhSl5DXKYPK6dd3-FepSyRXzNRZZU
+<<^ code="&#x0003;">>ni:///sha-256;qE_O0JjXl7_uah1-DWwobcJdWGLs3695n3_ecb9WHds
 
 <<^ code="&#x0004;" -> to="?">>

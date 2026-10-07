@@ -9,7 +9,7 @@
  *
  * THE NAMING RULING LANDED (canon `cabal-realm#six-joints`): the word retires to the FOUNDING ACT, and
  * the other joints hold their own names — `SealEpoch`/`verifySealLineage` for the lineage, `RealmGlamour`/
- * `projectRealmGlamour` for the published face, `KahuRoster` for the seats. Two joints collapsed as a gain:
+ * `projectRealmGlamour` for the published face, `KahuQuorumSeats` for the seats. Two joints collapsed as a gain:
  * the NAME reads as the content-address of the founding act, and the evidentiary MUNIMENT collapses whole,
  * since content-addressing makes a record self-proving natively.
  *
@@ -24,7 +24,7 @@
  *
  * The `bags/nexus` charter DOC carries the AUTHORITY HOME (data-as-authority): the operator SEATS the roster
  * into that doc, and the pure `kapae-antigen` fold/verify read it back through here. This file names the
- * founding quorum's SHAPE (three PersonaGroups, 2-of-3) and folds a loaded doc into the `KahuRoster`
+ * founding quorum's SHAPE (three PersonaGroups, 2-of-3) and folds a loaded doc into the `KahuQuorumSeats`
  * the antigen consumes — FAILING CLOSED whenever the doc is absent, unseated, or short of a quorum.
  *
  * THE FOUNDING QUORUM — three founding kahu cryptographic-individuals (persona-policy: each PersonaGroup
@@ -47,7 +47,7 @@
  */
 
 import { NEXUS_DOC_DOMAIN } from "./domains.js";
-import type { KahuRoster } from "./kapae-antigen.js";
+import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { sha256HexSync, canonicalJson } from "./crypto.js";
 import { type SealEpoch, verifySealLineage, sealKeySetHash } from "./wax-stamp.js";
 import { type FederationPosture, DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
@@ -167,16 +167,16 @@ export function genesisSealEpochCid(seatedKeys: readonly string[], threshold: nu
 }
 
 /**
- * The founding `KahuRoster`, folded from a loaded charter doc — the roster the antigen verifies against.
+ * The founding `KahuQuorumSeats`, folded from a loaded charter doc — the roster the antigen verifies against.
  * The doc IS the authority home. FAILS CLOSED: an absent doc, a wrong-kind doc, or a doc with no
  * established charter epoch yields an EMPTY key-set + empty epoch, so the multi-sig verifier's
  * `keys.length < threshold` and epoch-match guards both deny. Only a doc carrying a real charter epoch
  * AND seated keys raises a live roster.
  */
-export function foundingRoster(doc: NexusDoc | null): KahuRoster {
+export function foundingRoster(doc: NexusDoc | null): KahuQuorumSeats {
   const threshold = doc && Number.isInteger(doc.threshold) && doc.threshold >= 1 ? doc.threshold : UNREADABLE_THRESHOLD_FLOOR;
   const keys = seatedKahuKeys(doc);
-  const empty: KahuRoster = { keys: [], threshold, sealEpochCid: "" };
+  const empty: KahuQuorumSeats = { keys: [], threshold, sealEpochCid: "" };
 
   // Pre-rotation chain path: a present chain MUST verify its whole lineage AND its HEAD must bind the
   // seated key-set — either failure folds to the empty (inert) roster. The antigen then roots on the

@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
-import { signAntigenEntry, antigenEntryBytes, antigenActCid, foldAntigenVerdicts, foldAntigenSet, makeMultiSigQuorumVerifier, denyingQuorumVerifier, type KapaeAntigenEntry, type KahuRoster } from "../src/kapae-antigen.js";
+import { signAntigenEntry, antigenEntryBytes, antigenActCid, foldAntigenVerdicts, foldAntigenSet, makeMultiSigQuorumVerifier, denyingQuorumVerifier, type KapaeAntigenEntry, type KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { antigenEntriesFromBoard } from "../src/antigen-board.js";
 import { mutableLarRecord } from "../src/base-doc.js";
 import { hex } from "../src/crypto.js";
 const EPOCH="charter-a", victim="deadbeef".repeat(8), seeds=[new Uint8Array(32).fill(1),new Uint8Array(32).fill(2),new Uint8Array(32).fill(3)];
 const sign=(s:Uint8Array)=>(b:Uint8Array)=>ed.signAsync(b,s).then(hex), pub=(s:Uint8Array)=>ed.getPublicKeyAsync(s).then(hex), verifier=makeMultiSigQuorumVerifier();
-async function roster():Promise<KahuRoster>{return {keys:await Promise.all(seeds.map(pub)),threshold:2,sealEpochCid:EPOCH};}
+async function roster():Promise<KahuQuorumSeats>{return {keys:await Promise.all(seeds.map(pub)),threshold:2,sealEpochCid:EPOCH};}
 async function entry(action:"kapae"|"un_kapae",parents:string[]=[],pair=seeds.slice(0,2)):Promise<KapaeAntigenEntry>{return signAntigenEntry({nym:victim,action,parents,sealEpochCid:EPOCH},await Promise.all(pair.map(async s=>({signer:await pub(s),sign:sign(s)}))));}
 describe("Kapae antigen causal frontier",()=>{
  test("valid descendant withdraws founded ban",async()=>{const a=await entry("kapae"),b=await entry("un_kapae",[a.actCid]),r=await roster();expect((await foldAntigenVerdicts([a,b],r,verifier)).get(victim)).toBe("withdrawn");expect((await foldAntigenSet([a,b],r,verifier)).has(victim)).toBe(false);});

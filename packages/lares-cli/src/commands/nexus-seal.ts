@@ -39,7 +39,7 @@ import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
   defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
-  type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuRoster,
+  type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats,
   type QuorumSignature, type CharterSealState,
 } from "@lararium/mesh";
 import {
@@ -617,7 +617,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // whose head never lands names an epoch no lineage holds. A closing head that roots no roster (an inert
   // charter) counted no act, so it has nothing to carry and writes no anchor.
   const closing = foundingRoster(doc);
-  const opened: KahuRoster = { keys: seatedKeys, threshold, sealEpochCid };
+  const opened: KahuQuorumSeats = { keys: seatedKeys, threshold, sealEpochCid };
   let anchored: NexusRollAnchorResult | null = null;
   if (closing.sealEpochCid.length > 0) {
     try {

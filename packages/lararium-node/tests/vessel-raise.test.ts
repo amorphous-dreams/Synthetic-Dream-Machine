@@ -15,7 +15,7 @@ import * as ed from "@noble/ed25519";
 import {
   hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid,
   signRaiseGrant, emptyLarDoc, writeCarriageEntry, carriageDocUrl, NEXUS_DOC_DOMAIN,
-  type RaiseChallenge, type RaiseNexusReading, type CarriageEntry, type KahuRoster, type LarDoc, type NexusDoc,
+  type RaiseChallenge, type RaiseNexusReading, type CarriageEntry, type KahuQuorumSeats, type LarDoc, type NexusDoc,
 } from "@lararium/mesh";
 import {
   standRaiseDoor, placeCarriedNexuses, unionReadings, verifyNymSignature, type RaiseDoorOptions,
@@ -35,7 +35,7 @@ const PLACE_SEED = new Uint8Array(32).fill(11);
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 
-async function roster(): Promise<KahuRoster> {
+async function roster(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(KAHU_SEEDS.map(pubOf));
   return { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
 }

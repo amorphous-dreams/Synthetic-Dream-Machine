@@ -30,7 +30,7 @@ import {
   materializeSharedLarDoc, kapaeAntigenDocUrl, edgeKapaeBoardDocUrl, crossroadsDocUrl,
   whoBoardDocUrl, carriageDocUrl, vouchBoardDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry, foldAntigenSet,
-  makeMultiSigQuorumVerifier, type KahuRoster,
+  makeMultiSigQuorumVerifier, type KahuQuorumSeats,
   writeEdgeKapae, signEdgeKapae, shadowSetFromBoard,
   signRealmBagRegistration, writeRealmBagRegistration, realmDocUrl, realmBagAnnounceKey,
   publicRealmBooksFromDoc, crossroadsAnnounceOf,
@@ -72,7 +72,7 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
 const KAHU = [seedOf(1), seedOf(2), seedOf(3)];
 
-async function roster(epoch: string): Promise<KahuRoster> {
+async function roster(epoch: string): Promise<KahuQuorumSeats> {
   return { keys: await Promise.all(KAHU.map(pubOf)), threshold: 2, sealEpochCid: epoch };
 }
 

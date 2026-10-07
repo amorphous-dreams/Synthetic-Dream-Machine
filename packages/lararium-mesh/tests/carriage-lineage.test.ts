@@ -5,7 +5,7 @@ import {
   foldCarriageSet,
   type CarriageEntry,
 } from "../src/carriage-registry.js";
-import type { KahuRoster } from "../src/kapae-antigen.js";
+import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { kahuRoster, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
@@ -15,7 +15,7 @@ const SEEDS = {
   joiner: new Uint8Array(32).fill(5),
 };
 
-function roster(): Promise<KahuRoster> {
+function roster(): Promise<KahuQuorumSeats> {
   return kahuRoster([SEEDS.guru, SEEDS.telarus], 2, EPOCH);
 }
 

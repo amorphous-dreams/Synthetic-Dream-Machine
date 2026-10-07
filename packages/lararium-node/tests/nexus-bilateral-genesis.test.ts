@@ -42,7 +42,7 @@ import {
   hex, genesisSealEpochCid, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, PERSONA_GLAMOUR_CONTEXT,
-  type NexusDoc, type KahuRoster, type CarriageEntry,
+  type NexusDoc, type KahuQuorumSeats, type CarriageEntry,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
@@ -172,7 +172,7 @@ function hexToBytes(h: string): Uint8Array {
  * REVOKE counts). This models "revert the fix": if an admit counted on its kahu quorum WITHOUT the operator's
  * own consent, a Nexus could conscript. Verifies ≥ threshold distinct roster signatures over the entry bytes.
  */
-async function countsQuorumOnly(entry: CarriageEntry, roster: KahuRoster): Promise<boolean> {
+async function countsQuorumOnly(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<boolean> {
   if (entry.sealEpochCid !== roster.sealEpochCid) return false;
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
   const bytes = carriageEntryBytes({

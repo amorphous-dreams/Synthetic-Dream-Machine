@@ -43,7 +43,7 @@ import {
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
-  type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature, type RollAnchor,
+  type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -108,7 +108,7 @@ export interface NexusContractResult {
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root an admit on. */
-function seatedRosterOrRefuse(sealHome: string): KahuRoster {
+function seatedRosterOrRefuse(sealHome: string): KahuQuorumSeats {
   const roster = foundingRoster(readNexusDoc(sealHome));
   if (roster.sealEpochCid.length === 0 || roster.keys.length < roster.threshold) {
     throw new NexusContractError(
@@ -326,9 +326,9 @@ export interface NexusRollAnchorResult {
 export async function runNexusRollAnchor(opts: {
   readonly sealHome:    string;
   /** The roster at the head the roll closes. */
-  readonly closing:     KahuRoster;
+  readonly closing:     KahuQuorumSeats;
   /** The roster the roll seats, rooted on the new head's epoch cid. */
-  readonly opened:      KahuRoster;
+  readonly opened:      KahuQuorumSeats;
   readonly storageDir?: string;
 }): Promise<NexusRollAnchorResult> {
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new NexusContractError(

@@ -58,16 +58,17 @@ export interface KapaeAntigenEntry {
 }
 
 /**
- * The founding-kahu roster the antigen signs against — the concrete keys + threshold for ONE charter
- * epoch. An UNBOUND roster (empty `keys`) can never meet a threshold ≥ 1, so it FAILS CLOSED: every
- * entry stays ignored until the operator seats the real founding keys (see ./nexus-seal-seed).
+ * The kahu QUORUM's seats the antigen signs against — the seated keys + threshold for ONE charter epoch.
+ * It names keys, never people: the kahu cabal is the people who fill the seats, and this carries none of
+ * them. Unbound seats (empty `keys`) can never meet a threshold ≥ 1, so they FAIL CLOSED: every entry stays
+ * ignored until the operator seats the real founding keys (see ./nexus-seal-seed).
  */
-export interface KahuRoster {
-  /** The founding kahu ed25519 verifying-key hexes authorized to sign under this charter epoch. */
+export interface KahuQuorumSeats {
+  /** The seated ed25519 verifying-key hexes authorized to sign under this charter epoch. */
   readonly keys:            readonly string[];
-  /** k — the number of DISTINCT roster signatures a valid quorum act carries (2-of-3 at founding). */
+  /** k — the number of DISTINCT seated signatures a valid quorum act carries (2-of-3 at founding). */
   readonly threshold:       number;
-  /** The charter epoch this roster authorizes; an entry rooting elsewhere does not verify here. */
+  /** The charter epoch these seats authorize; an entry rooting elsewhere does not verify here. */
   readonly sealEpochCid: string;
 }
 
@@ -91,7 +92,7 @@ export function antigenActCid(entry: Omit<KapaeAntigenEntry, "signatures" | "act
  * verifier denies at the call site; a verifier that cannot decide returns false. Never allow-all.
  */
 export interface QuorumVerifier {
-  verifyQuorum(entry: KapaeAntigenEntry, roster: KahuRoster): Promise<boolean> | boolean;
+  verifyQuorum(entry: KapaeAntigenEntry, roster: KahuQuorumSeats): Promise<boolean> | boolean;
 }
 
 /**
@@ -118,7 +119,7 @@ export const denyingQuorumVerifier: QuorumVerifier = {
  */
 export function makeMultiSigQuorumVerifier(): QuorumVerifier {
   return {
-    async verifyQuorum(entry: KapaeAntigenEntry, roster: KahuRoster): Promise<boolean> {
+    async verifyQuorum(entry: KapaeAntigenEntry, roster: KahuQuorumSeats): Promise<boolean> {
       if (entry.kind !== KAPAE_ANTIGEN_DOMAIN)                 return false;
       if (roster.threshold < 1)                               return false;
       if (roster.keys.length < roster.threshold)              return false;   // unbound/short roster → deny
@@ -172,7 +173,7 @@ export type AntigenVerdict = "held" | "withdrawn" | "unsettled" | "unavailable" 
 
 export async function foldAntigenVerdicts(
   entries: Iterable<KapaeAntigenEntry>,
-  roster: KahuRoster,
+  roster: KahuQuorumSeats,
   verifier: QuorumVerifier,
 ): Promise<ReadonlyMap<string, AntigenVerdict>> {
   const grouped = new Map<string, KapaeAntigenEntry[]>();
@@ -201,7 +202,7 @@ export async function foldAntigenVerdicts(
 }
 
 export async function foldAntigenSet(
-  entries: Iterable<KapaeAntigenEntry>, roster: KahuRoster, verifier: QuorumVerifier,
+  entries: Iterable<KapaeAntigenEntry>, roster: KahuQuorumSeats, verifier: QuorumVerifier,
 ): Promise<ReadonlySet<string>> {
   const kapaed = new Set<string>();
   for (const [nym, verdict] of await foldAntigenVerdicts(entries, roster, verifier)) if (verdict === "held") kapaed.add(nym);

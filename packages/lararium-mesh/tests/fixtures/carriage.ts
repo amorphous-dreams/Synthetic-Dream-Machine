@@ -14,7 +14,7 @@ import {
   signCarriageQuorum, signCarriageContract, signCarrierContract,
   type CarriageAction, type CarriageEntry, type QuorumSignature,
 } from "../../src/carriage-registry.js";
-import type { KahuRoster } from "../../src/kapae-antigen.js";
+import type { KahuQuorumSeats } from "../../src/kapae-antigen.js";
 
 /** The hex-signing function a seed holds. */
 export const signerOf = (seed: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, seed).then(hex);
@@ -28,7 +28,7 @@ export function kahuSigners(seeds: readonly Uint8Array[]) {
 }
 
 /** A k-of-n roster over exactly the seeds named, rooted on `sealEpochCid`. */
-export async function kahuRoster(seeds: readonly Uint8Array[], threshold: number, sealEpochCid: string): Promise<KahuRoster> {
+export async function kahuRoster(seeds: readonly Uint8Array[], threshold: number, sealEpochCid: string): Promise<KahuQuorumSeats> {
   return { keys: await Promise.all(seeds.map(pubOf)), threshold, sealEpochCid };
 }
 

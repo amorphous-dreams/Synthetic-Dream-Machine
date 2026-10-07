@@ -35,7 +35,7 @@ describe("crossing-direction — inward runs free, outward answers to the cabal"
     expect(d.direction).toBe("outward");
     expect(d.needsCabal).toBe(true);
     expect(d.sourceGrade).toBe("admin");
-    expect(d.reading).toMatch(/cabal|declassif|no return/i);
+    expect(d.reading).toMatch(/quorum|declassif|no return/i);
   });
 
   it("★ one tier to itself reads LATERAL and stays cheap ★", () => {

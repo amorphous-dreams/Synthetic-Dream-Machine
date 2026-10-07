@@ -24,7 +24,7 @@ import {
   rollAnchorsFromBoard, writeRollAnchor, writeCarriageEntry, carriageEntriesFromBoard, presentationFromBoardDoc,
 } from "../src/carriage-board.js";
 import { isPresentedAdmit } from "../src/auth-wire.js";
-import { makeMultiSigQuorumVerifier, type KahuRoster } from "../src/kapae-antigen.js";
+import { makeMultiSigQuorumVerifier, type KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, type SealEpoch } from "../src/wax-stamp.js";
 import { emptyLarDoc } from "../src/base-doc.js";
 import { pubOf, kahuSigners, carriageAct } from "./fixtures/carriage.js";
@@ -50,7 +50,7 @@ async function charter(rolls: 1 | 2) {
     if (!r2.ok) throw new Error(r2.reason);
     lineage.push(r2.epoch);
   }
-  const roster = (keys: string[], e: SealEpoch): KahuRoster => ({ keys, threshold: 2, sealEpochCid: e.epochCid });
+  const roster = (keys: string[], e: SealEpoch): KahuQuorumSeats => ({ keys, threshold: 2, sealEpochCid: e.epochCid });
   return {
     lineage,
     r0: roster(oldK, lineage[0]!), r1: roster(midK, lineage[1]!),
@@ -65,7 +65,7 @@ async function revokeAt(epoch: string, kahu: readonly Uint8Array[], parents: str
   return carriageAct(JOINER, "revoke", { kahu: kahu.slice(0, 2), epoch, parents });
 }
 async function anchor(
-  closing: KahuRoster, opens: SealEpoch, parents: string[], signers: readonly Uint8Array[],
+  closing: KahuQuorumSeats, opens: SealEpoch, parents: string[], signers: readonly Uint8Array[],
 ): Promise<RollAnchor> {
   return signRollAnchor(
     { prevEpochCid: closing.sealEpochCid, sealEpochCid: opens.epochCid, prevKeys: closing.keys,
@@ -74,7 +74,7 @@ async function anchor(
   );
 }
 
-async function verify(admit: CarriageEntry, lineage: PresentedLineageAct[], head: KahuRoster,
+async function verify(admit: CarriageEntry, lineage: PresentedLineageAct[], head: KahuQuorumSeats,
                       sealLineage: SealEpoch[] | undefined, denyBoard: CarriageEntry[] = []) {
   return verifyPresentedAdmit({
     admit, lineage, roster: head, ...(sealLineage ? { sealLineage } : {}), denyBoard,
@@ -131,7 +131,7 @@ describe("an admit in the anchor's past carries across the roll", () => {
     // A FORKED genesis: internally valid, never on this charter's lineage.
     const forkKeys = await keysOf(FORK);
     const fork = genesisCharterEpoch(forkKeys, 2, sealKeySetHash(await keysOf(MID), 2));
-    const forkRoster: KahuRoster = { keys: forkKeys, threshold: 2, sealEpochCid: fork.epochCid };
+    const forkRoster: KahuQuorumSeats = { keys: forkKeys, threshold: 2, sealEpochCid: fork.epochCid };
     const admit = await admitAt(fork.epochCid, FORK);
     const roll = await signRollAnchor(
       { prevEpochCid: fork.epochCid, sealEpochCid: c.r1.sealEpochCid, prevKeys: forkRoster.keys,

@@ -27,7 +27,7 @@ import { hex, hexToBytes } from "../src/crypto.js";
 import { quorumEntryBytes, type QuorumEntryFields } from "../src/quorum-entry.js";
 import {
   makeMultiSigQuorumVerifier as makeAntigenVerifier, KAPAE_ANTIGEN_DOMAIN,
-  type KapaeAntigenEntry, type KahuRoster,
+  type KapaeAntigenEntry, type KahuQuorumSeats,
 } from "../src/kapae-antigen.js";
 import {
   foldCarriageSet, holdsCarriage, CARRIAGE_ENTRY_DOMAIN, carriageContractBytes, carriageEntryBytes,
@@ -110,7 +110,7 @@ describe("③ THE REPLAY, walked end to end — a real signature crossing boards
 });
 
 describe("④ each board's LIVE verifier rejects a foreign-domain entry", () => {
-  async function roster(): Promise<KahuRoster> {
+  async function roster(): Promise<KahuQuorumSeats> {
     return { keys: await Promise.all(KAHU_SEEDS.map(pubOf)), threshold: 2, sealEpochCid: EPOCH };
   }
 

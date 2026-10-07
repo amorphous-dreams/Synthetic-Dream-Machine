@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { KahuRoster } from "@lararium/mesh";
+import type { KahuQuorumSeats } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../src/held-quorum.js";
 
@@ -33,7 +33,7 @@ afterEach(() => {
 class DoorRefusal extends Error {}
 const refuse = (held: number, k: number): Error => new DoorRefusal(`door: ${held} of ${k}`);
 
-const rosterOf = (keys: string[], threshold: number): KahuRoster => ({ keys, threshold, sealEpochCid: "epoch0-x" });
+const rosterOf = (keys: string[], threshold: number): KahuQuorumSeats => ({ keys, threshold, sealEpochCid: "epoch0-x" });
 
 describe("selectHeldQuorumSigners — one selector, each door's own refusal", () => {
   it("selects exactly threshold distinct held roots seated in the roster", async () => {

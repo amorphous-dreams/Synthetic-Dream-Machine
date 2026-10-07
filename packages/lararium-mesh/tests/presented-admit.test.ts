@@ -23,7 +23,7 @@ import {
   verifyPresentedAdmit, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import {
-  signAntigenEntry, makeMultiSigQuorumVerifier, type KahuRoster, type KapaeAntigenEntry,
+  signAntigenEntry, makeMultiSigQuorumVerifier, type KahuQuorumSeats, type KapaeAntigenEntry,
 } from "../src/kapae-antigen.js";
 import { pubOf, kahuRoster, kahuSigners as signersOf, carriageAct } from "./fixtures/carriage.js";
 
@@ -41,12 +41,12 @@ const SEEDS = {
   warden1:   new Uint8Array(32).fill(11),
   warden2:   new Uint8Array(32).fill(12),
 };
-function roster(sealEpochCid = EPOCH): Promise<KahuRoster> {
+function roster(sealEpochCid = EPOCH): Promise<KahuQuorumSeats> {
   return kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], 2, sealEpochCid);
 }
 
 /** The antigen roster stands on the wardens' own keys, never the membership quorum's. */
-function antigenRoster(): Promise<KahuRoster> {
+function antigenRoster(): Promise<KahuQuorumSeats> {
   return kahuRoster([SEEDS.warden1, SEEDS.warden2], 2, EPOCH);
 }
 

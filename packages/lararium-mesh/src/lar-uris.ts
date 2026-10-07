@@ -481,13 +481,20 @@ export function emptySessionsDoc(): SessionsDoc     { return emptyLarDoc(); }
 /** Sentinel URI for a vessel's PersonaGroup membership document. */
 export const PERSONA_GROUP_SENTINEL_URI = stableLarUri("sentinel/persona-group");
 /**
- * Sentinel URI for a Nexus's MeshCabal membership document — the body of KAHU, the kuleana-bearing tenders
- * of one nexus-mesh, each seated as a PersonaGroup.
+ * Sentinel URI for the kahu CABAL's membership document — the kuleana-bearing tenders of one nexus-mesh,
+ * each a PersonaGroup member of it.
  *
- * The name says a ROLE, never a rank. A cabal seat carries the tending a Nexus lives by; it confers no tier
- * above anyone, and its holders hold no power over each other that the membership graph does not already
+ * It names the CABAL, never the QUORUM. The document holds members and nothing else: no threshold, no AID,
+ * no succession. The quorum's seats — the keys and threshold a charter epoch authorizes — ride
+ * `KahuQuorumSeats` off the charter, and membership here grants none of them.
+ *
+ * The name says a ROLE, never a rank. Membership carries the tending a Nexus lives by; it confers no tier
+ * above anyone, and its members hold no power over each other that the membership graph does not already
  * carry. Any name here that reads as an office — administrator, owner, root — would import an authority the
- * seat does not hold, so the slot names what its holders DO.
+ * membership does not hold, so the slot names what its members DO.
+ *
+ * The URI's digest seeds the Keyhive document's ChangeId (`changeIdForBag`), so it rides Keyhive's own
+ * signed events in every archive that holds the document. It renames only by a deliberate re-key.
  */
 export const MESH_CABAL_SENTINEL_URI   = stableLarUri("sentinel/kahu-cabal");
 

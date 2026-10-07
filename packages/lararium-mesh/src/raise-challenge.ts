@@ -46,7 +46,7 @@ import {
   verifyPresentedAdmit, type CarriageEntry, type PresentedAdmitState, type PresentedLineageAct,
 } from "./carriage-registry.js";
 import type { SealEpoch } from "./wax-stamp.js";
-import { makeMultiSigQuorumVerifier, type KahuRoster, type KapaeAntigenEntry } from "./kapae-antigen.js";
+import { makeMultiSigQuorumVerifier, type KahuQuorumSeats, type KapaeAntigenEntry } from "./kapae-antigen.js";
 import type { RaisedCaps } from "./vessel-standing.js";
 
 /** Domain separation — a raise signature can never be replayed as any other act this house signs. */
@@ -95,13 +95,13 @@ export interface RaiseNexusReading {
   /** The Nexus's AID — what `RaiseChallenge.nexus` names. */
   readonly aid:           string;
   /** The Nexus's membership roster at the head of the charter the vessel holds for it. */
-  readonly roster:        KahuRoster;
+  readonly roster:        KahuQuorumSeats;
   /** The Nexus's carriage board, read as a DENY board (counted revokes only). */
   readonly denyBoard:     readonly CarriageEntry[];
   /** The Nexus's Kapae antigen entries. */
   readonly antigen:       readonly KapaeAntigenEntry[];
   /** The ANTIGEN quorum's roster, held apart from the membership roster. */
-  readonly antigenRoster: KahuRoster;
+  readonly antigenRoster: KahuQuorumSeats;
   /** The charter's epoch lineage, genesis first — what an admit at a rolled epoch is walked against. A lineage
    *  whose rolls do not verify reads no ancestor. Absent → only an admit at the head reads held. */
   readonly sealLineage?:  readonly SealEpoch[];

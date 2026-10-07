@@ -13,7 +13,7 @@
  *
  * ── SO THE COST SITS ON THE OUTWARD CROSSING ────────────────────────────────────────────────────
  * A user may copy and alter a public tiddler into a more private bag. Moving anything from a private
- * bag toward a public one belongs to the kahu-cabal signers, whose quorum carries the integrity that
+ * bag toward a public one belongs to the kahu quorum's seated signers, whose threshold carries the integrity that
  * the decision to relax demands — a per-vessel `admin` cap answers for one hand, and a crossing that
  * cannot be walked back wants more hands than one.
  *
@@ -33,7 +33,7 @@ export interface CrossingCost {
   readonly direction:   CrossingDirection;
   /** What the SOURCE bag's cap must answer. Outward wants owner authority; inward wants a reader. */
   readonly sourceGrade: "read" | "admin";
-  /** Whether the crossing additionally wants a kahu-cabal quorum, which only an outward one does. */
+  /** Whether the crossing additionally wants the kahu quorum, which only an outward one does. */
   readonly needsCabal:  boolean;
   /** The direction, and why it costs what it costs. */
   readonly reading:     string;
@@ -55,7 +55,7 @@ export function crossingDirection(at: { from: CapTier; to: CapTier }): CrossingC
              reading: `this crossing carries ${at.from} material into ${at.to}, so it RELAXES confinement — `
                     + "material held for few becomes material held for many, and no return crossing exists. "
                     + "Declassifying wants the source owner's authority, and the decision to relax wants the "
-                    + "kahu-cabal quorum behind it: one hand cannot answer for an act nobody can walk back." };
+                    + "kahu quorum behind it: one hand cannot answer for an act nobody can walk back." };
   }
   if (to < from) {
     return { direction: "inward", sourceGrade: "read", needsCabal: false,

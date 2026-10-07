@@ -18,7 +18,7 @@ import {
   carriageEntryCounts,
   CARRIAGE_ENTRY_DOMAIN, carriageEntryActCid, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
-import type { KahuRoster } from "../src/kapae-antigen.js";
+import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { pubOf, kahuRoster, kahuSigners, contractIn, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
@@ -31,7 +31,7 @@ const SEEDS = {
   joiner:   new Uint8Array(32).fill(5),   // the operator being admitted
   stranger: new Uint8Array(32).fill(7),
 };
-function roster(threshold = 2): Promise<KahuRoster> {
+function roster(threshold = 2): Promise<KahuQuorumSeats> {
   return kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], threshold, EPOCH);
 }
 
@@ -96,7 +96,7 @@ describe("the members fold — admit needs BOTH the kahu quorum AND the operator
   });
 
   test("an unbound (empty-key) roster fails closed", async () => {
-    const empty: KahuRoster = { keys: [], threshold: 2, sealEpochCid: EPOCH };
+    const empty: KahuQuorumSeats = { keys: [], threshold: 2, sealEpochCid: EPOCH };
     const nym = await pubOf(SEEDS.joiner);
     const set = await foldCarriageSet([await admitEntry()], empty);
     expect(holdsCarriage(nym, set)).toBe(false);
