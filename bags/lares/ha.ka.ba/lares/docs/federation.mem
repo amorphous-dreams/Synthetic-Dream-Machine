@@ -133,7 +133,7 @@ pnpm install && pnpm -r build      # bootstrap the lares CLI + node
 lares vessel stand --admit admit.json      # idempotent join-standup
 ```
 
-`lares vessel stand --admit` runs the same found-if-absent standup as `--install` — build, mempalace, genesis (skipped; `island.bin` rides the clone) — but the init step ''joins'' the PersonaGroup from the payload instead of founding a new one: it loads the operator key (same DID = a member), applies the cap-events, writes the local `social-bootstrap.json` into the vessel's own store, and stands the node up. The keyhive boot gates then verify membership and the vessel goes live. Re-running is a no-op (the bootstrap already lives).
+`lares vessel stand --admit` runs the same found-if-absent standup as `--install` — build, mempalace, genesis (skipped; `island.bin` rides the clone) — but the init step ''joins'' the PersonaGroup from the payload instead of founding a new one: it loads the operator key (same DID = a member), applies the cap-events, writes the local `social-bootstrap.json` into the vessel's own store, and stands the node up. The keyhive boot gates then verify its identity and the vessel goes live. Re-running is a no-op (the bootstrap already lives).
 
 <<~/ahu>>
 
@@ -141,7 +141,7 @@ lares vessel stand --admit admit.json      # idempotent join-standup
 
 !! The Gate, Honestly
 
-A joining vessel proves itself on every boot through three keyhive gates: its DID matches its key (A), its Individual is a member of the PersonaGroup (B), and the PersonaGroup is a member of the Nexus MeshCabal (C). Under the retired stopgap all three passed trivially because the vessel //was// the same operator — which is exactly the merge the True Name Model refuses. Under the True Name Model, gate B fails until the vessel's OWN key is delegated in, so the contact-card exchange is not a delay but ''the gate doing its work'': the vessel must be admitted as itself.
+A joining vessel proves its IDENTITY on every boot, and only its identity: its DID matches its key (Gate A), and a device delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate). Cabal affiliation never gates boot. A PersonaGroup belongs to many Nexuses or none, so Gate C — the PersonaGroup's membership in the Nexus MeshCabal — belongs at ACCESS to the cabal's shared canon (`boot-daemon-keyhive.ts`; ''owed in code'': no access path reads it yet), and it checks cabal MEMBERSHIP, never the kahu quorum's seats. Under the retired stopgap every gate passed trivially because the vessel //was// the same operator — which is exactly the merge the True Name Model refuses. Under the True Name Model, the Binding Gate fails until the vessel's OWN key is delegated in, so the contact-card exchange is not a delay but ''the gate doing its work'': the vessel must be admitted as itself.
 
 A vessel never joins by pulling a repo; it joins by receiving — deliberately, out-of-band — what the founder hands it. The public clone carries the house; the operator carries the key. The founder hands more than the delegation: the ''`@cad` read-key rides the admission grant'', sealed to the joinee's ephemeral recipient and ''bound by a digest into the persona-signed transcript'' — the joinee installs it only on a signature-covered match, superseding its self-minted phantom, so same-Nexus members read each other's sealed bodies (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/keyring-delivery">>).
 
@@ -163,6 +163,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JiyxsFPnU2LfvOfCxQNIN4gCNg0zMtlSFcwrzvna-Wc
+<<^ code="&#x0003;">>ni:///sha-256;fytBHoPgsnPmrxpvWaXdGCbu_dGKEGMQiZ7aQe7YOXE
 
 <<^ code="&#x0004;" -> to="?">>

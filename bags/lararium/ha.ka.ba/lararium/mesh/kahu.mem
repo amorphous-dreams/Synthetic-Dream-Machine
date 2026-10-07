@@ -219,6 +219,10 @@ shared key-set. A seat commits its own COLD next key with a proof of possession 
 A routine roll takes k per-seat REVEALS, and every digest left unrevealed carries forward as reserve — a
 partial rotation. ''No Guardian takes part in a routine roll.''
 
+''Owed in code — the re-found.'' The charter holds ONE digest over the next key-set and threshold
+(`nextKeyCommit`, `wax-stamp.ts`). The per-seat `nextKeyDigests[]` · `nextThreshold`, `seal commit --seat`
+and the partial rotation land inside the re-found. The signed roll below stands in code.
+
 ''EVERY ROLL IS SIGNED BY THE KEYS IT REVEALS.'' At least threshold of the revealed keys — the keys whose
 digests the prior epoch committed, which carry that epoch's authority — sign the roll over the prior
 epoch's CID, the revealed key-set, the threshold and the next commitment, under the `seal-roll` domain. A
@@ -241,7 +245,8 @@ and, at recovery, signs that persona's rotation independently; nothing reconstru
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>). When a seat
 holder loses their keys, their Guardians rotate the person back into continuity, and the surviving kahu
 quorum re-seats that person by its own act (`seal reseat`). ''Guardians carry no weight in the Nexus KEL''
-outside the catastrophe rite.
+outside the catastrophe rite. ''Owed in code — the re-found'': `seal reseat` rides the per-seat
+commitment and stands unbuilt.
 
 ''ROAD (iv): A QUORUM CHANGE SURFACES, it never cascades.'' A seat change re-seats nothing on its own.
 The house derives, from records already on the board, which admits and offices leaned on a departed
@@ -361,13 +366,14 @@ These may name adjacent roles as the DreamNet social layer develops:
 
 !! Ea Notes
 
-The Keyhive three-gate lattice (Gates A/B/C) bootstraps vessel identity but does not
-itself encode kahu. A vessel that clears all three gates knows:
-* it holds a valid Individual keypair (Gate A)
-* that keypair belongs to a PersonaGroup (Gate B)
-* that PersonaGroup belongs to a MeshCabal (Gate C)
+The Keyhive gates prove vessel identity and cabal affiliation; neither encodes kahu.
+* Boot proves IDENTITY ONLY: the vessel holds a valid Individual keypair (Gate A), and a device
+  delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
+* Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
+  belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
+  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': no access path reads it yet.
 
-Gate C proves the vessel belongs to //some// cabal. Who holds kahu over the corpus bags
+Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
 rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
 founding ceremony initializes those docs with the corpus-kahu's seated keys and threshold —
 keys, never a membership list — and needs no subsequent runtime authority transfer.
@@ -388,6 +394,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qE_O0JjXl7_uah1-DWwobcJdWGLs3695n3_ecb9WHds
+<<^ code="&#x0003;">>ni:///sha-256;aPOExZgn70JfDqdrDB0bLmM2BOokjmM_3rCHsJQHLnk
 
 <<^ code="&#x0004;" -> to="?">>
