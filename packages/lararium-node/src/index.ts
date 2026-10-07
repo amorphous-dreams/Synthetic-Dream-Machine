@@ -268,6 +268,7 @@ export {
   type ReachFace, type InterfaceTable, type ExplicitOriginComposition, type FaceOriginComposition,
   type WaystoneOriginComposition, type StandingOriginComposition, type OriginStanding,
 } from "./lan-address.js";
+export { isSerdeSkewFault, bootFaultReport, fatalLine, SERDE_SKEW_EXIT, SERDE_SKEW_CURE } from "./boot-fault.js";
 // The active-persona selector — "put on a mask" at the identity layer (Plurality Pono). The persona-root
 // SET mints/loads the operator-root the `lares persona` door drives (founder-side custody).
 export { loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots } from "./node-vessel-identity.js";

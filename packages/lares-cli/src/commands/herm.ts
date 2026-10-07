@@ -16,7 +16,7 @@ import { existsSync, mkdirSync, openSync, readFileSync, statSync } from "node:fs
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
-import { loadVesselVerifyingKey } from "@lararium/node";
+import { loadVesselVerifyingKey, fatalLine } from "@lararium/node";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir } from "../env.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -88,7 +88,8 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
     note = phase === "ready"
       ? `started detached (pid ${child.pid ?? "?"}); attested vessel-ready`
       : phase === "fault"
-        ? `started then attested a boot fault — see ${log}`
+        // A boot fault keeps its own voice: the node's `fatal:` line names the fault and any cure.
+        ? `started then attested a boot fault: ${fatalLine(readAttestation()) ?? "see " + log}`
         : `starting detached (pid ${child.pid ?? "?"}); boot stalled before vessel-ready — see ${log}`;
 
     // Echo the node's OWN carriage crossroads lines (dial URLs + gate key) — the node computes the gate key from the

@@ -38,6 +38,7 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
+import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
@@ -576,21 +577,6 @@ async function main(): Promise<void> {
   process.on("SIGTERM", () => void shutdown("SIGTERM"));
 }
 
-/**
- * Serde-skew detector — a dependency bump (keyhive / automerge / beelay / TW5) can
- * leave the on-disk genesis engine serialized in a format the new deserializer cannot
- * read; the vessel-host then faults with a Rust enum-tag error. Rather than a bare
- * boot-loop `fatal:`, name the condition and point at the identity-safe cure.
- */
-function isSerdeSkewFault(err: unknown): boolean {
-  const msg = err instanceof Error ? err.message : String(err);
-  // Match the SYMPTOM (a Rust deserializer error), never the wrapper: matching any
-  // `[vessel-host] fault` / `manifest handler threw` painted every island fault
-  // (e.g. a slot-sync timeout) with the "run lares vessel rite rebuild" cure — a wrong cure
-  // banner that costs real diagnosis time.
-  return /tag for enum is not valid|failed to deserialize|invalid type:|serde/i.test(msg);
-}
-
 main().catch((err) => {
   if (err instanceof OriginCustodyRefusal) {
     // The refusal still carries the `fatal:` marker: a supervisor reading the boot log (`lares herm`) attests a
@@ -598,14 +584,9 @@ main().catch((err) => {
     console.error(`[lararium] fatal: ${err.message}`);
     process.exit(1);
   }
-  if (isSerdeSkewFault(err)) {
-    console.error("[lararium] STORED-BYTES SERDE SKEW — the vessel could not deserialize the stored genesis engine.");
-    console.error("[lararium]   Cause: stored bytes predate a dependency bump (keyhive / automerge / beelay / TW5).");
-    console.error("[lararium]   Cure (identity-safe, no data loss): run `lares vessel rite rebuild`");
-    console.error("[lararium]         — rebuilds the genesis engine under current deps; your operator key/card are untouched.");
-    console.error("[lararium]   underlying:", err instanceof Error ? err.message : String(err));
-    process.exit(75);  // EX_TEMPFAIL — recoverable, distinct from a generic fatal(1)
-  }
-  console.error("[lararium] fatal:", err);
-  process.exit(1);
+  // Every other fault leads with ONE `fatal:` line naming it (a serde skew names its cure there); detail and the
+  // stack ride below.
+  const report = bootFaultReport(err);
+  for (const line of report.lines) console.error(line);
+  process.exit(report.code);
 });

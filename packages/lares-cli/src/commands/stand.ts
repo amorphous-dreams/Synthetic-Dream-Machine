@@ -22,6 +22,7 @@ import { existsSync, mkdirSync, openSync, readFileSync, statSync } from "node:fs
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
+import { fatalLine } from "@lararium/node";
 import { faceStandsOnDisk } from "../floor-cure.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
@@ -77,19 +78,6 @@ async function recallIntoWake(): Promise<WakeRecall> {
   } catch (e) {
     return { ok: false, wing, note: e instanceof Error ? e.message : String(e) };
   }
-}
-
-/**
- * The FATAL line a booting node attested, trimmed for a one-line report — or null when none stands.
- *
- * A boot fault writes its own diagnosis, and several of them name the exact cure (a sealed archive
- * wanting its passphrase, a stale dist wanting a rebuild). Reporting the log's PATH instead of its
- * verdict discards the one sentence written to be read.
- */
-function fatalLine(attestation: string): string | null {
-  const line = attestation.split("\n").reverse().find((l) => /fatal:/.test(l));
-  if (!line) return null;
-  return line.replace(/^.*?fatal:\s*/, "").replace(/^Error:\s*/, "").split("\n")[0]!.trim().slice(0, 300);
 }
 
 /** The standing a running vessel published beside its socket, or null when it published none. */
