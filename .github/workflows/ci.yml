@@ -419,8 +419,11 @@ jobs:
         with:
           python-version: "3.12"
       - run: pnpm install --frozen-lockfile
+      # The py host's three imports, each at the version the house venv runs (tree-sitter and pytest
+      # as `packages/lararium-sensorium/requirements.txt` pins them, pygls as the venv resolves the
+      # root manifest's `pygls>=2.1`), so this gate measures the same runtime the operator does.
       - name: Install py host deps
-        run: pip install tree-sitter pytest pygls
+        run: pip install tree-sitter==0.26.0 pytest==9.1.1 pygls==2.1.1
       - name: generate-parity — the committed parser.c stays the truth
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:generate-parity

@@ -13,8 +13,8 @@
   ],
   "artifact": {
     "grammarAbi": 15,
-    "treeSitterCli": "0.26.11",
-    "webTreeSitter": "0.26.11",
+    "treeSitterCli": "0.27.0",
+    "webTreeSitter": "0.27.0",
     "toolchain": "tree-sitter-cli >=0.26.1 builds wasm via auto-downloaded wasi-sdk; no emscripten pin. The CLI that generates and the runtime that loads never drift a minor apart (the pin-pair law).",
     "corpusManifest": "0.1.0"
   },
@@ -25,7 +25,7 @@
     "gates": "pnpm run gate:generate-parity && pnpm run gate:fold && pnpm run gate:fold-ts",
     "build:wasm": "tree-sitter build --wasm -o tree-sitter-memetic_wikitext.wasm",
     "release:bundle": "pnpm run gates && pnpm run build:wasm && node tools/bundle-release.mjs",
-    "gate:fold-ts": "node --test host-ts/fold.test.mjs host-ts/held-text.test.mjs && node host-ts/parity.mjs"
+    "gate:fold-ts": "node --test host-ts/fold.test.mjs host-ts/held-text.test.mjs host-ts/artifact-pin.test.mjs && node host-ts/parity.mjs"
   },
   "devDependencies": {
     "tree-sitter-cli": "0.27.0"
