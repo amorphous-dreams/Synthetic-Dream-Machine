@@ -22,6 +22,18 @@ written   = "2026-06-19"
 
 
 
+<<~ ahu #/shift-2026-10-07-sign-off>>
+
+!! Shift — the sign-off of five lanes and the canon scribe, 2026-10-07
+
+''What landed.'' The episkopos accepted every lane and found no blocker. ''The seal rolls sign'': the revealed keys sign every roll under `seal-roll`, and the lineage verifies them, so public keys forge no epoch. ''One presenter'' (`presentationFromBoardDoc`) reads acts and roll anchors off one board, and an orphan anchor closes no admit. ''The herm keeps silence'': it hands over its bulb by CID behind one closed door, a waymark rung is opt-in, and the temple stays the lararium's. ''The bulb is the coal'', named by the seed's published bytes. ''The quoteblock floor runs inside the deserializer'', so every door fences, and the gate reads its frame once. ''Any standing face invites'' on its per-Nexus leaf; the `seat` arm refuses while chairs carry roots. The device edge carries no clock. `KahuQuorumSeats` names the quorum's seats. The CHANGELOG's `[Unreleased]` SIGN-OFF BATCH lines name every commit.
+
+''Measured at the close.'' E2E 28 of 29 files (the red: the Offering crew's untracked suite). Witness fleet 31 ok, `vessel-parity` red. Typecheck clean. `lararium-tw5` 1732 passed, `carrier-edges` 174 of 172 on the crew's research carrier.
+
+''What it hands on.'' The ranked queue, the pending rulings and the re-found train stand in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>. The operator's live `~/.lares` vessel does not verify on this build (clocked device edges, unsigned rolls) — `er-handoff#/vitals` carries the warning.
+
+<<~/ahu>>
+
 <<~ ahu #/shift-2026-10-06-sign-off>>
 
 !! Shift — the sign-off of four lanes, 2026-10-06
@@ -499,7 +511,7 @@ E ka hale, aloha. The watcher's first cut runs (build 4 above) and the operator 
 
 When the floor closes, fold the rulings back into build 4 above, then the formal e2e vector (the deferred Cut C): rapid edits coalesce to one wave · a confirmed delete tombstones · a transient delete does not · the cookie test fails closed on a dead backend.
 
-The floor opened and SUSPENDED — the operator rebooted before steering it. Its telling, kept whole for you to resume:
+The floor opened and suspended when the operator rebooted before steering it; the moʻolelo above closed it. Its telling, kept whole for the record:
 
 ```
 <<~ talk-story #watcher-shores ground="build 4 first cut (ingest-core + lares watch on fs.watch), uncommitted; five shores open; operator named deletions heaviest">>
@@ -525,8 +537,8 @@ telling: what STANDS — the gesture automates the proven path, not a copy; the
   hints, scan is truth" — maybe the watcher is ALWAYS a backstop scan that
   events merely wake early. Then Q2 and Q4 dissolve into one rescan seat.
 - Liminal: none of the five must close this waking. The open hand is honest.
-exit -> suspended: ooda-ha="closed 0↺ -> open 1φ @_:operator-rebooted-before-steering" — the floor
-  reopens at the next waking, the telling above its seed; no ruling locked.
+exit -> moolelo: ooda-ha="closed 0↺ @_:operator-rebooted-before-steering" — the moʻolelo
+  above closed the floor: the five shores ruled, built and witnessed (Cut C).
 <<~/talk-story>>
 ```
 
@@ -670,6 +682,6 @@ re-entry: closed — the floor convened and the held review condition met; the c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OiQTNtaUq-HdsTQDgTFl0RcrejXmYb4XKI3mr9qjnLY
+<<^ code="&#x0003;">>ni:///sha-256;guav6KRfWdxVMelqKMTPi6Qn-Qn7BAMO62W5-Nxs2bA
 
 <<^ code="&#x0004;" -> to="?">>
