@@ -122,7 +122,10 @@ if (Test-Path -LiteralPath $cfgPath) {
     Need "$cfgPath is a link or read-only; the writer will not follow or clear it - apply the plan by hand, or change it, then re-run"
     if (-not $DryRun) { throw "$cfgPath is a link or read-only; stopping before the write (run with -DryRun for the plan)" }
   }
-  foreach ($line in [IO.File]::ReadAllLines($cfgPath, $utf8)) {
+  # A strict decoder: an ANSI/cp1252 file with a non-ASCII byte in a value would otherwise decode to U+FFFD and be rewritten that way without a word.
+  try { $lines = [IO.File]::ReadAllLines($cfgPath, (New-Object System.Text.UTF8Encoding($false, $true))) }
+  catch [System.Text.DecoderFallbackException] { throw "$cfgPath is not valid UTF-8 (an ANSI-saved file with an accented character?); re-save it as UTF-8 and re-run" }
+  foreach ($line in $lines) {
     # ReadAllLines honors a UTF-16 byte-order mark; without one every letter grows a NUL, every key reads unset, and ours would be appended to the wreck.
     if ($line -match "`0") { throw "$cfgPath holds NUL bytes (UTF-16 without a byte-order mark?); re-save it as UTF-8 and re-run" }
     if ($line -match '^\s*\[(.+?)\]\s*$') { $cur = $Matches[1]; if (-not $sections.Contains($cur)) { $sections[$cur] = @(); $order += $cur } }
