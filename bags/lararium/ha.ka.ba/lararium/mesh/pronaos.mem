@@ -12,7 +12,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2695;"
-role       = "PROPOSED first-reach architecture and intimate mythic binding. A Pronaos gives one locally sovereign Herm/Lararium composition its address-facing first face: local DNS/domain/LAN reach, browser secure-context origin, exact public arrival and genesis bytes, declared public routes, bounded live introductions, delivery policy, and explicit refusals. It composes Web and Node shores under one operator-held reach configuration without making either a client or server. It carries no peer identity, persona, document, library, general CAS read, VEIL read scope, admission, merge, or Oracle authority. A name grants rendezvous; a secure origin enables browser features; a peer key proves identity; a route delivers; a capability permits. The public Librarium remains a later, separate public-book crossroads concern."
+role       = "PROPOSED first-reach architecture and intimate mythic binding. A Pronaos gives one locally sovereign Lararium its address-facing first face; a herm climbs only the silent and waymark rungs below it: local DNS/domain/LAN reach, browser secure-context origin, exact public arrival and genesis bytes, declared public routes, bounded live introductions, delivery policy, and explicit refusals. It composes Web and Node shores under one operator-held reach configuration without making either a client or server. It carries no peer identity, persona, document, library, general CAS read, VEIL read scope, admission, merge, or Oracle authority. A name grants rendezvous; a secure origin enables browser features; a peer key proves identity; a route delivers; a capability permits. The public Librarium remains a later, separate public-book crossroads concern."
 status-why = "researched myth-plus-engineering plan re-framed from Propylaeum, 2026-09-22; production contract NOT built"
 tags       = ["mesh/cap-tier", "mesh/secure-context", "mesh/nexus-topology", "api/pono/causal-islands", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/mesh/pronaos"
@@ -36,7 +36,7 @@ written    = "2026-09-22"
 Greek *pronaos* names the front hall or fore-porch immediately before a temple's inner house. Pausanias names
 Athena and Hermes among the *Pronaoi* standing before the Ismenian Apollo sanctuary at Thebes; that narrow
 evidence supports a local threshold figure, never a universal Hermes-Pronaos cult. The Pronaos carries the
-relation into DreamNet: a particular Herm/Lararium composition's truthful first face. It gives a traveler public
+relation into DreamNet: a particular Lararium's truthful first face. It gives a traveler public
 orientation and declared crossings while the local house retains its own identity, archive, judgment, and keys.
 
 Sources: LSJ, https://atlas.perseus.tufts.edu/dictionaries/entry/urn%3Acite2%3Ascaife-viewer%3Adictionaries.v1%3Alsj-n88071/
@@ -90,13 +90,53 @@ names the first face a local composition may light from held public capabilities
 shore, reverse proxy, container composition, or future carrier may realize it; no physical placement changes the
 capability relation.
 
-Whether a persona-less Herm may light a Pronaos, or whether only a raised Lararium may light one, remains an
-operator-held fork. The cap model permits a Herm-held public face; no witness yet establishes its production
-composition. The first implementation must keep both readings explicit and refuse an unasked lift.
+''Only a lararium lights a Pronaos'' (operator-ruled). A herm stands on the lower rungs of the ladder below
+(#/the-rung-ladder): it hands over the bulb by name and, at most, posts a waymark. A herm handed any Pronaos input
+refuses before a face listens.
 
 The public Librarium — a public crossroads shrine of books, images, media, and deliberately offered editions —
 waits outside this carrier. A Pronaos may later route an explicit Librarium projection. It never turns the
 house-held `library:` collection or arbitrary CAS bytes public.
+
+<<~/ahu>>
+
+<<~ ahu #/the-rung-ladder>>
+
+!! The rung ladder ~ household, crossroads, temple
+
+How much a vessel says about itself to a stranger climbs three rungs, the same three tiers Elyncia keeps:
+a household shrine, a crossroads marker, a temple. ''Each rung is opt-in above the one below; the default stays
+silent.'' Grounds: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility">> — a
+self-description reads as the two-finger sign, cheap to read at a distance — and
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">> — any surface that answers a
+stranger distinguishably reads as an oracle, so the client proves first.
+
+```
+SILENT    herm (default)   hands over the bulb BY NAME: /bulb/<cid>.bin, /cas/<cid>; describes nothing
+WAYMARK   herm (opt-in)    + one UNSIGNED descriptor at /.well-known/lar: format, route shapes, bulb CID
+TEMPLE    lararium only    its own Pronaos: the arrival page and the arrival descriptor (#/the-first-arrival)
+```
+
+''SILENT.'' The traveler brings the name. The bulb names itself by its genesis seed's CID, which re-derives from
+the published build, so a traveler arrives already knowing it, and most Nexuses start from the stock bulb. No
+route lists, indexes or describes what the herm holds; a listing answers only a CID the client names. Every
+unknown, withheld or refused request — a path no face claims, a CID the herm never held, a wrong method, the
+well-known name itself — draws ''one indistinguishable closed door'': the same status, headers and body, carrying
+no text that names what answered.
+
+''WAYMARK.'' A herm that chooses to be found sets `herm.waymark` in its node config
+(`~/.lares/config.json`) and serves one minimal descriptor: its format, its route shapes and its bulb CID. It names
+no kindle pointer, no mirror and no carried Nexus. ''A herm never signs anything public'' — a public signature
+under a carrier's key would correlate the place with every Nexus it carries. The waymark and the temple's
+descriptor hold one dispatcher key, so one vessel can never answer the well-known name twice.
+
+''TEMPLE.'' The lararium's own Pronaos keeps its arrival descriptor whole (#/the-first-arrival). A lararium handed
+the waymark knob refuses: its arrival rides its Pronaos.
+
+''THE BULB IS THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
+The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
+so two houses holding one genesis hold one bulb CID. The charter epoch is the corm's freshness lease; a house's
+joining pointers ride the stolon, the invite. Neither rides the bulb.
 
 <<~/ahu>>
 
@@ -185,7 +225,7 @@ local vessel enough truthful material to choose its next crossing.
 
 <<~ ahu #/the-first-arrival>>
 
-!! The first arrival ~ the house's own origin serves the kindle (RULED, BUILT but the floor's announcement)
+!! The first arrival ~ the house's own origin serves the kindle (RULED, BUILT)
 
 ''The first arrival trusts the lararium's own origin'' (operator-ruled). A device that has never booted a
 vessel holds nothing to check bytes against; whatever origin it first reaches decides what it runs. So that
@@ -220,14 +260,17 @@ page, the seed and its CID, each worker asset and seed-named CAS member, and the
 naming that media type reaches the identical bytes; a wildcard or an HTML navigation still reads the page
 (`lararium-node/src/pronaos-adapter.ts`). A mirror list (`LAR_PRONAOS_MIRRORS`) refuses before mount when a mirror
 names a CID the receipt does not, stands on any origin the house answers on, or shares its origin with another
-entry (`pronaos-composition.ts`, fed every reach, Web, relay and oracle origin by `main.ts`). The kindle reads the
+entry (`pronaos-composition.ts`). `main.ts` feeds it every origin the house answers on through `houseOriginsOf`:
+each reach face's origin on every standing, plus each composed Web, relay and oracle origin. The kindle reads the
 descriptor, the seed and every seed-named member off the house's own origin, verifies each against its CID, never
-dials a mirror, and mints the device's own key (`kindle.ts#pullArrival`). The composition reads no standing and no
-archive and runs before the boot reads either, so a house at its waking floor serves all of it.
+dials a mirror, and mints the device's own key (`kindle.ts#pullArrival`). `pullArrival` stands as a LIBRARY call,
+exported beside `pullBulb`; no CLI verb carries it. The composition reads no standing and no archive and runs
+before the boot reads either, so a house at its waking floor serves all of it.
 
-''Owed.'' The floor's announcement of what it cannot yet do. The waking floor's //Announce// law requires that
-announcement to SIGN, and the signing domain it needs has no mint yet; until it does, the descriptor states no
-standing at all, and the bytes a floor serves equal the bytes a raised hearth serves.
+''The descriptor never carries the floor's announcement.'' That announcement speaks to PEERS over the socket or
+relay, once per carried Nexus, and never at `/.well-known/lar`
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement">>). So the bytes a floor serves here
+equal the bytes a raised hearth serves.
 
 <<~/ahu>>
 
@@ -342,6 +385,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LcsfM1CR_pb2JVxjKYsO0zJFDCV0pgeIcfkc4xa-XjM
+<<^ code="&#x0003;">>ni:///sha-256;h0JV1VD2859Bg26wtZnUgAadWzOGJ7YIxLcDBbi4bWw
 
 <<^ code="&#x0004;" -> to="?">>

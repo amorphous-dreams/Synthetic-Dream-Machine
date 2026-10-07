@@ -88,9 +88,9 @@ a performed one. But the announcement ''MUST SIGN'': unsigned, it becomes a spoo
 a targeting beacon naming which vessel sits unraised (#the-breaks c).
 
 ''THE RAISE REUSES MACHINERY THE MESH ALREADY RUNS'' — ''STRUCK, and the correction stands at #the-raise-is-a-vessel-layer-act.'' This paragraph proposed a kahu quorum signing the raise against the pre-rotated epoch chain. The founding order refutes it: a cabal is seated FROM declared Handles standing on an already-raised lararium, so a raise waiting on a quorum could never found the first Nexus — the dependency closes in a circle, and a kahu holding shares would become the collector this meme elsewhere forbids outright. ''What the mesh already runs and the raise MAY reuse'' reads narrower: the nonce-against-my-own-epoch-head freshness, never the quorum's authority.
-hash-linked epoch chain, rather than a second authority invented beside it. ''But the vessel supplies the
-freshness'': it emits a nonce bound to its own epoch head and the kahu sign THAT, because a clockless vessel
-accepting pre-signed material accepts a bearer credential that replays forever (#the-breaks b).
+''The vessel supplies the freshness'': it emits a nonce bound to its own epoch head and whoever raises it
+signs THAT, because a clockless vessel accepting pre-signed material accepts a bearer credential that replays
+forever (#the-breaks b).
 
 <<~/ahu>>
 
@@ -108,15 +108,32 @@ first MUST NOT wait on the second. The arrival page needs no secret — it rides
 waits to be raised would push that first arrival onto some other origin, and whatever origin answers first
 decides what a fresh device runs. The floor serving its own arrival page keeps the first trust at home.
 
-At the floor the page kindles nothing that needs a secret the floor does not hold. Where it announces the
-house standing unraised, that announcement answers to the floor's own //Announce// and //Stamp// law
-(#/the-shape).
+At the floor the page kindles nothing that needs a secret the floor does not hold, and it announces nothing:
+the floor's announcement speaks to peers, never to the arrival (#/the-announcement).
 
 ''Built.'' The Pronaos composes before the boot reads the archive or the face (`lararium-node/src/main.ts`), from
 the public genesis and the prepared Web artifact alone, so a lararium at its floor serves its arrival page, worker,
 seed, seed-named CAS members and its `/.well-known/lar` descriptor exactly as a raised hearth does.
-''Owed:'' the signed announcement. Until its signing domain mints, the floor announces nothing, and its descriptor
-carries no standing.
+
+<<~/ahu>>
+
+<<~ ahu #/the-announcement>>
+
+!! The announcement ~ signed, per Nexus, to peers alone (RULED, UNBUILT)
+
+''The verifiers of the floor's announcement are its PEERS.'' A stranger at the arrival page holds no relation to
+verify it against and needs none: it reads the same page from a floor and from a raised hearth. So the
+announcement rides the socket or the relay, ''once per carried Nexus'', and NEVER `/.well-known/lar` or any other
+public surface. The floor's public bytes stay identical to a raised hearth's, and a stranger probing the house
+learns nothing of its standing (#/the-breaks (c): an unsigned announcement targets; a public one targets too).
+
+''It signs under the domain `waking-floor-announce`'', which mints into the domain registry only when the
+announcement is built, at the re-found.
+
+''It signs with the per-Nexus wire key'' owed to the re-found, derived from the vessel seed and the Nexus AID
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>). NEVER the vessel key in public:
+the vessel key also signs carry seals, so one public signature under it would correlate the place with every
+Nexus it carries. Each Nexus therefore reads an announcement it can verify and no other Nexus can link.
 
 <<~/ahu>>
 
@@ -369,6 +386,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W8d8dpIhx_g2PhWJsduogd2ptHaRhcSQGqtENTUe4Xs
+<<^ code="&#x0003;">>ni:///sha-256;k_SKn0QdmRzcY7Own1VsTFFQ8KU2jYAZqE8Sx_LWBW0
 
 <<^ code="&#x0004;" -> to="?">>
