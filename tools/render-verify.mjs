@@ -4,8 +4,10 @@
 // differently once a widget consumes it.
 import { execSync } from "node:child_process";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
-const { resolveTiddlyWiki, boot } = require("/home/joshu/Synthetic-Dream-Machine/VSCode-TW5-Syntax/tools/tw5-oracle.js");
+// The oracle lives in the VSCode-TW5-Syntax submodule at the repo root, one level above this file.
+const { resolveTiddlyWiki, boot } = require(fileURLToPath(new URL("../VSCode-TW5-Syntax/tools/tw5-oracle.js", import.meta.url)));
 const o = boot(resolveTiddlyWiki(), {});
 const $tw = o.$tw;
 const COMMIT = process.argv[2];
