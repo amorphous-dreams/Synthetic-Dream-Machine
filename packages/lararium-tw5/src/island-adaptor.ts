@@ -39,10 +39,18 @@ import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive } from "@lararium/me
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
-import { splitBodyTiddler } from "./deserializer.js";
+import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 
 /** The wiki's live write layer — where a save the cascade cannot route still lands. */
 const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
+
+/** TW5's built-in alert tag — tiddlers carrying it surface in the alerts area. */
+const TW5_ALERT_TAG = "$:/tags/Alert";
+
+/** The alert a parallel draft that could not persist raises — one per draft, holding the draft itself. */
+export function parallelDraftAlertTitle(draftTitle: string): string {
+  return `$:/temp/lares/alert/parallel-draft/${draftTitle}`;
+}
 
 /**
  * The store the adaptor writes through: one that lands a family, and a tombstone, in the bag the
@@ -134,7 +142,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * work and having nothing to read.
    */
   private _destination(title: string): SlotUri | null {
-    const verdict = this._routeBag(title);
+    return this._settle(title, this._routeBag(title));
+  }
+
+  /** Act on a cascade verdict: a slot lands there, a named withholding skips, a gap falls to the write layer. */
+  private _settle(title: string, verdict: RouteVerdict): SlotUri | null {
     if (verdict.kind === "slot")     return verdict.uri;
     if (verdict.kind === "withheld") return null;
     const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
@@ -267,7 +279,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const bag = this._draftDestination(draft);
       if (bag === null || bag === change.bag) continue;
       this.store.writeFamily([draft], [], origin, { bag }).catch((err: unknown) => {
-        console.warn(`[island-adaptor] a parallel draft of "${change.title}" could not persist in ${bag}: ${err instanceof Error ? err.message : String(err)}`);
+        this._surfaceUnkeptDraft(draft, bag, err);
       });
     }
   }
@@ -275,7 +287,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /**
    * The bag the cascade routes THIS draft to. The draft is not in the wiki yet, so the cascade reads
    * its fields through a view that answers the draft under its own title — the same rule a saved
-   * draft rides, read once, never a second spelling of it.
+   * draft rides, read once, never a second spelling of it. The verdict settles as a save's does: a
+   * named withholding is a lawful quiet skip, and a gap falls to the write layer and says so.
    */
   private _draftDestination(draft: LarTiddlerRecord): SlotUri | null {
     const wiki = this.tw5.$tw.wiki;
@@ -286,7 +299,34 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       getTiddlerText: (t: string, fallback?: string) => wiki.getTiddlerText?.(t, fallback),
       filterTiddlers: (filter: string, widget?: unknown, source?: unknown) => wiki.filterTiddlers(filter, widget as never, source as never),
     }, title);
-    return verdict.kind === "slot" ? verdict.uri : null;
+    return this._settle(title, verdict);
+  }
+
+  /**
+   * A DRAFT THAT COULD NOT PERSIST SURFACES WHOLE. Automerge drops the conflict from `getConflicts` on
+   * the next write to the property, so once the persist fails this alert is the only surviving copy of
+   * the draft: it embeds the draft's text (fenced, so its sigils stay inert), the bag the write aimed
+   * at, and the error, on the wiki's alert rail. `$:/temp/…` never persists — it holds the draft for
+   * the operator to keep, and nothing here decides.
+   */
+  private _surfaceUnkeptDraft(draft: LarTiddlerRecord, bag: SlotUri, err: unknown): void {
+    const title = draft.tiddler.title;
+    const error = err instanceof Error ? err.message : String(err);
+    const draftOf = String(draft.tiddler["draft.of"] ?? title);
+    const text = typeof draft.tiddler.text === "string" ? draft.tiddler.text : "";
+    console.warn(`[island-adaptor] a parallel draft of "${draftOf}" could not persist in ${bag}: ${error} — held on the alert rail`);
+    this.tw5.$tw.wiki.addTiddler({
+      title: parallelDraftAlertTitle(title),
+      text: `A parallel draft of [[${draftOf}]] could not persist in ${bag} (${error}). ` +
+        `This alert holds the only surviving copy of its text:\n\n${quoteblockFence(text)}`,
+      tags: TW5_ALERT_TAG,
+      "alert-kind": "parallel-draft",
+      "draft-title": title,
+      "draft-of": draftOf,
+      "draft-text": text,
+      bag,
+      error,
+    });
   }
 
   // ---------------------------------------------------------------------------
