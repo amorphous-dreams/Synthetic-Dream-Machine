@@ -7,7 +7,9 @@
  *
  * Each door SURFACES the fence where it can: a wiki's alert rail, a bag door's receipt warnings, and
  * `$:/Import`'s listing message for the TW5 import doors. A torn frame holds verbatim as ONE flagged
- * record (TW5's contract has no refuse channel); a gate above refuses it on its own grade.
+ * record through TW5's own doors (their contract has no refuse channel). Every bag door has one and
+ * REFUSES the tear before it writes: LOAD and a native INGEST leave a family standing under the carrier's
+ * title byte-identical, and the Confluence gate refuses on the frame's own grade.
  *
  * CONTROLS: a clean carrier decomposes, carries no flag, and its receipts carry no `warnings` key.
  */
@@ -131,14 +133,61 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
     expect((result["warnings"] as string[]).join(" ")).toContain("ahu-orphan-close");
   });
 
-  test("LOAD of a torn frame lands the verbatim hold and its receipt names the tear", async () => {
+  /** Every record the bag holds under the carrier's family, serialized — the byte-identity witness. */
+  async function familyBytes(composite: CompositeStore): Promise<string> {
+    const titles = (await composite.listVisible()).filter((t) => t === URI || t.startsWith(`${URI}#`) || t.startsWith(`${URI}/`)).sort();
+    const records = await Promise.all(titles.map(async (t) => [t, await composite.get(t)] as const));
+    return JSON.stringify(records);
+  }
+
+  /** A bag with a sound family standing under the carrier's title, landed by a sound LOAD. */
+  async function standingFamily(): Promise<CompositeStore> {
     const composite = makeComposite();
-    const result = await run(composite, "LOAD", {
-      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "change-id": "c-load",
-      carriers: [{ title: URI, text: TORN }],
+    await run(composite, "LOAD", {
+      "source-uri": "file:///staged/sound.mem", "to-bag": BAG, "change-id": "c-stand",
+      carriers: [{ title: URI, text: carrier(SOUND) }],
     });
-    expect((await composite.get(URI))!.tiddler.text).toBe(TORN);
-    expect((result["warnings"] as string[]).join(" ")).toContain("torn frame held verbatim");
+    return composite;
+  }
+
+  test("★ a torn LOAD over a standing family REFUSES, and the family stands byte-identical ★", async () => {
+    const composite = await standingFamily();
+    const before = await familyBytes(composite);
+    expect(before).toContain(`${URI}#/a`);                       // the family stands: root and child
+    await expect(run(composite, "LOAD", {
+      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "change-id": "c-torn",
+      carriers: [{ title: `${URI}-sibling`, text: carrier(SOUND, `${URI}-sibling`) }, { title: URI, text: TORN }],
+    })).rejects.toThrow(/torn/);
+    expect(await familyBytes(composite)).toBe(before);
+    // Refused BEFORE any write: the sound sibling in the same LOAD never landed either.
+    expect(await composite.get(`${URI}-sibling`)).toBeFalsy();
+  });
+
+  test("★ a torn native INGEST over a standing family REFUSES on its receipt, and the family stands byte-identical ★", async () => {
+    const composite = await standingFamily();
+    const before = await familyBytes(composite);
+    // No speaking head: the content route is native, and the registry hands the bytes to the memetic reader,
+    // which holds the tear verbatim at the carrier's root.
+    const text = TORN.replace(/^<<\^ code="&#x0001;"[^\n]*\n/, "");
+    expect(memeticWikitextDeserializer(text, { title: URI })[0]![TORN_FIELD]).toBeTruthy();
+    const result = await run(composite, "INGEST", {
+      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "change-id": "c-torn",
+      carriers: [{ uri: URI, text, diskHash: carrierHash(text), syncedHash: null, ext: ".mem" }],
+    }, memeticRegistry());
+    const receipt = (result["carriers"] as Array<Record<string, unknown>>)[0]!;
+    expect(receipt).toMatchObject({ uri: URI, decision: "refuse", grade: "error" });
+    expect((receipt["warnings"] as string[]).join(" ")).toContain("torn frame refused");
+    expect(await familyBytes(composite)).toBe(before);
+  });
+
+  test("CONTROL: a sound carrier LOADs over the same family", async () => {
+    const composite = await standingFamily();
+    const result = await run(composite, "LOAD", {
+      "source-uri": "file:///staged/sound.mem", "to-bag": BAG, "change-id": "c-again",
+      carriers: [{ title: URI, text: carrier(SOUND) }],
+    });
+    expect(result["titles"]).toContain(URI);
+    expect(result).not.toHaveProperty("warnings");
   });
 
   test("the syncer INGEST receipt CARRIES the placement's warnings — `quoteblocked` is never dropped", async () => {

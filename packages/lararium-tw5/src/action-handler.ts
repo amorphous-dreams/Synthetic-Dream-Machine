@@ -688,18 +688,29 @@ async function landSkinnyHandle(
 
 /**
  * What the shore said about the records it handed a bag door — the quoteblock floor's account of a
- * fence it laid (`ahu.mem#/quoteblock-floor`) and the faults a torn frame was held verbatim under. A bag
- * holds no alert rail, so the door's receipt carries them: a fence nobody sees reads as a drop.
+ * fence it laid (`ahu.mem#/quoteblock-floor`). A bag holds no alert rail, so the door's receipt carries
+ * it: a fence nobody sees reads as a drop.
  */
 function shoreWarnings(records: ReadonlyArray<Record<string, unknown>>): string[] {
   const out: string[] = [];
   for (const r of records) {
-    for (const field of [QUOTEBLOCKED_FIELD, TORN_FIELD]) {
-      const v = r[field];
-      if (typeof v === "string" && v !== "") out.push(field === TORN_FIELD ? `${String(r["title"])}: torn frame held verbatim — ${v}` : v);
-    }
+    const v = r[QUOTEBLOCKED_FIELD];
+    if (typeof v === "string" && v !== "") out.push(v);
   }
   return out;
+}
+
+/**
+ * The tear a deserialized carrier names, or null when its frame reads sound. TW5's deserializer contract
+ * holds a torn frame verbatim as one `$torn` record because it has no way to refuse. A bag door has one,
+ * so it refuses: the verbatim hold would land at the carrier's root title and replace a family standing
+ * there with bytes no reader can divide.
+ */
+function tearOf(records: ReadonlyArray<Record<string, unknown>>): string | null {
+  const tears = records
+    .map((r) => r[TORN_FIELD])
+    .filter((v): v is string => typeof v === "string" && v !== "");
+  return tears.length === 0 ? null : tears.join("; ");
 }
 
 /** The warnings key, present only where the shore spoke — a clean receipt keeps its shape. */
@@ -717,6 +728,9 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
   }
   const titles: string[] = [];
   const warnings: string[] = [];
+  // REFUSE BEFORE ANY WRITE. Every carrier reads and every refusal fires first; only a LOAD whose every
+  // carrier stands sound lands, so a refused carrier never leaves its siblings half-landed.
+  const landings: Array<() => Promise<void>> = [];
   for (const carrier of carriers) {
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never entering the CRDT (nor RAM here — the gesture flags it, so we honor the flag
@@ -724,8 +738,11 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (carrier.skinny && carrier.textCid) {
       const title = carrier.title;
       if (!title) throw new Error("LOAD: a skinny carrier needs a title (its loci URI) — the handle names the body");
-      await landSkinnyHandle(access, action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
-      titles.push(title);
+      const cid = carrier.textCid;
+      landings.push(async () => {
+        await landSkinnyHandle(access, action.toBag, title, cid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
+        titles.push(title);
+      });
       continue;
     }
     // The verb rode a reference, never a body: resolve the carrier body from the
@@ -734,8 +751,11 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // Defense in depth: an un-flagged body that STILL resolves oversized leaves the CRDT
     // (never OOM the doc), provided it names a cid to point at and carries no memetic wrapper.
     if (carrier.textCid && !CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length) && carrier.title) {
-      await landSkinnyHandle(access, action.toBag, carrier.title, carrier.textCid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
-      titles.push(carrier.title);
+      const title = carrier.title, cid = carrier.textCid;
+      landings.push(async () => {
+        await landSkinnyHandle(access, action.toBag, title, cid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
+        titles.push(title);
+      });
       continue;
     }
     // The ungated-large-inline wall (the second wall — the TARGET bag doc, not the daemon bag): past
@@ -767,6 +787,10 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
         fieldsList[0] = { ...fieldsList[0], ...metaFields };
       }
     }
+    const tear = tearOf(fieldsList);
+    if (tear !== null) {
+      throw new Error(`LOAD: carrier ${carrier.title ?? "(carrier)"} REFUSED — its frame is torn (${tear}); nothing landed, and any family under that title stands as it stood`);
+    }
     warnings.push(...shoreWarnings(fieldsList));
     for (const fields of fieldsList) {
       const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
@@ -776,10 +800,13 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       }
       const tiddler = { ...fields, title } as LarTiddlerRecord["tiddler"];
       const record: LarTiddlerRecord = { tiddler, meta: {} };
-      await landInBag(access, action.toBag, record, action.changeId, origin(action));
-      titles.push(title);
+      landings.push(async () => {
+        await landInBag(access, action.toBag, record, action.changeId, origin(action));
+        titles.push(title);
+      });
     }
   }
+  for (const land of landings) await land();
   return withWarnings({ sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId, count: titles.length, titles }, warnings);
 }
 
@@ -948,6 +975,13 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       const metaFields: Record<string, unknown> = carrier.meta ? { ...tw5!.parseFields(carrier.meta) } : {};
       delete metaFields["title"];
       const fieldsList = tw5!.deserialize(carrier.ext || "text/plain", carrierText, {});
+      // A torn frame the registry held verbatim REFUSES here, before any record lands or tombstones: this door
+      // has a refuse channel, and the hold would replace the family standing at the carrier's root.
+      const tear = tearOf(fieldsList);
+      if (tear !== null) {
+        results.push({ uri, decision: "refuse", grade: "error", warnings: [`${uri}: torn frame refused — ${tear}`] });
+        continue;
+      }
       if (carrier.meta && fieldsList.length > 0) fieldsList[0] = { ...fieldsList[0], ...metaFields };
       freshRecords = fieldsList.map((fields) => {
         const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
