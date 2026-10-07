@@ -6,8 +6,8 @@
  * into the Herm's own `cid/`). A stranger C then fetches A's public blob THROUGH the Herm: `GET /cas/<cid>` on
  * the Herm's public read-face answers the bytes for a cid whose pointer sits in a PUBLIC-tier bag.
  *
- * CONTROLS: a cid whose pointer sits in a private/contract-tier bag draws 404 with the SAME body the bulb
- * answers today ("unknown or stale bulb cid" — a withholding never names which gate refused); a cid in `cid/`
+ * CONTROLS: a cid whose pointer sits in a private/contract-tier bag draws the CLOSED DOOR — the one answer every
+ * unknown path draws, so a withholding never names which gate refused; a cid in `cid/`
  * that no pointer names at all draws the same 404; the boot CAS still serves at `/bulb/<cid>.bin`; and
  * `/bulb/<cid>.bin` still refuses a staged blob (the bulb stays the boot CAS alone).
  */
@@ -23,7 +23,8 @@ import {
 import { mountBulbReadFace, publicCasShore } from "../src/bulb-read-face.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
-import type { BulbArtifact } from "../src/bulb.js";
+import { bulbCid, type BulbArtifact } from "../src/bulb.js";
+import { CLOSED_DOOR } from "../src/bulb-routes.js";
 
 function fixtureBulb(): BulbArtifact {
   const coreBlob   = utf8Bytes("fake-tw5-core-for-bulb");
@@ -33,7 +34,7 @@ function fixtureBulb(): BulbArtifact {
     plugins: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0", sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob }],
   };
   const a = buildGenesisDoc(inputs);
-  return { seed: a.seed, casEntries: a.casEntries, bootstrap: {}, sealEpochCid: null };
+  return { seed: a.seed, casEntries: a.casEntries };
 }
 
 const PUBLIC_BAG  = "lar:///ha.ka.ba/bags/crossroads";
@@ -76,13 +77,13 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     expect(pub.status).toBe(200);
     expect(sha256HexBytesSync(new Uint8Array(await pub.arrayBuffer()))).toBe(likenessCid);
 
-    // CONTROL: the private-tier cid and the unnamed cid draw the 404 the bulb answers today — same body.
+    // CONTROL: the private-tier cid and the unnamed cid draw the closed door — same body.
     const priv = await fetch(`http://127.0.0.1:${port}/cas/${noteCid}`);
     expect(priv.status).toBe(404);
-    expect(await priv.text()).toBe("unknown or stale bulb cid");
+    expect(await priv.text()).toBe(CLOSED_DOOR.body);
     const none = await fetch(`http://127.0.0.1:${port}/cas/${strayCid}`);
     expect(none.status).toBe(404);
-    expect(await none.text()).toBe("unknown or stale bulb cid");
+    expect(await none.text()).toBe(CLOSED_DOOR.body);
 
     // CONTROL: the boot CAS still serves, and the bulb route still refuses a staged blob.
     const bootCid = bulb.casEntries[0]!.cid;
@@ -93,7 +94,7 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     expect(bulbStaged.status).toBe(404);
   });
 
-  test("CONTROL: with no public-CAS shore mounted, GET /cas/<cid> draws the same 404 as today", async () => {
+  test("CONTROL: with no public-CAS shore mounted, GET /cas/<cid> draws the closed door", async () => {
     const bulb = fixtureBulb();
     const storageDir = mkdtempSync(join(tmpdir(), "lr-herm-reshare-")); dirs.push(storageDir);
     const likeness = utf8Bytes("a public png"); const likenessCid = sha256HexBytesSync(likeness);
@@ -136,24 +137,24 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
       const pub = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
       expect(pub.status).toBe(200);
       expect(sha256HexBytesSync(new Uint8Array(await pub.arrayBuffer()))).toBe(likenessCid);
-      const manifest = await fetch(`http://127.0.0.1:${port}/bulb/manifest`);
-      expect(manifest.status).toBe(200);
+      const seed = await fetch(`http://127.0.0.1:${port}/bulb/${bulbCid(bulb.seed)}.bin`);
+      expect(seed.status).toBe(200);
       const bootCid = bulb.casEntries[0]!.cid;
       const boot = await fetch(`http://127.0.0.1:${port}/bulb/${bootCid}.bin`);
       expect(boot.status).toBe(200);
       const ghost = await fetch(`http://127.0.0.1:${port}/cas/${"0".repeat(64)}`);
       expect(ghost.status).toBe(404);
-      expect(await ghost.text()).toBe("unknown or stale bulb cid");
-      // CONTROL: a route no face claims still draws the dispatcher's own terminal refusal.
+      expect(await ghost.text()).toBe(CLOSED_DOOR.body);
+      // CONTROL: a route no face claims draws the dispatcher's terminal refusal — the same closed door.
       const undeclared = await fetch(`http://127.0.0.1:${port}/undeclared`);
       expect(undeclared.status).toBe(404);
-      expect(await undeclared.text()).toBe("route unavailable");
+      expect(await undeclared.text()).toBe(CLOSED_DOOR.body);
 
       // Disposed, the face releases its routes: /cas falls to the dispatcher's refusal.
       face.dispose();
       const after = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
       expect(after.status).toBe(404);
-      expect(await after.text()).toBe("route unavailable");
+      expect(await after.text()).toBe(CLOSED_DOOR.body);
       await new Promise((r) => setTimeout(r, 50));
       expect(faults, "a request faulted the process").toEqual([]);
       dispatcher.dispose();

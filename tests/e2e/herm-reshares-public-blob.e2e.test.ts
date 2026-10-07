@@ -258,19 +258,20 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     expect(sha(readFileSync(held))).toBe(cid);
   }, 90_000);
 
-  test("CONTROL: a ghost cid draws the Herm's 404 byte-identical with A dark", async () => {
+  test("CONTROL: a ghost cid draws the Herm's closed door with A dark", async () => {
     const res = await fetch(`${fleet!.hermShore}/cas/${GHOST}`);
     expect(res.status).toBe(404);
-    expect(await res.text()).toBe("unknown or stale bulb cid");
+    expect(await res.text()).toBe("route unavailable");
   }, 30_000);
 
-  test("CONTROL: the Herm's boot CAS still serves at /bulb/<cid>.bin, and refuses the staged cid there", async () => {
-    const manifest = await fetch(`${fleet!.hermShore}/bulb/manifest`).then((r) => r.json()) as { blobs?: Array<{ cid: string }> } & Record<string, unknown>;
-    const bootCid = manifest.blobs?.[0]?.cid ?? (JSON.stringify(manifest).match(/[0-9a-f]{64}/) ?? [])[0] ?? "";
-    expect(bootCid, `no cid in the bulb manifest: ${JSON.stringify(manifest).slice(0, 200)}`).not.toBe("");
-    const boot = await fetch(`${fleet!.hermShore}/bulb/${bootCid}.bin`);
-    expect(boot.status).toBe(200);
-    expect(sha(new Uint8Array(await boot.arrayBuffer()))).toBe(bootCid);
+  test("CONTROL: the Herm serves its bulb at /bulb/<bulb cid>.bin, and refuses the staged cid there", async () => {
+    // The bulb CID re-derives from the genesis the Herm booted on; a silent herm lists nothing to read it from.
+    const seedPath = [join(fleet!.herm.root, "genesis", "seed.json"), join(REPO_ROOT, "genesis", "seed.json")].find((p) => existsSync(p))!;
+    const bulbCid = sha(Buffer.from(JSON.stringify(JSON.parse(readFileSync(seedPath, "utf8"))), "utf8"));
+    const boot = await fetch(`${fleet!.hermShore}/bulb/${bulbCid}.bin`);
+    expect(boot.status, `the herm served no bulb under ${bulbCid} (seed read from ${seedPath})`).toBe(200);
+    expect(sha(new Uint8Array(await boot.arrayBuffer()))).toBe(bulbCid);
+    expect((await fetch(`${fleet!.hermShore}/bulb/manifest`)).status).toBe(404);
     expect((await fetch(`${fleet!.hermShore}/bulb/${cid}.bin`)).status).toBe(404);
   }, 30_000);
 

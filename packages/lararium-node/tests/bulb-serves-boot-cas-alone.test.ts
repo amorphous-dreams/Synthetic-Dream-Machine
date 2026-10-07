@@ -7,7 +7,7 @@
  * a hearth staged, or the boot CAS alone. Measured here against the real read-face: the bulb answers
  * `GET /bulb/<cid>.bin` from the seed-derived genesis blobs ONLY (`bulb-read-face.ts` builds `blobByCid`
  * off `buildBulb(bulb)`); a blob sitting in the same vessel's `cid/` dir, absent from the inventory,
- * draws 404 "unknown or stale bulb cid". A boot blob draws 200 with its own bytes (the CONTROL).
+ * draws the closed door. A boot blob draws 200 with its own bytes (the CONTROL).
  */
 import { afterEach, describe, test, expect } from "vitest";
 import { createServer, type Server } from "node:http";
@@ -18,6 +18,7 @@ import {
   buildGenesisDoc, sha256HexBytesSync, utf8Bytes, LARES_MEMETIC_WIKITEXT_PLUGIN_URI, type GenesisInputs,
 } from "@lararium/mesh";
 import { mountBulbReadFace } from "../src/bulb-read-face.js";
+import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { writeCasEntriesFs, readCasBlobFromFs } from "../src/node-cas.js";
 import type { BulbArtifact } from "../src/bulb.js";
 
@@ -29,7 +30,7 @@ function fixtureBulb(): BulbArtifact {
     plugins: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0", sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob }],
   };
   const a = buildGenesisDoc(inputs);
-  return { seed: a.seed, casEntries: a.casEntries, bootstrap: {}, sealEpochCid: null };
+  return { seed: a.seed, casEntries: a.casEntries };
 }
 
 describe("the bulb read-face serves the BOOT CAS alone — an operator's staged blob draws 404", () => {
@@ -40,7 +41,7 @@ describe("the bulb read-face serves the BOOT CAS alone — an operator's staged 
     for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
   });
 
-  test("GET /bulb/<cid>.bin: a genesis blob → 200 (CONTROL); a cid/ blob outside the manifest → 404", async () => {
+  test("GET /bulb/<cid>.bin: a genesis blob → 200 (CONTROL); a cid/ blob outside the seed inventory → the closed door", async () => {
     const bulb = fixtureBulb();
     const storageDir = mkdtempSync(join(tmpdir(), "lr-bulb-cas-")); dirs.push(storageDir);
     // A hearth stages a public pointer's bytes into its OWN cid/ tier beside the boot material.
@@ -55,11 +56,9 @@ describe("the bulb read-face serves the BOOT CAS alone — an operator's staged 
     const port = (httpServer.address() as { port: number }).port;
     await mountBulbReadFace({ httpServer, bulb });
 
-    // The bulb's manifest is the complete public arrival receipt. The retired pointer route has no alias.
+    // No listing route answers: the bulb CID arrives with the traveler.
     const manifest = await fetch(`http://127.0.0.1:${port}/bulb/manifest`);
-    expect(manifest.status).toBe(200);
-    const pointer = await fetch(`http://127.0.0.1:${port}/bulb/pointer`);
-    expect(pointer.status).toBe(404);
+    expect(manifest.status).toBe(404);
 
     const bootCid = bulb.casEntries[0]!.cid;
     const control = await fetch(`http://127.0.0.1:${port}/bulb/${bootCid}.bin`);
@@ -68,6 +67,6 @@ describe("the bulb read-face serves the BOOT CAS alone — an operator's staged 
 
     const probe = await fetch(`http://127.0.0.1:${port}/bulb/${stagedCid}.bin`);
     expect(probe.status).toBe(404);
-    expect(await probe.text()).toBe("unknown or stale bulb cid");
+    expect(await probe.text()).toBe(CLOSED_DOOR.body);
   });
 });

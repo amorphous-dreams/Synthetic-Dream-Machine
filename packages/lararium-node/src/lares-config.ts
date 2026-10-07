@@ -68,6 +68,22 @@ export interface LaresConfig {
    * passphrase EXISTS, never what it is.
    */
   readonly sealExpected?: boolean;
+  /** A herm's public rung. Absent, the herm stands SILENT; `waymark: true` serves its unsigned waymark. */
+  readonly herm?: LaresHermConfig;
+}
+
+/** The herm rung knob (pronaos#/the-rung-ladder). */
+export interface LaresHermConfig {
+  /** True lifts a herm to the WAYMARK rung: one unsigned descriptor at `/.well-known/lar` naming its bulb CID. */
+  readonly waymark?: boolean;
+}
+
+/** Whether the config lifts this herm to the waymark rung. A non-boolean value throws, so a typo surfaces. */
+export function hermWaymarkDeclared(cfg: LaresConfig): boolean {
+  const herm: unknown = cfg.herm;
+  if (herm === undefined) return false;
+  if (herm === null || typeof herm !== "object" || Array.isArray(herm)) throw new Error("[lares config] herm must be an object");
+  return originBoolean((herm as { waymark?: unknown }).waymark, "herm.waymark") ?? false;
 }
 
 /** The per-daemon config file — `~/.lares/config.json`. LAR_ROOT-isolated for staged pairs (larHome

@@ -1,17 +1,26 @@
 /**
- * bulb-read-face — serve the HELD bulb by CID over the node's PUBLIC read-face (the oracle-substrate floor).
+ * bulb-read-face — hand over the BULB by CID over the node's PUBLIC read-face (the oracle-substrate floor).
  *
- * Routes (GET-only, on the SAME HTTP server the FLOW-map read-face uses, under a distinct `/bulb/` prefix):
- *   GET /bulb/manifest    → the bulb manifest (cid index, JSON)
- *   GET /bulb/<cid>.bin   → a content-addressed bulb blob (seed · bootstrap · cas-manifest · each engine/plugin blob)
+ * Routes (GET/HEAD-only, on the SAME HTTP server the FLOW-map read-face uses, under a distinct `/bulb/` prefix):
+ *   GET /bulb/<cid>.bin   → the genesis seed (under the bulb CID) or one seed-named engine/plugin CAS blob
  *   GET /cas/<cid>        → a PUBLIC-tier blob this Herm holds in its cleartext `cid/` (the Herm re-share, below)
+ *
+ * THE SILENT RUNG (pronaos#/the-rung-ladder). A herm answers a stranger only by a name the stranger brings. The
+ * bulb — the genesis seed plus the CAS blobs it names — re-derives from the published build, so a traveler arrives
+ * already knowing the bulb CID (the seed's own) and pulls the rest off the seed. No route lists or describes what
+ * the face holds, and every unknown, withheld or refused request draws the one CLOSED DOOR (`bulb-routes.ts`),
+ * byte-identical to the dispatcher's terminal refusal.
+ *
+ * THE WAYMARK RUNG (opt-in, `herm.waymark` in the node config). A herm that chooses to be found serves one
+ * minimal UNSIGNED descriptor at `/.well-known/lar`: its format, its route shapes, and its bulb CID. It names no
+ * kindle pointer, mirror or Nexus, and a herm signs nothing public.
  *
  * THE HERM RE-SHARE (basket-one #/the-fetch-door: "a public blob travels to a Herm before any hearth serves
  * it"). A fleet peer stages a public blob and goes dark; its bytes reached this Herm over Socket B and landed
  * write-through in `cid/`. A stranger fetches them here by cid — IFF a pointer in a PUBLIC-tier bag names the
  * cid (`publicCasShore`: the derived reference count → the bag → its declared tier). A cid named only from a
- * private or contract tier, or named by nothing, draws the SAME 404 the bulb answers, so a withholding never
- * says which gate refused. The bulb route itself stays the boot CAS alone.
+ * private or contract tier, or named by nothing, draws the closed door, so a withholding never says which gate
+ * refused. The bulb route itself stays the bulb alone.
  *
  * PUBLIC-FLOOR ONLY. The bulb carries ALL-PUBLIC boot material, so it rides THIS floor exclusively — NEVER the cad
  * carriage (Socket B). Write-refusal holds by construction: only GET, bytes named by their own hash, no sync session.
@@ -22,13 +31,14 @@
  */
 
 import type { Server, IncomingMessage, ServerResponse } from "node:http";
-import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_MANIFEST_ROUTE, BULB_BLOB_RE, CAS_BLOB_RE } from "./bulb-routes.js";
+import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_BLOB_RE, CAS_BLOB_RE, answerClosedDoor, bulbBlobRoute } from "./bulb-routes.js";
 import {
-  sha256HexBytesSync, utf8Bytes, casReferences, publicRealmBooksFromDoc,
+  canonicalJsonBytes, casReferences, publicRealmBooksFromDoc,
   type CasReferenceEntry, type CapTier, type LarDoc,
 } from "@lararium/mesh";
 import { readCasBlobFromFs } from "./node-cas.js";
-import { buildBulb, type BulbArtifact, type BulbBlob, type BulbManifest } from "./bulb.js";
+import { buildBulb, type BulbArtifact } from "./bulb.js";
+import { ARRIVAL_WELL_KNOWN_ROUTE, WELL_KNOWN_LAR_ROUTE_KEY } from "./pronaos-adapter.js";
 import type { OracleReadFace } from "./oracle-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
@@ -163,10 +173,7 @@ export function publicCasShore(opts: {
   };
 }
 
-/**
- * Mount the bulb read-face. Content-addresses the held snapshot once and serves its immutable manifest and blobs.
- * The manifest is the arrival receipt; there is no second pointer route or persisted pointer state.
- */
+/** Mount the bulb read-face: the seed under the bulb CID and every seed-named CAS blob under its own. */
 export async function mountBulbReadFace(args: {
   readonly httpServer: Server;
   readonly bulb:       BulbArtifact;
@@ -174,55 +181,41 @@ export async function mountBulbReadFace(args: {
   /** The vessel's one request listener. Present, the face CLAIMS `/bulb` and `/cas` before its asynchronous
    *  public-tier read, so the dispatcher's terminal refusal never answers a request this face then answers too. */
   readonly dispatcher?: HttpFaceDispatcher;
-  /** The Herm re-share shore; absent, `/cas/<cid>` answers the bulb's 404 for every cid. */
+  /** The Herm re-share shore; absent, `/cas/<cid>` answers the closed door for every cid. */
   readonly publicCas?: PublicCasShore;
 }): Promise<OracleReadFace> {
   const { httpServer, bulb, onLog, publicCas, dispatcher } = args;
-  const { manifest, blobs } = buildBulb(bulb);
-  const manifestBytes = utf8Bytes(JSON.stringify(manifest));
-  const manifestCid   = sha256HexBytesSync(manifestBytes);
-  const blobByCid = new Map<string, Uint8Array>(blobs.map((b: BulbBlob) => [b.cid, b.bytes]));
+  const { cid, blobs } = buildBulb(bulb);
+  const blobByCid = new Map<string, Uint8Array>(blobs.map((b) => [b.cid, b.bytes]));
 
-  onLog?.(`bulb read-face: manifest=${manifestCid.slice(0, 12)}… blobs=${blobs.length}`);
-  const CORS: Record<string, string> = {
-    "access-control-allow-origin":  "*",
-    "access-control-allow-methods": "GET, HEAD, OPTIONS",
-    "access-control-allow-headers": "*",
+  onLog?.(`bulb read-face: bulb=${cid} blobs=${blobs.length}`);
+  const SERVED: Record<string, string> = {
+    "access-control-allow-origin": "*",
+    "content-type":                "application/octet-stream",
+    "cache-control":               "public, immutable, max-age=31536000",
   };
-  const refuse = (res: ServerResponse): void => {
+  const serve = (req: IncomingMessage, res: ServerResponse, bytes: Uint8Array): void => {
     if (res.headersSent || res.writableEnded) return;
-    res.writeHead(404, { ...CORS, "content-type": "text/plain" }); res.end("unknown or stale bulb cid");
+    res.writeHead(200, SERVED);
+    if (req.method === "HEAD") res.end(); else res.end(Buffer.from(bytes));
   };
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
     if (!pathname.startsWith(BULB_ROUTE_PREFIX) && !pathname.startsWith(CAS_ROUTE_PREFIX)) return;   // not ours — leave for other handlers
-    if (req.method === "OPTIONS") { res.writeHead(204, CORS); res.end(); return; }
-    if (req.method !== "GET" && req.method !== "HEAD") {
-      res.writeHead(405, { ...CORS, "content-type": "text/plain" }); res.end("method not allowed"); return;
-    }
-    const cas = pathname.match(CAS_BLOB_RE);
+    if (req.method !== "GET" && req.method !== "HEAD") { answerClosedDoor(res); return; }
     if (pathname.startsWith(CAS_ROUTE_PREFIX)) {
-      if (!cas || !publicCas) { refuse(res); return; }
+      const cas = pathname.match(CAS_BLOB_RE);
+      if (!cas || !publicCas) { answerClosedDoor(res); return; }
       const cid = cas[1]!;
       void publicCas.isPublic(cid).then((isPublic) => {
         const bytes = isPublic ? publicCas.read(cid) : null;
-        if (!bytes) { refuse(res); return; }
-        res.writeHead(200, { ...CORS, "content-type": "application/octet-stream", "cache-control": "public, immutable, max-age=31536000" });
-        res.end(Buffer.from(bytes));
-      }).catch(() => refuse(res));   // a torn reference read withholds — never serves on a guess
+        if (bytes) serve(req, res, bytes); else answerClosedDoor(res);
+      }).catch(() => answerClosedDoor(res));   // a torn reference read withholds — never serves on a guess
       return;
-    }
-    if (pathname === BULB_MANIFEST_ROUTE) {
-      res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
-      res.end(Buffer.from(manifestBytes)); return;
     }
     const m = pathname.match(BULB_BLOB_RE);
     const bytes = m ? blobByCid.get(m[1]!) : undefined;
-    if (bytes) {
-      res.writeHead(200, { ...CORS, "content-type": "application/octet-stream", "cache-control": "public, immutable, max-age=31536000" });
-      res.end(Buffer.from(bytes)); return;
-    }
-    refuse(res);
+    if (bytes) serve(req, res, bytes); else answerClosedDoor(res);
   };
   const unregister = dispatcher?.register({
     name: "bulb",
@@ -238,5 +231,50 @@ export async function mountBulbReadFace(args: {
   return { dispose: () => { if (unregister) unregister(); else httpServer.off("request", onRequest); } };
 }
 
-/** The bulb manifest a puller GETs first (re-exported so the kindle transport speaks the same type). */
-export type { BulbManifest };
+/** The waymark's format tag — a name, never a version; a reader refuses any other. */
+export const WAYMARK_FORMAT = "lar-waymark";
+
+/** What a waymark herm says of itself, and nothing more: the format, its route shapes, its bulb CID. */
+export interface HermWaymark {
+  readonly format: typeof WAYMARK_FORMAT;
+  /** The route shapes, `<cid>` standing for a CID the client names. */
+  readonly routes: readonly string[];
+  /** The bulb CID this herm serves — the genesis seed's own CID. */
+  readonly bulb:   string;
+}
+
+/** The waymark's exact bytes: canonical JSON, UNSIGNED — a herm signs nothing public. */
+export function hermWaymarkBytes(bulbCid: string): Uint8Array {
+  if (!/^[0-9a-f]{64}$/.test(bulbCid)) throw new Error(`[waymark] bulb CID must be 64 hex: ${bulbCid}`);
+  const waymark: HermWaymark = {
+    format: WAYMARK_FORMAT,
+    routes: [bulbBlobRoute("<cid>"), `${CAS_ROUTE_PREFIX}<cid>`],
+    bulb:   bulbCid,
+  };
+  return canonicalJsonBytes(waymark);
+}
+
+/**
+ * Mount the WAYMARK rung: `/.well-known/lar` answers the waymark bytes to GET/HEAD and the closed door to every
+ * other method. It shares the arrival descriptor's route key, so a vessel can never mount a waymark beside a
+ * Pronaos — the temple's descriptor and the waymark never both answer one name.
+ */
+export function mountHermWaymark(args: {
+  readonly httpServer:  Server;
+  readonly bulbCid:     string;
+  readonly dispatcher?: HttpFaceDispatcher;
+}): OracleReadFace {
+  const bytes = hermWaymarkBytes(args.bulbCid);
+  const owns = (req: IncomingMessage): boolean => new URL(req.url ?? "/", "http://localhost").pathname === ARRIVAL_WELL_KNOWN_ROUTE;
+  const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
+    if (!owns(req)) return;
+    if (req.method !== "GET" && req.method !== "HEAD") { answerClosedDoor(res); return; }
+    res.writeHead(200, { "access-control-allow-origin": "*", "content-type": "application/json", "cache-control": "no-store" });
+    if (req.method === "HEAD") res.end(); else res.end(Buffer.from(bytes));
+  };
+  const unregister = args.dispatcher?.register({
+    name: "herm-waymark", routeKeys: [WELL_KNOWN_LAR_ROUTE_KEY], owns, handle: onRequest,
+  });
+  if (!unregister) args.httpServer.on("request", onRequest);
+  return { dispose: () => { if (unregister) unregister(); else args.httpServer.off("request", onRequest); } };
+}

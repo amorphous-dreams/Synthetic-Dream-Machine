@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeCidResolver, sha256HexBytesSync, utf8Bytes, type CasTransitTransport } from "@lararium/mesh";
 import { hermCasTransit, composeCasTransits, readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
+import { answerClosedDoor } from "../src/bulb-routes.js";
 
 const servers: Server[] = [];
 const dirs: string[] = [];
@@ -24,12 +25,12 @@ afterEach(async () => {
   for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
 });
 
-/** A fake Herm read-face: `/cas/<cid>` answers the bytes `serve` names, 404 otherwise. */
+/** A fake Herm read-face: `/cas/<cid>` answers the bytes `serve` names, the closed door otherwise. */
 async function fakeHerm(serve: Record<string, Uint8Array>): Promise<string> {
   const s = createServer((req, res) => {
     const m = /^\/cas\/([0-9a-f]{64})$/.exec(req.url ?? "");
     const bytes = m ? serve[m[1]!] : undefined;
-    if (!bytes) { res.writeHead(404, { "content-type": "text/plain" }); res.end("unknown or stale bulb cid"); return; }
+    if (!bytes) { answerClosedDoor(res); return; }
     res.writeHead(200, { "content-type": "application/octet-stream" }); res.end(Buffer.from(bytes));
   });
   servers.push(s);

@@ -384,12 +384,14 @@ export type { CarriageServeLoop, CarriageServeLoopConfig } from "./carriage-serv
 export { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 export type { LeaseRekeyResult } from "./lease-rekey.js";
 export { listSealedCids } from "./cas-reshare.js";
-// The BULB cap — the HELD cold-boot snapshot (genesis seed + CAS + bootstrap, epoch-PINNED), content-addressed +
-// served by cid over the public floor; and the `lares kindle <herm-url>` cold path that pulls it + kindles a NEW
-// SOVEREIGN hearth (the device mints its OWN key — serve fire, never key). All-public OPEN path (bulb ⊥ stolon).
-export { buildBulb, assembleBulb, readBulbArtifact, BULB_MANIFEST_FORMAT } from "./bulb.js";
-export type { BulbArtifact, BulbBlob, BulbManifest } from "./bulb.js";
-export { mountBulbReadFace } from "./bulb-read-face.js";
+// The BULB cap — the genesis seed + the CAS it names, named by the seed's CID and served by cid over the public
+// floor; and the two library doors (`pullBulb` by a bulb CID, `pullArrival` off a lararium's own Pronaos) that pull
+// it + kindle a NEW SOVEREIGN hearth (the device mints its OWN key — serve fire, never key). All-public OPEN path
+// (bulb ⊥ stolon).
+export { buildBulb, assembleBulb, readBulbArtifact, bulbCid } from "./bulb.js";
+export type { BulbArtifact, BulbBlob } from "./bulb.js";
+export { mountBulbReadFace, mountHermWaymark, hermWaymarkBytes, WAYMARK_FORMAT } from "./bulb-read-face.js";
+export type { HermWaymark } from "./bulb-read-face.js";
 export {
   mountPronaosReadFace, mountPronaosPublicArtifact, pronaosRequestHandler,
   pronaosPublicArtifactRequestHandler, pronaosRouteInventoryForProjection,
@@ -402,7 +404,7 @@ export type { PronaosProjectionInputs } from "./pronaos-projection.js";
 export { composePronaosFromEnv, parsePronaosCompositionConfig } from "./pronaos-composition.js";
 export type { PronaosComposition, PronaosCompositionConfig } from "./pronaos-composition.js";
 export { bulbCap } from "./node-caps.js";
-export { pullBulb, kindleFromBulb, httpBulbTransport } from "./kindle.js";
+export { pullBulb, pullArrival, kindleFromBulb, httpBulbTransport } from "./kindle.js";
 export type { BulbPullTransport, KindleResult } from "./kindle.js";
 export { startNexusClientDial, maybeStartNexusClientDial } from "./nexus-client-dial.js";
 export type { NexusClientDial, NexusClientDialConfig, NexusClientDialInput } from "./nexus-client-dial.js";

@@ -61,8 +61,11 @@ import type { AutomergeUrl }            from "@automerge/automerge-repo";
 import { join } from "path";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
-import { loadLaresConfig, originDeclaration } from "./lares-config.js";
+import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
 import { composePronaosFromEnv } from "./pronaos-composition.js";
+import { houseOriginsOf } from "./pronaos-adapter.js";
+import { mountHermWaymark } from "./bulb-read-face.js";
+import { readBulbArtifact, bulbCid } from "./bulb.js";
 import { createReadinessState, mountReadinessFace } from "./readiness-face.js";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
@@ -193,13 +196,20 @@ async function main(): Promise<void> {
   // The composition runs here, before `readArchiveOpening` and `standAs` below, and reads only the public genesis
   // dir and the prepared Web artifact — no key, no archive, no face. So a lararium at its waking floor serves its
   // arrival page, worker, seed, seed-named CAS members and the `/.well-known/lar` descriptor exactly as a raised
-  // hearth does: liveness ⊥ readiness. Every origin this house answers on is handed in, so the descriptor refuses a
-  // mirror that would share an origin with the house.
-  const houseOrigins = originCompositions === null ? [] : [...new Set([
-    ...reachFaces.map((face) => face.origin),
-    ...originCompositions.flatMap((c) => [c.webOrigin, c.relayOrigin, c.oracleOrigin]),
-  ])];
+  // hearth does: liveness ⊥ readiness. Every origin this house answers on is handed in — each reach face on every
+  // standing — so the descriptor refuses a mirror that would share an origin with the house.
+  const houseOrigins = houseOriginsOf(reachFaces, originCompositions);
   const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding, houseOrigins });
+  // THE RUNG LADDER (pronaos#/the-rung-ladder). A herm stands SILENT by default: it hands over its bulb by CID and
+  // describes nothing. `herm.waymark` in the node config lifts it to the WAYMARK rung — one unsigned descriptor at
+  // `/.well-known/lar` naming its bulb CID. The temple's descriptor is the lararium's own Pronaos, so a lararium
+  // handed the waymark refuses here, before any face listens.
+  if (hermWaymarkDeclared(loadLaresConfig())) {
+    if (askedStanding !== "herm") throw new Error("[lararium] herm.waymark names a herm's rung — a lararium's arrival rides its own Pronaos");
+    const bulb = readBulbArtifact(genesisDir);
+    if (!bulb) throw new Error(`[lararium] herm.waymark declared and no genesis bulb at ${genesisDir} — a waymark names a bulb this herm serves`);
+    mountHermWaymark({ httpServer, dispatcher, bulbCid: bulbCid(bulb.seed) });
+  }
 
   httpServer.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;

@@ -2,8 +2,8 @@
  * bulb-kindle.test.ts — the BULB cap: a Herm serves a HELD cold-boot snapshot; a cold device kindles a SOVEREIGN hearth.
  *
  * End-to-end, headless, every crypto piece real:
- *   1. SERVE + PULL — a Herm serves the bulb by cid over the PUBLIC floor (`/bulb/*`); a cold device pulls it and
- *      `assembleBulb` re-verifies `sha256(bytes) == cid` on every blob (content-address integrity, secret-free).
+ *   1. SERVE + PULL — a Herm serves the bulb by cid over the PUBLIC floor (`/bulb/*`); a cold device pulls it by the
+ *      bulb CID it already holds, and `assembleBulb` re-verifies `sha256(bytes) == cid` on every blob.
  *   2. KINDLE — the cold device materializes the oracle island from the bulb's genesis, mints its OWN Ed25519, and
  *      builds the ceremony on THAT key → the kindled hearth's did:key derives from the DEVICE's own key.
  *   3. SERVE FIRE, NEVER KEY (KAPU, by placement) — the bulb carries NO signing key; two devices kindling the SAME
@@ -25,28 +25,25 @@ import {
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, utf8Bytes,
   type GenesisInputs, type LarDoc,
 } from "@lararium/mesh";
-import { readBulbArtifact, buildBulb, assembleBulb, type BulbArtifact } from "../src/bulb.js";
+import { readBulbArtifact, buildBulb, assembleBulb, bulbCid, type BulbArtifact } from "../src/bulb.js";
 import { mountBulbReadFace } from "../src/bulb-read-face.js";
 import { pullBulb, kindleFromBulb, httpBulbTransport, type KindleResult } from "../src/kindle.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { readGenesisSeed, genesisCasDir } from "../src/genesis-artifact.js";
 
 /** A fixture bulb — a fake core blob + a plugin under the Lares plugin id (validateGenesisBytes requires both). */
-function fixtureBulb(): BulbArtifact {
+function fixtureBulb(actorSeed = "abc123"): BulbArtifact {
   const coreBlob   = utf8Bytes("fake-tw5-core-for-bulb");
   const pluginBlob = utf8Bytes("fake-lares-memetic-wikitext-plugin");
   const inputs: GenesisInputs = {
-    actorSeed: "abc123", coreBlob, coreVersion: "5.0.0-test",
+    actorSeed, coreBlob, coreVersion: "5.0.0-test",
     plugins: [{
       id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0",
       sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob,
     }],
   };
   const artifact = buildGenesisDoc(inputs);
-  return {
-    seed: artifact.seed, casEntries: artifact.casEntries,
-    bootstrap: { note: "all-public boot pointers" }, sealEpochCid: "epoch-fixture-cid",
-  };
+  return { seed: artifact.seed, casEntries: artifact.casEntries };
 }
 
 describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire, never key)", () => {
@@ -78,19 +75,19 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     const bulb = fixtureBulb();
     mkdirSync(genesisCasDir(genesisDir), { recursive: true });
     writeFileSync(join(genesisDir, "seed.json"),  JSON.stringify(bulb.seed));
-    writeFileSync(join(genesisDir, "social-bootstrap.json"), JSON.stringify(bulb.bootstrap));
     writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
 
-    const read = readBulbArtifact(genesisDir, "epoch-fixture-cid");
+    const read = readBulbArtifact(genesisDir);
     expect(read).not.toBeNull();
-    expect(read!.sealEpochCid).toBe("epoch-fixture-cid");
+    expect(Object.keys(read!).sort()).toEqual(["casEntries", "seed"]);
     expect(readGenesisSeed(genesisDir)?.format).toBe(bulb.seed.format);
 
     // buildBulb → assembleBulb re-verifies every blob against its cid.
-    const { manifest, blobs } = buildBulb(read!);
+    const { cid, blobs } = buildBulb(read!);
+    expect(cid).toBe(bulbCid(bulb.seed));
     const byCid = new Map(blobs.map((b) => [b.cid, b.bytes]));
-    const back = (cid: string): Uint8Array | null => byCid.get(cid) ?? null;
-    const reassembled = assembleBulb(manifest, back);
+    const back = (c: string): Uint8Array | null => byCid.get(c) ?? null;
+    const reassembled = assembleBulb(cid, back);
     expect(reassembled.seed.actorSeed).toBe(bulb.seed.actorSeed);
     expect(reassembled.casEntries.length).toBe(bulb.casEntries.length);
 
@@ -103,8 +100,34 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     })).toThrow(/seed-derived inventory/);
 
     // A tampered blob fails the content-address (secret-free integrity).
-    expect(() => assembleBulb(manifest, (cid) => (cid === manifest.seedCid ? utf8Bytes("tampered") : back(cid))))
+    expect(() => assembleBulb(cid, (c) => (c === cid ? utf8Bytes("tampered") : back(c))))
       .toThrow(/content-address/);
+  });
+
+  test("THE SEED NAMES THE BULB: two houses on two Nexuses holding one genesis hold one bulb CID; another seed, another CID", () => {
+    // Each house sites the same genesis beside its OWN social bootstrap and its OWN charter head. Neither organ
+    // belongs to the bulb (the stolon carries joining pointers, the corm the epoch lease), so neither moves its CID.
+    const houseBulb = (tag: string, bootstrap: Record<string, unknown>, epoch: string): BulbArtifact => {
+      const genesisDir = mkDir(tag);
+      const bulb = fixtureBulb();
+      mkdirSync(genesisCasDir(genesisDir), { recursive: true });
+      writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(bulb.seed));
+      writeFileSync(join(genesisDir, "social-bootstrap.json"), JSON.stringify(bootstrap));
+      writeFileSync(join(genesisDir, "charter-head"), epoch);
+      writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
+      return readBulbArtifact(genesisDir)!;
+    };
+    const a = houseBulb("house-a", { identities: "automerge:house-a" }, "epoch-nexus-a");
+    const b = houseBulb("house-b", { identities: "automerge:house-b" }, "epoch-nexus-b");
+    expect(buildBulb(a).cid).toBe(buildBulb(b).cid);
+    // The served blob set is identical byte for byte — nothing house-specific rides it.
+    const served = (x: BulbArtifact): string[] => buildBulb(x).blobs.map((blob) => blob.cid).sort();
+    expect(served(a)).toEqual(served(b));
+
+    // CONTROL: a different genesis seed names a different bulb.
+    const other = fixtureBulb("def456");
+    expect(buildBulb(other).cid).not.toBe(buildBulb(a).cid);
+    expect(bulbCid(other.seed)).toBe(buildBulb(other).cid);
   });
 
   test("SERVE + PULL + KINDLE: a cold device kindles a sovereign hearth; did:key derives from its OWN key", async () => {
@@ -115,10 +138,10 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     const port = (httpServer.address() as { port: number }).port;
     await mountBulbReadFace({ httpServer, bulb });
 
-    // PULL over real HTTP — assembleBulb re-verifies content-address on every blob.
-    const pulled = await pullBulb(httpBulbTransport(`http://127.0.0.1:${port}`));
+    // PULL over real HTTP by the bulb CID the traveler brings — assembleBulb re-verifies every blob.
+    const pulled = await pullBulb(httpBulbTransport(`http://127.0.0.1:${port}`), bulbCid(bulb.seed));
     expect(pulled.seed.actorSeed).toBe(bulb.seed.actorSeed);
-    expect(pulled.sealEpochCid).toBe("epoch-fixture-cid");
+    expect(Object.keys(pulled).sort()).toEqual(["casEntries", "seed"]);
 
     // KINDLE — the cold device mints its OWN key; the ceremony builds on it.
     process.env["LAR_ROOT"] = mkDir("root-serve");

@@ -1,27 +1,26 @@
 /**
- * bulb — the corm-and-rhizome BULB cap: a HELD cold-boot snapshot that carries its own next generation.
+ * bulb — the corm-and-rhizome BULB cap: the COAL, a cold-boot snapshot that carries its own next generation.
  *
- * The bulb = "seed-inside" (vessel-caps): the whole ALL-PUBLIC boot material a stranger needs to kindle their OWN
- * sovereign hearth — the genesis oracle seed, the engine + plugin CAS bytes, the social bootstrap pointers, PINNED
- * to a charter chain-head epoch. A Herm HOLDS it and serves it FROZEN offline / self-refreshed online (the oracle-
- * substrate corm-lease). It hands the FIRE (engine + genesis + grammar) — NEVER a key: the kindled hearth mints its
- * own sovereign self-certifying key from first breath (`kindleFromBulb`), so carry ⊥ read holds (the bulb carries
- * public boot material; the new hearth's keys never touch the Herm).
+ * The bulb = "seed-inside" (vessel-caps#/the-five-caps): the genesis oracle seed plus the engine and plugin CAS
+ * bytes it names — the whole ALL-PUBLIC boot material a stranger needs to kindle their OWN sovereign hearth, and
+ * nothing that names a house or a Nexus. THE SEED CID NAMES THE BULB: every byte beyond the seed derives from the
+ * seed, so two houses holding one genesis hold one bulb under one CID. The other modified stems keep their own
+ * organs — the charter epoch is the CORM's freshness lease, spent each cycle; a house's joining pointers ride the
+ * STOLON (the invite). The bulb hands the FIRE (engine + genesis + grammar) — NEVER a key: the kindled hearth mints
+ * its own sovereign self-certifying key from first breath (`kindleFromBulb`).
  *
  * ALL-PUBLIC → the PUBLIC FLOOR ONLY. The bulb rides the read-face (oracle-substrate) EXCLUSIVELY — NEVER the cad
  * carriage (Socket B). Routing a public artifact through the seal/keyring lane would collapse the OPEN path into
  * CLOSED (crypto-spine ledger #1: the cad seal ⊥ the ECDH box). Bulb ⊥ stolon: the bulb is the OPEN path (a stranger
  * births their own sovereign hearth); the stolon is the CLOSED path (invite a device into YOUR fleet).
  *
- * CONTENT-ADDRESSED. Every piece (seed, bootstrap, each engine/plugin blob) is named by its own sha256. The
- * puller derives the CAS inventory from the verified immutable seed, then re-verifies `sha256(bytes) == cid` on
- * every named blob before it trusts a byte. The serve stays a HINT-free content-address; no second inventory
- * artifact can widen or narrow the fire (the pointer adds freshness).
+ * CONTENT-ADDRESSED. The puller fetches the seed by its CID, derives the CAS inventory from that verified seed, and
+ * re-verifies `sha256(bytes) == cid` on every named blob before it trusts a byte. No second inventory artifact can
+ * widen or narrow the fire.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/bulb
  */
 
-import { readFileSync } from "node:fs";
 import {
   genesisCasManifestFromSeed,
   sha256HexBytesSync,
@@ -32,58 +31,35 @@ import {
 import { readGenesisSeed, readGenesisCasManifest, genesisCasDir } from "./genesis-artifact.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 
-/** The bulb-manifest format tag — a puller refuses an unknown one (fail-closed). */
-export const BULB_MANIFEST_FORMAT = "lararium-bulb-manifest/v1" as const;
-
-/** The held cold-boot snapshot — genesis seed + CAS + bootstrap, PINNED to a charter chain-head epoch. NO KEY. */
+/** The bulb — the genesis seed and its exact seed-named CAS bytes. NO KEY, no house, no Nexus. */
 export interface BulbArtifact {
   /** The plain-data oracle genesis seed — the boot MATERIALIZES the oracle CRDT fresh from it. */
-  readonly seed:            GenesisSeed;
+  readonly seed:       GenesisSeed;
   /** Every CAS-bound blob's {cid, bytes} (engine + plugins) — the FIRE bytes a fresh hearth boots on. */
-  readonly casEntries:      readonly { readonly cid: string; readonly bytes: Uint8Array }[];
-  /** The ALL-PUBLIC social bootstrap pointers (identities/circles/sessions/daemon/persona doc urls). */
-  readonly bootstrap:       Record<string, unknown>;
-  /** The charter chain-head epoch this bulb is EPOCH-PINNED to (null when the charter is unseated). */
-  readonly sealEpochCid: string | null;
+  readonly casEntries: readonly { readonly cid: string; readonly bytes: Uint8Array }[];
 }
 
 /** One content-addressed bulb blob served by cid over the public floor. */
 export interface BulbBlob { readonly cid: string; readonly bytes: Uint8Array; }
 
-/** The bulb manifest — enough to fetch and verify the seed, which then names every fire byte. */
-export interface BulbManifest {
-  readonly format:          typeof BULB_MANIFEST_FORMAT;
-  readonly seedCid:         string;              // sha256(JSON(seed))
-  readonly bootstrapCid:    string;              // sha256(JSON(bootstrap))
-  readonly sealEpochCid: string | null;       // the epoch-PIN (charter chain-head)
-}
-
 const jsonBytes = (v: unknown): Uint8Array => utf8Bytes(JSON.stringify(v));
 
+/** The bulb's CID: sha256 over the seed's JSON — the same bytes served at the seed's own CID. */
+export function bulbCid(seed: GenesisSeed): string {
+  return sha256HexBytesSync(jsonBytes(seed));
+}
+
 /**
- * Content-address a bulb into a manifest + the flat blob set the read-face serves by cid. The seed and bootstrap
- * get sha256 CIDs; the CAS entries carry their own. The inventory derives from the seed at this boundary, so a
- * caller cannot silently offer a partial or widened fire. NO signer, NO key — a bulb is public boot material;
- * integrity rides the content-address, freshness rides the pointer above.
+ * Content-address a bulb into its CID + the flat blob set the read-face serves by cid: the seed under the bulb
+ * CID, then each seed-named CAS entry under its own. The inventory derives from the seed at this boundary, so a
+ * caller cannot silently offer a partial or widened fire. NO signer, NO key — integrity rides the content-address.
  */
-export function buildBulb(a: BulbArtifact): { manifest: BulbManifest; blobs: BulbBlob[] } {
+export function buildBulb(a: BulbArtifact): { cid: string; blobs: BulbBlob[] } {
   const inventory = genesisCasManifestFromSeed(a.seed);
   const entries = exactCasEntries(inventory, a.casEntries, "build");
-  const seedBytes        = jsonBytes(a.seed);
-  const bootstrapBytes   = jsonBytes(a.bootstrap);
-  const seedCid          = sha256HexBytesSync(seedBytes);
-  const bootstrapCid     = sha256HexBytesSync(bootstrapBytes);
-  const manifest: BulbManifest = {
-    format: BULB_MANIFEST_FORMAT,
-    seedCid, bootstrapCid,
-    sealEpochCid: a.sealEpochCid,
-  };
-  const blobs: BulbBlob[] = [
-    { cid: seedCid,        bytes: seedBytes },
-    { cid: bootstrapCid,   bytes: bootstrapBytes },
-    ...entries,
-  ];
-  return { manifest, blobs };
+  const seedBytes = jsonBytes(a.seed);
+  const cid = sha256HexBytesSync(seedBytes);
+  return { cid, blobs: [{ cid, bytes: seedBytes }, ...entries] };
 }
 
 function verified(cid: string, label: string, getBlob: (cid: string) => Uint8Array | null): Uint8Array {
@@ -93,16 +69,13 @@ function verified(cid: string, label: string, getBlob: (cid: string) => Uint8Arr
   return bytes;
 }
 
-/** Verify the bulb's root seed and derive its one authoritative logical CAS inventory. */
+/** Verify the bulb's seed under the bulb CID and derive its one authoritative logical CAS inventory. */
 export function bulbSeedInventory(
-  manifest: BulbManifest,
+  cid: string,
   getBlob: (cid: string) => Uint8Array | null,
 ): { readonly seed: GenesisSeed; readonly inventory: GenesisCasManifest } {
-  if (manifest.format !== BULB_MANIFEST_FORMAT) {
-    throw new Error(`[bulb] unknown manifest format ${String(manifest.format)} — refusing`);
-  }
   let seed: GenesisSeed;
-  try { seed = JSON.parse(new TextDecoder().decode(verified(manifest.seedCid, "seed", getBlob))) as GenesisSeed; }
+  try { seed = JSON.parse(new TextDecoder().decode(verified(cid, "seed", getBlob))) as GenesisSeed; }
   catch (error) {
     if (error instanceof Error && error.message.startsWith("[bulb]")) throw error;
     throw new Error(`[bulb] seed is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
@@ -132,35 +105,25 @@ function exactCasEntries(
 }
 
 /**
- * Re-assemble a bulb from its manifest + a blob fetcher. The verified seed derives every required CAS CID; each
- * byte then re-verifies `sha256(bytes) == cid`. A tampered, absent, partial, or widened bulb throws. The one
- * intake a puller runs — content-address integrity, secret-free.
+ * Re-assemble a bulb from its CID + a blob fetcher. The verified seed derives every required CAS CID; each byte
+ * then re-verifies `sha256(bytes) == cid`. A tampered, absent, partial, or widened bulb throws. The one intake a
+ * puller runs — content-address integrity, secret-free.
  */
-export function assembleBulb(manifest: BulbManifest, getBlob: (cid: string) => Uint8Array | null): BulbArtifact {
-  const { seed, inventory } = bulbSeedInventory(manifest, getBlob);
-  let bootstrap: Record<string, unknown>;
-  try { bootstrap = JSON.parse(new TextDecoder().decode(verified(manifest.bootstrapCid, "bootstrap", getBlob))) as Record<string, unknown>; }
-  catch (error) {
-    if (error instanceof Error && error.message.startsWith("[bulb]")) throw error;
-    throw new Error(`[bulb] bootstrap is not valid JSON: ${error instanceof Error ? error.message : String(error)}`);
-  }
+export function assembleBulb(cid: string, getBlob: (cid: string) => Uint8Array | null): BulbArtifact {
+  const { seed, inventory } = bulbSeedInventory(cid, getBlob);
   const casEntries = exactCasEntries(
     inventory,
     inventory.blobs.map((blob) => ({ cid: blob.cid, bytes: verified(blob.cid, "cas", getBlob) })),
     "assembled",
   );
-  return { seed, casEntries, bootstrap, sealEpochCid: manifest.sealEpochCid };
+  return { seed, casEntries };
 }
 
 /**
- * Read a bulb from TWO SITED INPUTS — the HELD snapshot a Herm serves. The seed rides `genesisDir`; the
- * social bootstrap rides `bootstrapPath`, NAMED rather than reached for, because the two live in
- * different homes now (a shared seed, a per-vessel address book) and a function that names one target
- * while resolving the other from ambient state is the shape every confused-deputy bug wears. Reads the plain-data seed (seed.json),
- * its derived logical CAS inventory, every genesis/cas/<cid> blob, and the vessel's social bootstrap,
- * PINNED to the passed charter chain-head epoch. Returns null when the genesis is absent/malformed (nothing to serve).
+ * Read the bulb a Herm serves off its genesis dir: the plain-data seed (seed.json), its derived logical CAS
+ * inventory, and every genesis/cas/<cid> blob. Returns null when the genesis is absent/malformed (nothing to serve).
  */
-export function readBulbArtifact(genesisDir: string, sealEpochCid: string | null, bootstrapPath: string): BulbArtifact | null {
+export function readBulbArtifact(genesisDir: string): BulbArtifact | null {
   const seed        = readGenesisSeed(genesisDir);
   const casManifest = readGenesisCasManifest(genesisDir);
   if (!seed || !casManifest) return null;
@@ -170,8 +133,5 @@ export function readBulbArtifact(genesisDir: string, sealEpochCid: string | null
     if (!bytes) throw new Error(`[bulb] genesis CAS blob absent for cid ${b.cid} — re-run build:genesis`);
     return { cid: b.cid, bytes };
   });
-  let bootstrap: Record<string, unknown> = {};
-  try { bootstrap = JSON.parse(readFileSync(bootstrapPath, "utf8")) as Record<string, unknown>; }
-  catch { bootstrap = {}; }   // a Herm with no seated social plane serves an empty bootstrap (a stranger seeds their own)
-  return { seed, casEntries, bootstrap, sealEpochCid };
+  return { seed, casEntries };
 }

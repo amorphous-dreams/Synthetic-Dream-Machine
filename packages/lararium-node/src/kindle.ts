@@ -1,10 +1,10 @@
 /**
- * kindle — the cold path: pull a Herm's HELD bulb and kindle a NEW SOVEREIGN hearth, headless.
+ * kindle — the cold path: pull a bulb by its CID and kindle a NEW SOVEREIGN hearth, headless.
  *
- * `lares kindle <herm-url>` runs this: PULL the all-public bulb off the Herm's public floor → VALIDATE the genesis
- * bytes → MATERIALIZE the oracle island → the DEVICE mints its OWN Ed25519 → build the cold-boot ceremony tiddlers
- * on THAT key → seed the fresh social docs. The kindled hearth stands SOVEREIGN from first breath: it certifies
- * itself with a key IT minted, never one the Herm supplied.
+ * A library call, no CLI verb: PULL the all-public bulb by the CID the traveler already holds → VALIDATE the
+ * genesis bytes → MATERIALIZE the oracle island → the DEVICE mints its OWN Ed25519 → build the cold-boot ceremony
+ * tiddlers on THAT key → seed the fresh social docs. The kindled hearth stands SOVEREIGN from first breath: it
+ * certifies itself with a key IT minted, never one the Herm supplied.
  *
  * SERVE FIRE, NEVER KEY (load-bearing, by PLACEMENT). The bulb carries genesis + engine + grammar — NEVER a signing
  * key. `generateOrLoadVesselIdentity` mints the device's OWN Ed25519 HERE, on the cold device; `buildCeremonyTiddlers`
@@ -12,27 +12,27 @@
  * forbids it (no key rides the bulb to supply). So two devices kindling the SAME bulb become two DISTINCT sovereigns
  * (distinct did:keys), never one conscripted identity.
  *
- * TWO DOORS, ONE FIRE. `pullBulb` reads a Herm's HELD bulb; `pullArrival` reads a LARARIUM's own Pronaos — the
- * arrival descriptor at `/.well-known/lar`, then `genesis/seed.json` and every seed-named CAS member off the same
- * origin. The first arrival trusts the lararium's own origin (pronaos#/the-first-arrival), so `pullArrival` reads
- * only the origin it was handed: a mirror the descriptor lists never kindles, and this path never dials one.
- * Both doors yield the same fire (seed + CAS), and `kindleFromBulb` mints the device's own key over either.
+ * TWO DOORS, ONE FIRE. `pullBulb` reads a herm by a bulb CID the traveler brings — a silent herm describes nothing,
+ * so the CID arrives with the traveler (it re-derives from the published genesis). `pullArrival` reads a LARARIUM's
+ * own Pronaos — the arrival descriptor at `/.well-known/lar`, then `genesis/seed.json` and every seed-named CAS member
+ * off the same origin. The first arrival trusts the lararium's own origin (pronaos#/the-first-arrival), so
+ * `pullArrival` reads only the origin it was handed: a mirror the descriptor lists never kindles, and this path never
+ * dials one. Both doors yield the same bulb (seed + CAS), and `kindleFromBulb` mints the device's own key over either.
  *
  * OPEN PATH (bulb ⊥ stolon). Kindle births a STRANGER's own sovereign hearth (permissionless growth) — distinct from
  * the stolon, which invites a device into YOUR fleet (the closed path). Kindle joins no fleet: it seeds a FRESH
  * social plane (its own identities and circles docs), never the Herm's.
  *
  * SCOPE. `kindleFromBulb` runs the LIGHT cold-boot ceremony — oracle island + the device's own key + the identity/
- * circle tiddlers. A top-level `lares kindle <herm-url>` command that yields a directly `lares vessel stand --foreground`-able hearth
- * additionally bridges `runFoundingCeremony` (the daemon doc + keyhive + sentinel seeding), writes the device's own
- * the social bootstrap (the vessel's own doc-url map), and guards a fresh device (refuse when an identity already
- * stands). That command touches the lares-cli CLI↔MCP↔VERB_SEATS parity fixture — a gated follow, not this keel.
+ * circle tiddlers. It does not run `runFoundingCeremony` (the daemon doc + keyhive + sentinel seeding), write a
+ * social bootstrap, or guard a device whose identity already stands; a hearth kindled here is not yet
+ * `lares vessel stand --foreground`-able.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/kindle
  */
 
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
-import { BULB_MANIFEST_ROUTE, bulbBlobRoute } from "./bulb-routes.js";
+import { bulbBlobRoute } from "./bulb-routes.js";
 import { ARRIVAL_FORMAT, ARRIVAL_WELL_KNOWN_ROUTE, type ArrivalDescriptor } from "./pronaos-adapter.js";
 import {
   genesisCasManifestFromSeed, sha256HexBytesSync,
@@ -41,36 +41,32 @@ import {
   emptyLarDoc, IDENTITIES_NAMESPACE,
   type GenesisSeed, type LarDoc,
 } from "@lararium/mesh";
-import { assembleBulb, bulbSeedInventory, type BulbArtifact, type BulbManifest } from "./bulb.js";
+import { assembleBulb, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 
 /** The HTTP transport a pull rides — injected so a test drives it in-process (no real socket needed). */
 export interface BulbPullTransport {
-  /** GET a JSON body at a path under the Herm base (e.g. `/bulb/manifest`). */
+  /** GET a JSON body at a path under the base (e.g. `/.well-known/lar`). */
   getJson(path: string): Promise<unknown>;
   /** GET raw bytes at a path (e.g. `/bulb/<cid>.bin`). */
   getBytes(path: string): Promise<Uint8Array>;
 }
 
 /**
- * PULL a bulb over a transport: fetch and verify its seed first, derive every required CAS CID, then fetch the
- * bootstrap and exact fire bytes. `assembleBulb` verifies each byte again. Secret-free, content-address integrity
- * only. Returns the reconstructed bulb, ready to kindle.
+ * PULL a bulb by its CID over a transport: fetch and verify the seed under that CID, derive every required CAS CID
+ * from it, then fetch each fire byte. `assembleBulb` verifies each byte again. Secret-free, content-address
+ * integrity only. Returns the reconstructed bulb, ready to kindle.
  */
-export async function pullBulb(transport: BulbPullTransport): Promise<BulbArtifact> {
-  const manifest = await transport.getJson(BULB_MANIFEST_ROUTE) as BulbManifest;
+export async function pullBulb(transport: BulbPullTransport, cid: string): Promise<BulbArtifact> {
   const cache = new Map<string, Uint8Array>();
-  cache.set(manifest.seedCid, await transport.getBytes(bulbBlobRoute(manifest.seedCid)));
-  const { inventory } = bulbSeedInventory(manifest, (cid) => cache.get(cid) ?? null);
-  for (const cid of [manifest.bootstrapCid, ...inventory.blobs.map((blob) => blob.cid)]) {
-    if (!cache.has(cid)) cache.set(cid, await transport.getBytes(bulbBlobRoute(cid)));
+  cache.set(cid, await transport.getBytes(bulbBlobRoute(cid)));
+  const { inventory } = bulbSeedInventory(cid, (c) => cache.get(c) ?? null);
+  for (const blob of inventory.blobs) {
+    if (!cache.has(blob.cid)) cache.set(blob.cid, await transport.getBytes(bulbBlobRoute(blob.cid)));
   }
-  return assembleBulb(manifest, (cid) => cache.get(cid) ?? null);
+  return assembleBulb(cid, (c) => cache.get(c) ?? null);
 }
-
-/** The fire a kindle burns: the genesis seed and its exact seed-named CAS bytes. Either door supplies it. */
-export type KindleFire = Pick<BulbArtifact, "seed" | "casEntries">;
 
 function arrivalRefusal(message: string): Error {
   return new Error(`[kindle] arrival ${message}`);
@@ -87,7 +83,7 @@ function contentAddressed(bytes: Uint8Array, cid: string, label: string): Uint8A
  * that verified seed, refuses unless the descriptor's members equal that inventory exactly, then fetches and
  * re-verifies each member. Nothing here reads the descriptor's mirrors.
  */
-export async function pullArrival(transport: BulbPullTransport): Promise<KindleFire> {
+export async function pullArrival(transport: BulbPullTransport): Promise<BulbArtifact> {
   const descriptor = await transport.getJson(ARRIVAL_WELL_KNOWN_ROUTE) as ArrivalDescriptor;
   if (!descriptor || descriptor.format !== ARRIVAL_FORMAT || !Array.isArray(descriptor.routes)) {
     throw arrivalRefusal(`descriptor format unknown — refusing`);
@@ -113,7 +109,7 @@ export async function pullArrival(transport: BulbPullTransport): Promise<KindleF
   return { seed, casEntries };
 }
 
-/** A real-HTTP transport over a Herm base url (`http://host:port`). Uses the runtime `fetch`. */
+/** A real-HTTP transport over a base url (`http://host:port`). Uses the runtime `fetch`. */
 export function httpBulbTransport(baseUrl: string): BulbPullTransport {
   const base = baseUrl.replace(/\/+$/, "");
   return {
@@ -153,7 +149,7 @@ export interface KindleResult {
  * @param storageDir       the device's storage root (the runtime CAS + the identity home both site under it).
  */
 export async function kindleFromBulb(args: {
-  readonly bulb:        KindleFire;
+  readonly bulb:        BulbArtifact;
   readonly repo:        Repo;
   readonly storageDir:  string;
   readonly displayName?: string;

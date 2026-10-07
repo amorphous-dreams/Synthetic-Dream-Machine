@@ -71,6 +71,11 @@ const PRONAOS_PROJECTION_ROUTE_KEY = "pronaos:projection";
 
 /** The arrival descriptor's RFC 8615 well-known name. `lar` names the namespace, so every vessel shares it. */
 export const ARRIVAL_WELL_KNOWN_ROUTE = "/.well-known/lar";
+/**
+ * The dispatcher key every face answering `/.well-known/lar` holds — the temple's arrival descriptor here, a
+ * waymark herm's descriptor in `bulb-read-face.ts`. One key, so the two can never both mount on one vessel.
+ */
+export const WELL_KNOWN_LAR_ROUTE_KEY = "well-known:lar";
 /** The descriptor's media type; a request for `/` naming it negotiates onto the same descriptor bytes. */
 export const ARRIVAL_MEDIA_TYPE = "application/vnd.lar.arrival+json";
 /** The descriptor format tag — a name, never a version; a reader refuses any other. */
@@ -148,6 +153,22 @@ export function validateArrivalMirrors(
     mirrors.push({ cid: mirror.cid, origin });
   }
   return mirrors.sort((a, b) => a.cid.localeCompare(b.cid) || a.origin.localeCompare(b.origin));
+}
+
+/**
+ * Every origin a house answers on: each reach face's origin, whatever its standing, plus each composed Web,
+ * relay and oracle origin where the standing composes them. The reach faces feed in unconditionally, so a mirror
+ * on the house's own origin refuses on every standing.
+ */
+export function houseOriginsOf(
+  reachFaces: readonly { readonly origin: string }[],
+  compositions: readonly { readonly webOrigin?: string; readonly relayOrigin: string; readonly oracleOrigin: string }[] | null,
+): string[] {
+  return [...new Set([
+    ...reachFaces.map((face) => face.origin),
+    ...(compositions ?? []).flatMap((c) => [c.webOrigin, c.relayOrigin, c.oracleOrigin]
+      .filter((origin): origin is string => typeof origin === "string")),
+  ])];
 }
 
 /** The descriptor's exact bytes: canonical JSON over the receipt and the validated mirrors. */
@@ -385,7 +406,7 @@ export function mountPronaosReadFace(
   };
   const unregister = dispatcher?.register({
     name: "pronaos",
-    routeKeys: [PRONAOS_PROJECTION_ROUTE_KEY],
+    routeKeys: [PRONAOS_PROJECTION_ROUTE_KEY, WELL_KNOWN_LAR_ROUTE_KEY],
     owns,
     handle: listener,
   });
