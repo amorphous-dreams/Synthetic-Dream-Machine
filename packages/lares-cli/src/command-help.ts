@@ -479,16 +479,20 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   raise: {
-    usage: "usage: lares raise sign <challenge-json> [--as <persona-index>]",
+    usage: "usage: lares raise sign <challenge-json-text> [--as <persona-index>]",
     synopsis:
-      "The RECOGNISER's half of the raise ceremony. A vessel standing at the WAKING FLOOR emits a challenge; " +
-      "`raise sign` signs it with your persona's LEAF for the Nexus the challenge names (never the root), " +
-      "attaches that leaf's admit read off your own replica of the Nexus's board, and hands the grant back. " +
-      "The vessel raises only on an admit it reads HELD — no key of yours ever rests on the vessel you raise, " +
-      "and the grant stands only until that Nexus's lease epoch rolls past it.",
+      "The RECOGNISER's half of the raise ceremony. A vessel standing at the WAKING FLOOR emits a challenge " +
+      "as a line of JSON text (its boot log prints it); `raise sign` signs THAT TEXT, taken literally as the " +
+      "positional argument (never a path — it reads no file), with your persona's LEAF for the Nexus the " +
+      "challenge names (never the root). It attaches that leaf's admit, read off your own replica of the " +
+      "Nexus's carriage board as a presented admit — the counted head, its closed lineage, and any roll " +
+      "anchors that carry an admit minted before a roll — and hands the grant back. The vessel raises only " +
+      "on an admit it reads HELD on its own place-side carried set — no key of yours ever rests on the " +
+      "vessel you raise, and the grant stands only until that Nexus's lease epoch rolls past it.",
     examples: [
-      "lares raise sign ./challenge.json           # sign as persona 0's leaf for the challenge's Nexus",
-      "lares raise sign ./challenge.json --as 2    # ... as persona 2's leaf",
+      "lares raise sign '{\"vesselId\":\"<id>\",\"nexus\":\"<aid>\",\"epoch\":0,\"nonce\":\"<hex>\"}'" +
+        "   # sign the vessel's printed challenge as persona 0's leaf",
+      "lares raise sign \"$(cat ./challenge.json)\" --as 2   # ... as persona 2's leaf, challenge saved to a file first",
     ],
     flags: ["--as <persona-index>   which held persona's leaf signs the grant"],
     next: ["lares persona list", "lares vessel read"],
