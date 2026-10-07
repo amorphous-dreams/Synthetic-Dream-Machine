@@ -1,0 +1,103 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem"
+l-space   = "lares"
+mana      = 14
+manao     = 15
+manaoio   = 14
+role      = "local research report on the Offering Antigen scope fork: board scope as a receiving-Nexus relation versus a new cryptographic Nexus field in OfferingKapaeEntry"
+status    = "scouted — no implementation changed"
+tags      = ["research", "offering-antigen", "causal-island", "nexus-scope", "charter", "pattern-integrity"]
+title     = "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/scope-contract>>
+
+! Offering Antigen Scope — local scout
+
+> Wave 1 local-only research. The question is whether a receiving Nexus is named by the board relation alone (A), or whether every signed `OfferingKapaeEntry` must also carry a cryptographic Nexus or charter identity (B).
+
+!! The measured shape already in the tree
+
+The two choices are not equal layers:
+
+* **Board scope as relation (A)** says where a receiving vessel consults the fold. The Offering Antigen board is derived under one resolved Nexus scope, and a copied entry is merely bytes until the receiver folds it against its own board, charter roster, and local causal frontier.
+* **Cryptographic binding (B)** says which authority domain the signed act itself names. A receiver can reject an act before board placement when its signed scope does not match the receiver's charter identity.
+
+The implementation already carries a partial form of B: `OfferingKapaeEntry.sealEpochCid` is signed inside `offeringKapaeBytes`, and the quorum verifier requires it to equal the local `KahuRoster.sealEpochCid`. The act therefore commits to the charter epoch that authorizes its signatures, even though it does not carry a second field named `nexusScope` or `nexusId`.
+
+The distinction matters because `nexusIdentity` resolves more than one kind of island. A vessel may stand as `own`, `anchor`, `charter`, or `explicit`, while a torn charter must produce no scope and refuse board addressing. Offering Antigen is a quorum-governed authority plane, so its signer root is the seated charter, not an arbitrary `own` or `anchor` scope. A second generic scope field would need to say which of those identity kinds it names.
+
+!! Internal precedents and their integrity rhymes
+
+1. `packages/lararium-mesh/src/nexus-identity.ts` makes the genesis charter epoch the shared Nexus name when a charter stands. The value is derived from the founding keys and threshold, belongs to no vessel, survives later rotation as the lineage head, and is refused when the charter is torn. This is the local KERI-shaped identity precedent: the inception material names the island.
+
+2. `packages/lararium-mesh/src/deterministic-doc.ts` derives `kapaeAntigenDocUrl(scope)` from the resolved Nexus registry URI and scope. The board is therefore an address relation, not a portable authority claim. Every holder of one charter resolves the same board; a vessel with no readable scope must not quietly materialize a private board and call it shared.
+
+3. `packages/lararium-mesh/src/kapae-antigen.ts` signs `sealEpochCid` into the canonical quorum bytes and rejects entries rooted on another roster epoch. `packages/lararium-mesh/src/quorum-entry.ts` keeps domain separation first and refuses to carry a verdict in the shared byte helper. The existing pattern is: bind the act to its authority root, keep board placement and fold semantics local, and never infer authority from carriage.
+
+4. `packages/lararium-mesh/src/offering-antigen.ts` deliberately separates presentation from condemnation and presenter identity from offering collection. Its offering domain is distinct from `kapae-antigen`; a signed presenter act cannot be replayed as an offering act. The fold groups by `pluginsCid`, follows only same-offering causal parents, and ignores invalid or foreign-parent acts. A new Nexus field must preserve this relation-family boundary rather than make a collection act globally addressable.
+
+5. `bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem` says a causal island is a separate log with no shared now. A local snapshot is not a mesh-wide present. `bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem` makes the same cut as `FLOW ⊥ WHO`, and says every shared plane keys on the Nexus while a membership or carriage decision remains local. These laws favor board scope as the receiving relation and charter-root signatures as bounded evidence.
+
+6. `bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem` says social span and authority scope are separate: a Lamplighter may tend several Nexuses, but each grant is countersigned in its own island and no act crosses with its authority. It also says the offering board is per-Nexus, optional, and never a grammar ratchet. This is a direct warning against treating a copied signed act as globally meaningful.
+
+7. `bags/lararium/ha.ka.ba/lararium/mesh/carry-contract.mem` says quorum-signed antigen propagation is bounded by sync latency, never instant, and that a foreign antigen can only tighten a receiver's reading. The act may travel broadly; its authority remains rooted in the charter that signed it and the board that the receiver chose to consult.
+
+!! Failure modes the fork must expose
+
+* **Copied bytes mistaken for shared authority.** A foreign act may be carried into a local document. A board-scoped reader can retain it as evidence while the local quorum fold ignores it when `sealEpochCid` differs. Cryptographic binding makes the refusal explicit earlier, but does not replace the board relation.
+* **Same charter, different board.** Two boards derived from the same charter scope are two replicas of one Nexus plane, not two authorities. Adding a vessel-local or route-local scope to the act would falsely distinguish replicas and fracture valid carriage.
+* **Different charter, colliding or reused scope.** The current content-addressed genesis shape makes accidental collision implausible, while the roster epoch equality already refuses an act from another charter. A new free-form `nexusScope` field could be copied or mismatched unless it is itself canonical, validated, and included in every signer preimage.
+* **Anchor/charter ambiguity.** `nexusIdentity` permits an anchor scope for a leaf and a charter scope for a seated vessel. Letting an Offering Antigen act name either without an authority rule would allow a relay route to masquerade as a condemning charter.
+* **Torn charter fallback.** A reader that loses its charter must not descend to its own private board. `nexusScopeOrThrow` exists precisely to prevent a quiet split that reports as agreement. Any B implementation must preserve this refusal and never default a missing scope.
+* **Global registry drift.** A portable act with an apparently universal Nexus name can become a registry-shaped global currentness claim. The architecture rejects current/latest semantics; a receiver's local frontier and last synchronized board are the honest extent of knowledge.
+* **Duplicate identity fields drifting apart.** If `sealEpochCid` and a new `nexusScope` both name the same charter, one can be changed while the other remains signed or interpreted differently. That creates two authority roots and turns a strengthening field into a second source of truth.
+
+!! Pattern-integrity ruling
+
+The most coherent reading is a **hybrid with one cryptographic root and one receiving relation**:
+
+* Keep **A** as the board and consultation contract. The Offering Antigen board is a per-Nexus receiving relation, derived from the resolved Nexus scope. Board carriage, local replica state, and local fold evidence remain distinct from adoption, grammar, and global authority.
+* Treat the existing signed **`sealEpochCid` as the current B binding**. It is the charter genesis identity already used by the quorum roster and already covered by the Offering Kapae signature. It is stronger than an unsiged board label and does not introduce a second scope vocabulary.
+* Do **not** add a new `nexusScope` or `charterId` field yet. It would be redundant while the charter epoch is the canonical Nexus identity, and it would invite the anchor/charter ambiguity that `nexusIdentity` intentionally keeps explicit.
+* If a future deployment proves that one charter identity can authorize multiple independent Offering Antigen domains, then introduce a new field only as a deliberate domain migration: name its identity kind, include it in the canonical preimage and act CID, validate it against the local charter, and add a cross-Nexus refusal test. Early alpha permits that migration; an unmeasured duplicate field does not.
+
+This ruling gives the operator the stronger isolation property without pretending that a signature alone chooses the receiving board. **The board answers “where is this act being consulted?” The charter epoch answers “which quorum may make this act?” The local causal fold answers “what does this vessel know, and is the frontier settled?”**
+
+!! Proposed next red tests
+
+1. An Offering Kapae act signed under charter epoch A is carried into board B and remains observable as foreign evidence but cannot produce a B verdict.
+2. The same act carried between replicas of board A folds identically, independent of arrival order.
+3. A torn or unreadable charter refuses board resolution and never falls back to an own-vessel offering board.
+4. A valid offering act with a mismatched `sealEpochCid` fails quorum verification before it can condemn an offering.
+5. A test guards that no future `nexusScope` field is accepted unless it participates in the canonical signed bytes and matches the charter root.
+
+!! Sources
+
+* `packages/lararium-mesh/src/offering-antigen.ts`
+* `packages/lararium-mesh/src/kapae-antigen.ts`
+* `packages/lararium-mesh/src/quorum-entry.ts`
+* `packages/lararium-mesh/src/nexus-identity.ts`
+* `packages/lararium-mesh/src/deterministic-doc.ts`
+* `packages/lararium-mesh/src/domains.ts`
+* `packages/lararium-mesh/tests/offering-antigen.test.ts`
+* `bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem`
+* `bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem`
+* `bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem`
+* `bags/lararium/ha.ka.ba/lararium/mesh/carry-contract.mem`
+* `bags/lararium/ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout.mem`
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;hQuN_LJXR9E5VcRCmXI4hjoTLLROopbs_bfMdgIZB_Y
+<<^ code="&#x0004;" -> to="?">>

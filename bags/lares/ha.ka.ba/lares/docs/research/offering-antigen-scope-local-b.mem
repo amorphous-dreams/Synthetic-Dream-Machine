@@ -1,0 +1,215 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b.mem"
+l-space    = "lares"
+mana       = 15
+manao      = 15
+manaoio    = 14
+role       = "local research: Offering Antigen scope and identity contract; board rendezvous versus cryptographic Nexus binding"
+status-why = "Wave 1 local scout; recommendation ready for collision with internet research"
+tags       = ["research/offering-antigen", "api/pono/causal-islands", "mesh/identity-as-relation", "mesh/charter-scope"]
+title      = "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/scope-contract>>
+
+! Offering Antigen scope ~ the board is a rendezvous; the act carries the island
+
+!! Finding
+
+The local design supports neither a board address alone nor a rotating seal epoch as the complete
+identity of an Offering Antigen act. The most pono contract is layered:
+
+```text
+board address          selects the per-Nexus causal rendezvous
+stable Nexus scope     binds the signed act to the island it speaks for
+seal epoch CID         names the charter lineage and quorum authorization at signing
+offering CID           names the collection under review
+```
+
+The signed act SHOULD therefore carry a stable `nexusScopeCid` (or equivalent name) in its canonical
+preimage. For a charter-backed Nexus, that value is the charter's content-addressed genesis identity
+(`genesisSealEpochCid` / `genesisEpochCid` in the existing identity model), not a vessel key and not a
+wall-clock reading. The act SHOULD retain `sealEpochCid` as a separate field. The first field answers
+//which island//; the second answers //under which charter lineage did this quorum sign//.
+
+The deterministic board MUST still be derived from the resolved Nexus scope, and a receiver MUST read
+only the board for its locally resolved scope. Board scoping remains necessary for routing, locality, and
+replication. It is not sufficient as cryptographic provenance: a copied signed row can be written into a
+different board, and a board location is not part of the current OfferingKapae signature bytes.
+
+!! Local evidence
+
+* `packages/lararium-mesh/src/nexus-identity.ts` treats a charter's genesis epoch CID as the shared
+  island name. It is derived from public founding material, belongs to no operator, survives later
+  charter rotation, and outranks an anchor key. A torn charter refuses to resolve a scope rather than
+  falling back to a private vessel key.
+* The same resolver distinguishes `charter`, `anchor`, `own`, `explicit`, and `torn`. This is identity as
+  relation: a vessel's standing comes from the relation it holds, not from whatever board it happens to
+  open. An `own` key is a private Nexus of one; it must not silently become the shared Antigen scope.
+* `packages/lararium-mesh/src/offering-antigen.ts` signs `pluginsCid`, `action`, `actCid`, `parents`, and
+  `sealEpochCid`. Its fold groups by offering and verifies the Kahu quorum, but has no Nexus field in the
+  signed bytes. The `sealEpochCid` proves a charter epoch to a roster; it does not, by itself, state which
+  shared island is being addressed.
+* `packages/lararium-mesh/src/kapae-antigen.ts` and `antigen-board.ts` establish the existing immune
+  pattern: a board is an additive carrier, malformed or unverified entries die at the fold, and a
+  receiver's local decision does not become a mesh-wide command. That pattern preserves local agency,
+  but does not turn board placement into a signature-bound scope.
+* `bags/lararium/ha.ka.ba/lararium/mesh/oracle-governance.mem` says a well-known address is a rendezvous
+  while each peer materializes its own causal island. `pronaos.mem` makes the parallel explicit: name,
+  route, peer key, and capability are separate relations. A board URL belongs to the route relation; it
+  cannot impersonate the peer or charter relation.
+* `bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem` keeps INFRA/FLOW and SOCIAL/WHO
+  orthogonal. The Antigen board is a per-Nexus governance relation, not a global registry and not a
+  vessel's private capability stack.
+* `bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem` states that a shared membership record
+  records while each vessel decides, that a copied key/edge is a new relation rather than an inherited
+  authority, and that a charter chain carries continuity without a global present. These rules favor
+  binding acts to the stable charter identity while retaining local consultation.
+* `bags/lararium/ha.ka.ba/lararium/mesh/attestation-plane.mem` explicitly replaces timestamp ordering
+  with content-addressed charter epochs and causal links. The scope contract therefore MUST NOT use
+  `Date.now()`, a certificate date, a mutable latest pointer, or a numeric currentness claim.
+
+!! Why board scope alone is insufficient
+
+Board scope as a relation is a good transport and storage boundary. It limits which local replica a
+receiver consults, keeps Antigen per-Nexus, and allows a copied board to remain a harmless byte copy.
+It cannot answer whether an act //means// what the copied board says it means. In the current shape,
+two boards can carry the same signed `OfferingKapaeEntry`; the verifier sees the same offering, action,
+parents, seal epoch, and quorum signatures in both places. If the receiving code trusts the board's
+address as an implicit scope, a copied row can be laundered into another board or a stale board can be
+presented under a new route without changing its semantic bytes.
+
+This is the exact failure mode the no-global-now and identity-as-relation laws warn about: location is a
+witness of carriage, not an authority fact. A Crossroads copy proves that bytes crossed a projection
+boundary. It does not prove that the source board was entitled to speak for the receiver's Nexus.
+
+!! Why the rotating seal epoch is not enough
+
+`sealEpochCid` belongs in the signed act and remains essential. It prevents a signature from one seated
+quorum epoch being interpreted under another roster, and it supplies causal charter lineage. It is not
+the durable Nexus identity, however. Rotation changes the seal epoch while the island remains the same;
+using the rotating value as the only scope would make historical Antigen acts appear to belong to a new
+Nexus each time the charter rotates. That would confuse authorization lineage with place identity and
+would force a board migration to rewrite the meaning of old evidence.
+
+The stable genesis scope solves that tension: a historical act remains an act of the same island, while
+its `sealEpochCid` records which charter generation authorized it. A reader can require both values to
+be known and coherent under its local charter chain.
+
+!! Copied-act readings
+
+| copied material | truthful reading | forbidden inference |
+|---|---|---|
+| signed act copied into the same Nexus board | the same causal evidence was re-carried | the copy is a new verdict |
+| signed act copied into a different board with the same `nexusScopeCid` | a replicated record for that same island, subject to local lineage verification | board placement alone proves freshness |
+| signed act copied into a board with another resolved scope | foreign evidence; reject from that board's authority fold, retain only as audit noise | the foreign quorum condemned this Nexus's offering |
+| act with matching `sealEpochCid` but missing or wrong stable scope | malformed or foreign act; reject before folding | the shared charter epoch makes all boards interchangeable |
+| board pointer copied without its signed acts | a route hint with no verdict | the pointer imports Antigen authority |
+| act copied while the local charter is torn or absent | unavailable local authority; fail closed | a private `own` scope may substitute |
+
+The audit surface may report rejected foreign acts and their CIDs. The authority fold MUST exclude them,
+so an imported row cannot create a ban. Conversely, a foreign `un_kapae` MUST NOT be able to lift a local
+ban. The local scope check is therefore a refusal boundary, not a merge preference.
+
+!! Capability placement
+
+The stable scope field does not grant anyone a capability. It only makes the claimed subject of a signed
+act explicit. The capability stack remains separate:
+
+```text
+operator / Kahu cap       permits signing or countersigning the act
+charter relation           supplies the stable Nexus scope and epoch lineage
+Crossroads / board cap    permits carrying or reading a board projection
+receiver consult cap      permits asking the local Antigen fold for a decision
+adoption cap               remains a later receiver-owned action
+```
+
+A board reader can carry an act without holding the Kahu signing cap. A receiver can verify an act
+without adopting its verdict. A Kahu signer can sign only within the charter relation it holds; the
+scope field makes a confused-deputy signature over a foreign board detectable. None of these edges
+turns a public board into a global membership register.
+
+!! Counterarguments and their answers
+
+* ''The board is already deterministically keyed, so another field duplicates it.'' The duplication is
+  deliberate defense in depth across two independent layers. The board address is a transport fact;
+  the signed field is a semantic identity fact. The same separation already appears in Pronaos between
+  name, route, peer key, and capability.
+* ''The quorum's charter roster proves the Nexus.'' Only if the verifier already knows which charter
+  roster to use, and a copied act can be handed to a verifier with a matching roster under another
+  address. The stable scope makes that assumption explicit and testable.
+* ''Bind only the current board URL.'' URLs are mutable routing/projection material and may be copied,
+  re-homed, or represented by another transport. Binding the URL would make a route change a semantic
+  identity change. Bind the content-addressed Nexus identity; derive or announce the board separately.
+* ''Use the current `sealEpochCid` as the scope.'' That binds a generation, not the island. Retain it
+  for authorization and pair it with the stable genesis scope.
+* ''Use a vessel or Kahu public key.'' That collapses the Nexus onto one operator or signer, contrary to
+  the DreamNet two-axis model. A Kahu hand is an authority participant; it is not the place the act is
+  about.
+
+!! Red-first implementation contract
+
+Before changing production code, add failing Mesh tests for these controls:
+
+1. The same signed act has stable semantic bytes when carried to another board for the same
+   `nexusScopeCid`.
+2. Changing only `nexusScopeCid` changes `actCid` and invalidates every existing quorum signature.
+3. A valid act copied into a board whose expected scope differs is rejected before offering fold; audit
+   records the act CID as foreign evidence.
+4. A valid act with the right stable scope but a wrong or unknown `sealEpochCid` remains rejected by the
+   existing charter roster check.
+5. A charter rotation preserves the stable scope while requiring the new seal epoch for newly signed
+   acts; old acts remain attributable to the same Nexus without being re-signed.
+6. `own`, `anchor`, and `torn` identity readings cannot silently supply a charter-backed Offering
+   Antigen scope. The receiver returns an explicit unavailable/refused gradient.
+7. Reordering parents, board entries, or replica arrival does not choose between contradictory heads;
+   the existing causal fold remains unsettled and fail-closed.
+
+The implementation should then add the field to the canonical offering-act preimage, pass an expected
+scope into the platform-blind fold, and resolve the board through that same scope. Node and browser
+adapters may obtain the scope differently, but Mesh must verify the relation identically. No network
+fetch, automatic adoption, grammar mutation, or global registry belongs in this wave.
+
+!! Recommendation
+
+Adopt **cryptographic Nexus binding plus board scope**.
+
+* Keep the deterministic per-Nexus board address as the local causal rendezvous.
+* Add a stable charter-derived `nexusScopeCid` to the signed OfferingKapae act.
+* Keep `sealEpochCid` as a separate, rotating authorization-lineage field.
+* Require the receiver's resolved charter scope to equal the signed scope before folding.
+* Treat copied acts with a foreign scope as auditable carriage, never authority.
+* Leave non-charter `own` and `anchor` vessels outside live Offering Antigen enforcement until a separate
+  operator-held relation defines their scope and quorum.
+
+This preserves the existing local-first board model while giving the act a portable, content-addressed
+meaning. The board can move; the route can be reintroduced; the causal record can be copied. None of
+those movements silently changes which Nexus the record speaks for.
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-identity">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/offering-antigen">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/antigen-board">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kapae-antigen">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;i2xtHzLzJUQNhpELSebTngOURjppcWjq_NCsd-rzCNE
+
+<<^ code="&#x0004;" -> to="?">>
