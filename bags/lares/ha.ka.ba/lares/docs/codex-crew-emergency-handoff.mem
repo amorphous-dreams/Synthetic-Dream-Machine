@@ -11,7 +11,7 @@ mana       = 18
 manao      = 18
 manaoio    = 18
 role       = "emergency-room transfer for the Codex crew; records the observed repository boundary, current wounds, committed repairs, operator-held forks, and a cold-start triage order"
-status-why = "re-trued at af40104b2 after the first 2026-10-04 transfer; it distinguishes committed repairs, hot shared-tree lanes, and receipts not yet rerun at their repaired boundary"
+status-why = "re-trued at 650a8e475 after the first 2026-10-04 transfer; it distinguishes committed repairs, the hot shared-tree lanes, and research-backed decisions that remain operator-held"
 tags       = ["docs/handoff", "lifecycle/standing", "triage/emergency-room", "mesh/offering-antigen"]
 title      = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -25,7 +25,7 @@ updated    = "2026-10-06"
 
 ! Emergency-room handoff — Codex crew, re-trued 2026-10-06
 
-''Scope.'' This carrier is a local reading at `af40104b2`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
+''Scope.'' This carrier is a local reading at `650a8e475`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
 
 ''Read in this order.''
 
@@ -46,12 +46,12 @@ updated    = "2026-10-06"
 
 |!condition observed in this checkout |!required response |
 |---|---|
-|Current admission/carriage lane |Dirty Mesh carriage/auth/raise seams; Node carriage, contract, admit-bundle, and raise seams; `tools/contract-witness.sh`; and their tests belong to a live healing lane. Do not build generated outputs from them, stage them, revert them, or use `git add -A`. Read their exact diff and the `hearths` hold before touching a nearby seam.|
+|Current admission/carriage lane |Dirty Keyhive face-grant/operator-daemon seams; Node carriage, contract, admit-bundle, and raise seams; `tools/contract-witness.sh`; and their tests belong to a live healing lane. Do not build generated outputs from them, stage them, revert them, or use `git add -A`. Read their exact diff and the `hearths` hold before touching a nearby seam.|
 |Uncommitted receiver-witness seam |`tests/harness/instance.ts` and untracked `tests/e2e/nexus-offering-replication.test.ts` remain one bounded offering WIP. Their daemon launches use committed `dist` while the witness imports Node source, so a receipt waits for a settled source/build boundary.|
-|Concurrent TW5 and projection lane |`packages/lararium-tw5/**`, its generated plugin artifacts, `packages/lares-cli/src/commands/meme.ts`, and their tests carry live parser, weave, ingest, projection, and submission work. Do not normalize, regenerate, or stage another hand's artifacts while this lane remains live.|
-|Pronaos/arrival follow-on |`Pronaos`, arrival, Kindle, and smoke receipts landed at `37de22092` and `af40104b2`; any remaining dirty extension belongs to its landing hand. Keep arrival evidence separate from Offering transport/adoption claims.|
+|Current CLI seal seam |`packages/lares-cli/src/commands/nexus-seal.ts` remains dirty in this checkout. Keep a CLI refusal or command-surface repair within its owning cut; do not bundle it into the receiver E2E receipt.|
+|Pronaos/arrival receipt |`Pronaos`, arrival, Kindle, and smoke receipts landed at `37de22092` and `af40104b2`. Keep their source-descriptor/CAS verification evidence separate from Offering transport, adoption, or authority claims.|
 |Submodules and worktree directories |`mempalace`, `VSCode-TW5-Syntax`, `.worktrees/`, and `.claude/worktrees/` carry independent state. Do not clean them as aftermath for this handoff.|
-|Offering Antigen scope |Do not add `nexusScopeCid`, declare `sealEpochCid` the final answer, or wire enforcement before the research collision reaches the operator.|
+|Offering Antigen scope |Do not add a scope field or wire enforcement before the operator chooses the relation. `sealEpochCid` names a roster epoch, not yet a proven stable charter identity; identical rosters can produce identical genesis epoch CIDs across distinct charter intentions.|
 |Generic offering adoption |Do not mint generic `take` or `stage` evidence. A local CAS observation already says what it knows. Adoption waits for an explicit receiver-owned recipe/staging target relation.|
 
 The safety laws remain: no wall-clock authority substitute, no ambient global currentness, no board location mistaken for authority, no foreign copied act deciding local policy, and no grammar ratchet implied by an offering.
@@ -68,7 +68,8 @@ The safety laws remain: no wall-clock authority substitute, no ambient global cu
 * `0730dd41b` cuts membership consultation toward a socket-bound presented leaf admit. The leaf map and the root contract map remain separate; a refresh re-verifies against the local deny board and antigen. This is committed architecture, while related uncommitted follow-on edits remain another lane's work.
 * `099d2f88b` makes face-join return the canonical grant-record CID and causal heads, then tests a fresh local read of that exact record. It retires the broad full-record read door rather than treating a bounded view as the authority receipt.
 * `1f84c85e8` moves the Nexus and Nexus Offering refusal menus into `COMMAND_HELP`, preserves their full sub-door detail there, and expands the reach test over every dispatcher verb. The focused help/reach suite passes 39 tests and CLI typecheck passes.
-* `5eba52830` commits the two canonical local Offering Antigen scope studies. Their disagreement remains an operator-held contract decision; the commit preserves evidence and adds no enforcement.
+* `5eba52830` commits the two canonical local Offering Antigen scope studies. `4da8ddc18` turns their differences into a red-first decision matrix. `650a8e475` collides that matrix with signed-scope, delegation, federation, and key-event prior art. These reports preserve evidence and add no enforcement.
+* `080aa03e3` refines the Offering E2E receipt around detached source, submodule, and launched-artifact evidence. `a6384c868` refines Browser persona-ring parity into a dialer-based, typed verified-peer seam. Neither receipt changes production code.
 * `37de22092` provides the Pronaos first-arrival descriptor and Kindle verification surface; `af40104b2` makes smoke wait on causal vessel/oracle evidence rather than an incidental immediate read. These are committed arrival/boot receipts, not Offering adoption or authority receipts.
 * The surrounding healing wave also hardened carrier/frame law, origin custody, charter parsing, cross-Nexus carriage, causal record evidence, and test witnesses. Those receipts constrain the offering slice; they are not evidence that offering enforcement is complete.
 
@@ -94,13 +95,16 @@ It asserts no remote byte fetch, no Genesis/non-CAS authority write, refusal for
 
 The old `beforeAll` refusal — `current lease frontier unavailable` — is no longer an open explanation: the layer-selection repair above landed with dedicated tests. The offering witness has not yet been rerun against that repaired boundary in a settled, built checkout. Its next receipt is therefore a verification task, not a license to change the gate again.
 
-''Triage.'' After owners settle the current shared source edits, use an isolated `LAR_ROOT`/worktree, build only the required package outputs, and run from `tests/`:
+''Triage.'' The focused test is a bounded local integration receipt, not a hermetic reservation against another process. After owners settle the current shared source edits, create a fresh detached worktree at the settled commit, initialize its submodules, install from the lockfile, and build/stamp within that worktree:
 
 ```text
+pnpm -r --workspace-concurrency=1 build
+node tools/stamp-build.mjs .
+cd tests
 pnpm exec vitest run e2e/nexus-offering-replication.test.ts --reporter=verbose
 ```
 
-The e2e imports `runNexusInspectOffering` from Node source, but its staged harness starts the lares CLI and Node daemon from `packages/lares-cli/dist/...` and `packages/lararium-node/dist/...`. It deliberately passes `--skip-build`; a test must never rebuild the shared tree. In an isolated worktree, after source settles, use the ordinary build/stamp preparation (`pnpm -r build`, then `node tools/stamp-build.mjs .`) before this focused run. Do not launch that broad generated-output write in the shared checkout.
+The e2e imports `runNexusInspectOffering` from Node source, but its staged harness starts the lares CLI and Node daemon from `packages/lares-cli/dist/...` and `packages/lararium-node/dist/...`. It deliberately passes `--skip-build`; a test must never rebuild the shared tree. Record the detached commit, submodule state, source digest, and the actual launched `dist` digests with the test result. The repository stamp is a source-freshness sentinel; it does not itself attest the emitted bytes or builder. Use a separate staged root and leave `LAR_TARGET` unset. Do not launch that generated-output write in the shared checkout.
 
 If it passes, commit the harness option and e2e file alone with their focused receipt. If it fails, retain the exact first refusal and add the smallest test-only observation that separates fixture setup, build drift, causal carriage, and product behavior. Do not reopen the resolved lease semantics without a new discriminating red.
 
@@ -117,9 +121,9 @@ Both local studies agree that board address selects a receiver's causal rendezvo
 |<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>|Keep board scope as the receiving relation and use existing signed `sealEpochCid` as the one cryptographic charter binding. Avoid a second field that can drift from the charter root.|
 |<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>|Keep board scope for carriage, add a stable charter-genesis `nexusScopeCid` to the signed act, and retain rotating `sealEpochCid` for the signing quorum lineage.|
 
-Neither report has authority alone. `5eba52830` preserves both as canonical carriers. The repository evidence in this audit does not establish whether the external prior-art pair, exchange, and second research wave finished; treat that as an explicit coordination question, not a repository-derived claim.
+Neither local report has authority alone. `5eba52830` preserves both as canonical carriers. The later decision record `4da8ddc18` and external collision `650a8e475` refine the fork without closing it: a scope relation can name an Antigen act's domain, but grants no capability alone. A receiver must compare it with its own locally held charter relation, prove the named epoch belongs to that charter's lineage, and validate the Kahu quorum before a fold.
 
-''Required collision.'' First repair/read both local reports as valid carriers. Then compare content-addressed federation, capability scope, signature-bound revocation, and causal authority patterns to DreamNet's no-global-now and identity-as-relation law. The decision memo must test copied foreign acts, same-Nexus replica carriage, charter rotation, torn charter, wrong roster, own/anchor scope, and concurrent heads. It must state where each outside analogy breaks. The operator chooses the contract before enforcement code exists.
+''Decision now held.'' If cryptographic separation is selected, the candidate signed relation names the Offering Antigen domain, stable charter-inception identity, authorizing `sealEpochCid`, offering CID, action, and causal parents within that charter and offering. The new unresolved premise is earlier than the field choice: `genesisSealEpochCid` derives from domain tag, seated keys, and threshold, so distinct charter intentions with identical rosters share it. The operator decides whether that equality means one Nexus by definition or whether charter inception needs another content-addressed identity component. The red matrix covers copied foreign acts, same-Nexus replicas, charter rolls, torn identity, wrong roster, own/anchor scope, and concurrent heads. The operator chooses the contract before enforcement code exists.
 
 <<~/ahu>>
 
@@ -129,7 +133,7 @@ Neither report has authority alone. `5eba52830` preserves both as canonical carr
 
 `tools/vessel-parity-witness.sh` now reads `makePersonaGroupIdentityRing` on the Node shore but not the Browser shore. This does not name dead code: `open-node-vessel.ts` composes the ring into its live self-slot federation gate, source-weld tests pin that composition, and `persona-ring-cross-operator-admit.test.ts` exercises the Node crossing. Do not delete or disable the Node ring merely to make the parity weld green.
 
-The owed cut needs a Browser-local analogue that reads a browser-held face grant, a browser-held persona-KEL chain, and a peer proof without inventing an inbound WebSocket-server capability. First write the browser red matrix: grant-holder, stranger, absent/torn KEL, foreign plane, own hand, and a proof that the browser opener actually composes the resulting identity ring. Then decide the browser transport/peer-proof adapter and implement it red-first. The existing Browser `IdentityRing | null` parameter names a seam, not a completed composition.
+The refined Browser cut keeps Browser as an outward WebSocket dialer. A post-upgrade socket is full-duplex; Node can answer a fresh Browser challenge with a Node-signed response. Browser verifies that response against an explicitly provisioned or pinned Node identity, binds it to the exact Automerge `PeerId` from that socket, and supplies a typed verified-peer relation to a platform-blind outer PersonaGroup ring. That ring consults local face-grant and persona-KEL evidence before the same four-plane widening. Authentication proves a peer key; it grants no document access. First write the red matrix: valid proof, public-key echo/no signature, peer/socket swap, wrong face/key, missing KEL/grant, and unaffected base verdict. The existing Browser `IdentityRing | null` parameter remains an inner document-capability barrier, not this completed outer composition.
 
 <<~/ahu>>
 
@@ -139,9 +143,10 @@ The owed cut needs a Browser-local analogue that reads a browser-held face grant
 
 !! Research seat
 
-# Establish whether the external/local collision protocol completed, then deliver a short operator decision memo plus a red-test matrix.
+# Bring the Antigen scope/charter-inception identity decision to the operator with `offering-antigen-scope-decision-record` as the red-test matrix.
 # Keep Offering Antigen enforcement unimplemented while the scope choice remains open.
-# Independently scope the Browser identity-ring parity cut; it needs a capability/transport design and its own red matrix, not a deletion or a blind Node import.
+# Confirm whether Browser's worn face plane is registered and readable at its exact `shareConfig` decision, then implement the typed verified-peer contract red-first. Keep Browser an outward dialer; do not add a listener merely for symmetry.
+# Carry source, launched-artifact, and test-result digests with the focused Offering witness. This is a local causal receipt, not a global build declaration.
 
 !! Enactment seat
 
@@ -159,7 +164,8 @@ The owed cut needs a Browser-local analogue that reads a browser-held face grant
 
 # Finish the current presented-admit cut-over and its contract/e2e witness on its owner’s ground; its two-map distinction must survive every cleanup.
 # Re-run and commit the offering receiver e2e only after the source/build boundary is stable.
-# Bring the Antigen scope decision to the operator after collision; implement the selected contract red-first.
+# Bring the Antigen scope and charter-inception-identity decision to the operator; implement the selected contract red-first.
+# Decide Browser's face-plane serving role only after the dialer-based verified-peer contract and its red matrix make the requirement concrete.
 # Keep Pronaos first-arrival, Offering carriage, local inspection, adoption, grammar admission, and Antigen enforcement as separate receipts.
 # Build the multi-vessel/Docker receipt only from a runner that can inventory and tear down its own resources. It proves partial replication, partition/rejoin, custody, and named refusals; it never grants authority.
 # Keep D-VR-C custody, contract-frontier evidence, Pronaos reach, agent-worldline boundaries, live quoteblock behavior, and parallel-draft projection as distinct roadmap lanes. A green in one does not close another.
@@ -183,5 +189,5 @@ A context-free reviewer read the preceding revision of this carrier against the 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wSmE73g_4tbXVpl0lCapqDGAED_BXkrfa6k44APBxWU
+<<^ code="&#x0003;">>ni:///sha-256;O4iVlJqpXCAL5QPS6kAdP22NM8jPvdgtquwQD5Xy5TE
 <<^ code="&#x0004;" -> to="?">>
