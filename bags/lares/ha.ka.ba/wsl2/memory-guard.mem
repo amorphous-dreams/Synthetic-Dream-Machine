@@ -65,7 +65,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 ''`autoMemoryReclaim=gradual`'' — WSL hands page cache the VM no longer needs back to Windows, a little at a time. Without it, `vmmem` holds every byte it ever touched until shutdown, and the Windows-side monitor reads the VM as full long after the work ended.
 
-''`sparseVhd=true`'' — lets `ext4.vhdx` shrink when Linux deletes. Without it the file only grows: 118 GB on disk against 88 GB in use, on the day of the probe. The flag covers distros created after it; an existing one takes `wsl --manage <distro> --set-sparse true --allow-unsafe` while shut down. Microsoft gates the feature behind that flag with a data-corruption warning, so [[lar:///ha.ka.ba/wsl2/setup]] section 3 keeps it opt-in and names the safe way to return space.
+''`sparseVhd`'' — opt-in, never baseline. A sparse `ext4.vhdx` returns freed blocks as Linux deletes; a dense one only grows (150 GB on disk against 123 GB in use on 2026-10-06). WSL 2.5.6 gated the feature behind `--allow-unsafe` with a data-corruption warning, so the Windows stand writes `sparseVhd=true` and runs `wsl --manage <distro> --set-sparse true --allow-unsafe` only under `-Sparse`. The safe reclaim on every edition: `sudo fstrim -v /` inside, then `wsl --shutdown` and `diskpart` → `compact vdisk` outside — [[lar:///ha.ka.ba/wsl2/setup]] section 3 carries the recipe.
 
 <<~/ahu>>
 
@@ -74,7 +74,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 !! Who can set what, from where
 
 |! setting |! lives |! who |! applies |
-| `memory` `swap` `processors` `autoMemoryReclaim` `sparseVhd` | `.wslconfig` (Windows, on `/mnt/c`) | an agent inside the VM can write the file | after `wsl --shutdown` |
+| `memory` `swap` `processors` `autoMemoryReclaim` | `.wslconfig` (Windows, on `/mnt/c`) | the Windows stand, run as the account that owns the distro; an agent inside the VM can write the file | after `wsl --shutdown` |
 | `earlyoom` install + its drop-in `/etc/systemd/system/earlyoom.service.d/wsl.conf` | Linux, root | operator (`sudo`) | at once |
 | `appendWindowsPath` `systemd` | `/etc/wsl.conf`, root | operator (`sudo`) | after WSL restart |
 | `vm.swappiness` | `/etc/sysctl.d`, root | operator (`sudo`) | at once |
@@ -85,6 +85,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xvbAjsvEU8Nwd9QtoAAcBvpKV9gIV0nxIzCHV5fVNog
+<<^ code="&#x0003;">>ni:///sha-256;KGPgAFc8RLJl5dNj0QeRLetphjeTMYQKPKjONdYb0KQ
 
 <<^ code="&#x0004;" -> to="?">>

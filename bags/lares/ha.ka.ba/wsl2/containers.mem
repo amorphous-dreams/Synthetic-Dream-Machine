@@ -64,7 +64,7 @@ Rootful Docker Engine with the compose plugin, supervised by systemd inside Ubun
 
 ''Rootless stays off the table.'' WSL 2.9 moved the cgroup v2 hierarchy under `/wsl-user/distro-N/…`, so rootless Docker and rootless Podman fail on `cgroup.controllers` (microsoft/WSL #41492, open since 2026-09-01; 3.0.1 carries no fix). Rootful dockerd reads unaffected. The `docker` group therefore stays root-equivalent on this host; the runbook says so rather than hiding it.
 
-''WSL2 specifics worth knowing:'' cgroup v2 is the default; dockerd 25+ handles nft-based iptables; `-p` ports reach Windows `localhost` by default, and other LAN devices need `networkingMode=mirrored` or a `netsh portproxy`; distros are per Windows account, so a household that shares the stack shares the account.
+''WSL2 specifics worth knowing:'' cgroup v2 runs by default; dockerd 25+ handles nft-based iptables; `-p` ports reach Windows `localhost` by default, and other LAN devices need `networkingMode=mirrored` or a `netsh portproxy`; distros are per Windows account, so a household that shares the stack shares the account.
 
 <<~/ahu>>
 
@@ -108,6 +108,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LmAupgEf9_HAuh-vXiV45AeCogdexCOK-fmVXpbdL38
+<<^ code="&#x0003;">>ni:///sha-256;Nx0KobG8FSOxb56Hf6D-PWvx8TfZ49ADMIltiKic7A8
 
 <<^ code="&#x0004;" -> to="?">>
