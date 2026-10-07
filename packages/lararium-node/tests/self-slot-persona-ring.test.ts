@@ -24,8 +24,10 @@ import {
   deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
   hexToBytes, type FederationGate, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { faceGrantTitle, signFaceGrantRecord, FACE_GRANT_PREFIX, type FaceGrantRecord } from "@lararium/keyhive";
-import { makeSelfSlotPersonaGroupRing, provenVesselKeyOf } from "../src/self-slot-persona-ring.js";
+import {
+  faceGrantTitle, signFaceGrantRecord, assemblePersonaGroupRing, FACE_GRANT_PREFIX, type FaceGrantRecord,
+} from "@lararium/keyhive";
+import { provenVesselKeyOf } from "@lararium/mesh";
 
 // ── The face + its founder, mirroring the keyhive grant recipe ──────────────────────────────────────────
 const ROOT_SEED     = new Uint8Array(32).fill(7);
@@ -120,12 +122,12 @@ async function ringOver(
   const { urls, governedDoc, foreignDoc } = standPlanes();
   const edge = await founderEdge();
   const kel = kelOverride === null ? undefined : (kelOverride ?? (await personaKel()));
-  const ring = await makeSelfSlotPersonaGroupRing({
+  const ring = await assemblePersonaGroupRing({
     catalog: fakeCatalog(urls, grantText, reads),
     personaGroupDocIdHex: GROUP,
     personaRootDid: edge.personaRootDid,
     ...(kel ? { personaKel: kel } : {}),
-    provenIdentifierOf: (p) => identifiers.get(p) ?? null,
+    provenKeyOf: (p) => identifiers.get(p) ?? null,
     isOwnHand: (p) => p === OWN,
   });
   return { ring, governedDoc, foreignDoc };

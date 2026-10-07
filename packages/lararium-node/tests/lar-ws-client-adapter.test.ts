@@ -21,7 +21,7 @@ import { createServer, type Server } from "node:http";
 import { randomBytes, generateKeyPairSync } from "node:crypto";
 import { WebSocketServer, type WebSocket as WsSocket } from "ws";
 import {
-  verifyAuthProof, ed25519SignerFromSeed,
+  verifyAuthProof, ed25519SignerFromSeed, authOkBytes,
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg,
 } from "@lararium/mesh";
 import type { PeerId } from "@automerge/automerge-repo";
@@ -36,7 +36,13 @@ function genKey(): { seed: Uint8Array; pub: string } {
   const { publicKey, privateKey } = generateKeyPairSync("ed25519");
   const pub  = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
   const seed = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
+  SEED_OF.set(pub, seed);
   return { seed, pub };
+}
+const SEED_OF = new Map<string, Uint8Array>();
+/** The gate's verdict, signed by the gate's own key over this exchange — the only pass a leaf reads. */
+async function signedOk(gatePubKey: string, nonce: string, leafNonce: string, peerPubKey: string) {
+  return mkLarAuthOk(await ed25519SignerFromSeed(SEED_OF.get(gatePubKey)!)(authOkBytes({ nonce, leafNonce, gatePubKey, peerPubKey, aud: AUD })));
 }
 
 interface GateProbe {
@@ -69,9 +75,11 @@ function makeGate(opts: { gatePubKey: string; peerPubKey: string; accept?: boole
         void verifyAuthProof({
           nonce, gatePubKey: opts.gatePubKey, peerPubKey: opts.peerPubKey,
           aud: AUD, ts: parsed.ts ?? "", sig: parsed.sig,
-        }).then((v) => {
+        }).then(async (v) => {
           resolveAuth(v);
-          ws.send(JSON.stringify(accept && v.ok ? mkLarAuthOk() : mkLarAuthDenied(v.reason ?? "denied")));
+          ws.send(JSON.stringify(accept && v.ok
+            ? await signedOk(opts.gatePubKey, nonce, parsed.leafNonce, opts.peerPubKey)
+            : mkLarAuthDenied(v.reason ?? "denied")));
         });
       });
     });
@@ -91,7 +99,7 @@ function makeLeaf(): { identity: LeafIdentity; pub: string } {
   const { seed, pub } = genKey();
   return {
     pub,
-    identity: { contactCard: JSON.stringify({ dummy: true }), peerPubKey: pub, sign: ed25519SignerFromSeed(seed) },
+    identity: { contactCard: JSON.stringify({ peerPubKey: pub }), peerPubKey: pub, sign: ed25519SignerFromSeed(seed) },
   };
 }
 
@@ -166,7 +174,8 @@ function makeScriptedGate(opts: {
       count += 1;
       const ordinal = count;
       for (const w of waiters.splice(0)) { if (count >= w.n) w.done(true); else waiters.push(w); }
-      ws.send(JSON.stringify(mkLarChallenge(randomBytes(32).toString("hex"), opts.gatePubKey)));
+      const nonce = randomBytes(32).toString("hex");
+      ws.send(JSON.stringify(mkLarChallenge(nonce, opts.gatePubKey)));
       let dropped = false;
       ws.on("message", (data: Buffer, isBinary: boolean) => {
         if (isBinary) {
@@ -176,7 +185,10 @@ function makeScriptedGate(opts: {
         let parsed: unknown;
         try { parsed = JSON.parse(data.toString("utf8")); } catch { return; }
         if (!isLarAuthMsg(parsed)) return;
-        ws.send(JSON.stringify(opts.accept(ordinal) ? mkLarAuthOk() : mkLarAuthDenied("no vouch")));
+        const auth = parsed;
+        if (!opts.accept(ordinal)) { ws.send(JSON.stringify(mkLarAuthDenied("no vouch"))); return; }
+        const peerPubKey = (JSON.parse(auth.contactCard) as { peerPubKey: string }).peerPubKey;
+        void signedOk(opts.gatePubKey, nonce, auth.leafNonce, peerPubKey).then((ok) => ws.send(JSON.stringify(ok)));
       });
     });
     http.listen(0, "127.0.0.1", () => {

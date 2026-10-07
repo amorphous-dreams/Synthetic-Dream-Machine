@@ -75,8 +75,8 @@ describe("the auth proof signs inside its own domain", () => {
 describe("the auth wire messages carry no version", () => {
   test("no constructor stamps a version field", async () => {
     const msgs: object[] = [
-      mkLarChallenge("n", "g"), mkLarAuth("card", "n", "s"), mkLarAuthOk(), mkLarAuthDenied("r"),
-      await buildAuthResponse({ ...(await keyed()), contactCard: "card", sign: () => "x" }),
+      mkLarChallenge("n", "g"), mkLarAuth("card", "n", "s", "ab".repeat(32)), mkLarAuthOk("s"), mkLarAuthDenied("r"),
+      await buildAuthResponse({ ...(await keyed()), contactCard: "card", leafNonce: "ab".repeat(32), sign: () => "x" }),
     ];
     for (const m of msgs) expect("version" in m, JSON.stringify(m)).toBe(false);
   });

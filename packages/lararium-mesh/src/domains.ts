@@ -104,6 +104,13 @@ export const PERSONA_JOIN_DOMAIN = frozen("persona-join");
 export const PERSONA_ADMIT_SEAL_INFO = frozen("persona-admit-grant-seal");
 /** An invite into one Nexus, signed by the inviting face's per-Nexus leaf and spent once at the newcomer's boot. */
 export const NEXUS_INVITE_DOMAIN = mint("nexus-invite");
+/** The HOSTING HEARTH's countersign on a user's invite: the hearth's per-Nexus leaf signs the Nexus, the
+ *  invite nonce and the walker's leaf under this name. It names no guest; it never verifies as an invite. */
+export const HOST_COUNTERSIGN_DOMAIN = mint("host-countersign");
+/** The WALKER's proof over a live hosting session: its per-Nexus leaf signs the hearth's socket nonce, gate
+ *  key, the Nexus and the invite nonce under this name, so a countersign asks only over a session the hearth
+ *  holds. Apart from `presented-admit-leaf-proof`: a session proof never stands as an admit's proof. */
+export const HOST_SESSION_PROOF_DOMAIN = mint("host-session-proof");
 /** A cabal invite — the join axis, orthogonal to the carriage contract. */
 export const CABAL_INVITE_DOMAIN = frozen("cabal-invite");
 
@@ -150,6 +157,15 @@ export const AUTH_PROOF_DOMAIN = mint("auth-proof");
  *  to ONE socket. Its own name, apart from `auth-proof`: the vessel key signs that one and the leaf signs this
  *  one, and neither signature may verify as the other. No root signs it and no root is named in it. */
 export const PRESENTED_ADMIT_LEAF_PROOF_DOMAIN = mint("presented-admit-leaf-proof");
+/** The GATE'S VERDICT: a gate signs its `lar:auth-ok` with its own gate key over both nonces, the gate key,
+ *  the leaf's key and the audience under this name, so a leaf reads a passing verdict only from the gate it
+ *  pinned. Its own name, apart from `auth-proof`: the leaf signs that one and the gate signs this one. */
+export const AUTH_OK_DOMAIN = mint("auth-ok");
+/** A LEAF'S PROOF TO A SIBLING LEAF of one PersonaGroup: a device key signs the sibling's nonce and the
+ *  ephemeral key its answer is sealed to under this name, so the proof binds to one exchange and one channel. */
+export const LEAF_PEER_PROOF_DOMAIN = mint("leaf-peer-proof");
+/** Its HKDF `info` — the seal that keeps a leaf's device edge unread by the relay carrying it. */
+export const LEAF_PEER_SEAL_INFO = mint("leaf-peer-seal");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");

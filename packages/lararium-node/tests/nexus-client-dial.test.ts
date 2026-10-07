@@ -32,7 +32,7 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { DaemonAuthGate } from "../src/daemon-auth-gate.js";
+import { DaemonAuthGate, type GateKey } from "../src/daemon-auth-gate.js";
 import { startNexusClientDial, maybeStartNexusClientDial } from "../src/nexus-client-dial.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
@@ -41,12 +41,16 @@ const REPLY_KEY    = "lar:///ha.ka.ba/bags/personal/reply";
 type GreetDoc = { tiddlers: Record<string, { text: string }> };
 
 /** An Ed25519 keypair — raw 32-byte seed + verifying-key hex (the node-vessel-identity pattern). */
+const SEED_OF = new Map<string, Uint8Array>();
 function genKey(): { seed: Uint8Array; pub: string } {
   const { publicKey, privateKey } = generateKeyPairSync("ed25519");
   const pub  = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
   const seed = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
+  SEED_OF.set(pub, seed);
   return { seed, pub };
 }
+/** A gate's own key — the verifying key it advertises and the signer of its verdicts. */
+const gateKeyOf = (pub: string): GateKey => ({ pubKey: pub, sign: ed25519SignerFromSeed(SEED_OF.get(pub)!) });
 
 /** A node's leaf identity — a real Ed25519 signer + a ContactCard carrying its own verifying key. */
 function makeNodeIdentity(): { identity: LeafIdentity; seed: Uint8Array; pub: string } {
@@ -113,7 +117,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
       },
     });
 
-    gate.arm(makeCapabilityShore(opts.gatePubKey, opts.admitted), AUD, opts.gatePubKey);
+    gate.arm(makeCapabilityShore(opts.gatePubKey, opts.admitted), AUD, gateKeyOf(opts.gatePubKey));
 
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();

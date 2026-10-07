@@ -19,7 +19,7 @@
 import { describe, test, expect } from "vitest";
 import {
   leafProofBytes, signLeafProof, verifyLeafProof, runPeerHandshake, buildAuthResponse, isLarAuthMsg,
-  mkLarChallenge, type PresentedAdmit, type LarAuthMsg,
+  mkLarChallenge, mkLarAuthOk, authOkBytes, type PresentedAdmit, type LarAuthMsg,
 } from "../src/auth-wire.js";
 import {
   carriageEntryActCid, presentedAdmitFromBoard, verifyPresentedAdmit, type CarriageEntry,
@@ -111,10 +111,16 @@ describe("the handshake signs the leaf proof over the challenge it received", ()
     const admit = await act("admit");
     const gatePubKey = await pubOf(SEEDS.gate);
     const vesselKey  = await pubOf(SEEDS.vessel);
-    const inbox: unknown[] = [mkLarChallenge(NONCE, gatePubKey), { type: "lar:auth-ok" }];
     let sent: LarAuthMsg | null = null;
+    // The gate's verdict, signed by its own key over the leaf's own nonce — the only pass a leaf reads.
+    const inbox: Array<() => Promise<unknown>> = [
+      async () => mkLarChallenge(NONCE, gatePubKey),
+      async () => mkLarAuthOk(await signerOf(SEEDS.gate)(authOkBytes({
+        nonce: NONCE, leafNonce: (sent as unknown as LarAuthMsg).leafNonce, gatePubKey, peerPubKey: vesselKey, aud: "lar:///x",
+      }))),
+    ];
     const verdict = await runPeerHandshake({
-      recv: async () => inbox.shift(), send: (m) => { sent = m; },
+      recv: () => inbox.shift()!(), send: (m) => { sent = m; },
       contactCard: "{}", peerPubKey: vesselKey, gatePubKey, aud: "lar:///x",
       sign: signerOf(SEEDS.vessel), presentedAdmit: { admit, lineage: [] }, leafSign: signerOf(SEEDS.leaf),
       now: () => "2026-10-06T00:00:00.000Z",
@@ -146,7 +152,7 @@ describe("ONE SOCKET, ONE FACE — a presented admit never travels beside a root
 
   test("the wire guard refuses a lar:auth carrying an admit beside the fleet edge", async () => {
     const presentedAdmit = await proven(await act("admit"));
-    const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, sig: "00" } as const;
+    const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, leafNonce: "ef".repeat(32), sig: "00" } as const;
     expect(isLarAuthMsg({ ...base, presentedAdmit })).toBe(true);                       // control
     expect(isLarAuthMsg({ ...base, edge })).toBe(true);                                 // control
     expect(isLarAuthMsg({ ...base, presentedAdmit, edge })).toBe(false);
@@ -154,7 +160,7 @@ describe("ONE SOCKET, ONE FACE — a presented admit never travels beside a root
 
   test("the CONTRACT slot is retired — a lar:auth carrying `contractEdge` fails the guard, admit or no admit", async () => {
     const presentedAdmit = await proven(await act("admit"));
-    const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, sig: "00" } as const;
+    const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, leafNonce: "ef".repeat(32), sig: "00" } as const;
     expect(isLarAuthMsg(base)).toBe(true);                                              // control: the card alone
     expect(isLarAuthMsg({ ...base, contractEdge: edge })).toBe(false);
     expect(isLarAuthMsg({ ...base, presentedAdmit, contractEdge: edge })).toBe(false);
@@ -164,7 +170,7 @@ describe("ONE SOCKET, ONE FACE — a presented admit never travels beside a root
     const presentedAdmit = await proven(await act("admit"));
     const parts = {
       contactCard: "{}", nonce: NONCE, gatePubKey: "a".repeat(64), peerPubKey: "b".repeat(64), aud: "lar:///x",
-      ts: "2026-10-06T00:00:00.000Z", sign: signerOf(SEEDS.vessel),
+      ts: "2026-10-06T00:00:00.000Z", leafNonce: "ef".repeat(32), sign: signerOf(SEEDS.vessel),
     };
     const built = await buildAuthResponse({ ...parts, presentedAdmit });
     expect(built).toMatchObject({ presentedAdmit });                                    // control

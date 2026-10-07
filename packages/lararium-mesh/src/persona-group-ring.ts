@@ -30,8 +30,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-fork-that-wants-a-ruling
  */
 
-import type { DocumentId, PeerId } from "@automerge/automerge-repo";
+import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import type { FederationGate } from "./federation-gate.js";
+import { personaScopedBagIds } from "./persona-scope.js";
 
 /** The plane's own reading: the records that rest on it, and the seal check that judges one. */
 export interface PersonaGroupGrantReading {
@@ -85,4 +86,36 @@ export function makePersonaGroupIdentityRing(opts: {
       },
     }),
   };
+}
+
+// ── The inputs every vessel reads the same way ─────────────────────────────────────────────────────────────
+
+/** The slice of a catalog accessor a ring reads — `makeCatalogAccessor(repo, catalogUrl)` satisfies it. */
+export interface PlaneCatalog {
+  urlOf(bagUri: string): Promise<string | null>;
+  storeOf(bagUri: string): Promise<{ listVisible(): Promise<string[]>; get(title: string): Promise<unknown> } | null>;
+}
+
+/**
+ * The verifying key a proven identifier carries — its trailing 64 hex. A bare verifying key is its own
+ * trailing 64 hex. A peer that proved nothing, or an identifier too short to carry a key, reads null.
+ */
+export function provenVesselKeyOf(identifier: string | null | undefined): string | null {
+  if (typeof identifier !== "string") return null;
+  const m = identifier.toLowerCase().match(/[0-9a-f]{64}$/);
+  return m ? m[0] : null;
+}
+
+/**
+ * The face's four plane bags resolved to the doc-ids a ring decides over, off the vessel's own catalog — the
+ * SAME resolution `DeterministicFederationGate` runs for its own set. An absent plane falls out (fail-closed).
+ */
+export async function governedPlaneDocIds(catalog: PlaneCatalog, personaGroupDocIdHex: string): Promise<ReadonlySet<DocumentId>> {
+  const planes = personaScopedBagIds(personaGroupDocIdHex);
+  const ids = new Set<DocumentId>();
+  for (const bag of [planes.persona, planes.circles, planes.identities, planes.sessions]) {
+    const url = await catalog.urlOf(bag);
+    if (url) ids.add(interpretAsDocumentId(url as AutomergeUrl) as DocumentId);
+  }
+  return ids;
 }

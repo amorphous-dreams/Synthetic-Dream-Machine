@@ -27,18 +27,22 @@ import { verifyAuthProof, ed25519SignerFromSeed, LarWSClientAdapter } from "@lar
 import type { AuthVerifierShore } from "@lararium/mesh";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { DaemonAuthGate } from "../src/daemon-auth-gate.js";
+import { DaemonAuthGate, type GateKey } from "../src/daemon-auth-gate.js";
 import type { LeafIdentity } from "../src/leaf-identity.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
 
 /** An Ed25519 keypair (the node-vessel-identity pattern): raw 32-byte seed + verifying-key hex. */
+const SEED_OF = new Map<string, Uint8Array>();
 function genKey(): { seed: Uint8Array; pub: string } {
   const { publicKey, privateKey } = generateKeyPairSync("ed25519");
   const pub  = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
   const seed = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
+  SEED_OF.set(pub, seed);
   return { seed, pub };
 }
+/** A gate's own key — the verifying key it advertises and the signer of its verdicts. */
+const gateKeyOf = (pub: string): GateKey => ({ pubKey: pub, sign: ed25519SignerFromSeed(SEED_OF.get(pub)!) });
 
 /** A browser-shaped leaf: a real Ed25519 signer + a ContactCard that carries its own verifying key
  *  (the faithful stand-in for keyhive.receiveContactCard deriving the peer key from the card). */
@@ -113,7 +117,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     const { identity, pub } = makeLeaf();
 
     const connectionSeen = new Promise<void>((resolve) => harness!.gate.once("connection", () => resolve()));
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([pub]) }), AUD, gatePub);
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([pub]) }), AUD, gateKeyOf(gatePub));
 
     adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
     adapter.connect("browser-leaf" as PeerId);
@@ -130,7 +134,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     let crossed = false;
     harness.gate.once("connection", () => { crossed = true; });
     // admitted set is EMPTY — the leaf's proof will verify, but it holds no daemon grant.
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set() }), AUD, gatePub);
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set() }), AUD, gateKeyOf(gatePub));
 
     adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
     adapter.connect("anon-leaf" as PeerId);
@@ -150,7 +154,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     let crossed = false;
     harness.gate.once("connection", () => { crossed = true; });
     // The claimed key IS admitted — so only the signature check can turn this leaf away.
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([claimed.pub]) }), AUD, gatePub);
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([claimed.pub]) }), AUD, gateKeyOf(gatePub));
 
     const identity: LeafIdentity = {
       contactCard: JSON.stringify({ peerPubKey: claimed.pub }),
@@ -163,6 +167,33 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     await new Promise<void>((r) => setTimeout(r, 300));
     expect(crossed).toBe(false);                // the forged proof failed verifyAuthProof
     expect(harness.gate.clients.size).toBe(0);
+  });
+
+  test("RED: a gate that answers auth-ok without the key the leaf pinned is refused by the LEAF", async () => {
+    harness = await standGate();
+    const pinned = genKey().pub;                // the gate key the leaf was provisioned with
+    const relay  = genKey().pub;                // the key the answering hand actually holds
+    const { identity, pub } = makeLeaf();
+    // The leaf's proof verifies (bound to the pinned key), so the answering gate ADMITS it — and signs the
+    // verdict with a key that is not the pin. Only the leaf's own check can refuse it.
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: pinned, admitted: new Set([pub]) }), AUD, gateKeyOf(relay));
+    adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned });
+    adapter.connect("pinned-leaf" as PeerId);
+
+    await new Promise<void>((r) => setTimeout(r, 300));
+    expect(adapter.anergized).toBe("the verdict carries no signature of the pinned gate key");
+  });
+
+  test("CONTROL: the gate that holds the pinned key passes the leaf's check", async () => {
+    harness = await standGate();
+    const pinned = genKey().pub;
+    const { identity, pub } = makeLeaf();
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: pinned, admitted: new Set([pub]) }), AUD, gateKeyOf(pinned));
+    adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned });
+    adapter.connect("pinned-leaf" as PeerId);
+
+    await new Promise<void>((r) => setTimeout(r, 300));
+    expect(adapter.anergized).toBeNull();
   });
 });
 
@@ -209,7 +240,7 @@ function standNodeRepo(opts: { gatePubKey: string; admitted: ReadonlySet<string>
         return wsSocket ? peerIdentifierMap.has(peerId) : true;
       },
     });
-    gate.arm(makeCapabilityShore({ gatePubKey: opts.gatePubKey, admitted: opts.admitted }), AUD, opts.gatePubKey);
+    gate.arm(makeCapabilityShore({ gatePubKey: opts.gatePubKey, admitted: opts.admitted }), AUD, gateKeyOf(opts.gatePubKey));
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();
       if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
@@ -258,7 +289,48 @@ describe("browser↔node doc replication — the mesh breathes over the crossed 
     });
 
     expect(found.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/crossroads/greeting"]?.text).toBe("the DreamNet breathes");
+
+    // THE GATE PROVED ITSELF BACK: the node's peer, met on the socket whose verdict the pinned gate key
+    // signed, reads as that key — the proof source a leaf's PersonaGroup ring reads. A peer this transport
+    // never met reads null.
+    expect(clientAdapter.provenKeyOf(node.repo.peerId)).toBe(gatePub);
+    expect(clientAdapter.provenKeyOf("a-stranger" as PeerId)).toBeNull();
   }, 8_000);
+
+  test("THE SESSION: session messages ride the verified socket both ways, beside the Automerge sync", async () => {
+    const gatePub = genKey().pub;
+    const { identity, pub } = makeLeaf();
+    node = await standNodeRepo({ gatePubKey: gatePub, admitted: new Set([pub]) });
+    const heard: Array<{ socket: unknown; kind: string; body: unknown }> = [];
+    node.gate.onSession((socket, msg) => {
+      heard.push({ socket, kind: msg.kind, body: msg.body });
+      node!.gate.sendSession(socket, "echo", { got: msg.body });
+    });
+    const nodeDoc = node.repo.create<{ tiddlers: Record<string, { text: string }> }>({ tiddlers: {} });
+
+    clientAdapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${node.port}`, identity, aud: AUD, gatePubKey: gatePub });
+    expect(clientAdapter.sendSession("ask", 1)).toBe(false);                 // no verified socket yet: nothing sent
+    clientRepo = new Repo({ network: [clientAdapter], sharePolicy: async () => true });
+    const found = await clientRepo.find<{ tiddlers: Record<string, { text: string }> }>(nodeDoc.url);
+    await found.whenReady();
+
+    const answered = new Promise<unknown>((resolve) => clientAdapter!.onSession((msg) => { if (msg.kind === "echo") resolve(msg.body); }));
+    expect(clientAdapter.sendSession("ask", { n: 7 })).toBe(true);
+    expect(await answered).toEqual({ got: { n: 7 } });
+    expect(heard).toHaveLength(1);
+    // Both sides hold the same session: the nonce the gate issued on THAT socket, and the pinned gate key.
+    const socket = heard[0]!.socket as Parameters<typeof node.gate.getChallengeForSocket>[0];
+    expect(clientAdapter.session).toEqual({ nonce: node.gate.getChallengeForSocket(socket)!.nonce, gatePubKey: gatePub });
+
+    // The Automerge sync still breathes on the same socket after the session frames crossed it.
+    found.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/personal/after-session"] = { text: "still syncing" }; });
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("timeout: the sync stopped after a session message")), 5_000);
+      const check = () => { if (nodeDoc.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/personal/after-session"]) { clearTimeout(timer); resolve(); } };
+      nodeDoc.on("change", check);
+      check();
+    });
+  }, 10_000);
 
   test("the breath runs both ways — a browser-leaf change propagates back to the node", async () => {
     const gatePub = genKey().pub;

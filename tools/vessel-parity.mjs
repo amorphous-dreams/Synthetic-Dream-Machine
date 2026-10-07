@@ -92,6 +92,11 @@ const ROSTER = [
     pkg: "@lararium/mesh",
     why: "the signer both shores mint from their own seed.",
   },
+  {
+    symbol: "assemblePersonaGroupRing",
+    pkg: "@lararium/keyhive",
+    why: "the ONE PersonaGroup identity-slot ring assembly. Both shores call it and only the proof source differs: the node reads the key its inbound gate proved, a leaf reads the gate key its outbound socket proved by a signed verdict. Every leaf runs it: a face of an operator's PersonaGroup where a listening vessel exists, a single user device, and one device of a user-caps-only fleet where no vessel listens (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
+  },
 
   /* ── RULED ASYMMETRIC ────────────────────────────────────────────────────────────────────────
    * Each row names a seat difference canon RULES, not drift. The reason carries the citation.
@@ -129,18 +134,6 @@ const ROSTER = [
     },
   },
 
-  /* ── UNWIRED — shared, sited for BOTH shores, composed by NEITHER ───────────────────────────
-   * The vow-read-aspirational family: a capability correctly housed in mesh whose promise no shore
-   * has yet taken up. A row here asserts the SYMMETRIC absence holds — so the day one shore wires it
-   * and the other does not, this gate names the shore that stayed thin, at that commit.
-   */
-  {
-    symbol: "makePersonaGroupIdentityRing",
-    pkg: "@lararium/mesh",
-    unwired: {
-      reason: "Zero production call sites; both shores run `identity = null` — the browser at `open-browser-vessel.ts:395` (its own comment calls this an HONEST GAP), the node at `self-slot-share.ts:95` ('The self-slot INNER capability ring stays inert'). The null is RULED deliberate: `federation-gate.ts:237-244` holds that lighting the inner ring re-introduces the allow-all regression Ringward found. Symmetric absence, not browser drift — and `one-name-one-relation` rules the naming fusions resolve BEFORE this lights, since the cap layer hashes a bag URL to seed the Document behind it.",
-    },
-  },
 ];
 
 /** The roster floor. A gate that stops seeing its subject reports the cleanest run it ever produced. */

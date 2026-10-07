@@ -32,7 +32,7 @@ import { join } from "node:path";
 import { WebSocketServer } from "ws";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { verifyAuthProof } from "@lararium/mesh";
+import { verifyAuthProof, ed25519SignerFromSeed } from "@lararium/mesh";
 import type { AuthVerifierShore } from "@lararium/mesh";
 import { DaemonAuthGate } from "../src/daemon-auth-gate.js";
 
@@ -89,9 +89,10 @@ async function main(): Promise<void> {
                  : new Set(ADMIT.split(",").map((s) => s.trim()).filter(Boolean));
   console.log(`[crossing-daemon] admit policy=${ADMIT} → gate admits ${String(admitted.size)} key(s)`);
 
-  // Generate the gate key (published to the client, bound into its proof — a data binding, not a signer).
-  const { publicKey } = generateKeyPairSync("ed25519");
+  // Generate the gate key: published to the client (bound into its proof) and the signer of every verdict.
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
   const gatePubKey = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
+  const gateSeed   = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
 
   const http: Server = createServer();
   const wss  = new WebSocketServer({ server: http });
@@ -114,7 +115,7 @@ async function main(): Promise<void> {
     },
   });
 
-  gate.arm(makeCapabilityShore(gatePubKey, admitted), AUD, gatePubKey);
+  gate.arm(makeCapabilityShore(gatePubKey, admitted), AUD, { pubKey: gatePubKey, sign: ed25519SignerFromSeed(gateSeed) });
 
   const doc = repo.create<{ tiddlers: Record<string, { text: string }> }>({ tiddlers: {} });
   doc.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/crossroads/greeting"] = { text: GREET }; });

@@ -1,7 +1,7 @@
 /**
  * persona-ring-cross-operator-admit.test.ts — e2e: a REAL vessel boots, wears a face, and a
  * CROSS-OPERATOR peer holding a live face-join grant record reaches the face's own persona-plane
- * docs through the composed `makeSelfSlotPersonaGroupRing` — while a STRANGER (same proof, no grant)
+ * docs through the composed `assemblePersonaGroupRing` — while a STRANGER (same proof, no grant)
  * is refused the identical doc.
  *
  * THE GAP THIS CLOSES: `self-slot-persona-ring.test.ts` (unit) and
@@ -28,7 +28,7 @@
  *      SAME founder and is refused the SAME doc — the matched-pair control.
  *
  * RED-FIRST: `npm run` this file with the ring-compose block in `open-node-vessel.ts`
- * (`selfSlotFedGate = (await makeSelfSlotPersonaGroupRing(...)).compose(base)`) neutralized
+ * (`selfSlotFedGate = (await assemblePersonaGroupRing(...)).compose(base)`) neutralized
  * (`if (false && …)`) and the grant-holder assertion FAILS identically to the stranger — the ring is
  * load-bearing, not an incidental pass. Restored, it GREENS. See the handback for the measured run.
  *

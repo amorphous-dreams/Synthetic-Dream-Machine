@@ -92,6 +92,7 @@ describe("P1 authority relations — characterization witness", () => {
     const proof = await buildAuthResponse({
       ...challenge,
       contactCard: "audit-card",
+      leafNonce: "ef".repeat(32),
       sign: signWith(peerSeed),
     });
     const signatureOnly = await verifyAuthProof({ ...challenge, sig: proof.sig, ts: proof.ts! });

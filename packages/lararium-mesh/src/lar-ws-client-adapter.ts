@@ -13,6 +13,16 @@
  * always-on relay's leaf legs, AND the browser vessel (the global `WebSocket` + automerge's
  * isomorphic `WebSocketClientAdapter` carry it unchanged across the worker/window boundary).
  *
+ * THE GATE PROVES ITSELF BACK. `runPeerHandshake` reads a passing verdict only when the PINNED gate key
+ * signed it over this leaf's own fresh nonce. Once it has, the peer that socket's join yields is a peer whose
+ * key this leaf PROVED, and `provenKeyOf(peerId)` answers that key — the proof source a leaf's PersonaGroup
+ * ring reads. A peer that arrived on no verified socket reads null.
+ *
+ * THE SESSION. A verified socket also carries `lar:session` messages — JSON text frames beside Automerge's
+ * binary frames — for protocols that ride an authenticated session (a hosting hearth's countersign, say).
+ * `session` names what both sides hold for it: the gate's challenge nonce and the pinned gate key. A text
+ * frame never reaches the Automerge decoder; a session message is sent only on the verified socket.
+ *
  * Wire-format note: the handshake speaks JSON text frames; Automerge speaks CBOR binary frames. The
  * two never overlap — the handshake completes (a temporary text pump) before the parent's binary
  * `onMessage` attaches and `join()` fires.
@@ -24,8 +34,14 @@ import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websoc
 // automerge-repo 2.6's WebSocket adapter types its socket as the DOM WebSocket — a global in both
 // Node 22+ and every browser; use that, not isomorphic-ws (keeps this leaf truly platform-blind).
 import type { PeerId, PeerMetadata } from "@automerge/automerge-repo";
-import { runPeerHandshake } from "./auth-wire.js";
-import type { PeerHandshake, LeafIdentity } from "./auth-wire.js";
+import { runPeerHandshake, isLarSessionMsg, mkLarSessionMsg } from "./auth-wire.js";
+import type { PeerHandshake, LeafIdentity, LarSessionMsg } from "./auth-wire.js";
+
+/** The authenticated session a verified socket holds: the gate's challenge nonce and the pinned gate key. */
+export interface LarLeafSession {
+  readonly nonce:      string;
+  readonly gatePubKey: string;
+}
 
 export interface LarWSClientOptions {
   /** ws:// or wss:// URL of the relay gate. */
@@ -56,6 +72,13 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   #anergized: string | null = null;
   /** Set by `disconnect()` — the caller stood this transport down, and nothing below re-dials it. */
   #stopped = false;
+  /** The socket whose gate signed its verdict for this leaf; null while none has. */
+  #verifiedSocket: WebSocket | null = null;
+  /** peerId → the gate key that peer's socket PROVED. Entered only for a peer met on the verified socket. */
+  readonly #provenPeers = new Map<PeerId, string>();
+  /** The session the verified socket holds; null while none is verified. */
+  #session: LarLeafSession | null = null;
+  readonly #sessionListeners = new Set<(msg: LarSessionMsg) => void>();
 
   constructor(opts: LarWSClientOptions) {
     super(opts.url, opts.retryInterval);
@@ -63,6 +86,35 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     this.#aud        = opts.aud;
     this.#gatePubKey = opts.gatePubKey;
     this.#now        = opts.now;
+    // A peer counts as proven only when it arrives on the socket whose gate signed this leaf's verdict.
+    this.on("peer-candidate", ({ peerId }: { peerId: PeerId }) => {
+      if (this.#verifiedSocket !== null && this.#verifiedSocket === this.socket) {
+        this.#provenPeers.set(peerId, this.#gatePubKey.toLowerCase());
+      }
+    });
+    this.on("peer-disconnected", ({ peerId }: { peerId: PeerId }) => { this.#provenPeers.delete(peerId); });
+  }
+
+  /** The authenticated session the open socket holds, or null while no socket's gate has proved itself. */
+  get session(): LarLeafSession | null { return this.#session; }
+
+  /** Hear `lar:session` messages the gate sends on the verified socket. Returns the unsubscribe. */
+  onSession(listener: (msg: LarSessionMsg) => void): () => void {
+    this.#sessionListeners.add(listener);
+    return () => { this.#sessionListeners.delete(listener); };
+  }
+
+  /** Send one session message on the verified socket. False — nothing sent — while no session stands. */
+  sendSession(kind: string, body: unknown): boolean {
+    const socket = this.#verifiedSocket;
+    if (!this.#session || !socket || socket !== this.socket || socket.readyState !== WebSocket.OPEN) return false;
+    try { socket.send(JSON.stringify(mkLarSessionMsg(kind, body))); return true; } catch { return false; }
+  }
+
+  /** The key `peerId` PROVED on this transport — the pinned gate key, signed over this leaf's own nonce — or
+   *  null for a peer this transport proved nothing about. */
+  provenKeyOf(peerId: PeerId): string | null {
+    return this.#provenPeers.get(peerId) ?? null;
   }
 
   /** The gate's refusal if this leaf has anergized, else null. A caller MAY read it to offer a vouch. */
@@ -120,6 +172,9 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     // On open, run the auth handshake FIRST; only on a passing verdict hand the socket to the
     // parent's Automerge flow (binary onMessage + join).
     socket.addEventListener("open", () => { void this.#runHandshake(socket); });
+    socket.addEventListener("close", () => {
+      if (this.#verifiedSocket === socket) { this.#verifiedSocket = null; this.#session = null; }
+    });
     socket.addEventListener("close", this.onClose);
     socket.addEventListener("error", this.onError);
   }
@@ -151,7 +206,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       ...(this.#now ? { now: this.#now } : {}),
     };
 
-    let verdict: { ok: boolean; reason?: string };
+    let verdict: Awaited<ReturnType<typeof runPeerHandshake>>;
     try {
       verdict = await runPeerHandshake(handshake);
     } catch (err) {
@@ -189,7 +244,18 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
 
     // Authenticated — hand the SAME socket to the parent's Automerge machinery.
     try { console.log("[lar-leaf] verdict OK — crossing open, syncing"); } catch { /* */ }
-    socket.addEventListener("message", this.onMessage);
+    this.#verifiedSocket = socket;
+    this.#session = { nonce: verdict.nonce, gatePubKey: this.#gatePubKey.toLowerCase() };
+    // Text frames are the session's; binary frames are Automerge's. Neither reaches the other's reader.
+    socket.addEventListener("message", (event: MessageEvent) => {
+      if (typeof event.data !== "string") { this.onMessage(event); return; }
+      let msg: unknown;
+      try { msg = JSON.parse(event.data); } catch { return; }
+      if (!isLarSessionMsg(msg)) return;
+      for (const listener of this.#sessionListeners) {
+        try { listener(msg); } catch { /* one listener's throw never silences another */ }
+      }
+    });
     this.join();
   }
 }

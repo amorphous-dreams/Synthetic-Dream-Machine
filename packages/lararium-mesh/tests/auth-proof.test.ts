@@ -8,6 +8,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import {
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
+  authOkBytes, verifyAuthOk, ed25519VerifyingKeyFromSeed,
   ed25519SignerFromSeed, AUTH_PROOF_TTL_MS,
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isPresentedAdmit,
 } from "../src/auth-wire.js";
@@ -15,6 +16,7 @@ import { canonicalJsonBytes, hex } from "../src/crypto.js";
 import { carriageEntryActCid } from "../src/carriage-registry.js";
 import type { LarAuthMsg, PresentedAdmit } from "../src/auth-wire.js";
 import { carriageAct } from "./fixtures/carriage.js";
+import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN } from "../src/domains.js";
 
 const base = {
   nonce:      "ab12cd",
@@ -22,6 +24,7 @@ const base = {
   peerPubKey: "peer-pk-hex",
   aud:        "lar:///ha.ka.ba/bags/daemon",
   ts:         "2026-06-07T00:00:00Z",
+  leafNonce:  "ef".repeat(32),
 };
 
 // A real quorum-signed admit and the counted acts it cites — the subject's own presentation at the wire.
@@ -146,47 +149,107 @@ describe("buildAuthResponse (V3 peer half)", () => {
 });
 
 describe("runPeerHandshake (platform-blind V3 peer half)", () => {
-  function shore(incoming: unknown[]) {
-    const queue = [...incoming];
+  const GATE_SEED = new Uint8Array(32).fill(41);
+  const PEER_KEY  = "7".repeat(64);
+  const AUD       = "lar:///ha.ka.ba/bags/daemon";
+
+  /**
+   * A gate on the far side of a duplex: it sends `first`, then answers the leaf's lar:auth with `answer(auth)`.
+   * `answer` sees the leaf's own fresh nonce, so a signed verdict can commit to it the way a real gate's does.
+   */
+  function shore(first: unknown, answer?: (auth: LarAuthMsg) => Promise<unknown> | unknown) {
     const sent: LarAuthMsg[] = [];
+    let calls = 0;
     return {
-      recv:        async () => queue.shift(),
+      recv:        async () => (calls++ === 0 ? first : answer ? answer(sent[0]!) : undefined),
       send:        (m: LarAuthMsg) => { sent.push(m); },
-      contactCard: "card", peerPubKey: "peer-pk", gatePubKey: "gate-pk",
-      aud:         "lar:///ha.ka.ba/bags/daemon",
+      contactCard: "card", peerPubKey: PEER_KEY, gatePubKey: "", aud: AUD,
       sign:        () => "sig-hex",
       now:         () => "2026-06-07T00:00:00Z",
       sent,
     };
   }
+  /** The gate's verdict: signed by `seed` over this exchange (or over `override`'s values). */
+  const signedOk = (seed: Uint8Array, nonce: string, override: Partial<Parameters<typeof authOkBytes>[0]> = {}) =>
+    async (auth: LarAuthMsg) => {
+      const gatePubKey = await ed25519VerifyingKeyFromSeed(GATE_SEED);
+      const sig = await ed25519SignerFromSeed(seed)(authOkBytes({
+        nonce, leafNonce: auth.leafNonce, gatePubKey, peerPubKey: PEER_KEY, aud: AUD, ...override,
+      }));
+      return mkLarAuthOk(sig);
+    };
+  const pinnedGate = () => ed25519VerifyingKeyFromSeed(GATE_SEED);
 
-  test("challenge → signed lar:auth → auth-ok ⇒ { ok: true }", async () => {
-    const s = shore([mkLarChallenge("n1"), mkLarAuthOk()]);
+  test("CONTROL: challenge → signed lar:auth → the PINNED gate's signed auth-ok ⇒ { ok: true }", async () => {
+    const s = { ...shore(mkLarChallenge("n1"), signedOk(GATE_SEED, "n1")), gatePubKey: await pinnedGate() };
     const r = await runPeerHandshake(s);
     expect(r.ok).toBe(true);
     expect(s.sent).toHaveLength(1);
     expect(s.sent[0]!.type).toBe("lar:auth");
     expect(s.sent[0]!.sig).toBe("sig-hex");
     expect(s.sent[0]!.nonce).toBe("n1");
+    expect(s.sent[0]!.leafNonce).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  test("RED: a relay in the middle that answers auth-ok without the gate's key is refused", async () => {
+    const relaySeed = new Uint8Array(32).fill(42);
+    const s = { ...shore(mkLarChallenge("n1"), signedOk(relaySeed, "n1")), gatePubKey: await pinnedGate() };
+    expect(await runPeerHandshake(s)).toEqual({ ok: false, reason: "the verdict carries no signature of the pinned gate key" });
+  });
+
+  test("RED: a recorded verdict the gate signed for another leaf nonce is refused", async () => {
+    const s = {
+      ...shore(mkLarChallenge("n1"), signedOk(GATE_SEED, "n1", { leafNonce: "00".repeat(32) })),
+      gatePubKey: await pinnedGate(),
+    };
+    expect((await runPeerHandshake(s)).ok).toBe(false);
+  });
+
+  test("RED: an unsigned auth-ok is no verdict at all", async () => {
+    const s = { ...shore(mkLarChallenge("n1"), () => ({ type: "lar:auth-ok" })), gatePubKey: await pinnedGate() };
+    expect((await runPeerHandshake(s)).ok).toBe(false);
   });
 
   test("forwards the dialed island's presented admit onto the lar:auth", async () => {
     const presentedAdmit = await presentedAdmitFixture();
-    const s = { ...shore([mkLarChallenge("n1"), mkLarAuthOk()]), presentedAdmit };
+    const s = { ...shore(mkLarChallenge("n1"), signedOk(GATE_SEED, "n1")), gatePubKey: await pinnedGate(), presentedAdmit };
     expect((await runPeerHandshake(s)).ok).toBe(true);
     expect(s.sent[0]!.presentedAdmit).toEqual(presentedAdmit);
   });
 
   test("auth-denied ⇒ { ok:false, reason }", async () => {
-    const s = shore([mkLarChallenge("n1"), mkLarAuthDenied("insufficient cap")]);
+    const s = shore(mkLarChallenge("n1"), () => mkLarAuthDenied("insufficient cap"));
     expect(await runPeerHandshake(s)).toEqual({ ok: false, reason: "insufficient cap" });
   });
 
   test("wrong first message ⇒ rejects before sending anything", async () => {
-    const s = shore([mkLarAuthOk()]);
+    const s = shore(mkLarAuthOk("00".repeat(64)));
     const r = await runPeerHandshake(s);
     expect(r.ok).toBe(false);
     expect(s.sent).toHaveLength(0);
+  });
+});
+
+describe("authOkBytes / verifyAuthOk (the gate's signed verdict)", () => {
+  const parts = {
+    nonce: "n1", leafNonce: "ab".repeat(32), gatePubKey: "", peerPubKey: "cd".repeat(32), aud: "lar:///x",
+  };
+  test("the verdict opens on its own domain, apart from the leaf's proof", () => {
+    expect(AUTH_OK_DOMAIN).not.toBe(AUTH_PROOF_DOMAIN);
+    const text = new TextDecoder().decode(authOkBytes({ ...parts, gatePubKey: "ee".repeat(32) }));
+    expect(JSON.parse(text).domain).toBe(AUTH_OK_DOMAIN);
+    // No clock rides it.
+    expect(Object.keys(JSON.parse(text)).sort()).toEqual(["aud", "domain", "gatePubKey", "leafNonce", "nonce", "peerPubKey"]);
+  });
+  test("each bound value moves the verdict: another audience, leaf or gate key fails the check", async () => {
+    const seed = new Uint8Array(32).fill(43);
+    const gatePubKey = await ed25519VerifyingKeyFromSeed(seed);
+    const sig = await ed25519SignerFromSeed(seed)(authOkBytes({ ...parts, gatePubKey }));
+    expect(await verifyAuthOk({ ...parts, gatePubKey, sig })).toBe(true);                          // control
+    expect(await verifyAuthOk({ ...parts, gatePubKey, sig, aud: "lar:///y" })).toBe(false);
+    expect(await verifyAuthOk({ ...parts, gatePubKey, sig, peerPubKey: "ce".repeat(32) })).toBe(false);
+    expect(await verifyAuthOk({ ...parts, gatePubKey: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(44)), sig })).toBe(false);
+    expect(await verifyAuthOk({ ...parts, gatePubKey, sig: "zz" })).toBe(false);
   });
 });
 
@@ -200,6 +263,7 @@ describe("verifyAuthProof (V3 verifier half — real Ed25519 keys)", () => {
     gatePubKey: "00".repeat(32),                 // stands for the verifier's own key
     aud:        "lar:///ha.ka.ba/bags/daemon",
     ts:         "2026-06-07T00:00:00.000Z",
+    leafNonce:  "ef".repeat(32),
   };
 
   // Build a signed lar:auth the way a real peer would, then verify it.
@@ -291,7 +355,7 @@ describe("ed25519SignerFromSeed (the LIGHT leaf-identity signer)", () => {
     const sign   = ed25519SignerFromSeed(seed);               // the leaf signer
     const parts  = {
       nonce: "cafe".repeat(16), gatePubKey: "00".repeat(32),
-      peerPubKey: pub, aud: "lar:///ha.ka.ba/bags/daemon", ts: "2026-06-07T12:00:00.000Z",
+      peerPubKey: pub, aud: "lar:///ha.ka.ba/bags/daemon", ts: "2026-06-07T12:00:00.000Z", leafNonce: "ef".repeat(32),
     };
     const msg    = await buildAuthResponse({ ...parts, contactCard: "card", sign });
     // The gate recomputes with its OWN key (= gatePubKey here) and the card-derived

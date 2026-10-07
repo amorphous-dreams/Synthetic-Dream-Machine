@@ -119,9 +119,10 @@ export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";
 export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js";
 export {
-  makePersonaGroupIdentityRing,
-  type PersonaGroupIdentityRing, type PersonaGroupGrantReading,
+  makePersonaGroupIdentityRing, governedPlaneDocIds, provenVesselKeyOf,
+  type PersonaGroupIdentityRing, type PersonaGroupGrantReading, type PlaneCatalog,
 } from "./persona-group-ring.js";
+export * from "./leaf-peer-proof.js";
 export type { FederationGate } from "./federation-gate.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
@@ -210,15 +211,16 @@ export {
   mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
   isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg, isPresentedAdmit,
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
+  authOkBytes, verifyAuthOk, mintLeafNonce, mkLarSessionMsg, isLarSessionMsg,
   leafProofBytes, signLeafProof, verifyLeafProof,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
 } from "./auth-wire.js";
 export type {
-  LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarAuthDeniedMsg, LarAuthWireMsg,
+  LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarAuthDeniedMsg, LarSessionMsg, LarAuthWireMsg,
   AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit,
 } from "./auth-wire.js";
 export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
-export type { LarWSClientOptions } from "./lar-ws-client-adapter.js";
+export type { LarWSClientOptions, LarLeafSession } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
 export * from "./carriage-caps.js";
 export * from "./persona-hd.js";

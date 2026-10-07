@@ -51,13 +51,14 @@ import {
   COHERENCE_FRAME,
   SENSORIUM_FRAME,
   createWikiSenseSupervisor, registerWikiSenseVerbs,
+  makeCatalogAccessor,
 }                                            from "@lararium/tw5";
 import type { WikiSenseSupervisor }          from "@lararium/tw5";
 import type { CoherenceStatus } from "@lararium/tw5";
 import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
-import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
+import { runFoundingCeremony, runApplyAdmitPayload, assemblePersonaGroupRing } from "@lararium/keyhive";
 import { vesselDyads } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
@@ -629,6 +630,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // same-operator leaf, prior behavior). An un-admitted anon dials + fails closed.
   // Gated on `admittedToNexus`: a WITHHELD boot founds its own group at the anon floor and composes NO relay
   // adapter (no crossing, no federated sync) — the traceless outcome.
+  let relayAdapter: LarWSClientAdapter | null = null;
   if (relayUrl && social.contactCard && admittedToNexus) {
     const leaf: LeafIdentity = {
       contactCard: social.contactCard,
@@ -636,19 +638,20 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       sign:        ed25519SignerFromSeed(vesselSeed),
       ...(social.deviceEdge ? { edge: social.deviceEdge } : {}),
     };
-    const relayAdapter = new LarWSClientAdapter({
+    const adapter = new LarWSClientAdapter({
       url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayGatePubKey ?? vesselVerifyingKey,
     });
+    relayAdapter = adapter;
     // Tag the relay ring: every peer reached through this adapter enters `relayPeers`, so the
     // sharePolicy gates them while the in-process island peers keep sharing freely. Listeners
     // attach BEFORE addNetworkAdapter so a peer is classified before any doc is announced to it.
-    relayAdapter.on("peer-candidate",    ({ peerId }: { peerId: PeerId }) => { relayPeers.add(peerId); });
-    relayAdapter.on("peer-disconnected", ({ peerId }: { peerId: PeerId }) => { relayPeers.delete(peerId); });
+    adapter.on("peer-candidate",    ({ peerId }: { peerId: PeerId }) => { relayPeers.add(peerId); });
+    adapter.on("peer-disconnected", ({ peerId }: { peerId: PeerId }) => { relayPeers.delete(peerId); });
     // Arm the deny-by-default gate ONLY for a cross-operator crossing (relayGatePubKey names a
     // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
     // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
     if (relayGatePubKey) fedGate = new DeterministicFederationGate(nexusPubkey);
-    repo.networkSubsystem.addNetworkAdapter(relayAdapter);
+    repo.networkSubsystem.addNetworkAdapter(adapter);
   }
 
   // ── Catalog ────────────────────────────────────────────────────────────────
@@ -978,6 +981,26 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         },
         daemonAuth,
       });
+
+      // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
+      // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot
+      // wears, its pinned root and the KEL chain the Binding Gate just walked. Only the PROOF SOURCE differs:
+      // a leaf dials out, so the key it reads for a relay peer is the gate key that peer's socket PROVED by
+      // signing this leaf's verdict (`provenKeyOf`), never a key the wire named. It widens the cross-operator
+      // gate by the face's own planes and nothing else; with no cross-operator gate armed the relay is the
+      // operator's own node and every doc already syncs, so there is nothing to widen.
+      const ringRelay = relayAdapter;
+      const ringRoot = daemonAuth.deviceEdge?.personaRootDid;
+      if (fedGate && ringRelay && ringRoot) {
+        const base = fedGate;
+        fedGate = (await assemblePersonaGroupRing({
+          catalog: makeCatalogAccessor(repo, catalogHandle.url),
+          personaGroupDocIdHex: daemonAuth.personaGroupDocIdHex,
+          personaRootDid: ringRoot,
+          personaKel: daemonAuth.personaKel,
+          provenKeyOf: (peerId) => ringRelay.provenKeyOf(peerId),
+        })).compose(base);
+      }
       return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon };
     },
 

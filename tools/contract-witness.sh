@@ -309,7 +309,7 @@ switch (mode) {
   }
   case "wire": {               // one socket, one face: the admit never rides beside a root edge
     const p = json(a1);
-    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), presentedAdmit: p };
+    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), leafNonce: hex32(), presentedAdmit: p };
     console.log(`alone=${M.isLarAuthMsg(base)} beside-edge=${M.isLarAuthMsg({ ...base, edge: { deviceVerifyingKey: hex32() } })}`);
     break;
   }

@@ -7,9 +7,14 @@
  *
  * Wire sequence (gate initiates):
  *   Gate → Peer  : LarChallengeMsg  (fresh nonce)
- *   Peer → Gate  : LarAuthMsg       (Keyhive ContactCard + nonce echo)
- *   Gate → Peer  : LarAuthOkMsg     (auth passed — Automerge join may proceed)
+ *   Peer → Gate  : LarAuthMsg       (Keyhive ContactCard + nonce echo + the leaf's own fresh nonce)
+ *   Gate → Peer  : LarAuthOkMsg     (the gate's SIGNED verdict — Automerge join may proceed)
  *              OR      LarAuthDeniedMsg  (ws.close(4003) follows immediately)
+ *
+ * AUTHENTICATION BOTH WAYS. The leaf proves its key to the gate (the V3 proof); the gate proves its key to
+ * the leaf by signing `lar:auth-ok` (`authOkBytes`) over the leaf's own fresh nonce, so a relay standing in
+ * the middle, or a recorded verdict replayed, answers nothing the leaf will read as a pass. The leaf checks
+ * the signature against the gate key IT pinned out-of-band, never one the wire names.
  *
  * Alpha note: V3 proof-of-possession — ENFORCED end to end. The platform-blind
  * halves (`authProofBytes` · `buildAuthResponse` · `verifyAuthProof` ·
@@ -30,7 +35,8 @@ import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
-import { AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_ADMIT_LEAF_PROOF_DOMAIN } from "./domains.js";
+import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_ADMIT_LEAF_PROOF_DOMAIN } from "./domains.js";
+import { webGetRandomValues } from "./crypto.js";
 
 /** Gate → Peer: start of auth exchange. */
 export interface LarChallengeMsg {
@@ -127,6 +133,9 @@ export interface LarAuthMsg {
   type:        "lar:auth";
   contactCard: string; // Keyhive ContactCard.toJson() — self-certifying identity packet
   nonce:       string; // echo of gate nonce
+  /** The leaf's OWN fresh nonce (32-byte hex). The gate's signed verdict commits to it, so the leaf alone
+   *  decides the verdict's freshness — a gate-chosen nonce could be one a recorded verdict already answered. */
+  leafNonce:   string;
   /**
    * Ed25519 signature (hex) over authProofBytes({nonce, gatePubKey, peerPubKey, aud, ts})
    * — the V3 proof-of-possession (project_verification_placement). Alpha posture still
@@ -157,9 +166,11 @@ export interface LarAuthMsg {
   presentedAdmit?: PresentedAdmit;
 }
 
-/** Gate → Peer: auth passed, Automerge join may proceed. */
+/** Gate → Peer: auth passed, Automerge join may proceed — signed by the gate's own key (`authOkBytes`). */
 export interface LarAuthOkMsg {
   type:    "lar:auth-ok";
+  /** The gate key's Ed25519 signature (hex) over `authOkBytes` for this exchange. */
+  sig:     string;
 }
 
 /** Gate → Peer: auth failed, ws.close(4003) follows immediately. */
@@ -168,11 +179,24 @@ export interface LarAuthDeniedMsg {
   reason:  string;
 }
 
+/**
+ * Peer ↔ Gate, AFTER a passing verdict: one message of the authenticated session, carried as a JSON text
+ * frame on the SAME socket beside Automerge's binary frames. `kind` names the protocol riding the session;
+ * each side routes by it and reads `body` as untrusted input. Only a socket both sides authenticated carries
+ * one — the gate reads none before its verdict, and the leaf sends none before it verified the gate's.
+ */
+export interface LarSessionMsg {
+  type: "lar:session";
+  kind: string;
+  body: unknown;
+}
+
 export type LarAuthWireMsg =
   | LarChallengeMsg
   | LarAuthMsg
   | LarAuthOkMsg
-  | LarAuthDeniedMsg;
+  | LarAuthDeniedMsg
+  | LarSessionMsg;
 
 // ── Type guards ───────────────────────────────────────────────────────────────
 
@@ -189,7 +213,9 @@ export function isLarAuthMsg(v: unknown): v is LarAuthMsg {
     typeof v === "object" && v !== null &&
     (v as Record<string, unknown>)["type"] === "lar:auth" &&
     typeof (v as Record<string, unknown>)["contactCard"] === "string" &&
-    typeof (v as Record<string, unknown>)["nonce"] === "string"
+    typeof (v as Record<string, unknown>)["nonce"] === "string" &&
+    typeof (v as Record<string, unknown>)["leafNonce"] === "string" &&
+    LEAF_NONCE_RE.test((v as Record<string, unknown>)["leafNonce"] as string)
   );
   if (!ok) return false;
   const x = v as Record<string, unknown>;
@@ -207,7 +233,18 @@ export function isLarAuthMsg(v: unknown): v is LarAuthMsg {
 export function isLarAuthOkMsg(v: unknown): v is LarAuthOkMsg {
   return (
     typeof v === "object" && v !== null &&
-    (v as Record<string, unknown>)["type"] === "lar:auth-ok"
+    (v as Record<string, unknown>)["type"] === "lar:auth-ok" &&
+    typeof (v as Record<string, unknown>)["sig"] === "string"
+  );
+}
+
+export function isLarSessionMsg(v: unknown): v is LarSessionMsg {
+  return (
+    typeof v === "object" && v !== null &&
+    (v as Record<string, unknown>)["type"] === "lar:session" &&
+    typeof (v as Record<string, unknown>)["kind"] === "string" &&
+    ((v as Record<string, unknown>)["kind"] as string).length > 0 &&
+    "body" in (v as Record<string, unknown>)
   );
 }
 
@@ -231,16 +268,72 @@ export function mkLarAuth(
   contactCard: string,
   nonce: string,
   sig: string,
+  leafNonce: string,
 ): LarAuthMsg {
-  return { type: "lar:auth", contactCard, nonce, sig };
+  return { type: "lar:auth", contactCard, nonce, leafNonce, sig };
 }
 
-export function mkLarAuthOk(): LarAuthOkMsg {
-  return { type: "lar:auth-ok" };
+export function mkLarAuthOk(sig: string): LarAuthOkMsg {
+  return { type: "lar:auth-ok", sig };
+}
+
+/** A leaf nonce: 32 fresh bytes, lowercase hex. */
+const LEAF_NONCE_RE = /^[0-9a-f]{64}$/;
+
+/** Mint the leaf's own fresh nonce for one handshake. */
+export function mintLeafNonce(): string {
+  return hex(webGetRandomValues(new Uint8Array(32)));
+}
+
+// ── The gate's signed verdict ─────────────────────────────────────────────────────────────────────
+
+/**
+ * authOkBytes — the canonical bytes a GATE signs with its own gate key to say "this leaf passed": the
+ * gate's challenge `nonce`, the leaf's own `leafNonce`, the gate key, the leaf's key and the audience, under
+ * `AUTH_OK_DOMAIN`. The leaf's nonce carries the freshness (the leaf chose it, so no recorded verdict
+ * answers it); the gate key binds the verdict to the gate the leaf pinned; the leaf key and audience bind it
+ * to this leaf's ask. No clock rides it. The gate key signs it, never a root.
+ */
+export function authOkBytes(parts: {
+  nonce:      string;
+  leafNonce:  string;
+  gatePubKey: string;
+  peerPubKey: string;
+  aud:        string;
+}): Uint8Array {
+  return canonicalJsonBytes({
+    domain:     AUTH_OK_DOMAIN,
+    nonce:      parts.nonce,
+    leafNonce:  parts.leafNonce.toLowerCase(),
+    gatePubKey: parts.gatePubKey.toLowerCase(),
+    peerPubKey: parts.peerPubKey.toLowerCase(),
+    aud:        parts.aud,
+  });
+}
+
+/**
+ * verifyAuthOk — did the gate the leaf PINNED sign this verdict for this exchange? Pure; never throws.
+ * `gatePubKey` is the leaf's out-of-band pin, never a key the wire named; every other value is one the leaf
+ * itself sent or received on this socket.
+ */
+export async function verifyAuthOk(parts: {
+  nonce:      string;
+  leafNonce:  string;
+  gatePubKey: string;
+  peerPubKey: string;
+  aud:        string;
+  sig:        string;
+}): Promise<boolean> {
+  if (!/^[0-9a-fA-F]{128}$/.test(parts.sig) || !/^[0-9a-fA-F]{64}$/.test(parts.gatePubKey)) return false;
+  return ed25519VerifyHex(parts.sig, authOkBytes(parts), parts.gatePubKey);
 }
 
 export function mkLarAuthDenied(reason: string): LarAuthDeniedMsg {
   return { type: "lar:auth-denied", reason };
+}
+
+export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
+  return { type: "lar:session", kind, body };
 }
 
 // ── Proof-of-possession (V3 — challenge-response) ───────────────────────────
@@ -492,6 +585,8 @@ export async function buildAuthResponse(parts: {
   peerPubKey:  string;
   aud:         string;
   ts:          string;
+  /** The leaf's own fresh nonce the gate's signed verdict must commit to. */
+  leafNonce:   string;
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge ridden alongside the proof. */
   edge?:       DeviceDelegationTiddler;
@@ -513,6 +608,7 @@ export async function buildAuthResponse(parts: {
     type:        "lar:auth",
     contactCard: parts.contactCard,
     nonce:       parts.nonce,
+    leafNonce:   parts.leafNonce,
     sig,
     ts:          parts.ts,
     ...(parts.edge ? { edge: parts.edge } : {}),
@@ -559,8 +655,12 @@ export interface PeerHandshake {
  * await the verdict. Node, browser, and the CLI all compose this one flow with
  * their own transport + the shared keyhive identity. Resolves the auth verdict;
  * the caller proceeds to Automerge sync only on `{ ok: true }`.
+ *
+ * A passing verdict counts only when the PINNED gate key signed it over this leaf's own fresh nonce
+ * (`verifyAuthOk`). An unsigned or wrongly signed `lar:auth-ok` reads as a refusal: whoever answered did not
+ * prove it holds the gate key, so nothing past this point trusts it.
  */
-export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean; reason?: string }> {
+export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: true; nonce: string } | { ok: false; reason?: string }> {
   const challenge = await h.recv();
   if (!isLarChallengeMsg(challenge)) return { ok: false, reason: "expected lar:challenge" };
   // The leaf proof binds the presented admit to THIS challenge, THIS gate and THIS vessel key.
@@ -573,12 +673,14 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean;
         }),
       }
     : h.presentedAdmit;
+  const leafNonce = mintLeafNonce();
   const auth = await buildAuthResponse({
     contactCard: h.contactCard,
     nonce:       challenge.nonce,
     gatePubKey:  h.gatePubKey,
     peerPubKey:  h.peerPubKey,
     aud:         h.aud,
+    leafNonce,
     ts:          (h.now ?? (() => new Date().toISOString()))(),
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
@@ -586,7 +688,12 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean;
   });
   h.send(auth);
   const verdict = await h.recv();
-  if (isLarAuthOkMsg(verdict))     return { ok: true };
+  if (isLarAuthOkMsg(verdict)) {
+    const proven = await verifyAuthOk({
+      nonce: challenge.nonce, leafNonce, gatePubKey: h.gatePubKey, peerPubKey: h.peerPubKey, aud: h.aud, sig: verdict.sig,
+    });
+    return proven ? { ok: true, nonce: challenge.nonce } : { ok: false, reason: "the verdict carries no signature of the pinned gate key" };
+  }
   if (isLarAuthDeniedMsg(verdict)) return { ok: false, reason: verdict.reason };
   return { ok: false, reason: "unexpected message after lar:auth" };
 }

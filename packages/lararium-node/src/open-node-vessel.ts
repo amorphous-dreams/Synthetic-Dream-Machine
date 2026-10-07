@@ -71,13 +71,13 @@ import type {
   VesselWikiSlot, DaemonVmCore, VesselDaemonVm, VesselOrchestration,
   VerbContribution, MempalaceProvider, FormPalaceProvider, DaemonVerbProvider, TelemetryProvider, RecallClient,
 } from "@lararium/tw5";
-import { makeSelfSlotPersonaGroupRing } from "./self-slot-persona-ring.js";
 import {
   loadOrMaterializeOracle,
   reconcileWellKnownTiddlers, mintLaresIfAbsent, mintLarariumIfAbsent,
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { repoRoot }                       from "@lararium/mesh/node";
+import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir }               from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
@@ -435,11 +435,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         const cls = authGate.getClassForSocket(socket as Parameters<typeof authGate.getClassForSocket>[0]);
         if (cls) peerClassMap.set(peerId, cls);
         // THE LEAF SEAT. A presented admit binds to the values this gate issued and proved for THIS socket —
-        // never to anything the peer echoed. No gate key armed, no proved identifier, or no admit: `null`.
+        // never to anything the peer echoed. No proved identifier, or no admit: `null`.
         const gateSocket = socket as Parameters<typeof authGate.getPresentationForSocket>[0];
         const presentedAdmit = authGate.getPresentationForSocket(gateSocket)?.presentedAdmit;
         const challenge = authGate.getChallengeForSocket(gateSocket);
-        const binding: SocketBinding | null = presentedAdmit && challenge?.gatePubKey && identHex
+        const binding: SocketBinding | null = presentedAdmit && challenge && identHex
           ? { presentedAdmit, nonce: challenge.nonce, gatePubKey: challenge.gatePubKey, vesselKey: identHex.slice(-64).toLowerCase() }
           : null;
         peerBindings.set(peerId, binding);
@@ -1511,12 +1511,13 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // rather than a widening the vessel cannot walk clocklessly.
     if (personaGroupDocIdHex && deviceEdge?.personaRootDid && selfSlotFedGate && personaKelPrefix && personaKelChain) {
       const base = selfSlotFedGate;
-      selfSlotFedGate = (await makeSelfSlotPersonaGroupRing({
+      selfSlotFedGate = (await assemblePersonaGroupRing({
         catalog: makeCatalogAccessor(repo, catalogHandle.url),
         personaGroupDocIdHex,
         personaRootDid: deviceEdge.personaRootDid,
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
-        provenIdentifierOf: (peerId) => peerIdentifierMap.get(peerId),
+        // The node's proof source: the identifier this vessel's inbound DaemonAuthGate proved.
+        provenKeyOf: (peerId) => peerIdentifierMap.get(peerId),
       })).compose(base);
     }
 
@@ -2133,8 +2134,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     residency.startSweeper();
     assembly.composite.attachResidency(residency);
 
-    // Inbound WS gate — the daemon island's in-worker keyhive answers each peer.
-    authGate.arm(daemonVm.authShore, DAEMON_BAG_ID, vesselIdentity.verifyingKey);
+    // Inbound WS gate — the daemon island's in-worker keyhive answers each peer, and the vessel key (the gate
+    // key, never a root) signs every verdict back to the leaf.
+    authGate.arm(daemonVm.authShore, DAEMON_BAG_ID, {
+      pubKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+    });
 
     // Keep oracle tiddlers current — self, ka, ba, social plane, daemon.
     reconcileWellKnownTiddlers(
