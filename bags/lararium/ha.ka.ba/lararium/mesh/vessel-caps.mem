@@ -29,12 +29,14 @@ The mesh untangles into ''five distinct capabilities in two families'' — the m
 | family | cap | verb | what it does | already enacted as |
 |---|---|---|---|---|
 | ''CARRIAGE'' | ''rhizome'' | connect / spread | persistent lateral backbone; forwards sealed bytes | the ''relay / leyline'' |
-| | ''stolon'' | propagate-at-distance | runs out, drops a clone, then withers | the ''device-admit / invite'' ceremony |
+| | ''stolon'' | propagate-at-distance | runs out, drops a clone, then withers | the ''device-admit / invite'' ceremony — it carries a house's joining pointers |
 | ''VESSEL'' | ''tuber'' | store + seed | sovereign state store + genesis-buds | the ''lararium'' |
-| | ''bulb'' | seed-inside | a snapshot carrying its own next generation | the ''`cacheable` boot-seed / genesis'' |
-| | ''corm'' | renew-by-self-replacement | spent each cycle, a fresh one forms on the husk | the ''epoch-as-lease'' |
+| | ''bulb'' | seed-inside | a snapshot carrying its own next generation | the ''coal'': the genesis seed and the engine/plugin CAS blobs it names |
+| | ''corm'' | renew-by-self-replacement | spent each cycle, a fresh one forms on the husk | the ''epoch-as-lease'' — a charter's epoch pin, a herm's own freshness |
 
 The two families cross the ''AUTHORITY ⊥ FLOW'' master cut: VESSEL caps carry sovereignty and state (a //severable-but-viable// node), CARRIAGE caps carry connection and flow (the line between nodes). Biology witnesses both in one organism — a clonal plant's ramets stay severable-yet-viable while resource flows source→sink along the rhizome.
+
+''Three organs, never one manifest.'' The bulb carries the coal and nothing else: content-addressed, re-derivable, so Nexuses MAY share one bulb, and a shared bulb names no Nexus. A charter's epoch pin belongs to the corm, which renews by replacement; pinned in the bulb, it would stale the coal at every roll. A house's joining pointers belong to the stolon, which withers after one use; carried in the bulb, they would hand every kindler one house's door.
 
 ''Do not over-purify.'' The rhizome //itself// caches en-route; a carriage cap holding some replicated state breaks no law (botanically, the connector stores too). The cut names the ''primary verb'', never an absolute exclusion.
 
@@ -107,7 +109,7 @@ The carriage-demand stimulus reads off `r` — the carriage-standing coordinate 
 The smallest composition that still meshes — ''the Hermai'', the crossroads-markers. A Herm runs the ''same code keel as a full Lararium'' — the core ''@daemon wiki-worker'' plus its ''own mesh-palace'' — and thins only its `#has`-stack: it furnishes none of the operator-content wikis (no hot/cold user store, no sovereign `@catalog`). ''One codebase, two `#has`-stacks.'' The Herm differs from a fat node by ''composition over the shared keel'', never by a separate minimal codepath — so a Herm reads as a named point in cap-composition space (#/the-vessel-is-its-caps), not a stripped-down process. Its stack:
 
 * `#has {rhizome}` — it carries sealed mana along the leylines (CARRIAGE).
-* `#has {tuber}` scoped to the ''immune core'' — its own `@daemon` (the autonomy organ) and mesh-palace (the FLOW-map it routes on), carrying the ''bulb'' (the engine-blob / boot-seed) so it can seed a cold hearth.
+* `#has {tuber}` scoped to the ''immune core'' — its own `@daemon` (the autonomy organ) and mesh-palace (the FLOW-map it routes on), carrying the ''bulb'' (the coal: the genesis seed and the blobs it names, never an epoch pin or a joining pointer) so it can seed a cold hearth.
 * `#has {read}` scoped to the ''public floor'' — `@oracle` (base-ontology, engine-blob CIDs) and its own mesh-palace.
 * `#has-NOT` the ''operator-content wikis'' — no hot/cold user store; `#has-NOT {read}` on another operator's sovereign ''`@catalog`'', the sealed hearth stays a closed door.
 
@@ -195,6 +197,6 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MsQM2Yyt0Z5cuJkNPgmM0jckJuvMM5brIINVqnCBL68
+<<^ code="&#x0003;">>ni:///sha-256;XWVnFfcHRg5JxD8XLULzTV8q7GthV0_wGV0m-QSLF24
 
 <<^ code="&#x0004;" -> to="?">>
