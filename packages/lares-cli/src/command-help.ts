@@ -266,7 +266,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
       "--to <mem|md|html|tid|json>   (project) the render target",
       "--out <path>       (project) the pair's directory (--to md) or the rendered file; stdout otherwise",
-      "--title-base <uri> (project --to md) mount the pair under a shelf address",
       "--check            (project --to md, over a <file.md|dir>) prove currency by re-projection alone; " +
         "writes nothing, exits 1 naming each pair whose source moved or vanished, or whose bytes drifted",
     ],
