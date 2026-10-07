@@ -128,7 +128,8 @@ if (Test-Path -LiteralPath $cfgPath) {
   foreach ($line in $lines) {
     # ReadAllLines honors a UTF-16 byte-order mark; without one every letter grows a NUL, every key reads unset, and ours would be appended to the wreck.
     if ($line -match "`0") { throw "$cfgPath holds NUL bytes (UTF-16 without a byte-order mark?); re-save it as UTF-8 and re-run" }
-    if ($line -match '^\s*\[(.+?)\]\s*$') { $cur = $Matches[1]; if (-not $sections.Contains($cur)) { $sections[$cur] = @(); $order += $cur } }
+    # WSL's own grammar (configfile.cpp): a header is [name] plus optional blanks and an optional #comment; [ name ] opens nothing.
+    if ($line -match '^\s*\[([A-Za-z][A-Za-z0-9]*)\]\s*(#.*)?$') { $cur = $Matches[1]; if (-not $sections.Contains($cur)) { $sections[$cur] = @(); $order += $cur } }
     elseif ($cur) { $sections[$cur] += $line }
     else { $preamble += $line }
   }

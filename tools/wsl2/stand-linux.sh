@@ -82,10 +82,12 @@ step '2 · /etc/wsl.conf — systemd on, inherited Windows PATH off'
 WSLCONF=/etc/wsl.conf
 WSLCONF_CHANGED=0
 # WSL reads /etc/wsl.conf alone (no drop-in directory), so the stand edits the shared file in place under
-# one grammar for the read and the write: section and key match case-insensitively; any line opening with
-# `[` ends the section (`[boot] # note` and `[ boot ]` open no section); lines split on LF with an optional
-# CR before it; a leading BOM reads as nothing and does not come back; bytes outside UTF-8 round-trip
-# untouched. `read` prints every value the key carries and answers 0 only when all of them equal the
+# one grammar for the read and the write, matched to WSL's own parser (src/shared/configfile/configfile.cpp):
+# section and key match case-insensitively; a header is `[name]` plus optional blanks and an optional
+# `#comment` (`[boot] # note` opens boot; `[ boot ]` opens nothing, as in WSL); any line opening with `[`
+# ends the section; lines split on LF with an optional CR before it; bytes outside UTF-8 round-trip
+# untouched. WSL's parser holds no BOM handling and reads the first line invalid under one, so a leading
+# BOM reads as DRIFT and the write drops it. `read` prints every value the key carries and answers 0 only when all of them equal the
 # intent: a stale twin under a satisfied first line could win at WSL load. `write` replaces every matching
 # key line or inserts one after the section's last non-blank line; every other line, comment included,
 # stays. A symlink is followed so the target changes and the link stays; the temp file takes the original's
@@ -100,9 +102,10 @@ try:
 except FileNotFoundError:
     lines = []
 if lines and lines[-1] == "": lines.pop()
-if lines: lines[0] = lines[0].lstrip("﻿")
+bom = bool(lines) and lines[0].startswith("﻿")
+if bom: lines[0] = lines[0].lstrip("﻿")
 opener = re.compile(r"^[ \t]*\[")
-head = re.compile(r"^[ \t]*\[" + re.escape(sec) + r"\][ \t]*$", re.I)
+head = re.compile(r"^[ \t]*\[" + re.escape(sec) + r"\][ \t]*(#.*)?$", re.I)
 kv = re.compile(r"^[ \t]*" + re.escape(key) + r"[ \t]*=", re.I)
 in_s = False; hits = []; first = -1; last = -1
 for i, line in enumerate(lines):
@@ -115,8 +118,8 @@ for i, line in enumerate(lines):
         if line.strip(): last = i
 if mode == "read":
     haves = [lines[i].split("=", 1)[1].strip(" \t") for i in hits]
-    print(", ".join(haves) or "unset")
-    sys.exit(0 if haves and all(h == val for h in haves) else 1)
+    print((", ".join(haves) or "unset") + (" (BOM; WSL cannot read this file)" if bom else ""))
+    sys.exit(0 if haves and all(h == val for h in haves) and not bom else 1)
 new = f"{key}={val}"
 if hits:
     for i in hits: lines[i] = new
