@@ -42,12 +42,30 @@ let lar: LarInstance;
 let loadOk = false;
 let loadCount = 0;
 
+/** The projector's atomic-write staging name (`disk-projector.ts`): `<file>.lar-tmp-<pid>`, renamed into place. */
+const PROJECTOR_TMP = /\.lar-tmp-\d+$/;
+
+/**
+ * Every projected file under `dir`, read WHILE the projector writes. The projector stages each file
+ * under a `.lar-tmp-` name and renames it into place, so between the listing and the stat an entry can
+ * vanish: a vanished entry is a rename, never a fault, and a staging name is never a projected file.
+ */
 function walkFiles(dir: string): string[] {
-  if (!existsSync(dir)) return [];
+  let names: string[];
+  try { names = readdirSync(dir); } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw err;
+  }
   const out: string[] = [];
-  for (const name of readdirSync(dir)) {
+  for (const name of names) {
+    if (PROJECTOR_TMP.test(name)) continue;
     const p = join(dir, name);
-    if (statSync(p).isDirectory()) out.push(...walkFiles(p));
+    let isDir: boolean;
+    try { isDir = statSync(p).isDirectory(); } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") continue;
+      throw err;
+    }
+    if (isDir) out.push(...walkFiles(p));
     else out.push(p);
   }
   return out;
