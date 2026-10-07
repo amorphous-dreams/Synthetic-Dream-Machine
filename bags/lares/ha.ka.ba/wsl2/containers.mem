@@ -90,9 +90,30 @@ Any one of these moves `wslc` to the primary path and the in-distro engine to a 
 # A Docker-API endpoint ships officially (#40976), so `docker compose` and tooling target the wslc session.
 # `wslc` runs from inside the distro with `\\wsl.localhost` paths (#41105), which the lararium's bind mounts need.
 
-Separately, the #41492 fix shipped in 3.0.1 (PR #41512), so rootless Docker is open to a re-read of the rootful ruling, which would retire the root-equivalent `docker` group; this carrier has not re-read it.
+Separately, the #41492 fix shipped in 3.0.1 (PR #41512). ''Re-read 2026-10-06: rootful stays the household default; rootless stands as a documented variant, below.''
 
 When the tripwire turns: `stand-linux.sh` step 5b reads for `wslc` first and reports the in-distro engine as the fallback; `witness.sh` gains a `wslc compose` row; this carrier re-trues its ruling line and date.
+
+<<~/ahu>>
+
+<<~ ahu #/rootless-variant>>
+
+!! Rootless — the operator-chosen variant
+
+WSL 3.0.1 restored rootless Docker (PR #41512 gives each distro its own cgroup namespace, so dockerd's hard-coded `user.slice` path resolves again). The maintainer's test line names no distro or packaging, and no independent run on the seven-day-old stable exists yet; grade medium. What the variant costs and buys the lararium's stack:
+
+|! item |! rootful (default) |! rootless |
+| exposure | the `docker` group reads as root without a password prompt for every agent sharing the login user | a user-scoped daemon; the group stops mattering |
+| bind-mounted repo | container writes land root-owned in `git status` | writes land as the login user — the one daily gain |
+| install | one archive line: `docker.io docker-compose-v2` | the archive ships no rootless helper; Docker's repo, `docker-ce-rootless-extras uidmap`, then `dockerd-rootless-setuptool.sh install`, then `sudo loginctl enable-linger "$USER"` |
+| moving parts | `/var/run/docker.sock` | socket under `$XDG_RUNTIME_DIR`; `DOCKER_HOST` in every hook shell; a user service that dies at logout without linger |
+| the stack's needs | — | ports 18090–18094 only, bridge networks, no `cap_add`: nothing in the compose files breaks |
+| storage | overlay2 | overlay2 on kernels ≥ 5.11 — no fuse penalty on 6.6 / 6.18 |
+| limits | all controllers | `memory` and `pids` delegated by default; `--cpus` needs the operator to delegate `cpu` |
+
+''Tripwire for this variant:'' the first independent "rootless works on 3.0.1" report on microsoft/WSL #41492 or a successor, plus a bind-mount run against the lararium's own compose. When it turns, `stand-linux.sh` step 5b reads `${DOCKER_HOST#unix://}` → `$XDG_RUNTIME_DIR/docker.sock` → `/var/run/docker.sock` in that order and its `needs-you` lines name the rootless install; the witness gains a socket-owner row; the runbook's `usermod -aG docker` line leaves.
+
+Podman's own machine distro still reproduces #41492 because it starts systemd in a namespace without `systemd=true`; that fault and its fix sit on Podman's side.
 
 <<~/ahu>>
 
@@ -108,6 +129,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cKSAwr7Yp7F8jOAEXOidj2BfYVsJWRiGmAAu9zA83NQ
+<<^ code="&#x0003;">>ni:///sha-256;L2RqEEIY3ZY64pTbnOOZLDZ9nQ_u5W3P_MM1gk97xJ4
 
 <<^ code="&#x0004;" -> to="?">>

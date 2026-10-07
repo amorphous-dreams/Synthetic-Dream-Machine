@@ -63,7 +63,7 @@ Complete the distro's first-launch user creation before running the Linux script
 
 !!! Containers: Docker Engine in the distro
 
-The lararium kit runs in a container behind this WSL2 instance. Ubuntu's own `docker.io` package inside the distro supplies that, runs on Windows Home, costs nothing, and needs no Windows-side program; `systemd=true` (section 4) supervises its daemon, so install it after the first Linux stand and its `wsl --shutdown`. The Linux stand reports the exact install line as `needs-you`. The engine runs rootful by ruling: the 2.9.8–2.9.12 pre-releases broke rootless Docker and Podman (microsoft/WSL #41492; 3.0.1 carries the cgroup-namespace fix, PR #41512, while Podman's own distro still reproduces), so the `docker` group on this host reads root-equivalent; say so to whoever joins it.
+The lararium kit runs in a container behind this WSL2 instance. Ubuntu's own `docker.io` package inside the distro supplies that, runs on Windows Home, costs nothing, and needs no Windows-side program; `systemd=true` (section 4) supervises its daemon, so install it after the first Linux stand and its `wsl --shutdown`. The Linux stand reports the exact install line as `needs-you`. The engine runs rootful by ruling (re-read 2026-10-06 against WSL 3.0.1, where rootless works again): on a one-account PC whose login user already holds `sudo`, the `docker` group adds nothing above root — it removes the password prompt. Every agent process shares that login user, so rootful reads as root without a keystroke for anything that reaches the socket; a household that grants its agents `sudo` reach accepts this, and says so to whoever joins the group. The rootless variant, its costs and its tripwire live in [[lar:///ha.ka.ba/wsl2/containers]].
 
 Microsoft's own WSL containers (`wslc`, GA in WSL 3.0.1) run single containers on Home with nothing to install, but carry no compose and no Docker socket yet, so the stack stays on the in-distro engine. Fallbacks, the Docker Desktop nuance, and the tripwire that moves the stack onto `wslc` live in [[lar:///ha.ka.ba/wsl2/containers]]. Docker Desktop's own `docker-desktop` distributions, when present, are expected and never setup-script targets.
 
@@ -228,5 +228,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OOAmKTqKmaZuEkblHvV0qB00iXtdXHKsClDNkNa5LVs
+<<^ code="&#x0003;">>ni:///sha-256;hIBlmLXypmLEYl7cgsQ8wcBZFvRSJR3aZCC8sut0O2I
 <<^ code="&#x0004;" -> to="?">>
