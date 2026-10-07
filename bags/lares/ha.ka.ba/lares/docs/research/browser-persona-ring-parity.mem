@@ -1,0 +1,123 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/research/browser-persona-ring-parity.mem"
+l-space   = "lares"
+mana      = 15
+manao     = 15
+manaoio   = 14
+role      = "local source scout and red-first capability-parity contract for Node and Browser PersonaGroup identity rings"
+status    = "scouted — no package, test, generated artifact, or handoff changed"
+tags      = ["research", "vessel-parity", "persona-ring", "identity-as-relation", "causal-island"]
+title     = "lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/research/browser-persona-ring-parity"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/scope-and-question>>
+
+! Browser PersonaGroup ring — local capability scout
+
+This report asks what equivalent cross-operator PersonaGroup access means for a Browser vessel, which existing seams can hold it, and what remains undecided. It records source evidence only. No implementation or tests changed.
+
+The parity target is the **outer PersonaGroup identity ring** that composes onto a vessel's federation gate. It is not the separately named `IdentityRing` inner barrier in `federation-gate.ts`, which narrows per-document access through an `IdentitySlot`. Treating these two rings as one would wire the wrong authority question.
+
+!! Node composition already standing
+
+`packages/lararium-node/src/open-node-vessel.ts` composes `makeSelfSlotPersonaGroupRing(...).compose(base)` into the live `selfSlotFedGate` when a face, pinned persona root, and local persona-KEL chain are present. The ring widens that base only for the face's governed planes and verified grant holders; the base's existing allows remain intact.
+
+`packages/lararium-node/src/self-slot-persona-ring.ts` assembles the ring from four existing readings:
+
+* the face's PersonaGroup, Circles, Identities, and Sessions document IDs, resolved through the local catalog;
+* the key this Node vessel's `DaemonAuthGate` already verified for that peer;
+* the face's `face-join-grant/v1` records, read from that face's PersonaGroup plane;
+* the face's pinned persona root and locally held persona-KEL chain, supplied to `verifyFaceGrantRecord`.
+
+The own in-process hand is preserved. A peer with no verified key, a grant naming another face or vessel key, a torn grant, or no usable founder KEL cannot widen access. The factory supplies neither `now` nor `expectedEpoch`; its authorization path is the pinned identity and KEL event order, not a wall-clock freshness verdict.
+
+The lower-level `makePersonaGroupIdentityRing` in Mesh stays platform-blind. It accepts injected `governs`, own-hand, proven-key, record-reading, and grant-verification functions. It does not import Keyhive or choose the record's trust root itself.
+
+!! Browser surfaces already available
+
+`packages/lararium-browser/src/open-browser-vessel.ts` creates the IndexedDB-backed Repo and places `browserShareConfig(relayPeers, fedGate, identityRing)` on its share configuration. The current outer gate is armed for the cross-operator relay case. `relayPeers` classifies peers supplied by the outbound `LarWSClientAdapter` events. The Browser code sets the inner `identityRing` to `null`.
+
+That `identityRing` is the `IdentityRing` from Mesh: `{ slot, bagUrlForDoc, ability }`. It asks a per-document Keyhive identity slot to narrow the outer verdict. It is not a Browser implementation of `PersonaGroupIdentityRing` and cannot widen access to face-owned planes.
+
+The Browser opener already resolves the worn face's PersonaGroup ID, pinned persona-KEL prefix, and a local persona-KEL chain while standing its Binding Gate. It uses `makeBrowserIdbPersonaVault` for worn persona state and has a catalog handle in the main Repo. The Browser also has a V3 leaf transport, a locally held vessel signing key, and an out-of-band configured relay gate key.
+
+Those are candidate inputs, not a completed capability ring. The source does not currently compose `makePersonaGroupIdentityRing` on the Browser path. Its comments also identify that the daemon Keyhive provider and document-to-bag map live in the isolated daemon worker, while the Browser main-thread `shareConfig` has no current bridge that supplies this map to the inner `IdentityRing`.
+
+!! Transport direction is the central unresolved relation
+
+`LarWSClientAdapter` opens a WebSocket to a relay. It sends the Browser's ContactCard, V3 proof, optional device edge, and optional presented admit. The proof binds the Browser key to the expected gate key and the dialed audience. The server sends `lar:auth-ok` or refusal; the inspected client handshake does not receive a server ContactCard or a reciprocal server proof of possession.
+
+The Node `DaemonAuthGate` authenticates an incoming socket, retains the proved peer identifier, and lets Node's share policy associate that evidence with the Automerge peer. The Browser path inspected here instead tags the relay peer based on its client adapter and does not expose an equivalent verified remote vessel key. A configured gate key is a pin used by the Browser's proof; by itself it is not a reciprocal proof that the remote holder possesses that key.
+
+Therefore, the repository evidence does not yet establish that the Browser currently admits arbitrary inbound peers. It establishes a Browser leaf that dials a Node relay and a Browser share-policy hook that can gate documents for relay peers. Before implementing parity, the crew must name the relation being protected:
+
+* If the Browser is only a dialing leaf, the remote Node's admission of the Browser is the live incoming authorization decision. Browser-side PersonaGroup widening may not be needed for that direction; an equivalent receiver capability may instead belong at the Node.
+* If Browser must authorize a remote peer to receive Browser-held face planes, the handshake needs a trusted reciprocal identity/proof surface (or another explicit verified relation) that yields the remote peer's proven vessel key. A URL, Automerge peer ID, ContactCard assertion, or configured gate-key pin alone must not be silently promoted into that proof.
+* If Browser gains an inbound or multi-peer transport, its own gate must bind each authenticated transport peer to the exact Automerge peer identity before the ring can use the proven key.
+
+The direction is a product/capability decision. Do not add an inbound server merely to make a parity comparison symmetrical.
+
+!! Red-first contract, once the relation is named
+
+For any Browser path that does receive a peer and is authorized to serve the worn face's planes, the proposed contract is:
+
+1. **Subject evidence:** use the vessel key proved by this Browser vessel's own authenticated peer gate for that exact peer. No key or mismatched peer association refuses.
+2. **Face scope:** resolve only the worn face's four PersonaGroup planes through that vessel's own catalog. A grant for another face never widens this face.
+3. **Grant evidence:** read the face's local `face-join-grant/v1` records and verify them with the shared Keyhive verifier against this face's pinned root, group, joinee vessel key, and locally held persona-KEL chain.
+4. **Composition:** preserve own in-process island peers and all existing base-gate allows. Add only the face-grant path over its four governed planes. No other document receives an allow from this ring.
+5. **Knowledge boundary:** an absent plane, record, or required KEL segment on this replica withholds the grant path. Do not search a global source, substitute a wall-clock result, or infer a mesh-wide current state.
+6. **Failure vocabulary:** distinguish no verified peer key, no matching grant, wrong face, malformed/torn record, missing or torn KEL, ungoverned document, and unavailable local evidence. These all refuse the widening while preserving any independent base-gate allow.
+
+!! Proposed red matrix
+
+First establish the Browser transport/receiver role with a discriminating test. If that role stands, tests should exercise the real composition seam, not just call a pure ring predicate:
+
+1. Positive control: a reciprocal, authenticated peer key named by a valid grant reaches only the worn face's four planes.
+2. Stranger: a validly authenticated key with no matching grant gains no face-plane access.
+3. Identity binding: a valid grant for key A does not admit peer B; a transport peer ID cannot be swapped onto A's proof.
+4. Face binding: a valid grant for another PersonaGroup does not widen the worn face.
+5. KEL continuity: absent, torn, wrong-prefix, wrong-root, or rotated-away signer evidence withholds the grant path.
+6. Record integrity: malformed, signature-invalid, or joinee-mismatched records withhold the grant path.
+7. Scope: an ungoverned document stays at the base verdict; the ring cannot widen it.
+8. Composition: an existing base allow survives the ring, and own in-process peers keep their established behavior.
+9. Local knowledge: a grant or KEL event present on one replica but absent on another does not make the latter claim a shared present; local absence withholds only the ring's widening.
+10. Transport floor: a gate key pin without a reciprocal remote proof cannot be used as `provenVesselKey`.
+
+Before a product test, the transport-role test should make one deliberate weakening red: remove the reciprocal proof-to-peer binding while keeping a plausible peer ID or gate pin, and show the grant path refuses. A positive control must then show the same named peer succeeds with the bound proof and valid grant.
+
+!! Remaining decision seams
+
+* Does a Browser vessel serve face-owned documents to cross-operator peers, or does it only dial a Node vessel that makes the receiver-side decision?
+* Which transport can provide reciprocal authentication for a Browser-served document, and how does its authenticated identity bind to the Automerge `PeerId` used by `shareConfig`?
+* Are grant records and the required persona-KEL chain readable at the Browser main-thread share-policy seam, or must a narrowly typed worker request carry a verdict? If a bridge is used, it must not turn an untrusted caller-selected bag URL into the authority scope.
+* Which exact base-gate policy applies when remote identity proof is unavailable? The ring can withhold its own widening, but cannot repair a base gate that already permits the relation.
+* What are the intended behaviors for concurrent grant/revocation heads and partial replica knowledge? No global latest answer is inferred here.
+
+No code deletion, browser import, inbound transport, grant format change, or enforcement rule follows from this scout alone. The next red-first cut depends on the operator-visible transport role above.
+
+!! Source trail
+
+* `packages/lararium-node/src/open-node-vessel.ts` — live Node composition of the outer ring.
+* `packages/lararium-node/src/self-slot-persona-ring.ts` — Node assembly and evidence sources.
+* `packages/lararium-node/src/daemon-auth-gate.ts` — authenticated socket-to-identifier evidence.
+* `packages/lararium-mesh/src/persona-group-ring.ts` — platform-blind outer ring contract.
+* `packages/lararium-mesh/src/federation-gate.ts` — distinction between outer PersonaGroup ring and inner `IdentityRing`.
+* `packages/lararium-browser/src/open-browser-vessel.ts` — Browser repo, share gate, KEL reads, and outbound transport.
+* `packages/lararium-mesh/src/lar-ws-client-adapter.ts` and `auth-wire.ts` — Browser-to-gate handshake direction and proof contents.
+* `packages/lararium-keyhive/src/face-grant-record.ts` — shared grant verification.
+* `bags/lares/ha.ka.ba/lares/docs/codex-crew-emergency-handoff.mem#/vessel-parity` — active handoff boundary.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;tP7i7-hB8CUNPXsxEJe_bZ2KPv9mjU_6ZZoL9jEPx6o
+<<^ code="&#x0004;" -> to="?">>
