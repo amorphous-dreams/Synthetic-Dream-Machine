@@ -50,14 +50,14 @@ Open a terminal ''as Administrator'' for the first line only: right-click the St
 ```powershell
 wsl --install --no-distribution                         # Administrator; enables Virtual Machine Platform; restart after
 wsl --update                                            # moves inbox WSL to the Store build; repeat to stay current
-wsl --version                                           # 2.5.6 or later; when this prints the help text instead, inbox WSL answered: run wsl --update
+wsl --version                                           # 2.5.6 or later; when this prints the help text or an unrecognized-option error, inbox WSL answered: run wsl --update
 wsl --list --online
 wsl --install -d <DistroName>                           # Ubuntu-24.04 fits an apt-based stand; it asks you to invent a Linux user name and password
 wsl --list --verbose
-winget install --id Microsoft.PowerShell --source winget   # PowerShell 7 (pwsh), the runbook engine
+winget install --id Microsoft.PowerShell --source winget   # PowerShell 7 (pwsh), the runbook engine; since 7.6.0 this lands the MSIX under WindowsApps
 ```
 
-PowerShell 7 (`pwsh`) runs the Windows stand. Windows PowerShell 5.1 ships with Windows and stays as the bootstrap: `stand-windows.ps1` reads its own engine first and, under 5.1 with `pwsh` installed, relaunches itself there once; without `pwsh` it reports `needs-you` and continues degraded, since every later step tolerates 5.1. The script keeps a UTF-8 BOM and ASCII-only code so the 5.1 bootstrap parse holds. `witness.sh` and the Linux stand read for `pwsh` by absolute path and report its absence.
+PowerShell 7 (`pwsh`) runs the Windows stand. Windows PowerShell 5.1 ships with Windows and stays as the bootstrap: `stand-windows.ps1` reads its own engine first and, under 5.1 with `pwsh` installed, relaunches itself there once; without `pwsh` it reports `needs-you` and continues degraded, since every later step tolerates 5.1. The script keeps a UTF-8 BOM and ASCII-only code so the 5.1 bootstrap parse holds. `witness.sh` and the Windows stand read for `pwsh` at its two install paths — the MSI's `Program Files\PowerShell\7` and the MSIX's app-execution alias `%LOCALAPPDATA%\Microsoft\WindowsApps\pwsh.exe` — and report its absence.
 
 Complete the distro's first-launch user creation before running the Linux script: the Linux user name and password live inside the distro and bear no relation to the Windows account; typed passwords show nothing on screen.
 
@@ -87,7 +87,8 @@ cd ~/src/Synthetic-Dream-Machine
 tools/wsl2/stand-linux.sh --dry-run
 tools/wsl2/stand-linux.sh
 
-# From inside WSL, same directory. Full paths, because the stand takes Windows tools off $PATH:
+# From inside WSL, same directory. Full paths, because the stand takes Windows tools off $PATH
+# (an MSIX pwsh lives at /mnt/c/Users/<you>/AppData/Local/Microsoft/WindowsApps/pwsh.exe instead):
 "/mnt/c/Program Files/PowerShell/7/pwsh.exe" -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -DryRun
 "/mnt/c/Program Files/PowerShell/7/pwsh.exe" -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1
 # Without PowerShell 7 yet, Windows PowerShell 5.1 bootstraps the same file (and relaunches under pwsh once installed):
@@ -125,7 +126,7 @@ autoMemoryReclaim=gradual
 
 Microsoft's defaults, for comparison: `memory` at 50% of host RAM, `swap` at 25% of that rounded up to a GB, `processors` equal to the host's logical count. The profile leaves capacity for Windows while giving the Linux toolchain a useful ceiling. It is a developer-host default, not a universal performance law: an operator may choose a different bounded profile for a low-memory laptop, a shared workstation, or a dedicated build host. The script only owns the keys above.
 
-''Sparse VHD stays opt-in.'' Since WSL 2.5.6 (April 2025) Microsoft gates sparse virtual disks behind `--allow-unsafe`; `wsl --manage <Distro> --set-sparse true` answers "sparse VHD support is currently disabled due to potential data corruption". The script therefore writes `sparseVhd` and runs `--set-sparse true --allow-unsafe` only under `-Sparse`, and names the warning when it does. An existing sparse disk stays as found. To return deleted space to Windows without that risk: `wsl --shutdown`, confirm every distro reads `Stopped` in `wsl -l -v` (quit Docker Desktop first; it restarts the VM on its own), then in an Administrator prompt `diskpart` → `select vdisk file="<path to ext4.vhdx>"` → `attach vdisk readonly` → `compact vdisk` → `detach vdisk`, the sequence Microsoft's disk-space page gives. The script prints the vhdx path; `Optimize-VHD` needs Hyper-V tooling absent on Home, so `diskpart` serves every edition. When your `wsl --help` lists `--compact` under `--manage`, `wsl --manage <Distro> --compact` does the same job without diskpart. Before either, a backup: `wsl --export <Distro> <file>.tar` works on any edition and restores under a new name with `wsl --import <NewName> <InstallLocation> <file>.tar`; the tar carries `/etc/wsl.conf`, so the default user the Linux stand wrote comes back with it.
+''Sparse VHD stays opt-in.'' WSL 2.5.6 (April 2025) put sparse virtual disks behind `--allow-unsafe`: through 3.0.1, `wsl --manage <Distro> --set-sparse true` answers "Sparse VHD support is currently disabled due to potential data corruption" and a `sparseVhd=true` in `.wslconfig` stays inert. From 3.0.2 (PR #41726) the gate relaxes to a warning — "Sparse VHDs are currently experimental" — `sparseVhd` takes effect for new disks, and `--allow-unsafe` still parses. The script therefore writes `sparseVhd` and runs `--set-sparse true --allow-unsafe` only under `-Sparse`, and names the warning when it does; the flag reads harmless on every version. An existing sparse disk stays as found. To return deleted space to Windows without sparse: inside the distro `sudo fstrim -v /`, then `wsl --shutdown`, confirm every distro reads `Stopped` in `wsl -l -v` (quit Docker Desktop first; it restarts the VM on its own), then — on WSL 3.0.1 or later — `wsl --manage <Distro> --compact`, Microsoft's own command. On an older engine, in an Administrator prompt: `diskpart` → `select vdisk file="<path to ext4.vhdx>"` → `attach vdisk readonly` → `compact vdisk` → `detach vdisk`; that sequence comes from the WSL community (microsoft/WSL#4699), not from Microsoft's disk-space page, which covers only expansion. The script prints the vhdx path; `Optimize-VHD` needs the Hyper-V module absent on Home. Before either, a backup: `wsl --export <Distro> <file>.tar` works on any edition and restores under a new name with `wsl --import <NewName> <InstallLocation> <file>.tar`; the tar carries `/etc/wsl.conf`, so the default user the Linux stand wrote comes back with it.
 
 Network mode, DNS tunneling, proxy integration, firewall choices, Defender exclusions, and WSL idle policy depend on local security and network conditions. This baseline deliberately does not set them. If an organization permits an antivirus exclusion for a WSL virtual disk, make that a separately reviewed local policy; never infer it from this runbook.
 
@@ -227,5 +228,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mLpkRwrfFGJcpYohFJ8jYwb6R3xsuLtz9XuzHrpnydc
+<<^ code="&#x0003;">>ni:///sha-256;z1GkESHxK8emjZHOMQ-e-BE1WoLAO1vrrvvvcTLgFIA
 <<^ code="&#x0004;" -> to="?">>

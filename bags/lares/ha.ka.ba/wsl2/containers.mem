@@ -39,7 +39,7 @@ The lararium kit runs as a compose-shaped stack in containers behind the WSL2 in
 | CLI | Docker-shaped: `wslc run/build/exec`, `wslc image …`, `wslc container …`, `wslc network …`, `wslc system info`, `wslc events`; release notes say "for docker parity". Images, Containerfiles and registries work | high |
 | Docker API | not exposed. No socket, no `DOCKER_HOST`. Compose, Testcontainers, Dev Containers from WSL paths, buildx and docker-in-docker cannot target it (issues #40976, #40957) | high |
 | compose | absent at GA. GA post: "Our top feature request for WSLc is adding compose support, and this will be our focus for our next iterations" — aim: `wslc compose up` on an unchanged `compose.yaml`. Tracked at #40948; a `feature/compose` branch holds a proof of concept whose parser accepts only seven keys. No date | high on intent, low on timing |
-| from inside the distro | `wslc` does not run from a WSL distro and `\\wsl.localhost` paths fail; every `-v` source resolves as a Windows path (#41105, #40957) | high |
+| from inside the distro | `wslc` does not run from a WSL distro and `\\wsl.localhost` paths fail; every `-v` source resolves as a Windows path (#41105, #40957). Microsoft's GA post links a community wrapper, `wslc remote`, that relays the call out | high |
 | capabilities | `--cap-add`, `--cap-drop`, `--read-only`, `--privileged` absent "by design … due to some security concerns but it is being actively investigated" (#41545). No `--device`, no USB | high |
 | Windows Home | no edition restriction in any Microsoft text; it rides Virtual Machine Platform like WSL 2, no Hyper-V role. The WSL lead: it "works anywhere WSL is supported today" | high by inference |
 | `.wslconfig` | no new keys. Per-session CPU, memory and storage live in `%LOCALAPPDATA%\wslc\settings.yaml` and the SDK's `SessionSettings`. "Capabilities" in the release notes means CLI feature lists | medium-high |
@@ -62,7 +62,7 @@ Rootful Docker Engine with the compose plugin, supervised by systemd inside Ubun
 | Ubuntu archive | `sudo apt install docker.io docker-compose-v2 docker-buildx` | one line, Canonical-maintained; 29.1.3 / compose 2.40.3 in noble-updates. ''The family default.'' |
 | Docker's apt repo | `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin` | newest engine and compose, Docker-supported on 22.04 / 24.04 / 26.04; needs the signing key and a sources file; conflicts with the archive packages, which must leave first |
 
-''Rootless stays off the table.'' WSL 2.9 moved the cgroup v2 hierarchy under `/wsl-user/distro-N/…`, so rootless Docker and rootless Podman fail on `cgroup.controllers` (microsoft/WSL #41492, open since 2026-09-01; 3.0.1 carries no fix). Rootful dockerd reads unaffected. The `docker` group therefore stays root-equivalent on this host; the runbook says so rather than hiding it.
+''Rootless stays off the table.'' WSL 2.9 moved the cgroup v2 hierarchy under `/wsl-user/distro-N/…`, so rootless Docker and rootless Podman fail on `cgroup.controllers` (microsoft/WSL #41492, open since 2026-09-01; 3.0.1 carries no fix). Rootful dockerd reads unaffected. The WSL maintainers name an opt-out — `[wsl2] isolateDistroCgroup=false` in `.wslconfig` restores the standard hierarchy — but it disables per-distro cgroup isolation host-wide, so this kit does not set it; a household that wants rootless chooses it knowingly. The `docker` group therefore stays root-equivalent on this host; the runbook says so rather than hiding it.
 
 ''WSL2 specifics worth knowing:'' cgroup v2 runs by default; dockerd 25+ handles nft-based iptables; `-p` ports reach Windows `localhost` by default, and other LAN devices need `networkingMode=mirrored` or a `netsh portproxy`; distros are per Windows account, so a household that shares the stack shares the account.
 
@@ -108,6 +108,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Nx0KobG8FSOxb56Hf6D-PWvx8TfZ49ADMIltiKic7A8
+<<^ code="&#x0003;">>ni:///sha-256;kY4lGoLTC5kQv-Pn67FZXg79o8P6LKvSZQZwOlypN1A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -13,8 +13,9 @@
           and prints "sparse VHD support is currently disabled due to potential data corruption";
           without -Sparse the script neither writes sparseVhd nor runs --set-sparse.
 
-  The runbook's PowerShell is 7 (pwsh), read at its one install path, Program Files\PowerShell\7,
-  as the witness reads it. Step 0 reads the running engine: under Windows PowerShell 5.1 with pwsh
+  The runbook's PowerShell is 7 (pwsh), read at its two install paths and nowhere else: the MSI's
+  Program Files\PowerShell\7, and the MSIX's app-execution alias under %LOCALAPPDATA%\Microsoft\WindowsApps
+  (winget installs the MSIX by default since 7.6.0), as the witness reads them. Step 0 reads the running engine: under Windows PowerShell 5.1 with pwsh
   installed it relaunches itself there once; without pwsh it reports needs-you and continues, since
   every later step tolerates 5.1. The file keeps a UTF-8 BOM and ASCII-only code so that 5.1
   bootstrap parse holds.
@@ -35,8 +36,10 @@ function Step($m)    { Write-Host "`n$m" -ForegroundColor White }
 function Act($label, [scriptblock]$do) { if ($DryRun) { Plan $label } else { & $do; Set_ $label } }
 
 Step '0 | PowerShell 7 - the runbook engine'
-$pwsh = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
-if (-not (Test-Path -LiteralPath $pwsh)) { $pwsh = '' }
+$pwsh = ''
+foreach ($candidate in @((Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'), (Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\pwsh.exe'))) {
+  if (Test-Path -LiteralPath $candidate) { $pwsh = $candidate; break }
+}
 if ($PSVersionTable.PSVersion.Major -ge 7) {
   Already "pwsh $($PSVersionTable.PSVersion) running"
 } elseif ($pwsh -and $PSCommandPath) {

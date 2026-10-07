@@ -13,12 +13,17 @@ row() { # row <ok|drift> <intent> <reading>
 }
 gb() { awk -v kb="$1" 'BEGIN{printf "%.0f", kb/1048576}'; }
 
-grep -q 'microsoft-standard' /proc/version || { echo "not WSL2 (a WSL 1 distro? from Windows: wsl --set-version <DistroName> 2)"; exit 0; }
+# A witness that is not on WSL2 has nothing true to say about the stand; a hook gating on it must not read that as green.
+grep -q 'microsoft-standard' /proc/version || { echo "not WSL2 (a WSL 1 distro? from Windows: wsl --set-version <DistroName> 2)"; exit 1; }
 
 mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo); swap_kb=$(awk '/SwapTotal/{print $2}' /proc/meminfo)
 # Windows binaries by absolute path: appendWindowsPath=false (our intent) takes them off $PATH.
-# pwsh (PowerShell 7) is the runbook engine; the host read goes through Windows PowerShell 5.1, which every Windows carries.
+# pwsh (PowerShell 7) is the runbook engine, read at its two install paths: the MSI's Program Files, or the MSIX's
+# app-execution alias under the profile (winget installs the MSIX by default since 7.6.0). The host read goes
+# through Windows PowerShell 5.1, which every Windows carries.
+WIN_PROFILE=$(/mnt/c/Windows/System32/cmd.exe /c 'echo %LOCALAPPDATA%' 2>/dev/null | tr -d '\r')
 PWSH_EXE="/mnt/c/Program Files/PowerShell/7/pwsh.exe"
+[[ -x "$PWSH_EXE" ]] || PWSH_EXE="$(wslpath -u "${WIN_PROFILE:-C:\\nowhere}" 2>/dev/null)/Microsoft/WindowsApps/pwsh.exe"
 PS_EXE=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
 # The host read is bounded: a wedged interop must not hang a pre-session hook.
 if [[ -x "$PWSH_EXE" ]]; then row ok "PowerShell 7 (pwsh) on the host" "$PWSH_EXE"

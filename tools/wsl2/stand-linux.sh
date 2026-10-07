@@ -88,7 +88,7 @@ WSLCONF_CHANGED=0
 # ends the section; lines split on LF with an optional CR before it; bytes outside UTF-8 round-trip
 # untouched. WSL's parser holds no BOM handling and reads the first line invalid under one, so a leading
 # BOM reads as DRIFT and the write drops it. `read` prints every value the key carries and answers 0 only when all of them equal the
-# intent: a stale twin under a satisfied first line could win at WSL load. `write` replaces every matching
+# intent: WSL takes the FIRST occurrence and warns at every launch about the rest, so a twin reads as drift. `write` replaces every matching
 # key line or inserts one after the section's last non-blank line; every other line, comment included,
 # stays. A symlink is followed so the target changes and the link stays; the temp file takes the original's
 # mode and owner; a failure unlinks the temp.
