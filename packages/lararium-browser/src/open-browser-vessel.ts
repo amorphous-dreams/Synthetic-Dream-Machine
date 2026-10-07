@@ -405,7 +405,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
-    shareConfig: browserShareConfig(relayPeers, fedGate, identityRing),
+    // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
+    shareConfig: browserShareConfig(relayPeers, () => fedGate, identityRing),
   });
   emit("repo-open");
 
@@ -1361,7 +1362,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   };
 }
 
-/** The browser's share verdict on both hooks — one decision, announce and access alike. */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGate: FederationGate | null, identityRing: IdentityRing | null) {
-  return shareConfigOf((peerId, documentId) => identityShareDecision(relayPeers, fedGate, identityRing, peerId, documentId));
+/**
+ * The browser's share verdict on both hooks — one decision, announce and access alike.
+ *
+ * `fedGateOf` reads the federation gate AT EACH DECISION. The Repo takes this config before the spore
+ * crossing arms the gate, so a gate passed by value holds the pre-crossing `null` for the vessel's life —
+ * and a null gate reads a cross-operator relay as the operator's own node (full device sync).
+ */
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, identityRing: IdentityRing | null) {
+  return shareConfigOf((peerId, documentId) => identityShareDecision(relayPeers, fedGateOf(), identityRing, peerId, documentId));
 }
