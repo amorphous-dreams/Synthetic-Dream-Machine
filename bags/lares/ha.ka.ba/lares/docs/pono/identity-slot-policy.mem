@@ -12,7 +12,7 @@ manao      = 16
 manaoio    = 13
 revised-on = "2026-09-13"
 role       = "what OpenIdentitySlot's sharePolicy could key on now that the realm leg stands — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
-status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader this carrier called missing now stands as `makePersonaGroupIdentityRing` and `OpenIdentitySlot` retired whole. What remains sits at the two sharePolicy shores, named under #/the-ruling"
+status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and every leaf kind runs it (#/the-leaf-taxonomy)"
 tags       = ["docs/pono/design", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -103,9 +103,31 @@ The operator ruled: ''a slot doc's verdict = the face's grant records (the joine
 
 `OpenIdentitySlot` RETIRED whole — no alias, the alpha line's own law. `LarVessel.identity` reads `IdentitySlot | null` and a vessel given none carries none, where it once carried a slot that granted everything.
 
-!! What remains, named
+!! Two shores, one assembly
 
-''The two sharePolicy shores.'' The node's wire DOES carry the reading the ring needs — `peerIdentifierMap` holds the identifier a peer proved, whose trailing 64 hex are its vessel key, which is exactly what a grant record names. What the shore lacks is the PLANE: the PersonaGroup doc and its grant records reach the daemon island's own store, and the main-thread sharePolicy holds a `repo` and a catalog url. So the wiring is an addition at `open-node-vessel.ts`, ground the FOUNDING hearth holds (`docs/pono/hearths#/holds`), and it waits on that hearth's hand or a row and an override. The BROWSER shore admits only same-origin and in-process peers, where the ring's own-hand class short-circuits — so a ring wired there changes nothing until the browser admits a relay peer at all.
+`assemblePersonaGroupRing` (`packages/lararium-keyhive/src/persona-group-ring-assembly.ts`) hands the ring its inputs, and BOTH vessel shores call it — the node at `open-node-vessel.ts`, composed onto its self-slot fed gate; the browser at `open-browser-vessel.ts`, composed onto its cross-operator gate. It reads the face's four planes off the vessel's own catalog (`governedPlaneDocIds`), the face-join grant records on the PersonaGroup plane, and the founder's persona-KEL, and it binds the ONE `verifyFaceGrantRecord`. `tools/vessel-parity-witness.sh` holds the two shores to it.
+
+''Only the PROOF SOURCE differs, and neither source is a claim.''
+
+* A NODE listens. Its `DaemonAuthGate` proves the dialer's key (the V3 proof) and the ring reads the identifier that gate proved.
+* A LEAF dials out. The gate it dials signs its `lar:auth-ok` with the gate key over the leaf's own fresh nonce (`authOkBytes`, domain `auth-ok`), the leaf checks it against the key it pinned, and `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields. A gate that cannot sign under the pin answers nothing the leaf reads as a pass. Authentication runs both ways on one socket.
+* Two LEAVES of one PersonaGroup meet through a relay. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head (an edge a rotated-away op-key signed reads as rolled past), plus a signature by the device key over the sibling's nonce and the ephemeral key the answer is sealed to. The edge rides sealed to the sibling, so the relay forwards bytes and reads no leaf↔root link.
+
+''No clock enters any of the three.'' Freshness is a nonce the verifying side chose; licensing is KEL event order and the edge's lease epoch.
+
+<<~/ahu>>
+
+<<~ ahu #/the-leaf-taxonomy>>
+
+!! The leaf taxonomy — where the ring runs
+
+The ring runs on EVERY vessel that holds a face, because a leaf is not one thing. The operator's taxonomy names three:
+
+# ''A face of an operator's PersonaGroup where a listening vessel exists.'' The leaf dials a node of its own PersonaGroup; that node's gate proves the leaf, and the node's signed verdict proves the node back.
+# ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
+# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind is why the ring must run on leaves at all: with no listening vessel, no other hand could decide.
+
+A leaf holds only its own device key, its own edge and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
 
 <<~/ahu>>
 
@@ -133,6 +155,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sZOdsBRt3bFFxo5VRzGcogc5jkSFuOMC6KJ-YW9wOIY
+<<^ code="&#x0003;">>ni:///sha-256;k5Hnq1GetlAIGsw0nnE07lcPwoD-ssuCZRFZ7liLMkw
 
 <<^ code="&#x0004;" -> to="?">>

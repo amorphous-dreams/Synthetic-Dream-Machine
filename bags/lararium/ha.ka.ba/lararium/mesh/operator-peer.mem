@@ -227,10 +227,13 @@ budget choices, not architectural forks.
 | Active wiki lanes | pool-managed, piscina for stateless parse | pool-managed, dedicated islands |
 | Founding ceremony | `runFoundingCeremony(repo, seed)` via `@lararium/keyhive` | same |
 | Ea gates A/B/C | ✅ passes at boot | ✅ same ceremony, same gates |
+| PersonaGroup ring | `assemblePersonaGroupRing` — proof: the key its inbound gate proved | same assembly — proof: the gate key that signed its verdict, or a sibling leaf's proof |
 
 Where the node vessel does more (disk projection, persistent relay, process control),
 that counts as edge adaptation, not authority. The browser vessel breathes with
-identical ea rights.
+identical ea rights. The ring runs on every leaf kind — a face where a listening vessel exists, a single
+user device, and one device of a user-caps-only fleet where no vessel listens
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy">>).
 
 <<~/ahu>>
 
@@ -246,6 +249,6 @@ identical ea rights.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D6hADIZ0BTRZAteMklXhFW-R9aqvISsGVRXc553DEGU
+<<^ code="&#x0003;">>ni:///sha-256;V9YaRz6gZcHg1TmOsg3kV8x1gw27VP5doFUnTkK2Trg
 
 <<^ code="&#x0004;" -> to="?">>
