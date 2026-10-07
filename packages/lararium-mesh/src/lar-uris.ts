@@ -520,9 +520,9 @@ export function personaMembershipUri(planeTag: string): string {
 
 /** Persona oracle tiddler: PersonaGroup Document ID (hex). Legacy sentinel target (the Binding Gate superseded it). */
 export const PERSONA_GROUP_DOC_ID_TIDDLER   = `${PERSONA_NAMESPACE}/sentinel/persona-group/doc-id`;
-/** Persona oracle tiddler: PersonaGroup agent Identifier (hex). Used by boot Gate C. */
+/** Persona oracle tiddler: PersonaGroup agent Identifier (hex). Gate C owes its read at cabal-canon access, never at boot. */
 export const PERSONA_GROUP_AGENT_ID_TIDDLER = `${PERSONA_NAMESPACE}/sentinel/persona-group/agent-id`;
-/** Daemon oracle tiddler: MeshCabal Document ID (hex) — NEXUS-affiliation, sovereign-per-vessel. Used by boot Gate C. */
+/** Daemon oracle tiddler: MeshCabal Document ID (hex) — NEXUS-affiliation, sovereign-per-vessel. Gate C owes its read at cabal-canon access, never at boot. */
 export const MESH_CABAL_DOC_ID_TIDDLER     = `${DAEMON_BAG_ID}/sentinel/mesh-cabal/doc-id`;
 
 /**

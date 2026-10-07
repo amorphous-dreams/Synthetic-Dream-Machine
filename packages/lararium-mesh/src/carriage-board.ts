@@ -153,7 +153,7 @@ export function writeRollAnchor(draft: LarDoc, anchor: RollAnchor): void {
 
 /**
  * Extract every well-formed roll anchor the board carries. Shape only, exactly as the entry extractor is: a
- * PRESENTER reads these to carry its admit across a roll (`presentedAdmitFromBoard`), and the verifier counts
+ * PRESENTER reads these to carry its admit across a roll (`presentationFromBoardDoc`), and the verifier counts
  * the anchors a presentation carries. No gate reads an anchor off a board — the board stays deny-only.
  * Extra fields a forged tiddler smuggled in are dropped.
  */

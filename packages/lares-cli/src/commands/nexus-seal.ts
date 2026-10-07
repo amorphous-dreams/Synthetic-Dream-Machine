@@ -1,5 +1,5 @@
 /**
- * nexus-seal — the CHARTER SEAL door: the founding-kahu roster, its PRE-ROTATED hash-linked epoch
+ * nexus-seal — the CHARTER SEAL door: the founding kahu quorum's seats, its PRE-ROTATED hash-linked epoch
  * chain, the reserve that custodies the next key-set, and the growth rite that records a crossing.
  *
  * ── WHY THE CHAIN IS PRE-ROTATED ────────────────────────────────────────────────────────────────

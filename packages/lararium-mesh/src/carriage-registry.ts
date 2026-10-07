@@ -711,7 +711,7 @@ export interface PresentedAdmitInput {
    * presents an empty lineage.
    */
   readonly lineage:         readonly PresentedLineageAct[];
-  /** The membership kahu roster at the charter head. */
+  /** The kahu quorum's seats at the charter head. */
   readonly roster:          KahuQuorumSeats;
   /**
    * The charter's epoch lineage, genesis first, its last epoch the roster's head. Read only for an admit at

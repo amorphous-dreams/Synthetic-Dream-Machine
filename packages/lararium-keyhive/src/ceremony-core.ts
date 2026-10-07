@@ -16,8 +16,8 @@
  *
  * Identity lattice produced by runFoundingCeremony:
  *   Vessel Individual (from seed)
- *     └─▶ PersonaGroup sentinel Document (Gate B at boot)
- *              └─▶ MeshCabal sentinel Document (Gate C at boot)
+ *     └─▶ PersonaGroup sentinel Document (the Binding Gate proves the vessel at boot)
+ *              └─▶ MeshCabal sentinel Document (Gate C: cabal membership, owed at canon access, never at boot)
  *
  * At t=0, founding operator's PersonaGroup is the only MeshCabal member.
  * the carriage contract adds co-operators. The MeshCabal grows; this path never re-runs.

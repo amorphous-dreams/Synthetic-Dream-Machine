@@ -219,8 +219,8 @@ const normKeys = (keys: readonly string[]): string[] => [...new Set(keys.map((k)
 /**
  * The canonical bytes a roll's hands sign: the predecessor's cid, the seated key-set and its threshold, and
  * the epoch's forward commitment (`next`). Domain-separated under `seal-roll`. `next` carries the commitment
- * VALUE whatever its shape — a single digest today — so a per-seat commitment slots into the same field under
- * the same domain.
+ * VALUE whatever its shape — one digest until the re-found — so a per-seat commitment slots into the same
+ * field under the same domain.
  */
 export function sealRollBytes(parts: {
   readonly prevEpochCid: string; readonly keys: readonly string[]; readonly threshold: number;

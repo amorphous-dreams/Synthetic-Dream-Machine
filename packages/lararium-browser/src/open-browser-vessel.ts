@@ -207,14 +207,16 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    *  floor); `open` crosses with no invite. DEFAULT: `invite-only` when a `bootInvite` is carried, else `open`
    *  (so today's un-gated crossing is unchanged unless the operator opts into the gate). */
   bootInvitePolicy?: BootInvitePolicy;
-  /** The Nexus pubkey the carried invite seals — the key its `sig` verifies against. Provisioned OUT-OF-BAND.
-   *  DEFAULT: `relayGatePubKey` (the Nexus this vessel crosses into) ?? this vessel's own DID. */
+  /** The Nexus pubkey a carried invite names this vessel's crossing into — the `explicitScope` rung of the
+   *  Nexus-identity gradient, and nothing else. Provisioned OUT-OF-BAND. The invite's `sig` verifies against
+   *  the INVITER's per-Nexus face (`inviterKey`), never against this key. Absent → the gradient reads the
+   *  anchor gate key, then this vessel's own key. */
   inviteNexusPubkey?: string;
   /** The genesis AID of the Nexus a carried invite must name. Provisioned OUT-OF-BAND, never read off the
    *  invite itself. Absent → no invite binds, so an invite-only boot withholds. */
   inviteNexusAid?: string;
-  /** The Nexus material an inviter's standing is read against (kahu roster, deny board, antigen). Provisioned
-   *  OUT-OF-BAND. Absent → no inviter can show standing, so an invite-only boot withholds. */
+  /** The Nexus material an inviter's standing is read against (the kahu quorum's seats, deny board,
+   *  antigen). Provisioned OUT-OF-BAND. Absent → no inviter can show standing, so an invite-only boot withholds. */
   inviteStanding?: InviteStandingContext;
   /** URL of the compiled browser daemon island Worker script. */
   daemonWorkerUrl?: URL;

@@ -10,7 +10,7 @@
  *
  * ── WHAT A BUNDLE HOLDS — public bytes only ───────────────────────────────────────────────────────
  *   · `admit`      — the quorum-signed admit entry (the board's admit head for the nym, just written);
- *   · `lineage`    — its closed, tight causal lineage (`presentedAdmitFromBoard`), with the roll anchors
+ *   · `lineage`    — its closed, tight causal lineage (`presentationFromBoardDoc`), with the roll anchors
  *                    that carry it to the head when its epoch has rolled;
  *   · `aid`        — the Nexus the admit belongs to (the charter's genesis epoch);
  *   · `gatePubKey` — the gate key the bundle NAMES as the hearth that wrote it: the key the joinee's dial

@@ -144,7 +144,8 @@ export interface BootVerdict {
 
 /**
  * The Nexus material an inviter's standing is read against — the presented-admit verifier's inputs without
- * the presentation: the kahu roster at the charter head, the charter lineage, the deny board and the antigen.
+ * the presentation: the kahu quorum's seats at the charter head, the charter lineage, the deny board and the
+ * antigen.
  * The caller owns which Nexus this material belongs to.
  */
 export type InviteStandingContext = Omit<PresentedAdmitInput, "admit" | "lineage">;

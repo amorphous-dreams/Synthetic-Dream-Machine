@@ -486,7 +486,7 @@ export function makeNexusMembership(opts: {
  *     edge travels on any socket, so nothing fills that map. It never reads the LEAF MAP — a leaf a socket
  *     proved is not a root, and routing one here would link the two on this vessel's behalf.
  *   · `holdsCharter` reads this vessel's OWN charter on disk: the charter names a realm (its genesis epoch),
- *     and a hand SEATED in that charter's founding-kahu roster holds it. Any other nym, and any charter this
+ *     and a hand SEATED in that charter's founding kahu quorum holds it. Any other nym, and any charter this
  *     vessel does not itself hold, reads false — fail-closed, and never a roster of anybody else's members.
  *   · `holdsCharterPeer` names the peers standing on a socket THIS vessel dialed to the hearth whose charter
  *     it holds. The binding is the operator's own out-of-band act (the gate key the config pins, the charter

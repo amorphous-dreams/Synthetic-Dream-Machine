@@ -609,7 +609,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // The board keys on the ISLAND (`nexusPubkey` below), never on this vessel: the deterministic
   // antigen-board id is a pure function of it, so every member of one Nexus folds ONE board. The
   // holder resolves the always-carried antigen board, folds the quorum-signed bans against the
-  // founding-kahu roster read off `bags/nexus` (LAR_BAGS ?? <root>/bags), and re-folds on every board
+  // founding kahu quorum's seats read off `bags/nexus` (LAR_BAGS ?? <root>/bags), and re-folds on every board
   // change. FAILS CLOSED: an unseated charter → empty roster → nothing Kapae'd (no quorum, no bans).
   // The Nexus SEAL homes PER-OPERATOR (`<lares>/nexus`), never in the corpus bags tree: a seal sited in the
   // corpus inherits that tree's home, which on a development install sits inside the repository. The seal

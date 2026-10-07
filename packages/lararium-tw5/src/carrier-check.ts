@@ -143,7 +143,6 @@ function advisories(read: CarrierRead): string[] {
   return out;
 }
 
-/** Every check a carrier's bytes owe beyond the frame verdict, on the shared diagnostics channel. */
 /**
  * Every check a carrier's bytes owe beyond the frame verdict, on the shared diagnostics channel — read
  * off the deserializer's own reading, so a check judges exactly the division, scan and slot the records

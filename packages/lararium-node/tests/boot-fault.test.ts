@@ -26,7 +26,7 @@ describe("boot-fault attestation", () => {
     expect(report.lines[0]).toContain(SERDE_SKEW_CURE);
   });
 
-  it("the supervisor's fatalLine surfaces the skew cure (the stall the old shape read as)", () => {
+  it("the supervisor's fatalLine surfaces the skew cure, never a silent stall", () => {
     const text = attest(skew);
     expect(/fatal:/.test(text)).toBe(true);           // stand/herm's fault detector fires
     const line = fatalLine(text);
