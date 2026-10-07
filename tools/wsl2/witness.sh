@@ -5,6 +5,8 @@
 # pre-session hook can refuse to start agents on an unguarded VM.
 set -uo pipefail
 rc=0
+# A hook's `env -i` carries no HOME; the venv row reads the passwd home rather than exiting on an unbound variable.
+: "${HOME:=$(getent passwd "$(id -un)" | cut -d: -f6)}"
 row() { # row <ok|drift> <intent> <reading>
   if [[ $1 == ok ]]; then printf '  \e[32m%-6s\e[0m %-44s %s\n' ok "$2" "$3"
   else printf '  \e[31m%-6s\e[0m %-44s %s\n' drift "$2" "$3"; rc=1; fi

@@ -125,7 +125,7 @@ $want = [ordered]@{
 if ($Sparse) { $want['experimental']['sparseVhd'] = 'true' }
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $sections = [ordered]@{}; $order = @(); $preamble = @(); $cur = ''
-if (Test-Path $cfgPath) {
+if (Test-Path -LiteralPath $cfgPath) {
   foreach ($line in [IO.File]::ReadAllLines($cfgPath, $utf8)) {
     if ($line -match '^\s*\[(.+?)\]\s*$') { $cur = $Matches[1]; if (-not $sections.Contains($cur)) { $sections[$cur] = @(); $order += $cur } }
     elseif ($cur) { $sections[$cur] += $line }
@@ -179,10 +179,10 @@ if ($changed -and -not $DryRun) {
   $tmp = "$cfgPath.tmp"; $bak = "$cfgPath.bak"
   try {
     [IO.File]::WriteAllText($tmp, (($out -join "`r`n") + "`r`n"), $utf8)
-    if (Test-Path $cfgPath) {
+    if (Test-Path -LiteralPath $cfgPath) {
       try { [IO.File]::Replace($tmp, $cfgPath, $bak) }
       catch {
-        if (Test-Path $bak) { (Get-Item -LiteralPath $bak).IsReadOnly = $false }
+        if (Test-Path -LiteralPath $bak) { (Get-Item -LiteralPath $bak).IsReadOnly = $false }
         [IO.File]::Copy($cfgPath, $bak, $true)
         Move-Item -LiteralPath $tmp -Destination $cfgPath -Force
       }
@@ -192,7 +192,7 @@ if ($changed -and -not $DryRun) {
       Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
     }
   } finally {
-    if (Test-Path $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+    if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
   }
 }
 
@@ -205,17 +205,21 @@ if (-not $Distro) {
   # A -Distro name the registry does not carry reads needs-you with or without -Sparse: a typo must not pass as already.
   Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
 } elseif (-not $Sparse) {
-  if ($vhd -and (Test-Path $vhd) -and ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile)) {
-    Already "'$Distro' vhdx already sparse ($([math]::Round((Get-Item $vhd).Length / 1GB, 1)) GB on disk) - left as found"
+  # -LiteralPath: a base path holding [ or ] would otherwise read as a wildcard and the vhdx as absent.
+  if ($vhd -and (Test-Path -LiteralPath $vhd) -and ((Get-Item -LiteralPath $vhd).Attributes -band [IO.FileAttributes]::SparseFile)) {
+    Already "'$Distro' vhdx already sparse ($([math]::Round((Get-Item -LiteralPath $vhd).Length / 1GB, 1)) GB on disk) - left as found"
   } else {
     $vhdLabel = if ($vhd) { $vhd } else { '<path to ext4.vhdx>' }
     Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe: potential data corruption). Safe reclaim: wsl --shutdown, then (Administrator) diskpart > select vdisk file=`"$vhdLabel`" > attach vdisk readonly > compact vdisk > detach vdisk"
   }
-} elseif (-not (Test-Path $vhd)) {
+} elseif ($Distro -like 'docker-desktop*') {
+  # Docker Desktop owns its distros; the inventory names them Docker-managed, and -Distro does not override that.
+  Need "'$Distro' is Docker-managed; this runbook sets no Docker Desktop distro sparse"
+} elseif (-not (Test-Path -LiteralPath $vhd)) {
   Need "'$Distro' has no ext4.vhdx at its registered base path"
 } else {
-  $sizeGB = [math]::Round((Get-Item $vhd).Length / 1GB, 1)
-  if ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
+  $sizeGB = [math]::Round((Get-Item -LiteralPath $vhd).Length / 1GB, 1)
+  if ((Get-Item -LiteralPath $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
   else {
     $listing = Read-Wsl @('-l', '-v')
     $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
