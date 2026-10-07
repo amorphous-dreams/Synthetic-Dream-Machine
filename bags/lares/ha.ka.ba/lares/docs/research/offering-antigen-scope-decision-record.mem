@@ -73,6 +73,55 @@ These are proposed tests, not tests already added or run. Keep each test at the 
 
 The board and act tests should distinguish carriage from authority. A copied record may be inspectable without being authoritative; the operator's local frontier may be incomplete without becoming false. Every refusal should preserve the established gradient (`held`, `withdrawn`, `unsettled`, `unavailable`, absent) or add a precisely named foreign-evidence diagnostic without collapsing those states.
 
+!! Outside pattern collision — facts, inferences, and limits
+
+!!! Source-backed facts
+
+* **SPIFFE trust domains** pair a named identity realm with the cryptographic bundle that is authoritative for it. A verifier must select the bundle belonging to the identity's trust domain; pooling keys across domains can let one domain impersonate another. Federation is an explicitly configured relation, and is directional unless each side establishes its own relation. This is a strong rhyme for `scope ↔ charter root` and for keeping route lookup separate from the trust subject. SPIFFE commonly distributes bundle updates by polling and uses service identities; those mechanics do not define a local causal Antigen fold.
+* **OAuth Resource Indicators (RFC 8707)** let a request name the protected resource so a token can be audience-restricted; the security rationale is that a token meant for one resource must not be reusable at another. This supports binding an authorization statement to the resource it affects. OAuth's issuer/token-service model and URI resource semantics are not the DreamNet peer or Nexus model.
+* **UCAN 1.0** separates issuer, audience, subject/resource, command, and proof chain. Delegations attenuate authority, and a cryptographically valid chain can still be semantically wrong unless the resource checks ownership at execution. UCAN revocation names a delegation by CID; revocations are immutable and monotone and can propagate through eventually consistent stores. The specification provides no universal delivery deadline; a local replica cannot infer that it has seen every revocation. UCAN also defines validity intervals, which this design must not copy as wall-clock truth.
+* **Matrix federation** signs events at their origin and requires a receiving server to validate signatures and room authorization context. Its room event/auth graphs are a mature example of a signed act carried through federation while each receiving domain still checks whether it belongs in its local room graph. It also has server names, a server/client API split, and timestamp fields; those are context-specific and not DreamNet design rules.
+* **KERI** distinguishes a persistent identifier from the key state that changes through its verifiable event log. Its inception and rotation events provide a signed lineage connecting stable identifier to evolving control keys. This rhymes with separating stable Nexus identity from the exact seal epoch that authorized one act. The repository's current `genesisSealEpochCid` is a local hash over `NEXUS_DOC_DOMAIN`, the sorted seated key set, and threshold; it is not by itself a full KERI inception/KEL.
+
+!!! Inference for DreamNet
+
+These precedents converge on one useful relation: a signed act needs to say **who authored it, for which stable authority domain, under which authorization state, about which subject, and how it continues prior acts**. The board is an address and carriage rendezvous. It cannot supply any of those signed meanings by itself. The local receiver must still resolve its own charter relation and frontier; a remote signature never announces a global present.
+
+If the operator chooses cryptographic Nexus separation, the signed offering act should commit to this tuple in its canonical bytes and semantic CID:
+
+```text
+domain             = offering-kapae
+authority-scope    = stable charter inception identity
+authorization      = exact sealEpochCid whose Kahu roster signs this act
+subject            = pluginsCid (the offering under review)
+action             = kapae | un_kapae
+causal-parents     = prior acts in this same authority-scope + subject relation
+quorum-signatures  = distinct charter Kahu signatures over all fields above
+```
+
+The receiver then compares the signed authority scope with its locally resolved charter scope, verifies that the signed seal epoch is a member of that scope's locally held charter lineage, verifies the quorum for that exact epoch, and only then folds the act under the local causal frontier. Unknown or incomplete lineage yields `unavailable`, not acceptance and not a wall-clock-based “stale” result. A copied act may remain visible as foreign evidence, but it cannot enter the local authority fold. The `un_kapae` path must obey the same scope check, so foreign evidence cannot lift a local hold.
+
+The scope field is a **subject binding**, not a capability. It does not authorize a signer, grant board access, or make a receiver adopt the verdict. Separate relations continue to govern (1) board carriage/read, (2) Kahu quorum authority, and (3) receiver-local consultation or later adoption.
+
+One local identity premise needs operator attention before naming B's value: `genesisSealEpochCid` currently hashes only the Nexus domain tag, seated keys, and threshold. If the same founding quorum and threshold intentionally define the same Nexus everywhere, that is a stable content-addressed identity. If two independently governed Nexuses may intentionally start with the same roster and threshold, that formula aliases them. In that case, `nexusScopeCid` must name a distinct, canonical charter-inception relation that also commits to the shared identity statement the operators actually agreed on; it must not be a random vessel key, board URL, mutable label, or newly invented numeric epoch. This is a model question, not something prior art decides for the operator.
+
+!! Expanded red-first matrix
+
+Add these controls to the earlier matrix if the operator selects signed charter scope. Each red should be isolated at the platform-blind Mesh verifier first, with the receiver adapter separately proving that its identity/roster inputs came from the intended relation:
+
+|!additional case |! fixture and single changed condition |! required observation |
+|---|---|---|
+|Wrong stable scope, valid signatures |Sign an act under scope A, then present it to a receiver locally resolving scope B while keeping the board bytes and offering CID the same. |Receiver refuses the act before verdict fold and may report its CID as foreign evidence. |
+|Scope mutation breaks signature |Mutate only the signed scope after a valid act is formed, without re-signing. |The semantic act CID changes and quorum signatures fail verification. |
+|Same roster, independent charter intent |Construct two charter-inception records with the same Kahu set/threshold but a declared distinct charter relation. |The test must demonstrate the chosen identity rule: either they resolve to one Nexus by explicit law, or their stable scope CIDs differ. Silent aliasing is a red. |
+|Epoch not under scope |Keep a receiver's stable scope fixed; provide a valid quorum/epoch record whose lineage belongs to another scope. |The act is refused even if keys or the epoch string happen to compare equal in a test fixture. Scope membership in the verified lineage is required. |
+|Historical epoch in known lineage |Use a prior locally verifiable seal epoch in the same stable charter lineage. |Behavior matches the operator-selected historical-authorization rule; it does not infer “current” from wall time or arrival order. |
+|Unknown local frontier |The receiver has the act but lacks a needed parent or charter-lineage event. |Return `unavailable` with the missing relation identified; do not silently fetch authority or treat absence as revocation/acceptance. |
+|Foreign lift |Carry a correctly signed `un_kapae` from scope A to scope B where B has its own `kapae` head for the same offering CID. |A's act cannot lift B's hold, even if the action signatures and offering CID are valid. |
+|Partition then rejoin |Two replicas in the same scope independently receive a ban and a causally independent lift; test both arrival orders and after exchanging the records. |Before enough causal evidence arrives, each states its local frontier; after exchange the same incompatible heads remain `unsettled`, never selected by timestamp or whichever replica ran last. |
+
+For B, scope must be included in parent validation as well as signatures: a parent from the same offering but another charter scope is foreign, not a causal continuation. The receiver must verify the chain `(stable scope → seal epoch → Kahu roster)` from local charter evidence. A matching signer set alone is insufficient to establish that chain.
+
 !! Pattern-integrity constraints
 
 * **Causal islands:** each receiver reports only its locally resolved scope, roster/lineage, board contents, and frontier. Replication is eventual; no verdict claims planetary saturation or a global current state.
@@ -91,13 +140,18 @@ The board and act tests should distinguish carriage from authority. A copied rec
 * `packages/lararium-mesh/tests/offering-antigen.test.ts` — quorum, wrong epoch, causal parents, unsettled heads, hostile normalization, and no-production-caller control. It does not yet test resolved receiver scope or roll lineage.
 * `bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem`, `dreamnet-architecture.mem`, `lamplighters.mem`, `carry-contract.mem`, `oracle-governance.mem`, and `pronaos.mem` — local causal logs, per-Nexus boards, offering governance, bounded carriage, and the distinction among names, routes, peer keys, and capabilities.
 * `bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem` and `offering-antigen-scope-local-b.mem` — both canonical local studies and their contrasting proposals.
+* [UCAN v1 specification](https://github.com/ucan-wg/spec) and [UCAN revocation specification](https://github.com/ucan-wg/revocation) — signed issuer/audience/resource/capability/proof relations; immutable CID revocation and eventual delivery limits.
+* [OAuth 2.0 Resource Indicators, RFC 8707](https://www.rfc-editor.org/rfc/rfc8707.html) — audience restriction to intended protected resources.
+* [SPIFFE ID](https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE-ID.md), [Trust Domain and Bundle](https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE_Trust_Domain_and_Bundle.md), and [Federation](https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE_Federation.md) — explicit trust-domain to key-bundle binding and federation relations.
+* [Matrix Server-Server API](https://spec.matrix.org/latest/server-server-api/) — origin signatures and receiving-side validation of federation events and room authorization context.
+* [KERI specification](https://trustoverip.github.io/kswg-keri-specification/) — stable self-certifying identity and verifiable key-state evolution through inception/rotation events.
 
 !! Boundary and remaining uncertainty
 
-This record prepares a decision; it does not make it. No production field, fold, board, or enforcement behavior changed here. The operator still needs to choose the meaning of a copied act and the required scope evidence. Outside-research completion is not established by these local sources. Once chosen, enactment should begin with the positive control and the selected contract's foreign-scope red, then wire the smallest receiver seam that makes the test pass.
+This record prepares a decision; it does not make it. No production field, fold, board, or enforcement behavior changed here. The operator still needs to choose whether a copied act must carry stable charter scope, whether the local genesis identity's present derivation distinguishes every intended independent Nexus, and how historical epochs remain verifiable from a local frontier. Prior art supports explicit signed scope plus local verification, but it cannot decide DreamNet's identity law or revocation gradient. Once chosen, enactment should begin with the positive control, a scope-crossing red, and the same-roster/distinct-charter control, then wire the smallest receiver seam that makes them pass.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YaTNW1WaywTOM5xEC_s3ipPnpBYeV_hEBwC6uH7kMwM
+<<^ code="&#x0003;">>ni:///sha-256;9xLR8Bw0Nwec3GUWgfGoXWLB_AbcIHH2NX8EjvnjN7s
 
 <<^ code="&#x0004;" -> to="?">>
