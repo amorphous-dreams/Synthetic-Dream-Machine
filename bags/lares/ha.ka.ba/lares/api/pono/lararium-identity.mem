@@ -382,17 +382,18 @@ BBS per-verifier + Semaphore · Merton + Francis for the warning.
 > framing as the earlier shape the per-nexus steward-source supersedes.
 
 The DreamNet public plane (@oracle — the genesis grammar, public memes, the catalog schema) reads
-OPEN to all, anon included, and writes ONLY to the ''kahu-cabal''. The resolution ''splits the semantics''
+OPEN to all, anon included, and writes ONLY to the ''kahu quorum''. The resolution ''splits the semantics''
 rather than gate a mutable CRDT for public read (operator insight + scout-grounded, 2026-06-25):
 automerge-repo's `sharePolicy` gates the OFFER alone — //"the share policy will not stop a document//
 //being requested by another peer by its DocumentId"// — it never inspects an incoming change, so a
 shared mutable @oracle CRDT ''cannot'' gate writes without Beelay.
 
-''Operators and the kahu-cabal part as two groups'' (operator ruling 2026-06-25): every ''operator''
+''Operators and the kahu quorum part as two groups'' (operator ruling 2026-06-25): every ''operator''
 holds caps over their OWN infrastructure (their PersonaGroup · their bags · their hearth) and MAY
-receive ''Cabal/Nexus-scope'' caps //granted by// the kahu-cabal; only the ''kahu-cabal'' — the
-governance group (the Amorphous Dream Cabal, solo now, scaling toward consensus) — holds the
-steward-source-signing authority over its ''nexus's'' @oracle plane (per-nexus, never one global
+receive ''Nexus-scope'' caps //granted by// the kahu quorum; only that Nexus's ''kahu quorum'' — keys and
+a threshold seated through its seal lineage, one hand at founding, growing toward k-of-n — holds the
+steward-source-signing authority over its ''nexus's'' @oracle plane. At DreamNet scale the corpus-kahu,
+seated from the Amorphous Dreams Cabal, curate the grammar and hold no Nexus's plane (per-nexus, never one global
 DreamNet board — #the-oracle-plane cohere note, oracle-governance). Every admin/write cap reads
 ''temporary'' — a lease that decays
 unfed (#/the-lease), the kahu's own included; no permanent write-authority stands anywhere on the mesh.
@@ -576,6 +577,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bMFGwmJgkPK9QzhY6Eq4SCnkBQWNrtwvEjYmJQ5V6po
+<<^ code="&#x0003;">>ni:///sha-256;6bEZb4Ubl_iN2ncjYskbUs91hj8Kfvn3WwQaalCXGHU
 
 <<^ code="&#x0004;" -> to="?">>

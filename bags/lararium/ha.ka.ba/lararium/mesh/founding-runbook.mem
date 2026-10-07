@@ -42,7 +42,7 @@ pares the vessel to void · ''found'' stands the device + the three kahu · ''re
 pre-rotation's future-key custody · ''seal-and-back-up'' locks the secrets at rest + writes a
 recoverable copy · ''seed'' plants the content from `bags/` · ''LIVE'' serves ·
 ''crossroads'' stands a Herm where a family needs one (#/crossroads) · ''grow'' opens the Nexus,
-contracts fellow operators, and welcomes users at the anon floor (#/grow-the-nexus) · ''gather'' brings the
+contracts fellow operators and places, and welcomes users, who walk on an invite from any member face (#/grow-the-nexus) · ''gather'' brings the
 operator's own vessels in as contracted leaves (#/gather-the-fleet) · ''feed'' lays the first offering, which
 IS the realm's founding (#/feed-the-realm) · ''dwell'' seats a second operator IN the realm rather than
 merely carrying for it (#/dwell).
@@ -755,10 +755,18 @@ ceiling reads 0 and no argument raises it (faceless-by-class). See #crossroads.
 !! ③ Reserve ~ forge the pre-rotation's future
 
 The charter pre-rotates (a compromised present key-set cannot forge the future,
-[[charter-chain|lar:///ha.ka.ba/lararium/mesh/charter-chain]]), so `seat` needs a
-`--next-key-commit`. `reserve` forges the next epoch's key-set from a ''separate CSPRNG reserve
-seed'' (hardened SLIP-0010, never the live signing seed), prints the public commit, splits the seed
-Shamir ''2-of-3'', seals Share 1 on the vessel, and zeroizes the seed — the vessel keeps only Share
+[[charter-chain|lar:///ha.ka.ba/lararium/mesh/charter-chain]]), and ''the commitment runs PER SEAT''. Each
+Kahu seat commits its own COLD next key — paper words carrying a checksum, read back as a proof before the
+digest seals — and the charter carries the seats' digests and a next threshold (KERI's `n[]` · `nt`
+pair). A routine roll takes k per-seat reveals, and the keys it reveals sign it; digests
+left unrevealed carry forward as reserve. ''No Guardian takes part in a routine roll''
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+
+''What the code runs until the re-found.'' The per-seat commitment changes charter bytes, epoch CIDs and
+the Nexus AID, so it lands inside the re-found, and `seal commit --seat` stands unbuilt. Until then `seat`
+needs one `--next-key-commit`, and `reserve` forges the next epoch's key-set from a ''shared CSPRNG
+reserve seed'' (hardened SLIP-0010, never the live signing seed), prints the public commit, splits the
+seed Shamir ''2-of-3'', seals Share 1 on the vessel, and zeroizes the seed — the vessel keeps only Share
 1 + the public commit, never the seed:
 
 ```
@@ -767,11 +775,16 @@ lares nexus seal reserve --guardian-a '<guardian-a>' --guardian-b '<guardian-b>'
     #   seals 'Recovery-card mine' (Share 1) on the vessel, zeroizes the seed
 ```
 
+''The shared reserve seed stands RETIRED, and the re-found removes it.'' Its guardian-held shares rebuild
+the next KAHU key-set, so the Guardian face reaches the Nexus KEL through an ordinary roll — the fusion
+Guardian ⊥ Kahu forbids. No verb reveals a reserve key-set into the vault, and none will: the
+reserve-reveal verb retires with the seed.
+
 ''⚠ THE REAL NAMES NEVER ENTER THE TREE'' (operator, 2026-08-09). A guardian label names a ''living
 person'', and this runbook rides a checked-in, federating corpus — so writing the actual two in here
 would publish, to every reader of the repository and every clone of its history, ''who to approach to
-reconstruct a Nexus''. The independence rule (#/reserve-custody) buys its safety from an adversary not
-knowing which three domains to reach; a runbook naming two of them ''hands that back''.
+recover a person or a Nexus''. The independence rule (#/reserve-custody) buys its safety from an
+adversary not knowing which three domains to reach; a runbook naming two of them ''hands that back''.
 
 ''So the rite carries placeholders and the operator types the names at the CLI'', where they reach the
 reserve state on the vessel and the printed cards alone. ''The same law governs every operator-facing
@@ -791,13 +804,39 @@ lares nexus seal show                            # the quorum STANDS + the chain
 
 !! ③′ Reserve custody ~ the independence rule
 
-A single Shamir share reveals ''nothing''; any ''two'' reconstruct the reserve seed. So the whole
-scheme rests on one rule:
+Every key that rebuilds a future — a seat's cold next key, a Guardian's recovery key — rests on one rule:
 
-> ''The three shares MUST sit in three domains that do not fall together.'' No single realistic
-> breach, theft, or fire may reach two of them.
+> ''Keys that together reach a threshold MUST sit in domains that do not fall together.'' No single
+> realistic breach, theft, or fire may reach enough of them to act.
 
-The compromise-resistant layout keeps every operator copy as the ''same'' Share 1:
+''A guardian wears a face of its own.'' The GUARDIAN face holds a recovery key over a PERSON and ''never
+fuses with the kahu quorum-share'': a quorum-share signs the Nexus's present, a recovery key restores a
+person, and one object carrying both hands a single breach the lineage whole
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+
+Two correlation traps hide inside "lots of options": the ''online-identity trap'' (GitHub AND a
+cloud both behind one email/password-manager count as ONE domain — put at most one key there) and
+the ''co-location trap'' (a thumb drive AND a printout in the same drawer die in one fire — spread
+the offline keys across places). A card's ''confirmation phrase'' rides out-of-band (in person, a
+call) — it confirms the right person holds the right card, and it becomes the handshake at recovery.
+
+''The ruled shape then holds four ways'':
+
+* ''compromise'' — a thief who owns the vessel holds no cold next key, because a cold key never rests on
+  the vessel, so the lineage does not roll for them;
+* ''rotation'' — k seats reveal their own cold keys; no Guardian takes part;
+* ''loss'' — when a seat holder loses their keys, their Guardians recover them as a PERSON
+  (#/threshold-attest-recovery), and the surviving quorum re-seats them (`seal reseat`), surfacing what
+  leaned on the departed key for open review rather than cutting it;
+* ''catastrophe'' — where no quorum survives, the ''catastrophe rite'', named and opt-in, OFFERED at
+  founding (for a single-operator Nexus, the main survival path): Guardian weight counts for rotation
+  only, a contest window counts WITNESSED RECEIPTS rather than time, a live seat key supersedes inside
+  it, and the rite discloses when one human holds both faces.
+
+''Owed in code'': `seal reseat` and the catastrophe rite stand unbuilt.
+
+''What the shared-seed cards hold until the re-found.'' A single Shamir share reveals ''nothing''; any
+''two'' reconstruct the reserve seed. Every operator copy stays the ''same'' Share 1:
 
 * ''Share 1 (your domain)'' — the vessel + 'Recovery-card mine' (print AND/OR email); all one share,
   one domain. An adversary who owns your whole digital life reads ''one'' share -> nothing.
@@ -805,22 +844,8 @@ The compromise-resistant layout keeps every operator copy as the ''same'' Share 
   cabalmate takes it as they launch, via `reserve refresh`).
 * ''Share 3'' — 'Recovery-card guardian-B' (a second independent domain).
 
-''A guardian wears a face of its own.'' The GUARDIAN face holds a pre-rotation reserve share and
-''never fuses with the kahu quorum-share'': a quorum-share signs the Nexus's present, a reserve share
-rebuilds its future, and one object carrying both hands a single breach the lineage whole
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
-
-Two correlation traps hide inside "lots of options": the ''online-identity trap'' (GitHub AND a
-cloud both behind one email/password-manager count as ONE domain — put at most one share there) and
-the ''co-location trap'' (a thumb drive AND a printout in the same drawer die in one fire — spread
-the offline shares across places). The card's ''confirmation phrase'' rides out-of-band (in person, a
-call) — it confirms the right person holds the right share, and it becomes the handshake when a
-guardian hands the share back at recovery.
-
-The math then holds three ways: ''compromise'' (you fully
-owned -> one share -> safe); ''loss'' (you lose vessel + card -> two guardians rebuild without you);
-''rotation'' (your share + one guardian). A recovery materializes the seed, so `reserve refresh`
-re-seeds -> re-splits -> re-issues cards + a new commit afterward (Proactive Secret Sharing,
+A recovery materializes the seed, so `reserve refresh` re-seeds -> re-splits -> re-issues cards + a new
+commit afterward (Proactive Secret Sharing,
 [[siege-resilience|lar:///ha.ka.ba/lararium/mesh/siege-resilience]]).
 
 !!! Naming the two guardians ~ what the flags do, and the three questions that decide
@@ -831,10 +856,11 @@ and you place the card by hand. The names ride the public reserve state so `seal
 what — ''the label answers //who do I call at recovery//'', nothing more.
 
 ''The scheme's real purchase runs in the direction operators forget.'' Full compromise of the vessel yields
-''one'' share, which is nothing. The inverse matters more: ''the two guardians recover WITHOUT you''. That
-converts a death, a hospitalization, or a lost vault from the end of the lineage into a survivable event.
+''one'' share, which is nothing. The inverse matters more: ''Guardians recover WITHOUT you''. That
+converts a death, a hospitalization, or a lost vault from the end of the lineage into a survivable event —
+and the three questions below choose Guardians for the person and for the catastrophe rite alike.
 
-<<~ has Ask Collusion "asks/would-these-two-combine-against-me ~ together they hold the Nexus; pick two whose interests differ FROM EACH OTHER">>
+<<~ has Ask Collusion "asks/would-these-two-combine-against-me ~ together they hold your person; pick two whose interests differ FROM EACH OTHER">>
 <<~ has Ask Correlation "asks/could-one-fire-flood-or-subpoena-reach-both ~ two cards in one house reads as a 1-of-1 wearing a costume">>
 <<~ has Ask Reachability "asks/can-someone-who-is-NOT-me-find-them-on-the-worst-day ~ a guardian only you can reach recovers nothing">>
 
@@ -844,9 +870,9 @@ PLACEMENT act'' — handing physical cards to humans — and that act need not s
 founding. Place them when you next stand in front of those two people.
 
 ''The cost of a wrong name reads as a refresh, never a lineage'' — but the refresh carries a fork the command
-names for you: ''before'' the first rotate it re-mints genesis cleanly; ''after'' one, the current reserve
-keys must reveal at the pending rotate first, because a sealed head's pre-commitment freezes into its
-`epochCid`. So a founder who expects the names to change should refresh ''before'' rotating, not after.
+names for you: ''before'' the first rotate it re-mints genesis cleanly; ''after'' one, a sealed head's
+pre-commitment has frozen into its `epochCid`, and no verb reveals a reserve key-set to roll past it. So a
+founder who expects the names to change should refresh ''before'' rotating, not after.
 
 <<~/ahu>>
 
@@ -854,14 +880,15 @@ keys must reveal at the pending rotate first, because a sealed head's pre-commit
 
 !! ③″ Threshold-attest recovery ~ the pre-commit rhymes, the recovery rotates
 
-''Fork B'' (identity-classes#the-two-forks) recovers a PERSONA-root the way the reserve pre-commits a
-CHARTER key-set: ''both pre-commit at founding''. The reserve folds the next epoch's kahu keys into
-`nextKeyCommit`; the persona-KEL folds the ''guardians' recovery PUBLIC keys'' into the identifier
+''Fork B'' (identity-classes#the-two-forks) recovers a PERSONA-root the way a seat pre-commits its
+CHARTER key: ''both pre-commit at founding''. Each Kahu seat folds the digest of its own cold next key into
+the charter (#/reserve); the persona-KEL folds the ''guardians' recovery PUBLIC keys'' into the identifier
 PREFIX at inception (`provisionThresholdRecoveryAtFounding` -> `sealKeySetHash` -> `mintPersonaInception`).
 The two rites RHYME — a pre-committed k-of-n digest an operational compromise cannot forge — and the
 same ''independence rule'' (#/reserve-custody) binds the three guardian domains.
 
-The DIVERGENCE from the reserve card path (#/reserve-custody): threshold-attest ''reconstructs NOTHING''.
+''Guardians recover the PERSON this way'' — the only Guardian path outside the catastrophe rite.
+The DIVERGENCE from the shared-seed card path (#/reserve-custody): threshold-attest ''reconstructs NOTHING''.
 
 * the reserve SPLITS a seed 2-of-3 and MATERIALIZES it at recovery (a transient single-secret window);
 * Fork B gives each guardian their OWN recovery keypair — at recovery each guardian ''SIGNS'' the
@@ -880,11 +907,11 @@ accepting both a raw op-key pin and a prefix would open a downgrade. So ''contin
 this movement waits on no storage/sync placement (identity-classes#the-honest-edges carries the
 correction and its reason: //a stale wall misroutes every reader who trusts it//).
 
-⚠ ''WHAT REMAINS IS THE FORK, not a prerequisite.'' `identity-classes#the-two-forks` holds the one open
-choice — whether the recovery authority EVER materializes as a single secret (Fork A reconstruct-then-sign,
-maximal reuse of the guardian-card machinery, a shrunk transient window) or NEVER does (Fork B
-threshold-attest, each guardian signs independently, new multisig and heavier onboarding). ''Both stand
-built''; neither is wired into `runInit`, and the wiring waits on the ruling rather than on code.
+''THE FORK STANDS RULED.'' The NAME (the KEL prefix) recovers by Fork B — each Guardian signs, nothing
+assembles — and Fork A survives only as opt-in self-custody of the MEMORY (`identity-classes#the-two-forks`).
+A self-stood founding arms the prefix with the founder's own 1-of-1 self-recovery digest, and a real
+Guardian set grafts in by a later rotation's rolling commitment. ''Owed in code'': no verb grafts a
+Guardian set onto a standing prefix.
 
 ⚠ ''TWO SITES STILL BIND A RAW KEY where a prefix belongs'', each with its own consequence: the antigen
 bans a presenter `nym`, so a lawful rotation ''sheds the ban''; and a handle-card names a bare key as its
@@ -1045,10 +1072,11 @@ CONTRACTED (#/found), so it holds no seed to leak.
 
 ''AND A HERM CARRIES A RAISE DOOR, so a recognised operator may act there for a visit.'' The Herm prints a
 ''raise challenge'' in its own boot output — vessel, Nexus, epoch, nonce, and nothing of what it holds. A
-recognised operator signs it on THEIR machine and hands the grant back:
+recognised operator signs it on THEIR machine with their persona's per-Nexus LEAF for the challenge's
+Nexus — never the persona root — and hands the grant back, carrying that leaf's admit:
 
 ```
-# on the recogniser's own vessel, with one of their own persona roots:
+# on the recogniser's own vessel; --as picks which held persona's leaf signs:
 lares raise sign '<challenge-json>' [--as <persona-index>]
 ```
 
@@ -1058,8 +1086,12 @@ raise lives in memory only — a reboot drops the vessel back to its floor with 
 
 ''It ends by NON-RENEWAL, and nobody performs a lowering act.'' A grant binds the lease epoch its
 challenge named; when that Nexus's epoch rolls past it the reading simply stops coming back raised.
-Recognition itself borrows the members fold this Nexus already holds — quorum-signed, contract-in
-verified — so a Herm that recognises nobody raises for nobody.
+''Recognition reads a PRESENTED ADMIT, never a folded roster.'' The grant raises only when its admit
+roots on the challenge's Nexus — at the head epoch, or at an ancestor epoch its roll anchors carry to the
+head — the verifier reads it held against the deny board and the antigen, and the leaf that signed IS the
+admit's leaf; a root signing beside it refuses. The Herm chooses which boards it reads from the Nexuses it
+carries — its own counted carrier seal on a held charter's board, unioned with any persona-side carried
+set — and that choice seats no one. ''A Herm that carries no Nexus raises for nobody.''
 
 ''WHAT WAITS: the ask/answer verbs.'' The Herm's own half — provoking a fresh challenge on demand and
 reading a grant back — needs the door registered as a daemon verb, so today the boot output carries ONE
@@ -1088,7 +1120,7 @@ super-mesh (never a private plane; the read-floor holds in both postures):
 lares nexus posture open                            # co-federate the public shelf; a node bounce applies it
 ```
 
-''Contract a fellow operator'' — a two-sided wax-sealed handshake (the joining operator accepts
+''Contract a fellow operator or place'' — a two-sided wax-sealed handshake (the joining operator accepts
 carriage; the kahu-quorum counter-signs). The entry carries ''operator-pubkey + accepts-carriage +
 charter-epoch, and nothing more''; a contracted operator relays the mesh's sealed traffic + carries the
 Kapae immune antigen:
@@ -1111,9 +1143,11 @@ signing domain and no doc address — which is exactly why it gets deferred and 
 rite-commands witness now reads every instructed sub-door at its DISPATCH POSITION, so a door renamed
 underneath this rite fails the witness rather than the operator.
 
-''Welcome a user'' — a user needs no contract and leaves NO roster trace. Through invite-only alpha a
-sealed BURNABLE boot-invite gates the boot (spent-on-boot, no who-invited-whom edge); a garbled or
-absent invite founds a vessel at the ''anon floor''. A user builds their OWN social graph — a follow lands as
+''Welcome a user'' — a user WALKS: no contract, no quorum admit, and NO roster trace
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). Any member face —
+a Kahu, a Lamplighter, another user — hands a sealed BURNABLE invite signed by its own face for this Nexus;
+it gates the boot, burns once into the newcomer's local spent-set, and records no who-invited-whom
+anywhere. A garbled or absent invite founds a vessel at the ''anon floor''. A user builds their OWN social graph — a follow lands as
 a LOCAL write to that face's own private `circles-<tag>` doc, which fleet-syncs every one of their
 vessels and NEVER touches the wire — one follow graph per FACE, so a multitude's compartments never share
 a document anything could read to correlate them (#identity-classes, the recognition layer gives the human their one window on the crypto):
@@ -1456,6 +1490,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H-Ptim8FUfFRYl8jaOyP0sOBN_9uL_vNY_CmmL1MyCw
+<<^ code="&#x0003;">>ni:///sha-256;ycH5xTvnxC0F_9BumPPUE7-Uos-2Q0CL-1fod-mixBU
 
 <<^ code="&#x0004;" -> to="?">>

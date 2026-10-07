@@ -68,7 +68,7 @@ A human's posture rides the vessels in their PersonaGroup pool — a ''posture, 
 vessel by vessel (#/identity-classes):
 
 <<~ has Stack OPERATOR "runs/a node vessel does/CONTRACTS with the Nexus (owes MANDATORY carriage) trace/a wax-sealed carriage contract — consensual, minimal, revocable (Kapae)">>
-<<~ has Stack USER "runs/browser-style vessels, no infra does/SOFT-ATTACHES (boot-seeded from a node on the rhizome, own cap-stack, reads/writes through blind relays) trace/NONE — no roster, no account, no user table">>
+<<~ has Stack USER "runs/browser-style vessels, no infra does/WALKS on an invite from any member face (boot-seeded from a node on the rhizome, own cap-stack, reads/writes through blind relays) trace/NONE — no roster, no account, no user table, no quorum admit">>
 
 ''An operator contracts because carriage is a mutual obligation the mesh must check'' — a Nexus has
 to know its infrastructure-peers to gossip the antigen and split the carry. ''A user owes nothing,
@@ -85,7 +85,7 @@ the pool.
 | ''end user'' | `walk` — //an operator KEEPS a hearth; a user WALKS the road// |
 | ''Lamplighter'' | `carry` · `tend/island` · `tend/reach` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/reach">>) |
 | ''Kahu'' | the Nexus-scale `quorum-share`; the engine cadence rides a separate threshold, and the corpus-kahu curate at DreamNet scale (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
-| ''Guardian'' | the pre-rotation reserve share — never fused with a kahu quorum-share; one human may hold it beside a Kahu seat, in a separate custody |
+| ''Guardian'' | a recovery key over a persona's KEL — Guardians recover the PERSON, and carry weight in a Nexus KEL only inside its opt-in catastrophe rite; one human may hold it beside a Kahu seat, in a separate custody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
 
 ''Founding names an ACT, never a face'': it seats the first kahu quorum, and the founder then holds
 a Kahu seat in that Nexus.
@@ -99,6 +99,30 @@ nothing to do with mesh upkeep.
 
 ''The target scale model is the SMALL CLAN'': a family of several operators and several users, each
 holding several personas. The design scales up from the clan, never down from the civic.
+
+<<~/ahu>>
+
+<<~ ahu #/the-three-admissions>>
+
+!! Three admissions ~ walking, contracting and seating never share a name
+
+''Three relations bring a human into a Nexus, and one name for all three blurs the act each one enacts.''
+The criterion that keeps them apart reads the same as everywhere else in the house: different ceremony,
+different signer, different trace.
+
+|! relation |! who acts |! what it takes |! what it leaves |
+| a USER ''walks'' | any member face — a Kahu, a Lamplighter, another user | an invite, burned once at boot | nothing: no quorum, no board entry, no who-invited-whom |
+| an operator or place ''contracts'' | the subject, and ≥k of the kahu quorum | the presented admit, the subject's consent, ≥k Kahu countersigning, the carriage board, the Lamplighter office (`carry` · `tend`) | the carriage contract — and nothing more (#/the-operator-contract) |
+| a member is ''seated'' | the kahu quorum, through the seal lineage | a seat in the lineage's per-seat commitment | the seal lineage itself (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
+
+''Walking reads as HOSPITALITY, never admission.'' An invite hands a guest the road; it confers no
+standing, asks no quorum and leaves no trace on any board (#/the-invite). ''Contracting reads as the one
+ADMISSION'' — the word //admit// names this relation and no other, and the admit travels with its subject
+(#/the-operator-contract). ''Seating reads as SUCCESSION'' — a member joins the quorum that admits, and
+the seal lineage records it as keys and a threshold, never as a roster.
+
+The cadence threshold rides none of the three as a base relation: it seats operators who already
+contract, by its own lineage (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>).
 
 <<~/ahu>>
 
@@ -182,12 +206,20 @@ An invite rides as a ''sealed capability spent-on-boot'' (operator-ruled): peer-
 alpha changes nothing about the invariant: the invite is a ''capability the recipient RECEIVED, not
 a record the Nexus KEEPS.'' The general invite manufactures ''no social graph.''
 
+''ANY MEMBER FACE MAY INVITE, and an end user needs no quorum admit'' (operator-ruled). A Kahu, a
+Lamplighter or another user hands the invite, so users invite users. The inviter's own face for that
+Nexus signs it — never the node's vessel key — and the verifier reads the inviter's standing against
+the deny board, never against a list of who may invite. ''One hop, burned, remembered by no one'': the
+receiver's local spent-set closes the invite, no wall clock bounds it, the inviter carries no liability
+for the guest, and no record anywhere — board, inviter or newcomer — chains who invited whom, because that
+chain would read as a roster. Membership never confers trust; compartments outrank admission control.
+
 ''The reputation-cost braid'' — the idea that an invite rides on the inviter's reputation as a cost
 (Sybil-resistance, accountability) — reserves to the ''Cabal tier'', never the general invite: a
-cabal is a bilateral verb two operators actively DO (#/cabal-realm), and a reputation-priced admission
-lives THERE, where the graph is already mutual + consented, not on the traceless general invite.
-''The reservation runs as TWO DOMAINS, never one dial.'' `boot-invite` (`lar-boot-invite/v1`) seals
-Nexus-side, names no voucher, writes no edge, and burns locally — the general invite. `cabal-invite`
+cabal is a bilateral verb two operators actively DO (#/cabal-realm), and a reputation-priced JOIN to a
+realm lives THERE, where the graph is already mutual + consented, not on the traceless general invite.
+''The reservation runs as TWO DOMAINS, never one dial.'' `nexus-invite` carries the inviting face's
+signature for one Nexus, names no voucher, writes no edge, and burns locally — the general invite. `cabal-invite`
 (`lar-cabal-invite/v1`) names its `voucherDid` in the clear and feeds the vouch-DAG the lineage price
 walks. ''They never collapse'': merging them destroys the tracelessness on purpose-built ground. What
 the general invite forgoes is precisely what the Cabal tier requires — an attributable voucher to
@@ -281,6 +313,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lW-Q4K-WG2wmv5XsscSvUScu-ezzY7BxbyZaua2f7Y8
+<<^ code="&#x0003;">>ni:///sha-256;ba07LtEjvsKQdNUoMdo0vkhN1fMqBCXgyyedXHLPAuc
 
 <<^ code="&#x0004;" -> to="?">>
