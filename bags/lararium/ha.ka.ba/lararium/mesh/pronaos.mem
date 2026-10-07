@@ -115,6 +115,7 @@ stranger distinguishably reads as an oracle, so the client proves first.
 SILENT    herm (default)   hands over the bulb BY NAME: /bulb/<cid>.bin, /cas/<cid>; describes nothing
 WAYMARK   herm (opt-in)    + one UNSIGNED descriptor at /.well-known/lar: format, route shapes, bulb CID
 TEMPLE    lararium only    its own Pronaos: the arrival page and the arrival descriptor (#/the-first-arrival)
+ORACLE    every vessel     NO rung: the FLOW-map crosses only the gated oracle socket, to a dialer that proved first
 ```
 
 ''SILENT.'' The traveler brings the name. The bulb names itself by its genesis seed's CID, which re-derives from
@@ -133,7 +134,21 @@ under a carrier's key would correlate the place with every Nexus it carries. The
 descriptor hold one dispatcher key, so one vessel can never answer the well-known name twice.
 
 ''TEMPLE.'' The lararium's own Pronaos keeps its arrival descriptor whole (#/the-first-arrival). A lararium handed
-the waymark knob refuses: its arrival rides its Pronaos.
+the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
+alone; on a herm that path is the closed door, since a readiness answer is a self-description.
+
+''THE ORACLE STANDS ON NO RUNG.'' A vessel's oracle face is no HTTP face at any rung: every HTTP path under it,
+the pointer and the snapshot included, draws the one closed door. The signed FLOW-map pointer and the snapshot it
+names cross only the vessel's oracle socket, behind the vessel's own gate handshake: the dialer proves its key
+first, the gate signs its verdict with the vessel key, and only then do the pointer frame and the snapshot frame
+leave. A stranger who opens the socket and proves nothing receives the gate's challenge and its refusal, and no
+frame of the map. The carriage, a browser vessel's reader and the mesh witnesses all read through that socket.
+
+The pointer is signed by the vessel key, and the gate proves that same key on the socket before the pointer
+leaves, so the pointer tells a proven peer no key the handshake had not already proven to it. The correlation
+the waymark paragraph guards against (one public signature tying a place to every Nexus it carries) does not arise
+from the pointer, because the pointer is never public. What the socket does disclose sits at the gate: its
+challenge names the vessel key to any opener before the opener proves anything, as the relay gate's does.
 
 ''THE BULB IS THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
@@ -387,6 +402,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DHciqTf_eZ0psfzk1BRKU1Zs0f3V9DgOQEDwXyLGm14
+<<^ code="&#x0003;">>ni:///sha-256;YVfL09k33rTZZ5NEfLC1LfVVwNTNZ70czk7nr60B00g
 
 <<^ code="&#x0004;" -> to="?">>

@@ -39,7 +39,7 @@ import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
 import { bootFaultReport }                 from "./boot-fault.js";
-import { standAs } from "@lararium/mesh";
+import { standAs, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
 import {
   standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
@@ -182,15 +182,16 @@ async function main(): Promise<void> {
     }
   });
 
-  // WS server — path-scoped to /ws only. Non-WS requests get no handler (socket destroyed
-  // by the upgrade gate below). No HTTP surface — catalog URL advertised via stdout.
+  // WS server — path-scoped to /ws. The dispatcher routes each upgrade to the one socket face that claims
+  // its path and destroys the rest. Catalog URL advertised via stdout.
   const httpServer = createServer();
   const dispatcher = mountHttpFaceDispatcher(httpServer);
   const wss = new WebSocket.Server({ noServer: true });
   // Health names only the local boot posture. It carries no peer, document,
   // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.
+  // It binds on a lararium alone; a herm describes nothing to a stranger.
   const readinessState = createReadinessState();
-  const readinessFace = mountReadinessFace({ httpServer, state: readinessState, dispatcher });
+  const readinessFace = mountReadinessFace({ httpServer, state: readinessState, standing: askedStanding, dispatcher });
   // The Pronaos lights only from two explicit operator inputs, and only on a lararium. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
   //
@@ -213,13 +214,10 @@ async function main(): Promise<void> {
     mountHermWaymark({ httpServer, dispatcher, bulbCid: genesisSeedCid(bulb.seedBytes) });
   }
 
-  httpServer.on("upgrade", (req, socket, head) => {
-    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
-    if (pathname === "/ws") {
-      wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
-    } else {
-      socket.destroy();
-    }
+  // The relay socket rides the dispatcher's one upgrade listener; an upgrade no socket face claims is destroyed.
+  dispatcher.registerUpgrade({
+    name: "relay", path: "/ws",
+    handle: (req, socket, head) => wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req)),
   });
 
   // Fail-fast on a busy port — the supervised vessel never manages its siblings
@@ -305,7 +303,7 @@ async function main(): Promise<void> {
     console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
     console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
     console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
-    console.log(`[herm] FLOW-map read-face: GET /oracle/pointer · /oracle/<cid>.bin`);
+    console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
 
     // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
     // `standAs` above answers what this vessel stands as ALONE. A recognised operator may raise it for the
@@ -475,9 +473,9 @@ async function main(): Promise<void> {
     console.log(`[lararium] nexus dial-out → ${joinSync}${joinGate ? "" : "   (no LAR_JOIN_GATE — fail-closed to inert; a gate-less dial cannot bind the anti-relay proof)"}`);
   }
 
-  // The oracle doc's read-only PUBLIC substrate (the Two-Faced Substrate's content-addressed
-  // floor) — served over THIS http server: GET /oracle/pointer · /oracle/<cid>.bin.
-  // Write-refusing by construction (GET-only, hash-named, no sync). Best-effort: a
+  // The oracle doc's read-only substrate (the Two-Faced Substrate's content-addressed floor) — served to
+  // PROVEN PEERS over THIS http server's gated oracle socket; an HTTP request for it meets the closed door.
+  // Write-refusing by construction (send-only, hash-named, no sync). Best-effort: a
   // read-face failure logs and never crashes boot. lar:///…/lararium-identity#/the-oracle-plane.
   let oracleReadFace: { dispose: () => void } | null = null;
   if (result.oracleDocUrl) {
@@ -486,10 +484,11 @@ async function main(): Promise<void> {
       const signerSeed   = await loadVesselSigningSeed();
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
+        authShore: result.daemon.authShore,
         dispatcher,
         onLog: (line) => console.log(`[lararium] ${line}`),
       });
-      console.log(`[lararium] oracle read-face: GET /oracle/pointer · /oracle/<cid>.bin`);
+      console.log(`[lararium] oracle read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
     } catch (e) {
       console.log(`[lararium] oracle read-face skipped: ${e instanceof Error ? e.message : String(e)}`);
     }

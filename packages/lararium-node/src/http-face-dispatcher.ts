@@ -1,11 +1,14 @@
 /**
- * One request listener for a vessel's HTTP faces.
+ * One request listener and one upgrade listener for a vessel's HTTP faces.
  *
  * A face claims synchronously, then may answer asynchronously. The dispatcher
- * never races a claimed face with its terminal refusal.
+ * never races a claimed face with its terminal refusal. A request no face claims
+ * draws the closed door; an upgrade no socket face claims has its socket destroyed.
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import type { Duplex } from "node:stream";
+import { answerClosedDoor } from "./bulb-routes.js";
 
 export interface HttpFace {
   readonly name: string;
@@ -16,18 +19,18 @@ export interface HttpFace {
   readonly handle: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
 }
 
-export interface HttpFaceDispatcher {
-  readonly register: (face: HttpFace) => () => void;
-  readonly dispose: () => void;
+/** A face that answers a WebSocket upgrade on one exact path. */
+export interface HttpUpgradeFace {
+  readonly name: string;
+  /** The exact pathname this face upgrades. One live face per path. */
+  readonly path: string;
+  readonly handle: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
 }
 
-function refuse(res: ServerResponse): void {
-  if (res.writableEnded) return;
-  res.writeHead(404, {
-    "content-type": "text/plain; charset=utf-8",
-    "cache-control": "no-store",
-  });
-  res.end("route unavailable");
+export interface HttpFaceDispatcher {
+  readonly register: (face: HttpFace) => () => void;
+  readonly registerUpgrade: (face: HttpUpgradeFace) => () => void;
+  readonly dispose: () => void;
 }
 
 function failHandler(res: ServerResponse): void {
@@ -51,8 +54,9 @@ export function mountHttpFaceDispatcher(server: Server): HttpFaceDispatcher {
 
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const face = faces.find((candidate) => candidate.owns(req));
+    // A path no face claims draws THE closed door — the one answer every withheld or refused path draws.
     if (!face) {
-      refuse(res);
+      answerClosedDoor(res);
       return;
     }
     try {
@@ -63,6 +67,33 @@ export function mountHttpFaceDispatcher(server: Server): HttpFaceDispatcher {
   };
 
   server.on("request", onRequest);
+
+  const upgradeFaces = new Map<string, HttpUpgradeFace>();
+  const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
+    const face = upgradeFaces.get(new URL(req.url ?? "/", "http://localhost").pathname);
+    if (!face) { socket.destroy(); return; }
+    try { face.handle(req, socket, head); } catch { socket.destroy(); }
+  };
+  server.on("upgrade", onUpgrade);
+
+  const registerUpgrade = (face: HttpUpgradeFace): (() => void) => {
+    if (!face.name || face.name.trim() !== face.name) {
+      throw new Error("[http-face] upgrade face name must be a non-empty exact value");
+    }
+    if (!face.path.startsWith("/") || face.path.trim() !== face.path) {
+      throw new Error("[http-face] upgrade face path must be an exact absolute pathname");
+    }
+    if (upgradeFaces.has(face.path)) {
+      throw new Error("[http-face] upgrade path already owned: " + face.path);
+    }
+    upgradeFaces.set(face.path, face);
+    let live = true;
+    return () => {
+      if (!live) return;
+      live = false;
+      if (upgradeFaces.get(face.path) === face) upgradeFaces.delete(face.path);
+    };
+  };
 
   const register = (face: HttpFace): (() => void) => {
     if (!face.name || face.name.trim() !== face.name) {
@@ -91,10 +122,13 @@ export function mountHttpFaceDispatcher(server: Server): HttpFaceDispatcher {
 
   return {
     register,
+    registerUpgrade,
     dispose: () => {
       faces.length = 0;
       routeOwners.clear();
+      upgradeFaces.clear();
       server.off("request", onRequest);
+      server.off("upgrade", onUpgrade);
     },
   };
 }

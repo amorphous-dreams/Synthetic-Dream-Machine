@@ -4,6 +4,10 @@
  * `/api/health` reports only whether this selected Node boot path completed its
  * required local setup. It carries no identity, authority, document, Oracle,
  * Pronaos, or causal-freshness claim.
+ *
+ * It binds on a LARARIUM alone. A herm describes nothing to a stranger
+ * (pronaos#/the-rung-ladder), and a readiness answer is a self-description, so on
+ * a herm the route stays unclaimed and draws the vessel's closed door.
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
@@ -38,12 +42,15 @@ function answer(res: ServerResponse, state: ReadinessState, method: string): voi
   else res.end(JSON.stringify({ status: state.status() }));
 }
 
-/** Mount the exact health route on an existing Node server. */
+/** Mount the exact health route on an existing Node server — on a lararium; a herm mounts nothing. */
 export function mountReadinessFace(args: {
   readonly httpServer: Server;
   readonly state: ReadinessState;
+  /** What the operator asked this vessel to stand as. Only "lararium" binds the route. */
+  readonly standing: "lararium" | "herm";
   readonly dispatcher?: HttpFaceDispatcher;
 }): ReadinessFace {
+  if (args.standing !== "lararium") return { dispose: () => {} };
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
     if (pathname !== "/api/health") return;

@@ -1,29 +1,41 @@
 /**
  * oracle-read-face — the node-side wiring of the Two-Faced Substrate.
  *
- * Serves the oracle doc as the READ-ONLY PUBLIC substrate over the node's existing HTTP
- * server (no new tech, no new port):
- *   GET /oracle/pointer      → the locally published signed causal pointer (JSON)
- *   GET /oracle/<cid>.bin    → the content-addressed snapshot bytes (Automerge.save)
+ * Serves the oracle doc's signed causal pointer and the content-addressed snapshot it names (Automerge.save)
+ * to PEERS WHO PROVED FIRST, over the vessel's own gate handshake on one upgrade path:
+ *   ws <ORACLE_SOCKET_ROUTE> → lar:challenge · lar:auth · lar:auth-ok → pointer frame · snapshot frame · close
  *
- * Write-refusal is by construction: only GET is served, the bytes are named by their
- * own hash, and there is no sync session — nothing to write. On each oracle-doc change
- * the face re-exports the snapshot and publishes a fresh causal pointer. The local
- * causal frontier persists to disk so a reboot can continue the same lineage.
+ * The face is NOT an HTTP face. It claims no request path, so every HTTP request for the oracle draws the
+ * vessel's closed door, exactly as a path nobody claims; a dialer that cannot prove a key at the gate reads
+ * nothing (pronaos#/the-rung-ladder: the oracle rung answers proven peers alone).
+ *
+ * The gate is the vessel's own (`DaemonAuthGate`, armed with the daemon island's verify shore and the
+ * vessel key), so the pointer's signer is the very key the dialer's proof committed to: a peer learns no key
+ * from the pointer that the handshake had not already named to it.
+ *
+ * Write-refusal is by construction: the face only sends, the bytes are named by their own hash, and there is
+ * no sync session. On each oracle-doc change the face re-exports the snapshot and publishes a fresh causal
+ * pointer. The local causal frontier persists to disk so a reboot can continue the same lineage.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  * (the content-addressed floor; Hypercore live-streaming rides above it as the
  * deferred end-goal). The pure core (export/build/verify) lives in @lararium/mesh.
  */
 
-import type { Server, IncomingMessage, ServerResponse } from "node:http";
+import type { Server, IncomingMessage } from "node:http";
+import type { Duplex } from "node:stream";
+import WebSocket from "isomorphic-ws";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
+import { DaemonAuthGate } from "./daemon-auth-gate.js";
 import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { Doc } from "@automerge/automerge";
-import { ORACLE_ROUTE_PREFIX, ORACLE_POINTER_ROUTE, ORACLE_SNAPSHOT_RE } from "@lararium/mesh";
+import {
+  ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, DAEMON_BAG_ID, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed,
+  type AuthVerifierShore, type OraclePointerFrame,
+} from "@lararium/mesh";
 import {
   exportOracleSnapshot, buildOraclePointer, oraclePointerId, verifyOraclePointer, snapshotPublicFlowMap,
   type OracleSnapshot, type OraclePointer, type LarDoc,
@@ -44,15 +56,18 @@ export interface OracleReadFace {
 }
 
 /**
- * Mount the read-face on a running HTTP server, exporting from the oracle handle and
- * signing pointers with the node's seed. Idempotent in effect — re-exports only when
- * the oracle doc's content hash actually changes.
+ * Mount the read-face on a running HTTP server's upgrade path, exporting from the oracle handle and
+ * signing pointers with the vessel's seed. Idempotent in effect — re-exports only when the oracle doc's
+ * content hash actually changes.
  */
 export async function mountOracleReadFace(args: {
   readonly httpServer:   Server;
   readonly oracleHandle: DocHandle<unknown>;
+  /** The VESSEL seed — it signs the pointer, and its key is the gate key a dialer proves against. */
   readonly signerSeed:   Uint8Array;
   readonly storageDir:   string;
+  /** The daemon island's verify shore — the gate admits a dialer on its verdict, as the vessel's relay gate does. */
+  readonly authShore:    AuthVerifierShore;
   readonly dispatcher?:   HttpFaceDispatcher;
   readonly onLog?:       (line: string) => void;
   /** Export fn — defaults to exportOracleSnapshot (the raw doc). A FLOW-map serve passes a shore
@@ -111,70 +126,56 @@ export async function mountOracleReadFace(args: {
   const onChange = (): void => { void reissue(false); };
   oracleHandle.on("change", onChange);
 
-  // The read-face is the PUBLIC read-only plane — it reads to ANY origin (a node-less
-  // browser vessel on elyncia.app / localhost dev reads cross-origin). Open CORS is
-  // correct + pono here: no credentials, no writes, content verified by hash + signature.
-  const CORS: Record<string, string> = {
-    "access-control-allow-origin":  "*",
-    "access-control-allow-methods": "GET, HEAD, OPTIONS",
-    "access-control-allow-headers": "*",
-  };
-  const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
-    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
-    if (!pathname.startsWith(ORACLE_ROUTE_PREFIX)) return; // not ours — leave for other handlers
-    if (req.method === "OPTIONS") { res.writeHead(204, CORS); res.end(); return; } // preflight
-    if (req.method !== "GET" && req.method !== "HEAD") {
-      res.writeHead(405, { ...CORS, "content-type": "text/plain" });
-      res.end("method not allowed");
-      return;
-    }
-    if (pathname === ORACLE_POINTER_ROUTE) {
-      if (!pointer) { res.writeHead(503, CORS); res.end("no pointer yet"); return; }
-      res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
-      res.end(JSON.stringify(pointer));
-      return;
-    }
-    const m = pathname.match(ORACLE_SNAPSHOT_RE);
-    if (m && snapshot && m[1] === snapshot.cid) {
-      res.writeHead(200, {
-        ...CORS,
-        "content-type":  "application/octet-stream",
-        "cache-control": "public, immutable, max-age=31536000", // content-addressed → never stale
-      });
-      res.end(Buffer.from(snapshot.bytes));
-      return;
-    }
-    res.writeHead(404, { ...CORS, "content-type": "text/plain" });
-    res.end("unknown or stale oracle cid");
-  };
-  const unregister = args.dispatcher?.register({
-    name: "oracle",
-    routeKeys: ["oracle:/oracle"],
-    owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname.startsWith(ORACLE_ROUTE_PREFIX),
-    handle: onRequest,
+  // THE GATE — the vessel's own handshake on its own socket server. Only a socket that passed it reaches
+  // `connection`; every other socket was denied and closed by the gate before a frame of the map was sent.
+  const wss  = new WebSocket.Server({ noServer: true });
+  const gate = new DaemonAuthGate(wss);
+  // The vessel key is the gate key: it signs each verdict back to the dialer, and the same key signs the pointer.
+  gate.arm(args.authShore, DAEMON_BAG_ID, {
+    pubKey: await ed25519VerifyingKeyFromSeed(signerSeed), sign: ed25519SignerFromSeed(signerSeed),
   });
-  if (!unregister) httpServer.on("request", onRequest);
+  gate.on("connection", (socket: WebSocket) => {
+    // Read the pair once, so the pointer and the bytes it names always leave together.
+    const p = pointer, snap = snapshot;
+    if (!p || !snap) { socket.close(1000); return; }
+    const frame: OraclePointerFrame = { type: ORACLE_POINTER_FRAME, pointer: p };
+    socket.send(JSON.stringify(frame));
+    socket.send(Buffer.from(snap.bytes));
+    socket.close(1000);
+  });
+  const upgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
+    wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+  };
+  const unregister = args.dispatcher?.registerUpgrade({ name: "oracle", path: ORACLE_SOCKET_ROUTE, handle: upgrade });
+  // A bare server (no dispatcher) carries one listener that answers this path alone and leaves every other.
+  const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
+    if (new URL(req.url ?? "/", "http://localhost").pathname === ORACLE_SOCKET_ROUTE) upgrade(req, socket, head);
+  };
+  if (!unregister) httpServer.on("upgrade", onUpgrade);
 
   return {
     dispose: () => {
       oracleHandle.off("change", onChange);
       if (unregister) unregister();
-      else httpServer.off("request", onRequest);
+      else httpServer.off("upgrade", onUpgrade);
+      for (const client of wss.clients) client.terminate();
+      wss.close();
     },
   };
 }
 
 /**
- * Mount a vessel's PUBLIC FLOW-map (the mesh-palace projection) as a read-face. The disclosure
- * shore applies BEFORE the snapshot (snapshotPublicFlowMap), so only coarse public FLOW crosses
- * the wire — the private territory never leaves. A Herm serves this as its sole substrate (at
- * `/oracle/`); a peer pulls it with the same `pullAndVerifyOracle`. The Lares Viales floor on the wire.
+ * Mount a vessel's FLOW-map (the mesh-palace projection) as a read-face. The disclosure shore applies
+ * BEFORE the snapshot (snapshotPublicFlowMap), so only coarse public FLOW crosses the wire — the private
+ * territory never leaves. A Herm serves this as its sole substrate; a proven peer pulls it with the same
+ * `pullAndVerifyOracle`. The Lares Viales floor on the wire.
  */
 export function mountFlowMapReadFace(args: {
   readonly httpServer:       Server;
   readonly meshPalaceHandle: DocHandle<unknown>;
   readonly signerSeed:       Uint8Array;
   readonly storageDir:       string;
+  readonly authShore:        AuthVerifierShore;
   readonly dispatcher?:      HttpFaceDispatcher;
   readonly onLog?:           (line: string) => void;
 }): Promise<OracleReadFace> {
@@ -183,6 +184,7 @@ export function mountFlowMapReadFace(args: {
     oracleHandle:   args.meshPalaceHandle,
     signerSeed:     args.signerSeed,
     storageDir:     args.storageDir,
+    authShore:      args.authShore,
     ...(args.dispatcher ? { dispatcher: args.dispatcher } : {}),
     ...(args.onLog ? { onLog: args.onLog } : {}),
     exportSnapshot: (doc: unknown) => snapshotPublicFlowMap(doc as LarDoc),

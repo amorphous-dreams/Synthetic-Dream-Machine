@@ -71,6 +71,11 @@ jobs:
       - name: Browser weld driver preserves its entry contract
         if: matrix.driver == 'browser-weld'
         run: node --test tools/browser-weld-witness.test.mjs
+      # The mesh witnesses' readers hold to a known positive: a field the pointer builder stops minting
+      # reds here, before a mesh run can read every act as one frozen default.
+      - name: Herm mesh readers read a known positive
+        if: matrix.driver == 'herm-mesh'
+        run: node --test tools/herm-mesh-reader.test.mjs
 
       - name: Run ${{ matrix.driver }}
         shell: bash
@@ -105,18 +110,17 @@ jobs:
               run_captured "$ARTIFACT_DIR/mesh-setup.log" 10m docker compose -f docker-compose.mesh.yml up -d herm-source herm-relay herm-relay-2
               status=$?
               if [ "$status" -eq 0 ]; then
-                ready=0
-                for _ in $(seq 1 45); do
-                  if curl --connect-timeout 2 --max-time 2 -fsS http://localhost:18093/oracle/pointer >"$ARTIFACT_DIR/relay-2-pointer.json"; then ready=1; break; fi
-                  sleep 2
-                done
-                if [ "$ready" -ne 1 ]; then
-                  echo "relay-2 never exposed its oracle read-face within 90s" | tee -a "$ARTIFACT_DIR/driver.log"
+                # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
+                # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
+                reader_root="$(mktemp -d)"
+                if ! run_captured "$ARTIFACT_DIR/reader-found.log" 5m env LAR_ROOT="$reader_root" node packages/lares-cli/bin/lares.mjs vessel found --skip-build; then
+                  echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
                   status=1
                 else
-                  run_logged 90s bash tools/herm-mesh-witness.sh
+                  LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
                   status=$?
                 fi
+                rm -rf "$reader_root"
               fi
               ;;
             mesh-scenarios)

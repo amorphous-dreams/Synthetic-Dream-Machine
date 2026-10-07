@@ -17,7 +17,7 @@
  * path, and when it fails it fails with the next site's name in its message.
  *
  *   R1 — a herm reaches `live`                         · the base case of the stack
- *   R2 — a herm serves the public shelf                · carrying is what the floor is FOR
+ *   R2 — a herm serves its map to a proven peer alone  · carrying is what the floor is FOR; peers prove first
  *   R3 — a herm carries a crossing                     · admit-by-lease, the relay role that is load-bearing
  *   R4 — a herm refuses hearth-scoped acts LEGIBLY     · refusal is a feature of the floor
  *   R5 — a herm LIFTS into a lararium                  · the cap-stack transition the runbook's rite performs
@@ -179,6 +179,15 @@ async function operatorDid(r: string): Promise<string> {
   finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
 }
 
+/** The herm's own vessel, as a reader that proves its key at a gate — loaded from the root it founded. */
+async function readerOf(r: string): Promise<import("../../packages/lararium-mesh/src/auth-wire.js").LeafIdentity> {
+  const { loadLeafIdentity } = await import("../../packages/lararium-node/src/leaf-identity.js");
+  const prior = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = r;
+  try { return await loadLeafIdentity(); }
+  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+}
+
 afterAll(async () => {
   try {
     // LET THE VESSEL FINISH DYING. It flushes its stores on the way down, so tearing the tree out from
@@ -210,11 +219,19 @@ describe("the herm — the floor of the lararium cap stack", () => {
       .not.toMatch(/"index"\s*:\s*\d/);
   }, 200_000);
 
-  test("R2 — a herm serves the public shelf with no hearth-fire lit", async () => {
-    const res = await fetch(`http://127.0.0.1:${PORT}/oracle/pointer`).catch(() => null);
-    // This vector reaches the vessel R1 stood. A refusal here reads as "the shelf is unserved" and can
-    // equally mean "no vessel is listening at all" — so name both, and let the reader tell them apart.
-    expect(res?.ok, `the read-face never answered on :${PORT} — either the floor serves no shelf, or nothing stands there for R5 to lift`).toBe(true);
+  test("R2 — a herm serves its map to a proven peer, and a stranger meets the closed door", async () => {
+    const { pullAndVerifyOracle } = await import("../../packages/lararium-mesh/src/oracle-read-client.js");
+    const { CLOSED_DOOR } = await import("../../packages/lararium-node/src/bulb-routes.js");
+    const origin = `http://127.0.0.1:${PORT}`;
+    // A STRANGER asks for the pointer over HTTP and draws the one closed door — the vessel answers, and says
+    // nothing. A refused connection here would mean nothing stands at all, which is a different verdict.
+    const stranger = await fetch(`${origin}/oracle/pointer`).catch(() => null);
+    expect(stranger, `nothing answered on :${PORT} — no vessel stands there for R5 to lift`).not.toBeNull();
+    expect(stranger!.status).toBe(CLOSED_DOOR.status);
+    expect(await stranger!.text()).toBe(CLOSED_DOOR.body);
+    // A PROVEN PEER — this vessel's own key — reads the map through the gated oracle socket.
+    const read = await pullAndVerifyOracle(origin, { identity: await readerOf(root) });
+    expect(read.ok, `a proven peer read no map on :${PORT} — the floor serves no shelf: ${read.reason}`).toBe(true);
   }, 60_000);
 
   test("R3 — a herm carries: its verb channel answers a caller", async () => {

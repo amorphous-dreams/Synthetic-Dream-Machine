@@ -13,7 +13,7 @@ describe("Node readiness face", () => {
   test("answers 503 before setup, 200 after injected setup, and 405 for unsupported methods", async () => {
     const server = createServer(); servers.push(server);
     const state = createReadinessState();
-    const face = mountReadinessFace({ httpServer: server, state });
+    const face = mountReadinessFace({ httpServer: server, state, standing: "lararium" });
     server.on("request", (req, res) => { if (!res.writableEnded) { res.writeHead(404); res.end("other face"); } });
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
@@ -42,7 +42,7 @@ describe("Node readiness face", () => {
 
   test("does not own Oracle, Pronaos, or arbitrary API paths", async () => {
     const server = createServer(); servers.push(server);
-    const face = mountReadinessFace({ httpServer: server, state: createReadinessState() });
+    const face = mountReadinessFace({ httpServer: server, state: createReadinessState(), standing: "lararium" });
     server.on("request", (req, res) => {
       if (req.url === "/oracle/pointer") { res.writeHead(200); res.end("oracle-face"); return; }
       if (!res.writableEnded) { res.writeHead(404); res.end("other-face"); }

@@ -24,6 +24,7 @@ import {
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, identityShareDecision, shareConfigOf, type FederationGate, type IdentityRing,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
+  pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
@@ -277,6 +278,9 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
    * written (the traceless proof).
    */
   admittedToNexus: boolean;
+  /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
+   *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
+  readOracle: <T = unknown>(baseUrl: string) => Promise<OraclePullResult<T>>;
   /** Relay a main-thread DOM event to the ACTIVE surface (interactivity RETURN leg) — routes to the daemon or
    *  the pinned wiki by the live active-surface pointer. */
   sendDomEvent: (renderId: string, eventType: string, fields: Record<string, number | boolean>) => void;
@@ -577,6 +581,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     bootKeyWrites.bootstrap = bootstrap;
   }
   const social = bootstrap;   // narrowed (defined past this point)
+  // THE PROOF THIS VESSEL CARRIES TO A PEER'S ORACLE. Peers prove first: an oracle map crosses only a socket
+  // whose dialer passed the peer's gate, so the carriage and the page's reader prove this vessel's own key and
+  // founding card there. The seed stays inside this closure. No card cached → nothing to prove with.
+  const oracleProof: LeafIdentity | undefined = social.contactCard
+    ? { contactCard: social.contactCard, peerPubKey: vesselVerifyingKey, sign: ed25519SignerFromSeed(vesselSeed) }
+    : undefined;
 
   // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
   // The SAME observation node's `openDaemon` makes, through the same platform-blind door
@@ -783,6 +793,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     return [...carriageStack({
       repo, residency, self: leaf,
       nodeSeedHex: vesselVerifyingKey,   // the per-vessel cadence seed (browser-safe hex string, no Buffer)
+      ...(oracleProof ? { identity: oracleProof } : {}),
       onLog: (l) => console.log(`[lararium-browser] ${l}`),
     })];
   })() : [];
@@ -1358,6 +1369,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase:            "live",
     admittedToNexus,
+    readOracle: <T>(baseUrl: string) => oracleProof
+      ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof })
+      : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: "this vessel holds no card to prove at a peer's gate" }),
     // The return-leg routes to whichever surface is LIVE-active (read the pointer, never a captured value —
     // the seat routes the next event to whatever holds focus). daemon → its own worker; else the pinned wiki.
     sendDomEvent: (renderId, eventType, fields) =>

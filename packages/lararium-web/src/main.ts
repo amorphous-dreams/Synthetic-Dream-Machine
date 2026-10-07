@@ -23,7 +23,7 @@ import {
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { pullAndVerifyOracle, DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisSeed } from "@lararium/mesh";
+import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisSeed, type OraclePullResult } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -83,14 +83,15 @@ function set(id: string, text: string, cls = ""): void {
   const el = $(id); el.textContent = text; el.className = "v " + cls;
 }
 
-// The oracle read-face — the node-less anon-read path. INDEPENDENT of the vessel boot
-// (it reads a public read-face; it must not be gated behind the local vessel coming up).
-// Config-supplied via ?oracle=…, default the local dev node; elyncia.app → a public one.
-async function readOracle(): Promise<void> {
+// The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
+// proves its key at that peer's gate before any map crosses; an anon page reads nothing, so the read waits on
+// the vessel standing. Config-supplied via ?oracle=…, default the node that served this page.
+type OracleReader = <T>(baseUrl: string) => Promise<OraclePullResult<T>>;
+async function readOracle(read: OracleReader): Promise<void> {
   const readFace = new URLSearchParams(location.search).get("oracle") ?? defaultReadFace();
-  set("oracle-status", `reading ${readFace} …`);
+  set("oracle-status", `proving at ${readFace} …`);
   try {
-    const r = await pullAndVerifyOracle<{ tiddlers?: Record<string, unknown> }>(readFace);
+    const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace);
     if (r.ok && r.pointer) {
       const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
       const oracleEl = $("oracle"); oracleEl.replaceChildren();
@@ -342,6 +343,7 @@ async function bootVessel(): Promise<void> {
       console.log(`[vessel] this leaf's key: ${did}`);
       console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
     }
+    void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
     _sendDomEvent = result.sendDomEvent;        // arm the interactivity RETURN leg — the click half
     _sendDomInput = result.sendDomInput;        //   … and the text half
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
@@ -377,6 +379,4 @@ async function bootVessel(): Promise<void> {
   }
 }
 
-// Run both independently — the read of the oracle doc never waits on the vessel boot.
-void readOracle();
 void bootVessel();

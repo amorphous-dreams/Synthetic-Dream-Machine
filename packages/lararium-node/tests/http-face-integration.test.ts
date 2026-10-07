@@ -36,7 +36,7 @@ describe("production face dispatcher integration", () => {
   test("keeps readiness, Pronaos, and Oracle ownership distinct with terminal refusals", async () => {
     const server = createServer(); servers.push(server);
     const dispatcher = mountHttpFaceDispatcher(server);
-    const readiness = mountReadinessFace({ httpServer: server, state: createReadinessState(), dispatcher });
+    const readiness = mountReadinessFace({ httpServer: server, state: createReadinessState(), standing: "lararium", dispatcher });
     const pronaos = mountPronaosReadFace(server, projection(), dispatcher);
     const oracleUnregister = dispatcher.register({
       name: "oracle-test",

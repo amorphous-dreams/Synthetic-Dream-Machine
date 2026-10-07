@@ -17,8 +17,10 @@ import { getHeads } from "@automerge/automerge";
 import { composeVessel, pullAndVerifyOracle, dialEntryToRecord, routingSlotToRecord, radialCoordinate, type MeshPalaceDoc, type CapModule } from "@lararium/mesh";
 import { mountFlowMapReadFace } from "../src/oracle-read-face.js";
 import { carriageCap, CAP, incommensurablePullMs, discoverPeers, dampedRadius, type MeshPalaceComponent } from "../src/node-caps.js";
+import { provingShore, readerIdentity } from "./oracle-proof-fixture.js";
 
 const SEED_A = new Uint8Array(32).fill(7);
+const SEED_HERM = new Uint8Array(32).fill(11);   // the carrying Herm proves its own key at the source's gate
 async function listen(server: Server): Promise<number> {
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   return (server.address() as { port: number }).port;
@@ -39,13 +41,13 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
     const srcServer = createServer();
     const srcPort = await listen(srcServer);
-    const srcFace = await mountFlowMapReadFace({ httpServer: srcServer, meshPalaceHandle: srcHandle, signerSeed: SEED_A, storageDir: tmp("src-") });
+    const srcFace = await mountFlowMapReadFace({ httpServer: srcServer, meshPalaceHandle: srcHandle, signerSeed: SEED_A, storageDir: tmp("src-"), authShore: await provingShore(SEED_A) });
 
     // HERM cap-stack â€” a meshpalace-providing cap + the carriage cap wired over it by composeVessel.
     const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
-      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
+      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], identity: await readerIdentity(SEED_HERM), pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
 
@@ -71,12 +73,12 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
     const srcServer = createServer();
     const srcPort = await listen(srcServer);
-    const srcFace = await mountFlowMapReadFace({ httpServer: srcServer, meshPalaceHandle: srcHandle, signerSeed: SEED_A, storageDir: tmp("src-amp-") });
+    const srcFace = await mountFlowMapReadFace({ httpServer: srcServer, meshPalaceHandle: srcHandle, signerSeed: SEED_A, storageDir: tmp("src-amp-"), authShore: await provingShore(SEED_A) });
 
     const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
-      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
+      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], identity: await readerIdentity(SEED_HERM), pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
 
@@ -103,7 +105,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     // until the peer's public snapshot actually carries the new title before pulling, so this control
     // isn't racing that re-export.
     for (let i = 0; i < 50; i++) {
-      const v = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${srcPort}`);
+      const v = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${srcPort}`, { identity: await readerIdentity(SEED_HERM) });
       if (v.ok && v.doc && changedDial.tiddler.title in v.doc.tiddlers) break;
       await new Promise((r) => setTimeout(r, 10));
     }
@@ -199,10 +201,41 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
     const vessel = await composeVessel([
       meshpalaceProviding(hermHandle),
-      carriageCap({ peers: ["http://127.0.0.1:1/unreachable"], pullIntervalMs: 1_000_000 }),
+      carriageCap({ peers: ["http://127.0.0.1:1/unreachable"], identity: await readerIdentity(SEED_HERM), pullIntervalMs: 1_000_000 }),
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
     expect(await carriage.pullOnce()).toBe(0); // unreachable peer â†’ 0 merged, no throw
     await vessel.dispose();
+  });
+
+  test("peers prove first: a carriage with no identity carries in nothing from a live source", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const srcDial = dialEntryToRecord(
+      { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://src/p", scale: "dreamnet" }, "src");
+    const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
+    const srcServer = createServer();
+    const srcPort = await listen(srcServer);
+    const srcFace = await mountFlowMapReadFace({ httpServer: srcServer, meshPalaceHandle: srcHandle, signerSeed: SEED_A, storageDir: tmp("src-anon-"), authShore: await provingShore(SEED_A) });
+
+    const anonHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const anon = await composeVessel([
+      meshpalaceProviding(anonHandle),
+      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], pullIntervalMs: 1_000_000 }),
+    ]);
+    expect(await anon.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!.pullOnce()).toBe(0);
+    expect(Object.keys(anonHandle.doc()?.tiddlers ?? {})).not.toContain(srcDial.tiddler.title);
+
+    // CONTROL: the same source, a carriage that proves â€” the record crosses.
+    const provenHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const proven = await composeVessel([
+      meshpalaceProviding(provenHandle),
+      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], identity: await readerIdentity(SEED_HERM), pullIntervalMs: 1_000_000 }),
+    ]);
+    await proven.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!.pullOnce();
+    expect(Object.keys(provenHandle.doc()?.tiddlers ?? {})).toContain(srcDial.tiddler.title);
+
+    await anon.dispose(); await proven.dispose();
+    srcFace.dispose();
+    await new Promise<void>((r) => srcServer.close(() => r()));
   });
 });

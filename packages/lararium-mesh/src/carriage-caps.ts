@@ -23,6 +23,7 @@ import {
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
 import { pullAndVerifyOracle } from "./oracle-read-client.js";
+import type { LeafIdentity } from "./auth-wire.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import type { LarDoc } from "./base-doc.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
@@ -229,9 +230,12 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
 /** carriage — the blind relay: pull each PEER's PUBLIC FLOW-map (pullAndVerifyOracle) and merge it into
  *  this vessel's meshpalace doc, re-served by the read-face (carry-by-aggregate-reserve). Peers are
  *  DISCOVERED from the carried dials (self-peering) ∪ the bootstrap. A peer down is no error —
- *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from). */
+ *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from).
+ *
+ *  PEERS PROVE FIRST: each pull proves `identity` at the peer's gate before any map crosses. A carriage
+ *  handed no identity has nothing to prove with, so it pulls nothing — it still stands its own map. */
 export function carriageCap(deps: {
-  peers: readonly string[]; pullIntervalMs?: number; nodeSeedHex?: string;
+  peers: readonly string[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
   return {
@@ -242,6 +246,8 @@ export function carriageCap(deps: {
       const seenDiscovered = new Set<string>();
       let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
       let rPublished = rCurrent;
+      const identity = deps.identity;
+      if (!identity) deps.onLog?.("carriage: no identity to prove at a peer's gate — this vessel carries in nothing");
       const pullOnce = async (): Promise<number> => {
         let merged = 0;
         const peers = discoverPeers(mp.handle.doc(), deps.peers, deps.selfEndpoint, deps.maxFanout ?? 16, deps.selfCoord);
@@ -263,13 +269,14 @@ export function carriageCap(deps: {
             }
           }
         }
+        if (!identity) return merged;   // nothing to prove with — nothing crosses in
         for (const peer of peers) {
           if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {
             seenDiscovered.add(peer);
             deps.onLog?.(`carriage: self-peering discovered ${peer} from a carried dial`);
           }
           let verdict;
-          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer); }
+          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer, { identity }); }
           catch { continue; } // a peer down/unreachable is no error — feed-or-fade
           if (!verdict.ok || !verdict.doc) continue;
           const incoming = verdict.doc.tiddlers;
@@ -354,6 +361,8 @@ export function carriageStack(deps: {
   residency?:      BagStowage;
   self?:           MeshSelf;
   nodeSeedHex:     string;
+  /** The identity each pull proves at a peer's gate. Absent → the carriage pulls nothing. */
+  identity?:       LeafIdentity;
   pullIntervalMs?: number;
   onLog?:          (line: string) => void;
 }): readonly CapModule[] {
@@ -367,6 +376,7 @@ export function carriageStack(deps: {
     carriageCap({
       peers:       self?.peers ?? [],
       nodeSeedHex: deps.nodeSeedHex,   // the node-id seeds this vessel's incommensurable cadence
+      ...(deps.identity ? { identity: deps.identity } : {}),
       ...(deps.pullIntervalMs !== undefined ? { pullIntervalMs: deps.pullIntervalMs } : {}),
       ...(self ? {
         ...(self.endpoint ? { selfEndpoint: self.endpoint } : {}), // absent → a leaf, not dial-able

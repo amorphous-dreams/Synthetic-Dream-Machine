@@ -2296,6 +2296,20 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
 }
 
 /**
+ * The identity this vessel's carriage proves at each peer's gate: the vessel's own key and the ContactCard
+ * its founding cached. A vessel with no cached card proves nothing, so its carriage carries in nothing —
+ * named once here, never a throw that takes the boot with it.
+ */
+async function carriageIdentity(tag: string): Promise<LeafIdentity | undefined> {
+  try {
+    return await loadLeafIdentity();
+  } catch (e) {
+    console.log(`[${tag}] carriage holds no identity to prove at a peer's gate (${e instanceof Error ? e.message : String(e)})`);
+    return undefined;
+  }
+}
+
+/**
  * Open the FULL node Lararium — composeLararium's #has-cap-stack runs the shared keel sequence
  * (substrate → wiki-slot → daemon → verbs → wiki → pool → daemon-first ea-gate → primary-wiki mount
  * → live). Behaviour stays identical to the pre-cap-stack boot; the only change is the composed wrap.
@@ -2305,10 +2319,12 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
+  const identity = opts.meshSelf ? await carriageIdentity("lararium") : undefined;
   const carriageCaps = opts.meshSelf ? carriageStack({
     repo:        p.repo,
     self:        opts.meshSelf,
     nodeSeedHex: Buffer.from(p.vesselSeed).toString("hex"),
+    ...(identity ? { identity } : {}),
     ...(p.residency ? { residency: p.residency } : {}),
     onLog: (l) => console.log(`[lararium] ${l}`),
   }) : [];
@@ -2370,6 +2386,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
   // BANS (the antigen ring rides its carriage), so reading the WHO plane completes the pair: it recognises
   // the presenters those bans name. The cap cannot betray the asymmetry, because it holds no card to publish.
   const hermCrossroads = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
+  const identity = await carriageIdentity("herm");
   const herm = await composeHerm({
     extraCaps: [whoFaceCap({
       repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey, residency: p.residency,
@@ -2384,7 +2401,9 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
     signerSeed:  p.vesselSeed,
     storageDir:  opts.storageDir,
+    authShore:   () => p.daemonVm().authShore,
     ...(opts.meshSelf ? { meshSelf: opts.meshSelf } : {}),
+    ...(identity ? { identity } : {}),
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
     // Serve the HELD bulb by cid over the public floor (the OPEN path) — present only when the genesis stands.
     ...(p.bulb ? { bulb: p.bulb } : {}),

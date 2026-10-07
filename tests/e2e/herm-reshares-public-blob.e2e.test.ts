@@ -229,8 +229,9 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
 
   test("⑥ A goes DARK — its staged daemon alone", async () => {
     await fleet!.A.stopDaemonOnly();
+    // Any HTTP answer at all — the closed door included — means A still listens.
     const alive = await fetch(`http://127.0.0.1:${fleet!.A.port}/oracle/pointer`).then(() => true).catch(() => false);
-    expect(alive, "A's read-face still answers — A never went dark").toBe(false);
+    expect(alive, "A still answers on its port — A never went dark").toBe(false);
   }, 30_000);
 
   // THE VECTOR THE LAW OWES. Red today, for the seam the file header names: the Herm holds no pointer and no bytes.

@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import { mountHttpFaceDispatcher, type HttpFace } from "../src/http-face-dispatcher.js";
+import { CLOSED_DOOR } from "../src/bulb-routes.js";
 
 const servers: Server[] = [];
 afterEach(async () => {
@@ -31,9 +32,10 @@ describe("HTTP face dispatcher", () => {
     const server = createServer(); servers.push(server);
     mountHttpFaceDispatcher(server);
     const response = await fetch(await origin(server) + "/unclaimed");
-    expect(response.status).toBe(404);
-    expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(await response.text()).toBe("route unavailable");
+    expect(response.status).toBe(CLOSED_DOOR.status);
+    expect(response.headers.get("cache-control")).toBe(CLOSED_DOOR.headers["cache-control"]);
+    expect(response.headers.get("content-type")).toBe(CLOSED_DOOR.headers["content-type"]);
+    expect(await response.text()).toBe(CLOSED_DOOR.body);
   });
 
   test("dispatches the first face that claims and passes through earlier faces", async () => {
@@ -81,6 +83,31 @@ describe("HTTP face dispatcher", () => {
     const response = await fetch(await origin(server) + "/after-unregister");
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("route unavailable");
+    dispatcher.dispose();
+  });
+
+  test("routes an upgrade to the one socket face that claims its path and destroys the rest", async () => {
+    const server = createServer(); servers.push(server);
+    const dispatcher = mountHttpFaceDispatcher(server);
+    const seen: string[] = [];
+    const off = dispatcher.registerUpgrade({
+      name: "probe", path: "/sock",
+      handle: (req, socket) => { seen.push(req.url ?? ""); socket.end("HTTP/1.1 101 Switching Protocols\r\n\r\n"); },
+    });
+    expect(() => dispatcher.registerUpgrade({ name: "other", path: "/sock", handle: () => {} })).toThrow(/already owned/);
+    const base = (await origin(server)).replace("http", "ws");
+    const outcome = (path: string): Promise<string> => new Promise((resolve) => {
+      const ws = new WebSocket(base + path);
+      ws.onerror = () => resolve("refused");
+      ws.onopen = () => resolve("opened");
+    });
+    await outcome("/sock");                     // the claimed path reaches its face
+    expect(seen).toEqual(["/sock"]);
+    expect(await outcome("/unclaimed")).toBe("refused");
+    expect(seen).toEqual(["/sock"]);           // no face answered the unclaimed upgrade
+    off();
+    await outcome("/sock");
+    expect(seen).toEqual(["/sock"]);           // an unregistered path is unclaimed again
     dispatcher.dispose();
   });
 });

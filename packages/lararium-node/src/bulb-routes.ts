@@ -32,9 +32,10 @@ export const CAS_BLOB_RE  = new RegExp(`^${CAS_ROUTE_PREFIX}([0-9a-f]{64})$`);
 /**
  * THE CLOSED DOOR — the one answer every unknown, refused or withheld path draws.
  *
- * Its status, headers and body equal the vessel dispatcher's terminal refusal byte for byte, so a stranger
- * cannot tell a path no face claims from a CID this face withholds, a wrong method, or a blob it never held
- * (shelter-against-empire#/legibility: a surface that answers a stranger distinguishably reads as an oracle).
+ * The vessel dispatcher draws it for a path no face claims, and every face draws it for a path it withholds or
+ * refuses, so a stranger cannot tell an unclaimed path from a CID this face withholds, a wrong method, a blob it
+ * never held, or a face that answers only a proven peer (shelter-against-empire#/legibility: a surface that
+ * answers a stranger distinguishably reads as an oracle). It is spelled here alone; every refusal imports it.
  * It carries no CORS grant and no text that names what answered.
  */
 export const CLOSED_DOOR = {

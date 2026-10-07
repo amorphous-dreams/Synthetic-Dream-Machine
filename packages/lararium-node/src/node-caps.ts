@@ -45,6 +45,7 @@ import {
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
   CARRIAGE_CAP,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
+  type AuthVerifierShore, type LeafIdentity,
 } from "@lararium/mesh";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
@@ -81,15 +82,18 @@ export const CAP = {
   bulb:       "bulb",
 } as const;
 
-// ── the node-ONLY cap: the http read-face that serves the meshpalace FLOW-map ─────────────────────
+// ── the node-ONLY cap: the gated read-face that serves the meshpalace FLOW-map to proven peers ──────
 
-/** read-face — serves the meshpalace PUBLIC FLOW-map over the HTTP server (the disclosure shore
- *  at the wire). Requires substrate + meshpalace (the doc it projects). Disposes the HTTP face. */
+/** read-face — serves the meshpalace FLOW-map to PROVEN PEERS over the vessel's gated oracle socket (the
+ *  disclosure shore at the wire). Requires substrate + meshpalace (the doc it projects) + daemon (the
+ *  verify shore its gate admits on). Disposes the socket face. */
 export function flowMapReadFaceCap(deps: {
   httpServer: Server; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
+  /** The daemon island's inbound-peer verify shore, read once the daemon cap stands. */
+  authShore: () => AuthVerifierShore;
 }): CapModule {
   return {
-    id: CAP.readFace, requires: [CAP.substrate, CAP.meshpalace],
+    id: CAP.readFace, requires: [CAP.substrate, CAP.meshpalace, CAP.daemon],
     build: async (resolve) => {
       const mp = resolve<MeshPalaceComponent>(CAP.meshpalace);
       return mountFlowMapReadFace({
@@ -97,6 +101,7 @@ export function flowMapReadFaceCap(deps: {
         meshPalaceHandle: mp.handle,
         signerSeed:       deps.signerSeed,
         storageDir:       deps.storageDir,
+        authShore:        deps.authShore(),
         ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
         ...(deps.onLog ? { onLog: deps.onLog } : {}),
       });
@@ -147,6 +152,10 @@ export interface HermStackDeps extends DaemonCapDeps {
   /** This Herm's mesh standing — derived once via deriveMeshSelf. Present → it self-announces, self-peers,
    *  re-ranks by proximity + drifts r. Absent → a leaf that only carries what it pulls (no carriage dials). */
   readonly meshSelf?:      MeshSelf;
+  /** The daemon island's inbound-peer verify shore — the read-face's gate admits a peer on its verdict. */
+  readonly authShore:      () => AuthVerifierShore;
+  /** The identity this Herm's carriage proves at each peer's gate. Absent → it carries in nothing. */
+  readonly identity?:      LeafIdentity;
   readonly pullIntervalMs?: number;
   /** The HELD bulb this Herm serves by cid over the public floor. Absent → no `/bulb/*` face (a Herm with no
    *  genesis to hand). Present → a stranger pulls it + kindles their OWN sovereign hearth (serve fire, never key). */
@@ -190,11 +199,12 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
       nodeSeedHex: Buffer.from(d.signerSeed).toString("hex"),
       ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),
+      ...(d.identity ? { identity: d.identity } : {}),
       ...(d.pullIntervalMs !== undefined ? { pullIntervalMs: d.pullIntervalMs } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
     flowMapReadFaceCap({
-      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir,
+      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, authShore: d.authShore,
       ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
