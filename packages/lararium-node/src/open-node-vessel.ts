@@ -81,7 +81,7 @@ import { repoRoot }                       from "@lararium/mesh/node";
 import { daemonGenesisDir }               from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { DeterministicFederationGate, federationPostureFromDoc, sealLineageHead, utf8Bytes, makeCidResolver } from "@lararium/mesh";
+import { DeterministicFederationGate, federationPostureFromDoc, utf8Bytes, makeCidResolver } from "@lararium/mesh";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
@@ -725,7 +725,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // the vessel's OWN staged bodies for the FEDERATION plane; STAGE-2 admission delivery hands this keyring to a
   // joinee so a member reads too. FAIL-CLOSED elsewhere holds: absent this stand, `keyring.current()` throws and
   // the seal producer keeps a body cleartext-local (never plaintext sealed).
-  const sealHeadEpoch = sealLineageHead(nexusDocForBoot)?.epoch ?? 0;
+  // The head's place in the lineage IS its depth along the hash links — genesis 0 — so the keyring reads the
+  // chain itself rather than a counter any epoch record carries.
+  const sealHeadEpoch = Math.max(0, (nexusDocForBoot?.sealLineage?.length ?? 0) - 1);
   nexusConvergenceKeyring = standNexusKeyring({ sealEpoch: sealHeadEpoch });
   // The relay-side discovery index the seal producer announces a sealed cid onto (DHT-free; hint → peers → tracker).
   const casBagTracker = makeBagTracker();

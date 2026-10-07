@@ -40,7 +40,7 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
-  holdsCarriage, holdsCarrier, foundingRoster, presentedAdmitFromBoard,
+  holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
   type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature, type RollAnchor,
@@ -100,7 +100,7 @@ export interface NexusContractResult {
   readonly carrierHeld:      boolean;
   /**
    * The CARRIED admit (an `admit` only; null for every other act): the entry just signed, its closed, tight
-   * lineage off the board just written (`presentedAdmitFromBoard` for the nym), the Nexus AID, and THIS
+   * lineage off the board just written (`presentationFromBoardDoc` for the nym), the Nexus AID, and THIS
    * vessel's gate key — the hearth the joinee dials to present it. Public bytes only. The joinee takes it by
    * hand (`lares nexus admit-take`), so it reaches her under a PRIVATE posture, where no board crosses.
    */
@@ -283,7 +283,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     // (nothing presents, or another act heads the relation) emits no bundle rather than a different admit.
     let bundle: AdmitBundle | null = null;
     if (opts.action === "admit") {
-      const presented = await presentedAdmitFromBoard(written, nym, roster, rollAnchorsFromBoard(handle.doc()));
+      const { presentation: presented } = await presentationFromBoardDoc(handle.doc(), nym, roster);
       if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
         bundle = {
           aid: nexusAidOrRefuse(opts.sealHome), gatePubKey: nexusPubkey.toLowerCase(),

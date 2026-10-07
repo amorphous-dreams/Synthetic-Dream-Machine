@@ -58,7 +58,6 @@ import {
   foundingRoster,
   foldCarrierSet,
   carriageEntriesFromBoard,
-  rollAnchorsFromBoard,
   antigenEntriesFromBoard,
   carriageDocUrl,
   kapaeAntigenDocUrl,
@@ -66,7 +65,7 @@ import {
   makeMultiSigQuorumVerifier,
   verifyLeafProof,
   verifyPresentedAdmit,
-  presentedAdmitFromBoard,
+  presentationFromBoardDoc,
   ed25519SignerFromSeed,
   carriageEntryActCid,
   presentedActCid,
@@ -244,8 +243,8 @@ export interface DialPresentation extends AdmitPresentation {
  * must be a held leaf; the board's counted admit head for that leaf then presents ONLY when it descends from
  * the kept admit (the kept admit is the head or sits in the head's lineage) — both are counted acts, and the
  * board's head wins only by extending the kept one. Otherwise the kept bundle presents as it was taken. With
- * no holding kept bundle, each held leaf's counted board head is tried in roster order. The board's
- * roll anchors ride every board read, so an admit at an epoch the charter has rolled past presents with the
+ * no holding kept bundle, each held leaf's counted board head is tried in roster order. Every board read goes
+ * through the one presenter (`presentationFromBoardDoc`), which reads the board's roll anchors with its acts, so an admit at an epoch the charter has rolled past presents with the
  * anchors that carry it to the head; a kept bundle taken before the roll does not hold at the head on its
  * own, and the board's anchored head presents instead.
  *
@@ -276,13 +275,11 @@ export async function dialPresentation(opts: {
     const island = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
     const held = await (opts.leaves ?? heldNexusLeaves)(aid);
     const board = await opts.open(carriageDocUrl(island), "board:carriage-contracts");
-    const entries = carriageEntriesFromBoard(board);
-    const anchors = rollAnchorsFromBoard(board);
 
     const kept = readKeptAdmitBundle(opts.sealHome, aid);
     const keptLeaf = kept ? held.find((l) => l.verifyingKey.toLowerCase() === kept.admit.nym.toLowerCase()) : undefined;
     if (kept && keptLeaf && (await admitBundleHolds(kept, roster, doc?.sealLineage ?? []))) {
-      const head = await presentedAdmitFromBoard(entries, keptLeaf.verifyingKey, roster, anchors);
+      const { presentation: head } = await presentationFromBoardDoc(board, keptLeaf.verifyingKey, roster);
       const keptCid = carriageEntryActCid(kept.admit);
       const extends_ = head !== null &&
         (carriageEntryActCid(head.admit) === keptCid || head.lineage.some((e) => presentedActCid(e) === keptCid));
@@ -290,7 +287,7 @@ export async function dialPresentation(opts: {
       return { ...pick, aid, island, leaf: keptLeaf };
     }
     for (const leaf of held) {
-      const presented = await presentedAdmitFromBoard(entries, leaf.verifyingKey, roster, anchors);
+      const { presentation: presented } = await presentationFromBoardDoc(board, leaf.verifyingKey, roster);
       if (presented) return { ...presented, aid, island, leaf };
     }
     return null;

@@ -16,11 +16,12 @@ import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as ed from "@noble/ed25519";
 import { verifyBcc } from "@lararium/memetic-frame";
 import { readCarrierShape } from "@lararium/tw5";
 import {
   emptyFoundingCharterDoc, genesisSealEpochCid, foundingRoster, foundingQuorumSeated,
-  genesisCharterEpoch, sealKeySetHash, sealLineageHead,
+  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, sealLineageHead, ed25519SignerFromSeed, hex,
   renameOwnPersona, ownPersonaPetname, declarePersonaHandle, standForKahuSeat,
   personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
 } from "@lararium/mesh";
@@ -136,7 +137,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     writeNexusDoc(bags, doc);
     const back = readNexusDoc(bags);
     expect(back).toEqual(doc);                                          // the chain survives disk byte-faithful
-    expect(sealLineageHead(back)!.epoch).toBe(0);
+    expect(sealLineageHead(back)!.prevEpochCid).toBeNull();
     expect(foundingRoster(back).sealEpochCid).toBe(genesis.epochCid);   // antigen roots on the head
     expect(foundingQuorumSeated(back)).toBe(true);
   });
@@ -149,6 +150,44 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
       JSON.stringify({ kind: NEXUS_DOC_DOMAIN, threshold: 2, kahu: [], sealLineage: [{ epoch: 0, epochCid: "e0" }] }) +
       "\n```\n", "utf8");
     expect(readNexusDoc(bags)).toBeNull();                        // an epoch missing keySetHash/nextKeyCommit → torn → closed
+  });
+
+  /** A genesis over one pair, rolled signed to a second pair. */
+  async function rolledDoc(): Promise<NexusDoc> {
+    const seeds = [1, 2, 3, 4].map((n) => new Uint8Array(32).fill(60 + n));
+    const keys = await Promise.all(seeds.map(async (s) => hex(await ed.getPublicKeyAsync(s))));
+    const genesis = genesisCharterEpoch(keys.slice(0, 2), 2, sealKeySetHash(keys.slice(2), 2));
+    const r = await rotateSealEpoch(genesis, { keys: keys.slice(2), threshold: 2 }, "",
+      seeds.slice(2).map((s, i) => ({ signer: keys[i + 2]!, sign: ed25519SignerFromSeed(s) })));
+    if (!r.ok) throw new Error(r.reason);
+    return {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [genesis, r.epoch],
+      kahu: keys.slice(2).map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
+    };
+  }
+
+  test("a SIGNED roll round-trips through disk, and the roster roots on the rolled head", async () => {
+    const doc = await rolledDoc();
+    writeNexusDoc(bags, doc);
+    const back = readNexusDoc(bags);
+    expect(back).toEqual(doc);
+    expect(sealLineageHead(back)!.roll!.signatures).toHaveLength(2);
+    expect(foundingRoster(back).sealEpochCid).toBe(doc.sealEpochCid);
+  });
+
+  test("a TORN roll reads the whole doc null; a smuggled roll field never reaches a verifier", async () => {
+    const doc = await rolledDoc();
+    writeNexusDoc(bags, doc);
+    const path = nexusCharterDocPath(bags);
+    const whole = readFileSync(path, "utf8");
+    // Smuggle a field onto the roll: the coercion copies the known fields alone.
+    writeFileSync(path, whole.replace('"signatures": [', '"smuggled": true,\n      "signatures": ['), "utf8");
+    const smuggled = readNexusDoc(bags);
+    expect(smuggled).not.toBeNull();
+    expect(Object.keys(sealLineageHead(smuggled)!.roll!).sort()).toEqual(["keys", "signatures", "threshold"]);
+    // Tear the roll: a signature record without its sig.
+    writeFileSync(path, whole.replace(/"sig": "[0-9a-f]+"/, '"sig": 7'), "utf8");
+    expect(readNexusDoc(bags)).toBeNull();
   });
 });
 

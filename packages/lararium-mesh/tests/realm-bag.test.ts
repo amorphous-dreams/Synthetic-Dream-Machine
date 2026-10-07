@@ -47,8 +47,8 @@ describe("realm-bag — the realm's name", () => {
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: "epoch-1", kahu: [],
       sealLineage: [
-        { epoch: 0, epochCid: REALM, keySetHash: "k0", nextKeyCommit: "n0", prevEpochCid: null },
-        { epoch: 1, epochCid: "epoch-1", keySetHash: "n0", nextKeyCommit: "n1", prevEpochCid: REALM },
+        { epochCid: REALM, keySetHash: "k0", nextKeyCommit: "n0", prevEpochCid: null },
+        { epochCid: "epoch-1", keySetHash: "n0", nextKeyCommit: "n1", prevEpochCid: REALM },
       ],
     };
     expect(realmIdOfCharter(doc)).toBe(REALM);

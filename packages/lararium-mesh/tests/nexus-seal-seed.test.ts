@@ -116,7 +116,8 @@ describe("foundingRoster — the PRE-ROTATED CHAIN roots the antigen on the veri
     let keys = keysA;
     if (seedsB) {
       keys = await Promise.all(seedsB.map(pubOf));
-      const r = rotateSealEpoch(g, keys, 2, "");
+      const signers = await Promise.all(seedsB.map(async (sd) => ({ signer: await pubOf(sd), sign: signerOf(sd) })));
+      const r = await rotateSealEpoch(g, { keys, threshold: 2 }, "", signers);
       if (!r.ok) throw new Error(`rotate failed: ${r.reason}`);
       chain = [g, r.epoch];
     }
@@ -140,9 +141,18 @@ describe("foundingRoster — the PRE-ROTATED CHAIN roots the antigen on the veri
   test("after a valid rotate, the roster roots on epoch1's head (the seat→rotate round-trip)", async () => {
     const doc = await chainedDoc([SEEDS.guru, SEEDS.telarus], [SEEDS.lindwyrm, SEEDS.guru]);
     const head = sealLineageHead(doc)!;
-    expect(head.epoch).toBe(1);
+    expect(head.prevEpochCid).toBe(doc.sealLineage![0]!.epochCid);
     expect(foundingRoster(doc).sealEpochCid).toBe(head.epochCid);
     expect(foundingQuorumSeated(doc)).toBe(true);
+  });
+
+  test("★ a rotated chain whose roll carries no revealed-key signature folds to the inert roster ★", async () => {
+    const doc = await chainedDoc([SEEDS.guru, SEEDS.telarus], [SEEDS.lindwyrm, SEEDS.guru]);
+    const [g, head] = doc.sealLineage!;
+    const unsigned: NexusDoc = { ...doc, sealLineage: [g!, { ...head!, roll: { ...head!.roll!, signatures: [] } }] };
+    expect(foundingRoster(unsigned).keys).toEqual([]);
+    expect(foundingQuorumSeated(unsigned)).toBe(false);
+    expect(foundingQuorumSeated(doc)).toBe(true);   // CONTROL: the signed roll stands
   });
 
   test("a BROKEN chain fails closed to the empty (inert) roster", async () => {

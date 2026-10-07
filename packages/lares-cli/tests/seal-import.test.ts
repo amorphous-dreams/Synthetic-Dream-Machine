@@ -74,13 +74,25 @@ describe("seal-import — a charter arrives where none stands", () => {
 const verb = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options, flags: { json: true, ...flags } });
 
-/** A charter over `keys` with a pre-rotated lineage `rotations` epochs past genesis. */
-function charter(keys: string[], rotations = 0): NexusDoc {
+/** The seed behind each foreign key, so a partner's revealed hands can sign its rolls. */
+const seedOf = new Map<string, Uint8Array>();
+
+/** The hands over `keys`, each signing with its own seed. */
+function partnerHands(keys: readonly string[]): { signer: string; sign: (b: Uint8Array) => Promise<string> }[] {
+  return keys.map((k) => {
+    const seed = seedOf.get(k);
+    if (!seed) throw new Error("fixture: no seed for a key that must sign a roll");
+    return { signer: k, sign: (b: Uint8Array) => ed.signAsync(b, seed).then(hex) };
+  });
+}
+
+/** A charter over `keys` with a pre-rotated, signed lineage `rotations` epochs past genesis. */
+async function charter(keys: string[], rotations = 0): Promise<NexusDoc> {
   const lineage = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
   let threshold = 2;
   for (let i = 0; i < rotations; i++) {
     const revealed = threshold === 2 ? 3 : 2;
-    const r = rotateSealEpoch(lineage[lineage.length - 1]!, keys, revealed, sealKeySetHash(keys, threshold));
+    const r = await rotateSealEpoch(lineage[lineage.length - 1]!, { keys, threshold: revealed }, sealKeySetHash(keys, threshold), partnerHands(keys));
     if (!r.ok) throw new Error(r.reason);
     lineage.push(r.epoch);
     threshold = revealed;
@@ -90,7 +102,12 @@ function charter(keys: string[], rotations = 0): NexusDoc {
 }
 
 async function foreignKeys(salt: number): Promise<string[]> {
-  return Promise.all([1, 2, 3].map(async (i) => hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(salt + i)))));
+  return Promise.all([1, 2, 3].map(async (i) => {
+    const seed = new Uint8Array(32).fill(salt + i);
+    const pub = hex(await ed.getPublicKeyAsync(seed));
+    seedOf.set(pub, seed);
+    return pub;
+  }));
 }
 
 /** Capture the one JSON payload a verb emits. */
@@ -125,7 +142,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   /** This vessel's own founding: three held roots seated at the primary path. */
   async function found(): Promise<string[]> {
     const keys = (await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)))).map((r) => r.verifyingKey);
-    writeNexusDoc(larSealHome(), charter(keys));
+    writeNexusDoc(larSealHome(), (await charter(keys)));
     return keys;
   }
 
@@ -138,7 +155,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   it("★ seal import --carry lands a partner charter BESIDE the primary and leaves its bytes identical ★", async () => {
     await found();
     const before = readFileSync(nexusCharterDocPath(larSealHome()));
-    const partner = charter(await foreignKeys(10));
+    const partner = (await charter(await foreignKeys(10)));
     const aid = realmIdOfCharter(partner)!;
 
     const r = await run(verb(["seal", "import"], { carry: partnerFile(partner) }));
@@ -151,7 +168,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   it("CONTROL — a plain seal import of a DIFFERENT charter over the standing primary still refuses", async () => {
     await found();
     const before = readFileSync(nexusCharterDocPath(larSealHome()));
-    const r = await run(verb(["seal", "import", partnerFile(charter(await foreignKeys(10)))]));
+    const r = await run(verb(["seal", "import", partnerFile((await charter(await foreignKeys(10))))]));
     expect(r.code).toBe(3);
     expect(String((r.out["error"] as { message?: string })?.message)).toMatch(/--carry/);
     expect(readFileSync(nexusCharterDocPath(larSealHome())).equals(before)).toBe(true);
@@ -160,16 +177,16 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   it("CONTROL — seal import --carry of a charter that does not extend the held head refuses", async () => {
     await found();
     const keys = await foreignKeys(10);
-    expect((await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 1), "head.mem") }))).code).toBe(0);
-    const r = await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 0), "behind.mem") }));
+    expect((await run(verb(["seal", "import"], { carry: partnerFile((await charter(keys, 1)), "head.mem") }))).code).toBe(0);
+    const r = await run(verb(["seal", "import"], { carry: partnerFile((await charter(keys, 0)), "behind.mem") }));
     expect(r.code).toBe(3);
     expect((r.out["error"] as { code?: string })?.code).toBe("refused");
   });
 
   it("★ accept-carriage --nexus consents to one Nexus, and seal show reports the carried set ★", async () => {
     const keys = await found();
-    const primary = realmIdOfCharter(charter(keys))!;
-    const partner = charter(await foreignKeys(10));
+    const primary = realmIdOfCharter((await charter(keys)))!;
+    const partner = (await charter(await foreignKeys(10)));
     const aid = realmIdOfCharter(partner)!;
     await run(verb(["seal", "import"], { carry: partnerFile(partner) }));
 
@@ -200,13 +217,13 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   async function foundAndSameBytes(): Promise<{ dest: string; before: Buffer; same: string }> {
     const keys = await found();
     const dest = nexusCharterDocPath(larSealHome());
-    const same = partnerFile(charter(keys), "same.mem");
+    const same = partnerFile((await charter(keys)), "same.mem");
     writeFileSync(same, readFileSync(same, "utf8") + "\n", "utf8");
     return { dest, before: readFileSync(dest), same };
   }
 
   it("★ a primary land leaves no temp file beside the charter ★", async () => {
-    const r = await run(verb(["seal", "import", partnerFile(charter(await foreignKeys(10)))]));
+    const r = await run(verb(["seal", "import", partnerFile((await charter(await foreignKeys(10))))]));
     expect(r.code).toBe(0);
     expect(existsSync(nexusCharterDocPath(larSealHome()))).toBe(true);
     expect(strayTemps(larSealHome())).toEqual([]);
@@ -241,13 +258,13 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   it.skipIf(!hasDevFull)("★ a carried write that hits ENOSPC refuses, strands no temp, and leaves the held charter ★", async () => {
     await found();
     const keys = await foreignKeys(10);
-    expect((await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 0), "held.mem") }))).code).toBe(0);
-    const home = carriedCharterHome(larSealHome(), realmIdOfCharter(charter(keys, 0))!);
+    expect((await run(verb(["seal", "import"], { carry: partnerFile((await charter(keys, 0)), "held.mem") }))).code).toBe(0);
+    const home = carriedCharterHome(larSealHome(), realmIdOfCharter((await charter(keys, 0)))!);
     const path = join(home, "founding-roster.mem");
     const before = readFileSync(path);
     symlinkSync("/dev/full", `${path}.incoming`);
 
-    const r = await run(verb(["seal", "import"], { carry: partnerFile(charter(keys, 1), "next.mem") }));
+    const r = await run(verb(["seal", "import"], { carry: partnerFile((await charter(keys, 1)), "next.mem") }));
     expect(r.code).toBe(3);
     expect((r.out["error"] as { code?: string })?.code).toBe("refused");
     expect(readFileSync(path).equals(before)).toBe(true);
@@ -266,7 +283,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
     expect(parseNexusDoc(readFileSync(dest, "utf8"))).toBeNull();
     const torn = readFileSync(dest);
 
-    const r = await run(verb(["seal", "import", partnerFile(charter(keys))]));
+    const r = await run(verb(["seal", "import", partnerFile((await charter(keys)))]));
     expect(r.code).toBe(3);
     expect(String((r.out["error"] as { message?: string })?.message)).toMatch(/reads torn/);
     expect(readFileSync(dest).equals(torn)).toBe(true);
@@ -276,7 +293,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   it("CONTROL — a truly absent primary still lands", async () => {
     const dest = nexusCharterDocPath(larSealHome());
     expect(existsSync(dest)).toBe(false);
-    expect((await run(verb(["seal", "import", partnerFile(charter(await foreignKeys(10)))]))).code).toBe(0);
+    expect((await run(verb(["seal", "import", partnerFile((await charter(await foreignKeys(10))))]))).code).toBe(0);
     expect(parseNexusDoc(readFileSync(dest, "utf8"))).not.toBeNull();
   });
 

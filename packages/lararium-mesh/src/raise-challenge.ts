@@ -27,7 +27,8 @@
  * The vessel supplies what it reads off its own replica for each Nexus it carries (`RaiseNexusReading`: the
  * roster at the held charter head, the carriage board read as a DENY board, the Kapae antigen). The grant
  * raises only when the admit roots on the challenge's Nexus — at its head epoch, or at an ancestor epoch its
- * lineage's roll anchors carry to the head (walked against the reading's `sealLineage`) — `verifyPresentedAdmit`
+ * lineage's roll anchors carry to the head (walked against the reading's `sealLineage`, every roll of which
+ * the revealed keys signed) — `verifyPresentedAdmit`
  * reads it `held` there, that Nexus is the one the challenge names, the signer IS the admit's leaf, and the leaf's
  * signature verifies. A persona ROOT signing beside the same admit names a key the admit does not, and
  * refuses: the root never reaches a raise.
@@ -101,8 +102,8 @@ export interface RaiseNexusReading {
   readonly antigen:       readonly KapaeAntigenEntry[];
   /** The ANTIGEN quorum's roster, held apart from the membership roster. */
   readonly antigenRoster: KahuRoster;
-  /** The charter's epoch lineage, genesis first — what an admit at a rolled epoch is walked against. Absent →
-   *  only an admit at the head reads held. */
+  /** The charter's epoch lineage, genesis first — what an admit at a rolled epoch is walked against. A lineage
+   *  whose rolls do not verify reads no ancestor. Absent → only an admit at the head reads held. */
   readonly sealLineage?:  readonly SealEpoch[];
 }
 
@@ -153,8 +154,8 @@ function refused(why: RaiseRefusal, detail: string): RaiseRefused {
  *   1. the challenge: a live one exists, names this vessel and this Nexus, and carries the live nonce and
  *      epoch (`stale-challenge`, `wrong-vessel`, `wrong-nexus`);
  *   2. the challenge's Nexus stands in `readings` (`wrong-nexus`);
- *   3. an admit rooted on ANOTHER carried Nexus's head epoch refuses `wrong-nexus`; an admit at an ancestor
- *      epoch passes on to the verifier, which walks its roll anchors to the head;
+ *   3. an admit rooted on ANOTHER carried Nexus's head epoch refuses `wrong-nexus`; an admit at any other
+ *      epoch passes on to the verifier, which walks its roll anchors to the head or reads it `wrong-epoch`;
  *   4. `verifyPresentedAdmit` reads the admit against the challenge's Nexus: its roster head, its charter
  *      lineage (for an admit at an ancestor epoch), its deny board and its antigen. Anything but `held` refuses with the verifier's own state;
  *   5. the signer is the admit's leaf (`rejected`, detail `signer-is-not-the-admit-leaf`);

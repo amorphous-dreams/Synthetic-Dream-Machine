@@ -10,8 +10,8 @@
  * The signing key is the held persona's per-Nexus LEAF for the challenge's Nexus (`heldNexusLeaves`),
  * never the persona root: a root's signature names a key no admit names, and the asking vessel refuses it.
  * The grant carries that leaf's admit, read off THIS vessel's own replica of the Nexus's carriage board
- * (`presentedAdmitFromBoard`: the counted admit head and its closed, tight lineage) — the same derivation a
- * dial presents. The board is the one `runNexusContract` writes to, resolved through `nodeNexusIsland`
+ * (`presentationFromBoardDoc`: the counted admit head, its closed, tight lineage, and the roll anchors that
+ * carry an admit minted before a roll to the head) — the same derivation a dial presents. The board is the one `runNexusContract` writes to, resolved through `nodeNexusIsland`
  * over the home that holds the Nexus's charter. No admit on the replica → nothing to present → refuse.
  *
  * It opens the board read-only and writes nothing anywhere.
@@ -27,8 +27,8 @@
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl, carriageEntriesFromBoard,
-  materializeSharedLarDoc, presentedAdmitFromBoard,
+  signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl,
+  materializeSharedLarDoc, presentationFromBoardDoc,
   type RaiseChallenge, type RaiseGrant,
 } from "@lararium/mesh";
 
@@ -102,7 +102,7 @@ export async function runRaiseSign(opts: {
   let presented;
   try {
     const handle = await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts");
-    presented = await presentedAdmitFromBoard(carriageEntriesFromBoard(handle.doc()), leaf.verifyingKey, roster);
+    presented = (await presentationFromBoardDoc(handle.doc(), leaf.verifyingKey, roster)).presentation;
   } finally {
     await repo.flush().catch(() => { /* read-only: nothing owed */ });
   }

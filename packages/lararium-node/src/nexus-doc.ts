@@ -34,7 +34,7 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
 import {
   NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI,
-  type NexusDoc, type NexusCharterKahu, type SealEpoch,
+  type NexusDoc, type NexusCharterKahu, type SealEpoch, type SealRoll, type SealKeySet, type QuorumSignature,
   type FederationPosture, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -127,21 +127,55 @@ function coerceSealLineage(raw: unknown): SealEpoch[] | "torn" | undefined {
   for (const item of raw) {
     if (typeof item !== "object" || item === null) return "torn";
     const e = item as Record<string, unknown>;
-    if (!Number.isInteger(e["epoch"]))             return "torn";
     if (typeof e["epochCid"]      !== "string")    return "torn";
     if (typeof e["keySetHash"]    !== "string")    return "torn";
     if (typeof e["nextKeyCommit"] !== "string")    return "torn";
     const prev = e["prevEpochCid"];
     if (prev !== null && typeof prev !== "string") return "torn";
-    lineage.push({
-      epoch:         e["epoch"] as number,
+    const epoch: SealEpoch = {
       epochCid:      e["epochCid"] as string,
       keySetHash:    e["keySetHash"] as string,
       nextKeyCommit: e["nextKeyCommit"] as string,
       prevEpochCid:  (prev ?? null) as string | null,
-    });
+    };
+    if (e["roll"] === undefined) { lineage.push(epoch); continue; }
+    const roll = coerceSealRoll(e["roll"]);
+    if (roll === "torn") return "torn";
+    lineage.push({ ...epoch, roll });
   }
   return lineage;
+}
+
+/** A key-set read off disk: string keys and a whole threshold, or `"torn"`. */
+function coerceKeySet(raw: unknown): SealKeySet | "torn" {
+  if (typeof raw !== "object" || raw === null) return "torn";
+  const r = raw as Record<string, unknown>;
+  if (!Array.isArray(r["keys"]) || !r["keys"].every((k) => typeof k === "string")) return "torn";
+  if (!Number.isInteger(r["threshold"])) return "torn";
+  return { keys: [...(r["keys"] as string[])], threshold: r["threshold"] as number };
+}
+
+/**
+ * Coerce an epoch's signed roll. Shape only — `verifySealLineage` judges the signatures. Only the known
+ * fields are copied, so a field smuggled onto the roll never reaches a verifier.
+ */
+function coerceSealRoll(raw: unknown): SealRoll | "torn" {
+  const seated = coerceKeySet(raw);
+  if (seated === "torn") return "torn";
+  const r = raw as Record<string, unknown>;
+  const sigs = r["signatures"];
+  if (!Array.isArray(sigs)) return "torn";
+  const signatures: QuorumSignature[] = [];
+  for (const s of sigs) {
+    if (typeof s !== "object" || s === null) return "torn";
+    const q = s as Record<string, unknown>;
+    if (typeof q["signer"] !== "string" || typeof q["sig"] !== "string") return "torn";
+    signatures.push({ signer: q["signer"], sig: q["sig"] });
+  }
+  if (r["revealed"] === undefined) return { ...seated, signatures };
+  const revealed = coerceKeySet(r["revealed"]);
+  if (revealed === "torn") return "torn";
+  return { ...seated, revealed, signatures };
 }
 
 /** Fold the three read blocks into one composed `NexusDoc`, or null when seal or kahu fails its guards. */

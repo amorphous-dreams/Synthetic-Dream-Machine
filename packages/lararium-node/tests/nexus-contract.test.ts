@@ -29,7 +29,21 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, signerClass, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
+  listPersonaRoots } from "../src/node-vessel-identity.js";
+
+/** The hands over `keys` — each a persona root this vessel holds — signing a seal roll with its own seed. */
+async function heldHands(keys: readonly string[]): Promise<{ signer: string; sign: (b: Uint8Array) => Promise<string> }[]> {
+  const want = new Set(keys.map((k) => k.toLowerCase()));
+  const hands: { signer: string; sign: (b: Uint8Array) => Promise<string> }[] = [];
+  for (const i of await listPersonaRoots()) {
+    const root = await generateOrLoadPersonaGroupRoot(i);
+    if (want.has(root.verifyingKey.toLowerCase())) {
+      hands.push({ signer: root.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) });
+    }
+  }
+  return hands;
+}
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
@@ -41,8 +55,10 @@ import { existsSync } from "node:fs";
 import { larSealHome } from "../src/vessel-paths.js";
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
-import { presentedAdmitFromBoard, signLeafProof, foundingRoster } from "@lararium/mesh";
+import { presentedAdmitFromBoard, signLeafProof, foundingRoster, type AdmitPresentation } from "@lararium/mesh";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
+import { runRaiseSign } from "../src/commands/raise-sign.js";
+import { mintRaiseChallenge, verifyRaiseGrant } from "@lararium/mesh";
 import { takeAdmitBundle, readKeptAdmitBundle } from "../src/admit-bundle.js";
 import { carriageEntryActCid } from "@lararium/mesh";
 
@@ -314,7 +330,7 @@ describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup 
     writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu });
     const before = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
 
-    const rotated = rotateSealEpoch(genesis, keys, 3, sealKeySetHash(keys, 2));
+    const rotated = await rotateSealEpoch(genesis, { keys, threshold: 3 }, sealKeySetHash(keys, 2), await heldHands(keys));
     if (!rotated.ok) throw new Error(rotated.reason);
     writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 3, sealEpochCid: rotated.epoch.epochCid,
       sealLineage: [genesis, rotated.epoch], kahu });
@@ -434,13 +450,13 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
   const primaryAid = (): string => realmIdOfCharter(readNexusDoc(sealHome()))!;
 
   /** A charter with a pre-rotated lineage, so a rotation moves the head and keeps the AID. */
-  function seatLineage(keys: string[], rotations: number): void {
+  async function seatLineage(keys: string[], rotations: number): Promise<void> {
     const kahu = keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
     const lineage = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
     let threshold = 2;
     for (let i = 0; i < rotations; i++) {
       const revealed = threshold === 2 ? 3 : 2;
-      const r = rotateSealEpoch(lineage[lineage.length - 1]!, keys, revealed, sealKeySetHash(keys, threshold));
+      const r = await rotateSealEpoch(lineage[lineage.length - 1]!, { keys, threshold: revealed }, sealKeySetHash(keys, threshold), await heldHands(keys));
       if (!r.ok) throw new Error(r.reason);
       lineage.push(r.epoch);
       threshold = revealed;
@@ -479,12 +495,12 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     // The load-bearing case. Carriage was accepted under one seal epoch; a rotation moves the head of the
     // SAME Nexus, and a kept consent must not carry a relation across terms it never read.
     const keys = await threeKeys();
-    seatLineage(keys, 0);
+    await seatLineage(keys, 0);
     const aid = primaryAid();
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
     expect(await hasContractedInto(sealHome(), aid)).toBe(true);
 
-    seatLineage(keys, 1);
+    await seatLineage(keys, 1);
     expect(primaryAid()).toBe(aid);                                // the same Nexus …
     expect(await hasContractedInto(sealHome(), aid)).toBe(false);  // … at a head the consent never read
 
@@ -551,7 +567,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
     const kahu = (keys: string[]) => keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
     writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: kahu(oldKeys) });
-    const rolled = rotateSealEpoch(e0, newKeys, 2, "");
+    const rolled = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "", await heldHands(newKeys));
     if (!rolled.ok) throw new Error(rolled.reason);
     const roll = (): void => writeNexusDoc(sealHome(), {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: rolled.epoch.epochCid, sealLineage: [e0, rolled.epoch], kahu: kahu(newKeys),
@@ -606,8 +622,8 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       await holder.refold();
       expect(holder.readings().map((r) => [r.via, r.sealLineage.length])).toEqual([["seat", 2]]);
       const nonce = "34".repeat(32), gatePubKey = "ee".repeat(32), vesselKey = "cd".repeat(32);
-      const presentAs = async (peer: string, nym: string, idx: number, strip = false) => {
-        const p = await presentedAdmitFromBoard(entries, nym, head, anchors);
+      const presentAs = async (peer: string, nym: string, idx: number, strip = false, by?: AdmitPresentation) => {
+        const p = by ?? await presentedAdmitFromBoard(entries, nym, head, anchors);
         expect(p).not.toBeNull();
         const lineage = strip ? p!.lineage.filter((e) => !isRollAnchor(e)) : p!.lineage;
         const leafProof = await signLeafProof({ admit: p!.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed((await nexusLeafFor(idx, aid)).seed) });
@@ -615,11 +631,49 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       };
       await presentAs("peer-joiner", joinerNym, 3);
       await presentAs("peer-stripped", joinerNym, 3, true);
-      await presentAs("peer-late", lateNym, 0);
+      // The presenter carries nothing it cannot carry: no anchor holds the late admit in its past.
+      expect(await presentedAdmitFromBoard(entries, lateNym, head, anchors)).toBeNull();
+      // Presented by hand through the anchor anyway, the verifier refuses it.
+      await presentAs("peer-late", lateNym, 0, false, { admit: late, lineage: anchors });
       expect(holder.membership.holdsCarriagePeer("peer-joiner")).toBe(true);     // in the anchor's past → held
       expect(holder.membership.holdsCarriagePeer("peer-stripped")).toBe(false);  // CONTROL: no anchor → wrong-epoch
       expect(holder.membership.holdsCarriagePeer("peer-late")).toBe(false);      // CONTROL: after the anchor → wrong-epoch
     } finally { holder.dispose(); await repo.flush(); }
+  });
+
+  it("★ a recogniser whose admit was minted BEFORE a roll still raises — raise-sign presents the anchor ★", async () => {
+    const { opened, roll } = await foundAndArm();
+    const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+    const recogniser = await leafOf(3);
+    await runNexusContract({ action: "admit", nym: recogniser, sealHome: sealHome() });
+    const challenge = mintRaiseChallenge({ vesselId: "ab".repeat(32), nexus: aid, epoch: 1, nonce: "56".repeat(16) });
+    const challengeText = JSON.stringify(challenge);
+
+    // CONTROL, before the roll: the admit sits at the head and raises.
+    const before = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    expect(before.presentedAdmit.lineage.filter(isRollAnchor)).toEqual([]);
+
+    const closing = foundingRoster(readNexusDoc(sealHome()));
+    await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    roll();
+
+    // After the roll the admit roots on an ancestor epoch: the grant carries the anchor that carries it.
+    const grant = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    expect(grant.byNym).toBe(recogniser);
+    expect(grant.presentedAdmit.lineage.filter(isRollAnchor)).toHaveLength(1);
+
+    const ownVesselKey = await loadVesselVerifyingKey();
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    try {
+      const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
+      const readings = await readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open });
+      const verify = async (nym: string, bytes: Uint8Array, sig: string): Promise<boolean> =>
+        ed.verifyAsync(Buffer.from(sig, "hex"), bytes, Buffer.from(nym, "hex"));
+      expect(await verifyRaiseGrant({ grant, live: challenge, readings, verify })).toMatchObject({ ok: true });
+      // CONTROL: the same grant with its anchor stripped refuses at the rolled head.
+      const stripped = { ...grant, presentedAdmit: { ...grant.presentedAdmit, lineage: grant.presentedAdmit.lineage.filter((e) => !isRollAnchor(e)) } };
+      expect(await verifyRaiseGrant({ grant: stripped, live: challenge, readings, verify })).toMatchObject({ ok: false, why: "wrong-epoch" });
+    } finally { await repo.flush(); }
   });
 
   it("CONTROL: a roll whose NEW quorum this vessel does not hold REFUSES and lands no anchor", async () => {

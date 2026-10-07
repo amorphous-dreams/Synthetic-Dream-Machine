@@ -169,7 +169,7 @@ export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_EN
 export * from "./carriage-registry.js";
 export {
   carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX,
-  rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey,
+  rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,
 } from "./carriage-board.js";
 // The TRACELESS boot-invite — a sealed single-use capability spent-on-boot; no voucher, no board record.
 export * from "./boot-invite.js";

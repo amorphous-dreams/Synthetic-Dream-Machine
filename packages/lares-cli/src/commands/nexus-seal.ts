@@ -38,7 +38,7 @@ import {
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
-  defaultCryptoProvider, federationPostureFromDoc,
+  defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuRoster,
   type QuorumSignature,
 } from "@lararium/mesh";
@@ -197,9 +197,15 @@ const normHex = (s: string | undefined): string => (s ?? "").trim().toLowerCase(
  */
 type UnstoodChairs = "keep" | "drop";
 
+/** A persona this vessel holds that stood and took a chair — the hand that signs for its seat. */
+interface SeatedHand {
+  readonly handleIndex:  number;
+  readonly verifyingKey: string;
+}
+
 async function seatKahuFromVault(
   doc: NexusDoc, unstood: UnstoodChairs = "keep",
-): Promise<{ kahu: NexusCharterKahu[]; seatedKeys: string[] }> {
+): Promise<{ kahu: NexusCharterKahu[]; seatedKeys: string[]; hands: SeatedHand[] }> {
   // THE ROSTER FORMS FROM WHAT STOOD, never from a list this build shipped. A persona reaches a chair by
   // DECLARING the Handle it answers to and STANDING for a seat — two explicit acts on the operator's own
   // vessel — and the roster reads back exactly those. A scaffold carrying names would make the SOURCE decide
@@ -223,10 +229,12 @@ async function seatKahuFromVault(
   // steps down. Either way, a face standing under a name no chair carries ADDS one.
   const kahu: NexusCharterKahu[] = unstood === "drop" ? [] : doc.kahu.map((k) => ({ ...k }));
   const chairAt = new Map<string, number>(kahu.map((k, i) => [norm(k.displayName), i]));
+  const hands: SeatedHand[] = [];
 
   for (const [index, handle] of standing) {
     if (!held.has(index)) continue;             // a declaration without a held root seats nothing here
     const root = await generateOrLoadPersonaGroupRoot(index);   // loads a held root; never mints here
+    hands.push({ handleIndex: index, verifyingKey: root.verifyingKey });
     const at = chairAt.get(norm(handle));
     if (at === undefined) {
       chairAt.set(norm(handle), kahu.length);
@@ -236,7 +244,7 @@ async function seatKahuFromVault(
     }
   }
   const seatedKeys = kahu.map((k) => k.verifyingKey).filter((v): v is string => typeof v === "string" && v.length > 0);
-  return { kahu, seatedKeys };
+  return { kahu, seatedKeys, hands };
 }
 
 /**
@@ -437,7 +445,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
         rite: GROWTH_RITE_URI, oldSigs: [], newSigs: [], witnesses: [],
       });
       emit(args, { ok: true, data: { open: { fromEpochCid: head.epochCid, oldHands: seatedKeysOf(doc).length } },
-        human: () => console.log(`crossing OPEN from epoch ${head.epoch} — now pre-commit the successor, rotate, then \`grow bind\`.`) });
+        human: () => console.log(`crossing OPEN from epoch ${head.epochCid.slice(0, 16)}… — now pre-commit the successor, rotate, then \`grow bind\`.`) });
       return 0;
     }
     case "bind": {
@@ -448,7 +456,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
       if (p.toEpochCid) throw new UsageError("the crossing is already bound — sign, witness, and seal it");
       writePending({ ...p, toEpochCid: head.epochCid, newKeys: seatedKeysOf(doc), newThreshold: doc.threshold });
       emit(args, { ok: true, data: { bound: { toEpochCid: head.epochCid } },
-        human: () => console.log(`crossing BOUND to epoch ${head.epoch} — the byte-image is closed; gather signatures and a witness.`) });
+        human: () => console.log(`crossing BOUND to epoch ${head.epochCid.slice(0, 16)}… — the byte-image is closed; gather signatures and a witness.`) });
       return 0;
     }
     case "sign": {
@@ -522,6 +530,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   if (!doc || !head) {
     throw new UsageError("no genesis charter chain to rotate — establish one with `lares nexus seal seat` first");
   }
+  const depth = doc.sealLineage?.length ?? 0;
 
   // REVEAL: the operator has provisioned the pre-committed next key-set into the vault; seating from the
   // vault reads it back. The revealed key-set becomes the new head's authorized quorum.
@@ -529,7 +538,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // a new one takes a chair by declaring a Handle and standing. Neither needs an admin verb, because the
   // reveal below must still match the head's PRE-COMMITMENT: a roster change only lands if the operator
   // pre-committed the successor key-set an epoch earlier, under the quorum that stood then.
-  const { kahu, seatedKeys } = await seatKahuFromVault(doc, "drop");
+  const { kahu, seatedKeys, hands } = await seatKahuFromVault(doc, "drop");
   if (kahu.length === 0) {
     throw new UsageError(
       "no persona stands for a chair — a rotation seats the roster that STANDS, and none does. " +
@@ -544,7 +553,13 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
 
   // FAIL CLOSED: a revealed key-set whose digest does not match the head's pre-commitment REFUSES, and
   // writes nothing. A stolen current key-set cannot forge a successor it never pre-committed.
-  const result = rotateSealEpoch(head, seatedKeys, threshold, nextKeyCommit);
+  // THE REVEALED HANDS SIGN THE ROLL. Every seated key here is a root this vessel holds, so each signs the
+  // step with its own seed; a roll short of the revealed quorum refuses inside `rotateSealEpoch`.
+  const seatedSet = new Set(seatedKeys.map((k) => k.toLowerCase()));
+  const signers = await Promise.all(hands
+    .filter((h) => seatedSet.has(h.verifyingKey.toLowerCase()))
+    .map(async (h) => ({ signer: h.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(h.handleIndex)) })));
+  const result = await rotateSealEpoch(head, { keys: seatedKeys, threshold }, nextKeyCommit, signers);
   if (!result.ok) {
     // A CHANGED ROSTER lands here too, and reads as the same refusal for the same reason: the reveal must
     // match what the prior epoch pre-committed, so adding or dropping a kahu requires having pre-committed
@@ -555,7 +570,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       error: { code: "error", message: `rotation REFUSED (fail-closed): ${result.reason}` },
       human: () => {
         console.error(`nexus seal rotate REFUSED (fail-closed): ${result.reason}`);
-        console.error(`  the chain stays at epoch ${head.epoch}; nothing written.`);
+        console.error(`  the chain stays at depth ${depth}; nothing written.`);
         if (rosterMoved) {
           console.error(`  the roster MOVED (${doc.kahu.length} chairs @ ${doc.threshold} → ${kahu.length} @ ${threshold}).`);
           console.error(`  a succession lands only if THIS key-set was pre-committed an epoch ago:`);
@@ -588,7 +603,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
         error: { code: "error", message: `rotation REFUSED (fail-closed): ${err.message}` },
         human: () => {
           console.error(`nexus seal rotate REFUSED (fail-closed): ${err.message}`);
-          console.error(`  the chain stays at epoch ${head.epoch}; nothing written.`);
+          console.error(`  the chain stays at depth ${depth}; nothing written.`);
         },
       });
       return exitFor("error");
@@ -605,14 +620,14 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     data: {
-      path, epoch: result.epoch.epoch, sealEpochCid, prevEpochCid: result.epoch.prevEpochCid,
+      path, sealEpochCid, prevEpochCid: result.epoch.prevEpochCid,
       chainDepth: sealLineage.length, rotationArmed: armed, nextKeyCommit: nextKeyCommit || null,
       quorumSeated: foundingQuorumSeated(next),
       rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
     },
     human: () => {
-      console.log(`nexus seal ROTATED → epoch ${result.epoch.epoch} (chain depth ${sealLineage.length}) → ${path}`);
-      console.log(`  reveal VERIFIED against the prior epoch's pre-commitment.`);
+      console.log(`nexus seal ROTATED → chain depth ${sealLineage.length} → ${path}`);
+      console.log(`  reveal VERIFIED against the prior epoch's pre-commitment; the revealed hands SIGNED the roll.`);
       console.log(`  head epoch: ${sealEpochCid}`);
       console.log(`  prev link:  ${result.epoch.prevEpochCid}`);
       console.log(anchored

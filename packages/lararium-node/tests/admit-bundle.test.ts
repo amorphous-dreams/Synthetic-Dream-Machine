@@ -242,7 +242,8 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
   test("★ an anchored bundle takes and presents at the new head; CONTROL: the same bundle without its anchor refuses ★", async () => {
     const [oldKeys, newKeys] = await Promise.all([Promise.all(OLD.map(pubOf)), Promise.all(NEW.map(pubOf))]);
     const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
-    const r = rotateSealEpoch(e0, newKeys, 2, "");
+    const r = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "",
+      await Promise.all(NEW.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))));
     if (!r.ok) throw new Error(r.reason);
     const kahu = newKeys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
     const rolled: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [e0, r.epoch], kahu };

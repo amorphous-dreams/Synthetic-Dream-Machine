@@ -933,23 +933,98 @@ export interface AdmitPresentation {
 }
 
 /**
+ * A note the presenter surfaces while deriving a presentation. INFORMATIONAL — it never refuses and never
+ * changes which admit presents.
+ *
+ *   · `anchors-open-one-epoch` — two or more counted roll anchors open the same epoch. A rotate retried over
+ *     one commitment lands a second anchor for the same new head; the earlier one is an orphan. Both stand
+ *     on the board, and the presenter walks each in turn.
+ */
+export interface PresentationFinding {
+  readonly kind:       "anchors-open-one-epoch";
+  readonly epochCid:   string;
+  readonly anchorCids: readonly string[];
+}
+
+/** A board's presentation for one nym, and what the presenter noticed deriving it. */
+export interface BoardPresentation {
+  readonly presentation: AdmitPresentation | null;
+  readonly findings:     readonly PresentationFinding[];
+}
+
+/**
  * Derive the presentation a subject carries to the wire from a carriage board it holds: the counted `admit`
  * that stands as a causal HEAD of `nym`'s member relation, plus every counted act that admit transitively
  * cites. The acts are CLOSED (every cited parent resolves inside them) and TIGHT (every act is an ancestor of
  * the admit). Pure and clockless.
  *
  * THE EPOCH IT READS. The head epoch first. When `nym`'s relation holds no counted act there, the walk steps
- * back one roll at a time through `anchors` (the board's roll anchors): the anchor that opens the epoch in
- * hand and counts under its roster names the epoch it closed and that epoch's key-set, which counts the acts
- * there. The first epoch holding a counted act for `nym` decides; an admit head found below the head epoch
- * presents with the anchors that carry it, one per roll. The presenter trusts nothing it carries: the
- * verifier re-walks the chain against the charter lineage and the admit's place in every anchor's past.
+ * back one roll at a time through `anchors` (the board's roll anchors): an anchor that opens the epoch in hand
+ * and counts under its roster names the epoch it closed and that epoch's key-set, which counts the acts there.
+ * The first epoch holding a counted act for `nym` decides; an admit head found below the head epoch presents
+ * with the anchors that carry it, one per roll.
  *
- * Returns null when no counted admit stands as a head at that epoch (a revoke supersedes the last admit, or
- * nothing was ever admitted), or when the admit's ancestry does not resolve on this board. A revoke standing
- * CONCURRENT with the admit head does not stop the derivation: the presentation still travels, and the
- * verifier on the other side reads it `unsettled` against its own deny board. Two concurrent admit heads
- * present the one whose act CID sorts first.
+ * EVERY OPENING ANCHOR IS TRIED. When several anchors open one epoch, the walk tries each in act-CID order and
+ * presents through the first whose chain holds the admit in every anchor's causal past — the reading the
+ * verifier makes. An orphan anchor (an earlier attempt at the same roll) therefore never turns a carried admit
+ * into `wrong-epoch`; the fork itself surfaces as a `PresentationFinding`. The presenter trusts nothing it
+ * carries: the verifier re-walks the chain against the charter lineage.
+ *
+ * `presentation` is null when no counted admit stands as a head at the deciding epoch (a revoke supersedes the
+ * last admit, or nothing was ever admitted), when the admit's ancestry does not resolve on this board, or when
+ * no anchor chain carries it. A revoke standing CONCURRENT with the admit head does not stop the derivation:
+ * the presentation still travels, and the verifier on the other side reads it `unsettled` against its own deny
+ * board. Two concurrent admit heads present the one whose act CID sorts first.
+ */
+export async function readBoardPresentation(
+  entries: Iterable<CarriageEntry>,
+  nym: string,
+  roster: KahuRoster,
+  anchors: Iterable<RollAnchor> = [],
+): Promise<BoardPresentation> {
+  const want = nym.toLowerCase();
+  const source = [...entries];
+  const anchorList = [...anchors];
+  const findings: PresentationFinding[] = [];
+  const forked = new Set<string>();
+
+  const walk = async (at: KahuRoster, carried: readonly RollAnchor[], path: ReadonlySet<string>): Promise<AdmitPresentation | null> => {
+    const fold = await foldCarriageDetails(source, at);
+    // The fold's details run in source order, one per entry — zip them to recover each counted act.
+    const byCid = new Map<string, CarriageEntry>();
+    fold.entries.forEach((detail, i) => {
+      if (!detail.counted || detail.nym !== want || relationFamily(detail.action) !== "member") return;
+      if (detail.sealEpochCid !== at.sealEpochCid) return;
+      if (!byCid.has(detail.evidenceCid)) byCid.set(detail.evidenceCid, source[i]!);
+    });
+    if (byCid.size > 0) {
+      const found = presentationAt(byCid, carried);
+      return found && anchorsHoldAdmit(found, carried) ? found : null;
+    }
+    // No act for this nym at this epoch: step back through each anchor that opened it.
+    const opening: RollAnchor[] = [];
+    for (const anchor of anchorList) if (await rollAnchorCounts(anchor, at)) opening.push(anchor);
+    opening.sort((a, b) => rollAnchorCid(a).localeCompare(rollAnchorCid(b)));
+    if (opening.length > 1 && !forked.has(at.sealEpochCid)) {
+      forked.add(at.sealEpochCid);
+      findings.push({ kind: "anchors-open-one-epoch", epochCid: at.sealEpochCid, anchorCids: opening.map(rollAnchorCid) });
+    }
+    for (const step of opening) {
+      if (path.has(step.prevEpochCid)) continue;   // a cycle through the anchors carries nothing
+      const prior: KahuRoster = { keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid };
+      const found = await walk(prior, [step, ...carried], new Set([...path, step.prevEpochCid]));
+      if (found) return found;
+    }
+    return null;
+  };
+
+  const presentation = await walk(roster, [], new Set([roster.sealEpochCid]));
+  return { presentation, findings };
+}
+
+/**
+ * Derive the presentation for `nym` off a board's entries and anchors — `readBoardPresentation`'s
+ * presentation alone, for a caller that reads no finding.
  */
 export async function presentedAdmitFromBoard(
   entries: Iterable<CarriageEntry>,
@@ -957,34 +1032,17 @@ export async function presentedAdmitFromBoard(
   roster: KahuRoster,
   anchors: Iterable<RollAnchor> = [],
 ): Promise<AdmitPresentation | null> {
-  const want = nym.toLowerCase();
-  const source = [...entries];
-  const anchorList = [...anchors];
-  const carried: RollAnchor[] = [];
-  const visited = new Set<string>();
-  let at: KahuRoster | null = roster;
-  while (at && !visited.has(at.sealEpochCid)) {
-    visited.add(at.sealEpochCid);
-    const fold = await foldCarriageDetails(source, at);
-    // The fold's details run in source order, one per entry — zip them to recover each counted act.
-    const byCid = new Map<string, CarriageEntry>();
-    const epoch = at.sealEpochCid;
-    fold.entries.forEach((detail, i) => {
-      if (!detail.counted || detail.nym !== want || relationFamily(detail.action) !== "member") return;
-      if (detail.sealEpochCid !== epoch) return;
-      if (!byCid.has(detail.evidenceCid)) byCid.set(detail.evidenceCid, source[i]!);
-    });
-    if (byCid.size > 0) return presentationAt(byCid, carried);
-    // No act for this nym at this epoch: step back through the anchor that opened it.
-    const opening: RollAnchor[] = [];
-    for (const anchor of anchorList) if (await rollAnchorCounts(anchor, at)) opening.push(anchor);
-    opening.sort((a, b) => rollAnchorCid(a).localeCompare(rollAnchorCid(b)));
-    const step = opening[0];
-    if (!step) return null;
-    carried.unshift(step);
-    at = { keys: [...step.prevKeys], threshold: step.prevThreshold, sealEpochCid: step.prevEpochCid };
-  }
-  return null;
+  return (await readBoardPresentation(entries, nym, roster, anchors)).presentation;
+}
+
+/** Does every carried anchor hold the admit in its causal past, read over the presentation's own acts? */
+function anchorsHoldAdmit(found: AdmitPresentation, carried: readonly RollAnchor[]): boolean {
+  if (carried.length === 0) return true;
+  const admitCid = carriageEntryActCid(found.admit);
+  const causal = new Map<string, { readonly parents: readonly string[] }>();
+  for (const act of found.lineage) causal.set(presentedActCid(act), act);
+  causal.set(admitCid, found.admit);
+  return carried.every((anchor) => isCarriageDescendant(rollAnchorCid(anchor), admitCid, causal));
 }
 
 /** The admit head among one epoch's counted acts for a nym, its closed lineage, and the carrying anchors. */

@@ -10,15 +10,19 @@
  *   · CONTROL: a revoke at the closed epoch descending from the admit reads DENIED after the roll, whether it
  *     landed before the roll or after it,
  *   · the presenter derives the anchored presentation off the board, the wire guard accepts it, and the
- *     board's roll-anchor parents leave out acts at any other epoch.
+ *     board's roll-anchor parents leave out acts at any other epoch,
+ *   · ORPHAN ANCHOR: when two anchors open one epoch, the presenter tries each and presents through the one
+ *     whose chain carries the admit, and surfaces the fork as an informational finding — never a refusal.
  */
 import { describe, test, expect } from "vitest";
 import {
-  carriageEntryActCid, verifyPresentedAdmit, presentedAdmitFromBoard, signRollAnchor, rollAnchorCid,
+  carriageEntryActCid, verifyPresentedAdmit, presentedAdmitFromBoard, readBoardPresentation, signRollAnchor, rollAnchorCid,
   rollAnchorCounts, rollAnchorParents, isRollAnchor, CARRIAGE_ROLL_ANCHOR_DOMAIN,
   type CarriageEntry, type RollAnchor, type PresentedLineageAct,
 } from "../src/carriage-registry.js";
-import { rollAnchorsFromBoard, writeRollAnchor, writeCarriageEntry, carriageEntriesFromBoard } from "../src/carriage-board.js";
+import {
+  rollAnchorsFromBoard, writeRollAnchor, writeCarriageEntry, carriageEntriesFromBoard, presentationFromBoardDoc,
+} from "../src/carriage-board.js";
 import { isPresentedAdmit } from "../src/auth-wire.js";
 import { makeMultiSigQuorumVerifier, type KahuRoster } from "../src/kapae-antigen.js";
 import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, type SealEpoch } from "../src/wax-stamp.js";
@@ -38,11 +42,11 @@ const keysOf = (seeds: readonly Uint8Array[]): Promise<string[]> => Promise.all(
 async function charter(rolls: 1 | 2) {
   const [oldK, midK, newK] = await Promise.all([keysOf(OLD), keysOf(MID), keysOf(NEW)]);
   const e0 = genesisCharterEpoch(oldK, 2, sealKeySetHash(midK, 2));
-  const r1 = rotateSealEpoch(e0, midK, 2, sealKeySetHash(newK, 2));
+  const r1 = await rotateSealEpoch(e0, { keys: midK, threshold: 2 }, sealKeySetHash(newK, 2), await kahuSigners(MID));
   if (!r1.ok) throw new Error(r1.reason);
   const lineage: SealEpoch[] = [e0, r1.epoch];
   if (rolls === 2) {
-    const r2 = rotateSealEpoch(r1.epoch, newK, 2, "");
+    const r2 = await rotateSealEpoch(r1.epoch, { keys: newK, threshold: 2 }, "", await kahuSigners(NEW));
     if (!r2.ok) throw new Error(r2.reason);
     lineage.push(r2.epoch);
   }
@@ -216,5 +220,82 @@ describe("the presenter, the wire guard, and the board", () => {
     // A carriage act at another epoch is still refused by the guard: only an anchor crosses epochs.
     const elsewhere = await revokeAt(c.r1.sealEpochCid, MID, [carriageEntryActCid(admit)]);
     expect(isPresentedAdmit({ admit, lineage: [elsewhere] })).toBe(false);
+  });
+});
+
+describe("the orphan anchor — two anchors open one epoch", () => {
+  /**
+   * A rotate retried over one commitment: the first attempt landed its anchor and wrote no head; between the
+   * attempts an admit landed at the closing epoch; the retry's anchor cites it. Both anchors open the SAME new
+   * epoch and both count there. The orphan's past lacks the admit.
+   */
+  async function retriedRoll(otherSeed = 8) {
+    const c = await charter(1);
+    const board = emptyLarDoc();
+    // A standing act on another nym, so the orphan cites something.
+    const priorOther = await carriageAct(seed(otherSeed), "admit", { kahu: OLD.slice(0, 2), epoch: c.r0.sealEpochCid });
+    writeCarriageEntry(board, priorOther);
+    const orphan = await anchor(c.r0, c.lineage[1]!, await rollAnchorParents(carriageEntriesFromBoard(board), [], c.r0), MID);
+    writeRollAnchor(board, orphan);
+    const admit = await admitAt(c.r0.sealEpochCid, OLD);   // lands between the attempts
+    writeCarriageEntry(board, admit);
+    const retry = await anchor(c.r0, c.lineage[1]!, await rollAnchorParents(carriageEntriesFromBoard(board), [], c.r0), MID);
+    writeRollAnchor(board, retry);
+    return { c, board, admit, orphan, retry };
+  }
+
+  test("★ the presenter carries the admit through the anchor whose past holds it, though the ORPHAN sorts first ★", async () => {
+    // Pick a fixture whose orphan sorts BEFORE the retry, so a presenter taking the lowest CID would pick it.
+    let fixture = await retriedRoll(8);
+    for (let n = 9; rollAnchorCid(fixture.orphan) > rollAnchorCid(fixture.retry) && n < 40; n++) fixture = await retriedRoll(n);
+    const { c, board, admit, orphan, retry } = fixture;
+    expect(rollAnchorCid(orphan) < rollAnchorCid(retry), "the fixture never put the orphan first").toBe(true);
+    expect(await rollAnchorCounts(orphan, c.r1)).toBe(true);
+    expect(await rollAnchorCounts(retry, c.r1)).toBe(true);
+    const nym = await pubOf(JOINER);
+    // Either anchor may sort first; the presentation never depends on it. Feed both orders.
+    for (const anchors of [[orphan, retry], [retry, orphan]]) {
+      const { presentation, findings } = await readBoardPresentation(carriageEntriesFromBoard(board), nym, c.r1, anchors);
+      expect(presentation, "an orphan anchor hid a carried admit").not.toBeNull();
+      expect(presentation!.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([rollAnchorCid(retry)]);
+      expect(await verify(presentation!.admit, [...presentation!.lineage], c.r1, c.lineage)).toMatchObject({ state: "held" });
+      // The fork SURFACES — informational, naming the epoch and both anchors.
+      expect(findings).toEqual([{
+        kind: "anchors-open-one-epoch", epochCid: c.r1.sealEpochCid,
+        anchorCids: [rollAnchorCid(orphan), rollAnchorCid(retry)].sort(),
+      }]);
+    }
+    // CONTROL: presenting through the orphan alone is exactly what the verifier refuses.
+    expect(await verify(admit, [orphan], c.r1, c.lineage)).toMatchObject({ state: "wrong-epoch", reason: "admit-not-in-anchor-past" });
+  });
+
+  test("CONTROL — an act in BOTH anchors' past presents, and the fork still surfaces without refusing", async () => {
+    const { c, board, orphan } = await retriedRoll();
+    const both = await presentationFromBoardDoc(board, await pubOf(seed(8)), c.r1);   // the act both anchors cite
+    expect(both.presentation).not.toBeNull();
+    expect(both.findings).toHaveLength(1);
+    void orphan;
+  });
+
+  test("CONTROL — one anchor per epoch surfaces no finding", async () => {
+    const c = await charter(1);
+    const board = emptyLarDoc();
+    const admit = await admitAt(c.r0.sealEpochCid, OLD);
+    writeCarriageEntry(board, admit);
+    writeRollAnchor(board, await anchor(c.r0, c.lineage[1]!, [carriageEntryActCid(admit)], MID));
+    const read = await presentationFromBoardDoc(board, await pubOf(JOINER), c.r1);
+    expect(read.presentation).not.toBeNull();
+    expect(read.findings).toEqual([]);
+  });
+
+  test("the one presenter reads the anchors off the SAME doc — an admit minted before the roll presents at the new head", async () => {
+    const c = await charter(1);
+    const board = emptyLarDoc();
+    const admit = await admitAt(c.r0.sealEpochCid, OLD);
+    writeCarriageEntry(board, admit);
+    writeRollAnchor(board, await anchor(c.r0, c.lineage[1]!, [carriageEntryActCid(admit)], MID));
+    const { presentation } = await presentationFromBoardDoc(board, await pubOf(JOINER), c.r1);
+    expect(presentation).not.toBeNull();
+    expect(await verify(presentation!.admit, [...presentation!.lineage], c.r1, c.lineage)).toMatchObject({ state: "held" });
   });
 });

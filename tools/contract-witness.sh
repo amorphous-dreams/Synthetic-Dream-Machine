@@ -28,7 +28,7 @@
 #
 # ── THE PRESENTED ADMIT (S6), AND THE RAISE DOOR THAT READS IT ───────────────────────────────────────
 # Once A admits B, B's admit is a PRESENTATION: the counted admit head for B's leaf and its closed, tight
-# lineage, derived off A's board by `presentedAdmitFromBoard` — the same derivation a dial presents after
+# lineage, derived off A's board by `presentationFromBoardDoc` — the same derivation a dial presents after
 # sync. A small node helper (written to the transfer dir, importing the BUILT dist of @lararium/mesh and
 # @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
 # after a descending revoke. It checks that only B's leaf proves the
@@ -44,8 +44,8 @@
 # presentation captured before the roll, carrying no anchor, reads WRONG-EPOCH too.
 #
 # ── THE EPOCH ROLL ARMS WITH THE KEY-SET IT REVEALS ─────────────────────────────────────────────────────
-# `seal rotate` reveals the personas STANDING in the vault, and the reveal must hash to the head's
-# pre-commitment. The reserve's commit names three keys derived off a separate reserve seed, and no verb
+# `seal rotate` reveals the personas STANDING in the vault, the reveal must hash to the head's
+# pre-commitment, and the revealed hands SIGN the roll — the lineage verifies those signatures whole. The reserve's commit names three keys derived off a separate reserve seed, and no verb
 # provisions those keys into the vault, so a genesis armed with the reserve's commit can never rotate.
 # The witness arms with `seal commit` over the roster it will reveal, and says so.
 #
@@ -243,7 +243,7 @@ async function reading() {
     const board   = await M.materializeSharedLarDoc(repo, M.carriageDocUrl(island), "board:carriage-contracts");
     const antigen = await M.materializeSharedLarDoc(repo, M.kapaeAntigenDocUrl(island), "board:kapae-antigen");
     // The anchors are the PRESENTER's read; the verdict reads the board as a deny board and nothing more.
-    return { aid: M.realmIdOfCharter(doc), roster, sealLineage: doc?.sealLineage ?? [],
+    return { aid: M.realmIdOfCharter(doc), roster, sealLineage: doc?.sealLineage ?? [], boardDoc: board.doc(),
              denyBoard: M.carriageEntriesFromBoard(board.doc()), anchors: M.rollAnchorsFromBoard(board.doc()),
              antigen: M.antigenEntriesFromBoard(antigen.doc()), antigenRoster: roster };
   } finally { await repo.flush().catch(() => {}); }
@@ -256,9 +256,9 @@ const hex32 = () => randomBytes(32).toString("hex");
 
 const [mode, a1, a2] = process.argv.slice(2);
 switch (mode) {
-  case "present": {            // the presentation a nym's admit head makes off this replica
+  case "present": {            // the presentation a nym's admit head makes off this replica — the one presenter
     const r = await reading();
-    const p = await M.presentedAdmitFromBoard(r.denyBoard, a1, r.roster, r.anchors);
+    const { presentation: p } = await M.presentationFromBoardDoc(r.boardDoc, a1, r.roster);
     if (!p) { console.log("none"); process.exit(1); }
     writeFileSync(a2, JSON.stringify(p));
     console.log("captured");
@@ -266,6 +266,12 @@ switch (mode) {
   }
   case "verdict": {            // verifyPresentedAdmit against this replica, as of now
     console.log((await verdictOf(json(a1), await reading())).state);
+    break;
+  }
+  case "lineage": {            // does the charter lineage verify whole, and how many hands signed the head's roll
+    const r = await reading();
+    const head = r.sealLineage[r.sealLineage.length - 1];
+    console.log(`verified=${M.verifySealLineage(r.sealLineage)} sigs=${head?.roll?.signatures?.length ?? 0}`);
     break;
   }
   case "anchored": {           // how many roll anchors a captured presentation carries
@@ -339,7 +345,7 @@ PRESENTED="$XFER/presented-admit.json"
 
 # ── ⑤ S6 — B's admit as a PRESENTATION ───────────────────────────────────────────────────────────────
 say "⑤ S6 — B's admit, presented"
-note "the presentation derives off A's board (presentedAdmitFromBoard) — what B presents once it holds the board"
+note "the presentation derives off A's board (presentationFromBoardDoc) — what B presents once it holds the board"
 step "B's admit head and lineage derive off A's replica"
 if [ -n "$B_NYM" ] && out=$(s6_a present "$B_NYM" "$PRESENTED" 2>&1) && [ "$out" = "captured" ]; then ok
 else bad "${out:-no nym}"; fi
@@ -427,6 +433,10 @@ else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 step "the rotate landed a ROLL ANCHOR on A's board"
 if printf '%s' "$ROT" | grep -qE '"rollAnchor":\{"cid":"[0-9a-f]{64}"'; then ok
 else bad "no anchor in the rotate's report"; fi
+
+step "★ the revealed hands SIGNED the roll, and the lineage verifies whole ★"
+LN=$(s6_a lineage 2>&1)
+case "$LN" in verified=true\ sigs=[1-9]*) ok ;; *) bad "$LN" ;; esac
 
 step "★ a REPLAY across an epoch roll refuses ★"
 # The sharpest property: a contract-in binds to the epoch it consented under. Roll A's charter and the

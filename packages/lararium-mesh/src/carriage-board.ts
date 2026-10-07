@@ -31,11 +31,13 @@ import {
   carriageEntryActCid,
   isRollAnchor,
   rollAnchorCid,
+  readBoardPresentation,
+  type BoardPresentation,
   type CarriageEntry,
   type CarriageAction,
   type RollAnchor,
 } from "./carriage-registry.js";
-import type { QuorumSignature } from "./kapae-antigen.js";
+import type { KahuRoster, QuorumSignature } from "./kapae-antigen.js";
 
 /**
  * The tiddler-key prefix every carriage entry rides under — namespaced apart from the board's other content.
@@ -172,4 +174,18 @@ export function rollAnchorsFromBoard(doc: LarDoc | undefined | null): RollAnchor
     });
   }
   return anchors;
+}
+
+/**
+ * THE ONE PRESENTER. Read a nym's presentation off ONE board doc: its carriage acts AND its roll anchors,
+ * extracted together, so no caller can derive a presentation from the acts while forgetting the anchors that
+ * carry an admit across a roll. Every door that presents — the dial, the bundle a contract writes, the raise a
+ * recogniser signs — reads through here.
+ */
+export async function presentationFromBoardDoc(
+  doc: LarDoc | undefined | null,
+  nym: string,
+  roster: KahuRoster,
+): Promise<BoardPresentation> {
+  return readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, rollAnchorsFromBoard(doc));
 }

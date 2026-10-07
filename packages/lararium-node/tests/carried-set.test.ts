@@ -44,23 +44,48 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
+/** The seed behind each foreign key, so a partner's revealed hands can sign its rolls. */
+const seedOf = new Map<string, Uint8Array>();
+
 /** Three verifying keys this vessel does NOT hold — a partner Nexus's founding kahu. */
 async function foreignKeys(salt: number): Promise<string[]> {
-  return Promise.all([1, 2, 3].map(async (i) => hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(salt + i)))));
+  return Promise.all([1, 2, 3].map(async (i) => {
+    const seed = new Uint8Array(32).fill(salt + i);
+    const pub = hex(await ed.getPublicKeyAsync(seed));
+    seedOf.set(pub, seed);
+    return pub;
+  }));
+}
+
+/** The partner's hands over `keys`, each signing with its own seed. */
+function partnerHands(keys: readonly string[]): { signer: string; sign: (b: Uint8Array) => Promise<string> }[] {
+  return keys.map((k) => {
+    const seed = seedOf.get(k);
+    if (!seed) throw new Error("fixture: no seed for a key that must sign a roll");
+    return { signer: k, sign: (b: Uint8Array) => ed.signAsync(b, seed).then(hex) };
+  });
+}
+
+/** A partner Nexus at genesis only: one epoch, no roll. */
+function genesisCharter(keys: string[]): { doc: NexusDoc; lineage: SealEpoch[] } {
+  const kahu = keys.map((k, i) => ({ displayName: `Partner ${i}`, verifyingKey: k }));
+  const lineage: SealEpoch[] = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
+  return { doc: { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: lineage[0]!.epochCid, sealLineage: lineage, kahu }, lineage };
 }
 
 /**
  * A partner Nexus with a pre-rotated lineage that alternates its quorum between 2 and 3, so each
- * rotation reveals the key-set its predecessor committed to. `fork` varies a rotation's next commit.
+ * rotation reveals the key-set its predecessor committed to, and the revealed hands sign each roll.
+ * `fork` varies a rotation's next commit.
  */
-function lineageCharter(keys: string[], depth: number, fork = 0): { doc: NexusDoc; lineage: SealEpoch[] } {
+async function lineageCharter(keys: string[], depth: number, fork = 0): Promise<{ doc: NexusDoc; lineage: SealEpoch[] }> {
   const kahu = keys.map((k, i) => ({ displayName: `Partner ${i}`, verifyingKey: k }));
-  const lineage: SealEpoch[] = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
+  const lineage: SealEpoch[] = [...genesisCharter(keys).lineage];
   let threshold = 2;
   for (let d = 1; d < depth; d++) {
     const revealed = threshold === 2 ? 3 : 2;
     const next     = d === depth - 1 && fork > 0 ? sealKeySetHash(keys, 1 + fork) : sealKeySetHash(keys, threshold);
-    const r = rotateSealEpoch(lineage[lineage.length - 1]!, keys, revealed, next);
+    const r = await rotateSealEpoch(lineage[lineage.length - 1]!, { keys, threshold: revealed }, next, partnerHands(keys));
     if (!r.ok) throw new Error(r.reason);
     lineage.push(r.epoch);
     threshold = revealed;
@@ -71,7 +96,7 @@ function lineageCharter(keys: string[], depth: number, fork = 0): { doc: NexusDo
 
 /** A partner Nexus with a genesis-only charter (no lineage), its AID the stored epoch. */
 function genesisOnlyCharter(keys: string[], threshold: number): NexusDoc {
-  const doc = lineageCharter(keys, 1).doc;
+  const doc = genesisCharter(keys).doc;
   return { ...doc, threshold, sealLineage: undefined, sealEpochCid: `epoch0-${"0".repeat(63)}${threshold}` };
 }
 
@@ -80,7 +105,7 @@ async function standFounding(): Promise<string[]> {
   await generateOrLoadVesselIdentity();
   const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   const keys  = roots.map((r) => r.verifyingKey);
-  writeNexusDoc(sealHome(), lineageCharter(keys, 1).doc);
+  writeNexusDoc(sealHome(), genesisCharter(keys).doc);
   return keys;
 }
 
@@ -93,8 +118,8 @@ async function standJoiner(): Promise<void> {
 describe("the carried set — one contract-in per Nexus", () => {
   it("★ two accept-carriage calls for two AIDs keep two consent records and carry two Nexuses ★", async () => {
     await standJoiner();
-    const n1 = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
-    const n2 = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(20), 1).doc));
+    const n1 = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
+    const n2 = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(20)).doc));
     expect(n1.aid).not.toBe(n2.aid);
     expect(await carriedSet(sealHome())).toEqual(new Set());   // charters held, nothing consented
 
@@ -113,7 +138,7 @@ describe("the carried set — one contract-in per Nexus", () => {
 
   it("★ no single consent file remains — consent lives per Nexus ★", async () => {
     await standJoiner();
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome(), aid: n.aid });
     expect(existsSync(join(sealHome(), "nexus", "carriage-consent.json"))).toBe(false);
     expect(existsSync(carriageConsentPathFor(sealHome(), n.aid))).toBe(true);
@@ -122,7 +147,7 @@ describe("the carried set — one contract-in per Nexus", () => {
   it("★ a partner charter lands BESIDE the primary and leaves its bytes identical ★", async () => {
     await standFounding();
     const before = readFileSync(nexusCharterDocPath(sealHome()));
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
     expect(readFileSync(nexusCharterDocPath(sealHome())).equals(before)).toBe(true);
     expect(n.path).toBe(join(carriedCharterHome(sealHome(), n.aid), "founding-roster.mem"));
     expect([...readCarriedCharters(sealHome()).keys()]).toEqual([n.aid]);
@@ -131,11 +156,11 @@ describe("the carried set — one contract-in per Nexus", () => {
   it("★ a re-import that EXTENDS the lineage drops N until re-consent ★", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc));
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome(), aid: n.aid });
     expect(await carriedSet(sealHome())).toEqual(new Set([n.aid]));
 
-    const rotated = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc));
+    const rotated = importCarriedCharter(sealHome(), renderNexusDoc((await lineageCharter(keys, 2)).doc));
     expect(rotated.aid).toBe(n.aid);                             // a rotation keeps the AID
     expect(rotated.outcome).toBe("extended");
     expect(await hasContractedInto(sealHome(), n.aid)).toBe(false);
@@ -147,9 +172,9 @@ describe("the carried set — one contract-in per Nexus", () => {
 
   it("★ a seated chair carries its Nexus with NO consent record — primary or carried ★", async () => {
     const keys = await standFounding();
-    const primary = realmIdOfCharter(lineageCharter(keys, 1).doc)!;
+    const primary = realmIdOfCharter(genesisCharter(keys).doc)!;
     // A partner Nexus that seats one of this vessel's roots beside two foreign chairs.
-    const shared = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter([keys[0]!, ...(await foreignKeys(30)).slice(0, 2)], 1).doc));
+    const shared = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter([keys[0]!, ...(await foreignKeys(30)).slice(0, 2)]).doc));
 
     expect(readConsent(sealHome(), primary)).toBeNull();
     expect(readConsent(sealHome(), shared.aid)).toBeNull();
@@ -162,7 +187,7 @@ describe("the carried set — one contract-in per Nexus", () => {
 describe("CONTROLS — what stays out of the set, and what refuses to land", () => {
   async function oneCarried(): Promise<{ aid: string; head: string }> {
     await standJoiner();
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
     return { aid: n.aid, head: n.sealEpochCid };
   }
 
@@ -194,8 +219,8 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
 
   it("CONTROL — a consent filed under the WRONG AID carries neither Nexus", async () => {
     await standJoiner();
-    const n1 = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
-    const n2 = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(20), 1).doc));
+    const n1 = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
+    const n2 = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(20)).doc));
     const c1 = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome(), aid: n1.aid });
     rmSync(carriageConsentPathFor(sealHome(), n1.aid));
     writeConsent(sealHome(), n2.aid, c1);                         // n1's genuine consent, moved under n2
@@ -205,9 +230,9 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
   it("CONTROL — a re-import that FORKS the held lineage refuses; the held bytes stand", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 3).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc((await lineageCharter(keys, 3)).doc));
     const held = readFileSync(n.path);
-    const fork = lineageCharter(keys, 3, 1).doc;                   // same genesis, a different epoch-2
+    const fork = (await lineageCharter(keys, 3, 1)).doc;                  // same genesis, a different epoch-2
     expect(realmIdOfCharter(fork)).toBe(n.aid);
     expect(fork.sealEpochCid).not.toBe(n.sealEpochCid);
     expect(() => importCarriedCharter(sealHome(), renderNexusDoc(fork))).toThrow(CarriedCharterError);
@@ -217,18 +242,18 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
   it("CONTROL — a re-import that REWINDS to an ancestor refuses; the held bytes stand", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc((await lineageCharter(keys, 2)).doc));
     const held = readFileSync(n.path);
-    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc))).toThrow(CarriedCharterError);
+    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc))).toThrow(CarriedCharterError);
     expect(readFileSync(n.path).equals(held)).toBe(true);
   });
 
   it("CONTROL — re-importing the SAME head passes and carries the consent through", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc));
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome(), aid: n.aid });
-    expect(importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc)).outcome).toBe("same");
+    expect(importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc)).outcome).toBe("same");
     expect(await carriedSet(sealHome())).toEqual(new Set([n.aid]));
   });
 
@@ -237,30 +262,31 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
     const keys = await foreignKeys(10);
     const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisOnlyCharter(keys, 2)));
     expect(n.outcome).toBe("landed");
-    const other = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const other = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc));
     expect(other.aid).not.toBe(n.aid);
     expect(readCarriedCharters(sealHome()).size).toBe(2);
   });
 
   it("CONTROL — the primary's OWN charter refuses to land as a carried copy", async () => {
     const keys = await standFounding();
-    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc))).toThrow(CarriedCharterError);
+    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc))).toThrow(CarriedCharterError);
     expect(existsSync(join(sealHome(), "carried"))).toBe(false);
   });
 
   it("★ a carried land leaves no temp file beside the charter ★", async () => {
     await standJoiner();
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
     expect(readdirSync(dirname(n.path)).filter((f) => /\.incoming$|\.tmp$/.test(f))).toEqual([]);
   });
 
   it.skipIf(!existsSync("/dev/full"))("★ a carried write that hits ENOSPC refuses with CarriedCharterError, strands no temp, and the held bytes stand ★", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const rotatedTwo = renderNexusDoc((await lineageCharter(keys, 2)).doc);
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc));
     const held = readFileSync(n.path);
     symlinkSync("/dev/full", `${n.path}.incoming`);              // the temp write faults mid-write (ENOSPC)
-    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(CarriedCharterError);
+    expect(() => importCarriedCharter(sealHome(), rotatedTwo)).toThrow(CarriedCharterError);
     expect(readFileSync(n.path).equals(held)).toBe(true);
     expect(readdirSync(dirname(n.path)).filter((f) => /\.incoming$|\.tmp$/.test(f))).toEqual([]);
   });
@@ -268,22 +294,24 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
   it("★ a carried write that faults on a directory at the temp refuses with CarriedCharterError ★", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const rotatedTwo = renderNexusDoc((await lineageCharter(keys, 2)).doc);
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc));
     const held = readFileSync(n.path);
     mkdirSync(`${n.path}.incoming`);
-    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(CarriedCharterError);
+    expect(() => importCarriedCharter(sealHome(), rotatedTwo)).toThrow(CarriedCharterError);
     expect(readFileSync(n.path).equals(held)).toBe(true);
   });
 
   it("★ a re-import over a TORN held carried charter refuses and leaves the torn bytes ★", async () => {
     await standJoiner();
     const keys = await foreignKeys(10);
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 1).doc));
+    const rotatedTwo = renderNexusDoc((await lineageCharter(keys, 2)).doc);
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(keys).doc));
     const whole = readFileSync(n.path, "utf8");
     writeFileSync(n.path, whole.slice(0, Math.floor(whole.length / 2)), "utf8");
     expect(parseNexusDoc(readFileSync(n.path, "utf8"))).toBeNull();
     const torn = readFileSync(n.path);
-    expect(() => importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(keys, 2).doc))).toThrow(/reads torn/);
+    expect(() => importCarriedCharter(sealHome(), rotatedTwo)).toThrow(/reads torn/);
     expect(readFileSync(n.path).equals(torn)).toBe(true);
   });
 
@@ -297,7 +325,7 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
 
   it("CONTROL — a carried directory whose charter names another AID is not read as that directory's Nexus", async () => {
     await standJoiner();
-    const n = importCarriedCharter(sealHome(), renderNexusDoc(lineageCharter(await foreignKeys(10), 1).doc));
+    const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
     const misplaced = join(sealHome(), "carried", "epoch0-" + "f".repeat(64), "founding-roster.mem");
     mkdirSync(dirname(misplaced), { recursive: true });
     writeFileSync(misplaced, readFileSync(n.path));

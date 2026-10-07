@@ -6,26 +6,62 @@
  * public + on the data. Orthogonal.
  *
  * The charter is a pre-rotated, hash-linked, content-addressed EPOCH CHAIN (TUF ≈ KERI): each epoch
- * names its authorizing key-set AND pre-commits a digest of the NEXT epoch's keys — so stealing today's
- * council keys cannot forge tomorrow's charter. It lists KEYS/THRESHOLDS, never a roster. A stamp attests
+ * names its authorizing key-set AND pre-commits a digest of the NEXT epoch's keys, and every successor
+ * carries a ROLL that the revealed, pre-committed keys SIGN — so stealing today's council keys cannot forge
+ * tomorrow's charter, and knowing a revealed key-set's PUBLIC keys forges no epoch at all. It lists
+ * KEYS/THRESHOLDS, never a roster. A stamp attests
  * A PAST ("sealed under epoch N"), NEVER "the org endorses this now" — which is what preserves no-global-
  * now: the seal is a frozen causal fact, and present-standing reads live on the SEPARATE handshake.
  *
  * The honest wall, kept lit: "valid trace to lineage L" is a HARD crypto fact (decided here); "L is the
  * legitimate org" is HIGHER-ORDER social acceptance (NOT decided here — a fork yields two internally-valid
- * lineages). Duplicity — two signed inconsistent epochs at one sequence — IS algorithmically detectable.
+ * lineages). Duplicity — two signed inconsistent epochs rolling from one predecessor — IS algorithmically
+ * detectable.
+ *
+ * Order rides the hash link alone: an epoch's place in the lineage IS its `prevEpochCid` chain, so no epoch
+ * carries a sequence number.
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { sha256HexSync, hexToBytes, canonicalJson } from "./crypto.js";
+import { ed25519 as ed25519Sync } from "@noble/curves/ed25519.js";
+import { sha256HexSync, hexToBytes, canonicalJson, canonicalJsonBytes } from "./crypto.js";
+import { SEAL_ROLL_DOMAIN } from "./domains.js";
+import type { QuorumSignature } from "./kapae-antigen.js";
+
+/** A key-set and the quorum rule over it — the preimage `sealKeySetHash` digests. */
+export interface SealKeySet {
+  readonly keys:      readonly string[];
+  readonly threshold: number;
+}
+
+/**
+ * The signed ROLL a successor epoch carries — the KERI rotation event. Public charter material only.
+ *
+ *   · `keys` / `threshold` — the epoch's seated key-set, which `sealKeySetHash` binds to its `keySetHash`.
+ *   · `revealed`           — the preimage of the predecessor's `nextKeyCommit`, present only when the seated
+ *                            set differs from it (a SEAT CHANGE). Absent, the seated set IS the reveal.
+ *   · `signatures`         — over `sealRollBytes`: at least the revealed threshold of the REVEALED keys (the
+ *                            pre-committed hands, which carry the prior epoch's authority), at least the
+ *                            seated threshold of the SEATED keys, and EVERY seated key the commitment did not
+ *                            name (proof of possession — a seat change never seats a key nobody holds).
+ *
+ * The pre-commitment evidence (`revealed`) rides OUTSIDE the signed bytes, so a per-seat commitment can
+ * replace the single digest without re-shaping what the hands sign.
+ */
+export interface SealRoll {
+  readonly keys:       readonly string[];
+  readonly threshold:  number;
+  readonly revealed?:  SealKeySet;
+  readonly signatures: readonly QuorumSignature[];
+}
 
 /** One epoch in the charter's pre-rotated, hash-linked lineage. Content-addressed by `epochCid`. */
 export interface SealEpoch {
-  readonly epoch:        number;         // monotonic sequence; genesis = 0
-  readonly epochCid:     string;         // content-address of THIS epoch record (its own hash)
-  readonly keySetHash:   string;         // digest of the key-set/quorum authorized to seal UNDER this epoch
-  readonly nextKeyCommit: string;        // KERI pre-rotation: digest of the NEXT epoch's authorized keys
-  readonly prevEpochCid: string | null;  // hash-link to the predecessor (null at genesis)
+  readonly epochCid:      string;         // content-address of THIS epoch record (`sealEpochCidOf`)
+  readonly keySetHash:    string;         // digest of the key-set/quorum authorized to seal UNDER this epoch
+  readonly nextKeyCommit: string;         // KERI pre-rotation: digest of the NEXT epoch's authorized keys
+  readonly prevEpochCid:  string | null;  // hash-link to the predecessor (null at genesis)
+  readonly roll?:         SealRoll;       // the signed rotation event; every successor carries one, genesis none
 }
 
 /** A wax-stamp on posted data — inline, island-local, attests A PAST ("sealed under epoch N"). */
@@ -40,18 +76,22 @@ export interface WaxStamp {
 export type SealVerdict = "CURRENT" | "PAST_AUTHENTIC" | "SPOOF";
 
 /**
- * Verify the charter chain's integrity: monotonic sequence + hash-links + KERI PRE-ROTATION — each
- * epoch's `keySetHash` was pre-committed by its predecessor's `nextKeyCommit`, so a stolen current key
- * cannot forge a valid successor. Genesis (epoch 0) carries no predecessor.
+ * Verify the charter chain's integrity: content-addresses + hash-links + KERI PRE-ROTATION + SIGNED ROLLS.
+ * Every epoch's `epochCid` recomputes over its fields; every successor hash-links to its predecessor and
+ * carries a roll that `verifySealRoll` reads lawful — the revealed keys match the predecessor's commitment
+ * and SIGNED the step. A reader holding only the public keys of a revealed set therefore forges nothing.
+ * Genesis carries no predecessor and no roll. Synchronous, so every roster fold reads it in place.
  */
 export function verifySealLineage(chain: readonly SealEpoch[]): boolean {
   if (chain.length === 0) return false;
-  if (chain[0]!.epoch !== 0 || chain[0]!.prevEpochCid !== null) return false;
+  const genesis = chain[0]!;
+  if (genesis.prevEpochCid !== null || genesis.roll !== undefined) return false;
+  if (genesis.epochCid !== sealEpochCidOf(genesis)) return false;
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!, prev = chain[i - 1]!;
-    if (e.epoch !== prev.epoch + 1) return false;          // monotonic
     if (e.prevEpochCid !== prev.epochCid) return false;    // hash-linked
-    if (e.keySetHash !== prev.nextKeyCommit) return false; // pre-rotation: the predecessor pre-committed these keys
+    if (e.epochCid !== sealEpochCidOf(e)) return false;    // content-addressed
+    if (verifySealRoll(prev, e) !== null) return false;    // pre-rotated AND signed by the revealed hands
   }
   return true;
 }
@@ -76,15 +116,20 @@ export function classifySeal(
 }
 
 /**
- * Detect DUPLICITY across two claimed lineages: two epoch records at the SAME sequence with DIFFERENT
- * CIDs = proof-of-misbehavior (a controller signed inconsistent history). Returns the offending epoch
- * number, or null. This is algorithmically decidable; the LEGITIMACY of a fork is not (never auto-arbitrate).
+ * Detect DUPLICITY across two claimed lineages: two successors rolling from the SAME predecessor with
+ * DIFFERENT CIDs. Read over two lineages that each pass `verifySealLineage`, both rolls carry the revealed
+ * hands' signatures — proof-of-misbehavior (one controller signed inconsistent history). Returns the shared
+ * predecessor's cid, or null. Two distinct geneses share no predecessor: they are two lineages, never one
+ * controller's duplicity. This is algorithmically decidable; the LEGITIMACY of a fork is not (never
+ * auto-arbitrate).
  */
-export function detectDuplicity(a: readonly SealEpoch[], b: readonly SealEpoch[]): number | null {
-  const byEpoch = new Map(a.map((e) => [e.epoch, e.epochCid]));
+export function detectDuplicity(a: readonly SealEpoch[], b: readonly SealEpoch[]): string | null {
+  const byPrev = new Map<string, string>();
+  for (const e of a) if (e.prevEpochCid !== null) byPrev.set(e.prevEpochCid, e.epochCid);
   for (const e of b) {
-    const other = byEpoch.get(e.epoch);
-    if (other !== undefined && other !== e.epochCid) return e.epoch;
+    if (e.prevEpochCid === null) continue;
+    const other = byPrev.get(e.prevEpochCid);
+    if (other !== undefined && other !== e.epochCid) return e.prevEpochCid;
   }
   return null;
 }
@@ -116,28 +161,35 @@ export function sealKeySetHash(keys: readonly string[], threshold: number): stri
   return sha256HexSync(canonicalJson({ keys: norm, threshold }));
 }
 
-/** The authority fields an epoch's content-address binds — everything but the derived `epochCid` itself. */
-export type SealEpochFields = Omit<SealEpoch, "epochCid">;
+/** The authority fields an epoch's content-address binds — everything but the derived `epochCid` and the
+ *  roll, whose signatures are evidence around the act, never its identity. */
+export type SealEpochFields = Omit<SealEpoch, "epochCid" | "roll">;
 
 /**
- * The content-address of a charter epoch — a hash BINDING the epoch's authority fields (its sequence, its
- * authorized key-set digest, its pre-rotation commitment, its predecessor link). A single bit-flip in any
- * bound field yields a different cid, so the `epochCid` the next epoch hash-links against is tamper-evident.
+ * The content-address of a charter epoch — a hash BINDING the epoch's authority fields (its authorized
+ * key-set digest, its pre-rotation commitment, its predecessor link). A single bit-flip in any bound field
+ * yields a different cid, so the `epochCid` the next epoch hash-links against is tamper-evident. Genesis
+ * reads `epoch0-…` — the inception marker the Nexus AID shape keys on — and every successor `epoch-…`.
  */
 export function sealEpochCidOf(fields: SealEpochFields): string {
-  return `epoch${fields.epoch}-${sha256HexSync(canonicalJson({
-    epoch: fields.epoch, keySetHash: fields.keySetHash,
-    nextKeyCommit: fields.nextKeyCommit, prevEpochCid: fields.prevEpochCid,
-  }))}`;
+  const digest = sha256HexSync(canonicalJson({
+    keySetHash: fields.keySetHash, nextKeyCommit: fields.nextKeyCommit, prevEpochCid: fields.prevEpochCid,
+  }));
+  return fields.prevEpochCid === null ? `epoch0-${digest}` : `epoch-${digest}`;
 }
 
-/** Seal one charter epoch from its authority fields, deriving the content-address over them. */
-export function mintCharterEpoch(fields: SealEpochFields): SealEpoch {
-  return { ...fields, epochCid: sealEpochCidOf(fields) };
+/** Seal one charter epoch from its authority fields (and, for a successor, its roll), deriving the
+ *  content-address over the fields. */
+export function mintCharterEpoch(fields: SealEpochFields, roll?: SealRoll): SealEpoch {
+  const epoch: SealEpoch = {
+    keySetHash: fields.keySetHash, nextKeyCommit: fields.nextKeyCommit, prevEpochCid: fields.prevEpochCid,
+    epochCid: sealEpochCidOf(fields),
+  };
+  return roll ? { ...epoch, roll } : epoch;
 }
 
 /**
- * Seat the GENESIS epoch (sequence 0, no predecessor) from the founding key-set + a PRE-ROTATION
+ * Seat the GENESIS epoch (no predecessor, no roll) from the founding key-set + a PRE-ROTATION
  * commitment to the NEXT epoch's keys. The commitment rides in from OFFLINE custody of the next key-set
  * (KERI pre-rotation), so stealing today's council keys forges no valid successor. An empty commitment
  * leaves rotation UNARMED — `rotateSealEpoch` then refuses, since nothing stands pre-committed to verify
@@ -145,7 +197,6 @@ export function mintCharterEpoch(fields: SealEpochFields): SealEpoch {
  */
 export function genesisCharterEpoch(keys: readonly string[], threshold: number, nextKeyCommit: string): SealEpoch {
   return mintCharterEpoch({
-    epoch:         0,
     keySetHash:    sealKeySetHash(keys, threshold),
     nextKeyCommit,
     prevEpochCid:  null,
@@ -157,35 +208,121 @@ export type RotateResult =
   | { readonly ok: true;  readonly epoch: SealEpoch }
   | { readonly ok: false; readonly reason: string };
 
+/** One hand that signs a roll — its verifying key and a signer over bytes. The module holds no key. */
+export interface SealRollSigner {
+  readonly signer: string;
+  readonly sign:   (bytes: Uint8Array) => Promise<string>;
+}
+
+const normKeys = (keys: readonly string[]): string[] => [...new Set(keys.map((k) => k.toLowerCase()))].sort();
+
 /**
- * Advance the chain: REVEAL the pre-committed next key-set and seat it as the new head. FAILS CLOSED three
- * ways — an unarmed head (empty `nextKeyCommit`) refuses; a revealed key-set whose digest does not match
- * the head's `nextKeyCommit` refuses (the reveal was forged, lost, or the wrong threshold); and the caller
- * MUST supply the FOLLOWING commitment so the new head stays pre-rotated. The minted epoch hash-links to
- * `head.epochCid`, so `verifySealLineage` walks an unbroken, pre-rotated lineage through it.
+ * The canonical bytes a roll's hands sign: the predecessor's cid, the seated key-set and its threshold, and
+ * the epoch's forward commitment (`next`). Domain-separated under `seal-roll`. `next` carries the commitment
+ * VALUE whatever its shape — a single digest today — so a per-seat commitment slots into the same field under
+ * the same domain.
  */
-export function rotateSealEpoch(
-  head:              SealEpoch,
-  revealedKeys:      readonly string[],
-  revealedThreshold: number,
-  nextKeyCommit:     string,
-): RotateResult {
+export function sealRollBytes(parts: {
+  readonly prevEpochCid: string; readonly keys: readonly string[]; readonly threshold: number;
+  readonly nextKeyCommit: string;
+}): Uint8Array {
+  return canonicalJsonBytes({
+    kind:         SEAL_ROLL_DOMAIN,
+    prevEpochCid: parts.prevEpochCid,
+    keys:         normKeys(parts.keys),
+    threshold:    parts.threshold,
+    next:         parts.nextKeyCommit,
+  });
+}
+
+const isThreshold = (t: unknown): t is number => typeof t === "number" && Number.isInteger(t) && t >= 1;
+
+/**
+ * Is `epoch` a lawful roll from `prev`? Null when it holds, else the named refusal. FAILS CLOSED:
+ *   · `roll-unsigned`                 — no roll rides the epoch;
+ *   · `roll-malformed`                — a threshold below one, or a key or signature that is not hex;
+ *   · `roll-key-set-unbound`          — the roll's seated set does not hash to the epoch's `keySetHash`;
+ *   · `rotation-unarmed`              — the predecessor pre-committed nothing;
+ *   · `reveal-mismatch`               — the revealed set does not hash to the predecessor's commitment;
+ *   · `roll-short-of-revealed-quorum` — fewer than the revealed threshold of REVEALED keys signed;
+ *   · `roll-short-of-seated-quorum`   — fewer than the seated threshold of SEATED keys signed;
+ *   · `seat-change-without-proof-of-possession` — a seated key the commitment never named did not sign.
+ * A signature counts once per distinct key, and only over `sealRollBytes` for exactly this step.
+ */
+export function verifySealRoll(prev: SealEpoch, epoch: SealEpoch): string | null {
+  const roll = epoch.roll;
+  if (!roll || typeof roll !== "object") return "roll-unsigned";
+  if (!Array.isArray(roll.keys) || !isThreshold(roll.threshold) || !Array.isArray(roll.signatures)) return "roll-malformed";
+  const revealed: SealKeySet = roll.revealed ?? { keys: roll.keys, threshold: roll.threshold };
+  if (!Array.isArray(revealed.keys) || !isThreshold(revealed.threshold)) return "roll-malformed";
+  const hex64 = (k: unknown): k is string => typeof k === "string" && /^[0-9a-fA-F]{64}$/.test(k);
+  if (!roll.keys.every(hex64) || !revealed.keys.every(hex64)) return "roll-malformed";
+  if (sealKeySetHash(roll.keys, roll.threshold) !== epoch.keySetHash) return "roll-key-set-unbound";
+  if (prev.nextKeyCommit.length === 0) return "rotation-unarmed";
+  if (sealKeySetHash(revealed.keys, revealed.threshold) !== prev.nextKeyCommit) return "reveal-mismatch";
+
+  const seated = new Set(normKeys(roll.keys));
+  const committed = new Set(normKeys(revealed.keys));
+  const bytes = sealRollBytes({
+    prevEpochCid: prev.epochCid, keys: roll.keys, threshold: roll.threshold, nextKeyCommit: epoch.nextKeyCommit,
+  });
+  const signed = new Set<string>();
+  for (const s of roll.signatures) {
+    if (typeof s !== "object" || s === null || typeof s.signer !== "string" || typeof s.sig !== "string") continue;
+    const signer = s.signer.toLowerCase();
+    if (signed.has(signer) || !(seated.has(signer) || committed.has(signer))) continue;
+    if (!/^[0-9a-f]{128}$/i.test(s.sig)) continue;
+    let ok = false;
+    try { ok = ed25519Sync.verify(hexToBytes(s.sig), bytes, hexToBytes(signer)); } catch { ok = false; }
+    if (ok) signed.add(signer);
+  }
+  const count = (set: ReadonlySet<string>): number => [...set].filter((k) => signed.has(k)).length;
+  if (count(committed) < revealed.threshold) return "roll-short-of-revealed-quorum";
+  if (count(seated) < roll.threshold) return "roll-short-of-seated-quorum";
+  for (const k of seated) {
+    if (!committed.has(k) && !signed.has(k)) return "seat-change-without-proof-of-possession";
+  }
+  return null;
+}
+
+/**
+ * Advance the chain: REVEAL the pre-committed next key-set, seat it as the new head, and have its hands SIGN
+ * the roll. FAILS CLOSED: an unarmed head refuses; a reveal whose digest does not match the head's
+ * `nextKeyCommit` refuses; and the signed roll must read lawful under `verifySealRoll` before it is returned
+ * — a roll short of either quorum, or a seat change whose added key did not sign, refuses. The caller MUST
+ * supply the FOLLOWING commitment so the new head stays pre-rotated.
+ *
+ * `seat.revealed` names the commitment's preimage when the seated set differs from it (a SEAT CHANGE); absent,
+ * the seated set IS the reveal.
+ */
+export async function rotateSealEpoch(
+  head:          SealEpoch,
+  seat:          SealKeySet & { readonly revealed?: SealKeySet },
+  nextKeyCommit: string,
+  signers:       readonly SealRollSigner[],
+): Promise<RotateResult> {
   if (head.nextKeyCommit.length === 0) {
     return { ok: false, reason: "rotation unarmed — the head epoch pre-committed no next key-set" };
   }
-  const revealedHash = sealKeySetHash(revealedKeys, revealedThreshold);
-  if (revealedHash !== head.nextKeyCommit) {
+  const revealed = seat.revealed ?? seat;
+  if (sealKeySetHash(revealed.keys, revealed.threshold) !== head.nextKeyCommit) {
     return { ok: false, reason: "reveal mismatch — the revealed key-set does not match the head's pre-committed digest" };
   }
-  return {
-    ok: true,
-    epoch: mintCharterEpoch({
-      epoch:        head.epoch + 1,
-      keySetHash:   revealedHash,
-      nextKeyCommit,
-      prevEpochCid: head.epochCid,
-    }),
-  };
+  const keys = normKeys(seat.keys);
+  const bytes = sealRollBytes({ prevEpochCid: head.epochCid, keys, threshold: seat.threshold, nextKeyCommit });
+  const signatures: QuorumSignature[] = [];
+  for (const s of signers) signatures.push({ signer: s.signer.toLowerCase(), sig: await s.sign(bytes) });
+  const roll: SealRoll = seat.revealed
+    ? { keys, threshold: seat.threshold, revealed: { keys: normKeys(seat.revealed.keys), threshold: seat.revealed.threshold }, signatures }
+    : { keys, threshold: seat.threshold, signatures };
+  const epoch = mintCharterEpoch({
+    keySetHash:   sealKeySetHash(keys, seat.threshold),
+    nextKeyCommit,
+    prevEpochCid: head.epochCid,
+  }, roll);
+  const refusal = verifySealRoll(head, epoch);
+  if (refusal !== null) return { ok: false, reason: `roll refused — ${refusal}` };
+  return { ok: true, epoch };
 }
 
 /** Mint a wax-stamp: sign the artifact under a key authorized by the cited epoch. `sign` yields a hex

@@ -89,6 +89,10 @@ export const GUARDIAN_REGISTRATION_DOMAIN = frozen("guardian-registration");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
 export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");
+/** A charter epoch's ROLL: the revealed, pre-committed keys sign the predecessor's cid, the seated key-set,
+ *  its threshold and the next commitment — the KERI rotation event. Its own name: a roll must never verify
+ *  as a crossing record, a roll anchor, or any carriage act. */
+export const SEAL_ROLL_DOMAIN = mint("seal-roll");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 export const PERSONA_ENROLL_DOMAIN = frozen("persona-enroll");

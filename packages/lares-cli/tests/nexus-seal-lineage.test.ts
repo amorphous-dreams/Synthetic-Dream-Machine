@@ -3,13 +3,13 @@
  * through a REAL persona vault + the bags/nexus charter DOC on disk.
  *
  * Proven:
- *   · seat establishes the GENESIS epoch (sequence 0, null prev) with a pre-rotation commitment + raises a
+ *   · seat establishes the GENESIS epoch (null prev, no roll) with a pre-rotation commitment + raises a
  *     live quorum, all through the vault (pet-name match → seated verifying keys → chain head),
  *   · seat FAILS CLOSED against re-seating a chain that has already ROTATED past genesis,
- *   · rotate REVEALS the vault key-set, verifies it against the head's pre-commitment, and APPENDS a
- *     hash-linked epoch1 (the seat→rotate round-trip),
+ *   · rotate REVEALS the vault key-set, verifies it against the head's pre-commitment, has the revealed
+ *     hands SIGN the roll, and APPENDS a hash-linked successor (the seat→rotate round-trip),
  *   · a rotate whose reveal does NOT match the head's pre-commitment REFUSES (nonzero) and writes NOTHING
- *     (the chain stays at epoch0) — the fail-closed floor.
+ *     (the chain stays at genesis) — the fail-closed floor.
  *
  * The reveal-verify SEMANTICS (accept/refuse on the digest, the pre-rotation guard) are exhaustively proven
  * at the mesh layer (wax-stamp.test); this file proves the CLI WIRING over a genuine vault + disk.
@@ -25,7 +25,7 @@ import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
 } from "@lararium/mesh";
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
@@ -79,8 +79,8 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const doc = readNexusDoc(larSealHome());
     expect(doc?.sealLineage?.length).toBe(1);
     const head = sealLineageHead(doc)!;
-    expect(head.epoch).toBe(0);
     expect(head.prevEpochCid).toBeNull();
+    expect(head.roll).toBeUndefined();
     expect(head.nextKeyCommit).toBe(commitNext);          // rotation armed
     expect(doc?.sealEpochCid).toBe(head.epochCid);      // the antigen roots on the head
     expect(head.keySetHash).toBe(sealKeySetHash(keys, 2));
@@ -98,8 +98,10 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const doc = readNexusDoc(larSealHome());
     expect(doc?.sealLineage?.length).toBe(2);
     const head = sealLineageHead(doc)!;
-    expect(head.epoch).toBe(1);
     expect(head.prevEpochCid).toBe(genesis.epochCid);     // hash-linked to genesis
+    // The revealed hands SIGNED the roll, and the stored chain verifies whole.
+    expect(head.roll!.signatures.map((s) => s.signer).sort()).toEqual([...keys].map((k) => k.toLowerCase()).sort());
+    expect(verifySealLineage(doc!.sealLineage!)).toBe(true);
     expect(doc?.sealEpochCid).toBe(head.epochCid);      // the antigen re-roots on the new head
 
     // re-seat now REFUSES (the chain has rotated past genesis) — never a silent re-genesis.
@@ -157,8 +159,8 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     expect(rc).not.toBe(0);                                 // fail-closed on the reveal mismatch
 
     const after = readNexusDoc(larSealHome());
-    expect(after?.sealLineage?.length).toBe(1);            // nothing written — still at epoch0
-    expect(sealLineageHead(after)!.epoch).toBe(0);
+    expect(after?.sealLineage?.length).toBe(1);            // nothing written — still at genesis
+    expect(sealLineageHead(after)!.prevEpochCid).toBeNull();
   });
 
   test("commit computes a key-set digest matching sealKeySetHash (the operator's offline helper)", async () => {
