@@ -4,7 +4,11 @@
 # A gate only ever shown passing is no gate, so the CROSSING goes first: a commit trailing one hearth's
 # session that stages a file another hearth holds, and the gate must refuse naming the row. Then the
 # CONTROLs: the SAME file under the HOLDING hearth's trailer passes; a commit carrying NO trailer passes
-# with a note (the operator's own commits carry none); a path no hold names passes silently.
+# (the operator's own commits carry none); a path no hold names passes silently.
+#
+# THE PASS NOTE SPEAKS ONLY WHEN SOMETHING IS HELD, and the witness pins both halves: a pass over held
+# ground prints the note naming it, and a pass over ground no hold names prints NOTHING. A gate that
+# chatters on every commit trains the hand to stop reading the one line that matters.
 #
 # The ledger under test is the real one — a witness against a fixture ledger proves the parser and not
 # the rows the tree actually stands on.
@@ -18,8 +22,9 @@
 # ledger so the header's law still holds for them.
 #
 # A LIVE FENCE WITH NO HOLD STANDS THE GATE DOWN, and the real-ledger CONTROLs then witness exactly that:
-# a path a closed hearth held passes under the very trailer the arming vector refused, with the
-# stand-down note, because a closed hearth defends nothing.
+# a path a closed hearth held passes under the very trailer the arming vector refused, in SILENCE, because
+# a closed hearth defends nothing and nothing stands held. A ledger with no `holds` fence at all still
+# speaks its stand-down note: that names the ledger diverging from the gate, never nothing held.
 #
 # Runs under `${TMPDIR:-/tmp}`; touches no repo of the operator's.
 set -uo pipefail
@@ -139,6 +144,46 @@ step "CONTROL: the SAME file under the HOLDING hearth's trailer passes"
 printf 'lar:///a.b.c — the holder writes\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
 if [ $? -eq 0 ]; then ok; else bad "the holding hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
 
+# The note's two halves, both on the ARMED ledger so a held path exists to speak about.
+step "★ SPEAKS: a pass over HELD ground prints the note naming it"
+stage "$HELD_BY_A"
+printf 'lar:///a.b.c — the holder writes again\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "the holding hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "\[hearths-gate\] 1 path(s) stand on .*own ground" "$WORK/out.txt"; then ok
+else bad "passed held ground without the note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+
+step "★ SPEAKS: a trailer-less pass over HELD ground prints the operator note"
+stage "$HELD_BY_A"
+printf 'the operator writes held ground, carrying no trailer\n' | attempt
+if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "no \`Claude-Session:\` trailer" "$WORK/out.txt"; then ok
+else bad "passed without the note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+
+step "★ QUIET: a pass over ground NO hold names prints nothing"
+stage "$UNHELD"
+printf 'lar:///a.b.c — unheld ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "unheld ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "hearths-gate" "$WORK/out.txt"; then bad "the gate spoke with nothing held"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
+
+step "★ QUIET: a trailer-less pass over unheld ground prints nothing"
+stage "$UNHELD"
+printf 'the operator writes unheld ground, carrying no trailer\n' | attempt
+if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "hearths-gate" "$WORK/out.txt"; then bad "the gate spoke with nothing held"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
+
+# A ledger with no `holds` fence cannot say what is held, so the gate stands down ALOUD.
+printf 'a ledger whose holds fence went missing\n' > "$WORK/fenceless-ledger.mem"
+use_ledger "$WORK/fenceless-ledger.mem"
+step "CONTROL: a ledger with NO holds fence stands the gate down aloud"
+stage "$UNHELD"
+printf 'lar:///a.b.c — fenceless\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "a fenceless ledger blocked the tree"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "no \`holds\` fence .* the gate stands down" "$WORK/out.txt"; then ok
+else bad "stood down in silence over a fenceless ledger"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+use_ledger "$ARMED_LEDGER"
+
 step "CONTROL: the committing hearth's OWN ground passes"
 stage "$HELD_BY_B"
 printf 'lar:///a.b.c — own ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
@@ -183,7 +228,7 @@ else bad "refused for the wrong reason"; sed 's/^/      /' "$WORK/out.txt" | hea
 use_ledger "$WORK/real-ledger.mem"
 
 if [ -n "$LIVE_OWNER" ]; then
-step "CONTROL: a commit with NO trailer passes, with a printed note"
+step "CONTROL: a commit with NO trailer over live held ground passes, with a printed note"
 stage "$HELD_LIVE"
 printf 'the operator writes, carrying no trailer\n' | attempt
 if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
@@ -202,12 +247,12 @@ stage "$HELD_LIVE"
 printf 'lar:///a.b.c — the live hearth writes\n\nClaude-Session: https://claude.ai/code/%s\n' "$LIVE_OWNER" | attempt
 if [ $? -eq 0 ]; then ok; else bad "the standing hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
 else
-step "CONTROL: no live hold — the arming crossing passes, the gate stood down"
+step "CONTROL: no live hold — the arming crossing passes, in silence"
 stage "$HELD_BY_A"
 printf 'lar:///a.b.c — closed ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
 if [ $? -ne 0 ]; then bad "a closed hearth's former ground was defended"; sed 's/^/      /' "$WORK/out.txt" | head -8
-elif grep -q "the gate stands down" "$WORK/out.txt"; then ok
-else bad "passed without the stand-down note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+elif grep -q "hearths-gate" "$WORK/out.txt"; then bad "the gate spoke over a ledger holding nothing"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
 fi
 
 echo

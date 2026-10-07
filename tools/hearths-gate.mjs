@@ -8,8 +8,13 @@
  * the staged paths cross into a hold the committing hearth does not own — printing the row so the hand
  * reads WHOSE ground it stands on and what that hearth owes.
  *
- * A COMMIT WITH NO TRAILER PASSES, with a note. The operator's own commits carry none, and a gate that
- * refuses the operator on their own tree reads as an outage, never a safeguard.
+ * A COMMIT WITH NO TRAILER PASSES. The operator's own commits carry none, and a gate that refuses the
+ * operator on their own tree reads as an outage, never a safeguard.
+ *
+ * THE PASS NOTE SPEAKS ONLY WHEN SOMETHING IS HELD. A pass that touched held ground names that ground; a
+ * pass over ground no hold names prints nothing, so a tree with no live hold commits in silence and the
+ * one line that does print stays worth reading. A ledger whose `holds` fence the gate cannot find still
+ * speaks: that reads as the ledger diverging from the gate, never as nothing held.
  *
  * A path no hold names belongs to no hearth and passes silently. A path TWO hearths claim reads as a
  * crossing already in flight, and the gate says so rather than picking a winner.
@@ -102,10 +107,12 @@ export function trailerOf(message) {
 }
 
 export function verdict({ message, paths, ledger }) {
+  if (!/```toml holds\n/.test(ledger)) return { ok: true, note: `no \`holds\` fence in ${LEDGER} — the gate stands down` };
   const rows = parseHolds(ledger);
-  if (rows.length === 0) return { ok: true, note: `no \`holds\` rows parsed from ${LEDGER} — the gate stands down` };
+  const held = paths.filter((p) => hearthsOf(p, rows).length > 0).length;
+  if (held === 0) return { ok: true };
   const trailer = trailerOf(message);
-  if (!trailer) return { ok: true, note: "no `Claude-Session:` trailer — the gate passes it (an operator's own commit carries none)" };
+  if (!trailer) return { ok: true, note: `no \`Claude-Session:\` trailer — the gate passes ${held} held path(s) (an operator's own commit carries none)` };
   const mine = rows.find((r) => r.trailer === trailer);
   const crossings = [];
   for (const p of paths) {
@@ -114,13 +121,9 @@ export function verdict({ message, paths, ledger }) {
     }
   }
   if (crossings.length === 0) {
-    // THE NOTE STATES WHAT IT MEASURED, never what it assumed. Naming `mine` here read as a claim about
-    // the PATHS ("they stand on the founding hearth's ground") over a check that only ever asked whether
-    // they stood on ANOTHER hearth's — so every pass said it about files standing on no hold at all.
-    const held = paths.filter((p) => hearthsOf(p, rows).length > 0).length;
-    const where = held === 0
-      ? "no hearth's ground"
-      : held === paths.length ? `\`${mine?.hearth ?? "this hearth"}\`'s own ground`
+    // THE NOTE STATES WHAT IT MEASURED, never what it assumed: it counts the paths on the committing
+    // hearth's own ground apart from the paths on no hold, and attributes no unheld file to a hearth.
+    const where = held === paths.length ? `\`${mine?.hearth ?? "this hearth"}\`'s own ground`
       : `\`${mine?.hearth ?? "this hearth"}\`'s own ground, and ${paths.length - held} on no hold`;
     return { ok: true, note: `${paths.length} path(s) stand on ${where}` };
   }
@@ -140,7 +143,7 @@ function main() {
   if (paths.length === 0) return 0;
 
   const v = verdict({ message, paths, ledger });
-  if (v.ok) { console.log(`[hearths-gate] ${v.note}`); return 0; }
+  if (v.ok) { if (v.note) console.log(`[hearths-gate] ${v.note}`); return 0; }
 
   const byRow = new Map();
   for (const c of v.crossings) {
