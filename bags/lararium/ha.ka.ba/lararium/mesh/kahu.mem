@@ -139,8 +139,9 @@ cadence threshold never admits anyone. A kahu revoke of an operator only SURFACE
 cadence seat for the cadence quorum's review — the road-(iv) shape (#/nexus-scale): the seat stands
 until the cadence quorum unseats it openly by its own seat event, and no revoke cascades across the joint.
 
-''The clan default seats a signing threshold of one'' — a different count from the window's k hops: in a small clan one operator offers the engine, and
-the threshold grows as more places bear the cost. The lineage signs the `prev`-linked engine offers the
+''Two letters, two counts'': ''t'' names the signing threshold (how many cadence seats sign an offer, KERI's `nt`), and
+''k'' names the window (how many hops an offer may trail the head). ''The clan default seats t = 1'': in a small
+clan one operator offers the engine, and t grows as more places bear the cost. The lineage signs the `prev`-linked engine offers the
 window above reads, and each device adopts at reboot.
 
 ''EXIT RUNS BY FORK.'' Any hearth may stop following the lineage, and no act of the lineage reaches a
@@ -383,6 +384,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZEYZRTZQHEMk1udauAzNMyss4kTYJuNlpd9PDH8aAdc
+<<^ code="&#x0003;">>ni:///sha-256;UDYz8aQ5lJNbcqYhSl5DXKYPK6dd3-FepSyRXzNRZZU
 
 <<^ code="&#x0004;" -> to="?">>
