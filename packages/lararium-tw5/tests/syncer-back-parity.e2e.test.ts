@@ -32,8 +32,14 @@ if (!forkPresent) {
   console.error(`syncer-back-parity.e2e: SKIPPED — fork or plugin missing (${TW5_JS} · ${PLUGIN_TID})`);
 }
 
-/** A framed meme carrying one slot per name. */
+/** A framed meme carrying one slot per name — the canonical frame: the root meta opens the body, after STX. */
 const meme = (uri: string, uriPath: string, slots: readonly string[]): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+
+/** The same meme MIS-framed: its meta fence stands above STX, a tear the frame verdict names. */
+const misframed = (uri: string, uriPath: string, slots: readonly string[]): string =>
   `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
@@ -186,6 +192,20 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
     expect(wire, "the syncer's queue stalled — a later save never reached the server")
       .toContain(`PUT /recipes/default/tiddlers/${encodeURIComponent(title)} -> 204`);
   };
+
+  // ── CONTROL: the fixture reaches the code under test because its frame is sound ─────────────────
+  test("CONTROL: a deliberately mis-framed meme (meta above STX) still answers 422 `meta-before-stx`", async () => {
+    const put = await fetch(`${fork!.base}/bags/default/memes/lar/t/misframed`, {
+      method: "PUT", headers: { "x-requested-with": "TiddlyWiki" }, body: misframed("lar:///t/misframed", "t/misframed", ["a"]),
+    });
+    expect(put.status).toBe(422);
+    expect(await put.text()).toContain("meta-before-stx");
+    // The canonical fixture beside it lands.
+    const sound = await fetch(`${fork!.base}/bags/default/memes/lar/t/sound`, {
+      method: "PUT", headers: { "x-requested-with": "TiddlyWiki" }, body: meme("lar:///t/sound", "t/sound", ["a"]),
+    });
+    expect(sound.status).toBe(200);
+  }, 30_000);
 
   // ── (a) a meme ROOT edited in the browser and saved ──────────────────────────────────────────────
   test("(a) a framed root saved in the browser rides the charm to `/memes/`; a plain tiddler rides the native door", async () => {
