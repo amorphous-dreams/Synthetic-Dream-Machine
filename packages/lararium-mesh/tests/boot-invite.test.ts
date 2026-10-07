@@ -3,7 +3,8 @@
  *
  * Proven:
  *   · an invite signed by a MEMBER's per-Nexus leaf, carrying its held admit, ADMITS and names a burn id,
- *   · an invite from a KAHU chair (`seat`) ADMITS; a revoke or a held kapae on that chair withholds,
+ *   · a `seat` invite refuses `seat-standing-owed`, even from a key a chair carries: a chair holds a
+ *     PersonaGroup root, so a Kahu invites through the `admit` arm on its leaf,
  *   · an inviter whose admit a counted revoke closes, a stranger with no admit, an admit naming a different
  *     key, and a missing standing context each withhold `inviter-not-standing`,
  *   · SINGLE-USE — once `isSpent` reports the burn id, a re-present draws `already-spent`,
@@ -80,25 +81,16 @@ describe("decideBootInvite — any standing face invites", () => {
     expect(v).toEqual({ admitted: true, burnId: bootInviteId(inv) });
   });
 
-  test("a KAHU chair's invite (`seat`) ADMITS; a counted revoke or a held kapae on the chair withholds", async () => {
-    const inv = await invite(SEEDS.guru, { kind: "seat" });
-    expect((await decide(inv)).admitted).toBe(true);
-
-    const revoke = await carriageAct(SEEDS.guru, "revoke", { kahu: [SEEDS.telarus, SEEDS.lindwyrm], epoch: EPOCH });
-    expect(await decide(inv, { standing: await ctx({ denyBoard: [revoke] }) }))
-      .toEqual({ admitted: false, refusal: "inviter-not-standing" });
-
-    const kapae = await signAntigenEntry(
-      { nym: await pubOf(SEEDS.guru), action: "kapae", parents: [], sealEpochCid: EPOCH },
-      await kahuSigners([SEEDS.warden1, SEEDS.warden2]),
-    );
-    expect(await decide(inv, { standing: await ctx({ antigen: [kapae] }) }))
-      .toEqual({ admitted: false, refusal: "inviter-not-standing" });
-  });
-
-  test("a `seat` claim from a key no chair carries withholds", async () => {
-    const inv = await invite(SEEDS.user, { kind: "seat" });
-    expect(await decide(inv)).toEqual({ admitted: false, refusal: "inviter-not-standing" });
+  test("a `seat` invite REFUSES `seat-standing-owed` — a chair carries a PersonaGroup root, and a root proof never rides a wire", async () => {
+    // guru's key sits in the roster as a chair (a root key): a hand-built `seat` invite it signs must not stand.
+    const chair = await invite(SEEDS.guru, { kind: "seat" });
+    expect(await decide(chair)).toEqual({ admitted: false, refusal: "seat-standing-owed" });
+    // A key no chair carries refuses the same way: the arm is refused before any roster is read.
+    expect(await decide(await invite(SEEDS.user, { kind: "seat" })))
+      .toEqual({ admitted: false, refusal: "seat-standing-owed" });
+    // CONTROL: a leaf invite through the `admit` arm stands on the same Nexus material.
+    const leaf = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
+    expect((await decide(leaf)).admitted).toBe(true);
   });
 
   test("an inviter whose admit a counted revoke closes withholds — the deny board decides", async () => {
@@ -162,13 +154,13 @@ describe("no clock, one hop, remembered by no one", () => {
 
   test("the burn id digests the Nexus and nonce ALONE — two inviters, one nonce, one burn", async () => {
     const a = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
-    const b = await invite(SEEDS.guru, { kind: "seat" });
+    const b = await invite(SEEDS.user, { kind: "admit", admit: await admitOf(SEEDS.user), lineage: [] });
     expect(bootInviteId(a)).toBe(bootInviteId(b));
     expect(bootInviteId(a)).toBe(sha256HexBytesSync(canonicalJsonBytes({ kind: NEXUS_INVITE_DOMAIN, nexusAid: AID, nonce: a.nonce })));
-    // A spent-set holding member A's burn refuses guru's invite on the same nonce: the burn knows no inviter.
+    // A spent-set holding member A's burn refuses user B's invite on the same nonce: the burn knows no inviter.
     expect(await decide(b, { isSpent: (id) => id === bootInviteId(a) })).toEqual({ admitted: false, refusal: "already-spent" });
     // And a different nonce burns apart.
-    expect(bootInviteId(await invite(SEEDS.member, { kind: "seat" }, { nonce: "ffff" }))).not.toBe(bootInviteId(a));
+    expect(bootInviteId(await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] }, { nonce: "ffff" }))).not.toBe(bootInviteId(a));
   });
 
   test("the verdict names nobody — no inviter key, no admit, no standing rides out", async () => {

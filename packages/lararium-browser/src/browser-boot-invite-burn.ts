@@ -9,8 +9,8 @@
  * reload between burn and grant loses only the grant (the vessel re-boots to the anon floor — fail-closed);
  * it never double-spends a granted invite, because the id is already burned when the grant is attempted.
  *
- * WITHHOLD-NEVER-FORGE: every refusal (garbled, absent, wrong-Nexus, bad-seal, inviter-not-standing, already-spent)
- * returns the pure `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon
+ * WITHHOLD-NEVER-FORGE: every refusal (garbled, absent, wrong-Nexus, bad-seal, inviter-not-standing,
+ * seat-standing-owed, already-spent) returns the pure `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon
  * floor", never a throw. And it BURNS NOTHING and writes NO record on the withhold path (the traceless proof).
  *
  * Platform: IndexedDB for the burn-set (the browser floor); the OFFLINE seal and standing check is mesh's

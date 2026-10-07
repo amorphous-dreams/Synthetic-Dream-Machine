@@ -8,8 +8,8 @@
  * between burn and grant loses only the grant (the vessel re-boots to the anon floor — fail-closed); it never
  * double-spends a granted invite, because the id is already burned when the grant is attempted.
  *
- * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, bad-seal, inviter-not-standing, already-spent) returns the pure
- * `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon floor", never a throw.
+ * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, bad-seal, inviter-not-standing, seat-standing-owed,
+ * already-spent) returns the pure `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon floor", never a throw.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
@@ -59,8 +59,9 @@ export function burn(storageDir: string, burnId: string): void {
 /**
  * Mint an invite into the Nexus named by `nexusAid`, signed by the per-Nexus LEAF of the held persona at
  * `handleIndex` — the inviter's face for that Nexus, never this vessel's key and never the persona root.
- * The caller supplies the inviter's `standing` (a member admit presentation from a board it holds —
- * `presentedAdmitFromBoard` — or a kahu `seat`). A random nonce makes each invite unique. The mint writes
+ * The caller supplies the inviter's `standing`: a member admit presentation from a board it holds
+ * (`presentationFromBoardDoc`). A Kahu presents its leaf admit the same way; the `seat` arm refuses until the
+ * chairs carry per-Nexus leaves. A random nonce makes each invite unique. The mint writes
  * NOTHING: no record of the invite stays at the inviter, so nothing there can name whom it invited. The
  * caller carries the token out-of-band (paste / QR / URL fragment).
  */

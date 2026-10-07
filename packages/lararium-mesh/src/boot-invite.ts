@@ -11,8 +11,8 @@
  *     PersonaGroup root. The leaf names the inviter to this one Nexus and to nothing else, so an invite read
  *     in two Nexuses links no face across them.
  *   · IT CARRIES ITS OWN STANDING. The verifier holds no roster and looks nothing up: the invite presents what
- *     proves its inviter stands, and the gate reads that proof against the Nexus's kahu roster, its DENY-only
- *     board and the Kapae antigen. What proves standing is named on `InviterStanding`.
+ *     proves its inviter stands, and the gate reads that proof against the kahu quorum's seats, the Nexus's
+ *     DENY-only board and the Kapae antigen. What proves standing is named on `InviterStanding`.
  *   · CARRIED, never fetched — the newcomer holds it (paste / QR / URL fragment); no relay sees it in transit.
  *     It verifies OFFLINE.
  *   · SINGLE-USE, burned LOCALLY. The newcomer's vessel records the invite's burn id in its OWN spent-set and
@@ -36,10 +36,9 @@ import { NEXUS_INVITE_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import {
-  carriageEntryCounts, verifyPresentedAdmit,
+  verifyPresentedAdmit,
   type CarriageEntry, type PresentedAdmitInput, type PresentedLineageAct,
 } from "./carriage-registry.js";
-import { foldAntigenVerdicts } from "./kapae-antigen.js";
 
 /** The domain an invite signs over. A signature is meaningless without the domain it was made in. */
 export { NEXUS_INVITE_DOMAIN } from "./domains.js";
@@ -49,10 +48,11 @@ export { NEXUS_INVITE_DOMAIN } from "./domains.js";
  * none consults a roster of members.
  *
  *   · `admit` — the inviter's own quorum-signed member admit on its leaf nym, with that admit's closed, tight
- *     causal lineage (`presentedAdmitFromBoard`). A Lamplighter stands this way, and so does any face the
- *     kahu quorum admitted. Read by `verifyPresentedAdmit`; only `held` stands.
- *   · `seat`  — the inviter's key sits as a chair of the kahu roster at the charter head, and no counted
- *     revoke or held kapae names it. A Kahu stands this way once its chair carries its per-Nexus leaf.
+ *     causal lineage (`presentationFromBoardDoc`). A Lamplighter stands this way, and so does any face the
+ *     kahu quorum admitted — a Kahu included, on its leaf. Read by `verifyPresentedAdmit`; only `held` stands.
+ *   · `seat`  — the inviter's key sits as a chair of the kahu quorum's seats. REFUSED (`seat-standing-owed`):
+ *     a chair carries a PersonaGroup root key, and a root proof never rides a wire. The arm stands at the
+ *     re-found, which re-keys the chairs to per-Nexus leaves.
  */
 export type InviterStanding =
   | { readonly kind: "admit"; readonly admit: CarriageEntry; readonly lineage: readonly PresentedLineageAct[] }
@@ -130,6 +130,7 @@ export type BootRefusal =
   | "wrong-nexus"          // the invite names a different Nexus
   | "bad-signature"        // the inviter's leaf did not sign this — forged or torn
   | "inviter-not-standing" // the standing it presents does not hold here (rejected, denied, unsettled, unread)
+  | "seat-standing-owed"   // a `seat` claim: a chair carries a PersonaGroup root, so the arm stands only once chairs carry leaves
   | "already-spent";       // single-use: this invite was burned already (local island fact)
 
 export interface BootVerdict {
@@ -150,29 +151,20 @@ export type InviteStandingContext = Omit<PresentedAdmitInput, "admit" | "lineage
 
 const normAid = (aid: string): string => aid.trim().toLowerCase();
 
-/** Does the presented standing hold for `inviterKey` against the Nexus material? Fail-closed; never throws. */
-async function inviterStands(inviterKey: string, standing: InviterStanding, ctx: InviteStandingContext): Promise<boolean> {
+/**
+ * Does the presented standing hold for `inviterKey` against the Nexus material? Fail-closed; never throws.
+ * Answers null when it holds, else the refusal that names why.
+ */
+async function inviterRefusal(inviterKey: string, standing: InviterStanding, ctx: InviteStandingContext): Promise<BootRefusal | null> {
   try {
     if (standing.kind === "admit") {
-      if (standing.admit?.nym?.toLowerCase() !== inviterKey) return false;   // the admit must name the signer
+      if (standing.admit?.nym?.toLowerCase() !== inviterKey) return "inviter-not-standing";   // the admit must name the signer
       const v = await verifyPresentedAdmit({ ...ctx, admit: standing.admit, lineage: standing.lineage });
-      return v.state === "held";
+      return v.state === "held" ? null : "inviter-not-standing";
     }
-    if (standing.kind === "seat") {
-      if (!ctx.roster.keys.some((k) => k.trim().toLowerCase() === inviterKey)) return false;
-      for (const entry of ctx.denyBoard) {
-        if (entry?.action === "revoke" && entry.nym?.toLowerCase() === inviterKey
-            && await carriageEntryCounts(entry, ctx.roster)) return false;
-      }
-      const verdicts = await foldAntigenVerdicts(ctx.antigen, ctx.antigenRoster, ctx.antigenVerifier);
-      for (const [nym, verdict] of verdicts) {
-        if (nym.toLowerCase() === inviterKey && verdict !== "withdrawn") return false;   // held or contradictory
-      }
-      return true;
-    }
-    return false;
+    return "inviter-not-standing";
   } catch {
-    return false;
+    return "inviter-not-standing";
   }
 }
 
@@ -214,9 +206,12 @@ export async function decideBootInvite(args: {
     return { admitted: false, refusal: "bad-signature" };
   }
 
-  if (!args.standing || !(await inviterStands(inviterKey, inv.standing, args.standing))) {
-    return { admitted: false, refusal: "inviter-not-standing" };
-  }
+  // A chair carries a PersonaGroup root key, and a root proof never rides a wire: the `seat` arm stands only
+  // once the chairs carry per-Nexus leaves. Refused before any Nexus material is read.
+  if (inv.standing.kind === "seat") return { admitted: false, refusal: "seat-standing-owed" };
+  if (!args.standing) return { admitted: false, refusal: "inviter-not-standing" };
+  const refusal = await inviterRefusal(inviterKey, inv.standing, args.standing);
+  if (refusal) return { admitted: false, refusal };
 
   const burnId = bootInviteId(inv);
   if (await args.isSpent(burnId)) return { admitted: false, refusal: "already-spent" };
