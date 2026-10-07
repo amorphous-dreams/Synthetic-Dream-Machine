@@ -35,9 +35,9 @@ const args = (positional: string[], flags: Record<string, boolean> = {}): Parsed
 /** Every verb `cmdNexus` routes. A door dropped from the switch but left in the usage text reads as a
  *  door to a human and refuses to a machine, so the list is the switch's own. */
 const VERBS = [
-  "seal", "kapae", "un_kapae", "contract", "revoke", "members",
-  "accept-carriage", "admit-take", "posture", "rite", "kahuli", "refresh",
-  "realm-bag", "realm-bags",
+  "seal", "kapae", "un_kapae", "contract", "revoke", "carry", "uncarry", "members",
+  "accept-carriage", "admit-take", "carry-for", "posture", "rite", "kahuli", "publish", "offering",
+  "refresh", "realm-bag", "realm-bags",
 ] as const;
 
 describe("lares nexus — every verb reaches its door", () => {

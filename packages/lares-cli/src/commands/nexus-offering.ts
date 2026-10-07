@@ -1,14 +1,9 @@
 /** `lares nexus offering inspect <offering-cid>` — read one exact local gift. */
 import { runNexusInspectOffering, NexusOfferingInspectError } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-const USAGE: readonly string[] = [
-  "usage: lares nexus offering inspect <offering-cid>",
-  "",
-  "  inspect one exact signed offering already carried by this Nexus Crossroads board.",
-  "  This reads local CAS only, never fetches, installs, mutates genesis, or changes grammar.",
-];
 
 export async function cmdOffering(args: ParsedArgs): Promise<number> {
   const verb = args.positional[1];
@@ -17,10 +12,10 @@ export async function cmdOffering(args: ParsedArgs): Promise<number> {
   const unsupportedOptions = Object.keys(args.options);
   if (unsupportedFlags.length > 0 || unsupportedOptions.length > 0) {
     const name = unsupportedFlags[0] ?? unsupportedOptions[0];
-    return refuseUsage(args, "nexus offering", USAGE, `unsupported option --${name}`);
+    return refuseUsage(args, "nexus offering", helpLines("nexus offering"), `unsupported option --${name}`);
   }
   if (verb !== "inspect" || !cid || args.positional.length > 3) {
-    return refuseUsage(args, "nexus offering", USAGE, verb === "inspect" && !cid ? "name one offering CID" : undefined);
+    return refuseUsage(args, "nexus offering", helpLines("nexus offering"), verb === "inspect" && !cid ? "name one offering CID" : undefined);
   }
   try {
     const result = await runNexusInspectOffering({ offeringCid: cid });

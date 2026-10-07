@@ -27,6 +27,8 @@ export interface CommandHelp {
   readonly usage?: string;
   /** one paragraph: what the command does + (for destructive verbs) its preview/confirm path. */
   readonly synopsis: string;
+  /** A command family's own sub-door menu, where a single synopsis would hide meaningful distinctions. */
+  readonly details?: readonly string[];
   /** copy-pasteable invocations, the common cases FIRST. */
   readonly examples: readonly string[];
   /** `--flag  meaning` lines (the value form spelled where it takes one). */
@@ -38,6 +40,61 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  nexus: {
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | refresh | realm-bag | realm-bags | offering>",
+    synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
+    details: [
+      "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
+      "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
+      "  kapae --list                              read the currently-Kapae'd set (the fold)",
+      "  un_kapae <nym>                            mint a quorum-signed causal lift",
+      "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);",
+      "                                            --json emits the admit BUNDLE the joinee takes by hand",
+      "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
+      "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
+      "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
+      "                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)",
+      "  uncarry <place-vessel-key>                end a carrier contract (quorum-only)",
+      "  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never",
+      "                                            authority (default: the primary charter's Nexus)",
+      "  accept-carriage [--index N] [--nexus <aid>]  (joining operator) mint + keep the 'accepts carriage' contract-in",
+      "                                            for one Nexus (default: the primary charter's)",
+      "  admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over",
+      "                                            against the charter held for its Nexus, keep it, and re-present a",
+      "                                            running vessel's dial to the hearth that wrote it",
+      "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
+      "                                            key — reads no persona, because a crossroads holds none",
+      "  posture [private | open]                  read / flip the cross-Nexus federation posture",
+      "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
+      "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
+      "  refresh                                   re-read the charter and posture, re-fold every carried Nexus's deny",
+      "                                            board and antigen, and re-present the dial",
+      "  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)",
+      "            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign",
+      "            [--cosign]                      consent as a named steward to a standing proposal",
+      "            [--tier contract|public]        the DECLARED read — public names a book the Herm carries by hash",
+      "            [--expiry <rolls>]              lease the registration against the realm's own pace",
+      "            [--charter <nym>=<realm-id>]    the charter a named hand holds (a book spanning two charters)",
+      "  publish <plugins>                         THE OFFERING DOOR — what THIS operator publishes for others to take;",
+      "                                            held apart from `kahuli`, which overturns what the MESH shares",
+      "  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install",
+      "  realm-bags                                the bags the realm carries, and who keeps each",
+    ],
+    examples: [
+      "lares nexus rite cabal",
+      "lares nexus contract <operator-pubkey> --json",
+      "lares nexus admit-take ./admit-bundle.json",
+      "lares nexus offering inspect sha256:<offering-cid>",
+      "lares nexus refresh",
+    ],
+  },
+
+  "nexus offering": {
+    usage: "usage: lares nexus offering inspect <offering-cid>",
+    synopsis: "inspect one exact signed offering already carried by this Nexus Crossroads board. It reads local CAS only and never fetches, installs, mutates genesis, or changes grammar.",
+    examples: ["lares nexus offering inspect sha256:<offering-cid>"],
+  },
+
   sensorium: {
     synopsis:
       "The source-neutral sensorium surface. `run` / `open` ingest a path into a scratch sensorium. " +
@@ -493,6 +550,9 @@ export function helpLines(door: string, summary?: string): string[] {
   const out: string[] = [];
   if (help.usage) out.push(help.usage, "");
   out.push(`lares ${door} — ${help.synopsis}`, "");
+  if (help.details && help.details.length) {
+    out.push(...help.details, "");
+  }
   out.push("Examples:");
   for (const ex of help.examples) out.push(`  ${ex}`);
   if (help.flags && help.flags.length) {
