@@ -42,7 +42,7 @@ import type {
 } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
-  parseResidencyAction, withEffectRecord, sha256HexSync, sha256HexBytesSync, tagDigest, digestsEqual,
+  parseResidencyAction, withEffectRecord, sha256HexBytesSync, carrierHash, digestsEqual,
   emptyLarDoc, mutableLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
   ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
@@ -71,10 +71,10 @@ const DEFAULT_MASS_DELETE_FRACTION = 0.25;
  * digest-space as `carrierHash` (the disk `diskHash` + the projector's synced-tree
  * `obsHash`). The gate's candidate-render leg (`hash`) and its current-render leg
  * (`currentRenderHash`) both ride this producer, so the intra-gate `candidateHash
- * === currentRenderHash` stays tag-consistent while the gate's echo checks against a
- * possibly-bare STORED `syncedHash` normalize through `digestsEqual`.
+ * === currentRenderHash` stays tag-consistent, and the gate's echo checks against the
+ * STORED `syncedHash` compare through `digestsEqual`.
  */
-const renderHash = (text: string): string => tagDigest(sha256HexSync(text));
+const renderHash = (text: string): string => carrierHash(text);
 
 // ── Options + registration ─────────────────────────────────────────────────
 
@@ -906,9 +906,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // hash in the Synced tree, so a re-ingest of an unprojected-back carrier reads
       // this echo. (`decideIngest` re-checks the echo cheaply; keeping it here spares
       // the deserialize.)
-      // `digestsEqual` normalizes the tag boundary: `carrier.diskHash` rides freshly
-      // computed (tagged) while `carrier.syncedHash` may still rest bare in the tree —
-      // this pre-gate echo short-circuit stays true across the two forms.
+      // `digestsEqual` reads tagged digests only; a bare `carrier.syncedHash` never
+      // short-circuits here and meets the gate.
       if (carrier.syncedHash !== null && digestsEqual(carrier.diskHash, carrier.syncedHash)) {
         results.push({ uri, decision: "noop", reason: "disk-matches-synced" });
         continue;

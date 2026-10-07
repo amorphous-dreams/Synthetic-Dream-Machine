@@ -20,7 +20,7 @@ const REPO_ROOT = new URL("../../..", import.meta.url).pathname;
 const BOOT = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
 const URI  = "lar:///ha.ka.ba/lares/api/noosphere-boot";
 
-const sha = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
+const sha = (s: string) => `sha256:${createHash("sha256").update(s, "utf8").digest("hex")}`;
 
 /** Canonical render of arbitrary carrier text through the shore. */
 function renderOf(text: string, uri: string): string {

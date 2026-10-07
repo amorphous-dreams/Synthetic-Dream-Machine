@@ -6,9 +6,9 @@
  * THE SELF-PROVING SEAL (verify-cap, secret-free). The address IS `BLAKE3(ciphertext)`: any relay recomputes
  * `BLAKE3(bytes) == cid` with NOTHING but the bytes — no key, no per-Nexus secret, no read-cap. That recompute
  * IS the member blind-transit lane's honesty (the relay carries what it can never read AND proves integrity
- * without the read-cap). `verifyCiphertextCid` is that check; it routes through `digestsEqual`, so a stored
- * bare-hex value still matches a freshly-computed `blake3:` tag (agile-digest, fork-① — the sha256→BLAKE3
- * migration rides IN the multihash tag; an old cid stays parseable beside a new one).
+ * without the read-cap). `verifyCiphertextCid` is that check; it routes through `digestsEqual`, so the claimed
+ * cid must name `blake3:` itself (agile-digest, fork-① — the algorithm rides IN the multihash tag; a cid that
+ * names none matches nothing).
  *
  * THE READ-CAP (message-locked, per-Nexus). The body is sealed by a message-locked convergent construction:
  *   · messageKey = BLAKE3(plaintext, key = nexusSecret)          — the READ-CAP; message-locked to (content, secret)
@@ -84,9 +84,9 @@ export function ciphertextCid(ciphertext: Uint8Array): string {
 
 /**
  * THE BLIND VERIFY (secret-free). Recompute `BLAKE3(ciphertext)` and compare to the claimed cid — the check a
- * relay runs to certify a body it can never read. Routes through `digestsEqual` (tag-agnostic): a stored bare
- * hex still matches a computed `blake3:` value. Returns false (never throws) on a malformed cid — a hot-path
- * comparator surfaces a mismatch, it never crashes transit.
+ * relay runs to certify a body it can never read. Routes through `digestsEqual`: the claimed cid must carry the
+ * `blake3:` tag. Returns false (never throws) on a malformed or untagged cid — a hot-path comparator surfaces a
+ * mismatch, it never crashes transit.
  */
 export function verifyCiphertextCid(ciphertext: Uint8Array, cid: string): boolean {
   return digestsEqual(ciphertextCid(ciphertext), cid);

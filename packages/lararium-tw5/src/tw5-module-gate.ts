@@ -1,4 +1,4 @@
-import { digestsEqual, formatDigest, hex, IMPLICIT_ALGO } from "@lararium/mesh";
+import { digestsEqual, formatDigest, hex, SHA256_ALGO } from "@lararium/mesh";
 import { parsePonoLevel } from "./pono-level.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
@@ -70,10 +70,9 @@ async function verifySha256(body: string, claimedHex: string): Promise<boolean> 
     const subtle = globalThis.crypto?.subtle;
     if (!subtle) return false;
     const buf = await subtle.digest("SHA-256", new TextEncoder().encode(body));
-    // The computed digest rides bare (hex() emits no tag); `claimedHex` is the
-    // field's `source-sha256`, which every carrier now stores TAGGED — tag the
-    // computed side before comparing, since a bare value no longer parses.
-    const actual = formatDigest(IMPLICIT_ALGO, hex(new Uint8Array(buf)));
+    // `hex()` emits no tag; `claimedHex` is the field's `source-sha256`, stored
+    // TAGGED — tag the computed side, since a bare value parses as nothing.
+    const actual = formatDigest(SHA256_ALGO, hex(new Uint8Array(buf)));
     return digestsEqual(actual, claimedHex);
   } catch {
     return false;

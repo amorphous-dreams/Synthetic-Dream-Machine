@@ -51,7 +51,7 @@ describe("★ source-sha256 is the gate's own hash ★", () => {
 describe("★ a patched anchor re-stamps its check ★", () => {
   test("the field moves, and the check moves with it", () => {
     expect(verifyBcc(anchor)).toBe("ok");
-    const patched = applySourceSha256Patch(anchor, sha(CODE));
+    const patched = applySourceSha256Patch(anchor, `sha256:${sha(CODE)}`);
     expect(patched).toContain(`source-sha256 = "sha256:${sha(CODE)}"`);
     expect(verifyBcc(patched)).toBe("ok");
   });

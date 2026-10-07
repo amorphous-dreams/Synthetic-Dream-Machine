@@ -11,7 +11,7 @@ import {
   tagDigest,
   digestsEqual,
   reprDigestOf,
-  IMPLICIT_ALGO,
+  SHA256_ALGO,
 } from "../src/agile-digest.js";
 import { sha256HexSync, sha256HexBytesSync, utf8Bytes } from "../src/crypto.js";
 
@@ -19,13 +19,14 @@ const HEX64 = "a".repeat(64);
 const HEX64_B = "b".repeat(64);
 
 describe("parseDigest", () => {
-  test("a bare 64-char hex reads as implicit sha256", () => {
-    expect(parseDigest(HEX64)).toEqual({ algo: "sha256", hex: HEX64 });
-    expect(IMPLICIT_ALGO).toBe("sha256");
+  test("★ a bare 64-char hex names no algorithm and is refused, named ★", () => {
+    expect(() => parseDigest(HEX64)).toThrow(/bare hex .* names no algorithm/);
+    expect(() => parseDigest("AB".repeat(32))).toThrow(/names no algorithm/);
+    expect(SHA256_ALGO).toBe("sha256");
   });
 
-  test("uppercase bare hex normalizes to lowercase", () => {
-    expect(parseDigest("AB".repeat(32))).toEqual({ algo: "sha256", hex: "ab".repeat(32) });
+  test("uppercase tagged hex normalizes to lowercase", () => {
+    expect(parseDigest(`SHA256:${"AB".repeat(32)}`)).toEqual({ algo: "sha256", hex: "ab".repeat(32) });
   });
 
   test("the canonical tagged form splits on the first colon", () => {
@@ -64,24 +65,22 @@ describe("formatDigest / tagDigest", () => {
     expect(() => formatDigest("sha256", "nothex")).toThrow();
   });
 
-  test("tagDigest re-tags a bare value and is idempotent", () => {
+  test("tagDigest re-spells an accepted form as canonical, is idempotent, and refuses a bare value", () => {
     const tagged = `sha256:${HEX64}`;
-    expect(tagDigest(HEX64)).toBe(tagged);
     expect(tagDigest(tagged)).toBe(tagged);              // idempotent
-    expect(tagDigest(`sha256-${HEX64}`)).toBe(tagged);   // legacy → canonical
+    expect(tagDigest(`sha256-${HEX64}`)).toBe(tagged);   // SRI spelling → canonical
+    expect(() => tagDigest(HEX64)).toThrow(/names no algorithm/);
   });
 });
 
-describe("digestsEqual — THE DUAL-READ SHORE", () => {
-  test("a stored bare hex equals a freshly-computed tagged digest", () => {
-    // The no-flag-day guarantee: today's all-bare store compares equal to a
-    // tomorrow-tagged producer.
-    expect(digestsEqual(HEX64, `sha256:${HEX64}`)).toBe(true);
-    expect(digestsEqual(`sha256:${HEX64}`, HEX64)).toBe(true);
+describe("digestsEqual — one digest, every tagged spelling", () => {
+  test("★ a bare hex is unequal to its own tagged form, and to itself ★", () => {
+    expect(digestsEqual(HEX64, `sha256:${HEX64}`)).toBe(false);
+    expect(digestsEqual(`sha256:${HEX64}`, HEX64)).toBe(false);
+    expect(digestsEqual(HEX64, HEX64)).toBe(false);
   });
 
-  test("bare equals bare; tagged equals tagged", () => {
-    expect(digestsEqual(HEX64, HEX64)).toBe(true);
+  test("CONTROL: tagged equals tagged", () => {
     expect(digestsEqual(`sha256:${HEX64}`, `sha256:${HEX64}`)).toBe(true);
   });
 
@@ -90,12 +89,11 @@ describe("digestsEqual — THE DUAL-READ SHORE", () => {
   });
 
   test("case-insensitive on the hex", () => {
-    expect(digestsEqual("AB".repeat(32), "ab".repeat(32))).toBe(true);
+    expect(digestsEqual(`sha256:${"AB".repeat(32)}`, `sha256:${"ab".repeat(32)}`)).toBe(true);
   });
 
   test("different content never reads equal", () => {
-    expect(digestsEqual(HEX64, HEX64_B)).toBe(false);
-    expect(digestsEqual(HEX64, `sha256:${HEX64_B}`)).toBe(false);
+    expect(digestsEqual(`sha256:${HEX64}`, `sha256:${HEX64_B}`)).toBe(false);
   });
 
   test("a different algorithm over the same hex never reads equal", () => {
@@ -103,8 +101,8 @@ describe("digestsEqual — THE DUAL-READ SHORE", () => {
   });
 
   test("a malformed digest reads NOT-equal, never throws on the hot path", () => {
-    expect(digestsEqual("garbage", HEX64)).toBe(false);
-    expect(digestsEqual(HEX64, "")).toBe(false);
+    expect(digestsEqual("garbage", `sha256:${HEX64}`)).toBe(false);
+    expect(digestsEqual(`sha256:${HEX64}`, "")).toBe(false);
   });
 });
 
@@ -142,25 +140,26 @@ describe("★ RFC 9530 `Repr-Digest` — the third form of one digest ★", () =
   const hex = createHash("sha256").update("the one meme").digest("hex");
   const b64 = Buffer.from(hex, "hex").toString("base64");
 
-  test("`sha-256=:<base64>:` parses to the same (algo, hex) the tagged and bare forms carry", () => {
+  test("CONTROL: `sha-256=:<base64>:` parses to the same (algo, hex) the tagged forms carry", () => {
     expect(parseDigest(`sha-256=:${b64}:`)).toEqual({ algo: "sha256", hex });
     expect(digestsEqual(`sha-256=:${b64}:`, `sha256:${hex}`)).toBe(true);
-    expect(digestsEqual(`sha-256=:${b64}:`, hex)).toBe(true);
     expect(digestsEqual(`sha-256=:${b64}:`, `sha256-${hex}`)).toBe(true);
+    expect(digestsEqual(`sha-256=:${b64}:`, hex)).toBe(false);   // the bare side names no algorithm
   });
 
-  test("reprDigestOf emits the header value from any of the three forms; it round-trips through parseDigest", () => {
+  test("reprDigestOf emits the header value from any tagged form; it round-trips through parseDigest", () => {
     const want = `sha-256=:${b64}:`;
     expect(reprDigestOf(`sha256:${hex}`)).toBe(want);
-    expect(reprDigestOf(hex)).toBe(want);
+    expect(reprDigestOf(`sha256-${hex}`)).toBe(want);
     expect(reprDigestOf(want)).toBe(want);
-    expect(parseDigest(reprDigestOf(hex))).toEqual({ algo: "sha256", hex });
+    expect(parseDigest(reprDigestOf(`sha256:${hex}`))).toEqual({ algo: "sha256", hex });
+    expect(() => reprDigestOf(hex)).toThrow(/names no algorithm/);
   });
 
   test("CONTROL: a different body's Repr-Digest never reads equal; a torn header refuses", () => {
     const other = Buffer.from(createHash("sha256").update("another meme").digest("hex"), "hex").toString("base64");
-    expect(digestsEqual(`sha-256=:${other}:`, hex)).toBe(false);
-    expect(digestsEqual(`sha-256=:${b64.slice(1)}:`, hex)).toBe(false);
+    expect(digestsEqual(`sha-256=:${other}:`, `sha256:${hex}`)).toBe(false);
+    expect(digestsEqual(`sha-256=:${b64.slice(1)}:`, `sha256:${hex}`)).toBe(false);
     expect(() => parseDigest(`sha-256=:${b64}`)).toThrow(/malformed/);
     expect(() => parseDigest(`sha-256=::`)).toThrow(/malformed/);
     expect(() => reprDigestOf(`blake3:${hex}`)).toThrow(/sha-256/);

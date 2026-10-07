@@ -14,7 +14,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-module
  */
-import { tagDigest, formatDigest, IMPLICIT_ALGO } from "@lararium/mesh/agile-digest";
+import { tagDigest, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
@@ -29,15 +29,15 @@ import { rootMetaFence } from "../src/root-meta.js";
 export function moduleBodyDigest(content: string, moduleRef: string): string | null {
   const record = memeticWikitextDeserializer(content, { title: moduleRef }).find((r) => r.title === moduleRef);
   if (!record || typeof record.text !== "string") return null;
-  return formatDigest(IMPLICIT_ALGO, sha256HexSync(record.text));
+  return formatDigest(SHA256_ALGO, sha256HexSync(record.text));
 }
 
 /**
  * Write `source-sha256` into the anchor's ROOT meta — the first meta block of the body, found by the
  * one span reader — then re-stamp the anchor's check over the body that moved.
  */
-export function applySourceSha256Patch(content: string, sha256: string): string {
-  const tagged = tagDigest(sha256);
+export function applySourceSha256Patch(content: string, digest: string): string {
+  const tagged = tagDigest(digest);
   const fence = rootMetaFence(content);
   if (!fence) return content;
   const { bodyStart, bodyEnd, body } = fence;

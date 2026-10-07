@@ -41,7 +41,7 @@ import { execSync } from "child_process";
 import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lararium/mesh/node";
-import { tagDigest, digestsEqual } from "@lararium/mesh/agile-digest";
+import { formatDigest, digestsEqual } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
 import { moduleBodyDigest, applySourceSha256Patch } from "./heleuma-digest.js";
@@ -144,8 +144,8 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
 // Patches source-sha256 in the first ```toml block (the root toml meta prelude).
 // Adds the field if absent; replaces it if stale. The emitted value rides
 // ALGORITHM-TAGGED (`sha256:<hex>`) — `verifySha256` (the runtime cold-boot reader)
-// and this script's own drift check both dual-read via `digestsEqual`, so a field
-// stored bare pre-agile keeps comparing equal until the next commit rewrites it.
+// and this script's own drift check both compare via `digestsEqual`, which refuses a
+// bare value: a field stored bare reads as drift, and the next commit rewrites it tagged.
 
 // ---------------------------------------------------------------------------
 // --scan: find candidates in packages/ lacking a heleuma pair
@@ -441,9 +441,9 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
       continue;
     }
     const existingHash = asStr(toml["source-sha256"]);
-    // `existingHash` rides tagged (`sha256:…`) like every carrier digest now;
-    // `digestsEqual` still normalizes the canonical `:` vs legacy SRI `-` spelling.
-    // Empty existing → not-equal → drift (add).
+    // `existingHash` rides tagged (`sha256:…`) like every carrier digest; `digestsEqual`
+    // reads the canonical `:` and SRI `-` spellings as one. Empty or bare existing →
+    // not-equal → drift (the commit writes it tagged).
     const hashDrift    = !digestsEqual(liveHash, existingHash);
 
     const anchorUri = toml["uri-path"] !== undefined ? asStr(toml["uri-path"]) : mdPath;
@@ -574,7 +574,7 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   const srcSym    = d.symbols.join(" ");
   const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
   const joined    = bodies.join("\n\n");
-  const bodyHash  = tagDigest(sha256HexSync(joined));   // canonical tagged
+  const bodyHash  = formatDigest("sha256", sha256HexSync(joined));
   const kindLabel   = d.kind === "filter-operator" ? "TW5 filter operator" : "TW5 widget";
   // ka handles a single symbol; ba handles multiple space-separated symbols
   const heleumaMode = d.symbols.length === 1 ? "ka" : "ba";

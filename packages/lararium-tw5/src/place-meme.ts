@@ -43,8 +43,7 @@ import type { TW5Wiki } from "./types/tiddlywiki.js";
 
 import { carrierMarkPattern, headUriOf, maskedExec } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
-import { sha256HexSync } from "@lararium/mesh/crypto";
-import { tagDigest } from "@lararium/mesh/agile-digest";
+import { carrierHash } from "@lararium/mesh/crypto";
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -141,7 +140,7 @@ export function groupOfMeme(titles: readonly string[], uri: string): string[] {
   return titles.filter((t) => t === uri || t.startsWith(`${uri}#`) || t.startsWith(`${uri}/`));
 }
 
-const defaultHash = (text: string): string => tagDigest(sha256HexSync(text));
+const defaultHash = (text: string): string => carrierHash(text);
 
 /** The meme's group in the sink and its present render — the text the records carry now. */
 async function currentRender(

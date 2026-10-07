@@ -33,7 +33,7 @@ const coreBlobSkip = existsSync(CORE)
   : `TW5 core blob absent at ${CORE} — run: pnpm --filter @lararium/tw5 build:tw5-vendor`;
 const URI = "lar:///ha.ka.ba/lares/api/native/note";
 const BAG = "lar:///ha.ka.ba/bags/lares";
-const sha = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
+const sha = (s: string) => `sha256:${createHash("sha256").update(s, "utf8").digest("hex")}`;
 
 const allowCap = async (_a: CapabilityAccess, _b: string): Promise<CapabilityVerifyResult> => ({ ok: true });
 function ctx(composite: CompositeStore, args: Record<string, unknown>): VerbContext {

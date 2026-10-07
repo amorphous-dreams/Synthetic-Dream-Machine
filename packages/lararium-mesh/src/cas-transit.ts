@@ -38,9 +38,9 @@ import { sha256HexBytesSync } from "./crypto.js";
  *  `cid/` blob (bare hex / `sha256:`). The gate on the serve side and the verify on the fetch side both read this. */
 export type CidDigestClass = "sealed" | "cleartext";
 
-/** A bare 64-char hex cleartext cid — distinct from `source-sha256`'s carrier digest (always tagged
- *  now); a wire-protocol cid from a peer/relay may still arrive bare, so this class read stays
- *  tag-agnostic on purpose (bytes from OUTSIDE the house, not pre-agile debt to migrate away). */
+/** A bare 64-char hex cleartext cid — the `cid/` blob address the library store mints (`sha256` of the bytes,
+ *  a CID grammar of its own, not an agile digest field). It is read here explicitly, never through `parseDigest`,
+ *  which refuses a bare value. */
 const BARE_CID_HEX = /^[0-9a-fA-F]{64}$/;
 
 /** Read a cid's class off its own tag. A malformed cid reads CLEARTEXT-shaped and fails every verify downstream. */
@@ -50,9 +50,8 @@ export function cidDigestClass(cid: string): CidDigestClass {
 }
 
 /**
- * THE CLASS-AWARE VERIFY. A `blake3:` cid verifies as ciphertext (BLAKE3); a `sha256:` cid as a cleartext blob
- * (sha256). A BARE hex carries no tag, so it may name either — accept when EITHER digest recomputes to it
- * (both collision-resistant; a tampered byte fails both). Never widens: bytes matching neither are rejected.
+ * THE CLASS-AWARE VERIFY. A `blake3:` cid verifies as ciphertext (BLAKE3); a `sha256:` cid, or a bare `cid/` blob
+ * address, as a cleartext blob (sha256 of the bytes). Bytes that do not recompute to the cid are rejected.
  */
 export function verifyCidBytes(bytes: Uint8Array, cid: string): boolean {
   const bare = BARE_CID_HEX.test(cid);
@@ -63,8 +62,7 @@ export function verifyCidBytes(bytes: Uint8Array, cid: string): boolean {
     try { parsed = parseDigest(cid); } catch { return false; }
   }
   if (!bare && parsed.algo === CIPHERTEXT_CID_ALGO) return verifyCiphertextCid(bytes, cid);
-  if (sha256HexBytesSync(bytes).toLowerCase() === parsed.hex.toLowerCase()) return true;
-  return bare ? verifyCiphertextCid(bytes, cid) : false;
+  return sha256HexBytesSync(bytes).toLowerCase() === parsed.hex.toLowerCase();
 }
 
 /** A holder handle — an opaque peer id the transport routes a `want-block` to (a session peer or the relay). */

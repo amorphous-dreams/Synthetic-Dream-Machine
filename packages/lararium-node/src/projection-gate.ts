@@ -131,10 +131,10 @@ export interface ProjectionGateInput {
 /**
  * Decide ONE carrier's projection. Pure: no I/O, no clock, no hashing.
  *
- * Digest comparison rides `digestsEqual` throughout, for the same reason the
- * ingest gate does: a freshly computed hash arrives tagged (`sha256:hex`) while a
- * `syncedHash` resting in the tree may still be a pre-agile bare value — the same
- * content MUST read equal across both forms, or every carrier reads as moved.
+ * Digest comparison rides `digestsEqual` throughout, as the ingest gate's does: every
+ * tagged spelling of one digest reads equal, and a `syncedHash` resting bare in the
+ * tree names no algorithm and matches nothing — the carrier reads as moved, and the
+ * write (or the byte-skip's re-observation) records the tagged anchor.
  */
 export function decideProjection(input: ProjectionGateInput): ProjectionDecision {
   const { diskHash, syncedHash, recordsHash } = input;

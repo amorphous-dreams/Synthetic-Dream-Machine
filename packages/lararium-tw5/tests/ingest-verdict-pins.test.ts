@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import { frameCarrier } from "@lararium/memetic-frame";
 import { decideIngest } from "../src/ingest-gate.js";
 
-const sha = (s: string): string => createHash("sha256").update(s, "utf8").digest("hex");
+const sha = (s: string): string => `sha256:${createHash("sha256").update(s, "utf8").digest("hex")}`;
 
 const URI  = "lar:///t/pin";
 const META = "```toml meta\ntitle    = \"lar:///t/pin\"\ntype     = \"text/memetic-wikitext+tiddlywiki\"\nuri-path = \"t/pin\"\n```";

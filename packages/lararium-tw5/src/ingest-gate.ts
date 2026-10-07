@@ -207,10 +207,10 @@ export function decideIngest<R = TiddlerFields>(
     return { kind: "refuse", warnings: [wall.message], diagnostics: [wall] };
   }
 
-  // 1 — echo gate: the disk holds exactly what the projector last wrote.
-  // `digestsEqual` normalizes the tag boundary: `diskHash` rides freshly computed
-  // (tagged `sha256:hex`) while `syncedHash` may be a pre-agile bare value still
-  // resting in the tree — same content reads equal across the two forms.
+  // 1 — echo gate: the disk holds exactly what the projector last wrote. Both sides
+  // compare through `digestsEqual`, which reads only TAGGED digests: an anchor stored
+  // bare names no algorithm and never echoes, so the carrier falls through to the
+  // gates below (canonical equivalence, then the merge base, where it reads conflict).
   if (syncedHash !== null && digestsEqual(diskHash, syncedHash)) {
     return { kind: "noop", reason: "disk-matches-synced" };
   }
@@ -279,9 +279,8 @@ function settle<R>(
   diagnostics: readonly MemeDiagnostic[],
 ): IngestDecision<R> {
   const { syncedHash, currentRenderHash } = input;
-  // 4 — clean ingest: the records stand where the last projection left them.
-  // Same tag-boundary normalization as the echo gate above — `currentRenderHash`
-  // comes freshly computed (tagged) while `syncedHash` may still be stored bare.
+  // 4 — clean ingest: the records stand where the last projection left them. A bare
+  // anchor never reads as that base (`digestsEqual` refuses it), so it lands in 5.
   if (syncedHash !== null && digestsEqual(currentRenderHash, syncedHash)) {
     return { kind: "ingest", records, canonicalText, diagnostics };
   }

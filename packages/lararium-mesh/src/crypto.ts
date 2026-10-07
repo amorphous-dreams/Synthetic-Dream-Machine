@@ -194,10 +194,8 @@ export function sha256HexSync(text: string): string {
  *
  * The output rides ALGORITHM-TAGGED (`sha256:<hex>`, the agile-digest canonical
  * form), so a `carrierHash` value carries its own scheme and can sit beside a
- * future digest algorithm. Readers of a STORED value (a pre-agile bare hex synced
- * tree entry) still match through `digestsEqual`, which normalizes a bare side to
- * implicit sha256 — so tagging the producer converges the store lazily, never
- * forcing a re-key of already-stored observations.
+ * future digest algorithm. Readers compare through `digestsEqual`; a stored bare
+ * hex names no algorithm and matches nothing.
  */
 export function carrierHash(body: string, meta?: string): string {
   const hex = meta === undefined ? sha256HexSync(body) : sha256HexSync(`${meta}\n\n${body}`);

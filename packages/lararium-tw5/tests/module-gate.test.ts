@@ -74,7 +74,7 @@ function moduleMeme(title: string, body: string, overrides: Fields = {}): Fields
     tags:          [MODULE_COMPONENT],
     mana:          "18", manao: "18", manaoio: "18", confidence: "18",
     "module-type": "library",
-    "source-sha256": sha256(body),
+    "source-sha256": `sha256:${sha256(body)}`,
     text:          body,
     ...overrides,
   };

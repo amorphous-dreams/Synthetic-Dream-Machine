@@ -29,10 +29,11 @@
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from "fs";
 import { dirname, join } from "path";
 import { randomBytes } from "crypto";
-import { tagDigest, sha256HexSync } from "@lararium/mesh";
+import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
 
+/** A text's tagged sha256 digest (`sha256:<hex>`) — the body-only hash the projector's byte-skip compares. */
 export function contentHash(text: string): string {
-  return sha256HexSync(text);
+  return formatDigest("sha256", sha256HexSync(text));
 }
 
 /** The canonical Synced-tree key: bag-id + carrier-root URI, NUL-joined.
@@ -63,8 +64,9 @@ export class SyncedTree {
    *
    * DERIVED, never persisted: rebuilt from `map` on load, so the on-disk format stays
    * byte-identical (no migration) and a torn/absent tree degrades to fresh-adoption
-   * exactly as before. The hash normalizes through `tagDigest` (the agile-digest shore),
-   * so a STORED bare-hex value and a freshly-tagged query land on the SAME index key.
+   * exactly as before. The hash canonicalizes through `tagDigest`, so every tagged
+   * spelling of one digest lands on ONE index key; a bare value parses as nothing and
+   * stays out of the index.
    */
   private byHash = new Map<string, Set<string>>();
 
@@ -147,8 +149,8 @@ export class SyncedTree {
    * UNIQUE live carrier URI currently observing that exact content in that bag, else
    * null. Null on no match OR an AMBIGUOUS match (>1 live carrier shares the content —
    * two-carriers-same-content; the caller MUST NOT guess, mirroring the delete-gate's
-   * decline-on-collision). Tag-agnostic: a stored bare hash and a freshly-tagged query
-   * normalize to one index key, so the lookup straddles the agile-digest boundary.
+   * decline-on-collision). Spelling-agnostic: every tagged spelling of one digest reads
+   * one index key; a bare hash names no algorithm and resolves nothing.
    * A rename is confirmed by the CALLER (the moved uri differs AND the source file is
    * gone from disk — a copy leaves the source live and never resolves here).
    */
@@ -167,8 +169,8 @@ export class SyncedTree {
     return i < 0 ? { bagId: "", uri: key } : { bagId: key.slice(0, i), uri: key.slice(i + 1) };
   }
 
-  /** The reverse-index key for a (bagId, hash) pair — the hash canonicalized so a
-   *  bare-hex stored value and a tagged fresh value collapse together. A malformed
+  /** The reverse-index key for a (bagId, hash) pair — the hash canonicalized so every
+   *  tagged spelling of one digest collapses together. A malformed or bare
    *  hash returns null (that observation simply stays out of the rename-index — it
    *  degrades to a fresh-adoption decision, never a crash). */
   private hashIndexKey(bagId: string, hash: string): string | null {

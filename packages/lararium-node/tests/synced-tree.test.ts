@@ -147,12 +147,20 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     expect(t.renameSourceUri(BAG, h)).toBeNull();
   });
 
-  test("tag-agnostic — a stored BARE hex resolves against a freshly TAGGED query (agile shore)", () => {
+  test("spelling-agnostic: every tagged spelling of one digest resolves the same carrier", () => {
     const t = freshTree();
-    const bareHex = "a".repeat(64);                        // a pre-agile stored value
-    t.set(syncedTreeKey(BAG, "lar:///a.b.c"), bareHex);
-    expect(t.renameSourceUri(BAG, `sha256:${bareHex}`)).toBe("lar:///a.b.c");   // tagged query lands
-    expect(t.renameSourceUri(BAG, bareHex)).toBe("lar:///a.b.c");               // bare query too
+    const hex = "a".repeat(64);
+    t.set(syncedTreeKey(BAG, "lar:///a.b.c"), `sha256:${hex}`);
+    expect(t.renameSourceUri(BAG, `sha256:${hex}`)).toBe("lar:///a.b.c");
+    expect(t.renameSourceUri(BAG, `sha256-${hex}`)).toBe("lar:///a.b.c");     // SRI spelling, same digest
+  });
+
+  test("★ a BARE hex names no algorithm: stored, it stays out of the index; asked, it resolves nothing ★", () => {
+    const t = freshTree();
+    const hex = "a".repeat(64);
+    t.set(syncedTreeKey(BAG, "lar:///a.b.c"), hex);
+    expect(t.renameSourceUri(BAG, `sha256:${hex}`)).toBeNull();
+    expect(t.renameSourceUri(BAG, hex)).toBeNull();
   });
 
   test("the index rebuilds from disk on reload (derived, never persisted)", () => {

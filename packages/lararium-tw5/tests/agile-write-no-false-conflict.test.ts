@@ -1,18 +1,17 @@
 /**
- * agile-write — THE no-false-conflict canary (the identity flag-day go/no-go).
+ * agile-write — the Confluence's echo gate reads TAGGED digests only.
  *
- * Step 3 tags the three producers that feed the Confluence echo gate: `carrierHash`
- * (the disk `diskHash` + the projector's synced-tree `obsHash`) and the native
- * render-leg (`currentRenderHash`). If a producer tags while the gate's echo `===`
- * stays literal, every carrier reads `changed` against a bare STORED value → a mass
- * re-land + phantom conflicts. This canary holds the invariants that forbid that:
+ * The producers that feed the gate — `carrierHash` (the disk `diskHash` + the projector's synced-tree
+ * `obsHash`) and the render leg (`currentRenderHash`) — emit `sha256:<hex>`. A bare hex names no
+ * algorithm, so a synced-tree anchor holding one matches nothing:
  *
- *   1. The producer NOW emits tagged (`sha256:hex`) — the flag-day landed.
- *   2. A byte-identical carrier still reads `noop`/`unchanged` across BOTH stores:
- *      a POST-agile store (the synced value already tagged) AND a PRE-agile store
- *      (the synced value still bare hex) — the dual-read via `digestsEqual`.
- *   3. The mirror: a genuinely changed carrier still reads `ingest`, so the tag
- *      never MASKS a real edit.
+ *   1. The producer emits tagged (`sha256:hex`).
+ *   2. A byte-identical carrier against a TAGGED anchor reads `noop` (disk-matches-synced).
+ *   3. A BARE anchor is never a merge base the gate trusts: where the records moved it reads CONFLICT
+ *      (surfaced, never a silent noop that would hide the move), and where the disk moved alone it reads
+ *      CONFLICT too, never a clean ingest. A disk that already says what the records say still reads
+ *      `noop` by canonical equivalence — the next projection then records the tagged anchor.
+ *   4. The mirror: a genuinely changed carrier against a tagged anchor still reads `ingest`.
  *
  * The gate is driven by an IDENTITY-render congruence (the native-carrier shape the
  * action-handler uses): deserialize → the record, render → the disk join, ∅ structure,
@@ -21,7 +20,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { carrierHash, parseDigest, IMPLICIT_ALGO } from "@lararium/mesh";
+import { carrierHash, parseDigest, SHA256_ALGO } from "@lararium/mesh";
 import { decideIngest } from "../src/ingest-gate.js";
 import type { IngestOps } from "../src/ingest-gate.js";
 
@@ -49,25 +48,26 @@ const identityOps: IngestOps<{ text: string }> = {
   grade: () => "clean",
 };
 
-// The freshly-computed disk digest — post-step-3, this rides TAGGED.
+// The freshly-computed disk digest rides TAGGED.
 const diskHash = carrierHash(BODY, META);
-// What a store WRITTEN BEFORE step 3 holds for the same content: the bare hex, no tag.
+// A bare anchor: the same content's hex with no algorithm named.
 const bareStored = parseDigest(diskHash).hex;
-// What the projector's `obsHash` writes AFTER step 3: the same tagged value.
+// What the projector's `obsHash` writes: the same tagged value.
 const taggedStored = diskHash;
+// A records render that moved past the last projection.
+const movedRender = carrierHash(`${BODY} (records moved)`, META);
 
-describe("agile-write — the producer tags (flag-day landed)", () => {
+describe("agile-write — the producer tags", () => {
   test("carrierHash emits an algorithm-tagged digest, not bare hex", () => {
     const p = parseDigest(diskHash);
-    expect(p.algo).toBe(IMPLICIT_ALGO);       // sha256
+    expect(p.algo).toBe(SHA256_ALGO);         // sha256
     expect(diskHash).toBe(`${p.algo}:${p.hex}`);
-    expect(diskHash).toContain(":");          // tagged, not bare
-    expect(bareStored).not.toContain(":");    // the pre-agile stored form is bare
+    expect(() => parseDigest(bareStored)).toThrow(/names no algorithm/);
   });
 });
 
-describe("agile-write — no false conflict (the go/no-go canary)", () => {
-  test("byte-identical carrier vs a POST-agile (tagged) store → noop echo", () => {
+describe("agile-write — the echo gate reads tagged anchors only", () => {
+  test("CONTROL: byte-identical carrier vs a tagged anchor → noop echo", () => {
     const d = decideIngest({
       uri: URI, diskText: join(META, BODY),
       diskHash, syncedHash: taggedStored,
@@ -76,29 +76,41 @@ describe("agile-write — no false conflict (the go/no-go canary)", () => {
     expect(d).toEqual({ kind: "noop", reason: "disk-matches-synced" });
   });
 
-  test("byte-identical carrier vs a PRE-agile (bare) store → STILL noop (dual-read)", () => {
-    // THE migration canary: the tree still holds a bare hex from before step 3, the
-    // disk digest comes tagged. digestsEqual normalizes both → the echo gate reads
-    // noop, so an all-bare store never mass-re-lands the day the producers tag.
+  test("CONTROL: records moved, disk unmoved, tagged anchor → noop echo (the projection leg writes)", () => {
+    const d = decideIngest({
+      uri: URI, diskText: join(META, BODY),
+      diskHash, syncedHash: taggedStored,
+      currentRenderHash: movedRender, hash: carrierHashOf,
+    }, identityOps);
+    expect(d).toEqual({ kind: "noop", reason: "disk-matches-synced" });
+  });
+
+  test("★ the same state against a BARE anchor never reads noop — it reads CONFLICT ★", () => {
+    const d = decideIngest({
+      uri: URI, diskText: join(META, BODY),
+      diskHash, syncedHash: bareStored,
+      currentRenderHash: movedRender, hash: carrierHashOf,
+    }, identityOps);
+    expect(d.kind).toBe("conflict");
+  });
+
+  test("★ disk moved alone against a BARE anchor reads CONFLICT, never a clean ingest ★", () => {
+    const editedBody = `${BODY} (edited on disk)`;
+    const d = decideIngest({
+      uri: URI, diskText: join(META, editedBody),
+      diskHash: carrierHash(editedBody, META), syncedHash: bareStored,
+      currentRenderHash: diskHash, hash: carrierHashOf,
+    }, identityOps);
+    expect(d.kind).toBe("conflict");
+  });
+
+  test("a disk that already says what the records say reads noop by equivalence, even over a bare anchor", () => {
     const d = decideIngest({
       uri: URI, diskText: join(META, BODY),
       diskHash, syncedHash: bareStored,
       currentRenderHash: diskHash, hash: carrierHashOf,
     }, identityOps);
-    expect(d).toEqual({ kind: "noop", reason: "disk-matches-synced" });
-  });
-
-  test("clean-ingest leg (records unmoved) reads across the tag boundary too", () => {
-    // An edited disk whose RECORDS still stand where the last projection left them:
-    // the merge-base leg compares currentRenderHash (tagged) to a bare-stored
-    // syncedHash → must normalize to a clean ingest, never a phantom conflict.
-    const editedBody = `${BODY} (edited on disk)`;
-    const d = decideIngest({
-      uri: URI, diskText: join(META, editedBody),
-      diskHash: carrierHash(editedBody, META), syncedHash: bareStored,  // bare pre-agile merge base
-      currentRenderHash: diskHash, hash: carrierHashOf,                  // records unmoved (tagged)
-    }, identityOps);
-    expect(d.kind).toBe("ingest");
+    expect(d).toEqual({ kind: "noop", reason: "canonical-equivalent" });
   });
 
   test("mirror invariant — a genuinely CHANGED carrier still ingests (tag never masks an edit)", () => {

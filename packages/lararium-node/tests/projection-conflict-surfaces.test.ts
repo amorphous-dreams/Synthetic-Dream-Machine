@@ -123,12 +123,13 @@ describe("the projection gate's decision law — clause for clause against the i
     }
   });
 
-  test("the clause reads through digestsEqual too — a bare canonical hash still matches", () => {
-    // The canonical view arrives freshly computed (tagged) while a stored value may be
-    // bare; comparing literally would miss the equivalence and cry conflict on the
-    // ordinary round trip — the exact catastrophe clause 6 exists to prevent.
-    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.slice("sha256:".length) }))
+  test("the clause reads through digestsEqual — every tagged spelling matches, a bare hash never does", () => {
+    // CONTROL: the SRI spelling of the same digest is the same digest.
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.replace("sha256:", "sha256-") }))
       .toEqual({ kind: "project", reason: "canonical-equivalent" });
+    // A bare hex names no algorithm: no equivalence stands, and the standoff surfaces.
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.slice("sha256:".length) }))
+      .toEqual({ kind: "conflict", reason: "both-moved" });
   });
 
   test("the `≈` clause NEVER outranks a clause that already stood down", () => {
@@ -143,11 +144,12 @@ describe("the projection gate's decision law — clause for clause against the i
       .toEqual({ kind: "project", reason: "never-projected" });
   });
 
-  test("the digest tag boundary never reads as a move (bare stored vs tagged fresh)", () => {
-    // A pre-agile tree holds bare hex; a fresh hash arrives tagged. Comparing
-    // literally would read EVERY carrier as moved — a mass conflict storm.
+  test("★ a BARE anchor is no merge base: the disk it names reads as moved, and the standoff surfaces ★", () => {
     const bare = A.slice("sha256:".length);
     expect(decideProjection({ diskHash: A, syncedHash: bare, recordsHash: B }))
+      .toEqual({ kind: "conflict", reason: "both-moved" });
+    // CONTROL: the same state against the TAGGED anchor reads the disk unmoved and projects.
+    expect(decideProjection({ diskHash: A, syncedHash: A, recordsHash: B }))
       .toEqual({ kind: "project", reason: "disk-unmoved" });
   });
 

@@ -1,4 +1,4 @@
-import { digestsEqual, parseDigest, formatDigest, IMPLICIT_ALGO } from "./agile-digest.js";
+import { digestsEqual, parseDigest, formatDigest, SHA256_ALGO } from "./agile-digest.js";
 import { sha256HexBytesSync } from "./crypto.js";
 
 /**
@@ -348,7 +348,7 @@ export function deliverPublicArtifact(
   if (!(bytes instanceof Uint8Array)) {
     fail("public artifact bytes are not a Uint8Array");
   }
-  const computed = formatDigest(IMPLICIT_ALGO, sha256HexBytesSync(bytes));
+  const computed = formatDigest(SHA256_ALGO, sha256HexBytesSync(bytes));
   if (!digestsEqual(computed, publication.artifactCid) || !digestsEqual(computed, publication.integrity)) {
     fail("public artifact bytes fail integrity");
   }

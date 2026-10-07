@@ -101,14 +101,14 @@ export function forgetPack(p: PackProvenance, packPath: string): PackProvenance 
 //
 // The hash reads `carrierHash`-family (the member's canonical carrier render,
 // algorithm-tagged `sha256:hex`) — the map stores it opaquely, and the gate compares
-// it through `digestsEqual`, so a value stored bare in a pre-agile era still matches a
-// freshly-tagged one, never a parallel digest scheme.
+// it through `digestsEqual`; a value stored bare names no algorithm and matches nothing,
+// so that member reads as moved.
 
 /** The sibling aside tiddler — a JSON map of member title → content-hash. */
 export const ORIGINAL_TIDDLER_HASHES = "$:/config/OriginalTiddlerHashes";
 
 /** member title → the content-hash of the member as last reconciled (carrierHash-family,
- *  algorithm-tagged; a value stored bare pre-agile still compares via `digestsEqual`). */
+ *  algorithm-tagged; compared via `digestsEqual`, where a bare value matches nothing). */
 export type PackHashes = Readonly<Record<string, string>>;
 
 /** Parse the hash map from a tiddler's text; a missing or malformed body reads as
