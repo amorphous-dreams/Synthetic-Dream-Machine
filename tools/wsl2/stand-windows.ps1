@@ -10,7 +10,7 @@
   -DryRun shows the plan without writes.
   -Distro optionally names the WSL distro the sparse opt-in selects.
   -Sparse opts into sparse vhdx allocation. WSL 2.5.6+ gates sparse VHDs behind --allow-unsafe
-          and prints "sparse VHD support is currently disabled due to potential data corruption";
+          and prints "Sparse VHD support is currently disabled due to potential data corruption";
           without -Sparse the script neither writes sparseVhd nor runs --set-sparse.
 
   The runbook's PowerShell is 7 (pwsh), read at its two install paths and nowhere else: the MSI's
@@ -217,7 +217,7 @@ if (-not $Distro) {
     $running = @((Read-Wsl @('-l', '--running', '-q')) -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
     if ($running -contains $Distro) { Need "run wsl --shutdown, then re-run with -Sparse to set '$Distro' sparse ($sizeGB GB on disk)" }
     else {
-      Need "you accepted Microsoft's warning by passing -Sparse: 'sparse VHD support is currently disabled due to potential data corruption'"
+      Need "you accepted Microsoft's warning by passing -Sparse: 'Sparse VHD support is currently disabled due to potential data corruption'"
       Act "wsl --manage '$Distro' --set-sparse true --allow-unsafe" { wsl.exe --manage $Distro --set-sparse true --allow-unsafe | Out-Null; if ($LASTEXITCODE -ne 0) { throw "wsl --manage exited $LASTEXITCODE" } }
     }
   }

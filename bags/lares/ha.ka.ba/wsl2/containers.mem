@@ -44,7 +44,7 @@ The lararium kit runs as a compose-shaped stack in containers behind the WSL2 in
 | Windows Home | no edition restriction in any Microsoft text; it rides Virtual Machine Platform like WSL 2, no Hyper-V role. The WSL lead: it "works anywhere WSL is supported today" | high by inference |
 | `.wslconfig` | no new keys. Per-session CPU, memory and storage live in `%LOCALAPPDATA%\wslc\settings.yaml` and the SDK's `SessionSettings`. "Capabilities" in the release notes means CLI feature lists | medium-high |
 | Docker Desktop | Microsoft: the third-party tools "will also all benefit from these lower level platform changes" — never "replace". Docker Inc. has published no response | high |
-| cost on a home PC | a second utility VM (`vmmemwslc-cli`, default 2 vCPU / 2 GB, 32 GB dynamic VHDX) beside the WSL 2 VM; idle teardown landed in 2.9.x | medium |
+| cost on a home PC | a second utility VM (`vmmemwslc-cli`) beside the WSL 2 VM; 3.0.1's `settings.yaml` template defaults `cpuCount` to all CPUs, `memorySize` to half of host memory and `maxStorageSize` to 1 TB dynamic (the 2.9.3 preview note said 32 GB); idle teardown landed in 2.9.8 | high (source) |
 
 The community discovered the session VM already runs stock Moby and that compose, Dev Containers and Testcontainers all work unmodified against its socket — an unofficial route Microsoft has neither blessed nor closed.
 
@@ -62,7 +62,7 @@ Rootful Docker Engine with the compose plugin, supervised by systemd inside Ubun
 | Ubuntu archive | `sudo apt install docker.io docker-compose-v2 docker-buildx` | one line, Canonical-maintained; 29.1.3 / compose 2.40.3 in noble-updates. ''The family default.'' |
 | Docker's apt repo | `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin` | newest engine and compose, Docker-supported on 22.04 / 24.04 / 26.04; needs the signing key and a sources file; conflicts with the archive packages, which must leave first |
 
-''Rootless stays off the table.'' WSL 2.9 moved the cgroup v2 hierarchy under `/wsl-user/distro-N/…`, so rootless Docker and rootless Podman fail on `cgroup.controllers` (microsoft/WSL #41492, open since 2026-09-01; 3.0.1 carries no fix). Rootful dockerd reads unaffected. The WSL maintainers name an opt-out — `[wsl2] isolateDistroCgroup=false` in `.wslconfig` restores the standard hierarchy — but it disables per-distro cgroup isolation host-wide, so this kit does not set it; a household that wants rootless chooses it knowingly. The `docker` group therefore stays root-equivalent on this host; the runbook says so rather than hiding it.
+''Rootless stays off the table.'' WSL 2.9.8 moved the cgroup v2 hierarchy under `/wsl-user/distro-N/…`, so rootless Docker and rootless Podman failed on `cgroup.controllers` (microsoft/WSL #41492, open since 2026-09-01). PR #41512 (merged 2026-09-18; in 2.9.13 and 3.0.1) gives each distro its own cgroup namespace and its author reports rootless Docker working again; the issue stays open because Podman's machine distro, which starts systemd without `systemd=true`, still reproduces. Rootful dockerd reads unaffected throughout. The WSL maintainers name an opt-out — `[wsl2] isolateDistroCgroup=false` in `.wslconfig` restores the standard hierarchy — but it disables per-distro cgroup isolation host-wide, so this kit does not set it; a household that wants rootless chooses it knowingly. The `docker` group therefore stays root-equivalent on this host; the runbook says so rather than hiding it.
 
 ''WSL2 specifics worth knowing:'' cgroup v2 runs by default; dockerd 25+ handles nft-based iptables; `-p` ports reach Windows `localhost` by default, and other LAN devices need `networkingMode=mirrored` or a `netsh portproxy`; distros are per Windows account, so a household that shares the stack shares the account.
 
@@ -90,7 +90,7 @@ Any one of these moves `wslc` to the primary path and the in-distro engine to a 
 # A Docker-API endpoint ships officially (#40976), so `docker compose` and tooling target the wslc session.
 # `wslc` runs from inside the distro with `\\wsl.localhost` paths (#41105), which the lararium's bind mounts need.
 
-Separately, a fix for #41492 reopens rootless Docker, which retires the root-equivalent `docker` group.
+Separately, the #41492 fix shipped in 3.0.1 (PR #41512), so rootless Docker is open to a re-read of the rootful ruling, which would retire the root-equivalent `docker` group; this carrier has not re-read it.
 
 When the tripwire turns: `stand-linux.sh` step 5b reads for `wslc` first and reports the in-distro engine as the fallback; `witness.sh` gains a `wslc compose` row; this carrier re-trues its ruling line and date.
 
@@ -108,6 +108,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kY4lGoLTC5kQv-Pn67FZXg79o8P6LKvSZQZwOlypN1A
+<<^ code="&#x0003;">>ni:///sha-256;cKSAwr7Yp7F8jOAEXOidj2BfYVsJWRiGmAAu9zA83NQ
 
 <<^ code="&#x0004;" -> to="?">>

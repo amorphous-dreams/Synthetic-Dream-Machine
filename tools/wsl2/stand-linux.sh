@@ -84,8 +84,8 @@ WSLCONF_CHANGED=0
 # WSL reads /etc/wsl.conf alone (no drop-in directory), so the stand edits the shared file in place under
 # one grammar for the read and the write, matched to WSL's own parser (src/shared/configfile/configfile.cpp):
 # section and key match case-insensitively; a header is `[name]` plus optional blanks and an optional
-# `#comment` (`[boot] # note` opens boot; `[ boot ]` opens nothing, as in WSL); any line opening with `[`
-# ends the section; lines split on LF with an optional CR before it; bytes outside UTF-8 round-trip
+# `#comment` (`[boot] # note` opens boot; `[ boot ]` opens nothing and, as in WSL, leaves the open section in
+# force); any other line opening with `[` ends the section; lines split on LF with an optional CR before it; bytes outside UTF-8 round-trip
 # untouched. WSL's parser holds no BOM handling and reads the first line invalid under one, so a leading
 # BOM reads as DRIFT and the write drops it. `read` prints every value the key carries and answers 0 only when all of them equal the
 # intent: WSL takes the FIRST occurrence and warns at every launch about the rest, so a twin reads as drift. `write` replaces every matching
@@ -105,12 +105,14 @@ if lines and lines[-1] == "": lines.pop()
 bom = bool(lines) and lines[0].startswith("﻿")
 if bom: lines[0] = lines[0].lstrip("﻿")
 opener = re.compile(r"^[ \t]*\[")
+named = re.compile(r"^[ \t]*\[[A-Za-z]")
 head = re.compile(r"^[ \t]*\[" + re.escape(sec) + r"\][ \t]*(#.*)?$", re.I)
 kv = re.compile(r"^[ \t]*" + re.escape(key) + r"[ \t]*=", re.I)
 in_s = False; hits = []; first = -1; last = -1
 for i, line in enumerate(lines):
     if opener.match(line):
-        in_s = bool(head.match(line))
+        # WSL rejects a header whose first byte after `[` is no letter and keeps the open section
+        if named.match(line): in_s = bool(head.match(line))
         if in_s and first < 0: first = i
         continue
     if in_s:

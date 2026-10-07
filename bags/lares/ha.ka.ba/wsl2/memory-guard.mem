@@ -47,7 +47,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 | `ulimit -v` | one process's address space | the process, with a segfault, at the cap | none | the command line |
 | `.wslconfig` `memory=` / `swap=` | the VM's total | nothing — it sets the ceiling the others work under | Windows file | `C:\Users\<you>\.wslconfig` |
 
-''`earlyoom`'' — a small daemon that polls available memory and available swap at a rate that tightens as memory falls. When both fall under its thresholds (10 % each by default; the setup runbook tightens to `-m 5 -s 50`) it sends SIGTERM, then SIGKILL, to the process with the highest `oom_score`, which in practice means the one holding the most memory. It makes the same choice the kernel would make eventually, minutes earlier, while the desktop still responds. Its `--avoid` pattern lowers a matching process's `oom_score` by 300 — a bias, not immunity (`--ignore` grants that); `--prefer` adds 300. The match runs against the kernel's `comm` name, the first fifteen bytes of the binary's name: a native `claude` binary matches, a `claude` started as `node …/cli.js` reads as `node` and does not. On 2026-09-18 it would have killed the runaway `pytest` in under a second and touched nothing else.
+''`earlyoom`'' — a small daemon that polls available memory and available swap at a rate that tightens as memory falls. When both fall under its thresholds (10 % each by default; the setup runbook tightens to `-m 5 -s 50`) it sends SIGTERM, then SIGKILL, to the process with the highest `oom_score`, which in practice means the one holding the most memory. It makes the same choice the kernel would make eventually, minutes earlier, while the desktop still responds. Its `--avoid` pattern lowers a matching process's `oom_score` by 300 — a bias, not immunity (earlyoom carries no ignore flag; only a process at `oom_score_adj=-1000` is skipped); `--prefer` adds 300. The match runs against the kernel's `comm` name, the first fifteen bytes of the binary's name: a native `claude` binary matches, a `claude` started as `node …/cli.js` reads as `node` and does not. On 2026-09-18 it would have killed the runaway `pytest` in under a second and touched nothing else.
 
 ''`systemd-oomd`'' — systemd's answer to the same problem, driven by pressure-stall information rather than free counts. It kills a ''cgroup'', not a process. In WSL, a terminal, the Lares sessions it started and all their children usually share one slice, so one bad test could take every session with it. For a developer VM, `earlyoom`'s per-process choice fits better. Leave `oomd` off.
 
@@ -85,6 +85,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UzaRUj2bQEJstjctKAV_Nivfu_JbZdEGFAe9CB6j9IM
+<<^ code="&#x0003;">>ni:///sha-256;_k1unEe0qApA80TZCVTViAbIRjVwOKMkPytpuxArxWY
 
 <<^ code="&#x0004;" -> to="?">>
