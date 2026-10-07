@@ -229,8 +229,16 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(stranger, `nothing answered on :${PORT} — no vessel stands there for R5 to lift`).not.toBeNull();
     expect(stranger!.status).toBe(CLOSED_DOOR.status);
     expect(await stranger!.text()).toBe(CLOSED_DOOR.body);
-    // A PROVEN PEER — this vessel's own key — reads the map through the gated oracle socket.
-    const read = await pullAndVerifyOracle(origin, { identity: await readerOf(root) });
+    // A PROVEN PEER — this vessel's own key — reads the map through the gated oracle socket. LIVENESS ⊥
+    // READINESS: the vessel listens before its daemon's keyholder can verify a proof, and a gate asked in that
+    // window refuses ("keyhive not booted") exactly as it refuses a stranger. So the vector asks until the
+    // keyholder answers, inside its own budget, and reports the last refusal if it never does.
+    const identity = await readerOf(root);
+    let read = await pullAndVerifyOracle(origin, { identity });
+    for (const until = Date.now() + 45_000; !read.ok && Date.now() < until; ) {
+      await new Promise((r) => setTimeout(r, 1_000));
+      read = await pullAndVerifyOracle(origin, { identity });
+    }
     expect(read.ok, `a proven peer read no map on :${PORT} — the floor serves no shelf: ${read.reason}`).toBe(true);
   }, 60_000);
 
