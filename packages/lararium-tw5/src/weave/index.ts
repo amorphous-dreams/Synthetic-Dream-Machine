@@ -233,11 +233,18 @@ export function recordedTargetOf(metaText: string): { variant?: string; tongue?:
   return { ...(variant ? { variant } : {}), ...(tongue ? { tongue } : {}) };
 }
 
-/** The `.md.meta` sidecar's default title for a carrier's root `uri` — {@link projectSubmission}'s
- * own default, named here so a caller that needs to FIND the record (never project it) does not
- * re-spell the `/submission` suffix by hand. */
+/** The submissions shelf — the one address every projected submission pair lives under. */
+export const SUBMISSIONS_SHELF = "lar:///ha.ka.ba/lares/api/pono/submissions";
+
+/**
+ * The `.md.meta` sidecar's default title for a carrier's root `uri` — `submissions/<name>` on the
+ * shelf (operator ruling), `<name>` the uri's last path segment, the same name the pair's files carry
+ * (`<name>.md` · `<name>.md.meta`). {@link projectSubmission}'s own default, named here so a caller that
+ * needs to FIND the record (never project it) reads the one spelling.
+ */
 export function submissionTitleOf(uri: string): string {
-  return `${uri}/submission`;
+  const path = uri.replace(/[?#].*$/, "").replace(/\/+$/, "");
+  return `${SUBMISSIONS_SHELF}/${path.slice(path.lastIndexOf("/") + 1)}`;
 }
 
 /**

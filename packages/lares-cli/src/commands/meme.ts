@@ -848,7 +848,6 @@ export function bagsResolver(root: string): (uri: string) => string | null {
  */
 function projectMdLocal(args: ParsedArgs, file: string): number {
   const out = args.options["out"];
-  const titleBase = args.options["title-base"];
   if (out) mkdirSync(out, { recursive: true });
   const text = readNamed(file);
   const base = basename(file).replace(/\.mem$/, "");
@@ -874,8 +873,8 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
     throw new UsageError((err as Error).message);
   }
 
+  // The pair's title is the weave's own default — `submissions/<name>` on the shelf (operator ruling).
   const p = projectSubmission(text, {
-    ...(titleBase ? { title: `${titleBase}/${base}` } : {}),
     profile,
     resolve: bagsResolver(repoRoot),
     ...(tongue ? { tongue } : {}),

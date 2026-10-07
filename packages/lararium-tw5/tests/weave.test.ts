@@ -336,7 +336,7 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
     expect(p.markdown).toContain('variant: "GFM"');
     expect(p.markdown).toContain('lang: "en"');
     // the sidecar: title/type (what TW5 loads) + the target record (what --check re-projects with)
-    expect(p.meta).toContain("title: lar:///ha.ka.ba/lares/api/pono/probe2/submission");
+    expect(p.meta).toContain("title: lar:///ha.ka.ba/lares/api/pono/submissions/probe2");
     expect(p.meta).toContain("type: text/markdown");
     expect(p.meta).toContain("variant: GFM");
   });

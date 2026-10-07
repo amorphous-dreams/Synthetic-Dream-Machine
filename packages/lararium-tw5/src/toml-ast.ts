@@ -89,7 +89,9 @@ export interface TomlDuplicateKey {
   readonly line: number;
 }
 
-const REDEFINE = /redefine an already defined/i;
+/** The words smol-toml refuses a redefinition with — the one reading `duplicateTomlKeys` keys on. A
+ *  control (`tests/toml-redefine-message.test.ts`) reds the day the parser's wording moves. */
+export const TOML_REDEFINE_MESSAGE = /redefine an already defined/i;
 
 export function duplicateTomlKeys(toml: string): TomlDuplicateKey[] {
   const lines = toml.split("\n");
@@ -100,7 +102,7 @@ export function duplicateTomlKeys(toml: string): TomlDuplicateKey[] {
       return out;
     } catch (e) {
       const line = (e as { line?: number }).line;
-      if (!REDEFINE.test(String((e as Error)?.message ?? e)) || typeof line !== "number" || !lines[line - 1]?.trim()) return out;
+      if (!TOML_REDEFINE_MESSAGE.test(String((e as Error)?.message ?? e)) || typeof line !== "number" || !lines[line - 1]?.trim()) return out;
       const written = lines[line - 1]!.trim();
       const key = written.startsWith("[") ? written.replace(/\].*$/, "]") : written.split("=")[0]!.trim();
       out.push({ key, line });

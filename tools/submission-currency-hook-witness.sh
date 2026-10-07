@@ -52,8 +52,7 @@ cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism.mem"
 RFC2119_SRC="$REPO_ROOT/bags/lares/ha.ka.ba/lares/ref/RFC-2119.mem"
 [ -f "$RFC2119_SRC" ] && cp "$RFC2119_SRC" "$WORK/$REF_DIR/RFC-2119.mem"
 
-( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism.mem" --to md --out "$SHELF" \
-    --title-base lar:///ha.ka.ba/lares/api/pono/submissions >/dev/null 2>&1 )
+( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism.mem" --to md --out "$SHELF" >/dev/null 2>&1 )
 git -C "$WORK" add "$SRC_DIR/prism.mem" "$SHELF/prism.md" "$SHELF/prism.md.meta"
 [ -f "$WORK/$REF_DIR/RFC-2119.mem" ] && git -C "$WORK" add "$REF_DIR/RFC-2119.mem"
 git -C "$WORK" commit -qm baseline
@@ -79,8 +78,7 @@ else bad "fired on a commit that never touches the shelf"; fi
 git -C "$WORK" reset -q -- "bags/lares/elsewhere/other.mem"
 
 step "③ GREEN: the source edit plus a fresh re-projection → passes"
-( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism.mem" --to md --out "$SHELF" \
-    --title-base lar:///ha.ka.ba/lares/api/pono/submissions >/dev/null 2>&1 )
+( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism.mem" --to md --out "$SHELF" >/dev/null 2>&1 )
 git -C "$WORK" add "$SRC_DIR/prism.mem" "$SHELF/prism.md" "$SHELF/prism.md.meta"
 if OUT=$(cd "$WORK" && "$HOOK" 2>&1); then ok; else bad "$?"; printf '%s\n' "$OUT" | tail -6 | sed 's/^/      /'; fi
 git -C "$WORK" commit -qm "re-projected"
@@ -105,8 +103,7 @@ git -C "$WORK" reset -q -- "$SHELF/prism.md"
 step "⑥ a GFM+en pair recording its target → the gate re-projects WITH it, passes GREEN"
 cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism-gfm.mem"
 sed -i 's#to="lar:///ha.ka.ba/lares/api/pono/prism"#to="lar:///ha.ka.ba/lares/api/pono/prism-gfm"#' "$WORK/$SRC_DIR/prism-gfm.mem"
-( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism-gfm.mem" --to md --dialect GFM --tongue en --out "$SHELF" \
-    --title-base lar:///ha.ka.ba/lares/api/pono/submissions >/dev/null 2>&1 )
+( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism-gfm.mem" --to md --dialect GFM --tongue en --out "$SHELF" >/dev/null 2>&1 )
 if grep -q 'variant: GFM' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null && grep -q 'tongue: en' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null; then
   git -C "$WORK" add "$SRC_DIR/prism-gfm.mem" "$SHELF/prism-gfm.md" "$SHELF/prism-gfm.md.meta"
   if OUT=$(cd "$WORK" && "$HOOK" 2>&1); then ok; else bad "refused a current GFM+en pair"; printf '%s\n' "$OUT" | tail -6 | sed 's/^/      /'; fi

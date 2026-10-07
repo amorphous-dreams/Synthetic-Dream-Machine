@@ -6,7 +6,8 @@
  * listener leaves it (CONTROL). Driven over a fake `$tw` whose wiki fires `change` on every write.
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { startup, name, after, fenceChildBody } from "../src/modules/meme-backstop.js";
+import { startup, name, after } from "../src/modules/meme-backstop.js";
+import { quoteblockFence } from "../src/ingest-gate.js";
 import { placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 
@@ -131,7 +132,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
     // The UNDECOMPOSABLE splice gets fenced into a quoteblock — identity (title) untouched, body
     // replaced by a fence the frame mask recognises, so the composed root reads clean again.
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(pasted));
   });
 
   test("QUOTEBLOCK FLOOR: a child-slot save carrying a stray ETX gets fenced too", async () => {
@@ -142,7 +143,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     const alert = wiki.store.get(alertTitle);
     expect(alert).toBeDefined();
     expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(stray));
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(stray));
   });
 
   /**
@@ -162,7 +163,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(alert).toBeDefined();
     expect(String(alert?.["codes"] ?? "")).toContain("ahu-unbalanced-open");
     expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(unclosed));
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(unclosed));
   });
 
   test("QUOTEBLOCK FLOOR: a child-slot save carrying a stray block closer is fenced, codes `ahu-orphan-close` + `quoteblocked`", async () => {
@@ -174,7 +175,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(alert).toBeDefined();
     expect(String(alert?.["codes"] ?? "")).toContain("ahu-orphan-close");
     expect(String(alert?.["codes"] ?? "")).toContain("quoteblocked");
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(orphan));
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(orphan));
   });
 
   test("a lawful nested ahu child raises no alert", async () => {
@@ -222,7 +223,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
     expect(alert?.["child"]).toBe(`${URI}#/b`);
     // The clean sibling is untouched; only the faulty child is fenced.
     expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a CLEAN EDIT");
-    expect(String(wiki.store.get(`${URI}#/b`)!["text"])).toBe(fenceChildBody(meme(["z"])));
+    expect(String(wiki.store.get(`${URI}#/b`)!["text"])).toBe(quoteblockFence(meme(["z"])));
   });
 
   test("QUOTEBLOCK FLOOR · SELF-TERMINATION: the fence's own re-fire writes nothing further", async () => {
@@ -296,7 +297,7 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
     const pasted = meme(["z"]);
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: pasted, "$origin-bag": KEPT });
     await settle();
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(pasted));
     expect(String(wiki.store.get(alertTitle)?.["codes"] ?? "")).toContain("quoteblocked");
   });
 
@@ -305,7 +306,7 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
     const pasted = meme(["z"]);
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: pasted });
     await settle();
-    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(fenceChildBody(pasted));
+    expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(pasted));
   });
 
   /**
@@ -356,12 +357,19 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
  * `postamble-content` besides. The round-trip launders nothing the root's own door would not already
  * refuse (the CONTROL below), and these two shapes surface through it rather than passing silently.
  *
- * Seam (b) stands open for the OTHER five shapes: a child's save there can only be graded against
+ * TWO MORE shapes now fence: an unclosed ahu and a stray block closer leave the rendered root
+ * un-decomposable, and the quoteblock floor's whole-chunk grain (`ahu.mem#/quoteblock-floor`) reads the
+ * re-placed root as a whole carrier arriving — `decision=ingest`, `grade=warning`, `quoteblocked` named,
+ * the whole body fenced into the root, the slot child retired into that fence (its bytes kept inside
+ * it). A re-place is a whole-carrier write, so the carrier is its grain; the child gate above is the
+ * in-place grain that fences only the child's body.
+ *
+ * Seam (b) stands open for the OTHER three shapes: a child's save there can only be graded against
  * the CHILD'S OWN AUTHORED TEXT — the bytes that never pass through the renderer — and this package
  * carries no congruence that reads a fragment body as a gradeable unit on its own. That remains the
  * operator's call; the probe below is the measurement any such instrument must answer to.
  */
-describe("★ PHASE 5 RE-MEASURED: re-placing a root from its records catches two shapes, still misses five ★", () => {
+describe("★ PHASE 5 RE-MEASURED: re-placing a root from its records refuses two shapes, fences two, still misses three ★", () => {
   const sinkOf = (store: Map<string, TiddlerFields>) => ({
     allTitles: () => [...store.keys()],
     getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t)! } : undefined),
@@ -384,9 +392,31 @@ describe("★ PHASE 5 RE-MEASURED: re-placing a root from its records catches tw
 
   // The two shapes that mint a SECOND live ETX into the rendered root — re-measured 2026-10-04.
   const NOW_ERROR_GRADED = new Set(["a stray ETX mark", "a whole pasted frame"]);
+  // The two shapes the family split cannot decompose — the whole-chunk floor fences them.
+  const FLOOR_FENCED = new Set(["an unclosed ahu", "a stray block closer"]);
 
   for (const [what, text] of Object.entries(CHILD_EDITS)) {
     const errorGraded = NOW_ERROR_GRADED.has(what);
+    if (FLOOR_FENCED.has(what)) {
+      test(`the re-place reads INGEST over ${what} — the whole chunk fences, the bytes kept inside it`, async () => {
+        const store = new Map<string, TiddlerFields>();
+        const sink = wikiMemeSink(sinkOf(store) as never);
+        await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
+        store.set(`${URI}#/a`, { ...store.get(`${URI}#/a`)!, text });
+
+        const render = await readMeme(URI, sink);
+        const receipt = await placeMeme({ uri: URI, text: render!.text }, sink);
+
+        expect(receipt.decision).toBe("ingest");
+        expect(receipt.grade).toBe("warning");
+        expect(receipt.diagnostics.map((d) => d.code)).toContain("quoteblocked");
+        // No slot child lands (a `$`-carriage part of the rendered frame may ride beside the root).
+        expect(receipt.landed.filter((t) => !t.includes("#/$"))).toEqual([URI]);
+        expect(receipt.tombstoned).toEqual([`${URI}#/a`]);
+        expect(String(store.get(URI)!["text"])).toContain(text.trim());
+      });
+      continue;
+    }
     const title = errorGraded
       ? `the re-place reads ERROR over ${what} — a second live ETX, caught before any equivalence question`
       : `the re-place reads NOOP over ${what} — nothing grades, nothing lands`;

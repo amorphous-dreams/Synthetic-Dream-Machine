@@ -34,7 +34,7 @@ module-type: library
  * Meme: lar:///ha.ka.ba/lararium/tw5/place-meme
  */
 
-import { decideIngest } from "./ingest-gate.js";
+import { decideIngest, QUOTEBLOCKED_CODE } from "./ingest-gate.js";
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { gradeOf } from "./meme-ast/diagnostics.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -57,6 +57,67 @@ export interface MemeSink {
   land(fields: TiddlerFields): MaybePromise<void>;
   /** Remove one title. */
   tombstone(title: string): MaybePromise<void>;
+  /**
+   * THE ALERT RAIL, where the sink has one: raise (or, with `null`, clear) the one coalesced alert a
+   * meme root carries. A live wiki has it (`wikiMemeSink`); a bag store does not, and its placements
+   * carry the finding on the receipt alone.
+   */
+  surface?(root: string, finding: MemeAlertFinding | null): MaybePromise<void>;
+}
+
+// ---------------------------------------------------------------------------
+// THE ALERT RAIL — one coalesced alert per meme root
+// ---------------------------------------------------------------------------
+
+/** TW5's built-in alert tag — tiddlers carrying it surface in the alerts area. */
+const TW5_ALERT_TAG = "$:/tags/Alert";
+
+/** The one coalesced alert a root carries — stable per root, so a burst of saves (or two checks grading
+ *  the same root) updates one tiddler rather than piling up a new one each time. */
+export function memeAlertTitle(root: string): string {
+  return `$:/temp/lares/alert/meme-child-gate/${root}`;
+}
+
+/** One finding the rail raises: the record whose write earned it (the root itself for a whole-chunk
+ *  fence, a slot child for the child gate), and the codes + prose a reader sees. */
+export interface MemeAlertFinding {
+  readonly child: string;
+  readonly codes: readonly string[];
+  readonly why: string;
+}
+
+/** The wiki surface the rail writes through. */
+export interface MemeAlertWiki {
+  getTiddler(title: string): unknown;
+  addTiddler(fields: Record<string, unknown>): void;
+  deleteTiddler(title: string): void;
+}
+
+/**
+ * THE RAIL every meme check shares — the backstop's child gate (the in-place ahu grain) and the
+ * placement's quoteblock floor (the whole-chunk grain) raise and clear it alike. The LAST call standing
+ * wins the slot, same as any other `$:/temp/…` alert in this house. Clearing touches only an alert that
+ * stands, so a clean placement writes nothing. Never lands or refuses a record — surfacing, not gating.
+ */
+export function surfaceMemeAlert(wiki: MemeAlertWiki, root: string, finding: MemeAlertFinding | null): void {
+  const alertTitle = memeAlertTitle(root);
+  if (!finding) {
+    if (wiki.getTiddler(alertTitle)) wiki.deleteTiddler(alertTitle);
+    return;
+  }
+  const codes = finding.codes.join(", ");
+  wiki.addTiddler({
+    title: alertTitle,
+    text: finding.child === root
+      ? `${root} arrived un-decomposable (${codes}): ${finding.why}`
+      : `${finding.child} moved ${root} out of frame (${codes}): ${finding.why}`,
+    tags: TW5_ALERT_TAG,
+    "alert-kind": "meme-child-gate",
+    root,
+    child: finding.child,
+    codes,
+    ts: new Date().toISOString(),
+  });
 }
 
 export interface PlaceMemeInput {
@@ -217,7 +278,13 @@ export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<
     await sink.tombstone(title);
     tombstoned.push(title);
   }
-  return { uri, decision: "ingest", grade, landed, tombstoned, canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
+  // THE QUOTEBLOCK FLOOR SURFACES (`ahu.mem#/quoteblock-floor`): a fence nobody sees reads as a drop
+  // wearing a cure's face. The finding rides the receipt's warnings on every door, and the sink's rail
+  // where it has one; a placement that decomposes clean clears the root's standing alert.
+  const fenced = decision.diagnostics.filter((d) => d.code === QUOTEBLOCKED_CODE);
+  const warnings = fenced.map((d) => d.message);
+  await sink.surface?.(uri, fenced.length === 0 ? null : { child: uri, codes: [QUOTEBLOCKED_CODE], why: warnings.join("; ") });
+  return { uri, decision: "ingest", grade, landed, tombstoned, canonicalHash: hash(decision.canonicalText), warnings, diagnostics: decision.diagnostics };
 }
 
 /**
@@ -324,12 +391,14 @@ export async function listMemes(
   return out;
 }
 
-/** The `$tw.wiki` skin — a live wiki, on the plain server or inside the island. */
+/** The `$tw.wiki` skin — a live wiki, on the plain server or inside the island. Its rail is the wiki's
+ *  own alerts area. */
 export function wikiMemeSink(wiki: Pick<TW5Wiki, "allTitles" | "getTiddler" | "addTiddler" | "deleteTiddler">): MemeSink {
   return {
     titles: () => wiki.allTitles(),
     read: (title) => (wiki.getTiddler(title) as { fields?: TiddlerFields } | undefined)?.fields,
     land: (fields) => { wiki.addTiddler(fields as Record<string, unknown>); },
     tombstone: (title) => { wiki.deleteTiddler(title); },
+    surface: (root, finding) => { surfaceMemeAlert(wiki, root, finding); },
   };
 }

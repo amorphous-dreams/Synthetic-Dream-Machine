@@ -7,9 +7,10 @@
  * grammar tiddlers hydrate the scans — so the split names the grammar's own `ahu` opener, not the
  * bootstrap scan a test outside the VM sees. Every claim here therefore asks the booted wiki's face.
  *
- * The CONTROLS: a closer with no opener grades `warning` on both readers (the parser stands it back up
- * as water); an opener whose closer never arrives grades `info` on both (a repaired frame). Both keep
- * the text, and both readers say the same thing about it.
+ * The CONTROLS: a closer with no opener, and an opener whose closer never arrives, leave the family
+ * split un-decomposable, so the quoteblock floor fences the whole chunk (`ahu.mem#/quoteblock-floor`)
+ * and both readers grade it `warning`, naming `quoteblocked`. Both keep the text, and both readers say
+ * the same thing about it.
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
@@ -57,26 +58,28 @@ describe.skipIf(wikiSkip)(`one text, one grade${skipNote}`, () => {
     expect(placed.landed).toEqual([URI, `${URI}#/a`]);
   });
 
-  test("CONTROL: a closer no opener claims grades `warning` on both readers", async () => {
+  test("CONTROL: a closer no opener claims fences the whole chunk, graded `warning` on both readers", async () => {
     const uri = `${URI}-orphan`;
     const text = orphanOf(uri);
     const checked = face.check(text);
     const placed = await face.place(uri, text);
-    expect(checked.diagnostics.map((d) => d.code)).toEqual(["orphan-close:ahu"]);
+    expect(checked.diagnostics.map((d) => d.code)).toEqual(["quoteblocked"]);
     expect(checked.grade).toBe("warning");
     expect(placed.grade).toBe("warning");
     expect(placed.diagnostics.map((d) => d.code)).toEqual(checked.diagnostics.map((d) => d.code));
+    expect(placed.landed).toEqual([uri]);
   });
 
-  test("CONTROL: an opener whose closer never arrives grades `info` on both readers — repaired, text kept", async () => {
+  test("CONTROL: an opener whose closer never arrives fences the whole chunk, graded `warning` on both readers — text kept", async () => {
     const uri = `${URI}-unclosed`;
     const text = unclosedOf(uri);
     const checked = face.check(text);
     const placed = await face.place(uri, text);
-    expect(checked.diagnostics.map((d) => d.code)).toEqual(["unclosed-frame"]);
-    expect(checked.grade).toBe("info");
-    expect(placed.grade).toBe("info");
+    expect(checked.diagnostics.map((d) => d.code)).toEqual(["quoteblocked"]);
+    expect(checked.grade).toBe("warning");
+    expect(placed.grade).toBe("warning");
     expect(placed.diagnostics.map((d) => d.code)).toEqual(checked.diagnostics.map((d) => d.code));
+    expect(placed.landed).toEqual([uri]);
   });
 });
 

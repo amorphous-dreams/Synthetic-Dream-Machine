@@ -127,7 +127,7 @@ Quoteblocking runs as a one-way demotion: every sigil inside goes inert until th
 
 A child-slot save re-grades its root through the backstop's child gate (`packages/lararium-tw5/src/modules/meme-backstop.ts`, `runChildGate`), which runs the ingest gate's READ HALF — `evaluateMeme`, never `placeMeme` — over the composed root and surfaces what it finds on the SAME alert rail the quoteblock uses: a second live ETX, `frame-malformed`, `postamble-content` at error grade, and, widened past that leg, a composed-altitude ahu balance fault (`ahu-unbalanced-open`, `ahu-orphan-close` — the dangling opener eating the parent's closer, or the orphan closing the parent early) that the gate's own NOOP-equivalence leg grades below error and would otherwise drop. This never lands or refuses anything on the stock syncer path; the root door gate's own ingest grades stand untouched.
 
-!!! WHERE the floor sits ~ RULED, UNBUILT
+!!! WHERE the floor sits ~ BUILT
 
 ''The whole-chunk floor runs at the ingest gate, directly after the frame `verdict()`, on EVERY door'' —
 no door carries its own copy, and no door skips it. The order runs fixed:
@@ -136,6 +136,8 @@ no door carries its own copy, and no door skips it. The order runs fixed:
 # ''A torn frame REFUSES.'' A frame that cannot be divided without choosing never reaches decomposition, and no fence repairs it: quoteblocking a torn frame would hide the tear inside a span that reads sound.
 # ''Else decompose'' — the family split runs over the framed body.
 # ''If any ERROR or MISSING node remains'' anywhere in that decomposition, ''the WHOLE chunk fences'' and the fence surfaces. A partial fence over only the faulted span stays forbidden at this grain: no family stands yet to hold the sound remainder.
+
+''The seat.'' `wholeChunkFloor` (`packages/lararium-tw5/src/ingest-gate.ts`) reads each carrier's framed body through the family split's own machine reader — `findAhuBalanceFaults` over the fence mask, never the grammar — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The memetic congruence holds it (`memeticIngestOps.deserialize` and `declaredStructure`), so `decideIngest` on every door, and `canonicalizeCarrierText` on the projecting leg, read one fence: the head, the frame and the root meta stay outside it, and a check that matched re-stamps over the fenced body. The finding rides the diagnostics channel as `quoteblocked` (warning), the placement receipt's warnings on every door, and — where the sink holds a wiki — the one alert rail (`surfaceMemeAlert`, `packages/lararium-tw5/src/place-meme.ts`) the child gate shares. Witness: `packages/lararium-tw5/tests/quoteblock-floor-ingest.test.ts`.
 
 ''The stock syncer keeps NEVER-REFUSE.'' A child-slot save on the stock syncer path lands as written and only re-grades its root (the backstop paragraph above); the WHERE above governs the ingest gate's whole-chunk door and changes nothing about that path.
 
@@ -154,6 +156,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YXwlIr17A3E5HBBrdGNg--ftGGr3Ye0068ptBqJFch8
+<<^ code="&#x0003;">>ni:///sha-256;RnMRB3YUpxg130J-4VsbBd34X1gqq907VMcbBHTSz_Q
 
 <<^ code="&#x0004;" -> to="?">>

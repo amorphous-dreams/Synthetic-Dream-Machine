@@ -39,12 +39,13 @@ module-type: startup
  * the root, and the diagnostic codes; a clean one clears any alert this root already carries. The
  * child's own record is never touched by this path — refusing it is what the ruling forbids.
  *
- * THE ALERT RAIL IS ITS OWN SURFACE (`surfaceChildGateAlert`), exported rather than folded into this
- * listener's closure, because `evaluateMeme`'s diagnostics are not the only finding a child's save
- * can earn — the quoteblock-floor fence-on-write check (own ruling, follow-up hand) grades the SAME
- * composed root for unbalanced `ahu` openers/closers the Confluence gate today only drops as
- * info/warning. One root, one coalesced alert, one rail: both checks raise or clear it through this
- * function rather than each growing a parallel notice.
+ * THE ALERT RAIL IS ONE SURFACE (`surfaceMemeAlert`, `place-meme.ts`), shared rather than folded into
+ * this listener's closure: this gate raises the composed root's faults on it, and the placement's
+ * quoteblock floor raises a whole-chunk fence on it (`placeMeme` over a wiki sink). One root, one
+ * coalesced alert, one rail — every check raises or clears it through that function.
+ *
+ * THE FRAMED-ROOT LEG IS THE STOCK SYNCER'S PATH, and it never refuses an un-decomposable carrier: the
+ * placement fences the whole chunk (the floor's whole-chunk grain) and lands it, and the rail names it.
  *
  * ── THE FENCE IS A WRITE, AND A HEARTH WRITES ONLY WHERE IT KEEPS ─────────────────────────────────
  * Fencing commits the child's body back into the wiki, and the outbound shore carries that write into
@@ -59,7 +60,8 @@ module-type: startup
  * cascade at all, surfaces only.
  */
 
-import { framedRootOf, placeMeme, evaluateMeme, readMeme, wikiMemeSink } from "../place-meme.js";
+import { framedRootOf, placeMeme, evaluateMeme, readMeme, surfaceMemeAlert, wikiMemeSink } from "../place-meme.js";
+import { quoteblockFence } from "../ingest-gate.js";
 import type { MemeSink } from "../place-meme.js";
 import { findAhuBalanceFaults } from "../meme-ast/ahu-scan.js";
 import { routeBag } from "../bag-cascade.js";
@@ -95,56 +97,12 @@ export interface BackstopOptions {
   readonly log?: (line: string) => void;
 }
 
-/** TW5's built-in alert tag — tiddlers carrying it surface in the alerts area. Same shape as the
- *  reboot-pending / engine-waiting alerts (`wiki-behavior.ts`, `engine-watch.ts`), written directly
- *  through this module's own `wiki` rather than `ctx.composite.put` — this listener runs below the
- *  island layer and never holds a composite handle. */
-const TW5_ALERT_TAG = "$:/tags/Alert";
-
 /** A child-slot title — `uri#/slot…` — answers its root; everything else (a root itself, a plain
  *  tiddler, a `uri/path` child) answers null. Root law stays `isMemeRoot`/`framedRootOf`'s alone;
  *  this is a narrower, local read of the ONE shape this listener widens past them. */
 function childSlotRootOf(title: string): string | null {
   const at = title.indexOf("#/");
   return at < 0 ? null : title.slice(0, at);
-}
-
-/** The one coalesced alert a root's child-gate carries — stable per root, so a burst of child saves
- *  (or a second check grading the same root, see below) updates one tiddler rather than piling up a
- *  new one each time. Exported so a follow-up check can name the same slot without re-deriving it. */
-export function childGateAlertTitle(root: string): string {
-  return `$:/temp/lares/alert/meme-child-gate/${root}`;
-}
-
-/** One finding this rail can raise: the child whose save earned it, and the codes + message a
- *  reader should see. `null` clears whatever this root's alert currently carries. */
-export interface ChildGateFinding {
-  readonly child: string;
-  readonly codes: readonly string[];
-  readonly why: string;
-}
-
-/**
- * THE RAIL every child-gate check shares — `runChildGate` below calls it with `evaluateMeme`'s
- * verdict, and the quoteblock-floor's fence-on-write check (follow-up hand) calls it with its own
- * unbalanced-`ahu` finding over the SAME root. One coalesced alert per root; the LAST call standing
- * wins the slot, same as any other `$:/temp/…` alert in this house (`REBOOT_ALERT_TITLE`,
- * `ENGINE_WAITING_ALERT_TITLE`). Never lands or refuses anything — this is surfacing, not gating.
- */
-export function surfaceChildGateAlert(wiki: BackstopWiki, root: string, finding: ChildGateFinding | null): void {
-  const alertTitle = childGateAlertTitle(root);
-  if (!finding) { wiki.deleteTiddler(alertTitle); return; }
-  const codes = finding.codes.join(", ");
-  wiki.addTiddler({
-    title: alertTitle,
-    text: `${finding.child} moved ${root} out of frame (${codes}): ${finding.why}`,
-    tags: TW5_ALERT_TAG,
-    "alert-kind": "meme-child-gate",
-    root,
-    child: finding.child,
-    codes,
-    ts: new Date().toISOString(),
-  });
 }
 
 /**
@@ -173,20 +131,6 @@ function unkeptBagOf(wiki: BackstopWiki, child: string, fields: Record<string, u
 /** One composition fault found over a (simulated or real) composed-root render — the codes to report
  *  and the prose a reader sees. `null` from the grader below means the composition reads clean. */
 interface ComposedFault { readonly codes: string[]; readonly why: string }
-
-/**
- * Fence a child's stored body as a quoteblock the frame mask recognises — a backtick run strictly
- * longer than any backtick run already inside the body (so the body itself can never read as the
- * fence's own closer), with an info string so the fenced body reads as deliberately quoted rather
- * than an accidental code sample. The child's own identity (title, every other field) is untouched by
- * the caller — this returns only the new body text.
- */
-export function fenceChildBody(body: string): string {
-  let maxRun = 0;
-  for (const run of body.match(/`+/g) ?? []) maxRun = Math.max(maxRun, run.length);
-  const fence = "`".repeat(Math.max(3, maxRun + 1));
-  return `${fence}text\n${body}\n${fence}`;
-}
 
 /** Lay the listener on one wiki. Titles under placement are held so a burst of changes runs each once. */
 export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void {
@@ -235,14 +179,23 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
     read: (t) => (t === child ? (fencedFields as never) : sink.read(t)),
   });
 
+  // A child save that arrives while its root's gate is still grading an earlier save is never dropped:
+  // it waits here, and the gate re-runs over the root's then-current render once the earlier run ends.
+  const childGateWaiting = new Map<string, Set<string>>();
+
   const runChildGate = (root: string, candidates: readonly string[]): void => {
-    if (childGateInFlight.has(root)) return;
+    if (childGateInFlight.has(root)) {
+      const waiting = childGateWaiting.get(root) ?? new Set<string>();
+      for (const c of candidates) waiting.add(c);
+      childGateWaiting.set(root, waiting);
+      return;
+    }
     childGateInFlight.add(root);
     (async () => {
       const render = await readMeme(root, sink);
-      if (!render) { surfaceChildGateAlert(wiki, root, null); return; }
+      if (!render) { surfaceMemeAlert(wiki, root, null); return; }
       const fault = await gradeComposedRoot(root, render.text);
-      if (!fault) { surfaceChildGateAlert(wiki, root, null); return; }
+      if (!fault) { surfaceMemeAlert(wiki, root, null); return; }
 
       // ATTRIBUTION: several child saves can land in one change batch. Fence only the child whose
       // fencing HEALS the composition — evaluate the root with that one child fenced; a candidate
@@ -250,7 +203,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
       for (const child of candidates) {
         const fields = wiki.getTiddler(child)?.fields as Record<string, unknown> | undefined;
         if (!fields) continue;
-        const fenced = fenceChildBody(String(fields["text"] ?? ""));
+        const fenced = quoteblockFence(String(fields["text"] ?? ""));
         const fencedFields = { ...fields, text: fenced };
         const overrideSink = overrideOneChild(child, fencedFields);
         const simRender = await readMeme(root, overrideSink);
@@ -262,7 +215,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
         // this hearth's to write: surface the finding with the bag named, and leave the body standing.
         const unkept = unkeptBagOf(wiki, child, fields);
         if (unkept !== null) {
-          surfaceChildGateAlert(wiki, root, {
+          surfaceMemeAlert(wiki, root, {
             child,
             codes: [...fault.codes, "quoteblocked"],
             why: `${fault.why}; fencing the body would heal it, but it stands in ${unkept}, a bag this hearth ` +
@@ -276,7 +229,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
         // expandRefs, never stored, so fencing this body cannot lose the slot).
         lastFenced.set(child, fenced);
         wiki.addTiddler(fencedFields);
-        surfaceChildGateAlert(wiki, root, {
+        surfaceMemeAlert(wiki, root, {
           child,
           codes: [...fault.codes, "quoteblocked"],
           why: `${fault.why}; the body is now fenced as a quoted block, inert until the operator unwraps it`,
@@ -285,8 +238,15 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
       }
 
       // No single candidate's fence healed it — raise the finding and write nothing.
-      surfaceChildGateAlert(wiki, root, { child: candidates[candidates.length - 1] ?? root, codes: fault.codes, why: fault.why });
-    })().finally(() => { childGateInFlight.delete(root); });
+      surfaceMemeAlert(wiki, root, { child: candidates[candidates.length - 1] ?? root, codes: fault.codes, why: fault.why });
+    })().finally(() => {
+      childGateInFlight.delete(root);
+      const waiting = childGateWaiting.get(root);
+      if (waiting) {
+        childGateWaiting.delete(root);
+        runChildGate(root, [...waiting]);
+      }
+    });
   };
 
   wiki.addEventListener("change", (changes) => {

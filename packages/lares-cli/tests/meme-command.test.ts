@@ -264,13 +264,12 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(want.meta);
     expect(h.calls).toEqual([]);
   });
-  test("--title-base mounts the pair under a shelf address", async () => {
+  test("with no flag the pair's title takes the ruled form `submissions/<name>`", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
-    await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, "title-base": "lar:///t/shelf" }));
+    await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
     vi.restoreAllMocks();
-    const want = projectSubmission(readFileSync(PRISM, "utf8"), { title: "lar:///t/shelf/prism", resolve: bagsResolver(repoRoot) });
-    expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(want.meta);
+    expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toContain("title: lar:///ha.ka.ba/lares/api/pono/submissions/prism\n");
   });
 
   test("--dialect GFM writes frontmatter-carrying markdown PLUS the .md.meta sidecar (LOOP 6: every profile keeps one)", async () => {

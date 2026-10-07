@@ -138,7 +138,7 @@ printf '%s\n' "$OUT" | grep -E '^  [A-Za-z0-9_.-]+: ' | while IFS= read -r line;
   name="$(printf '%s' "$line" | sed -E 's/^  ([A-Za-z0-9_.-]+):.*/\1/')"
   src="${NAME_TO_SRC[$name]:-}"
   [ -z "$src" ] && continue
-  echo "    cure: lares meme project --to md $src --out $SHELF --title-base lar:///ha.ka.ba/lares/api/pono/submissions" >&2
+  echo "    cure: lares meme project --to md $src --out $SHELF" >&2
   echo "          then re-stage: git add $SHELF/$name.md $SHELF/$name.md.meta" >&2
 done
 echo "  (or commit with --no-verify to skip the check.)" >&2

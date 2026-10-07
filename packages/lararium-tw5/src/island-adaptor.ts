@@ -6,6 +6,7 @@
  *   - outbound (TW5 edits)  → saveTiddler() / deleteTiddler() → store.put/tombstone
  *   - cross-bag tombstone resolution stays in TS (needs async getLive on composite)
  *   - echo guard delegates to $tw.lares.isApplyingNalu() (wiki owns apply lifetime)
+ *   - a surfaced parallel draft persists into THIS wiki's draft bag (operator ruling Q4)
  *
  * The TW5 module nalu-engine owns (not this adaptor):
  *   - the per-island buffer — initial replay flows through enqueueNalu
@@ -30,9 +31,11 @@ import type {
   LarTiddlerChange,
   ChangeOrigin,
   MemeProjection,
+  ParallelDraftsChange,
+  ParallelDraftsReader,
   SlotUri,
 } from "@lararium/mesh";
-import { toLarTiddlerRecord, isVolatileVmUri } from "@lararium/mesh";
+import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive } from "@lararium/mesh";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
@@ -77,7 +80,7 @@ function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string>
 // IslandAdaptor
 // ---------------------------------------------------------------------------
 
-export class IslandAdaptor implements MemeProjection {
+export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   readonly name = "lararium-island";
 
   // SP-1 — 400 ms capture debounce on outbound saves.
@@ -235,6 +238,55 @@ export class IslandAdaptor implements MemeProjection {
    */
   onSyncComplete(_islandId = "automerge"): void {
     // intentionally empty
+  }
+
+  // ---------------------------------------------------------------------------
+  // ParallelDraftsReader — a surfaced parallel draft persists (operator ruling Q4)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * A merge on a bag this wiki READS left concurrent values on one record, and its doc store raised
+   * them as attributed TW5 drafts (`parallel-drafts.ts`). Automerge drops a conflict from
+   * `getConflicts` on the next write to that property, so a draft nobody keeps dies there. This wiki
+   * keeps every draft that carries a value the live record does not: it lands in the bag the cascade
+   * routes a `draft.of` tiddler to — THIS wiki's draft bag (`[is[draft]…]` → `current-wiki-draft` →
+   * `wikis/<slug>/draft`) — through the one write path, and arrives back here as an inbound change, so
+   * the wiki shows it (a quiet badge on the target, `parallel-drafts-badge.tid`) until a human
+   * discards it; that delete tombstones in the same bag (the last-known-slot map).
+   *
+   * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
+   * conflicted field live) is the live record, so it is never copied. A parallel draft never fuses
+   * with the projector's disk-conflict surface. A surfacing ON the draft bag itself persists nothing —
+   * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
+   */
+  onParallelDrafts(change: ParallelDraftsChange): void {
+    const kept = draftsOffLive(change.drafts);
+    if (kept.length === 0) return;
+    const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: change.bag ?? "automerge" };
+    for (const draft of kept) {
+      const bag = this._draftDestination(draft);
+      if (bag === null || bag === change.bag) continue;
+      this.store.writeFamily([draft], [], origin, { bag }).catch((err: unknown) => {
+        console.warn(`[island-adaptor] a parallel draft of "${change.title}" could not persist in ${bag}: ${err instanceof Error ? err.message : String(err)}`);
+      });
+    }
+  }
+
+  /**
+   * The bag the cascade routes THIS draft to. The draft is not in the wiki yet, so the cascade reads
+   * its fields through a view that answers the draft under its own title — the same rule a saved
+   * draft rides, read once, never a second spelling of it.
+   */
+  private _draftDestination(draft: LarTiddlerRecord): SlotUri | null {
+    const wiki = this.tw5.$tw.wiki;
+    const title = draft.tiddler.title;
+    const tiddler = new this.tw5.$tw.Tiddler(draft.tiddler as Record<string, unknown>);
+    const verdict = routeBag({
+      getTiddler: (t: string) => (t === title ? tiddler : wiki.getTiddler(t)),
+      getTiddlerText: (t: string, fallback?: string) => wiki.getTiddlerText?.(t, fallback),
+      filterTiddlers: (filter: string, widget?: unknown, source?: unknown) => wiki.filterTiddlers(filter, widget as never, source as never),
+    }, title);
+    return verdict.kind === "slot" ? verdict.uri : null;
   }
 
   // ---------------------------------------------------------------------------

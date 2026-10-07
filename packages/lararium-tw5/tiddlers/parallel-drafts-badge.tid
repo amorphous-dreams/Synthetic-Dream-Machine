@@ -1,0 +1,13 @@
+title: lar:///ha.ka.ba/lararium/templates/parallel-drafts/badge
+tags: $:/tags/ViewTemplate
+list-after: $:/core/ui/ViewTemplate/title
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$list filter="[all[tiddlers]field:draft.of<currentTiddler>has[lar-conflict-actor]limit[1]]" variable="-">
+<div class="lar-parallel-drafts" title="A concurrent edit kept as a parallel draft. The live value is the merge's own; discard the draft to let it go.">
+<$list filter="[all[tiddlers]field:draft.of<currentTiddler>has[lar-conflict-actor]sort[title]]">
+<$link to=<<currentTiddler>> class="lar-parallel-draft-badge">⋔ <$text text={{{ [<currentTiddler>get[modifier]] ~[<currentTiddler>get[lar-conflict-actor]] }}}/></$link>
+</$list>
+</div>
+</$list>

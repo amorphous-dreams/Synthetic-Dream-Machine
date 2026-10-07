@@ -19,6 +19,10 @@ import { CompositeStore, bagUri, type LarTiddlerStore } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const REPO_ROOT_FOR_SHELF = new URL("../../..", import.meta.url).pathname;
 
 // ── unit pins: the extracted laws ──────────────────────────────────────────────────────────────
 describe("profileOf / recordedTargetOf / resolveWeaveTarget / pinTargetsOf", () => {
@@ -37,10 +41,22 @@ describe("profileOf / recordedTargetOf / resolveWeaveTarget / pinTargetsOf", () 
     expect(recordedTargetOf("title: x\ntype: text/markdown\n")).toEqual({});
   });
 
-  test("submissionTitleOf names the /submission suffix projectSubmission's own default title uses", () => {
-    expect(submissionTitleOf("lar:///t/x")).toBe("lar:///t/x/submission");
+  test("submissionTitleOf names the `submissions/<name>` shelf title projectSubmission's own default uses", () => {
+    expect(submissionTitleOf("lar:///t/x")).toBe("lar:///ha.ka.ba/lares/api/pono/submissions/x");
+    expect(submissionTitleOf("lar:///ha.ka.ba/lares/docs/pono/lar-uri")).toBe("lar:///ha.ka.ba/lares/api/pono/submissions/lar-uri");
     const p = projectSubmission('<<^ code="&#x0001;" from="?" -> to="lar:///t/x">>\n<<^ code="&#x0002;">>\n\nbody\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n');
-    expect(p.meta).toContain("title: lar:///t/x/submission");
+    expect(p.meta).toContain("title: lar:///ha.ka.ba/lares/api/pono/submissions/x\n");
+  });
+
+  test("CONTROL: every pair standing on the shelf carries exactly the default title its source mints", () => {
+    const shelf = join(REPO_ROOT_FOR_SHELF, "bags/lares/ha.ka.ba/lares/api/pono/submissions");
+    const metas = readdirSync(shelf).filter((f) => f.endsWith(".md.meta"));
+    expect(metas.length).toBeGreaterThan(0);
+    for (const f of metas) {
+      const meta = readFileSync(join(shelf, f), "utf8");
+      const source = /^source: (\S+)$/m.exec(meta)?.[1];
+      expect(/^title: (\S+)$/m.exec(meta)?.[1], f).toBe(submissionTitleOf(source!));
+    }
   });
 
   test("resolveWeaveTarget: a flag wins over a recorded target, field by field", () => {
