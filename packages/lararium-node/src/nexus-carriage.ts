@@ -66,10 +66,12 @@ import {
   verifyLeafProof,
   verifyPresentedAdmit,
   presentationFromBoardDoc,
+  presentationFindingLine,
   ed25519SignerFromSeed,
   carriageEntryActCid,
   presentedActCid,
   type AdmitPresentation,
+  type PresentationFinding,
 } from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { DeviceDelegationTiddler } from "@lararium/mesh";
@@ -249,6 +251,10 @@ export interface DialPresentation extends AdmitPresentation {
  * own, and the board's anchored head presents instead.
  *
  * A charter that reads unseated, an island that will not resolve, or leaves that cannot be read all answer null.
+ *
+ * WHAT THE PRESENTER NOTICED SURFACES. Every board read hands its findings (two roll anchors opening one
+ * epoch) to `onFinding`, once each per dial, whether or not an admit presents. A finding never refuses and
+ * never changes the pick. The vessel's warn channel hears them unless the caller names its own.
  */
 export async function dialPresentation(opts: {
   readonly sealHome:       string;
@@ -260,7 +266,21 @@ export async function dialPresentation(opts: {
   readonly leaves?:        (aid: string) => Promise<readonly NexusLeaf[]>;
   /** The bootstrap the hearth pin rides in. Defaults to this vessel's own. */
   readonly bootstrapPath?: string;
+  /** Where the presenter's findings surface. Defaults to the vessel's warn channel. */
+  readonly onFinding?:     (finding: PresentationFinding) => void;
 }): Promise<DialPresentation | null> {
+  const surfaced = new Set<string>();
+  const onFinding = opts.onFinding ?? ((f: PresentationFinding) => console.warn(`[nexus-dial] ${presentationFindingLine(f)}`));
+  const present = async (board: Parameters<typeof presentationFromBoardDoc>[0], nym: string, roster: Parameters<typeof presentationFromBoardDoc>[2]) => {
+    const { presentation, findings } = await presentationFromBoardDoc(board, nym, roster);
+    for (const f of findings) {
+      const key = `${f.epochCid}:${f.anchorCids.join(",")}`;
+      if (surfaced.has(key)) continue;
+      surfaced.add(key);
+      onFinding(f);
+    }
+    return presentation;
+  };
   try {
     const aid = dialedNexusAid({
       sealHome: opts.sealHome, gatePubKey: opts.gatePubKey,
@@ -279,7 +299,7 @@ export async function dialPresentation(opts: {
     const kept = readKeptAdmitBundle(opts.sealHome, aid);
     const keptLeaf = kept ? held.find((l) => l.verifyingKey.toLowerCase() === kept.admit.nym.toLowerCase()) : undefined;
     if (kept && keptLeaf && (await admitBundleHolds(kept, roster, doc?.sealLineage ?? []))) {
-      const { presentation: head } = await presentationFromBoardDoc(board, keptLeaf.verifyingKey, roster);
+      const head = await present(board, keptLeaf.verifyingKey, roster);
       const keptCid = carriageEntryActCid(kept.admit);
       const extends_ = head !== null &&
         (carriageEntryActCid(head.admit) === keptCid || head.lineage.some((e) => presentedActCid(e) === keptCid));
@@ -287,7 +307,7 @@ export async function dialPresentation(opts: {
       return { ...pick, aid, island, leaf: keptLeaf };
     }
     for (const leaf of held) {
-      const { presentation: presented } = await presentationFromBoardDoc(board, leaf.verifyingKey, roster);
+      const presented = await present(board, leaf.verifyingKey, roster);
       if (presented) return { ...presented, aid, island, leaf };
     }
     return null;

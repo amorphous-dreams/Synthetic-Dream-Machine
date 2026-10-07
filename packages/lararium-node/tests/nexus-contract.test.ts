@@ -48,7 +48,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   hasContractedInto, runNexusRollAnchor } from "../src/commands/nexus-contract.js";
-import { rollAnchorsFromBoard, rollAnchorCid, isRollAnchor } from "@lararium/mesh";
+import { rollAnchorsFromBoard, rollAnchorCid, isRollAnchor, signRollAnchor, writeRollAnchor } from "@lararium/mesh";
 import { readConsent, writeConsent, carriageConsentPathFor } from "../src/carried-set.js";
 import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
 import { existsSync } from "node:fs";
@@ -650,7 +650,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const challengeText = JSON.stringify(challenge);
 
     // CONTROL, before the roll: the admit sits at the head and raises.
-    const before = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    const { grant: before } = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
     expect(before.presentedAdmit.lineage.filter(isRollAnchor)).toEqual([]);
 
     const closing = foundingRoster(readNexusDoc(sealHome()));
@@ -658,9 +658,10 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     roll();
 
     // After the roll the admit roots on an ancestor epoch: the grant carries the anchor that carries it.
-    const grant = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    const { grant, findings } = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
     expect(grant.byNym).toBe(recogniser);
     expect(grant.presentedAdmit.lineage.filter(isRollAnchor)).toHaveLength(1);
+    expect(findings).toEqual([]);   // CONTROL: one anchor opens the head epoch — nothing to surface
 
     const ownVesselKey = await loadVesselVerifyingKey();
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
@@ -674,6 +675,49 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       const stripped = { ...grant, presentedAdmit: { ...grant.presentedAdmit, lineage: grant.presentedAdmit.lineage.filter((e) => !isRollAnchor(e)) } };
       expect(await verifyRaiseGrant({ grant: stripped, live: challenge, readings, verify })).toMatchObject({ ok: false, why: "wrong-epoch" });
     } finally { await repo.flush(); }
+  });
+
+  /** Land an ORPHAN anchor for the same roll by hand: the opened quorum signs it, and it cites nothing. */
+  async function landOrphanAnchor(closing: ReturnType<typeof foundingRoster>, opened: { keys: string[]; threshold: number; sealEpochCid: string }) {
+    const orphan = await signRollAnchor(
+      { prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold, parents: [] },
+      (await heldHands(opened.keys)).slice(0, opened.threshold),
+    );
+    const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const handle = await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts");
+    handle.change((d) => writeRollAnchor(d, orphan));
+    await repo.flush();
+    return orphan;
+  }
+
+  it("★ raise-sign surfaces two anchors opening one epoch beside the grant, and still signs ★", async () => {
+    const { opened, roll } = await foundAndArm();
+    const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+    await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    const closing = foundingRoster(readNexusDoc(sealHome()));
+    const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    const orphan = await landOrphanAnchor(closing, opened);
+    roll();
+    const challengeText = JSON.stringify(mintRaiseChallenge({ vesselId: "ab".repeat(32), nexus: aid, epoch: 1, nonce: "57".repeat(16) }));
+    const { grant, findings } = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    expect(grant.presentedAdmit.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([landed.anchorCid]);
+    expect(findings).toEqual([{
+      kind: "anchors-open-one-epoch", epochCid: opened.sealEpochCid, anchorCids: [landed.anchorCid, rollAnchorCid(orphan)].sort(),
+    }]);
+  });
+
+  it("the contract reports the presenter's findings beside the bundle — its own fresh admit stands at the head, so it walks no fork", async () => {
+    const { opened, roll } = await foundAndArm();
+    const closing = foundingRoster(readNexusDoc(sealHome()));
+    await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    await landOrphanAnchor(closing, opened);
+    roll();
+    // The admit this act signs lands at the head epoch, and the presenter reads it there: it steps back
+    // through no anchor, so even a forked roll leaves this door nothing to report.
+    const res = await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    expect(res.bundle).not.toBeNull();
+    expect(res.findings).toEqual([]);
   });
 
   it("CONTROL: a roll whose NEW quorum this vessel does not hold REFUSES and lands no anchor", async () => {

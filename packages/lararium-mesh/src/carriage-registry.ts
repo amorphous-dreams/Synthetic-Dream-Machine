@@ -946,6 +946,17 @@ export interface PresentationFinding {
   readonly anchorCids: readonly string[];
 }
 
+/**
+ * The one human spelling of a finding, which every door that presents prints through its own report channel.
+ * It names the epoch and every anchor that opens it, and says the presentation went ahead.
+ */
+export function presentationFindingLine(finding: PresentationFinding): string {
+  const short = (cid: string): string => `${cid.slice(0, 16)}…`;
+  return `${finding.anchorCids.length} roll anchors open epoch ${short(finding.epochCid)} ` +
+    `(${finding.anchorCids.map(short).join(", ")}) — a roll landed more than once; ` +
+    "the presentation walked each and went ahead";
+}
+
 /** A board's presentation for one nym, and what the presenter noticed deriving it. */
 export interface BoardPresentation {
   readonly presentation: AdmitPresentation | null;

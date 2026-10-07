@@ -48,7 +48,7 @@ import {
   runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   takeAdmitBundle, AdmitBundleError,
 } from "@lararium/node";
-import { federationPostureFromDoc, type FederationPosture } from "@lararium/mesh";
+import { federationPostureFromDoc, presentationFindingLine, type FederationPosture } from "@lararium/mesh";
 import { larSealHome, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
@@ -296,9 +296,11 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
         action: r.action, nym: r.nym, parents: r.parents, evidenceCid: r.evidenceCid,
         sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
         contractIn: r.contractIn, boardUrl: r.boardUrl, memberHeld: r.memberHeld, carrierHeld: r.carrierHeld,
-        bundle: r.bundle,
+        bundle: r.bundle, findings: r.findings,
       },
       human: () => {
+        // What the presenter noticed reaches the kahu who signed, and never stops the act.
+        for (const f of r.findings) console.error(`lares nexus ${action}: the presenter noticed: ${presentationFindingLine(f)}`);
         const verb = action === "admit" ? "ADMITTED" : action === "carry" ? "CARRYING" : action === "uncarry" ? "UNCARRIED" : "REVOKED";
         console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (act ${r.evidenceCid.slice(0, 16)}…, ${r.parents.length} parent(s))`);
         console.log(`  signed by:   ${r.signers.length} of ${r.threshold} required founding-kahu roots`);

@@ -44,6 +44,7 @@ import {
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
   type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
+  type PresentationFinding,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -105,6 +106,9 @@ export interface NexusContractResult {
    * hand (`lares nexus admit-take`), so it reaches her under a PRIVATE posture, where no board crosses.
    */
   readonly bundle:          AdmitBundle | null;
+  /** What the presenter noticed deriving the bundle's lineage (an `admit` only). Informational: it never
+   *  refuses the act and never changes the bundle. */
+  readonly findings:        readonly PresentationFinding[];
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root an admit on. */
@@ -282,8 +286,11 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     // admit head for that nym; its lineage is read off the board it landed on. A head that reads otherwise
     // (nothing presents, or another act heads the relation) emits no bundle rather than a different admit.
     let bundle: AdmitBundle | null = null;
+    let findings: readonly PresentationFinding[] = [];
     if (opts.action === "admit") {
-      const { presentation: presented } = await presentationFromBoardDoc(handle.doc(), nym, roster);
+      const read = await presentationFromBoardDoc(handle.doc(), nym, roster);
+      findings = read.findings;
+      const presented = read.presentation;
       if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
         bundle = {
           aid: nexusAidOrRefuse(opts.sealHome), gatePubKey: nexusPubkey.toLowerCase(),
@@ -297,7 +304,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
       sealEpochCid: roster.sealEpochCid, threshold: roster.threshold,
       signers: selected.map((s) => s.verifyingKey),
       contractIn: contract ? contract.how : "n/a",
-      boardUrl, memberHeld, carrierHeld, bundle,
+      boardUrl, memberHeld, carrierHeld, bundle, findings,
     };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });

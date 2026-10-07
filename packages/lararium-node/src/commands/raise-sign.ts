@@ -28,8 +28,8 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl,
-  materializeSharedLarDoc, presentationFromBoardDoc,
-  type RaiseChallenge, type RaiseGrant,
+  materializeSharedLarDoc, presentationFromBoardDoc, presentationFindingLine,
+  type RaiseChallenge, type RaiseGrant, type PresentationFinding,
 } from "@lararium/mesh";
 
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -59,6 +59,12 @@ export function readRaiseChallenge(text: string): RaiseChallenge | null {
   };
 }
 
+/** A signed grant, and what the presenter noticed deriving the admit it carries (informational, never a refusal). */
+export interface RaiseSignResult {
+  readonly grant:    RaiseGrant;
+  readonly findings: readonly PresentationFinding[];
+}
+
 /**
  * Sign a challenge as persona `handleIndex`'s LEAF for the challenge's Nexus, and attach that leaf's admit.
  *
@@ -68,6 +74,8 @@ export function readRaiseChallenge(text: string): RaiseChallenge | null {
  *
  * REFUSES, signing nothing, when this vessel holds no charter for the challenge's Nexus, no persona at
  * `handleIndex`, or no counted admit for that persona's leaf on its own replica of the Nexus's board.
+ * The presenter's findings ride the result beside the grant, and never inside it: the grant carries signed
+ * bytes, and a finding is a note for the operator who signs.
  */
 export async function runRaiseSign(opts: {
   challengeText: string;
@@ -76,7 +84,7 @@ export async function runRaiseSign(opts: {
   storageDir?:   string;
   /** The seal home holding the Nexus's charter. Defaults to `larSealHome()`. */
   sealHome?:     string;
-}): Promise<RaiseGrant> {
+}): Promise<RaiseSignResult> {
   const challenge = readRaiseChallenge(opts.challengeText);
   if (!challenge) {
     throw new RaiseSignError(
@@ -101,23 +109,26 @@ export async function runRaiseSign(opts: {
 
   const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home });
   const repo   = new Repo({ storage: new NodeFSStorageAdapter(opts.storageDir ?? larDataDir()) });
-  let presented;
+  let read;
   try {
     const handle = await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts");
-    presented = (await presentationFromBoardDoc(handle.doc(), leaf.verifyingKey, roster)).presentation;
+    read = await presentationFromBoardDoc(handle.doc(), leaf.verifyingKey, roster);
   } finally {
     await repo.flush().catch(() => { /* read-only: nothing owed */ });
   }
+  const presented = read.presentation;
   if (!presented) {
     throw new RaiseSignError(
       `no counted admit for persona h${opts.handleIndex}'s leaf stands on this replica of that Nexus's board — ` +
-      "a raise presents an admit, and there is none to present.",
+      "a raise presents an admit, and there is none to present." +
+      read.findings.map((f) => `\n  the presenter noticed: ${presentationFindingLine(f)}`).join(""),
     );
   }
-  return signRaiseGrant({
+  const grant = await signRaiseGrant({
     challenge,
     byNym:          leaf.verifyingKey,
     presentedAdmit: presented,
     sign:           ed25519SignerFromSeed(leaf.seed),
   });
+  return { grant, findings: read.findings };
 }

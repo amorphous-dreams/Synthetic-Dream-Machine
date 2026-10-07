@@ -12,12 +12,14 @@
  *   · KEPT vs BOARD — the board's admit head presents only when it descends from the kept admit; an admit on
  *     the board that does not descend from it leaves the kept one presenting;
  *   · A PRIVATE gate holds the kept bundle: no board ever crossed to the joinee, yet her presentation reads
- *     MEMBER at the hearth. CONTROL: without the take, the same joinee presents nothing and stays a STRANGER.
+ *     MEMBER at the hearth. CONTROL: without the take, the same joinee presents nothing and stays a STRANGER;
+ *   · THE DIAL SURFACES the presenter's findings on both its paths (kept and board), even when nothing presents,
+ *     and never lets one change the pick. CONTROL: one anchor per epoch surfaces nothing.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   NEXUS_DOC_DOMAIN, hex, genesisSealEpochCid, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
@@ -277,5 +279,95 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
     expect(p).not.toBeNull();
     expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(admit));
     expect(p!.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([rollAnchorCid(anchor)]);
+  });
+});
+
+describe("the dial surfaces what the presenter noticed — two roll anchors opening one epoch", () => {
+  let root: string;
+  let prior: string | undefined;
+  beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-admit-fork-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
+  afterEach(() => { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
+
+  const OLD = [seed(61), seed(62), seed(63)];
+  const NEW = [seed(71), seed(72), seed(73)];
+  const LEAF = seed(74);
+  const GATE = "d5".repeat(32);
+
+  /** A charter rolled once, an admit minted before the roll, the anchor that carries it, and an orphan retry. */
+  async function rolledWithFork() {
+    const [oldKeys, newKeys] = await Promise.all([Promise.all(OLD.map(pubOf)), Promise.all(NEW.map(pubOf))]);
+    const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
+    const newHands = await Promise.all(NEW.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const r = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "", newHands);
+    if (!r.ok) throw new Error(r.reason);
+    const kahu = newKeys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
+    const rolled: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [e0, r.epoch], kahu };
+    const sealHome = join(root, "nexus");
+    writeNexusDoc(sealHome, rolled);
+    const aid = realmIdOfCharter(rolled)!;
+    const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
+      a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
+    const admit = await act({ kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, kahu }, OLD, LEAF, "admit");
+    const anchorOf = async (parents: string[]) => signRollAnchor(
+      { prevEpochCid: e0.epochCid, sealEpochCid: r.epoch.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents },
+      newHands.slice(0, 2),
+    );
+    const carrying = await anchorOf([carriageEntryActCid(admit)]);
+    const orphan   = await anchorOf([]);   // an earlier attempt at the same roll — it holds nothing in its past
+    const boardWith = (anchors: readonly typeof carrying[]): LarDoc => {
+      const board = emptyLarDoc();
+      writeCarriageEntry(board, admit);
+      for (const a of anchors) writeRollAnchor(board, a);
+      return board;
+    };
+    return { sealHome, aid, leaves, admit, carrying, orphan, anchorOf, epochCid: r.epoch.epochCid, boardWith };
+  }
+
+  const dial = async (w: Awaited<ReturnType<typeof rolledWithFork>>, board: LarDoc) => {
+    const heard: unknown[] = [];
+    const p = await dialPresentation({
+      sealHome: w.sealHome, ownVesselKey: await pubOf(VESSEL), gatePubKey: GATE, leaves: w.leaves,
+      open: async (url) => (url === carriageDocUrl(w.aid) ? board : undefined),
+      onFinding: (f) => heard.push(f),
+    });
+    return { p, heard };
+  };
+
+  test("★ the KEPT path surfaces the fork once, and still presents through the carrying anchor ★", async () => {
+    const w = await rolledWithFork();
+    await takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: w.aid, gatePubKey: GATE, admit: w.admit, lineage: [w.carrying] }), leaves: w.leaves });
+    const { p, heard } = await dial(w, w.boardWith([w.carrying, w.orphan]));
+    expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(w.admit));
+    expect(p!.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([rollAnchorCid(w.carrying)]);
+    expect(heard).toEqual([{ kind: "anchors-open-one-epoch", epochCid: w.epochCid, anchorCids: [rollAnchorCid(w.carrying), rollAnchorCid(w.orphan)].sort() }]);
+    // CONTROL: one anchor per epoch surfaces nothing.
+    expect((await dial(w, w.boardWith([w.carrying]))).heard).toEqual([]);
+  });
+
+  test("★ the BOARD path (no holding kept bundle) surfaces the fork, and still presents ★", async () => {
+    const w = await rolledWithFork();
+    // A kept bundle taken before the roll ties the gate to the Nexus and holds nothing at the rolled head on its
+    // own, so the dial reads the board's head for each held leaf.
+    const path = admitBundlePathFor(w.sealHome, w.aid);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, bundleText({ aid: w.aid, gatePubKey: GATE, admit: w.admit, lineage: [] }));
+    const { p, heard } = await dial(w, w.boardWith([w.orphan, w.carrying]));
+    expect(carriageEntryActCid(p!.admit)).toBe(carriageEntryActCid(w.admit));
+    expect(heard).toEqual([{ kind: "anchors-open-one-epoch", epochCid: w.epochCid, anchorCids: [rollAnchorCid(w.carrying), rollAnchorCid(w.orphan)].sort() }]);
+    // CONTROL: one anchor per epoch surfaces nothing.
+    const control = await dial(w, w.boardWith([w.carrying]));
+    expect(control.p).not.toBeNull();
+    expect(control.heard).toEqual([]);
+  });
+
+  test("a fork surfaces even when nothing presents — divergence is never dropped", async () => {
+    const w = await rolledWithFork();
+    const path = admitBundlePathFor(w.sealHome, w.aid);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, bundleText({ aid: w.aid, gatePubKey: GATE, admit: w.admit, lineage: [] }));
+    const orphanTwin = await w.anchorOf(["00".repeat(32)]);   // a second attempt that holds the admit no better
+    const { p, heard } = await dial(w, w.boardWith([w.orphan, orphanTwin]));
+    expect(p).toBeNull();
+    expect(heard).toHaveLength(1);
   });
 });

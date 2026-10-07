@@ -19,6 +19,7 @@
  */
 
 import { runRaiseSign, RaiseSignError } from "@lararium/node";
+import { presentationFindingLine } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -48,11 +49,13 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
   }
 
   try {
-    const grant = await runRaiseSign({ challengeText, handleIndex });
+    const { grant, findings } = await runRaiseSign({ challengeText, handleIndex });
     emit(args, {
       ok: true,
-      data: { challenge: { ...grant.challenge }, byNym: grant.byNym, sig: grant.sig, presentedAdmit: grant.presentedAdmit },
+      data: { challenge: { ...grant.challenge }, byNym: grant.byNym, sig: grant.sig, presentedAdmit: grant.presentedAdmit, findings },
       human: () => {
+        // What the presenter noticed reaches the signer, and never stops the grant.
+        for (const f of findings) console.error(`lares raise sign: the presenter noticed: ${presentationFindingLine(f)}`);
         console.log(`raise sign — signed the challenge as persona ${handleIndex}'s leaf for that Nexus:`);
         console.log(`  your leaf:  ${grant.byNym}`);
         console.log(`  admit:      carried, with ${grant.presentedAdmit.lineage.length} lineage act(s)`);
