@@ -104,7 +104,7 @@ The stack order makes //down// literal: ''core < canon < wiki < user < session''
 
 ⚠ ''THE RECORD IS MISSING, and it is the declared blocker.'' `tiddler-store` states it: //canon promotion is disabled until a Keyhive-backed proposal/receipt graph exists; `store.put()` never writes to `lares/`//. So promotion is PERMITTED by capability and RECORDED by nothing. A cap gate is a decision at a moment; ''a receipt is a record you can walk backwards'', and without one a promotion leaves no artifact to audit or revoke against. ''The receipt is the audit half of the priesthood act.''
 
-⚠ ''The source side is loose on the residency path.'' Canon's read-only mount does not protect it there — a residency MOVE/COPY reaches the bag's own doc and mounts nothing, so only the destination check applies. `crossingDirection` holds the full rule with `needsCabal`, and `VerbContext` carries `daemon`, `invocation`, `cap` and ''nothing that answers a bag's publicity tier''. The reader exists one package over (`bagManifest` parses `cap-tier`); the gap is the injection.
+⚠ ''The source side is loose on the residency path.'' Canon's read-only mount does not protect it there — a residency MOVE/COPY reaches the bag's own doc and mounts nothing, so only the destination check applies. `crossingDirection` holds the full rule with `needsQuorum`, and `VerbContext` carries `daemon`, `invocation`, `cap` and ''nothing that answers a bag's publicity tier''. The reader exists one package over (`bagManifest` parses `cap-tier`); the gap is the injection.
 
 !!! An address is stable; its bytes are versioned ~ and those are different claims
 
@@ -204,6 +204,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9117DFWxuP5WbfqEjkk1a1C2ZzGc0NZQiWgB67QKVMo
+<<^ code="&#x0003;">>ni:///sha-256;8A4HeEHpiLJbVRB0JPeeDjFIHAwZHeKAD3MibH9sC8c
 
 <<^ code="&#x0004;" -> to="?">>

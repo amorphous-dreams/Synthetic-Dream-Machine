@@ -1,7 +1,7 @@
 /**
  * action-handler-crossing — the gate reads a crossing's DIRECTION and prices it.
  *
- * `crossingDirection` carries the rule (inward cheap · lateral read · outward wants the kahu-cabal),
+ * `crossingDirection` carries the rule (inward cheap · lateral read · outward wants the kahu quorum),
  * and until this wire the gate branched on the VERB instead — the price followed the wrong axis, so an
  * OUTWARD copy passed on a read cap alone. These vectors assert the production path collects the price
  * the module names.
@@ -86,9 +86,9 @@ function makeTable(composite: CompositeStore): VerbTable {
 // ---------------------------------------------------------------------------
 
 describe("crossing direction pricing", () => {
-  test("★ AN OUTWARD COPY WITHOUT A CABAL SIGNATURE REFUSES ★", async () => {
+  test("★ AN OUTWARD COPY WITHOUT A QUORUM SIGNATURE REFUSES ★", async () => {
     // veil → public relaxes confinement with no return crossing; the decision to relax
-    // belongs to the kahu-cabal quorum, and no cabal signature rides this invocation.
+    // belongs to the kahu quorum, and no quorum signature rides this invocation.
     const composite = makeComposite();
     const table = makeTable(composite);
     await seedTiddler(composite, BAG_VEIL, "Secret", "held for few", "c-1");
@@ -96,7 +96,7 @@ describe("crossing direction pricing", () => {
     const handler = table.get("COPY")!;
     const args = { title: "Secret", "from-bag": BAG_VEIL, "to-bag": BAG_PUBLIC, "change-id": "c-1" };
     await expect(handler(args, makeContext(composite, "COPY", args)))
-      .rejects.toThrow(/outward|cabal/i);
+      .rejects.toThrow(/outward|quorum/i);
   });
 
   test("★ AN OUTWARD MOVE REFUSES THE SAME WAY ★", async () => {
@@ -108,7 +108,7 @@ describe("crossing direction pricing", () => {
     const handler = table.get("MOVE")!;
     const args = { title: "Secret", "from-bag": BAG_VEIL, "to-bag": BAG_PUBLIC, "change-id": "c-1" };
     await expect(handler(args, makeContext(composite, "MOVE", args)))
-      .rejects.toThrow(/outward|cabal/i);
+      .rejects.toThrow(/outward|quorum/i);
   });
 
   test("the INWARD copy stays cheap — the recipe stack depends on it", async () => {
@@ -126,7 +126,7 @@ describe("crossing direction pricing", () => {
 
   test("an ABSENT reader keeps today's behavior — veil meets veil and runs lateral", async () => {
     // A vessel that threads no bagTier reader fails closed to VEIL on both sides: lateral,
-    // read-priced, no cabal — byte-for-byte the gate's standing behavior before this wire.
+    // read-priced, no quorum — byte-for-byte the gate's standing behavior before this wire.
     const composite = makeComposite();
     const table = new VerbTable();
     registerActionReactors(table, { composite });

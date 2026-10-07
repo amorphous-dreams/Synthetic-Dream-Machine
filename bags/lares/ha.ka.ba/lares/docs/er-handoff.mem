@@ -60,7 +60,7 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 # ''`PresentationFinding` reaches no one.'' Surface it at the four presenter callers.
 # ''A bag door lands a torn frame.'' LOAD and native ingest land a torn frame as one verbatim record; refuse it there instead, or rule that it lands.
 # ''The keyring keys by lineage depth.'' Key it by `epochCid`.
-# ''Hygiene'': collapse `presentedAdmitFromBoard` into `presentationFromBoardDoc`; spell `CLOSED_DOOR` once; a design call on `/cas` timing; whether the parallel-draft alert persists; `needsCabal` → quorum; `tools/herm-mesh-partition.mjs` reads the gone `pointer.version`.
+# ''Hygiene'': collapse `presentedAdmitFromBoard` into `presentationFromBoardDoc`; spell `CLOSED_DOOR` once; a design call on `/cas` timing; whether the parallel-draft alert persists; `tools/herm-mesh-partition.mjs` reads the gone `pointer.version`.
 
 ''Carried, unranked''
 * Road (iv): surface-for-review.
@@ -146,6 +146,6 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;klsGBqoyYIu7twd0zgGXCI0dM2WmEgtCpZFZiY5FjM0
+<<^ code="&#x0003;">>ni:///sha-256;kNimw-OCDsspjBTFpgkWtczHLoPHhmM1Dx2dGWHeDG4
 
 <<^ code="&#x0004;" -> to="?">>

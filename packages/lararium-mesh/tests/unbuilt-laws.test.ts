@@ -91,9 +91,9 @@ describe("④ promotion into canon", () => {
 // ⑤ THE OUTWARD CROSSING WANTS A TIER — the rule exists and the gate cannot reach it
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 describe("⑤ the outward gate", () => {
-  test("the rule already knows outward wants a cabal", () => {
-    expect(crossingDirection({ from: "veil", to: "public" }).needsCabal).toBe(true);
-    expect(crossingDirection({ from: "public", to: "veil" }).needsCabal).toBe(false);
+  test("the rule already knows outward wants the quorum", () => {
+    expect(crossingDirection({ from: "veil", to: "public" }).needsQuorum).toBe(true);
+    expect(crossingDirection({ from: "public", to: "veil" }).needsQuorum).toBe(false);
   });
 
   // KEPT 2026-09-05 — both ⑤ reds greened by the wire, and their vectors live where the layers do:
@@ -102,10 +102,10 @@ describe("⑤ the outward gate", () => {
   //     (lararium-node/src/vessel-bag-tier.ts, witnessed in tests/vessel-bag-tier.test.ts) through
   //     keyhive's fs-blind door (DaemonExtra.bagTier). Mesh stays pure — the reader could never live
   //     here, which is why this file cannot assert it directly.
-  //   · AN OUTWARD COPY WITHOUT A CABAL SIGNATURE REFUSES — witnessed at the gate in
+  //   · AN OUTWARD COPY WITHOUT A QUORUM SIGNATURE REFUSES — witnessed at the gate in
   //     lararium-node/tests/action-handler-crossing.test.ts (outward COPY and MOVE refuse; inward
-  //     stays cheap; an unthreaded vessel prices lateral). The cabal-SIGNED outward crossing stays
-  //     future work: today every outward refuses, fail-closed, until a cabal quorum surface exists.
+  //     stays cheap; an unthreaded vessel prices lateral). The quorum-SIGNED outward crossing stays
+  //     future work: today every outward refuses, fail-closed, until a quorum signature surface exists.
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════

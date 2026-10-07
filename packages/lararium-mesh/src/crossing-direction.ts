@@ -34,7 +34,7 @@ export interface CrossingCost {
   /** What the SOURCE bag's cap must answer. Outward wants owner authority; inward wants a reader. */
   readonly sourceGrade: "read" | "admin";
   /** Whether the crossing additionally wants the kahu quorum, which only an outward one does. */
-  readonly needsCabal:  boolean;
+  readonly needsQuorum: boolean;
   /** The direction, and why it costs what it costs. */
   readonly reading:     string;
 }
@@ -51,20 +51,20 @@ export function crossingDirection(at: { from: CapTier; to: CapTier }): CrossingC
   const to   = capTierRank(at.to);
 
   if (to > from) {
-    return { direction: "outward", sourceGrade: "admin", needsCabal: true,
+    return { direction: "outward", sourceGrade: "admin", needsQuorum: true,
              reading: `this crossing carries ${at.from} material into ${at.to}, so it RELAXES confinement — `
                     + "material held for few becomes material held for many, and no return crossing exists. "
                     + "Declassifying wants the source owner's authority, and the decision to relax wants the "
                     + "kahu quorum behind it: one hand cannot answer for an act nobody can walk back." };
   }
   if (to < from) {
-    return { direction: "inward", sourceGrade: "read", needsCabal: false,
+    return { direction: "inward", sourceGrade: "read", needsQuorum: false,
              reading: `this crossing carries ${at.from} material into ${at.to}, so it RAISES confinement — the `
                     + "copy reaches fewer readers than the original. A shadow copy of a public tiddler into a "
                     + "private bag runs this way, and the recipe stack depends on it staying cheap. The source "
                     + "still answers at read: cheap differs from ungated." };
   }
-  return { direction: "lateral", sourceGrade: "read", needsCabal: false,
+  return { direction: "lateral", sourceGrade: "read", needsQuorum: false,
            reading: `both bags stand at ${at.from}, so this crossing moves nothing across a publicity boundary `
                   + "and relaxes nothing. The source answers at read, because reaching a bag one may not read "
                   + "stays a confused deputy whichever way the copy runs." };

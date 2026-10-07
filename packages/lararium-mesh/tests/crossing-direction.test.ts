@@ -13,7 +13,7 @@
  *
  * ── SO THE RESTRICTION SITS ON THE OUTWARD CROSSING ─────────────────────────────────────────────
  * Operator ruling: a user may copy and alter a public tiddler into a more private bag. Moving anything
- * from a private bag to a public one belongs to the kahu-cabal signers.
+ * from a private bag to a public one belongs to the kahu quorum's signers.
  *
  * This reads the DIRECTION from the two tiers and says what each side must answer. It holds no keys,
  * checks no quorum and reaches no bag — it names the cost, and the gate collects it.
@@ -21,19 +21,19 @@
 import { describe, it, expect } from "vitest";
 import { crossingDirection } from "../src/crossing-direction.js";
 
-describe("crossing-direction — inward runs free, outward answers to the cabal", () => {
+describe("crossing-direction — inward runs free, outward answers to the quorum", () => {
   it("★ public → veil reads INWARD: the shadow copy every recipe stack depends on ★", () => {
     const d = crossingDirection({ from: "public", to: "veil" });
     expect(d.direction).toBe("inward");
-    expect(d.needsCabal).toBe(false);
+    expect(d.needsQuorum).toBe(false);
     expect(d.sourceGrade).toBe("read");
     expect(d.reading).toMatch(/shadow|fewer readers|raises/i);
   });
 
-  it("★ veil → public reads OUTWARD and answers to the kahu cabal ★", () => {
+  it("★ veil → public reads OUTWARD and answers to the kahu quorum ★", () => {
     const d = crossingDirection({ from: "veil", to: "public" });
     expect(d.direction).toBe("outward");
-    expect(d.needsCabal).toBe(true);
+    expect(d.needsQuorum).toBe(true);
     expect(d.sourceGrade).toBe("admin");
     expect(d.reading).toMatch(/quorum|declassif|no return/i);
   });
@@ -41,21 +41,21 @@ describe("crossing-direction — inward runs free, outward answers to the cabal"
   it("★ one tier to itself reads LATERAL and stays cheap ★", () => {
     const d = crossingDirection({ from: "personagroup", to: "personagroup" });
     expect(d.direction).toBe("lateral");
-    expect(d.needsCabal).toBe(false);
+    expect(d.needsQuorum).toBe(false);
     expect(d.sourceGrade).toBe("read");
   });
 
   it("★ EVERY step up the ladder reads outward, not the extremes alone ★", () => {
     // contract sits below public, and a grant from it still relaxes confinement.
     for (const [from, to] of [["veil", "personagroup"], ["personagroup", "contract"], ["contract", "public"]] as const) {
-      expect(crossingDirection({ from, to }).needsCabal).toBe(true);
+      expect(crossingDirection({ from, to }).needsQuorum).toBe(true);
     }
   });
 
   it("★ EVERY step down the ladder runs free ★", () => {
     for (const [from, to] of [["public", "contract"], ["contract", "personagroup"], ["personagroup", "veil"]] as const) {
       const d = crossingDirection({ from, to });
-      expect(d.needsCabal).toBe(false);
+      expect(d.needsQuorum).toBe(false);
       expect(d.sourceGrade).toBe("read");
     }
   });

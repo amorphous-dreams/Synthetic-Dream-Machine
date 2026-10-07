@@ -439,8 +439,8 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // AND THE PRICE FOLLOWS THE DIRECTION. A copy INWARD — a public tiddler shadowed into a more
     // private bag — raises confinement and reaches fewer readers than the original: the recipe stack
     // runs on that shape and it stays cheap at read. A copy OUTWARD relaxes confinement with no
-    // return crossing, and belongs to the kahu-cabal signers — no cabal quorum surface stands yet,
-    // so an outward crossing refuses outright, fail-closed until the cabal can answer for it.
+    // return crossing, and belongs to the kahu quorum's signers — no quorum signature surface stands yet,
+    // so an outward crossing refuses outright, fail-closed until the quorum can answer for it.
     // MOVE keeps ADMIN whichever way the copy runs, because it tombstones the title where it stood,
     // which mutates the source.
     //
@@ -450,11 +450,11 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (action.verb === "MOVE" || action.verb === "ADD" || action.verb === "COPY") {
       const tierOf = (bag: string): CapTier => opts.bagTier?.(bag) ?? "veil";
       const cost = crossingDirection({ from: tierOf(action.fromBag), to: tierOf(destBag) });
-      if (cost.needsCabal) {
+      if (cost.needsQuorum) {
         throw new Error(
           `crossing-outward: ${action.verb} ${action.fromBag} -> ${destBag} carries ` +
           `${tierOf(action.fromBag)} material into ${tierOf(destBag)} and relaxes confinement — ` +
-          `an outward crossing wants the kahu-cabal quorum, and no cabal signature rides this invocation`,
+          `an outward crossing wants the kahu quorum, and no quorum signature rides this invocation`,
         );
       }
       const grade: "read" | "admin" = action.verb === "MOVE" ? "admin" : cost.sourceGrade;
