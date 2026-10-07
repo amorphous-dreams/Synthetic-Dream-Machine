@@ -269,10 +269,13 @@ forges a shared reserve seed split across guardian cards
 
 * ''The vessel key signs for three relations'' — the place's carrier seal, the wire's proof and the boot
   invite — where each relation wants its own face. The per-Nexus wire key rides the re-found.
-* ''`KahuRoster`'' names a seated key-set and its threshold, never a roster of who belongs.
-* ''`lares nexus rite cabal`'' seats the kahu quorum under the word for a realm's people.
-* ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) — a stable URI that signed material names, so a
-  rename waits for a deliberate re-key.
+* ''`KahuRoster`'' names a seated key-set and its threshold — the quorum's seats, never a roster of who
+  belongs — and owes a rename toward its seats.
+* ''`lares nexus rite cabal`'' seats the kahu QUORUM under the word for the kahu CABAL — the people who
+  fill the seats, never the seats themselves.
+* ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) — the Keyhive membership document of the kahu,
+  each seated as a PersonaGroup; whether it names the cabal or the quorum's seats stays owed a check,
+  and a stable URI that signed material names renames only by a deliberate re-key.
 
 <<~/ahu>>
 
@@ -380,6 +383,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jmUGdIU-rKrsjM-vKYdjj407gf6K7gJhRSfG8BoBVSI
+<<^ code="&#x0003;">>ni:///sha-256;ZEYZRTZQHEMk1udauAzNMyss4kTYJuNlpd9PDH8aAdc
 
 <<^ code="&#x0004;" -> to="?">>

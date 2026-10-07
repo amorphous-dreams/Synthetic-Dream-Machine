@@ -388,10 +388,11 @@ automerge-repo's `sharePolicy` gates the OFFER alone — //"the share policy wil
 //being requested by another peer by its DocumentId"// — it never inspects an incoming change, so a
 shared mutable @oracle CRDT ''cannot'' gate writes without Beelay.
 
-''Operators and the kahu quorum part as two groups'' (operator ruling 2026-06-25): every ''operator''
+''Operators and the kahu cabal part as two groups'' (operator ruling 2026-06-25): every ''operator''
 holds caps over their OWN infrastructure (their PersonaGroup · their bags · their hearth) and MAY
-receive ''Nexus-scope'' caps //granted by// the kahu quorum; only that Nexus's ''kahu quorum'' — keys and
-a threshold seated through its seal lineage, one hand at founding, growing toward k-of-n — holds the
+receive ''Nexus-scope'' caps //granted by// the kahu quorum; only that Nexus's ''kahu quorum'' — the seats the
+kahu cabal fills, keys and a threshold seated through its seal lineage, one hand at founding, growing
+toward k-of-n — holds the
 steward-source-signing authority over its ''nexus's'' @oracle plane. At DreamNet scale the corpus-kahu,
 seated from the Amorphous Dreams Cabal, curate the grammar and hold no Nexus's plane (per-nexus, never one global
 DreamNet board — #the-oracle-plane cohere note, oracle-governance). Every admin/write cap reads
@@ -577,6 +578,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6bEZb4Ubl_iN2ncjYskbUs91hj8Kfvn3WwQaalCXGHU
+<<^ code="&#x0003;">>ni:///sha-256;4XMooD7PSnnMFil6evBiXJaAe0nOhJ66K5Jo1V3G7RY
 
 <<^ code="&#x0004;" -> to="?">>
