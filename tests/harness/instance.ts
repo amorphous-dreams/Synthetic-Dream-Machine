@@ -434,6 +434,12 @@ export interface JoineeOptions {
   readonly daemonEnv?: Record<string, string>;
   /** Env A alone carries (e.g. `LAR_HERM_RELAY_PORT`). */
   readonly daemonEnvA?: Record<string, string>;
+  /**
+   * The one document B should ask for after its Socket A crossing. By default the harness asks for A's
+   * Lararium document; a board-level witness may name A's deterministic Crossroads document instead.
+   * This changes only the requested read, never the admission or gate relation.
+   */
+  readonly joinDocUrl?: string | ((A: LarInstance) => string | null | Promise<string | null>);
   /** A's own rite BEYOND place-and-face, run while NO daemon stands — where a suite seats a founding
    *  quorum (`persona new <i> --seat` ×3 · `nexus rite cabal`). A charter seats before the daemon reads it. */
   readonly riteA?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
@@ -508,8 +514,11 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
 
     let B: LarInstance | null = null, joinGate: string | null = null;
     if (opts.bootB !== false) {
+      const requestedDoc = typeof opts.joinDocUrl === "function"
+        ? await opts.joinDocUrl(A)
+        : opts.joinDocUrl ?? laresA;
       const dial = (opts.dial ?? "env") === "env"
-        ? { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA }
+        ? { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, ...(requestedDoc ? { LAR_JOIN_DOC: requestedDoc } : {}) }
         : {};
       try {
         B = await openStaged({
