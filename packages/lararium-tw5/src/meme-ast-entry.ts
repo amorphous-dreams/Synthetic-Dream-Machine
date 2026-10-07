@@ -34,6 +34,7 @@ export {
   SLOT_PATH_SRC,
   KAHEA_REF_RE,
   findTopLevelAhuBlocks,
+  scanAhu,
   composeChildPath,
   childUri,
 } from "./meme-ast/index.js";

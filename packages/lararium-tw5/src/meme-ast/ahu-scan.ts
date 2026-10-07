@@ -79,49 +79,12 @@ export interface AhuBlock {
 }
 
 /**
- * Scan top-level ahu blocks. Nested ahu blocks remain inside their parent's
- * `[bodyStart, bodyEnd)` span; callers walk recursively when they need
- * full-depth flattening.
- *
- * Balanced-bracket pairing: openers/closers go onto a stack; an unmatched
- * closer is dropped silently (caller's error to recover). Ties on position
- * resolve by event order — opener emits before closer.
+ * The top-level ahu blocks — `scanAhu`'s split reading. Nested ahu blocks remain inside their parent's
+ * `[bodyStart, bodyEnd)` span; callers walk recursively when they need full-depth flattening. A closer
+ * with nothing to close cuts no block; the scan names it as a fault, which the floor reads.
  */
 export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
-  // Quoted sigils never open or close a block: a fenced or inline-code
-  // `<<~ ahu …>>` is the operator SHOWING the grammar, not using it
-  // (fence-mask law).
-  const mask = fencedSpans(text);
-  const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
-  for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
-    if (!isAhuDeclaration(m[0])) continue;
-    events.push({ kind: "open", pos: m.index, end: m.index + m[0].length, slot: m[1] ?? "#" });
-  }
-  for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
-    events.push({ kind: "close", pos: m.index, end: m.index + m[0].length, slot: "" });
-  }
-  events.sort((a, b) => a.pos - b.pos);
-
-  const blocks: AhuBlock[] = [];
-  const stack: Array<{ openStart: number; bodyStart: number; slot: string }> = [];
-  for (const ev of events) {
-    if (ev.kind === "open") {
-      stack.push({ openStart: ev.pos, bodyStart: ev.end, slot: ev.slot });
-    } else {
-      const opener = stack.pop();
-      if (!opener) continue;
-      if (stack.length === 0) {
-        blocks.push({
-          openStart: opener.openStart,
-          bodyStart: opener.bodyStart,
-          bodyEnd:   ev.pos,
-          closeEnd:  ev.end,
-          slot:      opener.slot,
-        });
-      }
-    }
-  }
-  return blocks;
+  return [...scanAhu(text).blocks];
 }
 
 /**
@@ -157,11 +120,55 @@ export interface AhuBalanceFault {
   readonly pos: number;
 }
 
+/** One ahu scan, read two ways: the top-level blocks the split cuts, and the faults the floor fences on. */
+export interface AhuScan {
+  readonly blocks: readonly AhuBlock[];
+  readonly faults: readonly AhuBalanceFault[];
+}
+
 /**
- * Faults `findTopLevelAhuBlocks`'s balanced-bracket scanner drops on the floor rather than reports:
- * an opener left on the stack at EOF, and a closer that arrives with nothing on the stack to match.
- * Walks the SAME events, same fence-mask, same stack discipline — the two readers can never drift on
- * what counts as balanced, because they are one scan read two ways.
+ * THE ONE AHU SCAN. Openers and closers, read under the fence mask (a quoted sigil is the operator
+ * SHOWING the grammar, never using it), pair on one stack: an opener pushes; a closer pops — emitting a
+ * top-level block where the stack empties, or an `ahu-orphan-close` fault where nothing stands to pop;
+ * an opener still standing at EOF is an `ahu-unbalanced-open` fault. Ties on position resolve by event
+ * order, opener before closer. The split and the quoteblock floor read this one scan, so they can never
+ * disagree on what counts as balanced.
+ */
+export function scanAhu(text: string): AhuScan {
+  const mask = fencedSpans(text);
+  const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
+  for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
+    if (!isAhuDeclaration(m[0])) continue;
+    events.push({ kind: "open", pos: m.index, end: m.index + m[0].length, slot: m[1] ?? "#" });
+  }
+  for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
+    events.push({ kind: "close", pos: m.index, end: m.index + m[0].length, slot: "" });
+  }
+  events.sort((a, b) => a.pos - b.pos);
+
+  const blocks: AhuBlock[] = [];
+  const faults: AhuBalanceFault[] = [];
+  const stack: Array<{ openStart: number; bodyStart: number; slot: string }> = [];
+  for (const ev of events) {
+    if (ev.kind === "open") {
+      stack.push({ openStart: ev.pos, bodyStart: ev.end, slot: ev.slot });
+      continue;
+    }
+    const opener = stack.pop();
+    if (!opener) {
+      faults.push({ code: "ahu-orphan-close", slot: "", pos: ev.pos });
+    } else if (stack.length === 0) {
+      blocks.push({ openStart: opener.openStart, bodyStart: opener.bodyStart, bodyEnd: ev.pos, closeEnd: ev.end, slot: opener.slot });
+    }
+  }
+  for (const opener of stack) faults.push({ code: "ahu-unbalanced-open", slot: opener.slot, pos: opener.openStart });
+  return { blocks, faults };
+}
+
+/**
+ * The balance faults — `scanAhu`'s floor reading: an opener left on the stack at EOF, and a closer that
+ * arrives with nothing on the stack to match. The split's blocks and these faults are one scan read two
+ * ways, so the two can never drift on what counts as balanced.
  *
  * Meant to run over a COMPOSED root (a child's edited body, recomposed inline through its parent's
  * `<<~ ahu #/slot>>…<<~/ahu>>` wrapper) — at that altitude a child's dangling opener eats the parent's
@@ -172,31 +179,7 @@ export interface AhuBalanceFault {
  * REPORTING widening, never a change to the root door gate's ingest grades.
  */
 export function findAhuBalanceFaults(text: string): AhuBalanceFault[] {
-  const mask = fencedSpans(text);
-  const events: Array<{ kind: "open" | "close"; pos: number; slot: string }> = [];
-  for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
-    if (!isAhuDeclaration(m[0])) continue;
-    events.push({ kind: "open", pos: m.index, slot: m[1] ?? "#" });
-  }
-  for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
-    events.push({ kind: "close", pos: m.index, slot: "" });
-  }
-  events.sort((a, b) => a.pos - b.pos);
-
-  const faults: AhuBalanceFault[] = [];
-  const stack: Array<{ pos: number; slot: string }> = [];
-  for (const ev of events) {
-    if (ev.kind === "open") {
-      stack.push({ pos: ev.pos, slot: ev.slot });
-    } else {
-      const opener = stack.pop();
-      if (!opener) faults.push({ code: "ahu-orphan-close", slot: "", pos: ev.pos });
-    }
-  }
-  for (const opener of stack) {
-    faults.push({ code: "ahu-unbalanced-open", slot: opener.slot, pos: opener.pos });
-  }
-  return faults;
+  return [...scanAhu(text).faults];
 }
 
 /**

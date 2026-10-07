@@ -51,8 +51,10 @@ import { renderMetaTomlLine } from "./meme-normalize.js";
 import { lendHostGlobals } from "./host-globals-lend.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
-  findAhuBalanceFaults,
   findTopLevelAhuBlocks,
+  scanAhu,
+  type AhuBlock,
+  type AhuScan,
   KAHEA_REF_RE,
 } from "./meme-ast/ahu-scan.js";
 
@@ -135,12 +137,15 @@ export function deserializeCarrier(
   if (shape.kind === "torn") return { records: [heldTorn(baseUri, text, fields, shape.faults.map((f) => f.message))], floor: null };
   const arrived = text;
   let stream = readStream(text);
+  // Each carrier is divided and its ahu stack scanned ONCE; the floor and the split read that one reading.
+  let reads = readCarriers(carriersOf(stream, baseUri, text));
   const floor = shape.kind === "bare"
     ? null
-    : layFloor(baseUri, text, carriersOf(stream, baseUri, text), () => verdictOf(arrived, shape).kind === "match");
+    : layFloor(baseUri, text, reads, () => verdictOf(arrived, shape).kind === "match");
   if (floor) {
     text = floor.text;
     stream = readStream(text);
+    reads = readCarriers(carriersOf(stream, baseUri, text));
   }
   const result: TiddlerFields[] = [];
   // The file-level carriage — the prologue above the head and the bytes past the frame — hangs on the
@@ -148,12 +153,9 @@ export function deserializeCarrier(
   const carriage: TiddlerFields[] = [];
 
   const { closes, prologue, postamble, slotText } = stream;
-  for (const ev of closes) {
-    const uri      = ev.uri || baseUri;
-    // MemeStreamParser's fullText extends past the ETX in single-meme
-    // files; trim that trailing content so the parent meme's text field
-    // doesn't duplicate the postamble already captured separately.
-    const tiddlers = safeSplitMeme(uri, ownText(ev, closes, postamble), asStringFields(fields));
+  for (const [i, ev] of closes.entries()) {
+    // The carrier's own text (`ownText`, the postamble trimmed off) is the reading `carriersOf` divided.
+    const tiddlers = safeSplitMeme(reads[i]!, asStringFields(fields));
     if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
       // ONE RECORD, NOT A COPY PER TIDDLER. The prologue belongs to the carrier, and stamping it on
       // every record of that carrier put 4,015 copies of one string in the corpus.
@@ -190,8 +192,8 @@ export function deserializeCarrier(
   }
 
   // ⤴ Fallback — no SOH framing: treat entire text as bare meme body.
-  if (result.length === 0 && text.trim()) {
-    result.push(...safeSplitMeme(baseUri, text, asStringFields(fields)));
+  if (result.length === 0 && reads.length > 0) {
+    result.push(...safeSplitMeme(reads[0]!, asStringFields(fields)));
   }
 
   result.push(...carriage);
@@ -268,18 +270,18 @@ export function quoteblockFloor(uri: string, text: string, restamp: boolean): Qu
   // The deserializer's tolerant read, folded once here too, so the offsets below index the bytes it reads.
   let folded = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   if (folded.includes("\r")) folded = folded.replace(/\r\n?/g, "\n");
-  return layFloor(uri, folded, carrierTexts(folded, uri), () => restamp);
+  return layFloor(uri, folded, readCarriers(carrierTexts(folded, uri)), () => restamp);
 }
 
 /** The floor over a folded text and the carriers already read from it. `restamp` is asked only once a fence lands. */
-function layFloor(uri: string, folded: string, carriers: readonly CarrierText[], restamp: () => boolean): QuoteblockFloor | null {
+function layFloor(uri: string, folded: string, reads: readonly CarrierRead[], restamp: () => boolean): QuoteblockFloor | null {
   let out = "";
   let cursor = 0;
   const named: string[] = [];
   const fenced = new Set<string>();
-  for (const carrier of carriers) {
-    const division = divideCarrier(carrier.text);
-    const faults = findAhuBalanceFaults(division.body);
+  for (const carrier of reads) {
+    const { division } = carrier;
+    const faults = carrier.scan.faults;
     if (faults.length === 0 || division.body === "") continue;
     const at = folded.indexOf(carrier.text, cursor);
     if (at < 0) continue;
@@ -406,6 +408,20 @@ function carriersOf(stream: StreamReading, baseUri: string, text: string): Carri
   return out.length === 0 && text.trim() ? [{ uri: baseUri, text }] : out;
 }
 
+/** One carrier, read once: its address and bytes, their division, and the ahu scan of the body. */
+export interface CarrierRead extends CarrierText {
+  readonly division: CarrierDivision;
+  readonly scan: AhuScan;
+}
+
+/** Divide each carrier and scan its body's ahu stack — the one reading the floor and the split share. */
+function readCarriers(carriers: readonly CarrierText[]): CarrierRead[] {
+  return carriers.map((c) => {
+    const division = divideCarrier(c.text);
+    return { ...c, division, scan: scanAhu(division.body) };
+  });
+}
+
 // ---------------------------------------------------------------------------
 // safeSplitMeme — LOSS-LESS split (Goal B).
 //
@@ -415,9 +431,10 @@ function carriersOf(stream: StreamReading, baseUri: string, text: string): Carri
 // or, if malformed, degrade legibly.
 // ---------------------------------------------------------------------------
 
-function safeSplitMeme(uri: string, text: string, fields: TiddlerFields): TiddlerFields[] {
+function safeSplitMeme(read: CarrierRead, fields: TiddlerFields): TiddlerFields[] {
+  const { uri, text } = read;
   try {
-    return splitMemeToTiddlers(uri, text, fields);
+    return splitMemeToTiddlers(uri, read, fields);
   } catch (err) {
     console.warn(`[memetic-deserializer] split failed for ${uri} — verbatim fallback (drop-honesty): ${err instanceof Error ? err.message : String(err)}`);
     return [{ ...fields, title: uri, text } as TiddlerFields];
@@ -510,14 +527,14 @@ export function divideCarrier(text: string): CarrierDivision {
 
 function splitMemeToTiddlers(
   uri:        string,
-  text:       string,
+  read:       CarrierRead,
   baseFields: TiddlerFields,
 ): TiddlerFields[] {
-  const { headerText, bodyMeta, body } = divideCarrier(text);
+  const { headerText, bodyMeta, body } = read.division;
   const rootFields = bodyMeta ? fieldifyToml(bodyMeta.content) : {};
   // A CARRIER IS A ROOT: every door refuses a fragment-carrying address before a split runs, so the
   // carrier's own URI is the root its slots compose under.
-  const { children, rewrittenText } = splitRecursive(uri, "", body);
+  const { children, rewrittenText } = splitRecursive(uri, "", body, read.scan.blocks);
 
   const parent: TiddlerFields = {
     ...baseFields,
@@ -554,10 +571,10 @@ function splitRecursive(
   rootUri:          string,
   fragmentPrefix:   string,  // "" at meme root; "#/a" → "#/a/b" → "#/a/b/c"
   text:             string,
+  blocks:           readonly AhuBlock[],  // `text`'s top-level blocks — the carrier's own scan at the root
 ): { children: TiddlerFields[]; rewrittenText: string } {
   const allChildren: TiddlerFields[] = [];
   const enclosingUri = rootUri + fragmentPrefix;
-  const blocks = findTopLevelAhuBlocks(text);
   let cursor = 0;
   let rewritten = "";
   for (const block of blocks) {
@@ -572,7 +589,7 @@ function splitRecursive(
     // `$slot` carry that same spelling, so a reader needs no compatibility normalization.
     const slot          = block.slot;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
-    const inner         = splitRecursive(rootUri, childSlotPath, bodyText);
+    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, findTopLevelAhuBlocks(bodyText));
     const childStructure = extractSlotStructure(inner.rewrittenText);
 
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
@@ -786,7 +803,7 @@ export function splitBodyTiddler(
   if (!bodyText.includes("<<~ ahu")) {
     return { parent: { ...baseFields, title: uri, text: bodyText }, children: [] };
   }
-  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, bodyText);
+  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, bodyText, findTopLevelAhuBlocks(bodyText));
   const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
   return { parent, children };
 }
