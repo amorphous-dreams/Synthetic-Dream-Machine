@@ -11,7 +11,7 @@ mana       = 16
 manao      = 16
 manaoio    = 15
 namespace  = "&#x2695;"
-revised-on = "2026-10-06"
+revised-on = "2026-10-07"
 role       = "the membership doctrine — the privacy invariant of the whole public-facing mesh: the Nexus tracks operator CONTRACTS, never user IDENTITIES. An operator contract carries pubkey + accepts-carriage + charter-epoch and NOTHING more; users SOFT-ATTACH and leave no roster trace; invites are sealed BURNABLE capabilities spent-on-boot that leave no record. We choose to not have the user table. Operator-ruled 2026-07-21. SECOND CONDITION ruled 2026-08-09: belonging carries TWO conditions — the contract AND agreement with the grammar vectors traded on that Nexus. Agreement rides KEYED, never audited (the MLS RFC 9420 `confirmation_tag` shape): a peer that disagrees cannot produce the binding, so no roster row is needed to record who agrees — the second condition adds NO table and lands back on the no-roster ruling."
 status-why = "operator-ruled and enforced at the members-registry"
 tags       = ["mesh/carry-contract", "mesh/identity-classes", "api/pono/persona-policy", "api/pono/cabal-realm", "api/pono/causal-islands", "lifecycle/standing"]
@@ -209,11 +209,28 @@ a record the Nexus KEEPS.'' The general invite manufactures ''no social graph.''
 ''ANY MEMBER FACE MAY INVITE, and an end user needs no quorum admit'' (operator-ruled). A Kahu, a
 Lamplighter or another user hands the invite, so users invite users. The inviter's own face for that
 Nexus signs it — never the node's vessel key — and the verifier reads the inviter's standing against
-the deny board, never against a list of who may invite. ''Owed in code'': a user face holds no standing proof
-to present, so the gate WITHHOLDS a user-face inviter; user-face standing awaits the operator's ruling (the
-leading candidate: the hosting hearth countersigns over the invite nonce). A Kahu invites through its leaf
-admit; the `seat` arm refuses (`seat-standing-owed`) until the re-found re-keys the chairs to leaves, since
-a chair carries a PersonaGroup root and a root proof never rides a wire.
+the deny board, never against a list of who may invite. A Kahu or a Lamplighter invites through its own
+leaf admit. The `seat` arm refuses (`seat-standing-owed`) until the re-found re-keys the chairs to leaves,
+since a chair carries a PersonaGroup root and a root proof never rides a wire.
+
+''A USER STANDS BY ITS HOST'' (operator-ruled). A user face holds no admit, so its invite carries the
+COUNTERSIGN of a hearth that hosts it — the `hosted` arm. The hearth's per-Nexus leaf signs the Nexus, the
+invite nonce and the walker's leaf (`host-countersign`), and the invite presents the hearth's own admit, which
+the gate reads against the deny board exactly as it reads any admit; the walker's leaf reads against the
+antigen. ''Hosting proves without a roster'': the hearth countersigns only over a LIVE session its own gate
+holds — the walker's leaf signs the nonce and gate key that gate issued on a socket open now
+(`host-session-proof`), so the hearth lends standing to exactly the walkers it is talking to and keeps no list
+of them. A closed socket carries no session, and the countersign refuses. ''The hearth learns that one of its
+walkers invited someone, and never whom'': the invite names no guest and its nonce is random. Neither side
+keeps the countersign. The gate WITHHOLDS a user invite that carries no countersign, refuses one from a
+hearth whose admit does not hold, and refuses one made over a different nonce, Nexus or walker.
+
+''Every leaf invites as ITSELF'' (operator-ruled). Every leaf starts at the floor with its OWN root, and a
+human may later JOIN it to a PersonaGroup so the person's devices sync as one fleet. Joining never takes the
+device's own root away. A per-Nexus face derives from a root (`m / handle' / context' / nexus-scope'`), so
+every leaf holds its own face for each Nexus: a device in an operator's PersonaGroup, a single user device,
+and a device in a user-only fleet each invite under their own root's per-Nexus face, through the `hosted`
+arm.
 ''One hop, burned, remembered by no one'': the
 receiver's local spent-set closes the invite, no wall clock bounds it, the inviter carries no liability
 for the guest, and no record anywhere — board, inviter or newcomer — chains who invited whom, because that
@@ -318,6 +335,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OgiyZUNwDea4vnUXfsr5R_sJF51ZYRqf0PZ4Ho7_VjI
+<<^ code="&#x0003;">>ni:///sha-256;zzwoQNISFDa8Sg090vmrztuWVBEJ8uQ3JPu8EoUx8JM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -228,11 +228,13 @@ export {
   isAdmitBundle, AdmitBundleError, type AdmitBundle, type AdmitTakeResult,
 } from "./admit-bundle.js";
 
-// The traceless BOOT-INVITE burn (Build-2) — mint a sealed single-use invite; decide + spend-on-boot LOCALLY.
+// The traceless BOOT-INVITE burn — mint a sealed single-use invite; decide + spend-on-boot LOCALLY.
 export {
-  runBootInviteMint, runBootInviteSpend, readBurnSet, isBurned, burn as burnBootInvite,
+  runBootInviteMint, runHostedInviteMint, runBootInviteSpend, readBurnSet, isBurned, burn as burnBootInvite,
   bootInviteBurnPath, bootInviteId,
 } from "./boot-invite-burn.js";
+// The HOST COUNTERSIGN — a hearth lends a user its standing, over a live session, and keeps nothing.
+export { hostSessionOf, runHostCountersign } from "./host-countersign.js";
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {

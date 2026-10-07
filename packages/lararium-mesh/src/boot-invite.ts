@@ -13,6 +13,11 @@
  *   · IT CARRIES ITS OWN STANDING. The verifier holds no roster and looks nothing up: the invite presents what
  *     proves its inviter stands, and the gate reads that proof against the kahu quorum's seats, the Nexus's
  *     DENY-only board and the Kapae antigen. What proves standing is named on `InviterStanding`.
+ *   · A USER STANDS BY ITS HOST. A user face holds no admit, so its invite carries the COUNTERSIGN of a hearth
+ *     that hosts it: the hearth signs the Nexus, the invite nonce and the walker's leaf, and only over a live
+ *     session in which the walker's leaf proved itself to that hearth (`countersignHostedInvite`). The hearth
+ *     stands through its own admit, read like any other. The hearth learns that one of its walkers invited
+ *     someone and never who: the invite names no guest, and the nonce is random. Neither side keeps anything.
  *   · CARRIED, never fetched — the newcomer holds it (paste / QR / URL fragment); no relay sees it in transit.
  *     It verifies OFFLINE.
  *   · SINGLE-USE, burned LOCALLY. The newcomer's vessel records the invite's burn id in its OWN spent-set and
@@ -32,16 +37,17 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { NEXUS_INVITE_DOMAIN } from "./domains.js";
+import { NEXUS_INVITE_DOMAIN, HOST_COUNTERSIGN_DOMAIN, HOST_SESSION_PROOF_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import {
   verifyPresentedAdmit,
   type CarriageEntry, type PresentedAdmitInput, type PresentedLineageAct,
 } from "./carriage-registry.js";
+import { foldAntigenVerdicts } from "./kapae-antigen.js";
 
 /** The domain an invite signs over. A signature is meaningless without the domain it was made in. */
-export { NEXUS_INVITE_DOMAIN } from "./domains.js";
+export { NEXUS_INVITE_DOMAIN, HOST_COUNTERSIGN_DOMAIN, HOST_SESSION_PROOF_DOMAIN } from "./domains.js";
 
 /**
  * What proves the inviter stands in the Nexus. Every kind is checked against the deny board and the antigen;
@@ -50,13 +56,34 @@ export { NEXUS_INVITE_DOMAIN } from "./domains.js";
  *   · `admit` — the inviter's own quorum-signed member admit on its leaf nym, with that admit's closed, tight
  *     causal lineage (`presentationFromBoardDoc`). A Lamplighter stands this way, and so does any face the
  *     kahu quorum admitted — a Kahu included, on its leaf. Read by `verifyPresentedAdmit`; only `held` stands.
+ *   · `hosted` — a USER face, which holds no admit, stands by the hearth that hosts it: the hearth's per-Nexus
+ *     leaf countersigns the Nexus, the invite nonce and the walker's leaf (`HostedStanding`), and the hearth's
+ *     own admit stands exactly as the `admit` arm reads one. The walker's leaf itself is read against the
+ *     antigen. No roster says who a hearth hosts: the countersign is minted only over a live session.
  *   · `seat`  — the inviter's key sits as a chair of the kahu quorum's seats. REFUSED (`seat-standing-owed`):
  *     a chair carries a PersonaGroup root key, and a root proof never rides a wire. The arm stands at the
  *     re-found, which re-keys the chairs to per-Nexus leaves.
  */
 export type InviterStanding =
   | { readonly kind: "admit"; readonly admit: CarriageEntry; readonly lineage: readonly PresentedLineageAct[] }
+  | HostedStanding
   | { readonly kind: "seat" };
+
+/**
+ * A user's standing, lent by the hearth that hosts it. The hearth's per-Nexus leaf signs
+ * `hostCountersignBytes` over this Nexus, the invite's nonce and the walker's leaf; the hearth's own admit
+ * and its lineage prove the hearth stands. It names no guest.
+ */
+export interface HostedStanding {
+  readonly kind:       "hosted";
+  /** The hosting hearth's per-Nexus leaf verifying key (hex). */
+  readonly hearthKey:  string;
+  /** The hearth's own quorum-signed admit on `hearthKey`. */
+  readonly admit:      CarriageEntry;
+  readonly lineage:    readonly PresentedLineageAct[];
+  /** Ed25519 by `hearthKey` over `hostCountersignBytes`. */
+  readonly countersig: string;
+}
 
 /**
  * A sealed, single-use invite into ONE Nexus. Absent by construction: any joiner identity, any place edge,
@@ -117,6 +144,113 @@ export async function verifyBootInviteSig(bytes: Uint8Array, sigHex: string, key
   catch { return false; }
 }
 
+// ── THE HOST COUNTERSIGN ────────────────────────────────────────────────────────────────────────
+
+/** The bytes a hosting hearth countersigns: the Nexus, the invite nonce and the walker's leaf. No guest. */
+export function hostCountersignBytes(parts: { readonly nexusAid: string; readonly nonce: string; readonly walkerKey: string }): Uint8Array {
+  return canonicalJsonBytes({
+    kind: HOST_COUNTERSIGN_DOMAIN, nexusAid: normAid(parts.nexusAid), nonce: parts.nonce, walkerKey: parts.walkerKey.toLowerCase(),
+  });
+}
+
+/**
+ * A live hosting session, as the HEARTH holds it: the nonce and gate key its own gate issued on a socket that is
+ * open now. The hearth reads both from its gate, never from anything the walker echoed.
+ */
+export interface HostSession {
+  readonly nonce:      string;
+  readonly gatePubKey: string;
+}
+
+/** What a walker asks its hearth to countersign, with its leaf's proof over the live session. */
+export interface HostCountersignRequest {
+  readonly nexusAid:  string;
+  /** The nonce of the invite the walker is minting. */
+  readonly nonce:     string;
+  /** The walker's per-Nexus leaf (hex) — the key that will sign the invite. */
+  readonly walkerKey: string;
+  /** Ed25519 by `walkerKey` over `hostSessionProofBytes`. */
+  readonly proof:     string;
+}
+
+/** The bytes a walker's leaf signs to ask for a countersign: bound to ONE live session, one Nexus, one invite. */
+export function hostSessionProofBytes(parts: {
+  readonly session: HostSession; readonly nexusAid: string; readonly nonce: string; readonly walkerKey: string;
+}): Uint8Array {
+  return canonicalJsonBytes({
+    kind:       HOST_SESSION_PROOF_DOMAIN,
+    session:    parts.session.nonce,
+    gatePubKey: parts.session.gatePubKey.toLowerCase(),
+    nexusAid:   normAid(parts.nexusAid),
+    nonce:      parts.nonce,
+    walkerKey:  parts.walkerKey.toLowerCase(),
+  });
+}
+
+/** Build a countersign request. The caller supplies the walker's leaf signer; this module holds no key. */
+export async function signHostCountersignRequest(
+  parts: { readonly session: HostSession; readonly nexusAid: string; readonly nonce: string; readonly walkerKey: string },
+  sign: (bytes: Uint8Array) => Promise<string>,
+): Promise<HostCountersignRequest> {
+  const walkerKey = parts.walkerKey.toLowerCase();
+  return {
+    nexusAid: parts.nexusAid, nonce: parts.nonce, walkerKey,
+    proof: await sign(hostSessionProofBytes({ ...parts, walkerKey })),
+  };
+}
+
+/** Why a hearth declined to countersign. */
+export type HostCountersignRefusal =
+  | "no-live-session"     // the hearth holds no open, gate-keyed session with this walker
+  | "malformed-request"   // the request is not a readable countersign request
+  | "wrong-nexus"         // the request names a Nexus other than the hearth's
+  | "bad-session-proof"   // the walker's leaf did not sign over THIS session
+  | "hearth-not-admitted"; // the hearth's admit names a key other than its own leaf
+
+export type HostCountersignVerdict =
+  | { readonly ok: true;  readonly standing: HostedStanding }
+  | { readonly ok: false; readonly refusal: HostCountersignRefusal };
+
+/**
+ * THE HEARTH'S SIDE. Countersign a walker's invite nonce — only over a live session the hearth holds with that
+ * walker, and only for the hearth's own Nexus. "Currently hosts" is proven without a roster: the walker's leaf
+ * signs the nonce the hearth's own gate issued on a socket open now, so the hearth countersigns exactly the
+ * walkers it is talking to. Pure: it writes nothing and returns nothing that names a guest.
+ */
+export async function countersignHostedInvite(args: {
+  /** The live session the request arrived on, read from the hearth's gate — null when none is open. */
+  readonly session:  HostSession | null;
+  readonly request:  HostCountersignRequest;
+  /** The Nexus this hearth stands in. */
+  readonly nexusAid: string;
+  /** The hearth's per-Nexus leaf, its own admit, and its signer. */
+  readonly hearth: {
+    readonly key: string; readonly admit: CarriageEntry; readonly lineage: readonly PresentedLineageAct[];
+    readonly sign: (bytes: Uint8Array) => Promise<string>;
+  };
+}): Promise<HostCountersignVerdict> {
+  const { session, request: req } = args;
+  if (!session || typeof session.nonce !== "string" || typeof session.gatePubKey !== "string"
+      || session.nonce.length === 0 || session.gatePubKey.length === 0) {
+    return { ok: false, refusal: "no-live-session" };
+  }
+  if (!req || typeof req !== "object" || typeof req.nexusAid !== "string" || typeof req.nonce !== "string"
+      || typeof req.walkerKey !== "string" || typeof req.proof !== "string" || req.nonce.length === 0) {
+    return { ok: false, refusal: "malformed-request" };
+  }
+  if (normAid(req.nexusAid) !== normAid(args.nexusAid)) return { ok: false, refusal: "wrong-nexus" };
+  const walkerKey = req.walkerKey.toLowerCase();
+  const proofBytes = hostSessionProofBytes({ session, nexusAid: req.nexusAid, nonce: req.nonce, walkerKey });
+  if (!(await verifyBootInviteSig(proofBytes, req.proof, walkerKey))) return { ok: false, refusal: "bad-session-proof" };
+  const hearthKey = args.hearth.key.toLowerCase();
+  if (args.hearth.admit?.nym?.toLowerCase() !== hearthKey) return { ok: false, refusal: "hearth-not-admitted" };
+  const countersig = await args.hearth.sign(hostCountersignBytes({ nexusAid: req.nexusAid, nonce: req.nonce, walkerKey }));
+  return {
+    ok: true,
+    standing: { kind: "hosted", hearthKey, admit: args.hearth.admit, lineage: args.hearth.lineage, countersig },
+  };
+}
+
 /** How the boot answers "may this vessel cross into the Nexus?". The operator turns it — code never bakes it in. */
 export type BootInvitePolicy =
   /** invite-only — a sealed, unspent invite from a standing face is REQUIRED, or the vessel founds its own group. */
@@ -130,6 +264,9 @@ export type BootRefusal =
   | "wrong-nexus"          // the invite names a different Nexus
   | "bad-signature"        // the inviter's leaf did not sign this — forged or torn
   | "inviter-not-standing" // the standing it presents does not hold here (rejected, denied, unsettled, unread)
+  | "no-countersign"       // a `hosted` invite that carries no hosting hearth's countersign
+  | "bad-countersign"      // the countersign does not verify over this Nexus, this nonce and this walker
+  | "host-not-standing"    // the countersigning hearth's own admit does not hold here
   | "seat-standing-owed"   // a `seat` claim: a chair carries a PersonaGroup root, so the arm stands only once chairs carry leaves
   | "already-spent";       // single-use: this invite was burned already (local island fact)
 
@@ -156,12 +293,28 @@ const normAid = (aid: string): string => aid.trim().toLowerCase();
  * Does the presented standing hold for `inviterKey` against the Nexus material? Fail-closed; never throws.
  * Answers null when it holds, else the refusal that names why.
  */
-async function inviterRefusal(inviterKey: string, standing: InviterStanding, ctx: InviteStandingContext): Promise<BootRefusal | null> {
+async function inviterRefusal(
+  inv: BootInvite, inviterKey: string, standing: InviterStanding, ctx: InviteStandingContext,
+): Promise<BootRefusal | null> {
   try {
     if (standing.kind === "admit") {
       if (standing.admit?.nym?.toLowerCase() !== inviterKey) return "inviter-not-standing";   // the admit must name the signer
       const v = await verifyPresentedAdmit({ ...ctx, admit: standing.admit, lineage: standing.lineage });
       return v.state === "held" ? null : "inviter-not-standing";
+    }
+    if (standing.kind === "hosted") {
+      const hearthKey = standing.hearthKey.toLowerCase();
+      const bytes = hostCountersignBytes({ nexusAid: inv.nexusAid, nonce: inv.nonce, walkerKey: inviterKey });
+      if (!(await verifyBootInviteSig(bytes, standing.countersig, hearthKey))) return "bad-countersign";
+      if (standing.admit?.nym?.toLowerCase() !== hearthKey) return "host-not-standing";   // the admit must name the countersigner
+      const v = await verifyPresentedAdmit({ ...ctx, admit: standing.admit, lineage: standing.lineage });
+      if (v.state !== "held") return "host-not-standing";
+      // The walker's own leaf holds no admit; the antigen still reads it. Held or unsettled → withhold.
+      const verdicts = await foldAntigenVerdicts(ctx.antigen, ctx.antigenRoster, ctx.antigenVerifier);
+      for (const [nym, verdict] of verdicts) {
+        if (nym.toLowerCase() === inviterKey && verdict !== "withdrawn") return "inviter-not-standing";
+      }
+      return null;
     }
     return "inviter-not-standing";
   } catch {
@@ -210,8 +363,14 @@ export async function decideBootInvite(args: {
   // A chair carries a PersonaGroup root key, and a root proof never rides a wire: the `seat` arm stands only
   // once the chairs carry per-Nexus leaves. Refused before any Nexus material is read.
   if (inv.standing.kind === "seat") return { admitted: false, refusal: "seat-standing-owed" };
+  if (inv.standing.kind === "hosted") {
+    const h = inv.standing;
+    if (typeof h.countersig !== "string" || h.countersig.length === 0 || typeof h.hearthKey !== "string") {
+      return { admitted: false, refusal: "no-countersign" };
+    }
+  }
   if (!args.standing) return { admitted: false, refusal: "inviter-not-standing" };
-  const refusal = await inviterRefusal(inviterKey, inv.standing, args.standing);
+  const refusal = await inviterRefusal(inv, inviterKey, inv.standing, args.standing);
   if (refusal) return { admitted: false, refusal };
 
   const burnId = bootInviteId(inv);

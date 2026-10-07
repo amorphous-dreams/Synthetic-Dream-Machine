@@ -12,14 +12,22 @@
  *   · NO CLOCK — the invite carries no expiry, and the module source names no clock,
  *   · ONE HOP, REMEMBERED BY NO ONE — the burn id digests the Nexus and nonce alone: two inviters' invites with
  *     one nonce burn as one, and the id derives nothing of the inviter or its standing,
- *   · the OPEN policy admits with no invite at all.
+ *   · the OPEN policy admits with no invite at all,
+ *   · THE HOSTED ARM — a user face stands by the hearth that hosts it: a countersigned user invite ADMITS; one
+ *     without a countersign withholds `no-countersign`; a countersign from a revoked or unadmitted hearth
+ *     refuses `host-not-standing`; one over a different nonce, Nexus or walker refuses `bad-countersign`; a
+ *     Kapae'd walker withholds `inviter-not-standing`,
+ *   · THE HEARTH'S SIDE countersigns only over a live session the walker's leaf signed, only for its own Nexus,
+ *     and only with an admit on its own leaf; what it returns and what it signs name no guest.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { canonicalJsonBytes, sha256HexBytesSync } from "../src/crypto.js";
 import {
   signBootInvite, bootInviteId, decideBootInvite,
-  NEXUS_INVITE_DOMAIN, type BootInvite, type InviterStanding, type InviteStandingContext,
+  countersignHostedInvite, signHostCountersignRequest, hostCountersignBytes,
+  NEXUS_INVITE_DOMAIN, HOST_COUNTERSIGN_DOMAIN, type BootInvite, type InviterStanding, type InviteStandingContext,
+  type HostSession, type HostedStanding,
 } from "../src/boot-invite.js";
 import { carriageEntryActCid, type CarriageEntry } from "../src/carriage-registry.js";
 import { signAntigenEntry, makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
@@ -171,5 +179,138 @@ describe("no clock, one hop, remembered by no one", () => {
     const blob = JSON.stringify(v);
     expect(blob).not.toContain(await pubOf(SEEDS.member));
     expect(blob).not.toContain(carriageEntryActCid(admit));
+  });
+});
+
+// ── THE HOSTED ARM ─────────────────────────────────────────────────────────────────────────────────
+
+const HEARTH = SEEDS.member;              // a Lamplighter's leaf, admitted: the hearth that hosts the walker
+const WALKER = SEEDS.user;                // a user face: holds no admit
+const GATE   = new Uint8Array(32).fill(21);
+const NONCE  = "a1b2c3d4e5f60718";
+
+async function session(nonce = "5e5510a0000000000000000000000001"): Promise<HostSession> {
+  return { nonce, gatePubKey: await pubOf(GATE) };
+}
+
+/** The hearth countersigns a walker's request over `sess`; throws on a refusal (the fixtures expect a lend). */
+async function hostedStanding(over: {
+  hearth?: Uint8Array; admitSeed?: Uint8Array; walker?: Uint8Array; nonce?: string; nexusAid?: string;
+} = {}): Promise<HostedStanding> {
+  const hearth = over.hearth ?? HEARTH;
+  const walker = over.walker ?? WALKER;
+  const sess = await session();
+  const request = await signHostCountersignRequest(
+    { session: sess, nexusAid: over.nexusAid ?? AID, nonce: over.nonce ?? NONCE, walkerKey: await pubOf(walker) }, signerOf(walker),
+  );
+  const v = await countersignHostedInvite({
+    session: sess, request, nexusAid: over.nexusAid ?? AID,
+    hearth: { key: await pubOf(hearth), admit: await admitOf(over.admitSeed ?? hearth), lineage: [], sign: signerOf(hearth) },
+  });
+  if (!v.ok) throw new Error(`countersign refused: ${v.refusal}`);
+  return v.standing;
+}
+
+const userInvite = async (standing: InviterStanding, over: { nonce?: string; walker?: Uint8Array } = {}) =>
+  invite(over.walker ?? WALKER, standing, { nonce: over.nonce ?? NONCE });
+
+describe("the hosted arm — a user stands by the hearth that hosts it", () => {
+  test("CONTROL: a user invite countersigned by its standing hearth ADMITS", async () => {
+    const inv = await userInvite(await hostedStanding());
+    expect(await decide(inv)).toEqual({ admitted: true, burnId: bootInviteId(inv) });
+  });
+
+  test("a user invite WITHOUT a countersign is withheld (`no-countersign`)", async () => {
+    const lent = await hostedStanding();
+    expect(await decide(await userInvite({ ...lent, countersig: "" })))
+      .toEqual({ admitted: false, refusal: "no-countersign" });
+    const { countersig: _drop, ...bare } = lent;
+    expect(await decide(await userInvite(bare as unknown as InviterStanding)))
+      .toEqual({ admitted: false, refusal: "no-countersign" });
+  });
+
+  test("a countersign from a NON-STANDING hearth is refused (`host-not-standing`)", async () => {
+    // A hearth whose admit a counted revoke closes.
+    const lent = await hostedStanding();
+    const inv = await userInvite(lent);
+    const revoke = await carriageAct(HEARTH, "revoke", {
+      kahu: [SEEDS.guru, SEEDS.telarus], epoch: EPOCH, parents: [carriageEntryActCid(lent.admit)],
+    });
+    expect(await decide(inv, { standing: await ctx({ denyBoard: [revoke] }) }))
+      .toEqual({ admitted: false, refusal: "host-not-standing" });
+    // A stranger hearth presenting a member's admit: the admit never lends to a key it does not name.
+    const borrowed: HostedStanding = { ...(await hostedStanding({ hearth: SEEDS.stranger, admitSeed: SEEDS.stranger })), admit: lent.admit };
+    expect(await decide(await userInvite(borrowed))).toEqual({ admitted: false, refusal: "host-not-standing" });
+    // A hearth the kahu quorum never admitted: its admit counts under no seat.
+    const unseated = { ...(await ctx()), roster: await kahuRoster([SEEDS.warden1, SEEDS.warden2], 2, EPOCH) };
+    expect(await decide(inv, { standing: unseated })).toEqual({ admitted: false, refusal: "host-not-standing" });
+  });
+
+  test("a countersign over a DIFFERENT nonce, Nexus or walker is refused (`bad-countersign`)", async () => {
+    const lent = await hostedStanding({ nonce: "0000000000000001" });
+    expect(await decide(await userInvite(lent))).toEqual({ admitted: false, refusal: "bad-countersign" });
+    // CONTROL: the same lend on its own nonce stands.
+    expect((await decide(await userInvite(lent, { nonce: "0000000000000001" }))).admitted).toBe(true);
+    // A lend made for another Nexus does not cross into this one.
+    const foreign = await hostedStanding({ nexusAid: "nexus-aid-elsewhere" });
+    expect(await decide(await userInvite(foreign))).toEqual({ admitted: false, refusal: "bad-countersign" });
+    // A lend to one walker never stands for another walker on the same nonce.
+    expect(await decide(await userInvite(await hostedStanding(), { walker: SEEDS.stranger })))
+      .toEqual({ admitted: false, refusal: "bad-countersign" });
+  });
+
+  test("a Kapae'd walker withholds even with a standing hearth's countersign", async () => {
+    const wardens = await Promise.all([SEEDS.warden1, SEEDS.warden2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const kapae = await signAntigenEntry({ nym: await pubOf(WALKER), action: "kapae", parents: [], sealEpochCid: EPOCH }, wardens);
+    const inv = await userInvite(await hostedStanding());
+    expect(await decide(inv, { standing: await ctx({ antigen: [kapae] }) }))
+      .toEqual({ admitted: false, refusal: "inviter-not-standing" });
+  });
+
+  test("the countersign names no guest, and the verdict names neither walker nor hearth", async () => {
+    const lent = await hostedStanding();
+    expect(Object.keys(lent).sort()).toEqual(["admit", "countersig", "hearthKey", "kind", "lineage"]);
+    expect(JSON.parse(new TextDecoder().decode(hostCountersignBytes({ nexusAid: AID, nonce: NONCE, walkerKey: await pubOf(WALKER) }))))
+      .toEqual({ kind: HOST_COUNTERSIGN_DOMAIN, nexusAid: AID, nonce: NONCE, walkerKey: await pubOf(WALKER) });
+    const v = await decide(await userInvite(lent));
+    expect(Object.keys(v).sort()).toEqual(["admitted", "burnId"]);
+    const blob = JSON.stringify(v);
+    expect(blob).not.toContain(await pubOf(WALKER));
+    expect(blob).not.toContain(await pubOf(HEARTH));
+  });
+});
+
+describe("countersignHostedInvite — the hearth lends only over a live session", () => {
+  async function ask(over: {
+    session?: HostSession | null; proveOver?: HostSession; nexusAid?: string; admitSeed?: Uint8Array;
+  } = {}) {
+    const live = await session();
+    const request = await signHostCountersignRequest(
+      { session: over.proveOver ?? live, nexusAid: AID, nonce: NONCE, walkerKey: await pubOf(WALKER) }, signerOf(WALKER),
+    );
+    return countersignHostedInvite({
+      session: over.session === undefined ? live : over.session, request, nexusAid: over.nexusAid ?? AID,
+      hearth: { key: await pubOf(HEARTH), admit: await admitOf(over.admitSeed ?? HEARTH), lineage: [], sign: signerOf(HEARTH) },
+    });
+  }
+
+  test("CONTROL: a request proven over the live session is countersigned", async () => {
+    expect((await ask()).ok).toBe(true);
+  });
+
+  test("no live session → `no-live-session`", async () => {
+    expect(await ask({ session: null })).toEqual({ ok: false, refusal: "no-live-session" });
+  });
+
+  test("a proof over ANOTHER session (a replayed request) → `bad-session-proof`", async () => {
+    expect(await ask({ proveOver: await session("5e5510a0000000000000000000000002") }))
+      .toEqual({ ok: false, refusal: "bad-session-proof" });
+    expect(await ask({ proveOver: { nonce: (await session()).nonce, gatePubKey: await pubOf(SEEDS.stranger) } }))
+      .toEqual({ ok: false, refusal: "bad-session-proof" });
+  });
+
+  test("a request for another Nexus → `wrong-nexus`; an admit on another key → `hearth-not-admitted`", async () => {
+    expect(await ask({ nexusAid: "nexus-aid-elsewhere" })).toEqual({ ok: false, refusal: "wrong-nexus" });
+    expect(await ask({ admitSeed: SEEDS.stranger })).toEqual({ ok: false, refusal: "hearth-not-admitted" });
   });
 });

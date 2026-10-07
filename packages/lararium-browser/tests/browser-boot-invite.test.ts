@@ -7,12 +7,15 @@
  *     lands in this island's OWN IndexedDB, and the burned key names no inviter,
  *   · SINGLE-USE — a re-present of the burned invite WITHHOLDS (`already-spent`), never a throw,
  *   · a GARBLED / ABSENT / WRONG-NEXUS / UNSTANDING invite WITHHOLDS and BURNS NOTHING,
- *   · the OPEN policy admits with no invite (no burn, no record).
+ *   · the OPEN policy admits with no invite (no burn, no record),
+ *   · a USER's invite, countersigned by its hosting hearth over a live session, ADMITS and burns an id naming
+ *     neither walker nor hearth; the same invite stripped of its countersign WITHHOLDS and burns nothing.
  */
 import { describe, test, expect, afterEach } from "vitest";
 import {
   signBootInvite, bootInviteId, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier, hex,
-  type BootInvite, type CarriageEntry, type InviteStandingContext,
+  signHostCountersignRequest, countersignHostedInvite,
+  type BootInvite, type CarriageEntry, type InviteStandingContext, type HostedStanding,
 } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 import {
@@ -111,6 +114,44 @@ describe("runBrowserBootInviteSpend — any standing face, single-use, remembere
     const v = await runBrowserBootInviteSpend({ idbName: name, nexusAid: AID, standing: null, invite: null, policy: { kind: "open" } });
     expect(v.admitted).toBe(true);
     expect(v.burnId).toBeUndefined();
+    expect([...await readBootInviteBurnSet(name)]).toEqual([]);
+  });
+});
+
+describe("runBrowserBootInviteSpend — a user's invite, lent standing by its hosting hearth (real IDB)", () => {
+  const WALKER = new Uint8Array(32).fill(6);
+  const NONCE  = "a1b2c3d4e5f60718";
+
+  async function hostedInvite(): Promise<BootInvite> {
+    const session = { nonce: "5e5510a0000000000000000000000001", gatePubKey: await pub(new Uint8Array(32).fill(21)) };
+    const request = await signHostCountersignRequest(
+      { session, nexusAid: AID, nonce: NONCE, walkerKey: await pub(WALKER) }, signer(WALKER),
+    );
+    const lent = await countersignHostedInvite({
+      session, request, nexusAid: AID,
+      hearth: { key: await pub(MEMBER), admit: await memberAdmit(MEMBER), lineage: [], sign: signer(MEMBER) },
+    });
+    if (!lent.ok) throw new Error(lent.refusal);
+    return signBootInvite({ nexusAid: AID, nonce: NONCE, inviterKey: await pub(WALKER), standing: lent.standing }, signer(WALKER));
+  }
+
+  test("a hosted user invite ADMITS and burns an id naming neither walker nor hearth", async () => {
+    const name = idb();
+    const inv  = await hostedInvite();
+    expect(await spend(name, inv)).toEqual({ admitted: true, burnId: bootInviteId(inv) });
+    const burned = [...await readBootInviteBurnSet(name)].join();
+    expect(burned).not.toContain(await pub(WALKER));
+    expect(burned).not.toContain(await pub(MEMBER));
+  });
+
+  test("the same user invite WITHOUT its countersign WITHHOLDS and burns nothing", async () => {
+    const name = idb();
+    const inv  = await hostedInvite();
+    const bare = await signBootInvite({
+      nexusAid: AID, nonce: NONCE, inviterKey: inv.inviterKey,
+      standing: { ...(inv.standing as HostedStanding), countersig: "" },
+    }, signer(WALKER));
+    expect(await spend(name, bare)).toEqual({ admitted: false, refusal: "no-countersign" });
     expect([...await readBootInviteBurnSet(name)]).toEqual([]);
   });
 });

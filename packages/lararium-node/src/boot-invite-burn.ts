@@ -8,8 +8,8 @@
  * between burn and grant loses only the grant (the vessel re-boots to the anon floor — fail-closed); it never
  * double-spends a granted invite, because the id is already burned when the grant is attempted.
  *
- * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, bad-seal, inviter-not-standing, seat-standing-owed,
- * already-spent) returns the pure `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon floor", never a throw.
+ * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, bad-seal, inviter-not-standing, no-countersign,
+ * bad-countersign, host-not-standing, seat-standing-owed, already-spent) returns the pure `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon floor", never a throw.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
@@ -19,8 +19,9 @@ import { randomBytes } from "node:crypto";
 import { join, dirname } from "node:path";
 import * as ed25519 from "@noble/ed25519";
 import {
-  decideBootInvite, signBootInvite, bootInviteId,
+  decideBootInvite, signBootInvite, signHostCountersignRequest, bootInviteId,
   type BootInvite, type BootInvitePolicy, type BootVerdict, type InviterStanding, type InviteStandingContext,
+  type HostCountersignRefusal, type HostCountersignRequest, type HostCountersignVerdict, type HostSession,
 } from "@lararium/mesh";
 import { larDataDir } from "./vessel-paths.js";
 import { nexusLeafFor } from "./nexus-leaf.js";
@@ -74,6 +75,31 @@ export async function runBootInviteMint(opts: {
     { nexusAid: opts.nexusAid, nonce, inviterKey: leaf.verifyingKey, standing: opts.standing },
     async (bytes) => Buffer.from(await ed25519.signAsync(bytes, leaf.seed)).toString("hex"),
   );
+}
+
+/**
+ * Mint a USER's invite — the `hosted` arm. The walker persona at `handleIndex` holds no admit, so it asks the
+ * hearth that hosts it to countersign: its per-Nexus leaf signs a request over `session` (the nonce and gate
+ * key the hearth's gate issued on the live socket between them), `askHearth` carries the request to that
+ * hearth, and the countersigned standing rides inside the invite the leaf then signs. A refused countersign
+ * mints nothing. Like the member mint, it writes NOTHING, and the hearth never sees a guest.
+ */
+export async function runHostedInviteMint(opts: {
+  handleIndex: number; nexusAid: string; session: HostSession;
+  askHearth: (request: HostCountersignRequest) => Promise<HostCountersignVerdict>;
+}): Promise<{ readonly ok: true; readonly invite: BootInvite } | { readonly ok: false; readonly refusal: HostCountersignRefusal }> {
+  const leaf  = await nexusLeafFor(opts.handleIndex, opts.nexusAid);
+  const nonce = randomBytes(16).toString("hex");
+  const sign  = async (bytes: Uint8Array) => Buffer.from(await ed25519.signAsync(bytes, leaf.seed)).toString("hex");
+  const request = await signHostCountersignRequest(
+    { session: opts.session, nexusAid: opts.nexusAid, nonce, walkerKey: leaf.verifyingKey }, sign,
+  );
+  const verdict = await opts.askHearth(request);
+  if (!verdict.ok) return verdict;
+  const invite = await signBootInvite(
+    { nexusAid: opts.nexusAid, nonce, inviterKey: leaf.verifyingKey, standing: verdict.standing }, sign,
+  );
+  return { ok: true, invite };
 }
 
 /**

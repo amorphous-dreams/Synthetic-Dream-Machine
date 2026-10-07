@@ -8,7 +8,11 @@
  *   · a null invite → `no-invite`, a foreign-Nexus invite → `wrong-nexus`; each burns nothing,
  *   · the MINT writes nothing at the inviter,
  *   · NO WHO-INVITED-WHOM DATUM PERSISTS: after the spend, no file under either root carries the inviter's
- *     leaf key, its admit, its contract seal, or the invite's signature; the burn ledger holds one opaque id.
+ *     leaf key, its admit, its contract seal, or the invite's signature; the burn ledger holds one opaque id,
+ *   · A USER INVITES THROUGH ITS HOST: the walker's leaf asks its hearth over a live gate session, the hearth's
+ *     leaf countersigns, and the invite ADMITS once; a closed socket draws `no-live-session` and mints nothing;
+ *     after the spend no file under the hearth's, the walker's or the newcomer's root names walker, hearth,
+ *     countersign, session or guest.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -23,8 +27,10 @@ import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesse
 import { larDataDir } from "../src/vessel-paths.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import {
-  runBootInviteMint, runBootInviteSpend, bootInviteBurnPath, isBurned, bootInviteId,
+  runBootInviteMint, runHostedInviteMint, runBootInviteSpend, bootInviteBurnPath, isBurned, bootInviteId,
 } from "../src/boot-invite-burn.js";
+import { runHostCountersign, hostSessionOf } from "../src/host-countersign.js";
+import type { HostSession, HostCountersignRequest } from "@lararium/mesh";
 
 const AID   = "nexus-aid-genesis-0a1b2c";
 const EPOCH = "epoch-cid-genesis";
@@ -34,12 +40,14 @@ const pub = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 
 let inviterRoot: string;
 let newcomerRoot: string;
+let walkerRoot: string;
 let priorLarRoot: string | undefined;
 const asRoot = (root: string) => { process.env["LAR_ROOT"] = root; };
 
 beforeEach(() => {
   inviterRoot  = mkdtempSync(join(tmpdir(), "lares-invite-inviter-"));
   newcomerRoot = mkdtempSync(join(tmpdir(), "lares-invite-newcomer-"));
+  walkerRoot   = mkdtempSync(join(tmpdir(), "lares-invite-walker-"));
   priorLarRoot = process.env["LAR_ROOT"];
 });
 afterEach(() => {
@@ -47,6 +55,7 @@ afterEach(() => {
   else process.env["LAR_ROOT"] = priorLarRoot;
   rmSync(inviterRoot, { recursive: true, force: true });
   rmSync(newcomerRoot, { recursive: true, force: true });
+  rmSync(walkerRoot, { recursive: true, force: true });
 });
 
 async function standingCtx(): Promise<InviteStandingContext> {
@@ -137,5 +146,93 @@ describe("the node invite — signed by the inviter's face, burned once, remembe
       for (const t of traces) expect(f.body.toLowerCase().includes(t.toLowerCase()), `${f.path} carries ${t}`).toBe(false);
     }
     expect(readFileSync(bootInviteBurnPath(larDataDir()), "utf8")).toBe(`${bootInviteId(inv)}\n`);
+  });
+});
+
+/** A hearth's gate as `hostSessionOf` reads it: the live clients and the challenge issued on each socket. */
+function fakeGate(gatePubKey: string) {
+  const challenges = new WeakMap<object, { nonce: string; gatePubKey?: string }>();
+  const clients = new Set<object>();
+  return {
+    clients,
+    getChallengeForSocket: (s: object) => challenges.get(s),
+    open(nonce: string): object { const s = {}; challenges.set(s, { nonce, gatePubKey }); clients.add(s); return s; },
+    close(s: object): void { clients.delete(s); },
+  };
+}
+
+describe("the user invite — the walker's leaf asks its hearth, over a live session", () => {
+  async function standWalker(): Promise<string> {
+    asRoot(walkerRoot);
+    await generateOrLoadVesselIdentity();
+    await generateOrLoadPersonaGroupRoot(0);
+    return (await nexusLeafFor(0, AID)).verifyingKey;
+  }
+
+  /** The hearth stands (admitted), the walker stands (no admit), and a gate holds a live socket between them. */
+  async function stage() {
+    const hearth = await standInviter();
+    const walkerKey = await standWalker();
+    const gate = fakeGate(await pub(new Uint8Array(32).fill(21)));
+    const socket = gate.open("5e5510a0000000000000000000000001");
+    const askHearth = async (request: HostCountersignRequest) => {
+      const back = process.env["LAR_ROOT"]!;
+      asRoot(inviterRoot);   // the countersign runs at the hearth, on its own root
+      try {
+        return await runHostCountersign({
+          gate: gate as never, socket: socket as never, request, handleIndex: 0, nexusAid: AID, admit: hearth.admit, lineage: [],
+        });
+      } finally { asRoot(back); }
+    };
+    const session = hostSessionOf(gate as never, socket as never) as HostSession;
+    return { hearth, walkerKey, gate, socket, askHearth, session };
+  }
+
+  it("the hearth's countersign lends standing; the walker's leaf signs; the invite ADMITS once", async () => {
+    const { hearth, walkerKey, askHearth, session } = await stage();
+    asRoot(walkerRoot);
+    const minted = await runHostedInviteMint({ handleIndex: 0, nexusAid: AID, session, askHearth });
+    if (!minted.ok) throw new Error(minted.refusal);
+    expect(minted.invite.inviterKey).toBe(walkerKey);
+    expect(minted.invite.standing).toMatchObject({ kind: "hosted", hearthKey: hearth.leafKey });
+
+    asRoot(newcomerRoot);
+    expect(await runBootInviteSpend({ invite: minted.invite, nexusAid: AID, standing: await standingCtx() }))
+      .toEqual({ admitted: true, burnId: bootInviteId(minted.invite) });
+    expect(await runBootInviteSpend({ invite: minted.invite, nexusAid: AID, standing: await standingCtx() }))
+      .toEqual({ admitted: false, refusal: "already-spent" });
+  });
+
+  it("a CLOSED socket holds no session: the hearth refuses `no-live-session` and nothing mints", async () => {
+    const { gate, socket, askHearth, session } = await stage();
+    gate.close(socket);
+    expect(hostSessionOf(gate as never, socket as never)).toBeNull();
+    asRoot(walkerRoot);
+    expect(await runHostedInviteMint({ handleIndex: 0, nexusAid: AID, session, askHearth }))
+      .toEqual({ ok: false, refusal: "no-live-session" });
+  });
+
+  it("NO WHO-INVITED-WHOM DATUM PERSISTS — not at the hearth, not at the walker, not at the newcomer", async () => {
+    const { hearth, walkerKey, askHearth, session } = await stage();
+    const snap = (root: string) => allFiles(root).map((f) => `${f.path}\n${f.body}`).sort();
+    const hearthBefore = snap(inviterRoot);
+    const walkerBefore = snap(walkerRoot);
+    asRoot(walkerRoot);
+    const minted = await runHostedInviteMint({ handleIndex: 0, nexusAid: AID, session, askHearth });
+    if (!minted.ok) throw new Error(minted.refusal);
+    expect(snap(inviterRoot)).toEqual(hearthBefore);   // the countersign writes nothing at the hearth
+    expect(snap(walkerRoot)).toEqual(walkerBefore);    // the mint writes nothing at the walker
+
+    asRoot(newcomerRoot);
+    expect((await runBootInviteSpend({ invite: minted.invite, nexusAid: AID, standing: await standingCtx() })).admitted).toBe(true);
+
+    const lent = minted.invite.standing as { countersig: string };
+    const traces = [walkerKey, hearth.leafKey, carriageEntryActCid(hearth.admit), lent.countersig, minted.invite.sig, minted.invite.nonce, session.nonce];
+    const files = [...allFiles(newcomerRoot), ...allFiles(inviterRoot), ...allFiles(walkerRoot)];
+    // CONTROL: the scan reads the newcomer's root — it finds the burn ledger it must find.
+    expect(files.some((f) => f.path === bootInviteBurnPath(larDataDir()) && f.body.includes(bootInviteId(minted.invite)))).toBe(true);
+    for (const f of files) {
+      for (const t of traces) expect(f.body.toLowerCase().includes(t.toLowerCase()), `${f.path} carries ${t}`).toBe(false);
+    }
   });
 });
