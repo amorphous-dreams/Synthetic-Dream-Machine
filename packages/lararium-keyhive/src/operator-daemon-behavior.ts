@@ -595,7 +595,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 void _grantKind;
                 const rec = await signFaceGrantRecord({
                   kind: "face-join-grant/v1", groupDocIdHex: faceGroup(), ...grantBody,
-                  founderEdge: ownEdge, issuedAt: new Date().toISOString(),
+                  founderEdge: ownEdge,
                 }, ed25519SignerFromSeed(daemonAuth.seed));
                 recordTitle = faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex);
                 await store.put(

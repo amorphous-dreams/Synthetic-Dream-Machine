@@ -118,6 +118,8 @@ async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecor
   const { rec, why } = await recordOffPlane(title, group, g["recordHeads"] as UrlHeads);
   expect(rec, `no grant record stands at ${title}: ${why}`).not.toBeNull();
   expect(faceGrantRecordCid(rec!), "the record read off the plane is not the record the outcome names").toBe(g["recordCid"]);
+  // The record orders by the plane's history, so it carries no wall-clock stamp.
+  expect(rec!, "the grant record carries a wall-clock stamp").not.toHaveProperty("issuedAt");
   const verdict = await verifyFaceGrantRecord(rec, {
     personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupDocIdHex: rec!.groupDocIdHex,
   });

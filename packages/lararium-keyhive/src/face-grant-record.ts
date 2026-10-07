@@ -29,7 +29,10 @@ const FACE_GRANT_DOMAIN = "lares/face-join-grant/v1";
 /** The title prefix under which grant records land on the PersonaGroup plane. */
 export const FACE_GRANT_PREFIX = "$:/lares/face-grant/";
 
-/** The record as it lands on the plane — the grant plus the seal's two halves (edge + signature). */
+/**
+ * The record as it lands on the plane — the grant plus the seal's two halves (edge + signature). It carries no
+ * wall-clock stamp: the plane's causal history orders it, and a re-join overwrites it at its own title.
+ */
 export interface FaceGrantRecord {
   readonly kind: "face-join-grant/v1";
   /** The PersonaGroup sentinel this seat lands in. */
@@ -43,8 +46,6 @@ export interface FaceGrantRecord {
   readonly reSealed: readonly { bagUrl: string; contentRefB64: string; ciphertextB64: string }[];
   /** The founder's OWN device-delegation edge — root-signed; the joinee verifies it under the root it pinned. */
   readonly founderEdge: DeviceDelegationTiddler;
-  /** ISO-8601, caller-supplied (no ambient clock). */
-  readonly issuedAt: string;
   /** Hex Ed25519 signature under `founderEdge.deviceVerifyingKey` over `signedBytes(record)`. */
   readonly sig: string;
 }

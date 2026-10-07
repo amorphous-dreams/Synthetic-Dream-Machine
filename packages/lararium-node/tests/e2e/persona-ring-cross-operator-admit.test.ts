@@ -187,7 +187,6 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
       regranted: 0,
       reSealed: [],
       founderEdge: anchors.deviceEdge,
-      issuedAt: new Date().toISOString(),
     }, ed25519SignerFromSeed(founderSeed));
     const grantTitle = faceGrantTitle(personaGroupDocIdHex, joineeAgentIdHex);
 

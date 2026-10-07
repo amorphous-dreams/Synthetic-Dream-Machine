@@ -10,6 +10,8 @@
  *   · a record for another group → refused.
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, hexToBytes,
   deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
@@ -64,7 +66,6 @@ async function grantFor(overrides: Partial<FaceGrantRecord> = {}, rootSeed = ROO
     capEvents: ["AQID", "BAU="],
     reKeyed: true, regranted: 1, reSealed: [],
     founderEdge: edge,
-    issuedAt: "2026-09-11T11:00:00.000Z",
     ...overrides,
   };
   return signFaceGrantRecord(unsigned, ed25519SignerFromSeed(FOUNDER_SEED));
@@ -121,11 +122,34 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const moved: Array<[string, FaceGrantRecord]> = [
       ["one more cap event", { ...rec, capEvents: [...rec.capEvents, "Zm9yZ2Vk"] }],
       ["regranted",          { ...rec, regranted: rec.regranted + 1 }],
-      ["issuedAt",           { ...rec, issuedAt: "2026-09-11T11:00:00.001Z" }],
+      ["reKeyed",            { ...rec, reKeyed: !rec.reKeyed }],
       ["the signature",      { ...rec, sig: `${rec.sig.slice(0, -1)}${rec.sig.endsWith("0") ? "1" : "0"}` }],
       ["the joinee",         { ...rec, joineeAgentIdHex: `0x${"5".repeat(64)}` }],
     ];
     for (const [what, m] of moved) expect(faceGrantRecordCid(m), `moving ${what} left the CID standing`).not.toBe(cid);
+  });
+
+  // ── NO GLOBAL NOW IN THE RECORD ───────────────────────────────────────────────────────────────────────
+  // The record orders by the plane's causal history, so it carries no wall-clock stamp. The daemon's mint
+  // passes only the grant, the group and the founder's edge into the signed bytes.
+  test("★ the daemon mints the grant record with no wall-clock stamp ★", () => {
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
+    const start = src.indexOf("await signFaceGrantRecord({");
+    const end = src.indexOf("ed25519SignerFromSeed(", start);
+    expect(start, "the daemon's grant-record mint moved").toBeGreaterThan(-1);
+    const mint = src.slice(start, end);
+    expect(mint).not.toMatch(/issuedAt|Date/);
+  });
+
+  test("CONTROL: a record minted with no stamp verifies, and a moved byte still refuses", async () => {
+    const rec = await grantFor();
+    expect(Object.keys(rec)).not.toContain("issuedAt");
+    const edge = await founderEdge();
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, now: NOW };
+    expect(await verifyFaceGrantRecord(rec, ctx)).toEqual({ ok: true });
+    const moved = await verifyFaceGrantRecord({ ...rec, regranted: rec.regranted + 1 }, ctx);
+    expect(moved.ok).toBe(false);
+    if (!moved.ok) expect(moved.reason).toMatch(/signature/i);
   });
 
   // ── THE VERIFY WALKS THE KEL HEAD ─────────────────────────────────────────────────────────────────────

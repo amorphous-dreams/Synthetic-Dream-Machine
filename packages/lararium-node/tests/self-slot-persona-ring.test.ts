@@ -47,7 +47,7 @@ async function validGrant(opKeySeed = ROOT_SEED): Promise<FaceGrantRecord> {
   return signFaceGrantRecord({
     kind: "face-join-grant/v1", groupDocIdHex: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
     founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, regranted: 1, reSealed: [],
-    founderEdge: edge, issuedAt: "2026-09-11T11:00:00.000Z",
+    founderEdge: edge,
   }, ed25519SignerFromSeed(FOUNDER_SEED));
 }
 
