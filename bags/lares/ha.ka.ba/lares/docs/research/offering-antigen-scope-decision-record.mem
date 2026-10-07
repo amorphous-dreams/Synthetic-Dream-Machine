@@ -1,0 +1,103 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record.mem"
+l-space    = "lares"
+mana       = 15
+manao      = 15
+manaoio    = 14
+role       = "decision preparation: Offering Antigen scope boundary, measured code contract, operator-held options, and red-test matrix"
+status-why = "Prepared from two canonical local studies and current source inspection; offers evidence and tests without selecting an enforcement contract"
+tags       = ["research/offering-antigen", "mesh/identity-as-relation", "api/pono/causal-islands", "decision/held"]
+title      = "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/measured-boundary>>
+
+! Offering Antigen scope — decision record for the receiving relation
+
+!! What the code establishes today
+
+`OfferingKapaeEntry` signs `pluginsCid`, `action`, `actCid`, canonical `parents`, and `sealEpochCid`. The verifier requires the entry's `sealEpochCid` to equal the one `KahuRoster.sealEpochCid` supplied to the fold, checks the quorum signatures, and then folds by offering CID. The act carries no stable Nexus-scope field, and the fold receives no expected Nexus identity or board address.
+
+The deterministic Offering Antigen board is addressed from a Nexus scope. `nexusIdentity` distinguishes `charter`, `anchor`, `own`, `explicit`, and `torn`; `nexusScopeOrThrow` refuses a torn identity instead of quietly making a private fallback. Board address, signed act, roster selection, and receiver fold are therefore distinct seams in the current source.
+
+`sealEpochCid` is not a timeless label in the general charter model. `genesisSealEpochCid` names the stable charter genesis and is used as the initial epoch identity; later seal rolls create further epoch identities. The existing Offering fold accepts one roster and exact epoch equality. Its tests establish that a different epoch is ignored, but do not establish charter lineage handling for historical acts or a receiver's resolved Nexus scope.
+
+The fold is deliberately not called by production code today. `offering-antigen.test.ts` guards that absence and the module header says READY, not enforced. The present receiver-replication E2E work is a distinct observation seam and does not settle this contract.
+
+!! Two local readings, and the unresolved distinction
+
+|!study |! recommendation |! question left for the operator |
+|---|---|---|
+|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a">>|Use the per-Nexus board as the receiving relation and retain only the signed `sealEpochCid` as charter binding; avoid a duplicate identity field. |Should exact epoch equality plus correct receiver-local roster selection be sufficient across charter rolls and copied boards? |
+|<<~ loulou "lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>|Keep the board as rendezvous, add stable charter-genesis `nexusScopeCid` to the signed act, and retain `sealEpochCid` for quorum lineage. |Does explicit stable scope prevent a meaningful cross-Nexus ambiguity that the receiver's scoped board and charter roster cannot already prevent? |
+
+The studies agree that board placement alone is not a signature and that a receiver must not mistake carried bytes for a local verdict. They differ over whether the act must itself name a stable island in addition to its signing epoch. Study A's “genesis identity” phrasing needs to be read with the measured roll model: an epoch can be the genesis epoch or a later roll. That distinction is material before adopting its conclusion.
+
+!! Operator decision to make
+
+Choose the contract for **what a copied signed act can mean at a receiving Nexus**, including what the receiver verifies before any Offering verdict can affect local behavior:
+
+* **Board plus current signed epoch (A).** Keep the signed fields as they stand. The receiving relation selects the board and supplies the right roster. Specify how a receiver resolves the act's epoch under its local charter lineage, or explicitly constrain the fold to one exact epoch. A foreign act remains auditable carriage and cannot become a verdict unless local verification admits it.
+* **Board plus stable signed charter scope (B).** Add one stable charter-genesis identity to the canonical act bytes and act CID, retaining `sealEpochCid` as the authorization epoch. Specify how receiver scope is resolved and compared before folding, including torn, anchor, own, and explicit identity readings.
+* **Receiver-scoped fold without a new act field (a possible refinement).** Keep the board and current act shape, but make the receiver pass a resolved scope and charter-lineage context into a platform-blind verification seam. This makes scope selection explicit at the receiving relation; it still depends on the relation between the selected roster/lineage and that scope. This option is not endorsed by either report and needs a written proof that copied acts cannot cross that boundary.
+
+For each option, state whether wrong-scope material is retained as foreign evidence, rejected from the authority fold, or both; how a historical act remains attributable after a charter roll; and what capability authorizes the receiver to consult the board. The board grants no signing authority, and a valid act grants no automatic adoption, fetch, or grammar mutation.
+
+!! Red-first matrix for the chosen contract
+
+These are proposed tests, not tests already added or run. Keep each test at the Mesh contract seam first; then add a receiver adapter test when the receiver chooses a board, roster, and local fold. Use a positive control and change one condition at a time.
+
+|!case |! fixture and single changed condition |! required observation |
+|---|---|---|
+|Positive control |A locally resolved charter, its selected board and authorized roster, and a valid quorum act for offering X. |The configured local fold yields the signed action for X. This proves the harness reaches the fold. |
+|Foreign copied act |Carry the same valid act into a receiver whose resolved Nexus scope differs. |The act cannot create a receiver verdict. If policy retains it, the audit identifies it as foreign evidence separately from the fold. |
+|Same-Nexus replica |Copy identical act bytes between two replicas resolving the same Nexus scope and compatible local charter evidence. |Both replicas reach the same semantic fold for the same held causal frontier; arrival order does not create authority. |
+|Wrong roster epoch |Keep scope and board constant; give the receiver a roster that does not authorize the act's `sealEpochCid`. |Quorum verification refuses the act. No rejection becomes a `kapae` or `un_kapae` verdict. |
+|Charter roll |Keep stable Nexus scope; advance the charter lineage and introduce an act signed at the appropriate epoch. |The chosen contract states whether the fold accepts historical acts, new acts, or only one epoch. No test may silently equate “latest” with a global present. |
+|Torn charter |Keep a shared plane expected; make its charter unreadable. |Resolution is explicitly unavailable/refused. No own-vessel or anchor fallback supplies an Antigen board. |
+|Anchor / own / explicit |Vary only the identity resolution kind while keeping a valid-looking board record. |The receiver follows the chosen authority rule; no vessel identity or route silently becomes a charter-backed condemning scope. |
+|Mismatched extra field (B only) |Hold every current field fixed and mutate only the stable scope field, then re-sign only in a dedicated positive control. |Mutation without matching signatures fails canonical identity/quorum verification. A correctly signed but wrong-scope act is rejected by the receiver before folding. |
+|Concurrent opposite heads |Deliver valid `kapae` and `un_kapae` heads with no causal parent relation in both arrival orders. |The fold remains `unsettled`; input order never picks a winner. |
+|Missing causal parent |Deliver a valid child without its parent while retaining the same local scope and roster. |The result is `unavailable`, never a guessed verdict. |
+|Receiver absence |Do not grant the receiver the consultation capability. |No automatic read, adoption, fetch, or grammar mutation occurs. |
+
+The board and act tests should distinguish carriage from authority. A copied record may be inspectable without being authoritative; the operator's local frontier may be incomplete without becoming false. Every refusal should preserve the established gradient (`held`, `withdrawn`, `unsettled`, `unavailable`, absent) or add a precisely named foreign-evidence diagnostic without collapsing those states.
+
+!! Pattern-integrity constraints
+
+* **Causal islands:** each receiver reports only its locally resolved scope, roster/lineage, board contents, and frontier. Replication is eventual; no verdict claims planetary saturation or a global current state.
+* **Identity as relation:** scope comes from the receiver's actual charter/anchor/explicit relation. A route, board URL, signer key, or copied act does not become the receiver's identity.
+* **Peer ontology:** each Lararium vessel selects and verifies its local board relation as a peer. Avoid naming one vessel a global server or treating another as a passive client.
+* **Capability separation:** permission to carry/read a board, authority to sign a quorum act, and permission to consult or act on a local verdict remain distinct. Antigen inspection does not itself adopt bytes.
+* **No global now:** do not add timestamps, `Date.now()`, mutable `latest`, a numeric currentness field, or wall-clock precedence. Charter lineage and causal parents carry the ordering evidence.
+* **Early alpha:** no backwards-compatibility field migration is required. If a new signed field is chosen, update the canonical act identity, signature preimage, normalizer, board projection, and refusal controls together; do not accept two ambiguous wire meanings.
+
+!! Evidence examined
+
+* `packages/lararium-mesh/src/offering-antigen.ts` — act fields, canonical bytes, act CID, exact roster-epoch equality, offering fold, audit gradient, and READY/no-caller contract.
+* `packages/lararium-mesh/src/kapae-antigen.ts` — `KahuRoster` and shared multi-signature epoch check.
+* `packages/lararium-mesh/src/nexus-identity.ts` — resolved identity kinds and torn refusal.
+* `packages/lararium-mesh/src/deterministic-doc.ts` — deterministic Nexus-scoped Antigen board address.
+* `packages/lararium-mesh/tests/offering-antigen.test.ts` — quorum, wrong epoch, causal parents, unsettled heads, hostile normalization, and no-production-caller control. It does not yet test resolved receiver scope or roll lineage.
+* `bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem`, `dreamnet-architecture.mem`, `lamplighters.mem`, `carry-contract.mem`, `oracle-governance.mem`, and `pronaos.mem` — local causal logs, per-Nexus boards, offering governance, bounded carriage, and the distinction among names, routes, peer keys, and capabilities.
+* `bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem` and `offering-antigen-scope-local-b.mem` — both canonical local studies and their contrasting proposals.
+
+!! Boundary and remaining uncertainty
+
+This record prepares a decision; it does not make it. No production field, fold, board, or enforcement behavior changed here. The operator still needs to choose the meaning of a copied act and the required scope evidence. Outside-research completion is not established by these local sources. Once chosen, enactment should begin with the positive control and the selected contract's foreign-scope red, then wire the smallest receiver seam that makes the test pass.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;YaTNW1WaywTOM5xEC_s3ipPnpBYeV_hEBwC6uH7kMwM
+
+<<^ code="&#x0004;" -> to="?">>
