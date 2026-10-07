@@ -1,168 +1,223 @@
 /**
- * boot-invite — the TRACELESS alpha boot capability: a sealed, single-use token spent-on-boot that leaves NO
- * record on any board and names NO voucher. It gates invite-only alpha the way cabal-invite gates a cabal, but
- * it is the deliberate CONTRAST to it (membership-doctrine #the-invite): a cabal-invite names its `voucherDid`
- * in the clear (attributable, reputation-priced, board-tracked) BECAUSE a cabal is a mutual, consented graph; a
- * boot-invite manufactures NO social graph, so it carries no inviter identity and writes no who-invited-whom
- * edge anywhere.
+ * boot-invite — the invite an end user boots into a Nexus on. Any face that stands in that Nexus may mint
+ * one; the newcomer spends it once; nobody remembers who invited whom.
+ *
+ * An end user needs no quorum admit. It needs an INVITE from a face that already stands in the Nexus — a
+ * Kahu, a Lamplighter, or another member — and nothing else.
  *
  * WHAT IT IS, AND IS NOT:
- *   · CARRIED, never fetched — the recipient holds it; no relay and no issuer sees it in transit (admit-carriage's
- *     discipline). It verifies OFFLINE against the Nexus pubkey, so it needs no reachable authority (an isolated
- *     mesh is the only kind that ever really needs an invite).
- *   · SEALED by the NEXUS, not by a person — the signature is the charter/Nexus authority's, IDENTICAL in shape
- *     for every invite it mints, so two invites reveal nothing about who minted which. A random `nonce` makes each
- *     token unique (and is the local burn key); the nonce carries no meaning, only freshness.
- *   · SINGLE-USE, burned LOCALLY. Spend-on-boot: the receiving vessel records the invite's fingerprint in its OWN
- *     local spent-set and refuses a second spend. There is deliberately NO federated burn-registry — a mesh-wide
- *     "which invites are spent" list would re-introduce exactly the tracking the doctrine forbids (and it would
- *     demand a global now the mesh does not have). The burn is a causal-island-local fact.
- *   · WITHHOLD, never forge. A garbled / absent / expired / already-spent invite does NOT throw and does NOT
- *     admit — it means the invite DID NOT ARRIVE, and the vessel then founds its OWN group and stands at the anon
- *     floor (a correct outcome, never an attack; a human's typo must not read as a breach).
+ *   · SIGNED BY THE INVITER'S FACE FOR THAT NEXUS — the persona's per-Nexus leaf
+ *     (`m / handle' / context' / nexus-scope'`, `deriveNexusScopedKey`), never a vessel key and never a
+ *     PersonaGroup root. The leaf names the inviter to this one Nexus and to nothing else, so an invite read
+ *     in two Nexuses links no face across them.
+ *   · IT CARRIES ITS OWN STANDING. The verifier holds no roster and looks nothing up: the invite presents what
+ *     proves its inviter stands, and the gate reads that proof against the Nexus's kahu roster, its DENY-only
+ *     board and the Kapae antigen. What proves standing is named on `InviterStanding`.
+ *   · CARRIED, never fetched — the newcomer holds it (paste / QR / URL fragment); no relay sees it in transit.
+ *     It verifies OFFLINE.
+ *   · SINGLE-USE, burned LOCALLY. The newcomer's vessel records the invite's burn id in its OWN spent-set and
+ *     refuses a second spend. No federated burn-registry exists: a mesh-wide spent list would track exactly
+ *     what the doctrine forbids tracking. The single-use burn is what CLOSES an invite — it carries no clock.
+ *     A signature does not age; the invite's scope (one Nexus, one spend) bounds it.
+ *   · ONE HOP, REMEMBERED BY NO ONE. Spending records nothing about who invited whom: no board entry, nothing
+ *     at the inviter, and on the newcomer only a burn id that digests the Nexus and the nonce — never the
+ *     inviter's key, never its standing. A newcomer's own standing never cites the invite it spent, so
+ *     invites never chain into a lineage (a lineage of who-invited-whom IS a roster). The inviter carries no
+ *     liability for whom it invited: membership never confers trust.
+ *   · WITHHOLD, never forge. A garbled / absent / wrong-Nexus / unsigned / unstanding / already-spent invite
+ *     does NOT throw and does NOT admit — the vessel founds its OWN group and stands at the anon floor.
  *
- * ── AUTHN ⊥ AUTHZ, AND THE EXPIRY SITS ON THE WRONG SIDE (operator ruling) ────────────────────────────
- * A signature does not expire. What bounds a capability is not its token's age but the SCOPE of the act it
- * authorizes — a specific space, a specific deed, spent once. This invite already carries that scope: it
- * binds to ONE nexus and spends SINGLE-USE, and those two facts do the work the wall-clock `expiresAt` was
- * hired for. The clock adds nothing the binding lacks, and it adds a dependency on an instant that a device
- * owner sets freely — more freely still if they operate the box, since skew is a testing FEATURE there.
- *
- * The expiry therefore reads as DEBT, not design. Retiring it wants the scope stated explicitly enough to
- * stand alone; until then it rides, named.
- *
- * Platform-blind: rides ./crypto only. NO node: imports — the LOCAL spent-set (the burn) lives in the boot host
- * (node: boot-invite-burn; browser: an IndexedDB/localStorage sibling), which this module consults through an
- * injected `isSpent` shore and never reaches itself.
+ * Platform-blind: rides ./crypto and @noble/ed25519 only. The LOCAL spent-set lives in the boot host (node:
+ * boot-invite-burn; browser: browser-boot-invite-burn) and arrives here through an injected `isSpent` shore.
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { BOOT_INVITE_DOMAIN } from "./domains.js";
+import { NEXUS_INVITE_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
+import {
+  carriageEntryCounts, verifyPresentedAdmit,
+  type CarriageEntry, type PresentedAdmitInput, type PresentedLineageAct,
+} from "./carriage-registry.js";
+import { foldAntigenVerdicts } from "./kapae-antigen.js";
 
-/** The domain a boot-invite signs over. A signature is meaningless without the domain it was made in. */
-export { BOOT_INVITE_DOMAIN } from "./domains.js";
+/** The domain an invite signs over. A signature is meaningless without the domain it was made in. */
+export { NEXUS_INVITE_DOMAIN } from "./domains.js";
+
 /**
- * A sealed, single-use, TRACELESS boot capability. Note what is ABSENT by construction: no `voucherDid`, no
- * joiner identity, no place edge — a boot-invite is bearer within its Nexus and names nobody. The Nexus seals
- * it; the recipient carries it; the local burn spends it once.
+ * What proves the inviter stands in the Nexus. Every kind is checked against the deny board and the antigen;
+ * none consults a roster of members.
+ *
+ *   · `admit` — the inviter's own quorum-signed member admit on its leaf nym, with that admit's closed, tight
+ *     causal lineage (`presentedAdmitFromBoard`). A Lamplighter stands this way, and so does any face the
+ *     kahu quorum admitted. Read by `verifyPresentedAdmit`; only `held` stands.
+ *   · `seat`  — the inviter's key sits as a chair of the kahu roster at the charter head, and no counted
+ *     revoke or held kapae names it. A Kahu stands this way once its chair carries its per-Nexus leaf.
+ */
+export type InviterStanding =
+  | { readonly kind: "admit"; readonly admit: CarriageEntry; readonly lineage: readonly PresentedLineageAct[] }
+  | { readonly kind: "seat" };
+
+/**
+ * A sealed, single-use invite into ONE Nexus. Absent by construction: any joiner identity, any place edge,
+ * any expiry. The inviter's leaf rides only so the seal and the standing can be checked; the burn digests
+ * neither.
  */
 export interface BootInvite {
-  readonly kind:        typeof BOOT_INVITE_DOMAIN;
-  /** The Nexus this invite boots INTO — the pubkey its `sig` verifies against. An invite is never a general pass. */
-  readonly nexusPubkey: string;
-  /** A random freshness nonce (hex) — makes each token unique and IS the local burn key. Carries no identity. */
-  readonly nonce:       string;
-  /** ISO-8601 expiry. An invite that never expires is a key left under a mat; the seal decays unless re-minted. */
-  readonly expiresAt:   string;
-  /** Ed25519 over the canonical bytes of everything above, by the NEXUS authority key. Unforgeable; anonymous. */
-  readonly sig:         string;
+  readonly kind:       typeof NEXUS_INVITE_DOMAIN;
+  /** The Nexus this invite boots INTO — its genesis AID (`realmIdOfCharter`). An invite is never a general pass. */
+  readonly nexusAid:   string;
+  /** A random freshness nonce (hex) — makes each invite unique and keys its local burn. Carries no identity. */
+  readonly nonce:      string;
+  /** The inviter's per-Nexus leaf verifying key (hex). Signs the invite; never a vessel key, never a root. */
+  readonly inviterKey: string;
+  /** What proves the inviter stands in this Nexus. */
+  readonly standing:   InviterStanding;
+  /** Ed25519 by `inviterKey` over the canonical bytes of everything above. */
+  readonly sig:        string;
 }
 
-/** The bytes a boot-invite signs over. Canonical, so one invite yields one signature. */
+/** The bytes an invite signs over. Canonical, so one invite yields one signature. */
 export function bootInviteBytes(parts: Omit<BootInvite, "sig">): Uint8Array {
   return canonicalJsonBytes({
-    kind:        parts.kind,
-    nexusPubkey: parts.nexusPubkey,
-    nonce:       parts.nonce,
-    expiresAt:   parts.expiresAt,
+    kind:       parts.kind,
+    nexusAid:   parts.nexusAid,
+    nonce:      parts.nonce,
+    inviterKey: parts.inviterKey,
+    standing:   parts.standing,
   });
 }
 
 /**
- * Mint a boot-invite. The caller supplies the NEXUS authority signer (this module holds no key and mints no
- * authority) and a random nonce (a fresh CSPRNG hex — the caller owns the RNG so the module stays platform-blind).
- * The signer is the SAME for every invite the Nexus mints, so the seal reveals no inviter.
+ * Mint an invite. The caller supplies the inviter's leaf signer (this module holds no key) and a fresh CSPRNG
+ * nonce (the caller owns the RNG so the module stays platform-blind).
  */
 export async function signBootInvite(
   parts: Omit<BootInvite, "kind" | "sig">,
   sign: (bytes: Uint8Array) => Promise<string>,
 ): Promise<BootInvite> {
-  const unsigned = { ...parts, kind: BOOT_INVITE_DOMAIN } as Omit<BootInvite, "sig">;
+  const unsigned = { ...parts, inviterKey: parts.inviterKey.toLowerCase(), kind: NEXUS_INVITE_DOMAIN } as Omit<BootInvite, "sig">;
   return { ...unsigned, sig: await sign(bootInviteBytes(unsigned)) };
 }
 
-/** A stable fingerprint of an invite — the LOCAL burn key, so one invite spends exactly once on this island. */
-export function bootInviteId(inv: BootInvite): string {
-  return hex(bootInviteBytes(inv));
+/**
+ * The LOCAL burn key: a digest over the domain, the Nexus and the nonce ALONE. It names no inviter and no
+ * standing, so the spent-set a newcomer keeps remembers that AN invite spent, never whose. Two invites that
+ * share a Nexus and a nonce burn as one.
+ */
+export function bootInviteId(inv: Pick<BootInvite, "nexusAid" | "nonce">): string {
+  return sha256HexBytesSync(canonicalJsonBytes({
+    kind: NEXUS_INVITE_DOMAIN, nexusAid: normAid(inv.nexusAid), nonce: inv.nonce,
+  }));
 }
 
-/**
- * The ready-made OFFLINE seal verifier — an Ed25519 check over @noble/ed25519 (browser-shippable, the same
- * library the handle-card and antigen seals ride). Pass it as `decideBootInvite.verify` from EITHER platform:
- * the browser needs no node crypto and no added dep, and the node burn may adopt it too. False on any
- * malformed input — a torn signature reads as withhold, never a throw.
- */
+/** The OFFLINE Ed25519 check over @noble/ed25519. False on any malformed input — a torn seal reads as withhold. */
 export async function verifyBootInviteSig(bytes: Uint8Array, sigHex: string, keyHex: string): Promise<boolean> {
   try { return await ed25519.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(keyHex)); }
   catch { return false; }
 }
 
-/** How the boot answers "may this vessel cross into the alpha?". The operator turns it — code never bakes it in. */
+/** How the boot answers "may this vessel cross into the Nexus?". The operator turns it — code never bakes it in. */
 export type BootInvitePolicy =
-  /** invite-only — a sealed, unspent, in-date, Nexus-signed invite is REQUIRED, or the vessel founds its own group. */
+  /** invite-only — a sealed, unspent invite from a standing face is REQUIRED, or the vessel founds its own group. */
   | { readonly kind: "invite-only" }
-  /** open — no invite required; every vessel boots into the Nexus. The later, opened setting. */
+  /** open — no invite required; every vessel boots into the Nexus. */
   | { readonly kind: "open" };
 
-/** Why a boot crossing was refused. A refusal names itself; a refused vessel founds its own group at the anon floor. */
+/** Why a boot crossing was refused. A refused vessel founds its own group at the anon floor. */
 export type BootRefusal =
-  | "no-invite"        // invite-only, and none arrived (absent / garbled)
-  | "wrong-nexus"      // the invite seals a different Nexus
-  | "expired"          // the seal lapsed
-  | "already-spent"    // single-use: this invite was burned already (local island fact)
-  | "bad-signature";   // the Nexus did not seal this — forged or torn
+  | "no-invite"            // invite-only, and none arrived (absent / garbled)
+  | "wrong-nexus"          // the invite names a different Nexus
+  | "bad-signature"        // the inviter's leaf did not sign this — forged or torn
+  | "inviter-not-standing" // the standing it presents does not hold here (rejected, denied, unsettled, unread)
+  | "already-spent";       // single-use: this invite was burned already (local island fact)
 
 export interface BootVerdict {
-  /** True → the vessel boots INTO the Nexus. False → it founds its own group + stands at the anon floor (never banned). */
+  /** True → the vessel boots INTO the Nexus. False → it founds its own group + stands at the anon floor. */
   readonly admitted: boolean;
   /** Present only on a refusal. */
   readonly refusal?: BootRefusal;
-  /** Present only on an admission — the caller MUST burn this id in its LOCAL spent-set before granting (spend-on-boot). */
+  /** Present only on an admission — the caller MUST burn this id in its LOCAL spent-set before granting. */
   readonly burnId?:  string;
 }
 
 /**
- * THE GATE. Decide whether a vessel boots into the Nexus on a carried invite. OFFLINE + platform-blind:
- * `verify` checks the Nexus seal, `now` bounds the lease, `isSpent` reads the LOCAL burn set — nothing here
- * reaches a network or an authority. WITHHOLD-not-forge: every failure returns `admitted:false` (never throws),
- * and the caller reads that as "found your own group at the anon floor".
+ * The Nexus material an inviter's standing is read against — the presented-admit verifier's inputs without
+ * the presentation: the kahu roster at the charter head, the charter lineage, the deny board and the antigen.
+ * The caller owns which Nexus this material belongs to.
+ */
+export type InviteStandingContext = Omit<PresentedAdmitInput, "admit" | "lineage">;
+
+const normAid = (aid: string): string => aid.trim().toLowerCase();
+
+/** Does the presented standing hold for `inviterKey` against the Nexus material? Fail-closed; never throws. */
+async function inviterStands(inviterKey: string, standing: InviterStanding, ctx: InviteStandingContext): Promise<boolean> {
+  try {
+    if (standing.kind === "admit") {
+      if (standing.admit?.nym?.toLowerCase() !== inviterKey) return false;   // the admit must name the signer
+      const v = await verifyPresentedAdmit({ ...ctx, admit: standing.admit, lineage: standing.lineage });
+      return v.state === "held";
+    }
+    if (standing.kind === "seat") {
+      if (!ctx.roster.keys.some((k) => k.trim().toLowerCase() === inviterKey)) return false;
+      for (const entry of ctx.denyBoard) {
+        if (entry?.action === "revoke" && entry.nym?.toLowerCase() === inviterKey
+            && await carriageEntryCounts(entry, ctx.roster)) return false;
+      }
+      const verdicts = await foldAntigenVerdicts(ctx.antigen, ctx.antigenRoster, ctx.antigenVerifier);
+      for (const [nym, verdict] of verdicts) {
+        if (nym.toLowerCase() === inviterKey && verdict !== "withdrawn") return false;   // held or contradictory
+      }
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * THE GATE. Decide whether a vessel boots into the Nexus on a carried invite. OFFLINE, clockless and pure:
+ * it checks the Nexus binding, the inviter's leaf seal, the inviter's presented standing against `standing`
+ * (the roster, deny board and antigen the caller holds for this Nexus), and the LOCAL burn set. Every failure
+ * returns `admitted:false`; nothing throws.
  *
- * The caller MUST, on an admission, burn `burnId` in its local spent-set BEFORE granting — this fn is pure and
- * does not mutate the set (the atomic decide-then-burn lives in the boot host, so a crash between cannot double-spend
- * a granted invite; the host burns first, then grants).
- *
- * `verify` MUST come from the caller: this module holds no trust root and never decides which key is the Nexus.
+ * The caller MUST, on an admission, burn `burnId` in its local spent-set BEFORE granting — this fn does not
+ * mutate the set (the host burns first, then grants, so a crash between never double-spends).
  */
 export async function decideBootInvite(args: {
-  readonly policy:      BootInvitePolicy;
-  readonly nexusPubkey: string;
-  readonly invite:      BootInvite | null;
-  readonly now:         Date;
-  /** Verify an Ed25519 signature against the Nexus pubkey. The CALLER owns which key is the Nexus authority. */
-  readonly verify:      (bytes: Uint8Array, sigHex: string, nexusPubkey: string) => Promise<boolean>;
-  /** Has this invite id been burned on THIS island already? A LOCAL fact — never a federated lookup. */
-  readonly isSpent:     (burnId: string) => boolean | Promise<boolean>;
+  readonly policy:   BootInvitePolicy;
+  /** The genesis AID of the Nexus this vessel crosses into. */
+  readonly nexusAid: string;
+  readonly invite:   BootInvite | null;
+  /** The Nexus material standing is read against. Absent → no invite can show standing, so invite-only withholds. */
+  readonly standing: InviteStandingContext | null;
+  /** Has this burn id been spent on THIS island already? A LOCAL fact — never a federated lookup. */
+  readonly isSpent:  (burnId: string) => boolean | Promise<boolean>;
 }): Promise<BootVerdict> {
-  // OPEN: no invite required. Every vessel boots into the Nexus.
   if (args.policy.kind === "open") return { admitted: true };
 
-  // INVITE-ONLY: a sealed, unspent, in-date, Nexus-signed invite or nothing.
   const inv = args.invite;
-  if (!inv || inv.kind !== BOOT_INVITE_DOMAIN) return { admitted: false, refusal: "no-invite" };
+  if (!inv || typeof inv !== "object" || inv.kind !== NEXUS_INVITE_DOMAIN
+      || typeof inv.nexusAid !== "string" || typeof inv.nonce !== "string"
+      || typeof inv.inviterKey !== "string" || typeof inv.sig !== "string"
+      || !inv.standing || typeof inv.standing !== "object") {
+    return { admitted: false, refusal: "no-invite" };
+  }
 
-  // Bind to THIS Nexus BEFORE the signature — a valid seal for another Nexus is a valid signature and an invalid
-  // admission; verifying first would let a real invite for elsewhere read as proof here.
-  if (inv.nexusPubkey !== args.nexusPubkey) return { admitted: false, refusal: "wrong-nexus" };
+  // Bind to THIS Nexus BEFORE the seal — a valid invite into another Nexus is a valid signature and an
+  // invalid admission here.
+  if (normAid(inv.nexusAid) !== normAid(args.nexusAid)) return { admitted: false, refusal: "wrong-nexus" };
 
-  const exp = Date.parse(inv.expiresAt);
-  if (!Number.isFinite(exp) || exp <= args.now.getTime()) return { admitted: false, refusal: "expired" };
+  const inviterKey = inv.inviterKey.toLowerCase();
+  if (!(await verifyBootInviteSig(bootInviteBytes(inv), inv.sig, inviterKey))) {
+    return { admitted: false, refusal: "bad-signature" };
+  }
 
-  const ok = await args.verify(bootInviteBytes(inv), inv.sig, inv.nexusPubkey);
-  if (!ok) return { admitted: false, refusal: "bad-signature" };
+  if (!args.standing || !(await inviterStands(inviterKey, inv.standing, args.standing))) {
+    return { admitted: false, refusal: "inviter-not-standing" };
+  }
 
-  // SINGLE-USE — the local burn. A spent invite draws the same withhold as a garbled one: found your own group.
   const burnId = bootInviteId(inv);
   if (await args.isSpent(burnId)) return { admitted: false, refusal: "already-spent" };
 

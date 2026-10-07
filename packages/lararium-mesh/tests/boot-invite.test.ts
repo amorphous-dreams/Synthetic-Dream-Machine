@@ -1,97 +1,183 @@
 /**
- * boot-invite.test.ts — the TRACELESS boot-invite: sealed, single-use, no voucher, no board.
+ * boot-invite.test.ts — an invite from any standing face, burned once, remembered by no one.
  *
  * Proven:
- *   · a valid sealed invite (in-date, right Nexus, unspent) ADMITS + names its local burn id,
- *   · SINGLE-USE — once `isSpent` reports the burn id, a re-present draws `already-spent` (withhold, never a throw),
- *   · a GARBLED / ABSENT invite → `no-invite` (found your own group at the anon floor — never a crash),
- *   · a WRONG-NEXUS seal, an EXPIRED lease, and a BAD signature each refuse (fail-closed),
- *   · NO RECORD — the invite carries NO voucher DID / joiner id / inviter edge (the cabal-invite contrast); the
- *     decision is pure (writes nothing anywhere),
+ *   · an invite signed by a MEMBER's per-Nexus leaf, carrying its held admit, ADMITS and names a burn id,
+ *   · an invite from a KAHU chair (`seat`) ADMITS; a revoke or a held kapae on that chair withholds,
+ *   · an inviter whose admit a counted revoke closes, a stranger with no admit, an admit naming a different
+ *     key, and a missing standing context each withhold `inviter-not-standing`,
+ *   · SINGLE-USE — once `isSpent` reports the burn id, a re-present draws `already-spent`,
+ *   · garbled / absent → `no-invite`; wrong Nexus → `wrong-nexus`; a tampered or foreign seal → `bad-signature`,
+ *   · NO CLOCK — the invite carries no expiry, and the module source names no clock,
+ *   · ONE HOP, REMEMBERED BY NO ONE — the burn id digests the Nexus and nonce alone: two inviters' invites with
+ *     one nonce burn as one, and the id derives nothing of the inviter or its standing,
  *   · the OPEN policy admits with no invite at all.
  */
 import { describe, test, expect } from "vitest";
-import * as ed from "@noble/ed25519";
-import { hex, hexToBytes } from "../src/crypto.js";
+import { readFileSync } from "node:fs";
+import { canonicalJsonBytes, sha256HexBytesSync } from "../src/crypto.js";
 import {
-  signBootInvite, bootInviteBytes, bootInviteId, decideBootInvite,
-  BOOT_INVITE_DOMAIN, type BootInvite,
+  signBootInvite, bootInviteId, decideBootInvite,
+  NEXUS_INVITE_DOMAIN, type BootInvite, type InviterStanding, type InviteStandingContext,
 } from "../src/boot-invite.js";
+import { carriageEntryActCid, type CarriageEntry } from "../src/carriage-registry.js";
+import { signAntigenEntry, makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
+import { pubOf, signerOf, kahuRoster, kahuSigners, carriageAct } from "./fixtures/carriage.js";
 
-const NEXUS_SEED = new Uint8Array(32).fill(9);   // the Nexus authority key
-const nexusSign  = (bytes: Uint8Array) => ed.signAsync(bytes, NEXUS_SEED).then(hex);
-const verify = async (bytes: Uint8Array, sigHex: string, keyHex: string): Promise<boolean> => {
-  try { return await ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(keyHex)); } catch { return false; }
+const EPOCH = "epoch-cid-genesis";
+const AID   = "nexus-aid-genesis-0a1b2c";
+const SEEDS = {
+  guru:     new Uint8Array(32).fill(1),
+  telarus:  new Uint8Array(32).fill(2),
+  lindwyrm: new Uint8Array(32).fill(3),
+  member:   new Uint8Array(32).fill(5),   // a Lamplighter's per-Nexus leaf
+  user:     new Uint8Array(32).fill(6),
+  stranger: new Uint8Array(32).fill(7),
+  warden1:  new Uint8Array(32).fill(11),
+  warden2:  new Uint8Array(32).fill(12),
 };
 const neverSpent = () => false;
 
-let NEXUS = "";
-async function invite(over: Partial<Omit<BootInvite, "kind" | "sig">> = {}): Promise<BootInvite> {
-  NEXUS = NEXUS || (await ed.getPublicKeyAsync(NEXUS_SEED).then(hex));
-  return signBootInvite({
-    nexusPubkey: over.nexusPubkey ?? NEXUS,
-    nonce:       over.nonce       ?? "a1b2c3d4e5f60718",
-    expiresAt:   over.expiresAt   ?? new Date(Date.now() + 86_400_000).toISOString(),
-  }, nexusSign);
+async function ctx(over: Partial<InviteStandingContext> = {}): Promise<InviteStandingContext> {
+  return {
+    roster:          await kahuRoster([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm], 2, EPOCH),
+    denyBoard:       [],
+    antigen:         [],
+    antigenRoster:   await kahuRoster([SEEDS.warden1, SEEDS.warden2], 2, EPOCH),
+    antigenVerifier: makeMultiSigQuorumVerifier(),
+    ...over,
+  };
 }
 
-describe("decideBootInvite — sealed, single-use, traceless", () => {
-  test("a valid sealed invite ADMITS and names its local burn id", async () => {
-    const inv = await invite();
-    const v = await decideBootInvite({ policy: { kind: "invite-only" }, nexusPubkey: NEXUS, invite: inv, now: new Date(), verify, isSpent: neverSpent });
-    expect(v.admitted).toBe(true);
-    expect(v.burnId).toBe(bootInviteId(inv));
+const admitOf = (seed: Uint8Array): Promise<CarriageEntry> =>
+  carriageAct(seed, "admit", { kahu: [SEEDS.guru, SEEDS.telarus], epoch: EPOCH });
+
+async function invite(
+  signer: Uint8Array,
+  standing: InviterStanding,
+  over: { nexusAid?: string; nonce?: string } = {},
+): Promise<BootInvite> {
+  return signBootInvite({
+    nexusAid:   over.nexusAid ?? AID,
+    nonce:      over.nonce ?? "a1b2c3d4e5f60718",
+    inviterKey: await pubOf(signer),
+    standing,
+  }, signerOf(signer));
+}
+
+async function decide(inv: BootInvite | null, over: { standing?: InviteStandingContext | null; isSpent?: (id: string) => boolean } = {}) {
+  return decideBootInvite({
+    policy: { kind: "invite-only" }, nexusAid: AID, invite: inv,
+    standing: over.standing === undefined ? await ctx() : over.standing,
+    isSpent:  over.isSpent ?? neverSpent,
+  });
+}
+
+describe("decideBootInvite — any standing face invites", () => {
+  test("a MEMBER's leaf invite, carrying its held admit, ADMITS and names its burn id", async () => {
+    const inv = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
+    const v = await decide(inv);
+    expect(v).toEqual({ admitted: true, burnId: bootInviteId(inv) });
+  });
+
+  test("a KAHU chair's invite (`seat`) ADMITS; a counted revoke or a held kapae on the chair withholds", async () => {
+    const inv = await invite(SEEDS.guru, { kind: "seat" });
+    expect((await decide(inv)).admitted).toBe(true);
+
+    const revoke = await carriageAct(SEEDS.guru, "revoke", { kahu: [SEEDS.telarus, SEEDS.lindwyrm], epoch: EPOCH });
+    expect(await decide(inv, { standing: await ctx({ denyBoard: [revoke] }) }))
+      .toEqual({ admitted: false, refusal: "inviter-not-standing" });
+
+    const kapae = await signAntigenEntry(
+      { nym: await pubOf(SEEDS.guru), action: "kapae", parents: [], sealEpochCid: EPOCH },
+      await kahuSigners([SEEDS.warden1, SEEDS.warden2]),
+    );
+    expect(await decide(inv, { standing: await ctx({ antigen: [kapae] }) }))
+      .toEqual({ admitted: false, refusal: "inviter-not-standing" });
+  });
+
+  test("a `seat` claim from a key no chair carries withholds", async () => {
+    const inv = await invite(SEEDS.user, { kind: "seat" });
+    expect(await decide(inv)).toEqual({ admitted: false, refusal: "inviter-not-standing" });
+  });
+
+  test("an inviter whose admit a counted revoke closes withholds — the deny board decides", async () => {
+    const admit  = await admitOf(SEEDS.member);
+    const revoke = await carriageAct(SEEDS.member, "revoke", {
+      kahu: [SEEDS.guru, SEEDS.telarus], epoch: EPOCH, parents: [carriageEntryActCid(admit)],
+    });
+    const inv = await invite(SEEDS.member, { kind: "admit", admit, lineage: [] });
+    expect((await decide(inv)).admitted).toBe(true);   // control: the same invite stands on an empty board
+    expect(await decide(inv, { standing: await ctx({ denyBoard: [revoke] }) }))
+      .toEqual({ admitted: false, refusal: "inviter-not-standing" });
+  });
+
+  test("an admit naming a DIFFERENT key than the signing leaf withholds (standing never lends)", async () => {
+    const inv = await invite(SEEDS.stranger, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
+    expect(await decide(inv)).toEqual({ admitted: false, refusal: "inviter-not-standing" });
+  });
+
+  test("no standing context → an invite-only gate withholds; it never admits on an unread standing", async () => {
+    const inv = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
+    expect(await decide(inv, { standing: null })).toEqual({ admitted: false, refusal: "inviter-not-standing" });
   });
 
   test("SINGLE-USE — a burned invite draws `already-spent` (withhold, not a throw)", async () => {
-    const inv = await invite();
+    const inv = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
     const id  = bootInviteId(inv);
-    const v = await decideBootInvite({ policy: { kind: "invite-only" }, nexusPubkey: NEXUS, invite: inv, now: new Date(), verify, isSpent: (b) => b === id });
-    expect(v.admitted).toBe(false);
-    expect(v.refusal).toBe("already-spent");
+    expect(await decide(inv, { isSpent: (b) => b === id })).toEqual({ admitted: false, refusal: "already-spent" });
   });
 
-  test("a GARBLED / ABSENT invite → no-invite (found your own group at the anon floor)", async () => {
-    const v = await decideBootInvite({ policy: { kind: "invite-only" }, nexusPubkey: NEXUS, invite: null, now: new Date(), verify, isSpent: neverSpent });
-    expect(v.admitted).toBe(false);
-    expect(v.refusal).toBe("no-invite");
-  });
+  test("GARBLED / ABSENT → no-invite; WRONG NEXUS → wrong-nexus; a tampered or foreign seal → bad-signature", async () => {
+    const standing: InviterStanding = { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] };
+    expect(await decide(null)).toEqual({ admitted: false, refusal: "no-invite" });
+    expect(await decide({ garbage: true } as unknown as BootInvite)).toEqual({ admitted: false, refusal: "no-invite" });
 
-  test("a WRONG-NEXUS seal refuses", async () => {
-    const inv = await invite({ nexusPubkey: "ff".repeat(32) });   // sealed for a DIFFERENT nexus
-    const v = await decideBootInvite({ policy: { kind: "invite-only" }, nexusPubkey: NEXUS, invite: inv, now: new Date(), verify, isSpent: neverSpent });
-    expect(v.admitted).toBe(false);
-    expect(v.refusal).toBe("wrong-nexus");
-  });
+    const elsewhere = await invite(SEEDS.member, standing, { nexusAid: "nexus-aid-elsewhere" });
+    expect(await decide(elsewhere)).toEqual({ admitted: false, refusal: "wrong-nexus" });
 
-  test("an EXPIRED lease refuses", async () => {
-    const inv = await invite({ expiresAt: new Date(Date.now() - 1000).toISOString() });
-    const v = await decideBootInvite({ policy: { kind: "invite-only" }, nexusPubkey: NEXUS, invite: inv, now: new Date(), verify, isSpent: neverSpent });
-    expect(v.admitted).toBe(false);
-    expect(v.refusal).toBe("expired");
-  });
-
-  test("a BAD signature refuses (tampered nonce)", async () => {
-    const inv = await invite();
-    const tampered: BootInvite = { ...inv, nonce: "deadbeefdeadbeef" };   // sig now over the old nonce
-    const v = await decideBootInvite({ policy: { kind: "invite-only" }, nexusPubkey: NEXUS, invite: tampered, now: new Date(), verify, isSpent: neverSpent });
-    expect(v.admitted).toBe(false);
-    expect(v.refusal).toBe("bad-signature");
+    const inv = await invite(SEEDS.member, standing);
+    expect(await decide({ ...inv, nonce: "deadbeefdeadbeef" })).toEqual({ admitted: false, refusal: "bad-signature" });
+    // A stranger re-signs nothing: swapping in the member's key under the stranger's seal fails the seal.
+    const forged = await invite(SEEDS.stranger, standing);
+    expect(await decide({ ...forged, inviterKey: await pubOf(SEEDS.member) }))
+      .toEqual({ admitted: false, refusal: "bad-signature" });
   });
 
   test("OPEN policy admits with NO invite at all", async () => {
-    const v = await decideBootInvite({ policy: { kind: "open" }, nexusPubkey: NEXUS, invite: null, now: new Date(), verify, isSpent: neverSpent });
+    const v = await decideBootInvite({ policy: { kind: "open" }, nexusAid: AID, invite: null, standing: null, isSpent: neverSpent });
     expect(v.admitted).toBe(true);
   });
 });
 
-describe("TRACELESS — no voucher, no joiner id, no inviter edge (the cabal-invite contrast)", () => {
-  test("the invite + its signed bytes carry ONLY nexus · nonce · expiry — no identity of any party", async () => {
-    const inv = await invite();
-    expect(inv.kind).toBe(BOOT_INVITE_DOMAIN);
-    // The type has no voucherDid / joinerIdentityHex field, and the signed bytes carry only the sealed floor.
-    const decoded = JSON.parse(new TextDecoder().decode(bootInviteBytes(inv))) as Record<string, unknown>;
-    expect(Object.keys(decoded).sort()).toEqual(["expiresAt", "kind", "nexusPubkey", "nonce"]);
-    expect(JSON.stringify(inv)).not.toMatch(/voucher|joiner|inviter|did:/i);
+describe("no clock, one hop, remembered by no one", () => {
+  test("the invite carries no expiry, and the module source names no clock", async () => {
+    const inv = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
+    expect(inv.kind).toBe(NEXUS_INVITE_DOMAIN);
+    expect(Object.keys(inv).sort()).toEqual(["inviterKey", "kind", "nexusAid", "nonce", "sig", "standing"]);
+    const src = readFileSync(new URL("../src/boot-invite.ts", import.meta.url), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    expect(src).not.toMatch(/Date\b|expiresAt|\bnow\b|performance\.|setTimeout/);
+  });
+
+  test("the burn id digests the Nexus and nonce ALONE — two inviters, one nonce, one burn", async () => {
+    const a = await invite(SEEDS.member, { kind: "admit", admit: await admitOf(SEEDS.member), lineage: [] });
+    const b = await invite(SEEDS.guru, { kind: "seat" });
+    expect(bootInviteId(a)).toBe(bootInviteId(b));
+    expect(bootInviteId(a)).toBe(sha256HexBytesSync(canonicalJsonBytes({ kind: NEXUS_INVITE_DOMAIN, nexusAid: AID, nonce: a.nonce })));
+    // A spent-set holding member A's burn refuses guru's invite on the same nonce: the burn knows no inviter.
+    expect(await decide(b, { isSpent: (id) => id === bootInviteId(a) })).toEqual({ admitted: false, refusal: "already-spent" });
+    // And a different nonce burns apart.
+    expect(bootInviteId(await invite(SEEDS.member, { kind: "seat" }, { nonce: "ffff" }))).not.toBe(bootInviteId(a));
+  });
+
+  test("the verdict names nobody — no inviter key, no admit, no standing rides out", async () => {
+    const admit = await admitOf(SEEDS.member);
+    const inv = await invite(SEEDS.member, { kind: "admit", admit, lineage: [] });
+    const v = await decide(inv);
+    expect(Object.keys(v).sort()).toEqual(["admitted", "burnId"]);
+    const blob = JSON.stringify(v);
+    expect(blob).not.toContain(await pubOf(SEEDS.member));
+    expect(blob).not.toContain(carriageEntryActCid(admit));
   });
 });

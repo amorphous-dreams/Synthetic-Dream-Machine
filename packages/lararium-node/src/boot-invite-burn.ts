@@ -1,14 +1,14 @@
 /**
- * boot-invite-burn — the LOCAL, causal-island burn store for the traceless boot-invite, plus the node-side
- * mint + spend-on-boot. The burn is deliberately LOCAL: a spent invite id lands in this vessel's OWN store and
- * never federates. A mesh-wide "which invites are spent" list would re-introduce the tracking the doctrine
+ * boot-invite-burn — the LOCAL, causal-island burn store for the Nexus invite, plus the node-side mint (by the
+ * inviter's per-Nexus leaf) and spend-on-boot. The burn is deliberately LOCAL: a spent invite id lands in this
+ * vessel's OWN store and never federates. A mesh-wide "which invites are spent" list would re-introduce the tracking the doctrine
  * forbids (and demand a global now) — so single-use is enforced island-local, not by a federated registry.
  *
  * SPEND-ON-BOOT ATOMICITY: `runBootInviteSpend` decides then BURNS BEFORE returning `admitted:true`. A crash
  * between burn and grant loses only the grant (the vessel re-boots to the anon floor — fail-closed); it never
  * double-spends a granted invite, because the id is already burned when the grant is attempted.
  *
- * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, expired, already-spent, bad-seal) returns the pure
+ * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, bad-seal, inviter-not-standing, already-spent) returns the pure
  * `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon floor", never a throw.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
@@ -19,11 +19,11 @@ import { randomBytes } from "node:crypto";
 import { join, dirname } from "node:path";
 import * as ed25519 from "@noble/ed25519";
 import {
-  decideBootInvite, signBootInvite, bootInviteId, hexToBytes,
-  type BootInvite, type BootInvitePolicy, type BootVerdict,
+  decideBootInvite, signBootInvite, bootInviteId,
+  type BootInvite, type BootInvitePolicy, type BootVerdict, type InviterStanding, type InviteStandingContext,
 } from "@lararium/mesh";
 import { larDataDir } from "./vessel-paths.js";
-import { loadVesselSigningSeed, loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { nexusLeafFor } from "./nexus-leaf.js";
 
 /** The local burn ledger path — one spent invite-id per line, under the vessel store. Never federated. */
 export function bootInviteBurnPath(storageDir: string): string {
@@ -56,52 +56,43 @@ export function burn(storageDir: string, burnId: string): void {
   writeFileSync(path, [...set].sort().join("\n") + "\n", "utf8");
 }
 
-/** Verify an ed25519 signature-hex over bytes against a verifying-key hex — false on any malformed input. */
-async function verifyHex(bytes: Uint8Array, sigHex: string, keyHex: string): Promise<boolean> {
-  try { return await ed25519.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(keyHex)); }
-  catch { return false; }
-}
-
 /**
- * Mint a traceless boot-invite sealed by THIS node's Nexus authority key (its own vessel signing seed). A random
- * nonce makes each token unique; the seal is IDENTICAL in shape for every invite, so it reveals no inviter. The
- * caller carries the token out-of-band (paste / QR / URL fragment) to the joining vessel — no board records it.
+ * Mint an invite into the Nexus named by `nexusAid`, signed by the per-Nexus LEAF of the held persona at
+ * `handleIndex` — the inviter's face for that Nexus, never this vessel's key and never the persona root.
+ * The caller supplies the inviter's `standing` (a member admit presentation from a board it holds —
+ * `presentedAdmitFromBoard` — or a kahu `seat`). A random nonce makes each invite unique. The mint writes
+ * NOTHING: no record of the invite stays at the inviter, so nothing there can name whom it invited. The
+ * caller carries the token out-of-band (paste / QR / URL fragment).
  */
 export async function runBootInviteMint(opts: {
-  expiresInDays?: number; storageDir?: string; now?: Date;
+  handleIndex: number; nexusAid: string; standing: InviterStanding;
 }): Promise<BootInvite> {
-  // `opts.storageDir` feeds no local read: `loadVesselVerifyingKey`/`loadVesselSigningSeed` resolve the
-  // identity home off LAR_ROOT/XDG alone (`identityDir()` takes no `dataDir`). The field stays on `opts`
-  // for call-site shape compatibility only.
-  const nexusPubkey = await loadVesselVerifyingKey();
-  const seed        = await loadVesselSigningSeed();
-  const now         = opts.now ?? new Date();
-  const expiresAt   = new Date(now.getTime() + (opts.expiresInDays ?? 14) * 86_400_000).toISOString();
-  const nonce       = randomBytes(16).toString("hex");
+  const leaf  = await nexusLeafFor(opts.handleIndex, opts.nexusAid);
+  const nonce = randomBytes(16).toString("hex");
   return signBootInvite(
-    { nexusPubkey, nonce, expiresAt },
-    async (bytes) => Buffer.from(await ed25519.signAsync(bytes, seed)).toString("hex"),
+    { nexusAid: opts.nexusAid, nonce, inviterKey: leaf.verifyingKey, standing: opts.standing },
+    async (bytes) => Buffer.from(await ed25519.signAsync(bytes, leaf.seed)).toString("hex"),
   );
 }
 
 /**
- * Decide a carried boot-invite AND spend it on boot — the atomic decide-then-burn. Verifies the seal against
- * THIS node's Nexus pubkey, checks the local spent-set, and — on an admission — BURNS the id BEFORE returning
- * `admitted:true`. A refused invite (garbled / wrong-Nexus / expired / already-spent / bad-seal) returns
- * `admitted:false` and burns nothing (the vessel founds its own group at the anon floor).
+ * Decide a carried invite AND spend it on boot — the atomic decide-then-burn. Reads the inviter's presented
+ * standing against `standing` (the roster, deny board and antigen this vessel holds for the Nexus), checks
+ * the local spent-set, and — on an admission — BURNS the id BEFORE returning `admitted:true`. The burn
+ * line is a digest of the Nexus and nonce alone, so the ledger never names the inviter. A refused invite
+ * returns `admitted:false` and burns nothing (the vessel founds its own group at the anon floor).
  */
 export async function runBootInviteSpend(opts: {
-  invite: BootInvite | null; policy?: BootInvitePolicy; storageDir?: string; now?: Date;
+  invite: BootInvite | null; nexusAid: string; standing: InviteStandingContext | null;
+  policy?: BootInvitePolicy; storageDir?: string;
 }): Promise<BootVerdict> {
-  const storageDir  = opts.storageDir ?? larDataDir();
-  const nexusPubkey = await loadVesselVerifyingKey();
+  const storageDir = opts.storageDir ?? larDataDir();
   const verdict = await decideBootInvite({
-    policy:      opts.policy ?? { kind: "invite-only" },
-    nexusPubkey,
-    invite:      opts.invite,
-    now:         opts.now ?? new Date(),
-    verify:      verifyHex,
-    isSpent:     (burnId) => isBurned(storageDir, burnId),
+    policy:   opts.policy ?? { kind: "invite-only" },
+    nexusAid: opts.nexusAid,
+    invite:   opts.invite,
+    standing: opts.standing,
+    isSpent:  (burnId) => isBurned(storageDir, burnId),
   });
   // SPEND-ON-BOOT: burn FIRST, then the caller grants. A crash after the burn re-boots to the anon floor (safe);
   // it never re-grants a spent invite.

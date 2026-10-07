@@ -98,8 +98,8 @@ export const PERSONA_JOIN_DOMAIN = frozen("persona-join");
 /** The grant seal's HKDF `info`. A NAME of its own — never a version digit carrying the separation from
  *  the four signing domains above. */
 export const PERSONA_ADMIT_SEAL_INFO = frozen("persona-admit-grant-seal");
-/** A burnable boot invite, spent once at a vessel's first waking. */
-export const BOOT_INVITE_DOMAIN = frozen("boot-invite");
+/** An invite into one Nexus, signed by the inviting face's per-Nexus leaf and spent once at the newcomer's boot. */
+export const NEXUS_INVITE_DOMAIN = mint("nexus-invite");
 /** A cabal invite — the join axis, orthogonal to the carriage contract. */
 export const CABAL_INVITE_DOMAIN = frozen("cabal-invite");
 

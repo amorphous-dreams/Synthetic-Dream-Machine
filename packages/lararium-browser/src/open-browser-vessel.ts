@@ -37,7 +37,7 @@ import {
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
   type GenesisSeed,
-  type BootInvite, type BootInvitePolicy,
+  type BootInvite, type BootInvitePolicy, type InviteStandingContext,
 }                                            from "@lararium/mesh";
 import { runBrowserBootInviteSpend }         from "./browser-boot-invite-burn.js";
 import {
@@ -194,22 +194,28 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   admit?:           CarriedAdmitPayload;
   /**
-   * A carried TRACELESS boot-invite (membership-doctrine #the-invite) — a sealed, single-use capability the
-   * vessel spends ON BOOT to cross into the Nexus. CARRIED, never fetched (a URL fragment / paste / QR that
-   * never reaches a server); verified OFFLINE against the Nexus seal. WITHHOLD-NEVER-FORGE: a garbled / absent
-   * / expired / already-spent invite does NOT throw and does NOT cross — the vessel founds its own group and
+   * A carried invite (membership-doctrine #the-invite) — signed by a standing face's per-Nexus leaf, spent
+   * ONCE on boot to cross into the Nexus. CARRIED, never fetched (a URL fragment / paste / QR that never
+   * reaches a server); its seal and its inviter's standing verify OFFLINE. WITHHOLD-NEVER-FORGE: a garbled /
+   * absent / unstanding / already-spent invite does NOT throw and does NOT cross — the vessel founds its own group and
    * stands at the ANON FLOOR (a correct outcome, never an attack). Single-use is burned LOCALLY (IndexedDB;
    * NO federated burn-registry). ABSENT (with no invite-only policy) → the vessel crosses on the open setting
    * exactly as today (the relay/who caps compose when a relay is configured).
    */
   bootInvite?:      BootInvite | null;
-  /** The boot-invite policy — `invite-only` REQUIRES a sealed unspent in-date invite to cross (else anon
+  /** The boot-invite policy — `invite-only` REQUIRES a sealed, unspent invite from a standing face (else anon
    *  floor); `open` crosses with no invite. DEFAULT: `invite-only` when a `bootInvite` is carried, else `open`
    *  (so today's un-gated crossing is unchanged unless the operator opts into the gate). */
   bootInvitePolicy?: BootInvitePolicy;
   /** The Nexus pubkey the carried invite seals — the key its `sig` verifies against. Provisioned OUT-OF-BAND.
    *  DEFAULT: `relayGatePubKey` (the Nexus this vessel crosses into) ?? this vessel's own DID. */
   inviteNexusPubkey?: string;
+  /** The genesis AID of the Nexus a carried invite must name. Provisioned OUT-OF-BAND, never read off the
+   *  invite itself. Absent → no invite binds, so an invite-only boot withholds. */
+  inviteNexusAid?: string;
+  /** The Nexus material an inviter's standing is read against (kahu roster, deny board, antigen). Provisioned
+   *  OUT-OF-BAND. Absent → no inviter can show standing, so an invite-only boot withholds. */
+  inviteStanding?: InviteStandingContext;
   /** URL of the compiled browser daemon island Worker script. */
   daemonWorkerUrl?: URL;
   /**
@@ -335,7 +341,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
     meshLeaf, admit,
-    bootInvite, bootInvitePolicy, inviteNexusPubkey,
+    bootInvite, bootInvitePolicy, inviteNexusPubkey, inviteNexusAid, inviteStanding,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
 
@@ -588,16 +594,16 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // Decide whether this boot CROSSES into the Nexus. The vessel ALREADY founded its own group above
   // (the anon floor is the ground, not a competing state) — the invite only lifts it into the crossing.
   // The policy DEFAULTS to `open` (today's un-gated crossing) unless the operator carries a `bootInvite`
-  // or names an `invite-only` policy; then a sealed, unspent, in-date, Nexus-signed invite is REQUIRED, or
-  // the vessel WITHHOLDS the crossing (garbled/absent/expired/already-spent → anon floor, never a throw).
-  // The nexus the invite seals: `inviteNexusPubkey` ?? the relay's gate key ?? this vessel's own DID. The
+  // or names an `invite-only` policy; then a sealed, unspent invite from a face standing in the Nexus named
+  // by `inviteNexusAid` is REQUIRED, its standing read against `inviteStanding`, or the vessel WITHHOLDS the
+  // crossing (garbled/absent/unstanding/already-spent → anon floor, never a throw). The
   // single-use burn lands in this island's OWN IndexedDB (NO federated burn-registry). On a WITHHOLD nothing
   // burns and — because the relay/who caps below gate on `admittedToNexus` — NO federated record is written.
   const invitePolicy: BootInvitePolicy =
     bootInvitePolicy ?? (bootInvite ? { kind: "invite-only" } : { kind: "open" });
-  const inviteNexus = nexusPubkey;   // the SAME island ruling — explicit scope, then anchor, then own key
   const bootVerdict = await runBrowserBootInviteSpend({
-    idbName, nexusPubkey: inviteNexus, invite: bootInvite ?? null, policy: invitePolicy,
+    idbName, nexusAid: inviteNexusAid ?? "", standing: inviteStanding ?? null,
+    invite: bootInvite ?? null, policy: invitePolicy,
   });
   const admittedToNexus = bootVerdict.admitted;
   if (!admittedToNexus) {

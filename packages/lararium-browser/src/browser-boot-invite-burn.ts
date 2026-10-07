@@ -1,5 +1,5 @@
 /**
- * browser-boot-invite-burn — the LOCAL, causal-island burn store for the traceless boot-invite on the
+ * browser-boot-invite-burn — the LOCAL, causal-island burn store for the Nexus invite on the
  * BROWSER (island-of-one), plus the spend-on-boot. The browser twin of node's boot-invite-burn: the burn is
  * deliberately LOCAL — a spent invite-id lands in this vessel's OWN IndexedDB and NEVER federates. A mesh-wide
  * "which invites are spent" list would re-introduce the tracking the doctrine forbids (and demand a global
@@ -9,19 +9,19 @@
  * reload between burn and grant loses only the grant (the vessel re-boots to the anon floor — fail-closed);
  * it never double-spends a granted invite, because the id is already burned when the grant is attempted.
  *
- * WITHHOLD-NEVER-FORGE: every refusal (garbled, absent, wrong-Nexus, expired, already-spent, bad-seal)
+ * WITHHOLD-NEVER-FORGE: every refusal (garbled, absent, wrong-Nexus, bad-seal, inviter-not-standing, already-spent)
  * returns the pure `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon
  * floor", never a throw. And it BURNS NOTHING and writes NO record on the withhold path (the traceless proof).
  *
- * Platform: IndexedDB for the burn-set (the browser floor), @noble/ed25519 for the OFFLINE seal check
- * (mesh's `verifyBootInviteSig` — no added dep). NO relay, no authority, no clock beyond the local `now`.
+ * Platform: IndexedDB for the burn-set (the browser floor); the OFFLINE seal and standing check is mesh's
+ * `decideBootInvite` (no added dep). NO relay, no authority, no clock.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import {
-  decideBootInvite, bootInviteId, verifyBootInviteSig,
-  type BootInvite, type BootInvitePolicy, type BootVerdict,
+  decideBootInvite, bootInviteId,
+  type BootInvite, type BootInvitePolicy, type BootVerdict, type InviteStandingContext,
 } from "@lararium/mesh";
 import { openVesselIdb, idbGet, idbPut, idbKeys, BOOT_INVITE_BURN_STORE } from "./browser-vessel-identity.js";
 
@@ -49,26 +49,26 @@ export async function readBootInviteBurnSet(idbName: string): Promise<Set<string
 }
 
 /**
- * Decide a carried boot-invite AND spend it on boot — the atomic decide-then-burn for the browser. Verifies
- * the seal OFFLINE against the provided Nexus pubkey (verifyBootInviteSig), checks the local spent-set, and —
- * on an admission — BURNS the id in IndexedDB BEFORE returning `admitted:true`. A refused invite (absent /
- * garbled / wrong-Nexus / expired / already-spent / bad-seal) returns `admitted:false`, burns nothing, and
- * writes no record — the vessel founds its own group at the anon floor. The OPEN policy admits with no invite.
+ * Decide a carried invite AND spend it on boot — the atomic decide-then-burn for the browser. Checks the
+ * inviter's leaf seal and its presented standing OFFLINE against `standing` (the roster, deny board and
+ * antigen the boot holds for the Nexus named by `nexusAid`), checks the local spent-set, and — on an
+ * admission — BURNS the id in IndexedDB BEFORE returning `admitted:true`. The burn id digests the Nexus and
+ * nonce alone, so the IndexedDB entry never names the inviter. A refused invite returns `admitted:false`,
+ * burns nothing, and writes no record. The OPEN policy admits with no invite.
  */
 export async function runBrowserBootInviteSpend(opts: {
-  readonly idbName:     string;
-  readonly nexusPubkey: string;
-  readonly invite:      BootInvite | null;
-  readonly policy?:     BootInvitePolicy;
-  readonly now?:        Date;
+  readonly idbName:  string;
+  readonly nexusAid: string;
+  readonly standing: InviteStandingContext | null;
+  readonly invite:   BootInvite | null;
+  readonly policy?:  BootInvitePolicy;
 }): Promise<BootVerdict> {
   const verdict = await decideBootInvite({
-    policy:      opts.policy ?? { kind: "invite-only" },
-    nexusPubkey: opts.nexusPubkey,
-    invite:      opts.invite,
-    now:         opts.now ?? new Date(),
-    verify:      verifyBootInviteSig,
-    isSpent:     (burnId) => isBootInviteBurned(opts.idbName, burnId),
+    policy:   opts.policy ?? { kind: "invite-only" },
+    nexusAid: opts.nexusAid,
+    invite:   opts.invite,
+    standing: opts.standing,
+    isSpent:  (burnId) => isBootInviteBurned(opts.idbName, burnId),
   });
   // SPEND-ON-BOOT: burn FIRST, then the caller grants. A reload after the burn re-boots to the anon floor
   // (safe); it never re-grants a spent invite. Withhold burns nothing (the traceless path writes no record).

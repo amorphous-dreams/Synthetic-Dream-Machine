@@ -8,9 +8,9 @@
  * raw source would match the prose and red over code that is already correct), then assert every
  * board-door call's ARGUMENT reads the RESOLVED island rather than a bare vessel-key variable.
  *
- * `boot-invite-burn.ts:74,95` carry NO board (they stamp the vessel key as the Nexus IDENTITY into an
- * invite/policy decision) and `nexus-contract.ts`'s carry-for reads a nym, not an island - both EXCLUDED
- * from the sweep by design (curing them by the board recipe is a category error).
+ * `boot-invite-burn.ts` calls NO board door (the invite carries its inviter's standing, and the spend reads
+ * the Nexus material its caller hands it) and `nexus-contract.ts`'s carry-for reads a nym, not an island -
+ * both EXCLUDED from the sweep by design (curing them by the board recipe is a category error).
  *
  * Each site sits CORRECT for an un-climbed vessel by construction (`nodeNexusIsland` returns the own
  * key at the `own` notch) - a behavioural vector over a never-climbed vessel greens on the defect, so
@@ -86,12 +86,12 @@ describe("the 12 CLI-verb sites resolve the island the boot resolved, not the ra
     expect(code).not.toMatch(/carriageDocUrl\(\s*ownKey\s*\)/);
   });
 
-  test("CONTROL - boot-invite-burn.ts carries NO board and stays untouched (category error to cure)", () => {
+  test("CONTROL - boot-invite-burn.ts calls NO board door and reads NO vessel key (the inviter's face signs)", () => {
     const code = stripComments(read("boot-invite-burn.ts"));
     // No board-door call anywhere in this file.
     expect(code).not.toMatch(/BoardDocUrl\(|kapaeAntigenDocUrl\(|carriageDocUrl\(/);
-    // And it still reads the vessel key directly, twice, as documented (the invite IDENTITY, not a board).
-    const bareReads = [...code.matchAll(/loadVesselVerifyingKey\(\)/g)];
-    expect(bareReads.length).toBe(2);
+    // The invite is signed by the inviter's per-Nexus leaf, so the vessel key never enters it.
+    expect(code).not.toMatch(/loadVesselVerifyingKey|loadVesselSigningSeed/);
+    expect(code).toMatch(/nexusLeafFor\(/);
   });
 });
