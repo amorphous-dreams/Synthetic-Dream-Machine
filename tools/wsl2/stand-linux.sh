@@ -290,7 +290,7 @@ fi
 step '7 · witness'
 # The Windows half (memory=, swap=, pwsh) reads through the witness alone.
 if (( WSLCONF_CHANGED )); then
-  if (( DRY )); then plan 'wsl --shutdown after the write'
+  if (( DRY )); then need 'after the write: run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'
   else need 'run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'; fi
 fi
 bash "$SELF_DIR/witness.sh"; witness_rc=$?

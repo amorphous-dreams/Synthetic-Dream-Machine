@@ -126,7 +126,7 @@ autoMemoryReclaim=gradual
 
 Microsoft's defaults, for comparison: `memory` at 50% of host RAM, `swap` at 25% of that rounded up to a GB, `processors` equal to the host's logical count. The profile leaves capacity for Windows while giving the Linux toolchain a useful ceiling. It is a developer-host default, not a universal performance law: an operator may choose a different bounded profile for a low-memory laptop, a shared workstation, or a dedicated build host. The script only owns the keys above.
 
-''Sparse VHD stays opt-in.'' WSL 2.5.6 (April 2025) put sparse virtual disks behind `--allow-unsafe`: through 3.0.1, `wsl --manage <Distro> --set-sparse true` answers "Sparse VHD support is currently disabled due to potential data corruption" and a `sparseVhd=true` in `.wslconfig` stays inert. From 3.0.2 (PR #41726) the gate relaxes to a warning — "Sparse VHDs are currently experimental" — `sparseVhd` takes effect for new disks, and `--allow-unsafe` still parses. The script therefore writes `sparseVhd` and runs `--set-sparse true --allow-unsafe` only under `-Sparse`, and names the warning when it does; the flag reads harmless on every version. An existing sparse disk stays as found. To return deleted space to Windows without sparse: inside the distro `sudo fstrim -v /`, then `wsl --shutdown`, confirm every distro reads `Stopped` in `wsl -l -v` (quit Docker Desktop first; it restarts the VM on its own), then — on WSL 3.0.1 or later — `wsl --manage <Distro> --compact`, Microsoft's own command. On an older engine, in an Administrator prompt: `diskpart` → `select vdisk file="<path to ext4.vhdx>"` → `attach vdisk readonly` → `compact vdisk` → `detach vdisk`; that sequence comes from the WSL community (microsoft/WSL#4699), not from Microsoft's disk-space page, which covers only expansion. The script prints the vhdx path; `Optimize-VHD` needs the Hyper-V module absent on Home. Before either, a backup: `wsl --export <Distro> <file>.tar` works on any edition and restores under a new name with `wsl --import <NewName> <InstallLocation> <file>.tar`; the tar carries `/etc/wsl.conf`, so the default user the Linux stand wrote comes back with it.
+''Sparse VHD stays opt-in.'' WSL 2.5.6 (April 2025) put sparse virtual disks behind `--allow-unsafe`: through 3.0.1, `wsl --manage <Distro> --set-sparse true` answers "Sparse VHD support is currently disabled due to potential data corruption" and a `sparseVhd=true` in `.wslconfig` stays inert. From 3.0.2 (PR #41726) the gate relaxes to a warning — "Sparse VHDs are currently experimental" — `sparseVhd` takes effect for new disks, and `--allow-unsafe` still parses. The script therefore writes `sparseVhd` and runs `--set-sparse true --allow-unsafe` only under `-Sparse`, and names the warning when it does; the flag reads harmless on every version. An existing sparse disk stays as found. To return deleted space to Windows without sparse: inside the distro `sudo fstrim -v /`, then `wsl --shutdown`, confirm every distro reads `Stopped` in `wsl -l -v` (quit Docker Desktop first; it restarts the VM on its own), then — on WSL 3.0.1 or later — `wsl --manage <Distro> --compact`, Microsoft's own command. On an older engine, in an Administrator prompt: `diskpart` → `select vdisk file="<path to ext4.vhdx>"` → `attach vdisk readonly` → `compact vdisk` → `detach vdisk`; that sequence comes from the WSL community (microsoft/WSL#4699), not from Microsoft's disk-space page, which covers only expansion. The script prints the vhdx path; `Optimize-VHD` needs the Hyper-V module absent on Home. Before either, a backup — section 8 carries both forms and the restore. Section 7 orders the whole settling sequence.
 
 Network mode, DNS tunneling, proxy integration, firewall choices, Defender exclusions, and WSL idle policy depend on local security and network conditions. This baseline deliberately does not set them. If an organization permits an antivirus exclusion for a WSL virtual disk, make that a separately reviewed local policy; never infer it from this runbook.
 
@@ -211,9 +211,94 @@ A witness drift states the local condition it could not verify. Repair only that
 
 <<~/ahu>>
 
+<<~ ahu #/settle>>
+
+!! 7 · Settle the host — stand, back up, update, heal, in that order
+
+One sequence carries a host from "installed" to "settled", and the order holds the safety: the Linux stand first, so its `wsl.conf` change rides the same restart as everything else; the backup before the engine moves; the engine before the heal, since `--compact` ships only in 3.0.1 and later. The shutdown in step 3 ends every WSL session, so the sequence waits for a boundary the operator chooses. "Heal" means compact — returning the gap between the vhdx on disk and the data inside it to Windows, changing nothing inside. Sparse changes how the disk allocates and stays opt-in (section 3).
+
+```sh
+# inside the distro, before anything stops
+# 0a. settle the work in progress: commit what you keep; close the test runs
+tools/wsl2/stand-linux.sh --dry-run && tools/wsl2/stand-linux.sh     # asks for sudo once
+# 0b. clear stale caches first, so the backup carries less: docker builder/image prune, pip/npm caches, /tmp
+sudo fstrim -v /                                                    # mark freed ext4 blocks, or compact reclaims nothing from them
+```
+
+```powershell
+# Windows, in pwsh
+# 1. gate: nothing may hold the vhdx open — quit Docker Desktop (it restarts the VM on its own), then
+wsl --shutdown
+wsl -l -v                                   # every line Stopped, or stop here and find what woke it
+# 2. back up BEFORE the engine moves (section 8); a major update is one of the two moments the backup exists for
+# 3. the engine
+wsl --update
+wsl --version                               # 3.0.1 or later
+wsl --shutdown                              # the new engine loads on next start
+# 4. the heal — Microsoft's own command; the distro must read Stopped
+wsl --manage <Distro> --compact             # "Compaction in progress, this may take a few minutes."
+# 5. up, and read it
+wsl -d <Distro>
+```
+
+```sh
+tools/wsl2/witness.sh                       # every row ok; the Windows stand's memory and swap now read live
+```
+
+The update swaps the engine, never the distro: files, `/etc/wsl.conf`, the stand's drop-in all stay. When `--compact` refuses — a Running line, or an engine below 3.0.1 — the community `diskpart` recipe in section 3 does the same job from an Administrator window. Nothing in this sequence passes `-Sparse`, and nothing unregisters a distro.
+
+<<~/ahu>>
+
+<<~ ahu #/backup>>
+
+!! 8 · Back up and restore a distro — two ways
+
+Stop the distro first: `wsl --export` tolerates a running distro, but a quiescent image reads back whole, and the raw copy needs the VM down. Quit Docker Desktop before `wsl --shutdown`; with WSL integration on it restarts the distro under your copy. Then `wsl -l -v` must show every distro `Stopped`. Keep backups off the system drive. `--export` and `Copy-Item` create no folder: `New-Item -ItemType Directory -Force <backup-dir>` once.
+
+!!! `wsl --export` / `--import` — portable, the official way
+
+```powershell
+wsl --shutdown
+wsl --export <Distro> "<backup-dir>\<Distro>-$(Get-Date -Format yyyy-MM-dd).tar"
+# --format vhd writes the raw disk image instead (the vhdx's full size, free space included); `--vhd` is the older spelling
+wsl --export <Distro> "<backup-dir>\<Distro>-$(Get-Date -Format yyyy-MM-dd).vhdx" --format vhd
+
+# RESTORE to a new name, so the original stays until you are sure
+wsl --import <Distro>-restored <install-dir> "<backup-dir>\<Distro>-YYYY-MM-DD.tar"
+wsl --import <Distro>-restored <install-dir> "<backup-dir>\<Distro>-YYYY-MM-DD.vhdx" --vhd     # copies the image; the backup stays a backup
+# the tar carries /etc/wsl.conf, so the Linux stand's [user] default comes back with it; only an image from before the stand comes up as root:
+wsl --manage <Distro>-restored --set-default-user <linux-user>      # the registry switch; never append a second [user] block
+wsl -t <Distro>-restored
+# happy?  wsl --unregister <Distro>  (deletes its vhdx)  then  wsl --set-default <Distro>-restored
+# and re-point whatever names the distro: the Windows Terminal profile, VS Code Remote-WSL, the docker context
+```
+
+!!! Copy the vhdx — fastest, same machine only
+
+```powershell
+wsl --shutdown
+wsl -l -v                                   # every line Stopped, or the copy is torn
+Copy-Item "<path to ext4.vhdx>" "<backup-dir>\ext4-$(Get-Date -Format yyyy-MM-dd).vhdx"
+# RESTORE in place: quit Docker Desktop, wsl --shutdown, copy the backup back over ext4.vhdx at its registered path
+# RESTORE as a new distro — point --import-in-place at a COPY, never at the backup: it adopts the file where it sits, and that file becomes the live disk
+Copy-Item "<backup-dir>\ext4-YYYY-MM-DD.vhdx" "<install-dir>\ext4.vhdx"
+wsl --import-in-place <Distro>-restored "<install-dir>\ext4.vhdx"      # ext4-formatted vhdx only; comes up per the image's /etc/wsl.conf
+```
+
+The registered path comes from the registry, never from memory: `Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss\* | ? DistributionName | % { "$($_.DistributionName)  $($_.BasePath)" }`; `stand-windows.ps1 -DryRun` prints the same path in its step 2 line.
+
+|! form |! carries |! size |! speed |! restores where |
+| `--export` `.tar` | every file, nothing else | used data only | slowest | any PC, any WSL version |
+| `--export --format vhd` | the whole disk image, free space included | the vhdx's size | faster | any PC, WSL 2 only |
+| file copy | identical bytes | the vhdx's size | fastest | this machine; the VM must be down |
+
+`--import-in-place` and the `--vhd` pair arrived with the Store build (0.58, 2022); `--export --format` and `--manage --set-default-user` with 2.x — all present before 3.0.1, so a restore never waits on the update. None of them carries `%UserProfile%\.wslconfig` (the device record in `~/.infrastructure` snapshots it), the registry row (a fresh import rebuilds it), or Docker Desktop's own distro. A rhythm: monthly, and before every compact or major `wsl --update`.
+
+<<~/ahu>>
+
 <<~ ahu #/troubleshooting>>
 
-!! 7 · The seven errors a household meets
+!! 9 · The seven errors a household meets
 
 |! you see |! it means |! do this |
 | `WslRegisterDistribution failed with error: 0x80370102` or `HCS_E_HYPERV_NOT_INSTALLED` | the hypervisor cannot start: firmware virtualization off, or Virtual Machine Platform absent | Task Manager → Performance → CPU: when `Virtualization: Disabled`, enable VT-x / AMD-V (SVM) in UEFI setup. Then, as Administrator: `wsl --install --no-distribution`, restart. If it persists, `bcdedit /enum | findstr -i hypervisorlaunchtype` should read `Auto`; set it with `bcdedit /set hypervisorlaunchtype Auto` and restart |
@@ -228,5 +313,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hIBlmLXypmLEYl7cgsQ8wcBZFvRSJR3aZCC8sut0O2I
+<<^ code="&#x0003;">>ni:///sha-256;ADSEtSGbnih6T8VulVhLwxd1vq-5Q9CLrzoNsQn1QBo
 <<^ code="&#x0004;" -> to="?">>
