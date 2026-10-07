@@ -19,6 +19,14 @@ function setEnv(k: string, v: string | undefined): void {
   if (v === undefined) delete process.env[k]; else process.env[k] = v;
 }
 
+/**
+ * SIZED FROM A MEASURED RUN: the two sealed-archive tests derive a scrypt key on every seal, open and refused
+ * write, so their time is KDF time. Idle they took 2.0-2.4 s and 3.5-3.8 s; under 24 CPU burners on a 12-core
+ * box they took 3.9-5.2 s and 6.3-8.0 s, and over the 5 s default they read "timed out" with every assertion
+ * green. 30 s gives ~8x the idle time for full-suite load and still bounds a hang.
+ */
+const SEALED_ARCHIVE_TIMEOUT_MS = 30_000;
+
 describe("identity anchors (M2)", () => {
   let root: string;
   const anchors: IdentityAnchors = {
@@ -114,7 +122,7 @@ describe("identity anchors (M2)", () => {
     persistIdentityArchive(sovereign);
     expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
     expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
-  });
+  }, SEALED_ARCHIVE_TIMEOUT_MS);
 
   /**
    * ── THE OTHER HALF OF THE SAME FLOOR, AND IT COSTS THE IDENTITY ────────────────────────────────
@@ -153,5 +161,5 @@ describe("identity anchors (M2)", () => {
     persistVeilArchive(sovereign);
     expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
     expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
-  });
+  }, SEALED_ARCHIVE_TIMEOUT_MS);
 });
