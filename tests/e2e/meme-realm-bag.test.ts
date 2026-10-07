@@ -20,12 +20,14 @@
  * crossroads read of the bag's meme shows no record; B's `meme put --bag lares` refuses (read tier).
  *
  * THE WIRE UNDER THE REALM — TWO MAPS, NEVER LINKED. B boots before any contract and dials A at the
- * cross-operator floor, presenting her own root's edge in the CONTRACT slot (never the fleet slot, which
- * chains to the founder's KEL and anergizes a foreign root); A keeps it as untrusted input and seats nothing
- * by it. Once A's quorum admits B's per-Nexus LEAF and B's `nexus refresh` finds that admit on her own
- * replica of A's carriage board (A's posture stands OPEN so that board crosses to her while she is still a
- * stranger; under PRIVATE it does not, and her admit's out-of-band door stands unbuilt), B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over
- * A's challenge — and no root-signed edge (no proof binding a leaf to a root travels on the wire). A's seat
+ * cross-operator floor, presenting her ContactCard ALONE: a self-founded vessel presents no root-signed edge
+ * on any socket, because its one vessel key would link that root to the leaf it presents to the same Nexus.
+ * A's Nexus stays PRIVATE throughout, so no board of A's crosses to B while she is a stranger. A's quorum
+ * admits B's per-Nexus LEAF, and `nexus contract --json` emits the CARRIED admit bundle (the admit, its
+ * lineage, the Nexus, A's gate key); it travels to B BY FILE, as the charter and the contract token travel,
+ * and B's `nexus admit-take` verifies it against the charter she holds, keeps it, and drives her running
+ * vessel's refresh. B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over A's
+ * challenge — and no root-signed edge (no proof binding a leaf to a root travels on the wire). A's seat
  * verifies the proof and holds the admit against its deny board: B's LEAF enters A's leaf map, which the
  * membership consult reads, while A's ROOT map stays empty. The realm co-sign signs with B's persona ROOT,
  * so `--steward` names that root, read off B's own founding door. The share verdict seats on BOTH of
@@ -163,23 +165,23 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       acc = { ...(typeof data["nym"] === "string" ? { nym: data["nym"] } : {}), ...(typeof data["contractSig"] === "string" ? { contractSig: data["contractSig"] } : {}) };
       if (acc.nym && acc.contractSig) {
         contractNym = acc.nym;
-        // A OPENS ITS POSTURE. B reads her admit off her OWN replica of A's carriage board, and under PRIVATE a
-        // stranger draws nothing from A — not even that board — so the admit she must present never reaches
-        // her (measured: A's verdict on the board for B and C reads `false` on every hook). Under OPEN the
-        // public shelf, the carriage board included, crosses to a proof-carrying stranger; the realm doc and
-        // the bag still cross to a MEMBER alone, so ⑦'s non-member CONTROL keeps its meaning. A joiner under a
-        // PRIVATE Nexus needs her admit delivered out of band, as the charter is — that door stands unbuilt.
-        const posture = await A.cli(["nexus", "posture", "open", "--json"]);
-        lines.push(`A nexus posture open → ${posture.code}`);
+        // A's Nexus stays PRIVATE: no board of A's crosses to B while she is a stranger. Her admit reaches her
+        // as the charter and the token reach her — by FILE: the bundle `nexus contract --json` emits.
         const contract = await A.cli(["nexus", "contract", acc.nym, "--sig", acc.contractSig, "--json"]);
         lines.push(`A nexus contract → ${contract.code}: ${said(contract).trim().slice(0, 240)}`);
-        contracted = contract.code === 0;
-        // BOTH sides re-fold: A's running node folds the admit the CLI wrote beside it (its live member set
-        // now names B at the wire); B stands the realm the imported charter names.
-        const refreshA = await A.cli(["nexus", "refresh", "--json"]);
-        lines.push(`A nexus refresh → ${refreshA.code}: ${said(refreshA).trim().slice(0, 200)}`);
-        const refresh = await B.cli(["nexus", "refresh", "--json"]);
-        lines.push(`B nexus refresh → ${refresh.code}: ${said(refresh).trim().slice(0, 200)}`);
+        const bundle = ((contract.json?.["data"] ?? {}) as Record<string, unknown>)["bundle"];
+        if (contract.code === 0 && bundle) {
+          const bundleFile = join(rootB, "a-admit-bundle.json");
+          writeFileSync(bundleFile, JSON.stringify(bundle));
+          // A's running node folds the admit the CLI wrote beside it.
+          const refreshA = await A.cli(["nexus", "refresh", "--json"]);
+          lines.push(`A nexus refresh → ${refreshA.code}: ${said(refreshA).trim().slice(0, 200)}`);
+          // B TAKES the bundle: verified against the charter she holds, kept beside her consent, and her running
+          // vessel's refresh re-presents the dial (it also stands the realm the imported charter names).
+          const take = await B.cli(["nexus", "admit-take", bundleFile, "--json"]);
+          lines.push(`B nexus admit-take → ${take.code}: ${said(take).trim().slice(0, 240)}`);
+          contracted = take.code === 0 && ((take.json?.["data"] ?? {}) as Record<string, unknown>)["represented"] === true;
+        }
       }
     }
     doors = lines.join("\n  ");
@@ -289,8 +291,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toMatch(/bag +=  *"salt: 12 · barley: 40"/);
   }, 120_000);
 
-  // THE MEASURE: B's own daemon says the socket stood — first on the contract edge at the floor, then on her
-  // LEAF admit once A's quorum admitted it, and A admitted both sockets.
+  // THE MEASURE: B's own daemon says the socket stood — first on the ContactCard alone at the floor, then on her
+  // LEAF admit once she took the bundle A's quorum emitted, and A admitted both sockets.
   test("MEASURE: the two-operator dial STANDS — B re-presents her LEAF admit with no root edge, A admits the socket", () => {
     const b = B!.bootLog();
     const verdict = b.split("\n").find((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l)) ?? "(no verdict line)";
@@ -300,7 +302,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-A.log"), A!.bootLog());
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-B.log"), b);
     }
-    expect(b).toContain("[nexus-join] presenting the contract edge");          // the boot dial, before any admit
+    expect(b).toContain("[nexus-join] presenting the ContactCard alone");      // the boot dial, before any admit
+    expect(b).not.toContain("contract edge");                                    // no root edge rides any socket
     const leafLine = b.split("\n").find((l) => l.includes("[nexus-join] presenting the leaf admit")) ?? "";
     console.error(`meme-realm-bag MEASURE B re-presentation: ${leafLine.trim().slice(0, 240)}`);
     expect(leafLine).toContain("no root edge rides it");

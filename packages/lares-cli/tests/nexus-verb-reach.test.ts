@@ -36,7 +36,7 @@ const args = (positional: string[], flags: Record<string, boolean> = {}): Parsed
  *  door to a human and refuses to a machine, so the list is the switch's own. */
 const VERBS = [
   "seal", "kapae", "un_kapae", "contract", "revoke", "members",
-  "accept-carriage", "posture", "rite", "kahuli", "refresh",
+  "accept-carriage", "admit-take", "posture", "rite", "kahuli", "refresh",
   "realm-bag", "realm-bags",
 ] as const;
 

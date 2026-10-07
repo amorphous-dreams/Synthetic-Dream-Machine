@@ -42,9 +42,11 @@
  * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
+import { readFileSync } from "node:fs";
 import {
   readNexusDoc, writeNexusPractice,
   runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
+  takeAdmitBundle, AdmitBundleError,
 } from "@lararium/node";
 import { federationPostureFromDoc, type FederationPosture } from "@lararium/mesh";
 import { larSealHome, vesselDid } from "../env.js";
@@ -59,13 +61,14 @@ import { cmdSeal, runCabalRite } from "./nexus-seal.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const NEXUS_USAGE: readonly string[] = [
-  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | carry-for | posture | refresh | realm-bag | realm-bags | offering>",
+  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | refresh | realm-bag | realm-bags | offering>",
   "",
   "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
   "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
   "  kapae --list                              read the currently-Kapae'd set (the fold)",
   "  un_kapae <nym>                            mint a quorum-signed causal lift",
-  "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)",
+  "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);",
+  "                                            --json emits the admit BUNDLE the joinee takes by hand",
   "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
   "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
   "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
@@ -75,12 +78,16 @@ const NEXUS_USAGE: readonly string[] = [
   "                                            authority (default: the primary charter's Nexus)",
   "  accept-carriage [--index N] [--nexus <aid>]  (joining operator) mint + keep the 'accepts carriage' contract-in",
   "                                            for one Nexus (default: the primary charter's)",
+  "  admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over",
+  "                                            against the charter held for its Nexus, keep it, and re-present a",
+  "                                            running vessel's dial to the hearth that wrote it",
   "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
   "                                            key — reads no persona, because a crossroads holds none",
   "  posture [private | open]                  read / flip the cross-Nexus federation posture",
   "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
   "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
-  "  refresh                                   re-read the charter and re-fold the boards it names",
+  "  refresh                                   re-read the charter and posture, re-fold every carried Nexus's deny",
+  "                                            board and antigen, and re-present the dial",
   "  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)",
   "            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign",
   "            [--cosign]                      consent as a named steward to a standing proposal",
@@ -105,6 +112,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "uncarry":         return await cmdContract(args, "uncarry");
     case "members":         return await cmdMembers(args);
     case "accept-carriage": return await cmdAcceptCarriage(args);
+    case "admit-take":      return await cmdAdmitTake(args);
     case "carry-for":       return await cmdCarryFor(args);
     case "posture":         return await cmdPosture(args);
     case "rite":            return await runNexusRite(args);
@@ -131,7 +139,9 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
 };
 
 /**
- * `lares nexus refresh` — re-read the disk charter and re-fold the boards it names.
+ * `lares nexus refresh` — re-read the disk posture, re-fold every carried Nexus's deny board and antigen, and
+ * re-present the dial when what it presents moved. The JSON names that work: `posture`, one `nexuses[]` row per
+ * carried Nexus (`aid`, `island`, `denyEntries`, `antigenEntries`, `held`), and this vessel's own island.
  *
  * THE DOOR AN IMPORT NEEDS. A joining operator places a partner's charter and signs a contract-in,
  * and from that moment her vessel should fold the FOUNDER's members board rather than her own. The
@@ -150,13 +160,31 @@ async function cmdNexusRefresh(args: ParsedArgs): Promise<number> {
       return 1;
     }
     const out = summaryOutput(r) ?? {};
+    const nexuses = Array.isArray(out["nexuses"]) ? (out["nexuses"] as Array<Record<string, unknown>>) : [];
+    // THE SHAPE NAMES WHAT THE REFRESH DID: the posture, then one row per CARRIED Nexus — its deny board, its
+    // antigen and the peers whose presented admit for it now reads held — beside this vessel's own island.
+    const data = {
+      posture:            out["posture"] ?? null,
+      nexuses:            nexuses.map((n) => ({
+        aid: n["aid"] ?? null, island: n["island"] ?? null,
+        denyEntries: n["denyEntries"] ?? 0, antigenEntries: n["antigenEntries"] ?? 0, held: n["held"] ?? 0,
+      })),
+      ownIsland:          out["boardRoot"] ?? null,
+      ownCarriageEntries: out["memberEntries"] ?? 0,
+      ownAntigenEntries:  out["antigenEntries"] ?? 0,
+      realm:              out["realm"] ?? null,
+      realmDoc:           out["realmDoc"] ?? null,
+    };
     emit(args, {
-      ok: true, data: out,
+      ok: true, data,
       human: () => {
-        console.log("nexus refresh — charter re-read, boards re-folded:");
-        console.log(`  posture:        ${String(out["posture"] ?? "?")}`);
-        console.log(`  members board:  ${String(out["boardRoot"] ?? "?")}  (this vessel's own immune surface)`);
-        console.log(`  member entries: ${String(out["memberEntries"] ?? 0)} · antigen entries: ${String(out["antigenEntries"] ?? 0)}`);
+        console.log("nexus refresh — posture re-read, every carried Nexus's deny board and antigen re-folded:");
+        console.log(`  posture:     ${String(data.posture ?? "?")}`);
+        if (data.nexuses.length === 0) console.log("  carried:     none — no Nexus stands in this vessel's carried set");
+        for (const n of data.nexuses) {
+          console.log(`  carried:     ${String(n.aid).slice(0, 24)}…  deny ${String(n.denyEntries)} · antigen ${String(n.antigenEntries)} · held ${String(n.held)}`);
+        }
+        console.log(`  own island:  ${String(data.ownIsland ?? "?")}  (carriage ${String(data.ownCarriageEntries)} · antigen ${String(data.ownAntigenEntries)})`);
       },
     });
     return 0;
@@ -307,6 +335,7 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
         action: r.action, nym: r.nym, parents: r.parents, evidenceCid: r.evidenceCid,
         sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
         contractIn: r.contractIn, boardUrl: r.boardUrl, memberHeld: r.memberHeld, carrierHeld: r.carrierHeld,
+        bundle: r.bundle,
       },
       human: () => {
         const verb = action === "admit" ? "ADMITTED" : action === "carry" ? "CARRYING" : action === "uncarry" ? "UNCARRIED" : "REVOKED";
@@ -322,6 +351,10 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
           console.log(`  and NOT:     a member — a place holds no read cap, no seat, and no membership (carry ⊥ read)`);
         } else {
           console.log(`  enforced:    ${r.memberHeld ? "MEMBER (a cross-operator under this nym co-federates / blind-transits sealed planes)" : "NOT a member (a standing revoke or higher entry supersedes)"}`);
+        }
+        if (r.bundle) {
+          console.log(`  bundle:      the admit, its lineage (${r.bundle.lineage.length}), the Nexus and this hearth's gate key —`);
+          console.log(`               \`--json\` emits it as \`data.bundle\`; the joinee runs \`lares nexus admit-take <file>\``);
         }
       },
     });
@@ -414,6 +447,59 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
     const msg  = err instanceof Error ? err.message : String(err);
     const code = err instanceof NexusContractError ? "refused" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus accept-carriage: ${msg}`) });
+    return exitFor("error");
+  }
+}
+
+/**
+ * `lares nexus admit-take <bundle-file>` — run by the JOINING operator on her OWN vessel: take the admit bundle a
+ * founding kahu handed over (`nexus contract --json` → `data.bundle`, or the bundle object alone). The take
+ * verifies it OFFLINE against the charter this vessel holds for its Nexus, refuses a leaf this vessel does not
+ * hold, and keeps it under the seal home beside the consent. A running vessel then re-presents through the
+ * refresh: its dial to the hearth that wrote the admit presents it. No daemon → the next boot's dial presents it.
+ */
+async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
+  const file = args.positional[1];
+  if (!file) { console.error("usage: lares nexus admit-take <bundle-file>"); return 2; }
+  try {
+    let raw: string;
+    try { raw = readFileSync(file, "utf8"); } catch (err) {
+      throw new AdmitBundleError(`cannot read ${file}: ${(err as NodeJS.ErrnoException).code ?? String(err)}`);
+    }
+    // Accept the contract's whole `--json` envelope as handed over, or the bundle alone.
+    let text = raw;
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      const inner = ((parsed["data"] as Record<string, unknown> | undefined)?.["bundle"]) ?? parsed["bundle"];
+      if (inner !== undefined) text = JSON.stringify(inner);
+    } catch { /* the take names the parse failure */ }
+    const r = await takeAdmitBundle({ sealHome: larSealHome(), raw: text });
+    // RE-PRESENT through the running vessel's refresh — the take drives it, never a timer.
+    let represented = false;
+    try {
+      const refresh = await runVerb("nexus-refresh", {}, await vesselDid());
+      represented = refresh.status !== "error";
+    } catch { /* no daemon — the next boot's dial presents the kept bundle */ }
+    emit(args, {
+      ok: true,
+      data: { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented },
+      human: () => {
+        console.log("nexus admit-take — the admit verified against the charter held for its Nexus, and kept:");
+        console.log(`  nexus:   ${r.aid}`);
+        console.log(`  leaf:    ${r.nym}`);
+        console.log(`  admit:   ${r.admitCid} (lineage ${r.lineage})`);
+        console.log(`  hearth:  ${r.gatePubKey}  (the dial to this gate presents it)`);
+        console.log(`  kept at: ${r.path}`);
+        console.log(represented
+          ? "  the running vessel re-folded and re-presents its dial"
+          : "  no running vessel answered — the next boot's dial presents it");
+      },
+    });
+    return 0;
+  } catch (err) {
+    const msg  = err instanceof Error ? err.message : String(err);
+    const code = err instanceof AdmitBundleError ? "refused" : "error";
+    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus admit-take: ${msg}`) });
     return exitFor("error");
   }
 }
