@@ -376,7 +376,6 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     frame: typeof import("@lararium/memetic-frame");
     markdown: typeof import("../src/weave/index.js");
     normalize: typeof import("../src/meme-normalize.js");
-    stream: typeof import("../src/meme-stream.js");
     deser: typeof import("../src/deserializer.js");
   }) => Promise<T> | T): Promise<T> {
     vi.resetModules();
@@ -390,7 +389,6 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
         frame:     await import("@lararium/memetic-frame"),
         markdown:  await import("../src/weave/index.js"),
         normalize: await import("../src/meme-normalize.js"),
-        stream:    await import("../src/meme-stream.js"),
         deser:     await import("../src/deserializer.js"),
       });
     } finally {
@@ -434,11 +432,9 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     });
   });
 
-  test("★ meme-stream closes a carrier on a probed ETX ★", async () => {
-    await withProbes(({ stream }) => {
-      const p = new stream.MemeStreamParser();
-      const events = p.push(probed);
-      expect(events.map((e) => e.kind)).toContain("carrier-close");
+  test("★ the deserializer's division closes a carrier on a probed ETX ★", async () => {
+    await withProbes(({ deser }) => {
+      expect(deser.carrierText(probed, "probe")?.text.endsWith(`<<^ code="${PROBE_ETX}">>`)).toBe(true);
     });
   });
 
@@ -454,13 +450,13 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   // CONTROL — the walk measures the PROBE, never the canonical marks. Every reading above must also
   // hold over the declaration as it stands, or a green probe would prove only that the walk is loose.
   test("CONTROL — every reader answers the same over the CANONICAL marks", async () => {
-    await withProbes(({ shape, frame, markdown, stream, deser }) => {
+    await withProbes(({ shape, frame, markdown, deser }) => {
       const m = shape.readCarrierShape(canon).marks;
       expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: true, etx: true, eot: true });
       expect(frame.frameStanding(canon).kind).toBe("framed");
       expect(frame.checkSpan(canon)).not.toBeNull();
       expect(markdown.transposeMarkdown(canon).check).toBe("ni:///sha-256;probe");
-      expect(new stream.MemeStreamParser().push(canon).map((e) => e.kind)).toContain("carrier-close");
+      expect(deser.carrierText(canon, "canon")?.text.endsWith('<<^ code="&#x0003;">>')).toBe(true);
       const text = String(deser.memeticWikitextDeserializer(canon, { title: "canon" })[0]?.["text"] ?? "");
       expect(text).toContain("the body stands here.");
     });

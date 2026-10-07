@@ -13,7 +13,7 @@ import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { scanAhu, findTopLevelAhuBlocks, findAhuBalanceFaults } from "../src/meme-ast/ahu-scan.js";
-import { carrierTexts, divideCarrier } from "../src/deserializer.js";
+import { carrierText, divideCarrier } from "../src/deserializer.js";
 import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
@@ -42,7 +42,8 @@ describe("★ scanAhu — one stack, two readings ★", () => {
     const bodies = Object.values(FIXTURES);
     for (const f of carrierFiles(REPO)) {
       const text = readFileSync(path.join(REPO, f), "utf8");
-      for (const c of carrierTexts(text, f)) bodies.push(divideCarrier(c.text).body);
+      const c = carrierText(text, f);
+      if (c) bodies.push(divideCarrier(c.text).body);
     }
     expect(bodies.length).toBeGreaterThan(500);
     for (const body of bodies) {

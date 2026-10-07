@@ -32,10 +32,11 @@ When TW5 encounters a tiddler with that content-type, it calls:
 deserializer(text: string, fields: Record<string, unknown>) → TiddlerFields[]
 ```
 
-Stream model:
-* ''Multi-carrier'': MemeStreamParser emits one `carrier-close` per meme; each becomes `[parent, ...children]`.
-* ''Partial carrier'' (no ETX): `flush()` emits best-effort; no crash.
+Carrier model — one file, one carrier (`memetic-wikitext-framing#/frame-security`):
+* ''Framed'': the live heading opens the carrier and the span reader (`readFrame`) closes it; it becomes `[parent, ...children]`, with the prologue and postamble as carriage records under the parent.
+* ''Torn'' (no ETX after STX, a second heading or text frame, a mark out of spine order): held verbatim as ONE `text/plain` record carrying `$torn`; the Confluence gate refuses it.
 * ''Bare body'' (no SOH framing): treated as a single carrier with `fields.title` as URI.
+* A stream of carriers belongs to the SYN-framed profile, never to this deserializer.
 
 Parent tiddler: `text = original carrier text`, `type = "text/memetic-wikitext+tiddlywiki"`.
 Child tiddlers (ahu slots): `text = ahu body text`, also `type = "text/memetic-wikitext+tiddlywiki"`.
@@ -55,11 +56,10 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/carrier-split">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/meme-stream">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Bp4WgGYuKkQHE6sDYbtvYrQAwfC7e8T7islNIj2bbY0
+<<^ code="&#x0003;">>ni:///sha-256;iNtHOmGDFWfkq5L2pYDdmHh1VVf5bmZWRstVgMhFBXA
 
 <<^ code="&#x0004;" -> to="?">>

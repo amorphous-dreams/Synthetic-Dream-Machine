@@ -34,8 +34,8 @@ function error(code: string, message: string, length: number): MemeDiagnostic {
  * ETX ends the text; the slot after it carries the check, never payload (memetic-frame `check.ts`
  * holds the why). Content there reaches no reader and no render reproduces it: two `#edges` blocks
  * vanished that way before anyone diffed a round-trip. So the slot is classified, and foreign content
- * is the NAK the original protocol answered with. The LAST carrier owns the file's tail, so the slot
- * read is that carrier's own.
+ * is the NAK the original protocol answered with. The slot is the one carrier's own, read by the span
+ * reader that divided it.
  */
 function strandedPastEtx(reading: CarrierReading): MemeDiagnostic[] {
   const slot = classifyPostamble(reading.slotText);
@@ -150,9 +150,9 @@ function advisories(read: CarrierRead): string[] {
  */
 export function checkCarrier(reading: CarrierReading): MemeDiagnostic[] {
   const out = strandedPastEtx(reading);
-  for (const read of reading.reads) {
-    for (const line of advisories(read)) out.push(shoreDiagnostic(line, reading.text.length));
-    nestedSlotOutsideParent(read.uri, read.division.body, read.scan.blocks, null, out);
-  }
+  const { read } = reading;
+  if (!read) return out;
+  for (const line of advisories(read)) out.push(shoreDiagnostic(line, reading.text.length));
+  nestedSlotOutsideParent(read.uri, read.division.body, read.scan.blocks, null, out);
   return out;
 }

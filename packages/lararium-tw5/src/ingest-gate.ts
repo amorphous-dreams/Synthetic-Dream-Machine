@@ -119,7 +119,7 @@ const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
   "second-etx":        "frame-malformed",
   "etx-before-stx":    "frame-malformed",
   "eot-out-of-order":  "frame-malformed",
-  "soh-inside-frame":  "frame-malformed",
+  "second-soh":        "frame-malformed",
 };
 
 /**

@@ -54,8 +54,9 @@ describe("★ verdict(text) ★", () => {
     expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["etx-before-stx"]);
   });
 
-  test("a second STX alone is never a tear — a stream stands several by design", () => {
-    expect(verdict(carrier.replace(ETX, `${ETX}\n\n${STX}`)).kind).not.toBe("torn");
+  test("a second STX alone tears — one file frames one carrier; a stream belongs to the SYN profile", () => {
+    const v = verdict(carrier.replace(ETX, `${ETX}\n\n${STX}`));
+    expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["second-stx"]);
   });
 
   test("a toml meta fence standing before STX reads torn — root metadata opens the body, below STX", () => {

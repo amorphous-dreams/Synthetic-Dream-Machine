@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;N-tDz9fV_4NOlm_TQ8vctrMO6IdGwq8iF6nbV5W0c3w"
+source-check: "ni:///sha-256;mAShDguCfZepnT8tS7PO3UTDCwQeR5FaaVSQ8NCub3g"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -56,7 +56,9 @@ document, and stops there.
 **Out of scope.** The markup language inside the frame — lexical structure, grammar, processing model,
 typed edges — lives in [MEMETIC-WIKITEXT]. The `lar:` URI scheme the heading declares lives in
 [LAR-URI]. Stream framing stands anticipated rather than precluded (#/frame-security): this frame frames
-**records**.
+**records**. **One file frames one carrier**: a second heading, a second text frame or a second close
+anywhere in a file reads torn, never as a second carrier; a stream of carriers belongs to the
+SYN-framed profile (`&#x0016;`, held in reserve), which defines its own division and resynchronisation.
 
 **Relation to the language.** The frame and the language divide at one joint: a **document** encodes one
 meme's structure and nothing else; a **carrier** wraps a document in this frame. The grammar here
@@ -802,10 +804,10 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
   NOT occur. A stale check on a human's edit still owes that edit a real decision (noop, ingest or
   conflict), never a blanket refusal; the conflict belongs to the humans involved, and the carrier still
   parses, as graceful parsing requires, as a carrier in fault.
-- **torn** — the frame cannot divide without choosing: STX without ETX, a second live ETX, an ETX ahead
-  of STX, a meta fence above STX, a head or release in a torn spelling, or a mark out of spine order
-  (#/carrier-spine) — a release standing before the text closes, or a second heading standing inside
-  the first carrier's frame — each fault named. A torn
+- **torn** — the frame cannot divide without choosing: STX without ETX, a second live STX or ETX, an
+  ETX ahead of STX, a meta fence above STX, a head or release in a torn spelling, a release standing
+  before the text closes (#/carrier-spine), or a second heading anywhere in the file (one file frames
+  one carrier) — each fault named. A torn
   carrier reads as a truncated or broken transmission and MUST NOT read as `absent`: conflating the two
   hands an adversary the cheapest strip on offer — cut a file ahead of its closer and a missing check
   would read as lawful absence. A consumer refuses a torn carrier, and its bytes stay where they stand.
@@ -1077,7 +1079,7 @@ Field grounds: `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-gr
 
 ## Schema (machine-readable)
 
-This law's own machine surface holds the spine, the resonance set, and the trust tiers. Parse types (`CarrierShape`, `CarrierRecord`, `MemeStreamEvent`), the rating/depth ladders, the render-suppression list, and the sigil vocabulary live in the memes named at #edges.
+This law's own machine surface holds the spine, the resonance set, and the trust tiers. Parse types (`CarrierShape`, `CarrierRecord`), the rating/depth ladders, the render-suppression list, and the sigil vocabulary live in the memes named at #edges.
 
 ```toml
 # Carrier spine — transmission-frame control codes

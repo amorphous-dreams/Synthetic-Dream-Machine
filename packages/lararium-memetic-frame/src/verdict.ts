@@ -14,14 +14,15 @@
  *                opens the BODY — a block above STX stands outside the span the check covers, and no
  *                reader recovers it), a head or release in a TORN spelling (a bare `?`, an unquoted
  *                or positional target, glyphs before the code), a mark out of spine order (a release
- *                before the text closes, a second heading inside the first carrier's frame) — no
+ *                before the text closes), a second heading or text frame anywhere in the file — no
  *                reader repairs one in silence. Each fault is named; nothing past the close is folded in.
  *   · `bare`   — NO frame at all: no head, no STX, no ETX, no release. Bare data found on the internet
  *                is not a meme, and reading it as one would invent a carrier nobody wrote.
  *
  * Pure, isomorphic, built on the one span reader and the one check reader — a second reading of the
- * frame here would be the drift `span.ts` exists to end. A second STX is never a tear: a stream of
- * several carriers stands several by design, and the check covers the first span only.
+ * frame here would be the drift `span.ts` exists to end. One file frames ONE carrier, so a second STX
+ * tears like any second mark: a stream of several carriers belongs to the SYN-framed profile
+ * (#/frame-security), which defines its own resynchronisation, never to this base profile.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing
  */
@@ -117,7 +118,7 @@ export function frameShape(text: string): FrameShape {
     || maskedExec(text, carrierMarkPattern("release", "g"), spans);
   if (!marked) return { kind: "bare" };
 
-  const faults = [...frame.faults.filter((f) => f.kind !== "second-stx"), ...torn];
+  const faults = [...frame.faults, ...torn];
   if (frame.stx && !frame.etx) faults.push(NO_ETX);
   // A meta fence IS a fence, so its opener sits at a mask span's start: `allowSpanStart` admits it and
   // still refuses one quoted inside another fence.

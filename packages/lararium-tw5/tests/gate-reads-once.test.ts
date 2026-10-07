@@ -38,9 +38,10 @@ const FENCED = carrier("<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/
 const sha = (s: string): string => `sha256:${createHash("sha256").update(s).digest("hex")}`;
 const zero = (): void => { calls.verdict = 0; calls.verdictOf = 0; calls.fencedSpans = 0; };
 
-/** Measured: the fence-mask reads one sound carrier's deserialize makes on the tw5 side (29 before the
- *  gate threaded its reading). A BUDGET ONLY EVER LOWERS. */
-const MASK_BUDGET = 19;
+/** Measured: the fence-mask reads one sound carrier's deserialize makes on the tw5 side — 29 before the
+ *  gate threaded its reading, 19 while a stream parser still re-masked per event, 11 on one mask, one
+ *  heading and one span reader. A BUDGET ONLY EVER LOWERS. */
+const MASK_BUDGET = 11;
 
 describe("★ the gate threads its reading ★", () => {
   beforeEach(zero);

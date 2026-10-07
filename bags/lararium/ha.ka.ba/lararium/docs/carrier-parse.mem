@@ -23,7 +23,7 @@ uri-path      = "ha.ka.ba/lararium/docs/carrier-parse"
 <<~ ahu #/ooda-ha>>
 
 ✶ carrier text arrives at the shore; normalize bytes (strip a leading BOM, fold CR into LF).
-⏿ orient: does an SOH sentinel frame a carrier? `MemeStreamParser` scans for carrier-open/close events across single-meme, multi-meme, and partial input.
+⏿ orient: does an SOH sentinel frame a carrier? the one head reader finds the live heading and the span reader (`readFrame`) closes the carrier — one file, one carrier.
 ◇ decide: each carrier-close routes through `splitMemeToTiddlers`; a bare doc (no SOH framing) falls through to a verbatim-body split.
 ▶ split ahu slots recursively into child tiddlers, rewrite each block to a `<<~ kahea ahu #/slot>>` reference in the parent, and grade the parse via `parseMemeText().failures`.
 ↺ verify: a split failure degrades loss-lessly (verbatim fallback, `lar_parse_degraded`), warnings ride a `parse-warning` tiddler that `deserializeCarrier` reads into `MemeDiagnostic[]` — text-in, records-out, no `fs`/`path`/`window`. Callers own persistence and routing.
@@ -36,7 +36,7 @@ uri-path      = "ha.ka.ba/lararium/docs/carrier-parse"
 
 `deserializeCarrier(text, fields)` gates all carrier ingress, returning `{ records: TiddlerFields[]; diagnostics: MemeDiagnostic[] }`. It delegates the split to `memeticWikitextDeserializer` (the TW5 `tiddlerdeserializer` export) and lifts synthesised parse-warning tiddlers onto the shared diagnostics contract, so a caller reads a grade rather than sniffing a title. Isomorphic — no `fs`, no `path`, no `window`; the host passes text, the shore returns typed records.
 
-The shore marks the causal-island boundary (spec: TW5 VM). `memeticWikitextDeserializer` uses `parseMemeText` and `MemeStreamParser` (both TW5-independent) to fold one carrier into a parent tiddler plus N ahu-slot children. Decomposition law begins here: non-TW5 adaptation stops at this shore.
+The shore marks the causal-island boundary (spec: TW5 VM). `memeticWikitextDeserializer` uses `parseMemeText` and the span reader (both TW5-independent) to fold one carrier into a parent tiddler plus N ahu-slot children. Decomposition law begins here: non-TW5 adaptation stops at this shore.
 
 <<~/ahu>>
 
@@ -70,6 +70,6 @@ export function deserializeCarrier(
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lq_0K6NZnRqGURv4pXzPYuVSKlJuyxXOTNqX-4cCO7s
+<<^ code="&#x0003;">>ni:///sha-256;1HJAKzn0PTyZce0igAwt3_oOu0EPUKQIrhe3z6zVcxQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -19,7 +19,8 @@ module-type: tiddlerdeserializer
  *
  * Incoming (disk → wiki):
  *   memeticWikitextDeserializer — TW5 tiddlerdeserializer contract.
- *   Multi-meme: MemeStreamParser batches carrier-close events.
+ *   One carrier per text: one fence mask, one heading, one span reader (`readFrame`) — a stream of
+ *   carriers belongs to the SYN-framed profile, never to this one.
  *   Parent text model: ahu definition blocks → kahea references (children authoritative).
  *
  * Outgoing (wiki → disk):
@@ -29,16 +30,15 @@ module-type: tiddlerdeserializer
  *   child bodies, reconstructs the whole definition-form carrier.
  */
 
-import { MemeStreamParser } from "./meme-stream.js";
 import {
   carrierHeadLinePattern,
+  carrierHeadPattern,
   fencedSpans,
   inMask,
   maskedExec,
   maskedExecAll,
   META_OPEN_RE,
   PLAIN_OPEN_RE,
-  frameAlt,
   frameHex,
   readFrame,
   frameCarrier,
@@ -49,7 +49,6 @@ import {
 } from "@lararium/memetic-frame";
 import { renderMetaTomlLine } from "./meme-normalize.js";
 import { lendHostGlobals } from "./host-globals-lend.js";
-import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   findTopLevelAhuBlocks,
   scanAhu,
@@ -58,12 +57,9 @@ import {
   KAHEA_REF_RE,
 } from "./meme-ast/ahu-scan.js";
 
-// ── THE CODE SETS COME FROM THE DECLARATION; THE HEAD SCANS STAY THIS READER'S OWN (marks.ts) ───────
-// The STX/ETX/EOT division is the one span reader's (`readFrame`). What stays here reads the HEAD: the
-// SOH PREFIX stops at `&` so a namespace written as entities is never read AS the code. Only the entity
-// alternation travels between them.
-/** `<<^` then anything but an entity, then a SOH code — the prefix that stops at `&`. */
-const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
+// ── THE CODE SETS COME FROM THE DECLARATION (marks.ts) ──────────────────────────────────────────────
+// The heading is the one head reader's (`carrierHeadPattern`); the STX/ETX/EOT division the one span
+// reader's (`readFrame`). What stays here reads the head's NAMED code binding.
 /** The SOH variant a head names through its `code=` binding, captured. */
 const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
 import { parseTaploFields } from "./toml-ast.js";
@@ -110,10 +106,10 @@ export interface CarrierReading {
   readonly floor: QuoteblockFloor | null;
   /** The bytes the records were split from: folded once (BOM, CRLF), and fenced where the floor stood. */
   readonly text: string;
-  /** Each carrier as the stream divides it — its division and its ahu scan. A torn frame's records hold
-   *  verbatim, but its reading still stands for the carrier check. */
-  readonly reads: readonly CarrierRead[];
-  /** What a headed text's last carrier wrote between end-of-text and end-of-transmission; "" where none stands. */
+  /** The carrier as the span reader divides it — its division and its ahu scan; null for an empty text.
+   *  A torn frame's records hold verbatim, but its reading still stands for the carrier check. */
+  readonly read: CarrierRead | null;
+  /** What the carrier wrote between end-of-text and end-of-transmission; "" where no heading or slot stands. */
   readonly slotText: string;
 }
 
@@ -142,77 +138,54 @@ export function deserializeCarrier(
   // a check that matched the arriving body, so it runs where a fence lands and nowhere else.
   const shape = frameShape(text);
   let stream = readStream(text);
-  // Each carrier is divided and its ahu stack scanned ONCE; the floor, the split and the carrier check
+  // The carrier is divided and its ahu stack scanned ONCE; the floor, the split and the carrier check
   // read that one reading. A torn frame splits no records — they hold verbatim — but its reading still
   // stands as the evidence a check names (a close swallowed by a fence, content stranded past ETX).
-  let reads = readCarriers(carriersOf(stream, baseUri, text));
+  let read = readCarrier(carrierOf(stream, baseUri, text));
   if (shape.kind === "torn") {
     const held = heldTorn(baseUri, text, fields, shape.faults.map((f) => f.message));
-    return { records: [held], floor: null, text, reads, slotText: stream.headed ? stream.slotText : "" };
+    return { records: [held], floor: null, text, read, slotText: stream.slotText };
   }
   const arrived = text;
   const floor = shape.kind === "bare"
     ? null
-    : layFloor(baseUri, text, reads, () => verdictOf(arrived, shape).kind === "match");
+    : layFloor(baseUri, text, read, () => verdictOf(arrived, shape).kind === "match");
   if (floor) {
     text = floor.text;
     stream = readStream(text);
-    reads = readCarriers(carriersOf(stream, baseUri, text));
+    read = readCarrier(carrierOf(stream, baseUri, text));
   }
-  const result: TiddlerFields[] = [];
-  // The file-level carriage — the prologue above the head and the bytes past the frame — hangs on the
-  // FIRST and LAST carrier respectively, so it is gathered here and joined once every close is read.
+  if (!read) return { records: [], floor, text, read, slotText: "" };
+  const tiddlers = safeSplitMeme(read, asStringFields(fields));
+  const { carrier, prologue, postamble, slotText } = stream;
+  // The file-level carriage — the prologue above the head and the bytes past the frame — rides as ONE
+  // record each under the carrier, never a copy per tiddler (a copy on every record of a carrier once
+  // put 4,015 copies of one string in the corpus).
   const carriage: TiddlerFields[] = [];
-
-  const { closes, prologue, postamble, slotText } = stream;
-  for (const [i, ev] of closes.entries()) {
-    // The carrier's own text (`ownText`, the postamble trimmed off) is the reading `carriersOf` divided.
-    const tiddlers = safeSplitMeme(reads[i]!, asStringFields(fields));
-    if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
-      // ONE RECORD, NOT A COPY PER TIDDLER. The prologue belongs to the carrier, and stamping it on
-      // every record of that carrier put 4,015 copies of one string in the corpus.
-      carriage.push(...carriageRecord(String(tiddlers[0]!["title"]), "prologue", prologue));
-    }
+  if (carrier) {
+    const root = String(tiddlers[0]!["title"]);
+    if (prologue.length > 0) carriage.push(...carriageRecord(root, "prologue", prologue));
     // The head names its namespace and its code by NAMED params, the one spelling a head is read in;
     // a head in a retired spelling (glyphs before the code) is the frame verdict's tear, never read
     // here. The Kapu SOH variant (&#x0011; DC1) carries its own semantics — the code survives on the
     // parent as `$carrier-soh`, never normalized away.
-    const namespace = (/^<<\^[^>\n]*?\bnamespace="([^"]*)"/.exec(ev.fullText)?.[1] ?? "").trim();
-    const sohCode = SOH_CODE_PARAM_RE.exec(ev.fullText)?.[1];
-    if (namespace.length > 0 && tiddlers.length > 0) {
-      for (const t of tiddlers) t["namespace"] = namespace;
+    const namespace = (/^<<\^[^>\n]*?\bnamespace="([^"]*)"/.exec(carrier.text)?.[1] ?? "").trim();
+    if (namespace.length > 0) for (const t of tiddlers) t["namespace"] = namespace;
+    if (SOH_CODE_PARAM_RE.exec(carrier.text)?.[1] === "0011") tiddlers[0]!["$carrier-soh"] = "0011";
+    // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else. ETX ends the text; the slot after
+    // it carries the block check, never payload (@lararium/memetic-frame check.ts holds the why). Foreign
+    // content in that slot is the carrier check's to refuse (`carrier-check.ts`); this reader stamps no
+    // reading onto a record, and an arriving check needs no record — the emitter mints one over every
+    // framed body.
+    if (postamble.trim().length > 0 || slotText.trim().length > 0) {
+      carriage.push(...carriageRecord(root, "postamble", postamble));
     }
-    if (sohCode === "0011" && tiddlers.length > 0) {
-      tiddlers[0]!["$carrier-soh"] = "0011";
-    }
-    // `ahu` and `fragment` lower through one intent path. Each child record carries its authored
-    // worksite spelling, and recomposition returns that surface.
-    // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else.
-    //
-    // ETX ends the text; the slot after it carries the block check, never payload (@lararium/memetic-frame check.ts
-    // holds the why). A carrier that wrote prose there lost it: the render never reproduced it, and
-    // nothing said so. Two `#edges` blocks vanished that way before anyone diffed a round-trip.
-    //
-    // Foreign content in that slot is the carrier check's to refuse (`carrier-check.ts`); this reader
-    // stamps no reading onto a record. A block check needs no record either: the emitter mints one over
-    // every framed body, so an arriving check is a fact already true of the bytes.
-    if ((postamble.trim().length > 0 || slotText.trim().length > 0)
-        && tiddlers.length > 0 && ev === closes[closes.length - 1]) {
-      carriage.push(...carriageRecord(String(tiddlers[0]!["title"]), "postamble", postamble));
-    }
-    result.push(...tiddlers);
   }
-
-  // ⤴ Fallback — no SOH framing: treat entire text as bare meme body.
-  if (result.length === 0 && reads.length > 0) {
-    result.push(...safeSplitMeme(reads[0]!, asStringFields(fields)));
-  }
-
-  result.push(...carriage);
+  const result = [...tiddlers, ...carriage];
   if (floor) {
-    for (const r of result) if (floor.fenced.has(String(r.title))) r[QUOTEBLOCKED_FIELD] = floor.message;
+    for (const r of result) if (String(r.title) === floor.root) r[QUOTEBLOCKED_FIELD] = floor.message;
   }
-  return { records: result, floor, text, reads, slotText: stream.headed ? slotText : "" };
+  return { records: result, floor, text, read, slotText: stream.slotText };
 }
 
 // ---------------------------------------------------------------------------
@@ -255,16 +228,17 @@ export function quoteblockFence(body: string): string {
   return `${fence}text\n${body}\n${fence}`;
 }
 
-/** What the floor laid: the fenced text, the carrier roots it fenced, and its account of why. */
+/** What the floor laid: the fenced text, the carrier root it fenced, and its account of why. */
 export interface QuoteblockFloor {
   readonly text: string;
-  readonly fenced: ReadonlySet<string>;
+  /** The carrier root the fence stands under. */
+  readonly root: string;
   readonly message: string;
 }
 
 /**
  * THE QUOTEBLOCK FLOOR, whole-chunk grain (`ahu.mem#/quoteblock-floor`). Runs the family split's own
- * reader — the machine `ahu-scan` stack, under the fence mask, never the grammar — over each carrier's
+ * reader — the machine `ahu-scan` stack, under the fence mask, never the grammar — over the carrier's
  * framed body. Where that decomposition leaves an ERROR (`ahu-orphan-close`: a closer that closes
  * nothing) or a MISSING (`ahu-unbalanced-open`: an opener whose closer never arrives), the carrier's
  * WHOLE body (everything after its root meta, up to ETX) fences as one quoteblock: no family stands yet
@@ -273,7 +247,7 @@ export interface QuoteblockFloor {
  * matched the arriving body over the fenced one.
  *
  * Pure and idempotent: a fenced body masks every sigil it holds, so a second pass finds no fault and
- * answers null. Null as well when every carrier decomposes. The caller reads the frame first — a torn
+ * answers null. Null as well when the carrier decomposes. The caller reads the frame first — a torn
  * frame never reaches this read, because a fence over a tear would hide it inside a span that reads
  * sound. Vocabulary never reaches it either: a dialect edit can change how a meme reads, never whether
  * it fences.
@@ -282,121 +256,78 @@ export function quoteblockFloor(uri: string, text: string, restamp: boolean): Qu
   // The deserializer's tolerant read, folded once here too, so the offsets below index the bytes it reads.
   let folded = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   if (folded.includes("\r")) folded = folded.replace(/\r\n?/g, "\n");
-  return layFloor(uri, folded, readCarriers(carrierTexts(folded, uri)), () => restamp);
+  return layFloor(uri, folded, readCarrier(carrierText(folded, uri)), () => restamp);
 }
 
-/** The floor over a folded text and the carriers already read from it. `restamp` is asked only once a fence lands. */
-function layFloor(uri: string, folded: string, reads: readonly CarrierRead[], restamp: () => boolean): QuoteblockFloor | null {
-  let out = "";
-  let cursor = 0;
-  const named: string[] = [];
-  const fenced = new Set<string>();
-  for (const carrier of reads) {
-    const { division } = carrier;
-    const faults = carrier.scan.faults;
-    if (faults.length === 0 || division.body === "") continue;
-    const at = folded.indexOf(carrier.text, cursor);
-    if (at < 0) continue;
-    // The body opens after STX (or after the head, where no STX stands) and past the root meta.
-    const headLength = carrier.text.length - division.noSoh.length;
-    const opens = headLength + (division.frame.stx ? division.frame.stx.end : 0);
-    const bodyAt = carrier.text.indexOf(division.body, opens);
-    if (bodyAt < 0) continue;
-    out += folded.slice(cursor, at + bodyAt) + quoteblockFence(division.body);
-    cursor = at + bodyAt + division.body.length;
-    fenced.add(carrier.uri);
-    named.push(...faults.map((f) => f.code === "ahu-unbalanced-open" ? `${f.code} ${f.slot}` : f.code));
-  }
-  if (named.length === 0) return null;
-  const joined = out + folded.slice(cursor);
+/** The floor over a folded text and the carrier already read from it. `restamp` is asked only once a fence lands. */
+function layFloor(uri: string, folded: string, read: CarrierRead | null, restamp: () => boolean): QuoteblockFloor | null {
+  if (!read) return null;
+  const { division, scan } = read;
+  if (scan.faults.length === 0 || division.body === "") return null;
+  const at = folded.indexOf(read.text);
+  if (at < 0) return null;
+  // The body opens after STX (or after the head, where no STX stands) and past the root meta.
+  const headLength = read.text.length - division.noSoh.length;
+  const opens = headLength + (division.frame.stx ? division.frame.stx.end : 0);
+  const bodyAt = read.text.indexOf(division.body, opens);
+  if (bodyAt < 0) return null;
+  const cut = at + bodyAt;
+  const joined = folded.slice(0, cut) + quoteblockFence(division.body) + folded.slice(cut + division.body.length);
+  const named = [...new Set(scan.faults.map((f) => f.code === "ahu-unbalanced-open" ? `${f.code} ${f.slot}` : f.code))];
   return {
     text: restamp() ? stampCarrier(joined) : joined,
-    fenced,
-    message: `${uri}: the family split cannot decompose this carrier (${[...new Set(named)].join(", ")}) — the whole ` +
+    root: read.uri,
+    message: `${uri}: the family split cannot decompose this carrier (${named.join(", ")}) — the whole ` +
       `chunk is fenced as one quoteblock, inert until the operator unwraps it`,
   };
 }
 
-type CarrierClose = Extract<MemeStreamEvent, { kind: "carrier-close" }>;
-
-/** A stream of carriers, read once: each close, and the file-level carriage around them. */
+/**
+ * A text, read once as the ONE carrier it carries (memetic-wikitext-framing #/frame-security: this frame
+ * frames records — a carrier travels whole, and a stream of carriers belongs to the SYN-framed profile):
+ * the carrier's own bytes, and the file-level carriage around them.
+ */
 interface StreamReading {
-  readonly closes: readonly CarrierClose[];
+  /** The heading through the mark that closes it, with the address the heading names; null with no heading. */
+  readonly carrier: CarrierText | null;
+  /** The bytes above the heading, the declaration excepted — the frame owns the declaration. */
   readonly prologue: string;
+  /** The bytes past the release (past ETX, where no release stands). */
   readonly postamble: string;
-  /** What the last carrier wrote between end-of-text and end-of-transmission. */
+  /** What the carrier wrote between end-of-text and end-of-transmission. */
   readonly slotText: string;
-  /** Whether a live heading stands at all — the slot belongs to a carrier only where one does. */
-  readonly headed: boolean;
 }
 
 function readStream(text: string): StreamReading {
-  // ✶ Scan — stream parse: handles single-meme, multi-meme, and partials.
-  const parser = new MemeStreamParser();
-  const events: MemeStreamEvent[] = [...parser.push(text), ...parser.flush()];
-
-  // ⏿ Hold — only carrier-close events produce tiddlers.
-  const closes = events.filter((e): e is CarrierClose =>
-    e.kind === "carrier-close"
-  );
-
-  // ◇ Route — each carrier-close → split ahu slots → batch.
-  // Pre-SOH content (the declaration + leading prose) sits OUTSIDE
-  // ev.fullText because MemeStreamParser frames on SOH/ETX. Capture
-  // everything before the first SOH as `prologue` on the first carrier's
-  // parent and everything after the last ETX/EOT as `postamble` on the
-  // last carrier's parent. The recompose inverse (`expandMemeRefs` /
-  // `exportMemeText`) re-emits both verbatim. Round-trip law: anything in
-  // the operator's source survives.
-  // (Multi-meme prologue/postamble distribution between intermediate
-  // carriers lands when MemeStreamParser surfaces positional metadata on
-  // carrier events.)
-  // SOH carrier sentinels begin with `<<^` then optional namespace glyphs
-  // (⊙, ॐ ँ, …) then the SOH control-char reference directly — the same
-  // shape the namespace extractor below reads. Anchoring on the SOH/SOH2
-  // codes avoids matching the declaration, a speaking-head sigil,
-  // or later STX/ETX sentinels — an
-  // any-control-char form swallows the whole header into `prologue` whenever
-  // the SOH carries a namespace it cannot see.
-  const sohM = maskedExec(text, SOH_PREFIX_RE);
-  const sohIdx = sohM ? sohM.index : -1;
-  // THE FRAME OWNS THE DECLARATION; `prologue` carries bytes beyond it. This keeps the declaration in
-  // one frame position instead of copying it onto every record of a carrier.
-  const prologueRaw = (closes.length > 0 && sohIdx > 0) ? text.slice(0, sohIdx) : "";
-  const prologue = prologueRaw.replace(/^<<!DOCTYPE[^>\n]*>>\n?\n?/m, "");
-  // THE CLOSE IS THE ONE SPAN READER'S (`readFrame`), the same reader the block check and the gradient
-  // divide by. The LAST carrier owns the file's tail, so the reader runs over that carrier's own region:
-  // the ETX that closes its text, then the first release past it.
-  //
+  // ONE MASK, ONE HEADING, ONE SPAN READER. The live heading opens the carrier; the span reader
+  // (`readFrame`, the reader the block check and the gradient divide by) closes it — at the first live
+  // ETX after the first live STX, or at the release where no text frame stands. No ahu sigil, quoted
+  // mark, or mark spelled outside the control head moves the close. A second heading is the frame
+  // verdict's tear (`second-soh`) and never reaches a division.
+  const spans = fencedSpans(text);
+  const head = maskedExec(text, carrierHeadPattern("g"), spans);
+  if (!head) return { carrier: null, prologue: "", postamble: "", slotText: "" };
+  const from = head.index;
+  const frame = readFrame(text.slice(from), spans
+    .filter((sp) => sp.end > from)
+    .map((sp) => ({ ...sp, start: Math.max(0, sp.start - from), end: sp.end - from })));
+  const close = frame.etx ?? frame.eot;
+  const carrierEnd = from + (close ? close.end : text.length - from);
   // ETX AND EOT ARE DIFFERENT GLYPHS AND STAY APART. The slot between them carries the block check and
-  // nothing else; content stranded there stays legible to the classifier below instead of vanishing in
-  // the render — which is how two `#edges` blocks were once lost. A second live ETX inside the frame
-  // lands in that slot too: the text closed at the first, so what follows is not body, and it NAKs.
-  const lastSoh = maskedExecAll(text, new RegExp(SOH_PREFIX_RE.source, "g")).at(-1);
-  const tailFrom = lastSoh ? lastSoh.index : 0;
-  const tail = readFrame(text.slice(tailFrom));
-  const closeEnd = tail.etx ? tailFrom + tail.etx.end : -1;
-  const release = tail.etx && tail.eot ? tail.eot : null;
-  // THE SLOT: what the carrier wrote between end-of-text and end-of-transmission.
-  const slotText = closeEnd >= 0 && release ? text.slice(closeEnd, tailFrom + release.index) : "";
-  // Past EOT there stands only the frame's own trailing newline; that tail reads to end of text.
-  const frameEnd = release ? tailFrom + release.end : closeEnd;
-  const postamble = (closes.length > 0 && frameEnd >= 0 && frameEnd < text.length)
-    ? text.slice(frameEnd)
-    : "";
-  return { closes, prologue, postamble, slotText, headed: sohM !== null };
-}
-
-/**
- * One carrier's own text. MemeStreamParser's fullText extends past the ETX in single-meme files; trim
- * that trailing content so the parent meme's text field doesn't duplicate the postamble captured
- * separately.
- */
-function ownText(ev: CarrierClose, closes: readonly CarrierClose[], postamble: string): string {
-  if (postamble.length > 0 && ev === closes[closes.length - 1] && ev.fullText.endsWith(postamble)) {
-    return ev.fullText.slice(0, ev.fullText.length - postamble.length);
-  }
-  return ev.fullText;
+  // nothing else; content stranded there stays legible to the carrier check instead of vanishing in the
+  // render — which is how two `#edges` blocks were once lost.
+  const release = frame.etx && frame.eot ? frame.eot : null;
+  const slotText = release ? text.slice(from + frame.etx!.end, from + release.index) : "";
+  // Past the release there stands only the frame's own trailing newline; the postamble reads to the end.
+  const frameEnd = release ? from + release.end : carrierEnd;
+  // THE FRAME OWNS THE DECLARATION; `prologue` carries bytes beyond it, once, on the carrier.
+  const prologue = text.slice(0, from).replace(/^<<!DOCTYPE[^>\n]*>>\n?\n?/m, "");
+  return {
+    carrier: { uri: head[1] ?? "", text: text.slice(from, carrierEnd) },
+    prologue,
+    postamble: frameEnd < text.length ? text.slice(frameEnd) : "",
+    slotText,
+  };
 }
 
 /** One carrier of a text: the address it names and the bytes the records are split from. */
@@ -406,20 +337,20 @@ export interface CarrierText {
 }
 
 /**
- * Every carrier a text carries, as the deserializer divides it — or the whole text under `baseUri`
- * where no carrier closes. The carrier check reads the same division the records were split from.
+ * The carrier a text carries, as the deserializer divides it — or the whole text under `baseUri` where
+ * no heading stands; null for a text holding nothing. The carrier check reads the same division the
+ * records were split from.
  */
-export function carrierTexts(text: string, baseUri: string): CarrierText[] {
+export function carrierText(text: string, baseUri: string): CarrierText | null {
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
-  return carriersOf(readStream(text), baseUri, text);
+  return carrierOf(readStream(text), baseUri, text);
 }
 
-/** The carriers one stream reading divides a (folded) text into. */
-function carriersOf(stream: StreamReading, baseUri: string, text: string): CarrierText[] {
-  const { closes, postamble } = stream;
-  const out = closes.map((ev) => ({ uri: ev.uri || baseUri, text: ownText(ev, closes, postamble) }));
-  return out.length === 0 && text.trim() ? [{ uri: baseUri, text }] : out;
+/** The carrier one reading divides a (folded) text into. */
+function carrierOf(stream: StreamReading, baseUri: string, text: string): CarrierText | null {
+  if (stream.carrier) return { uri: stream.carrier.uri || baseUri, text: stream.carrier.text };
+  return text.trim() ? { uri: baseUri, text } : null;
 }
 
 /** One carrier, read once: its address and bytes, their division, and the ahu scan of the body. */
@@ -428,12 +359,11 @@ export interface CarrierRead extends CarrierText {
   readonly scan: AhuScan;
 }
 
-/** Divide each carrier and scan its body's ahu stack — the one reading the floor and the split share. */
-function readCarriers(carriers: readonly CarrierText[]): CarrierRead[] {
-  return carriers.map((c) => {
-    const division = divideCarrier(c.text);
-    return { ...c, division, scan: scanAhu(division.body) };
-  });
+/** Divide the carrier and scan its body's ahu stack — the one reading the floor and the split share. */
+function readCarrier(carrier: CarrierText | null): CarrierRead | null {
+  if (!carrier) return null;
+  const division = divideCarrier(carrier.text);
+  return { ...carrier, division, scan: scanAhu(division.body) };
 }
 
 // ---------------------------------------------------------------------------
@@ -458,7 +388,7 @@ function safeSplitMeme(read: CarrierRead, fields: TiddlerFields): TiddlerFields[
 // ---------------------------------------------------------------------------
 // splitMemeToTiddlers — parse one meme (SOH→ETX span) into parent + children.
 //
-// `text` = ev.fullText from MemeStreamParser = SOH line → ETX inclusive.
+// `read` = the carrier the span reader divided: heading line → ETX inclusive.
 // On exit: parent.text = body proper only (SOH/meta/STX/ETX stripped).
 // Child tiddlers: one per non-control ahu slot; text = slot body proper.
 // ---------------------------------------------------------------------------

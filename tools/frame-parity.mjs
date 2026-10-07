@@ -150,10 +150,10 @@ const tableOnly = [...tableCodes].filter((c) => !standing.some((s) => s.code ===
 
 // AND EVERY READER, checked against the table rather than rewritten onto it.
 //
-// Four readers spell their own control codes inside scans their contexts earned — the stream framer
-// refusing to cross a line, the bootstrap taking the wider read, the deserializer anchoring on the
-// code itself. Rewriting those to build from a shared constant would collapse three scars into one
-// regex and reopen the bugs their comments record.
+// The readers below spell their own control codes inside scans their contexts earned — the bootstrap
+// taking the wider read, the deserializer anchoring on the head's code binding. Rewriting those to
+// build from a shared constant would collapse the scars into one regex and reopen the bugs their
+// comments record.
 //
 // So the table stays authoritative BY VERIFICATION rather than by construction: every code any reader
 // scans for must stand in `FRAME_MARKS`, and every mark the table declares must be scanned somewhere.
@@ -161,7 +161,6 @@ const tableOnly = [...tableCodes].filter((c) => !standing.some((s) => s.code ===
 // notices when they disagree.
 const READERS = [
   "packages/lararium-tw5/src/meme-ast/scanner.ts",
-  "packages/lararium-tw5/src/meme-stream.ts",
   "packages/lararium-tw5/src/deserializer.ts",
   "packages/lararium-memetic-frame/src/check.ts",
 ];
