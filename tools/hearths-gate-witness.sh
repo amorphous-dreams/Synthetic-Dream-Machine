@@ -17,6 +17,10 @@
 # hearth opens. The script SAYS when it fell back, and the pass-through CONTROLs keep reading the real
 # ledger so the header's law still holds for them.
 #
+# A LIVE FENCE WITH NO HOLD STANDS THE GATE DOWN, and the real-ledger CONTROLs then witness exactly that:
+# a path a closed hearth held passes under the very trailer the arming vector refused, with the
+# stand-down note, because a closed hearth defends nothing.
+#
 # Runs under `${TMPDIR:-/tmp}`; touches no repo of the operator's.
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
@@ -178,22 +182,33 @@ else bad "refused for the wrong reason"; sed 's/^/      /' "$WORK/out.txt" | hea
 # refuse, and that answer must come off the rows the tree actually stands on, single hearth or not.
 use_ledger "$WORK/real-ledger.mem"
 
+if [ -n "$LIVE_OWNER" ]; then
 step "CONTROL: a commit with NO trailer passes, with a printed note"
 stage "$HELD_LIVE"
 printf 'the operator writes, carrying no trailer\n' | attempt
 if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
 elif grep -q "no \`Claude-Session:\` trailer" "$WORK/out.txt"; then ok
 else bad "passed without the note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+fi
 
 step "CONTROL: a path NO hold names passes"
 stage "$UNHELD"
 printf 'lar:///a.b.c — unheld ground\n\nClaude-Session: https://claude.ai/code/%s\n' "${LIVE_OWNER:-session_NOBODYHOLDSTHIS}" | attempt
 if [ $? -eq 0 ]; then ok; else bad "unheld ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
 
+if [ -n "$LIVE_OWNER" ]; then
 step "CONTROL: a live hearth writes its OWN ground on the real ledger"
 stage "$HELD_LIVE"
 printf 'lar:///a.b.c — the live hearth writes\n\nClaude-Session: https://claude.ai/code/%s\n' "$LIVE_OWNER" | attempt
 if [ $? -eq 0 ]; then ok; else bad "the standing hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+else
+step "CONTROL: no live hold — the arming crossing passes, the gate stood down"
+stage "$HELD_BY_A"
+printf 'lar:///a.b.c — closed ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
+if [ $? -ne 0 ]; then bad "a closed hearth's former ground was defended"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "the gate stands down" "$WORK/out.txt"; then ok
+else bad "passed without the stand-down note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+fi
 
 echo
 if [ "$FAILED" -eq 0 ]; then printf '\033[32mhearths-gate-witness: all vectors stand\033[0m\n'; exit 0; fi

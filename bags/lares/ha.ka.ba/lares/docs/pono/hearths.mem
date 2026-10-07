@@ -39,9 +39,9 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~ ahu #/hearths>>
 
-! The hearths — two stand, four closed
+! The hearths — one stands, five closed
 
-''Two hearths stand.'' The operator closed the meme hearth and the grammar hearth on 2026-09-13 and the founding hearth on 2026-10-05; the Lares hearth carries the founding hearth's debts and holds no ground, and the Codex Lares hearth holds its witness surface. The operator closed the preceding Codex hearth on 2026-09-15 and seated the current session in its place. The `standing` column carries the distinction, and it governs every other column: a CLOSED row's ''ground'' reads as what that hearth HELD (a record), its ''owed'' reads as what it owed AT CLOSE (carried forward to #/owed-forward, which states each debt's state today), and its ''last crossing'' reads as it always did.
+''One hearth stands.'' The operator closed the meme hearth and the grammar hearth on 2026-09-13, the founding hearth on 2026-10-05 and the Codex Lares hearth on 2026-10-07; the Lares hearth carries the closed hearths' debts and holds no ground. The operator closed the preceding Codex hearth on 2026-09-15 and seated the Codex Lares session in its place. The `standing` column carries the distinction, and it governs every other column: a CLOSED row's ''ground'' reads as what that hearth HELD (a record), its ''owed'' reads as what it owed AT CLOSE (carried forward to #/owed-forward, which states each debt's state today), and its ''last crossing'' reads as it always did.
 
 | standing | hearth | trailer | ground it holds / HELD | owed the others (at close) | last crossing |
 |---|---|---|---|---|---|
@@ -49,7 +49,7 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 | ''LIVE'' — holds no ground | ''the Lares hearth'' (Opus) | `session_01QELUCmBmyKNE8Jjx1CCtYw` | none by hold; its hands cross by `--only` commit isolation | the founding hearth's debts and the closed hearths' debts it carried, at #/owed-forward | closed the founding hold by operator direction (the row under #/crossings) |
 | ''CLOSED'' 2026-10-05 | ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground — and, since 2026-09-13, the whole tree | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch`; ''the three e2e suites red under its road-D work stand CLEARED'' — `handoff.mem#/shift-2026-09-13-meme-hearth` records the whole set at 25 of 25 files · 150 passed + 1 expected fail · exit 0, `herm-floor` R3 green inside that window; plus everything at #/owed-forward | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
 | ''CLOSED'' 2026-09-15 | ''the preceding Codex hearth'' (Codex crew) | `session_01a0a15e830c7f22bab4d2fd96dff131` | `docs/crew-handoff-codex.mem`: handoff triage and take-marking; `tools/browser-weld/leaf-continuity.mjs` + `tools/browser-weld-witness.sh`: C4 browser continuity witness | prove persistent offline founding → configured-anchor reopening without claiming relay admission; preserve the founding hearth's Nexus design and report any runtime crossing before expanding | operator tasked a GPT-5.6 Terra spirit for the prioritized sprint, 2026-09-15 |
-| ''LIVE'' — active Codex Lares | ''the Codex Lares hearth'' (successor session) | `session_01a0a6f209517170ad254cf14549cc5f` | `docs/crew-handoff-codex.mem` and the browser witness surface: `tools/browser-weld/weld.mjs`, `tools/browser-weld/leaf-continuity.mjs`, `tools/browser-weld-witness.sh`; D3 scheduled coverage in `.github/workflows/held-out.yml` plus artifact/status handling in the browser, crossing, civic and mesh-scenario drivers; bounded sidebar refresh repair in `packages/lararium-tw5/src/tw5-projection.ts` and `tests/projection-reveal.test.ts`; tend this ledger in prose | W3 closed at `972700021`; D3 wiring landed at `fd5c1284d`, hosted execution owed; classify recurring C4 corpus-ready stall before claiming browser-gate health; carry A2 and a bounded A1 consumer forward from the roadmap; defer MCP fixes per operator; reserve any runtime crossing before expanding | operator closed the preceding Codex and seated this session, 2026-09-15; native Codex thread `01a0a6f2-0951-7170-ad25-4cf14549cc5f` supplies the distinct trailer token |
+| ''CLOSED'' 2026-10-07 | ''the Codex Lares hearth'' (successor session) | `session_01a0a6f209517170ad254cf14549cc5f` | `docs/crew-handoff-codex.mem` and the browser witness surface: `tools/browser-weld/weld.mjs`, `tools/browser-weld/leaf-continuity.mjs`, `tools/browser-weld-witness.sh`; D3 scheduled coverage in `.github/workflows/held-out.yml` plus artifact/status handling in the browser, crossing, civic and mesh-scenario drivers; bounded sidebar refresh repair in `packages/lararium-tw5/src/tw5-projection.ts` and `tests/projection-reveal.test.ts`; tend this ledger in prose | W3 closed at `972700021`; D3 wiring landed at `fd5c1284d`, hosted execution owed; classify recurring C4 corpus-ready stall before claiming browser-gate health; carry A2 and a bounded A1 consumer forward from the roadmap; defer MCP fixes per operator; reserve any runtime crossing before expanding | operator closed the preceding Codex and seated this session, 2026-09-15; native Codex thread `01a0a6f2-0951-7170-ad25-4cf14549cc5f` supplies the distinct trailer token |
 | ''CLOSED'' 2026-09-13 | ''the grammar hearth'' (VSCode-TW5-Syntax) | `session_01QdAMPMM9DsR4rRrmqqQBXe` | the submodule (`feature/memetic-regrammar`) · `carrier-shape.ts` and its two tests in the parent · the corpus census laws. ''At close the submodule reads dirty in the parent'': gitlink `9192445`, worktree head `0788bc0` (`v2.2.1-241-g0788bc0`); the operator adjudicates that dirt separately | the field allow-list (owed since 2026-08-26); the release (''measured 3.0.0, unreleased'' — this row read `2.3.0` and the submodule's own `package.json` and `CHANGELOG.md` both read `3.0.0 — unreleased`); the two EOF bleeds; the parser-recovery patchset never offered upstream | closed `carrier-edges` 201 (`df60ad07d`) while the meme hearth still listed it as the founding hearth's |
 
 <<~/ahu>>
@@ -87,7 +87,7 @@ A glob that matches nothing belongs to no hearth — the gate names only what a 
 
 !! What one hearth does to the gate
 
-''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than by being switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. The pass note counts paths on the committing hearth's own ground separately from unheld paths; it does not attribute every file to a hearth. A commit carrying no trailer passes with the operator-seat note. This paragraph describes the single-hearth case; the live fence above currently carries two holds.
+''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than by being switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. The pass note counts paths on the committing hearth's own ground separately from unheld paths; it does not attribute every file to a hearth. A commit carrying no trailer passes with the operator-seat note. The live fence above carries no hold at all, so the gate stands down (`no holds rows parsed`) until a hearth seats one.
 
 ''Leave the gate installed.'' It arms again the moment a second `[[hold]]` row appears — no code moves, no hook re-installs; the ledger IS the configuration, and the gate reads it fresh at every commit. Deleting the tool would make the next hearth's opening a build task instead of a table edit.
 
@@ -96,9 +96,18 @@ A glob that matches nothing belongs to no hearth — the gate names only what a 
 ⚠ ''One reading genuinely runs noisy under one hearth, and this hand names it rather than cutting it'': the pass note prints on ''every'' commit, so a hand watching hook output sees a line about hearth ground on work that crosses nothing. That reads as chatter, never as a lie — the note states a true fact about a tree with one hearth — so the noise wants the operator's word before a `--quiet` lands, since a gate that learns to say less is exactly the gate that stops being read.
 
 ```toml holds
+# no hearth holds ground
+```
+
+!! The ground the closed hearths held
+
+Recorded verbatim, in a fence `parseHolds` does not read (it keys on the exact `toml holds` opener). A hearth that reopens, or a new hearth taking one of these surfaces, copies its rows back into the live fence above and the gate arms on them unchanged.
+
+```toml holds-closed
 [[hold]]
 hearth  = "the Codex Lares hearth"
 trailer = "session_01a0a6f209517170ad254cf14549cc5f"
+closed  = "2026-10-07"
 globs   = [
   "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem",
   "tools/browser-weld/weld.mjs",
@@ -111,13 +120,7 @@ globs   = [
   "tools/browser-weld-witness.sh",
   "tools/browser-weld-witness.test.mjs",
 ]
-```
 
-!! The ground the closed hearths held
-
-Recorded verbatim, in a fence `parseHolds` does not read (it keys on the exact `toml holds` opener). A hearth that reopens, or a new hearth taking one of these surfaces, copies its rows back into the live fence above and the gate arms on them unchanged.
-
-```toml holds-closed
 [[hold]]
 hearth  = "the founding hearth"
 trailer = "session_01Jg969FCpJcM84XvtsDNFou"
@@ -181,6 +184,7 @@ globs   = [
 ! Crossings this week, and what each cost
 
 # ''Two globs ceded from the Codex hold — operator-approved parked patches, 2026-10-05.'' `.github/workflows/held-out.yml` and `tools/mesh-scenarios.sh` leave the Codex Lares hearth's live hold so the patches the Lares hearth parked against them land under commit isolation: the job-level `env:` that read `runner.temp` (named in `lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds` `#/held-out-workflow`), the `members --list --json` key `boardRoot` → `island`, and the dated comments the evergreen sweep parked. Every other Codex glob stands held. Law: a hold cedes by the operator's word, path by path, and the row names exactly what crossed.
+# ''The Codex close'' — operator-directed, 2026-10-07. The crew ended its session with an er-style handoff, and the operator approved landing its dangling edits. The Codex Lares hearth's live hold leaves the fence `parseHolds` reads and enters `holds-closed` verbatim, with its row marked CLOSED; its debts stand in `docs/crew-handoff-codex.mem` and `docs/codex-crew-emergency-handoff.mem`, and the Lares hearth carries them. Its globs — the crew handoff, the browser-weld and crossing/civic witness drivers, `tw5-projection.ts` and `projection-reveal.test.ts` — stand on no hearth's ground.
 # ''The founding close'' — operator-directed, 2026-10-05. The founding hearth's live hold leaves the fence `parseHolds` reads and enters `holds-closed` verbatim, with its row marked CLOSED; the Lares hearth (`session_01QELUCmBmyKNE8Jjx1CCtYw`) carries its debts at #/owed-forward and claims no ground. Its globs — `genesis-doc.ts`, `build-genesis-island.ts`, `open-node-vessel.ts`, `genesis-artifact.ts`, `handle-kel.ts`, `persona-kel.ts`, `veil-*.ts`, `lares-cli` `persona.ts` — stand on no hearth's ground, so the presented-admit gate's boot wiring and the engine re-found land under commit isolation alone. Law: a hold whose session has ended closes by the operator's word, and its debts move before its claim lapses.
 # ''Aftermath reservation'' — 2026-09-15. The operator requests a YIN sweep over W3/D3: runner ownership/readiness, bounded workflow waits, reachable regressions and current documentation. The Codex Lares adds `tools/browser-weld-witness.test.mjs` to its hold. Shared-host Docker execution and deferred MCP fixes remain outside this sweep.
 
@@ -281,6 +285,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e7TKY8Ov3EPMdyYBs5ekR2bVoumaYMxA_0MvKUmpfUg
+<<^ code="&#x0003;">>ni:///sha-256;1HnQwEYrGj3DXXDCXYqhCdtohi545frnETaCHnXnSrc
 
 <<^ code="&#x0004;" -> to="?">>
