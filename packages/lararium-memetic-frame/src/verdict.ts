@@ -13,8 +13,9 @@
  *                an ETX ahead of the STX, a toml meta fence standing before the STX (root metadata
  *                opens the BODY — a block above STX stands outside the span the check covers, and no
  *                reader recovers it), a head or release in a TORN spelling (a bare `?`, an unquoted
- *                or positional target, glyphs before the code) — no reader repairs one in silence.
- *                Each fault is named; nothing past the close is folded in.
+ *                or positional target, glyphs before the code), a mark out of spine order (a release
+ *                before the text closes, a second heading inside the first carrier's frame) — no
+ *                reader repairs one in silence. Each fault is named; nothing past the close is folded in.
  *   · `bare`   — NO frame at all: no head, no STX, no ETX, no release. Bare data found on the internet
  *                is not a meme, and reading it as one would invent a carrier nobody wrote.
  *

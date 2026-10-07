@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;1MPmLZSVAw0k068PL_mmwRKpq-QBQDnmY6pOVQEbg-4"
+source-check: "ni:///sha-256;N-tDz9fV_4NOlm_TQ8vctrMO6IdGwq8iF6nbV5W0c3w"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -803,7 +803,9 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
   conflict), never a blanket refusal; the conflict belongs to the humans involved, and the carrier still
   parses, as graceful parsing requires, as a carrier in fault.
 - **torn** — the frame cannot divide without choosing: STX without ETX, a second live ETX, an ETX ahead
-  of STX, a meta fence above STX, or a head or release in a torn spelling, each fault named. A torn
+  of STX, a meta fence above STX, a head or release in a torn spelling, or a mark out of spine order
+  (#/carrier-spine) — a release standing before the text closes, or a second heading standing inside
+  the first carrier's frame — each fault named. A torn
   carrier reads as a truncated or broken transmission and MUST NOT read as `absent`: conflating the two
   hands an adversary the cheapest strip on offer — cut a file ahead of its closer and a missing check
   would read as lawful absence. A consumer refuses a torn carrier, and its bytes stay where they stand.

@@ -35,6 +35,7 @@ import { fencedSpans, maskedExecAll, type MaskSpan } from "./fence-mask.js";
 // A frame sigil never crosses a line, and `>>` closes it only when a second bracket follows — the
 // arrow's own `>` rides as content.
 const INNER = "(?:[^>\\n]|>(?!>))*";
+const SOH_SRC = `<<\\^${INNER}${frameAlt("SOH")}${INNER}>>`;
 const STX_SRC = `<<\\^${INNER}${frameAlt("STX")}${INNER}>>`;
 const ETX_SRC = `<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`;
 const EOT_SRC = `<<\\^${INNER}${frameAlt("EOT")}${INNER}>>`;
@@ -47,6 +48,7 @@ export interface MarkHit {
 
 /** Every LIVE frame mark of a text — quoted marks masked out. */
 export interface FrameMarks {
+  readonly soh: readonly MarkHit[];
   readonly stx: readonly MarkHit[];
   readonly etx: readonly MarkHit[];
   readonly eot: readonly MarkHit[];
@@ -55,9 +57,14 @@ export interface FrameMarks {
 const hits = (text: string, src: string, spans: readonly MaskSpan[]): MarkHit[] =>
   maskedExecAll(text, new RegExp(src, "g"), spans).map((m) => ({ index: m.index, end: m.index + m[0].length }));
 
-/** The live STX, ETX and EOT marks of `text`, in order, read through the fence mask. */
+/** The live SOH, STX, ETX and EOT marks of `text`, in order, read through the fence mask. */
 export function frameMarks(text: string, spans: readonly MaskSpan[] = fencedSpans(text)): FrameMarks {
-  return { stx: hits(text, STX_SRC, spans), etx: hits(text, ETX_SRC, spans), eot: hits(text, EOT_SRC, spans) };
+  return {
+    soh: hits(text, SOH_SRC, spans),
+    stx: hits(text, STX_SRC, spans),
+    etx: hits(text, ETX_SRC, spans),
+    eot: hits(text, EOT_SRC, spans),
+  };
 }
 
 /**
@@ -90,7 +97,9 @@ export interface FrameRead {
  * of several carriers stands several STX by design, while a second ETX inside one frame never does.
  */
 export interface FrameFault {
-  readonly kind: "second-stx" | "etx-before-stx" | "second-etx" | "no-etx" | "meta-before-stx" | "torn-spelling";
+  readonly kind:
+    | "second-stx" | "etx-before-stx" | "second-etx" | "no-etx" | "meta-before-stx" | "torn-spelling"
+    | "eot-out-of-order" | "soh-inside-frame";
   readonly message: string;
 }
 
@@ -113,6 +122,20 @@ export function readFrame(text: string, spans: readonly MaskSpan[] = fencedSpans
   }
   if (after.length > 1) {
     faults.push({ kind: "second-etx", message: `${after.length} live ETX marks follow the STX — the text closes at the first, and nothing past it is checked or read as body` });
+  }
+  // THE SPINE HOLDS ITS ORDER (#/carrier-spine: SOH, STX, ETX, EOT, "in this order"; where the marks
+  // stand, spine order MUST hold). A release standing before the text closes — or before the text
+  // opens, where no close stands — and a second heading standing before the first carrier's frame
+  // closes, each leave a frame no reader divides without choosing: one closes at the early release and
+  // drops bytes the check covers, another opens a carrier nobody wrote. Each is named, never chosen.
+  const textBound = etx ?? stx;
+  if (textBound && marks.eot.some((h) => h.index < textBound.index)) {
+    faults.push({ kind: "eot-out-of-order", message: `a live EOT stands before the ${etx ? "text closes (ETX)" : "text opens (STX)"} — the release comes last in the spine` });
+  }
+  const frameClose = etx ? etx.index : eot ? eot.index : text.length;
+  const inside = marks.soh.slice(1).filter((h) => h.index < frameClose);
+  if (inside.length > 0) {
+    faults.push({ kind: "soh-inside-frame", message: `${inside.length} live heading(s) stand inside the first carrier's frame — a heading opens a carrier only past the one before it` });
   }
   return { stx, etx, eot, faults };
 }

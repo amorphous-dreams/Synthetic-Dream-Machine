@@ -104,12 +104,14 @@ function diagnostic(severity: DiagnosticSeverity, code: string, message: string,
 
 /** Each tear's code on the diagnostics channel: a missing close and a fault of the frame's own spelling keep their names. */
 const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
-  "no-etx":          "block-check-torn",
-  "meta-before-stx": "meta-before-stx",
-  "torn-spelling":   "torn-spelling",
-  "second-stx":      "frame-malformed",
-  "second-etx":      "frame-malformed",
-  "etx-before-stx":  "frame-malformed",
+  "no-etx":            "block-check-torn",
+  "meta-before-stx":   "meta-before-stx",
+  "torn-spelling":     "torn-spelling",
+  "second-stx":        "frame-malformed",
+  "second-etx":        "frame-malformed",
+  "etx-before-stx":    "frame-malformed",
+  "eot-out-of-order":  "frame-malformed",
+  "soh-inside-frame":  "frame-malformed",
 };
 
 /**
