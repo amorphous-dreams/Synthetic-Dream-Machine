@@ -18,20 +18,20 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Vitals
 
-* ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Crew-held dirt in the tree: `mempalace` (submodule), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts` and `packages/lararium-node/tests/origin-standing.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
-* ''Corpus'': every tracked `bags/*.mem` reads canonical under `lares meme check`; `tools/bcc-witness.sh` reads every block check `ok`.
-* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. Two of 32 read red after a fresh build: `vessel-parity-witness` (`makePersonaGroupIdentityRing` composes on node only — the browser side is owed) and `round-trip-witness` (`lararium-tw5` `tests/grammar-in-a-wiki.test.ts` runs past the default 5 s under load; it passes alone at a 60 s timeout). Every other witness reads ok, `contract-witness` among them (on the fold, `#/wounds` P1); `symbol-anchor-witness` holds at its ceiling of 34; `unbuilt-laws-witness` reads 12 declared, 12 still red. Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too.
+* ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Crew-held dirt in the tree: `mempalace` and `VSCode-TW5-Syntax` (submodule pointers), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
+* ''Landed in the last sign-off'' (CHANGELOG `[Unreleased]`, the SIGN-OFF BATCH lines): the first arrival — the descriptor at `/.well-known/lar` (`application/vnd.lar.arrival+json`, mirrors from `LAR_PRONAOS_MIRRORS`), `kindle.ts#pullArrival`, a waking-floor lararium serving all of it; anchored ancestry — a seal roll lands a roll anchor (domain `carriage-roll-anchor`) and an admit in its causal past carries to the head; the quoteblock floor's whole-chunk grain (`ingest-gate.ts` `wholeChunkFloor`) beside the child grain; parallel drafts persisted to the reading wiki's draft bag (`wikis/<slug>/draft`) through a `ParallelDraftsReader`; submissions titled `submissions/<name>` with `--title-base` removed; the face-grant record carrying no wall clock; the tree-sitter CLI and runtime pinned at 0.27.0.
+* ''E2E'' (the whole staged set): 27 of 29 files, 205 tests passed. The two reds: the crew's untracked `tests/e2e/nexus-offering-replication.test.ts`, and a race in `tests/e2e/corpus-feed.test.ts` F2 — its walker meets a disk projector's `*.lar-tmp-*` file (`disk-projector.ts`) that is renamed away before the read (ENOENT); it passes 4 of 4 alone (`#/wounds` 6).
+* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 31 of 32 read ok; `vessel-parity-witness` reads red (`makePersonaGroupIdentityRing` composes on node only — the browser side is owed). `contract-witness` reads ok through ⑩, anchored ancestry. Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too.
 * ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
-* ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. Its reds and what answers each in the unpushed commits: Typecheck (`OraclePointer.version`, answered by the oracle panel's act CID), Grammar artifact gates (the wasm built after the TS host read it, answered by the build order), the Sensorium suite (the meme-tools fixture's socket path, answered by pytest's tmp; `test_structure_router` stays red — `#/wounds` P1), Witnesses (`typecheck`, `unbuilt-laws` reading an escape-coloured summary — answered — and `vessel-parity`, which stands), and E2E (runs out its ceiling — `#/wounds` P1). Build + generated freshness, Pristine upstream and Boot budget read green. `.github/workflows/held-out.yml` failed validation at 0s on that push; the unpushed tree resolves its evidence path inside the run step. The next push is the witness for the answers.
+* ''Unit suites'': `lararium-tw5` 1696 of 1703 (6 skipped, 1 red: `tests/carrier-edges.test.ts` reads 174 dangling edges against a ceiling of 172 — the +2 stand in the offering-antigen crew's `bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b.mem:201-204`, theirs to settle); `lararium-mesh` 2414 passed; `lararium-node` 1356 passed and 1 expected fail.
+* ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. The next push is the witness for everything since.
 * ''The tree is shared'': a parallel lane edits `bags/lares/ha.ka.ba/wsl2/**` and `tools/wsl2/**` and re-stamps after editing — a witness run mid-edit reads its carriers as drifted for a minute. Re-run before believing a red there.
 * ''Known test reds'' and their owners:
-** `lararium-node` `tests/bind-under-handle.test.ts` — crew: the joinee boot path never supplies `expectedEpoch` (the binding gate needs the live lease epoch, as `face-join.ts` supplies it); never revert the gate.
-** `lares-cli` `tests/help-door-meme.test.ts`, `tests/nexus-verb-reach.test.ts` — crew: `nexus offering` keeps its help text outside the command registry.
-** `lararium-sensorium` `scripts/test_structure_router.py::test_ahu_block_nests_inner_sigils` — `#/wounds` P1.
-** `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` — environmental (browser / server sockets).
+** `lararium-tw5` `tests/carrier-edges.test.ts` — the offering-antigen crew (above).
+** `lararium-sensorium` `scripts/test_structure_router.py::test_ahu_block_nests_inner_sigils` reads one inner sigil where it asserts two — red on the desk and in CI.
+** `tests/e2e/corpus-feed.test.ts` F2 under the whole set — `#/wounds` 6; `tests/e2e/nexus-offering-replication.test.ts` — the Offering crew's.
+** `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` — environmental when a browser or server socket is missing.
 ** `lararium-tw5` corpus suites can fail on `bags/lares/ha.ka.ba/wsl2/*.mem` while that lane edits them — its owner's to settle.
-** `lararium-tw5` `tests/grammar-in-a-wiki.test.ts` — a corpus-wide walk that times out at the default 5 s under load; passes alone.
-** Every staged e2e suite but the two herm suites — `#/wounds` P1.
 
 <<~/ahu>>
 
@@ -39,11 +39,11 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Cold start
 
-# `export LAR_BAGS=/tmp/lar-scratch-<you>` before any `lares` command or in-tree boot — a bare in-tree boot writes projection artifacts into the tracked tree.
+# `export LAR_BAGS=/tmp/lar-scratch-<you>` before any `lares` command or in-tree boot — a bare in-tree boot writes projection artifacts into the tracked tree. The staged e2e set takes a scratch `LAR_ROOT` per vessel and NO global `LAR_BAGS`.
 # `pnpm install --frozen-lockfile`, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob `head-parity` and `scripts/smoke-plugin-boot.ts` need — `pnpm -r build` does not produce it), then `node tools/stamp-build.mjs`.
 # A fresh `git worktree` holds empty submodules (`TiddlyWiki5`, `VSCode-TW5-Syntax`, `mempalace`); populate them before building there.
 # `lares-cli` `tests/pour-repave.test.ts` needs the dev-root marker (`LAR_DEV_REPO_ROOT=1` or the gitignored `lar-dev-root.json`).
-# The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) is tracked and must equal a fresh build — rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job checks it once CI runs.
+# The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) is tracked and must equal a fresh build — rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job checks it.
 # Run `bash tools/witness-all.sh` for the whole fleet — a hand-picked subset of witnesses reads greener than the tree.
 # Read `lar:///ha.ka.ba/lares/api/noosphere-boot` (the boot seed), then this carrier, then the rulings memory (`project_grammar_as_tiddlers_rulings.md`) before touching grammar, frame, or ingest code.
 
@@ -51,32 +51,42 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 <<~ ahu #/wounds>>
 
-!! Open wounds, by priority
+!! Open wounds — round 4, ranked
 
-''P1 — owed now''
-* ''E2E reds on every staged vessel.'' The explicit-origin law (`1c502ba92`) refuses a vessel booted under a scratch `LAR_ROOT`, which reads its own absent `config.json`: boot composes the Web and oracle origins for every face and refuses with "Web origin must be declared". The herm suites declare `LAR_SAME_ORIGIN=true` for themselves (`tests/e2e/herm-floor.test.ts`, `tests/e2e/herm-reshares-public-blob.e2e.test.ts`); every other staged suite refuses. The cure waits on the operator's herm decision #3, a standing-aware origin composition. Behind it stands the lease-frontier red: "Binding Gate: current lease frontier unavailable" (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:137`). CI's e2e job runs out its ceiling on these.
-* ''The presented-admit gate: the cut-over (solo, open ground) and the contract-witness proof.'' What stands: `verifyPresentedAdmit` (`packages/lararium-mesh/src/carriage-registry.ts`) reads a presented admit and its lineage against the deny-only board and the kapae antigen; the wire carries `presentedAdmit` and `packages/lararium-node/src/daemon-auth-gate.ts` keeps it per socket, deciding nothing; the subject stamp signs with a per-Nexus leaf (`packages/lararium-node/src/nexus-leaf.ts`); a vessel carries a SET of Nexuses (`packages/lararium-node/src/carried-set.ts`, `lares nexus seal import --carry`); the federation gate federates every carried island's boards. ''The cut-over'' moves the daemon's carriage decision off the folded members board (`foldCarriageSet` → `nexus-carriage.ts`) onto the verifier, and fills the boot seat that reads no contract nym (`open-node-vessel.ts`, `contractNymAtThisSeat`). The docblocks at `nexus-carriage.ts:36`, `:271` and `nexus-refresh.ts:61` name the fold "this vessel's own board" and move with it. Its globs stand on no hearth's ground; it lands under commit isolation. ''The proof'': `tools/contract-witness.sh` reads green today on the fold; it takes five checks over the presented admit and an e2e. Canon: `lar:///ha.ka.ba/lararium/mesh/kahu` `#/nexus-scale`.
-* ''The quoteblock floor in live use.'' `packages/lararium-tw5/src/modules/meme-backstop.ts` `runChildGate` fences a child body whose splice breaks the composed root, only on a bag this hearth keeps, and raises `quoteblocked`; a peer's child on a bag this hearth does not keep surfaces only. Unit-tested; unexercised against real concurrent browser saves — watch it, and add a test for any shape it mis-attributes.
-* ''Parallel drafts reach no wiki.'' `packages/lararium-mesh/src/parallel-drafts.ts` answers one attributed TW5 draft per writing actor from a record's conflict ops, and `AutomergeDocStore` raises the surface; no wiki shows them. Whether a losing draft persists durably is the operator's ruling (P2).
-* ''A Sensorium red.'' `packages/lararium-sensorium/scripts/test_structure_router.py::test_ahu_block_nests_inner_sigils` reads one inner sigil where it asserts two — red on the desk and in CI.
+The sign-off reviewed the last four lanes and found no blocker; what it found stands here in the order to take it.
 
-''P2 — needs the operator''
-* ''The herm's Web surface, decisions 1–5'' — #3, the standing-aware origin composition, gates the e2e red above.
-* ''Parallel drafts: does a loser persist durably?''
+# ''MED — a raise presents without roll anchors.'' `packages/lararium-node/src/commands/raise-sign.ts:105` builds its presented admit off the board's entries without the board's roll anchors, so an admit at a rolled epoch presents with no chain to the head. Collapse the four callers onto ONE board-doc presenter helper, and add a post-roll raise test.
+# ''MED — the syncer ingest door drops the floor's warnings.'' `packages/lararium-tw5/src/action-handler.ts:895` discards `placed.warnings`, so a `quoteblocked` finding on that door reaches no one. Carry the warnings through and pin it with a test.
+# ''MED — two doors skip the whole-chunk floor.'' The LOAD door (`action-handler.ts:732`) and the registered deserializer (`packages/lararium-tw5/src/deserializer.ts:608`) read a carrier without `wholeChunkFloor`. Either gate them, or re-true `lar:///ha.ka.ba/lares/api/pono/ahu` `:132-133` and `:140`, which claim every door — a ruling for the hand that takes it; this sign-off re-trued neither.
+# ''MED — the rotate's ordering is untested at its own level.'' A rotate-level test: an anchor refusal leaves the charter unwritten, and the anchor lands before `writeNexusSeal`.
+# ''LOW — an orphan anchor on a same-commit retry.'' A rotate retried over the same commit can leave an anchor that no charter head follows, and the presenter chooses among anchors by CID order.
+# ''LOW — the corpus-feed walker races the projector's temp files.'' Tolerate ENOENT, or skip `*.lar-tmp-*`, in the F2 walker (`tests/e2e/corpus-feed.test.ts`). Hand the `carrier-edges` +2 to the offering-antigen crew.
+# ''LOW — the Pronaos reads its house origins from a lararium alone.'' `packages/lararium-node/src/main.ts:198` hands the mirror check an empty `houseOrigins` when the standing is not `lararium`. `kindle.ts#pullArrival` is library-only — no verb reaches it — against `lar:///ha.ka.ba/lararium/mesh/pronaos` `:225`; wire a door or re-true the carrier (a ruling, as in 3).
+# ''LOW — draft persistence fires and forgets.'' The island adaptor's `ParallelDraftsReader` write reports a failure through `console.warn` alone, and a null destination skips in silence; route both to the alert rail.
+# ''LOW — a wall clock still signs inside the face-grant record.'' The `DeviceDelegation` `founderEdge` carried in the record still signs `issuedAt`/`expiresAt`.
+
+''Carried, unranked''
+* `packages/lares-cli/src/command-help.ts` still lists the `--title-base` row (~:269); the flag is gone.
+* The L1 realm root map, derived from `keptBy`.
+* Road (iv): surface-for-review.
+* Q6: loans keyed by CID.
+* The floor's signed announcement of what it cannot do — owed until its signing domain mints; the name waits on the operator (lean: `arrival-floor-announcement`).
+* The herm descriptor's contents — an operator ruling owed (lean: relay, read face, bulb CID and kindle pointer; never the carried Nexuses).
+* A canon scribe pass: re-true Guardian ⊥ Kahu in `lar:///ha.ka.ba/lararium/mesh/kahu` `#/nexus-scale` and `#/reserve-custody`; strike "rotation = your share + one guardian" from the founding runbook; sweep wide, including `packages/lararium-sensorium/requirements.txt`, whose comment calls the tree-sitter versions one (Python binding 0.26, CLI 0.27; both ABI 15).
+* The Sensorium red above.
+
+''Needs the operator''
+* ''The herm's Web surface'': the standing-aware origin composition stands built (`440a11ce1`, `2ed97c057`); the descriptor's contents (carried, above) remain.
 * ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
 * ''The offering's `offer`/`witness` caps'' against the Lamplighter stack.
 * ''Engine cadence, still open'' (`lar:///ha.ka.ba/lararium/mesh/kahu` `#/contract`): who holds a cadence share; one daemon hosting two engine epochs; whether partial conformance lands before `kahuli engine` un-holds.
-* ''Backstop seam (b), PHASE 5'' (`tests/meme-backstop.test.ts`): two child-edit cases the test marks as the operator's call.
+* ''Backstop seam (b), PHASE 5'' (`tests/meme-backstop.test.ts`): three child-edit shapes the test marks as the operator's call.
 * ''Ruling-gated mesh modules'' (listed in `packages/lararium-mesh/src/index.ts`'s header): `recipe`, `readiness`, `reaction-graph` (canon memes pin their mesh `source-file`), `pronaos`, `offering-inspection` (own mesh-namespace memes). Each moves or stays only by ruling.
 * ''The capture cell'' sits isolated for review in `packages/lararium-mesh/src/capture/`, `packages/lararium-node/src/capture/`, `packages/lararium-tw5/src/capture/`, `packages/lares-cli/src/commands/capture/`. Canon (`lar:///ha.ka.ba/lararium/api/capture-annotation-model`, the sensorium-machina S5 ruling) places capture in Python per stream with the TS @daemon coordinating only; the TS cell carries the live path. Rule: retire it to Python, or re-home it.
-* ''The wild-bytes line'' — tolerate bytes the house cannot re-make (history, outside bytes), cut tolerance for state it can re-found — awaits canonizing beside the no-legacy law. `packages/lararium-mesh/src/capture/turn-harvest.ts` keeps its retired-head tolerance for old transcripts under it.
-* ''`bags/lares/ha.ka.ba/lares/docs/handoff.mem` `#/shift-2026-09-13-meme-hearth`'' (~:516) carries a suspended loop `@_:operator-rebooted-before-steering` (the watcher talk-story) — reconvene or release.
+* ''`bags/lares/ha.ka.ba/lares/docs/handoff.mem` `#/shift-2026-09-13-meme-hearth`'' carries a suspended loop `@_:operator-rebooted-before-steering` (the watcher talk-story) — reconvene or release.
 * ''The tree's git config'': restore `core.bare = false` (operator's hand only).
 
-''Research owed''
-* ''Whole-chunk grain of the quoteblock floor'' (a carrier arriving whole and partially un-decomposable → fence the whole chunk at the ingest seat), specified in `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`, unbuilt. The spec names WHAT fences and not WHERE: which ingest door(s) seat it, how "partially un-decomposable" decides before any family stands, and how it composes with a torn frame's refusal.
-
-''P3 — deferred by law or by the operator''
+''Deferred by law or by the operator''
 * ''The Sensorium's logic'' (`packages/lararium-sensorium/**`, tw5 `form-layer/**`, mesh `ffz-project`, `clock-recovery`, coupling/metric modules): the measure-servo aliases in `ffz-project.ts`, one five-band ladder (Title case `ApertureBand`, the others derived), the `lar_feedback` output field name. Frames inside it stay in scope for healing at any time.
 * ''Tangle, the putback law, the tongue fold'' — gated on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` (mirror pairing, round-trip CI, Markdown injection into `hana`). The aka/weave rhyme (`memetic-wikitext-framing.mem` Annex) waits on tangle.
 * ''A relay-stream profile'' — carriers close on EOT in flight; SYN (`&#x0016;`) stays the one reserved stream mark; the profile defines batch framing and resynchronisation.
@@ -90,11 +100,11 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Crew-held work (do not take without the crew)
 
-* The binding-gate caller in `bind-under-handle`, the `nexus offering` help registry, the Offering lane (local adoption, grammar-scoped relation, Antigen consultation cap, the multi-vessel receipt — `tests/e2e/nexus-offering-replication.test.ts` is its first slice), Pronaos live Docker reach.
-* The uncommitted hunks in `tests/harness/instance.ts`, the untracked `packages/lararium-node/tests/origin-standing.test.ts`, and the `mempalace` submodule pointer — another hand's; never commit, stash or revert them.
+* The Offering lane (local adoption, grammar-scoped relation, Antigen consultation cap, the multi-vessel receipt — `tests/e2e/nexus-offering-replication.test.ts` is its first slice), its antigen scope research under `bags/lares/ha.ka.ba/lares/docs/research/`, and Pronaos live Docker reach.
+* The uncommitted hunks in `tests/harness/instance.ts` and the `mempalace` and `VSCode-TW5-Syntax` submodule pointers — another hand's; never commit, stash or revert them.
 * The Codex Lares hearth holds every Codex glob but `.github/workflows/held-out.yml` and `tools/mesh-scenarios.sh`, which it ceded for the parked patches (`lar:///ha.ka.ba/lares/docs/pono/hearths`).
-* `bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-a.mem` closes its ETX on a spelling outside the frame grammar — theirs to align.
-* Operator forks recorded in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`: the contract-witness digest and equivocation vocabulary, the four named forks, the emission threshold and destination receipt, worker offline restart, the plane roster.
+* The PersonaGroup ring's browser symmetry (`vessel-parity-witness`), named in the browser-persona-ring research.
+* Operator forks recorded in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`.
 * Hand them items through `bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem`.
 
 <<~/ahu>>
@@ -106,7 +116,8 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 * ''The frame is canon'': `@lararium/memetic-frame` — DOCTYPE → `<<^ code="&#x0001;" from="?" -> to="…">>` → `<<^ code="&#x0002;">>` → `toml meta` first in the body → body → `<<^ code="&#x0003;">>ni:///sha-256;…` → `<<^ code="&#x0004;" -> to="?">>`. Marks: SOH, SOH2 (the one kapu alias), STX, ETX, EOT; each declares its family. One span: first masked STX to first masked ETX; a second is a fault. A spelling outside the frame grammar tears the frame. See `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`.
 * ''Ingest'' = decide(parse, verdict). The deserializer is the pure meme→tiddlers function; `verdict()` (Match · Stale · Absent · Torn · Bare) lives in the frame package; checks live in `carrier-check.ts`, composed by the ingest gate; repairs live in normalize; policy lives at each door. A stale check on a human edit warns; a torn frame refuses; text with no frame is bare data, UNSTABLE, never a meme.
 * ''Never refuse on the stock syncer path''; surface on the alert rail instead.
-* ''The quoteblock floor'': `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`.
+* ''The quoteblock floor'' fences at two grains — the whole chunk at the ingest gate, a child's body in place at the backstop's child gate: `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`.
+* ''An admit carries across a seal roll only through its roll anchors''; the carriage board stays deny-only, and the anchors ride the presentation's lineage.
 * ''Fragments'': every `lar:` fragment is rooted (`#/…`), one raw `#`, slot names `[a-z0-9āēīōūʻ-]`, `/` nests, `$` reserved; fragment law lives in the media type (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`).
 * ''Grammar is the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` → `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` = informative pin, `kanawai` = binding pin, `kahea` = live transclusion; HUD gauges `aperture` and `ooda-ha`.
 * ''Early alpha'': no back-compat, no shims, no legacy recovery — align stale things to the current frame and grammar. Derive, don't enumerate. Beware overcollapse: one function, one relation.
@@ -118,10 +129,9 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Map ahead
 
-# Close P1: the e2e origin red once herm decision #3 rules, then the lease-frontier red behind it; then bring each P2 to the operator as a short talk-story with its research.
-# Cut the presented-admit gate over (solo, on open ground), then prove it: `tools/contract-witness.sh` takes five checks over the presented admit, plus an e2e.
+# Work `#/wounds` round 4 in its order; the three MED code wounds (1, 2, 4) take a test first, and wounds 3 and 7 go to the operator as gate-or-retrue rulings before any hand re-trues `ahu.mem` or `pronaos.mem`.
 # THE COMBINED RE-FOUND, one act: R1 commits the device edge to the Nexus AID (the engine a separate claim; `epoch0-<sha>` names become `nexus-<sha>`); R2 signs the engine offer lineage, a window k hops along `prev`; R3 folds TW5 core plus the memetic-wikitext bootstrap into `engineCid`, and the vocabulary (`sigil-*.tid`) leaves the engine as content. R3's scout plan runs S0–S5, and its last three stages ride one merge train with R1 and R2. The vocabulary-table drop rides with it, and so does version-tag Stage R: the re-found mints unversioned names, re-mints the engine and edge, and re-seats the Nexus — never a persona or sealed-body wipe. DESTROY-class strings stay frozen. Then the island `schema_version` (~35 files) drops its counter.
-# Show parallel drafts in the wiki once the operator rules on loser durability; exercise the quoteblock floor and the child gate in the live wiki, and turn every surprise into a test.
+# Exercise the quoteblock floor (both grains), the child gate and the persisted parallel drafts in the live wiki, against real concurrent browser saves, and turn every surprise into a test.
 # The faces stand in canon (`lar:///ha.ka.ba/lararium/mesh/membership-doctrine` `#/the-two-stacks`): end user `walk`; Lamplighter `carry`, `tend/island`, `tend/reach`; Kahu, the Nexus-scale `quorum-share`, its engine cadence a separate joint and the corpus-kahu at DreamNet scale; Guardian, the reserve share. Founding acts; it never stands as a face. Stacks compose on a persona, combined by default and split only by the holder's own act. Grammar per Nexus stands ruled: the grammar lives, the corpus-kahu curate it, and no version names it. The target scale model is the small clan.
 # Rule the capture cell; then pick up the Sensorium's logic when the operator returns to it.
 # Regenerate the tree-sitter grammar whole and ship the TW5-Syntax 3.0 release — this unlocks tangle and the publication track.
@@ -139,6 +149,6 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vC_5p16hAL2Fbqa14FyiEQ8cKMEAVXLUNlm924tsSMw
+<<^ code="&#x0003;">>ni:///sha-256;rahPHGa4t0l_3drlnX5RVeGMV1P9FvsloX1vYmkJFYM
 
 <<^ code="&#x0004;" -> to="?">>

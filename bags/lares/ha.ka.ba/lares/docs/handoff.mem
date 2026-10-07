@@ -22,6 +22,18 @@ written   = "2026-06-19"
 
 
 
+<<~ ahu #/shift-2026-10-06-sign-off>>
+
+!! Shift — the sign-off of four lanes, 2026-10-06
+
+''What landed.'' The episkopos read four lanes and found no blocker. ''The first arrival'': the house's own origin answers `/.well-known/lar` with the arrival descriptor (`application/vnd.lar.arrival+json`), derived from the Pronaos route receipt alone plus hash-pinned mirrors (`LAR_PRONAOS_MIRRORS`); `kindle.ts#pullArrival` kindles off the house's origin and never dials a mirror; a lararium at its waking floor serves it. ''Anchored ancestry'': a seal roll lands a roll anchor (domain `carriage-roll-anchor`) before the charter moves, and an admit in its causal past carries to the head — `contract-witness` ⑩. ''The quoteblock floor's whole-chunk grain'' fences an un-decomposable carrier whole at the ingest gate. ''Parallel drafts persist'' in the reading wiki's draft bag. ''Submissions title themselves'' `submissions/<name>`. The face-grant record carries no wall clock; the tree-sitter artifact pins 0.27.0. The CHANGELOG's `[Unreleased]` SIGN-OFF BATCH lines name every commit.
+
+''Measured at the close.'' E2E 27 of 29 files, 205 passed (reds: the Offering crew's untracked suite; the corpus-feed F2 walker racing a projector temp file, green alone). Witness fleet 31 of 32 ok, `vessel-parity` red. Typecheck clean across 11 projects. `lararium-tw5` 1696 of 1703, `carrier-edges` red on +2 from the offering-antigen crew's research carrier.
+
+''What it hands on.'' The ranked round-4 queue and every carried item stand in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> `#/wounds`. Two of them are rulings, not patches: gate the LOAD door and the registered deserializer on the whole-chunk floor or re-true `ahu.mem`'s every-door claim; wire a door to `pullArrival` or re-true `pronaos.mem`'s. Neither carrier was re-trued here.
+
+<<~/ahu>>
+
 <<~ ahu #/shift-2026-09-13-meme-hearth>>
 
 !! Shift — the meme hearth, 2026-09-13
@@ -658,6 +670,6 @@ re-entry: closed — the floor convened and the held review condition met; the c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C6BhaR08Gn3fuYRuEqyY4w5Hp3qV5deIp9H8b98lVUc
+<<^ code="&#x0003;">>ni:///sha-256;OiQTNtaUq-HdsTQDgTFl0RcrejXmYb4XKI3mr9qjnLY
 
 <<^ code="&#x0004;" -> to="?">>
