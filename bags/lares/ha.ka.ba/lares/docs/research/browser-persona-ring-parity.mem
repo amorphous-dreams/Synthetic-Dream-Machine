@@ -7,11 +7,11 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/research/browser-persona-ring-parity.mem"
 l-space   = "lares"
-mana      = 15
-manao     = 15
-manaoio   = 14
-role      = "local source scout and red-first capability-parity contract for Node and Browser PersonaGroup identity rings"
-status    = "scouted — no package, test, generated artifact, or handoff changed"
+mana      = 17
+manao     = 17
+manaoio   = 16
+role      = "local and external engineering research with a red-first capability-parity contract for Node and Browser PersonaGroup identity rings"
+status    = "second research wave collided with repository evidence — no package, test, generated artifact, or handoff changed"
 tags      = ["research", "vessel-parity", "persona-ring", "identity-as-relation", "causal-island"]
 title     = "lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -67,41 +67,57 @@ Therefore, the repository evidence does not yet establish that the Browser curre
 
 The direction is a product/capability decision. Do not add an inbound server merely to make a parity comparison symmetrical.
 
-!! Red-first contract, once the relation is named
+!! External pattern collision — transport role is not the identity relation
 
-For any Browser path that does receive a peer and is authorized to serve the worn face's planes, the proposed contract is:
+The sources below are engineering precedents, not laws for this repository. They separate four concerns that had been fused in the first scout: who opens a channel, how the channel protects bytes, which peer key the channel belongs to, and which local capability authorizes a document.
 
-1. **Subject evidence:** use the vessel key proved by this Browser vessel's own authenticated peer gate for that exact peer. No key or mismatched peer association refuses.
-2. **Face scope:** resolve only the worn face's four PersonaGroup planes through that vessel's own catalog. A grant for another face never widens this face.
-3. **Grant evidence:** read the face's local `face-join-grant/v1` records and verify them with the shared Keyhive verifier against this face's pinned root, group, joinee vessel key, and locally held persona-KEL chain.
-4. **Composition:** preserve own in-process island peers and all existing base-gate allows. Add only the face-grant path over its four governed planes. No other document receives an allow from this ring.
-5. **Knowledge boundary:** an absent plane, record, or required KEL segment on this replica withholds the grant path. Do not search a global source, substitute a wall-clock result, or infer a mesh-wide current state.
-6. **Failure vocabulary:** distinguish no verified peer key, no matching grant, wrong face, malformed/torn record, missing or torn KEL, ungoverned document, and unavailable local evidence. These all refuse the widening while preserving any independent base-gate allow.
+!!! Established protocol facts
 
-!! Proposed red matrix
+* **WebSocket opening is client/server asymmetric.** RFC 6455 has the client send an HTTP Upgrade request and the server return the opening response. For `wss`, TLS authenticates the web endpoint under the browser's usual certificate rules. `Sec-WebSocket-Accept` confirms the server processed the client's handshake nonce; that field is not a Lararium vessel identity or face grant. Once upgraded, the WebSocket is a bidirectional message channel. The Browser can send a fresh challenge to the Node on the already-open socket without listening for a new connection.
+* **WebTransport keeps the browser-to-server session shape.** The W3C API defines a browser/server WebTransport session with streams and datagrams. It can change delivery and multiplexing behavior; it does not make a Browser vessel an inbound network listener or supply a Lararium identity relation.
+* **WebRTC allows peer data channels but leaves signaling to the application.** W3C's peer-connection example has two peers exchange offer/answer and ICE data through an out-of-band signaling channel. Data channels are bidirectional once established. DTLS certificate fingerprints secure the transport connection, but an application must still bind that transport identity to its own peer identity.
+* **libp2p makes that extra identity binding explicit.** Its Noise XX handshake mutually authenticates the peers' static keys; the Noise static key is authenticated by a signature under each peer's identity key. The JavaScript libp2p WebRTC implementation then uses that handshake to prove possession of the private key corresponding to a PeerId. This is a pattern-integrity rhyme: transport security yields a channel; a separate, reciprocal identity proof binds the channel to a peer key.
+* **Local-first sources put ownership and offline control with local devices.** The Ink & Switch essay describes collaborative software that preserves user ownership and local/offline use while allowing peer-to-peer collaboration. It does not prescribe this repository's grant semantics. Inference for DreamNet: rendezvous and carriage may help peers meet, but a receiver's locally carried grant/KEL evidence should decide the receiver's local widening; a relay's unqualified boolean should not become planetary authority.
 
-First establish the Browser transport/receiver role with a discriminating test. If that role stands, tests should exercise the real composition seam, not just call a pure ring predicate:
+!!! Repository collision and correction
 
-1. Positive control: a reciprocal, authenticated peer key named by a valid grant reaches only the worn face's four planes.
-2. Stranger: a validly authenticated key with no matching grant gains no face-plane access.
-3. Identity binding: a valid grant for key A does not admit peer B; a transport peer ID cannot be swapped onto A's proof.
-4. Face binding: a valid grant for another PersonaGroup does not widen the worn face.
-5. KEL continuity: absent, torn, wrong-prefix, wrong-root, or rotated-away signer evidence withholds the grant path.
-6. Record integrity: malformed, signature-invalid, or joinee-mismatched records withhold the grant path.
-7. Scope: an ungoverned document stays at the base verdict; the ring cannot widen it.
-8. Composition: an existing base allow survives the ring, and own in-process peers keep their established behavior.
-9. Local knowledge: a grant or KEL event present on one replica but absent on another does not make the latter claim a shared present; local absence withholds only the ring's widening.
-10. Transport floor: a gate key pin without a reciprocal remote proof cannot be used as `provenVesselKey`.
+The current Browser WebSocket already becomes a full-duplex channel after Node accepts its client opening. Thus the Browser need not become a WebSocket server to receive proof from Node. Additions, if chosen, belong to the application handshake over that existing channel or to a future symmetric channel adapter such as WebRTC.
 
-Before a product test, the transport-role test should make one deliberate weakening red: remove the reciprocal proof-to-peer binding while keeping a plausible peer ID or gate pin, and show the grant path refuses. A positive control must then show the same named peer succeeds with the bound proof and valid grant.
+The report's earlier mention of a missing main-thread-to-worker bridge describes the separate **inner `IdentityRing`** capability barrier. It is not established as a blocker for the **outer `PersonaGroupIdentityRing`**. The Browser main Repo already holds the catalog handle, can resolve the persona-KEL board, and has `@lararium/tw5`'s `makeCatalogAccessor` available through an existing package dependency. The shared `verifyFaceGrantRecord` is available from Keyhive. Inference: the Browser outer ring can likely read its own local face-plane grants and KEL from the main Repo, matching the Node factory's injected inputs, without a new worker bridge. A focused implementation scout must still prove that the worn face plane is registered and locally readable at the exact share-policy decision point.
+
+The remaining proof gap is narrower: Browser's current V3 handshake proves the Browser to Node. To use a Node key as `provenVesselKey` when Browser's share policy serves a face plane, Node must also prove possession of its expected identity key to Browser, and the proof must bind to the exact Automerge peer candidate on that same socket. Merely echoing the configured `gatePubKey`, accepting a WSS connection, or receiving `lar:auth-ok` does not establish that relation.
+
+!! Minimally viable red-first contract — no Browser listener
+
+Preserve the common meaning of the cap and let each vessel compose a transport adapter appropriate to its surface:
+
+1. **Keep the current topology.** Browser dials the Node relay over the existing WebSocket. Node remains the socket acceptor for this connection. This is a transport role, not a client/server authority relation; both vessels remain Lararium peers.
+2. **Complete reciprocal application proof on that socket.** After the Browser's existing proof, Node proves its expected vessel/gate identity under its private key in response to a fresh Browser challenge. Both signatures cover a domain-separated canonical transcript containing both peers' public identity keys, the two fresh nonces, and the dialed audience. No wall-clock timestamp is needed for this handshake; nonce reuse or absent proof refuses. The expected Node key must come from an explicit local trust relation or provisioning input, never from a self-asserted key in the response.
+3. **Bind proof to the sync peer.** The adapter exposes a `peerId -> verified remote vessel key` association only after the reciprocal transcript verifies on the socket that produced that Automerge peer candidate. A missing or mismatched association yields no proven key. Do not infer it from an address, URL, `PeerId`, ContactCard alone, or a transport certificate fingerprint alone.
+4. **Keep authentication and authorization separate.** A valid reciprocal proof names the remote vessel key; it grants no document by itself. The Browser's outer PersonaGroup ring reads the worn face's own four plane IDs and local face-grant records, then validates the matching record against the locally held pinned root and persona-KEL chain. The ring adds only its existing grant-holder widening over those planes; the base federation verdict remains authoritative everywhere else.
+5. **Use the same semantic contract across transports.** Node's inbound socket adapter and a later Browser WebRTC adapter both produce the same typed, verified peer relation for the platform-blind ring. WebRTC signaling may relay setup data; it does not grant the identity or the cap. WebTransport can carry the same application proof where a server session fits, but does not remove the browser/server transport role.
+6. **Fail with local evidence.** No remote proof, unknown expected key, peer/socket mismatch, missing local grant, wrong face, torn KEL, or unavailable local plane withholds the widening. Existing base-gate allows remain unchanged. A partitioned replica speaks only for the grants and KEL it currently carries; no central lookup or global `latest` is implied.
+
+!!! Red-first discriminating tests
+
+1. **Positive control:** over the existing WebSocket session, a Node holding the locally expected key signs the Browser challenge and transcript; the exact sync peer maps to that key, and a valid local face grant widens access to only the four worn planes.
+2. **Weakening red:** a Node sends the configured public key but no valid signature; a plausible URL and successful WebSocket upgrade must not admit the peer to face planes.
+3. **Peer-binding red:** move a valid proof to a different Automerge peer candidate or socket; the grant path refuses the swapped association.
+4. **Subject red:** proof by key A does not satisfy a face grant for key B; a validly authenticated but ungranted key sees only the base gate's existing documents.
+5. **Face/scope red:** a valid grant for another PersonaGroup cannot widen the worn face; a governed-face grant cannot widen an unrelated document.
+6. **Local-causality red:** remove the grant or required KEL event from one replica; only that replica withholds the added path, without inventing a network-wide verdict.
+7. **Composition red:** verify an existing base allow remains allowed, own in-process island peers keep their current behavior, and the PersonaGroup ring never widens beyond its four governed planes.
+
+The first implementation seam should be a transport-neutral verified-peer relation plus the Browser main-Repo ring assembly, tested with an in-memory duplex session before any WebRTC buildout. If the existing WebSocket package cannot safely correlate its peer-candidate to its authenticated socket, that correlation is an explicit adapter API gap; do not fake it with a peer-id map assembled from unauthenticated messages.
 
 !! Remaining decision seams
 
 * Does a Browser vessel serve face-owned documents to cross-operator peers, or does it only dial a Node vessel that makes the receiver-side decision?
 * Which transport can provide reciprocal authentication for a Browser-served document, and how does its authenticated identity bind to the Automerge `PeerId` used by `shareConfig`?
-* Are grant records and the required persona-KEL chain readable at the Browser main-thread share-policy seam, or must a narrowly typed worker request carry a verdict? If a bridge is used, it must not turn an untrusted caller-selected bag URL into the authority scope.
+* Does the Browser's worn face plane resolve from its own catalog and remain readable at the exact main-thread share-policy decision point? The Repo/catalog/KEL and Keyhive verifier surfaces exist; their composition into a grant-reading outer ring is not yet measured. The worker bridge notes above apply to the separate inner `IdentityRing` and must not be carried over as an assumed blocker here.
 * Which exact base-gate policy applies when remote identity proof is unavailable? The ring can withhold its own widening, but cannot repair a base gate that already permits the relation.
 * What are the intended behaviors for concurrent grant/revocation heads and partial replica knowledge? No global latest answer is inferred here.
+* Which local relation pins or provisions the expected Node identity key for this Browser vessel? A domain name and TLS certificate establish the web endpoint under web PKI; whether that meets the operator's vessel relation is not decided by protocol literature.
 
 No code deletion, browser import, inbound transport, grant format change, or enforcement rule follows from this scout alone. The next red-first cut depends on the operator-visible transport role above.
 
@@ -117,7 +133,16 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 * `packages/lararium-keyhive/src/face-grant-record.ts` — shared grant verification.
 * `bags/lares/ha.ka.ba/lares/docs/codex-crew-emergency-handoff.mem#/vessel-parity` — active handoff boundary.
 
+!! Outside engineering sources
+
+* RFC Editor, **RFC 6455: The WebSocket Protocol** — client opening request/server response, WSS/TLS, and bidirectional connection framing: https://www.rfc-editor.org/rfc/rfc6455
+* W3C, **WebRTC: Real-Time Communication in Browsers** — peer connection/data-channel APIs and out-of-band signaling example: https://www.w3.org/TR/webrtc/
+* W3C, **WebTransport** — browser-to-server API, sessions, and streams/datagrams: https://www.w3.org/TR/webtransport/
+* libp2p Specs, **Noise** — mutual XX handshake and identity-key signatures binding static channel keys: https://github.com/libp2p/specs/blob/master/noise/README.md
+* js-libp2p, **WebRTC transport** — application Noise handshake binds the transport peer to the private key for its PeerId; browsers dial but cannot listen on WebRTC Direct addresses: https://github.com/libp2p/js-libp2p/blob/main/packages/transport-webrtc/README.md
+* Kleppmann et al., **Local-First Software: You Own Your Data, in spite of the Cloud** — ownership, offline operation, collaboration, and CRDT/P2P framing: https://www.inkandswitch.com/essay/local-first/
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tP7i7-hB8CUNPXsxEJe_bZ2KPv9mjU_6ZZoL9jEPx6o
+<<^ code="&#x0003;">>ni:///sha-256;f9dPc7zH8Gkl9v1EKWAp_WPOU1QjhFZW3G1OEhIr6R0
 <<^ code="&#x0004;" -> to="?">>
