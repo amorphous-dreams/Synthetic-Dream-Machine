@@ -15,11 +15,9 @@ for arg in "$@"; do
     *) printf 'usage: %s [--dry-run] [--with-project]\n' "$0" >&2; exit 2 ;;
   esac
 done
-# Under `sudo ./stand-linux.sh` $USER reads root and $HOME reads /root: [user] default would name root
-# and the venv would land in /root. The script calls sudo itself. A root shell that carries no SUDO_USER
-# (`su -`, `wsl -u root`) would write the same wrong lines, so root passes only on a distro that holds
-# no login user at all (a fresh install whose user step was skipped).
-if (( EUID == 0 )) && { [[ -n "${SUDO_USER:-}" ]] || getent passwd | awk -F: '$3 >= 1000 && $3 < 60000 { found = 1 } END { exit !found }'; }; then
+# As root, `id -un` reads root and $HOME reads /root: [user] default would name root and the venv would
+# land in /root. The script calls sudo itself.
+if (( EUID == 0 )); then
   printf 'run %s as the distro user, not as root; it asks for sudo on the steps that need it\n' "$0" >&2
   exit 2
 fi
@@ -27,9 +25,6 @@ SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$SELF_DIR/../.." && pwd)"
 # A hook's `env -i` carries no HOME; the venv lands in the passwd home, never in an unbound-variable exit.
 : "${HOME:=$(getent passwd "$(id -un)" | cut -d: -f6)}"
-WINDIR=/mnt/c/Windows
-CMD_EXE=$(command -v cmd.exe 2>/dev/null || echo "$WINDIR/System32/cmd.exe")
-PWSH_EXE=$(command -v pwsh.exe 2>/dev/null || { [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]] && echo "/mnt/c/Program Files/PowerShell/7/pwsh.exe"; })
 
 FAILED_N=0
 already() { printf '  \e[2m%-10s\e[0m %s\n' already "$1"; }
@@ -54,38 +49,10 @@ act() {
 # A fresh distro carries no package lists; `apt-get install` alone answers "Unable to locate package".
 # `--no-remove` aborts instead of letting `-y` consent to a removal the resolver proposes.
 apt_install() { sudo env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -qq && apt-get install -y -qq --no-remove "$@"' _ "$@"; }
-# set_line FILE PATTERN LINE: every line matching PATTERN (case-insensitive) becomes LINE, else LINE is appended;
-# comments and other lines stay; the write lands on a temp file in the same directory and renames into place.
-# Both editors share one read/write discipline: a symlink is followed so the target changes and the link
-# stays; bytes outside UTF-8 round-trip untouched (surrogateescape); a leading BOM reads as nothing and
-# does not come back; the temp file takes the original's mode and owner; a failure unlinks the temp.
-# Lines split on LF with an optional CR before it, the same cut awk and grep make: str.splitlines would
-# also cut at a form feed or a NEL inside a comment and rewrite a line the readers never saw.
-set_line() { sudo python3 - "$@" <<'PY'
-import os, re, sys, tempfile
-p, pat, new = sys.argv[1:]
-p = os.path.realpath(p)
-enc = dict(encoding="utf-8", errors="surrogateescape")
-try:
-    with open(p, newline="", **enc) as f: lines = re.split(r"\r?\n", f.read())
-except FileNotFoundError:
-    lines = []
-if lines and lines[-1] == "": lines.pop()
-if lines: lines[0] = lines[0].lstrip("﻿")
-rx = re.compile(pat, re.I)
-hits = [i for i, line in enumerate(lines) if rx.match(line)]
-for i in hits: lines[i] = new
-if not hits: lines.append(new)
-fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p) or ".", prefix=os.path.basename(p) + ".")
-try:
-    with os.fdopen(fd, "w", **enc) as f: f.write("\n".join(lines) + "\n"); f.flush(); os.fsync(f.fileno())
-    try: st = os.stat(p); os.chmod(tmp, st.st_mode & 0o7777); os.chown(tmp, st.st_uid, st.st_gid)
-    except FileNotFoundError: os.chmod(tmp, 0o644)
-    os.replace(tmp, p)
-except BaseException:
-    os.unlink(tmp); raise
-PY
-}
+# own_file FILE CONTENT: a file this stand owns whole lands as CONTENT plus a newline. The read beside it
+# compares the whole content, so a torn write reads as drift on the next run. The path travels as an
+# argument, never inside the shell text.
+own_file() { sudo sh -c 'mkdir -p "${1%/*}" && printf "%s\n" "$2" > "$1"' _ "$1" "$2"; }
 
 if ! grep -qi microsoft /proc/version; then
   echo 'not WSL2 — nothing to stand'
@@ -113,24 +80,18 @@ fi
 step '2 · /etc/wsl.conf — systemd on, inherited Windows PATH off'
 WSLCONF=/etc/wsl.conf
 WSLCONF_CHANGED=0
-# The read and the write agree on one grammar: section and key match case-insensitively, a trailing CR
-# (a Windows editor's CRLF) reads as whitespace, a leading BOM (the same editor's) reads as nothing, and
-# any line opening with `[` ends the section (`[boot] # note` and `[ boot ]` open no section for either).
-# Every matching line answers, and the step reads already only when all of them carry the value: a stale
-# twin under a satisfied first line could win at WSL load. The write touches only the matching key lines
-# or inserts one line after the section's last non-blank line; every other line, comment included, stays.
-want_ini() {
-  local sec="$1" key="$2" val="$3" cur
-  cur=$(awk -v s="$sec" -v k="$key" '
-    NR == 1 { sub(/^\357\273\277/, "") }
-    /^[ \t]*\[/ { in_s = (tolower($0) ~ "^[ \t]*\\[" tolower(s) "\\][ \t\r]*$") ; next }
-    in_s && tolower($0) ~ "^[ \t]*" tolower(k) "[ \t]*=" { sub(/^[^=]*=[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print }' "$WSLCONF" 2>/dev/null)
-  if [[ -n "$cur" ]] && ! grep -qvxF -- "$val" <<<"$cur"; then already "[$sec] $key=$val"; return; fi
-  WSLCONF_CHANGED=1
-  local was=${cur//$'\n'/, }
-  act "[$sec] $key=$val (was '${was:-unset}')" sudo python3 - "$WSLCONF" "$sec" "$key" "$val" <<'PY'
+# WSL reads /etc/wsl.conf alone (no drop-in directory), so the stand edits the shared file in place under
+# one grammar for the read and the write: section and key match case-insensitively; any line opening with
+# `[` ends the section (`[boot] # note` and `[ boot ]` open no section); lines split on LF with an optional
+# CR before it; a leading BOM reads as nothing and does not come back; bytes outside UTF-8 round-trip
+# untouched. `read` prints every value the key carries and answers 0 only when all of them equal the
+# intent: a stale twin under a satisfied first line could win at WSL load. `write` replaces every matching
+# key line or inserts one after the section's last non-blank line; every other line, comment included,
+# stays. A symlink is followed so the target changes and the link stays; the temp file takes the original's
+# mode and owner; a failure unlinks the temp.
+INI_PY=$(cat <<'PY'
 import os, re, sys, tempfile
-p, sec, key, val = sys.argv[1:]
+p, sec, key, val, mode = sys.argv[1:]
 p = os.path.realpath(p)
 enc = dict(encoding="utf-8", errors="surrogateescape")
 try:
@@ -151,6 +112,10 @@ for i, line in enumerate(lines):
     if in_s:
         if kv.match(line): hits.append(i)
         if line.strip(): last = i
+if mode == "read":
+    haves = [lines[i].split("=", 1)[1].strip(" \t") for i in hits]
+    print(", ".join(haves) or "unset")
+    sys.exit(0 if haves and all(h == val for h in haves) else 1)
 new = f"{key}={val}"
 if hits:
     for i in hits: lines[i] = new
@@ -168,56 +133,53 @@ try:
 except BaseException:
     os.unlink(tmp); raise
 PY
+)
+want_ini() {
+  local sec="$1" key="$2" val="$3" was
+  if was=$(python3 -c "$INI_PY" "$WSLCONF" "$sec" "$key" "$val" read); then already "[$sec] $key=$val"; return; fi
+  WSLCONF_CHANGED=1
+  act "[$sec] $key=$val (was '$was')" sudo python3 -c "$INI_PY" "$WSLCONF" "$sec" "$key" "$val" write
 }
 want_ini boot systemd true
 # `id -un` names the account the kernel runs this shell as; $USER is an inherited string any profile may reset.
 want_ini user default "$(id -un)"
 want_ini interop enabled true
 want_ini interop appendWindowsPath false
-RESTART_NEEDED=$WSLCONF_CHANGED
-[[ "$(systemctl is-system-running 2>/dev/null)" =~ running|degraded ]] || RESTART_NEEDED=1
-(( $(echo "$PATH" | tr ':' '\n' | grep -c '^/mnt/') > 6 )) && RESTART_NEEDED=1
 
 step '3 · earlyoom — keep a runaway process from freezing the VM'
-EARLYOOM_ARGS="-m 5 -s 50 -r 3600 --avoid '(^|/)(claude|codex|Xwayland|systemd)\$'"
 if pkg_installed earlyoom; then already 'earlyoom installed'
 else act 'apt install earlyoom' apt_install earlyoom; fi
-EARLYOOM_LINE="EARLYOOM_ARGS=\"$EARLYOOM_ARGS\""
-# The package conffile carries the operator-facing examples as comments; only the EARLYOOM_ARGS line changes.
-earlyoom_apply() { set_line /etc/default/earlyoom '^[ \t]*EARLYOOM_ARGS[ \t]*=' "$EARLYOOM_LINE" && sudo systemctl restart earlyoom; }
+# The thresholds ride a systemd drop-in this stand owns whole; the package's /etc/default/earlyoom and its
+# operator-facing comments stay as shipped. $EARLYOOM_ARGS stays first so that file's other flags still
+# count; earlyoom takes the last -m and -s it sees.
+EARLYOOM_DROPIN=/etc/systemd/system/earlyoom.service.d/wsl.conf
+EARLYOOM_UNIT="[Service]
+ExecStart=
+ExecStart=/usr/bin/earlyoom \$EARLYOOM_ARGS -m 5 -s 50 --avoid '(^|/)(claude|codex|Xwayland|systemd)\$'"
+earlyoom_apply() { own_file "$EARLYOOM_DROPIN" "$EARLYOOM_UNIT" && sudo systemctl daemon-reload && sudo systemctl restart earlyoom; }
 # The file alone does not prove the thresholds: a restart that failed after the write leaves the daemon on
 # the old line, so an active daemon must also show `-m 5` on its command line before the step reads already.
 earlyoom_live_ok() {
   [[ "$(systemctl is-active earlyoom 2>/dev/null)" == active ]] || return 0
   tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom 2>/dev/null)"/cmdline 2>/dev/null | grep -q -- '-m 5 '
 }
-# systemd's EnvironmentFile takes the last assignment, so the line must stand alone among the uncommented ones.
-earlyoom_file_ok() {
-  grep -qxF "$EARLYOOM_LINE" /etc/default/earlyoom 2>/dev/null && [[ "$(grep -ciE '^[ \t]*EARLYOOM_ARGS[ \t]*=' /etc/default/earlyoom 2>/dev/null)" == 1 ]]
-}
-# /etc/default/earlyoom is the package's conffile: written before the package lands, it meets dpkg's
-# conffile prompt on the install that follows. The thresholds and the unit wait on the package (a dry run
-# plans them past the planned install).
-if (( ! DRY )) && ! pkg_installed earlyoom; then
-  need 'earlyoom is absent; its thresholds and unit wait on the install above'
+if [[ "$(cat "$EARLYOOM_DROPIN" 2>/dev/null)" == "$EARLYOOM_UNIT" ]] && earlyoom_live_ok; then
+  already "earlyoom thresholds ($EARLYOOM_DROPIN)"
 else
-  if earlyoom_file_ok && earlyoom_live_ok; then
-    already '/etc/default/earlyoom thresholds'
-  else
-    act '/etc/default/earlyoom thresholds (-m 5 -s 50)' earlyoom_apply
-  fi
-  if [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
-    already 'earlyoom enabled + active'
-  else act 'systemctl enable --now earlyoom' sudo systemctl enable --now earlyoom; fi
+  act "earlyoom thresholds (-m 5 -s 50) via $EARLYOOM_DROPIN" earlyoom_apply
 fi
+if [[ "$(systemctl is-enabled earlyoom 2>/dev/null)" == enabled && "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
+  already 'earlyoom enabled + active'
+else act 'systemctl enable --now earlyoom' sudo systemctl enable --now earlyoom; fi
 
 step '4 · vm.swappiness=10 — reserve swap for a short recovery window'
 SYSCTL=/etc/sysctl.d/90-wsl-swap.conf
 SYSCTL_LINE='vm.swappiness=10'
+sysctl_apply() { own_file "$SYSCTL" "$SYSCTL_LINE" && sudo sysctl -q --system; }
 swappiness=$(sysctl -n vm.swappiness 2>/dev/null)
-if [[ "$swappiness" == 10 && -f "$SYSCTL" ]]; then
+if [[ "$swappiness" == 10 && "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]; then
   already "vm.swappiness=10 ($SYSCTL)"
-elif grep -qxF "$SYSCTL_LINE" "$SYSCTL" 2>/dev/null; then
+elif [[ "$(cat "$SYSCTL" 2>/dev/null)" == "$SYSCTL_LINE" ]]; then
   # Our file is in place and still loses. Without systemd nothing applies sysctl.d at boot, so one re-apply
   # comes first; a value that still differs names a later sysctl.d file or /etc/sysctl.conf. A rewrite would change nothing.
   if (( ! DRY )) && sudo sysctl -q --system >/dev/null 2>&1 && [[ "$(sysctl -n vm.swappiness 2>/dev/null)" == 10 ]]; then
@@ -226,8 +188,7 @@ elif grep -qxF "$SYSCTL_LINE" "$SYSCTL" 2>/dev/null; then
     need "vm.swappiness reads ${swappiness:-unreadable} though $SYSCTL asks for 10; find the override:  grep -rn swappiness /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d"
   fi
 else
-  # The path travels as an argument, never inside the shell text.
-  act "vm.swappiness=10 via $SYSCTL" sudo sh -c 'printf "%s\n" "$1" > "$2" && sysctl -q --system' _ "$SYSCTL_LINE" "$SYSCTL"
+  act "vm.swappiness=10 via $SYSCTL" sysctl_apply
 fi
 
 step '5 · Node and pnpm — repository toolchain'
@@ -297,22 +258,11 @@ else
   already 'project dependency install skipped (pass --with-project to run it)'
 fi
 
-step '8 · Windows half'
-WIN_PROFILE=$("$CMD_EXE" /c 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')
-WSLCFG=$(wslpath -u "${WIN_PROFILE:-C:\\nowhere}" 2>/dev/null)/.wslconfig
-# Keys match case-insensitively, as stand-windows.ps1 reads and keeps them (`Memory=` stays spelled so).
-if [[ -f "$WSLCFG" ]] && grep -qiE '^[[:space:]]*memory[[:space:]]*=' "$WSLCFG" && grep -qiE '^[[:space:]]*swap[[:space:]]*=' "$WSLCFG"; then
-  already ".wslconfig carries memory= and swap= ($WSLCFG - belongs to this Windows account only)"
-else
-  need 'run tools/wsl2/stand-windows.ps1 in PowerShell as the Windows account that owns this distro (writes only the owned WSL resource keys and inventories distros)'
-fi
-if [[ -n "$PWSH_EXE" ]]; then already "PowerShell 7 at $PWSH_EXE (the runbook engine for stand-windows.ps1)"
-else need 'install PowerShell 7 on Windows: winget install --id Microsoft.PowerShell --source winget   (stand-windows.ps1 degrades to Windows PowerShell 5.1 without it)'; fi
-(( RESTART_NEEDED )) && need 'run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'
-
-step '9 · witness'
-# The exit code carries the witness's drift, and any FAILED step above: a hook that gates on 0 must not
-# start agents over a step that printed FAILED and a witness that happened to read green.
+step '8 · witness'
+# The Windows half (memory=, swap=, pwsh) reads through the witness alone; its exit code carries the drift,
+# and any FAILED step above: a hook that gates on 0 must not start agents over a step that printed FAILED
+# and a witness that happened to read green.
+(( WSLCONF_CHANGED )) && need 'run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'
 bash "$SELF_DIR/witness.sh"; witness_rc=$?
 (( FAILED_N )) && { printf '\n%d step(s) FAILED above\n' "$FAILED_N" >&2; exit 1; }
 exit $witness_rc

@@ -12,20 +12,19 @@
   -Sparse opts into sparse vhdx allocation. WSL 2.5.6+ gates sparse VHDs behind --allow-unsafe
           and prints "sparse VHD support is currently disabled due to potential data corruption";
           without -Sparse the script neither writes sparseVhd nor runs --set-sparse.
-  -NoRelaunch keeps the run in the current PowerShell even when pwsh (7+) is installed.
 
-  The runbook's PowerShell is 7 (pwsh). Step 0 reads the running engine: under Windows PowerShell
-  5.1 with pwsh installed it relaunches itself there once; without pwsh it reports needs-you and
-  continues, since every later step tolerates 5.1. The file keeps a UTF-8 BOM and ASCII-only code
-  so that 5.1 bootstrap parse holds.
+  The runbook's PowerShell is 7 (pwsh), read at its one install path, Program Files\PowerShell\7,
+  as the witness reads it. Step 0 reads the running engine: under Windows PowerShell 5.1 with pwsh
+  installed it relaunches itself there once; without pwsh it reports needs-you and continues, since
+  every later step tolerates 5.1. The file keeps a UTF-8 BOM and ASCII-only code so that 5.1
+  bootstrap parse holds.
 
-  Step 0b reads the host without elevation: Windows edition (WSL 2 runs on Home), the Windows
-  account (distros and .wslconfig belong to one account), the hypervisor / firmware virtualization
-  state, and the WSL engine version (inbox WSL lacks --version and --manage; 2.5.6+ carries the
-  --allow-unsafe sparse gate).
+  Step 0b reads the host without elevation: the hypervisor / firmware virtualization state and the
+  WSL engine version (inbox WSL lacks --version and --manage; 2.5.6+ carries the --allow-unsafe
+  sparse gate).
 #>
 [CmdletBinding()]
-param([switch]$DryRun, [string]$Distro = '', [switch]$NoRelaunch, [switch]$Sparse)
+param([switch]$DryRun, [string]$Distro = '', [switch]$Sparse)
 
 $ErrorActionPreference = 'Stop'
 function Already($m) { Write-Host ("  {0,-10} {1}" -f 'already', $m) -ForegroundColor DarkGray }
@@ -36,26 +35,20 @@ function Step($m)    { Write-Host "`n$m" -ForegroundColor White }
 function Act($label, [scriptblock]$do) { if ($DryRun) { Plan $label } else { & $do; Set_ $label } }
 
 Step '0 | PowerShell 7 - the runbook engine'
-$psMajor = $PSVersionTable.PSVersion.Major
-# The machine-wide install under Program Files comes first; a pwsh.exe found on a user-writable PATH entry serves only as the fallback.
-$pwsh = $null
-$candidate = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
-if (Test-Path $candidate) { $pwsh = Get-Item $candidate }
-if (-not $pwsh) { $pwsh = Get-Command pwsh.exe -ErrorAction SilentlyContinue }
-if ($psMajor -ge 7) {
+$pwsh = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
+if (-not (Test-Path -LiteralPath $pwsh)) { $pwsh = '' }
+if ($PSVersionTable.PSVersion.Major -ge 7) {
   Already "pwsh $($PSVersionTable.PSVersion) running"
-} elseif ($pwsh -and -not $NoRelaunch -and $PSCommandPath) {
-  $pwshPath = if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }
-  $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath, '-NoRelaunch')
+} elseif ($pwsh -and $PSCommandPath) {
+  $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath)
   if ($DryRun) { $forward += '-DryRun' }
   if ($Sparse) { $forward += '-Sparse' }
   if ($Distro) { $forward += @('-Distro', $Distro) }
-  Set_ "relaunching under $pwshPath (was Windows PowerShell $($PSVersionTable.PSVersion))"
-  & $pwshPath @forward
+  Set_ "relaunching under $pwsh (was Windows PowerShell $($PSVersionTable.PSVersion))"
+  & $pwsh @forward
   exit $LASTEXITCODE
 } elseif ($pwsh) {
-  $stay = if ($NoRelaunch) { 'by -NoRelaunch' } else { 'because this run has no script path to hand over (dot-sourced or piped)' }
-  Already "pwsh present at $(if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }); staying in $($PSVersionTable.PSVersion) $stay"
+  Already "pwsh present at $pwsh; staying in $($PSVersionTable.PSVersion) because this run has no script path to hand over (dot-sourced or piped)"
 } else {
   Need "install PowerShell 7: winget install --id Microsoft.PowerShell --source winget   (continuing under Windows PowerShell $($PSVersionTable.PSVersion))"
 }
@@ -66,14 +59,11 @@ function Read-Wsl([string[]]$wslArgs) {
   try { [Console]::OutputEncoding = [Text.Encoding]::Unicode; (& wsl.exe @wslArgs 2>&1 | Out-String) } catch { '' } finally { [Console]::OutputEncoding = $oldEnc }
 }
 
-Step '0b | Windows host - edition, account, virtualization, WSL engine (read-only)'
+Step '0b | Windows host - virtualization, WSL engine (read-only)'
 $computer = Get-CimInstance Win32_ComputerSystem
-$os = Get-CimInstance Win32_OperatingSystem
 $hostGB = [math]::Round($computer.TotalPhysicalMemory / 1GB)
 $processors = @(Get-CimInstance Win32_Processor)
 $cpus = ($processors | Measure-Object NumberOfLogicalProcessors -Sum).Sum
-Already "$($os.Caption) build $($os.BuildNumber) - WSL 2 runs on every desktop edition, Home included"
-Already "Windows account $env:USERNAME - WSL distros and $env:USERPROFILE\.wslconfig belong to this account only; another family account starts from nothing"
 if ($computer.HypervisorPresent) {
   Already 'hypervisor running - Virtual Machine Platform active, firmware virtualization on'
 } elseif (($processors | Where-Object { $_.VirtualizationFirmwareEnabled -eq $false }).Count -gt 0) {
@@ -102,10 +92,10 @@ $lxss = Get-ChildItem $lxssRootPath -ErrorAction SilentlyContinue |
   ForEach-Object { Get-ItemProperty $_.PSPath } |
   Where-Object { $_.DistributionName -and $_.BasePath }
 
+# The selection is the registered default or the -Distro name, never a guess from the inventory.
 if (-not $Distro) {
   $defaultGuid = [string]$lxssRoot.DefaultDistribution
   $selected = @($lxss | Where-Object { $_.PSChildName -eq $defaultGuid }) | Select-Object -First 1
-  if (-not $selected) { $selected = @($lxss | Where-Object { $_.DistributionName -notlike 'docker-desktop*' }) | Select-Object -First 1 }
   if ($selected) { $Distro = [string]$selected.DistributionName }
 }
 
@@ -150,7 +140,7 @@ foreach ($sec in $want.Keys) {
           $spelled = if ($sections[$sec][$i] -match '^\s*([^=\s]+)') { $Matches[1] } else { $key }
           $sections[$sec][$i] = "$spelled=$value"
         }
-      }.GetNewClosure()
+      }
     } else {
       $changed = $true
       Act "[$sec] $key=$value (was unset)" {
@@ -159,7 +149,7 @@ foreach ($sec in $want.Keys) {
         $head = if ($n -gt 0) { $body[0..($n - 1)] } else { @() }
         $tail = if ($n -lt $body.Count) { $body[$n..($body.Count - 1)] } else { @() }
         $sections[$sec] = @($head) + "$key=$value" + @($tail)
-      }.GetNewClosure()
+      }
     }
   }
 }
@@ -172,25 +162,14 @@ if ($changed -and -not $DryRun) {
     if ($n -gt 0) { $out += $body[0..($n - 1)] }
     $out += ''
   }
-  # The text lands on a sibling temp file first; File.Replace swaps it in atomically and keeps the previous file as .wslconfig.bak
-  # (File.Move for a first write). A failure mid-write leaves .wslconfig as it was and takes the temp file with it.
-  # ReplaceFile has no answer on a redirected (UNC) profile and refuses a read-only .bak; that .bak is this runbook's
-  # own leftover, so the fallback clears its read-only bit, copies the current file over it, then moves the new text in.
+  # The text lands on a sibling temp file first; the previous file is copied to .wslconfig.bak, then the temp moves
+  # into place. A failure before the move (a read-only .bak included) leaves .wslconfig as it was and takes the temp with it.
   $tmp = "$cfgPath.tmp"; $bak = "$cfgPath.bak"
   try {
     [IO.File]::WriteAllText($tmp, (($out -join "`r`n") + "`r`n"), $utf8)
-    if (Test-Path -LiteralPath $cfgPath) {
-      try { [IO.File]::Replace($tmp, $cfgPath, $bak) }
-      catch {
-        if (Test-Path -LiteralPath $bak) { (Get-Item -LiteralPath $bak).IsReadOnly = $false }
-        [IO.File]::Copy($cfgPath, $bak, $true)
-        Move-Item -LiteralPath $tmp -Destination $cfgPath -Force
-      }
-      Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file kept as $bak)"
-    } else {
-      [IO.File]::Move($tmp, $cfgPath)
-      Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
-    }
+    if (Test-Path -LiteralPath $cfgPath) { [IO.File]::Copy($cfgPath, $bak, $true) }
+    Move-Item -LiteralPath $tmp -Destination $cfgPath -Force
+    Need "run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start (previous file, if any, kept as $bak)"
   } finally {
     if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
   }
@@ -200,22 +179,17 @@ Step '2 | selected distro vhdx - sparse allocation (opt-in by -Sparse)'
 $work = @($lxss | Where-Object DistributionName -eq $Distro) | Select-Object -First 1
 $vhd = if ($work) { Join-Path ($work.BasePath -replace '^\\\\\?\\', '') 'ext4.vhdx' } else { '' }
 if (-not $Distro) {
-  Need 'no non-Docker WSL distro is registered; install one with wsl --install -d <DistroName>'
+  Need 'no default WSL distro is registered; install one with wsl --install -d <DistroName>, or name one with -Distro'
 } elseif (-not $work) {
   # A -Distro name the registry does not carry reads needs-you with or without -Sparse: a typo must not pass as already.
   Need "distro '$Distro' is not registered; run wsl -l -v, then pass -Distro with an exact name"
 } elseif (-not $Sparse) {
-  # -LiteralPath: a base path holding [ or ] would otherwise read as a wildcard and the vhdx as absent.
-  if ($vhd -and (Test-Path -LiteralPath $vhd) -and ((Get-Item -LiteralPath $vhd).Attributes -band [IO.FileAttributes]::SparseFile)) {
-    Already "'$Distro' vhdx already sparse ($([math]::Round((Get-Item -LiteralPath $vhd).Length / 1GB, 1)) GB on disk) - left as found"
-  } else {
-    $vhdLabel = if ($vhd) { $vhd } else { '<path to ext4.vhdx>' }
-    Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe: potential data corruption). Safe reclaim: wsl --shutdown, then (Administrator) diskpart > select vdisk file=`"$vhdLabel`" > attach vdisk readonly > compact vdisk > detach vdisk"
-  }
+  Already "sparse vhdx not requested for '$Distro' (-Sparse opts in; WSL gates it as unsafe) - $vhd left as found; the safe reclaim is diskpart compact, see the runbook"
 } elseif ($Distro -like 'docker-desktop*') {
   # Docker Desktop owns its distros; the inventory names them Docker-managed, and -Distro does not override that.
   Need "'$Distro' is Docker-managed; this runbook sets no Docker Desktop distro sparse"
 } elseif (-not (Test-Path -LiteralPath $vhd)) {
+  # -LiteralPath: a base path holding [ or ] would otherwise read as a wildcard and the vhdx as absent.
   Need "'$Distro' has no ext4.vhdx at its registered base path"
 } else {
   $sizeGB = [math]::Round((Get-Item -LiteralPath $vhd).Length / 1GB, 1)

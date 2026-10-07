@@ -75,7 +75,7 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 |! setting |! lives |! who |! applies |
 | `memory` `swap` `processors` `autoMemoryReclaim` `sparseVhd` | `.wslconfig` (Windows, on `/mnt/c`) | an agent inside the VM can write the file | after `wsl --shutdown` |
-| `earlyoom` install + `/etc/default/earlyoom` | Linux, root | operator (`sudo`) | at once |
+| `earlyoom` install + its drop-in `/etc/systemd/system/earlyoom.service.d/wsl.conf` | Linux, root | operator (`sudo`) | at once |
 | `appendWindowsPath` `systemd` | `/etc/wsl.conf`, root | operator (`sudo`) | after WSL restart |
 | `vm.swappiness` | `/etc/sysctl.d`, root | operator (`sudo`) | at once |
 | `--set-sparse` (opt-in, `--allow-unsafe`) | Windows, distro stopped | operator | once |
@@ -85,6 +85,6 @@ Swap, in this picture, buys the kernel time to thrash. A smaller swap shortens t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sT7ZC0cZPC3wuwcQrcqn_xIRzXIPDQG4i89Q3WxCKdA
+<<^ code="&#x0003;">>ni:///sha-256;xvbAjsvEU8Nwd9QtoAAcBvpKV9gIV0nxIzCHV5fVNog
 
 <<^ code="&#x0004;" -> to="?">>

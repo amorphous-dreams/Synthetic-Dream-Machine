@@ -17,11 +17,11 @@ grep -qi microsoft /proc/version || { echo "not WSL2"; exit 0; }
 
 mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo); swap_kb=$(awk '/SwapTotal/{print $2}' /proc/meminfo)
 # Windows binaries by absolute path: appendWindowsPath=false (our intent) takes them off $PATH.
-# pwsh (PowerShell 7) is the runbook engine; Windows PowerShell 5.1 serves as the read-only fallback.
-PWSH_EXE=$(command -v pwsh.exe 2>/dev/null || { [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]] && echo "/mnt/c/Program Files/PowerShell/7/pwsh.exe"; })
-PS_EXE=${PWSH_EXE:-$(command -v powershell.exe 2>/dev/null || echo /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe)}
+# pwsh (PowerShell 7) is the runbook engine; the host read goes through Windows PowerShell 5.1, which every Windows carries.
+PWSH_EXE="/mnt/c/Program Files/PowerShell/7/pwsh.exe"
+PS_EXE=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
 # Each host read is bounded: a wedged interop or a slow first pwsh start must not hang a pre-session hook.
-if [[ -n "$PWSH_EXE" ]]; then
+if [[ -x "$PWSH_EXE" ]]; then
   row ok "PowerShell 7 (pwsh) on the host" "$(timeout 30 "$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')"
 else row drift "PowerShell 7 (pwsh) on the host" "absent — winget install --id Microsoft.PowerShell; stand-windows.ps1 runs degraded under 5.1"; fi
 host_kb=$(timeout 30 "$PS_EXE" -NoProfile -Command '[int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB)' 2>/dev/null | tr -d '\r' | cut -d. -f1)
@@ -31,7 +31,7 @@ if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
   half_kb=$(( host_kb / 2 ))
   if (( mem_kb * 8 <= host_kb * 5 + host_kb / 20 )) && ! (( mem_kb > half_kb - half_kb / 20 && mem_kb < half_kb + half_kb / 20 )); then
     row ok "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host"
-  else row drift "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host (default = half; .wslconfig waits on wsl --shutdown?)"; fi
+  else row drift "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host (default = half) — stand-windows.ps1 as the owning Windows account, then wsl --shutdown"; fi
 else row drift "memory= set, not the default half" "host RAM unreadable via $PS_EXE — is [interop] enabled=true?"; fi
 if (( swap_kb <= 4300000 )); then
   row ok "swap= ≤ 4 GB" "$(gb "$swap_kb") GB"
@@ -58,7 +58,7 @@ else row drift "systemd running" "off — /etc/wsl.conf [boot] systemd=true, the
 
 n=$(echo "$PATH" | tr ':' '\n' | grep -c '^/mnt/')
 if (( n <= 6 )); then row ok "Windows PATH entries ≤ 6" "$n"
-else row drift "Windows PATH entries ≤ 6" "$n on \$PATH ride 9p — appendWindowsPath=false"; fi
+else row drift "Windows PATH entries ≤ 6" "$n on \$PATH ride 9p — appendWindowsPath=false, then wsl --shutdown"; fi
 
 root_fs=$(findmnt -no FSTYPE,OPTIONS / 2>/dev/null)
 if [[ "$root_fs" == ext4* && "$root_fs" == *discard* ]]; then row ok "root ext4 + discard" "$root_fs"
