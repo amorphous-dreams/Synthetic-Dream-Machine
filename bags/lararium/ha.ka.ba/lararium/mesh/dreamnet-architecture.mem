@@ -125,9 +125,9 @@ The outermost reach. ''≥2 nexuses.'' No central server, no authority vessel. T
 
 Some nexuses carry degraded connections (network partition, protocol fork). Some evolve oppositional constitutions — different charter values, different grant policies. The protocol stays legible across these boundaries because the ''grammar'' (not the data) stays shared.
 
-The Amorphous Dreams Cabal holds ''kahu'' at this layer: curator of the protocol corpus (`lararium`, `lares`, genesis artifact). The grammar lives and drifts by use; the Cabal lifts lived constructions into the corpus bags as lexicographers, and nothing ratifies a lift. Vessels enforce their own founding proofs. No live command crosses the DreamNet layer from the Cabal to any operator. (See <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>.)
+The corpus-kahu hold ''kahu'' at this layer — a k-of-n quorum seated from the Amorphous Dreams Cabal, curator of the protocol corpus (`lararium`, `lares`, genesis artifact). The grammar lives and drifts by use; the corpus-kahu lift lived constructions into the corpus bags as lexicographers, and nothing ratifies a lift. Vessels enforce their own founding proofs. No live command crosses the DreamNet layer from the corpus-kahu to any operator. (See <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>.)
 
-''The engine cadence runs per Nexus, and devices move by adoption.'' A Nexus admits a rolling window of engine epochs; a cadence threshold seated apart from its admission quorum, held by those who run its hearths, offers the next engine and advances the window. ''Each device moves only by its own adoption'' — a reboot onto the offered engine — and carrying never counts toward the cadence (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>, the seated engine-update authority at <<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>).
+''The engine cadence runs per Nexus, and devices move by adoption.'' A Nexus admits a rolling window of engine epochs; a cadence threshold seated apart from its kahu quorum — a self-governing lineage held by those who bear the reboot cost (operators whose places run the engine) — offers the next engine and advances the window. ''Each device moves only by its own adoption'' — a reboot onto the offered engine — and carrying never counts toward the cadence (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>, the seated engine-update authority at <<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>).
 
 ''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift is not even grammar drift: since the grammar took its own region, an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName` = `engineCid`, signed into every device-delegation edge, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover">>).
 
@@ -137,13 +137,15 @@ The Amorphous Dreams Cabal holds ''kahu'' at this layer: curator of the protocol
 
 !! A Nexus reads as the PARSE ~ conformance, never a hash
 
-''A Nexus stands as a CONFORMANCE-VECTOR SET, and membership reads as passing it.'' Given these `.mem` inputs, produce these parses; two vessels share a Nexus exactly when they agree on every vector — whatever engine, whatever implementation, whatever version.
+''SUPERSEDED AS A MEMBERSHIP RULE.'' The engine binds membership through its window (#/infra-axis), an operator or place enters a Nexus by contract and a user walks on an invite (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>), and the chant carries engine plus protocol only — conformance-vector membership retires. What this section still holds: the silent-responder findings and the prologue seat, which bind whatever the chant carries.
+
+''The reading it records: a Nexus as a CONFORMANCE-VECTOR SET, and membership as passing it.'' Given these `.mem` inputs, produce these parses; two vessels share a Nexus exactly when they agree on every vector — whatever engine, whatever implementation, whatever version.
 
 ''The blur that hid this: //plugin// carried two entities.'' CONSTITUTIVE plugins (the parser, the sigil layer, the grammar cache) decide what a `lar:` URI MEANS — without them a vessel reads nothing. OFFERED plugins compose per-operator and carry the client diversity that keeps one implementation's bug from becoming the rule. ''The grammar never rode the engine'', so an engine hash never determined the parse.
 
 ''What the vector set buys, all at once'':
 
-* ''The kahu stop deciding who belongs.'' They publish the VECTORS; membership DERIVES. Nobody gets admitted, and no act excludes anyone.
+* ''The kahu would stop deciding who belongs.'' They would publish the VECTORS and membership would DERIVE — the claim the contract relation and the engine window replace.
 * ''ADD runs automatic.'' A fresh upstream release joins by passing — no ceremony, no sharding, no decision. Only CHANGING the vectors costs anything, which seats the dear ceremony where it belongs.
 * ''The ratchet splits by DIRECTION rather than rate'' — ADD widens the set and can hurt nobody; DROP narrows it and puts someone out, so DROP alone takes the price and the long pre-announced notice.
 * ''Partial conformance gains a seat.'' A vessel passing an older vector set stands IN with reduced sovereignty rather than exiled — the //out of conformance, still in communion, on named authority, bounded and revocable// instrument that the older tradition ran as its most-used and this stack lacked.
@@ -195,13 +197,13 @@ One operator, N device-vessels. The Keyhive `PersonaGroup` sentinel document pro
 
 !!! cabalGroup (neighborhood shrine)
 
-Multiple personaGroups who share a charter and a common ontology surface. The Keyhive `MeshCabal` sentinel document proves cabalGroup membership; cabal membership ''scopes read'' — it decides what a vessel may decrypt off the streams its relays deliver. ''A cabal names a //social// relationship — a mutual-petname Circle (who-recognizes-whom on the WHO axis), and it carries NO carriage:'' cabal-membership proposes ''no'' relay edge. To carry, a vessel signs a //separate//, deliberate PEER/TRANSIT edge on the INFRA axis (#/infra-axis) — the two planes never auto-couple, ''map never collapses to territory'' (ruling 2026-06-28). A cabalGroup holds `cap=admin` on its own ''charter and corpus bags'' (its social shared docs, never carriage-infrastructure) and may author a local corpus extension — new meme namespaces, local sigil tiddlers, charter documents — without permission from the DreamNet layer. The charter lives in the cabal's own Automerge docs; it does not inherit the DreamNet Cabal's grammar, it ''shares'' it via CRDT propagation from the genesis artifact.
+Multiple personaGroups who share a charter and a common ontology surface. The Keyhive `MeshCabal` sentinel document proves cabalGroup membership; cabal membership ''scopes read'' — it decides what a vessel may decrypt off the streams its relays deliver. ''A cabal names a //social// relationship — a mutual-petname Circle (who-recognizes-whom on the WHO axis), and it carries NO carriage:'' cabal-membership proposes ''no'' relay edge. To carry, a vessel signs a //separate//, deliberate PEER/TRANSIT edge on the INFRA axis (#/infra-axis) — the two planes never auto-couple, ''map never collapses to territory'' (ruling 2026-06-28). A cabalGroup holds `cap=admin` on its own ''charter and corpus bags'' (its social shared docs, never carriage-infrastructure) and may author a local corpus extension — new meme namespaces, local sigil tiddlers, charter documents — without permission from the DreamNet layer. The charter lives in the cabal's own Automerge docs; it does not inherit the corpus-kahu's grammar, it ''shares'' it via CRDT propagation from the genesis artifact.
 
 The "neighborhood shrine" framing: a place that carries local ritual, local knowledge, local aesthetic — while recognizing the shared pattern grammar that keeps it legible to neighboring shrines.
 
 !!! user ≠ operator
 
-A lararium hosts an ''operator'' (sovereign — founds the lararium, holds the founding key) plus N ''users'' who ride it (family, teammates, ''ephemeral test users''). A user carries a veiled persona, a lease-decaying membership, and read scoped by the cabal — carried by the host's relay, but never sovereign over the lararium. Admission runs ''admit-then-sever'': optimistic on contact, the edge cut (per-edge anergy) if it sours, never the peer banned wholesale.
+A lararium hosts an ''operator'' (sovereign — founds the lararium, holds the founding key) plus N ''users'' who ride it (family, teammates, ''ephemeral test users''). A user WALKS: they arrive on an invite any member face hands them, carry a veiled persona and read scoped by the realm, and hold no membership any board records — carried by the host's relay, never sovereign over the lararium, and never admitted (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). Contact runs ''open-then-sever'': optimistic on contact, the edge cut (per-edge anergy) if it sours, never the peer banned wholesale.
 
 ''The operator standing rides the INFRA axis (runs-infrastructure), never a WHO rung'' (#/two-axis-topology) — it surfaces in this WHO section only because hosting meets membership at the shore (#/the-shore). The sovereign's own //read// standing still rides a veiled persona like any other vessel; sovereignty over the box and a place on the social graph stay two coordinates.
 
@@ -481,7 +483,7 @@ The earlier cap-wall — an anonymous vessel ''DENIED'' at the relay door — re
 A fresh browser spore dials in along one of ''three distinct crossings'', each clearing a different door:
 
 * ''anon → public-lararium'' — the ''veil'' path: public-read off the content-addressed floor (#/the-cas-substrate), no pledge, no admission; the relay-forward gate runs near-open. WITNESSED: an anon browser boots live against a public lararium and renders the public plane (the browser-wiki witness, commit 0c379598). This older direct browser projection witness does not prove the current Pronaos target or an NGINX/Caddy carrier deployment.
-* ''anon → known'' — the ''guild-PLEDGE'': a member ''vouches'', minting a ''device-admit edge'' into the PersonaGroup (#/social-axis); the voucher ''co-pays and watches'' — their standing decays if the spore sours (the siege-gate `rb>c`, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>). ''No pledge → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with a vouch.
+* ''anon → walking'' — the ''invite'': any member face (a Kahu, a Lamplighter, another user) hands a burned-once invite, and the spore boots onto the road — no quorum, no board trace, hospitality rather than admission (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). A realm's own JOIN rides apart: a held face ''vouches'' and stakes its own standing, which decays if the joiner sours (the siege-gate `rb>c`, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>); and a ''device-admit edge'' binds one human's own instruments into their PersonaGroup, never a second human (#/social-axis). ''No invite → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with an invite.
 * ''operator'' — ''runs-INFRA'', orthogonal to the two WHO crossings: a browser carrying the operator's own infrastructure standing reaches its own sovereign plane. The vertical-on-INFRA position (#/two-axis-topology), never a social tier.
 
 ''The keystone (PROPOSED, unbuilt):'' a ''tiered verdict in the keyholder worker'' — the gate reads the dialing spore and returns one of ''veil · PersonaGroup · owner'', routing each crossing to its right door (the split-gate made operational). The earlier single DENIED verdict read as a fused gate; the tiered verdict dissolves it. the matrix stands ruled; the tiered keyholder-worker verdict awaits build and witness.
@@ -613,6 +615,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eTSmwtzlshY-B4Eo4ZKJv8hWqBVOKo1gbDfExLCAgOU
+<<^ code="&#x0003;">>ni:///sha-256;CBryFHq1z40fo2t32YFheYGjq2cqLP2xtarEEapZSnc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -49,7 +49,7 @@ across four axes and fixes how each RECOVERS — the axis Reading-B re-cuts.
 
 !!! The faces ride beside the classes, never inside them
 
-A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP STACK a human holds, and the two axes never collapse. Four faces stand — end user `walk` · Lamplighter `carry` · `tend/island` · `tend/reach` · Kahu `quorum-share` · Guardian (the reserve share) — and they COMPOSE on a persona, combined by default, split only by the holder's own act. Founding names an act that seats the first kahu quorum, never a face. The face table and its law live at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>; this meme does not restate them. So the KAHU class row above reads as the class a vessel stands in while its human holds the Kahu face; one human may hold several faces at once, across whichever vessels their pool carries.
+A class names what a principal RUNS and how it RECOVERS; a ''face'' names a CAP STACK a human holds, and the two axes never collapse. Four faces stand — end user `walk` · Lamplighter `carry` · `tend/island` · `tend/reach` · Kahu `quorum-share` · Guardian (a recovery key over a person) — and they COMPOSE on a persona, combined by default, split only by the holder's own act. Founding names an act that seats the first kahu quorum, never a face. The face table and its law live at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>; this meme does not restate them. So the KAHU class row above reads as the class a vessel stands in while its human holds the Kahu face; one human may hold several faces at once, across whichever vessels their pool carries.
 
 !!! ★ HERM READS AS A STATE EVERY VESSEL PASSES THROUGH, not only a class one vessel IS ★
 
@@ -498,8 +498,10 @@ Four clauses, each carrying its no-global-now discipline:
 
 ''The G2 settlement this walk licenses:'' the persona-KEL's ONE remaining bytes-change adds exactly
 the provisional marker and the veto kind (with the board keying above); nothing else rides it.
-* ''CIVIC stays as wired'' — pre-rotation-with-reveal at the charter, the reserve-seed Shamir one
-  layer beneath. The incumbent never generalizes upward.
+* ''CIVIC rolls by per-seat pre-rotation'' — each Kahu seat commits its own cold next key, a roll
+  reveals k of them, the revealed keys sign it, and Guardians recover the PERSON by Fork B
+  above, never the charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). The shared
+  reserve seed split by Shamir beneath the charter retires with the re-found.
 
 ''THE ROLLING COMMITMENT (enacted with the ruling):'' every KEL event carries `nextRecoverySetHash`
 beside the genesis wall — the prefix keeps binding the GENESIS set (anti-swap survives), while each
@@ -651,6 +653,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vXT33tkPG0L_SMvrLsZQ1xqJOtN88KAlcL08bTzbRec
+<<^ code="&#x0003;">>ni:///sha-256;0BunO0BOQC6W7rsRFbv4X1tXo5MdDGWfTiWlEaBQTgY
 
 <<^ code="&#x0004;" -> to="?">>

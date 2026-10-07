@@ -48,11 +48,11 @@ Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freed
 
 <<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">> holds the Elyncia reading — soot-cloaked walkers who relight a toppled herm, a cold wayside lararium, a flickering crossroads, carrying ledgers of every dark stretch. This carrier holds the MECHANISM half; both name one body.
 
-''The faction canon states the Union holds infrastructure BEYOND ANY ONE NEXUS, and that agrees with the fence rather than straining it.'' The Union spans the mesh SOCIALLY; every grant it produces binds to exactly ONE Nexus, because an epoch means nothing outside the island that rolls it. So a walker tending crossroads in three Nexuses holds ''three'' grants, each countersigned in its own island, each lapsing on its own roll, none reading the others. ''Social span ⊥ authority scope'' — and a bad walker therefore cannot be swept from the whole mesh by one act, nor carry a seating from one island into another.
+''The faction canon states the Union holds infrastructure BEYOND ANY ONE NEXUS, and that agrees with the fence rather than straining it.'' The Union spans the mesh SOCIALLY; every grant it produces binds to exactly ONE Nexus, because an epoch means nothing outside the island that rolls it. So a lamplighter tending crossroads in three Nexuses holds ''three'' grants, each countersigned in its own island, each lapsing on its own roll, none reading the others. ''Social span ⊥ authority scope'' — and a bad lamplighter therefore cannot be swept from the whole mesh by one act, nor carry a seating from one island into another.
 
 ''Multi-Nexus carriage reads as a SET of separate contract-ins on one daemon.'' Each contract-in names its one Nexus, and the carried set names ''Nexus ids, never member nyms'' — so a daemon carrying for three Nexuses holds three consents and no list of anybody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-three-tiers">>).
 
-''And carriage ⊥ the cadence.'' A walker carries sealed bytes it cannot read, and carrying confers ''no share in the engine cadence'' of any Nexus — the cadence stands its own joint, offered by a cadence threshold seated apart from the admission quorum and held by those who run the Nexus's hearths, and each device moves only by its own adoption (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). ''Founding reads as an ACT, never a face'': a walker who founds a Nexus holds a kahu seat in THAT Nexus alone, and its grants elsewhere gain nothing from it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+''And carriage ⊥ the cadence.'' A lamplighter carries sealed bytes it cannot read, and carrying confers ''no share in the engine cadence'' of any Nexus — the cadence stands its own joint, offered by a cadence threshold seated apart from the kahu quorum and held by those who bear the reboot cost (operators whose places run the engine), and each device moves only by its own adoption (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). ''Founding reads as an ACT, never a face'': a lamplighter who founds a Nexus holds a kahu seat in THAT Nexus alone, and its grants elsewhere gain nothing from it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
 
 ''Their ledger names DARK STRETCHES, never tenders.'' A record of places wanting light holds no roster of who may light them, so it crosses the no-roster law untouched.
 
@@ -153,7 +153,7 @@ So the quorum ''seats'' an office (rare) and the ''renewal rides the place's own
 <<~ scale cap "what-may-I-do -> flows-DOWN-by-delegation -> signed-scoped-EXPIRING -> carried-on-a-device/YES">>
 <<~ scale standing "what-do-I-count-as -> flows-UP-by-conferral -> a-live-query-never-a-stored-number -> carried-on-a-device/NEVER">>
 
-''//May tend this crossroads// rides as a CAP. //Belongs to the Union// stands as a STANDING'', and a standing carried on a device rebuilds the apex this house removed. So the Union holds no members anywhere — ''a walker carries what they may do, and what they count as answers live, or not at all''.
+''//May tend this crossroads// rides as a CAP. //Belongs to the Union// stands as a STANDING'', and a standing carried on a device rebuilds the apex this house removed. So the Union holds no members anywhere — ''a lamplighter carries what they may do, and what they count as answers live, or not at all''.
 
 !!! ③ The repair verbs already stand
 
@@ -200,11 +200,11 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 ''The seating rides LINEAGE, never the head.'' The quorum's half carries across a seal roll by ancestry: the seal epoch it issued under MUST stand an ancestor of the current head. The holder re-consents over the new head. A seating rooted on a forked or non-ancestor branch dies.
 
-''Three endings, and only one on purpose.'' The place's lease ends an office by non-renewal; a seal roll asks only the holder to re-consent; a quorum act on the deny board — revoke, uncarry or kapae — ends it on purpose. ''Road (iv), forced re-seating, answers a change in the quorum's MEMBERSHIP'', never a routine key rotation.
+''Three endings, and only one on purpose.'' The place's lease ends an office by non-renewal; a seal roll asks only the holder to re-consent; a quorum act on the deny board — revoke, uncarry or kapae — ends it on purpose. ''Road (iv) answers a change in the quorum's MEMBERSHIP'', never a routine key rotation — and it SURFACES rather than re-seats: the house derives from the board's own records which offices and admits leaned on a departed signer, and the new quorum revokes openly, by name, on the deny board, while standing carries until then (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
 
 > ''INVARIANT —'' //An office is fenced by its place and seated by its Nexus's lineage: the place's lease ends it by non-renewal, a seal roll asks only the holder to re-consent, and only a quorum act on the deny board ends it on purpose.//
 
-''Owed in code.'' The carriage registry ends every office and every admit at every roll: its entry count compares an entry's `sealEpochCid` to the roster head by EQUALITY and refuses with `wrong-charter-epoch` (`packages/lararium-mesh/src/carriage-registry.ts`). The ruled shape owes an ancestry walk over the seal lineage for a seating, and the place-keyed lease resource for the fence. An admit fails closed at a roll, with no window; whether admits take the same ancestry rule stays a follow-up.
+''A presented admit carries across a roll by ANCHORED ancestry'': it counts at an ancestor epoch only when it already stood in the board's causal past at the roll, walked through the roll anchors (`verifyPresentedAdmit`). ''Owed in code'': the registry's entry count still compares an entry's `sealEpochCid` to the roster head by EQUALITY and refuses with `wrong-charter-epoch` (`packages/lararium-mesh/src/carriage-registry.ts`), so an office seating owes the same ancestry walk, and the fence owes the place-keyed lease resource.
 
 ''The field ships the split.'' KERI anchors an issuance in the key event log, and the issuance survives a later rotation. Canon law c.184 §2 keeps an office standing when the conferrer's authority lapses. The Demise of the Crown Act 1901 keeps an office held under the Crown from vacating on the sovereign's death. Viewstamped Replication and Vertical Paxos carry committed state across a view or configuration change rather than ending it. And Kleppmann's fencing tokens site the fence AT THE RESOURCE, which the place-keyed lease reproduces.
 
@@ -226,7 +226,7 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 !!! ★ UNIFORM REFUSAL CONSTITUTES THE LOWERING — and PRESENTATION ⊥ CONDEMNATION does not stop it ★
 
-''A walker declining to tend one crossroads costs nothing.'' Forty walkers quietly declining the same one costs everything, and `lararium-canonical-model` prices it in its own words:
+''A lamplighter declining to tend one crossroads costs nothing.'' Forty lamplighters quietly declining the same one costs everything, and `lararium-canonical-model` prices it in its own words:
 
 > ⚠ ''uniform refusal to hear, to carry, and to vouch CONSTITUTES the lowering with nobody performing it. Fuse the verbs in implementation and this law falls silently.''
 
@@ -234,7 +234,7 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 <<~moves refusal-to-TEND -> MUST-stay-apart-from loss-of-STANDING if/refusals-converge do/surface-them-as-presentations>>
 
-''The cure keeps the verbs apart rather than forbidding refusal.'' A walker MUST keep the freedom to decline — conscription reads worse than silence. But converging declines MUST surface as ''presentations'' the quorum can read, so the mesh sees a crossroads going dark by consensus and names it, rather than watching it fade with nobody accountable.
+''The cure keeps the verbs apart rather than forbidding refusal.'' A lamplighter MUST keep the freedom to decline — conscription reads worse than silence. But converging declines MUST surface as ''presentations'' the quorum can read, so the mesh sees a crossroads going dark by consensus and names it, rather than watching it fade with nobody accountable.
 
 ''This holds ZERO-WEIGHT intact.'' Surfaced refusals steer ATTENTION, exactly as corroboration does (#/zero-weight); they lower no threshold and condemn nobody. The quorum still needs its full k. What changes: the quorum can no longer be bypassed by an act nobody performs.
 
@@ -273,7 +273,7 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 * ''(a) REFUSED'' — relaxing the ban to ''no LOCAL wall-clock duration'', admitting witnessed third-party signed time. ⚠ ''A draft priced this as free by asserting Roughtime already stood in the house. It does not.'' A repo-wide grep returns exactly one hit: that sentence itself. Option (a) therefore reads as a proposal to ''ADOPT'' an unbuilt subsystem — plus its own specification's explicitly-unsolved server-list problem, which that spec calls essential for security. Refused besides on its own merits: the operator ruled the no-global-now law absolute.
 * ''(c) REFUSED'' — a roster, by standing ruling: a compiled-about registry at ANY scope rejects the fork (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
 
-''The counter-argument, stated fairly'': the inversion moves the failure from ''forgeable'' to ''silent''. Under (b), many walkers quietly declining one crossroads produces no accrual and no alarm. The inversion makes neglect ''honest'' rather than ''detected''.
+''The counter-argument, stated fairly'': the inversion moves the failure from ''forgeable'' to ''silent''. Under (b), many lamplighters quietly declining one crossroads produces no accrual and no alarm. The inversion makes neglect ''honest'' rather than ''detected''.
 
 !!!! ★ AND THAT HOLE CLOSES BY THEOREM, never by a design we have not found yet ★
 
@@ -420,6 +420,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HKwm_Ti5YkeqyzAXncipdH05K-Gdl2-NyM2fMxQwYdg
+<<^ code="&#x0003;">>ni:///sha-256;IzlbDtitfn6lT-Y0r-srryN6--S5KE_UIHrZQhUlLV0
 
 <<^ code="&#x0004;" -> to="?">>

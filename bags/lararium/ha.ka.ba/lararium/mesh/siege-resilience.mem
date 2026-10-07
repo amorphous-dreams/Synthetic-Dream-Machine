@@ -188,9 +188,9 @@ The maintainer (the bounded repair hand of [[steward-doctrine|lar:///ha.ka.ba/la
 | ''evict'' | blank a member's path so it loses ALL future access | TreeKEM blank-the-path + a [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] on the membership stack |
 | ''heal-partition'' | re-converge two halves after a split | gossip / epidemic anti-entropy |
 | ''recover-from-fork'' | re-anchor a forked island to a trusted line | weak-subjectivity CHECKPOINT — a guardian-signed re-genesis seed |
-| ''re-genesis'' | re-seed a destroyed island from the guardians | guardian-threshold social-recovery + a TIME-LOCK |
+| ''re-genesis'' | roll a Nexus whose quorum is lost, through its Guardians | the opt-in catastrophe rite — Guardian weight for rotation only + a contest window counted in witnessed receipts |
 
-Two verbs carry a sharp edge worth naming. ''evict'' runs forward-only — TreeKEM's blank-the-path removes //future// access (the evicted member keeps what it already read); pair it with the membership-stack [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] so the eviction shadows resurrection. ''re-genesis'' carries a ''TIME-LOCK by design'' — a guardian-threshold can re-seed a lost island, but the time-lock gives the legitimate operator a veto window to refuse an //attacker's// recovery attempt. Without the lock, the social-recovery path itself becomes the adversary's cleanest entry — designation must carry authority and fail loud, never recover silently.
+Two verbs carry a sharp edge worth naming. ''evict'' runs forward-only — TreeKEM's blank-the-path removes //future// access (the evicted member keeps what it already read); pair it with the membership-stack [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] so the eviction shadows resurrection. ''re-genesis'' carries a ''CONTEST WINDOW by design'' — inside the catastrophe rite a Guardian threshold may roll a Nexus whose quorum is lost, but the window gives a legitimate seat holder a veto: a live seat key supersedes the rite while it stands open. The window counts WITNESSED RECEIPTS — a causal, monotone count — never time, since a veto window measured by a clock hands the race to whoever controls the clock (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). Without the window, the social-recovery path itself becomes the adversary's cleanest entry — designation must carry authority and fail loud, never recover silently.
 
 <<~/ahu>>
 
@@ -242,6 +242,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IulVkTiIVwRRBluqxQR5i_VRDLl_mUyCFHyiV57Mszc
+<<^ code="&#x0003;">>ni:///sha-256;QFs6E3xZ75WHOjryniRVSYgBJVcyB4tLcdwX60mEG1A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -258,7 +258,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 |! rite |! from → to |! WHO may perform it |! WITNESS (what proves it) |! RECORD (where history keeps it) |
 | ''pour'' | fleeting → designed | ''any hand'' — the operator, a Lares, a tasked spirit | `lares meme normalize` then `meme check` answers canonical; `meme check --edges` gains no dangling | the commit that adds the file; `status-why` names what stands unbuilt |
 | ''rule'' | designed → standing | ''the OPERATOR alone.'' A spirit may argue, measure, and enact; it MUST NOT move its own carrier to `standing` on its own authority | the enactment's own red-first witness — the failing test quoted first, its cure, and a CONTROL; or, for a `reading`, the dated measurement | `status-why` names the witness verbatim; the CHANGELOG's Fixed/Added/Changed carries the fact |
-| ''promote'' | `docs/pono/x` → `api/pono/x` | ''the kahu-cabal'' — whoever holds `cap("admin", …)` on the canon bag (`canon-boundary.mem:95`) | the cap gate ''plus'' a receipt — ⚠ ''the receipt does not exist'' (`canon-boundary.mem:97`, the declared blocker) | today: the commit alone. Owed: the proposal/receipt graph |
+| ''promote'' | `docs/pono/x` → `api/pono/x` | ''the kahu quorum'' — whoever holds `cap("admin", …)` on the canon bag (`canon-boundary.mem:95`) | the cap gate ''plus'' a receipt — ⚠ ''the receipt does not exist'' (`canon-boundary.mem:97`, the declared blocker) | today: the commit alone. Owed: the proposal/receipt graph |
 | ''fold'' | standing → folded | ''the spirit that closed the last open lean'' — never the carrier's own author witnessing its own fold (`hoike.mem:77`) | `meme check --edges <carrier> $(git ls-files 'bags/*.mem')` shows ''zero inbound''; every ruling reachable at its new `standing` home | each slot rewritten to "folded to `lar:///…`"; `status-why` names the targets; CHANGELOG Changed names the fold |
 | ''otakiage'' | folded → gone | ''the operator CALLS it; any hand may carry it.'' The call and the carriage separate — see #/the-fire | the fold's weld still holds at the moment of the fire (re-run, never trusted from the fold commit); the house's checks green in the same commit | the last check-in commit, then the delete commit. ''git holds the argument''; the CHANGELOG holds the fact |
 | ''tombstone'' | //orthogonal — a live record leaving a live group// | `removeMeme` through any skin (`place-meme.ts:215`) | the 60s grace window and the 0.25 mass-delete brake both passing (`commands/watch.ts:42-43`) | the synced tree's `null` (`synced-tree.ts:114`); the group's whole tombstone set in the result |
@@ -474,6 +474,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ewJyhwrZSeZP-AxgFDYjAqMjJK2UKEyNK8jJn_x08EI
+<<^ code="&#x0003;">>ni:///sha-256;vIPdAUZ9zYuIU_24dWGvtZidXMEfTmKW3ZOMMlYjstk
 
 <<^ code="&#x0004;" -> to="?">>
