@@ -2,17 +2,15 @@
 # stand-linux — Debian/Ubuntu WSL2 half of lar:///ha.ka.ba/wsl2/setup.
 #
 # Each step names what it intends, reads what is, and changes only drift. It never changes the
-# Windows host, unregisters a distro, or chooses a Docker policy. `--with-project` is the explicit
-# opt-in for the repository dependency install.
+# Windows host, unregisters a distro, chooses a Docker policy, or installs the repository's own
+# dependencies — `pnpm install` stays the operator's line.
 set -uo pipefail
 
 DRY=0
-WITH_PROJECT=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY=1 ;;
-    --with-project) WITH_PROJECT=1 ;;
-    *) printf 'usage: %s [--dry-run] [--with-project]\n' "$0" >&2; exit 2 ;;
+    *) printf 'usage: %s [--dry-run]\n' "$0" >&2; exit 2 ;;
   esac
 done
 # As root, `id -un` reads root and $HOME reads /root: [user] default would name root and the venv would
@@ -250,15 +248,7 @@ if [[ -f "$REPO/requirements.txt" ]]; then
   fi
 fi
 
-step '7 · project dependencies — explicit opt-in'
-if (( WITH_PROJECT )); then
-  if command -v pnpm >/dev/null 2>&1; then act 'pnpm install --frozen-lockfile' pnpm --dir "$REPO" install --frozen-lockfile
-  else need 'pnpm is required before --with-project can install workspace dependencies'; fi
-else
-  already 'project dependency install skipped (pass --with-project to run it)'
-fi
-
-step '8 · witness'
+step '7 · witness'
 # The Windows half (memory=, swap=, pwsh) reads through the witness alone; its exit code carries the drift,
 # and any FAILED step above: a hook that gates on 0 must not start agents over a step that printed FAILED
 # and a witness that happened to read green.

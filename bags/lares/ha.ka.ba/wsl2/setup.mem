@@ -86,7 +86,6 @@ cd ~/src/Synthetic-Dream-Machine
 # Inside the checked-out repository, in WSL:
 tools/wsl2/stand-linux.sh --dry-run
 tools/wsl2/stand-linux.sh
-tools/wsl2/stand-linux.sh --with-project       # explicit pnpm workspace install
 
 # From inside WSL, same directory. Full paths, because the stand takes Windows tools off $PATH:
 "/mnt/c/Program Files/PowerShell/7/pwsh.exe" -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -DryRun
@@ -100,7 +99,7 @@ pwsh -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -Sparse         
 tools/wsl2/witness.sh                          # writes nothing; nonzero means drift
 ```
 
-The Linux stand installs only ordinary apt packages, writes `/etc/wsl.conf`, configures `earlyoom` and `vm.swappiness`, maintains `~/.venv` from `requirements.txt`, and checks Node/pnpm and Docker Engine. It reports `needs-you` with the exact commands when Node 24+ or Docker is absent rather than running a third-party installer on the operator's behalf. `--with-project` explicitly runs `pnpm install --frozen-lockfile`.
+The Linux stand installs only ordinary apt packages, writes `/etc/wsl.conf`, configures `earlyoom` and `vm.swappiness`, maintains `~/.venv` from `requirements.txt`, and checks Node/pnpm and Docker Engine. It reports `needs-you` with the exact commands when Node 24+ or Docker is absent rather than running a third-party installer on the operator's behalf. The repository's own dependencies stay the operator's line: `pnpm install --frozen-lockfile` in the clone, after Node lands.
 
 The Windows stand reads the host first without elevation (edition, Windows account, hypervisor and firmware virtualization state, WSL engine version) and reports each gap as `needs-you`. It then merges only `memory`, `swap`, `processors`, and `autoMemoryReclaim`, plus `sparseVhd` when `-Sparse` opts in. It preserves other `.wslconfig` content, including network/VPN settings and comments. It inspects other registered distros but leaves them untouched.
 
@@ -175,7 +174,8 @@ source ~/.nvm/nvm.sh && nvm install 24 && nvm alias default 24
 # Docker Engine from Ubuntu — the container host for the lararium kit; open a new terminal after.
 sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod -aG docker "$USER"
 
-tools/wsl2/stand-linux.sh --with-project
+# The repository's own dependencies, in the clone, once Node 24+ answers `node --version`:
+pnpm install --frozen-lockfile
 ```
 
 Open a new terminal tab between the Docker line and the stand: group membership and the nvm shell hook both land at the next login. The Linux stand reads for Node 24+, Corepack, and a reachable Docker daemon and prints these same lines as `needs-you` while any one stays absent; it runs none of them for you. The stand's own `corepack enable` exposes `pnpm`; the first `pnpm` command then fetches pnpm 10, which satisfies the repository's `engines` (pnpm 9 or later).
@@ -224,5 +224,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UiPw_B6Otz0ej4_1TjNRReQkMiBw41vT-vQhXY4ITwc
+<<^ code="&#x0003;">>ni:///sha-256;iBpeBVWC050_tRzJkLQnpQrjsmMGdFlrN_i0-bk8WmQ
 <<^ code="&#x0004;" -> to="?">>
