@@ -43,7 +43,8 @@ import {
   readFrame,
   frameCarrier,
   stampCarrier,
-  verdict,
+  frameShape,
+  verdictOf,
   type FrameRead,
 } from "@lararium/memetic-frame";
 import { renderMetaTomlLine } from "./meme-normalize.js";
@@ -128,10 +129,15 @@ export function deserializeCarrier(
   // fence is laid here. TW5's contract is synchronous fields-out with no refuse channel, so a torn frame
   // holds verbatim as ONE flagged record (a gate above refuses it on its own grade), and a fence carries
   // a field that names it on the record the operator reviews.
-  const frame = verdict(text);
-  if (frame.kind === "torn") return { records: [heldTorn(baseUri, text, fields, frame.faults.map((f) => f.message))], floor: null };
+  // The SHAPE is all a decomposing carrier needs; the digest answers only whether a fence must re-stamp
+  // a check that matched the arriving body, so it runs where a fence lands and nowhere else.
+  const shape = frameShape(text);
+  if (shape.kind === "torn") return { records: [heldTorn(baseUri, text, fields, shape.faults.map((f) => f.message))], floor: null };
+  const arrived = text;
   let stream = readStream(text);
-  const floor = frame.kind === "bare" ? null : layFloor(baseUri, text, carriersOf(stream, baseUri, text), frame.kind === "match");
+  const floor = shape.kind === "bare"
+    ? null
+    : layFloor(baseUri, text, carriersOf(stream, baseUri, text), () => verdictOf(arrived, shape).kind === "match");
   if (floor) {
     text = floor.text;
     stream = readStream(text);
@@ -262,11 +268,11 @@ export function quoteblockFloor(uri: string, text: string, restamp: boolean): Qu
   // The deserializer's tolerant read, folded once here too, so the offsets below index the bytes it reads.
   let folded = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   if (folded.includes("\r")) folded = folded.replace(/\r\n?/g, "\n");
-  return layFloor(uri, folded, carrierTexts(folded, uri), restamp);
+  return layFloor(uri, folded, carrierTexts(folded, uri), () => restamp);
 }
 
-/** The floor over a folded text and the carriers already read from it. */
-function layFloor(uri: string, folded: string, carriers: readonly CarrierText[], restamp: boolean): QuoteblockFloor | null {
+/** The floor over a folded text and the carriers already read from it. `restamp` is asked only once a fence lands. */
+function layFloor(uri: string, folded: string, carriers: readonly CarrierText[], restamp: () => boolean): QuoteblockFloor | null {
   let out = "";
   let cursor = 0;
   const named: string[] = [];
@@ -290,7 +296,7 @@ function layFloor(uri: string, folded: string, carriers: readonly CarrierText[],
   if (named.length === 0) return null;
   const joined = out + folded.slice(cursor);
   return {
-    text: restamp ? stampCarrier(joined) : joined,
+    text: restamp() ? stampCarrier(joined) : joined,
     fenced,
     message: `${uri}: the family split cannot decompose this carrier (${[...new Set(named)].join(", ")}) — the whole ` +
       `chunk is fenced as one quoteblock, inert until the operator unwraps it`,

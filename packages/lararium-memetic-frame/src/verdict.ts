@@ -91,7 +91,24 @@ function tornSpellings(text: string, spans: ReturnType<typeof fencedSpans>): Fra
   return faults;
 }
 
-export function verdict(text: string): FrameVerdict {
+/**
+ * The frame's SHAPE — the span reader's division, graded, with no digest taken:
+ *
+ *   · `bare`   — no frame stands.
+ *   · `torn`   — the frame cannot be divided without choosing; each fault named.
+ *   · `absent` — a frame stands with no text frame (no STX..ETX span).
+ *   · `framed` — a text frame stands; `span` is the checked span, STX sigil through ETX sigil.
+ *
+ * A reader that needs only the shape reads it here and never computes a digest; `verdictOf` adds the
+ * digest over the same shape, so the two depths are one reading.
+ */
+export type FrameShape =
+  | { readonly kind: "bare" }
+  | { readonly kind: "torn"; readonly faults: readonly FrameFault[] }
+  | { readonly kind: "absent" }
+  | { readonly kind: "framed"; readonly span: { readonly start: number; readonly end: number } };
+
+export function frameShape(text: string): FrameShape {
   const spans = fencedSpans(text);
   const frame = readFrame(text, spans);
   const torn = tornSpellings(text, spans);
@@ -108,11 +125,20 @@ export function verdict(text: string): FrameVerdict {
     faults.push(META_BEFORE_STX);
   }
   if (faults.length > 0) return { kind: "torn", faults };
-
   if (!frame.stx || !frame.etx) return { kind: "absent" };
-  const check = standingCheck(text, { start: frame.stx.index, end: frame.etx.end });
+  return { kind: "framed", span: { start: frame.stx.index, end: frame.etx.end } };
+}
+
+/** The verdict over a shape already read: the digest is the one thing it adds. */
+export function verdictOf(text: string, shape: FrameShape): FrameVerdict {
+  if (shape.kind !== "framed") return shape;
+  const check = standingCheck(text, shape.span);
   if (!check) return { kind: "absent" };
   return check.verifies
     ? { kind: "match", check: check.stored }
     : { kind: "stale", stored: check.stored, computed: check.computed };
+}
+
+export function verdict(text: string): FrameVerdict {
+  return verdictOf(text, frameShape(text));
 }

@@ -32,7 +32,7 @@ export {
   CHECK_ALG, bccOfSpan, nihOfSpan, bccOf, verifyBcc, BCC_RE, classifyPostamble, classifyPostEot,
   type Postamble,
 } from "./check.js";
-export { verdict, type FrameVerdict } from "./verdict.js";
+export { verdict, verdictOf, frameShape, type FrameVerdict, type FrameShape } from "./verdict.js";
 export {
   CARRIER_DECLARATION, markCode, headSigil, frameCarrier, stampCarrier,
   type FrameHeadSpec, type FrameCarrierInput,
