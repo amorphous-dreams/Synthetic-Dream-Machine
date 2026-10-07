@@ -33,8 +33,6 @@ const edge = (deviceDid: string, rootDid = ROOT): DeviceDelegationTiddler => ({
   deviceDid: deviceDid as never,
   deviceVerifyingKey: deviceDid.slice(2),
   hearthTrueName: "",
-  issuedAt: "2026-01-01T00:00:00.000Z",
-  expiresAt: "2027-01-01T00:00:00.000Z",
 } as DeviceDelegationTiddler);
 
 /** The ruled record shape: an EXPLICIT ref (place × derived face), the edge as carriage. */

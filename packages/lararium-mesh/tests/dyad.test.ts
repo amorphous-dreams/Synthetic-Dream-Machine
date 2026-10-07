@@ -64,7 +64,7 @@ function edge(vesselDid: string, veilDid: string): DeviceDelegationTiddler {
     kind: "device-delegation",
     personaRootDid: veilDid, deviceDid: vesselDid,
     deviceVerifyingKey: vesselDid.slice(2), hearthTrueName: "bafyHearth",
-    issuedAt: "2026-07-20T00:00:00Z", expiresAt: "2027-07-20T00:00:00Z",
+    
     boundEpoch: "0", signature: "00".repeat(128),
   };
 }

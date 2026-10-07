@@ -68,8 +68,6 @@ describe("identity anchors (M2)", () => {
     deviceDid: "0xbb22" as LarDid,
     deviceVerifyingKey: "cc".repeat(32),
     hearthTrueName: "",
-    issuedAt: "2026-01-01T00:00:00.000Z",
-    expiresAt: "2027-01-01T00:00:00.000Z",
     boundEpoch: "1",
     signature: "dd".repeat(64),
   };

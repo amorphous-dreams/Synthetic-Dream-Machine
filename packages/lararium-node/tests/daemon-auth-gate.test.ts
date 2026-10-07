@@ -364,7 +364,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const vesselKey = toHex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(22)));
     const rootEdge = await buildDeviceDelegation({
       personaRootSeed: rootSeed, deviceVerifyingKey: vesselKey, hearthTrueName: "",
-      issuedAt: TS, expiresAt: "2026-06-08T00:00:00.000Z", boundEpoch: 0,
+      boundEpoch: 0,
     });
     const kahu = await Promise.all([1, 2].map(async (n) => {
       const seed = new Uint8Array(32).fill(n);

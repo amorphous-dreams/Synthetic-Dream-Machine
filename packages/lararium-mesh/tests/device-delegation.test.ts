@@ -10,9 +10,6 @@ import {
 
 const opSeed  = new Uint8Array(32).fill(7);
 const devSeed = new Uint8Array(32).fill(9);
-const ISSUED  = "2026-06-24T00:00:00.000Z";
-const EXPIRES = "2026-12-31T00:00:00.000Z";
-const NOW     = Date.parse("2026-08-01T00:00:00.000Z"); // inside [ISSUED, EXPIRES]
 const PLACE   = "bafkreic7r3jrao44srh5bp47uryotaqp62bnmovzpqccbfy2kclf447bra";
 
 const vkOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
@@ -23,8 +20,6 @@ async function mint(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
     personaRootSeed: opSeed,
     deviceVerifyingKey: await vkOf(devSeed),
     hearthTrueName: PLACE,
-    issuedAt: ISSUED,
-    expiresAt: EXPIRES,
     boundEpoch,
   });
 }
@@ -33,13 +28,13 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
   it("returns relation-scoped evidence for checked, unavailable, stale, malformed, and rejected edges", async () => {
     const edge = await mint(5);
     const root = await opDidP;
-    expect(await evaluateDeviceDelegation(edge, root, { now: NOW, expectedEpoch: 5 })).toMatchObject({
+    expect(await evaluateDeviceDelegation(edge, root, { expectedEpoch: 5 })).toMatchObject({
       relation: "device-face-delegation", state: "checked-valid", cryptographicallyValid: true,
     });
-    expect(await evaluateDeviceDelegation(edge, root, { now: NOW })).toMatchObject({
+    expect(await evaluateDeviceDelegation(edge, root)).toMatchObject({
       relation: "device-face-delegation", state: "unavailable", cryptographicallyValid: true,
     });
-    expect(await evaluateDeviceDelegation(edge, root, { now: NOW, expectedEpoch: 6 })).toMatchObject({
+    expect(await evaluateDeviceDelegation(edge, root, { expectedEpoch: 6 })).toMatchObject({
       relation: "device-face-delegation", state: "stale", cryptographicallyValid: false,
     });
     expect(await evaluateDeviceDelegation({ ...edge, signature: "deadbeef" }, root)).toMatchObject({
@@ -60,7 +55,7 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     // attacker mints their OWN edge under their OWN root: internally valid, but not the pin.
     const attackerSeed = new Uint8Array(32).fill(13);
     const attackerEdge = await buildDeviceDelegation({
-      personaRootSeed: attackerSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: PLACE, issuedAt: ISSUED, expiresAt: EXPIRES, boundEpoch: 5,
+      personaRootSeed: attackerSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: PLACE, boundEpoch: 5,
     });
     const res = await verifyDeviceDelegation(attackerEdge, await opDidP); // pin = the REAL operator
     expect(res.ok).toBe(false);
@@ -73,11 +68,9 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     expect((await verifyDeviceDelegation({ ...edge, deviceVerifyingKey: otherVk, deviceDid: `0x${otherVk}` }, await opDidP)).ok).toBe(false);
   });
 
-  it("rejects tampered hearthTrueName / issuedAt / expiresAt (signature mismatch)", async () => {
+  it("rejects a tampered hearthTrueName (signature mismatch)", async () => {
     const edge = await mint();
     expect((await verifyDeviceDelegation({ ...edge, hearthTrueName: "bafotherplace" }, await opDidP)).ok).toBe(false);
-    expect((await verifyDeviceDelegation({ ...edge, issuedAt: "2030-01-01T00:00:00.000Z" }, await opDidP)).ok).toBe(false);
-    expect((await verifyDeviceDelegation({ ...edge, expiresAt: "2099-01-01T00:00:00.000Z" }, await opDidP)).ok).toBe(false);
   });
 
   it("rejects a deviceDid not bound to its verifying key", async () => {
@@ -92,7 +85,7 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     // personaRootDid undefined would have thrown in v1 (startsWith on non-string) — must now fail loud.
     await expect(verifyDeviceDelegation({ ...edge, personaRootDid: undefined as unknown as string }, await opDidP)).resolves.toMatchObject({ ok: false });
     await expect(verifyDeviceDelegation({ ...edge, signature: "deadbeef" }, await opDidP)).resolves.toMatchObject({ ok: false });
-    await expect(verifyDeviceDelegation({ ...edge, issuedAt: 12345 as unknown as string }, await opDidP)).resolves.toMatchObject({ ok: false });
+    await expect(verifyDeviceDelegation({ ...edge, boundEpoch: 12345 as unknown as string }, await opDidP)).resolves.toMatchObject({ ok: false });
   });
 
   it("rejects non-canonical personaRootDid (no 0x / uppercase)", async () => {
@@ -102,20 +95,9 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     expect((await verifyDeviceDelegation({ ...edge, personaRootDid: `0x${vkUpper}` }, await opDidP)).ok).toBe(false); // uppercase
   });
 
-  it("enforces the freshness window when `now` is supplied", async () => {
-    const edge = await mint();
-    expect((await verifyDeviceDelegation(edge, await opDidP, { now: NOW })).ok).toBe(true);
-    const expired = await verifyDeviceDelegation(edge, await opDidP, { now: Date.parse("2027-06-01T00:00:00.000Z") });
-    expect(expired.ok).toBe(false);
-    expect(expired.reason).toMatch(/expired/);
-    const tooEarly = await verifyDeviceDelegation(edge, await opDidP, { now: Date.parse("2026-01-01T00:00:00.000Z") });
-    expect(tooEarly.ok).toBe(false);
-    expect(tooEarly.reason).toMatch(/not yet valid/);
-  });
-
   it("rejects an edge with an illegal-character hearthTrueName at mint", async () => {
     await expect(buildDeviceDelegation({
-      personaRootSeed: opSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: "evil|injection", issuedAt: ISSUED, expiresAt: EXPIRES, boundEpoch: 5,
+      personaRootSeed: opSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: "evil|injection", boundEpoch: 5,
     })).rejects.toThrow(/hearthTrueName/);
   });
 
@@ -137,9 +119,35 @@ describe("device-delegation — the signed capability edge (v2, post-verificatio
     expect((await verifyDeviceDelegation({ ...edge, boundEpoch: "999" }, await opDidP)).ok).toBe(false);
   });
 
+  // ── NO GLOBAL NOW ON THE EDGE ──────────────────────────────────────────────────────────────────────────
+  // The edge decays by its lease (`boundEpoch` against the resource's max-register) and is revoked by the
+  // membership graph; no wall-clock rides in its fields or its signed bytes.
+  const CLOCK_KEY = /^(issuedAt|expiresAt|timestamp|createdAt|notBefore|notAfter|exp|iat|nbf)$/i;
+  const clockKeys = (v: unknown, path = ""): string[] =>
+    v === null || typeof v !== "object" ? [] : Object.entries(v as Record<string, unknown>).flatMap(([k, x]) =>
+      [...(CLOCK_KEY.test(k) ? [`${path}${k}`] : []), ...clockKeys(x, `${path}${k}.`)]);
+
+  it("★ the edge carries no clock field — the lease is its only decay ★", async () => {
+    const edge = await mint(5);
+    expect(clockKeys(edge)).toEqual([]);
+    expect(Object.keys(edge).sort()).toEqual(
+      ["boundEpoch", "deviceDid", "deviceVerifyingKey", "hearthTrueName", "kind", "personaRootDid", "signature"]);
+  });
+
+  it("CONTROL: the clock scan finds a planted stamp, and the lease still fences a rolled epoch", async () => {
+    const edge = await mint(5);
+    expect(clockKeys({ ...edge, nested: { issuedAt: "x" } })).toContain("nested.issuedAt");
+    expect((await verifyDeviceDelegation(edge, await opDidP, { expectedEpoch: 6 })).ok).toBe(false);
+    expect((await verifyDeviceDelegation(edge, await opDidP, { expectedEpoch: 5 })).ok).toBe(true);
+  });
+
+  it("two mints of one binding at one lease agree byte-for-byte — nothing instant-bound rides the edge", async () => {
+    expect(await mint(5)).toEqual(await mint(5));
+  });
+
   it("rejects a non-numeric boundEpoch at mint", async () => {
     await expect(buildDeviceDelegation({
-      personaRootSeed: opSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: PLACE, issuedAt: ISSUED, expiresAt: EXPIRES, boundEpoch: -1,
+      personaRootSeed: opSeed, deviceVerifyingKey: await vkOf(devSeed), hearthTrueName: PLACE, boundEpoch: -1,
     })).rejects.toThrow(/boundEpoch/);
   });
 });

@@ -46,15 +46,13 @@ delete process.env["LAR_V3_ALLOW_UNPROVEN"];
 
 const DAEMON_BAG = "lar:///ha.ka.ba/bags/daemon";
 const PLACE      = "bafkreic7r3jrao44srh5bp47uryotaqp62bnmovzpqccbfy2kclf447bra";
-const ISSUED     = "2026-06-24T00:00:00.000Z";
-const EXPIRES    = "2026-12-31T00:00:00.000Z";
 
 /** Derive the raw ed25519 verifying-key hex of a seed via the mesh minter
  *  (personaRootDid = "0x"+vk) — no direct @noble dependency in this dir. */
 async function vkOfSeed(seed: Uint8Array): Promise<string> {
   const e = await buildDeviceDelegation({
     personaRootSeed: seed, deviceVerifyingKey: "00".repeat(32),
-    hearthTrueName: "", issuedAt: ISSUED, expiresAt: EXPIRES, boundEpoch: 1,
+    hearthTrueName: "", boundEpoch: 1,
   });
   return e.personaRootDid.slice(2);
 }
@@ -63,7 +61,7 @@ async function vkOfSeed(seed: Uint8Array): Promise<string> {
 async function mintEdge(signerSeed: Uint8Array, deviceVk: string): Promise<DeviceDelegationTiddler> {
   return buildDeviceDelegation({
     personaRootSeed: signerSeed, deviceVerifyingKey: deviceVk,
-    hearthTrueName: PLACE, issuedAt: ISSUED, expiresAt: EXPIRES, boundEpoch: 1,
+    hearthTrueName: PLACE, boundEpoch: 1,
   });
 }
 

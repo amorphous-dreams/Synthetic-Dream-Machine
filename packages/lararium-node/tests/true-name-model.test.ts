@@ -80,13 +80,11 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
     const personaRoot = await generateOrLoadPersonaGroupRoot();
     const signerSeed  = await loadPersonaGroupRootSeed();
 
-    const issuedAt  = new Date().toISOString();
-    const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
     const edge = await buildDeviceDelegation({
       personaRootSeed:       signerSeed,          // the HUMAN's root signs
       deviceVerifyingKey: vesselKey,           // the PLACE's key delegates
       hearthTrueName:     HEARTH_TRUE_NAME,    // the place this binds TO
-      issuedAt, expiresAt, boundEpoch: 0,
+      boundEpoch: 0,
     });
 
     // The edge chains to the persona root, delegates the vessel, and names the hearth.
@@ -97,7 +95,7 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
     expect(edge.personaRootDid).not.toBe(edge.deviceDid);
 
     // A peer pinning the persona root clears it.
-    await expect(verifyDeviceDelegation(edge, `0x${personaRoot.verifyingKey}`, { now: Date.now() }))
+    await expect(verifyDeviceDelegation(edge, `0x${personaRoot.verifyingKey}`))
       .resolves.toMatchObject({ ok: true });
   });
 
@@ -107,16 +105,14 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
     await generateOrLoadPersonaGroupRoot();
     const signerSeed = await loadPersonaGroupRootSeed();
 
-    const issuedAt  = new Date().toISOString();
-    const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
     const edge = await buildDeviceDelegation({
       personaRootSeed: signerSeed, deviceVerifyingKey: vesselKey,
-      hearthTrueName: HEARTH_TRUE_NAME, issuedAt, expiresAt, boundEpoch: 0,
+      hearthTrueName: HEARTH_TRUE_NAME, boundEpoch: 0,
     });
 
     // The confused-deputy guard in identity form: a verifier that pins the PLACE where the HUMAN
     // belongs gets a clean refusal, never an ambient pass.
-    await expect(verifyDeviceDelegation(edge, `0x${vesselKey}`, { now: Date.now() }))
+    await expect(verifyDeviceDelegation(edge, `0x${vesselKey}`))
       .resolves.toMatchObject({ ok: false, reason: "operator is not the pinned root" });
   });
 

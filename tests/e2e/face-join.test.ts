@@ -120,6 +120,8 @@ async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecor
   expect(faceGrantRecordCid(rec!), "the record read off the plane is not the record the outcome names").toBe(g["recordCid"]);
   // The record orders by the plane's history, so it carries no wall-clock stamp.
   expect(rec!, "the grant record carries a wall-clock stamp").not.toHaveProperty("issuedAt");
+  // Nor does the founder's edge it carries: the lease is the edge's only decay.
+  expect(Object.keys(rec!.founderEdge).filter((k) => /^(issuedAt|expiresAt)$/.test(k)), "the founder's edge carries a wall-clock stamp").toEqual([]);
   const verdict = await verifyFaceGrantRecord(rec, {
     personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupDocIdHex: rec!.groupDocIdHex,
   });

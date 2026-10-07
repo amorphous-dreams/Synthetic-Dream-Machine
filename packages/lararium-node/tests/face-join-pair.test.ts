@@ -44,8 +44,6 @@ describe("face-join — the granting half, proven end to end", () => {
       personaRootSeed:    ROOT_SEED,
       deviceVerifyingKey: await rawKeyOf(joinee),
       hearthTrueName:     HEARTH,
-      issuedAt:           "2026-08-16T11:00:00.000Z",
-      expiresAt:          "2026-09-16T11:00:00.000Z",
       boundEpoch:         0,
     });
     const ctx: FaceJoinContext = {
@@ -108,8 +106,6 @@ describe("face-join — the granting half, proven end to end", () => {
       personaRootSeed:    ROOT_SEED,
       deviceVerifyingKey: await rawKeyOf(joinee),
       hearthTrueName:     HEARTH,
-      issuedAt:           "2026-08-16T11:00:00.000Z",
-      expiresAt:          "2026-09-16T11:00:00.000Z",
       boundEpoch:         0,
     });
     const outcome = await runFaceJoin(founder, {
@@ -167,7 +163,7 @@ describe("face-join — the granting half, proven end to end", () => {
 
     const edge = await buildDeviceDelegation({
       personaRootSeed: ROOT_SEED, deviceVerifyingKey: await rawKeyOf(joinee), hearthTrueName: HEARTH,
-      issuedAt: "2026-08-16T11:00:00.000Z", expiresAt: "2026-09-16T11:00:00.000Z", boundEpoch: 0,
+      boundEpoch: 0,
     });
     const ctx: FaceJoinContext = {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
@@ -234,8 +230,6 @@ describe("face-join — the granting half, proven end to end", () => {
       personaRootSeed:    ROOT_SEED,
       deviceVerifyingKey: await rawKeyOf(joinee),
       hearthTrueName:     HEARTH,
-      issuedAt:           "2026-08-16T11:00:00.000Z",
-      expiresAt:          "2026-09-16T11:00:00.000Z",
       boundEpoch:         0,
     });
     const ctx: FaceJoinContext = {
@@ -271,7 +265,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     const joinee = await makeVessel(72);
     const edge = await buildDeviceDelegation({
       personaRootSeed: ROOT_SEED, deviceVerifyingKey: await rawKeyOf(joinee), hearthTrueName: HEARTH,
-      issuedAt: "2026-08-16T11:00:00.000Z", expiresAt: "2026-09-16T11:00:00.000Z", boundEpoch: 0,
+      boundEpoch: 0,
     });
     const repo = new Repo({});
     const applied = await runApplyAdmitPayload({

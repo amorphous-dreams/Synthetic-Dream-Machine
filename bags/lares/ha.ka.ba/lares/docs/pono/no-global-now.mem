@@ -209,15 +209,11 @@ the direction and the boundary, not those fields.
 
 ''The mines answer YES, and the house already spells it three different ways, each lawful, each NAMED.''
 
-!!! ① The BACKSTOP spelling — `device-delegation.ts`, and the operator's own question produced it
+!!! ① The LEASE spelling — `device-delegation.ts`, and the operator's own question produced it
 
-The operator asked (2026-08-16, quote license): //"Does this read 'no global now' (wallclock on each device serves as an unreliable narrator)?"// The house's answer and cure that turn: ''the lease is the authority, the clock only backstops'' — and the code now says it in its own comments (quote license):
+The operator asked (2026-08-16, quote license): //"Does this read 'no global now' (wallclock on each device serves as an unreliable narrator)?"// The answer the code carries: ''the lease is the only narrator.'' The device-delegation edge signs no instant — no issue time, no expiry. It decays by its `boundEpoch` against the PersonaGroup's lease epoch (`verifyDeviceDelegation(edge, root, { expectedEpoch })`), and the Keyhive membership graph withdraws it. Two mints of one binding at one lease are the same bytes, and the face-join grant record that carries a founder's edge carries no clock at any depth (`face-grant-record.test.ts`, `device-delegation.test.ts`).
 
-* `device-delegation.ts:66` — `expiresAt` — //"ISO-8601 expiry instant — bounds the replay window even absent synchronous revocation (now a replay ''BACKSTOP'', not the lease authority)."//
-* `device-delegation.ts:177-180` — //"The epoch is the lease ''AUTHORITY''; the wall-clock window above is only a replay backstop. Targeted revocation rides the Keyhive membership graph, never this counter."//
-* And the RANKING rides the call site: `verifyDeviceDelegation(edge, root, { now, expectedEpoch })` — the comment at the time of the cure read //"`now` — replay backstop — the unreliable narrator"// beside //"`expectedEpoch` — THE AUTHORITY — monotone, local, no shared clock"//, with two tests fencing the ranking (a grant bound below a rolled lease refuses ''while the wall clock still reads inside its window'').
-
-''The sin that cure named, in the house's own words'': //"The violation is that I made the unreliable narrator the ONLY narrator."// That sentence prices gap (2) exactly.
+''The sin a wall-clock backstop named, in the house's own words'': //"The violation is that I made the unreliable narrator the ONLY narrator."// A backstop no gate consulted still kept that narrator in the signed bytes; with it gone, the lease narrates alone.
 
 !!! ② The ROLLS spelling — an `expiry` read against the realm's own pace
 
@@ -248,7 +244,7 @@ The operator asked (2026-08-16, quote license): //"Does this read 'no global now
 
 ''Two things the mines separate, and the carrier keeps apart.'' The ruling MANDATES that the guarded RESOURCE fence. Whether the pure `verifyOraclePointer` FUNCTION must refuse a caller who names no high-water names a different question — an API shape, not a law — and the mines carry no sentence on it. See #/silence and #/questions.
 
-''The precedent one layer over, for whoever builds it.'' `device-delegation.ts` also leaves `expectedEpoch` optional (//"OPTIONAL (like opts.now): pass expectedEpoch … to enforce the lease; omit to check signature + pin alone"//) and cures the inversion at the ''call site'', by ranking the two instruments in the caller's own code. The oracle pointer's asymmetry differs from that precedent in one measurable way: `nowMs` there reads optional too, while on the pointer it stands ''required''.
+''The precedent one layer over, for whoever builds it.'' `device-delegation.ts` also leaves `expectedEpoch` optional (//"pass expectedEpoch (the resource's current max-register epoch the verifier holds) to enforce the lease; omit to check signature + pin alone"//) and cures the inversion at the ''call site'': every gate that mutates authority supplies the epoch. The oracle pointer's asymmetry differs from that precedent in one measurable way: the edge carries no clock to weigh at all, while on the pointer `nowMs` stands ''required''.
 
 <<~/ahu>>
 
@@ -358,6 +354,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aN40sCw2wxLelbuRpvBtzXR2c9SAnqstyZ050hcoynI
+<<^ code="&#x0003;">>ni:///sha-256;2iUNenb8I1Aimul1Hw-0aQyc7oiGq9UyvILHvLHqqdQ
 
 <<^ code="&#x0004;" -> to="?">>

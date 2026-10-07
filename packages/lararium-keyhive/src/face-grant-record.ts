@@ -101,18 +101,10 @@ export interface FaceGrantVerifyContext {
   /** The group this vessel's face belongs to — the record must name it. */
   readonly groupDocIdHex: string;
   /**
-   * OPTIONAL wall-clock witness (ms) — a soft, non-authoritative backstop on the founder edge's replay
-   * window, never the licensing authority. Omitted, the freshness check inside `verifyDeviceDelegation`
-   * skips cleanly (its own `opts?.now !== undefined` guard); the KEL-head walk (`verifyEdgeAgainstPersonaKel`)
-   * already licenses the edge clocklessly (event order — a rotated-away key refuses under the head, no
-   * clock consulted). No global now in load-bearing admission.
-   */
-  readonly now?: number;
-  /**
    * OPTIONAL PersonaGroup lease epoch (`effectiveLeaseEpoch` off the live daemon replica) the JOINEE holds
    * at verify time. Present, the founder's OWN edge must not read stale against it — the founder leases too,
    * the same as any other device (FRESHNESS TAKES THE LEASE). An offline/read-only observer may omit this
-   * relation witness and receive only the verifier's cryptographic checks plus the optional soft clock window;
+   * relation witness and receive only the verifier's cryptographic checks;
    * a consuming mutation gate MUST supply it and refuse or remain pending when it cannot read the frontier.
    * The verifier never fabricates an epoch when the joinee cannot read one.
    */
@@ -137,12 +129,8 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
   if (typeof r.joineeAgentIdHex !== "string" || !r.joineeAgentIdHex.toLowerCase().endsWith(ctx.selfVerifyingKey.toLowerCase())) {
     return { ok: false, reason: "the record names another joinee" };
   }
-  const freshnessOpts = (ctx.now !== undefined || ctx.expectedEpoch !== undefined)
-    ? {
-        ...(ctx.now !== undefined ? { now: ctx.now } : {}),
-        ...(ctx.expectedEpoch !== undefined ? { expectedEpoch: ctx.expectedEpoch } : {}),
-      }
-    : undefined;
+  // The lease is the edge's only decay; no clock rides the record or its founder's edge.
+  const freshnessOpts = ctx.expectedEpoch !== undefined ? { expectedEpoch: ctx.expectedEpoch } : undefined;
   if (ctx.personaKel) {
     const { prefix, chain } = ctx.personaKel;
     const genesis = chain[0];

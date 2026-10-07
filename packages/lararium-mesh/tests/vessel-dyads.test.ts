@@ -23,7 +23,7 @@ function wholeEdge(deviceDid: string): DeviceDelegationTiddler {
   return {
     kind: "device-delegation", personaRootDid: ROOT, deviceDid,
     deviceVerifyingKey: deviceDid.slice(2), hearthTrueName: "",
-    issuedAt: "2026-01-01T00:00:00.000Z", expiresAt: "2027-01-01T00:00:00.000Z",
+    
   } as unknown as DeviceDelegationTiddler;
 }
 

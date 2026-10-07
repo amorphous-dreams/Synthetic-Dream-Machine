@@ -31,8 +31,6 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
     personaRootSeed:       OPERATOR_SEED,          // the OPERATOR signs, elsewhere
     deviceVerifyingKey,
     hearthTrueName,
-    issuedAt:  new Date("2026-07-20T00:00:00Z").toISOString(),
-    expiresAt: new Date("2027-07-20T00:00:00Z").toISOString(),
     boundEpoch: 0,
   });
   // NO PREFIX INCEPTS UNARMED — the carried chain arms exactly as a self-stood founding does: the

@@ -38,8 +38,6 @@ const auditRows: AuditRow[] = [];
 const opSeed = new Uint8Array(32).fill(31);
 const deviceSeed = new Uint8Array(32).fill(32);
 const peerSeed = new Uint8Array(32).fill(33);
-const issuedAt = "2026-09-01T00:00:00.000Z";
-const expiresAt = "2026-12-31T00:00:00.000Z";
 const now = Date.parse("2026-09-23T00:00:00.000Z");
 const realm = "a".repeat(64);
 const joiner = "b".repeat(64);
@@ -53,8 +51,6 @@ async function delegation(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
     personaRootSeed: opSeed,
     deviceVerifyingKey: await pubOf(deviceSeed),
     hearthTrueName: "",
-    issuedAt,
-    expiresAt,
     boundEpoch,
   });
 }
@@ -63,11 +59,11 @@ describe("P1 authority relations — characterization witness", () => {
   test("records device/face delegation and exposes the missing expectedEpoch fallback", async () => {
     const edge = await delegation();
     const root = `0x${await pubOf(opSeed)}`;
-    const withEpoch = await verifyDeviceDelegation(edge, root, { now, expectedEpoch: 5 });
-    const staleWithEpoch = await verifyDeviceDelegation(edge, root, { now, expectedEpoch: 6 });
+    const withEpoch = await verifyDeviceDelegation(edge, root, { expectedEpoch: 5 });
+    const staleWithEpoch = await verifyDeviceDelegation(edge, root, { expectedEpoch: 6 });
     // This is the open seam, recorded without selecting a policy: the same signed edge passes when
     // the caller omits the current resource frontier. A future D-AE choice may alter this contract.
-    const omittedEpoch = await verifyDeviceDelegation(edge, root, { now });
+    const omittedEpoch = await verifyDeviceDelegation(edge, root);
     auditRows.push({
       relation: "device-face-delegation",
       inputs: { boundEpoch: edge.boundEpoch, expectedEpoch: 5, staleExpectedEpoch: 6, omittedExpectedEpoch: true },

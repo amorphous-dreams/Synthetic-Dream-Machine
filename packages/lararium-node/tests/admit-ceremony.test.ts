@@ -181,14 +181,13 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     expect(a.deviceEdge.deviceVerifyingKey).toBe(b.deviceEdge.deviceVerifyingKey);
     expect(a.deviceEdge.hearthTrueName).toBe(b.deviceEdge.hearthTrueName);
 
-    // THE LEASE is not, and MUST NOT BE. The edge signs over issuedAt/expiresAt, so two mints at two
-    // instants carry different bytes and different signatures — which is the lease working, not the
-    // ceremony failing. Standing decays unless fed; an edge with a frozen issuedAt could never expire,
-    // and a grant that cannot expire is a grant that cannot be withdrawn from a mesh it can no longer
-    // reach. Byte-equality here would be a BUG, and asserting it would have enshrined one.
-    expect(a.deviceEdge.issuedAt).toBeTruthy();
-    expect(a.deviceEdge.expiresAt).toBeTruthy();
-    expect(Date.parse(a.deviceEdge.expiresAt)).toBeGreaterThan(Date.parse(a.deviceEdge.issuedAt));
+    // THE LEASE decays the edge, never a clock: no instant rides it, so two mints at one lease epoch are
+    // the same bytes. Standing still decays unless fed — the PersonaGroup's lease epoch rolls past
+    // `boundEpoch` and the edge reads stale at every door that reads the frontier.
+    expect(a.deviceEdge).not.toHaveProperty("issuedAt");
+    expect(a.deviceEdge).not.toHaveProperty("expiresAt");
+    expect(a.deviceEdge.boundEpoch).toBe(b.deviceEdge.boundEpoch);
+    expect(a.deviceEdge).toEqual(b.deviceEdge);
   });
 
   test("a joinee REFUSES a payload whose binding is incomplete — never a half-bound daemon doc", async () => {

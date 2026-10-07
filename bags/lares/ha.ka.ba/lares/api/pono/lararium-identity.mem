@@ -139,7 +139,7 @@ The bond between operator and vessel rides a ''signed delegation edge'', not a s
 secret. The canon already shapes it — the `DeviceDelegationTiddler` (the device key delegating up to its PersonaGroup, the WHO axis):
 
 ```
-device-delegation | {operatorDid} | {deviceDid} | {deviceVerifyingKey} | {issuedAt}
+device-delegation | {personaRootDid} | {deviceDid} | {deviceVerifyingKey} | {hearthTrueName} | {boundEpoch}
 ```
 
 The operator root ''signs'' this edge; any peer ''verifies'' //"Device D speaks as//
@@ -152,8 +152,8 @@ confused-deputy guard).
 
 Revocation rides ''Keyhive concap'' — delegation + revocation as ''convergent CRDT membership-graph''
 ''state'' (an observed-remove op that converges offline, no bolted-on blocklist) — the model Ink&Switch
-moved //to//, away from UCAN's external-state revocation. The standing edge carries a generous `exp` as a
-backstop; an epoch bump stays the heavy hammer for re-founding only. Revocation is first-class and
+moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: it decays by its lease
+(`boundEpoch` against the PersonaGroup's lease epoch), and an epoch bump stays the heavy hammer for re-founding only. Revocation is first-class and
 convergent, never the deferred afterthought.
 
 <<~/ahu>>
@@ -578,6 +578,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4XMooD7PSnnMFil6evBiXJaAe0nOhJ66K5Jo1V3G7RY
+<<^ code="&#x0003;">>ni:///sha-256;3RQ2JE8u6nYjYxAkekJnujwwcTjojOfOG2nGtXYUK7U
 
 <<^ code="&#x0004;" -> to="?">>

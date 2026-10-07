@@ -58,11 +58,6 @@ import {
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
 } from "@lararium/mesh";
 
-// A device-delegation edge's expiry is a generous replay BACKSTOP only — the
-// epoch-lease is the live authority (device-delegation.ts). 100 years keeps the
-// founding edge well clear of the wall while the lease does the real work.
-const EDGE_BACKSTOP_MS = 100 * 365 * 24 * 60 * 60 * 1000;
-
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 import { buildCeremonyTiddlers, webDigest, hex as hexEncode } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
@@ -389,8 +384,6 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
         personaRootSeed:    input.binding.signerSeed,  // the root SIGNS
         deviceVerifyingKey: vesselVerifyingKey,      // the per-vessel device is the delegate
         hearthTrueName:     input.hearthTrueName,      // the place this binds TO
-        issuedAt:           new Date().toISOString(),
-        expiresAt:          new Date(Date.now() + EDGE_BACKSTOP_MS).toISOString(),
         // GENESIS, NOT A PLACEHOLDER: at self-stood founding the daemon bag carries no lease-epoch slots yet
         // for this PersonaGroup (they cannot — the group is born in this same act), so `effectiveLeaseEpoch`
         // over an empty slot set IS 0 (epoch-lease.ts) — this 0 already equals the live read, not a stand-in
@@ -663,14 +656,10 @@ export async function runDeviceAdmitEdge(
   if (input.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runDeviceAdmitEdge: hearthDaemonUrl required (may be null) — state the hearth's door explicitly or name null, never omit it");
   }
-  const issuedAt  = new Date().toISOString();
-  const expiresAt = new Date(Date.now() + EDGE_BACKSTOP_MS).toISOString();
   const deviceEdge = await buildDeviceDelegation({
     personaRootSeed:    input.signerSeed,          // the founder's PersonaGroup root SIGNS
     deviceVerifyingKey: input.joineeVerifyingKey,  // the joinee's vessel key is the delegate
     hearthTrueName:     input.hearthTrueName,
-    issuedAt,
-    expiresAt,
     // THE DEVICE-ADMIT PATH MUST CARRY A REAL EPOCH — this edge licenses a NEW device, so it binds to the
     // lease epoch the caller read live (`input.boundEpoch`), never a frozen genesis value. Absent a live
     // read, 0 is the honest floor (a doc predating the epoch wiring reads every device as maximally stale —

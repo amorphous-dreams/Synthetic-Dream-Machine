@@ -30,8 +30,6 @@ async function leafEdge(rootSeed: Uint8Array, joinee: KeyhiveProvider) {
     personaRootSeed: rootSeed,
     deviceVerifyingKey: await rawKeyOf(joinee),
     hearthTrueName: "",
-    issuedAt: "2026-08-17T11:00:00.000Z",
-    expiresAt: "2026-09-17T11:00:00.000Z",
     boundEpoch: 0,
   });
 }

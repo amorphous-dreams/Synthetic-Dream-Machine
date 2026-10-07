@@ -63,8 +63,6 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
     personaRootSeed:    seedOf(213),
     deviceVerifyingKey: (await laptop.whoami()).replace(/^0x/, ""),
     hearthTrueName:     "",
-    issuedAt:           "2026-08-17T11:00:00.000Z",
-    expiresAt:          "2026-09-17T11:00:00.000Z",
     boundEpoch:         0,
   });
   const ctx: FaceJoinContext = {

@@ -18,13 +18,11 @@ const HEARTH       = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqw
 /** The identifier a card derives ends in the raw verifying key — the relationship the Binding Gate leans on. */
 const cardIdFor = (key: string) => `0x${key}`;
 
-async function edgeFor(opts: { seed?: Uint8Array; key?: string; hearth?: string; expiresAt?: string } = {}) {
+async function edgeFor(opts: { seed?: Uint8Array; key?: string; hearth?: string } = {}) {
   return buildDeviceDelegation({
     personaRootSeed:    opts.seed ?? FOUNDER_SEED,
     deviceVerifyingKey: opts.key  ?? JOINEE_KEY,
     hearthTrueName:     opts.hearth ?? HEARTH,
-    issuedAt:           "2026-08-16T11:00:00.000Z",
-    expiresAt:          opts.expiresAt ?? "2026-09-16T11:00:00.000Z",
     boundEpoch:         0,
   });
 }
@@ -87,16 +85,6 @@ describe("the gate — a signature, never a list", () => {
     expect(out.ok).toBe(false);
     if (!out.ok) expect(out.reason).toMatch(/different hearth/i);
     expect(p.calls.received).toBe(0);
-  });
-
-  test("an edge's wall-clock label does not override the causal lease", async () => {
-    const ctx = await ctxFor();
-    const out = await runFaceJoin(
-      fakeProvider(),
-      summons(await edgeFor({ expiresAt: "2026-08-16T11:30:00.000Z" })),
-      ctx,
-    );
-    expect(out.ok).toBe(true);
   });
 
   test("a VALID edge presented with somebody ELSE'S card → refused, and no seat is granted", async () => {

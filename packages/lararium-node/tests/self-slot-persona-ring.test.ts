@@ -39,7 +39,7 @@ async function founderEdge(opKeySeed = ROOT_SEED) {
   const founderKey = await ed25519VerifyingKeyFromSeed(FOUNDER_SEED);
   return buildDeviceDelegation({
     personaRootSeed: opKeySeed, deviceVerifyingKey: founderKey, hearthTrueName: HEARTH,
-    issuedAt: "2026-09-01T00:00:00.000Z", expiresAt: "2026-12-01T00:00:00.000Z", boundEpoch: 0,
+    boundEpoch: 0,
   });
 }
 async function validGrant(opKeySeed = ROOT_SEED): Promise<FaceGrantRecord> {

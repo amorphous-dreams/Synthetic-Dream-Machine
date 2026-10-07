@@ -17,11 +17,16 @@
  * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — a FROZEN
  * registry name, read whole: its `/v1` tail names nothing and no successor will exist;
  * every field strict-charset so no `|` can shift a boundary):
- *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{issuedAt}|{expiresAt}|{boundEpoch}
+ *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
+ *
+ * NO CLOCK rides the edge — no issue instant, no expiry. It decays by its LEASE alone (`boundEpoch`
+ * against the resource's max-register epoch) and is withdrawn by the membership graph; a wall-clock
+ * window would make an unreliable narrator a party to the grant. Two mints of one binding at one
+ * lease are the same bytes.
  *
  * Trust rides the SIGNATURE + the PINNED root, never a doc's write-ACL (confused-deputy
  * guard). Hardened against untrusted input: never throws on
- * untrusted input · mandatory operator-root pin · exp/freshness · canonical lowercase DIDs
+ * untrusted input · mandatory operator-root pin · lease epoch · canonical lowercase DIDs
  * · strict ZIP215-off verify · domain separation. Reuses the mesh's bare-Ed25519
  * surface (@noble/ed25519 v3 + ./crypto hex).
  */
@@ -33,22 +38,8 @@ import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type La
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 
 export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
-/** Clock drift tolerance for the freshness window (matches the V3 auth-proof posture / UCAN ±60s). */
-/**
- * The clock-skew tolerance the freshness check falls back on — PRIVATE, and it stays private because
- * exporting it would advertise a shared-clock assumption as public API. A drift constant reconciles two
- * clocks, and this mesh holds no global now to reconcile them TOWARD: a device clock reads freely settable
- * by its user and more freely by its operator, so the skew arrives on purpose as often as by accident.
- *
- * It survives here as an honest DEBT rather than a design. The freshness question this bounds — how far
- * back may a replay reach — wants a POSITION a verifier can walk (the signer's own KEL sequence), never an
- * instant two parties must agree on. Until that lands, the tolerance stays, unexported, and named.
- */
-const DELEGATION_CLOCK_DRIFT_MS = 60_000;
-
 const VK_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
 const SIG_RE  = /^[0-9a-f]{128}$/;         // 64-byte Ed25519 signature hex, lowercase
-const ISO_RE  = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const TRUE_NAME_RE = /^[A-Za-z0-9._:/@-]*$/;   // CID / lar:-name safe; no `|`, no whitespace; "" allowed (place-agnostic)
 const EPOCH_RE = /^\d{1,15}$/;             // decimal lease epoch; 1-15 digits, bounded < Number.MAX_SAFE_INTEGER
 
@@ -63,10 +54,6 @@ export interface DeviceDelegationTiddler {
   /** the hearth true-name this edge binds the vessel TO — the engine blob's public True Name
    *  (the genesis engineCid), or "" if hearth-agnostic. The binding IS (vessel × hearthTrueName). */
   readonly hearthTrueName:             string;
-  /** ISO-8601 issue instant (caller-supplied; no ambient clock). */
-  readonly issuedAt:            string;
-  /** ISO-8601 expiry instant — bounds the replay window even absent synchronous revocation (now a replay BACKSTOP, not the lease authority). */
-  readonly expiresAt:           string;
   /** the LEASE epoch this grant binds to — a per-resource max-register value (1-15 decimal digits).
    *  The grant goes stale when the resource's epoch rolls past it (non-renewal). The epoch is a
    *  LEASE, never a targeted revoker (targeted revoke rides the Keyhive membership graph). */
@@ -80,12 +67,12 @@ export type DeviceDelegationEvidence = AuthorityEvidenceVerdict<"device-face-del
 
 type ProofFields = Pick<
   DeviceDelegationTiddler,
-  "personaRootDid" | "deviceDid" | "deviceVerifyingKey" | "hearthTrueName" | "issuedAt" | "expiresAt" | "boundEpoch"
+  "personaRootDid" | "deviceDid" | "deviceVerifyingKey" | "hearthTrueName" | "boundEpoch"
 >;
 
 function delegationProofBytes(d: ProofFields): Uint8Array {
   return new TextEncoder().encode(
-    `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}|${d.issuedAt}|${d.expiresAt}|${d.boundEpoch}`,
+    `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}|${d.boundEpoch}`,
   );
 }
 
@@ -100,8 +87,6 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
   if (typeof d.deviceVerifyingKey !== "string" || !VK_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
   if (typeof d.deviceDid !== "string" || d.deviceDid !== didFromVerifyingKey(d.deviceVerifyingKey)) return "deviceDid not bound to deviceVerifyingKey";
   if (typeof d.hearthTrueName !== "string" || !TRUE_NAME_RE.test(d.hearthTrueName))                       return "hearthTrueName has illegal characters";
-  if (typeof d.issuedAt !== "string" || !ISO_RE.test(d.issuedAt))                       return "issuedAt not strict ISO-8601";
-  if (typeof d.expiresAt !== "string" || !ISO_RE.test(d.expiresAt))                     return "expiresAt not strict ISO-8601";
   if (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))                 return "boundEpoch not a 1-15 digit decimal";
   if (typeof d.signature !== "string" || !SIG_RE.test(d.signature))                     return "signature not 64-byte lowercase hex";
   return null;
@@ -109,16 +94,14 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
 
 /**
  * Mint a signed device-delegation edge. The PERSONA ROOT's 32-byte seed signs, and personaRootDid
- * derives from that same seed (self-attribution) — the group's key, never the device's. `issuedAt`/`expiresAt`/`hearthTrueName` are
- * caller-supplied (pure, no ambient clock). Throws on malformed inputs — it is the
+ * derives from that same seed (self-attribution) — the group's key, never the device's. `hearthTrueName` and
+ * `boundEpoch` are caller-supplied (pure, no clock). Throws on malformed inputs — it is the
  * controlled minter, never fed untrusted data.
  */
 export async function buildDeviceDelegation(args: {
   personaRootSeed:    Uint8Array; // the PERSONA ROOT's 32-byte Ed25519 seed — the HUMAN's side, and the signer
   deviceVerifyingKey: string;     // raw Ed25519 verifying-key hex (64, lowercase) of the delegate
   hearthTrueName:            string;     // hearth true-name (genesis CID), or "" if place-agnostic
-  issuedAt:           string;     // ISO-8601
-  expiresAt:          string;     // ISO-8601 — replay backstop (generous is fine; the epoch is the authority)
   boundEpoch:         number;     // the per-resource lease epoch this grant binds to (non-negative integer)
 }): Promise<DeviceDelegationTiddler> {
   const personaRootDid = didFromVerifyingKey(hex(await ed25519.getPublicKeyAsync(args.personaRootSeed)));
@@ -127,8 +110,6 @@ export async function buildDeviceDelegation(args: {
     deviceDid:          didFromVerifyingKey(args.deviceVerifyingKey),
     deviceVerifyingKey: args.deviceVerifyingKey,
     hearthTrueName:            args.hearthTrueName,
-    issuedAt:           args.issuedAt,
-    expiresAt:          args.expiresAt,
     boundEpoch:         String(args.boundEpoch),
   };
   const candidate = { kind: "device-delegation" as const, ...fields, signature: "0".repeat(128) };
@@ -146,15 +127,15 @@ export async function buildDeviceDelegation(args: {
  * carries authority, no ambient fallback. (verify proving only "someone signed" was the
  * confused-deputy bait the verification swarm flagged; the pin is now a required argument.)
  *
- * Freshness: pass `opts.now` (verifier clock, ms) to enforce the [issuedAt-drift, expiresAt]
- * window; omit it to check the signature alone (pure-crypto tests). Strict RFC8032 verify
+ * Lease: pass `opts.expectedEpoch` (the resource's current max-register epoch) to enforce
+ * non-renewal; omit it to check signature + pin alone. Strict RFC8032 verify
  * (`zip215:false`) → strongly-binding signatures (exclusive ownership; safe to key dedup on
  * canonical content, never on the malleable signature bytes).
  */
 export async function verifyDeviceDelegation(
   edge: DeviceDelegationTiddler,
   expectedOperatorDid: string,
-  opts?: { now?: number; driftMs?: number; expectedEpoch?: number },
+  opts?: { expectedEpoch?: number },
 ): Promise<{ ok: boolean; reason?: string }> {
   const evidence = await evaluateDeviceDelegation(edge, expectedOperatorDid, opts);
   return evidence.cryptographicallyValid
@@ -174,7 +155,7 @@ export async function verifyDeviceDelegation(
 export async function evaluateDeviceDelegation(
   edge: DeviceDelegationTiddler,
   expectedOperatorDid: string,
-  opts?: { now?: number; driftMs?: number; expectedEpoch?: number },
+  opts?: { expectedEpoch?: number },
 ): Promise<DeviceDelegationEvidence> {
   const verdict = (state: DeviceDelegationEvidence["state"], cryptographicallyValid: boolean, reason?: string): DeviceDelegationEvidence => ({
     relation: "device-face-delegation",
@@ -193,22 +174,10 @@ export async function evaluateDeviceDelegation(
     return verdict("rejected", false, "operator is not the pinned root");
   }
 
-  // Freshness — bound replay even without synchronous revocation.
-  if (opts?.now !== undefined) {
-    const drift   = opts.driftMs ?? DELEGATION_CLOCK_DRIFT_MS;
-    const issued  = Date.parse(edge.issuedAt);
-    const expires = Date.parse(edge.expiresAt);
-    if (Number.isNaN(issued) || Number.isNaN(expires)) return verdict("malformed", false, "unparseable time bounds");
-    if (expires <= issued)              return verdict("malformed", false, "expiresAt not after issuedAt");
-    if (opts.now > expires + drift)     return verdict("stale", false, "delegation expired");
-    if (opts.now < issued - drift)      return verdict("stale", false, "delegation not yet valid");
-  }
-
-  // Lease (non-renewal) — the epoch the grant binds to must not have rolled past. OPTIONAL
-  // (like opts.now): pass expectedEpoch (the resource's current max-register epoch the verifier
-  // holds) to enforce the lease; omit to check signature + pin alone. The epoch is the lease
-  // AUTHORITY; the wall-clock window above is only a replay backstop. Targeted revocation rides
-  // the Keyhive membership graph, never this counter.
+  // Lease (non-renewal) — the epoch the grant binds to must not have rolled past. OPTIONAL:
+  // pass expectedEpoch (the resource's current max-register epoch the verifier holds) to enforce
+  // the lease; omit to check signature + pin alone. The epoch is the edge's only decay.
+  // Targeted revocation rides the Keyhive membership graph, never this counter.
   if (opts?.expectedEpoch !== undefined) {
     const bound = Number(edge.boundEpoch);
     if (!Number.isFinite(bound))        return verdict("malformed", false, "unparseable boundEpoch");
