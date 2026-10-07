@@ -17,7 +17,7 @@
 // tree while I walked it."
 import { readFileSync, existsSync } from "fs";
 import { join, resolve } from "path";
-import { sourceDigest, packageStampPath, workspacePackageDirs, globalStampPath } from "./stamp-build.mjs";
+import { sourceDigest, packageStampPath, workspacePackageDirs, globalStampPath, wasmStampPath, wasmStampBody } from "./stamp-build.mjs";
 
 let vanished = 0;
 
@@ -167,6 +167,29 @@ export function assertDistFresh(repo, distPath, toolName) {
     console.error(`[${toolName}] stale build: ${name} dist was not built from the current source\n  cure: pnpm --filter ${name} build && node tools/stamp-build.mjs . --pkg ${d}`);
     process.exit(2);
   }
+}
+
+/**
+ * Refuse (exit 2) when `packages/<dir>/<wasmFile>` is missing, carries no wasm stamp, or carries one that
+ * disagrees with the C sources and wasm bytes the tree holds right now. The grammar-wasm twin of
+ * `assertDistFresh`: same door shape, same exit code, one cure line naming the build and the stamp.
+ * Returns the absolute wasm path once it reads fresh.
+ */
+export function assertWasmFresh(repo, dir, wasmFile, toolName) {
+  const at = join(resolve(repo), "packages", dir, wasmFile);
+  const cure = `pnpm --filter ./packages/${dir} build:wasm && node tools/stamp-build.mjs . --wasm ${dir}`;
+  const now = wasmStampBody(repo, dir, wasmFile);
+  if (now === null) {
+    console.error(`[${toolName}] no built grammar at ${at}\n  cure: ${cure}`);
+    process.exit(2);
+  }
+  let stamped = null;
+  try { stamped = readFileSync(wasmStampPath(repo, dir), "utf8"); } catch { stamped = null; }
+  if (stamped !== now) {
+    console.error(`[${toolName}] stale build: ${dir}/${wasmFile} was not built from the current C sources (or carries no wasm stamp)\n  cure: ${cure}`);
+    process.exit(2);
+  }
+  return at;
 }
 
 /**

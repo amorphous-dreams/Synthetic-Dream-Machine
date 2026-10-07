@@ -90,9 +90,84 @@ export function sourceDigest(dir) {
   return h.digest("hex");
 }
 
+// ---------------------------------------------------------------------------
+// A GRAMMAR WASM IS A DIST THE DIGEST ABOVE CANNOT SEE. `sourceDigest` reads `.ts`/`.json`, and a
+// tree-sitter package's wasm is compiled from `src/*.c` and `src/**/*.h` — so a scanner edit leaves
+// every per-package stamp reading fresh over a wasm built from the bytes before it. The wasm stamp
+// binds the two halves of one build: the C sources it came from AND the wasm bytes it produced, so a
+// source edit without a rebuild, or a wasm rebuilt from other bytes, both read stale.
+//
+// Struck only by the explicit `--wasm <dir>` act after `build:wasm`, never by the whole-tree stamp:
+// `pnpm -r build` compiles no wasm, and a stamp struck over a build that never ran is a lie.
+// ---------------------------------------------------------------------------
+
+/** The one path a grammar-wasm stamp lives at, shared by the writer here and `corpus-read.mjs#assertWasmFresh`. */
+export function wasmStampPath(repo, dir) {
+  return join(resolve(repo), "node_modules", ".lares-build", "wasm", dir);
+}
+
+/** Path + bytes of every C source and header under `<pkgDir>/src` — what `tree-sitter build --wasm` compiles. */
+export function nativeSourceDigest(pkgDir) {
+  const h = createHash("sha256");
+  const root = join(pkgDir, "src");
+  const walk = (d) => {
+    let entries;
+    try { entries = readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+      const full = join(d, e.name);
+      if (e.isDirectory()) { walk(full); continue; }
+      if (!/\.(c|h)$/.test(e.name)) continue;
+      try { h.update(relative(root, full)); h.update(readFileSync(full)); } catch { /* unreadable — skip */ }
+    }
+  };
+  walk(root);
+  return h.digest("hex");
+}
+
+/** The stamp's two lines for `<repo>/packages/<dir>` holding `wasmFile` — or null when the wasm is absent. */
+export function wasmStampBody(repo, dir, wasmFile) {
+  const pkgDir = join(resolve(repo), "packages", dir);
+  let wasm;
+  try { wasm = readFileSync(join(pkgDir, wasmFile)); } catch { return null; }
+  return `src ${nativeSourceDigest(pkgDir)}\nwasm ${wasmFile} ${createHash("sha256").update(wasm).digest("hex")}\n`;
+}
+
+/** Every `*.wasm` standing at the root of `packages/<dir>` — the grammar artifacts a wasm stamp covers. */
+export function grammarWasms(repo, dir) {
+  try {
+    return readdirSync(join(resolve(repo), "packages", dir)).filter((f) => f.endsWith(".wasm")).sort();
+  } catch { return []; }
+}
+
+/** Stamp one package's grammar wasm with the C sources and wasm bytes of the build that just ran. */
+export function stampWasm(repo, dir) {
+  const wasms = grammarWasms(repo, dir);
+  if (wasms.length !== 1) throw new Error(`packages/${dir} holds ${wasms.length} root wasm files; a wasm stamp binds exactly one`);
+  const body = wasmStampBody(repo, dir, wasms[0]);
+  const path = wasmStampPath(repo, dir);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, body);
+  return body;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const pkgFlagAt = process.argv.indexOf("--pkg");
-  if (pkgFlagAt !== -1) {
+  const wasmFlagAt = process.argv.indexOf("--wasm");
+  if (wasmFlagAt !== -1) {
+    // Grammar-wasm mode: run right after `build:wasm`, binding the wasm to the C sources it came from.
+    const dir = process.argv[wasmFlagAt + 1];
+    if (!dir) {
+      console.error("[stamp-build] --wasm requires a packages/<dir> name");
+      process.exit(1);
+    }
+    try {
+      const body = stampWasm(REPO, dir);
+      console.log(`[stamp-build] ${dir} wasm ${body.split("\n")[0].slice(4, 20)}… — the grammar wasm now names the C sources it came from`);
+    } catch (e) {
+      console.error(`[stamp-build] ${e.message}`);
+      process.exit(1);
+    }
+  } else if (pkgFlagAt !== -1) {
     // Single-package mode: stamp ONE package only, leaving the global workspace stamp untouched —
     // the shape a filtered `pnpm --filter X build` cure needs, since it never rebuilds the rest.
     const dir = process.argv[pkgFlagAt + 1];
