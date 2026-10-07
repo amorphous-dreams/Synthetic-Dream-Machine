@@ -131,7 +131,7 @@ holds, the cut-over it owes, the subject stamp's nexus-scoped leaf, and the gate
 leaf exists so that one human admitted to two Nexuses reads as two unrelated subjects; a single signed
 edge from root to leaf, presented once, undoes that for every Nexus that ever sees it.
 
-The law, in four clauses:
+The law, in five clauses:
 
 # A socket that presents a leaf admit MUST NOT present a root-signed edge. ''One socket, one face.''
 # The ''carriage membership consult'' reads the LEAF map alone. A peer enters that map only from a
@@ -144,6 +144,16 @@ The law, in four clauses:
   one to the other, and a leaf MUST NOT answer a root question (nor a root a leaf question). Where a seat
   holds no proven root edge, the root map answers null for that peer — an honest nothing, never a leaf
   promoted to stand in.
+# ''One face per vessel per Nexus, on every socket.'' A vessel that presents a leaf to a Nexus — or will
+  present one — presents NO root-signed edge to that Nexus on ANY socket, before the admit or after it.
+  Every socket a vessel opens proves the same vessel key, so a root edge on one socket and a leaf admit on
+  another link root to leaf through that key as surely as both on one socket would. The wire therefore
+  carries no contract slot at all: a self-founded vessel with no admit for the dialed Nexus presents its
+  ContactCard alone, and only the fleet edge (signed by a root the vessel does NOT hold) rides beside a card.
+
+The residual correlation, named: the vessel key is ONE key across every Nexus the vessel dials, so two
+Nexuses that compare the wire keys they proved can still learn that one vessel stands in both — though
+never which root, nor which leaves. A per-Nexus wire key closes that, and it is owed to the re-found.
 
 ''ROOT ⊥ LEAF stands as its own pair that must not fuse'', beside members ⊥ carriers and never folded
 into it. Carriage asks //may this face carry for this Nexus//; the realm asks //who stands behind this
@@ -271,6 +281,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mv4kfJp69P7yd_b91cHtveZ3FHWqLlM5AMH6qzZMZQw
+<<^ code="&#x0003;">>ni:///sha-256;lW-Q4K-WG2wmv5XsscSvUScu-ezzY7BxbyZaua2f7Y8
 
 <<^ code="&#x0004;" -> to="?">>
