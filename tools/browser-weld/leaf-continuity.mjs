@@ -168,16 +168,12 @@ function instrumentBootSource(source) {
     (match) => `console.log("[C4 boot] host:worker-spawn");\n  ${match}`,
   );
   body = body.replace(
-    /if \(isIslandToVesselMsg\(raw\) && raw\.type === "ready"\) finish\(\);/,
-    `if (isIslandToVesselMsg(raw) && raw.type === "ready") { console.log("[C4 boot] worker:ready"); finish(); }`,
+    /if \(isIslandToVesselMsg\(raw\) && raw\.type === "ready"\) resolve\(\);/,
+    `if (isIslandToVesselMsg(raw) && raw.type === "ready") { console.log("[C4 boot] worker:ready"); resolve(); }`,
   );
   body = body.replace(
-    /setTimeout\(finish, 1500\);/,
-    `setTimeout(() => { if (!settled) console.log("[C4 boot] host:ready-fallback"); finish(); }, 1500);`,
-  );
-  body = body.replace(
-    /\}\)\.then\(\(\) => \{ worker\.post\(manifestMsg, \[syncPort\]\); \}\);/,
-    `}).then(() => { console.log("[C4 boot] host:manifest-post"); worker.post(manifestMsg, [syncPort]); });`,
+    /worker\.post\(manifestMsg, transfer\);/,
+    (match) => `console.log("[C4 boot] host:manifest-post"); ${match}`,
   );
 
   // Post-ea host-chain receipts. These replacements are test-route observations only: they leave

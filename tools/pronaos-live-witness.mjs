@@ -209,7 +209,9 @@ export async function runPronaosInProcessWitness({
     let status = 200;
     let headers = {};
     const chunks = [];
-    const req = { url: route, method };
+    // A real IncomingMessage always carries a lower-cased `headers` object; the faces read it (Accept
+    // negotiation), so the fake carries one. A plain request names no Accept, as `httpRequest` sends none.
+    const req = { url: route, method, headers: {} };
     const res = {
       writableEnded: false,
       headersSent: false,
@@ -419,7 +421,8 @@ async function childMain() {
         const chunks = [];
         let status = 200;
         let headers = {};
-        const req = { url: request.route, method: request.method };
+        // The same shape a real IncomingMessage carries: a lower-cased `headers` object, no Accept named.
+        const req = { url: request.route, method: request.method, headers: {} };
         const res = {
           writableEnded: false,
           headersSent: false,

@@ -145,7 +145,7 @@ async function testC4TraceHookIsOptIn() {
   assert.match(source, /if \(!BOOT_TRACE \|\| source\.includes\("__laresC4BootTrace"\)\) return source/);
   for (const marker of [
     "host:corpus-ready", "host:kel-carry:start", "host:kel-board:start", "host:daemon-vm:start",
-    "host:worker-spawn", "worker:ready", "host:ready-fallback", "host:manifest-post",
+    "host:worker-spawn", "worker:ready", "host:manifest-post",
     "raw.type === \"breath\"", "raw.type === \"ea\"", "worker:startup-error",
     "worker:manifest-received", "worker:manifest-rejected", "worker:manifest-accepted",
     "worker:shore-manifest-inbound",
@@ -175,8 +175,8 @@ async function testC4TraceAnchorsStillStand() {
     ["KEL carry", vessel, /await carryPersonaKelUpTheGradient\(\{/g],
     ["daemon VM", vessel, /daemon = await openBrowserDaemonVm\(\{/g],
     ["worker spawn", daemon, /const worker = host\.spawnWorker\(workerScriptUrl\);/g],
-    ["ready gate", daemon, /raw\.type === "ready"/g],
-    ["manifest post", daemon, /worker\.post\(manifestMsg, \[syncPort\]\)/g],
+    ["ready gate", daemon, /if \(isIslandToVesselMsg\(raw\) && raw\.type === "ready"\) resolve\(\);/g],
+    ["manifest post", daemon, /worker\.post\(manifestMsg, transfer\);/g],
     ["worker WASM init", worker, /await initKeyhiveWasm\(\);/g],
     ["worker kernel import", worker, /await import\("@lararium\/browser\/browser-daemon-island"\);/g],
     ["worker trace gate", worker, /searchParams\.get\("c4trace"\) !== "1"/g],
