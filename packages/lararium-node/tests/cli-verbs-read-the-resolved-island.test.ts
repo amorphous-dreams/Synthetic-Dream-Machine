@@ -91,8 +91,9 @@ describe("the 12 CLI-verb sites resolve the island the boot resolved, not the ra
     const code = stripComments(read("commands/host.ts"));
     expect(code).toMatch(/hostingDocUrl\(aid, await loadVesselVerifyingKey\(\)\)/);
     expect(code, "the hosting door writes no carriage board").not.toMatch(/carriageDocUrl\(/);
-    // The act is signed by the face's per-Nexus leaf, never the vessel key.
-    expect(code).toMatch(/heldNexusLeaves\(/);
+    // The act is signed by the WORN face's per-Nexus leaf, never the vessel key and never the roster's first.
+    expect(code).toMatch(/wornNexusLeaf\(/);
+    expect(code).not.toMatch(/heldNexusLeaves\(/);
     expect(code).not.toMatch(/loadVesselSigningSeed/);
   });
 });
