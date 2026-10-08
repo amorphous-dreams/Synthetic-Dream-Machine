@@ -71,6 +71,8 @@ capture_mesh_state() {
 clear_all() {
   capture_mesh_state
   $COMPOSE down -v >/dev/null 2>&1 || true
+  unset HERM_SOURCE_GATE HERM_RELAY_GATE HERM_RELAY_2_GATE LARARIUM_A_GATE LARARIUM_B_GATE
+  rm -f .mesh-pins.env
   local deadline=$((SECONDS + 60))
   while docker network ls --format '{{.Name}}' | grep -q '^dreamnet-mesh_mesh$' && [ "$SECONDS" -lt "$deadline" ]; do
     sleep 1
@@ -156,11 +158,18 @@ dump_boot_failure() {
   $COMPOSE logs "$svc" 2>&1 | tail -6 | sed 's/^/      /'
 }
 
-# Wait until a hearth both STANDS and ANSWERS. Either alone is a half-truth.
+# EVERY PEER IS PINNED. A compose peer names the gate key it knocks with, read off the herm's own founded store
+# (`tools/mesh-pins.mjs`), so a herm that stands exports its pin for every service that boots after it. A
+# scenario that founds afresh reads afresh: `clear_all` drops the pins with the volumes.
+pin_herms() { eval "$(node tools/mesh-pins.mjs --print 2>/dev/null | sed -n 's/^\([A-Z0-9_]*_GATE=[0-9a-f]\{64\}\)$/export \1/p')"; }
+
+# Wait until a hearth both STANDS and ANSWERS. Either alone is a half-truth. A herm that answers exports its pin.
 up_and_answering() {
   local svc="$1" deadline=$(( SECONDS + ${2:-300} ))
   while ! { stood "$svc" && answers "$svc"; } && [ "$SECONDS" -lt "$deadline" ]; do sleep 3; done
-  stood "$svc" && answers "$svc"
+  stood "$svc" && answers "$svc" || return 1
+  case "$svc" in herm-*) pin_herms ;; esac
+  return 0
 }
 
 # whether a hearth has stood — the boot line every lararium prints.
@@ -650,8 +659,8 @@ run_relation() {
 run_nexus() {
   say "NEXUS — every class, carrying"
   clear_all
-  step "the whole mesh up"
-  if UPLOG=$($COMPOSE up -d 2>&1); then ok; else
+  step "the whole mesh up, in pin order"
+  if UPLOG=$(node tools/mesh-pins.mjs --up 2>&1); then ok; pin_herms; else
     bad "up"; printf '%s\n' "$UPLOG" | tail -6 | sed 's/^/      /'; return
   fi
 
