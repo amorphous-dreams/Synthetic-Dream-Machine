@@ -9,18 +9,22 @@
 // and reported a false failure while federation ran green underneath it. This witness decodes, so it reads
 // what the map actually carries AND exercises the full pointer-signature/hash/freshness verify path.
 //
-// Run:  docker compose -f docker-compose.mesh.yml up -d
+// Run:  node tools/mesh-pins.mjs --up
 //       export LAR_ROOT=$(mktemp -d) && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
 //       node tools/herm-mesh-witness.mjs
 // Env:  LAR_ROOT names the founded READER vessel (peers prove first); HOP_SOURCE / HOP_RELAY1 / HOP_RELAY2
-//       override the hop URLs; NEEDLE overrides the carried bearing.
+//       override the hop URLs (`<url>#<gate key>`); NEEDLE overrides the carried bearing. By default each hop
+//       pins the gate key `tools/mesh-pins.mjs` read off that herm's own store (`.mesh-pins.env`).
 
 import { pullHop, dialsOf } from "./herm-mesh-reader.mjs";
+import { readPins } from "./mesh-pins.mjs";
 
+const PINS = readPins();
+const pinned = (url, name) => (PINS[name] ? `${url}#${PINS[name]}` : url);
 const HOPS = [
-  { name: "source ", url: process.env.HOP_SOURCE ?? "http://localhost:18092" },
-  { name: "relay-1", url: process.env.HOP_RELAY1 ?? "http://localhost:18091" },
-  { name: "relay-2", url: process.env.HOP_RELAY2 ?? "http://localhost:18093" },
+  { name: "source ", url: process.env.HOP_SOURCE ?? pinned("http://localhost:18092", "HERM_SOURCE_GATE") },
+  { name: "relay-1", url: process.env.HOP_RELAY1 ?? pinned("http://localhost:18091", "HERM_RELAY_GATE") },
+  { name: "relay-2", url: process.env.HOP_RELAY2 ?? pinned("http://localhost:18093", "HERM_RELAY_2_GATE") },
 ];
 const NEEDLE = process.env.NEEDLE ?? "node/alpha";
 const ATTEMPTS = Number.parseInt(process.env.WITNESS_ATTEMPTS ?? "30", 10);

@@ -94,12 +94,13 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
 
   test("★ and it boots with PEERS CONFIGURED that have not yet stood ★", () => {
     // THE CONTAINER'S ACTUAL CONDITION, which the arms above omit. `lararium-a` boots with
-    // `LAR_PEERS=http://herm-source:8080` — a peer that on a cold mesh may not be serving yet. A vessel is
+    // `LAR_PEERS=http://herm-source:8080#<its gate key>` — a pinned peer that on a cold mesh may not be serving
+    // yet. The entry carries a gate key, so it is DIALED rather than refused for naming none. A vessel is
     // a CAUSAL ISLAND: it reads its own state and knows only "as of my last sync". So a peer that has not
     // answered names nothing about whether THIS island's own daemon doc stands, and a boot that reported
     // "local corruption (no peer carries it)" would be reading an absence somewhere else as damage here.
     lares(["vessel", "stop"]);
-    const out = lares(["vessel", "stand"], { LAR_PEERS: "http://127.0.0.1:9/never-stands" });
+    const out = lares(["vessel", "stand"], { LAR_PEERS: `http://127.0.0.1:9/never-stands#${"ab".repeat(32)}` });
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);
   });

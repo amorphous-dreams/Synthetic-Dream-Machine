@@ -19,10 +19,11 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { pullHop, dialsOf, actOf, pointerAdvanced } from "./herm-mesh-reader.mjs";
+import { readPins } from "./mesh-pins.mjs";
 
 const run = promisify(execFile);
 const COMPOSE = ["compose", "-f", "docker-compose.mesh.yml"];
-const RELAY2 = process.env.HOP_RELAY2 ?? "http://localhost:18093";
+const RELAY2 = process.env.HOP_RELAY2 ?? (readPins().HERM_RELAY_2_GATE ? `http://localhost:18093#${readPins().HERM_RELAY_2_GATE}` : "http://localhost:18093");
 const NEEDLE = process.env.NEEDLE ?? "node/alpha";
 const dockerRelay1 = process.env.RELAY1_SERVICE ?? "herm-relay";  // compose SERVICE name (not the container name)
 

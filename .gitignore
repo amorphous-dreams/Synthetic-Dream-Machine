@@ -84,3 +84,6 @@ lar-dev-root.json
 
 # runtime content-addressed store — vessel state (larDataDir/cas), never the repo (#54)
 /cas
+
+# the docker mesh's peer pins — read off each container's own founded store by tools/mesh-pins.mjs
+/.mesh-pins.env
