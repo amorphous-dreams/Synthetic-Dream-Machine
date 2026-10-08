@@ -13,7 +13,8 @@ name: CI
 #                     the standalone `$:/` distribution)
 #   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own
 #                     name so a red suite cannot swallow it; the docker/browser hold-outs are
-#                     named with their reasons in the job's log
+#                     named with their reasons in the job's log; beside it, every
+#                     `tools/*.test.mjs` self-test the instruments carry
 #   e2e             — the residency/ingest witnesses through the real CLI + vessels
 #   boot-budget     — the cache-stable boot stays under its char ceiling
 #   pristine-upstream — the meme routes AND a stock single-file build meet a PUBLISHED tiddlywiki
@@ -227,6 +228,7 @@ jobs:
       - name: Render the TW5 core blob (four witnesses read it)
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (the fleet measures the built tree)
+        id: build
         run: pnpm build
       - name: Run every witness (never short-circuits; the worst exit wins)
         run: |
@@ -242,6 +244,13 @@ jobs:
             exit 1
           fi
           sed -n '/held out of this run/,$p' "$RUNNER_TEMP/witnesses.log"
+      # THE INSTRUMENTS' OWN SELF-TESTS. Each `tools/*.test.mjs` plants the reds its tool owes against fakes
+      # and scratch trees — no docker, no browser, no standing app — and reads the built tree, so it runs
+      # here beside the fleet it keeps honest. The glob reads the live set; a new self-test joins without a
+      # hand edit. It runs whatever the fleet answered, so one red cannot hide the other question.
+      - name: Run every tool self-test (tools/*.test.mjs)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: node --test tools/*.test.mjs
 
   # ─── e2e (residency / ingest witnesses) ────────────────────────────────────
   e2e:
