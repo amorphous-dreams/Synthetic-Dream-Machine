@@ -16,6 +16,11 @@
  * one line that does print stays worth reading. A ledger whose `holds` fence the gate cannot find still
  * speaks: that reads as the ledger diverging from the gate, never as nothing held.
  *
+ * A TORN HOLD SPEAKS. A `[[hold]]` row that names a hold but parses without a trailer or without a glob
+ * defends nothing, so the gate cannot honour it — and a fence whose every row tore would otherwise pass in
+ * the same silence as a fence that holds nothing. The gate names each torn row on every commit until the
+ * ledger mends it: the divergence surfaces, it never blocks the tree, and it is never dropped.
+ *
  * A path no hold names belongs to no hearth and passes silently. A path TWO hearths claim reads as a
  * crossing already in flight, and the gate says so rather than picking a winner.
  *
@@ -33,11 +38,9 @@ import { join } from "node:path";
 
 const LEDGER = "bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem";
 
-/** The `holds` fence, read as rows. Deliberately narrow: `[[hold]]` tables of scalar strings plus one
- *  `globs` array. A shape the fence does not carry reads as no rows and fails OPEN: a ledger with no
- *  fence at all earns a note, while a fence that holds no rows passes in silence — a ledger this gate
- *  cannot parse must not block a tree. */
-export function parseHolds(text) {
+/** Every `[[hold]]` row the `holds` fence names, whole or torn. Deliberately narrow: `[[hold]]` tables of
+ *  scalar strings plus one `globs` array; a key in any other shape reads as absent from its row. */
+function holdRows(text) {
   const fence = /```toml holds\n([\s\S]*?)\n```/.exec(text);
   if (!fence) return [];
   const rows = [];
@@ -64,7 +67,31 @@ export function parseHolds(text) {
     const s = /^"([^"]*)"/.exec(rest);
     if (s && (key === "hearth" || key === "trailer")) cur[key] = s[1];
   }
-  return rows.filter((r) => r.trailer && r.globs.length > 0);
+  return rows;
+}
+
+const whole = (r) => Boolean(r.trailer) && r.globs.length > 0;
+
+/** The rows the gate defends: a trailer and at least one glob. A ledger this gate cannot parse fails OPEN
+ *  — it must not block a tree — and the rows it could not read surface through `tornHolds`. */
+export function parseHolds(text) {
+  return holdRows(text).filter(whole);
+}
+
+/** The `[[hold]]` rows that name a hold yet parse without a trailer or without a glob. */
+export function tornHolds(text) {
+  return holdRows(text).filter((r) => !whole(r));
+}
+
+/** The one line a torn fence speaks, or "" when every row parses whole. */
+export function tornNote(text) {
+  const torn = tornHolds(text);
+  if (torn.length === 0) return "";
+  const named = torn.map((r) => {
+    const lack = [r.trailer ? "" : "no trailer", r.globs.length ? "" : "no globs"].filter(Boolean).join(", ");
+    return `${r.hearth ? `\`${r.hearth}\`` : "an unnamed hearth"} (${lack})`;
+  }).join("; ");
+  return `${torn.length} \`[[hold]]\` row(s) in ${LEDGER} parse incomplete and defend nothing: ${named}`;
 }
 
 /** A repo-relative glob → a regex over the whole path. `**` crosses separators, `*` never does, and a
@@ -110,6 +137,12 @@ export function trailerOf(message) {
 export function verdict({ message, paths, ledger }) {
   if (!/```toml holds\n/.test(ledger)) return { ok: true, note: `no \`holds\` fence in ${LEDGER} — the gate stands down` };
   const rows = parseHolds(ledger);
+  const torn = tornNote(ledger);
+  const v = verdictOver(rows, message, paths);
+  return torn ? { ...v, torn } : v;
+}
+
+function verdictOver(rows, message, paths) {
   const held = paths.filter((p) => hearthsOf(p, rows).length > 0).length;
   if (held === 0) return { ok: true };
   const trailer = trailerOf(message);
@@ -144,6 +177,7 @@ function main() {
   if (paths.length === 0) return 0;
 
   const v = verdict({ message, paths, ledger });
+  if (v.torn) console.error(`[hearths-gate] ${v.torn}`);
   if (v.ok) { if (v.note) console.log(`[hearths-gate] ${v.note}`); return 0; }
 
   const byRow = new Map();

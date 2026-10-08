@@ -87,7 +87,7 @@ A glob that matches nothing belongs to no hearth — the gate names only what a 
 
 !! What one hearth does to the gate
 
-''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than by being switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. The pass note counts paths on the committing hearth's own ground separately from unheld paths; it does not attribute every file to a hearth. A commit carrying no trailer passes with the operator-seat note. The live fence above carries no hold at all, so the gate stands down (`no holds rows parsed`) until a hearth seats one.
+''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than by being switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. The pass note counts paths on the committing hearth's own ground separately from unheld paths; it does not attribute every file to a hearth. A commit carrying no trailer passes with the operator-seat note. The live fence above carries no hold at all, so every commit passes in silence until a hearth seats one. A `[[hold]]` row that parses without a quoted trailer or without a glob defends nothing, and the gate names each such row on every commit until the ledger mends it: a fence that tore whole never reads as a fence that holds nothing.
 
 ''Leave the gate installed.'' It arms again the moment a second `[[hold]]` row appears — no code moves, no hook re-installs; the ledger IS the configuration, and the gate reads it fresh at every commit. Deleting the tool would make the next hearth's opening a build task instead of a table edit.
 
@@ -285,6 +285,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1HnQwEYrGj3DXXDCXYqhCdtohi545frnETaCHnXnSrc
+<<^ code="&#x0003;">>ni:///sha-256;lN2Lxd0Y_UvyfPoXbQHaOHczniRutFlK9IYhpD_GmfI
 
 <<^ code="&#x0004;" -> to="?">>

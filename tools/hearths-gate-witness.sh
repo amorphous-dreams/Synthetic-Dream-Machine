@@ -24,7 +24,9 @@
 # A LIVE FENCE WITH NO HOLD STANDS THE GATE DOWN, and the real-ledger CONTROLs then witness exactly that:
 # a path a closed hearth held passes under the very trailer the arming vector refused, in SILENCE, because
 # a closed hearth defends nothing and nothing stands held. A ledger with no `holds` fence at all still
-# speaks its stand-down note: that names the ledger diverging from the gate, never nothing held.
+# speaks its stand-down note: that names the ledger diverging from the gate, never nothing held. A fence
+# whose `[[hold]]` rows parse incomplete names each torn row, so a fence that tore whole never reads as one
+# that holds nothing.
 #
 # Runs under `${TMPDIR:-/tmp}`; touches no repo of the operator's.
 set -uo pipefail
@@ -182,7 +184,38 @@ printf 'lar:///a.b.c — fenceless\n\nClaude-Session: https://claude.ai/code/%s\
 if [ $? -ne 0 ]; then bad "a fenceless ledger blocked the tree"; sed 's/^/      /' "$WORK/out.txt" | head -8
 elif grep -q "no \`holds\` fence .* the gate stands down" "$WORK/out.txt"; then ok
 else bad "stood down in silence over a fenceless ledger"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+
+# A FENCE WHOSE EVERY ROW TORE MUST NOT PASS AS AN EMPTY ONE. Each row below names a hold, yet one lacks a
+# quoted trailer and the other lacks a glob, so neither parses whole and the gate can defend neither. The
+# commit still passes (a ledger the gate cannot read never blocks a tree), but the gate names both rows.
+cat > "$WORK/torn-ledger.mem" <<'TORN'
+```toml holds
+[[hold]]
+hearth  = "Torn Trailer"
+trailer = session_UNQUOTED
+globs   = ["tools/a-path-no-hold-names.txt"]
+
+[[hold]]
+hearth  = "Torn Globs"
+trailer = "session_TORNGLOBS"
+```
+TORN
+use_ledger "$WORK/torn-ledger.mem"
+step "★ SPEAKS: a fence whose every row parses incomplete names each torn row"
+stage "$UNHELD"
+printf 'lar:///a.b.c — over a torn fence\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "a torn fence blocked the tree"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "2 \`\[\[hold\]\]\` row(s) .* parse incomplete" "$WORK/out.txt" \
+  && grep -q "Torn Trailer\` (no trailer)" "$WORK/out.txt" && grep -q "Torn Globs\` (no globs)" "$WORK/out.txt"; then ok
+else bad "a torn fence passed without naming its rows"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
 use_ledger "$ARMED_LEDGER"
+
+step "CONTROL: a fence whose rows parse whole names no torn row"
+stage "$UNHELD"
+printf 'lar:///a.b.c — over a whole fence\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "unheld ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "parse incomplete" "$WORK/out.txt"; then bad "a whole fence read as torn"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
 
 step "CONTROL: the committing hearth's OWN ground passes"
 stage "$HELD_BY_B"
