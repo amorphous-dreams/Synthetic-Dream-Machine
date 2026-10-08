@@ -5,10 +5,10 @@
  * per-Nexus leaf seed) and handed over as ciphertext and its content address. The read-cap stays on the walker's
  * device in its receipt, written durably BEFORE the ciphertext leaves; the hearth holds bytes it can never open.
  *
- * THE KEEP STUB. The hearth's first answer names the record it carries this walker's documents under — the
- * record's own opaque key, which only this walker is ever handed. The walker keeps it and presents it on every
- * later carry and fetch, so its carriage stays reachable even after its grant lapsed and it walked back in on a
- * fresh invite (a new lineage). The stub names nothing to anyone else and is the ONLY way to the record.
+ * REACHED BY PROOF, NEVER BY A HANDED KEY. The hearth files a walker's carriage under its PROVEN per-Nexus leaf,
+ * so every carry and fetch rides only the grant the socket already proved, and nothing travels that names the
+ * record. A walker that lapsed and walks back in on a fresh invite under the same leaf reaches its carriage again;
+ * a fresh leaf is a fresh carriage. What the walker keeps is its own: the receipts, one per carried document.
  *
  * THE PERSONAGROUP IS THE DURABLE COPY. A hearth's carriage is a convenience a walker reaches from any dial; it is
  * reclaimable under the hearth's own pressure, with notice first, and is never presented as backup. The walker's
@@ -31,9 +31,6 @@ export const HOSTING_FETCH_SESSION_KIND   = "hosting/fetch";
 export const HOSTING_FETCHED_SESSION_KIND = "hosting/fetched";
 export const HOSTING_NOTICE_SESSION_KIND  = "hosting/notice";
 
-/** A hearth's record key (the keep stub): 32 bytes, hex. */
-export const CARRY_STUB_RE = /^[0-9a-f]{64}$/;
-
 type CarryTransport = Pick<WalkTransport, "sendSession" | "onSession">;
 
 /** Wait for the first session frame of `kind` whose body names `cid`, or null after `withinMs`. */
@@ -48,7 +45,7 @@ function answerFor(transport: CarryTransport, kind: string, cid: string, withinM
   });
 }
 
-/** What a carry came to: held (and the stub kept), refused with the hearth's reason, or no answer. */
+/** What a carry came to: held, refused with the hearth's reason, or no answer. */
 export type CarryOutcome =
   | { readonly cid: string; readonly held: true }
   | { readonly cid: string; readonly refused: string }
@@ -56,7 +53,7 @@ export type CarryOutcome =
 
 /**
  * Hand one document to the hearth to carry. The receipt (its cid and read-cap) is kept durably first; the
- * ciphertext is sent after, with the keep stub when one is held. The hearth's answer's stub is kept.
+ * ciphertext is sent after, on the walker's own proven socket.
  */
 export async function carryDocument(opts: {
   readonly transport: CarryTransport; readonly store: WalkStore; readonly gatePubKey: string;
@@ -70,17 +67,10 @@ export async function carryDocument(opts: {
     await opts.store.write(gate, { ...held, carried: [...(held.carried ?? []), { cid: sealed.cid, readCap: hex(sealed.readCap) }] });
   }
   const answered = answerFor(opts.transport, HOSTING_CARRIED_SESSION_KIND, sealed.cid, opts.withinMs, async (msg) => {
-    const body = msg.body as { held?: unknown; refused?: unknown; stub?: unknown };
-    if (body.held === true && typeof body.stub === "string" && CARRY_STUB_RE.test(body.stub)) {
-      const now = await opts.store.read(gate);
-      if (now && now.carryStub !== body.stub) await opts.store.write(gate, { ...now, carryStub: body.stub });
-      return true;
-    }
-    return typeof body.refused === "string";
+    const body = msg.body as { held?: unknown; refused?: unknown };
+    return body.held === true || typeof body.refused === "string";
   });
-  opts.transport.sendSession(HOSTING_CARRY_SESSION_KIND, {
-    cid: sealed.cid, ciphertext: base64UrlEncode(sealed.ciphertext), ...(held.carryStub ? { stub: held.carryStub } : {}),
-  });
+  opts.transport.sendSession(HOSTING_CARRY_SESSION_KIND, { cid: sealed.cid, ciphertext: base64UrlEncode(sealed.ciphertext) });
   const msg = await answered;
   if (!msg) return null;
   const body = msg.body as { held?: unknown; refused?: unknown };
@@ -107,13 +97,12 @@ export async function fetchDocument(opts: {
   readonly transport: CarryTransport; readonly store: WalkStore; readonly gatePubKey: string;
   readonly cid: string; readonly withinMs: number;
 }): Promise<Uint8Array | null> {
-  const stub = (await opts.store.read(opts.gatePubKey.toLowerCase()))?.carryStub;
   let opened: Uint8Array | null = null;
   const answered = answerFor(opts.transport, HOSTING_FETCHED_SESSION_KIND, opts.cid, opts.withinMs, async (msg) => {
     opened = await openCarried(opts.store, opts.gatePubKey, msg.body);
     return opened !== null;
   });
-  opts.transport.sendSession(HOSTING_FETCH_SESSION_KIND, { cid: opts.cid, ...(stub ? { stub } : {}) });
+  opts.transport.sendSession(HOSTING_FETCH_SESSION_KIND, { cid: opts.cid });
   return (await answered) ? opened : null;
 }
 

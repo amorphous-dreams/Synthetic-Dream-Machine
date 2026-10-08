@@ -488,12 +488,15 @@ export function finalizeWalkerBatch(act: HostingAct, pending: PendingMint, answe
 // ── W — THE HEARTH CARRIES A WALKER'S OWN DOCUMENTS, SEALED ──────────────────────────────────────
 
 /**
- * The hearth's opaque key for one lineage's carried record in N: HMAC under the hearth's own leaf seed. The record
- * is reachable by the grant that opened it — the hearth computes the key from the lineage a presented grant
- * carries — and the key names no lineage, no leaf and no guest to anyone who holds no hearth seed.
+ * The hearth's opaque key for one guest's carried record in N: HMAC under the hearth's own leaf seed over the
+ * guest's PROVEN per-Nexus leaf `G` — the leaf every grant names and every socket's leaf proof proves. The record
+ * is reached only by a socket that proves `G`, whichever lineage its grant rides, so a guest walking back in on a
+ * fresh invite under the same leaf reaches its carriage by proof, and a fresh leaf is a fresh carriage. The key
+ * names no leaf to anyone who holds no hearth seed; a holder of the hearth seed can test a KNOWN leaf against the
+ * records (the bound canon names), which adds no linkage the hearth lacks, since it already sees `G` prove.
  */
-export function carryRecordKey(hearthLeafSeed: Uint8Array, nexusAid: string, lineage: string): string {
-  return hex(hmac(sha256, hearthLeafSeed, canonicalJsonBytes({ domain: HOSTING_CARRY_DOMAIN, nexusAid: normAid(nexusAid), lineage: lineage.toLowerCase() })));
+export function carryRecordKey(hearthLeafSeed: Uint8Array, nexusAid: string, leaf: string): string {
+  return hex(hmac(sha256, hearthLeafSeed, canonicalJsonBytes({ domain: HOSTING_CARRY_DOMAIN, nexusAid: normAid(nexusAid), leaf: leaf.toLowerCase() })));
 }
 
 /**

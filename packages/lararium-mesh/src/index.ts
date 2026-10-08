@@ -235,7 +235,7 @@ export {
 } from "./walk-client.js";
 export type { WalkRecord, WalkStore, WalkLeaf, WalkTransport, CarryReceipt } from "./walk-client.js";
 export {
-  carryDocument, fetchDocument, openCarried, watchCarryNotice, CARRY_STUB_RE,
+  carryDocument, fetchDocument, openCarried, watchCarryNotice,
   HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
 } from "./walk-carry.js";
 export type { CarryOutcome } from "./walk-carry.js";

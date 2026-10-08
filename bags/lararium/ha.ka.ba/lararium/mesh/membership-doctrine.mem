@@ -282,13 +282,23 @@ hearth only ciphertext and its content address. The hearth verifies the address,
 stores the bytes, and can never open them or confirm a guessed plaintext. The read-cap stays in the
 walker's own receipt.
 
-''ONE RECORD PER GRANT, REACHED ONLY BY ITS TAG.'' The hearth files a grant's carriage under a key it
-derives from the grant's lineage under its own leaf seed (`hosting-carry`). A record holds SCALARS and the
-blobs: the bytes it carries, the hearth epoch it last saw the guest, the guest's own typical gap between
-contacts, and a pending mark. It never holds a list of guests, a lineage, a leaf or a grant tag. The hearth
-hands the walker that key as its ''keep stub'', and presenting the stub reaches the same record from a fresh
-lineage. A grant lapsed past two rolls is dead, and the walker walks back in on a new invite. The quota
-bounds each grant's carriage, and a deposit past it is refused.
+''ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF.'' The hearth files a guest's
+carriage under a key it derives from the guest's PROVEN per-Nexus leaf under its own leaf seed
+(`hosting-carry`). Every grant names that leaf and every socket's leaf proof proves it, so the record is
+reached by proof alone and nothing the hearth hands out names it. A grant lapsed past two rolls is dead, and
+a guest that walks back in on a new invite under the same leaf reaches its carriage again. A fresh leaf is
+a fresh carriage, and a kapae'd leaf reaches nothing through a new one: kapae is of the leaf. Every dial on
+the leaf is a CONTACT, on the grant arm and the token arm alike, so the notice reaches a guest by a plain
+dial. A record holds SCALARS and the blobs: the bytes it carries, the hearth epoch it last saw the guest,
+the guest's own typical gap between contacts, and a pending mark. It never holds a lineage, a leaf or a
+grant tag. The guest keeps its own receipts. The quota bounds each guest's carriage, and a deposit past it
+is refused.
+
+''TWO BOUNDS, NAMED.'' The records are a directory of opaque rows, so a seizer of the hearth's store reads
+how many guests it carries for and each row's contact rhythm — a count and a cadence, never who. A holder
+of the hearth's leaf seed can test a KNOWN leaf against the rows; that adds no linkage the hearth lacks,
+since it already sees that leaf prove. Both bounds stand until the sealed custody root closes the store at
+rest.
 
 ''RECLAIM IS PONO — PRESSURE THE ONLY TRIGGER, THE GUEST'S OWN RHYTHM THE MEASURE, NOTICE BEFORE DISCARD.''
 * Nothing is evicted for lapsing alone. Only a deposit that would pass the hearth's total triggers a
@@ -399,6 +409,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RgT7MupKGDRdqDFYa8pvWd0PuW1mpGCirzCdueJzK5U
+<<^ code="&#x0003;">>ni:///sha-256;sP_9AbkpXurP8Lq7ULBB7tkwy6nlUksB4J37nM9oajg
 
 <<^ code="&#x0004;" -> to="?">>

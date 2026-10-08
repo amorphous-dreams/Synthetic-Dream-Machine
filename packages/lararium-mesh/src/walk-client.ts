@@ -46,11 +46,8 @@ export interface WalkRecord {
   readonly wallet?:  ReadonlyArray<{ readonly epoch: string; readonly token: InviteToken }>;
   /** A blinded batch sent and not yet finalized. */
   readonly pending?: PendingMint;
-  /** The KEEP STUBS: a receipt per document this hearth carries for the walker — its address and its read-cap. */
+  /** The walker's own receipts: one per document this hearth carries for it — its address and its read-cap. */
   readonly carried?: ReadonlyArray<CarryReceipt>;
-  /** The KEEP STUB: the opaque key the hearth carries this walker's documents under, presented on every carry
-   *  and fetch so the carriage outlives a lapsed lineage. */
-  readonly carryStub?: string;
   /** The hearth's notice stands: its carriage for this walker is marked for reclaim under pressure. */
   readonly atRisk?:  boolean;
 }
@@ -85,11 +82,10 @@ export async function takeInvite(store: WalkStore, carried: string): Promise<{ r
   const gatePubKey = invite.gatePubKey.toLowerCase();
   const held = await store.read(gatePubKey);
   if (held?.grant && !held.invite) return { gatePubKey, record: held };          // already walking here
-  // A walker walking back in keeps its grant until the new one lands, and its carriage receipts and keep stub.
+  // A walker walking back in keeps its grant until the new one lands, and its carriage receipts.
   const record: WalkRecord = {
     nexusAid: invite.nexusAid, invite: carried, ...(held?.grant ? { grant: held.grant } : {}),
-    ...(held?.carried ? { carried: held.carried } : {}), ...(held?.carryStub ? { carryStub: held.carryStub } : {}),
-    ...(held?.atRisk ? { atRisk: held.atRisk } : {}),
+    ...(held?.carried ? { carried: held.carried } : {}), ...(held?.atRisk ? { atRisk: held.atRisk } : {}),
   };
   await store.write(gatePubKey, record);
   return { gatePubKey, record };

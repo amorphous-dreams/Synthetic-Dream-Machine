@@ -16,13 +16,14 @@
  *   · MOST-LAPSED-FOR-ITSELF FIRST: the guest lapsed furthest past its OWN rhythm is taken, not the one with the
  *     longest absolute lapse; CONTROL: a regular guest is never taken while a long-lapsed one stands, even when
  *     the lapsed one cannot cover the whole shortfall;
- *   · NO ENUMERABLE GUEST SET: the store holds no lineage, leaf or grant tag; a record key needs the hearth's seed;
- *     CONTROL: the right grant (or its keep stub) reaches its record;
+ *   · NO GUEST NAMED: the store holds no lineage, leaf or grant tag; a record key needs the hearth's seed;
+ *     CONTROL: the proven leaf's key reaches its record;
  *   · through the sorter: a renewed walker's carriage survives a roll; a marked carriage's contact pushes the
- *     notice; CONTROL: an unmarked one pushes none.
+ *     notice on EITHER arm — a dial alone delivers it, the token arm included; CONTROL: an unmarked one pushes
+ *     none; a fresh lineage under the same leaf reaches the same record, and another leaf reaches none.
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -43,7 +44,7 @@ let storageDir = "";
 beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "hosting-carry-")); });
 afterEach(() => { rmSync(storageDir, { recursive: true, force: true }); });
 
-const keyOf = (lineage: string) => carryRecordKey(HEARTH, AID, lineage);
+const keyOf = (leaf: string) => carryRecordKey(HEARTH, AID, leaf);
 const L = (c: string) => c.repeat(64);
 const bytes = (n: number, fill = 7) => new Uint8Array(n).fill(fill);
 /** A distinct ciphertext of `n` bytes and its address (the hearth carries only what it can address). */
@@ -175,14 +176,14 @@ describe("reclaim — pressure the only trigger, the guest's own rhythm the meas
 });
 
 describe("no enumerable guest set", () => {
-  test("RED: the store holds no lineage, leaf or grant tag, and a record key needs the hearth's seed; CONTROL: the grant's key reaches it", () => {
+  test("RED: the store holds no lineage, leaf or grant tag, and a record key needs the hearth's seed; CONTROL: the proven leaf's key reaches it", () => {
     const lineage = L("e"), leaf = L("f"), tag = L("9");
-    put(keyOf(lineage), 1, 10, 1, { perGrantBytes: 100, totalBytes: 100 });
+    put(keyOf(leaf), 1, 10, 1, { perGrantBytes: 100, totalBytes: 100 });
     const all = everything();
     for (const secret of [lineage, leaf, tag]) expect(all).not.toContain(secret);
-    expect(readCarryRecord(storageDir, AID, carryRecordKey(new Uint8Array(32).fill(9), AID, lineage))).toBeNull();
-    expect(readCarryRecord(storageDir, AID, keyOf(lineage))?.bytes).toBe(10);           // CONTROL
-    expect(all).toContain(keyOf(lineage));                                                // the scan sees what is there
+    expect(readCarryRecord(storageDir, AID, carryRecordKey(new Uint8Array(32).fill(9), AID, leaf))).toBeNull();
+    expect(readCarryRecord(storageDir, AID, keyOf(leaf))?.bytes).toBe(10);              // CONTROL
+    expect(all).toContain(keyOf(leaf));                                                   // the scan sees what is there
   });
 });
 
@@ -190,11 +191,20 @@ describe("through the sorter", () => {
   const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
   const GATE = "ee".repeat(32), NONCE = "ab".repeat(32);
 
-  async function stand() {
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+  /** Mark a leaf's carriage pending at `depth`, as a reclaim would. */
+  function markPending(leaf: string, depth: number): void {
+    const rec = readCarryRecord(storageDir, AID, keyOf(leaf))!;
+    writeFileSync(join(hostingDir(storageDir, AID), "carry", keyOf(leaf), "record.json"), JSON.stringify({ ...rec, pending: depth }));
+  }
+  async function readingNow(): Promise<CarriedNexusReading> {
     const keys = await Promise.all(SEEDS.map((s) => ed.getPublicKeyAsync(s).then(hex)));
     const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
-    const reading: CarriedNexusReading = { aid: AID, via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
+    return { aid: AID, via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
+  }
+
+  async function stand() {
+    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    const reading = await readingNow();
     const sort = makeSocketSorter({
       readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
       hosting: { storageDir, leafSeedFor: async () => HEARTH },
@@ -209,33 +219,73 @@ describe("through the sorter", () => {
     });
     const token = mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current);
     const redeemed = await present({ kind: "token", nexusAid: AID, token, claim: redeemClaim(leaf.seed, token.n), leaf: leaf.verifyingKey });
-    return { present, grant: redeemed!.grant! };
+    return { present, grant: redeemed!.grant!, leaf, token };
   }
 
   test("CONTROL: a renewed walker's carriage survives a roll", async () => {
     const { present, grant } = await stand();
     const doc = blob(40, 5);
-    depositCarried({ storageDir, nexusAid: AID, key: keyOf(grant.lineage), depth: readHostingState(storageDir, AID)!.depth, ...doc });
+    depositCarried({ storageDir, nexusAid: AID, key: keyOf(grant.leaf), depth: readHostingState(storageDir, AID)!.depth, ...doc });
     await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
     const renewed = (await present({ kind: "grant", grant }))!.grant!;
     expect(renewed.epoch).not.toBe(grant.epoch);
-    expect(fetchCarried(storageDir, AID, keyOf(renewed.lineage), doc.cid)).not.toBeNull();
+    expect(fetchCarried(storageDir, AID, keyOf(renewed.leaf), doc.cid)).not.toBeNull();
   });
 
   test("RED: a marked carriage's contact pushes the notice; CONTROL: an unmarked one pushes none", async () => {
     const { present, grant } = await stand();
     const depth = readHostingState(storageDir, AID)!.depth;
-    depositCarried({ storageDir, nexusAid: AID, key: keyOf(grant.lineage), depth, ...blob(40, 5) });
+    depositCarried({ storageDir, nexusAid: AID, key: keyOf(grant.leaf), depth, ...blob(40, 5) });
     const quiet = await present({ kind: "grant", grant });
     expect(quiet?.class).toBe("walker");
     expect((quiet?.push ?? []).some((f) => f.kind === HOSTING_NOTICE_SESSION_KIND)).toBe(false);
-    // Mark it as a reclaim would, in this epoch.
-    const rec = readCarryRecord(storageDir, AID, keyOf(grant.lineage))!;
-    const dir = join(hostingDir(storageDir, AID), "carry", keyOf(grant.lineage), "record.json");
-    await import("node:fs").then((fs) => fs.writeFileSync(dir, JSON.stringify({ ...rec, pending: depth })));
+    markPending(grant.leaf, depth);
     const noticed = await present({ kind: "grant", grant });
     expect(noticed?.class).toBe("walker");
     expect((noticed?.push ?? []).some((f) => f.kind === HOSTING_NOTICE_SESSION_KIND)).toBe(true);
+  });
+
+  test("RED: a dial alone delivers the notice — the token arm too, on a fresh lineage under the same leaf", async () => {
+    const { present, grant, leaf } = await stand();
+    depositCarried({ storageDir, nexusAid: AID, key: keyOf(grant.leaf), depth: readHostingState(storageDir, AID)!.depth, ...blob(40, 5) });
+    // The grant lapses past two rolls, and pressure marks the lapsed guest's carriage in the hearth's epoch.
+    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    markPending(grant.leaf, readHostingState(storageDir, AID)!.depth);
+    // The guest walks back in on a fresh invite under the SAME leaf — no carry, no fetch, only the dial.
+    const fresh = mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current);
+    const back = await present({ kind: "token", nexusAid: AID, token: fresh, claim: redeemClaim(leaf.seed, fresh.n), leaf: leaf.verifyingKey });
+    expect(back?.class).toBe("walker");
+    expect(back!.grant!.lineage).not.toBe(grant.lineage);
+    expect((back?.push ?? []).some((f) => f.kind === HOSTING_NOTICE_SESSION_KIND)).toBe(true);
+    // The contact folded the guest's rhythm into the one record its leaf keys: no second record stands.
+    expect(readdirSync(join(hostingDir(storageDir, AID), "carry"))).toEqual([keyOf(grant.leaf)]);
+  });
+
+  test("CONTROL: another leaf's dial touches no carriage and hears no notice", async () => {
+    const { grant } = await stand();
+    const depth = readHostingState(storageDir, AID)!.depth;
+    depositCarried({ storageDir, nexusAid: AID, key: keyOf(grant.leaf), depth, ...blob(40, 5) });
+    markPending(grant.leaf, depth);
+    const before = readCarryRecord(storageDir, AID, keyOf(grant.leaf));
+    // A second guest under its own leaf redeems its own invite at the same hearth.
+    const kp = await deriveNexusScopedKey(new Uint8Array(32).fill(66), 0, PERSONA_GLAMOUR_CONTEXT, AID);
+    const other = { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
+    const vessel = await ed.getPublicKeyAsync(new Uint8Array(32).fill(67)).then(hex);
+    const token = mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current);
+    const arm: UnsignedPresented = { kind: "token", nexusAid: AID, token, claim: redeemClaim(other.seed, token.n), leaf: other.verifyingKey };
+    const sort = makeSocketSorter({
+      readings: async () => [await readingNow()], carrier: () => false, primaryPosture: () => "private",
+      hosting: { storageDir, leafSeedFor: async () => HEARTH },
+    });
+    const verdict = await sort({
+      identifier: `0x${vessel}`, vesselKey: vessel, sameOperator: false,
+      presented: await signPresented({ presented: arm, nonce: NONCE, gatePubKey: GATE, vesselKey: vessel, sign: async (m) => hex(await ed.signAsync(m, other.seed)) }),
+      challenge: { nonce: NONCE, gatePubKey: GATE },
+    });
+    expect(verdict?.class).toBe("walker");
+    expect((verdict?.push ?? []).some((f) => f.kind === HOSTING_NOTICE_SESSION_KIND)).toBe(false);
+    expect(readCarryRecord(storageDir, AID, keyOf(grant.leaf))).toEqual(before);
   });
 });
 

@@ -85,16 +85,18 @@ async function walkerStanding(
   if (!live) return null;
   const standing = { nym: leaf, aid };
   const push = (grant: HostingGrant): SortVerdict["push"] => [{ kind: HOSTING_GRANT_SESSION_KIND, body: { grant } }];
+  // EVERY DIAL ON THE LEAF IS A CONTACT. It folds the guest's own rhythm into the carriage its PROVEN leaf keys,
+  // whichever arm it rode and whichever lineage it stands on; a carriage marked pending under pressure hears the
+  // notice on this contact, and a later epoch's contact clears it. Called only once the arm has stood.
+  const contact = (): SortVerdict["push"] => noteContact(hosting.storageDir, aid, carryRecordKey(seed!, aid, leaf), state.depth).notice
+    ? [{ kind: HOSTING_NOTICE_SESSION_KIND, body: { pending: true } }] : [];
 
   if (presented.kind === "grant") {
     const grant = presented.grant;
     const current = grantVerifiesAt(live.current, grant) ? grant
       : live.previous && grantVerifiesAt(live.previous, grant) ? renewGrant(live.current, grant) : null;
     if (!current) return null;                                                   // two rolls back, or never this hearth's
-    // A grant's contact folds its own rhythm into its carriage's scalars (reached by its tag alone); a carriage
-    // marked pending under pressure hears the notice on this contact, and a later epoch's contact clears it.
-    const { notice } = noteContact(hosting.storageDir, aid, carryRecordKey(seed!, aid, grant.lineage), state.depth);
-    const frames = [...(current === grant ? [] : push(current) ?? []), ...(notice ? [{ kind: HOSTING_NOTICE_SESSION_KIND, body: { pending: true } }] : [])];
+    const frames = [...(current === grant ? [] : push(current) ?? []), ...(contact() ?? [])];
     return { standing, grant: current, ...(frames.length > 0 ? { push: frames } : {}) };
   }
 
@@ -109,7 +111,7 @@ async function walkerStanding(
     leaf, lineage: lineageOf(token.n, presented.claim), survived: 0,
     from: token.purpose === "host-invite" ? "host" : "walker",
   });
-  return { standing, grant, push: push(grant) };
+  return { standing, grant, push: [...(push(grant) ?? []), ...(contact() ?? [])] };
 }
 
 /**

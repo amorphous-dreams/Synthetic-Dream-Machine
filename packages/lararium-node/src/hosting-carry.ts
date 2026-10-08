@@ -7,19 +7,24 @@
  * own leaf, root and fleet. The hearth's carriage is a CONVENIENCE: the walker's own devices (its PersonaGroup)
  * hold the durable copy, and nothing here is backup.
  *
- *   walker → hearth  `hosting/carry {cid, ciphertext, stub?}` → `hosting/carried {cid, held, stub}` or `{cid, refused}`
- *   walker → hearth  `hosting/fetch {cid, stub?}`             → `hosting/fetched {cid, ciphertext}` (its own bytes only)
+ *   walker → hearth  `hosting/carry {cid, ciphertext}` → `hosting/carried {cid, held}` or `{cid, refused}`
+ *   walker → hearth  `hosting/fetch {cid}`             → `hosting/fetched {cid, ciphertext}` (its own bytes only)
  *   hearth → walker  `hosting/notice {pending: true}`  on a contact while the walker's carriage stands marked
  *
- * ONE RECORD PER GRANT, REACHABLE ONLY BY ITS TAG. The hearth keys each lineage's carriage under
- * `carryRecordKey(hearthLeafSeed, N, lineage)` — computed from the lineage a presented grant carries — so a record
- * is reachable by the grant that opened it and its key names no one to anyone without the hearth's seed. The
- * hearth hands the walker that key as its KEEP STUB; presenting it later reaches the same record from a fresh
- * lineage, since a grant lapsed past two rolls is dead and the walker walks back in on a new invite. It holds
- * per-grant SCALARS and the blobs: the bytes it carries, the hearth epoch it last saw the guest, the guest's own
- * typical gap between contacts, and a pending mark. Never a list of guests, never a lineage, never a leaf.
+ * ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF. The hearth keys each guest's carriage under
+ * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and its leaf proof
+ * proves — so a record is reached by proof alone, whichever lineage the grant rides, and nothing the hearth hands
+ * out names it. A guest that lapsed and walks back in on a fresh invite under the same leaf reaches its carriage
+ * again; a fresh leaf is a fresh carriage, and a kapae'd leaf reaches nothing through a new one. Every dial on G
+ * is a CONTACT — the grant arm and the token arm alike (`socket-sorter`) — so the notice reaches a guest by a
+ * plain dial. It holds per-guest SCALARS and the blobs: the bytes it carries, the hearth epoch it last saw the
+ * guest, the guest's own typical gap between contacts, and a pending mark. Never a lineage and never a leaf.
  *
- * QUOTA IS TOLERANCE. Each grant may carry up to `perGrantBytes`; a deposit past it is refused, nothing detected.
+ * TWO BOUNDS, NAMED. The records are a directory of opaque rows, so their COUNT and each row's contact rhythm are
+ * enumerable from the store — never who. A holder of the hearth seed can test a KNOWN leaf against the rows; the
+ * sealed custody root closes both at rest.
+ *
+ * QUOTA IS TOLERANCE. Each guest may carry up to `perGrantBytes`; a deposit past it is refused, nothing detected.
  *
  * RECLAIM — PRESSURE IS THE ONLY TRIGGER, THE GUEST'S OWN RHYTHM THE MEASURE, NOTICE BEFORE DISCARD. Nothing is
  * evicted for lapsing alone. Only when a deposit would pass `totalBytes` does the hearth reclaim, choosing among
@@ -37,13 +42,12 @@ import { join } from "node:path";
 import {
   verifyCiphertextCid, lapseRatio, foldRhythm, carryRecordKey, grantVerifiesAt, base64UrlEncode, base64UrlDecode,
   RECLAIM_RATIO, HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND,
-  HOSTING_NOTICE_SESSION_KIND, CARRY_STUB_RE,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { hostingDir, readHostingState, liveEpochs } from "./hosting-store.js";
 import type { DaemonAuthGate } from "./daemon-auth-gate.js";
 
-/** How much a hearth carries for walkers: per grant, and in all. */
+/** How much a hearth carries for walkers: per guest, and in all. */
 export interface CarryLimits {
   readonly perGrantBytes: number;
   readonly totalBytes:    number;
@@ -51,9 +55,9 @@ export interface CarryLimits {
 
 export const DEFAULT_CARRY_LIMITS: CarryLimits = { perGrantBytes: 8 * 1024 * 1024, totalBytes: 256 * 1024 * 1024 };
 
-/** One grant's carriage scalars. */
+/** One guest's carriage scalars. */
 export interface CarryRecord {
-  /** Bytes this grant's carriage holds. */
+  /** Bytes this guest's carriage holds. */
   readonly bytes:    number;
   /** The hearth epoch (`HostingState.depth`) the guest was last in contact at. */
   readonly lastSeen: number;
@@ -70,7 +74,7 @@ function carryRoot(storageDir: string, nexusAid: string): string { return join(h
 function recordDir(storageDir: string, nexusAid: string, key: string): string { return join(carryRoot(storageDir, nexusAid), key); }
 const blobName = (cid: string): string => cid.replace(/^blake3:/, "");
 
-/** One grant's record, reached by its key — or null where this hearth carries nothing for it. */
+/** One guest's record, reached by its key — or null where this hearth carries nothing for it. */
 export function readCarryRecord(storageDir: string, nexusAid: string, key: string): CarryRecord | null {
   try { return JSON.parse(readFileSync(join(recordDir(storageDir, nexusAid, key), "record.json"), "utf8")) as CarryRecord; }
   catch { return null; }
@@ -100,7 +104,7 @@ export function noteContact(storageDir: string, nexusAid: string, key: string, d
   return { notice: next.pending !== null };
 }
 
-/** Bytes carried in all, across every grant's record. */
+/** Bytes carried in all, across every guest's record. */
 function totalCarried(storageDir: string, nexusAid: string): number {
   const root = carryRoot(storageDir, nexusAid);
   if (!existsSync(root)) return 0;
@@ -159,16 +163,15 @@ export function depositCarried(opts: {
   return "held";
 }
 
-/** The ciphertext a grant's carriage holds under `cid`, or null. Only the grant that deposited it reaches it. */
+/** The ciphertext a guest's carriage holds under `cid`, or null. Only the leaf that deposited it reaches it. */
 export function fetchCarried(storageDir: string, nexusAid: string, key: string, cid: string): Uint8Array | null {
   const path = join(recordDir(storageDir, nexusAid, key), "blobs", blobName(cid));
   try { return statSync(path).isFile() ? new Uint8Array(readFileSync(path)) : null; } catch { return null; }
 }
 
 /**
- * Serve walkers' carriage on `gate`'s sessions — walker sockets alone, each reaching only the record its own grant
- * keys or its own keep stub names. A carry's answer hands the walker its record's key as the keep stub, which is
- * how a walker that lapsed and walked back in on a fresh lineage reaches its carriage again.
+ * Serve walkers' carriage on `gate`'s sessions — walker sockets alone, each reaching only the record its own
+ * proven leaf keys. Nothing in a request names a record, and nothing in an answer hands one out.
  */
 export function serveHostingCarry(
   gate: Pick<DaemonAuthGate, "onSession" | "sendSession" | "getClassForSocket" | "getGrantForSocket">,
@@ -179,19 +182,14 @@ export function serveHostingCarry(
     void (async () => {
       if (gate.getClassForSocket(socket) !== "walker") return;
       const grant = gate.getGrantForSocket(socket);
-      const body = msg.body as { cid?: unknown; ciphertext?: unknown; stub?: unknown } | null;
+      const body = msg.body as { cid?: unknown; ciphertext?: unknown } | null;
       if (!grant || typeof body?.cid !== "string") return;
       const state = readHostingState(deps.storageDir, grant.nexusAid);
       const seed = state ? await deps.leafSeedFor(grant.nexusAid) : null;
       const live = state && seed ? liveEpochs(state, seed) : null;
       if (!state || !seed || !live || !grantVerifiesAt(live.current, grant)) return;
-      // The record: the one the presented keep stub names, when it stands; else this grant's own.
-      const stub = typeof body.stub === "string" && CARRY_STUB_RE.test(body.stub) && readCarryRecord(deps.storageDir, grant.nexusAid, body.stub)
-        ? body.stub : null;
-      const key = stub ?? carryRecordKey(seed, grant.nexusAid, grant.lineage);
-      if (stub && noteContact(deps.storageDir, grant.nexusAid, stub, state.depth).notice) {
-        gate.sendSession(socket, HOSTING_NOTICE_SESSION_KIND, { pending: true });
-      }
+      // The record the socket's proven leaf keys — the grant's leaf, which the sorter proved over this socket.
+      const key = carryRecordKey(seed, grant.nexusAid, grant.leaf);
       if (msg.kind === HOSTING_FETCH_SESSION_KIND) {
         const bytes = fetchCarried(deps.storageDir, grant.nexusAid, key, body.cid);
         if (bytes) gate.sendSession(socket, HOSTING_FETCHED_SESSION_KIND, { cid: body.cid, ciphertext: base64UrlEncode(bytes) });
@@ -205,7 +203,7 @@ export function serveHostingCarry(
         storageDir: deps.storageDir, nexusAid: grant.nexusAid, key, depth: state.depth, cid: body.cid, ciphertext,
         ...(deps.limits ? { limits: deps.limits } : {}),
       });
-      gate.sendSession(socket, HOSTING_CARRIED_SESSION_KIND, outcome === "held" ? { cid: body.cid, held: true, stub: key } : { cid: body.cid, refused: outcome });
+      gate.sendSession(socket, HOSTING_CARRIED_SESSION_KIND, outcome === "held" ? { cid: body.cid, held: true } : { cid: body.cid, refused: outcome });
     })().catch(() => { /* a fault answers nothing */ });
   });
 }
