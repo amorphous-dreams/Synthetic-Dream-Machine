@@ -20,12 +20,14 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 * ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Dirt in the tree that no lane authored: the `mempalace` and `VSCode-TW5-Syntax` submodule pointers, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
 * ''Landed in the last sign-off'' (CHANGELOG `[Unreleased]`, the SIGN-OFF BATCH lines): the gate-signed `lar:auth-ok`; `lar:session` frames on an admitted socket; leaf↔leaf proof as a library; the PersonaGroup ring on both vessels through one function; the oracle crossing only to a proven peer over the gated `/oracle` socket, every HTTP path the one `CLOSED_DOOR`; `/api/health` on a lararium alone; the `hosted` invite arm and its countersign over the live session; R1 (one file, one carrier; `MemeStreamParser` gone); the carrier grammar's name-matched ahu pairing and the `ahu-pair-parity` weld; bag doors refusing a torn frame; one presenter, forks per board, findings surfaced; `rite quorum` and `needsQuorum`; the Codex hold closed and the hearths gate quiet unless held; the offering replication suite; the browser share config reading the armed gate.
-* ''E2E'' (the whole staged set): 29 of 29 files — 208 passed, 1 expected fail.
-* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 33 of 33 read ok. Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too. CI's witnesses job also runs every `tools/*.test.mjs` (12 files, 46 tests).
+* ''Landed since'' (CHANGELOG, THE HOSTED WALK and THE HOSTED WALK, MADE SOUND): the hosted walk (F1), then its cleanup (B1) — the leaf-bound retry; carriage keyed by the proven leaf; the live wallet; host and walk running inside the standing vessel over the one store door; the per-hearth hosting doc; the node's `lares walk` verbs, walking as the worn face, at one hearth; ROOT-ON-FOUNDER pinned; the pinned docker mesh; the tree-clean witness; the staged `hosted-walk` acceptance.
+* ''E2E'' (the whole staged set): 30 of 30 files — 215 passed.
+* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 34 witnesses; 33 read ok and `tree-clean-witness` reads RED: the node e2e config, with `LAR_BAGS` unset, writes `bags/crossroads/ha.ka.ba/bags/` into the tracked tree. It stays red until the bags-isolation mechanism (an operator ruling) lands; delete the untracked dirt a run leaves. Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too. CI's witnesses job also runs every `tools/*.test.mjs` (53 tests).
 * ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
-* ''Unit suites'': `lararium-tw5` 1732; `lararium-mesh` 2459; `lararium-node` 1400; `lares-cli` 554; `lararium-keyhive` 146; `lararium-browser` 145; `lararium-web` 9; `lararium-memetic-frame` 357; `lararium-sensorium` 952 Python + 54 vitest. The tree-sitter carrier grammar reads clean.
+* ''Unit suites'': `lararium-tw5` 1732; `lararium-mesh` 2470; `lararium-node` 1440; `lares-cli` 554; `lararium-keyhive` 146; `lararium-browser` 145; `lararium-web` 9; `lararium-memetic-frame` 357; `lararium-sensorium` 952 Python + 54 vitest. The tree-sitter carrier grammar reads clean.
 * ''HEADS-UP — the operator's live `~/.lares` vessel'': its stored device edges were signed over the clocked layout, and any rotated seal lineage it holds carries no signed rolls. Both fail verification on this build. Do NOT stand that vessel on this build; it needs the re-found or a re-mint.
 * ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. The next push is the witness for everything since.
+* ''The docker mesh'' (by hand; `witness-all` runs none of it): `crossing-witness` 4 of 4 green; `node tools/mesh-pins.mjs --up` stands the mesh pinned, and the herm mesh is DARK — each herm sorts the pinned pulls of the next to silence (a faceless herm folds PRIVATE), so no FLOW-map crosses a hop and `mesh-scenarios nexus` reads "no carriage". The cure waits on the operator's herm-posture ruling. `lararium-a` with its default peer also exits on `origin composition refused … Web origin must be declared`.
 * ''Known environmental reds'': `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` fail when a browser or server socket is missing.
 
 <<~/ahu>>
@@ -48,7 +50,7 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Open wounds, ranked
 
-The round-5 sign-off accepted every lane but one finding: F1, on the hosted countersign, whose fix is in flight. No other operator ruling is pending.
+The hosted walk and its cleanup stand. Three operator rulings are owed before the push: WHO HOSTS (the worn face, or the vessel through its sole held leaf — hosting still reads the first held leaf); the HERM'S POSTURE (the herm mesh is dark); and BAGS ISOLATION (`bagsRoot` follows `LAR_ROOT`, or a `setupFiles` isolator).
 
 # ''THE RE-FOUND, one act'' (rulings: the operator's STABLE and CUSTODY rulings; canon `lar:///ha.ka.ba/lararium/mesh/kahu`, `lar:///ha.ka.ba/lararium/mesh/membership-doctrine`). It mints unversioned names, re-mints the engine and edge, and re-seats the Nexus — never a persona or sealed-body wipe; DESTROY-class strings stay frozen.
 ## ''STABLE — the founding state.''
@@ -154,6 +156,6 @@ The round-5 sign-off accepted every lane but one finding: F1, on the hosted coun
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EiiqokzJ_mt7xbfTcE1coh1EedQyoXM9MEUZx15bwfQ
+<<^ code="&#x0003;">>ni:///sha-256;5a4c-d52LcwCR_uBLPyrRc7AUGS7VERs5ul4XdZdCOM
 
 <<^ code="&#x0004;" -> to="?">>
