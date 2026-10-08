@@ -241,7 +241,7 @@ export {
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
-  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, ownPresentationFor, presentationKey,
+  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
   dialIdentityFor,
 } from "./nexus-carriage.js";
 export type {

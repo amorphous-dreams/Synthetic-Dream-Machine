@@ -164,7 +164,6 @@ the record version literal "realm-bag"                                        re
 * `RaiseChallenge` (`raise-challenge.ts:49,76,86,88`) — `vesselId` · ''nexus'' · `epoch` · `nonce`; validated by name at `lararium-node/src/commands/raise-sign.ts:41,45`.
 * `CabalInvite` — ''realmDocIdHex'' (`cabal-invite.ts:165`); refusal literal `"wrong-realm"` (`:116`).
 * Vouch record (`vouch-board.ts:94`) — `realmDocIdHex` · `joinerIdentityHex` · `voucherDid` · `expiresAt` · `boundEpoch` · `sig`.
-* `BootInvite` — ''nexusPubkey'' (`boot-invite.ts:157`); refusal literal `"wrong-nexus"` (`:112`).
 * `CabalRealm` (`cabal-realm.ts:54-67`) — `realmDocIdHex` · `realmAgentIdHex` · `substrateUrl` · `genesisUri`.
 * `IdentityTiddler` (`social-tiddlers.ts:25,28`) — field ''nexusId''; `trustTier` values `"nexus"` / `"cross-nexus"`.
 * `CircleTiddler` (`social-tiddlers.ts:54-55`) — field ''nexusScope'', and `:55` documents the signature as over `id|name|nexusScope|sortedMemberDids`: ''the field name itself sits in a signature preimage''.
@@ -210,6 +209,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JeV4CLXYveLtlg68xknS1-dzBpJxIhFA1BrjdmbJwWU
+<<^ code="&#x0003;">>ni:///sha-256;YHBJzXEDh-8XHiL05KRF1TkH-9CgtXoaW7Oke1nAud8
 
 <<^ code="&#x0004;" -> to="?">>

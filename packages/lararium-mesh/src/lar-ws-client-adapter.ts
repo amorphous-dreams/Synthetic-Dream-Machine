@@ -19,7 +19,7 @@
  * ring reads. A peer that arrived on no verified socket reads null.
  *
  * THE SESSION. A verified socket also carries `lar:session` messages — JSON text frames beside Automerge's
- * binary frames — for protocols that ride an authenticated session (a hosting hearth's countersign, say).
+ * binary frames — for protocols that ride an authenticated session (a hearth's hosting grant push, say).
  * `session` names what both sides hold for it: the gate's challenge nonce and the pinned gate key. A text
  * frame never reaches the Automerge decoder; a session message is sent only on the verified socket.
  *

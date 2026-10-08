@@ -4,7 +4,7 @@
  *
  * WHAT IT HOLDS, per Nexus it hosts in (`<storage>/hosting/<aid digest>/`, owner-only like the root above it):
  *   · `state.json` — the current hosting act and the previous one (or none). Both acts are public: each stands
- *     on the Nexus's carriage board too, and the current act names the allowance cap.
+ *     on this hearth's hosting doc in N too, and the current act names the allowance cap.
  *   · `spent-<epoch>` — append-only lines, fsynced before any answer:
  *       `n <nonce> <claim digest>`     — a token redeemed at this epoch, the digest binding the claim to the
  *                                         leaf that proved over the redeeming socket;
@@ -86,7 +86,7 @@ export function liveEpochs(state: HostingState, leafSeed: Uint8Array): { readonl
 /**
  * ROLL: sign the hearth's next hosting act in N (rolling from its current one, or its first), make it current,
  * keep the old current as previous, and delete the spent-set of every other epoch. Returns the new act — the
- * caller lands it on N's carriage board. `cap` names a new allowance cap; absent, the standing one holds.
+ * caller lands it on this hearth's hosting doc in N. `cap` names a new allowance cap; absent, the standing one holds.
  */
 export async function rollHosting(opts: {
   readonly storageDir: string; readonly nexusAid: string; readonly leafSeed: Uint8Array; readonly cap?: number;

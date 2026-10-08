@@ -290,11 +290,11 @@ export async function dialPresentation(opts: {
 
 /**
  * The admit this vessel's own leaf presents in the Nexus named by `aid`, or null (it holds none there). The
- * one reading `dialPresentation` makes once it has tied a gate key to a Nexus, and the one a hosting hearth
- * makes to present its own standing beside a countersign: the kept bundle when the board's head does not
- * extend it, else the board's counted head for each held leaf in roster order, through the one presenter.
+ * one reading `dialPresentation` makes once it has tied a gate key to a Nexus: the kept bundle when the board's
+ * head does not extend it, else the board's counted head for each held leaf in roster order, through the one
+ * presenter.
  */
-export async function ownPresentationFor(opts: {
+async function ownPresentationFor(opts: {
   readonly sealHome:     string;
   readonly ownVesselKey: string;
   readonly aid:          string;

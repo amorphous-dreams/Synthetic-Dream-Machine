@@ -12,7 +12,7 @@
  * ── ISOMORPHIC TO FederationPosture (by composition, not interface) ──────────────────────────────
  * `FederationPosture` (federation-gate.ts) models a per-Nexus stance as a self-describing datum: a
  * closed string union, a `DEFAULT_…` fail-closed constant, a `…FromDoc` parser that fail-closes on a
- * torn value, and a pure gate fn (`postureGatesCrossOperator`) that reads it. This module models the
+ * torn value, and a pure fold (`answersStrangers`) that reads it. This module models the
  * cap-tier the SAME way — a closed union, `DEFAULT_CAP_TIER = "veil"` (fail-closed), `parseCapTier`
  * that fail-closes any torn value to VEIL, and a pure `resolveTier` gate. The tier only carries MORE
  * structure than a posture: a TOTAL ORDER + a `meet` (a posture is a two-valued special case).

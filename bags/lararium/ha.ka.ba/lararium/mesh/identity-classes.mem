@@ -297,7 +297,7 @@ role the operator named REQUIRES private ciphertext to cross foreign legs, and c
 by construction — the relay holds bytes it provably cannot read. The refinement stays NARROW: it flips
 the private-plane denial from ''deny-carry-and-read'' to ''deny-read, allow-blind-carry'', and changes
 NOTHING at the read lane the self-slot was built to protect. ''Named as a fork'' because it edits a
-committed security surface (`federation-gate.ts` `classifyCrossOperatorAdmission` +
+committed security surface (the gate's sorter, `socket-sorter.ts` `makeSocketSorter` +
 `self-slot-share.ts` `selfSlotShareDecision`), and the operator owns that cut.
 
 <<~/ahu>>
@@ -653,6 +653,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0BunO0BOQC6W7rsRFbv4X1tXo5MdDGWfTiWlEaBQTgY
+<<^ code="&#x0003;">>ni:///sha-256;aOqJYvhoEeAZjKwlqprEgiZBvtTHnOtW9F3Usg-au8U
 
 <<^ code="&#x0004;" -> to="?">>
