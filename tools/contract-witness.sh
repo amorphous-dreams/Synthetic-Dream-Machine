@@ -301,15 +301,16 @@ switch (mode) {
     const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
     if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
     const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };
-    const proof = async (seed) => M.signLeafProof({ admit: p.admit, ...bind, sign: M.ed25519SignerFromSeed(seed) });
-    const honest = await M.verifyLeafProof({ presentedAdmit: { ...p, leafProof: await proof(leaf.seed) }, ...bind });
-    const forged = await M.verifyLeafProof({ presentedAdmit: { ...p, leafProof: await proof(randomBytes(32)) }, ...bind });
+    const arm = { kind: "admit", ...p };
+    const proof = async (seed) => M.signLeafProof({ presented: arm, ...bind, sign: M.ed25519SignerFromSeed(seed) });
+    const honest = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(leaf.seed) }, ...bind });
+    const forged = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(randomBytes(32)) }, ...bind });
     console.log(`honest=${honest} forged=${forged}`);
     break;
   }
   case "wire": {               // one socket, one face: the admit never rides beside a root edge
     const p = json(a1);
-    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), leafNonce: hex32(), presentedAdmit: p };
+    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), leafNonce: hex32(), presented: { kind: "admit", ...p, leafProof: "ab".repeat(64) } };
     console.log(`alone=${M.isLarAuthMsg(base)} beside-edge=${M.isLarAuthMsg({ ...base, edge: { deviceVerifyingKey: hex32() } })}`);
     break;
   }
