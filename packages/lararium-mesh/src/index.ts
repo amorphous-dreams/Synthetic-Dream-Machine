@@ -128,8 +128,7 @@ export { DeterministicFederationGate, federationShareDecision, identityShareDeci
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
 export type { IdentityRing } from "./federation-gate.js";
 export type { AntigenRing } from "./federation-gate.js";
-export { presenterIsKapaed, carryContractShareDecision, classifyCrossOperatorAdmission } from "./federation-gate.js";
-export type { CrossOperatorAdmission } from "./federation-gate.js";
+export { presenterIsKapaed, carryContractShareDecision, classifySocket, answersStrangers } from "./federation-gate.js";
 export { carrierShareDecision, capTierShareDecision } from "./federation-gate.js";
 export type { NexusMembership, PlaneSeal } from "./federation-gate.js";
 // The household's own certificate witness — nothing outside this stack warns before a cert expires.
@@ -161,7 +160,7 @@ export type {
 } from "./cas-transit.js";
 // The open-beta federation POSTURE — the outer gate over cross-operator admission (private/open, default private).
 export type { FederationPosture } from "./federation-gate.js";
-export { DEFAULT_FEDERATION_POSTURE, postureGatesCrossOperator, admitCrossOperatorUnderPosture } from "./federation-gate.js";
+export { DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 export * from "./quorum-entry.js";
 export * from "./sealed-box.js";
 export * from "./kapae-antigen.js";
@@ -207,17 +206,19 @@ export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-island-pool-core.js";
 export {
-  mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
-  isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg, isPresentedAdmit,
+  mkLarChallenge, mkLarAuth, mkLarAuthOk,
+  isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isPresentedAdmit, isPresented,
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   authOkBytes, verifyAuthOk, mintLeafNonce, mkLarSessionMsg, isLarSessionMsg,
-  leafProofBytes, signLeafProof, verifyLeafProof,
+  leafProofBytes, signLeafProof, signPresented, verifyLeafProof, presentedCid, presentedSigner,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
 } from "./auth-wire.js";
 export type {
-  LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarAuthDeniedMsg, LarSessionMsg, LarAuthWireMsg,
-  AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit,
+  LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarSessionMsg, LarAuthWireMsg,
+  AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit, PresentedAdmitArm,
+  Presented, UnsignedPresented,
 } from "./auth-wire.js";
+export { knockSegment, knockPath, knockedUrl } from "./gate-knock.js";
 export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions, LarLeafSession } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";

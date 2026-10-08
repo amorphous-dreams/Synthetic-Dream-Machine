@@ -1,137 +1,155 @@
 /**
- * daemon-auth-gate — pre-sync WebSocket authentication gate for the daemon doc.
+ * daemon-auth-gate — the pre-sync WebSocket gate every proving door of a vessel stands behind.
  *
- * Wraps a WebSocketServer as an EventEmitter proxy compatible with
- * NodeWSServerAdapter. The adapter calls .on("connection") and .on("close")
- * and reads .clients — this class satisfies all three without exposing any
- * unauthenticated connections upstream.
+ * Wraps a WebSocketServer as an EventEmitter proxy compatible with NodeWSServerAdapter. The adapter calls
+ * .on("connection") and .on("close") and reads .clients — this class satisfies all three without exposing any
+ * unadmitted socket upstream.
  *
- * Auth exchange before Automerge sync:
- *   Server  → lar:challenge  (fresh 32-byte hex nonce)
- *   Client  → lar:auth       (Keyhive ContactCard JSON + nonce echo)
- *   Server  → lar:auth-ok    (signed by the gate key over the leaf's own nonce; emit "connection")
- *        OR   lar:auth-denied + ws.close(4003)
+ * ── THE ONE RULE ON THE WIRE ──────────────────────────────────────────────────────────────────────
+ *   Gate → peer : lar:challenge {nonce}
+ *   Peer → gate : lar:auth      (ContactCard, nonce echo, the leaf's own fresh nonce, the V3 proof, and at most
+ *                                one presentation)
+ *   Gate → peer : lar:auth-ok   (signed by the gate key over both nonces) — OR NOTHING AT ALL.
  *
- * THE GATE SIGNS ITS VERDICT. `arm` takes the gate's key — its verifying key AND its signer — and every
- * `lar:auth-ok` carries the gate key's signature over `authOkBytes` (both nonces, the gate key, the proven
- * leaf key, the audience). A leaf reads a pass only under the gate key it pinned, so authentication runs
- * both ways on the one socket. The gate key signs; no root ever does.
+ * SILENCE (siege-resilience#/the-active-prober). Every refusal — a gate not yet armed, too many pending
+ * sockets, a malformed message, a bad proof, a presentation that does not hold, a stranger under PRIVATE
+ * posture — draws the same answer: none. The gate draws ONE deadline at accept, uniform in
+ * [authTimeout, 2·authTimeout), and a socket that has not passed by then is TERMINATED with no close frame, no
+ * code and no reason. Because the deadline is drawn at accept rather than at the failure, how long the gate
+ * stays quiet says nothing about which check failed or how long verifying took. The cause goes to the local
+ * log alone. A legitimate party sees exactly what an attacker sees.
  *
- * The gate starts "disarmed" — all connections are rejected with 4503 until
- * arm() is called with the daemon island's AuthVerifierShore, the daemon bag URL and the gate key.
- * The host holds no keyhive after Stage 1; the shore proxies each verify to the
- * daemon island, which answers from its in-worker keyhive and returns the peer's
- * Identifier hex for the sharePolicy map. arm() is called once the daemon VM lives.
+ * THE KNOCK. A gate answers an upgrade only on `<route>/<knock>` (`knockPath`, mesh `gate-knock`), derived
+ * from its own gate key; `upgradePath(route)` names it once armed, and the caller registers exactly that path
+ * on the vessel's dispatcher, which destroys every unclaimed upgrade before any HTTP 101.
  *
- * After a peer authenticates:
- *   1. socketToIdentifier WeakMap records socket → identifierHex.
- *   2. The Repo's sharePolicy should call getIdentifierForSocket() to build
- *      PeerId → identifierHex entries when the adapter emits "peer-candidate".
- *   3. The PRESENTATION riding the lar:auth — the PRESENTED ADMIT (`presentedAdmit`, the dialed island's
- *      quorum-signed admit of that operator's leaf, its causal lineage and the leaf's proof over this socket) —
- *      is kept per socket as UNTRUSTED input, read back by getPresentationForSocket(), beside the nonce and
- *      gate key this gate issued (getChallengeForSocket()), which the seat verifies the leaf proof against.
- *      The gate decides nothing by it: admission stays the worker's verdict, no class or nym is lifted from
- *      it, and a peer that presents nothing stands at the cross-operator floor exactly as one that presents.
- *      A presented admit that fails its structural guard fails `isLarAuthMsg`, so the socket is denied like
- *      any malformed lar:auth — and so is a lar:auth carrying the retired `contractEdge` slot: no root-signed
- *      edge over a cross-operator's vessel key travels on any socket (membership-doctrine #/two-maps).
+ * ── THE SORTER ────────────────────────────────────────────────────────────────────────────────────
+ * `arm` takes a SORTER and it is REQUIRED, so no gate instance (the relay `/ws`, the oracle socket) stands
+ * without one. After the keyholder worker proves the peer's key (and vouches it same-operator when it is), the
+ * sorter reads what the socket presented and answers its CLASS — same-operator · contracted · walker · stranger
+ * — or null, which is silence. The sort runs BEFORE `lar:auth-ok`; a socket whose class is decided carries it
+ * from its first frame. Any session frames the sorter hands back (a walker's renewed grant) follow the
+ * verdict on the same socket.
+ *
+ * THE GATE SIGNS ITS VERDICT. Every `lar:auth-ok` carries the gate key's signature over `authOkBytes` (both
+ * nonces, the gate key, the proven leaf key, the audience). A leaf reads a pass only under the gate key it
+ * pinned, so authentication runs both ways on the one socket. The gate key signs; no root ever does.
  *
  * THE SESSION. An admitted socket also carries `lar:session` messages — JSON text frames beside Automerge's
- * binary frames — for protocols that ride an authenticated session. The gate routes every text frame on an
- * admitted socket to its "session" listeners (`socket`, the message) and hands the adapter binary frames
- * alone, so a session message never reaches the Automerge decoder. `sendSession` answers on the same socket.
- * A socket the gate has not admitted carries no session: its only text frame is the lar:auth.
+ * binary frames. The gate routes every text frame on an admitted socket to its "session" listeners and hands
+ * the adapter binary frames alone, so a session message never reaches the Automerge decoder. A socket the
+ * gate has not admitted carries no session.
  *
- * Security posture (alpha):
- *   - V3 proof-of-possession (ENFORCED): the gate emits its gate-binding key in
- *     lar:challenge and relays the peer's {nonce, sig} to the keyholder worker,
- *     which verifies the Ed25519 proof (verifyAuthProof) against the card key + the
- *     gate's own key AND folds the result into its verdict (operator-daemon-behavior,
- *     step D). So `verdict.ok` already means capability AND a verified proof; the
- *     gate admits on it directly and stays keyhive-free. A node operator MAY relax
- *     to capability-only with LAR_V3_ALLOW_UNPROVEN=1 (the prior advisory posture).
- *   - ContactCard payload is capped at MAX_CONTACT_CARD_BYTES before TextEncoder.
- *   - Concurrent unauthenticated connections are capped at MAX_PENDING.
- *   - Auth timeout is 5 s (machine-to-machine; no human interaction path).
+ * The host holds no keyhive; the shore proxies each verify to the daemon island, which answers from its
+ * in-worker keyhive. A node operator MAY relax the proof to capability-only with LAR_V3_ALLOW_UNPROVEN=1
+ * (worker-side, for its own device fleet only). ContactCard payloads are capped at MAX_CONTACT_CARD_BYTES and
+ * concurrent unadmitted sockets at MAX_PENDING.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/daemon-auth-gate
  */
 
 import { EventEmitter }  from "node:events";
-import { randomBytes }   from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 import type WebSocket    from "isomorphic-ws";
 import type { WebSocketServer as WSSType } from "isomorphic-ws";
 import {
-  mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, authOkBytes, isLarSessionMsg, mkLarSessionMsg,
+  mkLarChallenge, mkLarAuthOk, isLarAuthMsg, authOkBytes, isLarSessionMsg, mkLarSessionMsg, knockPath,
 } from "@lararium/mesh";
-import type { AuthVerifierShore, LarSessionMsg, PeerClass, PresentedAdmit } from "@lararium/mesh";
+import type { AuthVerifierShore, LarSessionMsg, PeerClass, Presented } from "@lararium/mesh";
 
 /**
- * What a peer presented on its lar:auth beyond its card, proof and fleet edge, exactly as it arrived.
- * UNTRUSTED: nothing here is verified at the gate, and its presence or absence changes no admission.
- */
-export interface SocketPresentation {
-  readonly presentedAdmit: PresentedAdmit;
-}
-
-/**
- * The challenge THIS gate issued on a socket: the single-use nonce and the gate key it advertised. Trusted —
- * the gate minted both — so a seat reads a presented admit's leaf proof against these values and never
- * against anything the peer echoed.
+ * The challenge THIS gate issued on a socket: the single-use nonce and its own gate key. Trusted — the gate
+ * minted both — so a sorter reads a presentation's leaf proof against these values and never against anything
+ * the peer echoed.
  */
 export interface SocketChallenge {
   readonly nonce:      string;
   readonly gatePubKey: string;
 }
 
-/** The gate's own key: the verifying key it advertises and the signer that signs its verdicts. A vessel's
- *  gate key, never a persona root. */
+/** The gate's own key: its verifying key and the signer that signs its verdicts. A vessel's gate key, never a
+ *  persona root. */
 export interface GateKey {
   readonly pubKey: string;
   readonly sign:   (bytes: Uint8Array) => Promise<string> | string;
 }
 
-const AUTH_TIMEOUT_MS       = 5_000;
-const MAX_PENDING           = 50;     // max concurrent unauthenticated connections
+/** What the sorter reads for one socket whose key the worker proved. */
+export interface SortInput {
+  /** The Identifier hex the worker proved. */
+  readonly identifier:   string;
+  /** The raw vessel verifying key the V3 proof proved (the identifier's suffix), lowercase. */
+  readonly vesselKey:    string;
+  /** The worker vouched the peer same-operator (cap=admin@daemon, or a KEL-pinned device edge). */
+  readonly sameOperator: boolean;
+  /** What the socket presented beside its proof — UNTRUSTED until the sorter reads it. */
+  readonly presented?:   Presented;
+  /** The challenge this gate issued on the socket. */
+  readonly challenge:    SocketChallenge;
+}
+
+/** The sorter's answer for an admitted socket. */
+export interface SortVerdict {
+  readonly class:     PeerClass;
+  /** The leaf a contracted or walker socket stands as, and the Nexus it stands in. */
+  readonly standing?: { readonly nym: string; readonly aid: string };
+  /** Session frames the gate sends right after `lar:auth-ok`, in order. */
+  readonly push?:     ReadonlyArray<{ readonly kind: string; readonly body: unknown }>;
+}
+
+/** The sorter: a class for the socket, or null — silence. It never throws to the gate; a throw reads null. */
+export type SocketSorter = (input: SortInput) => Promise<SortVerdict | null>;
+
+/** Tunables a test may tighten. Production takes the defaults. */
+export interface DaemonAuthGateOptions {
+  /** The base of the silence deadline: a socket has [authTimeoutMs, 2·authTimeoutMs) from accept. */
+  readonly authTimeoutMs?: number;
+  /** Where the gate logs a refusal's cause (the wire never carries it). Defaults to the console. */
+  readonly onRefuse?:      (reason: string) => void;
+}
+
+const AUTH_TIMEOUT_MS        = 5_000;
+const MAX_PENDING            = 50;     // max concurrent unadmitted connections
 const MAX_CONTACT_CARD_BYTES = 64_000; // 64 KB — generous for a self-certifying identity packet
-const WS_CLOSE_UNAUTHORIZED  = 4003;
-const WS_CLOSE_NOT_READY     = 4503;
-const WS_CLOSE_RATE_LIMITED  = 4429;
 
 interface ArmedState {
   shore:        AuthVerifierShore;
   daemonBagUrl: string;
-  /** The gate key: advertised in lar:challenge (the gate-binding the peer's V3 proof commits to) and the
-   *  signer of every lar:auth-ok. */
   gate:         GateKey;
+  sort:         SocketSorter;
 }
 
+type Settled =
+  | { readonly ok: true; readonly identHex: string; readonly leafNonce: string; readonly verdict: SortVerdict; readonly presented?: Presented }
+  | { readonly ok: false; readonly reason: string };
+
 /**
- * EventEmitter proxy that NodeWSServerAdapter accepts in place of a
- * WebSocketServer. Intercepts raw connections, runs the auth exchange,
- * and only forwards authenticated sockets to the adapter.
+ * EventEmitter proxy that NodeWSServerAdapter accepts in place of a WebSocketServer. Intercepts raw
+ * connections, runs the auth exchange and the sort, and forwards only admitted sockets to the adapter.
  */
 export class DaemonAuthGate extends EventEmitter {
-  /** Mirrors the set of authenticated, live WebSocket connections.
-   *  NodeWSServerAdapter reads .clients for keep-alive sweeps. */
+  /** The admitted, live sockets. NodeWSServerAdapter reads .clients for keep-alive sweeps. */
   readonly clients: Set<WebSocket> = new Set();
 
   private armed: ArmedState | null = null;
   private _pending = 0;
-  /** socket → Keyhive Identifier hex (set on successful auth). */
+  private readonly authTimeoutMs: number;
+  private readonly onRefuse: (reason: string) => void;
+  /** socket → the Keyhive Identifier hex the worker proved. */
   private readonly socketToIdentifier = new WeakMap<WebSocket, string>();
-  /** socket → the self-slot PeerClass the keyholder vouched (#the self-slot split). Set on a
-   *  same-operator admit; ABSENT for any admit the worker could not positively vouch — the
-   *  sharePolicy reads that absence as the stricter cross-operator class (fail-closed). */
+  /** socket → the class the sorter answered. */
   private readonly socketToClass = new WeakMap<WebSocket, PeerClass>();
-  /** socket → the untrusted presentation an admitted peer carried (see the header, step 3). */
-  private readonly socketToPresentation = new WeakMap<WebSocket, SocketPresentation>();
-  /** socket → the challenge this gate issued on it (kept for every admitted socket, beside the presentation). */
+  /** socket → the leaf and Nexus a contracted or walker socket stands as. */
+  private readonly socketToStanding = new WeakMap<WebSocket, { readonly nym: string; readonly aid: string }>();
+  /** socket → what an admitted peer presented, as it arrived. */
+  private readonly socketToPresented = new WeakMap<WebSocket, Presented>();
+  /** socket → the challenge this gate issued on it. */
   private readonly socketToChallenge = new WeakMap<WebSocket, SocketChallenge>();
 
-  constructor(realWss: WSSType) {
+  constructor(realWss: WSSType, opts: DaemonAuthGateOptions = {}) {
     super();
+    this.authTimeoutMs = opts.authTimeoutMs ?? AUTH_TIMEOUT_MS;
+    this.onRefuse = opts.onRefuse ?? ((reason) => { try { console.log(`[gate] silent: ${reason}`); } catch { /* */ } });
     realWss.on("connection", (socket: WebSocket, req: unknown) => {
       void this._handleConnection(socket, req);
     });
@@ -140,85 +158,76 @@ export class DaemonAuthGate extends EventEmitter {
   }
 
   /**
-   * Arm the gate with the daemon island's verify shore, the daemon bag URL and the gate key that signs every
-   * verdict. Call once the daemon VM lives (its in-worker keyhive answers verify-proxy queries). Connections
-   * arriving before arm() are rejected with 4503.
+   * Arm the gate: the daemon island's verify shore, the daemon bag URL (the proof's audience), the gate key
+   * that signs every verdict, and the SORTER that classes every proven socket. Until armed, every socket is
+   * silent until its deadline.
    */
-  arm(shore: AuthVerifierShore, daemonBagUrl: string, gate: GateKey): void {
-    this.armed = { shore, daemonBagUrl, gate: { pubKey: gate.pubKey.toLowerCase(), sign: gate.sign } };
+  arm(shore: AuthVerifierShore, daemonBagUrl: string, gate: GateKey, sort: SocketSorter): void {
+    this.armed = { shore, daemonBagUrl, gate: { pubKey: gate.pubKey.toLowerCase(), sign: gate.sign }, sort };
   }
 
-  /**
-   * Look up the Keyhive Identifier hex for an authenticated socket.
-   * Call this (deferred by one microtask) from a "peer-candidate" listener
-   * on the NetworkAdapter to populate the PeerId → identifierHex map used
-   * by sharePolicy.
-   */
+  /** The exact upgrade path this gate answers on for `route` (`/ws`, `/oracle`), or null while unarmed. */
+  upgradePath(route: string): string | null {
+    return this.armed ? knockPath(this.armed.gate.pubKey, route) : null;
+  }
+
+  /** The Identifier hex the worker proved for an admitted socket. */
   getIdentifierForSocket(socket: WebSocket): string | undefined {
     return this.socketToIdentifier.get(socket);
   }
 
-  /**
-   * Look up the self-slot PeerClass the keyholder vouched for an authenticated socket. Call it
-   * (deferred one microtask, ALONGSIDE getIdentifierForSocket) from the "peer-candidate" listener to
-   * key the sharePolicy's class map. `undefined` — the worker admitted the peer but could not positively
-   * vouch it same-operator — reads as the stricter cross-operator class at the sharePolicy (fail-closed).
-   */
+  /** The class the sorter answered for an admitted socket. */
   getClassForSocket(socket: WebSocket): PeerClass | undefined {
     return this.socketToClass.get(socket);
   }
 
-  /**
-   * The presented admit an admitted peer carried on its lar:auth, as received — undefined for a peer that
-   * presented none. UNTRUSTED: the gate verified none of it, so a reader folds it against its own carriage
-   * frontier before reading any relation from it.
-   */
-  getPresentationForSocket(socket: WebSocket): SocketPresentation | undefined {
-    return this.socketToPresentation.get(socket);
+  /** The leaf and Nexus a contracted or walker socket stands as. */
+  getStandingForSocket(socket: WebSocket): { readonly nym: string; readonly aid: string } | undefined {
+    return this.socketToStanding.get(socket);
   }
 
-  /**
-   * The nonce and gate key this gate issued on an admitted socket — the values a presented admit's leaf
-   * proof must verify against. The gate decides nothing by them; the seat does.
-   */
+  /** What an admitted peer presented on its lar:auth, as received. The sorter has read it. */
+  getPresentedForSocket(socket: WebSocket): Presented | undefined {
+    return this.socketToPresented.get(socket);
+  }
+
+  /** The nonce and gate key this gate issued on an admitted socket. */
   getChallengeForSocket(socket: WebSocket): SocketChallenge | undefined {
     return this.socketToChallenge.get(socket);
   }
 
-  private async _handleConnection(socket: WebSocket, req: unknown): Promise<void> {
-    if (!this.armed) {
-      this._deny(socket, WS_CLOSE_NOT_READY, "vessel not ready");
-      return;
-    }
+  /**
+   * Drop an admitted socket SILENTLY — no close frame, no code, no reason — as the gate drops a refused one.
+   * The caller's refold uses it when a socket's class no longer holds (a revoked admit under PRIVATE, a
+   * posture flipped to PRIVATE under a stranger).
+   */
+  drop(socket: WebSocket): void {
+    this.clients.delete(socket);
+    terminate(socket);
+  }
 
-    if (this._pending >= MAX_PENDING) {
-      this._deny(socket, WS_CLOSE_RATE_LIMITED, "too many pending auth connections");
-      return;
-    }
+  private async _handleConnection(socket: WebSocket, req: unknown): Promise<void> {
+    // ONE DEADLINE, drawn at accept. Whatever happens below, a socket that has not passed by then is cut.
+    const deadline = this.authTimeoutMs + randomInt(0, Math.max(1, this.authTimeoutMs));
+    const timer = setTimeout(() => terminate(socket), deadline);
+    socket.once("close", () => clearTimeout(timer));
+    const silence = (reason: string): void => {
+      try { socket.removeAllListeners("message"); } catch { /* closed */ }
+      this.onRefuse(reason);
+    };
+
+    if (!this.armed) { silence("gate not armed"); return; }
+    if (this._pending >= MAX_PENDING) { silence("too many pending sockets"); return; }
 
     this._pending++;
-    const { shore, daemonBagUrl, gate } = this.armed;
+    const { shore, daemonBagUrl, gate, sort } = this.armed;
     const gatePubKey = gate.pubKey;
-
     const nonce = randomBytes(32).toString("hex");
-    this._send(socket, mkLarChallenge(nonce, gatePubKey));
+    send(socket, mkLarChallenge(nonce));
 
-    const result = await new Promise<
-      { ok: true; identHex: string; leafNonce: string; peerClass?: PeerClass; presentation?: SocketPresentation } | { ok: false; reason: string }
-    >((resolve) => {
-      const timer = setTimeout(
-        () => { socket.off("close", onClose); resolve({ ok: false, reason: "auth timeout" }); },
-        AUTH_TIMEOUT_MS,
-      );
-
-      const onClose = () => {
-        clearTimeout(timer);
-        socket.off("message", onMessage);
-        resolve({ ok: false, reason: "connection closed before auth" });
-      };
-
-      const onMessage = async (raw: Buffer | ArrayBuffer | Buffer[]) => {
-        clearTimeout(timer);
+    const result = await new Promise<Settled>((resolve) => {
+      const onClose = (): void => { socket.off("message", onMessage); resolve({ ok: false, reason: "closed before auth" }); };
+      const onMessage = async (raw: Buffer | ArrayBuffer | Buffer[]): Promise<void> => {
         socket.off("close", onClose);
         try {
           const text = Buffer.isBuffer(raw)
@@ -226,98 +235,69 @@ export class DaemonAuthGate extends EventEmitter {
             : Array.isArray(raw)
               ? Buffer.concat(raw).toString("utf8")
               : Buffer.from(raw as ArrayBuffer).toString("utf8");
-
           const parsed = JSON.parse(text) as unknown;
-          if (!isLarAuthMsg(parsed)) {
-            resolve({ ok: false, reason: "expected lar:auth message" });
-            return;
-          }
+          if (!isLarAuthMsg(parsed))                              { resolve({ ok: false, reason: "not a lar:auth" }); return; }
+          if (parsed.nonce !== nonce)                             { resolve({ ok: false, reason: "nonce mismatch" }); return; }
+          if (parsed.contactCard.length > MAX_CONTACT_CARD_BYTES) { resolve({ ok: false, reason: "contactCard too large" }); return; }
 
-          if (parsed.nonce !== nonce) {
-            resolve({ ok: false, reason: "nonce mismatch" });
-            return;
-          }
-
-          if (parsed.contactCard.length > MAX_CONTACT_CARD_BYTES) {
-            resolve({ ok: false, reason: "contactCard payload too large" });
-            return;
-          }
-
-          const cardBytes = new TextEncoder().encode(parsed.contactCard);
-
-          // V3 proof relay: carry the peer's signed proof material to the keyholder
-          // worker (the only verifier — project_verification_placement). The gate
-          // holds no keyhive, so it forwards {nonce, sig} and the worker checks
-          // the Ed25519 signature against the card-derived key + this gate's own key.
+          // The V3 proof rides to the keyholder worker (the only verifier); the fleet edge rides untouched.
           const proof = parsed.sig ? { nonce, sig: parsed.sig } : undefined;
+          const verdict = await shore.verify(new TextEncoder().encode(parsed.contactCard), daemonBagUrl, "admin", proof, parsed.edge);
+          if (!verdict.ok || !verdict.identifier) { resolve({ ok: false, reason: verdict.reason ?? "unproven" }); return; }
 
-          // Path (b): host has no keyhive — proxy to the daemon island, which
-          // does receiveContactCard + verify in-worker and returns the verdict
-          // plus the peer's Identifier hex for the sharePolicy map. The OPTIONAL
-          // device-delegation edge rides through untouched — the gate
-          // never adjudicates it; the in-worker keyholder verifies it against the
-          // PINNED hearth root.
-          const verdict = await shore.verify(cardBytes, daemonBagUrl, "admin", proof, parsed.edge);
-
-          // ENFORCEMENT (V3 step D): the keyholder worker already folded the proof
-          // check into `verdict.ok` (it returns ok only on capability AND a verified
-          // proof; LAR_V3_ALLOW_UNPROVEN=1 relaxes it worker-side). The gate admits
-          // on the verdict directly — it never re-decides policy, staying a relay.
-          if (!verdict.ok || !verdict.identifier) {
-            resolve({ ok: false, reason: verdict.reason ?? (verdict.ok ? "verify-proxy returned no identifier" : "insufficient capability") });
-          } else {
-            // Keep the presentation as received; it rides beside the verdict and changes none of it.
-            const presentation: SocketPresentation | undefined =
-              parsed.presentedAdmit !== undefined ? { presentedAdmit: parsed.presentedAdmit } : undefined;
-            // Carry the self-slot class the keyholder vouched (absent → cross-operator at the gate).
-            resolve({
-              ok: true, identHex: verdict.identifier, leafNonce: parsed.leafNonce,
-              ...(verdict.peerClass !== undefined ? { peerClass: verdict.peerClass } : {}),
-              ...(presentation ? { presentation } : {}),
+          const identHex = verdict.identifier;
+          let sorted: SortVerdict | null = null;
+          try {
+            sorted = await sort({
+              identifier: identHex,
+              vesselKey: identHex.slice(-64).toLowerCase(),
+              sameOperator: verdict.peerClass === "same-operator",
+              ...(parsed.presented !== undefined ? { presented: parsed.presented } : {}),
+              challenge: { nonce, gatePubKey },
             });
+          } catch (err) {
+            resolve({ ok: false, reason: `sorter fault: ${err instanceof Error ? err.message : String(err)}` });
+            return;
           }
-        } catch (err) {
+          if (!sorted) { resolve({ ok: false, reason: "sorted to silence" }); return; }
           resolve({
-            ok:     false,
-            reason: err instanceof Error ? err.message : String(err),
+            ok: true, identHex, leafNonce: parsed.leafNonce, verdict: sorted,
+            ...(parsed.presented !== undefined ? { presented: parsed.presented } : {}),
           });
+        } catch (err) {
+          resolve({ ok: false, reason: err instanceof Error ? err.message : String(err) });
         }
       };
-
       socket.once("close", onClose);
       socket.once("message", onMessage);
     });
 
     this._pending--;
+    if (!result.ok) { silence(result.reason); return; }
 
-    if (!result.ok) {
-      this._send(socket, mkLarAuthDenied(result.reason));
-      this._deny(socket, WS_CLOSE_UNAUTHORIZED, result.reason);
-      return;
-    }
-
-    // The verdict, signed by the gate key over the leaf's own nonce and the key the worker proved.
     let okSig: string;
     try {
       okSig = await gate.sign(authOkBytes({
         nonce, leafNonce: result.leafNonce, gatePubKey, peerPubKey: result.identHex.slice(-64), aud: daemonBagUrl,
       }));
     } catch (err) {
-      const reason = `gate could not sign its verdict: ${err instanceof Error ? err.message : String(err)}`;
-      this._send(socket, mkLarAuthDenied(reason));
-      this._deny(socket, WS_CLOSE_UNAUTHORIZED, reason);
+      silence(`gate could not sign its verdict: ${err instanceof Error ? err.message : String(err)}`);
       return;
     }
+    if (socket.readyState !== 1) { clearTimeout(timer); return; }   // the peer left while the sort ran
+    clearTimeout(timer);
     this.socketToIdentifier.set(socket, result.identHex);
-    if (result.peerClass !== undefined) this.socketToClass.set(socket, result.peerClass);
-    if (result.presentation !== undefined) this.socketToPresentation.set(socket, result.presentation);
+    this.socketToClass.set(socket, result.verdict.class);
+    if (result.verdict.standing) this.socketToStanding.set(socket, result.verdict.standing);
+    if (result.presented !== undefined) this.socketToPresented.set(socket, result.presented);
     this.socketToChallenge.set(socket, { nonce, gatePubKey });
-    this._send(socket, mkLarAuthOk(okSig));
+    send(socket, mkLarAuthOk(okSig));
     this.clients.add(socket);
     socket.once("close", () => this.clients.delete(socket));
     this._splitSessionFrames(socket);
+    for (const frame of result.verdict.push ?? []) this.sendSession(socket, frame.kind, frame.body);
 
-    // Hand the authenticated socket to NodeWSServerAdapter.
+    // Hand the admitted socket to NodeWSServerAdapter.
     this.emit("connection", socket, req);
   }
 
@@ -357,12 +337,14 @@ export class DaemonAuthGate extends EventEmitter {
       if (isLarSessionMsg(msg)) this.emit("session", socket, msg);
     });
   }
+}
 
-  private _send(socket: WebSocket, msg: object): void {
-    try { socket.send(JSON.stringify(msg)); } catch { /* socket may have closed */ }
-  }
+function send(socket: WebSocket, msg: object): void {
+  try { socket.send(JSON.stringify(msg)); } catch { /* socket may have closed */ }
+}
 
-  private _deny(socket: WebSocket, code: number, reason: string): void {
-    try { socket.close(code, reason); } catch { /* already closed */ }
-  }
+/** Cut a socket with no close frame: `terminate` where the transport has it, else a bare close. */
+function terminate(socket: WebSocket): void {
+  const s = socket as unknown as { terminate?: () => void; close: () => void };
+  try { if (typeof s.terminate === "function") s.terminate(); else s.close(); } catch { /* already gone */ }
 }

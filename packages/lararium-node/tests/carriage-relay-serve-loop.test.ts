@@ -103,7 +103,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     relay = await startCarriageRelay({ gateSeed: holderSeed });
     expect(relay.port).toBeGreaterThan(0);
     expect(relay.tracker.size).toBe(0);   // the composed hint index stands empty until a body announces
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
 
     // The HOLDER hearth runs the serve-loop (B3): it dials + auto-answers want-blocks — no hand-driven serve turn.
     loops.push(startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 }));
@@ -145,7 +145,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
       fedGate: new DeterministicFederationGate(holderKey),
     };
     relay = await startCarriageRelay({ gateSeed: holderSeed });
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     loops.push(startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps: bypassedDeps, pollIntervalMs: 25 }));
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     channels.push(memberCh);
@@ -165,7 +165,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     await new Promise<void>((r) => counter.on("listening", () => r()));
     const addr = counter.address();
     const port = typeof addr === "object" && addr ? addr.port : 0;
-    const url = `ws://127.0.0.1:${port}`;
+    const url = `ws://127.0.0.1:${port}#${"ab".repeat(32)}`;   // a pinned address — the dial knocks with its pin
     const seed = new Uint8Array(32).fill(6);
     const deps: CasWireServerDeps = {
       cadDir: mkDir("inert"), seal: makeSealedPlaneRegistry().seal,
@@ -211,7 +211,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
       fedGate: new DeterministicFederationGate(holderKey),
     };
     relay = await startCarriageRelay({ gateSeed: holderSeed });
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     const loop = startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 });
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     channels.push(memberCh);

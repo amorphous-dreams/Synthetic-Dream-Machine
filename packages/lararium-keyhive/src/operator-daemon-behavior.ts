@@ -58,7 +58,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  the gate fail-closes every bag to VEIL and prices every transfer lateral, as before. */
   bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
 };
-import { verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
+import { verifyAuthProof, verifyEdgeAgainstPersonaKel } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
@@ -889,22 +889,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         };
       }
 
-      // GATE-WIDENING — CROSS-OPERATOR bounded carriage (carry-contract MANDATORY tier). The peer holds
-      // NEITHER cap=admin@daemon NOR a valid pinned-root device-edge, yet it proved a valid self-certifying
-      // identity (receiveContactCard) and, under enforcement, key-possession (proofVerified — the early
-      // return above already guaranteed it). A DIFFERENT operator identity (a cabal-mate / another kahu)
-      // earns the BOUNDED "cross-operator" class: the node sharePolicy grants it ONLY the deterministically-
-      // federatable public/infra planes (crossroads/WHO/kapae-antigen), NEVER a private-own plane, NEVER
-      // admin. FAIL-CLOSED on the widened surface — a foreign identity that cannot prove possession draws a
-      // DENY (the classifier gates on proofVerified; the LAR_V3_ALLOW_UNPROVEN escape hatch relaxes the
-      // operator's OWN device fleet above, never a foreign presenter). The #59 antigen draws Mu on a Kapae'd
-      // cross-operator AHEAD, at the sharePolicy.
-      const cross = classifyCrossOperatorAdmission(proofVerified);
-      if (cross.ok) {
-        return { ok: true, identifier: id, proofVerified, reason: cross.reason, peerClass: cross.peerClass };
-      }
-      // No proven possession → the existing capability denial stands (fail-closed).
-      return { ...verdict, identifier: id, proofVerified, reason: verdict.reason ?? cross.reason };
+      // A PROVEN KEY, AND NOTHING MORE. The peer holds neither cap=admin@daemon nor a valid KEL-pinned device
+      // edge, yet it proved a self-certifying identity and — the foreign surface never relaxes — possession of
+      // its key. The worker vouches exactly that: `ok` with the proven identifier and NO class. The gate's sorter
+      // then classes the socket (contracted · walker · stranger) or answers it silence; the worker never
+      // decides what a foreign key reaches. A foreign key that cannot prove possession is refused here, whatever
+      // `LAR_V3_ALLOW_UNPROVEN` says (that hatch relaxes the operator's OWN device fleet above, never a foreign
+      // presenter).
+      if (proofVerified) return { ok: true, identifier: id, proofVerified, reason: "proven key — the gate's sorter classes it" };
+      return { ...verdict, identifier: id, proofVerified, reason: verdict.reason ?? "a foreign key must prove possession" };
     },
 
     // A VESSEL BINDS ON ITS OWN KEY, AND A FACE COMPOSES ONTO THAT.

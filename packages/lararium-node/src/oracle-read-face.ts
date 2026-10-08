@@ -2,8 +2,12 @@
  * oracle-read-face — the node-side wiring of the Two-Faced Substrate.
  *
  * Serves the oracle doc's signed causal pointer and the content-addressed snapshot it names (Automerge.save)
- * to PEERS WHO PROVED FIRST, over the vessel's own gate handshake on one upgrade path:
- *   ws <ORACLE_SOCKET_ROUTE> → lar:challenge · lar:auth · lar:auth-ok → pointer frame · snapshot frame · close
+ * to PEERS WHO PROVED FIRST, over the vessel's own gate handshake on one upgrade path — the KNOCK its gate key
+ * derives under the oracle route (`knockPath(vesselKey, ORACLE_SOCKET_ROUTE)`):
+ *   ws <ORACLE_SOCKET_ROUTE>/<knock> → lar:challenge · lar:auth · lar:auth-ok → pointer frame · snapshot frame · close
+ *
+ * The gate arms with the vessel's ONE sorter, so the oracle socket answers exactly the classes the relay does:
+ * under PRIVATE a proven stranger reads nothing at all — no verdict, no frame — exactly like a failed proof.
  *
  * The face is NOT an HTTP face. It claims no request path, so every HTTP request for the oracle draws the
  * vessel's closed door, exactly as a path nobody claims; a dialer that cannot prove a key at the gate reads
@@ -26,7 +30,7 @@ import type { Server, IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import WebSocket from "isomorphic-ws";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
-import { DaemonAuthGate } from "./daemon-auth-gate.js";
+import { DaemonAuthGate, type SocketSorter } from "./daemon-auth-gate.js";
 import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
@@ -68,6 +72,8 @@ export async function mountOracleReadFace(args: {
   readonly storageDir:   string;
   /** The daemon island's verify shore — the gate admits a dialer on its verdict, as the vessel's relay gate does. */
   readonly authShore:    AuthVerifierShore;
+  /** The vessel's ONE sorter — every proven reader is classed by it before any verdict, or met with silence. */
+  readonly sort:         SocketSorter;
   readonly dispatcher?:   HttpFaceDispatcher;
   readonly onLog?:       (line: string) => void;
   /** Export fn — defaults to exportOracleSnapshot (the raw doc). A FLOW-map serve passes a shore
@@ -127,13 +133,14 @@ export async function mountOracleReadFace(args: {
   oracleHandle.on("change", onChange);
 
   // THE GATE — the vessel's own handshake on its own socket server. Only a socket that passed it reaches
-  // `connection`; every other socket was denied and closed by the gate before a frame of the map was sent.
+  // `connection`; every other socket met silence before a frame of the map was sent.
   const wss  = new WebSocket.Server({ noServer: true });
   const gate = new DaemonAuthGate(wss);
   // The vessel key is the gate key: it signs each verdict back to the dialer, and the same key signs the pointer.
   gate.arm(args.authShore, DAEMON_BAG_ID, {
     pubKey: await ed25519VerifyingKeyFromSeed(signerSeed), sign: ed25519SignerFromSeed(signerSeed),
-  });
+  }, args.sort);
+  const path = gate.upgradePath(ORACLE_SOCKET_ROUTE)!;
   gate.on("connection", (socket: WebSocket) => {
     // Read the pair once, so the pointer and the bytes it names always leave together.
     const p = pointer, snap = snapshot;
@@ -146,10 +153,10 @@ export async function mountOracleReadFace(args: {
   const upgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
     wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
   };
-  const unregister = args.dispatcher?.registerUpgrade({ name: "oracle", path: ORACLE_SOCKET_ROUTE, handle: upgrade });
-  // A bare server (no dispatcher) carries one listener that answers this path alone and leaves every other.
+  const unregister = args.dispatcher?.registerUpgrade({ name: "oracle", path, handle: upgrade });
+  // A bare server (no dispatcher) carries one listener that answers this knock alone and leaves every other.
   const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
-    if (new URL(req.url ?? "/", "http://localhost").pathname === ORACLE_SOCKET_ROUTE) upgrade(req, socket, head);
+    if (new URL(req.url ?? "/", "http://localhost").pathname === path) upgrade(req, socket, head);
   };
   if (!unregister) httpServer.on("upgrade", onUpgrade);
 
@@ -176,6 +183,7 @@ export function mountFlowMapReadFace(args: {
   readonly signerSeed:       Uint8Array;
   readonly storageDir:       string;
   readonly authShore:        AuthVerifierShore;
+  readonly sort:             SocketSorter;
   readonly dispatcher?:      HttpFaceDispatcher;
   readonly onLog?:           (line: string) => void;
 }): Promise<OracleReadFace> {
@@ -185,6 +193,7 @@ export function mountFlowMapReadFace(args: {
     signerSeed:     args.signerSeed,
     storageDir:     args.storageDir,
     authShore:      args.authShore,
+    sort:           args.sort,
     ...(args.dispatcher ? { dispatcher: args.dispatcher } : {}),
     ...(args.onLog ? { onLog: args.onLog } : {}),
     exportSnapshot: (doc: unknown) => snapshotPublicFlowMap(doc as LarDoc),

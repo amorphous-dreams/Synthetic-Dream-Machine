@@ -71,7 +71,7 @@ describe("no-break-own-sync — a SAME-OPERATOR device-fleet peer keeps FULL dev
 
 describe("the no-leak — a CROSS-OPERATOR peer reaches ONLY the federatable-own planes", () => {
   const cross = (documentId: DocumentId) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate, antigenRing: null, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId,
+    hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate, antigenRing: null, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId,
   });
 
   test("crossroads crosses (federatable-own)", async () => { expect(await cross(CROSSROADS)).toBe(true); });
@@ -95,13 +95,13 @@ describe("fail-closed — an UNCLASSIFIED WS peer is treated cross-operator", ()
 describe("the #59 antigen runs AHEAD — a Kapae'd cross-operator draws Mu", () => {
   test("even a federatable plane draws Mu (false) for a Kapae'd presenter", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate, antigenRing: antigen, membership: null, planeSeal: null, peerId: KAPAED_PEER, documentId: CROSSROADS,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate, antigenRing: antigen, membership: null, planeSeal: null, peerId: KAPAED_PEER, documentId: CROSSROADS,
     });
     expect(verdict).toBe(false);
   });
   test("a clean cross-operator still reaches the federatable plane with the antigen wired", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate, antigenRing: antigen, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId: CROSSROADS,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate, antigenRing: antigen, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId: CROSSROADS,
     });
     expect(verdict).toBe(true);
   });
@@ -117,7 +117,7 @@ describe("house members + boot edge", () => {
 
   test("a gated peer whose fed gate has NOT yet stood is DENIED even a federatable plane (no boot-window leak)", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: null, antigenRing: null, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId: CROSSROADS,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: null, antigenRing: null, membership: null, planeSeal: null, peerId: CROSS_PEER, documentId: CROSSROADS,
     });
     expect(verdict).toBe(false);
   });
@@ -134,7 +134,7 @@ const planeSeal: PlaneSeal = { isSealedPlane: (docId) => docId === SEALED_PLANE 
 
 describe("the carry-split — the mesh BREATHES: a MEMBER blind-transits a sealed private plane", () => {
   const decide = (peerId: string, documentId: DocumentId | undefined) => selfSlotShareDecision({
-    hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate,
+    hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate,
     antigenRing: null, membership, planeSeal, peerId, documentId,
   });
 
@@ -162,14 +162,14 @@ describe("the carry-split — the mesh BREATHES: a MEMBER blind-transits a seale
 describe("the seal-guard fail-closed — DENY_ALL seal keeps the member lane INERT (today's wire)", () => {
   test("even a MEMBER cannot carry a private plane when planeSeal is null (no sealed plane provable)", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate,
       antigenRing: null, membership, planeSeal: null, peerId: MEMBER_PEER, documentId: SEALED_PLANE,
     });
     expect(verdict).toBe(false);
   });
   test("with a null membership consult, every cross-operator is a STRANGER (no sealed carriage)", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate,
       antigenRing: null, membership: null, planeSeal, peerId: MEMBER_PEER, documentId: SEALED_PLANE,
     });
     expect(verdict).toBe(false);
@@ -186,7 +186,7 @@ describe("the read-lane stays absolute — a Kapae'd MEMBER draws Mu even for a 
 
   test("a banned MEMBER cannot blind-transit even a sealed plane (Kapae stays ahead of the carry-split)", async () => {
     const verdict = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: fedGate,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: fedGate,
       antigenRing: antigenMember, membership: memberIncludingKapaed, planeSeal, peerId: kapaedMember, documentId: SEALED_PLANE,
     });
     expect(verdict).toBe(false);

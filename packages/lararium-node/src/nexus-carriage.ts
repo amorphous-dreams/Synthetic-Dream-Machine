@@ -50,10 +50,11 @@
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type {
   NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit, CarriageEntry, KapaeAntigenEntry, KahuQuorumSeats,
-  LeafIdentity, SealEpoch,
+  LeafIdentity, SealEpoch, FederationPosture,
 } from "@lararium/mesh";
 import {
   realmIdOfCharter,
+  federationPostureFromDoc,
   seatedKahuKeys,
   foundingRoster,
   foldCarrierSet,
@@ -122,6 +123,9 @@ export interface CarriedNexusReading {
   /** The ANTIGEN quorum's roster, passed as its own input. `readCarriedNexuses` reads it off N's charter
    *  roster, exactly as the antigen ring folds its own board. */
   readonly antigenRoster: KahuQuorumSeats;
+  /** N's federation posture off the charter this vessel holds for N (PRIVATE when absent or torn). The gate
+   *  answers strangers iff some carried Nexus reads OPEN (`answersStrangers`). */
+  readonly posture:       FederationPosture;
 }
 
 /** Opens a per-Nexus board by url on whatever replica the caller reads, returning its doc. */
@@ -159,6 +163,7 @@ export async function readCarriedNexuses(opts: {
       denyBoard:     carriageEntriesFromBoard(denyDoc),
       antigen:       antigenEntriesFromBoard(antigenDoc),
       antigenRoster: roster,
+      posture:       federationPostureFromDoc(doc),
     });
   }
   return out;
@@ -207,7 +212,10 @@ export interface LeafStanding {
  */
 export async function leafStandingFor(binding: SocketBinding, readings: readonly CarriedNexusReading[]): Promise<LeafStanding | null> {
   try {
-    if (!(await verifyLeafProof(binding))) return null;
+    if (!(await verifyLeafProof({
+      presented: { kind: "admit", ...binding.presentedAdmit }, nonce: binding.nonce,
+      gatePubKey: binding.gatePubKey, vesselKey: binding.vesselKey,
+    }))) return null;
     const admit = binding.presentedAdmit.admit;
     const reading = readings.find((r) => r.roster.sealEpochCid.length > 0 && r.roster.sealEpochCid === admit.sealEpochCid)
       ?? readings.find((r) => r.roster.sealEpochCid.length > 0 && r.sealLineage.some((e) => e.epochCid === admit.sealEpochCid));
@@ -349,7 +357,7 @@ export function dialIdentityFor(
   if (presented) {
     return {
       contactCard: base.contactCard, peerPubKey: base.peerPubKey, sign: base.sign,
-      presentedAdmit: { admit: presented.admit, lineage: presented.lineage },
+      presented: { kind: "admit", admit: presented.admit, lineage: presented.lineage },
       leafSign: leafSignerOf(presented),
     };
   }

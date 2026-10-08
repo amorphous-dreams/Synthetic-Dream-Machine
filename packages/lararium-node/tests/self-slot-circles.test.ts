@@ -43,7 +43,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
 
   test("a CROSS-OPERATOR peer is DENIED the circles doc even with the Nexus OPEN", async () => {
     const base = {
-      hasWsSocket: true, peerClass: "cross-operator" as const,
+      hasWsSocket: true, peerClass: "stranger" as const,
       selfSlotFedGate: gate, antigenRing: null, membership: null, planeSeal: null,
       federationPosture: "open" as const, peerId: "stranger",
     };
@@ -55,7 +55,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
 
   test("a CROSS-OPERATOR peer is denied the circles doc under a PRIVATE Nexus too", async () => {
     const denied = await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator",
+      hasWsSocket: true, peerClass: "stranger",
       selfSlotFedGate: gate, antigenRing: null, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "stranger", documentId: circlesStandIn,
     });

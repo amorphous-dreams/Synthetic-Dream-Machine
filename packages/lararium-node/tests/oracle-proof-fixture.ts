@@ -7,6 +7,12 @@ import {
   verifyAuthProof, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   type AuthVerifierShore, type LeafIdentity,
 } from "@lararium/mesh";
+import type { SocketSorter } from "../src/daemon-auth-gate.js";
+
+/** A face that answers proven strangers — its vessel stands in an OPEN Nexus. */
+export const openSorter: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
+/** A face whose every Nexus reads PRIVATE: a proven stranger is silence. */
+export const privateSorter: SocketSorter = async (input) => (input.sameOperator ? { class: "same-operator" } : null);
 
 /** A shore that admits exactly the readers whose proof holds for `gateSeed`'s key — the card is the reader's key. */
 export async function provingShore(gateSeed: Uint8Array): Promise<AuthVerifierShore> {
@@ -15,9 +21,9 @@ export async function provingShore(gateSeed: Uint8Array): Promise<AuthVerifierSh
     verify: async (cardBytes, bagUrl, _access, proof) => {
       const peerPubKey = new TextDecoder().decode(cardBytes);
       if (!proof) return { ok: false, reason: "V3 proof required" };
-      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey, aud: bagUrl, ts: proof.ts, sig: proof.sig });
+      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey, aud: bagUrl, sig: proof.sig });
       return v.ok
-        ? { ok: true, identifier: peerPubKey, proofVerified: true, peerClass: "cross-operator" }
+        ? { ok: true, identifier: peerPubKey, proofVerified: true }
         : { ok: false, reason: `V3 proof rejected: ${v.reason ?? "unverified"}` };
     },
   };

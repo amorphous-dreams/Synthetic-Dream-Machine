@@ -1,36 +1,31 @@
 /**
- * self-slot-share — the federatable-own vs private-own SPLIT the node sharePolicy enacts per WS peer.
+ * self-slot-share — the per-peer, per-document share verdict the node sharePolicy enacts, keyed on the CLASS
+ * the gate's sorter answered before the socket's verdict.
  *
- * The DaemonAuthGate admits an inbound peer; the keyholder worker vouches HOW it relates to this
- * operator's identity (the PeerClass). This pure decision reads that class and routes the doc:
- *   · an IN-PROCESS island peer (no WS socket) — a house member — shares FREELY (empty relay ring).
- *   · a SAME-OPERATOR WS peer — it proved admin@daemon OR a pinned-root device-edge, both UNFORGEABLE —
- *     shares FREELY too (full device sync; the operator's own fleet carries every private plane).
- *   · a CROSS-OPERATOR or UNCLASSIFIED WS peer — a singleton relay ring + the self-slot federation gate.
- *     The CARRY-SPLIT (operator-ruled 2026-07-20) lets the mesh BREATHE across a Nexus here: a cross-operator
- *     the nexus-doc consult names a MEMBER blind-transits a PROVABLY-SEALED private plane (carry the ciphertext,
- *     never the read-cap); a STRANGER (valid identity, no contract) reaches ONLY the deterministically-
- *     federatable public shelf. The read-lane denial stays absolute — no cross-operator ever decrypts.
+ *   · an IN-PROCESS island peer (no WS socket) — a house member — shares FREELY (empty relay ring);
+ *   · a SAME-OPERATOR WS peer — the keyholder vouched admin@daemon or a KEL-pinned device edge, both
+ *     UNFORGEABLE — shares FREELY too (full device sync; the operator's own fleet carries every private plane);
+ *   · every other WS peer — contracted, walker, stranger, or one with no class — rides a singleton relay ring
+ *     over the deterministic federatable shelf (crossroads · WHO · kapae-antigen · boards). The CARRY-SPLIT lets
+ *     a peer the nexus-doc consult names a MEMBER (a held, presented admit) blind-transit a PROVABLY-SEALED
+ *     private plane (carry the ciphertext, never the read-cap). The read-lane denial stays absolute.
  *
- * FAIL-CLOSED: the class the worker could not positively vouch as same-operator arrives here `undefined`
- * and routes to the STRICTER cross-operator branch — the federatable floor crosses only if PROVABLY
- * federatable; the sealed-carry lane opens only for a PROVABLY-member peer over a PROVABLY-sealed plane
- * (absent the nexus-doc consult or the seal oracle, every cross-operator is treated STRANGER).
+ * POSTURE IS NOT READ HERE. A stranger the gate does not answer never holds a socket: under PRIVATE the sorter
+ * answers silence before any verdict, so every peer this decision sees was admitted, and posture has one reader.
  *
- * THE SPLIT RIDES THE OUTER RING — the deterministic federatable set (DeterministicFederationGate) — and
- * that placement IS the safety: the outer gate is the position where a permissive substitution would leak a
- * private-own plane, because nothing runs ahead of it, so the split seats a CLOSED-SET membership test there.
- * A cross-operator peer therefore reaches a FIXED public/infra surface, never an over-broad grant of this
- * vessel's own docs. The INNER verifyCapability-for-self ring stays null here, and its absence costs no
- * safety: the composition ANDs outer-first, so an inner ring can only ever NARROW this verdict, never widen
- * it (measured: `lararium-mesh/tests/allow-all-ring-ordering.test.ts`). The #59 antigen consult runs AHEAD
- * (a Kapae'd presenter draws Mu even for a federatable plane).
+ * FAIL-CLOSED: a WS peer with no class routes to the shelf; the sealed-carry lane opens only for a
+ * PROVABLY-member peer over a PROVABLY-sealed plane. THE SPLIT RIDES THE OUTER RING — the deterministic
+ * federatable set — and that placement IS the safety: nothing runs ahead of it, so a permissive substitution
+ * could leak a private-own plane there, and the split seats a CLOSED-SET membership test instead. The INNER
+ * verifyCapability-for-self ring stays null; the composition ANDs outer-first, so an inner ring can only ever
+ * NARROW this verdict (`lararium-mesh/tests/allow-all-ring-ordering.test.ts`). The #59 antigen consult runs
+ * AHEAD (a Kapae'd presenter draws Mu even for a federatable plane).
  *
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */
 import type { DocumentId } from "@automerge/automerge-repo";
-import { carryContractShareDecision, carrierShareDecision, postureGatesCrossOperator } from "@lararium/mesh";
-import type { AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PlaneSeal } from "@lararium/mesh";
+import { carryContractShareDecision, carrierShareDecision } from "@lararium/mesh";
+import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal } from "@lararium/mesh";
 
 /** A same-operator peer + every in-process island peer ride this empty relay ring → shared freely. */
 const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
@@ -38,59 +33,31 @@ const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
 export interface SelfSlotShareInput {
   /** True for a WS peer (an outside carrier); false for an in-process island peer (a house member). */
   readonly hasWsSocket: boolean;
-  /** The class the keyholder vouched at admission; `undefined` → fail-closed to cross-operator. */
+  /** The class the gate's sorter answered; `undefined` → the shelf, fail-closed. */
   readonly peerClass: PeerClass | undefined;
   /** The federatable-own classifier (a pure function of this Nexus's pubkey). Null before it stands. */
   readonly selfSlotFedGate: FederationGate | null;
   /** The #59 Kapae-antigen ring (consulted AHEAD; a Kapae'd presenter draws Mu). Null denies nobody. */
   readonly antigenRing: AntigenRing | null;
-  /** The nexus-doc membership consult — a cross-operator MEMBER blind-transits a sealed plane. Null → every
-   *  cross-operator treated STRANGER (public-read only), fail-closed. */
+  /** The nexus-doc membership consult — a MEMBER blind-transits a sealed plane. Null → no peer is a member. */
   readonly membership: NexusMembership | null;
   /** The plane-seal oracle — only a PROVABLY-sealed plane blind-transits. Null → deny-carry, fail-closed. */
   readonly planeSeal: PlaneSeal | null;
-  /**
-   * The per-Nexus federation POSTURE (read as-of-last-sync off the nexus doc). Governs cross-Nexus
-   * carry of the PUBLIC shelf to a FOREIGN (non-member) operator: PRIVATE denies it entirely (only a SAME-Nexus
-   * member co-federates); OPEN lets any proof-carrying foreign operator reach the public shelf. It NEVER touches
-   * a private plane — those stay sealed by the read-floor + the self-slot denial in BOTH postures.
-   *
-   * This pure mechanism defaults OPEN when omitted (policy-neutral: the code never bakes the legitimacy answer,
-   * mirroring `decideCabalJoin`), AND — because the posture only ever gates the world-public shelf — an omitted
-   * default can leak nothing private. The FAIL-CLOSED live default (PRIVATE) is set by the NODE caller
-   * (`open-node-vessel` reads the charter doc, defaulting private); every live sharePolicy call supplies it.
-   */
-  readonly federationPosture?: FederationPosture;
   readonly peerId: string;
   /** The doc under decision; `undefined` (a gated relay peer with no doc id) → deny-by-default. */
   readonly documentId: DocumentId | undefined;
 }
 
 /**
- * The per-peer share verdict. A same-operator / in-process peer full-syncs; a cross-operator /
- * unclassified WS peer reaches only the deterministically-federatable planes; a Kapae'd presenter
- * draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
+ * The per-peer share verdict. A same-operator / in-process peer full-syncs; every other WS peer reaches only
+ * the deterministically-federatable planes (and, as a member, a provably-sealed plane's ciphertext); a Kapae'd
+ * presenter draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
  */
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
-  // Gate a WS peer the worker did NOT positively vouch same-operator (cross-operator OR unclassified).
-  const gateThisPeer = input.hasWsSocket && input.peerClass !== "same-operator";
-  if (gateThisPeer) {
-    // THE POSTURE OUTER GATE (open-beta toggle). Under PRIVATE, a cross-Nexus foreign operator that is NOT a
-    // SAME-Nexus member is denied co-federation ENTIRELY — not even the public shelf crosses. Under OPEN, any
-    // proof-carrying foreign operator reaches the public shelf (the prior bounded carry). The posture never opens
-    // a private plane; it only gates WHO may carry the world-public surface. Defaults OPEN when omitted (the pure
-    // mechanism stays policy-neutral + can leak nothing private); the live node caller supplies the fail-closed
-    // PRIVATE default it read off the charter doc.
-    const posture  = input.federationPosture ?? "open";
-    const holdsCarriage = input.membership?.holdsCarriagePeer(input.peerId) ?? false;
-    if (!postureGatesCrossOperator(posture, holdsCarriage)) return false;   // private + non-member → deny all (Mu-shaped false)
+  if (input.hasWsSocket && input.peerClass !== "same-operator") {
     // FAIL-CLOSED at the boot edge: a gated peer whose federatable classifier has not yet stood gets a
-    // DenyAllGate floor — the federatable floor reads nothing crossable (`carryContractShareDecision` reads
-    // a null fed gate as "same-operator relay → full sync", a DIFFERENT case, so a gated peer MUST never
-    // reach it null — that would leak every plane). The carry-split adds the MEMBER blind-transit lane atop
-    // that floor: a MEMBER (per the nexus-doc consult) blind-transits a PROVABLY-SEALED private plane; a
-    // STRANGER reaches only the federatable floor; a Kapae'd presenter draws Mu regardless. The self-slot
-    // INNER capability ring stays inert (identity = null) — the carry-split rides carriage, never a read-cap.
+    // DenyAllGate floor (`carryContractShareDecision` reads a null fed gate as "same-operator relay → full
+    // sync", a DIFFERENT case, so a gated peer must never reach it null — that would leak every plane).
     const fedGate: FederationGate = input.selfSlotFedGate ?? new DenyAllGate();
     return carrierShareDecision(
       new Set<string>([input.peerId]),

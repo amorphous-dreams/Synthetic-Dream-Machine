@@ -32,7 +32,9 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { DaemonAuthGate, type GateKey } from "../src/daemon-auth-gate.js";
+import { DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
+/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
+const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import { startNexusClientDial, maybeStartNexusClientDial } from "../src/nexus-client-dial.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
@@ -93,7 +95,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
   return new Promise((resolve, reject) => {
     const http: Server = createServer();
     const wss  = new WebSocketServer({ server: http });
-    const gate = new DaemonAuthGate(wss);
+    const gate = new DaemonAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
     const serverNetwork = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
 
     const peerIdentifierMap = new Map<string, string>();
@@ -117,7 +119,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
       },
     });
 
-    gate.arm(makeCapabilityShore(opts.gatePubKey, opts.admitted), AUD, gateKeyOf(opts.gatePubKey));
+    gate.arm(makeCapabilityShore(opts.gatePubKey, opts.admitted), AUD, gateKeyOf(opts.gatePubKey), admitProven);
 
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();

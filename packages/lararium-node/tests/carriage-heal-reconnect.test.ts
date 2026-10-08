@@ -7,15 +7,19 @@
  *   2. the RE-connect fires `onReconnect` (the board re-fold) — NEVER fired on the first connect,
  *   3. `stop()` after a drop halts the re-dial → no connection outlives teardown (no leak, no infinite retry).
  *
- * A minimal handshake relay stands in for the real crossroads: it challenges, answers `auth-ok`, and exposes a
- * `killLive()` that closes the current socket (the drop the heal watches). The two-OS-process crossing + a Pi's
+ * A minimal handshake relay stands in for the real crossroads: it speaks the one gate wire (challenge, then a
+ * verdict SIGNED by its gate key over the dialer's own nonce), and exposes a `killLive()` that closes the current
+ * socket (the drop the heal watches). The two-OS-process crossing + a Pi's
  * real partition stay outside this headless proof — here the reconnection machinery itself is exercised for real.
  *
  * Gate: lar:///ha.ka.ba/lararium/node/carriage-serve-loop#heal
  */
 import { afterEach, describe, test, expect } from "vitest";
 import { WebSocketServer, WebSocket, type RawData } from "ws";
-import { webGetRandomValues, hex } from "@lararium/mesh";
+import {
+  webGetRandomValues, hex, mkLarChallenge, mkLarAuthOk, authOkBytes, isLarAuthMsg,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, MEMBERSHIP_RELAY_DOMAIN,
+} from "@lararium/mesh";
 import type { CasWireServerDeps } from "../src/cas-wire.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
 import { DeterministicFederationGate } from "@lararium/mesh";
@@ -24,34 +28,44 @@ import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 const asText = (d: RawData): string => (typeof d === "string" ? d : d.toString());
 
-/** A minimal handshake relay: challenge → (client auth) → auth-ok. Tracks connections + can kill the live socket. */
+const GATE_SEED = new Uint8Array(32).fill(77);
+const MEMBERSHIP_AUD = MEMBERSHIP_RELAY_DOMAIN;
+
+/** A minimal handshake relay: challenge → (client auth) → signed auth-ok. Tracks connections + can kill the live socket. */
 function startHandshakeRelay(): Promise<{
-  port: number; connections: () => number; killLive: () => void; close: () => Promise<void>;
+  port: number; gatePubKey: string; connections: () => number; killLive: () => void; close: () => Promise<void>;
 }> {
   return new Promise((resolve) => {
     const wss = new WebSocketServer({ port: 0 });
     let count = 0;
     let live: WebSocket | null = null;
+    const gatePub = ed25519VerifyingKeyFromSeed(GATE_SEED);
     wss.on("connection", (sock: WebSocket) => {
       count += 1;
       live = sock;
       const nonce = hex(webGetRandomValues(new Uint8Array(32)));
-      sock.send(JSON.stringify({ t: "challenge", nonce, gatePubKey: "00".repeat(32) }));
+      sock.send(JSON.stringify(mkLarChallenge(nonce)));
       sock.on("message", (data: RawData) => {
-        let frame: { t?: string };
-        try { frame = JSON.parse(asText(data)) as { t?: string }; } catch { return; }
-        if (frame.t === "auth") sock.send(JSON.stringify({ t: "auth-ok" }));   // accept — the reconnection is under test, not the proof
+        let frame: unknown;
+        try { frame = JSON.parse(asText(data)); } catch { return; }
+        if (!isLarAuthMsg(frame)) return;
+        // Accept — the reconnection is under test, not the proof; the verdict still carries the gate key's signature.
+        const auth = frame;
+        void gatePub.then(async (gatePubKey) => {
+          const sig = await ed25519SignerFromSeed(GATE_SEED)(authOkBytes({ nonce, leafNonce: auth.leafNonce, gatePubKey, peerPubKey: auth.contactCard, aud: MEMBERSHIP_AUD }));
+          sock.send(JSON.stringify(mkLarAuthOk(sig)));
+        });
       });
     });
     wss.on("listening", () => {
       const addr = wss.address();
       const port = typeof addr === "object" && addr ? addr.port : 0;
-      resolve({
-        port,
+      void gatePub.then((gatePubKey) => resolve({
+        port, gatePubKey,
         connections: () => count,
         killLive: () => { try { live?.close(); } catch { /* down */ } },
         close: () => new Promise<void>((r) => wss.close(() => r())),
-      });
+      }));
     });
   });
 }
@@ -73,7 +87,7 @@ describe("carriage HEAL — the serve-loop re-dials after a drop and re-folds th
   test("kill the live socket mid-serve → the loop RE-DIALS and fires onReconnect (never on the first connect)", async () => {
     const relay = await startHandshakeRelay();
     relays.push(relay);
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     let reconnects = 0;
 
     const loop = startCarriageServeLoop({
@@ -104,7 +118,7 @@ describe("carriage HEAL — the serve-loop re-dials after a drop and re-folds th
   test("stop() after a drop halts the re-dial — no connection outlives teardown", async () => {
     const relay = await startHandshakeRelay();
     relays.push(relay);
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     const loop = startCarriageServeLoop({
       relayUrl: url, vesselSeed: new Uint8Array(32).fill(10), serverAddr: "holder",
       deps: inertDeps(), pollIntervalMs: 25, reconnectDelayMs: 100,

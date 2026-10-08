@@ -25,7 +25,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { openStagedJoinee, freePort, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStagedJoinee, freePort, pinnedCarriageRelay, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -117,11 +117,11 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     // The joinee rite — one door in the harness. The carriage crossroads (Socket B) A stands and both dial —
     // the fetch door's transport; the early LOAD lands on A before B stands.
     const portRelay = await freePort();
-    const carriageRelay = `ws://127.0.0.1:${portRelay}`;
+    const relay = await pinnedCarriageRelay(portRelay);
     pair = await openStagedJoinee({
       tag: "blob",
-      daemonEnv:  { LAR_CARRIAGE_RELAY: carriageRelay },
-      daemonEnvA: { LAR_HERM_RELAY_PORT: String(portRelay) },
+      daemonEnv:  { LAR_CARRIAGE_RELAY: relay.url },
+      daemonEnvA: { LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex },
       beforeB: async (a) => {
         const earlyDir = join(a.root, "blob-stage/bags/lares", LOCI_EARLY);
         mkdirSync(earlyDir, { recursive: true });

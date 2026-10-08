@@ -60,7 +60,7 @@ function reading(aid: string, roster: KahuQuorumSeats, denyBoard: CarriageEntry[
 }
 async function bind(admit: CarriageEntry, opts: { lineage?: CarriageEntry[]; signer?: Uint8Array; vessel?: Uint8Array; wireVessel?: Uint8Array } = {}): Promise<SocketBinding> {
   const vesselKey = await pubOf(opts.vessel ?? VESSEL_SEED);
-  const leafProof = await signLeafProof({ admit, nonce: NONCE, gatePubKey: GATE, vesselKey, sign: signerOf(opts.signer ?? LEAF_SEED) });
+  const leafProof = await signLeafProof({ presented: { kind: "admit", admit, lineage: [] }, nonce: NONCE, gatePubKey: GATE, vesselKey, sign: signerOf(opts.signer ?? LEAF_SEED) });
   return {
     presentedAdmit: { admit, lineage: opts.lineage ?? [], leafProof },
     nonce: NONCE, gatePubKey: GATE, vesselKey: await pubOf(opts.wireVessel ?? opts.vessel ?? VESSEL_SEED),

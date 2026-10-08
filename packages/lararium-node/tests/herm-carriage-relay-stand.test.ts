@@ -27,7 +27,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { WebSocket } from "ws";
-import {
+import { knockedUrl,
   DeterministicFederationGate, openBodyOnCas, verifyCiphertextCid, utf8Bytes, hex,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
@@ -117,7 +117,7 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     expect(relay!.gatePubKey).toBe(await pubOf(resolveRelayGateSeed(hermSeed)));
     expect(relay!.gatePubKey).not.toBe(await pubOf(hermSeed));
     expect(relay!.tracker.size).toBe(0);
-    const url = `ws://127.0.0.1:${relay!.port}`;
+    const url = `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`;
 
     // A holder hearth serves its sealed body over the Herm's crossroads; two requester hearths dial the same URL.
     loops.push(startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 }));
@@ -149,7 +149,8 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     // CONFIGURED: the SAME gate with a port stands exactly one crossroads a hearth can dial.
     relay = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
     expect(relay).not.toBeNull();
-    const url = `ws://127.0.0.1:${relay!.port}`;
+    // A hearth dials the knock its pin derives — the only path the crossroads answers an upgrade on.
+    const url = knockedUrl(`ws://127.0.0.1:${relay!.port}`, relay!.gatePubKey);
     const dialed = await new Promise<boolean>((resolve) => {
       const ws = new WebSocket(url);
       const done = (v: boolean) => { try { ws.close(); } catch { /* down */ } resolve(v); };
@@ -197,7 +198,7 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     const hermSeed = new Uint8Array(32).fill(41);
     const stood = await bootRelayGate({ vesselSeed: hermSeed, relayPort: 0 });
     expect(stood).not.toBeNull();
-    const url = `ws://127.0.0.1:${stood!.port}`;
+    const url = knockedUrl(`ws://127.0.0.1:${stood!.port}`, stood!.gatePubKey);
 
     // UP: a hearth reaches the crossroads.
     const upDial = await new Promise<boolean>((resolve) => {

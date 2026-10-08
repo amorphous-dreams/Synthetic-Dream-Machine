@@ -52,6 +52,7 @@ import { readArchiveOpening } from "./archive-passphrase.js";
 import { faceStands } from "./commands/init.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
+import { parseMeshPeer } from "@lararium/mesh";
 import { startUdsChannel }              from "./uds-channel.js";
 import { rendezvousPath, rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
@@ -151,10 +152,17 @@ async function main(): Promise<void> {
 
   // Mesh standing — derived ONCE for either cap-stack, shared by the herm + lararium
   // branches. Every vessel stands a node on the routing chart: LAR_PUBLIC_URL = its REACHABLE http
-  // read-face (the self-peering key, advertised in its dial), LAR_PEERS = bootstrap base URLs,
+  // read-face (the self-peering key, advertised in its dial), LAR_PEERS = bootstrap peers (`<url>#<gate key>`),
   // LAR_SEED = its dial label (else hash-derived); LAR_RADIUS = its carriage standing r.
   const publicUrl = process.env["LAR_PUBLIC_URL"] ?? `http://localhost:${port}`;
-  const peers = (process.env["LAR_PEERS"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  // Each bootstrap peer names its gate key — `<http read-face>#<gate key hex>` — the pin a pull knocks with and
+  // proves to. An entry with no key names no gate: refused here, said aloud, and never dialed.
+  const peerEntries = (process.env["LAR_PEERS"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  const peers = peerEntries.flatMap((entry) => {
+    const peer = parseMeshPeer(entry);
+    if (!peer) console.log(`[lararium] LAR_PEERS entry refused — no gate key to pin (write <url>#<gate key hex>): ${entry}`);
+    return peer ? [peer] : [];
+  });
   const seedLabel = process.env["LAR_SEED"];
   // The radius reads from the host HERE, where a host environment exists. Passing it inward keeps the
   // mesh module isomorphic — it can hold no opinion about which platform it woke on.
@@ -214,11 +222,8 @@ async function main(): Promise<void> {
     mountHermWaymark({ httpServer, dispatcher, bulbCid: genesisSeedCid(bulb.seedBytes) });
   }
 
-  // The relay socket rides the dispatcher's one upgrade listener; an upgrade no socket face claims is destroyed.
-  dispatcher.registerUpgrade({
-    name: "relay", path: "/ws",
-    handle: (req, socket, head) => wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req)),
-  });
+  // The relay socket rides the dispatcher's one upgrade listener on the KNOCK its gate key derives — the vessel
+  // registers that path when its gate arms. An upgrade no socket face claims is destroyed before any HTTP 101.
 
   // Fail-fast on a busy port — the supervised vessel never manages its siblings
   // (12-factor / island sovereignty). A clean message, not an unhandled 'error'
@@ -431,6 +436,7 @@ async function main(): Promise<void> {
     genesisDir,
     rootDir,
     wss,
+    dispatcher,
     catalogUrl,
     meshSelf,
     onPhase: (phase) => {
@@ -449,10 +455,9 @@ async function main(): Promise<void> {
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
   // THE CROSSING, spoken aloud. A leaf's V3 proof commits to the GATE'S key, and the leaf must hold that
-  // key OUT-OF-BAND — the challenge carries it on the wire, but trusting it there would let any relay
-  // impersonate the gate (the anti-relay guarantee), so the wire copy sources nothing. A leaf that never
-  // received the key binds its proof to its OWN did, the gate recomputes against its own, and the proof
-  // fails closed. That refusal reads correct, and it looks exactly like a broken socket: dial, deny, re-dial.
+  // key OUT-OF-BAND — the challenge names no key, and the relay answers only on the knock that key derives, so
+  // a leaf that never received the key reaches no gate at all. That reads correct, and it looks exactly like
+  // a dead socket.
   //
   // The gate arms with this vessel's operator verifying key, so this vessel already HOLDS the one thing a
   // crossing leaf cannot obtain for itself. Printing it turns an unperformable ritual into an instruction.
@@ -485,6 +490,7 @@ async function main(): Promise<void> {
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
         authShore: result.daemon.authShore,
+        sort:      result.socketSorter,
         dispatcher,
         onLog: (line) => console.log(`[lararium] ${line}`),
       });

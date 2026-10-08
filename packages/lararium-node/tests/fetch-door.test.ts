@@ -54,7 +54,7 @@ describe("the fetch door — a fleet peer's read pulls a cleartext blob across S
     writeFileSync(join(cidA, CLEAR_CID), CLEAR);
 
     relay = await startCarriageRelay({ gateSeed: seedA });
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     // A: fleet = {B}; members (CONTRACT) = {C}. C stands as a contracted cabal's hearth, never fleet.
     const loopA = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedA, serverAddr: keyA, deps: depsFor(cidA, [keyB], [keyC], keyA), pollIntervalMs: 25 });
     const loopB = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedB, serverAddr: keyB, deps: depsFor(cidB, [], [], keyB), pollIntervalMs: 25 });
@@ -81,7 +81,7 @@ describe("the fetch door — a fleet peer's read pulls a cleartext blob across S
     const [keyA, keyB] = await Promise.all([pubOf(seedA), pubOf(seedB)]);
     const cidB = mkdtempSync(join(tmpdir(), "cidB-")); dirs.push(cidB);
     relay = await startCarriageRelay({ gateSeed: seedA });
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     // Only B dials; A (the named holder) never stands.
     const loopB = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedB, serverAddr: keyB, deps: depsFor(cidB, [], [], keyB), pollIntervalMs: 25, fetchTimeoutMs: 300 });
     loops.push(loopB);

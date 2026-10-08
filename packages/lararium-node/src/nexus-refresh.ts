@@ -1,16 +1,17 @@
 /**
  * nexus-refresh — the LIVE-refold shore behind the `nexus-refresh` daemon verb.
  *
- * A running node reads its federation POSTURE off the disk charter, and judges every presented carriage admit
- * against the DENY boards and antigens of the Nexuses it carries. The posture settles at boot; the boards
- * re-fold live on a CHANGE that reaches the running Repo by sync. An OUT-OF-PROCESS edit reaches neither:
- * `lares nexus posture` rewrites a disk file the boot read once, and `lares nexus kapae` / `contract` write the
- * boards through their OWN throwaway Repo, and NodeFS carries no cross-process change bus. This refresh closes
- * that gap on demand.
+ * A running node judges every presented carriage admit against the DENY boards and antigens of the Nexuses it
+ * carries, and answers strangers iff its own charter or some carried Nexus reads OPEN. The gate's sorter reads both
+ * fresh per socket, and the boards re-fold live on a CHANGE that reaches the running Repo by sync. An
+ * OUT-OF-PROCESS edit reaches no socket already standing: `lares nexus posture` rewrites a disk file, and
+ * `lares nexus kapae` / `contract` / `host roll` write the boards through their OWN throwaway Repo, and NodeFS
+ * carries no cross-process change bus. This refresh closes that gap on demand.
  *
  * WHAT IT DOES, once, fail-closed:
- *   1. POSTURE — re-read the disk charter and hand the posture to the caller's setter. A torn / absent charter
- *      reads PRIVATE (`federationPostureFromDoc` fails closed), so a broken read only ever tightens the mesh.
+ *   1. POSTURE — read after the refold: the gate answers strangers iff its own charter or some carried Nexus
+ *      reads OPEN. A torn /
+ *      absent charter reads PRIVATE (`federationPostureFromDoc` fails closed), so a broken read only tightens.
  *   2. BOARDS — for this vessel's own island AND every Nexus in its carried set (each island resolved over
  *      that Nexus's charter home, exactly as the admit writer resolves it), materialize the carriage and
  *      antigen boards on a THROWAWAY Repo bound to the same storage dir (a cold read of the flushed bytes the
@@ -18,7 +19,8 @@
  *      holds both what sync brought and what the CLI wrote, so a later live refold cannot read a revoke away,
  *      and the running Repo gossips the merged bytes onward.
  *   3. REFOLD — the antigen ring refolds its own board; the membership holder re-reads every carried Nexus's
- *      deny board and antigen, re-verifies every standing presentation, and swaps its leaf map whole.
+ *      deny board, antigen and posture, re-verifies every standing presentation, and swaps its leaf map whole;
+ *      the caller's refold hook drops every socket the new readings no longer hold.
  *   4. REPORT — the counts per carried Nexus, plus this vessel's own board.
  *
  * NO-GLOBAL-NOW: every reading is this node's own storage and replica as of now. TRACK-CONTRACTS-NEVER-
@@ -35,6 +37,7 @@ import {
   federationPostureFromDoc, type FederationPosture,
 } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
+import { gateAnswersStrangers } from "./socket-sorter.js";
 import { carriedSet, charterHomeFor } from "./carried-set.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import type { AntigenRingHolder } from "./antigen-ring.js";
@@ -55,8 +58,6 @@ export interface NexusRefreshDeps {
   readonly antigen: AntigenRingHolder;
   /** The live membership holder — it re-reads the carried Nexuses and re-verifies every presentation. */
   readonly membership: NexusMembershipHolder;
-  /** Reassign the sharePolicy's live `federationPosture` closure var. Called ONLY with a freshly-read posture. */
-  readonly setPosture: (posture: FederationPosture) => void;
 }
 
 /** One carried Nexus's reading after the refresh. */
@@ -72,7 +73,7 @@ export interface NexusRefreshPerNexus {
 }
 
 export interface NexusRefreshResult {
-  /** The posture the disk charter now names (PRIVATE when the charter is absent / torn — fail-closed). */
+  /** The gate's posture toward strangers after the refold: OPEN iff some carried Nexus reads OPEN. */
   readonly posture: FederationPosture;
   /** This vessel's own antigen board entry count (0 when the board is absent / unsynced). */
   readonly antigenEntries: number;
@@ -103,10 +104,6 @@ async function refreshIslands(deps: NexusRefreshDeps): Promise<readonly string[]
  * throwaway Repo is disposed on return.
  */
 export async function runNexusRefresh(deps: NexusRefreshDeps): Promise<NexusRefreshResult> {
-  // 1. POSTURE — fresh disk read; PRIVATE on absent / torn (fail-closed: a broken read only ever tightens).
-  const posture = federationPostureFromDoc(readNexusDoc(deps.sealHome));
-  deps.setPosture(posture);
-
   // 2. BOARDS — a throwaway Repo on the SAME storage dir reads the flushed bytes cold; each is merged into the
   //    running Repo's handle for the same board, which every live refold reads.
   const throwaway = new Repo({ storage: new NodeFSStorageAdapter(deps.storageDir) });
@@ -140,6 +137,8 @@ export async function runNexusRefresh(deps: NexusRefreshDeps): Promise<NexusRefr
   await deps.membership.refold();
 
   // 4. REPORT — per carried Nexus, off the readings the membership holder just judged against.
+  const primary = federationPostureFromDoc(readNexusDoc(deps.sealHome));
+  const posture: FederationPosture = gateAnswersStrangers(primary, deps.membership.readings()) ? "open" : "private";
   const held = deps.membership.heldCounts();
   const nexuses: NexusRefreshPerNexus[] = deps.membership.readings().map((r) => ({
     aid: r.aid, island: r.island, denyEntries: r.denyBoard.length, antigenEntries: r.antigen.length,

@@ -11,7 +11,7 @@ import { describe, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import {
   authProofBytes, verifyAuthProof, buildAuthResponse,
-  mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
+  mkLarChallenge, mkLarAuth, mkLarAuthOk,
 } from "../src/auth-wire.js";
 import { AUTH_PROOF_DOMAIN, ALL_DOMAINS, DOMAIN_ROOT } from "../src/domains.js";
 import { canonicalJsonBytes, hex } from "../src/crypto.js";
@@ -75,7 +75,7 @@ describe("the auth proof signs inside its own domain", () => {
 describe("the auth wire messages carry no version", () => {
   test("no constructor stamps a version field", async () => {
     const msgs: object[] = [
-      mkLarChallenge("n", "g"), mkLarAuth("card", "n", "s", "ab".repeat(32)), mkLarAuthOk("s"), mkLarAuthDenied("r"),
+      mkLarChallenge("n"), mkLarAuth("card", "n", "s", "ab".repeat(32)), mkLarAuthOk("s"),
       await buildAuthResponse({ ...(await keyed()), contactCard: "card", leafNonce: "ab".repeat(32), sign: () => "x" }),
     ];
     for (const m of msgs) expect("version" in m, JSON.stringify(m)).toBe(false);

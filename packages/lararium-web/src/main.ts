@@ -23,7 +23,7 @@ import {
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisSeed, type OraclePullResult } from "@lararium/mesh";
+import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -84,14 +84,19 @@ function set(id: string, text: string, cls = ""): void {
 }
 
 // The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
-// proves its key at that peer's gate before any map crosses; an anon page reads nothing, so the read waits on
-// the vessel standing. Config-supplied via ?oracle=…, default the node that served this page.
-type OracleReader = <T>(baseUrl: string) => Promise<OraclePullResult<T>>;
+// dials the knock the peer's gate key derives and proves its key there before any map crosses; an anon page
+// reads nothing, so the read waits on the vessel standing. Config-supplied via ?oracle=… (default the node that
+// served this page) and pinned by ?oracle-gate=… (default the ?gate= relay key — the same node's vessel key).
+// A face with no pinned key is not dialed: there is no gate to knock on.
+type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
 async function readOracle(read: OracleReader): Promise<void> {
-  const readFace = new URLSearchParams(location.search).get("oracle") ?? defaultReadFace();
+  const params = new URLSearchParams(location.search);
+  const readFace = params.get("oracle") ?? defaultReadFace();
+  const pin = params.get("oracle-gate") ?? params.get("gate");
+  if (!pin) { set("oracle-status", "no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
   set("oracle-status", `proving at ${readFace} …`);
   try {
-    const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace);
+    const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace, pin);
     if (r.ok && r.pointer) {
       const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
       const oracleEl = $("oracle"); oracleEl.replaceChildren();
@@ -307,16 +312,18 @@ async function bootVessel(): Promise<void> {
   }
   // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
   const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
-  // ?mesh=<readface,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer oracle
-  //   read-faces (opt-in; absent = no carriage / pure local boot). Empty value defaults to the
-  //   ?oracle= read-face. The browser is a LEAF (no endpoint — carries-in, not dial-able).
+  // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer oracle
+  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). Empty value
+  //   defaults to the ?oracle= read-face under its pin. An entry with no key is dropped: nothing to knock on.
+  //   The browser is a LEAF (no endpoint — carries-in, not dial-able).
   const meshParam = new URLSearchParams(location.search).get("mesh");
+  const defaultPin = new URLSearchParams(location.search).get("oracle-gate") ?? new URLSearchParams(location.search).get("gate");
   const meshLeaf = meshParam !== null
     ? {
         coordSeed: location.origin,
         peers: meshParam
-          ? meshParam.split(",").map((s) => s.trim()).filter(Boolean)
-          : [new URLSearchParams(location.search).get("oracle") ?? defaultReadFace()],
+          ? meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null)
+          : defaultPin ? [{ endpoint: new URLSearchParams(location.search).get("oracle") ?? defaultReadFace(), gatePubKey: defaultPin.toLowerCase() }] : [],
       }
     : undefined;
   try {

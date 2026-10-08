@@ -1,52 +1,55 @@
 /**
- * authenticated-membership-relay — the LIVE-WS `MembershipChannel` transport with REAL Ed25519 auth, so the
- * cas-wire member gate reads a PROVEN peer identity, never a self-asserted one.
+ * authenticated-membership-relay — the LIVE-WS `MembershipChannel` transport behind the ONE gate, so the cas-wire
+ * member gate reads a PROVEN peer identity, never a self-asserted one.
  *
  * WHY AUTH BINDS TO THE ENVELOPE `from`. cas-wire's `carrierShareDecision` gates the sealed-body carry on the
  * requester's peer id (the envelope `from`). A DUMB re-broadcast relay lets a peer CLAIM any `from`, so a stranger
  * could name a member's id and be served the ciphertext. Carry ⊥ read bounds that (a stranger reads nothing without
  * the read-cap), but the member lane's carry-restriction wants a PROVEN id. This relay closes that: a connecting
- * peer proves it HOLDS its verifying key (an Ed25519 proof-of-possession — the SAME challenge/sign/verify the
- * DaemonAuthGate runs, reused here, never weakened), and the relay then STAMPS every envelope's `from` with that
- * proven key. A forged `from` cannot cross — a peer speaks only AS the key it proved.
+ * peer proves it HOLDS its verifying key, and the relay STAMPS every envelope's `from` with that proven key. A
+ * forged `from` cannot cross — a peer speaks only AS the key it proved.
  *
- * NOT A SEPARATE TRUST ROOT. This reuses `mkLarChallenge` + `verifyAuthProof` (the DaemonAuthGate's own
- * proof-of-possession primitives) — isomorphism-by-composition, not a weakening: the automerge-coupled DaemonAuthGate
- * stays the automerge relay's gate; this stands the SAME Ed25519 mechanism for the membership transport. The relay
- * holds NO read-cap and reads NO ciphertext — it moves opaque envelopes (want-block / cas-block / cas-mu) that ride
- * ciphertext + verify-cap only (carry ⊥ read ⊥ contract; verify-cap ⊥ read-cap), so a compromised relay leaks nothing.
+ * ONE PROVING DOOR, ONE WIRE. The relay stands the vessel gate itself (`DaemonAuthGate`), not a handshake of its
+ * own:
+ *   · THE KNOCK — it answers an upgrade only on the path its gate key derives (`knockPath`), and destroys every
+ *     other upgrade before any HTTP 101. A dialer carries the relay's gate key as its pin, in the URL fragment
+ *     (`ws://host:port#<gate key hex>`): the fragment never leaves the dialer, and it is all a dial needs.
+ *   · THE WIRE — `lar:challenge {nonce}` → `lar:auth` (the V3 proof over this relay's audience) → the gate's
+ *     SIGNED `lar:auth-ok`, which the dialer reads only under the key it pinned.
+ *   · SILENCE — a bad proof, a wrong knock, anything malformed: no answer, and the socket cut at the deadline the
+ *     gate drew at accept. No close code and no reason cross.
+ *   · ENVELOPES — ride the admitted socket as `lar:session` frames of kind `membership/env`.
  *
- * NO-GLOBAL-NOW: a peer's membership + Kapae status the cas-wire gate reads is a local replica as-of-last-sync — this
- * transport proves WHO a peer is, never adjudicates membership (that stays the cas-wire gate's local read).
+ * WHO IT ADMITS. A crossroads relay carries opaque envelopes for ANY proven key: it holds NO read-cap, reads NO
+ * ciphertext and keeps no roster, so its sorter classes every proven key a stranger and admits it. Membership is
+ * never the relay's to decide — the cas-wire gate reads it off its own replica, as of its last sync.
  *
  * Node-side (the transport branch); the `MembershipChannel` shore + the file impl stay platform-blind.
  * Meme: lar:///ha.ka.ba/lararium/node/authenticated-membership-relay
  */
 
-import { MEMBERSHIP_RELAY_DOMAIN } from "@lararium/mesh";
+import { createServer, type IncomingMessage } from "node:http";
+import type { Duplex } from "node:stream";
 import { WebSocketServer, WebSocket, type RawData } from "ws";
 import * as ed from "@noble/ed25519";
 import {
-  hex, verifyAuthProof, authProofBytes, ed25519SignerFromSeed, webGetRandomValues,
-  MEMBERSHIP_BROADCAST,
-  type MembershipChannel, type MembershipEnvelope,
+  MEMBERSHIP_RELAY_DOMAIN, MEMBERSHIP_BROADCAST,
+  hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl,
+  type AuthVerifierShore, type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
+import { DaemonAuthGate, type SocketSorter } from "./daemon-auth-gate.js";
 
-const asText = (data: RawData): string => (typeof data === "string" ? data : data.toString());
-/** The audience tag the membership proof-of-possession binds to — distinct from the daemon-bag audience. */
+/** The audience the membership proof-of-possession binds to — distinct from the daemon-bag audience. */
 const MEMBERSHIP_AUD = MEMBERSHIP_RELAY_DOMAIN;
+/** The session kind an envelope rides under on an admitted socket. */
+export const MEMBERSHIP_ENVELOPE_KIND = "membership/env";
 
-/** The wire frames over the socket: the auth handshake, then opaque envelope carriage. */
-type RelayFrame =
-  | { readonly t: "challenge"; readonly nonce: string; readonly gatePubKey: string }
-  // The challenge nonce is this connection's replay boundary; no clock rides the proof.
-  | { readonly t: "auth";      readonly peerPubKey: string; readonly sig: string }
-  | { readonly t: "auth-ok" }
-  | { readonly t: "env";       readonly env: MembershipEnvelope };
+const KEY_RE = /^[0-9a-f]{64}$/;
 
-/** A running authenticated membership relay — the WS server + its bound port. */
+/** A running authenticated membership relay — the WS server + its bound port + the gate key a dialer pins. */
 export interface AuthenticatedMembershipRelay {
-  readonly port: number;
+  readonly port:       number;
+  readonly gatePubKey: string;
   close(): Promise<void>;
 }
 
@@ -63,82 +66,91 @@ export interface RelayAnnounceObserver {
 }
 
 /**
- * Start an authenticated membership relay. Each connecting socket runs the Ed25519 proof-of-possession: the relay
- * challenges (fresh nonce + its own gate key), the peer signs `authProofBytes`, the relay `verifyAuthProof`s it and
- * binds socket → proven key. Thereafter it re-broadcasts each peer's envelopes — but STAMPS `from` with the proven
- * key (a forged `from` never crosses). An un-authenticated / mis-proving socket is closed, never relayed.
- *
- * @param gateSeed the relay's 32-byte Ed25519 seed — its gate key rides the challenge as the proof-binding.
+ * A pinned dial address: `ws(s)://host[:port][/path]#<gate key hex>`. The fragment is the dialer's own pin and
+ * never rides a request. Throws on an address with no 32-byte hex key — a dial with no pin has no gate to reach.
  */
-export function startAuthenticatedMembershipRelay(
+export function pinnedRelayAddress(url: string): { readonly url: string; readonly gatePubKey: string } {
+  const u = new URL(url);
+  const gatePubKey = u.hash.replace(/^#/, "").toLowerCase();
+  if (!KEY_RE.test(gatePubKey)) throw new Error(`a relay address names its gate key in its fragment (#<gate key hex>): ${url}`);
+  u.hash = "";
+  return { url: u.href, gatePubKey };
+}
+
+/** The relay's verify shore: the card IS the peer's raw verifying key, and the V3 proof must hold under it. */
+function proofOnlyShore(gatePubKey: string): AuthVerifierShore {
+  return {
+    async verify(cardBytes, aud, _access, proof) {
+      const key = new TextDecoder().decode(cardBytes).trim().toLowerCase();
+      if (!KEY_RE.test(key) || !proof) return { ok: false, reason: "no proof" };
+      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey: key, aud, sig: proof.sig });
+      return v.ok ? { ok: true, identifier: key, proofVerified: true } : { ok: false, ...(v.reason ? { reason: v.reason } : {}) };
+    },
+  };
+}
+
+/** Every proven key rides a crossroads relay: membership is the cas-wire gate's, never the relay's. */
+const admitEveryProvenKey: SocketSorter = async () => ({ class: "stranger" });
+
+/**
+ * Start an authenticated membership relay on `port` (0 → any free port), keyed by `gateSeed`. Every socket runs
+ * the one gate; every admitted socket's envelopes are re-broadcast with `from` STAMPED to the key it proved.
+ *
+ * @param gateSeed the relay's 32-byte Ed25519 seed — its gate key derives the knock and signs every verdict.
+ */
+export async function startAuthenticatedMembershipRelay(
   gateSeed: Uint8Array,
   port = 0,
   observer?: RelayAnnounceObserver,
+  opts: { readonly authTimeoutMs?: number } = {},
 ): Promise<AuthenticatedMembershipRelay> {
-  return (async () => {
-    const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
-    return await new Promise<AuthenticatedMembershipRelay>((resolve) => {
-      const wss = new WebSocketServer({ port });
-      const proven = new WeakMap<WebSocket, string>();   // socket → its PROVEN verifying key (the only `from` it may send)
-      // A socket latches its auth attempt SYNCHRONOUSLY. `proven` only fills after an async verify, so gating on it
-      // alone would let concurrent `auth` frames all pass and the last-verified proof win the binding. One attempt
-      // per socket, decided once — a peer that wants a different key opens a different connection.
-      const authLatched = new WeakSet<WebSocket>();
+  const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
+  const httpServer = createServer((_req, res) => { res.socket?.destroy(); });
+  const wss = new WebSocketServer({ noServer: true });
+  const gate = new DaemonAuthGate(wss as unknown as ConstructorParameters<typeof DaemonAuthGate>[0], {
+    ...(opts.authTimeoutMs !== undefined ? { authTimeoutMs: opts.authTimeoutMs } : {}),
+    onRefuse: () => { /* silence: the cause is no one's to hear */ },
+  });
+  gate.arm(proofOnlyShore(gatePubKey), MEMBERSHIP_AUD, { pubKey: gatePubKey, sign: ed25519SignerFromSeed(gateSeed) }, admitEveryProvenKey);
+  const path = gate.upgradePath("/")!;
+  httpServer.on("upgrade", (req: IncomingMessage, socket: Duplex, head: Buffer) => {
+    if (new URL(req.url ?? "/", "http://localhost").pathname !== path) { socket.destroy(); return; }
+    wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+  });
 
-      wss.on("connection", (sock: WebSocket) => {
-        const nonce = hex(webGetRandomValues(new Uint8Array(32)));
-        const send = (f: RelayFrame) => { try { sock.send(JSON.stringify(f)); } catch { /* closed */ } };
-        send({ t: "challenge", nonce, gatePubKey });
+  const provenKeyOf = (socket: WebSocket): string | null => {
+    const id = gate.getIdentifierForSocket(socket as never);
+    return id ? id.slice(-64).toLowerCase() : null;
+  };
+  gate.on("connection", (socket: WebSocket) => {
+    const key = provenKeyOf(socket);
+    // On departure, surface the proven holder so the tracker PRUNES it (an offline holder never lingers).
+    socket.once("close", () => { if (key) observer?.onLeave?.(key); });
+  });
+  gate.onSession((socket, msg) => {
+    if (msg.kind !== MEMBERSHIP_ENVELOPE_KIND || typeof msg.body !== "object" || msg.body === null) return;
+    const provenKey = provenKeyOf(socket as unknown as WebSocket);
+    if (!provenKey) return;
+    // STAMP `from` with the proven key — a forged `from` is overwritten, never trusted. The relay never reads the
+    // opaque payload (ciphertext + verify-cap only ride it).
+    const stamped: MembershipEnvelope = { ...(msg.body as MembershipEnvelope), from: provenKey };
+    observer?.onEnvelope?.(stamped);
+    for (const client of gate.clients) {
+      if (client !== socket) gate.sendSession(client, MEMBERSHIP_ENVELOPE_KIND, stamped);
+    }
+  });
 
-        // On departure, surface the proven holder so the tracker PRUNES it (an offline holder never lingers). Fires
-        // only for a socket that reached auth-ok (a proven key), so an un-authenticated flap prunes nothing.
-        sock.on("close", () => { const k = proven.get(sock); if (k) observer?.onLeave?.(k); });
-
-        sock.on("message", (data: RawData) => {
-          let frame: RelayFrame;
-          try { frame = JSON.parse(asText(data)) as RelayFrame; } catch { return; }
-
-          if (frame.t === "auth" && !authLatched.has(sock)) {
-            authLatched.add(sock);   // latch BEFORE the await — a second auth frame on this socket never races in
-            void (async () => {
-              // The relay's authority boundary is this connection's fresh challenge nonce plus the gate-bound
-              // audience/key. No clock rides the proof: membership relay admission is connection-scoped.
-              // A harvested proof cannot cross connections because the fresh nonce changes; the synchronous latch
-              // also prevents a second auth attempt from rebinding this socket.
-              const v = await verifyAuthProof({
-                nonce, gatePubKey, peerPubKey: frame.peerPubKey, aud: MEMBERSHIP_AUD, sig: frame.sig,
-              });
-              if (!v.ok) { try { sock.close(4003, v.reason ?? "auth failed"); } catch { /* closed */ } return; }
-              proven.set(sock, frame.peerPubKey.toLowerCase());   // this socket speaks ONLY as this proven key
-              send({ t: "auth-ok" });
-            })();
-            return;
-          }
-
-          if (frame.t === "env") {
-            const provenKey = proven.get(sock);
-            if (!provenKey) { try { sock.close(4003, "envelope before auth"); } catch { /* closed */ } return; }
-            // STAMP `from` with the proven key — a forged `from` is overwritten, never trusted. The relay never
-            // reads the opaque payload (ciphertext + verify-cap only ride it).
-            const stamped: MembershipEnvelope = { ...frame.env, from: provenKey };
-            // Surface the PROVEN-stamped envelope to the sniff observer (the carriage picks `cas-have` announces
-            // into its bag-tracker). The relay itself stays agnostic — it forwards + surfaces, never interprets.
-            observer?.onEnvelope?.(stamped);
-            const out = JSON.stringify({ t: "env", env: stamped } satisfies RelayFrame);
-            for (const client of wss.clients) {
-              if (client !== sock && client.readyState === WebSocket.OPEN && proven.has(client)) client.send(out);
-            }
-          }
-        });
-      });
-
-      wss.on("listening", () => {
-        const addr = wss.address();
-        const boundPort = typeof addr === "object" && addr ? addr.port : port;
-        resolve({ port: boundPort, close: () => new Promise<void>((r) => wss.close(() => r())) });
-      });
-    });
-  })();
+  await new Promise<void>((resolve) => httpServer.listen(port, resolve));
+  const addr = httpServer.address();
+  const boundPort = typeof addr === "object" && addr ? addr.port : port;
+  return {
+    port: boundPort,
+    gatePubKey,
+    close: () => new Promise<void>((resolve) => {
+      for (const client of wss.clients) client.terminate();
+      wss.close(() => httpServer.close(() => resolve()));
+    }),
+  };
 }
 
 /** An envelope this recipient should receive (addressed or broadcast, never self) — deliver-once on poll. */
@@ -147,10 +159,11 @@ function forRecipient(e: MembershipEnvelope, recipient: string): boolean {
 }
 
 /**
- * The authenticated live-WS membership channel — one connection per vessel, gated by proof-of-possession. On
- * `connect` it completes the Ed25519 handshake (signs the relay's challenge with `peerSeed`), so every envelope it
- * offers rides its PROVEN key as `from`. Satisfies the exact `MembershipChannel` contract (offer/poll, deliver-once)
- * — cas-wire's `serveCasWire` / `fetchSealedCidOverWire` run over it UNCHANGED.
+ * The authenticated live-WS membership channel — one connection per vessel, behind the relay's gate. On `connect`
+ * it dials the knock its pin derives and completes the one handshake (signs the relay's challenge with
+ * `peerSeed`, reads a verdict only under the pinned key), so every envelope it offers rides its PROVEN key as
+ * `from`. Satisfies the exact `MembershipChannel` contract (offer/poll, deliver-once) — cas-wire's `serveCasWire`
+ * / `fetchSealedCidOverWire` run over it UNCHANGED.
  */
 export class AuthenticatedWSMembershipChannel implements MembershipChannel {
   // The inbox is a STABLE array both the socket message handler (push) and poll (splice) share — NEVER reassigned,
@@ -158,50 +171,67 @@ export class AuthenticatedWSMembershipChannel implements MembershipChannel {
   private constructor(private readonly ws: WebSocket, private readonly inbox: MembershipEnvelope[]) {}
 
   /**
-   * Connect + complete the proof-of-possession handshake. Resolves once the relay returns `auth-ok`.
+   * Connect to a PINNED relay address (`ws://host:port#<gate key hex>`) and complete the handshake. Resolves once
+   * the relay's signed verdict verifies under the pin; a relay that answers nothing rejects ("no answer").
    *
-   * `onClose` fires when a LIVE (post-auth-ok) channel's socket drops — the shore a reconnecting dialer watches
-   * to re-dial + re-fold its board (a Herm's HEAL tooth). A drop BEFORE auth-ok rejects the pending connect
-   * instead, so a dialer reschedules on it too (never hangs a half-open dial). Both settle exactly once.
+   * `onClose` fires when a LIVE (verified) channel's socket drops — the shore a reconnecting dialer watches to
+   * re-dial + re-fold its board. A drop BEFORE the verdict rejects the pending connect instead, so a dialer
+   * reschedules on it too (never hangs a half-open dial). Both settle exactly once.
    */
   static connect(
-    url: string,
+    address: string,
     peerSeed: Uint8Array,
     opts?: { readonly onClose?: () => void },
   ): Promise<AuthenticatedWSMembershipChannel> {
     return new Promise((resolve, reject) => {
-      const ws = new WebSocket(url);
+      let pinned: { url: string; gatePubKey: string };
+      try { pinned = pinnedRelayAddress(address); } catch (err) { reject(err); return; }
+      const ws = new WebSocket(knockedUrl(pinned.url, pinned.gatePubKey));
       const inbox: MembershipEnvelope[] = [];
-      let channel: AuthenticatedWSMembershipChannel | null = null;
-      let settled = false;   // the connect promise settles ONCE; the post-settle close routes to onClose
+      let settled = false;
+      let verified = false;
+      const frames: unknown[] = [];
+      const waiters: Array<(v: unknown) => void> = [];
+      const deliver = (v: unknown): void => { const w = waiters.shift(); if (w) w(v); else frames.push(v); };
       ws.on("error", (err: Error) => { if (!settled) { settled = true; reject(err); } });
-      ws.on("close", () => { if (!settled) { settled = true; reject(new Error("socket closed before auth-ok")); } else opts?.onClose?.(); });
+      ws.on("close", () => {
+        while (waiters.length) waiters.shift()!(undefined);
+        if (!settled) { settled = true; reject(new Error("socket closed before a verdict")); }
+        else if (verified) opts?.onClose?.();
+      });
       ws.on("message", (data: RawData) => {
-        let frame: RelayFrame;
-        try { frame = JSON.parse(asText(data)) as RelayFrame; } catch { return; }
-        if (frame.t === "challenge") {
-          void (async () => {
-            const peerPubKey = hex(await ed.getPublicKeyAsync(peerSeed));
-            // Admission is bound to the relay challenge nonce; no clock rides the proof.
-            const sig = await ed25519SignerFromSeed(peerSeed)(
-              authProofBytes({ nonce: frame.nonce, gatePubKey: frame.gatePubKey, peerPubKey, aud: MEMBERSHIP_AUD }),
-            );
-            ws.send(JSON.stringify({ t: "auth", peerPubKey, sig } satisfies RelayFrame));
-          })();
-        } else if (frame.t === "auth-ok") {
-          settled = true;
-          channel = new AuthenticatedWSMembershipChannel(ws, inbox);
-          resolve(channel);
-        } else if (frame.t === "env") {
-          inbox.push(frame.env);
+        let msg: unknown;
+        try { msg = JSON.parse(data.toString()); } catch { return; }
+        if (verified) {
+          if (isLarSessionMsg(msg) && msg.kind === MEMBERSHIP_ENVELOPE_KIND && typeof msg.body === "object" && msg.body !== null) {
+            inbox.push(msg.body as MembershipEnvelope);
+          }
+          return;
         }
+        deliver(msg);
+      });
+      ws.on("open", () => {
+        void (async () => {
+          const peerPubKey = hex(await ed.getPublicKeyAsync(peerSeed));
+          const verdict = await runPeerHandshake({
+            recv: () => frames.length ? Promise.resolve(frames.shift()) : new Promise((r) => waiters.push(r)),
+            send: (m) => { try { ws.send(JSON.stringify(m)); } catch { /* closed */ } },
+            contactCard: peerPubKey, peerPubKey, gatePubKey: pinned.gatePubKey, aud: MEMBERSHIP_AUD,
+            sign: ed25519SignerFromSeed(peerSeed),
+          });
+          if (settled) return;
+          settled = true;
+          if (!verdict.ok) { try { ws.close(); } catch { /* closed */ } reject(new Error(verdict.reason)); return; }
+          verified = true;
+          resolve(new AuthenticatedWSMembershipChannel(ws, inbox));
+        })();
       });
     });
   }
 
   async offer(env: MembershipEnvelope): Promise<void> {
     // The relay STAMPS `from` with this channel's proven key regardless — a caller cannot spoof another id.
-    this.ws.send(JSON.stringify({ t: "env", env } satisfies RelayFrame));
+    this.ws.send(JSON.stringify(mkLarSessionMsg(MEMBERSHIP_ENVELOPE_KIND, env)));
   }
 
   async poll(recipient: string): Promise<readonly MembershipEnvelope[]> {

@@ -3,7 +3,8 @@
  * LIVE, AUTHENTICATED WS transport (real sockets), and a peer CANNOT impersonate the member gate.
  *
  * Proven over a real socket hop:
- *   · the Ed25519 proof-of-possession handshake gates every connection (an un-proving peer never relays),
+ *   · the ONE gate fronts the relay: a dial reaches it only on the knock its pinned key derives, proves its key, and
+ *     reads the relay's signed verdict; a replayed or racing lar:auth meets silence or binds once,
  *   · CARRY ⊥ READ over the wire — an admitted MEMBER (proven key in the member set) carries the sealed ciphertext
  *     (verify-cap re-checked SECRET-FREE) + reads it with the per-body read-cap; a NON-member draws Mu,
  *   · NO IMPERSONATION — a stranger that forges `from = <a member's key>` is STAMPED back to its OWN proven key by
@@ -19,7 +20,7 @@ import * as ed from "@noble/ed25519";
 import WS, { type RawData } from "ws";
 import {
   DeterministicFederationGate, openBodyOnCas, utf8Bytes, hex,
-  authProofBytes, ed25519SignerFromSeed,
+  buildAuthResponse, ed25519SignerFromSeed, mintLeafNonce, knockedUrl, isLarChallengeMsg, isLarAuthOkMsg, mkLarSessionMsg,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
 import { standNexusKeyring } from "../src/nexus-convergence-secret-store.js";
@@ -83,7 +84,7 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
 
     // Stand the AUTHENTICATED relay + three real socket connections (each proves possession of its key).
     relay = await startAuthenticatedMembershipRelay(holderSeed);
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     const holderCh   = await AuthenticatedWSMembershipChannel.connect(url, holderSeed);
     const memberCh   = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     const strangerCh = await AuthenticatedWSMembershipChannel.connect(url, strangerSeed);
@@ -114,60 +115,73 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     }
   }, 15_000);
 
-  test("an un-proving connection never relays (the handshake gates the socket)", async () => {
+  test("the relay stands behind the one gate: a pinned, proven dial joins; no pin, a wrong pin or no knock reaches nothing", async () => {
     const gateSeed = new Uint8Array(32).fill(7);
-    relay = await startAuthenticatedMembershipRelay(gateSeed);
-    // A raw socket that never completes the proof handshake cannot join — AuthenticatedWSMembershipChannel.connect
-    // only resolves on `auth-ok`. A peer with a valid seed DOES connect (proving the gate admits the proven).
+    relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });
     const goodSeed = new Uint8Array(32).fill(8);
-    const ch = await AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}`, goodSeed);
+    // CONTROL: the pinned, proven dial joins.
+    const ch = await AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`, goodSeed);
     expect(ch).toBeInstanceOf(AuthenticatedWSMembershipChannel);
     ch.close();
+    // An address with no pin names no gate: the dial never opens.
+    await expect(AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}`, goodSeed)).rejects.toThrow(/gate key/);
+    // A pin for another key derives another knock: the relay destroys that upgrade before any 101.
+    const otherPin = await pubOf(new Uint8Array(32).fill(99));
+    await expect(AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}#${otherPin}`, goodSeed)).rejects.toThrow();
+    // The bare root draws no 101 either.
+    const bare = await new Promise<boolean>((resolve) => {
+      const raw = new WS(`ws://127.0.0.1:${relay.port}/`);
+      raw.on("open", () => { raw.close(); resolve(true); });
+      raw.on("error", () => resolve(false));
+      raw.on("unexpected-response", () => resolve(false));
+    });
+    expect(bare).toBe(false);
   }, 15_000);
 
-  test("an old signed proof stays connection-scoped — fresh challenge nonce defeats cross-connection replay", async () => {
+  test("an old signed lar:auth stays connection-scoped — a fresh challenge nonce meets it with silence", async () => {
     const gateSeed = new Uint8Array(32).fill(11);
-    relay = await startAuthenticatedMembershipRelay(gateSeed);
+    relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });
     const peerSeed = new Uint8Array(32).fill(12);
     const peerPubKey = await pubOf(peerSeed);
+    const knocked = knockedUrl(`ws://127.0.0.1:${relay.port}`, relay.gatePubKey);
 
-    // Hand-drive the handshake: the challenge nonce is the connection-scoped replay boundary.
-    const first = await new Promise<{ raw: WS; proof: { peerPubKey: string; sig: string } }>((resolve, reject) => {
-      const raw = new WS(`ws://127.0.0.1:${relay!.port}`);
-      let proof: { peerPubKey: string; sig: string } | undefined;
+    // Hand-drive the one handshake: the challenge nonce is the connection-scoped replay boundary.
+    const first = await new Promise<{ raw: WS; auth: unknown }>((resolve, reject) => {
+      const raw = new WS(knocked);
+      let auth: unknown;
       raw.on("error", reject);
       raw.on("message", (data: RawData) => {
-        const frame = JSON.parse(data.toString()) as { t: string; nonce?: string; gatePubKey?: string };
-        if (frame.t === "challenge") void (async () => {
-          const sig = await ed25519SignerFromSeed(peerSeed)(
-            authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey, aud: MEMBERSHIP_RELAY_DOMAIN }),
-          );
-          proof = { peerPubKey, sig };
-          raw.send(JSON.stringify({ t: "auth", ...proof }));
+        const frame = JSON.parse(data.toString()) as Record<string, unknown>;
+        if (isLarChallengeMsg(frame)) void (async () => {
+          auth = await buildAuthResponse({
+            contactCard: peerPubKey, nonce: frame.nonce, gatePubKey: relay!.gatePubKey, peerPubKey,
+            aud: MEMBERSHIP_RELAY_DOMAIN, leafNonce: mintLeafNonce(), sign: ed25519SignerFromSeed(peerSeed),
+          });
+          raw.send(JSON.stringify(auth));
         })();
-        else if (frame.t === "auth-ok" && proof) resolve({ raw, proof });
+        else if (isLarAuthOkMsg(frame) && auth) resolve({ raw, auth });
       });
     });
     first.raw.close();
 
-    // The same signed proof cannot cross a fresh challenge: the nonce is part of the signed bytes. This proves
-    // connection-scoped replay protection without asserting cross-restart or wall-clock freshness.
-    const closed = await new Promise<number>((resolve, reject) => {
-      const raw = new WS(`ws://127.0.0.1:${relay!.port}`);
+    // The same signed lar:auth cannot cross a fresh challenge: the nonce is part of the signed bytes. The gate
+    // answers nothing and cuts the socket with no close frame.
+    const end = await new Promise<{ code: number; frames: number }>((resolve, reject) => {
+      const raw = new WS(knocked);
+      let frames = 0;
       raw.on("error", reject);
       raw.on("message", (data: RawData) => {
-        const frame = JSON.parse(data.toString()) as { t: string; nonce?: string; gatePubKey?: string };
-        if (frame.t !== "challenge") return;
-        raw.send(JSON.stringify({ t: "auth", ...first.proof }));
+        frames += 1;
+        if (isLarChallengeMsg(JSON.parse(data.toString()))) raw.send(JSON.stringify(first.auth));
       });
-      raw.on("close", (code: number) => resolve(code));
+      raw.on("close", (code: number) => resolve({ code, frames }));
     });
-    expect(closed).toBe(4003);
+    expect(end).toEqual({ code: 1006, frames: 1 });
   }, 15_000);
 
-  test("concurrent auth frames on ONE socket cannot race the binding — the attempt latches once", async () => {
+  test("two lar:auth frames on ONE socket cannot race the binding — the gate reads exactly one", async () => {
     const gateSeed = new Uint8Array(32).fill(13);
-    relay = await startAuthenticatedMembershipRelay(gateSeed);
+    relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });
     const seedA = new Uint8Array(32).fill(14);
     const seedB = new Uint8Array(32).fill(15);
     const keyA = await pubOf(seedA);
@@ -176,32 +190,32 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     // An OBSERVER peer reads the stamped `from` — the relay broadcasts to other clients, never back to the sender.
     const observerSeed = new Uint8Array(32).fill(16);
     const observerKey = await pubOf(observerSeed);
-    const observer = await AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}`, observerSeed);
+    const observer = await AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`, observerSeed);
 
-    // One socket sends TWO valid proofs (different keys) back to back. Only the FIRST may bind.
-    const raw = new WS(`ws://127.0.0.1:${relay.port}`);
+    // One socket sends TWO valid lar:auth frames (different keys) back to back. Only the FIRST may bind.
+    const raw = new WS(knockedUrl(`ws://127.0.0.1:${relay.port}`, relay.gatePubKey));
     try {
       await new Promise<void>((resolve) => {
         raw.on("message", (data: RawData) => {
-          const frame = JSON.parse(data.toString()) as { t: string; nonce?: string; gatePubKey?: string };
-          if (frame.t === "challenge") {
+          const frame = JSON.parse(data.toString()) as Record<string, unknown>;
+          if (isLarChallengeMsg(frame)) {
             void (async () => {
-              // Pre-sign BOTH proofs, then send them in the SAME tick — awaiting between sends would let the first
-              // verify finish and close the window, and the race would never surface.
+              // Pre-build BOTH, then send them in the SAME tick — awaiting between sends would let the first verify
+              // finish and close the window, and the race would never surface.
               const frames: string[] = [];
               for (const [seed, key] of [[seedA, keyA], [seedB, keyB]] as const) {
-                const sig = await ed25519SignerFromSeed(seed)(
-                  authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey: key, aud: MEMBERSHIP_RELAY_DOMAIN }),
-                );
-                frames.push(JSON.stringify({ t: "auth", peerPubKey: key, sig }));
+                frames.push(JSON.stringify(await buildAuthResponse({
+                  contactCard: key, nonce: frame.nonce, gatePubKey: relay.gatePubKey, peerPubKey: key,
+                  aud: MEMBERSHIP_RELAY_DOMAIN, leafNonce: mintLeafNonce(), sign: ed25519SignerFromSeed(seed),
+                })));
               }
               for (const f of frames) raw.send(f);
             })();
-          } else if (frame.t === "auth-ok") {
-            // Probe only AFTER both proofs have had time to verify — otherwise the first binding is read before a
-            // racing second one could overwrite it, and the check would pass even with the latch removed.
+          } else if (isLarAuthOkMsg(frame)) {
+            // Probe only AFTER both frames have had time to verify — otherwise the first binding is read before a
+            // racing second one could overwrite it.
             setTimeout(() => {
-              raw.send(JSON.stringify({ t: "env", env: { kind: "probe", from: "forged", to: observerKey, payload: {} } }));
+              raw.send(JSON.stringify(mkLarSessionMsg("membership/env", { kind: "probe", from: "forged", to: observerKey, payload: {} })));
               resolve();
             }, 250);
           }
@@ -211,7 +225,7 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
 
       let seen: MembershipEnvelope | undefined;
       for (let i = 0; i < 40 && !seen; i++) { const r = await observer.poll(observerKey); if (r.length) seen = r[0]!; else await sleep(10); }
-      // Exactly one auth attempt bound, and it was the FIRST — the second proof never re-bound the socket.
+      // Exactly one lar:auth bound, and it was the FIRST — the second never re-bound the socket.
       expect(seen?.from).toBe(keyA);
       expect(seen?.from).not.toBe(keyB);
     } finally {

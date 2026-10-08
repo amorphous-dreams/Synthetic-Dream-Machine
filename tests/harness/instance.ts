@@ -21,6 +21,8 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
+import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/auth-wire.js";
+import { randomBytes } from "node:crypto";
 import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync } from "node:fs";
 
 /**
@@ -94,6 +96,17 @@ function runCli(env: Record<string, string>, args: readonly string[]): Promise<C
       resolve({ code: code ?? -1, stdout, stderr, json });
     });
   });
+}
+
+/**
+ * A carriage crossroads the rig stands, PINNED: its gate seed chosen here, so the address every hearth dials
+ * carries the relay's gate key in its fragment (`ws://127.0.0.1:<port>#<gate key>`) — the pin the dial knocks
+ * with and reads the relay's verdict under. The herm takes the seed as `LAR_HERM_RELAY_SEED`.
+ */
+export async function pinnedCarriageRelay(port: number): Promise<{ readonly url: string; readonly seedHex: string; readonly gatePubKey: string }> {
+  const seed = new Uint8Array(randomBytes(32));
+  const gatePubKey = await ed25519VerifyingKeyFromSeed(seed);
+  return { url: `ws://127.0.0.1:${port}#${gatePubKey}`, seedHex: Buffer.from(seed).toString("hex"), gatePubKey };
 }
 
 /** An OS-assigned free port (bind :0 → read the assigned port → close). Collision-
@@ -329,7 +342,8 @@ export interface StagedFleet {
 export async function openStagedFleet(opts: { readonly tag?: string } = {}): Promise<StagedFleet> {
   const tag = opts.tag ? `${opts.tag}-` : "";
   const [portHerm, portRelay] = await Promise.all([freePort(), freePort()]);
-  const relayUrl  = `ws://127.0.0.1:${portRelay}`;
+  const relay     = await pinnedCarriageRelay(portRelay);
+  const relayUrl  = relay.url;
   const hermShore = `http://127.0.0.1:${portHerm}`;
   const stood: LarInstance[] = [];
   let pairRef: StagedJoinee | null = null;
@@ -338,7 +352,7 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
     if (pairRef) { await pairRef.stop(); pairRef = null; }
     for (const v of stood.reverse()) await v.stop();
   };
-  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) };
+  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex };
   const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
     const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
     if (reset.code !== 0) throw new Error(`herm: clear failed (${reset.code})\n${reset.stderr.slice(-800)}`);

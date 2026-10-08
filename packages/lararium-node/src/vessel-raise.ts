@@ -53,7 +53,7 @@ import {
   mintRaiseChallenge, verifyRaiseGrant, raiseStands, standingClass,
   leaseEpochPrefix, effectiveLeaseEpoch, hexToBytes,
   foundingRoster, foldCarrierSet, carriageEntriesFromBoard, antigenEntriesFromBoard,
-  carriageDocUrl, kapaeAntigenDocUrl,
+  carriageDocUrl, kapaeAntigenDocUrl, federationPostureFromDoc,
   type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
   type RaiseNexusReading, type LarDoc,
 } from "@lararium/mesh";
@@ -203,7 +203,7 @@ export async function placeCarriedNexuses(opts: {
       const antigen = antigenEntriesFromBoard(await opts.open(kapaeAntigenDocUrl(island), "board:kapae-antigen"));
       out.push({
         aid, via: "carrier-seal", island, roster, sealLineage: doc?.sealLineage ?? [],
-        denyBoard, antigen, antigenRoster: roster,
+        denyBoard, antigen, antigenRoster: roster, posture: federationPostureFromDoc(doc),
       });
     } catch { continue; }
   }

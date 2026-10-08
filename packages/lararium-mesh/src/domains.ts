@@ -158,6 +158,10 @@ export const AUTH_PROOF_DOMAIN = mint("auth-proof");
  *  Apart from `auth-proof`: the vessel key signs that one and the leaf signs this one, and neither signature
  *  may verify as the other. No root signs it and no root is named in it. */
 export const PRESENTED_LEAF_PROOF_DOMAIN = mint("presented-leaf-proof");
+/** The per-shrine KNOCK's key: a gate answers an upgrade only on the path an HMAC under SHA-256(this name ‖ its
+ *  gate key) derives (`gate-knock`), so a dialer that pinned no gate key reaches no gate. A derivation, never a
+ *  signature: its own name keeps the knock apart from every proof made with the same key. */
+export const GATE_KNOCK_DOMAIN = mint("gate-knock");
 /** The GATE'S VERDICT: a gate signs its `lar:auth-ok` with its own gate key over both nonces, the gate key,
  *  the leaf's key and the audience under this name, so a leaf reads a passing verdict only from the gate it
  *  pinned. Its own name, apart from `auth-proof`: the leaf signs that one and the gate signs this one. */

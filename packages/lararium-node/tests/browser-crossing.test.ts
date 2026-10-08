@@ -27,7 +27,9 @@ import { verifyAuthProof, ed25519SignerFromSeed, LarWSClientAdapter } from "@lar
 import type { AuthVerifierShore } from "@lararium/mesh";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { DaemonAuthGate, type GateKey } from "../src/daemon-auth-gate.js";
+import { DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
+/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
+const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import type { LeafIdentity } from "../src/leaf-identity.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
@@ -88,7 +90,7 @@ function standGate(): Promise<GateHarness> {
   return new Promise((resolve, reject) => {
     const http: Server = createServer();
     const wss  = new WebSocketServer({ server: http });
-    const gate = new DaemonAuthGate(wss);
+    const gate = new DaemonAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();
       if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
@@ -117,7 +119,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     const { identity, pub } = makeLeaf();
 
     const connectionSeen = new Promise<void>((resolve) => harness!.gate.once("connection", () => resolve()));
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([pub]) }), AUD, gateKeyOf(gatePub));
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([pub]) }), AUD, gateKeyOf(gatePub), admitProven);
 
     adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
     adapter.connect("browser-leaf" as PeerId);
@@ -134,7 +136,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     let crossed = false;
     harness.gate.once("connection", () => { crossed = true; });
     // admitted set is EMPTY — the leaf's proof will verify, but it holds no daemon grant.
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set() }), AUD, gateKeyOf(gatePub));
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set() }), AUD, gateKeyOf(gatePub), admitProven);
 
     adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
     adapter.connect("anon-leaf" as PeerId);
@@ -154,7 +156,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     let crossed = false;
     harness.gate.once("connection", () => { crossed = true; });
     // The claimed key IS admitted — so only the signature check can turn this leaf away.
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([claimed.pub]) }), AUD, gateKeyOf(gatePub));
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: gatePub, admitted: new Set([claimed.pub]) }), AUD, gateKeyOf(gatePub), admitProven);
 
     const identity: LeafIdentity = {
       contactCard: JSON.stringify({ peerPubKey: claimed.pub }),
@@ -176,7 +178,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     const { identity, pub } = makeLeaf();
     // The leaf's proof verifies (bound to the pinned key), so the answering gate ADMITS it — and signs the
     // verdict with a key that is not the pin. Only the leaf's own check can refuse it.
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: pinned, admitted: new Set([pub]) }), AUD, gateKeyOf(relay));
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: pinned, admitted: new Set([pub]) }), AUD, gateKeyOf(relay), admitProven);
     adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned });
     adapter.connect("pinned-leaf" as PeerId);
 
@@ -188,7 +190,7 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     harness = await standGate();
     const pinned = genKey().pub;
     const { identity, pub } = makeLeaf();
-    harness.gate.arm(makeCapabilityShore({ gatePubKey: pinned, admitted: new Set([pub]) }), AUD, gateKeyOf(pinned));
+    harness.gate.arm(makeCapabilityShore({ gatePubKey: pinned, admitted: new Set([pub]) }), AUD, gateKeyOf(pinned), admitProven);
     adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned });
     adapter.connect("pinned-leaf" as PeerId);
 
@@ -221,7 +223,7 @@ function standNodeRepo(opts: { gatePubKey: string; admitted: ReadonlySet<string>
   return new Promise((resolve, reject) => {
     const http: Server = createServer();
     const wss  = new WebSocketServer({ server: http });
-    const gate = new DaemonAuthGate(wss);
+    const gate = new DaemonAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
     const network = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
     const peerIdentifierMap = new Map<string, string>();
     network.on("peer-candidate", ({ peerId }: { peerId: string }) => {
@@ -240,7 +242,7 @@ function standNodeRepo(opts: { gatePubKey: string; admitted: ReadonlySet<string>
         return wsSocket ? peerIdentifierMap.has(peerId) : true;
       },
     });
-    gate.arm(makeCapabilityShore({ gatePubKey: opts.gatePubKey, admitted: opts.admitted }), AUD, gateKeyOf(opts.gatePubKey));
+    gate.arm(makeCapabilityShore({ gatePubKey: opts.gatePubKey, admitted: opts.admitted }), AUD, gateKeyOf(opts.gatePubKey), admitProven);
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();
       if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }

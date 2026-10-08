@@ -36,14 +36,17 @@ import { deriveMeshSelf, deriveMeshLeaf, meshSelfDial, meshSelfSeed } from "../s
 const AUTH = "lar:///ha.ka.ba/bags/meshpalace/test";
 
 describe("MeshSelf — the leaf↔full tier is ONE field (endpoint present-vs-absent)", () => {
-  test("a full node advertises a dial; a leaf carries-in but has no reachable endpoint", () => {
-    const full = deriveMeshSelf("http://node:8080", ["http://boot:8080"]);
+  test("a full node advertises a dial under its gate key; a leaf carries-in but has no reachable endpoint", () => {
+    const boot = { endpoint: "http://boot:8080", gatePubKey: "b".repeat(64) };
+    const full = deriveMeshSelf("http://node:8080", [boot], { gatePubKey: "C".repeat(64) });
     expect(full.endpoint).toBe("http://node:8080");
-    expect(meshSelfDial(full)).toBeDefined();            // full node → a dial peers can reach
+    expect(meshSelfDial(full)).toMatchObject({ endpoint: "http://node:8080", verifyingKeyHex: "c".repeat(64) });
     expect(meshSelfSeed(full)).toHaveLength(1);
-    const leaf = deriveMeshLeaf("browser-origin-xyz", ["http://relay:8080"]);
+    // A face with no gate key publishes no dial: a peer would have nothing to knock on or pin.
+    expect(meshSelfDial(deriveMeshSelf("http://node:8080", [boot]))).toBeUndefined();
+    const leaf = deriveMeshLeaf("browser-origin-xyz", [{ endpoint: "http://relay:8080", gatePubKey: "d".repeat(64) }]);
     expect(leaf.endpoint).toBeUndefined();               // a LEAF has NO reachable endpoint (not dial-able)
-    expect(leaf.peers).toEqual(["http://relay:8080"]);   // …yet it still carries-in
+    expect(leaf.peers).toEqual([{ endpoint: "http://relay:8080", gatePubKey: "d".repeat(64) }]);   // …yet it still carries-in
     expect(leaf.coord.r).toBeGreaterThanOrEqual(0);      // …and holds a coord for the proximity re-rank
     expect(meshSelfDial(leaf)).toBeUndefined();          // no dial
     expect(meshSelfSeed(leaf)).toEqual([]);              // → no self-announce seed

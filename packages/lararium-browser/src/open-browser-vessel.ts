@@ -26,7 +26,7 @@ import {
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
-  carriageStack, deriveMeshLeaf,
+  carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
@@ -40,6 +40,7 @@ import {
   type GenesisSeed,
   type BootInvite, type BootInvitePolicy, type InviteStandingContext,
 }                                            from "@lararium/mesh";
+import { relayPinFor } from "./browser-relay-pin.js";
 import { runBrowserBootInviteSpend }         from "./browser-boot-invite-burn.js";
 import {
   MemoryTiddlerStore,
@@ -250,9 +251,9 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
     /** A stable self-identifier (the vessel's origin / relay URL) hashed to the leaf's chart coord +
      *  bearing — content-blind, names where this leaf sits on the routing chart. */
     coordSeed: string;
-    /** Bootstrap peer read-face base URLs (`https://…`) the leaf carries-in from; the carriage UNIONs
-     *  these with the dials it discovers off the carried FLOW-map (self-peering). */
-    peers:     readonly string[];
+    /** Bootstrap peers the leaf carries-in from — each read-face base URL (`https://…`) with the gate key it
+     *  pins there; the carriage UNIONs these with the dials it discovers off the carried FLOW-map. */
+    peers:     readonly MeshPeer[];
     /** Optional radial standing override (default 1 — a rim leaf). */
     radius?:   number;
     /** Max peer read-faces pulled per carriage cycle (default 16). */
@@ -280,7 +281,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   admittedToNexus: boolean;
   /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
    *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
-  readOracle: <T = unknown>(baseUrl: string) => Promise<OraclePullResult<T>>;
+  readOracle: <T = unknown>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
   /** Relay a main-thread DOM event to the ACTIVE surface (interactivity RETURN leg) — routes to the daemon or
    *  the pinned wiki by the live active-surface pointer. */
   sendDomEvent: (renderId: string, eventType: string, fields: Record<string, number | boolean>) => void;
@@ -612,13 +613,17 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // NOTE: the gate admits a peer holding cap=admin on the node's daemon bag, OR one the
   // operator device-admitted that carries a valid device-delegation edge pinned to the node's
   // hearth root. The leaf rides its own device edge (social.deviceEdge) so the in-worker keyholder
-  // can admit it at the operator's-own-device tier. gatePubKey is PROVISIONED out-of-band: for a
-  // cross-operator crossing pass the NODE's gate key (relayGatePubKey); absent → own DID (the
-  // same-operator leaf, prior behavior). An un-admitted anon dials + fails closed.
+  // can admit it at the operator's-own-device tier. The node's gate key is PROVISIONED out-of-band
+  // (relayGatePubKey) and is the only key the dial knocks with and the verdict is read under; absent,
+  // the vessel does not cross (`relayPinFor`). An un-admitted anon dials and meets silence.
   // Gated on `admittedToNexus`: a WITHHELD boot founds its own group at the anon floor and composes NO relay
   // adapter (no crossing, no federated sync) — the traceless outcome.
   let relayAdapter: LarWSClientAdapter | null = null;
-  if (relayUrl && social.contactCard && admittedToNexus) {
+  // THE PIN. A relay URL with no gate key is refused aloud: the relay answers only on the knock its own key
+  // derives, so a dial under any other key (this vessel's own included) would reach no gate and sit dark.
+  const relayPin = relayPinFor(relayUrl, relayGatePubKey);
+  if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
+  if (relayPin.dial && relayUrl && social.contactCard && admittedToNexus) {
     const leaf: LeafIdentity = {
       contactCard: social.contactCard,
       peerPubKey:  vesselVerifyingKey,
@@ -626,7 +631,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       ...(social.deviceEdge ? { edge: social.deviceEdge } : {}),
     };
     const adapter = new LarWSClientAdapter({
-      url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayGatePubKey ?? vesselVerifyingKey,
+      url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayPin.gatePubKey,
     });
     relayAdapter = adapter;
     // Tag the relay ring: every peer reached through this adapter enters `relayPeers`, so the
@@ -1346,8 +1351,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase:            "live",
     admittedToNexus,
-    readOracle: <T>(baseUrl: string) => oracleProof
-      ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof })
+    readOracle: <T>(baseUrl: string, gatePubKey: string) => oracleProof
+      ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof, verifyingKey: gatePubKey })
       : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: "this vessel holds no card to prove at a peer's gate" }),
     // The return-leg routes to whichever surface is LIVE-active (read the pointer, never a captured value —
     // the seat routes the next event to whatever holds focus). daemon → its own worker; else the pinned wiki.

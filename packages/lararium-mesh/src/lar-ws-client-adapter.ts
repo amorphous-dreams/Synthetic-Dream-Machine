@@ -23,6 +23,13 @@
  * `session` names what both sides hold for it: the gate's challenge nonce and the pinned gate key. A text
  * frame never reaches the Automerge decoder; a session message is sent only on the verified socket.
  *
+ * THE KNOCK. The socket opens on `url` with the knock the PINNED gate key derives (`knockedUrl`), so a leaf
+ * reaches only the gate it pinned; a gate keyed otherwise never answers the upgrade.
+ *
+ * SILENCE IS AN ANSWER. A gate that refuses says nothing and cuts the socket at its own deadline. A socket
+ * cut before any challenge is a transport fault (the parent re-dials); a socket cut after this leaf sent its
+ * lar:auth is a refusal, and the leaf ANERGIZES exactly as it would on a spoken one.
+ *
  * Wire-format note: the handshake speaks JSON text frames; Automerge speaks CBOR binary frames. The
  * two never overlap — the handshake completes (a temporary text pump) before the parent's binary
  * `onMessage` attaches and `join()` fires.
@@ -35,6 +42,7 @@ import { WebSocketClientAdapter } from "@automerge/automerge-repo-network-websoc
 // Node 22+ and every browser; use that, not isomorphic-ws (keeps this leaf truly platform-blind).
 import type { PeerId, PeerMetadata } from "@automerge/automerge-repo";
 import { runPeerHandshake, isLarSessionMsg, mkLarSessionMsg } from "./auth-wire.js";
+import { knockedUrl } from "./gate-knock.js";
 import type { PeerHandshake, LeafIdentity, LarSessionMsg } from "./auth-wire.js";
 
 /** The authenticated session a verified socket holds: the gate's challenge nonce and the pinned gate key. */
@@ -44,7 +52,7 @@ export interface LarLeafSession {
 }
 
 export interface LarWSClientOptions {
-  /** ws:// or wss:// URL of the relay gate. */
+  /** ws:// or wss:// URL of the relay gate's route (`…/ws`). The knock the pinned gate key derives is appended. */
   url:        string;
   /** The leaf's light identity — cached ContactCard + bare-Ed25519 signer. */
   identity:   LeafIdentity;
@@ -78,7 +86,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   readonly #sessionListeners = new Set<(msg: LarSessionMsg) => void>();
 
   constructor(opts: LarWSClientOptions) {
-    super(opts.url, opts.retryInterval);
+    super(knockedUrl(opts.url, opts.gatePubKey), opts.retryInterval);
     this.#identity   = opts.identity;
     this.#aud        = opts.aud;
     this.#gatePubKey = opts.gatePubKey;
@@ -179,6 +187,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     // Temporary JSON text pump — drains gate handshake frames in arrival order.
     const queue:   unknown[] = [];
     const waiters: Array<(v: unknown) => void> = [];
+    let ended = false;
     const onText = (event: { data: unknown }): void => {
       if (typeof event.data !== "string") return; // ignore any binary during handshake
       let msg: unknown;
@@ -186,10 +195,19 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       const w = waiters.shift();
       if (w) w(msg); else queue.push(msg);
     };
+    // A cut socket answers every pending and later read with nothing — the handshake ends, it never hangs.
+    const onEnd = (): void => { ended = true; while (waiters.length) waiters.shift()!(undefined); };
     socket.addEventListener("message", onText);
+    socket.addEventListener("close", onEnd);
+    let challenged = false;
 
     const handshake: PeerHandshake = {
-      recv:        () => (queue.length ? Promise.resolve(queue.shift()) : new Promise((r) => waiters.push(r))),
+      recv:        () => {
+        const next = queue.length ? Promise.resolve(queue.shift())
+          : ended ? Promise.resolve(undefined)
+          : new Promise<unknown>((r) => waiters.push(r));
+        return next.then((m) => { if (m !== undefined) challenged = true; return m; });
+      },
       send:        (m) => socket.send(JSON.stringify(m)),
       contactCard: this.#identity.contactCard,
       peerPubKey:  this.#identity.peerPubKey,
@@ -197,20 +215,24 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       aud:         this.#aud,
       sign:        this.#identity.sign,
       ...(this.#identity.edge ? { edge: this.#identity.edge } : {}),
-      ...(this.#identity.presentedAdmit ? { presentedAdmit: this.#identity.presentedAdmit } : {}),
+      ...(this.#identity.presented ? { presented: this.#identity.presented } : {}),
       ...(this.#identity.leafSign ? { leafSign: this.#identity.leafSign } : {}),
     };
 
     let verdict: Awaited<ReturnType<typeof runPeerHandshake>>;
     try {
       verdict = await runPeerHandshake(handshake);
-    } catch (err) {
+    } catch {
       socket.removeEventListener("message", onText);
-      try { socket.close(4003, err instanceof Error ? err.message : "handshake error"); } catch { /* closed */ }
+      socket.removeEventListener("close", onEnd);
+      try { socket.close(); } catch { /* closed */ }
       return;
     }
 
     socket.removeEventListener("message", onText);
+    socket.removeEventListener("close", onEnd);
+    // Cut before any challenge: the gate never spoke — a transport fault, and the parent's close path re-dials.
+    if (!verdict.ok && !challenged) return;
     if (!verdict.ok) {
       // ANERGY, not a retry (lar:///ha.ka.ba/lares/api/pono/lararium-identity #the-siege-gate).
       //
@@ -225,7 +247,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       // second signal, so the leaf stops dialing until something changes — a vouch, a delegation edge, a
       // gate key it did not have. The state refuses at `connect`, so the reconnect the close below
       // schedules opens nothing; the parent's loop stays armed for the socket a re-presentation opens.
-      this.#anergized = verdict.reason ?? "auth denied";
+      this.#anergized = verdict.reason;
       try {
         console.warn(
           `[lar-leaf] ANERGIZED: ${this.#anergized}\n` +
@@ -233,7 +255,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
           "alone is signal-1; admission needs signal-2 — a VOUCH from an already-licensed member.",
         );
       } catch { /* a console is a courtesy, never a dependency */ }
-      try { socket.close(4003, verdict.reason ?? "auth denied"); } catch { /* closed */ }
+      try { socket.close(); } catch { /* closed */ }
       return;
     }
 

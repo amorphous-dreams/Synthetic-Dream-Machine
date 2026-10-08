@@ -1,8 +1,12 @@
 /**
- * persona-ring-cross-operator-admit.test.ts — e2e: a REAL vessel boots, wears a face, and a
- * CROSS-OPERATOR peer holding a live face-join grant record reaches the face's own persona-plane
- * docs through the composed `assemblePersonaGroupRing` — while a STRANGER (same proof, no grant)
- * is refused the identical doc.
+ * persona-ring-cross-operator-admit.test.ts — e2e: a REAL vessel boots, wears a face, and its gate SORTS every
+ * proven foreign key before any verdict:
+ *   · UNDER PRIVATE (the fail-closed default): a fresh foreign key, proven at the real gate through the real
+ *     in-worker keyhive `verifyPeer`, meets SILENCE — no verdict, no session — so no session verb (a hosted
+ *     invite mint included) can be asked at all (the STRANGER probe);
+ *   · UNDER OPEN: a peer holding a live face-join grant record reaches the face's own persona-plane docs
+ *     through the composed `assemblePersonaGroupRing`, while a STRANGER (same proof, no grant) is admitted at
+ *     the shelf and refused the identical doc.
  *
  * THE GAP THIS CLOSES: `self-slot-persona-ring.test.ts` (unit) and
  * `open-node-vessel-composes-persona-ring.test.ts` (source weld) prove the ring's LOGIC and its WIRE,
@@ -21,9 +25,9 @@
  *      (`operator-daemon-behavior.ts`) — and writes it onto the face's OWN PersonaGroup persona-plane
  *      bag, live, through the SAME `makeCatalogAccessor`/`storeOf` the ring itself reads.
  *   3. The grant-holder dials the founder's `/ws` with `LarWSClientAdapter`, proves possession of its
- *      own key at the real `DaemonAuthGate` (V3), lands `peerClass: "cross-operator"` at the worker's
- *      `verifyPeer` (operator-daemon-behavior.ts), and — ONLY because the ring's `grants.verify` finds
- *      and verifies its published record — reaches the persona-plane doc.
+ *      own key at the real `DaemonAuthGate` (V3), is vouched a proven key with NO class at the worker's
+ *      `verifyPeer` (operator-daemon-behavior.ts), is sorted a stranger under the OPEN posture, and — ONLY
+ *      because the ring's `grants.verify` finds and verifies its published record — reaches the persona-plane doc.
  *   4. A STRANGER (a second real Keyhive identity, same proof machinery, no grant record) dials the
  *      SAME founder and is refused the SAME doc — the matched-pair control.
  *
@@ -191,14 +195,13 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     const grantTitle = faceGrantTitle(personaGroupDocIdHex, joineeAgentIdHex);
 
     // ── Open the federation POSTURE ─────────────────────────────────────────────────────────────
-    // `selfSlotShareDecision` (self-slot-share.ts) consults the identity-slot ring's widened
-    // `selfSlotFedGate` ONLY after `postureGatesCrossOperator(posture, isNexusMember)` passes — and a
-    // freshly-founded, charter-less vessel's nexus doc is ABSENT, which `federationPostureFromDoc` folds
-    // to PRIVATE (fail-closed). Under PRIVATE, every non-member cross-operator is denied BEFORE the ring
-    // is ever reached — an outer relation (this Nexus's stance toward foreign operators) gates an inner
-    // one (this face's own PersonaGroup grant). So proving the ring needs this vessel's Nexus posture
-    // OPEN, seeded here through `writeNexusDoc` — the founding act's own writer, and the sanctioned way
-    // to mint a minimal charter for a vessel that never ran a real seal-seat ceremony.
+    // The gate's sorter answers a proven foreign key only when some Nexus the vessel stands in reads OPEN —
+    // and a freshly-founded, charter-less vessel's nexus doc is ABSENT, which `federationPostureFromDoc` folds
+    // to PRIVATE (fail-closed). Under PRIVATE every such key is SILENCE before the ring is ever reached — an
+    // outer relation (this Nexus's stance toward strangers) gates an inner one (this face's own PersonaGroup
+    // grant). So proving the ring needs this vessel's Nexus posture OPEN, seeded here through `writeNexusDoc` —
+    // the founding act's own writer, and the sanctioned way to mint a minimal charter for a vessel that never
+    // ran a real seal-seat ceremony.
     // `nexusIdentity` reads a null `sealEpochCid` beside a STANDING charter file as TORN (a half-written
     // seat) rather than "no charter at all" — so the seed needs a well-formed (if synthetic) genesis
     // epoch id, `GENESIS_RE = /^epoch0-[0-9a-f]{64}$/` (nexus-identity.ts), to read as a coherent charter.
@@ -276,4 +279,36 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
       client.disconnect();
     }
   }, 15_000);
+
+  test("★ STRANGER under PRIVATE: a fresh foreign key proven at the real gate meets silence — no verdict, no session, no mint ★", async () => {
+    // The operator closes the Nexus; the gate's sorter reads the posture fresh for the very next socket.
+    const nexusPrivate: NexusDoc = {
+      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, kahu: [], federationPosture: "private",
+    };
+    await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusPrivate); });
+    try {
+      const stranger = await makePeerIdentity(203);
+      const client = new LarWSClientAdapter({ url: `ws://127.0.0.1:${port}`, identity: stranger.identity, aud: DAEMON_BAG_ID, gatePubKey });
+      const strangerRepo = new Repo({ network: [client] });
+      try {
+        client.connect("stranger-probe" as never);
+        let reason: string | null = null;
+        for (let i = 0; i < 150 && !reason; i++) { await new Promise((r) => setTimeout(r, 100)); reason = client.anergized; }
+        expect(reason, "the gate answered a PRIVATE stranger — a refusal or a verdict crossed the wire").toBe("no answer");
+        expect(client.session).toBeNull();
+        // No session stands, so no session verb can be asked: a hosted-invite mint has no socket to ride.
+        expect(client.sendSession("hosting/mint", { blinded: [] })).toBe(false);
+        expect(await findWithin(strangerRepo, personaBagUrl, 2_000)).not.toBe("found");
+      } finally {
+        await strangerRepo.shutdown();
+        client.disconnect();
+      }
+    } finally {
+      // CONTROL rides the other tests: the OPEN posture admits the grant-holder at the same gate.
+      const nexusOpen: NexusDoc = {
+        kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, kahu: [], federationPosture: "open",
+      };
+      await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusOpen); });
+    }
+  }, 30_000);
 });

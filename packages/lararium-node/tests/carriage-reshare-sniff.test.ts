@@ -43,7 +43,7 @@ describe("carriage RE-SHARE — the relay bag-tracker sniffs holders from the wi
     const holderKey = await pubOf(holderSeed);
     relay = await startCarriageRelay({ gateSeed: new Uint8Array(32).fill(99) });
     expect(relay.tracker.size).toBe(0);   // stands empty until a body announces (fail-closed discovery)
-    const url = `ws://127.0.0.1:${relay.port}`;
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
 
     // 1. ANNOUNCE — the holder broadcasts cas-have(cid); the relay stamps `from` with the proven key + sniffs it.
     const holderCh = await AuthenticatedWSMembershipChannel.connect(url, holderSeed);

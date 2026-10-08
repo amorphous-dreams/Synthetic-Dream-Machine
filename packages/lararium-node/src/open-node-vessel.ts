@@ -85,7 +85,7 @@ import { DeterministicFederationGate, federationPostureFromDoc, utf8Bytes, makeC
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
-import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
+import type { SparseFormVector, AntigenRing, FederationGate, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
@@ -93,7 +93,7 @@ import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import {
   makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener, dialPresentation,
   presentationKey, dialIdentityFor,
-  type NexusMembershipHolder, type SocketBinding, type DialPresentation,
+  type NexusMembershipHolder, type SocketBinding, type DialPresentation, type CarriedNexusReading,
 } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { nodeNexusStandsAt } from "./nexus-standing.js";
@@ -146,7 +146,9 @@ import {
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
 import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
-import { DaemonAuthGate }                           from "./daemon-auth-gate.js";
+import { DaemonAuthGate, type SocketSorter }       from "./daemon-auth-gate.js";
+import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "./socket-sorter.js";
+import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
@@ -266,7 +268,8 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   meshSelf?: MeshSelf;
   /** Carriage pull cadence (ms) — tuning, kept separate from membership. */
   pullIntervalMs?: number;
-  /** The CARRIAGE-relay URL (Socket B, ciphertext) the vessel dials to serve sealed cad bodies to members.
+  /** The PINNED carriage-relay address (Socket B, ciphertext; `ws://<host>:<port>#<relay gate key hex>`) the
+   *  vessel dials to serve sealed cad bodies to members.
    *  ABSENT (and `LAR_CARRIAGE_RELAY` unset) → NO carriage socket opens, NO serve-loop stands (provably inert). */
   carriageRelayUrl?: string;
   /** The carriage serve-loop poll cadence (ms) — how promptly a member's want-block draws a serve turn. */
@@ -302,6 +305,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   eventBus:  LarEventBusImpl;
   /** Stop the N-accumulator tick loop (call on graceful shutdown). */
   stopTick:  () => void;
+  /** The ONE sorter this vessel's gates arm with — the oracle socket a host mounts beside the relay takes it. */
+  socketSorter: SocketSorter;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -319,6 +324,8 @@ export interface NodeHermResult {
   /** The stood carriage relay's gate verifying-key hex — the key a dialing hearth binds its proof to (out-of-band).
    *  `null` when no relay was configured. The operator hands a hearth this alongside the URL. */
   carriageRelayGatePubKey: string | null;
+  /** The ONE sorter this vessel's gates arm with. */
+  socketSorter:     SocketSorter;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
   dispose:          () => Promise<void>;
 }
@@ -346,6 +353,10 @@ interface NodeBootPrep {
   /** This vessel's own gate key — the node ANCHORS its confederation, so its gate key doubles as the Nexus
    *  key its browser leaves pass as relayGatePubKey. Every per-Nexus board (WHO, KEL, antigen) scopes to it. */
   nexusPubkey:      string;
+  /** This vessel's gate key — its own verifying key, the key every gate it stands answers under. */
+  vesselGateKey:    string;
+  /** The ONE sorter every gate of this vessel arms with. */
+  socketSorter:     SocketSorter;
   residency:        BagStowage;
   /** The carriage serve-loop (Socket B) — present ONLY when a carriage-relay URL was configured; else null (inert).
    *  The two vessel entry-points fold its `stop()` into their teardown so no timer / socket leaks past close. */
@@ -402,6 +413,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // ── 1. Repo — NodeFS storage + WebSocket relay behind the DaemonAuthGate ─────
   const storage = new DurableNodeFSStorageAdapter(storageDir);
   const authGate = new DaemonAuthGate(wss);
+  let relayRegistered = false;
   const network  = new ListeningWSServerAdapter(authGate as unknown as typeof wss);
   const peerIdentifierMap = new Map<string, string>();
   // The self-slot CLASS map — peerId → the class the keyholder vouched at admission. Populated in the
@@ -435,13 +447,14 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         if (identHex) peerIdentifierMap.set(peerId, identHex);
         const cls = authGate.getClassForSocket(socket as Parameters<typeof authGate.getClassForSocket>[0]);
         if (cls) peerClassMap.set(peerId, cls);
-        // THE LEAF SEAT. A presented admit binds to the values this gate issued and proved for THIS socket —
-        // never to anything the peer echoed. No proved identifier, or no admit: `null`.
-        const gateSocket = socket as Parameters<typeof authGate.getPresentationForSocket>[0];
-        const presentedAdmit = authGate.getPresentationForSocket(gateSocket)?.presentedAdmit;
+        // THE LEAF SEAT. The sorter already read this socket's admit HELD before its verdict; the holder keeps the
+        // binding so every later refold re-reads it. It binds to the values this gate issued and proved for THIS
+        // socket — never to anything the peer echoed. A socket that is not contracted seats `null`.
+        const gateSocket = socket as Parameters<typeof authGate.getPresentedForSocket>[0];
+        const presented = cls === "contracted" ? authGate.getPresentedForSocket(gateSocket) : undefined;
         const challenge = authGate.getChallengeForSocket(gateSocket);
-        const binding: SocketBinding | null = presentedAdmit && challenge && identHex
-          ? { presentedAdmit, nonce: challenge.nonce, gatePubKey: challenge.gatePubKey, vesselKey: identHex.slice(-64).toLowerCase() }
+        const binding: SocketBinding | null = presented?.kind === "admit" && challenge && identHex
+          ? { presentedAdmit: presented, nonce: challenge.nonce, gatePubKey: challenge.gatePubKey, vesselKey: identHex.slice(-64).toLowerCase() }
           : null;
         peerBindings.set(peerId, binding);
         void nexusMembershipHolder?.present(peerId, binding);
@@ -471,10 +484,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // it) and STOOD once the operator's own nym is loaded, below. Null keeps every cross-operator STRANGER
   // (public-read only) through the boot window — the fail-closed default (a node never assumes Nexus-pono).
   let nexusMembership: NexusMembership | null = null;
-  // The per-Nexus federation POSTURE — read as-of-last-sync off the nexus doc. Default PRIVATE
-  // (fail-closed): the pre-read boot window denies every cross-Nexus foreign operator co-federation. STOOD
-  // once the operator's own nym + bags dir are known, below; a live posture-flip re-reads on membership refold.
-  let federationPosture: FederationPosture = "private";
   // THE SEAL-PRODUCER — a LIVE sealed-plane registry, empty at boot (fail-closed: behaves EXACTLY as
   // DENY-ALL until the encrypt-on-CAS installer seals a body). `sealRegistry.seal` is the oracle the
   // sharePolicy closes over; the moment `installSealedBody(sealRegistry, …)` seals a cad body, its docId
@@ -552,9 +561,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         // body sealed by `installSealedBody` registers its docId here; the member lane then blind-transits it
         // (carry the ciphertext, never the read-cap — the read-cap rides the private keyhive lane).
         planeSeal:       sealRegistry.seal,
-        // THE POSTURE OUTER GATE — PRIVATE (default) denies a cross-Nexus (non-member) foreign operator ALL
-        // co-federation; OPEN lets a proof-carrying foreign operator reach the public shelf (never a private plane).
-        federationPosture,
         peerId,
         documentId: documentId as DocumentId | undefined,
       });
@@ -697,23 +703,57 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     void nexusMembershipHolder?.refold();
     void representIfMoved?.();
   });
+  const readCarried = (): Promise<readonly CarriedNexusReading[]> =>
+    readCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open });
+  // Every Nexus this vessel carries, either way it carries: a persona's consent or seated chair, or this PLACE's
+  // own counted carrier seal. The sorter reads the postures of all of them.
+  const readEveryCarried = async (): Promise<readonly CarriedNexusReading[]> => unionReadings(
+    await readCarried(),
+    await placeCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open }),
+  );
+  /** A peer a contracted class holds: a leaf the membership reads held, or a PLACE whose key this board carries. */
+  const contractHolds = (peerId: string): boolean => {
+    const holder = nexusMembershipHolder;
+    if (!holder) return false;
+    if (holder.membership.holdsCarriagePeer(peerId)) return true;
+    const ident = peerIdentifierMap.get(peerId);
+    return ident !== undefined && holder.carriers().has(ident.slice(-64).toLowerCase());
+  };
+  // A REFOLD THAT DEMOTES CLOSES. When a refold reads a contracted socket's admit no longer held, or reads every
+  // carried Nexus PRIVATE under a stranger's socket, that socket would be silence at the gate today — so it is
+  // dropped the way the gate drops a refused one: no frame, no reason.
+  const dropNoLongerHeld = (): void => {
+    const holder = nexusMembershipHolder;
+    if (!holder) return;
+    const sockets = (network.sockets ?? {}) as Record<string, unknown>;
+    const admitted = Object.entries(sockets).map(([peerId, socket]) => ({ peerId, socket, cls: peerClassMap.get(peerId) }));
+    const drop = socketsNoLongerHeld(admitted, {
+      holds: contractHolds,
+      answersStrangers: gateAnswersStrangers(federationPostureFromDoc(readNexusDoc(sealHome)), holder.readings()),
+    });
+    for (const socket of drop) authGate.drop(socket as Parameters<typeof authGate.drop>[0]);
+  };
   const membershipHolder: NexusMembershipHolder = makeNexusMembership({
     sealHome,
     repo,
     nexusPubkey,
-    readCarried: () => readCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open }),
-    onRefold:    reverdict,
+    readCarried,
+    onRefold:    () => { reverdict(); dropNoLongerHeld(); },
   });
   nexusMembershipHolder = membershipHolder;
   nexusMembership = membershipHolder.membership;
   // Replay every socket that presented before the holder stood.
   for (const [peerId, binding] of peerBindings) void membershipHolder.present(peerId, binding);
+  // THE ONE SORTER every gate of this vessel arms with — the relay `/ws` and the oracle socket alike. It reads
+  // the carried readings FRESH per socket, so a posture flipped on disk or a revoke landed by sync sorts the very
+  // next socket by it.
+  const socketSorter: SocketSorter = makeSocketSorter({
+    readings: readEveryCarried,
+    carrier:  (vesselKey) => membershipHolder.carriers().has(vesselKey.toLowerCase()),
+    primaryPosture: () => federationPostureFromDoc(readNexusDoc(sealHome)),
+  });
 
-  // Read the federation POSTURE off the nexus doc (as-of-last-sync). Default PRIVATE (fail-closed):
-  // a cross-Nexus foreign operator co-federates ONLY when the operator flips the Nexus open. A live flip needs
-  // a re-read (surfaced gap — boot-time read for alpha; the CLI `lares nexus posture` edits the doc).
   const nexusDocForBoot = readNexusDoc(sealHome);
-  federationPosture = federationPostureFromDoc(nexusDocForBoot);
 
   // Read the bulb off the genesis dir — the ALL-PUBLIC seed + CAS a Herm serves so a stranger kindles their OWN
   // sovereign hearth (serve fire, never key). Null when the genesis is absent (nothing to hand). It pins no epoch
@@ -797,7 +837,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
             storageDir, sealHome, nexusPubkey,
             ownVesselKey: vesselIdentity.verifyingKey, repo,
             antigen: antigenHolder, membership: membershipHolder,
-            setPosture: (p) => { federationPosture = p; },
           });
           await realmPlane?.refresh(readNexusDoc(sealHome));
           reverdict();
@@ -822,7 +861,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     ? await startCarriageRelay({ gateSeed: relayGateSeed, port: relayPort })
     : null;
   if (carriageRelay) {
-    console.log(`[carriage] crossroads relay standing — ws://<host>:${carriageRelay.port} · gate ${carriageRelay.gatePubKey}`);
+    console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
   }
 
   // ── THE FETCH DOOR, vessel side — `makeCidResolver(localRead, casTransit, cacheWriteThrough)` ──────────────
@@ -1361,8 +1400,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
               storageDir, sealHome, nexusPubkey,
               ownVesselKey: vesselIdentity.verifyingKey, repo,
               antigen: antigenHolder, membership: membershipHolder,
-              setPosture: (p) => { federationPosture = p; },
-            });
+              });
             await realmPlane?.refresh(readNexusDoc(sealHome));
             reverdict();
           },
@@ -1918,7 +1956,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         repo,
         membership:  membershipHolder,
         // Reassign the live posture the sharePolicy closure reads each call (fail-closed PRIVATE on a torn read).
-        setPosture:  (p) => { federationPosture = p; },
       });
       // A charter imported after boot names a realm this vessel never stood — stand it now (idempotent).
       await realmPlane?.refresh(readNexusDoc(sealHome));
@@ -2139,7 +2176,17 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // key, never a root) signs every verdict back to the leaf.
     authGate.arm(daemonVm.authShore, DAEMON_BAG_ID, {
       pubKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
-    });
+    }, socketSorter);
+    // THE KNOCK. The relay answers an upgrade only on the path its gate key derives; the dispatcher destroys
+    // every other upgrade before any HTTP 101. Registered once — a re-armed gate keeps its key and its path.
+    const relayPath = authGate.upgradePath("/ws");
+    if (opts.dispatcher && relayPath && !relayRegistered) {
+      relayRegistered = true;
+      opts.dispatcher.registerUpgrade({
+        name: "relay", path: relayPath,
+        handle: (req, socket, head) => wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req)),
+      });
+    }
     // THE HOST COUNTERSIGN rides the gate's authenticated sessions: a walker on a live socket asks, and this
     // hearth lends its own leaf's standing in the asked Nexus over that socket's session — keeping no list of
     // whom it hosts and nothing of whom they invite.
@@ -2289,7 +2336,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   };
 
   return {
-    repo, catalogHandle, vesselSeed, nexusPubkey,
+    repo, catalogHandle, vesselSeed, nexusPubkey, socketSorter,
+    vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
@@ -2329,7 +2377,7 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
   const identity = opts.meshSelf ? await carriageIdentity("lararium") : undefined;
   const carriageCaps = opts.meshSelf ? carriageStack({
     repo:        p.repo,
-    self:        opts.meshSelf,
+    self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
     nodeSeedHex: Buffer.from(p.vesselSeed).toString("hex"),
     ...(identity ? { identity } : {}),
     ...(p.residency ? { residency: p.residency } : {}),
@@ -2373,6 +2421,7 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
     // Graceful shutdown tears the pool down AND stops the carriage serve-loop (Socket B) + the client dial-out
     // (Socket A) — each a no-op when none stood — so no timer / client socket leaks past close.
     stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); void p.carriageLoop?.stop(); p.nexusDial?.stop(); },
+    socketSorter: p.socketSorter,
   };
 }
 
@@ -2409,7 +2458,8 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     signerSeed:  p.vesselSeed,
     storageDir:  opts.storageDir,
     authShore:   () => p.daemonVm().authShore,
-    ...(opts.meshSelf ? { meshSelf: opts.meshSelf } : {}),
+    sort:        p.socketSorter,
+    ...(opts.meshSelf ? { meshSelf: { ...opts.meshSelf, gatePubKey: p.vesselGateKey } } : {}),
     ...(identity ? { identity } : {}),
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
     // Serve the HELD bulb by cid over the public floor (the OPEN path) — present only when the genesis stands.
@@ -2456,6 +2506,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     phase:            "live",
     carriageRelayPort:       p.carriageRelay?.port ?? null,
     carriageRelayGatePubKey: p.carriageRelay?.gatePubKey ?? null,
+    socketSorter:     p.socketSorter,
     dispose: async () => {
       setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
       await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak

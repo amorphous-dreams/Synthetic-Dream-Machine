@@ -7,10 +7,13 @@
  * proof-of-possession `runPeerHandshake` composes). A dialer that cannot prove a key reads nothing, and an
  * HTTP request for the oracle meets the vessel's closed door.
  *
+ * EVERY DIALER PINS. The reader names the publisher's key out of band (`verifyingKey`): the vessel key is both the
+ * gate key and the pointer's signer. The socket opens on the knock that key derives (`knockedUrl`), the proof
+ * commits to it, the verdict must carry its signature, and the pointer must be signed by it — so a socket that
+ * proved to one vessel cannot be fed another's map, and a reader that pinned no key dials nothing.
+ *
  * The reader then VERIFIES before trusting (signature · causal ancestry · publisher binding · rehash == cid ·
- * heads == signed frontier). The publisher binds to the gate by default: the pointer must be signed by the
- * key the gate named in its challenge, the key this dialer's proof committed to — so a socket that proved to
- * one vessel cannot be fed another's map.
+ * heads == signed frontier).
  * Isomorphic: the global `WebSocket` (Node 22+/browser) + `Automerge.load`; a browser vessel reads exactly so.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
@@ -20,11 +23,12 @@ import { load as automergeLoad, getHeads, type Doc } from "@automerge/automerge"
 import { verifyOraclePointer, verifyOracleSnapshotBytes, type OraclePointer } from "./oracle-substrate.js";
 import { isLarChallengeMsg, runPeerHandshake, type LeafIdentity } from "./auth-wire.js";
 import { DAEMON_BAG_ID } from "./lar-uris.js";
+import { knockedUrl } from "./gate-knock.js";
 
 /**
  * THE ORACLE SOCKET ROUTE AND FRAME, SPELLED ONCE.
  *
- * A server in `lararium-node` answers this upgrade path and this client dials it. Spelled twice, the two move
+ * A server in `lararium-node` answers this route (behind its knock) and this client dials it. Spelled twice, the two move
  * only when someone remembers both — and they do not run in one process, so nothing forces the memory: a vessel
  * and a Herm built from different commits would simply miss each other, which reads as a peer being down rather
  * than as a rename. Mesh holds them because node imports mesh and never the reverse.
@@ -60,8 +64,8 @@ export interface OracleChannel {
 export interface OraclePullOpts {
   /** The identity this reader proves at the peer's gate. Without one there is nothing to prove, and nothing reads. */
   readonly identity:          LeafIdentity;
-  /** Pin the publisher — refuse a pointer signed by any other key. Absent → the key the gate named. */
-  readonly verifyingKey?:     string;
+  /** The publisher's key — the gate key this reader proves to and the key the pointer must be signed by. */
+  readonly verifyingKey:      string;
   /** Locally held pointer identities; a missing parent is unavailable. */
   readonly knownPointerIds?: readonly string[];
   /** Open the socket (tests inject one). Default: the global `WebSocket`. */
@@ -139,7 +143,7 @@ export async function pullAndVerifyOracle<T = unknown>(
   const timeoutMs = opts.frameTimeoutMs ?? DEFAULT_FRAME_TIMEOUT_MS;
   let channel: OracleChannel;
   try {
-    const url = oracleSocketUrl(baseUrl);
+    const url = knockedUrl(oracleSocketUrl(baseUrl), opts.verifyingKey);
     channel = await (opts.openChannel ?? ((u: string) => webSocketChannel(u, timeoutMs)))(url);
   } catch (e) {
     return { ok: false, reason: `dial failed: ${e instanceof Error ? e.message : String(e)}` };
@@ -152,16 +156,10 @@ export async function pullAndVerifyOracle<T = unknown>(
 }
 
 async function pullOverChannel<T>(channel: OracleChannel, opts: OraclePullOpts): Promise<OraclePullResult<T>> {
-  // 1. the gate speaks first; its challenge names the key this dialer's proof commits to.
+  // 1. the gate speaks first: a bare nonce. The key this dialer proves to is its own pin.
   const challenge = parseText(await channel.recv());
   if (!isLarChallengeMsg(challenge)) return { ok: false, reason: "no gate challenge" };
-  // A pinned publisher pins the gate too: the vessel key is both, so a socket answered by any other gate is
-  // refused before this dialer proves anything to it. Unpinned, the dialer adopts the key the gate named —
-  // the gate then proves it holds that key by signing its verdict, and the pointer must carry the same key.
-  const gatePubKey = opts.verifyingKey ?? challenge.gatePubKey;
-  if (!gatePubKey) return { ok: false, reason: "the gate named no key to prove against" };
-  if (challenge.gatePubKey && challenge.gatePubKey.toLowerCase() !== gatePubKey.toLowerCase())
-    return { ok: false, reason: "the gate is not the pinned publisher" };
+  const gatePubKey = opts.verifyingKey;
 
   // 2. prove — the gate's own handshake, composed unchanged.
   let replayed = false;
@@ -178,7 +176,7 @@ async function pullOverChannel<T>(channel: OracleChannel, opts: OraclePullOpts):
     sign:        opts.identity.sign,
     ...(opts.identity.edge ? { edge: opts.identity.edge } : {}),
   });
-  if (!verdict.ok) return { ok: false, reason: `gate refused: ${verdict.reason ?? "denied"}` };
+  if (!verdict.ok) return { ok: false, reason: `gate refused: ${verdict.reason}` };
 
   // 3. the signed pointer — verify BEFORE trusting, bound to the gate this socket proved to.
   const frame = parseText(await channel.recv());

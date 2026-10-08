@@ -6,8 +6,8 @@
  *   · PER CARRIED NEXUS — a revoke written out of process onto a carried Nexus's board is merged into the running
  *     Repo, the held presentation re-verifies against it and drops to STRANGER, and the report names that
  *     Nexus with its deny entries and held count (before: held 1; after: held 0).
- *   · POSTURE — an out-of-process `nexus posture open` disk write, then a refresh, reassigns the live posture
- *     (the setter fires with "open"); a torn/absent charter reads PRIVATE (fail-closed).
+ *   · POSTURE — an out-of-process `nexus posture open` disk write, then a refresh, reads the gate's posture
+ *     OPEN; a torn/absent charter reads PRIVATE (fail-closed).
  *   · BOARD — a real 2-of-3 ban written through a SEPARATE repo on the same storage dir (the CLI's own repo)
  *     does NOT reach a holder standing on a cold board; a refresh re-materializes the board off storage and
  *     re-folds → the victim stands Kapae'd → carryContractShareDecision draws Mu for its peer.
@@ -101,7 +101,7 @@ describe("nexus-refresh — the own-board report names this vessel's own island"
       writeNexusDoc(bags, seatedCharter(keys));
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.boardRoot).toBe(NEXUS_PUBKEY.toLowerCase());
     } finally { holders.dispose(); }
@@ -116,7 +116,7 @@ describe("nexus-refresh — the own-board report names this vessel's own island"
       writeNexusDoc(bags, { ...seatedCharter(keys), boardRoot: "f".repeat(64) } as never);
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.boardRoot).toBe(NEXUS_PUBKEY.toLowerCase());
     } finally { holders.dispose(); }
@@ -129,32 +129,28 @@ describe("nexus-refresh — POSTURE re-read (D2)", () => {
   beforeEach(() => { bags = mkdtempSync(join(tmpdir(), "lares-refresh-bags-")); storage = mkdtempSync(join(tmpdir(), "lares-refresh-store-")); });
   afterEach(async () => { await drainStorageThrottle(); rmSync(bags, { recursive: true, force: true }); rmSync(storage, { recursive: true, force: true }); });
 
-  test("an out-of-process posture flip to OPEN is picked up by a refresh (the setter fires with open)", async () => {
+  test("an out-of-process posture flip to OPEN is picked up by a refresh — the gate's posture reads open", async () => {
     const keys = await Promise.all(SEEDS.map(pubOf));
     const holders = standHolders(bags);
-    let live: FederationPosture = "private";   // the live sharePolicy default, as the node boots it
     try {
       // The operator's `lares nexus posture open` rewrites the disk charter beside the running node.
       writeNexusDoc(bags, seatedCharter(keys, "open"));
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: (p) => { live = p; },
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.posture).toBe("open");
-      expect(live).toBe("open");   // the sharePolicy's live posture reassigned — no bounce
     } finally { holders.dispose(); }
   });
 
   test("FAIL CLOSED — an absent charter reads PRIVATE (a broken read only ever tightens)", async () => {
     const holders = standHolders(bags);
-    let live: FederationPosture = "open";
     try {
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: (p) => { live = p; },
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.posture).toBe("private");
-      expect(live).toBe("private");
     } finally { holders.dispose(); }
   });
 });
@@ -193,7 +189,7 @@ describe("nexus-refresh — out-of-process BOARD write (E2)", () => {
       // The refresh re-materializes the board off storage and re-folds → the victim now stands Kapae'd.
       const r = await runNexusRefresh({
         storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
-        ...holders.deps, antigen: holders.antigen, membership: holders.membership, setPosture: () => {},
+        ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.antigenEntries).toBe(1);
       expect(holders.antigen.ring.kapaed.has(victim)).toBe(true);
@@ -254,12 +250,12 @@ describe("nexus-refresh — the deny board of EVERY carried Nexus refolds, and t
       sealHome: bags, repo: live, nexusPubkey: island,
       readCarried: () => readCarriedNexuses({ sealHome: bags, ownVesselKey, open: boards.open }),
     });
-    const deps = { storageDir: storage, sealHome: bags, nexusPubkey: island, ownVesselKey, repo: live, antigen, membership, setPosture: () => {} };
+    const deps = { storageDir: storage, sealHome: bags, nexusPubkey: island, ownVesselKey, repo: live, antigen, membership };
     try {
       const gate = "ee".repeat(32);
       const nonce = "12".repeat(32);
       const vesselKey = await pubOf(new Uint8Array(32).fill(45));
-      const leafProof = await signLeafProof({ admit, nonce, gatePubKey: gate, vesselKey, sign: signerOf(leafSeed) });
+      const leafProof = await signLeafProof({ presented: { kind: "admit", admit, lineage: [] }, nonce, gatePubKey: gate, vesselKey, sign: signerOf(leafSeed) });
       await membership.refold();
       await membership.present("peer-b", { presentedAdmit: { admit, lineage: [], leafProof }, nonce, gatePubKey: gate, vesselKey });
       expect(membership.membership.holdsCarriagePeer("peer-b")).toBe(true);

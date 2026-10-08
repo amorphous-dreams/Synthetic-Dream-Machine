@@ -55,7 +55,8 @@ export interface CarriageServeLoop {
 
 /** What the serve-loop dials with + answers over. */
 export interface CarriageServeLoopConfig {
-  /** The carriage relay URL (`ws://<host>:<port>`) — the vessel dials it and proves possession of `vesselSeed`. */
+  /** The PINNED carriage relay address (`ws://<host>:<port>#<relay gate key hex>`) — the vessel dials the knock
+   *  that key derives, proves possession of `vesselSeed`, and reads a verdict only under that key. */
   readonly relayUrl:        string;
   /** The vessel's 32-byte Ed25519 seed — its PROVEN key stamps every envelope it offers. */
   readonly vesselSeed:    Uint8Array;

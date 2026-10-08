@@ -20,7 +20,9 @@ import {
   askHearthOverSession, mintHostedInvite, decideBootInvite, bootInviteId, makeMultiSigQuorumVerifier, hex,
   type AuthVerifierShore, type InviteStandingContext, type HostSession,
 } from "@lararium/mesh";
-import { DaemonAuthGate } from "../src/daemon-auth-gate.js";
+import { DaemonAuthGate, type SocketSorter } from "../src/daemon-auth-gate.js";
+/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
+const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import { serveHostCountersign, type HearthStandingSource } from "../src/host-countersign.js";
 
 const AUD   = "lar:///ha.ka.ba/bags/daemon";
@@ -84,7 +86,7 @@ async function standHearth(standing: HearthStandingSource): Promise<{ gate: Daem
   wss = new WebSocketServer({ server: http });
   const gate = new DaemonAuthGate(wss);
   const gatePub = await pub(GATE);
-  gate.arm(shoreFor(gatePub, await pub(WALKER_VESSEL)), AUD, { pubKey: gatePub, sign: ed25519SignerFromSeed(GATE) });
+  gate.arm(shoreFor(gatePub, await pub(WALKER_VESSEL)), AUD, { pubKey: gatePub, sign: ed25519SignerFromSeed(GATE) }, admitProven);
   serveHostCountersign(gate, standing);
   const port = await new Promise<number>((resolve) => http!.listen(0, "127.0.0.1", () => {
     const a = http!.address(); resolve(typeof a === "object" && a ? a.port : 0);

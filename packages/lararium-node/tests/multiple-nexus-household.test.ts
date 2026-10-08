@@ -91,14 +91,14 @@ describe("multiple-Nexus household proof", () => {
 
     for (const documentId of aBoards) {
       expect(await selfSlotShareDecision({
-        hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: gateA,
+        hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
         antigenRing: null, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
       })).toBe(true);
     }
     for (const documentId of [...bBoards, privateA]) {
       // This assertion is the mutation pin: replacing the gate with `() => true` must turn red.
       expect(await selfSlotShareDecision({
-        hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: gateA,
+        hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
         antigenRing: null, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
       })).toBe(false);
     }
@@ -144,7 +144,7 @@ describe("multiple-Nexus household proof", () => {
     // No A board is materialized or merged. The foreign absence is an explicit denied read.
     const gateB = new DeterministicFederationGate(NEXUS_B);
     expect(await selfSlotShareDecision({
-      hasWsSocket: true, peerClass: "cross-operator", selfSlotFedGate: gateB,
+      hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateB,
       antigenRing: null, membership: null, planeSeal: null, peerId: RELAY_A, documentId: docIdOf(crossroadsDocUrl(NEXUS_A)),
     })).toBe(false);
     expect(bBoard.doc()?.tiddlers["lar:///household/b-state"]?.text).toBe("B-local-causal-state");

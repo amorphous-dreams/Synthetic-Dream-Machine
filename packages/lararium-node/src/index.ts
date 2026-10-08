@@ -155,7 +155,8 @@ export type { ComposeStreamOptions } from "./sense-stream.js";
 
 export { LarDiskProjector } from "./disk-projector.js";
 export { DaemonAuthGate } from "./daemon-auth-gate.js";
-export type { SocketPresentation, SocketChallenge } from "./daemon-auth-gate.js";
+export type { SocketChallenge, SocketSorter, SortInput, SortVerdict, GateKey, DaemonAuthGateOptions } from "./daemon-auth-gate.js";
+export { makeSocketSorter, socketsNoLongerHeld } from "./socket-sorter.js";
 export { openNodeVessel } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";

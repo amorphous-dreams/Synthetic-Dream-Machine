@@ -400,7 +400,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
       const nonce = "34".repeat(32);
       const gatePubKey = "ee".repeat(32);
       const vesselKey = "cd".repeat(32);
-      const leafProof = await signLeafProof({ admit: presented!.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leaf.seed) });
+      const leafProof = await signLeafProof({ presented: { kind: "admit", admit: presented!.admit, lineage: [] }, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leaf.seed) });
       await holder.present("peer-joiner", { presentedAdmit: { ...presented!, leafProof }, nonce, gatePubKey, vesselKey });
       await holder.present("peer-kahu", null);
       await holder.present("peer-wire-nym", null);
@@ -626,7 +626,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
         const p = by ?? (await presentationFromBoardDoc(boardDoc, nym, head)).presentation;
         expect(p).not.toBeNull();
         const lineage = strip ? p!.lineage.filter((e) => !isRollAnchor(e)) : p!.lineage;
-        const leafProof = await signLeafProof({ admit: p!.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed((await nexusLeafFor(idx, aid)).seed) });
+        const leafProof = await signLeafProof({ presented: { kind: "admit", admit: p!.admit, lineage: [] }, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed((await nexusLeafFor(idx, aid)).seed) });
         await holder.present(peer, { presentedAdmit: { admit: p!.admit, lineage, leafProof }, nonce, gatePubKey, vesselKey });
       };
       await presentAs("peer-joiner", joinerNym, 3);

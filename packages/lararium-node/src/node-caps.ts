@@ -52,6 +52,7 @@ import {
   type DaemonCapDeps, type VesselDaemonVm,
 } from "@lararium/tw5";
 import { mountFlowMapReadFace, type OracleReadFace } from "./oracle-read-face.js";
+import type { SocketSorter } from "./daemon-auth-gate.js";
 import { mountBulbReadFace, type PublicCasShore } from "./bulb-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { BulbArtifact } from "./bulb.js";
@@ -91,6 +92,8 @@ export function flowMapReadFaceCap(deps: {
   httpServer: Server; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
   /** The daemon island's inbound-peer verify shore, read once the daemon cap stands. */
   authShore: () => AuthVerifierShore;
+  /** The vessel's ONE sorter — the oracle socket's gate classes every proven reader by it. */
+  sort:      SocketSorter;
 }): CapModule {
   return {
     id: CAP.readFace, requires: [CAP.substrate, CAP.meshpalace, CAP.daemon],
@@ -102,6 +105,7 @@ export function flowMapReadFaceCap(deps: {
         signerSeed:       deps.signerSeed,
         storageDir:       deps.storageDir,
         authShore:        deps.authShore(),
+        sort:             deps.sort,
         ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
         ...(deps.onLog ? { onLog: deps.onLog } : {}),
       });
@@ -154,6 +158,8 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly meshSelf?:      MeshSelf;
   /** The daemon island's inbound-peer verify shore — the read-face's gate admits a peer on its verdict. */
   readonly authShore:      () => AuthVerifierShore;
+  /** The vessel's ONE sorter — the read-face's gate classes every proven reader by it. */
+  readonly sort:           SocketSorter;
   /** The identity this Herm's carriage proves at each peer's gate. Absent → it carries in nothing. */
   readonly identity?:      LeafIdentity;
   readonly pullIntervalMs?: number;
@@ -204,7 +210,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
     flowMapReadFaceCap({
-      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, authShore: d.authShore,
+      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, authShore: d.authShore, sort: d.sort,
       ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),

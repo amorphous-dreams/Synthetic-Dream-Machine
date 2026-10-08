@@ -150,10 +150,10 @@ describe("one face per vessel per Nexus — a dial carries no contract slot", ()
     const id = dialIdentityFor(base, p, fleetEdge);
     expect(id.edge).toBeUndefined();
     expect("contractEdge" in id).toBe(false);
-    expect(id.presentedAdmit?.admit).toBe(p.admit);
+    expect(id.presented).toMatchObject({ kind: "admit", admit: p.admit });
     expect(typeof id.leafSign).toBe("function");
     const msg = await buildAuthResponse({ contactCard: id.contactCard, nonce: "00".repeat(32), gatePubKey: "ee".repeat(32),
-      peerPubKey: id.peerPubKey, aud: "lar:///x", ts: "2026-10-06T00:00:00.000Z", leafNonce: "ef".repeat(32), sign: id.sign, presentedAdmit: id.presentedAdmit! });
+      peerPubKey: id.peerPubKey, aud: "lar:///x", leafNonce: "ef".repeat(32), sign: id.sign, presented: { ...id.presented!, leafProof: "ab".repeat(64) } });
     expect("contractEdge" in msg).toBe(false);
     expect(msg.edge).toBeUndefined();
     const sig = await id.leafSign!(new Uint8Array([1, 2, 3]));

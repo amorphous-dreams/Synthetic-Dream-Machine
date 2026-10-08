@@ -34,7 +34,9 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { verifyAuthProof, ed25519SignerFromSeed } from "@lararium/mesh";
 import type { AuthVerifierShore } from "@lararium/mesh";
-import { DaemonAuthGate } from "../src/daemon-auth-gate.js";
+import { DaemonAuthGate, type SocketSorter } from "../src/daemon-auth-gate.js";
+/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
+const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
 const envOf = (k: string, d = ""): string => process.env[k] ?? d;
@@ -115,7 +117,7 @@ async function main(): Promise<void> {
     },
   });
 
-  gate.arm(makeCapabilityShore(gatePubKey, admitted), AUD, { pubKey: gatePubKey, sign: ed25519SignerFromSeed(gateSeed) });
+  gate.arm(makeCapabilityShore(gatePubKey, admitted), AUD, { pubKey: gatePubKey, sign: ed25519SignerFromSeed(gateSeed) }, admitProven);
 
   const doc = repo.create<{ tiddlers: Record<string, { text: string }> }>({ tiddlers: {} });
   doc.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/crossroads/greeting"] = { text: GREET }; });

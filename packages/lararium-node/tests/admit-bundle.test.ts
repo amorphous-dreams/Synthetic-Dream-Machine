@@ -214,7 +214,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const bindingOf = async () => {
       const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: GATE_P, open: async () => undefined, leaves: w.leaves });
       if (!p) return null;
-      const leafProof = await signLeafProof({ admit: p.admit, nonce, gatePubKey: GATE_P, vesselKey: vessel, sign: signerOf(p.leaf.seed) });
+      const leafProof = await signLeafProof({ presented: { kind: "admit", admit: p.admit, lineage: [] }, nonce, gatePubKey: GATE_P, vesselKey: vessel, sign: signerOf(p.leaf.seed) });
       return { presentedAdmit: { admit: p.admit, lineage: p.lineage, leafProof }, nonce, gatePubKey: GATE_P, vesselKey: vessel };
     };
     // CONTROL first: no take → no presentation → STRANGER.

@@ -540,20 +540,22 @@ export interface DaemonMsg_VerifyRequest {
 }
 
 /**
- * PeerClass — how the admitted inbound peer relates to THIS operator's identity, the signal the
- * node sharePolicy reads to arm the federatable-own/private-own self-slot split.
- *   · "same-operator" — the peer proved it carries THIS operator's identity: it holds cap=admin on
- *     the daemon bag (only this operator's PersonaGroup does), OR it presented a device-delegation edge that
- *     chains to this hearth's PINNED persona-root (signerDid). Either proof binds the peer to the
- *     operator's own device-fleet → it keeps FULL device sync (every private plane crosses).
- *   · "cross-operator" — the peer carries a DIFFERENT operator identity (a cabal-mate / another kahu):
- *     it reaches ONLY the deterministically-federatable-own planes, never a private-own plane.
+ * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
+ * sharePolicy reads it to route every document.
+ *   · "same-operator" — the keyholder worker vouched it: it holds cap=admin on the daemon bag (only this
+ *     operator's PersonaGroup does), OR it presented a device-delegation edge chaining to the PINNED persona-KEL
+ *     head. The operator's own device fleet → FULL device sync.
+ *   · "contracted"    — it presented a quorum-signed admit that reads HELD against a Nexus this vessel carries.
+ *     The federatable shelf, plus blind transit of a provably-sealed plane (carry the ciphertext, never the
+ *     read-cap).
+ *   · "walker"        — it presented THIS hearth's hosting grant, or redeemed a token at this gate.
+ *   · "stranger"      — a proven key that is none of the above, admitted only where some carried Nexus reads
+ *     OPEN. The federatable shelf alone.
  *
- * FAIL-CLOSED law: the CLASS a verdict cannot positively vouch as same-operator is `undefined` here;
- * the sharePolicy treats an absent/unresolved class as the STRICTER cross-operator class. Only the two
- * unforgeable proofs above (admin@daemon · pinned-root device-edge) earn "same-operator".
+ * FAIL-CLOSED law: a socket with no class reads as a stranger at the sharePolicy. A stranger the gate does not
+ * answer never reaches it: under PRIVATE the sorter answers silence.
  */
-export type PeerClass = "same-operator" | "cross-operator";
+export type PeerClass = "same-operator" | "contracted" | "walker" | "stranger";
 
 /** Island → vessel: the keyhive verdict for a verify-request. */
 export interface DaemonMsg_VerifyResult {
@@ -572,9 +574,8 @@ export interface DaemonMsg_VerifyResult {
    */
   proofVerified?: boolean;
   /**
-   * The peer's relation to this operator's identity (#the self-slot split). Set only on an `ok` verdict
-   * that PROVES same-operator (admin@daemon or a pinned-root device-edge). Absent → the host fails closed
-   * to cross-operator (federatable-own planes only). See PeerClass.
+   * "same-operator" on an `ok` verdict that PROVES it (admin@daemon or a KEL-pinned device edge); absent on
+   * every other proven key, which the gate's sorter then classes (contracted · walker · stranger · silence).
    */
   peerClass?: PeerClass;
 }

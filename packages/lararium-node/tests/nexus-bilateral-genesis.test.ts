@@ -153,7 +153,7 @@ async function standGate(h: Hearth) {
     const nonce = "56".repeat(32);
     const gatePubKey = h.nexusPubkey;
     const vesselKey = "cd".repeat(32);
-    const leafProof = await signLeafProof({ admit: presented.admit, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leafSeed) });
+    const leafProof = await signLeafProof({ presented: { kind: "admit", admit: presented.admit, lineage: [] }, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leafSeed) });
     await holder.present(peerId, { presentedAdmit: { ...presented, leafProof }, nonce, gatePubKey, vesselKey });
   };
   return { holder, present };

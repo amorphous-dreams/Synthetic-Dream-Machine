@@ -10,7 +10,7 @@ import {
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   authOkBytes, verifyAuthOk, ed25519VerifyingKeyFromSeed,
   ed25519SignerFromSeed,
-  mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isPresentedAdmit,
+  mkLarChallenge, mkLarAuthOk, isLarAuthMsg, isPresentedAdmit,
 } from "../src/auth-wire.js";
 import { canonicalJsonBytes, hex } from "../src/crypto.js";
 import { carriageEntryActCid } from "../src/carriage-registry.js";
@@ -81,20 +81,21 @@ describe("buildAuthResponse (V3 peer half)", () => {
     let plainSigned: Uint8Array | undefined;
     let presentedSigned: Uint8Array | undefined;
     await buildAuthResponse({ ...parts, sign: (bytes) => { plainSigned = bytes; return "x"; } });
-    await buildAuthResponse({ ...parts, presentedAdmit, sign: (bytes) => { presentedSigned = bytes; return "x"; } });
+    await buildAuthResponse({ ...parts, presented: { kind: "admit", ...presentedAdmit }, sign: (bytes) => { presentedSigned = bytes; return "x"; } });
     expect(presentedSigned).toEqual(plainSigned);
     expect(presentedSigned).toEqual(authProofBytes(base));
   });
 
   test("a presented admit round-trips byte-identical through build, the wire and the guard", async () => {
     const presentedAdmit = await presentedAdmitFixture();
-    const msg = await buildAuthResponse({ ...parts, presentedAdmit, sign: () => "x" });
+    const presented = { kind: "admit" as const, ...presentedAdmit };
+    const msg = await buildAuthResponse({ ...parts, presented, sign: () => "x" });
     const wire = JSON.parse(JSON.stringify(msg)) as unknown;
     expect(isLarAuthMsg(wire)).toBe(true);
-    const carried = (wire as LarAuthMsg).presentedAdmit;
+    const carried = (wire as LarAuthMsg).presented;
     expect(isPresentedAdmit(carried)).toBe(true);
-    expect(canonicalJsonBytes(carried)).toEqual(canonicalJsonBytes(presentedAdmit));
-    expect(JSON.stringify(carried)).toBe(JSON.stringify(presentedAdmit));
+    expect(canonicalJsonBytes(carried)).toEqual(canonicalJsonBytes(presented));
+    expect(JSON.stringify(carried)).toBe(JSON.stringify(presented));
     // TAMPER PROBE: one moved signature byte in the lineage moves the decoded bytes; the structural guard
     // still passes it, because the guard reads shape and leaves every signature to the receiver's fold.
     const cited = presentedAdmit.lineage[1]!;
@@ -110,15 +111,15 @@ describe("buildAuthResponse (V3 peer half)", () => {
     expect(isPresentedAdmit(tampered)).toBe(true);
   });
 
-  test("CONTROL: a lar:auth presenting nothing carries no presentedAdmit key", async () => {
+  test("CONTROL: a lar:auth presenting nothing carries no presentation key", async () => {
     const msg = await buildAuthResponse({ ...parts, sign: () => "x" });
-    expect("presentedAdmit" in msg).toBe(false);
+    expect("presented" in msg).toBe(false);
     expect(isLarAuthMsg(JSON.parse(JSON.stringify(msg)))).toBe(true);
   });
 
   test("a malformed presented admit fails the guard, and the whole lar:auth with it", async () => {
     const good = await presentedAdmitFixture();
-    const msg = await buildAuthResponse({ ...parts, presentedAdmit: good, sign: () => "x" });
+    const msg = await buildAuthResponse({ ...parts, presented: { kind: "admit", ...good }, sign: () => "x" });
     const { admit, lineage } = good;
     const malformed: unknown[] = [
       null, "bundle", [], {},
@@ -140,7 +141,8 @@ describe("buildAuthResponse (V3 peer half)", () => {
     ];
     for (const bad of malformed) {
       expect(isPresentedAdmit(bad), JSON.stringify(bad)?.slice(0, 80)).toBe(false);
-      expect(isLarAuthMsg({ ...msg, presentedAdmit: bad })).toBe(false);
+      const arm = typeof bad === "object" && bad !== null && !Array.isArray(bad) ? { kind: "admit", ...bad } : bad;
+      expect(isLarAuthMsg({ ...msg, presented: arm })).toBe(false);
     }
     expect(isPresentedAdmit(good)).toBe(true);                                // CONTROL: the well-formed bundle passes
     expect(isPresentedAdmit({ admit, lineage: [] })).toBe(true);              // CONTROL: a genesis admit cites no lineage
@@ -208,16 +210,19 @@ describe("runPeerHandshake (platform-blind V3 peer half)", () => {
     expect((await runPeerHandshake(s)).ok).toBe(false);
   });
 
-  test("forwards the dialed island's presented admit onto the lar:auth", async () => {
-    const presentedAdmit = await presentedAdmitFixture();
-    const s = { ...shore(mkLarChallenge("n1"), signedOk(GATE_SEED, "n1")), gatePubKey: await pinnedGate(), presentedAdmit };
+  test("forwards the dialed island's presented admit onto the lar:auth, signed by its leaf", async () => {
+    const { admit, lineage } = await presentedAdmitFixture();
+    const s = {
+      ...shore(mkLarChallenge("n1"), signedOk(GATE_SEED, "n1")), gatePubKey: await pinnedGate(),
+      presented: { kind: "admit" as const, admit, lineage }, leafSign: () => "ab".repeat(64),
+    };
     expect((await runPeerHandshake(s)).ok).toBe(true);
-    expect(s.sent[0]!.presentedAdmit).toEqual(presentedAdmit);
+    expect(s.sent[0]!.presented).toEqual({ kind: "admit", admit, lineage, leafProof: "ab".repeat(64) });
   });
 
-  test("auth-denied ⇒ { ok:false, reason }", async () => {
-    const s = shore(mkLarChallenge("n1"), () => mkLarAuthDenied("insufficient cap"));
-    expect(await runPeerHandshake(s)).toEqual({ ok: false, reason: "insufficient cap" });
+  test("a gate that says nothing after the lar:auth ⇒ { ok:false, reason: \"no answer\" }", async () => {
+    const s = shore(mkLarChallenge("n1"), () => undefined);
+    expect(await runPeerHandshake(s)).toEqual({ ok: false, reason: "no answer" });
   });
 
   test("wrong first message ⇒ rejects before sending anything", async () => {

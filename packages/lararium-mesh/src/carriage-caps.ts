@@ -101,18 +101,45 @@ export function incommensurablePullMs(seedHex: string, baseMs: number, rand: () 
 export interface CarriageComponent { readonly pullOnce: () => Promise<number>; readonly stop: () => void; }
 
 /**
+ * A peer the carriage pulls: its http read-face and the gate key it PINS there. The key is the peer's vessel
+ * key — the gate its oracle socket stands behind and the signer of its pointer — so a pull knocks on the path
+ * that key derives, proves to it, and reads only a map it signed. A peer known by address alone is not dialed.
+ */
+export interface MeshPeer {
+  readonly endpoint:   string;
+  readonly gatePubKey: string;
+}
+
+const PEER_KEY_RE = /^[0-9a-f]{64}$/;
+
+/**
+ * A bootstrap peer as an operator names it: `<http read-face>#<gate key hex>`. The fragment never leaves this
+ * vessel (a URL fragment rides no request); it is the pin the dial carries. An entry without a 32-byte hex key
+ * names no gate to knock on and reads null.
+ */
+export function parseMeshPeer(entry: string): MeshPeer | null {
+  const hash = entry.indexOf("#");
+  if (hash < 0) return null;
+  const endpoint = entry.slice(0, hash).trim();
+  const gatePubKey = entry.slice(hash + 1).trim().toLowerCase();
+  if (!/^https?:\/\//.test(endpoint) || !PEER_KEY_RE.test(gatePubKey)) return null;
+  return { endpoint, gatePubKey };
+}
+
+/**
  * Self-peering federation: the carriage discovers its pull-set from the FLOW-map's DIALS (each dial
- * advertises a reachable http read-face URL) UNION the bootstrap peers — so the mesh grows by the dials
- * it CARRIES (transitive discovery), never a hardcoded list. http(s) read-faces only (ws sync-endpoints
- * skipped); self excluded; deduped; bounded by maxFanout. With a `selfCoord`, the carried dials are
- * RE-RANKED by l-space proximity (the native `hyperbolicDistance` over published routing-slots — the
- * routing chart drives WHICH dials to carry, nearest first; the embedding's re-rank stage, native side).
+ * advertises a reachable http read-face URL and the gate key it answers under) UNION the bootstrap peers — so
+ * the mesh grows by the dials it CARRIES (transitive discovery), never a hardcoded list. http(s) read-faces
+ * only (ws sync-endpoints skipped); a dial whose key is not a 32-byte hex key skipped (nothing to knock on);
+ * self excluded; deduped by endpoint; bounded by maxFanout. With a `selfCoord`, the carried dials are
+ * RE-RANKED by l-space proximity (the native `hyperbolicDistance` over published routing-slots — the routing
+ * chart drives WHICH dials to carry, nearest first; the embedding's re-rank stage, native side).
  */
 export function discoverPeers(
   doc: { tiddlers: Record<string, LarTiddlerRecord> } | undefined,
-  bootstrap: readonly string[], selfEndpoint: string | undefined, maxFanout: number,
+  bootstrap: readonly MeshPeer[], selfEndpoint: string | undefined, maxFanout: number,
   selfCoord?: Coord,
-): string[] {
+): MeshPeer[] {
   let dials = doc ? dialEntries(doc as LarDoc) : [];
   if (selfCoord && doc) {
     const coordOf = new Map<string, Coord>(routingSlots(doc as LarDoc).map((s) => [s.bearing, { r: s.r, theta: s.theta }]));
@@ -122,11 +149,13 @@ export function discoverPeers(
     };
     dials = [...dials].sort((a, b) => distOf(a.bearing) - distOf(b.bearing)); // nearest by the chart first
   }
-  const peers: string[] = [];
+  const peers: MeshPeer[] = [];
   const seen = new Set<string>();
-  for (const p of [...bootstrap, ...dials.map((d) => d.endpoint)]) { // bootstrap first, then nearest dials
-    if (!p || p === selfEndpoint || !/^https?:\/\//.test(p) || seen.has(p)) continue; // http read-faces only
-    seen.add(p);
+  const carried = dials.map((d) => ({ endpoint: d.endpoint, gatePubKey: d.verifyingKeyHex.toLowerCase() }));
+  for (const p of [...bootstrap, ...carried]) { // bootstrap first, then nearest dials
+    if (!p.endpoint || p.endpoint === selfEndpoint || !/^https?:\/\//.test(p.endpoint) || seen.has(p.endpoint)) continue;
+    if (!PEER_KEY_RE.test(p.gatePubKey)) continue;   // no pin, no knock
+    seen.add(p.endpoint);
     peers.push(p);
     if (peers.length >= maxFanout) break;
   }
@@ -164,7 +193,10 @@ export interface MeshSelf {
   /** Own dial bearing — the slot the carriage re-publishes as its standing `r` drifts. */
   readonly bearing: string;
   readonly coord: Coord;                 // routing-chart coord (r=standing, θ=kinship), published in its slot
-  readonly peers: readonly string[];     // bootstrap peer base URLs carried (∪ discovered dials); empty = a leaf
+  readonly peers: readonly MeshPeer[];   // bootstrap peers carried (∪ discovered dials); empty = a leaf
+  /** OWN gate key — the vessel key its read-face's oracle socket stands behind, published in its dial so a
+   *  peer can knock and pin. ABSENT → no dial is published (nothing could reach the face). */
+  readonly gatePubKey?: string;
   readonly maxFanout?: number;           // max peers pulled per cycle
 }
 
@@ -181,7 +213,7 @@ export function hashUnit(s: string): number {
  * (radius, default 1 — the node entry supplies `LAR_RADIUS`), bearing = `…/bags/oracle/node/<label>` (`LAR_SEED` label, else hash-derived).
  */
 export function deriveMeshSelf(
-  publicUrl: string, peers: readonly string[], opts: { label?: string; radius?: number } = {},
+  publicUrl: string, peers: readonly MeshPeer[], opts: { label?: string; radius?: number; gatePubKey?: string } = {},
 ): MeshSelf {
   const u = hashUnit(publicUrl);
   const label = opts.label ?? u.toString(36).slice(2, 8);
@@ -194,6 +226,7 @@ export function deriveMeshSelf(
     // reads `LAR_RADIUS` and passes it; a browser passes its own, or takes the default the leaf takes.
     coord:    { theta: u * 2 * Math.PI, r: opts.radius ?? 1 },
     peers,
+    ...(opts.gatePubKey ? { gatePubKey: opts.gatePubKey.toLowerCase() } : {}),
   };
 }
 
@@ -203,7 +236,7 @@ export function deriveMeshSelf(
  * vessel's own identifier — origin / relay URL) hashes to the chart coord + the leaf's bearing.
  */
 export function deriveMeshLeaf(
-  coordSeed: string, peers: readonly string[], opts: { radius?: number } = {},
+  coordSeed: string, peers: readonly MeshPeer[], opts: { radius?: number } = {},
 ): MeshSelf {
   const u = hashUnit(coordSeed);
   return {
@@ -217,8 +250,8 @@ export function deriveMeshLeaf(
 /** The self-announce dial a vessel seeds on its OWN FLOW-map — DERIVED from its MeshSelf (the `seed`
  *  param dissolved: bearing + endpoint ARE the dial). A LEAF (no endpoint) has no dial → undefined. */
 export function meshSelfDial(self: MeshSelf): DialEntry | undefined {
-  if (!self.endpoint) return undefined; // a leaf advertises no reachable dial
-  return { bearing: self.bearing, verifyingKeyHex: "f".repeat(64), endpoint: self.endpoint, scale: "dreamnet" };
+  if (!self.endpoint || !self.gatePubKey) return undefined; // a leaf, or a face with no gate key, advertises no dial
+  return { bearing: self.bearing, verifyingKeyHex: self.gatePubKey.toLowerCase(), endpoint: self.endpoint, scale: "dreamnet" };
 }
 
 /** The self-announce seed a caller hands `meshPalaceCap` — `[dial]` for a full node, `[]` for a leaf. */
@@ -235,14 +268,14 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
  *  PEERS PROVE FIRST: each pull proves `identity` at the peer's gate before any map crosses. A carriage
  *  handed no identity has nothing to prove with, so it pulls nothing — it still stands its own map. */
 export function carriageCap(deps: {
-  peers: readonly string[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
+  peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
   return {
     id: CARRIAGE_CAP.carriage, requires: [CARRIAGE_CAP.meshpalace],
     build: (resolve) => {
       const mp = resolve<MeshPalaceComponent>(CARRIAGE_CAP.meshpalace);
-      const bootstrap = new Set(deps.peers);
+      const bootstrap = new Set(deps.peers.map((p) => p.endpoint));
       const seenDiscovered = new Set<string>();
       let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
       let rPublished = rCurrent;
@@ -270,13 +303,13 @@ export function carriageCap(deps: {
           }
         }
         if (!identity) return merged;   // nothing to prove with — nothing crosses in
-        for (const peer of peers) {
+        for (const { endpoint: peer, gatePubKey } of peers) {
           if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {
             seenDiscovered.add(peer);
             deps.onLog?.(`carriage: self-peering discovered ${peer} from a carried dial`);
           }
           let verdict;
-          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer, { identity }); }
+          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer, { identity, verifyingKey: gatePubKey }); }
           catch { continue; } // a peer down/unreachable is no error — feed-or-fade
           if (!verdict.ok || !verdict.doc) continue;
           const incoming = verdict.doc.tiddlers;

@@ -1,6 +1,6 @@
 /**
- * presented-admit-leaf-proof.test.ts — the LEAF binds its presented admit to ONE socket, and the dialer derives
- * what it presents from a board it holds.
+ * presented-leaf-proof.test.ts — the LEAF binds what it presents to ONE socket, and the dialer derives the admit
+ * it presents from a board it holds.
  *
  * Proven:
  *   · a leaf proof verifies for its own nonce, gate key, vessel key and admit CID;
@@ -19,7 +19,7 @@
 import { describe, test, expect } from "vitest";
 import {
   leafProofBytes, signLeafProof, verifyLeafProof, runPeerHandshake, buildAuthResponse, isLarAuthMsg,
-  mkLarChallenge, mkLarAuthOk, authOkBytes, type PresentedAdmit, type LarAuthMsg,
+  mkLarChallenge, mkLarAuthOk, authOkBytes, type Presented, type LarAuthMsg,
 } from "../src/auth-wire.js";
 import {
   carriageEntryActCid, verifyPresentedAdmit, type CarriageEntry,
@@ -49,17 +49,17 @@ const act = (action: "admit" | "revoke", parents: readonly string[] = [], subjec
   carriageAct(subject, action, { kahu: KAHU, epoch: EPOCH, parents });
 const cid = (e: CarriageEntry) => carriageEntryActCid(e);
 
-async function proven(admit: CarriageEntry, over: { nonce?: string; gate?: Uint8Array; vessel?: Uint8Array; signer?: Uint8Array } = {}): Promise<PresentedAdmit> {
+async function proven(admit: CarriageEntry, over: { nonce?: string; gate?: Uint8Array; vessel?: Uint8Array; signer?: Uint8Array } = {}): Promise<Presented> {
   const leafProof = await signLeafProof({
-    admit, nonce: over.nonce ?? NONCE, gatePubKey: await pubOf(over.gate ?? SEEDS.gate),
+    presented: { kind: "admit", admit, lineage: [] }, nonce: over.nonce ?? NONCE, gatePubKey: await pubOf(over.gate ?? SEEDS.gate),
     vesselKey: await pubOf(over.vessel ?? SEEDS.vessel), sign: signerOf(over.signer ?? SEEDS.leaf),
   });
-  return { admit, lineage: [], leafProof };
+  return { kind: "admit", admit, lineage: [], leafProof };
 }
 
-async function check(presentedAdmit: PresentedAdmit, over: { nonce?: string; gate?: Uint8Array; vessel?: Uint8Array } = {}) {
+async function check(presented: Presented, over: { nonce?: string; gate?: Uint8Array; vessel?: Uint8Array } = {}) {
   return verifyLeafProof({
-    presentedAdmit, nonce: over.nonce ?? NONCE,
+    presented, nonce: over.nonce ?? NONCE,
     gatePubKey: await pubOf(over.gate ?? SEEDS.gate), vesselKey: await pubOf(over.vessel ?? SEEDS.vessel),
   });
 }
@@ -95,16 +95,16 @@ describe("the leaf proof binds a presented admit to one socket", () => {
 
   test("CONTROL: an absent or malformed proof reads false", async () => {
     const admit = await act("admit");
-    expect(await check({ admit, lineage: [] })).toBe(false);
-    expect(await check({ admit, lineage: [], leafProof: "zz" })).toBe(false);
+    expect(await check({ kind: "admit", admit, lineage: [] })).toBe(false);
+    expect(await check({ kind: "admit", admit, lineage: [], leafProof: "zz" })).toBe(false);
   });
 
   test("the proof bytes open on their own domain, apart from the V3 proof", () => {
     expect(PRESENTED_LEAF_PROOF_DOMAIN).not.toBe(AUTH_PROOF_DOMAIN);
-    const text = new TextDecoder().decode(leafProofBytes({ nonce: NONCE, gatePubKey: "a".repeat(64), vesselKey: "b".repeat(64), admitCid: "c".repeat(64) }));
+    const text = new TextDecoder().decode(leafProofBytes({ nonce: NONCE, gatePubKey: "a".repeat(64), vesselKey: "b".repeat(64), presentedCid: "c".repeat(64) }));
     expect(text).toContain(PRESENTED_LEAF_PROOF_DOMAIN);
     // No clock and no root ride the bytes.
-    expect(Object.keys(JSON.parse(text)).sort()).toEqual(["admitCid", "domain", "gatePubKey", "nonce", "vesselKey"]);
+    expect(Object.keys(JSON.parse(text)).sort()).toEqual(["domain", "gatePubKey", "nonce", "presentedCid", "vesselKey"]);
   });
 });
 
@@ -116,7 +116,7 @@ describe("the handshake signs the leaf proof over the challenge it received", ()
     let sent: LarAuthMsg | null = null;
     // The gate's verdict, signed by its own key over the leaf's own nonce — the only pass a leaf reads.
     const inbox: Array<() => Promise<unknown>> = [
-      async () => mkLarChallenge(NONCE, gatePubKey),
+      async () => mkLarChallenge(NONCE),
       async () => mkLarAuthOk(await signerOf(SEEDS.gate)(authOkBytes({
         nonce: NONCE, leafNonce: (sent as unknown as LarAuthMsg).leafNonce, gatePubKey, peerPubKey: vesselKey, aud: "lar:///x",
       }))),
@@ -124,27 +124,27 @@ describe("the handshake signs the leaf proof over the challenge it received", ()
     const verdict = await runPeerHandshake({
       recv: () => inbox.shift()!(), send: (m) => { sent = m; },
       contactCard: "{}", peerPubKey: vesselKey, gatePubKey, aud: "lar:///x",
-      sign: signerOf(SEEDS.vessel), presentedAdmit: { admit, lineage: [] }, leafSign: signerOf(SEEDS.leaf),
+      sign: signerOf(SEEDS.vessel), presented: { kind: "admit", admit, lineage: [] }, leafSign: signerOf(SEEDS.leaf),
     });
     expect(verdict.ok).toBe(true);
     const msg = sent as unknown as LarAuthMsg;
     expect(isLarAuthMsg(msg)).toBe(true);
-    expect(msg.presentedAdmit?.leafProof).toMatch(/^[0-9a-f]{128}$/);
-    expect(await verifyLeafProof({ presentedAdmit: msg.presentedAdmit!, nonce: NONCE, gatePubKey, vesselKey })).toBe(true);
+    expect(msg.presented?.leafProof).toMatch(/^[0-9a-f]{128}$/);
+    expect(await verifyLeafProof({ presented: msg.presented!, nonce: NONCE, gatePubKey, vesselKey })).toBe(true);
     // CONTROL: the same proof read against another nonce fails — the challenge is the freshness.
-    expect(await verifyLeafProof({ presentedAdmit: msg.presentedAdmit!, nonce: "cd".repeat(32), gatePubKey, vesselKey })).toBe(false);
+    expect(await verifyLeafProof({ presented: msg.presented!, nonce: "cd".repeat(32), gatePubKey, vesselKey })).toBe(false);
   });
 
-  test("CONTROL: without a leaf signer the admit travels unproven", async () => {
+  test("CONTROL: without a leaf signer nothing is presented — an unproven presentation binds to no socket", async () => {
     const admit = await act("admit");
     const inbox: unknown[] = [mkLarChallenge(NONCE), { type: "lar:auth-ok" }];
     let sent: LarAuthMsg | null = null;
     await runPeerHandshake({
       recv: async () => inbox.shift(), send: (m) => { sent = m; },
       contactCard: "{}", peerPubKey: await pubOf(SEEDS.vessel), gatePubKey: await pubOf(SEEDS.gate), aud: "lar:///x",
-      sign: signerOf(SEEDS.vessel), presentedAdmit: { admit, lineage: [] },
+      sign: signerOf(SEEDS.vessel), presented: { kind: "admit", admit, lineage: [] },
     });
-    expect((sent as unknown as LarAuthMsg).presentedAdmit?.leafProof).toBeUndefined();
+    expect((sent as unknown as LarAuthMsg).presented).toBeUndefined();
   });
 });
 
@@ -152,31 +152,31 @@ describe("ONE SOCKET, ONE FACE — a presented admit never travels beside a root
   const edge = { kind: "x" } as unknown as LarAuthMsg["edge"];
 
   test("the wire guard refuses a lar:auth carrying an admit beside the fleet edge", async () => {
-    const presentedAdmit = await proven(await act("admit"));
+    const presented = await proven(await act("admit"));
     const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, leafNonce: "ef".repeat(32), sig: "00" } as const;
-    expect(isLarAuthMsg({ ...base, presentedAdmit })).toBe(true);                       // control
+    expect(isLarAuthMsg({ ...base, presented })).toBe(true);                            // control
     expect(isLarAuthMsg({ ...base, edge })).toBe(true);                                 // control
-    expect(isLarAuthMsg({ ...base, presentedAdmit, edge })).toBe(false);
+    expect(isLarAuthMsg({ ...base, presented, edge })).toBe(false);
   });
 
   test("the CONTRACT slot is retired — a lar:auth carrying `contractEdge` fails the guard, admit or no admit", async () => {
-    const presentedAdmit = await proven(await act("admit"));
+    const presented = await proven(await act("admit"));
     const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, leafNonce: "ef".repeat(32), sig: "00" } as const;
     expect(isLarAuthMsg(base)).toBe(true);                                              // control: the card alone
     expect(isLarAuthMsg({ ...base, contractEdge: edge })).toBe(false);
-    expect(isLarAuthMsg({ ...base, presentedAdmit, contractEdge: edge })).toBe(false);
+    expect(isLarAuthMsg({ ...base, presented, contractEdge: edge })).toBe(false);
   });
 
   test("buildAuthResponse refuses to build an admit beside the fleet edge, and never names a contract slot", async () => {
-    const presentedAdmit = await proven(await act("admit"));
+    const presented = await proven(await act("admit"));
     const parts = {
       contactCard: "{}", nonce: NONCE, gatePubKey: "a".repeat(64), peerPubKey: "b".repeat(64), aud: "lar:///x",
-      ts: "2026-10-06T00:00:00.000Z", leafNonce: "ef".repeat(32), sign: signerOf(SEEDS.vessel),
+      leafNonce: "ef".repeat(32), sign: signerOf(SEEDS.vessel),
     };
-    const built = await buildAuthResponse({ ...parts, presentedAdmit });
-    expect(built).toMatchObject({ presentedAdmit });                                    // control
+    const built = await buildAuthResponse({ ...parts, presented });
+    expect(built).toMatchObject({ presented });                                         // control
     expect("contractEdge" in built).toBe(false);
-    await expect(buildAuthResponse({ ...parts, presentedAdmit, edge })).rejects.toThrow(/one socket, one face/);
+    await expect(buildAuthResponse({ ...parts, presented, edge })).rejects.toThrow(/one socket, one face/);
   });
 });
 

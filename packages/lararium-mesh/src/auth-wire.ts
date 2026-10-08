@@ -5,11 +5,13 @@
  * begins. The exchange establishes the connecting vessel's Keyhive identity and
  * proves it holds cap=admin on the target document.
  *
- * Wire sequence (gate initiates):
- *   Gate → Peer  : LarChallengeMsg  (fresh nonce)
- *   Peer → Gate  : LarAuthMsg       (Keyhive ContactCard + nonce echo + the leaf's own fresh nonce)
+ * Wire sequence (gate initiates, on the knock path `gate-knock` derives from the gate key the dialer pinned):
+ *   Gate → Peer  : LarChallengeMsg  (fresh nonce — and nothing else; the dialer already pins the gate key)
+ *   Peer → Gate  : LarAuthMsg       (Keyhive ContactCard + nonce echo + the leaf's own fresh nonce + at most one
+ *                                    presentation)
  *   Gate → Peer  : LarAuthOkMsg     (the gate's SIGNED verdict — Automerge join may proceed)
- *              OR      LarAuthDeniedMsg  (ws.close(4003) follows immediately)
+ *              OR      nothing at all: the gate terminates the socket at a deadline it drew at accept, with no
+ *                      close frame and no reason. Every refusal reads alike (siege-resilience#/the-active-prober).
  *
  * AUTHENTICATION BOTH WAYS. The leaf proves its key to the gate (the V3 proof); the gate proves its key to
  * the leaf by signing `lar:auth-ok` (`authOkBytes`) over the leaf's own fresh nonce, so a relay standing in
@@ -29,24 +31,18 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes, hex, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
 import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_LEAF_PROOF_DOMAIN } from "./domains.js";
 import { webGetRandomValues } from "./crypto.js";
 
-/** Gate → Peer: start of auth exchange. */
+/** Gate → Peer: start of auth exchange. The gate names no key: a dialer proves to the gate key it PINNED, and
+ *  an echoed key would only confirm that key to whoever replays a sniffed path. */
 export interface LarChallengeMsg {
   type:    "lar:challenge";
   nonce:   string; // 32-byte hex, gate-generated per connection
-  /**
-   * The gate's verifying-key hex — the gate-binding the peer's proof commits to
-   * (the verifier recomputes with its OWN key, so a relay to a different gate
-   * fails). Optional for back-compat: a gate armed without it omits the field;
-   * once the peer transport (C) + enforcement flip (D) land it becomes load-bearing.
-   */
-  gatePubKey?: string;
 }
 
 /**
@@ -125,6 +121,27 @@ export function isPresentedAdmit(v: unknown): v is PresentedAdmit {
     entry.sealEpochCid === admit.sealEpochCid));
 }
 
+/** A presented admit as one arm of the presentation slot. */
+export type PresentedAdmitArm = { readonly kind: "admit" } & PresentedAdmit;
+
+/**
+ * THE PRESENTATION SLOT — at most one per socket: what this socket stands as beyond its vessel key. Each arm
+ * carries the presenting LEAF's proof over this socket (`leafProofBytes`, one domain for every arm). The gate's
+ * sorter reads it before any verdict; nothing on it grants anything on arrival.
+ */
+export type Presented = PresentedAdmitArm;
+
+/** A presentation before its leaf proof is signed — what a dialer carries until it holds a challenge. */
+export type UnsignedPresented = Presented extends infer P ? (P extends unknown ? Omit<P, "leafProof"> : never) : never;
+
+/** Structural guard for the presentation slot. Shape only. */
+export function isPresented(v: unknown): v is Presented {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
+  const kind = (v as Record<string, unknown>)["kind"];
+  if (kind === "admit") return isPresentedAdmit(v);
+  return false;
+}
+
 /** Peer → Gate: identity assertion. */
 export interface LarAuthMsg {
   type:        "lar:auth";
@@ -146,17 +163,16 @@ export interface LarAuthMsg {
    */
   edge?:       DeviceDelegationTiddler;
   /**
-   * OPTIONAL presented admit — the dialed island's quorum-signed admit of this subject, its causal lineage and
-   * the leaf's proof over this socket. Outside the proof signature; the gate keeps it per socket as untrusted
-   * input beside the nonce and gate key it issued, and decides nothing by it. A message carrying it beside
-   * `edge` fails `isLarAuthMsg`.
+   * OPTIONAL presentation — ONE arm, with the presenting leaf's proof over this socket. Outside the V3 proof
+   * signature; the gate's sorter reads it against the nonce and gate key the gate issued before any verdict.
+   * A message carrying it beside `edge` fails `isLarAuthMsg`: one socket, one face.
    *
    * NO CONTRACT SLOT. A cross-operator's own persona-root-signed edge over its vessel key never rides a
    * lar:auth: the vessel key is one key across every Nexus, so a root edge on any socket links that root to
    * every leaf the same vessel presents (membership-doctrine #/two-maps). `isLarAuthMsg` refuses a message
    * carrying a `contractEdge` field at all.
    */
-  presentedAdmit?: PresentedAdmit;
+  presented?:  Presented;
 }
 
 /** Gate → Peer: auth passed, Automerge join may proceed — signed by the gate's own key (`authOkBytes`). */
@@ -164,12 +180,6 @@ export interface LarAuthOkMsg {
   type:    "lar:auth-ok";
   /** The gate key's Ed25519 signature (hex) over `authOkBytes` for this exchange. */
   sig:     string;
-}
-
-/** Gate → Peer: auth failed, ws.close(4003) follows immediately. */
-export interface LarAuthDeniedMsg {
-  type:    "lar:auth-denied";
-  reason:  string;
 }
 
 /**
@@ -188,7 +198,6 @@ export type LarAuthWireMsg =
   | LarChallengeMsg
   | LarAuthMsg
   | LarAuthOkMsg
-  | LarAuthDeniedMsg
   | LarSessionMsg;
 
 // ── Type guards ───────────────────────────────────────────────────────────────
@@ -213,14 +222,15 @@ export function isLarAuthMsg(v: unknown): v is LarAuthMsg {
   if (!ok) return false;
   const x = v as Record<string, unknown>;
   // THE CONTRACT SLOT IS RETIRED. A root-signed edge over a cross-operator's vessel key binds that root to the
-  // vessel key every leaf of the same vessel rides, so it travels on no socket at all.
-  if ("contractEdge" in x) return false;
-  const presented = x["presentedAdmit"];
+  // vessel key every leaf of the same vessel rides, so it travels on no socket at all. A presentation rides the
+  // one slot; a field beside it under any other name is refused.
+  if ("contractEdge" in x || "presentedAdmit" in x) return false;
+  const presented = x["presented"];
   if (presented === undefined) return true;
-  // ONE SOCKET, ONE FACE. A presented leaf admit travels with no root-signed edge: carrying the fleet edge
-  // beside it would bind the leaf to the root on the wire.
+  // ONE SOCKET, ONE FACE. A presented leaf travels with no root-signed edge: carrying the fleet edge beside it
+  // would bind the leaf to the root on the wire.
   if (x["edge"] !== undefined) return false;
-  return isPresentedAdmit(presented);
+  return isPresented(presented);
 }
 
 export function isLarAuthOkMsg(v: unknown): v is LarAuthOkMsg {
@@ -241,20 +251,10 @@ export function isLarSessionMsg(v: unknown): v is LarSessionMsg {
   );
 }
 
-export function isLarAuthDeniedMsg(v: unknown): v is LarAuthDeniedMsg {
-  return (
-    typeof v === "object" && v !== null &&
-    (v as Record<string, unknown>)["type"] === "lar:auth-denied"
-  );
-}
-
 // ── Constructors ──────────────────────────────────────────────────────────────
 
-export function mkLarChallenge(nonce: string, gatePubKey?: string): LarChallengeMsg {
-  return {
-    type: "lar:challenge", nonce,
-    ...(gatePubKey ? { gatePubKey } : {}),
-  };
+export function mkLarChallenge(nonce: string): LarChallengeMsg {
+  return { type: "lar:challenge", nonce };
 }
 
 export function mkLarAuth(
@@ -319,10 +319,6 @@ export async function verifyAuthOk(parts: {
 }): Promise<boolean> {
   if (!/^[0-9a-fA-F]{128}$/.test(parts.sig) || !/^[0-9a-fA-F]{64}$/.test(parts.gatePubKey)) return false;
   return ed25519VerifyHex(parts.sig, authOkBytes(parts), parts.gatePubKey);
-}
-
-export function mkLarAuthDenied(reason: string): LarAuthDeniedMsg {
-  return { type: "lar:auth-denied", reason };
 }
 
 export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
@@ -463,32 +459,48 @@ export async function evaluateAuthProof(parts: {
   return verdict("checked-valid", true);
 }
 
-// ── Leaf proof of possession over a presented admit ───────────────────────────────────────────────
+// ── Leaf proof of possession over what a socket presents ──────────────────────────────────────────
 
 /**
- * leafProofBytes — the canonical bytes a presented admit's LEAF signs to bind that admit to ONE socket:
- * `PRESENTED_LEAF_PROOF_DOMAIN`, the gate's challenge `nonce`, the gate's verifying key, the presenting
- * VESSEL key (the key the V3 proof proves on the same socket), and the admit's act CID. No clock rides it —
- * the gate's single-use nonce is the freshness — and no root rides it.
+ * The CID of one presentation arm — what its leaf proof binds. An admit arm names its act CID; every other arm
+ * names the digest of its own kind-tagged content (its leaf proof left out), so no two arms' CIDs collide.
+ */
+export function presentedCid(presented: UnsignedPresented | Presented): string {
+  if (presented.kind === "admit") return carriageEntryActCid(presented.admit);
+  const { leafProof: _omit, ...content } = presented as Presented & { leafProof?: string };
+  return sha256HexBytesSync(canonicalJsonBytes(content));
+}
+
+/** The leaf that signs a presentation's proof — the key the presentation stands as. */
+export function presentedSigner(presented: UnsignedPresented | Presented): string {
+  if (presented.kind === "admit") return presented.admit.nym.toLowerCase();
+  return "";
+}
+
+/**
+ * leafProofBytes — the canonical bytes a presenting LEAF signs to bind what it presents to ONE socket:
+ * `PRESENTED_LEAF_PROOF_DOMAIN`, the gate's challenge `nonce`, the gate's verifying key, the presenting VESSEL
+ * key (the key the V3 proof proves on the same socket), and the presentation's CID. No clock rides it — the
+ * gate's single-use nonce is the freshness — and no root rides it.
  */
 export function leafProofBytes(parts: {
-  nonce:      string;
-  gatePubKey: string;
-  vesselKey:  string;
-  admitCid:   string;
+  nonce:        string;
+  gatePubKey:   string;
+  vesselKey:    string;
+  presentedCid: string;
 }): Uint8Array {
   return canonicalJsonBytes({
-    domain:     PRESENTED_LEAF_PROOF_DOMAIN,
-    nonce:      parts.nonce,
-    gatePubKey: parts.gatePubKey.toLowerCase(),
-    vesselKey:  parts.vesselKey.toLowerCase(),
-    admitCid:   parts.admitCid,
+    domain:       PRESENTED_LEAF_PROOF_DOMAIN,
+    nonce:        parts.nonce,
+    gatePubKey:   parts.gatePubKey.toLowerCase(),
+    vesselKey:    parts.vesselKey.toLowerCase(),
+    presentedCid: parts.presentedCid,
   });
 }
 
-/** Sign the leaf proof for `admit` on one socket. `sign` is the LEAF's own signer — the admit's nym. */
+/** Sign the leaf proof for `presented` on one socket. `sign` is the presenting LEAF's own signer. */
 export async function signLeafProof(parts: {
-  admit:      CarriageEntry;
+  presented:  UnsignedPresented | Presented;
   nonce:      string;
   gatePubKey: string;
   vesselKey:  string;
@@ -496,36 +508,48 @@ export async function signLeafProof(parts: {
 }): Promise<string> {
   return parts.sign(leafProofBytes({
     nonce: parts.nonce, gatePubKey: parts.gatePubKey, vesselKey: parts.vesselKey,
-    admitCid: carriageEntryActCid(parts.admit),
+    presentedCid: presentedCid(parts.presented),
   }));
 }
 
+/** Attach the presenting leaf's proof over one socket to an unsigned presentation. */
+export async function signPresented(parts: {
+  presented:  UnsignedPresented;
+  nonce:      string;
+  gatePubKey: string;
+  vesselKey:  string;
+  sign:       (bytes: Uint8Array) => Promise<string> | string;
+}): Promise<Presented> {
+  return { ...parts.presented, leafProof: await signLeafProof(parts) } as Presented;
+}
+
 /**
- * verifyLeafProof — does the presented admit's leaf bind it to THIS socket? Pure; never throws.
+ * verifyLeafProof — does the presenting leaf bind what it presents to THIS socket? Pure; never throws.
  *
  * The caller passes the values IT holds for the socket: the nonce its gate issued, its own gate key, and the
- * vessel key the V3 proof proved. The signature must verify under the ADMIT'S nym over those values and the
- * admit's act CID, so a proof minted for another nonce, gate, vessel or admit, or by any other hand (a root
- * included), reads false. It answers possession only; whether the admit counts is `verifyPresentedAdmit`'s.
+ * vessel key the V3 proof proved. The signature must verify under the presentation's own leaf over those
+ * values and the presentation's CID, so a proof minted for another nonce, gate, vessel or presentation, or by
+ * any other hand (a root included), reads false. It answers possession only; whether the presentation holds
+ * is the sorter's.
  */
 export async function verifyLeafProof(parts: {
-  presentedAdmit: PresentedAdmit;
-  nonce:          string;
-  gatePubKey:     string;
-  vesselKey:      string;
+  presented:  Presented;
+  nonce:      string;
+  gatePubKey: string;
+  vesselKey:  string;
 }): Promise<boolean> {
-  const { presentedAdmit } = parts;
-  const sig = presentedAdmit?.leafProof;
+  const { presented } = parts;
+  const sig = presented?.leafProof;
   if (typeof sig !== "string" || !/^[0-9a-fA-F]{128}$/.test(sig)) return false;
-  const nym = presentedAdmit.admit?.nym;
-  if (typeof nym !== "string" || !/^[0-9a-fA-F]{64}$/.test(nym)) return false;
   if (!/^[0-9a-fA-F]{64}$/.test(parts.gatePubKey) || !/^[0-9a-fA-F]{64}$/.test(parts.vesselKey)) return false;
   if (typeof parts.nonce !== "string" || parts.nonce.length === 0) return false;
-  let admitCid: string;
-  try { admitCid = carriageEntryActCid(presentedAdmit.admit); } catch { return false; }
+  let cid: string;
+  let signer: string;
+  try { cid = presentedCid(presented); signer = presentedSigner(presented); } catch { return false; }
+  if (!/^[0-9a-f]{64}$/.test(signer)) return false;
   return ed25519VerifyHex(sig, leafProofBytes({
-    nonce: parts.nonce, gatePubKey: parts.gatePubKey, vesselKey: parts.vesselKey, admitCid,
-  }), nym);
+    nonce: parts.nonce, gatePubKey: parts.gatePubKey, vesselKey: parts.vesselKey, presentedCid: cid,
+  }), signer);
 }
 
 /**
@@ -554,11 +578,11 @@ export async function buildAuthResponse(parts: {
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge ridden alongside the proof. */
   edge?:       DeviceDelegationTiddler;
-  /** OPTIONAL presented admit, outside the signed proof bytes. Never beside `edge`. */
-  presentedAdmit?: PresentedAdmit;
+  /** OPTIONAL presentation (one arm, its leaf proof signed), outside the signed proof bytes. Never beside `edge`. */
+  presented?:  Presented;
 }): Promise<LarAuthMsg> {
-  if (parts.presentedAdmit && parts.edge) {
-    throw new Error("a presented leaf admit travels with no root-signed edge — one socket, one face");
+  if (parts.presented && parts.edge) {
+    throw new Error("a presented leaf travels with no root-signed edge — one socket, one face");
   }
   const proof = authProofBytes({
     nonce:      parts.nonce,
@@ -574,7 +598,7 @@ export async function buildAuthResponse(parts: {
     leafNonce:   parts.leafNonce,
     sig,
     ...(parts.edge ? { edge: parts.edge } : {}),
-    ...(parts.presentedAdmit ? { presentedAdmit: parts.presentedAdmit } : {}),
+    ...(parts.presented ? { presented: parts.presented } : {}),
   };
 }
 
@@ -602,37 +626,33 @@ export interface PeerHandshake {
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge — a device-admitted leaf rides its edge to the gate. */
   edge?:       DeviceDelegationTiddler;
-  /** OPTIONAL presented admit — the dialed island's admit only, and never beside a root-signed edge. */
-  presentedAdmit?: PresentedAdmit;
-  /** The admit's LEAF signer, used for the leaf proof over the challenge and nothing else. Without it a
-   *  presented admit binds to no socket. */
+  /** OPTIONAL presentation — one arm, unsigned until the challenge arrives, never beside a root-signed edge. */
+  presented?:  UnsignedPresented;
+  /** The presenting LEAF's signer, used for the leaf proof over the challenge and nothing else. Without it a
+   *  presentation binds to no socket and is not sent. */
   leafSign?:   (bytes: Uint8Array) => Promise<string> | string;
 }
 
 /**
- * runPeerHandshake — the platform-blind peer half of V3, lifted ABOVE any
- * vessel: receive lar:challenge → sign the gate-bound proof → send lar:auth →
- * await the verdict. Node, browser, and the CLI all compose this one flow with
- * their own transport + the shared keyhive identity. Resolves the auth verdict;
- * the caller proceeds to Automerge sync only on `{ ok: true }`.
+ * runPeerHandshake — the platform-blind peer half of V3, lifted ABOVE any vessel: receive lar:challenge → sign
+ * the gate-bound proof (and the presenting leaf's proof over the same challenge) → send lar:auth → await the
+ * verdict. Node, browser, and the CLI all compose this one flow with their own transport + the shared keyhive
+ * identity. Resolves the auth verdict; the caller proceeds to Automerge sync only on `{ ok: true }`.
  *
  * A passing verdict counts only when the PINNED gate key signed it over this leaf's own fresh nonce
- * (`verifyAuthOk`). An unsigned or wrongly signed `lar:auth-ok` reads as a refusal: whoever answered did not
- * prove it holds the gate key, so nothing past this point trusts it.
+ * (`verifyAuthOk`). A gate that refuses answers NOTHING, so a `recv` that yields nothing (the socket closed or
+ * was cut) reads as "no challenge" before the challenge and "no answer" after the lar:auth — never a hang, and
+ * never a reason the gate did not give.
  */
-export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: true; nonce: string } | { ok: false; reason?: string }> {
+export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: true; nonce: string } | { ok: false; reason: string }> {
   const challenge = await h.recv();
-  if (!isLarChallengeMsg(challenge)) return { ok: false, reason: "expected lar:challenge" };
-  // The leaf proof binds the presented admit to THIS challenge, THIS gate and THIS vessel key.
-  const presentedAdmit: PresentedAdmit | undefined = h.presentedAdmit && h.leafSign
-    ? {
-        admit: h.presentedAdmit.admit, lineage: h.presentedAdmit.lineage,
-        leafProof: await signLeafProof({
-          admit: h.presentedAdmit.admit, nonce: challenge.nonce, gatePubKey: h.gatePubKey,
-          vesselKey: h.peerPubKey, sign: h.leafSign,
-        }),
-      }
-    : h.presentedAdmit;
+  if (!isLarChallengeMsg(challenge)) return { ok: false, reason: "no challenge" };
+  // The leaf proof binds the presentation to THIS challenge, THIS gate and THIS vessel key.
+  const presented: Presented | undefined = h.presented && h.leafSign
+    ? await signPresented({
+        presented: h.presented, nonce: challenge.nonce, gatePubKey: h.gatePubKey, vesselKey: h.peerPubKey, sign: h.leafSign,
+      })
+    : undefined;
   const leafNonce = mintLeafNonce();
   const auth = await buildAuthResponse({
     contactCard: h.contactCard,
@@ -643,7 +663,7 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: true; no
     leafNonce,
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
-    ...(presentedAdmit ? { presentedAdmit } : {}),
+    ...(presented ? { presented } : {}),
   });
   h.send(auth);
   const verdict = await h.recv();
@@ -653,8 +673,7 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: true; no
     });
     return proven ? { ok: true, nonce: challenge.nonce } : { ok: false, reason: "the verdict carries no signature of the pinned gate key" };
   }
-  if (isLarAuthDeniedMsg(verdict)) return { ok: false, reason: verdict.reason };
-  return { ok: false, reason: "unexpected message after lar:auth" };
+  return { ok: false, reason: "no answer" };
 }
 
 /**
@@ -673,9 +692,9 @@ export interface LeafIdentity {
   /** OPTIONAL device-delegation edge — a device-admitted leaf presents its edge to admit. A root this vessel
    *  does NOT hold signed it (the fleet slot); a self-founded vessel's own root never signs one onto the wire. */
   edge?:       DeviceDelegationTiddler;
-  /** OPTIONAL presented admit for the ONE island this identity dials — never the dialer's whole admit set,
-   *  and never beside `edge`. */
-  presentedAdmit?: PresentedAdmit;
-  /** The presented admit's LEAF signer (the admit's nym), used for the leaf proof alone. */
-  leafSign?:      (bytes: Uint8Array) => Promise<string>;
+  /** OPTIONAL presentation for the ONE gate this identity dials — never the dialer's whole admit set, and never
+   *  beside `edge`. Unsigned; the handshake signs its leaf proof over the challenge. */
+  presented?:  UnsignedPresented;
+  /** The presenting LEAF's signer, used for the leaf proof alone. */
+  leafSign?:   (bytes: Uint8Array) => Promise<string>;
 }

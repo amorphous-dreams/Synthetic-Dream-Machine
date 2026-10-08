@@ -17,7 +17,8 @@ import {
   type MeshPalaceDoc,
 } from "@lararium/mesh";
 import { mountFlowMapReadFace, mountOracleReadFace } from "../src/oracle-read-face.js";
-import { provingShore, readerIdentity } from "./oracle-proof-fixture.js";
+import { provingShore, readerIdentity, openSorter } from "./oracle-proof-fixture.js";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 
 const SEED = new Uint8Array(32).fill(7); // a fixed, valid ed25519 seed (deterministic)
 const READER = new Uint8Array(32).fill(9);
@@ -41,10 +42,10 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     const port = (server.address() as { port: number }).port;
     const storageDir = mkdtempSync(join(tmpdir(), "herm-flowmap-"));
 
-    const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signerSeed: SEED, storageDir, authShore: await provingShore(SEED) });
+    const face = await mountFlowMapReadFace({ httpServer: server, meshPalaceHandle: handle, signerSeed: SEED, storageDir, authShore: await provingShore(SEED), sort: openSorter });
 
     // a peer proves at the gate, then pulls + verifies (pointer signature · hash · lineage).
-    const verdict = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${port}`, { identity: await readerIdentity(READER) });
+    const verdict = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${port}`, { identity: await readerIdentity(READER), verifyingKey: await ed25519VerifyingKeyFromSeed(SEED) });
     expect(verdict.ok).toBe(true);
 
     const titles = Object.keys(verdict.doc?.tiddlers ?? {});
@@ -66,15 +67,15 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     const authShore = await provingShore(SEED);
     const identity = await readerIdentity(READER);
     const pointerAt = async (): Promise<{ actCid: string; parents: readonly string[] }> => {
-      const r = await pullAndVerifyOracle(url, { identity });
+      const r = await pullAndVerifyOracle(url, { identity, verifyingKey: await ed25519VerifyingKeyFromSeed(SEED) });
       if (!r.pointer) throw new Error(`no pointer: ${r.reason}`);
       return r.pointer;
     };
 
-    const first = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore });
+    const first = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter });
     const p1 = await pointerAt();
     first.dispose();
-    const second = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore });
+    const second = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter });
     const p1Restart = await pointerAt();
     expect(p1Restart).toEqual(p1);
 

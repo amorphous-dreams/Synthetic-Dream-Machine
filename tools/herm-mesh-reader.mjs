@@ -18,9 +18,15 @@ export function readerIdentity() {
   return identityPromise;
 }
 
-/** One proven, verified read of a hop's FLOW-map. */
-export async function pullHop(url) {
-  return pullAndVerifyOracle(url, { identity: await readerIdentity() });
+/**
+ * One proven, verified read of a hop's FLOW-map. The hop names its gate key in its fragment —
+ * `<http read-face>#<gate key hex>` — the pin the read knocks with and proves to. A hop with no pin is refused.
+ */
+export async function pullHop(hop) {
+  const at = hop.indexOf("#");
+  const gate = at < 0 ? "" : hop.slice(at + 1).toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(gate)) return { ok: false, reason: `the hop names no gate key to pin (write <url>#<gate key hex>): ${hop}` };
+  return pullAndVerifyOracle(hop.slice(0, at), { identity: await readerIdentity(), verifyingKey: gate });
 }
 
 /** The dial bearings a decoded FLOW-map carries — each rides a `…/bags/meshpalace/dial/<slug>` tiddler. */
