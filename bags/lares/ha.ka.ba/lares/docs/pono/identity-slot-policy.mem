@@ -12,7 +12,7 @@ manao      = 16
 manaoio    = 13
 revised-on = "2026-09-13"
 role       = "what OpenIdentitySlot's sharePolicy could key on now that the realm leg stands — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
-status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and every leaf kind runs it (#/the-leaf-taxonomy)"
+status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and it runs on every leaf that dials a listening vessel, the leaf-to-leaf source owed in code (#/the-leaf-taxonomy)"
 tags       = ["docs/pono/design", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -125,7 +125,7 @@ The ring runs on EVERY vessel that holds a face, because a leaf is not one thing
 
 # ''A face of an operator's PersonaGroup where a listening vessel exists.'' The leaf dials a node of its own PersonaGroup; that node's gate proves the leaf, and the node's signed verdict proves the node back.
 # ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
-# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind is why the ring must run on leaves at all: with no listening vessel, no other hand could decide.
+# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind is why the ring must run on leaves at all: with no listening vessel, no other hand could decide. The proof stands as a library (`leaf-peer-proof.ts`): it proves two device keys to each other over three frames, yet it rides no transport and binds no session, so no live sync reads its verdict. Owed in code — the lane that carries Automerge sync between leaves through a herm, with the proof bound to the session it admits.
 
 A leaf holds only its own device key, its own edge and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
 
@@ -155,6 +155,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k5Hnq1GetlAIGsw0nnE07lcPwoD-ssuCZRFZ7liLMkw
+<<^ code="&#x0003;">>ni:///sha-256;I4GRQYkmdeFSDa0hFuFbtK6ImYrkoNde9wDhH96awY0
 
 <<^ code="&#x0004;" -> to="?">>

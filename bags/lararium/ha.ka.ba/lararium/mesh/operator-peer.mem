@@ -227,7 +227,7 @@ budget choices, not architectural forks.
 | Active wiki lanes | pool-managed, piscina for stateless parse | pool-managed, dedicated islands |
 | Founding ceremony | `runFoundingCeremony(repo, seed)` via `@lararium/keyhive` | same |
 | Ea gates A/B/C | ✅ passes at boot | ✅ same ceremony, same gates |
-| PersonaGroup ring | `assemblePersonaGroupRing` — proof: the key its inbound gate proved | same assembly — proof: the gate key that signed its verdict, or a sibling leaf's proof |
+| PersonaGroup ring | `assemblePersonaGroupRing` — proof: the key its inbound gate proved | same assembly — proof: the gate key that signed its verdict; a sibling leaf's proof stands as a library on no transport, owed to the lane that carries leaf↔leaf Automerge sync through a herm with a session binding |
 
 Where the node vessel does more (disk projection, persistent relay, process control),
 that counts as edge adaptation, not authority. The browser vessel breathes with
@@ -249,6 +249,6 @@ user device, and one device of a user-caps-only fleet where no vessel listens
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;V9YaRz6gZcHg1TmOsg3kV8x1gw27VP5doFUnTkK2Trg
+<<^ code="&#x0003;">>ni:///sha-256;QyKTl-OTlnyeNR81_zVoYnZ1FKLjH7u-XFuiINdcs-w
 
 <<^ code="&#x0004;" -> to="?">>
