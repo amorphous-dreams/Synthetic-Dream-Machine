@@ -18,21 +18,15 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Vitals
 
-* ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Crew-held dirt in the tree: `mempalace` and `VSCode-TW5-Syntax` (submodule pointers), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
-* ''Landed in the last sign-off'' (CHANGELOG `[Unreleased]`, the SIGN-OFF BATCH lines): signed seal rolls (`seal-roll`); the herm's rung ladder (silent, waymark, temple) behind one closed door; any-face invites (`nexus-invite`), the `seat` arm refused as `seat-standing-owed`; `frameShape`/`verdictOf`; `scanAhu`; the charter seal-state readings; the boot fault's `fatal:` line; parallel-draft alerts; the bulb as the coal, named by the seed's published bytes; the quoteblock floor inside the deserializer, so every door fences; the gate reading its frame once; the clockless device edge; `KahuQuorumSeats`.
-* ''E2E'' (the whole staged set): 28 of 29 files. The one red: the crew's untracked `tests/e2e/nexus-offering-replication.test.ts`.
-* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 31 read ok; `vessel-parity-witness` alone reads red (`makePersonaGroupIdentityRing` composes on node only — the browser side is owed). Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too.
+* ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Dirt in the tree that no lane authored: the `mempalace` and `VSCode-TW5-Syntax` submodule pointers, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
+* ''Landed in the last sign-off'' (CHANGELOG `[Unreleased]`, the SIGN-OFF BATCH lines): the gate-signed `lar:auth-ok`; `lar:session` frames on an admitted socket; leaf↔leaf proof as a library; the PersonaGroup ring on both vessels through one function; the oracle crossing only to a proven peer over the gated `/oracle` socket, every HTTP path the one `CLOSED_DOOR`; `/api/health` on a lararium alone; the `hosted` invite arm and its countersign over the live session; R1 (one file, one carrier; `MemeStreamParser` gone); the carrier grammar's name-matched ahu pairing and the `ahu-pair-parity` weld; bag doors refusing a torn frame; one presenter, forks per board, findings surfaced; `rite quorum` and `needsQuorum`; the Codex hold closed and the hearths gate quiet unless held; the offering replication suite; the browser share config reading the armed gate.
+* ''E2E'' (the whole staged set): 29 of 29 files — 208 passed, 1 expected fail.
+* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 33 of 33 read ok. Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too. CI's witnesses job also runs every `tools/*.test.mjs` (12 files, 46 tests).
 * ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
-* ''Unit suites'': `lararium-tw5` 1732 passed, 1 red: `tests/carrier-edges.test.ts` reads 174 dangling edges against a ceiling of 172 — the +2 stand in the crew's research meme (`650a8e475`), theirs to settle; `lararium-mesh` 2427; `lararium-node` 1375; `lares-cli` 553; `lararium-keyhive` 146; `lararium-browser` 141; `lararium-memetic-frame` 354.
+* ''Unit suites'': `lararium-tw5` 1732; `lararium-mesh` 2459; `lararium-node` 1400; `lares-cli` 554; `lararium-keyhive` 146; `lararium-browser` 145; `lararium-web` 9; `lararium-memetic-frame` 357; `lararium-sensorium` 952 Python + 54 vitest. The tree-sitter carrier grammar reads clean.
 * ''HEADS-UP — the operator's live `~/.lares` vessel'': its stored device edges were signed over the clocked layout, and any rotated seal lineage it holds carries no signed rolls. Both fail verification on this build. Do NOT stand that vessel on this build; it needs the re-found or a re-mint.
 * ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. The next push is the witness for everything since.
-* ''The tree is shared'': a parallel lane edits `bags/lares/ha.ka.ba/wsl2/**` and `tools/wsl2/**` and re-stamps after editing — a witness run mid-edit reads its carriers as drifted for a minute. Re-run before believing a red there.
-* ''Known test reds'' and their owners:
-** `lararium-tw5` `tests/carrier-edges.test.ts` — the offering-antigen crew (above).
-** `lararium-sensorium` `scripts/test_structure_router.py::test_ahu_block_nests_inner_sigils` reads one inner sigil where it asserts two — red on the desk and in CI.
-** `tests/e2e/nexus-offering-replication.test.ts` — the Offering crew's.
-** `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` — environmental when a browser or server socket is missing.
-** `lararium-tw5` corpus suites can fail on `bags/lares/ha.ka.ba/wsl2/*.mem` while that lane edits them — its owner's to settle.
+* ''Known environmental reds'': `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` fail when a browser or server socket is missing.
 
 <<~/ahu>>
 
@@ -54,24 +48,42 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Open wounds, ranked
 
-The sign-off accepted every lane and found no blocker; what it found stands here in the order to take it.
+The round-5 sign-off accepted every lane but one finding: F1, on the hosted countersign, whose fix is in flight. No other operator ruling is pending.
 
-# ''The herm's `/oracle/*` and `/api/health` answer on the silent rung.'' An operator ruling: (a) closed-door refusals at once, then (b) peers prove first, or (c) an opt-in rung.
-# ''`PresentationFinding` reaches no one.'' Surface it at the four presenter callers.
-# ''A bag door lands a torn frame.'' LOAD and native ingest land a torn frame as one verbatim record; refuse it there instead, or rule that it lands.
-# ''The keyring keys by lineage depth.'' Key it by `epochCid`.
-# ''Hygiene'': collapse `presentedAdmitFromBoard` into `presentationFromBoardDoc`; spell `CLOSED_DOOR` once; a design call on `/cas` timing; whether the parallel-draft alert persists; `tools/herm-mesh-partition.mjs` reads the gone `pointer.version`.
+# ''THE RE-FOUND, one act'' (rulings: the operator's STABLE and CUSTODY rulings; canon `lar:///ha.ka.ba/lararium/mesh/kahu`, `lar:///ha.ka.ba/lararium/mesh/membership-doctrine`). It mints unversioned names, re-mints the engine and edge, and re-seats the Nexus — never a persona or sealed-body wipe; DESTROY-class strings stay frozen.
+## ''STABLE — the founding state.''
+### One interactive founding act, under one passphrase, produces the place, persona zero, a private charter (a cabal-of-one: one seat, t=1, per-seat next digests) and the keyring keyed by `epochCid`, minted at the seat, never at boot.
+### Every Nexus has a charter; guests walk the private Nexus, their planes persona-scoped.
+### Boards resolve per relation (`nexusIdentity` returns one island today).
+### Every leaf keeps its own floor root, with its own slot beside the group face (a two-mount shape).
+### Add-a-face (A): the daemon writes the public half, the terminal seals the recovery share, seating stays a separate act.
+### Delete the bare primary-path seal import.
+### The mirror guard keys on posture.
+### The direct-store verbs (`publish`, device-admit, `persona new N`) route through the live daemon over UDS. This carries the crew's live-holder gap: a direct-store write beside a live holder lands on disk the holder never carries.
+## ''CUSTODY — the Vessel KEK.''
+### One VK seals every carrier: archives, shares, the persona root, the next-root seed and the custody root.
+### LUKS-style keyslots of Clevis `sss` trees, with pins passphrase · paper · ember · tpm; a BACKUP route (passphrase or paper) is required at every tier, and bind refuses a tree without one.
+### EMBER: Tang-shaped, per-relation, holding no share of VK. The locality law: an unattended ember answers on the local link only; a relay pin must be attended.
+### The vessel rests at the floor, then the ember raise, which lapses by non-renewal. HOT ⊥ COLD: VK and keyhive state stay hot; the root, recovery shares and next seed unwrap per act.
+### The floor key keeps the public name ⊥ the sealed custody root derives the veil.
+### `unbind` offers a VK rotation loudly, every time.
+### `vault unlock|bind|unbind|status` over UDS; `LARES_ARCHIVE_PASSPHRASE` retires.
+### The cleartext vessel seed, persona root and next-root seed get wrapped.
+### Hardware x-only ECDH measurement: deferred.
+## ''CARRIED into the re-found.'' The per-Nexus wire key (it also cuts the oracle pointer's vessel-key correlation, `lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`); per-seat `nextKeyDigests`; S1, a multi-vessel kahu quorum; L1, the realm root map from `keptBy`; the coal-only seed without `schemaVersion`; the cadence inception (t/k); the sentinel re-key; the chairs re-keyed to per-Nexus leaves, which un-owes the invite's `seat` arm; `waking-floor-announce` (`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement`). Then the island `schema_version` (~35 files) drops its counter.
+# ''ROUND 6.''
+## ''The proof-first / silence protocol lane'' (Noise IK shape): the dialer proves first and a stranger draws silence. It covers the gate's `lar:challenge` naming the vessel key to any opener, the oracle route answering distinguishably, and N8: the membership relay's unsigned second handshake collapses onto the auth wire.
+## ''Leaf↔leaf transport'' (N2): Automerge sync between leaves through a herm, with `leaf-peer-proof` bound to the session it admits (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy`).
+## ''The held-out dispatch needs'': a host-built dist, and `vessel found` on the runner.
 
 ''Carried, unranked''
 * Road (iv): surface-for-review.
 * Q6: loans keyed by CID.
+* A design call on `/cas` timing; whether the parallel-draft alert persists.
 * `packages/lararium-sensorium/requirements.txt` calls the tree-sitter versions one (Python binding 0.26, CLI 0.27; both ABI 15).
-* The Sensorium red above.
 
 ''Pending operator rulings''
-* ''R1/R2 — multi-carrier files.'' C2b, the `MemeStreamParser` deletion, waits on it.
-* ''User-face standing'' (d): the gate withholds a user-face inviter until it rules (lean: the hosting hearth countersigns over the invite nonce — `lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite`).
-* ''Quieting the hearths-gate pass note.''
+* None standing, beyond any ruling F1 asks for.
 
 ''Needs the operator''
 * ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
@@ -85,7 +97,7 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 ''Deferred by law or by the operator''
 * ''The Sensorium's logic'' (`packages/lararium-sensorium/**`, tw5 `form-layer/**`, mesh `ffz-project`, `clock-recovery`, coupling/metric modules): the measure-servo aliases in `ffz-project.ts`, one five-band ladder (Title case `ApertureBand`, the others derived), the `lar_feedback` output field name. Frames inside it stay in scope for healing at any time.
 * ''Tangle, the putback law, the tongue fold'' — gated on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` (mirror pairing, round-trip CI, Markdown injection into `hana`). The aka/weave rhyme (`memetic-wikitext-framing.mem` Annex) waits on tangle.
-* ''A relay-stream profile'' — carriers close on EOT in flight; SYN (`&#x0016;`) stays the one reserved stream mark; the profile defines batch framing and resynchronisation.
+* ''A relay-stream profile'' — a stream of carriers belongs to the SYN-framed profile (`&#x0016;`, held in reserve); one `.mem` file frames one carrier. The profile defines batch framing and resynchronisation.
 * ''A carrier seal'' — re-mint an attestation mark with a computed, verified check when signing lands.
 * ''EOT targeting'' — what a resolved `-> to=` would name (the declared-unresolved meaning stands).
 * ''A standing whole-tree gate'' (build every package from clean, run every witness and suite) — run as a spirit pass, not built into the CLI or a trigger.
@@ -94,14 +106,11 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 
 <<~ ahu #/crew>>
 
-!! Crew-held work (do not take without the crew)
+!! Crew debts carried
 
-* The Offering lane (local adoption, grammar-scoped relation, Antigen consultation cap, the multi-vessel receipt — `tests/e2e/nexus-offering-replication.test.ts` is its first slice), its antigen scope research under `bags/lares/ha.ka.ba/lares/docs/research/`, and Pronaos live Docker reach.
-* The uncommitted hunks in `tests/harness/instance.ts` and the `mempalace` and `VSCode-TW5-Syntax` submodule pointers — another hand's; never commit, stash or revert them.
-* The Codex Lares hearth holds every Codex glob but `.github/workflows/held-out.yml` and `tools/mesh-scenarios.sh`, which it ceded for the parked patches (`lar:///ha.ka.ba/lares/docs/pono/hearths`).
-* The PersonaGroup ring's browser symmetry (`vessel-parity-witness`), named in the browser-persona-ring research.
-* Operator forks recorded in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`.
-* Hand them items through `bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem`.
+* The Codex Lares hold stands CLOSED (`lar:///ha.ka.ba/lares/docs/pono/hearths`); the Lares hearth carries its debts. Its open lanes — the Offering's local adoption, grammar-scoped relation and Antigen consultation cap, its antigen scope research under `bags/lares/ha.ka.ba/lares/docs/research/`, and Pronaos live Docker reach — read in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`, with the operator forks it records.
+* The live-holder direct-store gap the crew noted rides the re-found (#/wounds, STABLE).
+* Hand items through `bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem`.
 
 <<~/ahu>>
 
@@ -125,8 +134,8 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 
 !! Map ahead
 
-# Work `#/wounds` in its order; wound 1 and wound 3 go to the operator as rulings before any hand builds them.
-# THE RE-FOUND TRAIN, one act. R1 commits the device edge to the Nexus AID (the engine a separate claim; `epoch0-<sha>` names become `nexus-<sha>`); R2 signs the engine offer lineage, a window k hops along `prev`; R3 folds TW5 core plus the memetic-wikitext bootstrap into `engineCid`, and the vocabulary (`sigil-*.tid`) leaves the engine as content. Folded in: S1, a multi-vessel kahu quorum; L1, the realm root map derived from `keptBy`; the per-Nexus wire key; per-seat `nextKeyDigests[]` · `nextThreshold` (`lar:///ha.ka.ba/lararium/mesh/kahu`); the coal-only seed without `schemaVersion`; the cadence inception (t/k); the sentinel re-key; the floor's signed announcement (`waking-floor-announce`, `lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement`); and the chairs re-keyed to per-Nexus leaves, which un-owes the invite's `seat` arm. The re-found mints unversioned names, re-mints the engine and edge, and re-seats the Nexus — never a persona or sealed-body wipe. DESTROY-class strings stay frozen. Then the island `schema_version` (~35 files) drops its counter.
+# Work `#/wounds` in its order: the re-found first, as one act, then the round-6 lanes.
+# THE RE-FOUND TRAIN, one act, its full scope at #/wounds. R1 commits the device edge to the Nexus AID (the engine a separate claim; `epoch0-<sha>` names become `nexus-<sha>`); R2 signs the engine offer lineage, a window k hops along `prev`; R3 folds TW5 core plus the memetic-wikitext bootstrap into `engineCid`, and the vocabulary (`sigil-*.tid`) leaves the engine as content.
 # Exercise the quoteblock floor (both grains), the child gate and the persisted parallel drafts in the live wiki, against real concurrent browser saves, and turn every surprise into a test.
 # The faces stand in canon (`lar:///ha.ka.ba/lararium/mesh/membership-doctrine` `#/the-two-stacks`): end user `walk`; Lamplighter `carry`, `tend/island`, `tend/reach`; Kahu, the Nexus-scale `quorum-share`, its engine cadence a separate joint and the corpus-kahu at DreamNet scale; Guardian, the reserve share. Founding acts; it never stands as a face. Stacks compose on a persona, combined by default and split only by the holder's own act. Grammar per Nexus stands ruled: the grammar lives, the corpus-kahu curate it, and no version names it. The target scale model is the small clan.
 # Rule the capture cell; then pick up the Sensorium's logic when the operator returns to it.
@@ -145,6 +154,6 @@ The sign-off accepted every lane and found no blocker; what it found stands here
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hJUJ5k8STUAuckMmbcoLpoXYmyt6PZYSjncXJKoWVCw
+<<^ code="&#x0003;">>ni:///sha-256;EiiqokzJ_mt7xbfTcE1coh1EedQyoXM9MEUZx15bwfQ
 
 <<^ code="&#x0004;" -> to="?">>
