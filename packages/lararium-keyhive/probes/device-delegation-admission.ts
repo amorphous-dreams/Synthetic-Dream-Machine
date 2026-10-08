@@ -75,11 +75,10 @@ async function mintProof(peerSeed: Uint8Array, peerVk: string, gateVk: string, a
     gatePubKey:  gateVk,
     peerPubKey:  peerVk,
     aud,
-    ts:          new Date().toISOString(),
     leafNonce:   "cd".repeat(32),        // the gate's signed verdict is not under probe here
     sign:        ed25519SignerFromSeed(peerSeed),
   });
-  return { nonce: auth.nonce, sig: auth.sig, ts: auth.ts ?? "" };
+  return { nonce: auth.nonce, sig: auth.sig };
 }
 
 /** A minimal IslandContext — only what `onEa` touches: verifierFactory's event-store

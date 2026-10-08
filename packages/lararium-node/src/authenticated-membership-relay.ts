@@ -39,9 +39,8 @@ const MEMBERSHIP_AUD = MEMBERSHIP_RELAY_DOMAIN;
 /** The wire frames over the socket: the auth handshake, then opaque envelope carriage. */
 type RelayFrame =
   | { readonly t: "challenge"; readonly nonce: string; readonly gatePubKey: string }
-  // `ts` is signed proof metadata retained for protocol interoperability; this relay does not treat it as a
-  // wall-clock freshness witness. The challenge nonce supplies this connection's replay boundary.
-  | { readonly t: "auth";      readonly peerPubKey: string; readonly ts: string; readonly sig: string }
+  // The challenge nonce is this connection's replay boundary; no clock rides the proof.
+  | { readonly t: "auth";      readonly peerPubKey: string; readonly sig: string }
   | { readonly t: "auth-ok" }
   | { readonly t: "env";       readonly env: MembershipEnvelope };
 
@@ -103,12 +102,11 @@ export function startAuthenticatedMembershipRelay(
             authLatched.add(sock);   // latch BEFORE the await — a second auth frame on this socket never races in
             void (async () => {
               // The relay's authority boundary is this connection's fresh challenge nonce plus the gate-bound
-              // audience/key. Do not import a wall clock here: membership relay admission is connection-scoped,
-              // and the signed timestamp is evidence carried by the proof rather than a global freshness oracle.
+              // audience/key. No clock rides the proof: membership relay admission is connection-scoped.
               // A harvested proof cannot cross connections because the fresh nonce changes; the synchronous latch
               // also prevents a second auth attempt from rebinding this socket.
               const v = await verifyAuthProof({
-                nonce, gatePubKey, peerPubKey: frame.peerPubKey, aud: MEMBERSHIP_AUD, ts: frame.ts, sig: frame.sig,
+                nonce, gatePubKey, peerPubKey: frame.peerPubKey, aud: MEMBERSHIP_AUD, sig: frame.sig,
               });
               if (!v.ok) { try { sock.close(4003, v.reason ?? "auth failed"); } catch { /* closed */ } return; }
               proven.set(sock, frame.peerPubKey.toLowerCase());   // this socket speaks ONLY as this proven key
@@ -184,13 +182,11 @@ export class AuthenticatedWSMembershipChannel implements MembershipChannel {
         if (frame.t === "challenge") {
           void (async () => {
             const peerPubKey = hex(await ed.getPublicKeyAsync(peerSeed));
-            // `ts` is signed context for the proof. Admission is bound to the relay challenge nonce, not a wall
-            // clock; this vessel has no cross-restart replay or freshness claim here.
-            const ts = new Date().toISOString();
+            // Admission is bound to the relay challenge nonce; no clock rides the proof.
             const sig = await ed25519SignerFromSeed(peerSeed)(
-              authProofBytes({ nonce: frame.nonce, gatePubKey: frame.gatePubKey, peerPubKey, aud: MEMBERSHIP_AUD, ts }),
+              authProofBytes({ nonce: frame.nonce, gatePubKey: frame.gatePubKey, peerPubKey, aud: MEMBERSHIP_AUD }),
             );
-            ws.send(JSON.stringify({ t: "auth", peerPubKey, ts, sig } satisfies RelayFrame));
+            ws.send(JSON.stringify({ t: "auth", peerPubKey, sig } satisfies RelayFrame));
           })();
         } else if (frame.t === "auth-ok") {
           settled = true;

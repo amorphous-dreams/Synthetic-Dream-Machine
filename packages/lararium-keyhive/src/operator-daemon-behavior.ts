@@ -804,7 +804,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           gatePubKey: mintedByHex.slice(-64),
           peerPubKey,
           aud:        bagUrl,
-          ts:         proof.ts,
           sig:        proof.sig,
         });
         proofVerified = r.ok;

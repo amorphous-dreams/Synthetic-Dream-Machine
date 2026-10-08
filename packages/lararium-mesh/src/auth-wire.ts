@@ -16,16 +16,14 @@
  * the middle, or a recorded verdict replayed, answers nothing the leaf will read as a pass. The leaf checks
  * the signature against the gate key IT pinned out-of-band, never one the wire names.
  *
- * Alpha note: V3 proof-of-possession — ENFORCED end to end. The platform-blind
- * halves (`authProofBytes` · `buildAuthResponse` · `verifyAuthProof` ·
- * `runPeerHandshake` · `ed25519SignerFromSeed`) compose the full path: the gate
- * emits its gate-binding key in lar:challenge and relays {nonce, sig, ts} to the
- * keyholder worker, which checks the Ed25519 proof against the card key + its own
- * key and folds the result into admission (step D). The peer transport
- * (LarWSClientAdapter, node) sources a real proof from the light leaf identity
- * (bare-Ed25519 signer + cached ContactCard). A node operator MAY relax to
- * capability-only with LAR_V3_ALLOW_UNPROVEN=1. See `project_verification_placement`,
- * `operator-peer` #actor-parity. Live two-vessel smoke test remains the open verify.
+ * V3 proof-of-possession — ENFORCED end to end. The platform-blind halves (`authProofBytes` ·
+ * `buildAuthResponse` · `verifyAuthProof` · `runPeerHandshake` · `ed25519SignerFromSeed`) compose the full
+ * path: the gate relays {nonce, sig} to the keyholder worker, which checks the Ed25519 proof against the card
+ * key + its own key and folds the result into admission. NO CLOCK RIDES THE WIRE: the gate's single-use nonce
+ * is the proof's only freshness, so neither the proof bytes nor `lar:auth` carry a timestamp. The peer
+ * transport (LarWSClientAdapter) sources a real proof from the light leaf identity (bare-Ed25519 signer +
+ * cached ContactCard). A node operator MAY relax to capability-only with LAR_V3_ALLOW_UNPROVEN=1. See
+ * `project_verification_placement`, `operator-peer` #actor-parity.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/auth-wire
  */
@@ -35,7 +33,7 @@ import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
-import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_ADMIT_LEAF_PROOF_DOMAIN } from "./domains.js";
+import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_LEAF_PROOF_DOMAIN } from "./domains.js";
 import { webGetRandomValues } from "./crypto.js";
 
 /** Gate → Peer: start of auth exchange. */
@@ -61,7 +59,6 @@ export interface LarChallengeMsg {
 export interface AuthProofWire {
   nonce: string;
   sig:   string;
-  ts:    string;
 }
 
 export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-possession">;
@@ -137,14 +134,10 @@ export interface LarAuthMsg {
    *  decides the verdict's freshness — a gate-chosen nonce could be one a recorded verdict already answered. */
   leafNonce:   string;
   /**
-   * Ed25519 signature (hex) over authProofBytes({nonce, gatePubKey, peerPubKey, aud, ts})
-   * — the V3 proof-of-possession (project_verification_placement). Alpha posture still
-   * accepts a nonce echo until the gate flips enforcement; buildAuthResponse produces the
-   * real signature.
+   * Ed25519 signature (hex) over authProofBytes({nonce, gatePubKey, peerPubKey, aud}) — the V3
+   * proof-of-possession (project_verification_placement). buildAuthResponse produces it.
    */
   sig:         string;
-  /** Peer timestamp the signature commits to (the verifier recomputes the proof with it). */
-  ts?:         string;
   /**
    * OPTIONAL device-delegation edge. A peer the operator device-admitted carries the
    * signed root→device edge so the gate can admit it on the operator's-own-device path even
@@ -341,13 +334,14 @@ export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
 /**
  * authProofBytes — the canonical bytes a connecting peer signs to PROVE it HOLDS
  * its identity's private key (V3, see project_verification_placement). The proof
- * binds, in one signature: the gate `nonce` (freshness), the GATE's own pubkey
- * (the GATE-BINDING — the load-bearing field; signing only the nonce stays
- * relayable, so a malicious gate could replay the proof to a different gate;
- * WebAuthn, the FIDO formal proof, and Keyhive Notebook §05 all require binding
- * the gate identity), the peer's claimed pubkey, the target bag `aud`, and a
- * timestamp (bounds the replay window). The verifier — the keyholder worker —
- * checks the Ed25519 signature against the ContactCard's verifying key.
+ * binds, in one signature: the gate `nonce` (freshness — single-use, chosen by
+ * the gate), the GATE's own pubkey (the GATE-BINDING — the load-bearing field;
+ * signing only the nonce stays relayable, so a malicious gate could replay the
+ * proof to a different gate; WebAuthn, the FIDO formal proof, and Keyhive
+ * Notebook §05 all require binding the gate identity), the peer's claimed
+ * pubkey, and the target bag `aud`. No clock rides it. The verifier — the
+ * keyholder worker — checks the Ed25519 signature against the ContactCard's
+ * verifying key.
  *
  * The bytes open on `AUTH_PROOF_DOMAIN`, so a proof never verifies as any other
  * signed thing and no other signature verifies as a proof — the name separates,
@@ -363,11 +357,10 @@ export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
  * sock, gated by 0600 presence; the peer proof rides the WS relay surface.
  */
 export function authProofBytes(parts: {
-  nonce:       string;  // gate-issued, single-use, short-TTL
+  nonce:       string;  // gate-issued, single-use
   gatePubKey:  string;  // the gate's verifying key (hex) — the gate-binding
   peerPubKey:  string;  // the connecting peer's claimed identity (hex)
   aud:         string;  // the target bag URI the peer seeks
-  ts:          string;  // ISO timestamp — bounds the replay window
 }): Uint8Array {
   return canonicalJsonBytes({
     domain:     AUTH_PROOF_DOMAIN,
@@ -375,17 +368,8 @@ export function authProofBytes(parts: {
     gatePubKey: parts.gatePubKey,
     peerPubKey: parts.peerPubKey,
     aud:        parts.aud,
-    ts:         parts.ts,
   });
 }
-
-/**
- * AUTH_PROOF_TTL_MS — the freshness window (half-width) a proof's `ts` must fall
- * within of the verifier's clock. Bounds the replay window once the gate nonce
- * rotates (DPoP `iat` / Beelay timestamp discipline). 60 s allows machine clock
- * skew on a machine-to-machine path with no human interaction.
- */
-export const AUTH_PROOF_TTL_MS = 60_000;
 
 /**
  * ed25519SignerFromSeed — a bare-Ed25519 signer (32-byte seed → `sign(bytes)=>hex`)
@@ -425,19 +409,15 @@ export async function ed25519VerifyHex(sigHex: string, bytes: Uint8Array, verify
  * does not hold, the recomputed bytes diverge and the signature fails. NEVER feed
  * this the `peerPubKey`/`gatePubKey` a peer asserts on the wire.
  *
- * `now` opt-in: pass the verifier clock (ms) to enforce the freshness window; omit
- * to check the signature alone (pure-crypto unit tests). Uses `verifyAsync`, which
- * needs no global hash injection (@noble/ed25519 v3).
+ * The verifier reads no clock: the gate's single-use nonce is the freshness. Uses
+ * `verifyAsync`, which needs no global hash injection (@noble/ed25519 v3).
  */
 export async function verifyAuthProof(parts: {
   nonce:       string;
   gatePubKey:  string;
   peerPubKey:  string;  // raw ed25519 verifying-key hex (64 chars) — the key the sig verifies against
   aud:         string;
-  ts:          string;
   sig:         string;  // ed25519 signature hex (128 chars)
-  now?:        number;  // verifier clock (ms); omit to skip the freshness window
-  ttlMs?:      number;  // freshness half-width (default AUTH_PROOF_TTL_MS)
 }): Promise<{ ok: boolean; reason?: string }> {
   const evidence = await evaluateAuthProof(parts);
   return evidence.cryptographicallyValid
@@ -446,20 +426,16 @@ export async function verifyAuthProof(parts: {
 }
 
 /**
- * Read daemon proof evidence without turning a missing soft freshness witness
- * into a cryptographic failure. The nonce, gate binding, peer key and exact
- * audience are always covered by `authProofBytes`; this relation currently has
- * no separate method/resource fields and therefore makes no claim about them.
+ * Read daemon proof evidence. The nonce, gate binding, peer key and exact audience are covered by
+ * `authProofBytes`; the gate's single-use nonce is the freshness, so a signature that verifies reads
+ * `checked-valid`. This relation has no separate method/resource fields and makes no claim about them.
  */
 export async function evaluateAuthProof(parts: {
   nonce: string;
   gatePubKey: string;
   peerPubKey: string;
   aud: string;
-  ts: string;
   sig: string;
-  now?: number;
-  ttlMs?: number;
 }): Promise<DaemonProofEvidence> {
   const verdict = (state: DaemonProofEvidence["state"], cryptographicallyValid: boolean, reason?: string): DaemonProofEvidence => ({
     relation: "daemon-proof-of-possession",
@@ -471,20 +447,11 @@ export async function evaluateAuthProof(parts: {
   if (!/^[0-9a-fA-F]{64}$/.test(parts.peerPubKey))  return verdict("malformed", false, "peerPubKey not 32-byte hex");
   if (!/^[0-9a-fA-F]{128}$/.test(parts.sig))        return verdict("malformed", false, "sig not 64-byte hex");
 
-  // Freshness — bounded replay window once the nonce rotates.
-  if (parts.now !== undefined) {
-    const tsMs = Date.parse(parts.ts);
-    if (Number.isNaN(tsMs)) return verdict("malformed", false, "ts not a valid timestamp");
-    const ttl = parts.ttlMs ?? AUTH_PROOF_TTL_MS;
-    if (Math.abs(parts.now - tsMs) > ttl) return verdict("stale", false, "proof outside freshness window");
-  }
-
   const proof = authProofBytes({
     nonce:      parts.nonce,
     gatePubKey: parts.gatePubKey,
     peerPubKey: parts.peerPubKey,
     aud:        parts.aud,
-    ts:         parts.ts,
   });
   let ok = false;
   try {
@@ -493,16 +460,14 @@ export async function evaluateAuthProof(parts: {
     return verdict("malformed", false, err instanceof Error ? err.message : "ed25519 verify threw");
   }
   if (!ok) return verdict("rejected", false, "signature mismatch");
-  return parts.now === undefined
-    ? verdict("unavailable", true, "verifier freshness witness unavailable")
-    : verdict("checked-valid", true);
+  return verdict("checked-valid", true);
 }
 
 // ── Leaf proof of possession over a presented admit ───────────────────────────────────────────────
 
 /**
  * leafProofBytes — the canonical bytes a presented admit's LEAF signs to bind that admit to ONE socket:
- * `PRESENTED_ADMIT_LEAF_PROOF_DOMAIN`, the gate's challenge `nonce`, the gate's verifying key, the presenting
+ * `PRESENTED_LEAF_PROOF_DOMAIN`, the gate's challenge `nonce`, the gate's verifying key, the presenting
  * VESSEL key (the key the V3 proof proves on the same socket), and the admit's act CID. No clock rides it —
  * the gate's single-use nonce is the freshness — and no root rides it.
  */
@@ -513,7 +478,7 @@ export function leafProofBytes(parts: {
   admitCid:   string;
 }): Uint8Array {
   return canonicalJsonBytes({
-    domain:     PRESENTED_ADMIT_LEAF_PROOF_DOMAIN,
+    domain:     PRESENTED_LEAF_PROOF_DOMAIN,
     nonce:      parts.nonce,
     gatePubKey: parts.gatePubKey.toLowerCase(),
     vesselKey:  parts.vesselKey.toLowerCase(),
@@ -584,7 +549,6 @@ export async function buildAuthResponse(parts: {
   gatePubKey:  string;
   peerPubKey:  string;
   aud:         string;
-  ts:          string;
   /** The leaf's own fresh nonce the gate's signed verdict must commit to. */
   leafNonce:   string;
   sign:        (bytes: Uint8Array) => Promise<string> | string;
@@ -601,7 +565,6 @@ export async function buildAuthResponse(parts: {
     gatePubKey: parts.gatePubKey,
     peerPubKey: parts.peerPubKey,
     aud:        parts.aud,
-    ts:         parts.ts,
   });
   const sig = await parts.sign(proof);
   return {
@@ -610,7 +573,6 @@ export async function buildAuthResponse(parts: {
     nonce:       parts.nonce,
     leafNonce:   parts.leafNonce,
     sig,
-    ts:          parts.ts,
     ...(parts.edge ? { edge: parts.edge } : {}),
     ...(parts.presentedAdmit ? { presentedAdmit: parts.presentedAdmit } : {}),
   };
@@ -645,8 +607,6 @@ export interface PeerHandshake {
   /** The admit's LEAF signer, used for the leaf proof over the challenge and nothing else. Without it a
    *  presented admit binds to no socket. */
   leafSign?:   (bytes: Uint8Array) => Promise<string> | string;
-  /** Clock for the response timestamp (default: now, ISO). */
-  now?:        () => string;
 }
 
 /**
@@ -681,7 +641,6 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: true; no
     peerPubKey:  h.peerPubKey,
     aud:         h.aud,
     leafNonce,
-    ts:          (h.now ?? (() => new Date().toISOString()))(),
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
     ...(presentedAdmit ? { presentedAdmit } : {}),

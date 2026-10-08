@@ -131,20 +131,18 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     const peerSeed = new Uint8Array(32).fill(12);
     const peerPubKey = await pubOf(peerSeed);
 
-    // Hand-drive the handshake so the proof can carry deliberately old signed metadata; the relay does not claim
-    // wall-clock freshness. The challenge nonce, not this ts, is the connection-scoped replay boundary.
-    const first = await new Promise<{ raw: WS; proof: { peerPubKey: string; ts: string; sig: string } }>((resolve, reject) => {
+    // Hand-drive the handshake: the challenge nonce is the connection-scoped replay boundary.
+    const first = await new Promise<{ raw: WS; proof: { peerPubKey: string; sig: string } }>((resolve, reject) => {
       const raw = new WS(`ws://127.0.0.1:${relay!.port}`);
-      let proof: { peerPubKey: string; ts: string; sig: string } | undefined;
+      let proof: { peerPubKey: string; sig: string } | undefined;
       raw.on("error", reject);
       raw.on("message", (data: RawData) => {
         const frame = JSON.parse(data.toString()) as { t: string; nonce?: string; gatePubKey?: string };
         if (frame.t === "challenge") void (async () => {
-          const ts = new Date(Date.now() - 10 * 60_000).toISOString();   // deliberately old signed metadata
           const sig = await ed25519SignerFromSeed(peerSeed)(
-            authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey, aud: MEMBERSHIP_RELAY_DOMAIN, ts }),
+            authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey, aud: MEMBERSHIP_RELAY_DOMAIN }),
           );
-          proof = { peerPubKey, ts, sig };
+          proof = { peerPubKey, sig };
           raw.send(JSON.stringify({ t: "auth", ...proof }));
         })();
         else if (frame.t === "auth-ok" && proof) resolve({ raw, proof });
@@ -192,11 +190,10 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
               // verify finish and close the window, and the race would never surface.
               const frames: string[] = [];
               for (const [seed, key] of [[seedA, keyA], [seedB, keyB]] as const) {
-                const ts = new Date().toISOString();
                 const sig = await ed25519SignerFromSeed(seed)(
-                  authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey: key, aud: MEMBERSHIP_RELAY_DOMAIN, ts }),
+                  authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey: key, aud: MEMBERSHIP_RELAY_DOMAIN }),
                 );
-                frames.push(JSON.stringify({ t: "auth", peerPubKey: key, ts, sig }));
+                frames.push(JSON.stringify({ t: "auth", peerPubKey: key, sig }));
               }
               for (const f of frames) raw.send(f);
             })();

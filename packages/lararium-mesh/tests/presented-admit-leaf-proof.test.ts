@@ -27,7 +27,7 @@ import {
 import { presentationFromBoardDoc, writeCarriageEntry } from "../src/carriage-board.js";
 import { emptyLarDoc } from "../src/base-doc.js";
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
-import { PRESENTED_ADMIT_LEAF_PROOF_DOMAIN, AUTH_PROOF_DOMAIN } from "../src/domains.js";
+import { PRESENTED_LEAF_PROOF_DOMAIN, AUTH_PROOF_DOMAIN } from "../src/domains.js";
 import { pubOf, signerOf, kahuRoster, carriageAct } from "./fixtures/carriage.js";
 
 const EPOCH = "epoch-cid-genesis";
@@ -100,9 +100,9 @@ describe("the leaf proof binds a presented admit to one socket", () => {
   });
 
   test("the proof bytes open on their own domain, apart from the V3 proof", () => {
-    expect(PRESENTED_ADMIT_LEAF_PROOF_DOMAIN).not.toBe(AUTH_PROOF_DOMAIN);
+    expect(PRESENTED_LEAF_PROOF_DOMAIN).not.toBe(AUTH_PROOF_DOMAIN);
     const text = new TextDecoder().decode(leafProofBytes({ nonce: NONCE, gatePubKey: "a".repeat(64), vesselKey: "b".repeat(64), admitCid: "c".repeat(64) }));
-    expect(text).toContain(PRESENTED_ADMIT_LEAF_PROOF_DOMAIN);
+    expect(text).toContain(PRESENTED_LEAF_PROOF_DOMAIN);
     // No clock and no root ride the bytes.
     expect(Object.keys(JSON.parse(text)).sort()).toEqual(["admitCid", "domain", "gatePubKey", "nonce", "vesselKey"]);
   });
@@ -125,7 +125,6 @@ describe("the handshake signs the leaf proof over the challenge it received", ()
       recv: () => inbox.shift()!(), send: (m) => { sent = m; },
       contactCard: "{}", peerPubKey: vesselKey, gatePubKey, aud: "lar:///x",
       sign: signerOf(SEEDS.vessel), presentedAdmit: { admit, lineage: [] }, leafSign: signerOf(SEEDS.leaf),
-      now: () => "2026-10-06T00:00:00.000Z",
     });
     expect(verdict.ok).toBe(true);
     const msg = sent as unknown as LarAuthMsg;

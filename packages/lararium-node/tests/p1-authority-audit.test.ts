@@ -38,7 +38,6 @@ const auditRows: AuditRow[] = [];
 const opSeed = new Uint8Array(32).fill(31);
 const deviceSeed = new Uint8Array(32).fill(32);
 const peerSeed = new Uint8Array(32).fill(33);
-const now = Date.parse("2026-09-23T00:00:00.000Z");
 const realm = "a".repeat(64);
 const joiner = "b".repeat(64);
 const dials: AdmissionDials = { epsilon: 0.15, beta: 0.9, rho: 1, supply: 1, alpha: 0.5 };
@@ -79,15 +78,13 @@ describe("P1 authority relations — characterization witness", () => {
     expect(omittedEpoch).toMatchObject({ ok: true });
   });
 
-  test("records daemon PoP and exposes its opt-in local-clock freshness path", async () => {
+  test("records daemon PoP: the gate's single-use nonce is its only freshness", async () => {
     const peerPubKey = await pubOf(peerSeed);
     const challenge = {
       nonce: "ab12cd",
       gatePubKey: "00".repeat(32),
       peerPubKey,
       aud: "lar:///ha.ka.ba/bags/daemon",
-      // PoP's timestamp is a replay window witness, kept separate from the delegation's long lease.
-      ts: new Date(now).toISOString(),
     };
     const proof = await buildAuthResponse({
       ...challenge,
@@ -95,27 +92,19 @@ describe("P1 authority relations — characterization witness", () => {
       leafNonce: "ef".repeat(32),
       sign: signWith(peerSeed),
     });
-    const signatureOnly = await verifyAuthProof({ ...challenge, sig: proof.sig, ts: proof.ts! });
-    const clockBound = await verifyAuthProof({ ...challenge, sig: proof.sig, ts: proof.ts!, now });
-    const staleClock = await verifyAuthProof({
-      ...challenge,
-      sig: proof.sig,
-      ts: proof.ts!,
-      now: now + 10 * 60_000,
-    });
+    const fresh  = await verifyAuthProof({ ...challenge, sig: proof.sig });
+    const replay = await verifyAuthProof({ ...challenge, nonce: "cd34ef", sig: proof.sig });
     auditRows.push({
       relation: "daemon-proof-of-possession",
-      inputs: { nonce: challenge.nonce, audience: challenge.aud, suppliedNow: true, omittedNow: true },
+      inputs: { nonce: challenge.nonce, audience: challenge.aud },
       outcome: {
-        signatureOnly: signatureOnly.ok,
-        clockBound: clockBound.ok,
-        staleClock: staleClock.reason,
-        seam: "now optional; omitted verifier skips freshness window",
+        fresh:  fresh.ok,
+        replay: replay.ok,
+        seam: "no clock on the wire; a proof binds the gate's nonce alone",
       },
     });
-    expect(signatureOnly).toMatchObject({ ok: true });
-    expect(clockBound).toMatchObject({ ok: true });
-    expect(staleClock).toMatchObject({ ok: false, reason: "proof outside freshness window" });
+    expect(fresh).toMatchObject({ ok: true });
+    expect(replay).toMatchObject({ ok: false });
   });
 
   test("records persona admission as a local KEL-head relation with carried expiry", async () => {

@@ -45,7 +45,7 @@
  *
  * Security posture (alpha):
  *   - V3 proof-of-possession (ENFORCED): the gate emits its gate-binding key in
- *     lar:challenge and relays the peer's {nonce, sig, ts} to the keyholder worker,
+ *     lar:challenge and relays the peer's {nonce, sig} to the keyholder worker,
  *     which verifies the Ed25519 proof (verifyAuthProof) against the card key + the
  *     gate's own key AND folds the result into its verdict (operator-daemon-behavior,
  *     step D). So `verdict.ok` already means capability AND a verified proof; the
@@ -247,11 +247,9 @@ export class DaemonAuthGate extends EventEmitter {
 
           // V3 proof relay: carry the peer's signed proof material to the keyholder
           // worker (the only verifier — project_verification_placement). The gate
-          // holds no keyhive, so it forwards {nonce, sig, ts} and the worker checks
+          // holds no keyhive, so it forwards {nonce, sig} and the worker checks
           // the Ed25519 signature against the card-derived key + this gate's own key.
-          const proof = parsed.sig && parsed.ts
-            ? { nonce, sig: parsed.sig, ts: parsed.ts }
-            : undefined;
+          const proof = parsed.sig ? { nonce, sig: parsed.sig } : undefined;
 
           // Path (b): host has no keyhive — proxy to the daemon island, which
           // does receiveContactCard + verify in-worker and returns the verdict

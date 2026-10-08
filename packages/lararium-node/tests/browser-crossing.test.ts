@@ -67,7 +67,7 @@ function makeCapabilityShore(opts: { gatePubKey: string; admitted: ReadonlySet<s
       const peerPubKey = card.peerPubKey;
       if (!peerPubKey) return { ok: false, reason: "no peer key in card" };
       const v = await verifyAuthProof({
-        nonce: proof.nonce, gatePubKey: opts.gatePubKey, peerPubKey, aud: bagUrl, ts: proof.ts, sig: proof.sig,
+        nonce: proof.nonce, gatePubKey: opts.gatePubKey, peerPubKey, aud: bagUrl, sig: proof.sig,
       });
       if (!v.ok) return { ok: false, reason: v.reason ?? "proof failed" };
       // The real barrier: a valid proof proves WHO, never WHETHER-GRANTED. A founded anon leaf holds

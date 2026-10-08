@@ -303,31 +303,30 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     ws.close();
   });
 
-  test("V3: a lar:auth with sig+ts relays the proof {nonce, sig, ts} to the shore", async () => {
+  test("V3: a lar:auth with a sig relays the proof {nonce, sig} to the shore", async () => {
     const { shore, calls } = makeCapturingShore();
     gate.arm(shore, AUD, GATE);
 
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
 
-    // mkLarAuth(card, nonce, sig) + an explicit ts → the gate should bundle a proof.
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: "2026-06-07T00:00:00.000Z" }));
+    ws.send(JSON.stringify(mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE)));
     await nextMessage(ws); // auth-ok
 
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.proof).toEqual({ nonce: chal.nonce, sig: "ab".repeat(64), ts: "2026-06-07T00:00:00.000Z" });
+    expect(calls[0]!.proof).toEqual({ nonce: chal.nonce, sig: "ab".repeat(64) });
 
     ws.close();
   });
 
-  test("V3: a lar:auth without ts relays NO proof (the worker refuses an unproven peer)", async () => {
+  test("V3: a lar:auth with an empty sig relays NO proof (the worker refuses an unproven peer)", async () => {
     const { shore, calls } = makeCapturingShore();
     gate.arm(shore, AUD, GATE);
 
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
 
-    ws.send(JSON.stringify(mkLarAuth("card", chal.nonce, "stub-sig", LEAF_NONCE))); // no ts
+    ws.send(JSON.stringify(mkLarAuth("card", chal.nonce, "", LEAF_NONCE)));
     await nextMessage(ws); // auth-ok
 
     expect(calls).toHaveLength(1);
@@ -422,7 +421,6 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
   // ── THE PRESENTATION — the presented admit, recorded per socket, deciding nothing ──────────────────────────
   // The gate keeps what the peer presented, untrusted, for a later reader. The CONTRACT slot is retired: a
   // vessel that presents a leaf to a Nexus presents no root-signed edge to it on any socket (Q1, strict).
-  const TS = "2026-06-07T00:00:00.000Z";
   const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
 
   async function presentation() {
@@ -456,7 +454,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
 
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS, presentedAdmit: proven }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), presentedAdmit: proven }));
     expect(isLarAuthOkMsg(await nextMessage(ws))).toBe(true);
     const serverSocket = await admitted;
 
@@ -481,7 +479,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
     const closed = nextClose(ws);
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS, edge: rootEdge, presentedAdmit }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), edge: rootEdge, presentedAdmit }));
     expect(isLarAuthDeniedMsg(await nextMessage(ws))).toBe(true);
     expect((await closed).code).toBe(4003);
     expect(calls).toHaveLength(0);
@@ -497,7 +495,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
     const closed = nextClose(ws);
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS, contractEdge: rootEdge }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), contractEdge: rootEdge }));
     expect(isLarAuthDeniedMsg(await nextMessage(ws))).toBe(true);
     expect((await closed).code).toBe(4003);
     expect(calls).toHaveLength(0);
@@ -511,7 +509,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE) }));
     expect(isLarAuthOkMsg(await nextMessage(ws))).toBe(true);
     const serverSocket = await admitted;
     expect(gate.getPresentationForSocket(serverSocket)).toBeUndefined();
@@ -530,7 +528,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const chal = await nextMessage(ws) as { nonce: string };
     const closed = nextClose(ws);
     const bad = { ...presentedAdmit, lineage: [{ ...presentedAdmit.lineage[0]!, nym: "ab".repeat(32) }] }; // a lineage act for ANOTHER nym
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS, presentedAdmit: bad }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), presentedAdmit: bad }));
     const denied = await nextMessage(ws);
     expect(isLarAuthDeniedMsg(denied)).toBe(true);
     expect((denied as { reason: string }).reason).toBe("expected lar:auth message");
@@ -545,7 +543,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE) }));
     expect(isLarAuthOkMsg(await nextMessage(ws))).toBe(true);
     const serverSocket = await admitted;
     expect(calls).toHaveLength(1);
@@ -561,7 +559,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     const ws   = await connect(serverInfo.port);
     const chal = await nextMessage(ws) as { nonce: string };
     const closed = nextClose(ws);
-    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), ts: TS, presentedAdmit }));
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64), LEAF_NONCE), presentedAdmit }));
     expect(isLarAuthDeniedMsg(await nextMessage(ws))).toBe(true);
     expect((await closed).code).toBe(4003);
     expect(gate.clients.size).toBe(0);

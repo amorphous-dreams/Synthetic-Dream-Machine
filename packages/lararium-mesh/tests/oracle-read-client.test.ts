@@ -60,8 +60,8 @@ function gateChannel(script: GateScript): { open: (url: string) => Promise<Oracl
         void (async () => {
           const msg = JSON.parse(text) as unknown;
           if (!isLarAuthMsg(msg)) { push(null); return; }
-          const proof = msg.sig && msg.ts
-            ? await verifyAuthProof({ nonce, gatePubKey: gatePub, peerPubKey: msg.contactCard, aud: DAEMON_BAG_ID, ts: msg.ts, sig: msg.sig })
+          const proof = msg.sig
+            ? await verifyAuthProof({ nonce, gatePubKey: gatePub, peerPubKey: msg.contactCard, aud: DAEMON_BAG_ID, sig: msg.sig })
             : { ok: false };
           if (script.deny || !proof.ok) { push(JSON.stringify(mkLarAuthDenied("insufficient capability"))); push(null); return; }
           const signer = ed25519SignerFromSeed(script.unsigned ? OTHER : gateSeed);

@@ -66,7 +66,7 @@ function makeCapabilityShore(gatePubKey: string, admitted: ReadonlySet<string>):
       const card = JSON.parse(new TextDecoder().decode(cardBytes)) as { peerPubKey?: string };
       const peerPubKey = card.peerPubKey;
       if (!peerPubKey) return { ok: false, reason: "no peer key in card" };
-      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey, aud: bagUrl, ts: proof.ts, sig: proof.sig });
+      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey, aud: bagUrl, sig: proof.sig });
       if (!v.ok) return { ok: false, reason: v.reason ?? "proof failed" };
       if (!admitted.has(peerPubKey)) return { ok: false, reason: "insufficient capability (not admitted to the daemon bag)" };
       return { ok: true, identifier: peerPubKey };

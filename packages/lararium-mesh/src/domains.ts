@@ -109,7 +109,7 @@ export const NEXUS_INVITE_DOMAIN = mint("nexus-invite");
 export const HOST_COUNTERSIGN_DOMAIN = mint("host-countersign");
 /** The WALKER's proof over a live hosting session: its per-Nexus leaf signs the hearth's socket nonce, gate
  *  key, the Nexus and the invite nonce under this name, so a countersign asks only over a session the hearth
- *  holds. Apart from `presented-admit-leaf-proof`: a session proof never stands as an admit's proof. */
+ *  holds. Apart from `presented-leaf-proof`: a session proof never stands as a presentation's proof. */
 export const HOST_SESSION_PROOF_DOMAIN = mint("host-session-proof");
 /** A cabal invite — the join axis, orthogonal to the carriage contract. */
 export const CABAL_INVITE_DOMAIN = frozen("cabal-invite");
@@ -152,11 +152,12 @@ export const RELAY_GATE_INFO = frozen("relay-gate");
  *  timestamp, committed under this name so a proof can never verify as any other signed thing, nor any
  *  other signature as a proof. Ephemeral — both ends run one build, so nothing persisted rides it. */
 export const AUTH_PROOF_DOMAIN = mint("auth-proof");
-/** The LEAF'S PROOF OF POSSESSION over a presented carriage admit: the admit's own leaf signs the gate's
- *  nonce, the gate key, the presenting vessel key and the admit's act CID under this name, binding that admit
- *  to ONE socket. Its own name, apart from `auth-proof`: the vessel key signs that one and the leaf signs this
- *  one, and neither signature may verify as the other. No root signs it and no root is named in it. */
-export const PRESENTED_ADMIT_LEAF_PROOF_DOMAIN = mint("presented-admit-leaf-proof");
+/** The LEAF'S PROOF OF POSSESSION over what a socket PRESENTS — an admit, a hosting grant or a redeemed token:
+ *  the presenting leaf signs the gate's nonce, the gate key, the presenting vessel key and the presentation's
+ *  CID under this name, binding that presentation to ONE socket. One relation across every arm, so one name.
+ *  Apart from `auth-proof`: the vessel key signs that one and the leaf signs this one, and neither signature
+ *  may verify as the other. No root signs it and no root is named in it. */
+export const PRESENTED_LEAF_PROOF_DOMAIN = mint("presented-leaf-proof");
 /** The GATE'S VERDICT: a gate signs its `lar:auth-ok` with its own gate key over both nonces, the gate key,
  *  the leaf's key and the audience under this name, so a leaf reads a passing verdict only from the gate it
  *  pinned. Its own name, apart from `auth-proof`: the leaf signs that one and the gate signs this one. */

@@ -9,7 +9,7 @@ import * as ed25519 from "@noble/ed25519";
 import {
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   authOkBytes, verifyAuthOk, ed25519VerifyingKeyFromSeed,
-  ed25519SignerFromSeed, AUTH_PROOF_TTL_MS,
+  ed25519SignerFromSeed,
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isPresentedAdmit,
 } from "../src/auth-wire.js";
 import { canonicalJsonBytes, hex } from "../src/crypto.js";
@@ -23,7 +23,6 @@ const base = {
   gatePubKey: "gate-pk-hex",
   peerPubKey: "peer-pk-hex",
   aud:        "lar:///ha.ka.ba/bags/daemon",
-  ts:         "2026-06-07T00:00:00Z",
   leafNonce:  "ef".repeat(32),
 };
 
@@ -59,13 +58,13 @@ describe("authProofBytes (V3 proof-of-possession)", () => {
 describe("buildAuthResponse (V3 peer half)", () => {
   const parts = { ...base, contactCard: "card-json" };
 
-  test("signs exactly authProofBytes and returns a lar:auth with sig + ts", async () => {
+  test("signs exactly authProofBytes and returns a lar:auth with its sig and no clock", async () => {
     let signed: Uint8Array | undefined;
     const msg = await buildAuthResponse({ ...parts, sign: (b) => { signed = b; return "deadbeef"; } });
     expect(signed).toEqual(authProofBytes(base));
     expect(msg.type).toBe("lar:auth");
     expect(msg.sig).toBe("deadbeef");
-    expect(msg.ts).toBe(parts.ts);
+    expect("ts" in msg).toBe(false);
     expect(msg.contactCard).toBe("card-json");
     expect(msg.nonce).toBe(parts.nonce);
   });
@@ -165,7 +164,6 @@ describe("runPeerHandshake (platform-blind V3 peer half)", () => {
       send:        (m: LarAuthMsg) => { sent.push(m); },
       contactCard: "card", peerPubKey: PEER_KEY, gatePubKey: "", aud: AUD,
       sign:        () => "sig-hex",
-      now:         () => "2026-06-07T00:00:00Z",
       sent,
     };
   }
@@ -262,7 +260,6 @@ describe("verifyAuthProof (V3 verifier half — real Ed25519 keys)", () => {
     nonce:      "ab12cd",
     gatePubKey: "00".repeat(32),                 // stands for the verifier's own key
     aud:        "lar:///ha.ka.ba/bags/daemon",
-    ts:         "2026-06-07T00:00:00.000Z",
     leafNonce:  "ef".repeat(32),
   };
 
@@ -271,7 +268,7 @@ describe("verifyAuthProof (V3 verifier half — real Ed25519 keys)", () => {
     const msg = await buildAuthResponse({
       ...over, peerPubKey: peer, contactCard: "card-json", sign,
     });
-    return { sig: msg.sig, ts: msg.ts! };
+    return { sig: msg.sig };
   }
 
   beforeAll(async () => {
@@ -280,67 +277,47 @@ describe("verifyAuthProof (V3 verifier half — real Ed25519 keys)", () => {
     sign = async (bytes) => hex(await ed25519.signAsync(bytes, priv));
   });
 
-  test("returns relation-scoped evidence for checked, unavailable, stale, malformed, and rejected proofs", async () => {
-    const { sig, ts } = await signedProof();
-    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts, now: Date.parse(ts) })).toMatchObject({
+  test("returns relation-scoped evidence for checked, malformed, and rejected proofs", async () => {
+    const { sig } = await signedProof();
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig })).toMatchObject({
       relation: "daemon-proof-of-possession", state: "checked-valid", cryptographicallyValid: true,
     });
-    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts })).toMatchObject({
-      relation: "daemon-proof-of-possession", state: "unavailable", cryptographicallyValid: true,
-    });
-    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts, now: Date.parse(ts) + AUTH_PROOF_TTL_MS + 1 })).toMatchObject({
-      relation: "daemon-proof-of-possession", state: "stale", cryptographicallyValid: false,
-    });
-    expect(await evaluateAuthProof({ ...challenge, peerPubKey: "xyz", sig, ts })).toMatchObject({
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: "xyz", sig })).toMatchObject({
       relation: "daemon-proof-of-possession", state: "malformed", cryptographicallyValid: false,
     });
-    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig: "ab".repeat(64), ts })).toMatchObject({
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig: "ab".repeat(64) })).toMatchObject({
       relation: "daemon-proof-of-possession", state: "rejected", cryptographicallyValid: false,
     });
   });
 
   test("a genuine signature over the gate-bound proof clears", async () => {
-    const { sig, ts } = await signedProof();
-    expect(await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts }))
+    const { sig } = await signedProof();
+    expect(await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig }))
       .toEqual({ ok: true });
   });
 
   test("anti-relay: a proof signed for a DIFFERENT gate fails against this gate", async () => {
-    const { sig, ts } = await signedProof({ ...challenge, gatePubKey: "11".repeat(32) });
-    const r = await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts });
+    const { sig } = await signedProof({ ...challenge, gatePubKey: "11".repeat(32) });
+    const r = await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig });
     expect(r.ok).toBe(false);
   });
 
   test("anti-replay: a proof signed for a different nonce fails", async () => {
-    const { sig, ts } = await signedProof({ ...challenge, nonce: "ff9900" });
-    expect((await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts })).ok).toBe(false);
+    const { sig } = await signedProof({ ...challenge, nonce: "ff9900" });
+    expect((await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig })).ok).toBe(false);
   });
 
   test("imposter: a signature checked against a different peer key fails", async () => {
-    const { sig, ts } = await signedProof();
+    const { sig } = await signedProof();
     const otherPub = hex(await ed25519.getPublicKeyAsync(ed25519.utils.randomSecretKey()));
-    expect((await verifyAuthProof({ ...challenge, peerPubKey: otherPub, sig, ts })).ok).toBe(false);
-  });
-
-  test("freshness window: a stale ts past the TTL is rejected when `now` is supplied", async () => {
-    const { sig, ts } = await signedProof();
-    const stale = Date.parse(challenge.ts) + AUTH_PROOF_TTL_MS + 1_000;
-    const r = await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts, now: stale });
-    expect(r).toEqual({ ok: false, reason: "proof outside freshness window" });
-  });
-
-  test("freshness window: a ts within the TTL passes", async () => {
-    const { sig, ts } = await signedProof();
-    const fresh = Date.parse(challenge.ts) + 1_000;
-    expect(await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts, now: fresh }))
-      .toEqual({ ok: true });
+    expect((await verifyAuthProof({ ...challenge, peerPubKey: otherPub, sig })).ok).toBe(false);
   });
 
   test("malformed material is rejected before crypto", async () => {
-    const { sig, ts } = await signedProof();
-    expect((await verifyAuthProof({ ...challenge, peerPubKey: "xyz", sig, ts })).reason)
+    const { sig } = await signedProof();
+    expect((await verifyAuthProof({ ...challenge, peerPubKey: "xyz", sig })).reason)
       .toMatch(/peerPubKey/);
-    expect((await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig: "ab", ts })).reason)
+    expect((await verifyAuthProof({ ...challenge, peerPubKey: peerPub, sig: "ab" })).reason)
       .toMatch(/sig/);
   });
 });
@@ -355,15 +332,15 @@ describe("ed25519SignerFromSeed (the LIGHT leaf-identity signer)", () => {
     const sign   = ed25519SignerFromSeed(seed);               // the leaf signer
     const parts  = {
       nonce: "cafe".repeat(16), gatePubKey: "00".repeat(32),
-      peerPubKey: pub, aud: "lar:///ha.ka.ba/bags/daemon", ts: "2026-06-07T12:00:00.000Z", leafNonce: "ef".repeat(32),
+      peerPubKey: pub, aud: "lar:///ha.ka.ba/bags/daemon", leafNonce: "ef".repeat(32),
     };
     const msg    = await buildAuthResponse({ ...parts, contactCard: "card", sign });
     // The gate recomputes with its OWN key (= gatePubKey here) and the card-derived
     // peer key (= pub); a genuine leaf proof clears.
-    expect(await verifyAuthProof({ ...parts, sig: msg.sig, ts: msg.ts! }))
+    expect(await verifyAuthProof({ ...parts, sig: msg.sig }))
       .toEqual({ ok: true });
     // Anti-relay: a gate holding a DIFFERENT key rejects the same proof.
-    expect((await verifyAuthProof({ ...parts, gatePubKey: "11".repeat(32), sig: msg.sig, ts: msg.ts! })).ok)
+    expect((await verifyAuthProof({ ...parts, gatePubKey: "11".repeat(32), sig: msg.sig })).ok)
       .toBe(false);
   });
 });

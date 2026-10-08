@@ -57,8 +57,6 @@ export interface LarWSClientOptions {
    * its own key, so a mismatch fails closed.
    */
   gatePubKey: string;
-  /** Optional clock for the proof timestamp (default: now, ISO). */
-  now?:       () => string;
   /** The parent's reconnect delay (ms) after a socket closes. Defaults to the parent's own. */
   retryInterval?: number;
 }
@@ -67,7 +65,6 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   #identity:            LeafIdentity;
   readonly #aud:        string;
   readonly #gatePubKey: string;
-  readonly #now:        (() => string) | undefined;
   /** The gate's refusal, once it has come. A leaf that holds one has ANERGIZED and does not re-present. */
   #anergized: string | null = null;
   /** Set by `disconnect()` — the caller stood this transport down, and nothing below re-dials it. */
@@ -85,7 +82,6 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     this.#identity   = opts.identity;
     this.#aud        = opts.aud;
     this.#gatePubKey = opts.gatePubKey;
-    this.#now        = opts.now;
     // A peer counts as proven only when it arrives on the socket whose gate signed this leaf's verdict.
     this.on("peer-candidate", ({ peerId }: { peerId: PeerId }) => {
       if (this.#verifiedSocket !== null && this.#verifiedSocket === this.socket) {
@@ -203,7 +199,6 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       ...(this.#identity.edge ? { edge: this.#identity.edge } : {}),
       ...(this.#identity.presentedAdmit ? { presentedAdmit: this.#identity.presentedAdmit } : {}),
       ...(this.#identity.leafSign ? { leafSign: this.#identity.leafSign } : {}),
-      ...(this.#now ? { now: this.#now } : {}),
     };
 
     let verdict: Awaited<ReturnType<typeof runPeerHandshake>>;
