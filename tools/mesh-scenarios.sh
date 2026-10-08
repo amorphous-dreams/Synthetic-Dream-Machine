@@ -172,8 +172,18 @@ up_and_answering() {
   return 0
 }
 
-# whether a hearth has stood — the boot line every lararium prints.
-stood() { logs_have "[lararium]" "$1"; }
+# WHETHER A HEARTH HAS STOOD — its latest boot opened its relay socket and no fatal fault followed. A boot that
+# dies prints `[lararium] fatal: …` (`boot-fault.ts`) under the same prefix every boot line carries, so a bare
+# `[lararium]` match read a dying hearth as stood: a scenario read ok on a lararium that was exiting. The log
+# spans every restart (`on-failure`), so the reading is ORDER, never presence: the last relay line must stand
+# after the last fatal line, and a hearth that failed once and then stood reads as stood.
+stood() {
+  local log relay fatal
+  log=$($COMPOSE logs "$1" 2>&1)
+  relay=$(printf '%s\n' "$log" | grep -nF "[lararium] WS relay on" | tail -n 1 | cut -d: -f1)
+  fatal=$(printf '%s\n' "$log" | grep -nF "[lararium] fatal:" | tail -n 1 | cut -d: -f1)
+  [ -n "$relay" ] && [ "$relay" -gt "${fatal:-0}" ]
+}
 
 # HOW MANY TIMES A PATTERN STANDS IN A SERVICE'S LOG — the counting twin of `logs_have`, and it
 # exists for the same reason: `grep -q` over a growing container log closes the pipe at the first
