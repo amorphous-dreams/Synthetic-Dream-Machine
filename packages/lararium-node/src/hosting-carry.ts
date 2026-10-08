@@ -24,7 +24,7 @@
  * enumerable from the store — never who. A holder of the hearth seed can test a KNOWN leaf against the rows; the
  * sealed custody root closes both at rest.
  *
- * QUOTA IS TOLERANCE. Each guest may carry up to `perGrantBytes`; a deposit past it is refused, nothing detected.
+ * QUOTA IS TOLERANCE. Each guest may carry up to `perGuestBytes`; a deposit past it is refused, nothing detected.
  *
  * RECLAIM — PRESSURE IS THE ONLY TRIGGER, THE GUEST'S OWN RHYTHM THE MEASURE, NOTICE BEFORE DISCARD. Nothing is
  * evicted for lapsing alone. Only when a deposit would pass `totalBytes` does the hearth reclaim, choosing among
@@ -49,11 +49,11 @@ import type { DaemonAuthGate } from "./daemon-auth-gate.js";
 
 /** How much a hearth carries for walkers: per guest, and in all. */
 export interface CarryLimits {
-  readonly perGrantBytes: number;
+  readonly perGuestBytes: number;
   readonly totalBytes:    number;
 }
 
-export const DEFAULT_CARRY_LIMITS: CarryLimits = { perGrantBytes: 8 * 1024 * 1024, totalBytes: 256 * 1024 * 1024 };
+export const DEFAULT_CARRY_LIMITS: CarryLimits = { perGuestBytes: 8 * 1024 * 1024, totalBytes: 256 * 1024 * 1024 };
 
 /** One guest's carriage scalars. */
 export interface CarryRecord {
@@ -155,7 +155,7 @@ export function depositCarried(opts: {
   const blobPath = join(recordDir(opts.storageDir, opts.nexusAid, opts.key), "blobs", blobName(opts.cid));
   if (existsSync(blobPath)) return "held";                                               // already carried: idempotent
   const size = opts.ciphertext.byteLength;
-  if (record.bytes + size > limits.perGrantBytes) return "quota";
+  if (record.bytes + size > limits.perGuestBytes) return "quota";
   if (totalCarried(opts.storageDir, opts.nexusAid) + size > limits.totalBytes
       && !reclaim(opts.storageDir, opts.nexusAid, opts.depth, size, limits, opts.key)) return "pressure";
   writeRecord(opts.storageDir, opts.nexusAid, opts.key, { ...record, bytes: record.bytes + size });

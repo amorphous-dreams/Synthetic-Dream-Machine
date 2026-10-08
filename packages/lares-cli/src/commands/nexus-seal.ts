@@ -30,7 +30,7 @@
  */
 import {
   readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath,
-  listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
+  listPersonaRoots, loadPersonaGroupRootVerifyingKey, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, runNexusMembersList, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
   runNexusRollAnchor, NexusContractError, type NexusRollAnchorResult,
@@ -265,14 +265,15 @@ async function seatKahuFromVault(
 
   for (const [index, handle] of standing) {
     if (!held.has(index)) continue;             // a declaration without a held root seats nothing here
-    const root = await generateOrLoadPersonaGroupRoot(index);   // loads a held root; never mints here
-    hands.push({ handleIndex: index, verifyingKey: root.verifyingKey });
+    const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);   // a read; never a mint
+    if (!verifyingKey) continue;
+    hands.push({ handleIndex: index, verifyingKey });
     const at = chairAt.get(norm(handle));
     if (at === undefined) {
       chairAt.set(norm(handle), kahu.length);
-      kahu.push({ displayName: handle, verifyingKey: root.verifyingKey });
+      kahu.push({ displayName: handle, verifyingKey });
     } else {
-      kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey: root.verifyingKey };
+      kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey };
     }
   }
   const seatedKeys = kahu.map((k) => k.verifyingKey).filter((v): v is string => typeof v === "string" && v.length > 0);
@@ -320,8 +321,8 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   // charter in her own seal home — she cannot consent to one she has never seen — and seats her own
   // there too. Seating onto his MERGES the quorums: measured, six seated kahu at threshold two, so the
   // partner holds quorum over her Nexus using his own keys with no further act by her.
-  const heldKeys = await Promise.all(
-    (await listPersonaRoots()).map(async (i) => (await generateOrLoadPersonaGroupRoot(i)).verifyingKey));
+  const heldKeys = (await Promise.all((await listPersonaRoots()).map((i) => loadPersonaGroupRootVerifyingKey(i))))
+    .filter((k): k is string => k !== undefined);
   const foreign = foreignSeats(doc.kahu ?? [], heldKeys);
   if (!foreign.ok) throw new UsageError(foreign.why);
 

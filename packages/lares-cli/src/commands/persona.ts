@@ -25,7 +25,7 @@
  */
 
 import {
-  generateOrLoadPersonaGroupRoot, wearPersona, listPersonaRoots, loadActivePersonaIndex,
+  loadPersonaGroupRootVerifyingKey, wearPersona, listPersonaRoots, loadActivePersonaIndex,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
   runFoundTheFace, faceStands,
 } from "@lararium/node";
@@ -160,17 +160,20 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   //
   // Every added compartment rides beside the founding face, so a vessel with no group refuses them:
   // persona h1 inside no PersonaGroup would mint a root the Binding Gate could never walk to.
+  let founded: Awaited<ReturnType<typeof runFoundTheFace>>;
   if (index === 0) {
-    await runFoundTheFace({ storageDir: larDataDir() });
+    founded = await runFoundTheFace({ storageDir: larDataDir() });
   } else if (!faceStands()) {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
   } else {
-    await runFoundTheFace({ storageDir: larDataDir(), handleIndex: index });
+    founded = await runFoundTheFace({ storageDir: larDataDir(), handleIndex: index });
   }
 
-  // Mint/load the operator-root (idempotent per index; assertHandleIndex guards inside the core), then
-  // set the PRIVATE pet-name. renameOwnPersona keeps its own non-blank guard.
-  const root = await generateOrLoadPersonaGroupRoot(index);
+  // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
+  // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.
+  const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);
+  if (!verifyingKey) throw new UsageError(`the face h${index} stands here with no persona root held — re-found it`);
+  const root = { verifyingKey, created: !founded.alreadyStood };
   await renameOwnPersona(petnames, index, name);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching

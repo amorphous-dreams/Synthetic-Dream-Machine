@@ -32,7 +32,7 @@ import {
   offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow, makeLocalPersonaKelHeadResolver,
   listAdmittedPersonas, clearPersonaAdmitPending,
   loadVesselSigningSeed, loadVesselVerifyingKey,
-  generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
+  loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
 } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -80,8 +80,10 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         if (!offerCarriage) throw new UsageError("grant needs --offer <carriage> (the target's QR#1)");
         if (!prefix) throw new UsageError("grant needs --prefix <persona-kel-aid> (the persona's stable identifier)");
         if (!Number.isInteger(index) || index < 0) throw new UsageError(`--index must be a non-negative integer (got "${idxRaw}")`);
-        const root = await generateOrLoadPersonaGroupRoot(index);
-        const personaRef: PersonaRef = { prefix, verifyingKey: root.verifyingKey };
+        // A grant SIGNS with a held root; it never stands one up. An index this vessel holds no root for refuses.
+        const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);
+        if (!verifyingKey) throw new UsageError(`this vessel holds no persona root at h${index} — a grant signs only as a persona it carries`);
+        const personaRef: PersonaRef = { prefix, verifyingKey };
         const personaSigner = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(index));
         const r = await grantAdmitFlow({ offerCarriage, personaRef, personaSigner });
         if ("error" in r) throw new UsageError(r.error);

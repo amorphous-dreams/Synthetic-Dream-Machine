@@ -11,7 +11,7 @@
  */
 
 import type { KahuQuorumSeats } from "@lararium/mesh";
-import { listPersonaRoots, generateOrLoadPersonaGroupRoot } from "./node-vessel-identity.js";
+import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 
 export interface HeldQuorumSigner {
   readonly handleIndex:  number;
@@ -30,8 +30,8 @@ export async function selectHeldQuorumSigners(
   const candidates: HeldQuorumSigner[] = [];
   const seen       = new Set<string>();
   for (const handleIndex of await listPersonaRoots()) {
-    const root = await generateOrLoadPersonaGroupRoot(handleIndex);   // loads a HELD root; never mints here
-    const vk   = root.verifyingKey.toLowerCase();
+    const vk   = (await loadPersonaGroupRootVerifyingKey(handleIndex))?.toLowerCase();   // a read; never a mint
+    if (!vk) continue;
     if (!rosterKeys.has(vk) || seen.has(vk)) continue;                 // only a seated, not-yet-counted key
     seen.add(vk);
     candidates.push({ handleIndex, verifyingKey: vk });

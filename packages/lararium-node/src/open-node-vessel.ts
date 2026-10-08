@@ -78,7 +78,7 @@ import {
 } from "./genesis-artifact.js";
 import { repoRoot }                       from "@lararium/mesh/node";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { daemonGenesisDir }               from "./lares-config.js";
+import { daemonGenesisDir, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, federationPostureFromDoc, utf8Bytes, makeCidResolver, carriageDocUrl } from "@lararium/mesh";
@@ -153,7 +153,7 @@ import { DaemonAuthGate, type SocketSorter }       from "./daemon-auth-gate.js";
 import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "./socket-sorter.js";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { serveHostingMint }                       from "./hosting-mint.js";
-import { serveHostingCarry }                      from "./hosting-carry.js";
+import { serveHostingCarry, DEFAULT_CARRY_LIMITS } from "./hosting-carry.js";
 import { nodeWalkStore }                          from "./node-walk-store.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
@@ -2245,7 +2245,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     if (!mintServed) {
       mintServed = true;
       serveHostingMint(authGate, { storageDir, leafSeedFor: hostingLeafSeedFor });
-      serveHostingCarry(authGate, { storageDir, leafSeedFor: hostingLeafSeedFor });
+      serveHostingCarry(authGate, { storageDir, leafSeedFor: hostingLeafSeedFor, limits: hostingCarryLimits(loadLaresConfig(), DEFAULT_CARRY_LIMITS) });
     }
     // THE KNOCK. The relay answers an upgrade only on the path its gate key derives; the dispatcher destroys
     // every other upgrade before any HTTP 101. Registered once — a re-armed gate keeps its key and its path.

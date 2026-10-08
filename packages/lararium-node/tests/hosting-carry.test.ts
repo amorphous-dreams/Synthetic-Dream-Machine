@@ -82,7 +82,7 @@ describe("carry ⊥ read", () => {
 
 describe("the quota", () => {
   test("RED: a grant's deposit past its bound is refused; CONTROL: within it, held", () => {
-    const limits = { perGrantBytes: 100, totalBytes: 10_000 };
+    const limits = { perGuestBytes: 100, totalBytes: 10_000 };
     expect(put(keyOf(L("1")), 1, 80, 1, limits)).toBe("held");
     expect(put(keyOf(L("1")), 1, 30, 2, limits)).toBe("quota");
     expect(put(keyOf(L("1")), 1, 20, 3, limits)).toBe("held");
@@ -91,8 +91,8 @@ describe("the quota", () => {
 });
 
 describe("reclaim — pressure the only trigger, the guest's own rhythm the measure, notice before discard", () => {
-  const roomy = { perGrantBytes: 100, totalBytes: 1_000 };
-  const tight = { perGrantBytes: 100, totalBytes: 100 };
+  const roomy = { perGuestBytes: 100, totalBytes: 1_000 };
+  const tight = { perGuestBytes: 100, totalBytes: 100 };
 
   test("RED: no eviction without pressure; CONTROL: under pressure the same guest is marked", () => {
     expect(put(keyOf(L("a")), 1, 60, 1, roomy)).toBe("held");
@@ -152,7 +152,7 @@ describe("reclaim — pressure the only trigger, the guest's own rhythm the meas
   });
 
   test("RED: the guest most lapsed FOR ITSELF is taken first, not the longest absolute lapse", () => {
-    const limits = { perGrantBytes: 100, totalBytes: 150 };
+    const limits = { perGuestBytes: 100, totalBytes: 150 };
     // A: rhythm 10, lapsed 50 epochs (5 rhythms). B: rhythm 1, lapsed 8 epochs (8 rhythms).
     put(keyOf(L("a")), 0, 50, 1, limits);
     noteContact(storageDir, AID, keyOf(L("a")), 10); noteContact(storageDir, AID, keyOf(L("a")), 20);
@@ -165,7 +165,7 @@ describe("reclaim — pressure the only trigger, the guest's own rhythm the meas
   });
 
   test("CONTROL: a regular guest is never taken while a long-lapsed one stands — even past what it covers", () => {
-    const limits = { perGrantBytes: 100, totalBytes: 100 };
+    const limits = { perGuestBytes: 100, totalBytes: 100 };
     put(keyOf(L("a")), 1, 30, 1, limits);                                               // long-lapsed
     put(keyOf(L("r")), 1, 60, 2, limits);
     for (let d = 2; d <= 50; d++) noteContact(storageDir, AID, keyOf(L("r")), d);       // regular: every epoch
@@ -178,7 +178,7 @@ describe("reclaim — pressure the only trigger, the guest's own rhythm the meas
 describe("no enumerable guest set", () => {
   test("RED: the store holds no lineage, leaf or grant tag, and a record key needs the hearth's seed; CONTROL: the proven leaf's key reaches it", () => {
     const lineage = L("e"), leaf = L("f"), tag = L("9");
-    put(keyOf(leaf), 1, 10, 1, { perGrantBytes: 100, totalBytes: 100 });
+    put(keyOf(leaf), 1, 10, 1, { perGuestBytes: 100, totalBytes: 100 });
     const all = everything();
     for (const secret of [lineage, leaf, tag]) expect(all).not.toContain(secret);
     expect(readCarryRecord(storageDir, AID, carryRecordKey(new Uint8Array(32).fill(9), AID, leaf))).toBeNull();

@@ -70,6 +70,37 @@ export interface LaresConfig {
   readonly sealExpected?: boolean;
   /** A herm's public rung. Absent, the herm stands SILENT; `waymark: true` serves its unsigned waymark. */
   readonly herm?: LaresHermConfig;
+  /** What this hearth gives the walkers it hosts. Absent, the house defaults stand. */
+  readonly hosting?: LaresHostingConfig;
+}
+
+/** The hearth's hosting knobs. */
+export interface LaresHostingConfig {
+  /** How much the hearth carries for walkers — per guest, and in all, in bytes. Each absent field keeps its default. */
+  readonly carry?: { readonly perGuestBytes?: number; readonly totalBytes?: number };
+}
+
+/**
+ * The carry limits this hearth hosts under: `hosting.carry` over the house defaults. A city hearth carries more
+ * than a household's; the operator names it here. A value that is not a whole number of at least one byte
+ * throws, so a typo surfaces rather than hosting under a limit nobody chose.
+ */
+export function hostingCarryLimits(cfg: LaresConfig, defaults: { readonly perGuestBytes: number; readonly totalBytes: number }): {
+  readonly perGuestBytes: number; readonly totalBytes: number;
+} {
+  const hosting: unknown = cfg.hosting;
+  if (hosting === undefined) return defaults;
+  if (hosting === null || typeof hosting !== "object" || Array.isArray(hosting)) throw new Error("[lares config] hosting must be an object");
+  const carry: unknown = (hosting as { carry?: unknown }).carry;
+  if (carry === undefined) return defaults;
+  if (carry === null || typeof carry !== "object" || Array.isArray(carry)) throw new Error("[lares config] hosting.carry must be an object");
+  const read = (key: "perGuestBytes" | "totalBytes"): number => {
+    const v: unknown = (carry as Record<string, unknown>)[key];
+    if (v === undefined) return defaults[key];
+    if (typeof v !== "number" || !Number.isSafeInteger(v) || v < 1) throw new Error(`[lares config] hosting.carry.${key} must be a whole number of bytes, at least 1`);
+    return v;
+  };
+  return { perGuestBytes: read("perGuestBytes"), totalBytes: read("totalBytes") };
 }
 
 /** The herm rung knob (pronaos#/the-rung-ladder). */
