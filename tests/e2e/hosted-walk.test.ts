@@ -128,6 +128,9 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
       }
       const rite = await cli(["nexus", "rite", "quorum"]);
       if (rite.code !== 0) throw new Error(`A: rite quorum failed (${rite.code})\n${said(rite).slice(-800)}`);
+      // The hearth hosts as the face it wears.
+      const wear = await cli(["persona", "wear", "0"]);
+      if (wear.code !== 0) throw new Error(`A: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
   }, 400_000);

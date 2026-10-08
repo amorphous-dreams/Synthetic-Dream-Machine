@@ -13,7 +13,7 @@
  *                                                  the one string to carry; nothing about it is kept here
  *
  * Without `--nexus` a door acts on this hearth's own charter. A hearth hosts only in a Nexus it carries, and
- * only through a face that holds a leaf there.
+ * only as the face this vessel wears.
  *
  * ONE STORE DOOR. While the vessel stands, each door runs inside it (`host-*` verbs over the local socket), so a
  * roll lands on the replica its walkers sync; with no vessel standing, the door runs here (`store-door`).

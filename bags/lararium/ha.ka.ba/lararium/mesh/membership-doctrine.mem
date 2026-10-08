@@ -210,6 +210,13 @@ it pins — so every walker of one hearth reads the one doc, and the Nexus's car
 cross-check. The act grants nothing and names only the hearth. One key per act derives from the leaf seed
 and the act's link (`hosting-key`), with no counter.
 
+''THE WORN FACE HOSTS'' (operator-ruled). The leaf that signs the act is the per-Nexus leaf of the face the
+vessel WEARS — the same face its walks present, one face per vessel per Nexus. Nothing is picked by roster
+order, and a vessel wearing no face hosts no one. ''ROOT-ON-FOUNDER'' keeps a face on one hosting store, and
+the first roll guards it: before its first act in a Nexus, a roll reads the hosting doc, and an act this face
+signed there that no local state holds refuses the roll aloud and writes nothing. A face hosting from two
+places surfaces; nothing detects it beyond that read.
+
 ''THE CARRIAGE BOARD IS THE CARRIERS' LEDGER.'' The carriage board is the ALLOW-twin of the antigen: the
 carriers' contracts, their charter epoch, the quorum's countersigns, and the roll anchors — self-published
 infrastructure acts, never a guest. Its readership is the relation that holds contracts: the carriers, the
@@ -427,6 +434,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sw-PDn37TLnLX9obysrJAuvB-tMBTi4ezOyjDEyhHiM
+<<^ code="&#x0003;">>ni:///sha-256;3PKW5trfLk91hUpf2vqzk14dNuLapAkgW2N9efiuuSc
 
 <<^ code="&#x0004;" -> to="?">>

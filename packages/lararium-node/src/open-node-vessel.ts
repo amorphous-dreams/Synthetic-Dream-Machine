@@ -83,7 +83,7 @@ import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, federationPostureFromDoc, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
-import { heldNexusLeaves, wornNexusLeaf } from "./nexus-leaf.js";
+import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
@@ -775,10 +775,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // THE ONE SORTER every gate of this vessel arms with — the relay `/ws` and the oracle socket alike. It reads
   // the carried readings FRESH per socket, so a posture flipped on disk or a revoke landed by sync sorts the very
   // next socket by it.
-  // The leaf a hearth's hosting keys derive from in N: the first leaf its held personas present to N. A hearth
-  // with no face there hosts no one.
+  // The leaf a hearth's hosting keys derive from in N: the leaf of the face this vessel WEARS — the same face its
+  // walks present. A vessel wearing no face hosts no one.
   const hostingLeafSeedFor = async (aid: string): Promise<Uint8Array | null> => {
-    try { return (await heldNexusLeaves(aid))[0]?.seed ?? null; } catch { return null; }
+    try { return (await wornNexusLeaf(aid))?.seed ?? null; } catch { return null; }
   };
   const socketSorter: SocketSorter = makeSocketSorter({
     readings: readEveryCarried,
