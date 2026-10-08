@@ -12,6 +12,8 @@
  *   · a token redeems ONCE: the first socket is walker with a fresh grant pushed; the same claim again earns the
  *     IDENTICAL grant (refuse before destroy); a different claim is silence; a token of the other class, or one
  *     from another epoch, is silence;
+ *   · RED: a captured `{token, claim}` replayed under another leaf is silence, and the victim's own retry still
+ *     earns its identical grant after the refused attempt — the burn binds the leaf that proved;
  *   · a token is burned BEFORE the verdict — the spent-set holds its nonce as soon as the sort returns;
  *   · RED: after a redemption the hearth's store holds no guest leaf, no lineage and no claim;
  *   · the operator's count event fires once per fresh redemption.
@@ -139,6 +141,22 @@ describe("the token arm — redemption at the hearth's own gate", () => {
     expect(retry).toEqual(first);
     const thief = new Uint8Array(32).fill(70);
     expect(await sort(await socket(await tokenArm(token, thief), thief))).toBeNull();
+    expect(counts).toEqual([1]);
+  });
+
+  test("RED: a captured {token, claim} replayed under another leaf is silence, and destroys nothing — the victim's own retry still earns its grant", async () => {
+    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH_LEAF });
+    const counts: number[] = [];
+    const sort = sorter([await reading()], counts);
+    const token = mintHostToken((await liveNow()).current);
+    const first = await sort(await socket(await tokenArm(token)));
+    expect(first?.class).toBe("walker");
+    // The eavesdropper replays the victim's exact token and claim, under its OWN leaf and its own leaf proof.
+    const thief = new Uint8Array(32).fill(73);
+    const replay: Presented = { ...(await tokenArm(token)), leaf: await pubOf(thief) } as Presented;
+    expect(await sort(await socket(replay, thief))).toBeNull();
+    // CONTROL: the victim's own retry, after the refused attempt, earns the identical grant.
+    expect(await sort(await socket(await tokenArm(token)))).toEqual(first);
     expect(counts).toEqual([1]);
   });
 

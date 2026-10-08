@@ -214,12 +214,14 @@ PURPOSE label (`host-invite` or `walker-invite`), carried as one `lar-invite:` s
 gate key and Nexus. It names no guest, and its nonce is random. The newcomer presents it AT THE HOST'S OWN
 GATE, inside the authenticated handshake, together with a CLAIM its own leaf seed derives from the nonce.
 The host burns the nonce in its per-epoch spent-set (`hosting-spend`): random nonces and claim digests,
-about no one, fsynced before the verdict. The same claim again is a retry and earns the identical grant
-(refuse-before-destroy); a different claim on a burned nonce meets silence. The host then pushes a GRANT
-(`hosting-grant`): a keyed PRF tag over the Nexus, the walker's leaf, the epoch, a LINEAGE derived from
-nonce and claim, and how many rolls it survived. ''Only the host verifies it'', so a seized phone proves
-nothing to anyone else. The guest keeps its invite until a dial carrying the grant stands, then presents
-the grant on every dial.
+about no one, fsynced before the verdict. Each digest binds the claim to the leaf that proved over the
+redeeming socket. The same claim under the same leaf is a retry and earns the identical grant
+(refuse-before-destroy). A different claim, or the same claim under another leaf, meets silence, and the
+burn reads before it writes, so a captured `{token, claim}` replayed under a thief's leaf destroys nothing.
+The host then pushes a GRANT (`hosting-grant`): a keyed PRF tag over the Nexus, the walker's leaf, the
+epoch, a LINEAGE derived from nonce and claim, and how many rolls it survived. ''Only the host verifies
+it'', so a seized phone proves nothing to anyone else. The guest keeps its invite until a dial carrying the
+grant stands, then presents the grant on every dial.
 
 ''TWO LIVE EPOCHS, NO EXCHANGE.'' Tokens and grants hold at the current and the previous epoch. A grant
 presented at the previous epoch is renewed and pushed again. A ''hard roll'' is a roll done twice: every
@@ -397,6 +399,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;24Yvpa12jxKOK9TXuIVpbzQA-hwCxzu9yTpoZtPFQHY
+<<^ code="&#x0003;">>ni:///sha-256;RgT7MupKGDRdqDFYa8pvWd0PuW1mpGCirzCdueJzK5U
 
 <<^ code="&#x0004;" -> to="?">>

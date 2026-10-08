@@ -10,8 +10,9 @@
  *                     tag verifying at the current or previous epoch (a previous-epoch grant is renewed and the
  *                     renewal pushed after the verdict); or it redeemed an invite token here: the token verifies
  *                     at a live epoch under its own class, its nonce burns in that epoch's spent-set (fsynced
- *                     BEFORE the verdict; the same claim again is a retry and earns the identical grant), and the
- *                     new grant is pushed after the verdict. Either way the presenting leaf proves over this
+ *                     BEFORE the verdict, bound to the leaf that proved; the same claim under the same leaf is a
+ *                     retry and earns the identical grant, and under any other leaf it is silence), and the new
+ *                     grant is pushed after the verdict. Either way the presenting leaf proves over this
  *                     socket and reads clear of the Nexus's antigen;
  *   · stranger      — everything else. A gate answers strangers only if SOME Nexus it stands in reads OPEN —
  *                     its own primary charter or any it carries (`gateAnswersStrangers`); otherwise a stranger
@@ -101,7 +102,7 @@ async function walkerStanding(
   const at = tokenVerifiesAt(live.current, token) ? live.current
     : live.previous && tokenVerifiesAt(live.previous, token) ? live.previous : null;
   if (!at) return null;
-  const outcome = await spendToken({ storageDir: hosting.storageDir, nexusAid: aid, epochCid: at.cid, n: token.n, claimDigest: claimDigest(presented.claim) });
+  const outcome = await spendToken({ storageDir: hosting.storageDir, nexusAid: aid, epochCid: at.cid, n: token.n, claimDigest: claimDigest(presented.claim, leaf) });
   if (outcome === "spent-other") return null;
   if (outcome === "fresh") hosting.onRedeemed?.(aid, redeemedCount(hosting.storageDir, aid, at.cid));
   const grant = issueGrant(live.current, {

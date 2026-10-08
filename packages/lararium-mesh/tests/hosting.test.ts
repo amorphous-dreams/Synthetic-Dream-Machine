@@ -12,7 +12,7 @@
  *   · LABEL SEPARATION: a token evaluation presented as a grant tag never verifies, nor the reverse;
  *   · a grant verifies at its epoch alone, names its Nexus and its class, and renews deterministically;
  *   · a claim is derived from the leaf seed (a retry re-derives it), and the lineage moves with the claim — the
- *     claim digest a hearth keeps does not stand in for the claim.
+ *     claim digest a hearth keeps does not stand in for the claim, and it binds the leaf that presented it.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
@@ -150,7 +150,13 @@ describe("the claim — derived, never stored; the lineage only its holder compu
     expect(redeemClaim(OTHER, n)).not.toBe(claim);
     expect(lineageOf(n, claim)).toBe(lineageOf(n, claim));
     // What the hearth keeps — the claim's digest — does not stand in for the claim.
-    expect(lineageOf(n, claimDigest(claim))).not.toBe(lineageOf(n, claim));
+    expect(lineageOf(n, claimDigest(claim, GUEST))).not.toBe(lineageOf(n, claim));
+  });
+
+  test("RED: the kept digest binds the presenting leaf — one claim under two leaves digests apart; CONTROL: the same leaf digests alike", () => {
+    const claim = redeemClaim(LEAF, "ab".repeat(32));
+    expect(claimDigest(claim, GUEST)).toBe(claimDigest(claim, GUEST.toUpperCase()));
+    expect(claimDigest(claim, GUEST)).not.toBe(claimDigest(claim, "d".repeat(64)));
   });
 });
 

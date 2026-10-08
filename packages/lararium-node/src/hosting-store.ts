@@ -6,7 +6,8 @@
  *   · `state.json` — the current hosting act and the previous one (or none). Both acts are public: each stands
  *     on the Nexus's carriage board too, and the current act names the allowance cap.
  *   · `spent-<epoch>` — append-only lines, fsynced before any answer:
- *       `n <nonce> <claim digest>`     — a token redeemed at this epoch;
+ *       `n <nonce> <claim digest>`     — a token redeemed at this epoch, the digest binding the claim to the
+ *                                         leaf that proved over the redeeming socket;
  *       `m <marker> <batch digest>`    — a lineage's mint at this epoch.
  *     The nonces are random and name no one; a claim digest is a digest of the redeemer's claim, never the claim,
  *     so a seizer cannot compute any grant's lineage from it. A marker digests a lineage the hearth never sees.
@@ -15,9 +16,10 @@
  * who redeemed, or any mapping between them. Seized, it reveals how many tokens were redeemed and how many
  * mints happened in the live epochs — a count, never a roster.
  *
- * REFUSE BEFORE DESTROY. A spend is idempotent for its own claim: the same nonce redeemed again with the same
- * claim reads `retry` and earns the identical grant, so an answer lost after the burn destroys nothing. A
- * different claim on a burned nonce reads `spent-other` — silence at the gate. Every append is fsynced before
+ * REFUSE BEFORE DESTROY. A spend is idempotent for its own claim under its own leaf: the same nonce redeemed
+ * again with the same claim by the same leaf reads `retry` and earns the identical grant, so an answer lost after
+ * the burn destroys nothing. A different claim, or the same claim under another leaf, reads `spent-other` —
+ * silence at the gate — and the burn reads before it writes, so the refused attempt destroys nothing either. Every append is fsynced before
  * the gate answers; each burn reads and appends in one synchronous step, so no two burns interleave.
  *
  * A ROLL keeps exactly two epochs live: the new act becomes current, the old current becomes previous, and the

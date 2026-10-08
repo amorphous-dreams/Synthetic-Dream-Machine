@@ -54,7 +54,7 @@ describe("the burn — once, durably, refuse before destroy", () => {
     const { act } = await rollHosting({ storageDir, nexusAid: AID, leafSeed: LEAF });
     const e = hostingActCid(act);
     const n = "ab".repeat(32);
-    const claim = claimDigest(redeemClaim(GUEST_SEED, n));
+    const claim = claimDigest(redeemClaim(GUEST_SEED, n), GUEST_LEAF);
     expect(await spendToken({ storageDir, nexusAid: AID, epochCid: e, n, claimDigest: claim })).toBe("fresh");
     // Durable before return: the line already stands on disk.
     expect(readFileSync(join(hostingDir(storageDir, AID), `spent-${e}`), "utf8")).toContain(`n ${n} ${claim}`);
@@ -78,10 +78,10 @@ describe("the burn — once, durably, refuse before destroy", () => {
     const e = hostingActCid(act);
     const n = "ef".repeat(32);
     const claim = redeemClaim(GUEST_SEED, n);
-    await spendToken({ storageDir, nexusAid: AID, epochCid: e, n, claimDigest: claimDigest(claim) });
+    await spendToken({ storageDir, nexusAid: AID, epochCid: e, n, claimDigest: claimDigest(claim, GUEST_LEAF) });
     const everything = dirFiles().map((f) => readFileSync(join(hostingDir(storageDir, AID), f), "utf8")).join("\n");
     expect(everything).toContain(n);
-    expect(everything).toContain(claimDigest(claim));
+    expect(everything).toContain(claimDigest(claim, GUEST_LEAF));
     expect(everything).not.toContain(claim);
     expect(everything).not.toContain(lineageOf(n, claim));
     expect(everything).not.toContain(GUEST_LEAF);

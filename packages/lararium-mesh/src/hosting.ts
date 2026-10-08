@@ -41,9 +41,10 @@
  * ── THE CLAIM AND THE LINEAGE ──────────────────────────────────────────────────────────────────────
  * A newcomer redeems with a CLAIM `r = H(claim-tag, its leaf seed, n)`, derived and never stored: a retry
  * after a dropped answer re-derives the same `r`, so refuse-before-destroy holds without a pending record.
- * The hearth's spent-set keeps `n → H(r)`, never `r`, and the grant's lineage is `L = H(lineage-tag, n, r)`.
- * A seizer of the hearth holds `n` and `H(r)` and so cannot compute `L`; a retry carrying the same `r` gets
- * the identical grant, and a different `r` gets silence.
+ * The hearth's spent-set keeps `n → H(r, G)`, never `r` and never the leaf `G` that proved over the socket, and
+ * the grant's lineage is `L = H(lineage-tag, n, r)`. A seizer of the hearth holds `n` and `H(r, G)` and so cannot
+ * compute `L`; a retry carrying the same `r` under the same `G` gets the identical grant, and a different `r`, or
+ * the same `r` under another leaf, gets silence.
  *
  * WHAT WAITS FOR THE RE-FOUND. The leaf seed `k_e` derives from rests cleartext on disk until the sealed
  * custody root lands, so a seized hearth can mint tokens. The vessel key still links a walker's leaves across
@@ -344,9 +345,14 @@ export function redeemClaim(leafSeed: Uint8Array, n: string): string {
   return sha256HexBytesSync(canonicalJsonBytes({ domain: HOSTING_TOKEN_DOMAIN, part: "claim", leafSeed: hex(leafSeed), n: n.toLowerCase() }));
 }
 
-/** What the hearth's spent-set keeps for a claim: its digest, never the claim. */
-export function claimDigest(claim: string): string {
-  return sha256HexBytesSync(canonicalJsonBytes({ domain: HOSTING_TOKEN_DOMAIN, part: "claim-digest", claim: claim.toLowerCase() }));
+/**
+ * What the hearth's spent-set keeps for a redemption: a digest of the claim BOUND TO THE LEAF that proved over the
+ * socket, never the claim and never the leaf. A retry is the same claim under the same leaf; the same claim under
+ * any other leaf digests apart and reads as another redeemer, so a captured `{token, claim}` replayed under a
+ * thief's own leaf meets silence and the victim's own retry still earns its grant.
+ */
+export function claimDigest(claim: string, leaf: string): string {
+  return sha256HexBytesSync(canonicalJsonBytes({ domain: HOSTING_TOKEN_DOMAIN, part: "claim-digest", claim: claim.toLowerCase(), leaf: leaf.toLowerCase() }));
 }
 
 /** The lineage a redemption opens: a digest of the nonce and the claim, so only a claim holder computes it. */
