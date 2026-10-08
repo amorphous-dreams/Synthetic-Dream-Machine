@@ -22,7 +22,8 @@
  * THE WIRE UNDER THE REALM — TWO MAPS, NEVER LINKED. B boots before any contract and dials A at the
  * cross-operator floor, presenting her ContactCard ALONE: a self-founded vessel presents no root-signed edge
  * on any socket, because its one vessel key would link that root to the leaf it presents to the same Nexus.
- * A's Nexus stays PRIVATE throughout, so no board of A's crosses to B while she is a stranger. A's quorum
+ * A's Nexus stays PRIVATE throughout: B is a stranger, and a private gate answers a stranger with silence, so
+ * no board of A's crosses to B while she is one. A's quorum
  * admits B's per-Nexus LEAF, and `nexus contract --json` emits the CARRIED admit bundle (the admit, its
  * lineage, the Nexus, A's gate key); it travels to B BY FILE, as the charter and the contract token travel,
  * and B's `nexus admit-take` verifies it against the charter she holds, keeps it, and drives her running
@@ -291,11 +292,14 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toMatch(/bag +=  *"salt: 12 · barley: 40"/);
   }, 120_000);
 
-  // THE MEASURE: B's own daemon says the socket stood — first on the ContactCard alone at the floor, then on her
-  // LEAF admit once she took the bundle A's quorum emitted, and A admitted both sockets.
+  // THE MEASURE: B's own daemon says how each socket fared — on the ContactCard alone she is a STRANGER at A's
+  // PRIVATE gate and meets SILENCE (no verdict, no refusal); on her LEAF admit, once she took the bundle A's quorum
+  // emitted, A admits the socket and the crossing opens.
   test("MEASURE: the two-operator dial STANDS — B re-presents her LEAF admit with no root edge, A admits the socket", () => {
     const b = B!.bootLog();
-    const verdict = b.split("\n").find((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l)) ?? "(no verdict line)";
+    const lines = b.split("\n");
+    const verdicts = lines.filter((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l));
+    const verdict = verdicts.at(-1) ?? "(no verdict line)";
     console.error(`meme-realm-bag MEASURE B dial verdict: ${verdict.trim().slice(0, 200)}`);
     console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${/gate key: ([0-9a-f]{64})/.exec(b)?.[1] ?? "?"} · contract nym: ${contractNym}`);
     if (process.env["LAR_STAGE_DIR"]) {
@@ -307,7 +311,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const leafLine = b.split("\n").find((l) => l.includes("[nexus-join] presenting the leaf admit")) ?? "";
     console.error(`meme-realm-bag MEASURE B re-presentation: ${leafLine.trim().slice(0, 240)}`);
     expect(leafLine).toContain("no root edge rides it");
-    expect(b).not.toContain("[lar-leaf] ANERGIZED");
+    // The card-alone dial before the admit: a stranger at a PRIVATE gate is answered with silence.
+    const reDial = lines.findIndex((l) => l.includes("[nexus-join] presenting the leaf admit"));
+    const before = lines.slice(0, reDial).filter((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l));
+    expect(before.join("\n")).toContain("[lar-leaf] ANERGIZED: no answer");
+    expect(before.join("\n")).not.toContain("verdict OK");
+    // The leaf-admit dial after it stands.
+    expect(lines.slice(reDial).some((l) => l.includes("[lar-leaf] verdict OK — crossing open, syncing"))).toBe(true);
     expect(verdict).toContain("verdict OK — crossing open, syncing");
   });
 
