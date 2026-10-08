@@ -180,7 +180,8 @@ describe("the user invite — the walker's leaf asks its hearth, over a live ses
       asRoot(inviterRoot);   // the countersign runs at the hearth, on its own root
       try {
         return await runHostCountersign({
-          gate: gate as never, socket: socket as never, request, handleIndex: 0, nexusAid: AID, admit: hearth.admit, lineage: [],
+          gate: gate as never, socket: socket as never, request,
+          standing: async (aid) => aid === AID ? { leaf: await nexusLeafFor(0, AID), admit: hearth.admit, lineage: [] } : null,
         });
       } finally { asRoot(back); }
     };

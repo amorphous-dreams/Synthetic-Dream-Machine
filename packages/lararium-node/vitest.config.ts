@@ -84,6 +84,7 @@ export const heavy = [
   "tests/pronaos-public-artifact.test.ts",
   "tests/readiness-face.test.ts",
   "tests/oracle-closed-door.test.ts",
+  "tests/host-countersign-session.test.ts",
 ];
 
 /**

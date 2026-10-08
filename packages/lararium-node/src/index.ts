@@ -234,11 +234,14 @@ export {
   bootInviteBurnPath, bootInviteId,
 } from "./boot-invite-burn.js";
 // The HOST COUNTERSIGN — a hearth lends a user its standing, over a live session, and keeps nothing.
-export { hostSessionOf, runHostCountersign } from "./host-countersign.js";
+export {
+  hostSessionOf, runHostCountersign, serveHostCountersign, hearthStandingFromBoards,
+  type HearthStanding, type HearthStandingSource,
+} from "./host-countersign.js";
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
-  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
+  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, ownPresentationFor, presentationKey,
   dialIdentityFor,
 } from "./nexus-carriage.js";
 export type {

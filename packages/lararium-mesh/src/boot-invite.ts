@@ -251,6 +251,75 @@ export async function countersignHostedInvite(args: {
   };
 }
 
+// ── THE COUNTERSIGN ON THE SESSION ──────────────────────────────────────────────────────────────
+
+/** The session kind a walker asks on, carrying a `HostCountersignRequest`. */
+export const HOST_COUNTERSIGN_ASK = "host-countersign/ask";
+/** The session kind a hearth answers on, carrying `{ nonce, verdict }` for the request's nonce. */
+export const HOST_COUNTERSIGN_ANSWER = "host-countersign/answer";
+
+/** The walker's side of an authenticated session — the shape `LarWSClientAdapter` presents. */
+export interface HostSessionChannel {
+  readonly session: HostSession | null;
+  sendSession(kind: string, body: unknown): boolean;
+  onSession(listener: (msg: { readonly kind: string; readonly body: unknown }) => void): () => void;
+}
+
+const isVerdict = (v: unknown): v is HostCountersignVerdict => {
+  if (!v || typeof v !== "object") return false;
+  const r = v as { ok?: unknown; refusal?: unknown; standing?: unknown };
+  if (r.ok === false) return typeof r.refusal === "string";
+  if (r.ok !== true || !r.standing || typeof r.standing !== "object") return false;
+  const h = r.standing as Partial<HostedStanding>;
+  return h.kind === "hosted" && typeof h.hearthKey === "string" && typeof h.countersig === "string"
+    && !!h.admit && typeof h.admit === "object" && Array.isArray(h.lineage);
+};
+
+/**
+ * Ask the hearth at the other end of `channel` to countersign `request`, and read its answer for that request's
+ * nonce. With no session standing, nothing is sent and the answer is `no-live-session`; an `abort` reads the
+ * same. A malformed answer is never taken for a lend: the walker keeps listening for a well-formed one.
+ */
+export function askHearthOverSession(
+  channel: HostSessionChannel, request: HostCountersignRequest, abort?: AbortSignal,
+): Promise<HostCountersignVerdict> {
+  const closed: HostCountersignVerdict = { ok: false, refusal: "no-live-session" };
+  if (abort?.aborted) return Promise.resolve(closed);
+  return new Promise((resolve) => {
+    const off = channel.onSession((msg) => {
+      if (msg.kind !== HOST_COUNTERSIGN_ANSWER || !msg.body || typeof msg.body !== "object") return;
+      const body = msg.body as { nonce?: unknown; verdict?: unknown };
+      if (body.nonce !== request.nonce || !isVerdict(body.verdict)) return;
+      done(body.verdict);
+    });
+    const onAbort = () => done(closed);
+    function done(v: HostCountersignVerdict): void { off(); abort?.removeEventListener("abort", onAbort); resolve(v); }
+    abort?.addEventListener("abort", onAbort);
+    if (!channel.sendSession(HOST_COUNTERSIGN_ASK, request)) done(closed);
+  });
+}
+
+/**
+ * Mint a USER's invite — the `hosted` arm, platform-blind. The walker's per-Nexus leaf (`walkerKey`, `sign`)
+ * signs a request over `session`, `askHearth` carries it to the hearth that holds that session, and the lent
+ * standing rides inside the invite the same leaf then signs. A refused countersign mints nothing.
+ */
+export async function mintHostedInvite(opts: {
+  readonly nexusAid: string; readonly nonce: string; readonly walkerKey: string; readonly session: HostSession;
+  readonly sign: (bytes: Uint8Array) => Promise<string>;
+  readonly askHearth: (request: HostCountersignRequest) => Promise<HostCountersignVerdict>;
+}): Promise<{ readonly ok: true; readonly invite: BootInvite } | { readonly ok: false; readonly refusal: HostCountersignRefusal }> {
+  const request = await signHostCountersignRequest(
+    { session: opts.session, nexusAid: opts.nexusAid, nonce: opts.nonce, walkerKey: opts.walkerKey }, opts.sign,
+  );
+  const verdict = await opts.askHearth(request);
+  if (!verdict.ok) return verdict;
+  const invite = await signBootInvite(
+    { nexusAid: opts.nexusAid, nonce: opts.nonce, inviterKey: opts.walkerKey, standing: verdict.standing }, opts.sign,
+  );
+  return { ok: true, invite };
+}
+
 /** How the boot answers "may this vessel cross into the Nexus?". The operator turns it — code never bakes it in. */
 export type BootInvitePolicy =
   /** invite-only — a sealed, unspent invite from a standing face is REQUIRED, or the vessel founds its own group. */

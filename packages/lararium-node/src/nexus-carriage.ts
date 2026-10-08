@@ -269,6 +269,31 @@ export async function dialPresentation(opts: {
   /** Where the presenter's findings surface. Defaults to the vessel's warn channel. */
   readonly onFinding?:     (finding: PresentationFinding) => void;
 }): Promise<DialPresentation | null> {
+  const onFinding = opts.onFinding ?? ((f: PresentationFinding) => console.warn(`[nexus-dial] ${presentationFindingLine(f)}`));
+  try {
+    const aid = dialedNexusAid({
+      sealHome: opts.sealHome, gatePubKey: opts.gatePubKey,
+      ...(opts.bootstrapPath ? { bootstrapPath: opts.bootstrapPath } : {}),
+    });
+    if (!aid) return null;
+    return await ownPresentationFor({ ...opts, aid, onFinding });
+  } catch { return null; }
+}
+
+/**
+ * The admit this vessel's own leaf presents in the Nexus named by `aid`, or null (it holds none there). The
+ * one reading `dialPresentation` makes once it has tied a gate key to a Nexus, and the one a hosting hearth
+ * makes to present its own standing beside a countersign: the kept bundle when the board's head does not
+ * extend it, else the board's counted head for each held leaf in roster order, through the one presenter.
+ */
+export async function ownPresentationFor(opts: {
+  readonly sealHome:     string;
+  readonly ownVesselKey: string;
+  readonly aid:          string;
+  readonly open:         BoardOpener;
+  readonly leaves?:      (aid: string) => Promise<readonly NexusLeaf[]>;
+  readonly onFinding?:   (finding: PresentationFinding) => void;
+}): Promise<DialPresentation | null> {
   const surfaced = new Set<string>();
   const onFinding = opts.onFinding ?? ((f: PresentationFinding) => console.warn(`[nexus-dial] ${presentationFindingLine(f)}`));
   const present = async (board: Parameters<typeof presentationFromBoardDoc>[0], nym: string, roster: Parameters<typeof presentationFromBoardDoc>[2]) => {
@@ -282,11 +307,7 @@ export async function dialPresentation(opts: {
     return presentation;
   };
   try {
-    const aid = dialedNexusAid({
-      sealHome: opts.sealHome, gatePubKey: opts.gatePubKey,
-      ...(opts.bootstrapPath ? { bootstrapPath: opts.bootstrapPath } : {}),
-    });
-    if (!aid) return null;
+    const aid = opts.aid;
     const home = charterHomeFor(opts.sealHome, aid);
     if (!home) return null;
     const doc = readNexusDoc(home);

@@ -8,8 +8,13 @@
  * session from its OWN gate, never from anything the walker echoed, so it countersigns exactly the walkers
  * it is talking to and keeps no list of them. A closed socket carries no session, and the countersign refuses.
  *
- * The hearth signs with its persona's per-Nexus LEAF, never the vessel key and never the persona root, and
- * presents its own admit beside the countersign so the newcomer's gate reads the hearth's standing.
+ * THE WIRE. The walker asks on the authenticated session (`lar:session`, kind `host-countersign/ask`) and the
+ * hearth answers on the same socket (`host-countersign/answer`, `{ nonce, verdict }`). `serveHostCountersign`
+ * registers that handler on the gate.
+ *
+ * The hearth signs with its own per-Nexus LEAF, never the vessel key and never the persona root, and presents
+ * that leaf's own admit beside the countersign (`ownPresentationFor`, the one presenter) so the newcomer's
+ * gate reads the hearth's standing. A hearth with no admit in the asked Nexus lends nothing.
  *
  * NOTHING IS KEPT. The countersign writes no file and returns nothing that names a guest: the request
  * names the Nexus, a random nonce and the walker's leaf. The hearth learns that one of its walkers invited
@@ -20,14 +25,25 @@
 
 import * as ed25519 from "@noble/ed25519";
 import {
-  countersignHostedInvite,
+  countersignHostedInvite, HOST_COUNTERSIGN_ASK, HOST_COUNTERSIGN_ANSWER,
   type CarriageEntry, type HostCountersignRequest, type HostCountersignVerdict, type HostSession,
   type PresentedLineageAct,
 } from "@lararium/mesh";
 import type { DaemonAuthGate } from "./daemon-auth-gate.js";
-import { nexusLeafFor } from "./nexus-leaf.js";
+import type { NexusLeaf } from "./nexus-leaf.js";
+import { ownPresentationFor, type BoardOpener } from "./nexus-carriage.js";
 
 type GateSocket = Parameters<DaemonAuthGate["getChallengeForSocket"]>[0];
+
+/** What a hearth lends from: its own per-Nexus leaf in one Nexus and that leaf's admit there. */
+export interface HearthStanding {
+  readonly leaf:    NexusLeaf;
+  readonly admit:   CarriageEntry;
+  readonly lineage: readonly PresentedLineageAct[];
+}
+
+/** The hearth's own standing in the Nexus named by an AID, or null where it holds no admit. */
+export type HearthStandingSource = (nexusAid: string) => Promise<HearthStanding | null>;
 
 /**
  * The live hosting session on `socket`, read from this hearth's own gate: the nonce and gate key it issued,
@@ -45,28 +61,58 @@ export function hostSessionOf(
 }
 
 /**
- * Countersign a walker's request arriving on `socket`, as the hearth persona at `handleIndex` for the Nexus
- * named by `nexusAid`. `admit` and `lineage` present the hearth leaf's own standing
- * (`presentationFromBoardDoc`). Refuses when the socket holds no live session or the walker's leaf did not
- * sign over it. Writes nothing.
+ * Countersign a walker's request arriving on `socket`. Refuses when the socket holds no live session, the
+ * hearth holds no admit in the asked Nexus, or the walker's leaf did not sign over this session. Writes
+ * nothing.
  */
 export async function runHostCountersign(opts: {
-  gate:        Pick<DaemonAuthGate, "clients" | "getChallengeForSocket">;
-  socket:      GateSocket;
-  request:     HostCountersignRequest;
-  handleIndex: number;
-  nexusAid:    string;
-  admit:       CarriageEntry;
-  lineage:     readonly PresentedLineageAct[];
+  gate:     Pick<DaemonAuthGate, "clients" | "getChallengeForSocket">;
+  socket:   GateSocket;
+  request:  HostCountersignRequest;
+  standing: HearthStandingSource;
 }): Promise<HostCountersignVerdict> {
-  const leaf = await nexusLeafFor(opts.handleIndex, opts.nexusAid);
+  const session = hostSessionOf(opts.gate, opts.socket);
+  if (!session) return { ok: false, refusal: "no-live-session" };
+  const req = opts.request;
+  if (!req || typeof req !== "object" || typeof req.nexusAid !== "string") return { ok: false, refusal: "malformed-request" };
+  const own = await opts.standing(req.nexusAid);
+  if (!own) return { ok: false, refusal: "hearth-not-admitted" };
   return countersignHostedInvite({
-    session:  hostSessionOf(opts.gate, opts.socket),
-    request:  opts.request,
-    nexusAid: opts.nexusAid,
+    session, request: req, nexusAid: req.nexusAid,
     hearth: {
-      key: leaf.verifyingKey, admit: opts.admit, lineage: opts.lineage,
-      sign: async (bytes) => Buffer.from(await ed25519.signAsync(bytes, leaf.seed)).toString("hex"),
+      key: own.leaf.verifyingKey, admit: own.admit, lineage: own.lineage,
+      sign: async (bytes) => Buffer.from(await ed25519.signAsync(bytes, own.leaf.seed)).toString("hex"),
     },
   });
+}
+
+/**
+ * Serve countersigns on `gate`'s authenticated sessions: every `host-countersign/ask` is answered on the same
+ * socket with `{ nonce, verdict }`. Returns the unsubscribe.
+ */
+export function serveHostCountersign(
+  gate: Pick<DaemonAuthGate, "clients" | "getChallengeForSocket" | "onSession" | "sendSession">,
+  standing: HearthStandingSource,
+): () => void {
+  return gate.onSession((socket, msg) => {
+    if (msg.kind !== HOST_COUNTERSIGN_ASK) return;
+    const request = msg.body as HostCountersignRequest;
+    const nonce = request && typeof request === "object" ? (request as { nonce?: unknown }).nonce : undefined;
+    void runHostCountersign({ gate, socket, request, standing })
+      .catch((): HostCountersignVerdict => ({ ok: false, refusal: "malformed-request" }))
+      .then((verdict) => { gate.sendSession(socket, HOST_COUNTERSIGN_ANSWER, { nonce, verdict }); });
+  });
+}
+
+/**
+ * The hearth's own standing, read off the boards this vessel holds: its held leaf's admit in each asked
+ * Nexus, through the one presenter.
+ */
+export function hearthStandingFromBoards(opts: {
+  readonly sealHome: string; readonly ownVesselKey: string; readonly open: BoardOpener;
+}): HearthStandingSource {
+  return async (nexusAid) => {
+    const p = await ownPresentationFor({ ...opts, aid: nexusAid });
+    return p ? { leaf: p.leaf, admit: p.admit, lineage: p.lineage } : null;
+  };
 }

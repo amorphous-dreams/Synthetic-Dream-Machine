@@ -112,6 +112,7 @@ import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
+import { serveHostCountersign, hearthStandingFromBoards } from "./host-countersign.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
@@ -2139,6 +2140,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     authGate.arm(daemonVm.authShore, DAEMON_BAG_ID, {
       pubKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
     });
+    // THE HOST COUNTERSIGN rides the gate's authenticated sessions: a walker on a live socket asks, and this
+    // hearth lends its own leaf's standing in the asked Nexus over that socket's session — keeping no list of
+    // whom it hosts and nothing of whom they invite.
+    serveHostCountersign(authGate, hearthStandingFromBoards({
+      sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open,
+    }));
 
     // Keep oracle tiddlers current — self, ka, ba, social plane, daemon.
     reconcileWellKnownTiddlers(
