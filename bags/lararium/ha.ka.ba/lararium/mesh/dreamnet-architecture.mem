@@ -328,8 +328,8 @@ their own CID, with byte identity fixed by the digest (the ''true-name'' registe
 * ''plugin-blobs'' — the engine's extensions, content-addressed, composed atop the engine by CID.
 * ''byte-blobs'' — arbitrary sovereign payloads (attachments, media, sealed artifacts), each named by content.
 
-''Served via the read-face.'' The current Node oracle read-face answers `GET /oracle/<cid>.bin` as the CAS serve —
-the same content-addressed read-face the Two-Faced Substrate already stands (#capability-layer;
+''Served via the read-face.'' The bulb read-face answers `GET /cas/<cid>` and `GET /bulb/<cid>.bin` as the CAS serve, each route addressed by a CID the client already names. The oracle is no HTTP face: the signed FLOW-map pointer and the snapshot it names ride the vessel's `/oracle` WebSocket behind its own `DaemonAuthGate`, to a peer that proved its key first, and every HTTP path under `/oracle` draws the one closed door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>). The CAS serve stands as
+the content-addressed read-face of the Two-Faced Substrate (#capability-layer;
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">>). This documents a current
 Herm read face, not a composed Pronaos carrier or a general static HTTP surface. A hash-named blob refuses a write
 by its nature — no mutable surface, so the serve guards nothing; its response cache class remains an explicit
@@ -615,6 +615,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tRWxv_wk0674JtA0mB7vwKh19W5iXEowo8KAxLHI8Fg
+<<^ code="&#x0003;">>ni:///sha-256;przgnlGOSns3Eb-jA1mSZsd4ML8DveT78gixYGRFK6E
 
 <<^ code="&#x0004;" -> to="?">>

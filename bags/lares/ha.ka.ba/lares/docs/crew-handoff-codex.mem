@@ -800,7 +800,10 @@ loopback-only, no-volume probe found `lararium-node` answering `/oracle/pointer`
 with `200 application/json`; `/`, a web worker asset, a genesis manifest, and a deliberately missing
 path all timed out with zero bytes. The copied `@lararium/web` output therefore remains an unserved
 artifact in this image, while its independent artifact receipt remains green. This establishes Node's
-relay/read-face responsibility and does not select a static-serving shore.
+relay/read-face responsibility and does not select a static-serving shore. The HTTP oracle answer this probe
+saw retired: the FLOW-map pointer and its snapshot ride only the vessel's `/oracle` WebSocket behind its own
+`DaemonAuthGate`, a peer proves first, and every HTTP path under `/oracle` draws the one closed door
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>).
 
 ''E8 three-pass aftermath — 2026-09-21.'' The build-closure pass rebuilt the target and confirmed its
 runtime closure and exclusion of stale MCP, TLDraw, and baked `lares/` source inputs. The delivery pass
@@ -1529,6 +1532,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xC7SSZ-nvtlTrV43eJB9O4fRcZuXt_FH4IK4WaS20Ts
+<<^ code="&#x0003;">>ni:///sha-256;4wxBCxTYCktfmSo3_HpBQDqQQaZbC1tACJi-AQNtjTM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -85,8 +85,8 @@ Two registries, cleanly separated:
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
 * ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
 
-`@oracle` names the runtime system island, and the node's public read-face serves ''the oracle doc itself'' as a content-addressed snapshot (`GET /oracle/pointer` · `GET /oracle/<cid>.bin`, `exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. `lares`/`lararium` are ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
+`@oracle` names the runtime system island, and a vessel hands ''the oracle doc itself'' to a proven peer as a content-addressed snapshot (`exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. The signed FLOW-map pointer and the snapshot it names ride the vessel's oracle WebSocket at `/oracle`, behind its own `DaemonAuthGate`: the dialer proves its key first, and only then do the pointer and snapshot frames leave. The oracle is no HTTP face — every HTTP path under `/oracle` draws the one closed door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>). `lares`/`lararium` are ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
 
-<<^ code="&#x0003;">>ni:///sha-256;SvaWkVSZP_a7Wa__yDKVCuOC6Vf19O5JshRdtzpbosg
+<<^ code="&#x0003;">>ni:///sha-256;N6RFZZInUuCOLRsMDpxdQVf8XFivjVKE7NG8jMimJfg
 
 <<^ code="&#x0004;" -> to="?">>
