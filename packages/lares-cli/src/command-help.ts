@@ -170,6 +170,32 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares mempalace status", "lares mempalace quiesce   # pause AND drain"],
   },
 
+  host: {
+    usage: "usage: lares host <roll | invite>",
+    synopsis:
+      "the hearth's HOSTING door. A hearth that carries a Nexus hosts walkers in it: `roll` publishes a signed " +
+      "hosting act on the Nexus's carriage board (its CID names the epoch; rolling twice is the hard roll that " +
+      "ends every grant and token before it), and `invite` mints one invite at the current epoch, printed as " +
+      "the one `lar-invite:` string to carry. Bare `lares host` reads the live epochs, the cap and how many " +
+      "invites were redeemed — counts, never rows. Nothing about who was invited is kept anywhere.",
+    details: [
+      "  (none)                                   per Nexus: the current and previous epoch, the cap, the redemption counts",
+      "  roll   [--nexus <aid>] [--cap <n>]       roll the hosting epoch; the act lands on the Nexus's carriage board",
+      "  invite [--nexus <aid>] [--relay <url>]   mint this hearth's own invite at the current epoch",
+    ],
+    examples: [
+      "lares host                               # what this hearth hosts, and the redemption counts",
+      "lares host roll                          # open (or roll) the hosting epoch in the primary charter's Nexus",
+      "lares host roll --cap 2                  # each walker lineage mints at most 2 invites per epoch",
+      "lares host invite --relay ws://hearth:7700  # one invite to carry to one newcomer",
+    ],
+    flags: [
+      "--nexus <aid>   the Nexus to act in (default: this hearth's own charter)",
+      "--cap <n>       roll: invites per walker lineage per epoch (whole number ≥ 1)",
+      "--relay <url>   invite: the relay the newcomer dials, carried in the invite string",
+    ],
+    meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
+  },
   vessel: {
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Five primitives and one " +

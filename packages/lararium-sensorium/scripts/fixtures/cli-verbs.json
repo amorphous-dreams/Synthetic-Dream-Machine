@@ -3,6 +3,7 @@
   "verbs": [
     "vessel",
     "herm",
+    "host",
     "act",
     "ingest",
     "watch",
@@ -102,6 +103,7 @@
   "not_yet_mirrored": [
     "vessel",
     "herm",
+    "host",
     "act",
     "ingest",
     "watch",
