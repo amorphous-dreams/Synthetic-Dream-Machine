@@ -232,7 +232,8 @@ for the epoch in ONE blind batch, never one invite on demand, because mint time 
 invite grants its guest floor 1 at once. A WALKER-minted invite gives a budget that vests only at the
 host's NEXT roll, so a chain grows at most one hop per roll. The purpose label separates the two, and it
 never identifies the minting walker. One burn marker per lineage per epoch keeps the digest of the batch,
-so a retry finds its marker and burns nothing new.
+so a retry finds its marker and burns nothing new. Every fill drops the wallet's tokens from any epoch the
+host no longer holds live, and a hand-out takes the newest, so a walker never hands out a dead invite.
 
 ''WHO INVITED WHOM IS NOT COMPUTABLE.'' The blinded batch is unlinkable to the tokens it becomes, so the
 hearth learns that some walker it hosts minted some number of invites this epoch, and never whose invite
@@ -409,6 +410,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sP_9AbkpXurP8Lq7ULBB7tkwy6nlUksB4J37nM9oajg
+<<^ code="&#x0003;">>ni:///sha-256;OSRgPK-zCDwrhyTBd-QoiGjsvD78Lcm2G-fO1GONMhU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -10,6 +10,7 @@
  *
  * THE WALLET FILLS AT ONCE. Once a dial stands on a grant, the walker mints its whole allowance for that epoch in
  * ONE blind batch, never one invite on demand: mint time then says nothing about when an invite is handed out.
+ * Each fill first drops every token of an epoch the hearth no longer holds live, and a hand-out takes the newest.
  * The batch is blinded against the public key of the hearth's signed act for that epoch — read off the Nexus's
  * board, the same act every walker reads — and kept durably before it is sent; the same batch is resent until
  * the hearth's answer finalizes. An answer whose proof does not hold under that key finalizes nothing.
@@ -171,18 +172,27 @@ export function walkOver(opts: {
     })();
   });
 
-  /** Mint the whole allowance for the grant's epoch in one blind batch — or resend the batch already pending. */
+  /**
+   * Prune the wallet to the hearth's two live epochs — the grant's epoch and the act it rolled from — then mint the
+   * whole allowance for the grant's epoch in one blind batch, or resend the batch already pending. A token from an
+   * epoch the hearth no longer holds can only meet silence, so the wallet never keeps one to hand out.
+   */
   async function fill(): Promise<void> {
-    const held = await opts.store.read(gate);
+    let held = await opts.store.read(gate);
     const grant = held?.grant;
     if (!held || !grant || !opts.actFor) return;
+    const act = await opts.actFor(grant.epoch);
+    if (!act || hostingActCid(act) !== grant.epoch) return;
+    const live = new Set([grant.epoch, ...(act.prev ? [act.prev] : [])]);
+    if (held.wallet?.some((w) => !live.has(w.epoch))) {
+      held = { ...held, wallet: held.wallet.filter((w) => live.has(w.epoch)) };
+      await opts.store.write(gate, held);
+    }
     if (held.pending?.epoch === grant.epoch) {
       opts.transport.sendSession(HOSTING_MINT_SESSION_KIND, { blinded: held.pending.items.map((i) => i.blinded) });
       return;
     }
     if (held.wallet?.some((w) => w.epoch === grant.epoch)) return;            // this epoch's batch already stands
-    const act = await opts.actFor(grant.epoch);
-    if (!act || hostingActCid(act) !== grant.epoch) return;
     const count = allowance(grant, act.cap);
     if (count === 0) return;
     const pending = blindWalkerBatch(act, count);
@@ -209,14 +219,15 @@ export function walkOver(opts: {
 }
 
 /**
- * Hand one invite out of the wallet: the oldest unspent token, removed before it is returned, carried with the
- * hearth's gate key and Nexus. Null when the wallet holds none.
+ * Hand one invite out of the wallet: the NEWEST unspent token — the one minted at the latest epoch, which stays
+ * live longest — removed before it is returned, carried with the hearth's gate key and Nexus. Null when the
+ * wallet holds none.
  */
 export async function popInvite(store: WalkStore, gatePubKey: string, relay?: string): Promise<string | null> {
   const gate = gatePubKey.toLowerCase();
   const held = await store.read(gate);
-  const next = held?.wallet?.[0];
+  const next = held?.wallet?.[held.wallet.length - 1];
   if (!held || !next) return null;
-  await store.write(gate, { ...held, wallet: held.wallet!.slice(1) });
+  await store.write(gate, { ...held, wallet: held.wallet!.slice(0, -1) });
   return encodeInvite({ nexusAid: held.nexusAid, gatePubKey: gate, token: next.token, ...(relay ? { relay } : {}) });
 }
