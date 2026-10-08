@@ -76,9 +76,8 @@ import {
   reconcileWellKnownTiddlers, mintLaresIfAbsent, mintLarariumIfAbsent,
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
-import { repoRoot }                       from "@lararium/mesh/node";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { daemonGenesisDir, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -404,6 +403,10 @@ interface NodeBootPrep {
  */
 async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
+  // THE CORPUS ROOT every disk projection mirrors under: the one named, else `LAR_ROOT`, else the repo. A boot
+  // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
+  // boots repo-relative as it always has.
+  const corpusRoot = rootDirOpt ?? daemonCorpusRoot();
   const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
   const hearthPin = readHearthDialPin(bootstrapPath);
@@ -1617,7 +1620,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
       // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
       ownedDocument: true,
-      rootDir: rootDirOpt ?? repoRoot,
+      rootDir: corpusRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
 
@@ -2329,7 +2332,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     for (const ring of DEFAULT_RINGS) eventBus.registerRing(ring);
     eventBus.start();
 
-    const workerRootDir = rootDirOpt ?? repoRoot;
+    const workerRootDir = corpusRoot;
     const diskMirrorGrant: DiskMirrorGrant = [
       { bagId: LARES_DOC_URI,    mirrorRoot: join(workerRootDir, "bags/lares"),    scope: "lares" },
       { bagId: LARARIUM_DOC_URI, mirrorRoot: join(workerRootDir, "bags/lararium"), scope: "lararium" },
