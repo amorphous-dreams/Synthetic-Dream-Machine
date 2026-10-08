@@ -9,6 +9,9 @@
  * the gate LIVE, at each decision. A config that captured the gate's value at construction holds the
  * pre-crossing `null` forever, and a cross-operator relay then reads as the operator's own node — full
  * device sync of every private plane.
+ *
+ * ONE SOCKET, ONE RING. The PersonaGroup identity ring composes onto that same gate, so the config takes the
+ * gate alone: a second ring parameter beside it could only ever stand empty.
  */
 import { describe, expect, test } from "vitest";
 import type { DocumentId } from "@automerge/automerge-repo";
@@ -22,7 +25,7 @@ const CROSSROADS  = interpretAsDocumentId(crossroadsDocUrl(NEXUS)) as DocumentId
 
 describe("browserShareConfig", () => {
   test("a peer the decision refuses is refused on access too", async () => {
-    const cfg = browserShareConfig(new Set(["relay"]), () => null, null);
+    const cfg = browserShareConfig(new Set(["relay"]), () => null);
     // No federation gate and no ring: a relay peer draws the decision's floor on BOTH hooks, identically.
     const a = await cfg.announce("relay" as never, "doc" as never);
     const b = await cfg.access("relay" as never, "doc" as never);
@@ -33,7 +36,7 @@ describe("browserShareConfig", () => {
 
   test("a gate armed AFTER the config stands governs every later decision", async () => {
     let fedGate: FederationGate | null = null;
-    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate, null);
+    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
     // CONTROL: before the crossing arms the gate, the relay reads as the own node — full sync.
     expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(true);
     fedGate = new DeterministicFederationGate(NEXUS);
@@ -44,5 +47,21 @@ describe("browserShareConfig", () => {
     expect(await cfg.access("relay" as never, CROSSROADS)).toBe(true);
     // An in-process island peer is a house member whatever the gate reads.
     expect(await cfg.access("island" as never, PRIVATE_DOC)).toBe(true);
+  });
+
+  test("the ring composed onto the gate is the verdict — no second ring socket stands beside it", async () => {
+    // The config reads the relay set and the gate, nothing else.
+    expect(browserShareConfig.length).toBe(2);
+    const base = new DeterministicFederationGate(NEXUS);
+    let fedGate: FederationGate | null = base;
+    const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
+    // CONTROL: the bare cross-operator gate keeps a private plane off the relay.
+    expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(false);
+    // A ring composed onto the gate widens it by the face's own planes, for the peer it proved …
+    fedGate = { mayFederate: async (doc, peer) => (doc === PRIVATE_DOC && peer === "relay") || base.mayFederate(doc, peer) };
+    expect(await cfg.access("relay" as never, PRIVATE_DOC)).toBe(true);
+    expect(await cfg.announce("relay" as never, PRIVATE_DOC)).toBe(true);
+    // … and the public shelf still crosses through the base it composed over.
+    expect(await cfg.access("relay" as never, CROSSROADS)).toBe(true);
   });
 });

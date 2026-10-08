@@ -168,8 +168,9 @@ export interface IdentityRing {
  * worker (bootDaemonKeyhive over the worker composite), and the bag↔docId registry
  * lives there too — the founding ceremony DISPOSES its transient provider before
  * returning, and LarVessel (whose `identity` field would carry the slot) is not on
- * the live factory path. So both vessels pass `identity = null` and this degenerates
- * EXACTLY to federationShareDecision (zero behavior change, deny-by-default intact).
+ * the live factory path. So the node vessel passes `identity = null` and this degenerates
+ * EXACTLY to federationShareDecision (zero behavior change, deny-by-default intact); the browser
+ * vessel reads `federationShareDecision` directly, its PersonaGroup ring composed onto the gate itself.
  * The BRIDGE and the MAP both stand already, and conflating their absence with the ring's absence
  * mis-sizes the work: `daemon:verify-request`/`-result` runs worker-side and the node vessel arms it for
  * its peer gate, while the worker's provider holds the docId→bagUrl map. What is missing sits between

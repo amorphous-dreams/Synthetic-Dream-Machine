@@ -27,7 +27,7 @@ The standing reading calls `OpenIdentitySlot.verifyCapability`'s `return true; /
 
 * The ONE call site of any slot's `verifyCapability` in source stands at `packages/lararium-mesh/src/federation-gate.ts:192`, inside `identityShareDecision`.
 * That line runs only past `:186` — `if (!identity) return true;`.
-* The BROWSER passes `identityRing` as a `const … = null` (`open-browser-vessel.ts:392`), flagged in its own comment as an honest gap, into `browserShareConfig` (`:1229-1231`).
+* The BROWSER holds no identity-ring socket: `browserShareConfig` reads the federation gate alone, through `federationShareDecision`, and the PersonaGroup ring composes onto that gate (`open-browser-vessel.ts`, the `assemblePersonaGroupRing` call).
 * The NODE hands its whole verdict to `selfSlotShareDecision`, which passes `null` for the identity ring at BOTH exits (`self-slot-share.ts:91-100` · `:103`) — and says why in its own header: the split rides the OUTER deterministic gate, never the inner verify-for-self ring, ''sidestepping the allow-all self-grant trap''.
 * `OpenIdentitySlot` is constructed in exactly one place, `lar-vessel.ts:98`, and nothing reads `vessel.identity` to build an `IdentityRing`.
 
@@ -155,6 +155,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I4GRQYkmdeFSDa0hFuFbtK6ImYrkoNde9wDhH96awY0
+<<^ code="&#x0003;">>ni:///sha-256;sduhx1hfvE0GVvuh0D3Bhgxiw-q0BhFbK-XfBfDhLHY
 
 <<^ code="&#x0004;" -> to="?">>

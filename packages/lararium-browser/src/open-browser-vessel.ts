@@ -22,7 +22,7 @@ import {
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID, pluginCidsFromIslandBlobs,
   personaMultitudeView, renameOwnPersona,
-  DeterministicFederationGate, identityShareDecision, shareConfigOf, type FederationGate, type IdentityRing,
+  DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
@@ -380,38 +380,15 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // gate the relay is the operator's OWN node (same-operator leaf, own DID) → full device sync.
   const relayPeers = new Set<string>();
   let   fedGate: FederationGate | null = null;
-  // #58 — the deny-by-default IDENTITY ring, composed INSIDE the #49 federation gate
-  // (identityShareDecision: a doc crosses only if BOTH rings allow). This is the
-  // socket the crypto-backed KeyhiveIdentitySlot slots into — mirroring how `fedGate`
-  // itself pre-sockets ahead of a cross-operator crossing.
-  //
-  // HONEST GAP (surfaced, NOT papered): `identityRing` stays null on this path today,
-  // so the composition degenerates EXACTLY to the #49 fed gate (zero behavior change).
-  // The live KeyhiveProvider runs INSIDE the daemon-island worker (bootDaemonKeyhive
-  // over the worker composite); the founding ceremony DISPOSES its transient provider
-  // before returning, so NO provider — and no bag↔docId registry — reaches this
-  // main-thread shore synchronously.
-  //
-  // WHAT STANDS AND WHAT REMAINS, precisely — the two get conflated, and they differ:
-  //   · the async main↔worker cap-verify bridge EXISTS and runs — `daemon:verify-request` /
-  //     `daemon:verify-result`, handled worker-side and exposed as the daemon VM's authShore, which the
-  //     node vessel already arms for its peer gate.
-  //   · the docId→bagUrl map EXISTS too, inside the worker's provider.
-  //   · what is missing sits between them: NO message carries that map across. `verify-request` already
-  //     TAKES a bagUrl, so it assumes a caller who knows one, and this shore holds only a documentId.
-  // So the gap reads one message wide, plus building the ring over it.
-  //
-  // AND WIRING IT CLOSES A DOOR. The capability layer hashes a bag URL to seed the Document behind it, so
-  // once this ring verifies, every name that has been through it costs a re-founding to change. The
-  // remaining naming fusions therefore resolve BEFORE this lights, not after
-  // (canon: lar:///ha.ka.ba/lares/api/pono/one-name-one-relation).
-  const identityRing: IdentityRing | null = null;
+  // ONE SOCKET, ONE RING. The PersonaGroup identity ring composes ONTO `fedGate` itself (the assembly
+  // below, once the daemon island boots), so the share verdict reads one gate and the ring has no second
+  // socket to stand empty in.
   const repo = new Repo({
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
-    shareConfig: browserShareConfig(relayPeers, () => fedGate, identityRing),
+    shareConfig: browserShareConfig(relayPeers, () => fedGate),
   });
   emit("repo-open");
 
@@ -1405,7 +1382,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
  * `fedGateOf` reads the federation gate AT EACH DECISION. The Repo takes this config before the spore
  * crossing arms the gate, so a gate passed by value holds the pre-crossing `null` for the vessel's life —
  * and a null gate reads a cross-operator relay as the operator's own node (full device sync).
+ *
+ * The gate it reads is the whole verdict: the PersonaGroup ring composes onto that gate, never beside it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, identityRing: IdentityRing | null) {
-  return shareConfigOf((peerId, documentId) => identityShareDecision(relayPeers, fedGateOf(), identityRing, peerId, documentId));
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null) {
+  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId));
 }
