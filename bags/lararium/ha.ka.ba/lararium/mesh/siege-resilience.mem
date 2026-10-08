@@ -129,12 +129,31 @@ The `<- s` above the `...` reads //the initiator already holds the responder's s
 
 `psk0` WOULD gate message one, and pays the O(N) trial-decryption named above — which only a Household-tier peer count affords. Crossroads and Temple tiers (#/per-tier) cannot.
 
+!!! What stands in code ~ the knock and the silence
+
+''Two of the three properties stand at every gate a vessel opens'' — the relay socket, the oracle socket and
+the membership relay alike:
+* ''The KNOCK'' — the shrine-keyed gate, in the shape `mac1` names. A gate answers an upgrade only on a path
+  its own gate key derives (`gate-knock`: an HMAC over the route under a key hashed from the gate's public
+  key). A dialer that does not already hold the gate key cannot compute the path, and the dispatcher
+  destroys every other upgrade before any HTTP 101. The same leak applies: a watcher holding a suspected gate
+  key confirms the path passively.
+* ''SILENCE'' — no refusal anywhere. Every gate sorts each proven socket (same-operator · contracted · walker
+  · stranger) before its verdict. A socket that sorts nowhere, a failed proof and a stranger at a gate whose
+  carried Nexuses all read PRIVATE meet the same end. The gate draws ONE drop deadline at accept, uniform
+  over an interval, and terminates the socket at it with no close frame, so verify time leaks nothing.
+  A PRIVATE stranger is indistinguishable from a failed proof.
+
+''Still owed — the re-found'': the CLIENT does not yet prove first, since the gate's challenge is its first
+byte after the knock; full Noise `IK` closes that and hides the transport from a passive watcher; and a
+per-Nexus wire key replaces the one gate key every carried Nexus shares today.
+
 !!! What the shape still owes
 
 * ''Key confirmation.'' WireGuard §5 holds the responder from sending transport data until the initiator's first encrypted message lands — //"This ordering restriction is to require confirmation as described for KEA+C"//. A handshake skipping it lets a responder commit to a session the peer never confirmed.
 * ''A replay window'', which wants a per-peer monotonic counter rather than a clock — the transport form of the no-global-now law, at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands#/two-clocks">>.
 * ''Channel binding onto the handshake hash.'' Noise §14 seats it on `h`, never the chaining key `ck`, //"to prevent multiple sessions deriving identical keys through invalid public keys"//. Any vessel-or-persona binding this stack hangs on a session hangs on `h`.
-* ''Revocation after an invite leaks'' — OPEN, carried at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet">>.
+* ''Revocation after an invite leaks'' — the hearth's roll answers it for hosted invites (a hard roll kills every outstanding token and grant with no list to walk, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>); the founding-rite invite stays OPEN, carried at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet">>.
 
 <<~/ahu>>
 
@@ -242,6 +261,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QFs6E3xZ75WHOjryniRVSYgBJVcyB4tLcdwX60mEG1A
+<<^ code="&#x0003;">>ni:///sha-256;iCKbFJ_OcHA5bMxailjZhx7nxKVlskVIxkaySDyAOaw
 
 <<^ code="&#x0004;" -> to="?">>

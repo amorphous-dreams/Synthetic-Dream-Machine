@@ -42,7 +42,7 @@ pares the vessel to void · ''found'' stands the device + the three kahu · ''re
 pre-rotation's future-key custody · ''seal-and-back-up'' locks the secrets at rest + writes a
 recoverable copy · ''seed'' plants the content from `bags/` · ''LIVE'' serves ·
 ''crossroads'' stands a Herm where a family needs one (#/crossroads) · ''grow'' opens the Nexus,
-contracts fellow operators and places, and welcomes users, who walk on an invite from any member face (#/grow-the-nexus) · ''gather'' brings the
+contracts fellow operators and places, and welcomes users, who walk on an invite a hosting hearth or a walker it hosts hands them (#/grow-the-nexus) · ''gather'' brings the
 operator's own vessels in as contracted leaves (#/gather-the-fleet) · ''feed'' lays the first offering, which
 IS the realm's founding (#/feed-the-realm) · ''dwell'' seats a second operator IN the realm rather than
 merely carrying for it (#/dwell).
@@ -1144,10 +1144,13 @@ rite-commands witness now reads every instructed sub-door at its DISPATCH POSITI
 underneath this rite fails the witness rather than the operator.
 
 ''Welcome a user'' — a user WALKS: no contract, no quorum admit, and NO roster trace
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). Any member face —
-a Kahu, a Lamplighter, another user — hands a sealed BURNABLE invite signed by its own face for this Nexus;
-it gates the boot, burns once into the newcomer's local spent-set, and records no who-invited-whom
-anywhere. A garbled or absent invite founds a vessel at the ''anon floor''. A user builds their OWN social graph — a follow lands as
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). A hearth that
+carries the Nexus HOSTS: `lares host roll` publishes its hosting act on the Nexus's carriage board, and
+`lares host invite` hands one `lar-invite:` string. A walker it hosts hands invites from its own wallet.
+The newcomer redeems the invite once at the host's own gate, the host burns it in its per-epoch spent-set
+and pushes a keyed grant, and no who-invited-whom is recorded or computable anywhere
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). `lares host` reads the act,
+the cap and the epoch's redemption count. A garbled or absent invite founds a vessel at the ''anon floor''. A user builds their OWN social graph — a follow lands as
 a LOCAL write to that face's own private `circles-<tag>` doc, which fleet-syncs every one of their
 vessels and NEVER touches the wire — one follow graph per FACE, so a multitude's compartments never share
 a document anything could read to correlate them (#identity-classes, the recognition layer gives the human their one window on the crypto):
@@ -1229,7 +1232,7 @@ this edge rather than orphaning the vessel holding it.
 * ''chant epoch + protocol version'' — a dialect mismatch names itself before the handshake runs.
 * ''shrine key fingerprint'' — the guest confirms WHICH shrine it approaches, which the wire never tells it.
 * ''expected release fingerprint'' — the invite authenticates the software rather than the reverse (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/invariants">>).
-* ''single-use nonce'' — spent-on-boot, matching the burnable boot-invite the ⊕ Grow rite already mints (#/grow-the-nexus).
+* ''single-use nonce'' — burned once at the host's own gate, in its per-epoch spent-set, as the hosted invite the ⊕ Grow rite already hands (#/grow-the-nexus); the `lar-invite:` string already carries the hearth's gate key, the shrine-key half of this list.
 
 ''Silence then stays reserved for a genuine key mismatch'', which reads as the only failure the guest may not distinguish — and the only one worth hiding.
 
@@ -1246,6 +1249,7 @@ this edge rather than orphaning the vessel holding it.
 # ''Operator-side notification plus an auditable, revocable enrolled-vessel list.''
 
 > ''AND SILENCE HIDES THE RACE — OPEN, the ruling belongs to the operator.'' Where an adversary redeems a photographed invite FIRST, the legitimate guest's failure reads identical to a bad network, so no client-side signal exists at all. Detection therefore has to arrive from the operator's side: a vessel appears in the enrolled list that the operator did not expect. That names the requirement — ''enrollment MUST notify, and every enrolled vessel MUST come off individually without re-keying the shrine'' — and leaves unresolved how a revocation reaches a fleet that may sit partitioned for weeks under no global now.
+> For HOSTED invites the operator's signal stands: the hearth keeps a redemption COUNT per epoch (`lares host`), a number and never a row, so more redemptions than invites handed out names the race. A hard roll (`lares host roll` twice) revokes every outstanding token and grant with no list to walk. The enrolled-vessel side stays OPEN.
 
 ''What this does NOT add: DEPTH.'' Every vessel here binds ''one principal's instruments''. Below the phase change the gauge reads the realm nominal, and correctly — a fleet buys REACH, never dwelling. The realm's standing moves when a second locus of cost begins to dwell, never when a fourth device arrives.
 
@@ -1490,6 +1494,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ycH5xTvnxC0F_9BumPPUE7-Uos-2Q0CL-1fod-mixBU
+<<^ code="&#x0003;">>ni:///sha-256;XORFPIMWnlDBpt9M5vdjaZ3HQKgmAmGCwXCTlYn0jQM
 
 <<^ code="&#x0004;" -> to="?">>
