@@ -9,9 +9,9 @@
  * carries no cross-process change bus. This refresh closes that gap on demand.
  *
  * WHAT IT DOES, once, fail-closed:
- *   1. POSTURE — read after the refold: the gate answers strangers iff its own charter or some carried Nexus
- *      reads OPEN. A torn /
- *      absent charter reads PRIVATE (`federationPostureFromDoc` fails closed), so a broken read only tightens.
+ *   1. POSTURE — read after the refold: the gate answers strangers iff its own place posture or some carried
+ *      Nexus reads OPEN. The own posture reads `ownPlacePosture`: a lararium's torn or absent charter reads
+ *      PRIVATE, so a broken read only tightens; a herm answers the knock by its class.
  *   2. BOARDS — for this vessel's own island AND every Nexus in its carried set (each island resolved over
  *      that Nexus's charter home, exactly as the admit writer resolves it), materialize the carriage and
  *      antigen boards on a THROWAWAY Repo bound to the same storage dir (a cold read of the flushed bytes the
@@ -34,10 +34,10 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   materializeSharedLarDoc, kapaeAntigenDocUrl, carriageDocUrl,
   antigenEntriesFromBoard, carriageEntriesFromBoard,
-  federationPostureFromDoc, type FederationPosture,
+  type FederationPosture,
 } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
-import { gateAnswersStrangers } from "./socket-sorter.js";
+import { gateAnswersStrangers, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
 import { carriedSet, charterHomeFor } from "./carried-set.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import type { AntigenRingHolder } from "./antigen-ring.js";
@@ -48,6 +48,8 @@ export interface NexusRefreshDeps {
   readonly storageDir: string;
   /** The `bags/nexus` charter authority home (the CLI supplies the same dir the boot read). */
   readonly sealHome: string;
+  /** The kind of place this vessel stands as — its own posture reads through `ownPlacePosture`. */
+  readonly placeClass: PlaceClass;
   /** The node's own island — its own boards' deterministic address seed. */
   readonly nexusPubkey: string;
   /** The node's own vessel verifying key — the term each carried Nexus's island resolves beside its charter. */
@@ -137,7 +139,7 @@ export async function runNexusRefresh(deps: NexusRefreshDeps): Promise<NexusRefr
   await deps.membership.refold();
 
   // 4. REPORT — per carried Nexus, off the readings the membership holder just judged against.
-  const primary = federationPostureFromDoc(readNexusDoc(deps.sealHome));
+  const primary = ownPlacePosture(deps.placeClass, readNexusDoc(deps.sealHome));
   const posture: FederationPosture = gateAnswersStrangers(primary, deps.membership.readings()) ? "open" : "private";
   const held = deps.membership.heldCounts();
   const nexuses: NexusRefreshPerNexus[] = deps.membership.readings().map((r) => ({

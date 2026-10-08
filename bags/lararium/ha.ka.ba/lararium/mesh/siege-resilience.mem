@@ -143,6 +143,12 @@ the membership relay alike:
   carried Nexuses all read PRIVATE meet the same end. The gate draws ONE drop deadline at accept, uniform
   over an interval, and terminates the socket at it with no close frame, so verify time leaks nothing.
   A PRIVATE stranger is indistinguishable from a failed proof.
+* ''A HERM ANSWERS THE KNOCK'' (operator-ruled). A gate folds its own place posture beside every Nexus it
+  carries, read by one reader (`ownPlacePosture`). A lararium reads its charter, and an absent or torn
+  charter reads PRIVATE: for a hearth it is a fault, and a fault fails closed. A herm holds no charter by
+  CLASS, a waystone and never a broken lararium, so it answers any PROVEN peer that knocked. The knock is
+  its silence: only a peer handed the gate key can compute the path. A herm's SILENT or WAYMARK rung
+  governs its HTTP descriptor alone. No herm↔herm contract is needed.
 
 ''Still owed — the re-found'': the CLIENT does not yet prove first, since the gate's challenge is its first
 byte after the knock; full Noise `IK` closes that and hides the transport from a passive watcher; and a
@@ -261,6 +267,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iCKbFJ_OcHA5bMxailjZhx7nxKVlskVIxkaySDyAOaw
+<<^ code="&#x0003;">>ni:///sha-256;ynSfKZECnbtoPi2zguDhyCchnqNey9xeXSFtIY1ApBg
 
 <<^ code="&#x0004;" -> to="?">>

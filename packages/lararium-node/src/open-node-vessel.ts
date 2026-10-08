@@ -81,7 +81,7 @@ import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { DeterministicFederationGate, federationPostureFromDoc, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
@@ -148,7 +148,7 @@ import {
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
 import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
 import { DaemonAuthGate, type SocketSorter }       from "./daemon-auth-gate.js";
-import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "./socket-sorter.js";
+import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { serveHostingMint }                       from "./hosting-mint.js";
 import { serveHostingCarry, DEFAULT_CARRY_LIMITS } from "./hosting-carry.js";
@@ -402,7 +402,7 @@ interface NodeBootPrep {
  * identity, residency mechanism) + the keel + the VM-focused closures (wiki-slot, daemon,
  * verbs, pool, after-hooks). NO sequencing here — `composeLararium`/`composeHerm` wire the order.
  */
-async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
+async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
   const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
@@ -757,7 +757,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const admitted = Object.entries(sockets).map(([peerId, socket]) => ({ peerId, socket, cls: peerClassMap.get(peerId) }));
     const drop = socketsNoLongerHeld(admitted, {
       holds: contractHolds,
-      answersStrangers: gateAnswersStrangers(federationPostureFromDoc(readNexusDoc(sealHome)), holder.readings()),
+      answersStrangers: gateAnswersStrangers(ownPlacePosture(placeClass, readNexusDoc(sealHome)), holder.readings()),
     });
     for (const socket of drop) authGate.drop(socket as Parameters<typeof authGate.drop>[0]);
   };
@@ -783,7 +783,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const socketSorter: SocketSorter = makeSocketSorter({
     readings: readEveryCarried,
     carrier:  (vesselKey) => membershipHolder.carriers().has(vesselKey.toLowerCase()),
-    primaryPosture: () => federationPostureFromDoc(readNexusDoc(sealHome)),
+    // The vessel's OWN place posture: a lararium reads its charter (absent → PRIVATE); a herm answers the knock.
+    primaryPosture: () => ownPlacePosture(placeClass, readNexusDoc(sealHome)),
     // THE WALKER ARMS read this hearth's hosting store and the leaf its hosting keys derive from.
     hosting: {
       storageDir,
@@ -877,7 +878,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         // `nexus-refresh` verb runs; here it fires automatically when the carriage transport re-dials.
         onReconnect:  async () => {
           await runNexusRefresh({
-            storageDir, sealHome, nexusPubkey,
+            placeClass, storageDir, sealHome, nexusPubkey,
             ownVesselKey: vesselIdentity.verifyingKey, repo,
             antigen: antigenHolder, membership: membershipHolder,
           });
@@ -1456,7 +1457,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           // a peer that comes back re-attaches at the transport and draws a verdict computed before the cut.
           onReconnect: async () => {
             await runNexusRefresh({
-              storageDir, sealHome, nexusPubkey,
+              placeClass, storageDir, sealHome, nexusPubkey,
               ownVesselKey: vesselIdentity.verifyingKey, repo,
               antigen: antigenHolder, membership: membershipHolder,
               });
@@ -2028,7 +2029,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // island appeared or moved. DISTINCT from the worldline `kapae` branch-mute.
     registry.register("nexus-refresh", async () => {
       const r = await runNexusRefresh({
-        storageDir,
+        placeClass, storageDir,
         sealHome,
         nexusPubkey,
         antigen:     antigenHolder,
@@ -2475,7 +2476,7 @@ async function carriageIdentity(tag: string): Promise<LeafIdentity | undefined> 
  * → live). Behaviour stays identical to the pre-cap-stack boot; the only change is the composed wrap.
  */
 export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesselResult> {
-  const p = await prepareNodeBoot(opts);
+  const p = await prepareNodeBoot(opts, "lararium");
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
@@ -2540,7 +2541,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
   if (!opts.httpServer) {
     throw new Error("[lararium] openNodeHerm requires opts.httpServer (the FLOW-map read-face serves over it)");
   }
-  const p = await prepareNodeBoot(opts);
+  const p = await prepareNodeBoot(opts, "herm");
   // ── The WHO plane at a WAYFARER — recognition for a vessel that holds no face to lose ──
   // A Herm carries a Place DID and NO persona: there are no local human keys to steal at a crossroads. That
   // makes it the vessel with the least to risk and the most to gain from the board — it already recognises

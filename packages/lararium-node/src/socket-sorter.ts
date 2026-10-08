@@ -28,7 +28,8 @@
 import {
   classifySocket, answersStrangers, verifyLeafProof, presentedSigner, foldAntigenVerdicts, makeMultiSigQuorumVerifier,
   grantVerifiesAt, renewGrant, tokenVerifiesAt, issueGrant, lineageOf, claimDigest, carryRecordKey, HOSTING_GRANT_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
-  type FederationPosture, type PeerClass, type PresentedGrantArm, type PresentedTokenArm, type HostingGrant,
+  federationPostureFromDoc,
+  type FederationPosture, type PeerClass, type PresentedGrantArm, type PresentedTokenArm, type HostingGrant, type NexusDoc,
 } from "@lararium/mesh";
 import type { SocketSorter, SortInput, SortVerdict } from "./daemon-auth-gate.js";
 import { leafStandingFor, type CarriedNexusReading, type SocketBinding } from "./nexus-carriage.js";
@@ -51,10 +52,27 @@ export interface SocketSorterDeps {
   readonly readings: () => Promise<readonly CarriedNexusReading[]>;
   /** Does this vessel's own board count a carrier contract for this wire key (a faceless PLACE)? */
   readonly carrier:  (vesselKey: string) => boolean;
-  /** The posture of the vessel's own primary charter, read fresh (PRIVATE when absent or torn). */
+  /** The vessel's own place posture, read fresh (`ownPlacePosture`). */
   readonly primaryPosture: () => FederationPosture;
   /** The hosting store and leaf the walker arms read. Absent → no socket stands as a walker here. */
   readonly hosting?:       HostingSorterDeps;
+}
+
+/** The kind of place a vessel stands as: a hearth (a lararium, with a face) or a crossroads (a herm). */
+export type PlaceClass = "lararium" | "herm";
+
+/**
+ * ONE READER for a vessel's OWN place posture — the posture its gates fold beside every Nexus it carries.
+ *
+ *   · A LARARIUM reads its charter: OPEN only where the charter says so; an absent or torn charter reads PRIVATE,
+ *     because for a hearth an absent charter is a fault and a fault fails closed.
+ *   · A HERM holds no charter by CLASS — a waystone, never a broken lararium — so its absent charter is no fault to
+ *     fail closed on. A crossroads answers any proven peer that KNOCKED: the knock path derives from its gate key,
+ *     and only a peer handed that key can knock at all (a bare route draws no upgrade). Its SILENT/WAYMARK rung
+ *     governs the HTTP descriptor alone, never this.
+ */
+export function ownPlacePosture(placeClass: PlaceClass, charter: NexusDoc | null): FederationPosture {
+  return placeClass === "herm" ? "open" : federationPostureFromDoc(charter);
 }
 
 /** Is `leaf` held or unsettled on N's antigen? Either reads it out of the walker class. */

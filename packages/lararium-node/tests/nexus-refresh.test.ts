@@ -100,7 +100,7 @@ describe("nexus-refresh — the own-board report names this vessel's own island"
     try {
       writeNexusDoc(bags, seatedCharter(keys));
       const r = await runNexusRefresh({
-        storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
+        placeClass: "lararium", storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
         ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.boardRoot).toBe(NEXUS_PUBKEY.toLowerCase());
@@ -115,7 +115,7 @@ describe("nexus-refresh — the own-board report names this vessel's own island"
     try {
       writeNexusDoc(bags, { ...seatedCharter(keys), boardRoot: "f".repeat(64) } as never);
       const r = await runNexusRefresh({
-        storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
+        placeClass: "lararium", storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
         ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.boardRoot).toBe(NEXUS_PUBKEY.toLowerCase());
@@ -136,7 +136,7 @@ describe("nexus-refresh — POSTURE re-read (D2)", () => {
       // The operator's `lares nexus posture open` rewrites the disk charter beside the running node.
       writeNexusDoc(bags, seatedCharter(keys, "open"));
       const r = await runNexusRefresh({
-        storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
+        placeClass: "lararium", storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
         ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.posture).toBe("open");
@@ -147,7 +147,7 @@ describe("nexus-refresh — POSTURE re-read (D2)", () => {
     const holders = standHolders(bags);
     try {
       const r = await runNexusRefresh({
-        storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
+        placeClass: "lararium", storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
         ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.posture).toBe("private");
@@ -188,7 +188,7 @@ describe("nexus-refresh — out-of-process BOARD write (E2)", () => {
 
       // The refresh re-materializes the board off storage and re-folds → the victim now stands Kapae'd.
       const r = await runNexusRefresh({
-        storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
+        placeClass: "lararium", storageDir: storage, sealHome: bags, nexusPubkey: NEXUS_PUBKEY,
         ...holders.deps, antigen: holders.antigen, membership: holders.membership,
       });
       expect(r.antigenEntries).toBe(1);
@@ -250,7 +250,7 @@ describe("nexus-refresh — the deny board of EVERY carried Nexus refolds, and t
       sealHome: bags, repo: live, nexusPubkey: island,
       readCarried: () => readCarriedNexuses({ sealHome: bags, ownVesselKey, open: boards.open }),
     });
-    const deps = { storageDir: storage, sealHome: bags, nexusPubkey: island, ownVesselKey, repo: live, antigen, membership };
+    const deps = { placeClass: "lararium" as const, storageDir: storage, sealHome: bags, nexusPubkey: island, ownVesselKey, repo: live, antigen, membership };
     try {
       const gate = "ee".repeat(32);
       const nonce = "12".repeat(32);
