@@ -64,6 +64,9 @@ services:
       # `peers` filters empty away, so a lone vessel is a supported shape rather than a broken one.
       LAR_PEERS: "${LAR_A_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-}}"
       LAR_PUBLIC_URL: "http://lararium-a:8080"
+      # A LARARIUM DECLARES ITS ORIGINS. Its relay, oracle and Web surface share the one HTTP origin it serves;
+      # an undeclared Web origin refuses the boot (`origin composition`), as the staged harness declares too.
+      LAR_SAME_ORIGIN: "true"
       LAR_STAND_FACE: "alpha"                    # a FULL Lararium stands as a hearth — a face lifts it off the floor
       # OPERATOR A FOUNDS THE NEXUS, so it seats the founding kahu who tend it. Three chairs derive a
       # majority threshold of 2; a hearth with no cabal carries records it cannot govern.
@@ -96,6 +99,9 @@ services:
       LAR_PORT: "8080"
       LAR_PEERS: "${LAR_B_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-}}"
       LAR_PUBLIC_URL: "http://lararium-b:8080"
+      # A LARARIUM DECLARES ITS ORIGINS. Its relay, oracle and Web surface share the one HTTP origin it serves;
+      # an undeclared Web origin refuses the boot (`origin composition`), as the staged harness declares too.
+      LAR_SAME_ORIGIN: "true"
       LAR_STAND_FACE: "beta"
       # THE DIRECT DIAL — the member-read wire between two operators' hearths (`meme` sets both once A's
       # gate key is known; empty = no dial, the peerless shape every other reading keeps).
