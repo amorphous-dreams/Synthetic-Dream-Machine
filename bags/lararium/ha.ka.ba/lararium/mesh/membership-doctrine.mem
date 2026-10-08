@@ -202,11 +202,19 @@ subject stamp's nexus-scoped leaf and the gate's shape stand at
 !! The invite ~ a hosted grant the guest carries, burned by its host, about no one
 
 ''HOSPITALITY RIDES A HEARTH'' (operator-ruled). A hearth that carries a Nexus HOSTS walkers in it. The
-hearth publishes a ''hosting act'' on the Nexus's own carriage board — the per-Nexus public board every
-walker reaches (`hosting-act`): its own per-Nexus leaf signs the Nexus, its hosting public key, its hand-out
-cap and the act before it. The act's CID names the EPOCH. No hearth picks a random epoch id, because a
-fresh id per walker would tag each one. The act grants nothing and names only the hearth. The board stays
-deny-only. One key per act derives from the leaf seed and the act's link (`hosting-key`), with no counter.
+hearth publishes a ''hosting act'' on its own HOSTING DOC in the Nexus, one doc per (Nexus, hearth gate
+key) (`hosting-act`): its own per-Nexus leaf signs the Nexus, its hosting public key, its hand-out cap and
+the act before it. The act's CID names the EPOCH. No hearth picks a random epoch id, because a fresh id per
+walker would tag each one. A walker computes the doc from what its invite names — the Nexus and the gate key
+it pins — so every walker of one hearth reads the one doc, and the Nexus's carriers replicate it for the
+cross-check. The act grants nothing and names only the hearth. One key per act derives from the leaf seed
+and the act's link (`hosting-key`), with no counter.
+
+''THE CARRIAGE BOARD IS THE CARRIERS' LEDGER.'' The carriage board is the ALLOW-twin of the antigen: the
+carriers' contracts, their charter epoch, the quorum's countersigns, and the roll anchors — self-published
+infrastructure acts, never a guest. Its readership is the relation that holds contracts: the carriers, the
+kahu and the quorum. A walker never reads it, so the least-trusted relation never sees the Nexus's
+infrastructure graph; compartments outrank admission control.
 
 ''THE INVITE IS A TOKEN, THE STANDING IS A GRANT, BOTH KEYED.'' An invite is a POPRF token
 (RFC 9497, ristretto255; Privacy-Pass-shaped, not RFC 9578 wire-conformant) under the epoch's key and a
@@ -238,11 +246,20 @@ host no longer holds live, and a hand-out takes the newest, so a walker never ha
 ''WHO INVITED WHOM IS NOT COMPUTABLE.'' The blinded batch is unlinkable to the tokens it becomes, so the
 hearth learns that some walker it hosts minted some number of invites this epoch, and never whose invite
 was redeemed. The operator sees a redemption COUNT per epoch: a number, never a row. The CLI keeps the
-three verbs: `lares host` (the state and the count), `lares host roll`, `lares host invite`.
+three hosting verbs: `lares host` (the state and the count), `lares host roll`, `lares host invite`. While
+the vessel stands, each runs inside it, against the replica its walkers sync, so a roll reaches them with
+no restart; with no vessel standing, the CLI runs the same door and owns the store for that moment.
 
 ''A NODE MAY WALK'' (operator-ruled). The sorter sorts by PROVEN RELATION, never by device type, so a node
 vessel holding a grant sorts as a walker exactly like a browser leaf. Walking grants it no carry duty and
-leaves its own private Nexus untouched.
+leaves its own private Nexus untouched. A walker is a person, so it walks as the face its vessel WEARS:
+nothing is picked by roster order, and a vessel wearing no face walks nowhere. A node keeps its walk with
+three verbs: `lares walk` (where it walks, its standing there, its wallet's count), `lares walk take`
+(keep a carried invite; the vessel's hearth dial walks in on it) and `lares walk invite` (hand out the
+newest invite). A node carries none of its own documents at a hearth: it is its own durable store.
+''ONE HEARTH, OWED WIDER.'' A vessel holds one hearth dial, so it walks at one hearth: a take for a second
+hearth, beside a walk or a join dial that already stands, refuses aloud and writes nothing. Walking at
+several hearths at once is owed to one dial per (hearth, Nexus).
 
 ''ONE HOP, BURNED, REMEMBERED BY NO ONE'': the host's spent-set closes the invite, no wall clock bounds it,
 the inviter carries no liability for the guest, and no record anywhere — board, host or newcomer — chains
@@ -250,7 +267,7 @@ who invited whom, because that chain would read as a roster. Membership never co
 compartments outrank admission control.
 
 ''TWO LIMITS, NAMED.'' The ''cabal-of-one equivocation bound'': in a one-hearth Nexus the hearth relays its
-own board, so a forked hosting act cannot be detected until a second carrier holds the board. The
+own hosting doc, so a forked hosting act cannot be detected until a second carrier holds the doc. The
 ''social-inference limit'': in a small household the count, the timing and who is in the room can tell the
 host whose invite came in. The cryptography removes the record. It cannot remove what the host can see.
 
@@ -410,6 +427,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OSRgPK-zCDwrhyTBd-QoiGjsvD78Lcm2G-fO1GONMhU
+<<^ code="&#x0003;">>ni:///sha-256;Sw-PDn37TLnLX9obysrJAuvB-tMBTi4ezOyjDEyhHiM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -202,6 +202,9 @@ export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, Hand
 export { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
 export { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
 export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
+export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
+export type { WalkReading } from "./commands/walk.js";
+export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
   readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir,
   DEFAULT_HOSTING_CAP,

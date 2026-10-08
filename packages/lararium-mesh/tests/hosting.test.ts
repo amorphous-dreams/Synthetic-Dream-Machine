@@ -85,7 +85,7 @@ describe("the hosting act — the epoch is its CID", () => {
     expect(forks[0]!.actCids).toEqual([second.cid, hostingActCid(equivocal)].sort());
   });
 
-  test("the act rides the carriage board under its own key; the carriage reader never reads it as an act", async () => {
+  test("the act rides its hearth's hosting doc under its own key; the carriage reader never reads it as an act", async () => {
     const { first, second } = await epochs();
     const doc = emptyLarDoc();
     writeHostingAct(doc, first.act);

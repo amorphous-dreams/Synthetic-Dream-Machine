@@ -62,6 +62,18 @@ export function carriageDocUrl(nexusPubkey: string): AutomergeUrl {
 }
 
 /**
+ * ONE HEARTH'S HOSTING DOC in one Nexus — deterministic over (the Nexus, the hearth's gate key). It carries that
+ * hearth's signed hosting acts and nothing else: no carrier contract, no other hearth's act, no guest. A walker
+ * reaches exactly this doc beside the shelf, computed from what its invite already names — the Nexus and the gate
+ * key it pins — so every walker of one hearth reads the one doc and a hearth that showed two of them two epochs
+ * would sign a fork onto it. The Nexus's carriers replicate it for the same cross-check; the carriage board's
+ * contract ledger stays with the carriers, the kahu and the quorum who hold contracts.
+ */
+export function hostingDocUrl(nexusAid: string, hearthKey: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusAid.trim().toLowerCase())}#hosting/${hearthKey.trim().toLowerCase()}`);
+}
+
+/**
  * The Nexus's VOUCH board URL — deterministic, so every vessel folds the lineage from the SAME issued
  * invites. Sibling to the carriage + antigen boards under one nexus-pubkey: carriage says who carries,
  * antigen says who stands banned, and this says WHO VOUCHED FOR WHOM — the seed-rooted DAG the admission

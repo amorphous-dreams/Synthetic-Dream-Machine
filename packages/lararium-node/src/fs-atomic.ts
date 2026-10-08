@@ -14,7 +14,7 @@
  * carries the pid (so concurrent writers never share a temp path).
  */
 
-import { writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync } from "node:fs";
+import { writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, mkdirSync, chmodSync } from "node:fs";
 import { open, rename, rm } from "node:fs/promises";
 import { dirname } from "node:path";
 
@@ -73,4 +73,16 @@ export function atomicWriteFileSync(path: string, data: string | Uint8Array, tmp
     try { rmSync(tmp, { force: true }); } catch { /* the write's error is the one owed */ }
     throw err;
   }
+}
+
+/** The operator-only directory mode: a store holding bearer material is read by its own operator alone. */
+export const OWNER_ONLY_DIR_MODE = 0o700;
+
+/**
+ * Make `dir` (and any missing parents) and hold it at the owner-only mode — RE-MODING a directory that already
+ * stands, since `mkdir`'s mode applies only to a directory it creates.
+ */
+export function ownerOnlyDir(dir: string): void {
+  mkdirSync(dir, { recursive: true, mode: OWNER_ONLY_DIR_MODE });
+  chmodSync(dir, OWNER_ONLY_DIR_MODE);
 }

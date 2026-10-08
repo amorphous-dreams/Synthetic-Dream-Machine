@@ -38,7 +38,7 @@ import {
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
   type GenesisSeed,
-  takeInvite, walkIdentity, walkOver, popInvite, watchCarryNotice, carryDocument, fetchDocument, hostingActsFromBoard, hostingActCid, verifyHostingAct, carriageDocUrl,
+  takeInvite, walkIdentity, walkOver, popInvite, watchCarryNotice, carryDocument, fetchDocument, hostingActOn, hostingDocUrl,
   type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
@@ -616,9 +616,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   let walkLeaf: Awaited<ReturnType<typeof browserWalkLeaf>> | null = null;
   if (relayPin.dial && relayUrl && social.contactCard) {
     const base: LeafIdentity = { contactCard: social.contactCard, peerPubKey: vesselVerifyingKey, sign: ed25519SignerFromSeed(vesselSeed) };
-    walkLeaf = walk
-      ? await browserWalkLeaf(idbName, walk.nexusAid, (await loadBrowserActivePersona(idbName)) ?? FOUNDING_PERSONA_INDEX).catch(() => null)
-      : null;
+    // A walker is a person: it walks under the leaf of the face this vessel WEARS, never one picked for it. A
+    // vessel wearing no face walks nowhere, and says so.
+    const worn = walk ? await loadBrowserActivePersona(idbName) : undefined;
+    walkLeaf = walk && worn !== undefined ? await browserWalkLeaf(idbName, walk.nexusAid, worn).catch(() => null) : null;
+    if (walk && worn === undefined) console.warn("[lararium-browser] a walk record stands for this hearth, but this vessel wears no face — wear one to walk");
     const walking = walk && walkLeaf ? walkIdentity(base, walk, walkLeaf) : null;
     const leaf: LeafIdentity = walking ?? (social.deviceEdge ? { ...base, edge: social.deviceEdge } : base);
     const adapter = new LarWSClientAdapter({
@@ -626,14 +628,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     });
     relayAdapter = adapter;
     if (walking && walkLeaf && walk) {
-      // The wallet fills against the hearth's signed act for the grant's epoch, read off the Nexus's carriage
-      // board — the per-Nexus public board a walker reaches — and verified under the act's own leaf.
+      // The wallet fills against the hearth's signed act for the grant's epoch, read off that hearth's hosting doc
+      // — the doc the Nexus and the pinned gate key name, the one every walker of it reads — and verified under the
+      // act's own leaf.
+      const walkDoc = hostingDocUrl(walk.nexusAid, relayPin.gatePubKey);
       const actFor = async (epochCid: string): Promise<HostingAct | null> => {
-        const board = await materializeSharedLarDoc(repo, carriageDocUrl(walk.nexusAid), "board:carriage-contracts").catch(() => null);
-        for (const act of hostingActsFromBoard(board?.doc())) {
-          if (hostingActCid(act) === epochCid && (await verifyHostingAct(act))) return act;
-        }
-        return null;
+        const doc = await materializeSharedLarDoc(repo, walkDoc, "hosting").catch(() => null);
+        return doc ? hostingActOn(doc, epochCid, 15_000) : null;
       };
       walkOver({ transport: adapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, base, actFor });
       watchCarryNotice(adapter, walkStore, relayPin.gatePubKey);

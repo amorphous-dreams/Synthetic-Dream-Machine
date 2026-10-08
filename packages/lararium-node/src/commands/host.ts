@@ -5,9 +5,9 @@
  *   · `runHostState`  — per Nexus this hearth hosts in: the current and previous epochs (act CIDs), the cap, and
  *     how many tokens were redeemed this epoch and the last — counts, never a row.
  *   · `runHostRoll`   — sign the hearth's next hosting act in N with its per-Nexus leaf, keep the old act as the
- *     previous epoch, delete every older spent-set, and LAND the act on N's carriage board (the per-Nexus
- *     public/infra board a walker reads to check what its hearth published). Rolling twice kills every grant
- *     and token two epochs back — the hard roll is a roll done twice.
+ *     previous epoch, delete every older spent-set, and LAND the act on this hearth's HOSTING DOC in N
+ *     (`hostingDocUrl(N, gate key)`, the one doc its walkers read and N's carriers replicate). Rolling twice
+ *     kills every grant and token two epochs back — the hard roll is a roll done twice.
  *   · `runHostInvite` — mint a `host-invite` token at the current epoch, in process (the hearth IS the minter,
  *     so blindness against it is moot), and hand back the one carried string. Nothing is written: no record
  *     of the invite stays here to name whom it was for.
@@ -15,18 +15,22 @@
  * A hearth hosts through its FACE: the first leaf its held personas present to N signs the act and seeds the
  * act's key. A vessel with no face in N hosts no one there, and says so.
  *
+ * ONE STORE, ONE HOLDER. When the vessel stands, these doors run INSIDE it (`host-*` verbs over the local socket)
+ * and the roll lands on the running Repo — the replica its walkers sync — so a walker's next dial reads the act
+ * with no restart. When it does not stand, the CLI owns the store and opens it itself; either way one process
+ * holds the store at a time.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  carriageDocUrl, materializeSharedLarDoc, writeHostingAct, hostingActCid, mintHostToken, encodeInvite,
+  hostingDocUrl, materializeSharedLarDoc, writeHostingAct, hostingActCid, mintHostToken, encodeInvite,
   type HostingAct,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { primaryNexusAid, carriedSet, charterHomeFor } from "../carried-set.js";
-import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves } from "../nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import {
@@ -88,30 +92,36 @@ export interface HostRollResult {
   readonly epoch:    string;
   readonly previous: string | null;
   readonly cap:      number;
-  readonly boardUrl: string;
+  /** The hearth's hosting doc in N — the doc the act landed on. */
+  readonly docUrl:   string;
 }
 
-/** ROLL the hearth's hosting epoch in N and land the new act on N's carriage board. */
+/**
+ * ROLL the hearth's hosting epoch in N and land the new act on its hosting doc. `repo` is the running vessel's
+ * own Repo when the vessel stands (the act reaches its walkers' sync at once); absent, the door opens the store
+ * itself and flushes before it returns.
+ */
 export async function runHostRoll(opts: {
-  readonly sealHome: string; readonly storageDir?: string; readonly nexusAid?: string; readonly cap?: number;
+  readonly sealHome: string; readonly storageDir?: string; readonly nexusAid?: string; readonly cap?: number; readonly repo?: Repo;
 }): Promise<HostRollResult> {
   const storageDir = opts.storageDir ?? larDataDir();
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
-  const home = charterHomeFor(opts.sealHome, aid);
-  if (!home) throw new HostRefusal(`no charter for ${aid.slice(0, 18)}… stands here`);
+  if (!charterHomeFor(opts.sealHome, aid)) throw new HostRefusal(`no charter for ${aid.slice(0, 18)}… stands here`);
   const leafSeed = await hostingLeaf(aid);
-  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home });
-  const boardUrl = carriageDocUrl(island);
+  const docUrl = hostingDocUrl(aid, await loadVesselVerifyingKey());
   const { act, state } = await rollHosting({ storageDir, nexusAid: aid, leafSeed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}) });
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
-  try {
-    const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
+  const land = async (repo: Repo): Promise<void> => {
+    const handle = await materializeSharedLarDoc(repo, docUrl, "hosting");
     handle.change((d) => writeHostingAct(d, act));
     await repo.flush();
-  } finally {
-    await repo.shutdown().catch(() => { /* best-effort */ });
+  };
+  if (opts.repo) {
+    await land(opts.repo);
+  } else {
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+    try { await land(repo); } finally { await repo.shutdown().catch(() => { /* best-effort */ }); }
   }
-  return { nexusAid: aid, act, epoch: hostingActCid(act), previous: state.previous ? hostingActCid(state.previous) : null, cap: act.cap, boardUrl };
+  return { nexusAid: aid, act, epoch: hostingActCid(act), previous: state.previous ? hostingActCid(state.previous) : null, cap: act.cap, docUrl };
 }
 
 /** Mint the hearth's own invite at the current epoch in N: the one carried string, and nothing kept. */

@@ -4,8 +4,11 @@
  *
  * Proven:
  *   · `runHostRoll` signs the hosting act with the face's per-Nexus leaf, keeps the state, and LANDS the act on
- *     the Nexus's carriage board — the per-Nexus public/infra board a walker reads (Q1); a second roll chains
- *     from the first;
+ *     this hearth's hosting doc in the Nexus — the doc a walker reads — and never on the carriage board; a second
+ *     roll chains from the first;
+ *   · RED: with a running vessel's Repo handed in, the act lands on THAT replica at once, the replica its walkers
+ *     sync — no second Repo, no restart; CONTROL: with none, the door opens the store itself and the act is on
+ *     disk for the next opener;
  *   · `runHostInvite` mints a `host-invite` token at the current epoch: the carried string decodes, names this
  *     vessel's gate key and the Nexus, and REDEEMS through the vessel's own sorter, after which `runHostState`
  *     counts one redemption;
@@ -18,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, carriageDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
+  hex, genesisSealEpochCid, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
   tokenVerifiesAt, redeemClaim, signLeafProof, type NexusDoc, type Presented,
 } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
@@ -28,6 +31,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldNexusLeaves } from "../src/nexus-leaf.js";
 import { runHostRoll, runHostInvite, runHostState, HostRefusal } from "../src/commands/host.js";
+import { hearthDoorReactors } from "../src/hearth-door-verbs.js";
 import { readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
@@ -59,24 +63,44 @@ async function seatOwnCharter(): Promise<{ aid: string; doc: NexusDoc }> {
   return { aid: doc.sealEpochCid!, doc };
 }
 
-async function boardActs(aid: string): Promise<ReturnType<typeof hostingActsFromBoard>> {
+/** The hosting acts a doc carries, read by a fresh opener of the vessel's store. */
+async function docActs(url: Parameters<typeof materializeSharedLarDoc>[1]): Promise<ReturnType<typeof hostingActsFromBoard>> {
   const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-  try { return hostingActsFromBoard((await materializeSharedLarDoc(repo, carriageDocUrl(aid), "board:carriage-contracts")).doc()); }
+  try { return hostingActsFromBoard((await materializeSharedLarDoc(repo, url, "hosting")).doc()); }
   finally { await repo.shutdown().catch(() => {}); }
 }
 
 describe("lares host — roll, invite, state", () => {
-  it("Q1: a roll lands the signed act on the Nexus's carriage board; a second roll chains from the first", async () => {
+  it("a roll lands the signed act on this hearth's hosting doc, never the carriage board; a second roll chains from the first", async () => {
     const { aid } = await seatOwnCharter();
+    const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
     const first = await runHostRoll({ sealHome: sealHome() });
-    expect(first).toMatchObject({ nexusAid: aid, previous: null, boardUrl: carriageDocUrl(aid) });
+    expect(first).toMatchObject({ nexusAid: aid, previous: null, docUrl: doc });
     const leaf = (await heldNexusLeaves(aid))[0]!;
     expect(first.act.hearthLeaf).toBe(leaf.verifyingKey);
-    expect((await boardActs(aid)).map(hostingActCid)).toEqual([first.epoch]);
+    expect((await docActs(doc)).map(hostingActCid)).toEqual([first.epoch]);
+    expect(await docActs(carriageDocUrl(aid))).toEqual([]);
     const second = await runHostRoll({ sealHome: sealHome(), cap: 2 });
     expect(second.act.prev).toBe(first.epoch);
     expect(second.cap).toBe(2);
-    expect((await boardActs(aid)).map(hostingActCid).sort()).toEqual([first.epoch, second.epoch].sort());
+    expect((await docActs(doc)).map(hostingActCid).sort()).toEqual([first.epoch, second.epoch].sort());
+  });
+
+  it("RED: the door served inside a running vessel lands the act on its live replica at once; CONTROL: the direct door lands it on disk", async () => {
+    const { aid } = await seatOwnCharter();
+    const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
+    // The running vessel holds its store and already carries its hosting doc in its replica.
+    const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    try {
+      const held = await materializeSharedLarDoc(live, doc, "hosting");
+      const doors = hearthDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
+      const rolled = await doors["host-roll"]({}, {} as never);
+      expect(rolled["refused"]).toBeUndefined();
+      expect(hostingActsFromBoard(held.doc()).map(hostingActCid)).toEqual([rolled["epoch"]]);
+    } finally { await live.shutdown().catch(() => {}); }
+    // CONTROL: no vessel stands — the CLI's own door opens the store, and the next opener reads both acts.
+    const direct = await runHostRoll({ sealHome: sealHome() });
+    expect((await docActs(doc)).map(hostingActCid)).toContain(direct.epoch);
   });
 
   it("an invite the hearth mints redeems through its own sorter, and the state counts it", async () => {

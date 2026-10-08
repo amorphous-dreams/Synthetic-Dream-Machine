@@ -11,8 +11,8 @@
  * THE WALLET FILLS AT ONCE. Once a dial stands on a grant, the walker mints its whole allowance for that epoch in
  * ONE blind batch, never one invite on demand: mint time then says nothing about when an invite is handed out.
  * Each fill first drops every token of an epoch the hearth no longer holds live, and a hand-out takes the newest.
- * The batch is blinded against the public key of the hearth's signed act for that epoch — read off the Nexus's
- * board, the same act every walker reads — and kept durably before it is sent; the same batch is resent until
+ * The batch is blinded against the public key of the hearth's signed act for that epoch — read off the hearth's
+ * hosting doc, the same act every walker reads — and kept durably before it is sent; the same batch is resent until
  * the hearth's answer finalizes. An answer whose proof does not hold under that key finalizes nothing.
  *
  * REFUSE BEFORE DESTROY. The invite is written durably BEFORE the first dial, and it stays until a dial that
@@ -27,8 +27,10 @@ import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./auth-wire
 import { ed25519SignerFromSeed } from "./auth-wire.js";
 import {
   decodeInvite, encodeInvite, redeemClaim, isHostingGrant, allowance, hostingActCid, blindWalkerBatch, finalizeWalkerBatch,
+  hostingActsFromBoard, verifyHostingAct,
   type HostingAct, type HostingGrant, type InviteToken, type PendingMint,
 } from "./hosting.js";
+import type { LarDoc } from "./base-doc.js";
 
 /** The session kind a hearth pushes a walker's grant on. */
 export const HOSTING_GRANT_SESSION_KIND = "hosting/grant";
@@ -39,6 +41,9 @@ export const HOSTING_MINTED_SESSION_KIND = "hosting/minted";
 /** What a walker keeps for one hearth. */
 export interface WalkRecord {
   readonly nexusAid: string;
+  /** Where the hearth's relay answers (`ws(s)://host[:port]/ws`), when an invite named it — kept past the
+   *  invite's settling, so a vessel that dials by its own records knows where to dial again. */
+  readonly relay?:   string;
   /** The carried invite, kept until a grant-bearing dial stands. */
   readonly invite?:  string;
   /** The latest grant the hearth pushed. */
@@ -84,8 +89,9 @@ export async function takeInvite(store: WalkStore, carried: string): Promise<{ r
   const held = await store.read(gatePubKey);
   if (held?.grant && !held.invite) return { gatePubKey, record: held };          // already walking here
   // A walker walking back in keeps its grant until the new one lands, and its carriage receipts.
+  const relay = invite.relay ?? held?.relay;
   const record: WalkRecord = {
-    nexusAid: invite.nexusAid, invite: carried, ...(held?.grant ? { grant: held.grant } : {}),
+    nexusAid: invite.nexusAid, invite: carried, ...(relay ? { relay } : {}), ...(held?.grant ? { grant: held.grant } : {}),
     ...(held?.carried ? { carried: held.carried } : {}), ...(held?.atRisk ? { atRisk: held.atRisk } : {}),
   };
   await store.write(gatePubKey, record);
@@ -136,7 +142,7 @@ export function walkOver(opts: {
   readonly gatePubKey: string;
   readonly leaf:       WalkLeaf;
   readonly base:       LeafIdentity;
-  /** The hearth's signed hosting act named by an epoch, read off the Nexus's board. Absent → no wallet fills. */
+  /** The hearth's signed hosting act named by an epoch, read off the hearth's hosting doc. Absent → no wallet fills. */
   readonly actFor?:    (epochCid: string) => Promise<HostingAct | null>;
 }): () => void {
   const gate = opts.gatePubKey.toLowerCase();
@@ -216,6 +222,44 @@ export function walkOver(opts: {
     await opts.store.write(gate, { ...rest, wallet: [...(held.wallet ?? []), ...tokens.map((token) => ({ epoch: pending.epoch, token }))] });
   }
   return offSession;
+}
+
+/** The slice of a document handle `hostingActOn` reads: its current doc, and its change events. */
+export interface HostingDocHandle {
+  doc(): LarDoc | undefined;
+  on(event: "change", listener: () => void): unknown;
+  off(event: "change", listener: () => void): unknown;
+}
+
+/**
+ * The hearth's signed act for `epochCid`, read off its hosting doc — waiting up to `withinMs` for the doc to sync
+ * when the act has not landed yet. A walker's dial and the doc's sync start together, so the grant that names a
+ * fresh epoch can arrive before the act does; the wait is the walker's patience, never a causal reading. Only an
+ * act whose CID is the epoch and whose own leaf signs it is returned.
+ */
+export async function hostingActOn(handle: HostingDocHandle, epochCid: string, withinMs: number): Promise<HostingAct | null> {
+  const find = async (): Promise<HostingAct | null> => {
+    for (const act of hostingActsFromBoard(handle.doc())) {
+      if (hostingActCid(act) === epochCid && (await verifyHostingAct(act))) return act;
+    }
+    return null;
+  };
+  const now = await find();
+  if (now || withinMs <= 0) return now;
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (act: HostingAct | null): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      handle.off("change", onChange);
+      resolve(act);
+    };
+    const onChange = (): void => { void find().then((act) => { if (act) done(act); }); };
+    const timer = setTimeout(() => done(null), withinMs);
+    handle.on("change", onChange);
+    void find().then((act) => { if (act) done(act); });
+  });
 }
 
 /**

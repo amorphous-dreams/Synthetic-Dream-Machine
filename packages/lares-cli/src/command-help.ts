@@ -174,13 +174,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares host <roll | invite>",
     synopsis:
       "the hearth's HOSTING door. A hearth that carries a Nexus hosts walkers in it: `roll` publishes a signed " +
-      "hosting act on the Nexus's carriage board (its CID names the epoch; rolling twice is the hard roll that " +
+      "hosting act on this hearth's hosting doc in the Nexus (its CID names the epoch; rolling twice is the hard roll that " +
       "ends every grant and token before it), and `invite` mints one invite at the current epoch, printed as " +
       "the one `lar-invite:` string to carry. Bare `lares host` reads the live epochs, the cap and how many " +
-      "invites were redeemed — counts, never rows. Nothing about who was invited is kept anywhere.",
+      "invites were redeemed — counts, never rows. Nothing about who was invited is kept anywhere. While the " +
+      "vessel stands, each door runs inside it, so a roll reaches its walkers with no restart.",
     details: [
       "  (none)                                   per Nexus: the current and previous epoch, the cap, the redemption counts",
-      "  roll   [--nexus <aid>] [--cap <n>]       roll the hosting epoch; the act lands on the Nexus's carriage board",
+      "  roll   [--nexus <aid>] [--cap <n>]       roll the hosting epoch; the act lands on this hearth's hosting doc",
       "  invite [--nexus <aid>] [--relay <url>]   mint this hearth's own invite at the current epoch",
     ],
     examples: [
@@ -194,6 +195,29 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--cap <n>       roll: invites per walker lineage per epoch (whole number ≥ 1)",
       "--relay <url>   invite: the relay the newcomer dials, carried in the invite string",
     ],
+    meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
+  },
+
+  walk: {
+    usage: "usage: lares walk <take | invite>",
+    synopsis:
+      "this vessel's WALKING door. A vessel walks in at another hearth on an invite, as the face it wears: " +
+      "`take` keeps a carried `lar-invite:` string durably, and the vessel's hearth dial walks in on it; " +
+      "`invite` hands the newest invite out of the wallet, as one string to carry. Bare `lares walk` reads " +
+      "where this vessel walks — the Nexus, its standing there, and its wallet. A vessel walks at one hearth: " +
+      "a take for a second refuses and writes nothing. While the vessel stands, each door runs inside it.",
+    details: [
+      "  (none)                  per hearth: the Nexus, whether the invite still waits, the grant held, the wallet count",
+      "  take <lar-invite:…>     keep a carried invite; the hearth dial walks in on it as the worn face",
+      "  invite                  hand the newest invite out of the wallet",
+    ],
+    examples: [
+      "lares persona wear 0                     # a walker walks as the face it wears",
+      "lares walk take 'lar-invite:…'           # keep the invite a hearth handed you",
+      "lares walk                               # where this vessel walks, and how many invites it holds",
+      "lares walk invite                        # one invite to carry to one newcomer",
+    ],
+    flags: [],
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {

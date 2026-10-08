@@ -22,7 +22,7 @@
  */
 
 import { deriveNexusScopedKey, hexToBytes, PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh";
-import { listPersonaRoots, loadPersonaGroupRootSeed } from "./node-vessel-identity.js";
+import { listPersonaRoots, loadPersonaGroupRootSeed, makeNodeFsPersonaVault } from "./node-vessel-identity.js";
 
 /** One persona's leaf at one Nexus: the public half, and the 32-byte signing seed. */
 export interface NexusLeaf {
@@ -47,4 +47,17 @@ export async function heldNexusLeaves(nexusAid: string): Promise<readonly NexusL
   const leaves: NexusLeaf[] = [];
   for (const handleIndex of await listPersonaRoots()) leaves.push(await nexusLeafFor(handleIndex, nexusAid));
   return leaves;
+}
+
+/**
+ * The leaf the face this vessel WEARS presents to the Nexus named by `nexusAid` — or null when it wears none (an
+ * unset selector, or a worn index whose root this vessel does not hold). A walker is a person, so its leaf is
+ * the worn face's; nothing is picked by roster order, and a vessel that wears no face walks nowhere until the
+ * operator puts one on (`lares persona wear N`).
+ */
+export async function wornNexusLeaf(nexusAid: string): Promise<NexusLeaf | null> {
+  const vault = await makeNodeFsPersonaVault();
+  const worn = await vault.selector.load();
+  if (worn === undefined || !(await vault.hasRoot(worn))) return null;
+  return nexusLeafFor(worn, nexusAid);
 }

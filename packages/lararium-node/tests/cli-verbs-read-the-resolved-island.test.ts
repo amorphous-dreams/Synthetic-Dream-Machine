@@ -9,8 +9,9 @@
  * board-door call's ARGUMENT reads the RESOLVED island rather than a bare vessel-key variable.
  *
  * `nexus-contract.ts`'s carry-for reads a nym, not an island - EXCLUDED from the sweep by design (curing it by
- * the board recipe is a category error). The hosting door (`commands/host.ts`) lands its act on a per-Nexus
- * board, and is held to the same recipe: the board address reads the island resolved over N's charter home.
+ * the board recipe is a category error). The hosting door (`commands/host.ts`) addresses no board at all: it lands
+ * its act on the hearth's own HOSTING DOC, named by the Nexus AID and the hearth's gate key — the two things a
+ * walker's invite names — and it never writes the carriage board.
  *
  * Each site sits CORRECT for an un-climbed vessel by construction (`nodeNexusIsland` returns the own
  * key at the `own` notch) - a behavioural vector over a never-climbed vessel greens on the defect, so
@@ -86,11 +87,10 @@ describe("the 12 CLI-verb sites resolve the island the boot resolved, not the ra
     expect(code).not.toMatch(/carriageDocUrl\(\s*ownKey\s*\)/);
   });
 
-  test("the hosting door lands its act on the island resolved over N's charter home, never a bare vessel key", () => {
+  test("the hosting door lands its act on the hearth's hosting doc — the Nexus AID and its gate key — never a board", () => {
     const code = stripComments(read("commands/host.ts"));
-    expect(code).toMatch(/const island = nodeNexusIsland\(\{ ownVesselKey: await loadVesselVerifyingKey\(\), sealHome: home \}\);/);
-    expect(code).toMatch(/carriageDocUrl\(island\)/);
-    expect((code.match(/carriageDocUrl\(/g) ?? []).length, "one board door, one address").toBe(1);
+    expect(code).toMatch(/hostingDocUrl\(aid, await loadVesselVerifyingKey\(\)\)/);
+    expect(code, "the hosting door writes no carriage board").not.toMatch(/carriageDocUrl\(/);
     // The act is signed by the face's per-Nexus leaf, never the vessel key.
     expect(code).toMatch(/heldNexusLeaves\(/);
     expect(code).not.toMatch(/loadVesselSigningSeed/);

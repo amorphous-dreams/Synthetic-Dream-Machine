@@ -1145,8 +1145,9 @@ underneath this rite fails the witness rather than the operator.
 
 ''Welcome a user'' — a user WALKS: no contract, no quorum admit, and NO roster trace
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). A hearth that
-carries the Nexus HOSTS: `lares host roll` publishes its hosting act on the Nexus's carriage board, and
-`lares host invite` hands one `lar-invite:` string. A walker it hosts hands invites from its own wallet.
+carries the Nexus HOSTS: `lares host roll` publishes its hosting act on its own hosting doc in the Nexus,
+and `lares host invite` hands one `lar-invite:` string. A walker it hosts hands invites from its own
+wallet; a node walker takes one with `lares walk take` and hands one out with `lares walk invite`.
 The newcomer redeems the invite once at the host's own gate, the host burns it in its per-epoch spent-set
 and pushes a keyed grant, and no who-invited-whom is recorded or computable anywhere
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). `lares host` reads the act,
@@ -1494,6 +1495,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XORFPIMWnlDBpt9M5vdjaZ3HQKgmAmGCwXCTlYn0jQM
+<<^ code="&#x0003;">>ni:///sha-256;91xA-kW3d_hXjEFUGHS_tZDMImtIkt_VaKc5oeTejV4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -7,8 +7,11 @@
  *     UNFORGEABLE — shares FREELY too (full device sync; the operator's own fleet carries every private plane);
  *   · every other WS peer — contracted, walker, stranger, or one with no class — rides a singleton relay ring
  *     over the deterministic federatable shelf (crossroads · WHO · kapae-antigen · boards). A WALKER also reaches
- *     the carriage board of the Nexus its grant names — the public/infra board its hearth's hosting act rides,
- *     which it reads to check what the hearth published (`walkerBoard`). The CARRY-SPLIT lets
+ *     its hearth's HOSTING DOC in the Nexus its grant names — the doc that hearth's hosting acts ride, which it
+ *     reads to check what the hearth published (`walkerBoard`) — and NEVER the carriage board: the carrier set is
+ *     a contract ledger, read by those who hold contracts, so the least-trusted relation never sees the
+ *     Nexus's infrastructure graph. A CONTRACTED peer (a carrier) also replicates this hearth's own hosting docs
+ *     (`hostingDocs`) for the cross-check. The CARRY-SPLIT lets
  *     a peer the nexus-doc consult names a MEMBER (a held, presented admit) blind-transit a PROVABLY-SEALED
  *     private plane (carry the ciphertext, never the read-cap). The read-lane denial stays absolute.
  *
@@ -48,8 +51,12 @@ export interface SelfSlotShareInput {
   readonly peerId: string;
   /** The doc under decision; `undefined` (a gated relay peer with no doc id) → deny-by-default. */
   readonly documentId: DocumentId | undefined;
-  /** A walker's own Nexus carriage board — the one doc beyond the shelf a walker reaches. */
+  /** A walker's hearth's hosting doc in its Nexus — the one doc beyond the shelf a walker reaches. */
   readonly walkerBoard?: DocumentId | null;
+  /** This vessel's own carriage board — on the shelf for every other class, withheld from a walker. */
+  readonly carriageBoard?: DocumentId | null;
+  /** This hearth's own hosting docs — a contracted peer replicates them. */
+  readonly hostingDocs?: ReadonlySet<DocumentId>;
 }
 
 /**
@@ -60,7 +67,12 @@ export interface SelfSlotShareInput {
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
   if (input.hasWsSocket && input.peerClass !== "same-operator") {
     if (input.peerClass === "walker" && input.walkerBoard && input.documentId === input.walkerBoard) {
-      // Its Nexus's carriage board is public/infra; the antigen still draws Mu on a Kapae'd presenter.
+      // Its hearth's hosting doc names only that hearth's acts; the antigen still draws Mu on a Kapae'd presenter.
+      return carryContractShareDecision(NO_RELAY_PEERS, null, input.antigenRing, null, input.peerId, input.documentId);
+    }
+    // A walker never reads the contract ledger, even where the shelf would carry it.
+    if (input.peerClass === "walker" && input.carriageBoard && input.documentId === input.carriageBoard) return false;
+    if (input.peerClass === "contracted" && input.documentId && input.hostingDocs?.has(input.documentId)) {
       return carryContractShareDecision(NO_RELAY_PEERS, null, input.antigenRing, null, input.peerId, input.documentId);
     }
     // FAIL-CLOSED at the boot edge: a gated peer whose federatable classifier has not yet stood gets a

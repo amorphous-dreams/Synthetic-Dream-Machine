@@ -2,7 +2,7 @@
  * hosting-store — what a hearth keeps to host walkers in a Nexus: its current and previous hosting acts, and
  * one spent-set per live epoch. Nothing else.
  *
- * WHAT IT HOLDS, per Nexus it hosts in (`<storage>/hosting/<aid digest>/`):
+ * WHAT IT HOLDS, per Nexus it hosts in (`<storage>/hosting/<aid digest>/`, owner-only like the root above it):
  *   · `state.json` — the current hosting act and the previous one (or none). Both acts are public: each stands
  *     on the Nexus's carriage board too, and the current act names the allowance cap.
  *   · `spent-<epoch>` — append-only lines, fsynced before any answer:
@@ -29,13 +29,13 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { mkdirSync, readFileSync, readdirSync, rmSync, openSync, writeSync, fsyncSync, closeSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, rmSync, openSync, writeSync, fsyncSync, closeSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import {
   sha256HexSync, isHostingAct, hostingActCid, hostingEpochOf, mintHostingAct,
   type HostingAct, type HostingEpoch,
 } from "@lararium/mesh";
-import { atomicWriteFileSync } from "./fs-atomic.js";
+import { atomicWriteFileSync, ownerOnlyDir } from "./fs-atomic.js";
 
 /** The allowance cap a hearth hosts under until its operator names another. */
 export const DEFAULT_HOSTING_CAP = 3;
@@ -52,6 +52,14 @@ export interface HostingState {
 /** The directory one Nexus's hosting state lives in. */
 export function hostingDir(storageDir: string, nexusAid: string): string {
   return join(storageDir, "hosting", sha256HexSync(nexusAid.trim().toLowerCase()).slice(0, 32));
+}
+
+/** Stand one Nexus's hosting directory, and the `hosting/` root above it, at the owner-only mode. */
+export function standHostingDir(storageDir: string, nexusAid: string): string {
+  ownerOnlyDir(join(storageDir, "hosting"));
+  const dir = hostingDir(storageDir, nexusAid);
+  ownerOnlyDir(dir);
+  return dir;
 }
 
 /** Read the hosting state for N, or null where this hearth hosts nowhere in N (or the state is torn). */
@@ -87,8 +95,7 @@ export async function rollHosting(opts: {
   const cap = opts.cap ?? prior?.current.cap ?? DEFAULT_HOSTING_CAP;
   const minted = await mintHostingAct({ leafSeed: opts.leafSeed, nexusAid: opts.nexusAid, prev: prior ? hostingActCid(prior.current) : null, cap });
   const state: HostingState = { current: minted.act, previous: prior?.current ?? null, depth: (prior?.depth ?? 0) + 1 };
-  const dir = hostingDir(opts.storageDir, opts.nexusAid);
-  mkdirSync(dir, { recursive: true });
+  const dir = standHostingDir(opts.storageDir, opts.nexusAid);
   atomicWriteFileSync(join(dir, "state.json"), JSON.stringify(state));
   const live = new Set([`spent-${minted.cid}`, ...(state.previous ? [`spent-${hostingActCid(state.previous)}`] : [])]);
   for (const name of readdirSync(dir)) {
@@ -132,7 +139,7 @@ async function burn(path: string, tag: "n" | "m", key: string, value: string): P
 export function spendToken(opts: {
   readonly storageDir: string; readonly nexusAid: string; readonly epochCid: string; readonly n: string; readonly claimDigest: string;
 }): Promise<SpendOutcome> {
-  mkdirSync(hostingDir(opts.storageDir, opts.nexusAid), { recursive: true });
+  standHostingDir(opts.storageDir, opts.nexusAid);
   return burn(spentPath(opts.storageDir, opts.nexusAid, opts.epochCid), "n", opts.n.toLowerCase(), opts.claimDigest.toLowerCase());
 }
 
@@ -140,7 +147,7 @@ export function spendToken(opts: {
 export function spendMintMarker(opts: {
   readonly storageDir: string; readonly nexusAid: string; readonly epochCid: string; readonly marker: string; readonly batchDigest: string;
 }): Promise<SpendOutcome> {
-  mkdirSync(hostingDir(opts.storageDir, opts.nexusAid), { recursive: true });
+  standHostingDir(opts.storageDir, opts.nexusAid);
   return burn(spentPath(opts.storageDir, opts.nexusAid, opts.epochCid), "m", opts.marker.toLowerCase(), opts.batchDigest.toLowerCase());
 }
 

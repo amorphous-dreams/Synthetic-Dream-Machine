@@ -230,10 +230,10 @@ export type {
   HostingAct, HostingEpoch, HostingFork, InvitePurpose, InviteToken, HostingGrant, HostingInvite, PendingMint, PendingMintItem,
 } from "./hosting.js";
 export {
-  takeInvite, walkArm, walkIdentity, walkOver, popInvite,
+  takeInvite, walkArm, walkIdentity, walkOver, popInvite, hostingActOn,
   HOSTING_GRANT_SESSION_KIND, HOSTING_MINT_SESSION_KIND, HOSTING_MINTED_SESSION_KIND,
 } from "./walk-client.js";
-export type { WalkRecord, WalkStore, WalkLeaf, WalkTransport, CarryReceipt } from "./walk-client.js";
+export type { WalkRecord, WalkStore, WalkLeaf, WalkTransport, CarryReceipt, HostingDocHandle } from "./walk-client.js";
 export {
   carryDocument, fetchDocument, openCarried, watchCarryNotice,
   HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,

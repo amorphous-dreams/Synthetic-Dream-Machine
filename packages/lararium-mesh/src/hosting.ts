@@ -7,13 +7,13 @@
  * A hearth that hosts in Nexus N signs a HOSTING ACT with its per-Nexus leaf: `{N, hearthLeaf, oprfPub,
  * prev, cap}` — `cap` the most invites one lineage may mint in an epoch, public so a walker reads its own
  * allowance off the act. The act's CID IS the hosting EPOCH — never a counter and never an id the hearth picks alone. The act
- * lands on N's carriage board, the per-Nexus board every carrier of N federates as public/infra, so every
- * walker reads the one act the hearth published. A hearth that showed two walkers two different epochs would
- * have to sign two acts on one replicated board; per-board fork reporting surfaces that. In a one-hearth
- * Nexus the hearth relays the board itself, so a forked act is undetectable by its own walkers (the
- * CABAL-OF-ONE equivocation bound): unlinkability holds against a semi-honest hearth and is detectable, never
- * prevented, against an equivocating one. The act grants nothing and names no one but the hearth: the board
- * stays deny-only.
+ * lands on the hearth's own HOSTING DOC in N (`hostingDocUrl(N, gate key)`), which every walker of that hearth
+ * reads and every carrier of N replicates, so every walker reads the one act the hearth published. A hearth that
+ * showed two walkers two different epochs would have to sign two acts onto one replicated doc; per-doc fork
+ * reporting surfaces that. In a one-hearth Nexus the hearth relays the doc itself, so a forked act is
+ * undetectable by its own walkers (the CABAL-OF-ONE equivocation bound): unlinkability holds against a
+ * semi-honest hearth and is detectable, never prevented, against an equivocating one. The act grants nothing and
+ * names no one but the hearth; it never rides the carriage board, whose contract ledger a walker never reads.
  *
  * ── ONE KEY PER ACT ────────────────────────────────────────────────────────────────────────────────
  * The act's OPRF key is DERIVED, never stored: RFC 9497 POPRF `DeriveKeyPair(seed = the hearth's leaf seed,
@@ -58,7 +58,6 @@ import * as ed25519 from "@noble/ed25519";
 import { base64UrlDecode, base64UrlEncode, canonicalJsonBytes, hex, hexToBytes, sha256HexBytesSync, webGetRandomValues } from "./crypto.js";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
-import { CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 import {
   HOSTING_ACT_DOMAIN, HOSTING_CARRY_DOMAIN, HOSTING_GRANT_DOMAIN, HOSTING_KEY_DOMAIN, HOSTING_SPEND_DOMAIN, HOSTING_TOKEN_DOMAIN,
   WALK_CARRY_SEAL_INFO,
@@ -168,20 +167,20 @@ export async function mintHostingAct(parts: {
   return { act, cid: hostingActCid(act), secretKey: kp.secretKey };
 }
 
-// ── ON THE BOARD ──────────────────────────────────────────────────────────────────────────────────
+// ── ON THE HOSTING DOC ────────────────────────────────────────────────────────────────────────────
 
-/** The tiddler key a hosting act rides under on N's carriage board — keyed by its CID, so acts accrete. */
+/** The tiddler key a hosting act rides under on its hearth's hosting doc — keyed by its CID, so acts accrete. */
 export function hostingActKey(act: HostingAct): string {
-  return `${CARRIAGE_ENTRY_PREFIX}hosting/${hostingActCid(act)}`;
+  return `hosting/${hostingActCid(act)}`;
 }
 
-/** Land a hosting act on a board draft. Call INSIDE a `handle.change()` callback. */
+/** Land a hosting act on a hosting-doc draft. Call INSIDE a `handle.change()` callback. */
 export function writeHostingAct(draft: LarDoc, act: HostingAct): void {
   const key = hostingActKey(act);
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(act) }, hostingActCid(act));
 }
 
-/** Every well-formed hosting act a board carries, by `hearthLeaf` when named. Shape only; extra fields drop. */
+/** Every well-formed hosting act a hosting doc carries, by `hearthLeaf` when named. Shape only; extra fields drop. */
 export function hostingActsFromBoard(doc: LarDoc | undefined | null, hearthLeaf?: string): HostingAct[] {
   const tiddlers = doc?.tiddlers;
   if (!tiddlers) return [];

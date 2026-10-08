@@ -21,11 +21,10 @@ import {
   exportSealedArchive, repairSplitKek, weakPassphraseWarning,
   ARCHIVE_PASSPHRASE_ENV,
 } from "@lararium/node";
-import { vesselDid, larIdentityDir } from "../env.js";
+import { larIdentityDir } from "../env.js";
 import { discordianReading } from "@lararium/node";
-import { runVerb } from "../verb-call.js";
+import { throughStoreDoor } from "../store-door.js";
 import { udsAlive } from "../local-connector.js";
-import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { canPromptSecret, promptSecret, promptSecretConfirmed } from "../prompt-secret.js";
@@ -171,22 +170,6 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
   }
 }
 
-/** Route a mutating verb through the daemon (up) or the direct core op (down), returning its payload. */
-async function routed(
-  daemonUp: boolean,
-  verb: string,
-  vargs: Record<string, unknown>,
-  direct: () => Record<string, unknown>,
-): Promise<{ output: Record<string, unknown>; via: "daemon" | "direct" }> {
-  if (daemonUp) {
-    const did = await vesselDid();
-    const r = await runVerb(verb, vargs, did, { timeoutMs: 30_000 });
-    if (r.status === "error") throw new Error(r.errorMessage ?? "verb failed");
-    return { output: summaryOutput(r) ?? {}, via: "daemon" };
-  }
-  return { output: direct(), via: "direct" };
-}
-
 async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   // --check probes a passphrase to detect a split-KEK (the carriers disagree on it).
   let probe: string | undefined;
@@ -194,7 +177,7 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
     probe = process.env[ARCHIVE_PASSPHRASE_ENV] ?? (canPromptSecret() ? await promptSecret("passphrase to probe: ") : undefined);
   }
   const vargs: Record<string, unknown> = probe ? { probe } : {};
-  const { output, via } = await routed(daemonUp, "vault-status", vargs, () => ({ ...archiveSealStatus(probe ? { probe } : {}) }));
+  const { output, via } = await throughStoreDoor({ verb: "vault-status", args: vargs, direct: () => ({ ...archiveSealStatus(probe ? { probe } : {}) }), daemonUp });
   emit(args, {
     ok: true,
     data: { ...output, via },
@@ -255,7 +238,7 @@ async function vaultSeal(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   // vault opens on exactly what the operator typed, and the day rides beside it as a record.
   const pass    = secret;
   const erisian = discordianReading();
-  const { output, via } = await routed(daemonUp, "vault-seal", { passphrase: pass }, () => ({ ...sealArchiveWithPassphrase(pass) }));
+  const { output, via } = await throughStoreDoor({ verb: "vault-seal", args: { passphrase: pass }, direct: () => ({ ...sealArchiveWithPassphrase(pass) }), daemonUp });
   const sealed = (output["sealed"] ?? []) as string[];
 
   // THE STAMP RECORDS A SEAL THAT HAPPENED, never one that was attempted. Written ahead of the call it
@@ -289,7 +272,7 @@ async function vaultRotate(args: ParsedArgs, daemonUp: boolean): Promise<number>
   const oldP = await currentPass(args, "current passphrase");
   const newP = await newPass(args, "new passphrase");
   warnIfWeak(newP);
-  const { output, via } = await routed(daemonUp, "vault-rotate", { old: oldP, new: newP }, () => ({ ...rotateArchivePassphrase(oldP, newP) }));
+  const { output, via } = await throughStoreDoor({ verb: "vault-rotate", args: { old: oldP, new: newP }, direct: () => ({ ...rotateArchivePassphrase(oldP, newP) }), daemonUp });
   emit(args, {
     ok: true, data: { ...output, via },
     human: () => console.log(`rotated ${((output["rotated"] ?? []) as string[]).join(", ") || "(none)"} (${via})`),
@@ -305,7 +288,7 @@ async function vaultExport(args: ParsedArgs, daemonUp: boolean): Promise<number>
   // The BACKUP seal passphrase (a fresh choice for the portable file) — double-entry at a TTY.
   const pass = await newPass(args, "backup passphrase");
   warnIfWeak(pass);
-  const { output, via } = await routed(daemonUp, "vault-export", { passphrase: pass, dest, force }, () => ({ ...exportSealedArchive(pass, dest, force) }));
+  const { output, via } = await throughStoreDoor({ verb: "vault-export", args: { passphrase: pass, dest, force }, direct: () => ({ ...exportSealedArchive(pass, dest, force) }), daemonUp });
   emit(args, {
     ok: true, data: { ...output, via },
     human: () => console.log(`exported sealed backup → ${output["dest"]} (${output["bytes"]} bytes, ${via})`),
@@ -317,7 +300,7 @@ async function vaultRepair(args: ParsedArgs, daemonUp: boolean): Promise<number>
   // The lagging carrier opens under the OPEN passphrase; re-seal it under the SEAL (target) passphrase.
   const openP = await currentPass(args, "passphrase that opens the LAGGING carrier");
   const sealP = await newPass(args, "target passphrase (opens the other carrier)");
-  const { output, via } = await routed(daemonUp, "vault-repair", { openPass: openP, sealPass: sealP }, () => ({ ...repairSplitKek(openP, sealP) }));
+  const { output, via } = await throughStoreDoor({ verb: "vault-repair", args: { openPass: openP, sealPass: sealP }, direct: () => ({ ...repairSplitKek(openP, sealP) }), daemonUp });
   emit(args, {
     ok: true, data: { ...output, via },
     human: () => {
