@@ -226,3 +226,41 @@ describe("the one presenter — the dialer derives its presentation from a board
     expect(await presentOff([])).toBeNull();
   });
 });
+
+describe("one relation across every arm — the grant and token arms prove under their own leaf", () => {
+  const grantArm = async (): Promise<Presented> => ({
+    kind: "grant",
+    grant: { nexusAid: "epoch0-" + "a".repeat(64), leaf: await pubOf(SEEDS.leaf), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) },
+  });
+  const tokenArm = async (): Promise<Presented> => ({
+    kind: "token", nexusAid: "epoch0-" + "a".repeat(64),
+    token: { purpose: "host-invite", n: "ab".repeat(32), y: "cd".repeat(64) }, claim: "12".repeat(32), leaf: await pubOf(SEEDS.leaf),
+  });
+  const sign = async (arm: Presented, signer: Uint8Array) => ({
+    ...arm, leafProof: await signLeafProof({ presented: arm, nonce: NONCE, gatePubKey: await pubOf(SEEDS.gate), vesselKey: await pubOf(SEEDS.vessel), sign: signerOf(signer) }),
+  }) as Presented;
+  const holds = async (arm: Presented) => verifyLeafProof({ presented: arm, nonce: NONCE, gatePubKey: await pubOf(SEEDS.gate), vesselKey: await pubOf(SEEDS.vessel) });
+
+  test("each arm's proof verifies under its own leaf, and under no other hand", async () => {
+    for (const arm of [await grantArm(), await tokenArm()]) {
+      expect(isLarAuthMsg({ type: "lar:auth", contactCard: "{}", nonce: NONCE, leafNonce: "ef".repeat(32), sig: "00", presented: await sign(arm, SEEDS.leaf) })).toBe(true);
+      expect(await holds(await sign(arm, SEEDS.leaf))).toBe(true);
+      expect(await holds(await sign(arm, SEEDS.root))).toBe(false);
+    }
+  });
+
+  test("a proof lifted from one arm onto another never verifies — the arms' CIDs differ by kind", async () => {
+    const grant = await sign(await grantArm(), SEEDS.leaf);
+    const token = await tokenArm();
+    expect(await holds({ ...token, leafProof: grant.leafProof } as Presented)).toBe(false);
+  });
+
+  test("a malformed grant or token arm fails the wire guard", async () => {
+    const base = { type: "lar:auth", contactCard: "{}", nonce: NONCE, leafNonce: "ef".repeat(32), sig: "00" } as const;
+    const g = await grantArm() as Extract<Presented, { kind: "grant" }>;
+    const t = await tokenArm() as Extract<Presented, { kind: "token" }>;
+    expect(isLarAuthMsg({ ...base, presented: { ...g, grant: { ...g.grant, survived: -1 } } })).toBe(false);
+    expect(isLarAuthMsg({ ...base, presented: { ...t, token: { ...t.token, purpose: "anyone" } } })).toBe(false);
+    expect(isLarAuthMsg({ ...base, presented: { ...t, claim: "zz" } })).toBe(false);
+  });
+});

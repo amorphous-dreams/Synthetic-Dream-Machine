@@ -8,9 +8,9 @@
  * raw source would match the prose and red over code that is already correct), then assert every
  * board-door call's ARGUMENT reads the RESOLVED island rather than a bare vessel-key variable.
  *
- * `boot-invite-burn.ts` calls NO board door (the invite carries its inviter's standing, and the spend reads
- * the Nexus material its caller hands it) and `nexus-contract.ts`'s carry-for reads a nym, not an island -
- * both EXCLUDED from the sweep by design (curing them by the board recipe is a category error).
+ * `nexus-contract.ts`'s carry-for reads a nym, not an island - EXCLUDED from the sweep by design (curing it by
+ * the board recipe is a category error). The hosting door (`commands/host.ts`) lands its act on a per-Nexus
+ * board, and is held to the same recipe: the board address reads the island resolved over N's charter home.
  *
  * Each site sits CORRECT for an un-climbed vessel by construction (`nodeNexusIsland` returns the own
  * key at the `own` notch) - a behavioural vector over a never-climbed vessel greens on the defect, so
@@ -86,12 +86,13 @@ describe("the 12 CLI-verb sites resolve the island the boot resolved, not the ra
     expect(code).not.toMatch(/carriageDocUrl\(\s*ownKey\s*\)/);
   });
 
-  test("CONTROL - boot-invite-burn.ts calls NO board door and reads NO vessel key (the inviter's face signs)", () => {
-    const code = stripComments(read("boot-invite-burn.ts"));
-    // No board-door call anywhere in this file.
-    expect(code).not.toMatch(/BoardDocUrl\(|kapaeAntigenDocUrl\(|carriageDocUrl\(/);
-    // The invite is signed by the inviter's per-Nexus leaf, so the vessel key never enters it.
-    expect(code).not.toMatch(/loadVesselVerifyingKey|loadVesselSigningSeed/);
-    expect(code).toMatch(/nexusLeafFor\(/);
+  test("the hosting door lands its act on the island resolved over N's charter home, never a bare vessel key", () => {
+    const code = stripComments(read("commands/host.ts"));
+    expect(code).toMatch(/const island = nodeNexusIsland\(\{ ownVesselKey: await loadVesselVerifyingKey\(\), sealHome: home \}\);/);
+    expect(code).toMatch(/carriageDocUrl\(island\)/);
+    expect((code.match(/carriageDocUrl\(/g) ?? []).length, "one board door, one address").toBe(1);
+    // The act is signed by the face's per-Nexus leaf, never the vessel key.
+    expect(code).toMatch(/heldNexusLeaves\(/);
+    expect(code).not.toMatch(/loadVesselSigningSeed/);
   });
 });

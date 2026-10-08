@@ -38,10 +38,11 @@ import {
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
   type GenesisSeed,
-  type BootInvite, type BootInvitePolicy, type InviteStandingContext,
+  takeInvite, walkIdentity, walkOver, popInvite, watchCarryNotice, carryDocument, fetchDocument, hostingActsFromBoard, hostingActCid, verifyHostingAct, carriageDocUrl,
+  type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
-import { runBrowserBootInviteSpend }         from "./browser-boot-invite-burn.js";
+import { browserWalkStore, browserWalkLeaf } from "./browser-walk.js";
 import {
   MemoryTiddlerStore,
   selectActiveWikiSlug,
@@ -197,30 +198,15 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   admit?:           CarriedAdmitPayload;
   /**
-   * A carried invite (membership-doctrine #the-invite) — signed by a standing face's per-Nexus leaf, spent
-   * ONCE on boot to cross into the Nexus. CARRIED, never fetched (a URL fragment / paste / QR that never
-   * reaches a server); its seal and its inviter's standing verify OFFLINE. WITHHOLD-NEVER-FORGE: a garbled /
-   * absent / unstanding / already-spent invite does NOT throw and does NOT cross — the vessel founds its own group and
-   * stands at the ANON FLOOR (a correct outcome, never an attack). Single-use is burned LOCALLY (IndexedDB;
-   * NO federated burn-registry). ABSENT (with no invite-only policy) → the vessel crosses on the open setting
-   * exactly as today (the relay/who caps compose when a relay is configured).
+   * A carried hosting invite (`lar-invite:…`, membership-doctrine #/the-invite) — a bearer token minted by the
+   * hearth at `relayGatePubKey`, CARRIED and never fetched (paste, QR, URL fragment). It is written to this
+   * vessel's own IndexedDB BEFORE any dial and redeemed at that hearth's OWN gate, which burns it; the grant
+   * the hearth pushes back is kept, and the invite settles once a dial presenting that grant stands. Later
+   * boots present the grant. An invite for another gate, or a torn string, is no invite. ABSENT, a vessel
+   * holding a grant for the dialed hearth walks on it; holding none, it crosses only as its own credentials
+   * stand there (a fleet edge), and otherwise meets silence and stays at its own floor.
    */
-  bootInvite?:      BootInvite | null;
-  /** The boot-invite policy — `invite-only` REQUIRES a sealed, unspent invite from a standing face (else anon
-   *  floor); `open` crosses with no invite. DEFAULT: `invite-only` when a `bootInvite` is carried, else `open`
-   *  (so today's un-gated crossing is unchanged unless the operator opts into the gate). */
-  bootInvitePolicy?: BootInvitePolicy;
-  /** The Nexus pubkey a carried invite names this vessel's crossing into — the `explicitScope` rung of the
-   *  Nexus-identity gradient, and nothing else. Provisioned OUT-OF-BAND. The invite's `sig` verifies against
-   *  the INVITER's per-Nexus face (`inviterKey`), never against this key. Absent → the gradient reads the
-   *  anchor gate key, then this vessel's own key. */
-  inviteNexusPubkey?: string;
-  /** The genesis AID of the Nexus a carried invite must name. Provisioned OUT-OF-BAND, never read off the
-   *  invite itself. Absent → no invite binds, so an invite-only boot withholds. */
-  inviteNexusAid?: string;
-  /** The Nexus material an inviter's standing is read against (the kahu quorum's seats, deny board,
-   *  antigen). Provisioned OUT-OF-BAND. Absent → no inviter can show standing, so an invite-only boot withholds. */
-  inviteStanding?: InviteStandingContext;
+  walkInvite?:      string;
   /** URL of the compiled browser daemon island Worker script. */
   daemonWorkerUrl?: URL;
   /**
@@ -272,13 +258,26 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
   /**
-   * True → this boot CROSSED into the Nexus (an OPEN policy, or a sealed unspent invite spent this boot).
-   * False → the vessel WITHHELD the crossing and founded its own group at the ANON FLOOR (garbled / absent /
-   * expired / already-spent invite under an invite-only policy). Either way the vessel booted — a withhold is
-   * a correct outcome, never a throw — and on a withhold NO relay/who cap composed, so NO federated record was
-   * written (the traceless proof).
+   * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
+   * (a fleet device, a contracted member, or a walker); false while it has not — never pinned, unanswered, or
+   * met with silence. Either way the vessel booted: standing at its own floor is a correct outcome.
    */
-  admittedToNexus: boolean;
+  crossed: () => boolean;
+  /**
+   * Hand out one invite from this walker's wallet at the hearth it dials — the oldest unspent token, removed
+   * before it returns, as the one `lar-invite:` string to carry. Null when the wallet holds none (or this vessel
+   * walks nowhere). Nothing records whom it went to.
+   */
+  handOutInvite: () => Promise<string | null>;
+  /**
+   * Hand the hearth this walker dials one document to CARRY, sealed under the walker's own carry secret: the
+   * hearth holds ciphertext it cannot open, and the receipt stays on this device. Carriage is a convenience the
+   * hearth may reclaim under its own pressure (with notice first) — this vessel's own PersonaGroup holds the
+   * durable copy. Null when this vessel walks nowhere or the hearth answers nothing in `withinMs`.
+   */
+  carryAtHearth: (plaintext: Uint8Array, withinMs: number) => Promise<CarryOutcome>;
+  /** Fetch a carried document back by its cid and open it; null when the hearth answers nothing in `withinMs`. */
+  fetchFromHearth: (cid: string, withinMs: number) => Promise<Uint8Array | null>;
   /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
    *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
   readOracle: <T = unknown>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
@@ -348,8 +347,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     genesisSeed,
     genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
-    meshLeaf, admit,
-    bootInvite, bootInvitePolicy, inviteNexusPubkey, inviteNexusAid, inviteStanding,
+    meshLeaf, admit, walkInvite,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
 
@@ -419,12 +417,30 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // both CARRIES below, and a second copy of this object would drift from the first the day a term is
   // added — the carries would then read a gradient the boot does not stand on.
   //
-  // A LEAF PASSES THREE TERMS AND NO MORE. It supplies `explicitScope` off a carried invite — the only
-  // shore that does, which makes this the only boot whose gradient runs three rungs deep (own → anchor →
-  // explicit). It passes NO `genesisEpochCid` and NO `charterStands`: seating a charter reaches a SEAL HOME
-  // on disk and a leaf keeps none, so those terms are structurally absent rather than merely unset.
+  // A LEAF PASSES THREE TERMS AND NO MORE. It supplies `explicitScope` off the Nexus it WALKS in — a carried
+  // invite, or a grant it already holds for the hearth it dials — the only shore that does, which makes this the
+  // only boot whose gradient runs three rungs deep (own → anchor → explicit). It passes NO `genesisEpochCid`
+  // and NO `charterStands`: seating a charter reaches a SEAL HOME on disk and a leaf keeps none, so those terms
+  // are structurally absent rather than merely unset.
+  //
+  // THE WALK, read before the island resolves. The pin comes first: a relay URL with no gate key is refused
+  // aloud — the relay answers only on the knock its own key derives, so a dial under any other key (this
+  // vessel's own included) would reach no gate and sit dark. A carried invite for the pinned hearth is written
+  // DURABLY to this vessel's own store before any dial; otherwise the record this vessel already holds for that
+  // hearth, if any.
+  const relayPin = relayPinFor(relayUrl, relayGatePubKey);
+  if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
+  const walkStore = browserWalkStore(idbName);
+  const walk: WalkRecord | null = relayPin.dial ? await (async () => {
+    if (walkInvite) {
+      const taken = await takeInvite(walkStore, walkInvite);
+      if (taken && taken.gatePubKey === relayPin.gatePubKey) return taken.record;
+      console.warn("[lararium-browser] the carried invite names another hearth, or none — it is not this dial's");
+    }
+    return walkStore.read(relayPin.gatePubKey);
+  })() : null;
   const nexusStandsAt: NexusIdentityAt = {
-    explicitScope: inviteNexusPubkey ?? null,
+    explicitScope: walk?.nexusAid ?? null,
     anchorGateKey: relayGatePubKey ?? null,
     ownVesselKey:  vesselVerifyingKey,
   };
@@ -582,29 +598,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     }
   } catch { /* the observation never blocks a boot — a torn read stays a torn read */ }
 
-  // ── The TRACELESS boot-invite gate — spend-on-boot, WITHHOLD-NEVER-FORGE ──────────────────────
-  // Decide whether this boot CROSSES into the Nexus. The vessel ALREADY founded its own group above
-  // (the anon floor is the ground, not a competing state) — the invite only lifts it into the crossing.
-  // The policy DEFAULTS to `open` (today's un-gated crossing) unless the operator carries a `bootInvite`
-  // or names an `invite-only` policy; then a sealed, unspent invite from a face standing in the Nexus named
-  // by `inviteNexusAid` is REQUIRED, its standing read against `inviteStanding`, or the vessel WITHHOLDS the
-  // crossing (garbled/absent/unstanding/already-spent → anon floor, never a throw). The
-  // single-use burn lands in this island's OWN IndexedDB (NO federated burn-registry). On a WITHHOLD nothing
-  // burns and — because the relay/who caps below gate on `admittedToNexus` — NO federated record is written.
-  const invitePolicy: BootInvitePolicy =
-    bootInvitePolicy ?? (bootInvite ? { kind: "invite-only" } : { kind: "open" });
-  const bootVerdict = await runBrowserBootInviteSpend({
-    idbName, nexusAid: inviteNexusAid ?? "", standing: inviteStanding ?? null,
-    invite: bootInvite ?? null, policy: invitePolicy,
-  });
-  const admittedToNexus = bootVerdict.admitted;
-  if (!admittedToNexus) {
-    console.log(
-      `[lararium-browser] boot-invite WITHHELD (${bootVerdict.refusal ?? "no-invite"}) — founding own group at the ` +
-      `anon floor; no crossing, no federated record written (the invite did not arrive, never an attack).`,
-    );
-  }
-
   // ── The spore crossing — the outbound V3 leaf transport (opt-in via relayUrl) ──────────────
   // When a relay URL is given AND a founding card is cached, compose the platform-blind
   // LarWSClientAdapter and add it to the Repo: the browser dials the node's gate, runs the V3
@@ -615,25 +608,36 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // hearth root. The leaf rides its own device edge (social.deviceEdge) so the in-worker keyholder
   // can admit it at the operator's-own-device tier. The node's gate key is PROVISIONED out-of-band
   // (relayGatePubKey) and is the only key the dial knocks with and the verdict is read under; absent,
-  // the vessel does not cross (`relayPinFor`). An un-admitted anon dials and meets silence.
-  // Gated on `admittedToNexus`: a WITHHELD boot founds its own group at the anon floor and composes NO relay
-  // adapter (no crossing, no federated sync) — the traceless outcome.
+  // the vessel does not cross (`relayPinFor`). An un-admitted anon dials and meets silence and stays at its own
+  // floor — a correct outcome, never a throw.
+  // A WALKER presents its walk instead (the token while its invite is unsettled, else its grant), under its own
+  // per-Nexus leaf, and the walk client keeps what the hearth pushes back.
   let relayAdapter: LarWSClientAdapter | null = null;
-  // THE PIN. A relay URL with no gate key is refused aloud: the relay answers only on the knock its own key
-  // derives, so a dial under any other key (this vessel's own included) would reach no gate and sit dark.
-  const relayPin = relayPinFor(relayUrl, relayGatePubKey);
-  if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
-  if (relayPin.dial && relayUrl && social.contactCard && admittedToNexus) {
-    const leaf: LeafIdentity = {
-      contactCard: social.contactCard,
-      peerPubKey:  vesselVerifyingKey,
-      sign:        ed25519SignerFromSeed(vesselSeed),
-      ...(social.deviceEdge ? { edge: social.deviceEdge } : {}),
-    };
+  let walkLeaf: Awaited<ReturnType<typeof browserWalkLeaf>> | null = null;
+  if (relayPin.dial && relayUrl && social.contactCard) {
+    const base: LeafIdentity = { contactCard: social.contactCard, peerPubKey: vesselVerifyingKey, sign: ed25519SignerFromSeed(vesselSeed) };
+    walkLeaf = walk
+      ? await browserWalkLeaf(idbName, walk.nexusAid, (await loadBrowserActivePersona(idbName)) ?? FOUNDING_PERSONA_INDEX).catch(() => null)
+      : null;
+    const walking = walk && walkLeaf ? walkIdentity(base, walk, walkLeaf) : null;
+    const leaf: LeafIdentity = walking ?? (social.deviceEdge ? { ...base, edge: social.deviceEdge } : base);
     const adapter = new LarWSClientAdapter({
       url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayPin.gatePubKey,
     });
     relayAdapter = adapter;
+    if (walking && walkLeaf && walk) {
+      // The wallet fills against the hearth's signed act for the grant's epoch, read off the Nexus's carriage
+      // board — the per-Nexus public board a walker reaches — and verified under the act's own leaf.
+      const actFor = async (epochCid: string): Promise<HostingAct | null> => {
+        const board = await materializeSharedLarDoc(repo, carriageDocUrl(walk.nexusAid), "board:carriage-contracts").catch(() => null);
+        for (const act of hostingActsFromBoard(board?.doc())) {
+          if (hostingActCid(act) === epochCid && (await verifyHostingAct(act))) return act;
+        }
+        return null;
+      };
+      walkOver({ transport: adapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, base, actFor });
+      watchCarryNotice(adapter, walkStore, relayPin.gatePubKey);
+    }
     // Tag the relay ring: every peer reached through this adapter enters `relayPeers`, so the
     // sharePolicy gates them while the in-process island peers keep sharing freely. Listeners
     // attach BEFORE addNetworkAdapter so a peer is classified before any doc is announced to it.
@@ -792,7 +796,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // the ONLY thing that ever federates stays a glamour the human consciously posts, never a boot side-effect.
   // (A boot-minted card also had to name SOME key, and the only key at hand is this vessel's own — publishing
   // it would put the substrate key on the social board, the one co-surface the two-key atom forbids.)
-  const whoExtraCaps: CapModule[] = (relayUrl && relayGatePubKey && admittedToNexus) ? await (async () => {
+  const whoExtraCaps: CapModule[] = relayPin.dial ? await (async () => {
     const crossroadsHandle = await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
     return [whoFaceCap({ repo, crossroadsHandle, nexusPubkey, residency })];
   })() : [];
@@ -1112,8 +1116,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         return (await loadBrowserActivePersona(idbName)) ?? FOUNDING_PERSONA_INDEX;
       };
       const resolveWhoBoard = async (verb: string): Promise<DocHandle<LarDoc>> => {
-        if (!relayGatePubKey || !admittedToNexus) {
-          throw new Error(`[face-${verb}] this vessel holds no public WHO board — it withheld the Nexus crossing, so it has no board to name a face on.`);
+        if (!relayGatePubKey || !relayAdapter?.session) {
+          throw new Error(`[face-${verb}] this vessel holds no public WHO board — it has not crossed to a hearth, so it has no board to name a face on.`);
         }
         return materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
       };
@@ -1350,7 +1354,14 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase:            "live",
-    admittedToNexus,
+    crossed: () => relayAdapter?.session != null,
+    handOutInvite: () => relayPin.dial ? popInvite(walkStore, relayPin.gatePubKey, relayUrl) : Promise.resolve(null),
+    carryAtHearth: (plaintext, withinMs) => relayPin.dial && relayAdapter && walkLeaf
+      ? carryDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, plaintext, withinMs })
+      : Promise.resolve(null),
+    fetchFromHearth: (cid, withinMs) => relayPin.dial && relayAdapter
+      ? fetchDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, cid, withinMs })
+      : Promise.resolve(null),
     readOracle: <T>(baseUrl: string, gatePubKey: string) => oracleProof
       ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof, verifyingKey: gatePubKey })
       : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: "this vessel holds no card to prove at a peer's gate" }),

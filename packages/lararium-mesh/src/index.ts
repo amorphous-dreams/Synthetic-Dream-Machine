@@ -171,8 +171,6 @@ export {
   carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX,
   rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,
 } from "./carriage-board.js";
-// The TRACELESS boot-invite — a sealed single-use capability spent-on-boot; no voucher, no board record.
-export * from "./boot-invite.js";
 export {
   personaKelEventsFromBoard, personaKelChainsFromBoard, personaKelChainForPrefix,
   writePersonaKelEvent, personaKelEntryKey, PERSONA_KEL_ENTRY_PREFIX,
@@ -216,9 +214,31 @@ export {
 export type {
   LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarSessionMsg, LarAuthWireMsg,
   AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit, PresentedAdmitArm,
-  Presented, UnsignedPresented,
+  PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented,
 } from "./auth-wire.js";
 export { knockSegment, knockPath, knockedUrl } from "./gate-knock.js";
+export {
+  hostingActBytes, hostingActCid, isHostingAct, verifyHostingAct, hostingKeyPair, hostingEpochOf, mintHostingAct,
+  hostingActKey, writeHostingAct, hostingActsFromBoard, hostingForks,
+  isInviteToken, tokenInfo, evaluateToken, mintHostToken, tokenVerifiesAt,
+  isHostingGrant, grantInfo, issueGrant, grantVerifiesAt, renewGrant,
+  redeemClaim, claimDigest, lineageOf, encodeInvite, decodeInvite, INVITE_SCHEME,
+  allowance, mintMarker, batchDigest, evaluateWalkerBatch, blindWalkerBatch, finalizeWalkerBatch,
+  carryRecordKey, walkCarrySecret, lapseRatio, foldRhythm, RECLAIM_RATIO,
+} from "./hosting.js";
+export type {
+  HostingAct, HostingEpoch, HostingFork, InvitePurpose, InviteToken, HostingGrant, HostingInvite, PendingMint, PendingMintItem,
+} from "./hosting.js";
+export {
+  takeInvite, walkArm, walkIdentity, walkOver, popInvite,
+  HOSTING_GRANT_SESSION_KIND, HOSTING_MINT_SESSION_KIND, HOSTING_MINTED_SESSION_KIND,
+} from "./walk-client.js";
+export type { WalkRecord, WalkStore, WalkLeaf, WalkTransport, CarryReceipt } from "./walk-client.js";
+export {
+  carryDocument, fetchDocument, openCarried, watchCarryNotice, CARRY_STUB_RE,
+  HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
+} from "./walk-carry.js";
+export type { CarryOutcome } from "./walk-carry.js";
 export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions, LarLeafSession } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
@@ -243,7 +263,7 @@ export * from "./ahi-ka.js";
 export * from "./cas-caps.js";
 export * from "./handle-book.js";
 // The card-arrival front door — decode a carried (paste / QR / URL-fragment) HandleCard so a follow can admit
-// an unmet nym WITHOUT the CLI's `--card <file>` (the card arrives as data, boot-invite posture).
+// an unmet nym WITHOUT the CLI's `--card <file>` (the card arrives as data, carried as an invite is).
 // The type-blind PERSONA-ADMISSION ceremony (airgapped device-to-device persona handoff) — the 3-hop ECDH-sealed
 // choreography + its carried QR envelopes. A photographed tabletop stays inert; the join writes per-vessel only.
 export * from "./persona-admit.js";

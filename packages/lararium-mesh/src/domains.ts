@@ -102,15 +102,28 @@ export const PERSONA_JOIN_DOMAIN = frozen("persona-join");
 /** The grant seal's HKDF `info`. A NAME of its own — never a version digit carrying the separation from
  *  the four signing domains above. */
 export const PERSONA_ADMIT_SEAL_INFO = frozen("persona-admit-grant-seal");
-/** An invite into one Nexus, signed by the inviting face's per-Nexus leaf and spent once at the newcomer's boot. */
-export const NEXUS_INVITE_DOMAIN = mint("nexus-invite");
-/** The HOSTING HEARTH's countersign on a user's invite: the hearth's per-Nexus leaf signs the Nexus, the
- *  invite nonce and the walker's leaf under this name. It names no guest; it never verifies as an invite. */
-export const HOST_COUNTERSIGN_DOMAIN = mint("host-countersign");
-/** The WALKER's proof over a live hosting session: its per-Nexus leaf signs the hearth's socket nonce, gate
- *  key, the Nexus and the invite nonce under this name, so a countersign asks only over a session the hearth
- *  holds. Apart from `presented-leaf-proof`: a session proof never stands as a presentation's proof. */
-export const HOST_SESSION_PROOF_DOMAIN = mint("host-session-proof");
+/** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key
+ *  and the act it rolls from. The act's CID names the hosting epoch; the act grants nothing and names no one but
+ *  the hearth. Its own name: an act must never verify as a carriage act or any other signed thing. */
+export const HOSTING_ACT_DOMAIN = mint("hosting-act");
+/** The `keyInfo` a hosting act's POPRF key derives under (RFC 9497 DeriveKeyPair), over the Nexus and the act it
+ *  rolls from — one key per act, derived and never stored. */
+export const HOSTING_KEY_DOMAIN = mint("hosting-key");
+/** The POPRF `info` an INVITE TOKEN evaluates under, with its class (`host-invite` · `walker-invite`), its Nexus
+ *  and its epoch. Apart from `hosting-grant`: a token never verifies as a grant tag, nor a tag as a token. */
+export const HOSTING_TOKEN_DOMAIN = mint("hosting-token");
+/** The POPRF `info` a HOSTING GRANT's keyed tag evaluates under, with its Nexus and its epoch. */
+export const HOSTING_GRANT_DOMAIN = mint("hosting-grant");
+/** A lineage's MINT MARKER at one hosting epoch: the hearth burns a digest of the lineage and the epoch under
+ *  this name, so a lineage mints its whole allowance once per epoch and a replayed grant refills nothing. The
+ *  marker names no one: the lineage is opaque to anyone who holds no claim. */
+export const HOSTING_SPEND_DOMAIN = mint("hosting-spend");
+/** The hearth's opaque key for one lineage's CARRIED record: a keyed digest of the lineage under the hearth's
+ *  own leaf seed, so the record is reachable by the grant that opened it and names no one to anyone else. */
+export const HOSTING_CARRY_DOMAIN = mint("hosting-carry");
+/** A walker's own SEAL secret for the documents a hearth carries for it — derived from the walker's leaf in the
+ *  Nexus, so the read stays with the walker and the hearth carries ciphertext it can never open. */
+export const WALK_CARRY_SEAL_INFO = mint("walk-carry-seal");
 /** A cabal invite — the join axis, orthogonal to the carriage contract. */
 export const CABAL_INVITE_DOMAIN = frozen("cabal-invite");
 

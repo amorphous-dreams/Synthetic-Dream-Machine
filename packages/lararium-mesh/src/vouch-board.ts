@@ -4,8 +4,8 @@
  * banned) under one nexus-pubkey; this board answers WHO VOUCHED FOR WHOM.
  *
  * A vouch RIDES a board precisely because it carries attribution — a cabal-invite names its `voucherDid` in
- * the clear, and an invite nobody can attribute holds nobody to anything. The TRACELESS boot-invite
- * draws the deliberate contrast: it names no voucher, manufactures no social graph, and must NEVER gain a board.
+ * the clear, and an invite nobody can attribute holds nobody to anything. The hosting invite draws the
+ * deliberate contrast: it names no voucher, manufactures no social graph, and never gains a board record.
  *
  * ── THE VERIFY RIDES MANDATORY, WHICH IS WHY NO UNVERIFIED READ EXISTS ───────────────────────────────────
  * `vouchDagFromInvites` states its precondition plainly: the invites arrive ALREADY VERIFIED. A reader that

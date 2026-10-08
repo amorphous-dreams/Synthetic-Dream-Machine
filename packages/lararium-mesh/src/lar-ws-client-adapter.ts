@@ -264,15 +264,21 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     this.#verifiedSocket = socket;
     this.#session = { nonce: verdict.nonce, gatePubKey: this.#gatePubKey.toLowerCase() };
     // Text frames are the session's; binary frames are Automerge's. Neither reaches the other's reader.
-    socket.addEventListener("message", (event: MessageEvent) => {
-      if (typeof event.data !== "string") { this.onMessage(event); return; }
-      let msg: unknown;
-      try { msg = JSON.parse(event.data); } catch { return; }
+    const deliver = (msg: unknown): void => {
       if (!isLarSessionMsg(msg)) return;
       for (const listener of this.#sessionListeners) {
         try { listener(msg); } catch { /* one listener's throw never silences another */ }
       }
+    };
+    socket.addEventListener("message", (event: MessageEvent) => {
+      if (typeof event.data !== "string") { this.onMessage(event); return; }
+      let msg: unknown;
+      try { msg = JSON.parse(event.data); } catch { return; }
+      deliver(msg);
     });
+    // A session frame the gate sent right behind its verdict reached the handshake pump first; it is the
+    // session's, and is delivered in arrival order before any later frame.
+    for (const msg of queue.splice(0)) deliver(msg);
     this.join();
   }
 }

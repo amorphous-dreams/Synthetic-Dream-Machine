@@ -6,7 +6,9 @@
  *   · a SAME-OPERATOR WS peer — the keyholder vouched admin@daemon or a KEL-pinned device edge, both
  *     UNFORGEABLE — shares FREELY too (full device sync; the operator's own fleet carries every private plane);
  *   · every other WS peer — contracted, walker, stranger, or one with no class — rides a singleton relay ring
- *     over the deterministic federatable shelf (crossroads · WHO · kapae-antigen · boards). The CARRY-SPLIT lets
+ *     over the deterministic federatable shelf (crossroads · WHO · kapae-antigen · boards). A WALKER also reaches
+ *     the carriage board of the Nexus its grant names — the public/infra board its hearth's hosting act rides,
+ *     which it reads to check what the hearth published (`walkerBoard`). The CARRY-SPLIT lets
  *     a peer the nexus-doc consult names a MEMBER (a held, presented admit) blind-transit a PROVABLY-SEALED
  *     private plane (carry the ciphertext, never the read-cap). The read-lane denial stays absolute.
  *
@@ -46,6 +48,8 @@ export interface SelfSlotShareInput {
   readonly peerId: string;
   /** The doc under decision; `undefined` (a gated relay peer with no doc id) → deny-by-default. */
   readonly documentId: DocumentId | undefined;
+  /** A walker's own Nexus carriage board — the one doc beyond the shelf a walker reaches. */
+  readonly walkerBoard?: DocumentId | null;
 }
 
 /**
@@ -55,6 +59,10 @@ export interface SelfSlotShareInput {
  */
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
   if (input.hasWsSocket && input.peerClass !== "same-operator") {
+    if (input.peerClass === "walker" && input.walkerBoard && input.documentId === input.walkerBoard) {
+      // Its Nexus's carriage board is public/infra; the antigen still draws Mu on a Kapae'd presenter.
+      return carryContractShareDecision(NO_RELAY_PEERS, null, input.antigenRing, null, input.peerId, input.documentId);
+    }
     // FAIL-CLOSED at the boot edge: a gated peer whose federatable classifier has not yet stood gets a
     // DenyAllGate floor (`carryContractShareDecision` reads a null fed gate as "same-operator relay → full
     // sync", a DIFFERENT case, so a gated peer must never reach it null — that would leak every plane).

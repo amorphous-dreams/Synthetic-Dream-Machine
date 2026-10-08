@@ -6,6 +6,13 @@
  *                     vessel carries (its leaf proof over this socket, its charter lineage, the deny board, the
  *                     antigen); or it is a faceless PLACE whose vessel key this vessel's own board counts a
  *                     carrier contract for (`carrier`) — a place proves by its wire key, the only nym it has;
+ *   · walker        — it presented THIS hearth's hosting grant for a Nexus the hearth carries and hosts in, its
+ *                     tag verifying at the current or previous epoch (a previous-epoch grant is renewed and the
+ *                     renewal pushed after the verdict); or it redeemed an invite token here: the token verifies
+ *                     at a live epoch under its own class, its nonce burns in that epoch's spent-set (fsynced
+ *                     BEFORE the verdict; the same claim again is a retry and earns the identical grant), and the
+ *                     new grant is pushed after the verdict. Either way the presenting leaf proves over this
+ *                     socket and reads clear of the Nexus's antigen;
  *   · stranger      — everything else. A gate answers strangers only if SOME Nexus it stands in reads OPEN —
  *                     its own primary charter or any it carries (`gateAnswersStrangers`); otherwise a stranger
  *                     is SILENCE, exactly like a failed proof.
@@ -17,9 +24,25 @@
  * Meme: lar:///ha.ka.ba/lararium/node/socket-sorter
  */
 
-import { classifySocket, answersStrangers, type FederationPosture, type PeerClass } from "@lararium/mesh";
-import type { SocketSorter, SortVerdict } from "./daemon-auth-gate.js";
+import {
+  classifySocket, answersStrangers, verifyLeafProof, presentedSigner, foldAntigenVerdicts, makeMultiSigQuorumVerifier,
+  grantVerifiesAt, renewGrant, tokenVerifiesAt, issueGrant, lineageOf, claimDigest, carryRecordKey, HOSTING_GRANT_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
+  type FederationPosture, type PeerClass, type PresentedGrantArm, type PresentedTokenArm, type HostingGrant,
+} from "@lararium/mesh";
+import type { SocketSorter, SortInput, SortVerdict } from "./daemon-auth-gate.js";
 import { leafStandingFor, type CarriedNexusReading, type SocketBinding } from "./nexus-carriage.js";
+import { readHostingState, liveEpochs, spendToken, redeemedCount } from "./hosting-store.js";
+import { noteContact } from "./hosting-carry.js";
+
+/** What the walker arms read: the hearth's hosting store and its own per-Nexus leaf. */
+export interface HostingSorterDeps {
+  /** The vessel store the hosting state lives under. */
+  readonly storageDir:  string;
+  /** The hearth's own per-Nexus leaf seed for N — the seed its hosting keys derive from — or null (no face). */
+  readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null>;
+  /** The operator's count event: a token redeemed in N, and how many this epoch. A count, never a row. */
+  readonly onRedeemed?: (nexusAid: string, count: number) => void;
+}
 
 export interface SocketSorterDeps {
   /** The carried Nexuses' readings as of this vessel's last sync — what an admit is held against, and whose
@@ -29,6 +52,63 @@ export interface SocketSorterDeps {
   readonly carrier:  (vesselKey: string) => boolean;
   /** The posture of the vessel's own primary charter, read fresh (PRIVATE when absent or torn). */
   readonly primaryPosture: () => FederationPosture;
+  /** The hosting store and leaf the walker arms read. Absent → no socket stands as a walker here. */
+  readonly hosting?:       HostingSorterDeps;
+}
+
+/** Is `leaf` held or unsettled on N's antigen? Either reads it out of the walker class. */
+async function antigenHolds(reading: CarriedNexusReading, leaf: string): Promise<boolean> {
+  const verdicts = await foldAntigenVerdicts(reading.antigen, reading.antigenRoster, makeMultiSigQuorumVerifier());
+  for (const [nym, verdict] of verdicts) if (nym.toLowerCase() === leaf && verdict !== "withdrawn") return true;
+  return false;
+}
+
+/**
+ * The walker standing a grant or token arm earns at this hearth, and the session frames that follow its verdict,
+ * or null. Every read that can refuse runs BEFORE the one write (the token's burn), so a refused socket destroys
+ * nothing.
+ */
+async function walkerStanding(
+  presented: PresentedGrantArm | PresentedTokenArm, input: SortInput, readings: readonly CarriedNexusReading[], hosting: HostingSorterDeps,
+): Promise<{ readonly standing: { nym: string; aid: string }; readonly grant: HostingGrant; readonly push?: SortVerdict["push"] } | null> {
+  const aid = (presented.kind === "grant" ? presented.grant.nexusAid : presented.nexusAid).trim().toLowerCase();
+  const reading = readings.find((r) => r.aid.toLowerCase() === aid);
+  if (!reading) return null;                                                     // a Nexus this hearth does not carry
+  if (!(await verifyLeafProof({ presented, nonce: input.challenge.nonce, gatePubKey: input.challenge.gatePubKey, vesselKey: input.vesselKey }))) return null;
+  const leaf = presentedSigner(presented);
+  if (await antigenHolds(reading, leaf)) return null;
+  const state = readHostingState(hosting.storageDir, aid);
+  if (!state) return null;                                                       // this hearth hosts nobody in N
+  const seed = await hosting.leafSeedFor(aid);
+  const live = seed ? liveEpochs(state, seed) : null;
+  if (!live) return null;
+  const standing = { nym: leaf, aid };
+  const push = (grant: HostingGrant): SortVerdict["push"] => [{ kind: HOSTING_GRANT_SESSION_KIND, body: { grant } }];
+
+  if (presented.kind === "grant") {
+    const grant = presented.grant;
+    const current = grantVerifiesAt(live.current, grant) ? grant
+      : live.previous && grantVerifiesAt(live.previous, grant) ? renewGrant(live.current, grant) : null;
+    if (!current) return null;                                                   // two rolls back, or never this hearth's
+    // A grant's contact folds its own rhythm into its carriage's scalars (reached by its tag alone); a carriage
+    // marked pending under pressure hears the notice on this contact, and a later epoch's contact clears it.
+    const { notice } = noteContact(hosting.storageDir, aid, carryRecordKey(seed!, aid, grant.lineage), state.depth);
+    const frames = [...(current === grant ? [] : push(current) ?? []), ...(notice ? [{ kind: HOSTING_NOTICE_SESSION_KIND, body: { pending: true } }] : [])];
+    return { standing, grant: current, ...(frames.length > 0 ? { push: frames } : {}) };
+  }
+
+  const token = presented.token;
+  const at = tokenVerifiesAt(live.current, token) ? live.current
+    : live.previous && tokenVerifiesAt(live.previous, token) ? live.previous : null;
+  if (!at) return null;
+  const outcome = await spendToken({ storageDir: hosting.storageDir, nexusAid: aid, epochCid: at.cid, n: token.n, claimDigest: claimDigest(presented.claim) });
+  if (outcome === "spent-other") return null;
+  if (outcome === "fresh") hosting.onRedeemed?.(aid, redeemedCount(hosting.storageDir, aid, at.cid));
+  const grant = issueGrant(live.current, {
+    leaf, lineage: lineageOf(token.n, presented.claim), survived: 0,
+    from: token.purpose === "host-invite" ? "host" : "walker",
+  });
+  return { standing, grant, push: push(grant) };
 }
 
 /**
@@ -46,6 +126,10 @@ export function makeSocketSorter(deps: SocketSorterDeps): SocketSorter {
     const readings = await deps.readings();
     let standing: SortVerdict["standing"];
     const presented = input.presented;
+    let walker: Awaited<ReturnType<typeof walkerStanding>> = null;
+    if ((presented?.kind === "grant" || presented?.kind === "token") && deps.hosting) {
+      walker = await walkerStanding(presented, input, readings, deps.hosting);
+    }
     if (presented?.kind === "admit") {
       const binding: SocketBinding = {
         presentedAdmit: presented, nonce: input.challenge.nonce,
@@ -57,10 +141,11 @@ export function makeSocketSorter(deps: SocketSorterDeps): SocketSorter {
     const cls = classifySocket({
       sameOperator: false,
       contracted: standing !== undefined || (presented === undefined && deps.carrier(input.vesselKey)),
-      walker: false,
+      walker: walker !== null,
       answersStrangers: gateAnswersStrangers(deps.primaryPosture(), readings),
     });
     if (cls === null) return null;
+    if (cls === "walker" && walker) return { class: cls, standing: walker.standing, grant: walker.grant, ...(walker.push ? { push: walker.push } : {}) };
     return cls === "contracted" && standing ? { class: cls, standing } : { class: cls };
   };
 }

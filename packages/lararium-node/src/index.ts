@@ -200,6 +200,13 @@ export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, Hand
 
 // The Kapae antigen RAISE side (#65) — the founding kahu writes a quorum-signed ban/lift onto the board.
 export { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
+export { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
+export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
+export {
+  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir,
+  DEFAULT_HOSTING_CAP,
+} from "./hosting-store.js";
+export type { HostingState, SpendOutcome } from "./hosting-store.js";
 export type { NexusKapaeOptions, NexusKapaeResult, NexusKapaeListResult } from "./commands/nexus-kapae.js";
 export { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
 export type { NexusPublishPluginsOptions, NexusPublishPluginsResult } from "./commands/nexus-publish.js";
@@ -228,17 +235,6 @@ export {
   takeAdmitBundle, readKeptAdmitBundle, readKeptAdmitBundles, admitBundlePathFor, admitBundleHolds, dialedNexusAid,
   isAdmitBundle, AdmitBundleError, type AdmitBundle, type AdmitTakeResult,
 } from "./admit-bundle.js";
-
-// The traceless BOOT-INVITE burn — mint a sealed single-use invite; decide + spend-on-boot LOCALLY.
-export {
-  runBootInviteMint, runHostedInviteMint, runBootInviteSpend, readBurnSet, isBurned, burn as burnBootInvite,
-  bootInviteBurnPath, bootInviteId,
-} from "./boot-invite-burn.js";
-// The HOST COUNTERSIGN — a hearth lends a user its standing, over a live session, and keeps nothing.
-export {
-  hostSessionOf, runHostCountersign, serveHostCountersign, hearthStandingFromBoards,
-  type HearthStanding, type HearthStandingSource,
-} from "./host-countersign.js";
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {

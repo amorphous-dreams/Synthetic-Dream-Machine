@@ -66,7 +66,7 @@ export function carriageDocUrl(nexusPubkey: string): AutomergeUrl {
  * invites. Sibling to the carriage + antigen boards under one nexus-pubkey: carriage says who carries,
  * antigen says who stands banned, and this says WHO VOUCHED FOR WHOM — the seed-rooted DAG the admission
  * price walks. A vouch is board-tracked precisely because it is attributable (cabal-invite names its
- * voucher in the clear); the TRACELESS boot-invite has no board and must never gain one.
+ * voucher in the clear); a hosting invite names no voucher, and no invite ever gains a board record.
  */
 export function vouchBoardDocUrl(nexusPubkey: string): AutomergeUrl {
   return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#vouch`);

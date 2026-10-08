@@ -55,7 +55,7 @@ import type { WebSocketServer as WSSType } from "isomorphic-ws";
 import {
   mkLarChallenge, mkLarAuthOk, isLarAuthMsg, authOkBytes, isLarSessionMsg, mkLarSessionMsg, knockPath,
 } from "@lararium/mesh";
-import type { AuthVerifierShore, LarSessionMsg, PeerClass, Presented } from "@lararium/mesh";
+import type { AuthVerifierShore, HostingGrant, LarSessionMsg, PeerClass, Presented } from "@lararium/mesh";
 
 /**
  * The challenge THIS gate issued on a socket: the single-use nonce and its own gate key. Trusted — the gate
@@ -95,6 +95,8 @@ export interface SortVerdict {
   readonly standing?: { readonly nym: string; readonly aid: string };
   /** Session frames the gate sends right after `lar:auth-ok`, in order. */
   readonly push?:     ReadonlyArray<{ readonly kind: string; readonly body: unknown }>;
+  /** A walker socket's current-epoch grant — what its session verbs read (the mint door). */
+  readonly grant?:    HostingGrant;
 }
 
 /** The sorter: a class for the socket, or null — silence. It never throws to the gate; a throw reads null. */
@@ -141,6 +143,8 @@ export class DaemonAuthGate extends EventEmitter {
   private readonly socketToClass = new WeakMap<WebSocket, PeerClass>();
   /** socket → the leaf and Nexus a contracted or walker socket stands as. */
   private readonly socketToStanding = new WeakMap<WebSocket, { readonly nym: string; readonly aid: string }>();
+  /** socket → a walker socket's current-epoch grant. */
+  private readonly socketToGrant = new WeakMap<WebSocket, HostingGrant>();
   /** socket → what an admitted peer presented, as it arrived. */
   private readonly socketToPresented = new WeakMap<WebSocket, Presented>();
   /** socket → the challenge this gate issued on it. */
@@ -184,6 +188,11 @@ export class DaemonAuthGate extends EventEmitter {
   /** The leaf and Nexus a contracted or walker socket stands as. */
   getStandingForSocket(socket: WebSocket): { readonly nym: string; readonly aid: string } | undefined {
     return this.socketToStanding.get(socket);
+  }
+
+  /** A walker socket's current-epoch grant, as the sorter answered it. */
+  getGrantForSocket(socket: WebSocket): HostingGrant | undefined {
+    return this.socketToGrant.get(socket);
   }
 
   /** What an admitted peer presented on its lar:auth, as received. The sorter has read it. */
@@ -289,6 +298,7 @@ export class DaemonAuthGate extends EventEmitter {
     this.socketToIdentifier.set(socket, result.identHex);
     this.socketToClass.set(socket, result.verdict.class);
     if (result.verdict.standing) this.socketToStanding.set(socket, result.verdict.standing);
+    if (result.verdict.grant) this.socketToGrant.set(socket, result.verdict.grant);
     if (result.presented !== undefined) this.socketToPresented.set(socket, result.presented);
     this.socketToChallenge.set(socket, { nonce, gatePubKey });
     send(socket, mkLarAuthOk(okSig));

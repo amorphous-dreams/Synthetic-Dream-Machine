@@ -45,7 +45,7 @@ const KEY_RECORD = "vessel-key";
 // social bootstrap (the founding floor); the persona-multitude stores mirror the node fs vault's
 // per-index files. Every store bumps the DB version together, so a reboot upgrades additively (the
 // device key + bootstrap survive; the new stores appear empty until a persona founds).
-const IDB_VERSION       = 6;
+const IDB_VERSION       = 7;
 const PERSONA_ROOTS_STORE  = "persona-roots";     // per-index persona-root keypairs (self-sovereign secret)
 const PERSONA_ROSTER_STORE = "persona-roster";    // the EXPLICIT held-root record (never a keys()-scan)
 const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
@@ -59,7 +59,7 @@ const PERSONA_PUBLIC_HANDLE_STORE = "persona-public-handles"; // handleIndex →
 // between the two above so a private compartment label never becomes a public commitment by accident.
 const PERSONA_DECLARATION_STORE  = "persona-declarations";    // handleIndex → PersonaDeclaration
 // v4 additive stores (all causal-island-LOCAL, never federated):
-export const BOOT_INVITE_BURN_STORE = "boot-invite-burned";  // burned invite-id → 1 (single-use, local burn)
+export const WALK_STORE             = "hosting-walk";        // hearth gate key → WalkRecord (the walker's own, never federated)
 export const CIRCLE_STORE           = "circles-follow";      // circleId → nym[] (the IoC follow-graph, private)
 export const HANDLE_BOOK_STORE      = "handle-book";         // "snapshot" → HandleBookSnapshot (others' nyms + labels)
 // v6 additive: the OPT-IN PRF wrap of a persona-root seed, BESIDE the cleartext root (seed-wrap-prf.ts). Keyed
@@ -105,15 +105,17 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(PERSONA_PETNAME_STORE))       db.createObjectStore(PERSONA_PETNAME_STORE);
       if (!db.objectStoreNames.contains(PERSONA_PUBLIC_HANDLE_STORE)) db.createObjectStore(PERSONA_PUBLIC_HANDLE_STORE);
       if (!db.objectStoreNames.contains(PERSONA_DECLARATION_STORE))   db.createObjectStore(PERSONA_DECLARATION_STORE);
-      // v4 additive: the traceless boot-invite's LOCAL burn-set (browser twin of node's boot-invite-burned
-      // ledger) + the IoC follow's private stores (circle-graph + handle-book). All causal-island-LOCAL —
-      // none federate. A v3 DB gains them empty; nothing is spent/followed until the vessel acts.
-      if (!db.objectStoreNames.contains(BOOT_INVITE_BURN_STORE)) db.createObjectStore(BOOT_INVITE_BURN_STORE);
+      // v4 additive: the IoC follow's private stores (circle-graph + handle-book). Causal-island-LOCAL — none
+      // federate. A v3 DB gains them empty; nothing is followed until the vessel acts.
       if (!db.objectStoreNames.contains(CIRCLE_STORE))           db.createObjectStore(CIRCLE_STORE);
       if (!db.objectStoreNames.contains(HANDLE_BOOK_STORE))      db.createObjectStore(HANDLE_BOOK_STORE);
       // v6 additive: the seed-wrap slot. A v5 DB gains it empty; every root keeps resting cleartext until the
       // human opts a passkey in.
       if (!db.objectStoreNames.contains(SEED_WRAP_STORE))        db.createObjectStore(SEED_WRAP_STORE);
+      // v7: the walker's own store — per hearth, the carried invite until it settles and the grant that hearth
+      // pushed. The newcomer-side burn store it replaces goes: the HEARTH burns an invite, at its own gate.
+      if (!db.objectStoreNames.contains(WALK_STORE))             db.createObjectStore(WALK_STORE);
+      if (db.objectStoreNames.contains("boot-invite-burned"))    db.deleteObjectStore("boot-invite-burned");
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);

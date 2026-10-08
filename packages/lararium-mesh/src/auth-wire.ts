@@ -35,6 +35,7 @@ import { canonicalJsonBytes, hex, hexToBytes, sha256HexBytesSync } from "./crypt
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
+import { isHostingGrant, isInviteToken, type HostingGrant, type InviteToken } from "./hosting.js";
 import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_LEAF_PROOF_DOMAIN } from "./domains.js";
 import { webGetRandomValues } from "./crypto.js";
 
@@ -124,22 +125,56 @@ export function isPresentedAdmit(v: unknown): v is PresentedAdmit {
 /** A presented admit as one arm of the presentation slot. */
 export type PresentedAdmitArm = { readonly kind: "admit" } & PresentedAdmit;
 
+/** A WALKER's arm: the hosting grant this hearth issued it, proven by the grant's own leaf over this socket. */
+export interface PresentedGrantArm {
+  readonly kind:       "grant";
+  readonly grant:      HostingGrant;
+  readonly leafProof?: string;
+}
+
 /**
- * THE PRESENTATION SLOT — at most one per socket: what this socket stands as beyond its vessel key. Each arm
- * carries the presenting LEAF's proof over this socket (`leafProofBytes`, one domain for every arm). The gate's
- * sorter reads it before any verdict; nothing on it grants anything on arrival.
+ * A NEWCOMER's arm: an invite token redeemed at this hearth's gate, the claim the newcomer derived for it, and
+ * the per-Nexus leaf the grant will name, proven by that leaf over this socket. The Nexus rides beside the
+ * token because the token names none.
  */
-export type Presented = PresentedAdmitArm;
+export interface PresentedTokenArm {
+  readonly kind:       "token";
+  readonly nexusAid:   string;
+  readonly token:      InviteToken;
+  readonly claim:      string;
+  readonly leaf:       string;
+  readonly leafProof?: string;
+}
+
+/**
+ * THE PRESENTATION SLOT — at most one per socket: what this socket stands as beyond its vessel key — an admit, a
+ * hosting grant, or a token being redeemed. Each arm carries the presenting LEAF's proof over this socket
+ * (`leafProofBytes`, one domain for every arm). The gate's sorter reads it before any verdict; nothing on it
+ * grants anything on arrival.
+ */
+export type Presented = PresentedAdmitArm | PresentedGrantArm | PresentedTokenArm;
 
 /** A presentation before its leaf proof is signed — what a dialer carries until it holds a challenge. */
 export type UnsignedPresented = Presented extends infer P ? (P extends unknown ? Omit<P, "leafProof"> : never) : never;
 
+const LEAF_PROOF_RE = /^[0-9a-fA-F]{128}$/;
+const KEY_HEX_RE    = /^[0-9a-f]{64}$/;
+
 /** Structural guard for the presentation slot. Shape only. */
 export function isPresented(v: unknown): v is Presented {
   if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
-  const kind = (v as Record<string, unknown>)["kind"];
-  if (kind === "admit") return isPresentedAdmit(v);
-  return false;
+  const x = v as Record<string, unknown>;
+  const proof = x["leafProof"];
+  if (proof !== undefined && (typeof proof !== "string" || !LEAF_PROOF_RE.test(proof))) return false;
+  switch (x["kind"]) {
+    case "admit": return isPresentedAdmit(v);
+    case "grant": return isHostingGrant(x["grant"]);
+    case "token":
+      return typeof x["nexusAid"] === "string" && (x["nexusAid"] as string).length > 0 && isInviteToken(x["token"]) &&
+        typeof x["claim"] === "string" && KEY_HEX_RE.test(x["claim"] as string) &&
+        typeof x["leaf"] === "string" && KEY_HEX_RE.test(x["leaf"] as string);
+    default: return false;
+  }
 }
 
 /** Peer → Gate: identity assertion. */
@@ -473,8 +508,11 @@ export function presentedCid(presented: UnsignedPresented | Presented): string {
 
 /** The leaf that signs a presentation's proof — the key the presentation stands as. */
 export function presentedSigner(presented: UnsignedPresented | Presented): string {
-  if (presented.kind === "admit") return presented.admit.nym.toLowerCase();
-  return "";
+  switch (presented.kind) {
+    case "admit": return presented.admit.nym.toLowerCase();
+    case "grant": return presented.grant.leaf.toLowerCase();
+    case "token": return presented.leaf.toLowerCase();
+  }
 }
 
 /**

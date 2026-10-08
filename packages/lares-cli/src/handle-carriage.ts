@@ -4,7 +4,7 @@
  * THE CARD IS CARRIED, NEVER FETCHED. A HandleCard is self-certifying — its `sig` verifies against the `nym` it
  * names — so it needs no trusted channel and no reachable authority: a carrier may WITHHOLD it, never forge it.
  * The bytes ride anything a human can hand over — a paste, a QR code held to a screen, a `#card=…` URL fragment,
- * a file on a stick. This is the SAME posture as the boot-invite / device-admit carriage, applied to recognition:
+ * a file on a stick. This is the SAME posture as the hosting-invite / device-admit carriage, applied to recognition:
  * it lets a follow admit an unmet nym without the CLI's `--card <file>`, the card arriving by paste instead.
  *
  * The fragment earns its place because a browser never transmits one — the card reaches the vessel and no relay

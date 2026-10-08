@@ -22,7 +22,7 @@ import { describe, test, expect } from "vitest";
 import { interpretAsDocumentId, stringifyAutomergeUrl, type BinaryDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import { randomBytes } from "node:crypto";
 import { DeterministicFederationGate, type AntigenRing, type NexusMembership, type PlaneSeal } from "@lararium/mesh";
-import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl } from "@lararium/mesh";
+import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, carriageDocUrl } from "@lararium/mesh";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 // This vessel's operator identity (its Nexus pubkey) — the federatable planes derive from it.
@@ -190,5 +190,29 @@ describe("the read-lane stays absolute — a Kapae'd MEMBER draws Mu even for a 
       antigenRing: antigenMember, membership: memberIncludingKapaed, planeSeal, peerId: kapaedMember, documentId: SEALED_PLANE,
     });
     expect(verdict).toBe(false);
+  });
+});
+
+describe("a WALKER reaches its own Nexus's carriage board — the board its hearth's hosting act rides", () => {
+  const OTHER_NEXUS = "epoch0-" + "b".repeat(64);
+  const WALKER_BOARD = docIdOf(carriageDocUrl(OTHER_NEXUS));
+  const share = (peerClass: "walker" | "stranger", documentId: DocumentId, antigenRing: AntigenRing | null = null, peerId = CROSS_PEER) =>
+    selfSlotShareDecision({
+      hasWsSocket: true, peerClass, selfSlotFedGate: fedGate, antigenRing, membership: null, planeSeal: null,
+      peerId, documentId, walkerBoard: WALKER_BOARD,
+    });
+
+  test("RED: a walker reads its Nexus's carriage board; CONTROL: a stranger handed the same input does not", async () => {
+    expect(await share("walker", WALKER_BOARD)).toBe(true);
+    expect(await share("stranger", WALKER_BOARD)).toBe(false);
+  });
+
+  test("CONTROL: the walker's board is the one doc beyond the shelf — a private plane stays denied", async () => {
+    expect(await share("walker", CATALOG_LIKE)).toBe(false);
+    expect(await share("walker", CROSSROADS)).toBe(true);
+  });
+
+  test("a Kapae'd walker draws Mu on its board too", async () => {
+    expect(await share("walker", WALKER_BOARD, antigen, KAPAED_PEER)).toBe(false);
   });
 });

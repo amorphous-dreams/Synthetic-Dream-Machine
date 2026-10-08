@@ -33,6 +33,7 @@ export const heavy = [
   "tests/nexus-client-dial.test.ts",
   "tests/live-wire-node-crossing.test.ts",
   "tests/daemon-auth-gate.test.ts",
+  "tests/hosted-walker.test.ts",
   "tests/authenticated-membership-relay.test.ts",
   "tests/carriage-heal-reconnect.test.ts",
   "tests/carriage-reshare-sniff.test.ts",
@@ -84,7 +85,6 @@ export const heavy = [
   "tests/pronaos-public-artifact.test.ts",
   "tests/readiness-face.test.ts",
   "tests/oracle-closed-door.test.ts",
-  "tests/host-countersign-session.test.ts",
 ];
 
 /**
