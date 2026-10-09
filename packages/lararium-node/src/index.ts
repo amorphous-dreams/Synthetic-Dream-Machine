@@ -451,6 +451,9 @@ export {
 export type {
   VaultCarrier, CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry,
 } from "./vault-carriers.js";
+// The old-shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
+export { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "./custody-shape.js";
+export type { CustodyShape, CustodyShapeReading, OldShapeOffender, OldShapeReason } from "./custody-shape.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
