@@ -38,9 +38,15 @@ for f in "${STAGED[@]}"; do
   mkdir -p "$SCRATCH/$(dirname "$f")"
   git show ":$f" > "$SCRATCH/$f" || { echo "[meme-check-staged] cannot read the staged blob for $f" >&2; exit 1; }
 done
-git -C "$SCRATCH" init -q
+# The scratch tree stands as its own repo, so it inherits none of the hook's git env. Inside a linked
+# worktree the hook carries `GIT_DIR=<repo>/.git/worktrees/<name>`, and `-C` moves only the working
+# directory: an inherited GIT_DIR would point `init` at the worktree's gitdir, which reads as bare and
+# writes `core.bare = true` into the config every worktree shares.
+SCRATCH_ENV=(env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE -u GIT_COMMON_DIR -u GIT_PREFIX
+  -u GIT_OBJECT_DIRECTORY -u GIT_ALTERNATE_OBJECT_DIRECTORIES)
+"${SCRATCH_ENV[@]}" git -C "$SCRATCH" init -q
 
-OUT="$(cd "$SCRATCH" && node "$LARES" meme check "${STAGED[@]}" 2>&1)"
+OUT="$(cd "$SCRATCH" && "${SCRATCH_ENV[@]}" node "$LARES" meme check "${STAGED[@]}" 2>&1)"
 CODE=$?
 if [ "$CODE" -eq 0 ]; then
   echo "[meme-check-staged] ${#STAGED[@]} staged carrier(s) canonical"
