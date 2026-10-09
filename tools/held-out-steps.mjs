@@ -11,7 +11,8 @@
 //   - a `uses:` step maps onto the local fact it guarantees: the checkout holds its submodules at their recorded
 //     commits, pnpm and node stand at the declared majors, and the evidence directory is non-empty, then copied;
 //   - the `github` context (sha, ref, ref_name, repository, workspace, event_name, actor, run_id, run_attempt)
-//     reads off the checkout the job runs in, and every `run:` step reads it as `GITHUB_*`, as the runner exports it.
+//     reads the runner's own `GITHUB_*` variables first, then the checkout the job runs in, and every `run:` step
+//     reads it as `GITHUB_*`, as the runner exports it.
 //
 // THE READER KNOWS ONLY THE SHAPES THIS WORKFLOW WRITES. An unknown key (a step's, the job's or the workflow's),
 // expression or action throws rather than skipping: a step this reader cannot run must never read as a step that
@@ -64,7 +65,7 @@ export function parseWorkflow(text) {
   let inJobs = false;
   const keyAt = (l, n) => {
     if (skippable(l)) return;
-    const m = new RegExp(`^${" ".repeat(n)}([A-Za-z_-]+):`).exec(l);
+    const m = new RegExp(`^${" ".repeat(n)}([A-Za-z0-9_-]+):`).exec(l);
     if (!m || indentOf(l) !== n) return;
     if (n === 0) {
       inJobs = m[1] === "jobs";
@@ -176,11 +177,12 @@ export function shouldRun(cond, ctx, state) {
 }
 
 /**
- * The `github` context a hosted runner fills for this job, read off the checkout the job runs in. The runner's
- * checkout stands on the dispatched branch, so a detached checkout names no ref and throws unless the caller names
- * one (`GITHUB_REF`). A `GITHUB_*` variable the caller sets wins over the checkout's reading.
+ * The `github` context a hosted runner fills for this job. The runner names it in its env (`GITHUB_REF`,
+ * `GITHUB_REF_NAME`, `GITHUB_SHA`, `GITHUB_ACTOR`, …), and every variable it names wins; the checkout fills only
+ * what the env leaves unnamed. A pull request's checkout stands detached on its merge ref, which the env names,
+ * so a detached checkout reads its ref from there, and throws only when nothing names one.
  */
-export function githubContext(cwd, env = {}) {
+export function githubContext(cwd, env = process.env) {
   const git = (...args) => {
     const r = spawnSync("git", args, { cwd, encoding: "utf8" });
     return r.status === 0 ? String(r.stdout).trim() : "";
@@ -188,20 +190,21 @@ export function githubContext(cwd, env = {}) {
   const sha = env.GITHUB_SHA || git("rev-parse", "--verify", "HEAD");
   if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error(`held-out-steps: the job directory ${cwd} holds no git checkout to read github.sha from`);
   const ref = env.GITHUB_REF || git("symbolic-ref", "-q", "HEAD");
-  if (!ref) throw new Error("held-out-steps: the checkout stands detached, and the runner's checkout stands on a branch — check out a branch or set GITHUB_REF");
+  if (!ref) throw new Error("held-out-steps: the checkout stands detached and nothing names its ref — check out a branch or set GITHUB_REF");
   let repository = env.GITHUB_REPOSITORY || "";
   if (!repository) {
     const m = /github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/.exec(git("remote", "get-url", "origin"));
     if (!m) throw new Error("held-out-steps: the checkout's origin names no GitHub repository — set GITHUB_REPOSITORY");
     repository = m[1];
   }
-  // A local checkout holds no GitHub login, so the committer's own name stands for the actor.
+  // The runner names the GitHub login that started the run. A local checkout holds no login, so the committer's
+  // own name stands for it there.
   const actor = env.GITHUB_ACTOR || git("config", "user.name");
-  if (!actor) throw new Error("held-out-steps: the checkout names no actor (git config user.name) — set GITHUB_ACTOR");
+  if (!actor) throw new Error("held-out-steps: nothing names an actor (GITHUB_ACTOR, or git config user.name) — set GITHUB_ACTOR");
   return {
     sha,
     ref,
-    ref_name: ref.replace(/^refs\/(heads|tags)\//, ""),
+    ref_name: env.GITHUB_REF_NAME || ref.replace(/^refs\/(heads|tags|pull)\//, ""),
     repository,
     workspace: resolve(cwd),
     event_name: env.GITHUB_EVENT_NAME || "workflow_dispatch",
@@ -216,8 +219,8 @@ export function githubEnv(github) {
   return Object.fromEntries(Object.entries(github).map(([k, v]) => [`GITHUB_${k.toUpperCase()}`, v]));
 }
 
-/** The job context for one driver, its `github` context read off the checkout at `cwd`. */
-export function jobContext(wf, driver, { cwd = ROOT, env = {} } = {}) {
+/** The job context for one driver, its `github` context read off `env`, then the checkout at `cwd`. */
+export function jobContext(wf, driver, { cwd = ROOT, env = process.env } = {}) {
   const row = wf.matrix.find((m) => m.driver === driver);
   if (!row) throw new Error(`held-out-steps: no matrix driver "${driver}" (${wf.matrix.map((m) => m.driver).join(", ")})`);
   const ctx = { matrix: row, github: githubContext(cwd, env), env: {} };
@@ -348,7 +351,7 @@ export async function runJob(wf, driver, { cwd = ROOT, env = process.env, log = 
 }
 
 /** The step labels a GREEN job runs for one driver, in order — the plan, with nothing run. */
-export function planFor(wf, driver, { cwd = ROOT, env = {} } = {}) {
+export function planFor(wf, driver, { cwd = ROOT, env = process.env } = {}) {
   const ctx = jobContext(wf, driver, { cwd, env });
   ctx.env = { ...ctx.env, ARTIFACT_DIR: "$ARTIFACT_DIR" };
   return wf.steps

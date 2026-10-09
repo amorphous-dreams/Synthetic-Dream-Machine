@@ -154,7 +154,7 @@ test("the github context reads off the checkout as the runner fills it, and ever
   const temp = mkdtempSync(join(tmpdir(), "held-out-github-"));
   try {
     const { sha } = checkout(temp, { branch: "feature/ring" });
-    const gh = githubContext(temp);
+    const gh = githubContext(temp, {});
     assert.deepEqual(gh, {
       sha, ref: "refs/heads/feature/ring", ref_name: "feature/ring", repository: "someone/somewhere",
       workspace: temp, event_name: "workflow_dispatch", actor: "Kahu Runner", run_id: "local", run_attempt: "1",
@@ -174,14 +174,36 @@ ${fields.map((f) => `          test -n "\${{ github.${f} }}" && test "\${{ githu
 test("CONTROL: a checkout that cannot fill the github context throws instead of reading empty", () => {
   const temp = mkdtempSync(join(tmpdir(), "held-out-github-"));
   try {
-    assert.throws(() => githubContext(temp), /holds no git checkout/);
+    assert.throws(() => githubContext(temp, {}), /holds no git checkout/);
     const { git } = checkout(temp, { origin: "" });
-    assert.throws(() => githubContext(temp), /names no GitHub repository/);
+    assert.throws(() => githubContext(temp, {}), /names no GitHub repository/);
     git("remote", "add", "origin", "https://github.com/someone/somewhere.git");
-    assert.equal(githubContext(temp).repository, "someone/somewhere");
+    assert.equal(githubContext(temp, {}).repository, "someone/somewhere");
     git("checkout", "-q", "--detach");
-    assert.throws(() => githubContext(temp), /stands detached/);
+    assert.throws(() => githubContext(temp, {}), /nothing names its ref/, "a detached checkout that nothing names a ref for refuses");
     assert.equal(githubContext(temp, { GITHUB_REF: "refs/heads/main" }).ref_name, "main");
+    git("config", "user.name", "");
+    assert.throws(() => githubContext(temp, { GITHUB_REF: "refs/heads/main" }), /nothing names an actor/);
+  } finally { rmSync(temp, { recursive: true, force: true }); }
+});
+
+test("RED: a detached checkout reads the runner's own GITHUB_* first, as a pull request's merge-ref checkout stands", () => {
+  const temp = mkdtempSync(join(tmpdir(), "held-out-github-"));
+  try {
+    const { git, sha } = checkout(temp);
+    git("checkout", "-q", "--detach");
+    const merge = "f".repeat(40);
+    const runner = { GITHUB_REF: "refs/pull/7/merge", GITHUB_REF_NAME: "7/merge", GITHUB_SHA: merge, GITHUB_ACTOR: "kahu-login", GITHUB_EVENT_NAME: "pull_request" };
+    const gh = githubContext(temp, runner);
+    assert.deepEqual([gh.ref, gh.ref_name, gh.sha, gh.actor, gh.event_name], ["refs/pull/7/merge", "7/merge", merge, "kahu-login", "pull_request"]);
+    assert.notEqual(gh.sha, sha, "the runner's sha wins over the checkout's HEAD");
+    assert.equal(githubContext(temp, { GITHUB_REF: "refs/pull/7/merge" }).ref_name, "7/merge", "a pull ref with no named ref_name reads as the runner names it");
+    assert.equal(githubContext(temp, { GITHUB_REF: "refs/heads/main" }).actor, "Kahu Runner", "CONTROL: an env that names no actor reads the committer");
+    // The reader's own defaults read the process env, so a runner's GITHUB_REF reaches a plan with no env passed.
+    const saved = process.env.GITHUB_REF;
+    process.env.GITHUB_REF = "refs/pull/7/merge";
+    try { assert.equal(githubContext(temp).ref, "refs/pull/7/merge"); }
+    finally { if (saved === undefined) delete process.env.GITHUB_REF; else process.env.GITHUB_REF = saved; }
   } finally { rmSync(temp, { recursive: true, force: true }); }
 });
 
@@ -194,6 +216,8 @@ test("RED: a job-level defaults, services or container block throws, wherever it
   assert.throws(() => parseWorkflow(atJob("    container: node:24\n")), /job key "container"/);
   assert.throws(() => parseWorkflow(`${head}    container: node:24\n`), /job key "container"/, "a key after the steps still reads");
   assert.throws(() => parseWorkflow(`${head}  second:\n    runs-on: ubuntu-latest\n`), /ONE job/);
+  assert.throws(() => parseWorkflow(`${head}  build2:\n    runs-on: ubuntu-latest\n`), /ONE job/, "a job id carrying digits still counts");
+  assert.throws(() => parseWorkflow(atJob("    timeout2: 5\n")), /job key "timeout2"/, "a job key carrying digits still reads");
   assert.throws(() => parseWorkflow(head.replace("jobs:\n", "defaults:\n  run:\n    shell: sh\njobs:\n")), /workflow key "defaults"/);
   assert.doesNotThrow(() => parseWorkflow(HELD_OUT), "the held-out workflow itself reads");
 });
@@ -207,8 +231,11 @@ test("every held-out job installs, renders, builds, stamps, then drives, and upl
   const wf = parseWorkflow(HELD_OUT);
   const drivers = wf.matrix.map((m) => m.driver);
   assert.deepEqual(drivers, ["browser-weld", "civic", "crossing", "herm-mesh", "mesh-scenarios"]);
+  // The plan reads this process's env, as the runner hands it: on a pull request's detached checkout the runner
+  // names the ref there. A local detached checkout names none, so the plan names the dispatched branch it stands for.
+  const env = { ...process.env, GITHUB_REF: process.env.GITHUB_REF || "refs/heads/main" };
   for (const driver of drivers) {
-    const plan = planFor(wf, driver);
+    const plan = planFor(wf, driver, { env });
     const at = (pred, what) => {
       const i = plan.findIndex(pred);
       assert.ok(i >= 0, `${driver}: no step ${what}`);
@@ -225,7 +252,7 @@ test("every held-out job installs, renders, builds, stamps, then drives, and upl
     ];
     assert.deepEqual([...order].sort((a, b) => a - b), order, `${driver}: the job runs its acts in order`);
   }
-  const herm = planFor(wf, "herm-mesh");
+  const herm = planFor(wf, "herm-mesh", { env });
   const stand = herm.findIndex((s) => /node tools\/mesh-pins\.mjs --up herm-source herm-relay herm-relay-2/.test(s.run ?? ""));
   assert.ok(stand >= 0 && stand < herm.findIndex((s) => s.name === "Run herm-mesh"), "herm-mesh stands its pins before it drives");
   assert.ok(!/docker compose -f docker-compose\.mesh\.yml up/.test(HELD_OUT), "no step stands the mesh bare, without pins");
