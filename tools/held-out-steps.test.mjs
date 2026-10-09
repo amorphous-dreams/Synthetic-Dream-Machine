@@ -7,7 +7,8 @@ import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseWorkflow, planFor, runJob, shouldRun, readEnvFile, expand } from "./held-out-steps.mjs";
+import { spawnSync } from "node:child_process";
+import { parseWorkflow, planFor, runJob, shouldRun, readEnvFile, expand, githubContext } from "./held-out-steps.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HELD_OUT = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
@@ -34,11 +35,27 @@ jobs:
 ${steps}
 `;
 
-async function run(text, driver) {
+/** A git checkout on a branch with one commit and a GitHub origin, as the runner's checkout leaves the job. */
+function checkout(dir, { branch = "main", origin = "git@github.com:someone/somewhere.git" } = {}) {
+  const git = (...args) => {
+    const r = spawnSync("git", ["-c", "core.hooksPath=/dev/null", ...args], { cwd: dir, encoding: "utf8" });
+    assert.equal(r.status, 0, `git ${args.join(" ")}: ${r.stderr}`);
+    return String(r.stdout).trim();
+  };
+  git("init", "-q", "-b", branch);
+  git("config", "user.name", "Kahu Runner");
+  git("config", "user.email", "kahu@example.invalid");
+  git("commit", "-q", "--allow-empty", "-m", "seed");
+  if (origin) git("remote", "add", "origin", origin);
+  return { git, sha: git("rev-parse", "HEAD") };
+}
+
+async function run(text, driver, { env = {} } = {}) {
   const temp = mkdtempSync(join(tmpdir(), "held-out-steps-"));
   const lines = [];
   try {
-    const r = await runJob(parseWorkflow(text), driver, { cwd: temp, env: { PATH: process.env.PATH, RUNNER_TEMP: temp }, log: (l) => lines.push(l) });
+    checkout(temp);
+    const r = await runJob(parseWorkflow(text), driver, { cwd: temp, env: { PATH: process.env.PATH, RUNNER_TEMP: temp, ...env }, log: (l) => lines.push(l) });
     return { ...r, lines };
   } finally { rmSync(temp, { recursive: true, force: true }); }
 }
@@ -131,6 +148,54 @@ test("a property the context lacks reads empty, as on the runner, and an upload 
           if-no-files-found: error`), "green");
   assert.equal(r.verdict, "RED");
   assert.equal(r.failed, "actions/upload-artifact@v4");
+});
+
+test("the github context reads off the checkout as the runner fills it, and every run step reads it as GITHUB_*", async () => {
+  const temp = mkdtempSync(join(tmpdir(), "held-out-github-"));
+  try {
+    const { sha } = checkout(temp, { branch: "feature/ring" });
+    const gh = githubContext(temp);
+    assert.deepEqual(gh, {
+      sha, ref: "refs/heads/feature/ring", ref_name: "feature/ring", repository: "someone/somewhere",
+      workspace: temp, event_name: "workflow_dispatch", actor: "Kahu Runner", run_id: "local", run_attempt: "1",
+    });
+    assert.equal(githubContext(temp, { GITHUB_EVENT_NAME: "schedule", GITHUB_ACTOR: "kahu" }).event_name, "schedule", "a caller's GITHUB_* wins");
+  } finally { rmSync(temp, { recursive: true, force: true }); }
+  const fields = ["sha", "ref", "ref_name", "repository", "workspace", "event_name", "actor"];
+  const r = await run(fixture(`      - name: Every github field reads non-empty, in the expression and in the env
+        shell: bash
+        run: |
+${fields.map((f) => `          test -n "\${{ github.${f} }}" && test "\${{ github.${f} }}" = "$GITHUB_${f.toUpperCase()}"`).join("\n")}
+          test "\${{ github.repository }}" = someone/somewhere && test "\${{ github.ref }}" = refs/heads/main
+          test "\${{ github.workspace }}" = "$PWD"`), "green");
+  assert.equal(r.verdict, "GREEN", r.lines.join("\n"));
+});
+
+test("CONTROL: a checkout that cannot fill the github context throws instead of reading empty", () => {
+  const temp = mkdtempSync(join(tmpdir(), "held-out-github-"));
+  try {
+    assert.throws(() => githubContext(temp), /holds no git checkout/);
+    const { git } = checkout(temp, { origin: "" });
+    assert.throws(() => githubContext(temp), /names no GitHub repository/);
+    git("remote", "add", "origin", "https://github.com/someone/somewhere.git");
+    assert.equal(githubContext(temp).repository, "someone/somewhere");
+    git("checkout", "-q", "--detach");
+    assert.throws(() => githubContext(temp), /stands detached/);
+    assert.equal(githubContext(temp, { GITHUB_REF: "refs/heads/main" }).ref_name, "main");
+  } finally { rmSync(temp, { recursive: true, force: true }); }
+});
+
+test("RED: a job-level defaults, services or container block throws, wherever it sits in the job, and so does a second job", () => {
+  const head = fixture(`      - name: x\n        run: "true"`);
+  const atJob = (block) => head.replace("    runs-on: ubuntu-latest\n", `    runs-on: ubuntu-latest\n${block}`);
+  assert.doesNotThrow(() => parseWorkflow(head), "CONTROL: the fixture's own job keys read");
+  assert.throws(() => parseWorkflow(atJob("    defaults:\n      run:\n        shell: sh\n")), /job key "defaults"/);
+  assert.throws(() => parseWorkflow(atJob("    services:\n      redis:\n        image: redis\n")), /job key "services"/);
+  assert.throws(() => parseWorkflow(atJob("    container: node:24\n")), /job key "container"/);
+  assert.throws(() => parseWorkflow(`${head}    container: node:24\n`), /job key "container"/, "a key after the steps still reads");
+  assert.throws(() => parseWorkflow(`${head}  second:\n    runs-on: ubuntu-latest\n`), /ONE job/);
+  assert.throws(() => parseWorkflow(head.replace("jobs:\n", "defaults:\n  run:\n    shell: sh\njobs:\n")), /workflow key "defaults"/);
+  assert.doesNotThrow(() => parseWorkflow(HELD_OUT), "the held-out workflow itself reads");
 });
 
 test("$GITHUB_ENV reads plain and heredoc lines, and refuses a line it cannot read", () => {

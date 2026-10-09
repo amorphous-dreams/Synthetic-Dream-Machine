@@ -12,7 +12,7 @@
 //     live direct pull advances; a dead chain does not. An act is named by its `actCid`; no sequence rides.
 //   · restore — relay-1 comes back up, the full mesh returns.
 //
-// Run:  docker compose -f docker-compose.mesh.yml up -d
+// Run:  node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2
 //       export LAR_ROOT=$(mktemp -d) && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
 //       node tools/herm-mesh-partition.mjs        (LAR_ROOT names the founded READER vessel; peers prove first)
 

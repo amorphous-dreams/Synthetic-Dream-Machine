@@ -83,20 +83,41 @@ function up(services) {
 }
 
 /**
+ * The pins one `LAR_PEERS` value names. An outer `${VAR-default}` override reads as its default, the value the mesh
+ * stands with. Every entry must end in its pin (`<url>#${NAME-}`); an entry this reader cannot pin throws, because
+ * a service planned as pinning nobody boots before the peer it dials has founded.
+ */
+export function pinsOfPeers(value, where = "LAR_PEERS") {
+  const outer = /^\$\{[A-Z0-9_]+-(.*)\}$/.exec(value);
+  const entries = (outer ? outer[1] : value).split(",").map((e) => e.trim()).filter(Boolean);
+  return entries.map((entry) => {
+    const pin = /^[^\s#$]+#\$\{([A-Z0-9_]+)-?\}$/.exec(entry);
+    if (!pin) throw new Error(`${where}: the peer entry "${entry}" carries no pin this reader reads (<url>#\${NAME-})`);
+    return pin[1];
+  });
+}
+
+/**
  * The gate pins each compose service knocks with, read off its `LAR_PEERS` default and never listed by hand:
- * `{ service: [pin name…] }` for every service under `services:`. A service that pins nobody maps to `[]`.
+ * `{ service: [pin name…] }` for every service under `services:`. A service that names no `LAR_PEERS` maps to
+ * `[]`. The reader reads ONE spelling, a double-quoted single-line map entry; any other spelling of `LAR_PEERS`
+ * (single-quoted, bare, a block scalar, a `- LAR_PEERS=` list item) throws rather than planning the service as
+ * pinning nobody.
  */
 export function pinsNeeded(composeText) {
   const out = {};
   let inServices = false;
   let current = null;
-  for (const line of composeText.split("\n")) {
+  for (const [n, line] of composeText.split("\n").entries()) {
+    if (/^\s*#/.test(line)) continue;
     if (/^\S/.test(line)) { inServices = /^services:\s*$/.test(line); current = null; continue; }
     if (!inServices) continue;
     const head = /^  ([a-z0-9-]+):\s*$/.exec(line);
     if (head) { current = head[1]; out[current] = []; continue; }
-    const peers = /^\s+LAR_PEERS:\s*"(.*)"\s*$/.exec(line);
-    if (current && peers) for (const m of peers[1].matchAll(/#\$\{([A-Z0-9_]+)-?\}/g)) out[current].push(m[1]);
+    if (!current || !/\bLAR_PEERS\b/.test(line)) continue;
+    const peers = /^\s+LAR_PEERS:\s*"([^"]*)"\s*$/.exec(line);
+    if (!peers) throw new Error(`${current}: LAR_PEERS at line ${n + 1} has a spelling this reader cannot read: ${line.trim()}`);
+    out[current].push(...pinsOfPeers(peers[1], `${current} LAR_PEERS`));
   }
   return out;
 }

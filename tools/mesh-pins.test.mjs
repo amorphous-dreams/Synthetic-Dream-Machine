@@ -3,11 +3,11 @@
 // carrying one stands a mesh that cannot peer.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PINNED, readPins, pinsText, pinsNeeded, standPlan, standInPinOrder } from "./mesh-pins.mjs";
+import { PINNED, readPins, pinsText, pinsNeeded, pinsOfPeers, standPlan, standInPinOrder } from "./mesh-pins.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -82,4 +82,41 @@ test("a stand reads every key of a wave before the next wave boots, and only a w
   const whole = [];
   await standInPinOrder([["herm-source"]], { whole: true, stand: (s) => whole.push(s.length ? s.join(" ") : "*"), keyOf: async () => "ef".repeat(32), write: () => {} });
   assert.deepEqual(whole, ["herm-source", "*"]);
+});
+
+/** A compose text with one service whose LAR_PEERS line reads as given. */
+const oneService = (peersLine) => `services:\n  herm-relay:\n    image: node:24-slim\n    environment:\n${peersLine}\n  herm-source:\n    image: node:24-slim\n`;
+
+test("CONTROL: the one spelling the reader reads plans its pins, an override reads as its default, and a service with no LAR_PEERS pins nobody", () => {
+  assert.deepEqual(pinsNeeded(oneService('      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"')), { "herm-relay": ["HERM_SOURCE_GATE"], "herm-source": [] });
+  assert.deepEqual(pinsOfPeers("${LAR_A_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-},http://herm-relay:8080#${HERM_RELAY_GATE}}"), ["HERM_SOURCE_GATE", "HERM_RELAY_GATE"]);
+  assert.deepEqual(pinsOfPeers("${LAR_A_PEERS-}"), [], "an override whose default stands empty is a lone vessel, pinning nobody");
+  assert.deepEqual(pinsNeeded(`# LAR_PEERS: 'a column-0 comment never reads as a spelling'\n${oneService('      # LAR_PEERS: bare, inside a comment\n      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"')}`)["herm-relay"], ["HERM_SOURCE_GATE"]);
+});
+
+test("RED: a LAR_PEERS spelling the reader cannot read throws, and never plans the service as pinning nobody", () => {
+  for (const line of [
+    "      LAR_PEERS: 'http://herm-source:8080#${HERM_SOURCE_GATE-}'",
+    "      LAR_PEERS: http://herm-source:8080#${HERM_SOURCE_GATE-}",
+    "      LAR_PEERS: >-\n        http://herm-source:8080#${HERM_SOURCE_GATE-}",
+    "      - LAR_PEERS=http://herm-source:8080#${HERM_SOURCE_GATE-}",
+    '      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}" # trailing note',
+  ]) assert.throws(() => pinsNeeded(oneService(line)), /spelling this reader cannot read/, line);
+  assert.throws(() => pinsNeeded(oneService('      LAR_PEERS: "http://herm-source:8080"')), /carries no pin/);
+  assert.throws(() => pinsNeeded(oneService('      LAR_PEERS: "${LAR_A_PEERS-http://herm-source:8080}"')), /carries no pin/);
+});
+
+/** The lines in a text that stand the docker mesh with a bare `compose … up`, outside the pin order. */
+export function bareMeshStands(text) {
+  return text.split("\n").filter((l) => /docker compose -f docker-compose\.mesh\.yml\b[^\n]*\bup\b/.test(l));
+}
+
+test("no tool documents a bare compose stand of the mesh: every documented stand walks the pin order", () => {
+  assert.deepEqual(bareMeshStands("# Usage: docker compose -f docker-compose.mesh.yml up -d && ./x.sh"), ["# Usage: docker compose -f docker-compose.mesh.yml up -d && ./x.sh"], "CONTROL: the scan reads a bare stand");
+  assert.deepEqual(bareMeshStands("# Run: node tools/mesh-pins.mjs --up herm-source"), [], "CONTROL: a pinned stand reads clean");
+  const tools = join(ROOT, "tools");
+  const files = readdirSync(tools).filter((f) => /\.(sh|mjs)$/.test(f) && !/\.test\.mjs$/.test(f));
+  assert.ok(files.includes("herm-mesh-witness.sh") && files.includes("herm-mesh-partition.mjs"), "the scan reads the witness drivers");
+  const found = files.flatMap((f) => bareMeshStands(readFileSync(join(tools, f), "utf8")).map((l) => `${f}: ${l.trim()}`));
+  assert.deepEqual(found, []);
 });

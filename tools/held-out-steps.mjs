@@ -9,10 +9,13 @@
 //     for `shell: bash`), and the lines it appends to `$GITHUB_ENV` reach every later step;
 //   - the job's `timeout-minutes` cancels the job, and only `always()` steps run after that;
 //   - a `uses:` step maps onto the local fact it guarantees: the checkout holds its submodules at their recorded
-//     commits, pnpm and node stand at the declared majors, and the evidence directory is non-empty, then copied.
+//     commits, pnpm and node stand at the declared majors, and the evidence directory is non-empty, then copied;
+//   - the `github` context (sha, ref, ref_name, repository, workspace, event_name, actor, run_id, run_attempt)
+//     reads off the checkout the job runs in, and every `run:` step reads it as `GITHUB_*`, as the runner exports it.
 //
-// THE READER KNOWS ONLY THE SHAPES THIS WORKFLOW WRITES. An unknown key, expression or action throws rather than
-// skipping: a step this reader cannot run must never read as a step that passed.
+// THE READER KNOWS ONLY THE SHAPES THIS WORKFLOW WRITES. An unknown key (a step's, the job's or the workflow's),
+// expression or action throws rather than skipping: a step this reader cannot run must never read as a step that
+// passed, and a job-level `defaults:`, `services:` or `container:` would change how every step runs.
 //
 //   node tools/held-out-steps.mjs <driver>             run the job; exit 0 only when every step that ran passed
 //   node tools/held-out-steps.mjs <driver> --plan      print the steps a green job runs, and run nothing
@@ -27,6 +30,11 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STEP_KEYS = new Set(["name", "if", "run", "uses", "shell", "with"]);
+// The workflow-level and job-level keys this reader reads or that change nothing it runs. Any other key, such as a
+// job's `defaults:` (a different shell line), `services:` (sidecar containers) or `container:` (a different
+// image), changes how the runner runs every step, so it throws rather than reading as absent.
+const WORKFLOW_KEYS = new Set(["name", "on", "permissions", "jobs"]);
+const JOB_KEYS = new Set(["name", "runs-on", "timeout-minutes", "strategy", "env", "steps"]);
 
 const unquote = (v) => {
   const t = v.trim();
@@ -51,9 +59,28 @@ export function parseWorkflow(text) {
   const indentOf = (l) => l.length - l.trimStart().length;
   const skippable = (l) => l.trim() === "" || l.trim().startsWith("#");
 
+  // Every key at indent 0 (the workflow), 2 (a job) and 4 (the job's own keys) must be one this reader reads.
+  let jobs = 0;
+  let inJobs = false;
+  const keyAt = (l, n) => {
+    if (skippable(l)) return;
+    const m = new RegExp(`^${" ".repeat(n)}([A-Za-z_-]+):`).exec(l);
+    if (!m || indentOf(l) !== n) return;
+    if (n === 0) {
+      inJobs = m[1] === "jobs";
+      if (!WORKFLOW_KEYS.has(m[1])) throw new Error(`held-out-steps: workflow key "${m[1]}" has no local reading`);
+    } else if (n === 2 && inJobs && ++jobs > 1) {
+      throw new Error(`held-out-steps: the reader runs ONE job, and the workflow names a second ("${m[1]}")`);
+    } else if (n === 4 && inJobs && !JOB_KEYS.has(m[1])) {
+      throw new Error(`held-out-steps: job key "${m[1]}" has no local reading`);
+    }
+  };
+  const keysOf = (l) => { keyAt(l, 0); keyAt(l, 2); keyAt(l, 4); };
+
   // Job-level scalars and blocks sit at indent 4 under the one job.
   for (; i < lines.length; i++) {
     const l = lines[i];
+    keysOf(l);
     if (/^    timeout-minutes:/.test(l)) timeout = unquote(l.split(":").slice(1).join(":"));
     if (/^    env:\s*$/.test(l)) {
       for (i++; i < lines.length && (skippable(lines[i]) || indentOf(lines[i]) > 4); i++) {
@@ -80,7 +107,11 @@ export function parseWorkflow(text) {
     const l = lines[i];
     if (skippable(l)) continue;
     const ind = indentOf(l);
-    if (ind < 6) break;
+    if (ind < 6) {
+      // The job's keys after its steps still decide how the runner runs them.
+      for (; i < lines.length; i++) keysOf(lines[i]);
+      break;
+    }
     const open = /^      - ([a-z-]+):\s*(.*)$/.exec(l);
     const field = /^        ([a-z-]+):\s*(.*)$/.exec(l);
     const m = open ?? field;
@@ -144,11 +175,52 @@ export function shouldRun(cond, ctx, state) {
   return namesStatus ? value : state === "success" && value;
 }
 
-/** The job context for one driver. */
-export function jobContext(wf, driver, base = {}) {
+/**
+ * The `github` context a hosted runner fills for this job, read off the checkout the job runs in. The runner's
+ * checkout stands on the dispatched branch, so a detached checkout names no ref and throws unless the caller names
+ * one (`GITHUB_REF`). A `GITHUB_*` variable the caller sets wins over the checkout's reading.
+ */
+export function githubContext(cwd, env = {}) {
+  const git = (...args) => {
+    const r = spawnSync("git", args, { cwd, encoding: "utf8" });
+    return r.status === 0 ? String(r.stdout).trim() : "";
+  };
+  const sha = env.GITHUB_SHA || git("rev-parse", "--verify", "HEAD");
+  if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error(`held-out-steps: the job directory ${cwd} holds no git checkout to read github.sha from`);
+  const ref = env.GITHUB_REF || git("symbolic-ref", "-q", "HEAD");
+  if (!ref) throw new Error("held-out-steps: the checkout stands detached, and the runner's checkout stands on a branch — check out a branch or set GITHUB_REF");
+  let repository = env.GITHUB_REPOSITORY || "";
+  if (!repository) {
+    const m = /github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/.exec(git("remote", "get-url", "origin"));
+    if (!m) throw new Error("held-out-steps: the checkout's origin names no GitHub repository — set GITHUB_REPOSITORY");
+    repository = m[1];
+  }
+  // A local checkout holds no GitHub login, so the committer's own name stands for the actor.
+  const actor = env.GITHUB_ACTOR || git("config", "user.name");
+  if (!actor) throw new Error("held-out-steps: the checkout names no actor (git config user.name) — set GITHUB_ACTOR");
+  return {
+    sha,
+    ref,
+    ref_name: ref.replace(/^refs\/(heads|tags)\//, ""),
+    repository,
+    workspace: resolve(cwd),
+    event_name: env.GITHUB_EVENT_NAME || "workflow_dispatch",
+    actor,
+    run_id: env.GITHUB_RUN_ID || "local",
+    run_attempt: env.GITHUB_RUN_ATTEMPT || "1",
+  };
+}
+
+/** The variables the runner exports for its `github` context, so a `run:` step reads them as it does there. */
+export function githubEnv(github) {
+  return Object.fromEntries(Object.entries(github).map(([k, v]) => [`GITHUB_${k.toUpperCase()}`, v]));
+}
+
+/** The job context for one driver, its `github` context read off the checkout at `cwd`. */
+export function jobContext(wf, driver, { cwd = ROOT, env = {} } = {}) {
   const row = wf.matrix.find((m) => m.driver === driver);
   if (!row) throw new Error(`held-out-steps: no matrix driver "${driver}" (${wf.matrix.map((m) => m.driver).join(", ")})`);
-  const ctx = { matrix: row, github: { run_id: base.runId ?? "local", run_attempt: base.runAttempt ?? "1" }, env: {} };
+  const ctx = { matrix: row, github: githubContext(cwd, env), env: {} };
   for (const [k, v] of Object.entries(wf.env)) ctx.env[k] = expand(v, ctx);
   return ctx;
 }
@@ -236,12 +308,12 @@ export function readEnvFile(text) {
 export async function runJob(wf, driver, { cwd = ROOT, env = process.env, log = console.log } = {}) {
   const runnerTemp = env.RUNNER_TEMP;
   if (!runnerTemp) throw new Error("held-out-steps: RUNNER_TEMP must name a scratch directory");
-  const ctx = jobContext(wf, driver);
+  const ctx = jobContext(wf, driver, { cwd, env });
   const minutes = Number(expand(wf.timeout ?? "360", ctx));
   const deadline = Date.now() + minutes * 60_000;
   const evidence = env.HELD_OUT_EVIDENCE ?? join(runnerTemp, "uploaded");
   const stepDir = mkdtempSync(join(runnerTemp, "steps-"));
-  let jobEnv = { ...env, ...ctx.env, RUNNER_TEMP: runnerTemp, GITHUB_ACTIONS: "true", CI: "true" };
+  let jobEnv = { ...env, ...githubEnv(ctx.github), ...ctx.env, RUNNER_TEMP: runnerTemp, GITHUB_ACTIONS: "true", CI: "true" };
   let state = "success";
   let failed = null;
   for (const [n, step] of wf.steps.entries()) {
@@ -276,8 +348,8 @@ export async function runJob(wf, driver, { cwd = ROOT, env = process.env, log = 
 }
 
 /** The step labels a GREEN job runs for one driver, in order — the plan, with nothing run. */
-export function planFor(wf, driver) {
-  const ctx = jobContext(wf, driver, {});
+export function planFor(wf, driver, { cwd = ROOT, env = {} } = {}) {
+  const ctx = jobContext(wf, driver, { cwd, env });
   ctx.env = { ...ctx.env, ARTIFACT_DIR: "$ARTIFACT_DIR" };
   return wf.steps
     .filter((s) => shouldRun(s.if, ctx, "success"))
