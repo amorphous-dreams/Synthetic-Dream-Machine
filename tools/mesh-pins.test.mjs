@@ -7,7 +7,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PINNED, readPins, pinsText } from "./mesh-pins.mjs";
+import { PINNED, readPins, pinsText, pinsNeeded, standPlan, standInPinOrder } from "./mesh-pins.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -47,4 +47,39 @@ test("the pins file round-trips, and a torn line names no pin", () => {
     assert.deepEqual(readPins(path), pins);
     assert.deepEqual(readPins(join(dir, "absent.env")), {});
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("the stand order derives from the compose file: a herm boots only after the herm it pins has founded", () => {
+  const needs = pinsNeeded(readFileSync(join(ROOT, "docker-compose.mesh.yml"), "utf8"));
+  assert.deepEqual(needs["herm-relay"], ["HERM_SOURCE_GATE"]);
+  assert.deepEqual(needs["herm-relay-2"], ["HERM_RELAY_GATE"]);
+  assert.deepEqual(standPlan(needs), [["herm-source"], ["herm-relay", "lararium-a", "lararium-b"], ["herm-relay-2"]]);
+  // A scoped stand drags in exactly the peers it pins, and nothing a herm witness never reads.
+  assert.deepEqual(standPlan(needs, ["herm-relay-2"]), [["herm-source"], ["herm-relay"], ["herm-relay-2"]]);
+  assert.deepEqual(standPlan(needs, ["herm-source", "herm-relay", "herm-relay-2"]), [["herm-source"], ["herm-relay"], ["herm-relay-2"]]);
+});
+
+test("CONTROL: a plan over an unknown service, an unpinned service, a pin nobody writes, or a cycle refuses aloud", () => {
+  const needs = { "herm-source": [], "herm-relay": ["HERM_SOURCE_GATE"], "browser-a": [] };
+  assert.throws(() => standPlan(needs, ["herm-ghost"]), /no compose service named "herm-ghost"/);
+  assert.throws(() => standPlan(needs, ["browser-a"]), /founds no gate key/);
+  assert.throws(() => standPlan({ "herm-source": ["NOBODY_GATE"] }, ["herm-source"]), /which no pinned service writes/);
+  assert.throws(() => standPlan({ "herm-source": ["HERM_RELAY_GATE"], "herm-relay": ["HERM_SOURCE_GATE"] }, ["herm-relay"]), /cycle/);
+});
+
+test("a stand reads every key of a wave before the next wave boots, and only a whole stand raises the rest", async () => {
+  const acts = [];
+  const writes = [];
+  const pins = await standInPinOrder([["herm-source"], ["herm-relay"]], {
+    stand: (svcs) => acts.push(`up ${svcs.join(" ") || "*"}`),
+    keyOf: async (s) => { acts.push(`key ${s}`); return s === "herm-source" ? "ab".repeat(32) : "cd".repeat(32); },
+    write: (t) => writes.push(t),
+  });
+  assert.deepEqual(acts, ["up herm-source", "key herm-source", "up herm-relay", "key herm-relay"]);
+  assert.deepEqual(pins, { HERM_SOURCE_GATE: "ab".repeat(32), HERM_RELAY_GATE: "cd".repeat(32) });
+  assert.equal(writes[0], "", "a stand clears the prior pins before the first wave");
+  assert.equal(writes[1], `HERM_SOURCE_GATE=${"ab".repeat(32)}\n`, "the relay boots against the source's written pin");
+  const whole = [];
+  await standInPinOrder([["herm-source"]], { whole: true, stand: (s) => whole.push(s.length ? s.join(" ") : "*"), keyOf: async () => "ef".repeat(32), write: () => {} });
+  assert.deepEqual(whole, ["herm-source", "*"]);
 });

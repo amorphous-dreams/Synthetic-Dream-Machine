@@ -7,8 +7,11 @@
 // key its gates arm with — and writes `.mesh-pins.env`, which the compose file's pinned entries read.
 //
 //   node tools/mesh-pins.mjs           read the pins of every pinned service that stands; write .mesh-pins.env
-//   node tools/mesh-pins.mjs --up      stand the mesh in PIN ORDER: herm-source, then herm-relay pinned to it,
-//                                      then every other service pinned to both — re-reading the pins at each step
+//   node tools/mesh-pins.mjs --up      stand the mesh in PIN ORDER: each wave boots against the pins every earlier
+//                                      wave founded (the order derives from the compose file's LAR_PEERS), then the
+//                                      browser vessels stand against the full set
+//   node tools/mesh-pins.mjs --up <service…>
+//                                      stand only the named services and the peers they pin, in the same order
 //   node tools/mesh-pins.mjs --print   print the pins as `NAME=<hex>` lines and write nothing
 //
 // The witnesses read the same file: `tools/herm-mesh-witness.mjs` pins each hop it pulls from it.
@@ -79,28 +82,81 @@ function up(services) {
   execFileSync("docker", args, { stdio: "inherit" });
 }
 
-async function standInPinOrder() {
-  writeFileSync(PINS_FILE, "");
-  const pins = {};
-  up(["herm-source"]);
-  pins.HERM_SOURCE_GATE = await waitForKey("herm-source");
-  writeFileSync(PINS_FILE, pinsText(pins));
-  up(["herm-relay"]);
-  pins.HERM_RELAY_GATE = await waitForKey("herm-relay");
-  writeFileSync(PINS_FILE, pinsText(pins));
-  up([]);
-  for (const s of ["herm-relay-2", "lararium-a", "lararium-b"]) {
-    const name = PINNED.find((p) => p.service === s).name;
-    pins[name] = await waitForKey(s);
+/**
+ * The gate pins each compose service knocks with, read off its `LAR_PEERS` default and never listed by hand:
+ * `{ service: [pin name…] }` for every service under `services:`. A service that pins nobody maps to `[]`.
+ */
+export function pinsNeeded(composeText) {
+  const out = {};
+  let inServices = false;
+  let current = null;
+  for (const line of composeText.split("\n")) {
+    if (/^\S/.test(line)) { inServices = /^services:\s*$/.test(line); current = null; continue; }
+    if (!inServices) continue;
+    const head = /^  ([a-z0-9-]+):\s*$/.exec(line);
+    if (head) { current = head[1]; out[current] = []; continue; }
+    const peers = /^\s+LAR_PEERS:\s*"(.*)"\s*$/.exec(line);
+    if (current && peers) for (const m of peers[1].matchAll(/#\$\{([A-Z0-9_]+)-?\}/g)) out[current].push(m[1]);
   }
-  writeFileSync(PINS_FILE, pinsText(pins));
+  return out;
+}
+
+/**
+ * The waves a pinned stand walks. Each wave holds the pinned services whose every pin an earlier wave read.
+ * An empty `wanted` names every pinned service; a named service drags in the peers it pins. A name the compose
+ * file lacks, a service that founds no pinned key, or a pin no service writes refuses the plan aloud.
+ */
+export function standPlan(needs, wanted = []) {
+  const serviceOf = Object.fromEntries(PINNED.map((p) => [p.name, p.service]));
+  for (const s of wanted) {
+    if (!(s in needs)) throw new Error(`no compose service named "${s}"`);
+    if (!PINNED.some((p) => p.service === s)) throw new Error(`"${s}" founds no gate key a peer pins`);
+  }
+  const want = new Set(wanted.length ? wanted : PINNED.map((p) => p.service));
+  const queue = [...want];
+  while (queue.length) {
+    const s = queue.shift();
+    for (const pin of needs[s] ?? []) {
+      const peer = serviceOf[pin];
+      if (!peer) throw new Error(`${s} pins ${pin}, which no pinned service writes`);
+      if (!want.has(peer)) { want.add(peer); queue.push(peer); }
+    }
+  }
+  const waves = [];
+  const read = new Set();
+  let left = PINNED.filter((p) => want.has(p.service));
+  while (left.length) {
+    const wave = left.filter((p) => (needs[p.service] ?? []).every((pin) => read.has(pin)));
+    if (wave.length === 0) throw new Error(`the pins form a cycle: ${left.map((p) => p.service).join(", ")}`);
+    waves.push(wave.map((p) => p.service));
+    for (const p of wave) read.add(p.name);
+    left = left.filter((p) => !wave.includes(p));
+  }
+  return waves;
+}
+
+/**
+ * Stand the plan's waves, reading every key of a wave before the next one boots against it. `whole` then
+ * stands every remaining service (the browser vessels) against the full pin set.
+ */
+export async function standInPinOrder(waves, { whole = false, stand = up, keyOf = waitForKey, write = (t) => writeFileSync(PINS_FILE, t) } = {}) {
+  write("");
+  const pins = {};
+  for (const wave of waves) {
+    stand(wave);
+    for (const s of wave) pins[PINNED.find((p) => p.service === s).name] = await keyOf(s);
+    write(pinsText(pins));
+  }
+  if (whole) stand([]);
   return pins;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const arg = process.argv[2];
   if (arg === "--up") {
-    const pins = await standInPinOrder();
+    const wanted = process.argv.slice(3);
+    const waves = standPlan(pinsNeeded(readFileSync(join(ROOT, "docker-compose.mesh.yml"), "utf8")), wanted);
+    const pins = await standInPinOrder(waves, { whole: wanted.length === 0 });
     process.stdout.write(`[mesh-pins] the mesh stands, pinned — ${PINS_FILE}\n${pinsText(pins)}`);
   } else {
     const pins = readAll(arg === "--print" ? {} : readPins());
