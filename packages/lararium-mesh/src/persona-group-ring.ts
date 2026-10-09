@@ -51,6 +51,10 @@ export interface PersonaGroupIdentityRing {
   admitsPeer(documentId: DocumentId, peerId: PeerId): Promise<boolean>;
   /** The base gate widened by this ring's admit path, and by nothing else. */
   compose(base: FederationGate): FederationGate;
+  /** The ring's SIBLING predicate: a governed plane, asked by a peer this face's sibling session proved. */
+  admitsSibling(documentId: DocumentId, peerId: PeerId): boolean;
+  /** The base gate widened by the sibling admit path alone — the gate a share policy hands a sibling. */
+  composeSiblings(base: FederationGate): FederationGate;
 }
 
 export function makePersonaGroupIdentityRing(opts: {
@@ -60,6 +64,9 @@ export function makePersonaGroupIdentityRing(opts: {
   readonly isOwnHand?: (peerId: PeerId) => boolean;
   /** The vessel verifying key this peer PROVED at this vessel's gate; null for a peer that proved none. */
   readonly provenVesselKey: (peerId: PeerId) => string | null;
+  /** The device key a SIBLING proved over this face's sibling session — a device the face's own PersonaGroup
+   *  delegated. Such a peer holds STANDING: the governed planes, and nothing else. Null for every other peer. */
+  readonly siblingKeyOf?: (peerId: PeerId) => string | null;
   readonly grants: PersonaGroupGrantReading;
 }): PersonaGroupIdentityRing {
   const admitsPeer = async (documentId: DocumentId, peerId: PeerId): Promise<boolean> => {
@@ -76,13 +83,24 @@ export function makePersonaGroupIdentityRing(opts: {
     }
     return false;
   };
+  // A sibling's standing reaches the face's own planes alone: the sibling session proved its device under THIS
+  // face's KEL and lease, so the ring reads the proof, and a plane it does not govern stays shut.
+  const admitsSibling = (documentId: DocumentId, peerId: PeerId): boolean =>
+    opts.governs(documentId) && Boolean(opts.siblingKeyOf?.(peerId));
   return {
     admitsPeer,
+    admitsSibling,
     compose: (base) => ({
       mayFederate: async (documentId, peerId) => {
         if (await base.mayFederate(documentId, peerId)) return true;
         if (!peerId) return false;
         return admitsPeer(documentId, peerId);
+      },
+    }),
+    composeSiblings: (base) => ({
+      mayFederate: async (documentId, peerId) => {
+        if (await base.mayFederate(documentId, peerId)) return true;
+        return Boolean(peerId) && admitsSibling(documentId, peerId!);
       },
     }),
   };

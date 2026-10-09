@@ -26,6 +26,7 @@ import { sha256HexSync, canonicalJson, canonicalJsonBytes, hexToBytes } from "./
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-delegation.js";
+import type { PersonaGroupEnrolment } from "./persona-group-secret.js";
 
 /** The domain the persona-KEL prefix + event bytes tag — separates a persona AID from every other hash. */
 export { PERSONA_KEL_DOMAIN } from "./domains.js";
@@ -51,6 +52,10 @@ export interface PersonaKelEvent {
   readonly vetoOfCid:         string | null;      // a VETO names the provisional it kills; null on every other kind
   readonly rotationSigs:      readonly QuorumSignature[]; // [] at inception; ≥ threshold guardian sigs on a rotation
   readonly vetoSig?:          string | null;      // the standing op-key's signature over a veto's bytes (outside the cid, like rotationSigs)
+  /** The devices this event's op-key RE-ENROLS — each one's edge and its sealed PersonaGroup secret, signed by the
+   *  event's own op-key (`persona-group-secret`). Outside the cid, like rotationSigs: a device left out finds no
+   *  seal addressed to it, which is how a rotation revokes. */
+  readonly enrolments?:       readonly PersonaGroupEnrolment[];
 }
 
 /** The authority fields an event's content-address + the guardian signatures BOTH bind — the fields a

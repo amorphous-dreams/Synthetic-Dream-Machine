@@ -3,6 +3,9 @@
  * the gate's sorter answered before the socket's verdict.
  *
  *   · an IN-PROCESS island peer (no WS socket) — a house member — shares FREELY (empty relay ring);
+ *   · a SIBLING (no WS socket, proven over the sibling channel) — a device of the worn face's PersonaGroup —
+ *     holds STANDING, never the house: the sibling gate alone decides it (the face's own planes and the public
+ *     boards; never the @daemon, never another face's planes);
  *   · a SAME-OPERATOR WS peer — the keyholder vouched admin@daemon or a KEL-pinned device edge, both
  *     UNFORGEABLE — shares FREELY too (full device sync; the operator's own fleet carries every private plane);
  *   · every other WS peer — contracted, walker, stranger, or one with no class — rides a singleton relay ring
@@ -29,7 +32,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */
 import type { DocumentId } from "@automerge/automerge-repo";
-import { carryContractShareDecision, carrierShareDecision } from "@lararium/mesh";
+import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, siblingShareDecision } from "@lararium/mesh";
 import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal } from "@lararium/mesh";
 
 /** A same-operator peer + every in-process island peer ride this empty relay ring → shared freely. */
@@ -38,6 +41,11 @@ const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
 export interface SelfSlotShareInput {
   /** True for a WS peer (an outside carrier); false for an in-process island peer (a house member). */
   readonly hasWsSocket: boolean;
+  /** True for a peer the SIBLING CHANNEL proved — a device of the worn face's PersonaGroup, on no WS socket. It
+   *  holds standing, never the house: only `siblingGate` decides what reaches it. */
+  readonly sibling?: boolean;
+  /** The sibling gate — the PersonaGroup ring's sibling path over the public boards. Null denies every doc. */
+  readonly siblingGate?: FederationGate | null;
   /** The class the gate's sorter answered; `undefined` → the shelf, fail-closed. */
   readonly peerClass: PeerClass | undefined;
   /** The federatable-own classifier (a pure function of this Nexus's pubkey). Null before it stands. */
@@ -60,11 +68,18 @@ export interface SelfSlotShareInput {
 }
 
 /**
- * The per-peer share verdict. A same-operator / in-process peer full-syncs; every other WS peer reaches only
+ * The per-peer share verdict. A sibling reaches what the sibling gate federates; a same-operator / in-process
+ * peer full-syncs; every other WS peer reaches only
  * the deterministically-federatable planes (and, as a member, a provably-sealed plane's ciphertext); a Kapae'd
  * presenter draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
  */
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
+  // A SIBLING never shares freely: it arrives on no WS socket, yet it is no house member. The sibling gate holds
+  // its whole verdict (the face's own planes and the public boards), and the antigen still draws Mu ahead of it.
+  if (!input.hasWsSocket && input.sibling) {
+    if (presenterIsKapaed(input.antigenRing, input.peerId)) return false;
+    return siblingShareDecision(input.siblingGate ?? null, input.peerId, input.documentId);
+  }
   if (input.hasWsSocket && input.peerClass !== "same-operator") {
     if (input.peerClass === "walker" && input.walkerBoard && input.documentId === input.walkerBoard) {
       // Its hearth's hosting doc names only that hearth's acts; the antigen still draws Mu on a Kapae'd presenter.

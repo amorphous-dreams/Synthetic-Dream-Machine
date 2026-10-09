@@ -259,7 +259,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
   test("an applied admit lands the door on the joinee's OWN daemon doc, and returns it", async () => {
     const { Repo } = await import("@automerge/automerge-repo");
     const { runApplyAdmitPayload } = await import("@lararium/keyhive");
-    const { HEARTH_DAEMON_URL_TIDDLER } = await import("@lararium/mesh");
+    const { HEARTH_DAEMON_URL_TIDDLER, sealGroupSecret } = await import("@lararium/mesh");
 
     const HEARTH_DOOR = "automerge:2fakeHearthDoorUrl000000000";
     const joinee = await makeVessel(72);
@@ -288,6 +288,8 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
           vetoOfCid: null, rotationSigs: [],
         }],
         deviceEdge:             edge,
+        // The secret the same root sealed beside the edge — REQUIRED: an enrolment without it meets no sibling.
+        groupSecretSeal:        await sealGroupSecret({ opSeed: ROOT_SEED, prefix: "persona-probe", deviceVerifyingKey: await rawKeyOf(joinee) }),
         hearthTrueName:         HEARTH,
         personaGroupDocIdHex:   "ab".repeat(16),
         personaGroupAgentIdHex: "cd".repeat(16),

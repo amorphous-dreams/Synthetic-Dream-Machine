@@ -101,6 +101,13 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     if (sig === null) return null;   // a torn signature reads the whole event closed (never a partial quorum)
     rotationSigs.push(sig);
   }
+  // The enrolments ride outside the cid and verify downstream (`leafStandingUnder`); a torn list reads the whole
+  // event closed, never a partial.
+  const enrolRaw = p["enrolments"];
+  if (enrolRaw !== undefined && (!Array.isArray(enrolRaw) || enrolRaw.some((e) =>
+    typeof e !== "object" || e === null || typeof (e as Record<string, unknown>)["edge"] !== "object" || typeof (e as Record<string, unknown>)["seal"] !== "object"))) {
+    return null;
+  }
   // The event carries no explicit `kind` field (persona-kel events are structural); the domain lives in the
   // event bytes the cid commits, so a structural coercion + the downstream cid recompute is the real gate.
   void PERSONA_KEL_DOMAIN;
@@ -118,6 +125,7 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     recoveryThreshold: p["recoveryThreshold"] as number,
     prevEventCid:      prevRaw,
     rotationSigs,
+    ...(enrolRaw !== undefined ? { enrolments: enrolRaw as NonNullable<PersonaKelEvent["enrolments"]> } : {}),
   };
 }
 

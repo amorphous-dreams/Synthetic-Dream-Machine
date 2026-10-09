@@ -19,11 +19,12 @@
  *   · SILENCE — a bad proof, a wrong knock, anything malformed: no answer, and the socket cut at the deadline the
  *     gate drew at accept. No close code and no reason cross.
  *   · ENVELOPES — ride the admitted socket as `lar:session` frames of kind `membership/env`.
- *   · SIBLING FRAMES — a leaf that joins a channel (`sibling/join`, an opaque tag) reaches the other keys proven on
- *     that channel and no one else: a `sibling/frame` goes to the key it names, or to the whole channel, with
- *     `from` STAMPED to the sender's proven key. The relay routes on the tag and the stamp and reads no frame —
- *     the siblings' proof and session ride inside it (`@lararium/mesh` sibling-channel), the herm's face is
- *     carriage alone.
+ *   · SIBLING FRAMES — a leaf that joins channels (`sibling/join`, opaque tags its PersonaGroup secrets key at
+ *     this herm) reaches the other keys proven on a channel it shares and no one else: a `sibling/frame` goes to
+ *     the key it names, or to every key sharing one of its channels, with `from` STAMPED to the sender's proven
+ *     key. The relay routes on the tags and the stamp and reads no frame — the siblings' proof and session ride
+ *     inside it (`@lararium/mesh` sibling-channel), the herm's face is carriage alone. A leaf joins one channel
+ *     per secret it holds, so a sibling a rotation left behind still meets the sibling that can catch it up.
  *
  * WHO IT ADMITS. A crossroads relay carries opaque envelopes for ANY proven key: it holds NO read-cap, reads NO
  * ciphertext and keeps no roster, so its sorter classes every proven key a stranger and admits it. Membership is
@@ -69,7 +70,7 @@ export interface RelayAnnounceObserver {
   readonly onEnvelope?: (env: MembershipEnvelope) => void;
   readonly onLeave?:    (from: string) => void;
   /** Every sibling frame the relay carries, exactly as it carries it — the herm's whole sight of a channel. */
-  readonly onSiblingFrame?: (carried: { readonly channel: string; readonly from: string; readonly to: string | null; readonly frame: unknown }) => void;
+  readonly onSiblingFrame?: (carried: { readonly channels: readonly string[]; readonly from: string; readonly to: string | null; readonly frame: unknown }) => void;
 }
 
 /** The relay's verify shore: the card IS the peer's raw verifying key, and the V3 proof must hold under it. */
@@ -117,12 +118,18 @@ export async function startAuthenticatedMembershipRelay(
     const id = gate.getIdentifierForSocket(socket as never);
     return id ? id.slice(-64).toLowerCase() : null;
   };
-  // socket → the sibling channel it joined. One channel per socket; a later join moves it.
-  const channelOf = new Map<WebSocket, string>();
+  // socket → the sibling channels it joined. A later join adds to the set; a socket leaves them all on close.
+  const channelsOf = new Map<WebSocket, Set<string>>();
+  const shareChannel = (a: WebSocket, b: WebSocket): boolean => {
+    const mine = channelsOf.get(a), theirs = channelsOf.get(b);
+    if (!mine || !theirs) return false;
+    for (const c of mine) if (theirs.has(c)) return true;
+    return false;
+  };
   gate.on("connection", (socket: WebSocket) => {
     const key = provenKeyOf(socket);
     // On departure, surface the proven holder so the tracker PRUNES it (an offline holder never lingers).
-    socket.once("close", () => { channelOf.delete(socket); if (key) observer?.onLeave?.(key); });
+    socket.once("close", () => { channelsOf.delete(socket); if (key) observer?.onLeave?.(key); });
   });
   gate.onSession((socket, msg) => {
     if (msg.kind === SIBLING_JOIN_KIND || msg.kind === SIBLING_FRAME_KIND) {
@@ -141,24 +148,27 @@ export async function startAuthenticatedMembershipRelay(
     }
   });
 
-  /** Carry one sibling frame: from the proven sender, to the proven keys on its channel. Reads no frame. */
+  /** Carry one sibling frame: from the proven sender, to the proven keys sharing one of its channels. Reads no frame. */
   function routeSibling(socket: WebSocket, kind: string, body: unknown): void {
     const from = provenKeyOf(socket);
     if (!from || typeof body !== "object" || body === null) return;
     if (kind === SIBLING_JOIN_KIND) {
-      const channel = (body as { channel?: unknown }).channel;
-      if (typeof channel === "string" && KEY_RE.test(channel)) channelOf.set(socket, channel);
+      const channels = (body as { channels?: unknown }).channels;
+      if (!Array.isArray(channels)) return;
+      const joined = channelsOf.get(socket) ?? new Set<string>();
+      for (const c of channels) if (typeof c === "string" && KEY_RE.test(c)) joined.add(c);
+      if (joined.size > 0) channelsOf.set(socket, joined);
       return;
     }
-    const channel = channelOf.get(socket);
-    if (!channel) return;
+    const joined = channelsOf.get(socket);
+    if (!joined) return;
     const toRaw = (body as { to?: unknown }).to;
     const to = typeof toRaw === "string" && KEY_RE.test(toRaw.toLowerCase()) ? toRaw.toLowerCase() : null;
     if (toRaw !== null && to === null) return;
     const frame = (body as { frame?: unknown }).frame;
-    observer?.onSiblingFrame?.({ channel, from, to, frame });
+    observer?.onSiblingFrame?.({ channels: [...joined], from, to, frame });
     for (const client of gate.clients) {
-      if (client === socket || channelOf.get(client as unknown as WebSocket) !== channel) continue;
+      if (client === socket || !shareChannel(socket, client as unknown as WebSocket)) continue;
       if (to !== null && provenKeyOf(client as unknown as WebSocket) !== to) continue;
       gate.sendSession(client, SIBLING_FRAME_KIND, { from, frame });
     }

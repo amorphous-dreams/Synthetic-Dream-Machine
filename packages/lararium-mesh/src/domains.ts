@@ -187,9 +187,26 @@ export const LEAF_PEER_SEAL_INFO = mint("leaf-peer-seal");
 /** Its SESSION's HKDF `info`: the per-direction keys and chain seeds two proven siblings derive from the
  *  ephemerals their device keys signed, so every frame after the proof rides the channel the proof admitted. */
 export const LEAF_SESSION_INFO = mint("leaf-session");
-/** The SIBLING CHANNEL's rendezvous tag: an HMAC of a PersonaGroup's id under this name, the opaque label its
- *  leaves join on a herm's relay. The herm routes by it and reads no PersonaGroup from it. */
+/** The hello's HINT: an HMAC under the PersonaGroup secret over this name, the hello's nonce and its ephemeral
+ *  key, so a sibling finds which of its secrets the other holds and a non-member forges no hint. */
+export const LEAF_PEER_HINT_INFO = mint("leaf-peer-hint");
+/** The CATCH-UP seal's HKDF `info`: a sibling ahead seals the persona-KEL suffix a stale sibling lacks, under the
+ *  secret they share, so the herm carries the suffix without reading it. Apart from `leaf-peer-seal`: a suffix
+ *  box must never open as a proof box. */
+export const LEAF_CATCH_UP_SEAL_INFO = mint("leaf-catch-up-seal");
+/** The SIBLING CHANNEL's rendezvous tag: an HMAC under the PersonaGroup secret over this name and the herm's
+ *  gate key, the opaque label its leaves join on that herm's relay. A non-member computes no tag, and two herms
+ *  see two tags. The herm routes by it and reads no PersonaGroup from it. */
 export const SIBLING_CHANNEL_INFO = mint("sibling-channel");
+/** The PERSONAGROUP SECRET's derivation off the persona root's OWN seed, salted by the group's KEL prefix: the
+ *  root derives it, never stores it, and a rotation's fresh op-key derives the next one. Never off the KEL, which
+ *  rides public boards. */
+export const PERSONA_GROUP_SECRET_INFO = mint("persona-group-secret");
+/** Its delivery SEAL's HKDF `info`: the root seals the secret to one device key at enrolment, beside the edge. */
+export const GROUP_SECRET_SEAL_INFO = mint("group-secret-seal");
+/** The root's signature over one delivery seal — the op-key vouching that this box carries its secret to this
+ *  device. Its own name: a seal signature must never verify as an edge, a KEL event or any other signed thing. */
+export const GROUP_SECRET_ENROLMENT_DOMAIN = mint("group-secret-enrolment");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");

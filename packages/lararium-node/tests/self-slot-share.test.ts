@@ -228,3 +228,43 @@ describe("a WALKER reaches its hearth's hosting doc — and never the carriage b
     expect(await share("walker", WALKER_DOC, antigen, KAPAED_PEER)).toBe(false);
   });
 });
+
+describe("a SIBLING holds standing, never the house — the sibling gate alone decides it", () => {
+  // The sibling gate a boot stands: the PersonaGroup ring's sibling path (face A's own planes) over the public boards.
+  const FACE_A_PLANE = randomDocId();
+  const FACE_B_PLANE = randomDocId();
+  const DAEMON_LIKE  = randomDocId();
+  const SIBLING = "sibling-peer";
+  const siblingGate = {
+    mayFederate: async (documentId: DocumentId, peerId?: string) =>
+      fedGate.mayFederate(documentId) || (documentId === FACE_A_PLANE && peerId === SIBLING),
+  };
+  const sibling = (documentId: DocumentId | undefined, gate: typeof siblingGate | null = siblingGate, antigenRing: AntigenRing | null = null) =>
+    selfSlotShareDecision({
+      hasWsSocket: false, sibling: true, siblingGate: gate, peerClass: undefined, selfSlotFedGate: fedGate,
+      antigenRing, membership: null, planeSeal: null, peerId: SIBLING, documentId,
+    });
+
+  test("CONTROL: a face-A sibling reaches face A's plane and the public boards", async () => {
+    expect(await sibling(FACE_A_PLANE)).toBe(true);
+    expect(await sibling(CROSSROADS)).toBe(true);
+  });
+
+  test("RED: it never reaches face B's plane, the @daemon, or a private plane — though it rides no WS socket", async () => {
+    expect(await sibling(FACE_B_PLANE)).toBe(false);
+    expect(await sibling(DAEMON_LIKE)).toBe(false);
+    expect(await sibling(CATALOG_LIKE)).toBe(false);
+    // CONTROL: the same socketless peer, not proven a sibling, is a house member and shares freely.
+    expect(await selfSlotShareDecision({
+      hasWsSocket: false, peerClass: undefined, selfSlotFedGate: fedGate, antigenRing: null, membership: null,
+      planeSeal: null, peerId: "island", documentId: FACE_B_PLANE,
+    })).toBe(true);
+  });
+
+  test("RED: before the sibling gate stands it denies every doc, and a Kapae'd sibling draws Mu", async () => {
+    expect(await sibling(FACE_A_PLANE, null)).toBe(false);
+    expect(await sibling(undefined)).toBe(false);
+    const kapaedSibling: AntigenRing = { kapaed: new Set(["beef".repeat(16)]), presenterNym: (p) => (p === SIBLING ? "beef".repeat(16) : null) };
+    expect(await sibling(FACE_A_PLANE, siblingGate, kapaedSibling)).toBe(false);
+  });
+});

@@ -7,7 +7,8 @@
  *   · it STRIPS comments first (a docblock naming the old shape must not satisfy the sweep), and pins the
  *     strip against vacuity (the base arm must survive the strip, or every assertion below passes over ash);
  *   · it takes a CENSUS (`assemblePersonaGroupRing(` appears as a CALL exactly once), which a rename drops;
- *   · it reads the COMPOSE reassignment (`selfSlotFedGate = … .compose(`), the one wire that widens the gate.
+ *   · it reads the COMPOSE reassignment (`selfSlotFedGate = ring.compose(`), the one wire that widens the gate,
+ *     and the sibling gate the same ring stands by its sibling path (`siblingGate = ring.composeSiblings(`).
  * A full boot exercises the runtime path; this weld guards the wire from silently vanishing under a refactor.
  */
 import { describe, test, expect } from "vitest";
@@ -34,8 +35,16 @@ describe("the boot composes the PersonaGroup identity-slot ring", () => {
   });
 
   test("it reassigns selfSlotFedGate from a .compose( of the ring — the one widening wire", () => {
-    // The compose reassignment: selfSlotFedGate = (await assemblePersonaGroupRing({…})).compose(base)
-    expect(CODE).toMatch(/selfSlotFedGate\s*=\s*\(await\s+assemblePersonaGroupRing\([\s\S]*?\)\)\.compose\(/);
+    // The ring stands once (`const ring = await assemblePersonaGroupRing({…})`) and widens the gate by compose.
+    expect(CODE).toMatch(/const\s+ring\s*=\s*await\s+assemblePersonaGroupRing\(/);
+    expect(CODE).toMatch(/selfSlotFedGate\s*=\s*ring\.compose\(selfSlotFedGate\)/);
+  });
+
+  test("the SAME ring stands the sibling gate by its sibling path, over the public boards and nothing wider", () => {
+    expect(CODE).toMatch(/siblingGate\s*=\s*ring\.composeSiblings\(new DeterministicFederationGate\(nexusPubkey\)\)/);
+    // The grant path reads only what this vessel's own gate proved — a sibling's key never stands in for it.
+    expect(CODE).toMatch(/provenKeyOf:\s*\(peerId\)\s*=>\s*peerIdentifierMap\.get\(peerId\)\s*\?\?\s*null,/);
+    expect(CODE).toMatch(/siblingKeyOf:\s*\(peerId\)\s*=>\s*siblings\?\.provenKeyOf\(peerId\)/);
   });
 
   test("the ring wires behind an injected witness — the boot names no Date.now", () => {

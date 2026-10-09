@@ -107,22 +107,51 @@ export class DeterministicFederationGate implements FederationGate {
 }
 
 /**
+ * SiblingShare — how a share policy reads the peers a SIBLING CHANNEL yielded (`sibling-channel`). A sibling is a
+ * device of the face's own PersonaGroup, proven over the sibling session: it holds STANDING, never the vessel. It
+ * is neither a house member nor the operator's own node, so it never shares freely: every doc it asks for passes
+ * the sibling gate, which a vessel composes from its PersonaGroup ring (`composeSiblings`) over the public boards —
+ * the face's own planes and nothing else, never the @daemon, never another face's planes.
+ */
+export interface SiblingShare {
+  /** True for a peer a sibling channel PROVED. */
+  isSibling(peerId: string): boolean;
+  /** The gate a sibling's every doc passes. Null before it stands → deny-by-default. */
+  gate(): FederationGate | null;
+}
+
+/** The sibling verdict: deny-by-default, and only what the sibling gate federates crosses. */
+export async function siblingShareDecision(
+  gate:        FederationGate | null,
+  peerId:      string,
+  documentId?: DocumentId,
+): Promise<boolean> {
+  if (!gate || !documentId) return false;
+  return gate.mayFederate(documentId, peerId as PeerId);
+}
+
+/**
  * federationShareDecision — the relay-ring verdict a vessel's Automerge `sharePolicy`
  * delegates to. Pure (given the ring set + gate), so the vessel's sharePolicy stays a
  * one-liner and the whole decision is unit-testable without booting a vessel.
  *
- *   - an IN-PROCESS peer (not in `relayPeers`) → share freely (house member).
  *   - a relay peer with NO gate (same-operator own node, own DID) → full sovereign sync.
  *   - a gated relay peer with no documentId → DENY (deny-by-default).
  *   - a gated relay peer → only the gate's federatable surface crosses.
+ *   - a SIBLING (`siblings`) → only the sibling gate's surface crosses (`siblingShareDecision`).
+ *   - every other peer is IN-PROCESS → share freely (house member).
  */
 export async function federationShareDecision(
   relayPeers: ReadonlySet<string>,
   fedGate:    FederationGate | null,
   peerId:     string,
   documentId?: DocumentId,
+  siblings?:  SiblingShare | null,
 ): Promise<boolean> {
-  if (!relayPeers.has(peerId)) return true;   // in-process island peer — house member
+  if (!relayPeers.has(peerId)) {
+    if (siblings?.isSibling(peerId)) return siblingShareDecision(siblings.gate(), peerId, documentId);
+    return true;                               // in-process island peer — house member
+  }
   if (!fedGate)                return true;    // same-operator relay (own node) — full device sync
   if (!documentId)             return false;   // relay ring gated, no doc id → deny-by-default
   return fedGate.mayFederate(documentId, peerId as PeerId);
@@ -191,12 +220,13 @@ export async function identityShareDecision(
   identity:   IdentityRing | null,
   peerId:     string,
   documentId?: DocumentId,
+  siblings?:  SiblingShare | null,
 ): Promise<boolean> {
-  // OUTER ring — the #49 federation gate. Its own deny-by-default holds first.
-  const fedAllows = await federationShareDecision(relayPeers, fedGate, peerId, documentId);
+  // OUTER ring — the #49 federation gate (and the sibling gate for a sibling). Its deny-by-default holds first.
+  const fedAllows = await federationShareDecision(relayPeers, fedGate, peerId, documentId, siblings);
   if (!fedAllows)               return false;   // outer ring denies → done (AND semantics)
   if (!identity)                return true;    // no inner ring wired → fed gate is the whole verdict
-  if (!relayPeers.has(peerId))  return true;    // in-process island peer — slot not consulted
+  if (!relayPeers.has(peerId))  return true;    // in-process peer, or a sibling the sibling gate already judged
   if (!documentId)              return false;   // gated relay, no doc id → deny-by-default
   // INNER ring — resolve doc→bag, then ask the REAL barrier "may I sync this doc".
   const bagUrl = identity.bagUrlForDoc(documentId);

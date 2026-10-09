@@ -17,12 +17,12 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, appendFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
-import type { DocHandle, AutomergeUrl, DocumentId } from "@automerge/automerge-repo";
+import type { DocHandle, AutomergeUrl, DocumentId, PeerId } from "@automerge/automerge-repo";
 import { Repo, interpretAsDocumentId }  from "@automerge/automerge-repo";
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
@@ -82,7 +82,10 @@ import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
-import { standSiblingChannel, type SiblingNetworkAdapter } from "@lararium/mesh";
+import {
+  standSiblingChannel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter,
+} from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor } from "./worker-handle.js";
@@ -509,6 +512,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // below (the nexus pubkey it addresses the federatable planes from). Null keeps the pre-classification
   // boot window inert (no peer gated) — correct: no doc crosses to any WS peer until the gate arms anyway.
   let selfSlotFedGate: FederationGate | null = null;
+  // The SIBLING CHANNEL and the gate its peers pass — forward-declared (the sharePolicy closes over both) and
+  // stood once the worn face's KEL is walked, below. A sibling holds standing only: the gate is the PersonaGroup
+  // ring's sibling path over the public boards, and null denies every doc (fail-closed).
+  let siblings: SiblingNetworkAdapter | null = null;
+  let siblingGate: FederationGate | null = null;
   // The REALM plane — the relation's shared CRDT (realm-bag-brief). Stood once the oracle plane loads and a
   // charter names a realm; INERT (null) on a vessel outside every relation. Its gate composes ATOP the
   // deterministic shelf: the realm doc and each steward-registered bag's doc federate to a MEMBER peer alone.
@@ -583,6 +591,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       // deterministically-federatable planes; the antigen draws Mu on a Kapae'd presenter regardless.
       return selfSlotShareDecision({
         hasWsSocket:     !!wsSocket,
+        // A SIBLING arrives on no WS socket of this gate — it rides the sibling channel, proven there. It holds
+        // standing, never the house: the sibling gate decides its every doc.
+        sibling:         !wsSocket && Boolean(siblings?.provenKeyOf(peerId as PeerId)),
+        siblingGate,
         peerClass:       peerClassMap.get(peerId),
         selfSlotFedGate,
         antigenRing,
@@ -911,8 +923,15 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   const relayPortRaw = opts.standCarriageRelayPort ?? process.env["LAR_HERM_RELAY_PORT"];
   const relayPort = relayPortRaw !== undefined && relayPortRaw !== "" ? Number(relayPortRaw) : null;
   const relayGateSeed = resolveRelayGateSeed(vesselSeed, opts.standCarriageRelayGateSeedHex ?? process.env["LAR_HERM_RELAY_SEED"]);
+  // THE HERM'S SIGHT, WITNESSED. `LAR_HERM_SIGHT_LOG` names a file the relay appends every sibling frame it
+  // carries to, exactly as it carries it — the whole of what this herm sees of a sibling channel, so a witness
+  // scans it for anything the siblings' seal should keep from it. It records nothing the herm does not already hold.
+  const sightLog = process.env["LAR_HERM_SIGHT_LOG"];
   const carriageRelay: CarriageRelay | null = relayPort !== null && !Number.isNaN(relayPort)
-    ? await startCarriageRelay({ gateSeed: relayGateSeed, port: relayPort })
+    ? await startCarriageRelay({
+        gateSeed: relayGateSeed, port: relayPort,
+        ...(sightLog ? { onSiblingFrame: (carried) => { try { appendFileSync(sightLog, `${JSON.stringify(carried)}\n`); } catch { /* a witness never stops carriage */ } } } : {}),
+      })
     : null;
   if (carriageRelay) {
     console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
@@ -1631,22 +1650,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
 
-    // ── THE SIBLING CHANNEL (docs/pono/identity-slot-policy#/the-leaf-taxonomy) ─────────────────────
-    // The ONE composition the browser vessel calls (`standSiblingChannel`): this face's siblings prove their
-    // device edges to each other through the pinned herm against the KEL chain just walked, and sync over the
-    // session that proof binds; the herm carries sealed frames and reads none. A sibling's peer arrives on no
-    // WS socket of this vessel's gate, so the share verdict reads it as the fleet — whole sync, as a
-    // same-operator peer.
-    const siblingHerm = opts.siblingHerm ?? process.env["LAR_SIBLING_HERM"] ?? null;
-    let siblings: SiblingNetworkAdapter | null = null;
-    if (siblingHerm && personaGroupDocIdHex && personaKelPrefix && deviceEdge) {
-      siblings = await standSiblingChannel({
-        repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix, personaGroupDocIdHex,
-        deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed), edge: deviceEdge,
-        onRefusal: (r) => console.warn(`[sibling] refused ${r.peerKey.slice(0, 8)}…: ${r.reason}`),
-      });
-    }
-
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
@@ -1655,17 +1658,52 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     // the ONE `verifyFaceGrantRecord`. NO CLOCK RIDES IN: admission licenses off the persona-KEL HEAD alone
     // (event order), so absent a resolved KEL chain the ring stays UNWIRED — the pre-ring verdict stands
     // rather than a widening the vessel cannot walk clocklessly.
-    if (personaGroupDocIdHex && deviceEdge?.personaRootDid && selfSlotFedGate && personaKelPrefix && personaKelChain) {
-      const base = selfSlotFedGate;
-      selfSlotFedGate = (await assemblePersonaGroupRing({
+    //
+    // The SAME ring decides for this face's SIBLINGS, by its own path (`composeSiblings`): a device the face's
+    // PersonaGroup delegated, proven over the sibling session, reaches the face's own planes and the public
+    // boards — never the @daemon, never another face's planes. Its proof source is the sibling channel's alone;
+    // the grant path reads only what this vessel's inbound gate proved.
+    if (personaGroupDocIdHex && deviceEdge?.personaRootDid && personaKelPrefix && personaKelChain) {
+      const ring = await assemblePersonaGroupRing({
         catalog: makeCatalogAccessor(repo, catalogHandle.url),
         personaGroupDocIdHex,
         personaRootDid: deviceEdge.personaRootDid,
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
-        // The node's proof sources: the identifier this vessel's inbound DaemonAuthGate proved, and the device
-        // key a sibling proved over the sibling session.
-        provenKeyOf: (peerId) => peerIdentifierMap.get(peerId) ?? siblings?.provenKeyOf(peerId) ?? null,
-      })).compose(base);
+        provenKeyOf: (peerId) => peerIdentifierMap.get(peerId) ?? null,
+        siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
+      });
+      if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
+      siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey));
+    }
+
+    // ── THE SIBLING CHANNEL (docs/pono/identity-slot-policy#/the-leaf-taxonomy) ─────────────────────
+    // The ONE composition the browser vessel calls (`standSiblingChannel`): this face's siblings prove their
+    // device edges to each other through the pinned herm against the KEL chain just walked, under the
+    // PersonaGroup secret the root sealed to this device at enrolment and the lease epoch this vessel holds, and
+    // sync over the session that proof binds; the herm carries sealed frames and reads none. A face whose
+    // enrolment delivered no secret stands no channel, and says so. The seed stays in these closures.
+    const siblingHerm = opts.siblingHerm ?? process.env["LAR_SIBLING_HERM"] ?? null;
+    if (siblingHerm && personaGroupDocIdHex && personaKelPrefix && deviceEdge && siblingGate) {
+      const sealRecord = tiddlerText(daemonDoc?.tiddlers?.[groupSecretSealTitle(personaGroupDocIdHex)]);
+      let sealRaw: unknown = null;
+      try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
+      const seal = await verifyGroupSecretSeal(sealRaw);
+      if (!seal) {
+        console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
+      } else {
+        const leaseSlots: Array<string | null> = [];
+        const leasePrefix = leaseEpochPrefix(personaGroupDocIdHex);
+        for (const [title, rec] of Object.entries(daemonDoc?.tiddlers ?? {})) {
+          if (title.startsWith(leasePrefix)) leaseSlots.push(tiddlerText(rec));
+        }
+        siblings = await standSiblingChannel({
+          repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix,
+          deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+          enrolment: { edge: deviceEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
+          expectedEpoch: effectiveLeaseEpoch(leaseSlots),
+          onRefusal: (r) => console.warn(`[sibling] refused (${r.suspect}${r.suspect === "peer" ? ` ${r.peerKey.slice(0, 8)}…` : ""}): ${r.reason}`),
+        });
+      }
     }
 
     // ── NESTED verb-plane compose (composable-keel idiom) ─────────────────────────────────────────

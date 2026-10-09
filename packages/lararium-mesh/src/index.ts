@@ -124,8 +124,9 @@ export {
 } from "./persona-group-ring.js";
 export * from "./leaf-peer-proof.js";
 export * from "./sibling-channel.js";
-export type { FederationGate } from "./federation-gate.js";
-export { DeterministicFederationGate, federationShareDecision, identityShareDecision, shareConfigOf } from "./federation-gate.js";
+export * from "./persona-group-secret.js";
+export type { FederationGate, SiblingShare } from "./federation-gate.js";
+export { DeterministicFederationGate, federationShareDecision, identityShareDecision, siblingShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
 export type { IdentityRing } from "./federation-gate.js";
 export type { AntigenRing } from "./federation-gate.js";

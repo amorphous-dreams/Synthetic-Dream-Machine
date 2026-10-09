@@ -1,6 +1,6 @@
 // @lararium/keyhive — capability layer wrapping @keyhive/keyhive (Ink & Switch concap, pre-alpha).
 
-import type { DeviceDelegationTiddler, PersonaKelEvent } from "@lararium/mesh";
+import type { DeviceDelegationTiddler, PersonaKelEvent, GroupSecretSeal } from "@lararium/mesh";
 
 export type {
   CapabilityProvider, CapabilityProviderInitOpts,
@@ -107,6 +107,10 @@ export interface DeviceAdmitPayload {
   /** The signed root→joinee device-delegation edge (the founder's signer signs the joinee's
    *  vessel key × hearthTrueName) — the joinee's binding, verified at its Binding Gate. No Beelay. */
   readonly deviceEdge:             DeviceDelegationTiddler;
+  /** The PersonaGroup secret the same root sealed to the joinee's device key, beside the edge — the secret its
+   *  sibling proofs and channel tags run on. REQUIRED: an enrolment that delivers no secret leaves the joinee
+   *  unable to meet a single sibling, so `runApplyAdmitPayload` refuses a payload without one. */
+  readonly groupSecretSeal:        GroupSecretSeal;
   /** The hearth true-name (engine CID) the joinee binds TO. */
   readonly hearthTrueName:         string;
   /** Founder sentinel oracle IDs — for the founding sentinel dance + the future affiliation layer. */

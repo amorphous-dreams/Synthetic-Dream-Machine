@@ -11,7 +11,10 @@
  *   · RED: a leaf holding a sibling's real edge but not that sibling's device key is refused;
  *   · RED: a leaf whose edge the KEL has ROLLED PAST (the op-key that signed it was rotated away) is refused,
  *     and the same device re-delegated under the new head is licensed — event order, no clock;
- *   · RED: a relay that swaps its own ephemeral key into the exchange gains nothing the initiator accepts;
+ *   · RED: a relay that swaps its own ephemeral key into the exchange opens nothing without the PersonaGroup
+ *     secret, and even an insider holding the secret gains nothing the initiator accepts;
+ *   · RED: a hello whose hint names no secret the responder holds draws no box; one naming an OLDER secret draws
+ *     the KEL suffix alone (a catch-up), never the responder's edge;
  *   · RED: a channel that proved a different sender key than the edge names is refused;
  *   · RED: a relay that swaps the RESPONDER's ephemeral key in the answer is refused by the initiator — the
  *     signature covers the transcript, so no side stands a session whose key the relay chose;
@@ -20,61 +23,25 @@
  *   · a session whose edge the KEL head moved past refuses on `relicense`; a licensed edge stands.
  */
 import { describe, test, expect } from "vitest";
-import * as ed from "@noble/ed25519";
 import { hex, hexToBytes } from "../src/crypto.js";
 import { sealToRecipient, openFromSender } from "../src/sealed-box.js";
-import { buildDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
-import type { PersonaKelEvent } from "../src/persona-kel.js";
-import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
 import {
-  proveLeafPeerAsInitiator, proveLeafPeerAsResponder, startLeafPeerProof,
-  finishLeafPeerProof, leafPeerProofBytes,
+  proveLeafPeerAsInitiator, proveLeafPeerAsResponder, startLeafPeerProof, answerLeafPeerProof,
+  finishLeafPeerProof, openLeafCatchUp, leafPeerProofBytes,
   type LeafPeerSelf, type LeafPeerDuplex, type LeafPeerFrame, type LeafPeerVerdict,
 } from "../src/leaf-peer-proof.js";
 import { LEAF_PEER_PROOF_DOMAIN, LEAF_PEER_SEAL_INFO } from "../src/domains.js";
 import type { LeafPeerSession } from "../src/leaf-peer-proof.js";
+import { SEEDS, pubOf, didOf, founded, enrol, rotatedKeeping, leafUnder } from "./fixtures/sibling-fleet.js";
+import { leafPeerHint as hintFor } from "../src/leaf-peer-proof.js";
 
 const SEAL_INFO = new TextEncoder().encode(LEAF_PEER_SEAL_INFO);
 
-const SEEDS = {
-  opA:      new Uint8Array(32).fill(11),
-  opB:      new Uint8Array(32).fill(22),
-  stranger: new Uint8Array(32).fill(9),
-  deviceX:  new Uint8Array(32).fill(33),
-  deviceY:  new Uint8Array(32).fill(44),
-  deviceZ:  new Uint8Array(32).fill(55),
-  g1:       new Uint8Array(32).fill(1),
-  g2:       new Uint8Array(32).fill(2),
-  g3:       new Uint8Array(32).fill(3),
-};
-const pubOf    = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
-const didOf    = async (s: Uint8Array) => `0x${await pubOf(s)}`;
-const signerOf = (s: Uint8Array) => async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, s));
-
-async function founded(): Promise<{ inception: PersonaKelEvent; guardianRecoveryKeys: string[]; recoveryThreshold: number }> {
-  const foundingOpKeyDid = await didOf(SEEDS.opA);
-  const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
-  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
-  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid, guardians, recoveryThreshold: 2 });
-  return { inception: prov.inception, guardianRecoveryKeys, recoveryThreshold: prov.recoveryThreshold };
-}
-
-async function rotatedToOpB(): Promise<PersonaKelEvent[]> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners });
-  if (!rot.ok) throw new Error(rot.reason);
-  return [inception, rot.event];
-}
-
-async function edgeFor(root: Uint8Array, device: Uint8Array): Promise<DeviceDelegationTiddler> {
-  return buildDeviceDelegation({ personaRootSeed: root, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch: 0 });
-}
-
-async function leaf(device: Uint8Array, edge: DeviceDelegationTiddler, kel: readonly PersonaKelEvent[]): Promise<LeafPeerSelf> {
-  return { deviceKey: await pubOf(device), sign: signerOf(device), edge, kel };
+/** A device enrolled by `root` and standing under `kel`; `presents` swaps the edge it shows (an impostor's). */
+async function leaf(device: Uint8Array, root: Uint8Array, kel: Parameters<typeof leafUnder>[2], presents?: { root: Uint8Array; device: Uint8Array }): Promise<LeafPeerSelf> {
+  const prefix = kel[0]!.prefix;
+  const self = await leafUnder(device, await enrol(root, device, prefix), kel);
+  return presents ? { ...self, edge: (await enrol(presents.root, presents.device, prefix)).edge } : self;
 }
 
 /**
@@ -109,19 +76,20 @@ function relay(opts: {
   return { a: side("a"), b: side("b"), carried };
 }
 
-/** Run one exchange with a bounded wait on the responder, which hears no finish when the initiator refuses. */
-async function exchange(a: LeafPeerSelf, b: LeafPeerSelf, r = relay()): Promise<{ a: LeafPeerVerdict; b: LeafPeerVerdict | "no-finish"; carried: string[] }> {
-  const bSide = proveLeafPeerAsResponder(b, r.b);
-  const aVerdict = await proveLeafPeerAsInitiator(a, r.a);
-  const bVerdict = await Promise.race([bSide, new Promise<"no-finish">((res) => setTimeout(() => res("no-finish"), 200))]);
-  return { a: aVerdict, b: bVerdict, carried: r.carried };
+/** Run one exchange, each side's wait bounded: a side that hears nothing more reads "silent". */
+async function exchange(a: LeafPeerSelf, b: LeafPeerSelf, r = relay()): Promise<{ a: LeafPeerVerdict | "silent"; b: LeafPeerVerdict | "silent"; carried: string[] }> {
+  const bounded = <T,>(p: Promise<T>) => Promise.race([p, new Promise<"silent">((res) => setTimeout(() => res("silent"), 300))]);
+  const bSide = bounded(proveLeafPeerAsResponder(b, r.b));
+  const aVerdict = await bounded(proveLeafPeerAsInitiator(a, r.a));
+  return { a: aVerdict, b: await bSide, carried: r.carried };
 }
+const ok = (v: LeafPeerVerdict | "silent"): v is LeafPeerVerdict & { ok: true } => v !== "silent" && v.ok;
 
 describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
-  test("CONTROL: two sibling devices prove each other's device key", async () => {
+  test("CONTROL: two enrolled sibling devices prove each other's device key", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
     const { a, b } = await exchange(x, y);
     expect(a).toMatchObject({ ok: true, peerKey: y.deviceKey });
     expect(b).toMatchObject({ ok: true, peerKey: x.deviceKey });
@@ -129,73 +97,101 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
 
   test("the relay carried every byte and read no edge", async () => {
     const { inception } = await founded();
-    const ex = await edgeFor(SEEDS.opA, SEEDS.deviceX);
-    const ey = await edgeFor(SEEDS.opA, SEEDS.deviceY);
-    const { a, b, carried } = await exchange(
-      await leaf(SEEDS.deviceX, ex, [inception]), await leaf(SEEDS.deviceY, ey, [inception]));
-    expect(a.ok && b !== "no-finish" && b.ok).toBe(true);
+    const xs = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const ys = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
+    const { a, b, carried } = await exchange(xs, ys);
+    expect(ok(a) && ok(b)).toBe(true);
     expect(carried).toHaveLength(3);                                     // hello · answer · finish
     const wire = carried.join("\n");
     const rootKey = (await didOf(SEEDS.opA)).slice(2);
-    for (const secret of [ex.signature, ey.signature, rootKey, "device-delegation", "personaRootDid"]) {
+    for (const secret of [xs.edge.signature, ys.edge.signature, rootKey, "device-delegation", "personaRootDid"]) {
       expect(wire.includes(secret), `the relay read ${secret.slice(0, 16)}…`).toBe(false);
     }
     // CONTROL on the instrument: the same scan finds an edge field when one does cross in the clear.
-    expect(JSON.stringify(ex).includes("personaRootDid")).toBe(true);
+    expect(JSON.stringify(xs.edge).includes("personaRootDid")).toBe(true);
   });
 
   test("RED: an impostor leaf whose edge a stranger root signed is refused", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const z = await leaf(SEEDS.deviceZ, await edgeFor(SEEDS.stranger, SEEDS.deviceZ), [inception]);
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const z = await leaf(SEEDS.deviceZ, SEEDS.opA, [inception], { root: SEEDS.stranger, device: SEEDS.deviceZ });
     const { a } = await exchange(x, z);
-    expect(a.ok).toBe(false);
-    if (!a.ok) expect(a.reason).toMatch(/not licensed by this PersonaGroup's KEL head/);
+    expect(a).toMatchObject({ ok: false, reason: expect.stringMatching(/not licensed by this PersonaGroup's KEL head/) });
   });
 
   test("RED: a leaf holding a sibling's real edge but not its device key is refused", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const stolen = await edgeFor(SEEDS.opA, SEEDS.deviceY);
-    const z = await leaf(SEEDS.deviceZ, stolen, [inception]);        // signs with Z's key, presents Y's edge
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const z = await leaf(SEEDS.deviceZ, SEEDS.opA, [inception], { root: SEEDS.opA, device: SEEDS.deviceY });  // signs as Z, shows Y's edge
     const { a } = await exchange(x, z);
     expect(a).toEqual({ ok: false, reason: "the device key did not sign this exchange" });
   });
 
-  test("RED: a leaf whose edge the KEL rolled past is refused; re-delegated under the head, it is licensed", async () => {
-    const chain = await rotatedToOpB();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opB, SEEDS.deviceX), chain);
-    const rolledPast = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), chain);
-    const refused = await exchange(x, rolledPast);
-    expect(refused.a.ok).toBe(false);
-    const redelegated = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opB, SEEDS.deviceY), chain);
-    const licensed = await exchange(x, redelegated);
-    expect(licensed.a).toMatchObject({ ok: true, peerKey: redelegated.deviceKey });
+  test("RED: a leaf whose edge the KEL rolled past is refused; the edge the rotation re-enrolled licenses", async () => {
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, chain);
+    const rolledPast = await leaf(SEEDS.deviceY, SEEDS.opA, chain, { root: SEEDS.opA, device: SEEDS.deviceY });
+    expect((await exchange(x, rolledPast)).a).toMatchObject({ ok: false });
+    const redelegated = await leaf(SEEDS.deviceY, SEEDS.opA, chain);
+    expect(redelegated.edge.personaRootDid).toBe(await didOf(SEEDS.opB));
+    expect((await exchange(x, redelegated)).a).toMatchObject({ ok: true, peerKey: redelegated.deviceKey });
   });
 
-  test("RED: a relay that swaps its own ephemeral key into the exchange gains nothing the initiator accepts", async () => {
+  test("RED: a hello whose hint names no secret the responder holds draws no box — a forger without the secret opens nothing", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
-    // The relay hands Y ITS OWN ephemeral key in place of X's, opens the proof Y seals to it, and re-seals
-    // that proof toward X's real ephemeral key. It reads Y's edge — and holds a signature naming its own key.
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
+    const forged = startLeafPeerProof({ secrets: [{ opKeyDid: "0x00", secret: new Uint8Array(32).fill(7) }] });
+    expect(await answerLeafPeerProof(y, forged.frame)).toEqual({ kind: "unmatched" });
+    // A relay that swaps its own ephemeral into an honest hello breaks the hint the same way.
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const honest = startLeafPeerProof(x).frame;
+    expect(await answerLeafPeerProof(y, { ...honest, eph: forged.state.ephPub })).toEqual({ kind: "unmatched" });
+    // CONTROL: the honest hello draws an answer with a box.
+    expect((await answerLeafPeerProof(y, honest)).kind).toBe("answer");
+  });
+
+  test("RED: the proof box mixes the secret in — the responder's ephemeral and both nonces alone open nothing", async () => {
+    const { inception } = await founded();
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
+    const { frame: hello, state } = startLeafPeerProof(x);
+    const answered = await answerLeafPeerProof(y, hello);
+    if (answered.kind !== "answer") throw new Error("the control hello drew no answer");
+    const box = answered.frame.box;
+    const open = (salt: Uint8Array[]) => openFromSender({
+      recipientSecret: state.ephSecret, senderEphemeralPub: hexToBytes(box.e), aeadNonce: hexToBytes(box.n),
+      ciphertext: hexToBytes(box.c), info: SEAL_INFO, extraSalt: salt,
+    });
+    // Whoever holds the hello's ephemeral secret — the herm that forged it — and every public byte opens nothing.
+    expect(open([hexToBytes(hello.nonce), hexToBytes(answered.frame.nonce)])).toBeNull();
+    // CONTROL: the member's own salt, the secret mixed in, opens it.
+    expect(open([hexToBytes(hello.nonce), hexToBytes(answered.frame.nonce), x.secrets[0]!.secret])).not.toBeNull();
+  });
+
+  test("RED: an INSIDER relay holding the secret swaps its ephemeral key in and still gains nothing the initiator accepts", async () => {
+    const { inception } = await founded();
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
+    const secret = x.secrets[x.secrets.length - 1]!;
+    // The insider re-hints its own ephemeral, opens the proof Y seals to it, and re-seals that proof toward X's
+    // real ephemeral key. It reads Y's edge — and holds a signature naming its own key, which X's transcript refuses.
     let xEph = "";
-    let relayState: ReturnType<typeof startLeafPeerProof>["state"] | null = null;
     let helloNonce = "";
+    let insider: ReturnType<typeof startLeafPeerProof>["state"] | null = null;
     const mitm = relay({
       tamper: (frame, toward) => {
         if (frame.step === "hello" && toward === "b") {
           xEph = frame.eph; helloNonce = frame.nonce;
-          relayState = startLeafPeerProof().state;
-          return { ...frame, eph: relayState.ephPub };
+          insider = startLeafPeerProof({ secrets: [secret] }).state;
+          return { step: "hello", nonce: frame.nonce, eph: insider.ephPub, hint: hintFor(secret.secret, frame.nonce, insider.ephPub) };
         }
-        if (frame.step === "answer" && toward === "a" && relayState) {
-          const salt = [hexToBytes(helloNonce), hexToBytes(frame.nonce)];
+        if (frame.step === "answer" && toward === "a" && insider) {
+          const salt = [hexToBytes(helloNonce), hexToBytes(frame.nonce), secret.secret];
           const plaintext = openFromSender({
-            recipientSecret: relayState.ephSecret, senderEphemeralPub: hexToBytes(frame.box.e),
+            recipientSecret: insider.ephSecret, senderEphemeralPub: hexToBytes(frame.box.e),
             aeadNonce: hexToBytes(frame.box.n), ciphertext: hexToBytes(frame.box.c), info: SEAL_INFO, extraSalt: salt,
           });
-          expect(plaintext, "the active relay opened the box sealed to it").not.toBeNull();
+          expect(plaintext, "the insider opened the box sealed to it").not.toBeNull();
           const resealed = sealToRecipient({ recipientPub: hexToBytes(xEph), plaintext: plaintext!, info: SEAL_INFO, extraSalt: salt });
           return { ...frame, box: { e: hex(resealed.senderEphemeralPub), n: hex(resealed.aeadNonce), c: hex(resealed.ciphertext) } };
         }
@@ -206,15 +202,35 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     expect(a).toEqual({ ok: false, reason: "the device key did not sign this exchange" });
   });
 
+  test("RED: a hello under an OLDER secret draws the KEL suffix alone, which extends the stale leaf's chain", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const ahead = await leaf(SEEDS.deviceX, SEEDS.opA, chain);
+    const stale = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
+    expect(ahead.secrets).toHaveLength(2);
+    expect(stale.secrets).toHaveLength(1);
+    const { frame: hello, state } = startLeafPeerProof(stale);
+    const answered = await answerLeafPeerProof(ahead, hello);
+    expect(answered.kind).toBe("catch-up");
+    if (answered.kind !== "catch-up") return;
+    const caught = await openLeafCatchUp(stale, state, answered.frame);
+    expect(caught).toMatchObject({ ok: true });
+    if (caught.ok) expect(caught.kel.map((e) => e.eventCid)).toEqual(chain.map((e) => e.eventCid));
+    // The ahead leaf's own hello draws `unmatched` from the stale one — it holds no newer secret.
+    expect((await answerLeafPeerProof(stale, startLeafPeerProof(ahead).frame)).kind).toBe("unmatched");
+    // A catch-up opened under another exchange opens nothing.
+    expect(await openLeafCatchUp(stale, startLeafPeerProof(stale).state, answered.frame)).toEqual({ ok: false, reason: "the catch-up does not open for this leaf" });
+  });
+
   test("RED: a channel that proved a different sender key than the edge names is refused", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
     const { a } = await exchange(x, y, relay({ fromOf: { b: await pubOf(SEEDS.deviceZ) } }));
     expect(a).toEqual({ ok: false, reason: "the channel proved a different key than the edge names" });
     // CONTROL: the channel proving the edge's own key passes.
-    const ok = await exchange(x, y, relay({ fromOf: { b: y.deviceKey, a: x.deviceKey } }));
-    expect(ok.a).toMatchObject({ ok: true, peerKey: y.deviceKey });
+    const passed = await exchange(x, y, relay({ fromOf: { b: y.deviceKey, a: x.deviceKey } }));
+    expect(passed.a).toMatchObject({ ok: true, peerKey: y.deviceKey });
   });
 
   test("the proof bytes open on their own domain, cover the whole transcript and carry no clock", () => {
@@ -227,19 +243,19 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
 
   test("a finish read without an answer refuses rather than throws", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const { state, frame } = startLeafPeerProof();
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const { state, frame } = startLeafPeerProof(x);
     const r = await finishLeafPeerProof(x, state, frame);
     expect(r.verdict.ok).toBe(false);
   });
 
   test("RED: a relay that swaps the responder's ephemeral key in the answer stands no session it chose", async () => {
     const { inception } = await founded();
-    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-    const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
+    const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+    const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
     // The box Y sealed to X's real ephemeral still opens at X; only the clear `eph` field moves. Were the
     // signature blind to the responder's ephemeral, X would pass the proof and agree a session key with the relay.
-    const relayEph = startLeafPeerProof().state.ephPub;
+    const relayEph = startLeafPeerProof(x).state.ephPub;
     const swap = relay({ tamper: (frame, toward) => frame.step === "answer" && toward === "a" ? { ...frame, eph: relayEph } : frame });
     const { a } = await exchange(x, y, swap);
     expect(a).toEqual({ ok: false, reason: "the device key did not sign this exchange" });
@@ -248,10 +264,10 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
   describe("the session a passing proof admits", () => {
     async function proven(): Promise<{ a: LeafPeerSession; b: LeafPeerSession }> {
       const { inception } = await founded();
-      const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
-      const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
+      const x = await leaf(SEEDS.deviceX, SEEDS.opA, [inception]);
+      const y = await leaf(SEEDS.deviceY, SEEDS.opA, [inception]);
       const { a, b } = await exchange(x, y);
-      if (!a.ok || b === "no-finish" || !b.ok) throw new Error("the control exchange refused");
+      if (!ok(a) || !ok(b)) throw new Error("the control exchange refused");
       return { a: a.session, b: b.session };
     }
     const bytes = (s: string) => new TextEncoder().encode(s);
@@ -270,8 +286,7 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     test("RED: a frame the relay injects refuses the session, and the refusal stays", async () => {
       const { a, b } = await proven();
       const forged = { n: "A".repeat(32), c: "B".repeat(40) };
-      const r = b.open(forged);
-      expect(r.ok).toBe(false);
+      expect(b.open(forged).ok).toBe(false);
       expect(b.refusal).toMatch(/injected, replayed or reordered/);
       expect(text(b.open(a.seal(bytes("after"))))).toMatch(/^refused/);   // sticky: no frame reads past a refusal
     });
@@ -296,11 +311,15 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
       expect(a.open(a.seal(bytes("reflected"))).ok).toBe(false);
     });
 
-    test("RED: a session whose edge the KEL head rolled past refuses on relicense; under a head that licenses it, it stands", async () => {
+    test("RED: a session whose edge the head rolled past refuses on relicense; a re-enrolled edge keeps it standing", async () => {
       const { a } = await proven();
       expect(await a.relicense([(await founded()).inception])).toBe(true);
-      expect(await a.relicense(await rotatedToOpB())).toBe(false);
-      expect(a.refusal).toMatch(/not licensed by this PersonaGroup's KEL head/);
+      // CONTROL: the rotation re-enrolled the peer's device — the session stands on the new edge.
+      expect(await a.relicense(await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]))).toBe(true);
+      expect(a.peerEdge.personaRootDid).toBe(await didOf(SEEDS.opB));
+      const { b } = await proven();
+      expect(await b.relicense(await rotatedKeeping([]))).toBe(false);
+      expect(b.refusal).toMatch(/not licensed by this PersonaGroup's KEL head/);
     });
   });
 });

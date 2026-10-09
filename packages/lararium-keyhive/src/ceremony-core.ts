@@ -30,7 +30,9 @@
  *     at all, carrying instead an edge some other operator already signed.
  *   · `buildDeviceDelegation` binds them without merging them: the persona root signs
  *     "Operator O delegates to Device D AT PLACE P", where `hearthTrueName` names P — the
- *     hearth's True Name. Peers pin the root and verify that edge offline.
+ *     hearth's True Name. Peers pin the root and verify that edge offline. In the same act the root
+ *     seals its PersonaGroup secret to D's key (`persona-group-secret`), the secret D's sibling
+ *     proofs run on.
  * `runDeviceAdmitEdge` carries the same shape outward: the founder's root signs a joinee's
  * OWN vessel key into the PersonaGroup, so no seed ever crosses the wire. A single key
  * copied across vessels would present one collector to every verifier and link every self —
@@ -56,6 +58,7 @@ import {
   mintVeilTag, DYAD_VEIL_TAG_TIDDLER, hexToBytes,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
+  enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -96,6 +99,8 @@ export type FoundingBinding =
       readonly personaKelPrefix: string;
       /** That operator's KEL, carried so the first boot walks prefix→head off its own replica. */
       readonly personaKelChain:  readonly PersonaKelEvent[];
+      /** The PersonaGroup secret the contracting root sealed to THIS device beside the edge, in the same act. */
+      readonly groupSecretSeal:  GroupSecretSeal;
     };
 
 export interface FoundingCeremonyInput {
@@ -271,6 +276,19 @@ export interface FaceFoundingResult {
   signerDid:              string;
   personaKelPrefix:       string;
   founderEdge:            DeviceDelegationTiddler;
+  /** The PersonaGroup secret sealed to this device beside `founderEdge`. */
+  groupSecretSeal:        GroupSecretSeal;
+}
+
+/** Rest a device's PersonaGroup secret seal on its daemon doc, keyed by the group. Call inside `change()`. */
+function writeGroupSecretSeal(
+  doc: { tiddlers: Record<string, unknown> }, personaGroupDocIdHex: string, seal: GroupSecretSeal, authority = "lares-init",
+): void {
+  const title = groupSecretSealTitle(personaGroupDocIdHex);
+  doc.tiddlers[title] = {
+    tiddler: { title, text: JSON.stringify(seal), kind: "group-secret-seal" },
+    meta: { authority },
+  };
 }
 
 /**
@@ -444,6 +462,18 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(input.nexusPubkey), "board:persona-kel");
   kelBoard.change((draft) => { for (const e of seatedEvents) writePersonaKelEvent(draft, e); });
 
+  // ── THE PERSONAGROUP SECRET, sealed beside the edge (persona-group-secret) ──
+  // Self-stood, the root in these hands seals its secret to this device in the act that signed the edge; contracted,
+  // the seal arrived with the edge from the root that signed both. It rests on the daemon doc keyed by the group —
+  // sovereign, never crossing — so a compartment that does not mount keeps its own beside the mounted face's.
+  const groupSecretSeal: GroupSecretSeal = input.binding.mode === "self-stood"
+    ? await sealGroupSecret({ opSeed: input.binding.signerSeed, prefix: personaKelPrefix, deviceVerifyingKey: vesselVerifyingKey })
+    : input.binding.groupSecretSeal;
+  if (!groupSecretSeal || groupSecretSeal.deviceKey !== vesselVerifyingKey.toLowerCase() || groupSecretSeal.prefix !== personaKelPrefix) {
+    throw new Error("[founding] the enrolment carries no PersonaGroup secret sealed to this device under the pinned prefix — refusing to found under it.");
+  }
+  daemonHandle.change((doc) => { writeGroupSecretSeal(doc, personaGroup.docIdHex, groupSecretSeal); });
+
   // ── The DYAD, minted where the face meets the device ──
   // The veil derives off THIS vessel's seed, scoped by the PersonaGroup — never the persona root,
   // which spans devices and names no veil. Self-stood, the group root stands in these same hands,
@@ -492,6 +522,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     signerDid,
     personaKelPrefix,
     founderEdge,
+    groupSecretSeal,
     veilTag,
   };
 }
@@ -656,8 +687,11 @@ export async function runDeviceAdmitEdge(
   if (input.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runDeviceAdmitEdge: hearthDaemonUrl required (may be null) — state the hearth's door explicitly or name null, never omit it");
   }
-  const deviceEdge = await buildDeviceDelegation({
-    personaRootSeed:    input.signerSeed,          // the founder's PersonaGroup root SIGNS
+  // ONE ENROLMENT: the founder's PersonaGroup root signs the joinee's edge and seals the PersonaGroup secret to the
+  // same device key, in one act (persona-group-secret).
+  const { edge: deviceEdge, seal: groupSecretSeal } = await enrolDevice({
+    opSeed:             input.signerSeed,          // the founder's PersonaGroup root SIGNS and SEALS
+    prefix:             input.personaKelPrefix,
     deviceVerifyingKey: input.joineeVerifyingKey,  // the joinee's vessel key is the delegate
     hearthTrueName:     input.hearthTrueName,
     // THE DEVICE-ADMIT PATH MUST CARRY A REAL EPOCH — this edge licenses a NEW device, so it binds to the
@@ -672,6 +706,7 @@ export async function runDeviceAdmitEdge(
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,
     deviceEdge,
+    groupSecretSeal,
     hearthTrueName:         input.hearthTrueName,
     personaGroupDocIdHex:   input.personaGroupDocIdHex,
     personaGroupAgentIdHex: input.personaGroupAgentIdHex,
@@ -749,6 +784,10 @@ export async function runApplyAdmitPayload(
   if (payload.hearthDaemonUrl === undefined) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks hearthDaemonUrl — refusing to admit (pre-field payload would seat door-less with no stated absence).");
   }
+  const seal = payload.groupSecretSeal;
+  if (!seal || seal.deviceKey !== vesselVerifyingKey.toLowerCase() || seal.prefix !== payload.personaKelPrefix) {
+    throw new Error("[ceremony] runApplyAdmitPayload: payload carries no PersonaGroup secret sealed to this device under the pinned prefix — refusing to admit (an enrolment without its secret meets no sibling).");
+  }
 
   const daemonHandle = seedDaemonDoc(repo);
   // THE FOUR PLANES OF THE FACE THIS VESSEL JOINS — all named off the SAME group doc id the founder used,
@@ -804,6 +843,7 @@ export async function runApplyAdmitPayload(
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...payload.deviceEdge },
       meta: { authority: "lares-init-admit" },
     };
+    writeGroupSecretSeal(doc, payload.personaGroupDocIdHex, seal, "lares-init-admit");
     // The joinee's veil tag IS the carried group doc id (the split's second moment) — persisted under
     // the same tiddler the founder's minted tag rides, so ONE boot rule stands either veil.
     doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = {

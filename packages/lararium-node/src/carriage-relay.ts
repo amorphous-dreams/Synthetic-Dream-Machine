@@ -26,7 +26,7 @@ import * as ed from "@noble/ed25519";
 import { hex, type MembershipEnvelope } from "@lararium/mesh";
 import {
   startAuthenticatedMembershipRelay,
-  type AuthenticatedMembershipRelay,
+  type AuthenticatedMembershipRelay, type RelayAnnounceObserver,
 } from "./authenticated-membership-relay.js";
 import { CAS_HAVE } from "./cas-wire.js";
 import { makeBagTracker, type BagTracker } from "./bag-tracker.js";
@@ -83,7 +83,12 @@ export function resolveRelayGateSeed(vesselSeed: Uint8Array, seedHex?: string | 
  * before any envelope crosses); it grants NO read-cap and names NO roster — the member gate lives on the cas-wire
  * SERVE side (in the vessels), never here.
  */
-export function startCarriageRelay(cfg: { gateSeed: Uint8Array; port?: number }): Promise<CarriageRelay> {
+export function startCarriageRelay(cfg: {
+  gateSeed: Uint8Array;
+  port?: number;
+  /** Every sibling frame the relay carries, exactly as it carries it — the herm's whole sight of a channel. */
+  onSiblingFrame?: RelayAnnounceObserver["onSiblingFrame"];
+}): Promise<CarriageRelay> {
   return (async (): Promise<CarriageRelay> => {
     const tracker = makeBagTracker();
     // Per-holder cid set — so a DEPARTED holder's every announced cid prunes at once (the tracker forgets by
@@ -109,6 +114,7 @@ export function startCarriageRelay(cfg: { gateSeed: Uint8Array; port?: number })
         for (const cid of held) tracker.forget(cid, from);                  // prune every cid this holder announced
         heldByHolder.delete(from);
       },
+      ...(cfg.onSiblingFrame ? { onSiblingFrame: cfg.onSiblingFrame } : {}),
     });
     const gatePubKey = hex(await ed.getPublicKeyAsync(cfg.gateSeed));
     return {

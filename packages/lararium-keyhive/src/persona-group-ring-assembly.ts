@@ -15,7 +15,9 @@
  * ONE FUNCTION, TWO SHORES. Node and browser both call this; only the PROOF SOURCE differs. A node vessel
  * reads the identifier its inbound `DaemonAuthGate` proved; a browser leaf reads the gate key its outbound
  * transport proved when that gate SIGNED its verdict (`LarWSClientAdapter.provenKeyOf`). Neither source is
- * a claim the peer made about itself.
+ * a claim the peer made about itself. Both read the device key a SIBLING proved over the face's sibling
+ * session (`siblingKeyOf`), a separate path: a sibling holds standing, so `composeSiblings` admits it to the
+ * face's own planes and never through a grant.
  *
  * NO CLOCK RIDES IN AT ALL. `verifyFaceGrantRecord`'s validity window is a founder-edge freshness check
  * `verifyEdgeAgainstPersonaKel` can run with or without; this assembly supplies no `now` and abstains
@@ -48,6 +50,9 @@ export interface PersonaGroupRingInput {
   readonly provenKeyOf: (peerId: RingPeerId) => string | null | undefined;
   /** The vessel's OWN hand — its in-process island / own fleet; never questioned. */
   readonly isOwnHand?: (peerId: RingPeerId) => boolean;
+  /** The device key a sibling PROVED over this face's sibling session (`SiblingNetworkAdapter.provenKeyOf`).
+   *  Such a peer holds standing and reaches the face's own planes through `composeSiblings`, nothing else. */
+  readonly siblingKeyOf?: (peerId: RingPeerId) => string | null | undefined;
 }
 
 export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Promise<PersonaGroupIdentityRing> {
@@ -60,6 +65,7 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
     governs: (documentId) => governedDocIds.has(documentId),
     ...(input.isOwnHand ? { isOwnHand: input.isOwnHand } : {}),
     provenVesselKey: (peerId) => provenVesselKeyOf(input.provenKeyOf(peerId)),
+    ...(input.siblingKeyOf ? { siblingKeyOf: (peerId: RingPeerId) => provenVesselKeyOf(input.siblingKeyOf!(peerId)) } : {}),
     grants: {
       // The records resting on the face's own plane — the SAME store `takeFaceGrantIfPublished` reads.
       records: async () => {

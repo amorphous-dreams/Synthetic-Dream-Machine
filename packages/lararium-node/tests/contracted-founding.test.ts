@@ -13,9 +13,9 @@ import { describe, expect, it } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  buildDeviceDelegation, hex, deriveSelfRecoveryKey,
-  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
-  type PersonaKelEvent,
+  buildDeviceDelegation, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
+  personaGroupSecret, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, tiddlerText,
+  type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
 import { runFoundingCeremony } from "@lararium/keyhive";
 
@@ -41,12 +41,14 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
     guardians: [guardianRecoveryRegistrationCard("mine", selfRecovery.verifyingKey, null)],
     recoveryThreshold: 1,
   }).inception;
-  return { edge, personaKelPrefix: inception.prefix, personaKelChain: [inception] as const };
+  // The same act seals the operator's PersonaGroup secret to this device, beside the edge.
+  const groupSecretSeal = await sealGroupSecret({ opSeed: OPERATOR_SEED, prefix: inception.prefix, deviceVerifyingKey });
+  return { edge, personaKelPrefix: inception.prefix, personaKelChain: [inception] as const, groupSecretSeal };
 }
 
-async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], deviceKey: string) {
+async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], deviceKey: string, repo = new Repo({ sharePolicy: async () => true })) {
   return runFoundingCeremony({
-    repo: new Repo({ sharePolicy: async () => true }),
+    repo,
     vesselSeed: HERM_SEED,
     vesselVerifyingKey: deviceKey,
     vesselDisplayName: "herm",
@@ -104,6 +106,27 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const b = await bundleFor(deviceKey, "bafySomeOtherHearth");
     await expect(found({ mode: "contracted", ...b }, deviceKey))
       .rejects.toThrow(/different hearth true-name/);
+  });
+
+  it("lands the PersonaGroup secret the operator sealed beside the edge — and it opens for this device alone", async () => {
+    const deviceKey = await pubOf(HERM_SEED);
+    const b = await bundleFor(deviceKey);
+    const repo = new Repo({ sharePolicy: async () => true });
+    const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
+    expect(f.groupSecretSeal).toEqual(b.groupSecretSeal);
+    const daemon = await repo.find<LarDoc>(f.daemonUrl as never);
+    const rested = JSON.parse(tiddlerText(daemon.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupDocIdHex)]) ?? "null");
+    expect(rested).toEqual(b.groupSecretSeal);
+    expect(groupSecretOpenerFromSeed(HERM_SEED)(rested)).toEqual(personaGroupSecret(OPERATOR_SEED, b.personaKelPrefix));
+    expect(groupSecretOpenerFromSeed(OPERATOR_SEED)(rested)).toBeNull();
+  });
+
+  it("REFUSES an enrolment whose secret is sealed to ANOTHER device, or that carries none", async () => {
+    const deviceKey = await pubOf(HERM_SEED);
+    const b = await bundleFor(deviceKey);
+    const elsewhere = await sealGroupSecret({ opSeed: OPERATOR_SEED, prefix: b.personaKelPrefix, deviceVerifyingKey: await pubOf(new Uint8Array(32).fill(33)) });
+    await expect(found({ mode: "contracted", ...b, groupSecretSeal: elsewhere }, deviceKey)).rejects.toThrow(/no PersonaGroup secret sealed to this device/);
+    await expect(found({ mode: "contracted", ...b, groupSecretSeal: undefined as never }, deviceKey)).rejects.toThrow(/no PersonaGroup secret sealed to this device/);
   });
 
   it("REFUSES an EMPTY chain, and one whose prefix disagrees with the pin", async () => {

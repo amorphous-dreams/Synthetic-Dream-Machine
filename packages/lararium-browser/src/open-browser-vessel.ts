@@ -24,7 +24,8 @@ import {
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
-  standSiblingChannel, type SiblingNetworkAdapter,
+  standSiblingChannel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
@@ -389,6 +390,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // gate the relay is the operator's OWN node (same-operator leaf, own DID) → full device sync.
   const relayPeers = new Set<string>();
   let   fedGate: FederationGate | null = null;
+  // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
+  // standing, never the house: it never shares freely, and only `siblingGate` (the ring's sibling path over the
+  // public boards) decides what reaches it. Null denies every doc.
+  let   siblings: SiblingNetworkAdapter | null = null;
+  let   siblingGate: FederationGate | null = null;
   // ONE SOCKET, ONE RING. The PersonaGroup identity ring composes ONTO `fedGate` itself (the assembly
   // below, once the daemon island boots), so the share verdict reads one gate and the ring has no second
   // socket to stand empty in.
@@ -397,7 +403,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
-    shareConfig: browserShareConfig(relayPeers, () => fedGate),
+    shareConfig: browserShareConfig(relayPeers, () => fedGate, {
+      isSibling: (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)),
+      gate: () => siblingGate,
+    }),
   });
   emit("repo-open");
 
@@ -597,8 +606,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
   // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
+  // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal and lease epoch below.
+  let bootDaemonDoc: LarDoc | undefined;
   try {
     const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
+    bootDaemonDoc = dhandle.doc();
     const dyads = vesselDyads(dhandle.doc());
     if (social.deviceEdge && dyads.length === 0) {
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
@@ -990,43 +1002,59 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         daemonAuth,
       });
 
-      // ── THE SIBLING CHANNEL (leaf kind 3, docs/pono/identity-slot-policy#/the-leaf-taxonomy) ────────
-      // The ONE composition the node vessel calls (`standSiblingChannel`). This face's siblings — devices
-      // its own PersonaGroup delegated — prove their edges to each other through the pinned herm against the
-      // KEL chain the Binding Gate just walked, and sync over the session that proof binds. The herm carries
-      // sealed frames and reads none. A proven sibling is this face's own fleet: it never enters
-      // `relayPeers`, so it syncs whole, as a same-operator node does. The seed stays in this closure.
-      let siblings: SiblingNetworkAdapter | null = null;
-      const siblingEdge = daemonAuth.deviceEdge;
-      if (siblingHerm && siblingEdge) {
-        siblings = await standSiblingChannel({
-          repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix,
-          personaGroupDocIdHex: daemonAuth.personaGroupDocIdHex,
-          deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed), edge: siblingEdge,
-          onRefusal: (r) => console.warn(`[sibling] refused ${r.peerKey.slice(0, 8)}…: ${r.reason}`),
-        });
-      }
-
       // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
       // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot
       // wears, its pinned root and the KEL chain the Binding Gate just walked. Only the PROOF SOURCE differs:
       // a leaf dials out, so the key it reads for a peer is the key that peer PROVED to this leaf — the gate
-      // key that signed this leaf's verdict on the relay socket, or the device key a sibling proved over the
-      // sibling session — never a key the wire named. It widens the cross-operator gate by the face's own
-      // planes and nothing else; with no cross-operator gate armed the relay is the operator's own node and
-      // every doc already syncs, so there is nothing to widen.
+      // key that signed this leaf's verdict on the relay socket — never a key the wire named. It widens the
+      // cross-operator gate by the face's own planes and nothing else; with no cross-operator gate armed the
+      // relay is the operator's own node and every doc already syncs, so there is nothing to widen.
+      //
+      // The SAME ring decides for this face's SIBLINGS by its own path (`composeSiblings`), reading the device
+      // key each one proved over the sibling session: the face's own planes and the public boards, never the
+      // @daemon, never another face's planes.
       const ringRelay = relayAdapter;
       const ringRoot = daemonAuth.deviceEdge?.personaRootDid;
-      if (fedGate && ringRoot && (ringRelay || siblings)) {
-        const base = fedGate;
-        const ringSiblings = siblings;
-        fedGate = (await assemblePersonaGroupRing({
+      if (ringRoot && daemonAuth.personaKel) {
+        const ring = await assemblePersonaGroupRing({
           catalog: makeCatalogAccessor(repo, catalogHandle.url),
           personaGroupDocIdHex: daemonAuth.personaGroupDocIdHex,
           personaRootDid: ringRoot,
           personaKel: daemonAuth.personaKel,
-          provenKeyOf: (peerId) => ringSiblings?.provenKeyOf(peerId) ?? ringRelay?.provenKeyOf(peerId) ?? null,
-        })).compose(base);
+          provenKeyOf: (peerId) => ringRelay?.provenKeyOf(peerId) ?? null,
+          siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
+        });
+        if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
+        siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey));
+      }
+
+      // ── THE SIBLING CHANNEL (leaf kind 3, docs/pono/identity-slot-policy#/the-leaf-taxonomy) ────────
+      // The ONE composition the node vessel calls (`standSiblingChannel`). This face's siblings — devices
+      // its own PersonaGroup delegated — prove their edges to each other through the pinned herm against the
+      // KEL chain the Binding Gate just walked, under the PersonaGroup secret the root sealed to this device at
+      // enrolment and the lease epoch this vessel holds, and sync over the session that proof binds. The herm
+      // carries sealed frames and reads none. The seed stays in these closures.
+      const siblingEdge = daemonAuth.deviceEdge;
+      if (siblingHerm && siblingEdge && siblingGate) {
+        const group = daemonAuth.personaGroupDocIdHex;
+        const sealText = tiddlerText(bootDaemonDoc?.tiddlers?.[groupSecretSealTitle(group)]);
+        let sealRaw: unknown = null;
+        try { sealRaw = sealText ? JSON.parse(sealText) : null; } catch { sealRaw = null; }
+        const seal = await verifyGroupSecretSeal(sealRaw);
+        if (!seal) {
+          console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
+        } else {
+          const leasePrefix = leaseEpochPrefix(group);
+          const leaseSlots = Object.entries(bootDaemonDoc?.tiddlers ?? {})
+            .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
+          siblings = await standSiblingChannel({
+            repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix,
+            deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+            enrolment: { edge: siblingEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
+            expectedEpoch: effectiveLeaseEpoch(leaseSlots),
+            onRefusal: (r) => console.warn(`[sibling] refused (${r.suspect}${r.suspect === "peer" ? ` ${r.peerKey.slice(0, 8)}…` : ""}): ${r.reason}`),
+          });
+        }
       }
       return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon };
     },
@@ -1430,7 +1458,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
  * and a null gate reads a cross-operator relay as the operator's own node (full device sync).
  *
  * The gate it reads is the whole verdict: the PersonaGroup ring composes onto that gate, never beside it.
+ * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
+ * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null) {
-  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId));
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null) {
+  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
 }
