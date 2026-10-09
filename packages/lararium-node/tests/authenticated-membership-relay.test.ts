@@ -115,6 +115,35 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     }
   }, 15_000);
 
+  test("an addressed envelope reaches its addressee alone; a third proven peer sees neither its sender nor its cid", async () => {
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(21));
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
+    const [seedA, seedB, seedC] = [22, 23, 24].map((n) => new Uint8Array(32).fill(n)) as [Uint8Array, Uint8Array, Uint8Array];
+    const [keyA, keyB] = await Promise.all([pubOf(seedA), pubOf(seedB)]);
+    const a = await AuthenticatedWSMembershipChannel.connect(url, seedA);
+    const b = await AuthenticatedWSMembershipChannel.connect(url, seedB);
+    const c = await AuthenticatedWSMembershipChannel.connect(url, seedC);
+    try {
+      const cid = "bafy-the-kel-event-a-sibling-asks-for";
+      await a.offer({ kind: "cas-want-block", from: keyA, to: keyB, payload: { cid } });
+      await a.offer({ kind: "cas-have", from: keyA, to: "*", payload: { cid: "bafy-announced" } });
+      // CONTROL: the addressee receives the addressed envelope, stamped with the sender's proven key.
+      let atB: MembershipEnvelope[] = [];
+      for (let i = 0; i < 40 && atB.length < 2; i++) { atB = [...atB, ...(await b.poll(keyB))]; if (atB.length < 2) await sleep(10); }
+      expect(atB.map((e) => [e.kind, e.from])).toEqual([["cas-want-block", keyA], ["cas-have", keyA]]);
+      // The third peer reads its socket under the ADDRESSEE's name, so nothing the wire delivered hides from it:
+      // the broadcast reaches it, the addressed envelope never does.
+      let atC: MembershipEnvelope[] = [];
+      for (let i = 0; i < 40 && atC.length < 1; i++) { atC = [...atC, ...(await c.poll(keyB))]; if (atC.length < 1) await sleep(10); }
+      await sleep(50);
+      atC = [...atC, ...(await c.poll(keyB))];
+      expect(atC.map((e) => e.kind)).toEqual(["cas-have"]);
+      expect(JSON.stringify(atC)).not.toContain(cid);
+    } finally {
+      a.close(); b.close(); c.close();
+    }
+  }, 15_000);
+
   test("the relay stands behind the one gate: a pinned, proven dial joins; no pin, a wrong pin or no knock reaches nothing", async () => {
     const gateSeed = new Uint8Array(32).fill(7);
     relay = await startAuthenticatedMembershipRelay(gateSeed, 0, undefined, { authTimeoutMs: 200 });

@@ -18,7 +18,8 @@
  *     SIGNED `lar:auth-ok`, which the dialer reads only under the key it pinned.
  *   · SILENCE — a bad proof, a wrong knock, anything malformed: no answer, and the socket cut at the deadline the
  *     gate drew at accept. No close code and no reason cross.
- *   · ENVELOPES — ride the admitted socket as `lar:session` frames of kind `membership/env`.
+ *   · ENVELOPES — ride the admitted socket as `lar:session` frames of kind `membership/env`. An envelope addressed
+ *     to a key reaches the socket proven under that key alone; only a broadcast (`*`) reaches every other socket.
  *   · SIBLING FRAMES — a leaf that joins channels (`sibling/join`, opaque tags its PersonaGroup secrets key at
  *     this herm) reaches the other keys proven on a channel it shares and no one else: a `sibling/frame` goes to
  *     the key it names, or to every key sharing one of its channels, with `from` STAMPED to the sender's proven
@@ -90,7 +91,8 @@ const admitEveryProvenKey: SocketSorter = async () => ({ class: "stranger" });
 
 /**
  * Start an authenticated membership relay on `port` (0 → any free port), keyed by `gateSeed`. Every socket runs
- * the one gate; every admitted socket's envelopes are re-broadcast with `from` STAMPED to the key it proved.
+ * the one gate; every admitted socket's envelopes ride with `from` STAMPED to the key it proved, to the socket
+ * proven under their `to`, or to every other socket for a broadcast.
  *
  * @param gateSeed the relay's 32-byte Ed25519 seed — its gate key derives the knock and signs every verdict.
  */
@@ -143,8 +145,14 @@ export async function startAuthenticatedMembershipRelay(
     // opaque payload (ciphertext + verify-cap only ride it).
     const stamped: MembershipEnvelope = { ...(msg.body as MembershipEnvelope), from: provenKey };
     observer?.onEnvelope?.(stamped);
+    // An addressed envelope reaches the socket proven under its `to` and no other: a bystander learns neither the
+    // sender's key nor what it asked for. Only a broadcast (`*`) reaches every other socket.
+    const to = typeof stamped.to === "string" ? stamped.to.toLowerCase() : null;
+    if (to === null) return;
     for (const client of gate.clients) {
-      if (client !== socket) gate.sendSession(client, MEMBERSHIP_ENVELOPE_KIND, stamped);
+      if (client === socket) continue;
+      if (to !== MEMBERSHIP_BROADCAST && provenKeyOf(client as unknown as WebSocket) !== to) continue;
+      gate.sendSession(client, MEMBERSHIP_ENVELOPE_KIND, stamped);
     }
   });
 
