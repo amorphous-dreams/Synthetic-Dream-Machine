@@ -353,7 +353,7 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 !!! Session-wiki path (deferred — additional hot-tier mounts)
 
-`mountWiki` is now the ''one'' mount path: the primary rides it pinned (`{ pinned: true }`), future session wikis ride it unpinned. An earlier draft claimed the primary path //could not// use the admin-VM delegate-verb shore because the mount ran before `workerEa` — ''S11.5 reversed that.'' `await adminVm.workerEa` (`:770`) now precedes the mount (`:782`), so the admin VM is live for every mount. The primary path therefore resolves ''host-inline'' (composition-root, per the ocap ruling above). A future multiplexed session-mount path MAY instead route resolution through the ''admin-VM delegate-verb'' shore (`adminVm.mountMainVerbs(jobRegistry, keyhive)` + `AdminMsg_DelegateVerb` → `runLocalVerb`) if it needs to resolve off the host thread. `resolveOrMintBinding` stays callable from both.
+`mountWiki` serves as the ''one'' mount path: the primary rides it pinned (`{ pinned: true }`), future session wikis ride it unpinned. An earlier draft claimed the primary path //could not// use the admin-VM delegate-verb shore because the mount ran before `workerEa` — ''S11.5 reversed that.'' `await adminVm.workerEa` (`:770`) now precedes the mount (`:782`), so the admin VM is live for every mount. The primary path therefore resolves ''host-inline'' (composition-root, per the ocap ruling above). A future multiplexed session-mount path MAY instead route resolution through the ''admin-VM delegate-verb'' shore (`adminVm.mountMainVerbs(jobRegistry, keyhive)` + `AdminMsg_DelegateVerb` → `runLocalVerb`) if it needs to resolve off the host thread. `resolveOrMintBinding` stays callable from both.
 
 ''First delegate() call site.'' S7.6's `keyhive.delegate(...)` is the first active call to that method in the repo (the method exists; no caller yet). This binding flow establishes the delegation call pattern; the ocap research above governs where it lives.
 
@@ -508,6 +508,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y-B9X3LbCWwCk8-rQafi6X7J-7JN7q5cCqsOEA7SSSE
+<<^ code="&#x0003;">>ni:///sha-256;ZqQcYyuKClIn1nLwbhvdSwGaV_0hK8751lBodcyS5aQ
 
 <<^ code="&#x0004;" -> to="?">>

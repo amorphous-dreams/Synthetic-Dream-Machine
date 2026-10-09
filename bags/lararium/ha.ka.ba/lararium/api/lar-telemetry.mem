@@ -44,7 +44,7 @@ four-spirit grounding pass over the live parser and the TW5 framework).
 
 > ''The black speaks; the red steers — lar-telemetry reads the red's own gauges.''
 
-''FORWARD-FACING + LOCAL (2026-06-25 inversion).'' The gradient no longer races BEHIND
+''FORWARD-FACING + LOCAL (2026-06-25 inversion).'' The gradient never races BEHIND
 the mine. A producer reads the instruments AND the verbatim in ONE forward pass — a
 born-annotated record enqueued to the unified capture-nalu and flushed on the local tick
 through the RFC-002 source-adapter; mempalace FILES, never mines. And the writer is a
@@ -224,6 +224,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yshSUTV3yG0dXk7KCYqfq4tso6SwG9ndbg8g5azqmGY
+<<^ code="&#x0003;">>ni:///sha-256;6bBl3whm5e6sAAJQsTZwdaSjNIiE3I6GqUWI7NA2DNk
 
 <<^ code="&#x0004;" -> to="?">>

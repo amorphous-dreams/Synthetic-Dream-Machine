@@ -91,7 +91,7 @@ Consequences:
 * A bag referenced by NO `wela` island is ''`anu`'' — its handle MAY drop (the eviction `automerge-repo` does not do on its own; see [[issue #358|https://github.com/automerge/automerge-repo/issues/358]]).
 * ''Referenced bags inherit liveness.'' `lares` / `lararium` corpus and the session event-bus bag ride in multiple recipes; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they are ''`wela` by derivation'', never dropped while a pinned island holds them.
 
-Two disciplines survive the collapse as bag-level mechanism (now driven by the pool, not an independent authority):
+Two disciplines survive the collapse as bag-level mechanism (driven by the pool, not an independent authority):
 
 * ''Stub-on-oracle-traversal.'' A URL found in `tiddler.text` during traversal does NOT force `find()`/hydration. The bag lands cold (URL known, doc not loaded) until something reads through it. Lazy hydration stays a bag concern; the //tier// is the island's to set.
 * ''Don't drop while syncing.'' A bag mid-replication is unsafe to evict even if its referencing island cooled. The handle-drop on island cool MUST check `syncActive` before releasing.
@@ -150,6 +150,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kd2rCCFyaXlyPidI8oCnQXmL49wyaZlS3S-J36uLvy4
+<<^ code="&#x0003;">>ni:///sha-256;0v-1DxT4aQguSO9w1WRWxU6nwDX0byI5A4nJlL0fwUA
 
 <<^ code="&#x0004;" -> to="?">>

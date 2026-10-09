@@ -140,7 +140,7 @@ dispatch events through the widget tree's standard TW5 event bus.
 A `dispatchEvent({ type: "tm-verse-event", uri, listenable })` call travels up the
 widget tree to the root widget, where `reaction-router.ts` catches it.
 Outbound writes — when a user saves a tiddler from any camera — go through
-`IslandAdaptor.saveTiddler → store.put()`, the same path the Story River uses today.
+`IslandAdaptor.saveTiddler → store.put()`, the same path the Story River uses.
 No new write-back machinery is necessary for additional cameras.
 
 The TW5 Story River is the ''first camera'' — the primary rendered view
@@ -191,7 +191,7 @@ Lower `tickMs` = higher render priority.
 Cameras that accept user input (typing, drawing) register outbound handlers
 (`saveTiddler`, `dispatchEvent`) on their widget tree.
 Input from any camera writes back through `IslandAdaptor.saveTiddler` →
-`store.put()` — the same outbound path used by the Story River today.
+`store.put()` — the same outbound path the Story River uses.
 
 !! Visibility Gate — The Scale Boundary
 
@@ -258,6 +258,6 @@ The tick source changes; the drain contract does not.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bxxdNMV7lAhbu71XKMmoZ9dcX3lwVnyzf97pPcXOHLg
+<<^ code="&#x0003;">>ni:///sha-256;wHdGCxsMM31wGG65cTa9xvZzONDAcFDCMp6M1MSORLY
 
 <<^ code="&#x0004;" -> to="?">>

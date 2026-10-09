@@ -108,7 +108,7 @@ separately as `@cad` caps rather than folding into the grammar ratchet.
 
 !! The collapse, verb by verb
 
-Each row names a RETIRED spelling and the composition that carries it now. ''No aliases survive'' — a name
+Each row names a RETIRED spelling and the composition that carries it. ''No aliases survive'' — a name
 that still answers teaches that both spellings stand, and the surface regrows from there. Every spelling
 below refuses with `unknown command`, flags included: routing an unknown name to the global help would
 return 0 and print a full page, which reads exactly like a door that opened.
@@ -214,7 +214,7 @@ suite afterward would prove neither half. Move the names; move nothing else.
 
 !! What proves it landed
 
-''Each of these fails loudly on a partial collapse'', and each now rides a witness rather than a hand —
+''Each of these fails loudly on a partial collapse'', and each rides a witness rather than a hand —
 because a verification an operator has to remember to run is a verification that reports on their memory.
 
 # ''The tree typechecks'' — `tools/typecheck-witness.sh`. A green build has not typechecked: the compiler
@@ -273,6 +273,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hJvKn6Gs5nbwL2mS4YM-OOQxabeRU8oOgCmojM76ldA
+<<^ code="&#x0003;">>ni:///sha-256;Wd4ycIn28eA7Mr6OPA_YQRh4TSzL36X8QijJCdZf5vY
 
 <<^ code="&#x0004;" -> to="?">>

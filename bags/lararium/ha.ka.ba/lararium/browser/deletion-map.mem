@@ -77,11 +77,11 @@ touching the browser vessel surface. Four classifications:
 | `TW5WorkerProxy` | Constitutional | Already designed for browser use. Core of S2 worker boot. Migrates to `@lararium/browser` as the browser worker runtime; `@lararium/tw5` keeps it as the shared proxy class. |
 | `WorkerFactory` type | Constitutional | Caller supplies the island constructor. Browser factory goes in `@lararium/browser`; node factory stays in `@lararium/node`. |
 
-!!! The browser shore now has source
+!!! The browser shore has source
 
 `packages/lararium-browser/` carries the browser vessel: local persistence, worker lifecycle, browser
 capabilities, projection return legs, and the host-side vessel composition. This inventory describes its
-current migration boundary; it is no longer an empty destination. The page shell in `@lararium/web`
+current migration boundary; it stands as no empty destination. The page shell in `@lararium/web`
 composes the visible host surface around that vessel and remains a separate layer.
 
 <<~/ahu>>
@@ -140,6 +140,6 @@ Delete or quarantine these patterns. Each deletion happens after the replacement
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-Xff8MWKQB0yOT0anJ33NVMqvaDvspMj7qmZms05n-o
+<<^ code="&#x0003;">>ni:///sha-256;4DT_S_LSghYu5etok1cM2pkdxsRe9XV2E-7DNTanMXc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -252,7 +252,7 @@ the mixture — the black channel, the chant, which varies — it carries all th
 surrender to the first non-tie.'' The house canon said it early and this measures it: //the black speaks,
 the red steers//. The red channel steers — it picks the parser, it addresses, it classifies — while
 carrying almost no within-corpus discriminative content. Exactly what a classifier register should do, and
-now witnessed doing it.
+witnessed doing it.
 
 ''The design lesson:'' the notation behaves as a proper ''determinative system'' in the Egyptological sense
 the classifier-channel doctrine already cites — category-marks that steer without sounding. The dial turns
@@ -336,7 +336,7 @@ the py-side instance and offloads to it. The batch bands sensorium already runs 
 <<~ scale engine """boundary ~ python — the per-chunk cosine-drift signal + ruptures (Binseg / KernelCPD) as the python changepoint fallback -> form ~ python — tree-sitter · tree-sitter-languages · prefixspan · c2xg · treeminer · spacy+benepar (or stanza) -> stats ~ a thin R leg — "ecp::e.divisive" (the boundary tree) + a bootstrap / jackknife reproduction grade -> induce ~ the `induce` job mines a corpus end-to-end; the STREAMING layer TWINS it py-side, a live per-stream instance running the SAME model""">>
 
 ''The install carries the model, live and batch alike.'' Every dependency lands in the venv, and the venv
-now homes the sensorium itself — the model reads py-side rather than behind TS:
+homes the sensorium itself — the model reads py-side rather than behind TS:
 
 <<~ scale install "python-form ~ tree-sitter · tree-sitter-languages · prefixspan · c2xg · treeminer · spacy+benepar (or stanza) -> python-boundary ~ ruptures (changepoint) · the cosine-drift signal over content embeddings -> r-stats ~ ecp">>
 
@@ -517,6 +517,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VFVPc37dv1c22Mo-fJvkipgfsdOtsu3cEFWJo-1oMZY
+<<^ code="&#x0003;">>ni:///sha-256;Zi4XMR4KI-_qu0Fc6YkEYgLG20xVESjJmZjLASwaTwU
 
 <<^ code="&#x0004;" -> to="?">>

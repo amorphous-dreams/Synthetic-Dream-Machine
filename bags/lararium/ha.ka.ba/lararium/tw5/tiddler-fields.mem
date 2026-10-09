@@ -70,9 +70,9 @@ Lararium code should use these two names as the only TW5 authority shapes.
 
 !! Host Record Boundary
 
-TW5 field bags are no longer the whole Lararium store record.
+TW5 field bags form only part of the Lararium store record.
 
-`LarTiddlerRecord` now carries two explicit lanes:
+`LarTiddlerRecord` carries two explicit lanes:
 
 * `fields` = the canonical TW5 input-field bag that projects into TW5 VMs
 * `meta` = host-envelope state such as deletion and authority
@@ -94,6 +94,6 @@ This split removes the old flat-record ambiguity where TW5 content fields and ho
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5AsaC1vMp5GYJO4IQlrxTEIw2hFDTV5XO61c5WFGLBM
+<<^ code="&#x0003;">>ni:///sha-256;R0JwcJ-ExkfZXIroAq1g45QsOdRZ3UmNiW__RBq5Da4
 
 <<^ code="&#x0004;" -> to="?">>

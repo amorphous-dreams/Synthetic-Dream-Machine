@@ -22,13 +22,13 @@ uri-path      = "ha.ka.ba/lararium/docs/mcp-tool-registry"
 
 ! MCP Tool Registry
 
-''THIS PAGE DESCRIBES A SURFACE THAT NO LONGER SERVES.'' The ten TS tools below rode an
+''THIS PAGE RECORDS A SURFACE THAT DOES NOT SERVE.'' The ten TS tools below rode an
 Automerge-native MCP redesign that never landed; the LIVE MCP seat is `lares_mcp.py` — FastMCP over the
 sensorium lifecycle, every verb riding the @daemon cap-wire to the one process that owns the palace
 holders. Kept as a record of the shape that was tried, never as a map of what answers today.
 
 ''AND THE COUNT WAS THE TELL.'' This page said ten, `mcp-resolve.ts` said nine, and the live surface
-carried THIRTY — three descriptions of one surface, none of them derived from it. The count now lives
+carried THIRTY — three descriptions of one surface, none of them derived from it. The count lives
 where the tools do, and `tools/surface-parity-witness.sh` holds the invariant that matters: every MCP
 tool answers to a CLI door.
 
@@ -159,6 +159,6 @@ inputs      = ["uri: string"]
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TZOwopzjAg-syVLrA5PK-y19s_SMuBO1kunHIMg89i0
+<<^ code="&#x0003;">>ni:///sha-256;D8SrjCLdlsJTE237cllCU7BMHe7vBo8rxfPk3ZsTs7Y
 
 <<^ code="&#x0004;" -> to="?">>

@@ -47,7 +47,7 @@ WHOLE stack degrades on the same gradient:
 TEXT; verbatim text renders as escaped HTML text; ''HTML text always renders.'' So water falls all the
 way down the tower to HTML-text, which cannot fail — the tower has a GUARANTEED never-fail ground.
 Every malformation, however severe, degrades to "verbatim bytes shown as text," never a crash. The
-gradient and its floor are now structural, not aspirational.
+gradient and its floor stand structural, not aspirational.
 
 ''HTML5 is the canonical exemplar.'' The HTML5 parsing algorithm (tag-soup → a valid DOM, explicit
 error-recovery for every malformation, the browser NEVER fails to parse) is THE gold-standard
@@ -127,7 +127,7 @@ through control-char obfuscation, `on*` dropped) — defense-in-depth layered ov
 ''LIVE WIRING — designed, GATED on a VM integration test (NOT yet activated).'' The `html`-rule shadow
 ''RETRACTED in shape (2026-06-27):'' the originally-planned `html`-shadow that routed real-HTML tags
 through `parseHtml5OpenTag` is unsafe — it flattens TW5's extended attributes (above). The live-rule
-path is now: ''AUGMENT TW5's own `parseTag`/`parseAttribute` with resilient-recursive-descent recovery''
+path runs: ''AUGMENT TW5's own `parseTag`/`parseAttribute` with resilient-recursive-descent recovery''
 (an Error/missing node + recovery-sets + the ≥1-char progress invariant), preserving the `{{}}`/`<<>>`/
 filter extensions verbatim — a TW5-native augmentation, not a parse5 swap. (Exact shape under research:
 spirit a871269a; the floor `lar-html5-tag.ts` is unaffected — it stays the pure-HTML floor.)
@@ -183,7 +183,7 @@ widget crashed the whole render tree. (Unknown widget → `"Undefined widget"` t
 graceful; the gap was //throwing// widgets.)
 
 ''BUILT + TESTED — the per-widget render boundary (fork branch `feature/resilient-render-boundary`,''
-''fork a9dd2c92 / parent cf06adbf):'' `renderChildren` now wraps each `children[i].render()` in try/catch
+''fork a9dd2c92 / parent cf06adbf):'' `renderChildren` wraps each `children[i].render()` in try/catch
 → a throw degrades to a graded `$error`/`tc-error` span, later siblings still render; `TranscludeRecursionError`
 re-thrown (transclude.js handles it). Validated against the fork's OWN suite: ''1528 specs, 0 failures''
 (1527 existing transparent + 1 new `test-resilient-render.js`). This is the render side of grade-on-a-
@@ -437,6 +437,6 @@ the grain a write actually lands in.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-4JhQrMLP2Fhk9oGww-S6ENq_GFeQhEzU6dCDwMiGs8
+<<^ code="&#x0003;">>ni:///sha-256;z1AuH2ofPK3HvIexK9AsSW8WPJRFaOm1-wB5SEEDi_w
 
 <<^ code="&#x0004;" -> to="?">>

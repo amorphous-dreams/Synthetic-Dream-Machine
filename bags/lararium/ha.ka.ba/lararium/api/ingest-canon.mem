@@ -106,7 +106,7 @@ AST (meme-ast) parses the DOCUMENT sigils (ahu · pranala · edge-sugar · contr
 
 ''THE TURN SIGILS STAND REGISTERED.'' `lares` · `set` · `stance` · `mu` · `aperture` ·
 `ooda-ha` · `drift-ward` · `oracle` · `persona` · `carry` — each carries a tiddler, and each renders
-its own definition rather than falling to water. The turn frame the boot seed declares now stands on
+its own definition rather than falling to water. The turn frame the boot seed declares stands on
 the shelf beside the document sigils, so the VM reads a TURN the way it reads a document, and
 `turn-harvest.ts` stops standing as the only reader of the frame.
 
@@ -188,6 +188,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d-ENzSZ871-kuSNvUaMk7SoEFhBTFk2_IQcrYHEkgcA
+<<^ code="&#x0003;">>ni:///sha-256;463lyEn_uTxIHLXzUcwK9h8oXWydhGSDX5JeScHBqgA
 
 <<^ code="&#x0004;" -> to="?">>
