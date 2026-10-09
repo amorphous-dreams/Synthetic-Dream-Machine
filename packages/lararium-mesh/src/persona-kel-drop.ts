@@ -22,8 +22,8 @@
  *
  * THE LEAF'S FACE: EVERY LEAF ACTS ALIKE, SO A PULL SIGNALS NOTHING. Every leaf pulls before it joins its channel,
  * on every dial and whenever a sibling closes a session because the head rolled. Every leaf re-deposits its own
- * head chain, so a herm that restarted or evicted heals. Every leaf pins at least two herms, so one herm that
- * withholds is tolerated through another. Withholding stays undetectable from one herm: a truncated suffix
+ * head chain, so a herm that restarted or evicted heals. Every leaf pins at least two herms, so it tolerates one
+ * herm that withholds through another. Withholding stays undetectable from one herm: a truncated suffix
  * verifies, so it reads as "no rotation yet".
  *
  * THE READER FOLDS (`pullPersonaKelSuccessors`). It unions every herm's values under each name, keeps an event
@@ -32,7 +32,7 @@
  * on from the new head. It names every value it refused, so a herm that strips or swaps a successor surfaces. It
  * also re-reads the drop of every provisional's predecessor, so a veto a first pull missed still lands.
  *
- * NO CLOCK: a name is a hash of a cid; plurality and fold order are KEL event order.
+ * NO CLOCK: a name hashes a cid; plurality and fold order follow KEL event order.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-persona-group-secret
  */

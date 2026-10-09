@@ -419,8 +419,8 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 
   /**
-   * Stand this leaf again under a KEL it now carries. A KEL that moved is deposited at every pinned herm FIRST, so
-   * a sibling that hears the close finds the move waiting. Then every standing session is judged under the head:
+   * Stand this leaf again under a KEL it now carries. It deposits a KEL that moved at every pinned herm FIRST, so a
+   * sibling that hears the close finds the move waiting. Then it judges every standing session under the head:
    * one whose sibling proved with an edge the head rolled past closes, the sibling hears why inside it while both
    * still share the old channel, and only then does this leaf join the head's channel and say `here` — where the
    * head re-enrolled that sibling it catches up and they prove again, and where it revoked it the sibling says so
@@ -792,8 +792,8 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
  * it was handed, every re-enrolment the KEL's rotations carry, the lease epoch the vessel holds — and adds the
  * adapter over a dial to the first pinned herm to the repo. Every pinned herm carries the leaf's successor drops:
  * a pull lands on the same board, and the board's every change stands the leaf again, so a sibling whose edge the
- * moved head rolled past leaves the repo with its refusal said. A vessel pins at least two herms, so one herm that
- * withholds a drop is tolerated through another. A malformed herm address, or fewer than two herms, throws here, at
+ * moved head rolled past leaves the repo with its refusal said. A vessel pins at least two herms, so it tolerates
+ * one herm that withholds a drop through another. A malformed herm address, or fewer than two herms, throws here, at
  * boot: a vessel told to meet its siblings through herms it cannot pin has been told nothing it can do.
  *
  * A peer this channel yields is a device of THIS vessel's own PersonaGroup, proven over the session. It holds

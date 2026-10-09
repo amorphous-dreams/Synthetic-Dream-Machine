@@ -34,7 +34,7 @@
  *     holds nothing under, a refused deposit and every other path meet the same silence as a closed door.
  *
  * WHAT THE HERM STILL SEES. The stamp it routes on is each leaf's long-lived device key, and a socket's tag set
- * groups the keys that stand under one head, so a herm colluding with a revoked leaf reads who is online off its
+ * groups the keys that stand under one head, so a herm colluding with a revoked leaf reads who stands online off its
  * own gate. Per-dial transport keys bound into the siblings' proof close that; this relay does not.
  *
  * WHO IT ADMITS. A crossroads relay carries opaque envelopes for ANY proven key: it holds NO read-cap, reads NO
@@ -213,7 +213,7 @@ const DROP_BODY_CAP = 256 * 1024;
 const DROP_PATH_RE = new RegExp(`^${PERSONA_KEL_DROP_ROUTE}([0-9a-f]{64})$`);
 
 /**
- * Answer one plain request on the relay port: a successor drop's read or deposit, or silence. Silence is the cut
+ * Answer one plain request on the relay port: a successor drop's read or deposit, or silence. Silence: the cut
  * socket every closed door shows — no status, no body, no header. A drop answers with CORS open, so a browser leaf
  * reads it from any page; the POST takes `text/plain`, which no preflight precedes.
  */
