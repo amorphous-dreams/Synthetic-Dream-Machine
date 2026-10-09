@@ -1,36 +1,28 @@
 /**
  * key-class — THE VESSEL'S KEY CENSUS. The vocabulary (`KEY_CLASSES`, `isKeyClass`) lives in mesh; this file
- * reads the identity dir and names every key-bearing file by class for `vault status`.
+ * names every key-bearing file in the identity home by class for `vault status`.
  *
- * TWO AXES, AND NEITHER ANSWERS FOR THE OTHER. `class` names WHAT KIND OF SECRET a file holds; `atRest`
- * names WHO HOLDS IT AT REST. They are genuinely independent, and one class spans both regimes: three
- * files read `class: "seed"` — `recovery-device-share-h{N}.bin`, `seal-reserve-mine-share.bin`, and
- * `.persona-group-root-…-h{N}.json` — and only the first two ride the vault's at-rest seal lifecycle.
+ * THE CENSUS READS THE ONE CARRIER TABLE (`vault-carriers`). It spells no filename of its own: a row that
+ * carries a key names its class there, and every entry here derives from a row. A second list of key
+ * filenames would drift from the table in both expensive directions — a key the census omits gets skipped
+ * by a sweep that reports success, and a key the census invents gets written over by an act nobody owns.
  *
- * WHY THE SECOND AXIS, RATHER THAN A SPLIT CLASS. A hand that writes "re-seal every `seed`-class carrier
- * under the new passphrase" and iterates a one-axis census either writes over a file the lifecycle does not
- * own, or SKIPS it silently and reports "all seeds re-sealed" over a cleartext root. A sweep over a class
- * that names two regimes reports success on what it skipped. `class` is not wrong — it is INCOMPLETE, so
- * the cure adds the missing axis and leaves the class alone. Same shape as presence ⊥ readability in
- * `readArchiveOpening`, and as custody ⊥ materialization in the civic cap model.
- *
- * THE CUSTODY FACT IS DERIVED, NEVER HAND-SPELLED PER FILENAME. The authority on "the vault holds this at
- * rest" is the vault's own carrier enumeration, which lives once in `vault-carriers` and which
- * `archive-passphrase` reads for the very same set. A hand-list here would be a SECOND derivation of one
- * fact, and it would drift in both expensive directions (a governed carrier the census omits gets skipped
- * by a sweep that reports success; a carrier the census invents gets written over by a sweep no rotate
- * owns). `key-class.test` pins the agreement in BOTH directions so the drift cannot return.
+ * THREE AXES, AND NONE ANSWERS FOR ANOTHER.
+ *   `class`   — WHAT KIND OF SECRET the file holds (`device-minted` · `seed` · `cloud-synced`).
+ *   `custody` — WHERE THE VK HOLDS IT (`floor` · `floor-plain` · `hot` · `cold`), the table's class.
+ *   `atRest`  — whether the passphrase seal lifecycle governs it, with `carrier` naming which carrier.
+ * One class spans several custodies: three files read `class: "seed"` and all three rest `cold`, yet only
+ * two of them ride the passphrase lifecycle. A sweep keyed on one axis reports success on what another
+ * axis says it skipped.
  */
-
-import { existsSync, readdirSync } from "node:fs";
 
 // The vocabulary lives once, in mesh; the node re-exports it beside the census that reads the identity dir.
 import { KEY_CLASSES, isKeyClass, type KeyClass } from "@lararium/mesh";
-import { vaultCarrierMap, type CarrierName } from "./vault-carriers.js";
+import { identityCarrierCensus, type CarrierName, type CustodyClass } from "./vault-carriers.js";
 export { KEY_CLASSES, isKeyClass, type KeyClass };
 
 /**
- * Who holds a key AT REST — the custody axis, orthogonal to `class`.
+ * Whether the passphrase seal lifecycle governs a key — orthogonal to `class` and to `custody`.
  *
  * `sealed`    — the vault's at-rest seal lifecycle GOVERNS this file: `vault seal` seals it, `rotate`
  *               re-seals it, `repair` reconciles it, `status` reports its state, and `export` refuses to
@@ -47,7 +39,9 @@ export interface KeyCensusEntry {
   readonly name:  string;
   readonly class: KeyClass;
   readonly file:  string;
-  /** The CUSTODY axis — see `KeyAtRest`. Derived from the vault's own enumeration, never hand-spelled. */
+  /** Where the VK holds it — the carrier table's class for the row this file matched. */
+  readonly custody: CustodyClass;
+  /** The passphrase seal lifecycle's governance — see `KeyAtRest`. Derived from the same row. */
   readonly atRest: KeyAtRest;
   /**
    * WHICH vault carrier holds it, when one does; `null` when none does. Null STATES "no carrier owed" — it
@@ -59,34 +53,16 @@ export interface KeyCensusEntry {
 }
 
 /**
- * Census the identity dir: every key-bearing file, named and classed, with its custody. A card is PUBLIC
- * and never listed. An absent or unreadable dir names no keys and faults nothing — the status line still
- * renders.
+ * Census the identity home: every key-bearing file, named and classed, with its custody. A card is PUBLIC
+ * and carries no key, so it never lists. An absent or unreadable home names no keys and faults nothing — the
+ * status line still renders.
  */
 export function vesselKeyCensus(identityDir: string): KeyCensusEntry[] {
-  let names: string[];
-  try { names = existsSync(identityDir) ? readdirSync(identityDir) : []; } catch { return []; }
-  // ONE ASK, ONE ANSWER: the vault names which files it governs in THIS dir, and every entry's custody
-  // reads off that map. Nothing below spells a carrier filename of its own.
-  const governed = vaultCarrierMap(identityDir);
-  const custody = (file: string): Pick<KeyCensusEntry, "atRest" | "carrier"> => {
-    const carrier = governed.get(file);
-    return carrier ? { atRest: "sealed", carrier } : { atRest: "cleartext", carrier: null };
-  };
   const out: KeyCensusEntry[] = [];
-  const add = (name: string, cls: KeyClass, file: string): void => {
-    out.push({ name, class: cls, file, ...custody(file) });
-  };
-  for (const f of names.sort()) {
-    if (/^\.vessel-key(-[^.]+)?\.json$/.test(f))                    add("vessel-key", "device-minted", f);
-    else if (f === "veil-archive.bin")                              add("veil", "device-minted", f);
-    else if (f === "keyhive-archive.bin")                           add("keyhive-archive", "device-minted", f);
-    else {
-      const root = /^\.persona-group-root(?:-[^.]+?)?-h(\d+)\.json$/.exec(f);
-      if (root)                                                     add(`persona-root-${`h${root[1]}`}`, "seed", f);
-      else if (/^recovery-device-share-h\d+\.bin$/.test(f))         add(f.replace(/\.bin$/, ""), "seed", f);
-      else if (f === "seal-reserve-mine-share.bin")                 add("seal-reserve-mine-share", "seed", f);
-    }
+  for (const e of identityCarrierCensus(identityDir)) {
+    if (e.keyClass === null) continue;
+    const atRest: KeyAtRest = e.lifecycle ? "sealed" : "cleartext";
+    out.push({ name: e.name, class: e.keyClass, file: e.file, custody: e.custody, atRest, carrier: e.lifecycle });
   }
   return out;
 }

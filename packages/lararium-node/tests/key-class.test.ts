@@ -135,6 +135,18 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
+  test("each key names its custody class off the one carrier table: floor · hot · cold", () => {
+    const dir = sownDir();
+    try {
+      const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.custody]));
+      expect(byName).toEqual({
+        "vessel-key": "floor",
+        "keyhive-archive": "hot", "veil": "hot",
+        "persona-root-h0": "cold", "recovery-device-share-h0": "cold", "seal-reserve-mine-share": "cold",
+      });
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
   test("CONTROL: the three device-minted entries keep their class untouched", () => {
     const dir = sownDir();
     try {

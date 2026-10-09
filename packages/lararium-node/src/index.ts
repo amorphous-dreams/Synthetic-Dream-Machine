@@ -442,9 +442,15 @@ export type {
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
 export { KEY_CLASSES, isKeyClass, vesselKeyCensus } from "./key-class.js";
 export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
-// The ONE carrier enumeration the seal lifecycle and the key census both read — see `vault-carriers`.
-export { vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers } from "./vault-carriers.js";
-export type { VaultCarrier } from "./vault-carriers.js";
+// The ONE carrier table: every carrier at rest by home, custody class and writer. The key census, the seal
+// lifecycle and the custody shape reader all derive from it — see `vault-carriers`.
+export {
+  CUSTODY_CLASSES, carrierTable, carrierCensus, vesselCustodyHomes,
+  vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers,
+} from "./vault-carriers.js";
+export type {
+  VaultCarrier, CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry,
+} from "./vault-carriers.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
