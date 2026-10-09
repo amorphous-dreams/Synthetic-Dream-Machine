@@ -111,7 +111,9 @@ export interface FaceGrantVerifyContext {
   readonly expectedEpoch?: number;
 }
 
-export type FaceGrantVerdict = { ok: true } | { ok: false; reason: string };
+/** A grant record's verdict. `unreadable` names persona-KEL events the walk set aside — they move nothing, and the
+ *  verdict says so on either side. */
+export type FaceGrantVerdict = { ok: true; unreadable?: string } | { ok: false; reason: string; unreadable?: string };
 
 /**
  * Verify a grant record OFFLINE. Order: shape → ours (joinee + group) → the founder's edge under the persona-KEL
@@ -129,6 +131,8 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
   if (typeof r.joineeAgentIdHex !== "string" || !r.joineeAgentIdHex.toLowerCase().endsWith(ctx.selfVerifyingKey.toLowerCase())) {
     return { ok: false, reason: "the record names another joinee" };
   }
+  let unreadable: string | undefined;
+  const said = (): { unreadable?: string } => (unreadable ? { unreadable } : {});
   // The lease is the edge's only decay; no clock rides the record or its founder's edge.
   const freshnessOpts = ctx.expectedEpoch !== undefined ? { expectedEpoch: ctx.expectedEpoch } : undefined;
   if (ctx.personaKel) {
@@ -141,16 +145,17 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
       return { ok: false, reason: "the persona-KEL incepts under a root other than the pinned one — the seal binds the chain" };
     }
     const walked = await verifyEdgeAgainstPersonaKel(r.founderEdge, chain, freshnessOpts);
-    if (!walked.ok) return { ok: false, reason: `founder edge refused under the persona-KEL head: ${walked.reason ?? "signature or window"}` };
+    if (walked.unreadable) unreadable = walked.unreadable;
+    if (!walked.ok) return { ok: false, reason: `founder edge refused under the persona-KEL head: ${walked.reason ?? "signature or window"}`, ...said() };
   } else {
     const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, freshnessOpts);
     if (!edge.ok) return { ok: false, reason: `founder edge refused under the pinned root: ${edge.reason ?? "signature or window"}` };
   }
   const founderKey = r.founderEdge.deviceVerifyingKey;
   if (founderKey.toLowerCase() === ctx.selfVerifyingKey.toLowerCase()) {
-    return { ok: false, reason: "the record's founder is this vessel — a hearth never seats itself" };
+    return { ok: false, reason: "the record's founder is this vessel — a hearth never seats itself", ...said() };
   }
   const sigOk = await ed25519VerifyHex(r.sig, signedBytes(r as FaceGrantRecord), founderKey);
-  if (!sigOk) return { ok: false, reason: "the record's signature fails under the founder's licensed key" };
-  return { ok: true };
+  if (!sigOk) return { ok: false, reason: "the record's signature fails under the founder's licensed key", ...said() };
+  return { ok: true, ...said() };
 }

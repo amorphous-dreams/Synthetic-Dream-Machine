@@ -70,6 +70,9 @@ export interface BootDaemonKeyhiveResult {
   readonly keyhive: KeyhiveProvider;
   /** The operator DID (keyhive whoami) this boot resolved to. */
   readonly did: string;
+  /** What the Binding Gate's fold set aside — persona-KEL events that do not verify and so move nothing — or null
+   *  when every event it met verified. The boot also says it on the log. */
+  readonly unreadable: string | null;
 }
 
 /**
@@ -128,6 +131,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // self-contained signed (vessel × hearthTrueName) proof over public CRDT state — no Beelay, no
   // encrypted-graph walk. FAIL-CLOSED and HALT on: a chain whose genesis prefix mismatches the pin (a
   // mis-threaded log), an unreachable / broken / below-quorum head, or an edge that does not chain to the head.
+  let unreadable: string | null = null;
   if (!facelessFloor) {
   const { prefix, chain } = input.personaKel!;
   if (chain.length === 0 || chain[0]!.prefix !== prefix) {
@@ -137,6 +141,11 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     throw new Error("[daemon-keyhive] Binding Gate: current lease frontier unavailable — refusing persona-bound boot");
   }
   const binding = await verifyEdgeAgainstPersonaKel(input.deviceEdge!, chain, { expectedEpoch: input.expectedEpoch });
+  // Events that do not verify move nothing at the gate; the boot says so rather than set them aside in silence.
+  if (binding.unreadable) {
+    unreadable = binding.unreadable;
+    console.warn(`[daemon-keyhive] Binding Gate: ${binding.unreadable}`);
+  }
   if (!binding.ok) {
     throw new Error(`[daemon-keyhive] Binding Gate: device-delegation edge failed verification against the persona-KEL head op-key. ${binding.reason ?? ""}`);
   }
@@ -164,5 +173,5 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     await keyhive.registerBag(bagUrl);
   }
 
-  return { keyhive, did };
+  return { keyhive, did, unreadable };
 }

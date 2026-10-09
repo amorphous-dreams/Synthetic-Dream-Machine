@@ -6,6 +6,7 @@
  *   - re-hydrates cap state from the daemon doc and clears Gates A/B/C
  *   - registers the operator's writable bags so verify() resolves
  *   - HALTs (throws) on a drifted identity (Gate A) or a forged binding edge (the Binding Gate)
+ *   - says, on the log and in its result, every persona-KEL event the Binding Gate set aside as unverified
  *
  * Runs entirely in-process (no worker) because the logic is extracted pure —
  * that is the whole point: the worker is just the caller. Founds a real operator
@@ -21,7 +22,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   type LarDoc, type PersonaKelEvent,
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
-  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
+  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, enrolmentDigestOf, personaEventCidOf,
 } from "@lararium/mesh";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
@@ -100,6 +101,31 @@ describe("bootDaemonKeyhive", () => {
     expect(v.ok).toBe(true);
 
     await keyhive.dispose();
+  });
+
+  test("RED: a junk persona-KEL event beside the chain moves nothing at the Binding Gate, and the boot SAYS it set it aside; CONTROL: a clean chain says nothing", async () => {
+    const chain = founded.bootArgs.personaKel!.chain;
+    const head = chain[chain.length - 1]!;
+    const core = {
+      seq: head.seq + 1, prefix: head.prefix, opKeyDid: `0x${"ee".repeat(32)}`, recoverySetHash: head.recoverySetHash,
+      nextRecoverySetHash: head.nextRecoverySetHash, prevEventCid: head.eventCid, provisional: false, vetoOfCid: null,
+      enrolmentDigest: enrolmentDigestOf([]),
+    };
+    const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
+    const warned: string[] = [];
+    const warn = console.warn;
+    console.warn = (...a: unknown[]) => { warned.push(a.map(String).join(" ")); };
+    try {
+      const planted = await bootDaemonKeyhive({ ...founded.bootArgs, personaKel: { prefix: head.prefix, chain: [...chain, junk] }, expectedEpoch: 0 });
+      expect(planted.unreadable).toMatch(/do not verify and move nothing/);
+      expect(warned.some((w) => w.includes("Binding Gate") && w.includes(junk.eventCid.slice(0, 16)))).toBe(true);
+      await planted.keyhive.dispose();
+      warned.length = 0;
+      const clean = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+      expect(clean.unreadable).toBeNull();
+      expect(warned.some((w) => w.includes("Binding Gate"))).toBe(false);
+      await clean.keyhive.dispose();
+    } finally { console.warn = warn; }
   });
 
   test("HALTs on identity drift (Gate A)", async () => {

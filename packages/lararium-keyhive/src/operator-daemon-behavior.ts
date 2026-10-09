@@ -77,6 +77,15 @@ import { KeyhiveProvider } from "./keyhive-provider.js";
  * material, falls back to the verifier-less behavior (delegated-verb path only);
  * daemon manifests always carry daemonAuth, so that path guards tests.
  */
+/**
+ * The note a live admission verdict carries when the persona-KEL walk set events aside or met a fork: events that
+ * do not verify move nothing, and the verdict's provenance says so rather than drop them in silence. Empty when the
+ * walk read every event it met.
+ */
+export function kelWalkNote(walk: { readonly unreadable?: string; readonly fork?: string }): string {
+  return walk.unreadable ? ` — the persona-KEL walk set aside: ${walk.unreadable}` : "";
+}
+
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
   const { persistArchive, persistVeilArchive, vault, bagTier, ...daemonExtra } = extra;
@@ -870,6 +879,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const expectedEpoch = lease.n;
         const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, { expectedEpoch });
         const deviceMatches = edge.deviceDid === id;
+        const unreadNote    = kelWalkNote(delegation);
         if (delegation.ok && deviceMatches && proofVerified) {
           // Admitted at the operator's-own-device tier — equivalent flow to admin (it IS the
           // operator's delegated device). `reason` carries the provenance (survives the worker→host
@@ -879,13 +889,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // identifier's current authority — and binds to the exact identity that proved key-possession. A
           // cross-operator cannot forge an edge chaining to a KEL it never heads, so a verified head-chained
           // edge PROVES same-operator (the operator's own device fleet, a distinct device key under one identity).
-          return { ok: true, identifier: id, proofVerified, reason: "admitted via operator device-delegation", peerClass: "same-operator" as const };
+          // Events the walk set aside move nothing; the provenance says so rather than drop them in silence.
+          return { ok: true, identifier: id, proofVerified, reason: `admitted via operator device-delegation${unreadNote}`, peerClass: "same-operator" as const };
         }
         return {
           ok: false, identifier: id, proofVerified,
-          reason: !delegation.ok  ? `device-delegation rejected: ${delegation.reason ?? "(no reason)"}`
+          reason: (!delegation.ok  ? `device-delegation rejected: ${delegation.reason ?? "(no reason)"}`
                 : !deviceMatches  ? "device-delegation edge not bound to the presented identity"
-                :                   "device-delegation requires a verified proof-of-possession",
+                :                   "device-delegation requires a verified proof-of-possession") + unreadNote,
         };
       }
 

@@ -15,7 +15,7 @@ import { join } from "node:path";
 import {
   buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, hexToBytes,
   deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
-  type PersonaKelEvent,
+  enrolmentDigestOf, personaEventCidOf, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { faceGrantTitle, faceGrantRecordCid, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
 
@@ -256,5 +256,25 @@ describe("the later grant — a signed record the joinee verifies offline", () =
       const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP });
       expect(v.ok).toBe(true);
     });
+  });
+});
+
+describe("a grant record under a persona-KEL with a junk event beside it", () => {
+  test("RED: the junk moves nothing, and the verdict SAYS what the walk set aside; CONTROL: a clean chain says nothing", async () => {
+    const kel = await personaKel(null);
+    const inception = kel.chain[0]!;
+    const core = {
+      seq: 1, prefix: inception.prefix, opKeyDid: `0x${"ee".repeat(32)}`, recoverySetHash: inception.recoverySetHash,
+      nextRecoverySetHash: inception.nextRecoverySetHash, prevEventCid: inception.eventCid, provisional: false, vetoOfCid: null,
+      enrolmentDigest: enrolmentDigestOf([]),
+    };
+    const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
+    const rec = await grantFor();
+    const edge = await founderEdge();
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP };
+    const planted = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: { prefix: kel.prefix, chain: [...kel.chain, junk] } });
+    expect(planted).toMatchObject({ ok: true, unreadable: expect.stringMatching(/do not verify and move nothing/) });
+    const clean = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: kel });
+    expect(clean).toEqual({ ok: true });
   });
 });
