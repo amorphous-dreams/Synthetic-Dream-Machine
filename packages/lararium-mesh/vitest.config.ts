@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import path from "path";
 
 const root = new URL(".", import.meta.url).pathname;
@@ -19,5 +19,8 @@ export default defineConfig({
     isolate: true,
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    // A dotfile under tests/ never reads as a suite. A tool that writes a transient copy of a suite (a witness
+    // that strips skips) writes it outside this include, and a copy a killed run left behind stays uncollected.
+    exclude: [...configDefaults.exclude, "tests/**/.*"],
   },
 });

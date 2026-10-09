@@ -87,3 +87,6 @@ lar-dev-root.json
 
 # the docker mesh's peer pins — read off each container's own founded store by tools/mesh-pins.mjs
 /.mesh-pins.env
+
+# The unbuilt-laws witness's transient skip-stripped copy of the register (tools/unbuilt-laws-witness.sh).
+packages/lararium-mesh/.unbuilt-laws/

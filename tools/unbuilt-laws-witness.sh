@@ -17,16 +17,27 @@
 #
 # It also fails when the register runs EMPTY: a file that lost its tests would otherwise report the
 # cleanest possible run, and that is the shape of every witness this house has had to repair.
+#
+# ── THE STRIPPED COPY NEVER READS AS A SUITE ────────────────────────────────────────────────────
+# The copy lands under `packages/lararium-mesh/.unbuilt-laws/`, outside the mesh's default vitest include
+# and gitignored, and runs under its own config (`vitest.config.unbuilt-laws.ts`). A mesh suite run beside
+# this witness never collects its reds, and neither does a later one after a kill no trap survives.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
 SRC="packages/lararium-mesh/tests/unbuilt-laws.test.ts"
-TMP="packages/lararium-mesh/tests/.unbuilt-laws-collide.test.ts"
+RUN_DIR="packages/lararium-mesh/.unbuilt-laws"
+TMP="$RUN_DIR/collide.test.ts"
 [ -f "$SRC" ] || { echo "unbuilt-laws: the register is missing at $SRC"; exit 1; }
 
-# Strip the skips so every recorded law RUNS.
+# Every exit path removes the copy: a normal exit, an error, and the signals a cancel sends.
+trap 'rm -rf "$RUN_DIR"' EXIT
+trap 'exit 130' INT TERM HUP
+
+# Strip the skips so every recorded law RUNS. A copy a killed run left behind gives way to this one.
+rm -rf "$RUN_DIR"
+mkdir -p "$RUN_DIR"
 sed 's/test\.skip(/test(/g' "$SRC" > "$TMP"
-trap 'rm -f "$TMP"' EXIT
 
 # The register carries BOTH: skipped reds, and unskipped tests standing as the floor they sit on.
 declared=$(grep -c 'test\.skip(' "$SRC")
@@ -41,7 +52,7 @@ fi
 # with an escape byte instead of whitespace, the grep below matches nothing, and an unread summary
 # counts as zero reds: every law reports GREENED on a run where all of them failed. NO_COLOR asks for
 # plain text and the sed strips any escape that still slips through.
-out=$(cd packages/lararium-mesh && NO_COLOR=1 FORCE_COLOR=0 npx vitest run "tests/$(basename "$TMP")" --reporter=verbose 2>&1 \
+out=$(cd packages/lararium-mesh && NO_COLOR=1 FORCE_COLOR=0 npx vitest run --config vitest.config.unbuilt-laws.ts --reporter=verbose 2>&1 \
   | sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g')
 # THE `Tests` SUMMARY LINE, never the first "N failed" in the stream — `Test Files  1 failed` matches
 # that pattern too, and reading it reported one red standing where seventeen did.
