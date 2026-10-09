@@ -31,7 +31,7 @@ The canonical source rests at `lar:///ha.ka.ba/lararium/tw5/modules/deserializer
 
 !! Split Model
 
-The entry `memeticWikitextDeserializer(text, fields)` reads the ONE carrier a text carries — the live heading opens it and the span reader (`readFrame`) closes it, under one fence mask (one file frames one carrier; a stream belongs to the SYN-framed profile) — then routes it through `splitMemeToTiddlers` → `splitRecursive`. The root tiddler reads its complete authorial TOML block immediately after STX; each `<<~ ahu #/slot>>` or `<<fragment #/slot>>` block becomes a child tiddler holding its body bytes authoritatively, the parent keeping a `<<~ kahea ahu #/slot>>` reference in its place. Legacy pre-STX root metadata is recoverable only with a visible diagnostic; the emitter never recreates it. Transport prologue/postamble may ride records of their own, while scalar carriage — `$slot`, `$fragment-parent`, `$carrier-soh` — stays on fields (see lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/the-carriage). The STX–ETX check covers root TOML and all authored content.
+The entry `memeticWikitextDeserializer(text, fields)` reads the ONE carrier a text carries — the live heading opens it and the span reader (`readFrame`) closes it, under one fence mask (one file frames one carrier; a stream belongs to the SYN-framed profile) — then routes it through `splitMemeToTiddlers` → `splitRecursive`. The root tiddler reads its complete authorial TOML block immediately after STX; each `<<~ ahu #/slot>>` or `<<fragment #/slot>>` block becomes a child tiddler holding its body bytes authoritatively, the parent keeping a `<<~ kahea ahu #/slot>>` reference in its place. The reader recovers legacy pre-STX root metadata only beside a visible diagnostic; the emitter never recreates it. Transport prologue/postamble may ride records of their own, while scalar carriage — `$slot`, `$fragment-parent`, `$carrier-soh` — stays on fields (see lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/the-carriage). The STX–ETX check covers root TOML and all authored content.
 
 A split failure never truncates: `safeSplitMeme` falls back to one verbatim tiddler flagged `lar_parse_degraded`, and grades the parse via `parseMemeText().failures` into `lar_parse_failures` — degradation surfaces legibly rather than dropping bytes.
 
@@ -49,6 +49,6 @@ The paired `carrier-filetype` startup module registers `.mem` as `text/memetic-w
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_jLIJb65o2_c2Xt92jOzvKI6F0pLES7f6Xi51CfG84M
+<<^ code="&#x0003;">>ni:///sha-256;NfWoyJ3xu67fZs4Cy9Lfo4X_syg3mRo-wUhD88N4t94
 
 <<^ code="&#x0004;" -> to="?">>

@@ -94,8 +94,8 @@ Gate C: PersonaGroup ∈ MeshCabal sentinel doc.
 All three gates pass before the vessel opens its wiki VM lanes.
 
 ''OP-E3 — A vessel verifies; the owner governs.''
-A vessel may verify claims made by other vessels. Membership in a causal island MUST
-be granted or revoked by that island's owner alone. Delegation flows from the operator
+A vessel may verify claims made by other vessels. That island's owner alone MUST
+grant or revoke membership in a causal island. Delegation flows from the operator
 root key outward, never inward from a relay or server.
 
 ''OP-E4 — Ea at the admin ingress.''
@@ -214,8 +214,8 @@ seed+card; then V3 C (peer transport) and the writable MCP surface compose over 
 
 !! Vessel Parity
 
-Browser vessel and node vessel share this contract fully. Runtime differences are
-budget choices, not architectural forks.
+Browser vessel and node vessel share this contract fully. Runtime differences read as
+budget choices, never architectural forks.
 
 | Concern | Node vessel | Browser vessel |
 |---|---|---|
@@ -249,6 +249,6 @@ user device, and one device of a user-caps-only fleet where no vessel listens
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QyKTl-OTlnyeNR81_zVoYnZ1FKLjH7u-XFuiINdcs-w
+<<^ code="&#x0003;">>ni:///sha-256;NzKWv1qvh_--_x026JCLMIIkc2TGuUcBnapCHUEZ_cY
 
 <<^ code="&#x0004;" -> to="?">>

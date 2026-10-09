@@ -41,7 +41,7 @@ The two never fuse. Authority answers //"can this principal still act?"// and re
 
 A static defence loses a 500-year siege by arithmetic: given enough time, a creeping adversary eventually holds `t` shares and breaks any fixed `t`-of-`n` threshold. The mesh refuses the static fight and ''resets the clock instead'' — it periodically re-randomizes the secret shares so that every share the adversary already stole turns worthless.
 
-''Proactive Secret Sharing (PSS)'' carries the move: each refresh round adds a fresh random polynomial with `g(0) = 0` — the secret stays fixed, every individual share rotates. So the adversary no longer races to //eventually// collect `t` shares; it must collect `t` ''within a single refresh window'', then watch its haul expire. Past compromises compose to nothing across a refresh boundary. The 500-year clock collapses to the length of one window.
+''Proactive Secret Sharing (PSS)'' carries the move: each refresh round adds a fresh random polynomial with `g(0) = 0` — the secret stays fixed, every individual share rotates. So the adversary cannot race to //eventually// collect `t` shares; it must collect `t` ''within a single refresh window'', then watch its haul expire. Past compromises compose to nothing across a refresh boundary. The 500-year clock collapses to the length of one window.
 
 <<~moves static-threshold-defence/eventually-falls -> proactive-refresh/expires-every-theft on/g(0)=0-re-randomization if/refresh-faster-than-creep do/reset-the-window-not-win-the-fight>>
 
@@ -51,7 +51,7 @@ names the liveness ''lease'' (it bounds //who may still act//), DISTINCT from th
 ''compaction''-epoch (the snapshot-restart that bounds //state-history growth//) at
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>. Same word, two mechanisms — they
 MAY co-occur at a boundary, never fuse. ''Both ride ONE mechanism'' — a monotone frontier that only rolls
-forward — in two carriers: an integer max-register where the writer-set is fixed, a hash-linked chain head
+forward — in two carriers: an integer max-register where the writer-set holds fixed, a hash-linked chain head
 where the writer-set itself rotates. A grant binds to the frontier and goes stale when it moves past:
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
 
@@ -142,17 +142,17 @@ the membership relay alike:
   · stranger) before its verdict. A socket that sorts nowhere, a failed proof and a stranger at a gate whose
   carried Nexuses all read PRIVATE meet the same end. The gate draws ONE drop deadline at accept, uniform
   over an interval, and terminates the socket at it with no close frame, so verify time leaks nothing.
-  A PRIVATE stranger is indistinguishable from a failed proof.
+  A PRIVATE stranger reads indistinguishable from a failed proof.
 * ''A HERM ANSWERS THE KNOCK'' (operator-ruled). A gate folds its own place posture beside every Nexus it
   carries, read by one reader (`ownPlacePosture`). A lararium reads its charter, and an absent or torn
-  charter reads PRIVATE: for a hearth it is a fault, and a fault fails closed. A herm holds no charter by
+  charter reads PRIVATE: for a hearth that reads as a fault, and a fault fails closed. A herm holds no charter by
   CLASS, a waystone and never a broken lararium, so it answers any PROVEN peer that knocked. The knock is
   its silence: only a peer handed the gate key can compute the path. A herm's SILENT or WAYMARK rung
-  governs its HTTP descriptor alone. No herm↔herm contract is needed.
+  governs its HTTP descriptor alone. No herm↔herm contract enters.
 
 ''Still owed — the re-found'': the CLIENT does not yet prove first, since the gate's challenge is its first
 byte after the knock; full Noise `IK` closes that and hides the transport from a passive watcher; and a
-per-Nexus wire key replaces the one gate key every carried Nexus shares today.
+per-Nexus wire key replaces the one gate key every carried Nexus shares.
 
 !!! What the shape still owes
 
@@ -190,7 +190,7 @@ per-Nexus wire key replaces the one gate key every carried Nexus shares today.
 * ''The scanned code carries the PUBLIC DESCRIPTOR'' — expiry, chant epoch, protocol version, the shrine's key fingerprint, the expected release fingerprint. None of it confidential, all of it checkable ''before a packet leaves'', and loud on mismatch.
 * ''The human carries the SECRET'' — short enough to speak or write, and therefore unphotographable from across a room. A scanned bearer token falls to any camera with line of sight and persists in a photo roll; a spoken code leaves ''no artifact on any device''.
 
-''The exchange runs BALANCED, because peers hold no servers.'' An augmented password exchange stores a verifier on one side, and that asymmetry ''IS a server'' however well it performs. A balanced exchange holds the same secret at both ends, assigns no roles, stores nothing, and reads no clock.
+''The exchange runs BALANCED, because peers hold no servers.'' An augmented password exchange stores a verifier on one side, and that asymmetry ''stands as a server'' however well it performs. A balanced exchange holds the same secret at both ends, assigns no roles, stores nothing, and reads no clock.
 
 ''And the password CONSUMES ITSELF.'' It authorises one pairing; the vessels hold static keys afterward and the secret stops existing. So its lifetime reads as ONE USE rather than one hour — a bound that needs no global now to enforce.
 
@@ -250,7 +250,7 @@ The biological shape carries real structure, never decoration:
 
 The two clocks, the cadence, and the repair-kit run ''at each shrine tier autonomously'' — Household, Crossroads, Temple — each tier a viable system that refreshes its own authority and self-heals its own flow without a parent's permission (VSM recursion, #self-stabilization). No tier waits on the tier above to survive a local breach.
 
-This autonomy explains a build decision already taken: the Herm (the crossroads-marker, the minimal wayfarer of [[vessel-caps|lar:///ha.ka.ba/lararium/mesh/vessel-caps]]) now carries the ''@daemon'' as its keel — so even a pure-carriage waystation runs its own refresh clock and repair hand, rather than depending on a distant operator to defend it. A mesh whose smallest nodes can each reset their own clock has no single window the necrospire can pry.
+This autonomy explains a build decision: the Herm (the crossroads-marker, the minimal wayfarer of [[vessel-caps|lar:///ha.ka.ba/lararium/mesh/vessel-caps]]) carries the ''@daemon'' as its keel — so even a pure-carriage waystation runs its own refresh clock and repair hand, rather than depending on a distant operator to defend it. A mesh whose smallest nodes can each reset their own clock has no single window the necrospire can pry.
 
 <<~/ahu>>
 
@@ -258,6 +258,7 @@ This autonomy explains a build decision already taken: the Herm (the crossroads-
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
@@ -267,6 +268,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ynSfKZECnbtoPi2zguDhyCchnqNey9xeXSFtIY1ApBg
+<<^ code="&#x0003;">>ni:///sha-256;GDE43Ewds8bMYNDGJw2esxNVdlmjy0vmA6ZxCX0iZq4
 
 <<^ code="&#x0004;" -> to="?">>

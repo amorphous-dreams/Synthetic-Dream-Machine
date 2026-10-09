@@ -211,7 +211,7 @@ neither invented here.
 ''The root name carries no `text/`, and that division carries the point.'' A DOCTYPE names a DOCUMENT TYPE;
 `<!DOCTYPE html>` writes `html`, never `text/html`. The media type has its own home and always has —
 the tiddler's `type:` field, and the `type` line in every carrier's meta block. One name per relation:
-the DOCTYPE says WHICH GRAMMAR READS THIS, the `type` field says WHAT THIS IS TO A TRANSPORT. Folding
+the DOCTYPE says WHICH GRAMMAR READS THIS, the `type` field says WHAT THIS CARRIES TO A TRANSPORT. Folding
 the media type into the DOCTYPE slot would put both under one name for no gain.
 
 ''The media type follows the same suffix'' ([MEMETIC-WIKITEXT] #media-type): `text/memetic-wikitext+tiddlywiki`.
@@ -266,7 +266,7 @@ The order stands fixed:
 |2 |`<<!DOCTYPE …>>` |this grammar |
 |3 |`<<^ code="&#x0001;" …>>` |this carrier |
 
-''The DOCTYPE and the SOH bind tightly.'' Nothing stands between them. That pair IS the invariant a
+''The DOCTYPE and the SOH bind tightly.'' Nothing stands between them. That pair carries the invariant a
 processor enforces; what precedes the pair belongs to whoever else reads the file.
 
 One file then serves two readers. A skill loader reads front-matter at byte zero and stops; this grammar
@@ -339,7 +339,7 @@ than as decoration inside the line.
 !!! Why the arrow survives a named-parameter frame
 
 A named parameter states a PROPERTY — //this carrier has a lar value//. The arrow states a RELATION —
-//this carrier resolves toward that address//. One name, one relation: the edge IS the relation, and
+//this carrier resolves toward that address//. One name, one relation: the edge enacts the relation, and
 folding it into a quoted attribute would demote a relation to a field and break the scanner's capture
 with it. So named params ride in FRONT of the arrow and the arrow keeps its shape.
 
@@ -391,7 +391,7 @@ processor binds the name; nothing about either side asks the host for an extensi
 Slots read `name="value"`, which invokes in FIVE registers at once: TW5 procedure calls (the host's
 own — a parameter labelled with its name and `=`, values in single, double, triple-double or
 `[[bracket]]` quotes), TW5 tiddler-field headers, YAML, JSON and CSS. A frame that reads correctly in
-the host's calling syntax IS a call in that host, never a lookalike.
+the host's calling syntax enacts a call in that host, never a lookalike.
 
 ''The equals, and the spec writes only that.'' TW5 takes `=` or `:` between a name and its value, and
 they part company past that point: ONLY `=` admits a filtered, indirect, macro or substituted value,
@@ -432,15 +432,15 @@ The `bcc` slot carries a check over the framed span. Normatively:
   a mark gaining a named parameter, a spacing rule settling — moves them, and every check computed
   before it would read `stale` over a body nobody touched, reporting corruption where a grammar
   merely evolved.
-* ''The span's open and close are each a FIRST, never a choice.'' The span opens on the first unmasked
-  STX and closes on the first unmasked ETX AFTER it, and that ETX MUST be the only one: a second
-  unmasked ETX inside the opened span — or an unmasked ETX standing ahead of the opened STX — is a frame
-  fault, named and reported, never a question of whether a reader should take the first terminator or
+* ''The span's open and close each take a FIRST, never a choice.'' The span opens on the first unmasked
+  STX and closes on the first unmasked ETX AFTER it, and that ETX MUST stand alone: a second
+  unmasked ETX inside the opened span — or an unmasked ETX standing ahead of the opened STX — reads as a
+  frame fault, named and reported, never a question of whether a reader should take the first terminator or
   the last. Lineage: ISO 1745 and ECMA-16's basic mode, and IBM BSC beside them, read the first
   unescaped terminator a transmission offers, because their transparency mechanism (DLE-stuffing)
   guarantees exactly one stands unescaped; this frame's fence mask stands in that transparency's place,
-  masking every terminator a fenced example or quoted lesson wears so the one left unmasked is, by
-  construction, the only one. RFC 3230 fell to leaving a span's own anchor to interpretation, and its
+  masking every terminator a fenced example or quoted lesson wears so the one left unmasked stands, by
+  construction, alone. RFC 3230 fell to leaving a span's own anchor to interpretation, and its
   2024 replacement [RFC9530] closed that by naming it outright — the same lesson lands here: name the
   span's boundary, never leave a reader to decide between a first and a last.
 * ''Computed, never stored.'' A writer computes the check over the body it has assembled; a reader
@@ -451,7 +451,7 @@ The `bcc` slot carries a check over the framed span. Normatively:
   parent fields change MUST receive a new check; only DOCTYPE, SOH routing, and transport carriage remain
   outside this integrity span.
 * ''A carrier holding no check reads `absent`, never `stale`.'' Absence of a check and a failed
-  check stand as different facts (#/bearing-arrow), and a reader that collapsed them would be useless exactly
+  check stand as different facts (#/bearing-arrow), and a reader that collapsed them would fail exactly
   where it matters. The caller decides what a carrier with an absent check may do; it still parses.
 * ''What a relay can do with it:'' raw bytes, one scan, no parser and no canonicaliser. A relay holding
   `pull` and not `read` verifies this check over an offering it cannot open.
@@ -512,7 +512,7 @@ Resonance glyphs do ''not'' join the spine. They ride the ''SOH opener only'', a
 | `ॐ ँ` | `api/mu` · `api/lares` · `api/lararium` | elevated resonance |
 | //(bare — no glyph)// | `docs` · `library` · the pono `SKILL`s | base resonance |
 
-''The set stays open.'' These name the resonance characters known now; the registry admits more as layers and trust tiers emerge. A new glyph enters under the same two laws below — SOH-prefix only, EOT bare — and registers its layer in this table.
+''The set stays open.'' These name the resonance characters known; the table admits more as layers and trust tiers emerge. A new glyph enters under the same two laws below — SOH-prefix only, EOT bare — and registers its layer in this table.
 
 ```
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/…">>   ← pono layer
@@ -543,7 +543,7 @@ Each kernel-tier control character carries ''three simultaneous roles'', bound a
 | ''kernel'' | `0x01`–`0x0F` | kernel | standard | operator+ |
 | ''kapu / elevated'' | DC1 (`0x11`) | kapu | elevated | admin-only |
 
-SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias — a kapu-tier carrier still closes on plain EOT (`0x04`), at rest and in flight. SOH₂ is the ONLY kapu alias this grammar stands; DC4 (`0x14`) carries no office — stream/batch framing belongs to a future transport envelope, not a second at-rest EOT spelling. `&#x0016;` SYN stays the one reserved stream mark (#/the-marks-held-in-reserve).
+SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias — a kapu-tier carrier still closes on plain EOT (`0x04`), at rest and in flight. SOH₂ names the ONLY kapu alias this grammar stands; DC4 (`0x14`) carries no office — stream/batch framing belongs to a future transport envelope, not a second at-rest EOT spelling. `&#x0016;` SYN stays the one reserved stream mark (#/the-marks-held-in-reserve).
 
 <<~/ahu>>
 
@@ -583,7 +583,7 @@ heading removes it from the checked document and violates its own root-field/bod
 
 !!! The placement law
 
-''A field visible on the tiddler MUST round-trip. A fact that cannot round-trip MUST NOT be visible on
+''A field visible on the tiddler MUST round-trip. A fact that cannot round-trip MUST NOT show on
 the tiddler.'' A promise, never a prohibition — and it replaces every list of names an author may not use.
 
 |!class |!holds |!because |
@@ -661,7 +661,7 @@ the resemblance and settles nothing about it.
 
 !!! Tangle's Deferral
 
-The law reads WEAVE and TANGLE as a pair, and today the house builds only the WEAVE half. Tangle
+The law reads WEAVE and TANGLE as a pair, and the house builds only the WEAVE half. Tangle
 stays deferred, named here as law rather than left silent, with the acceptance criteria that close the
 deferral:
 
@@ -703,7 +703,7 @@ talk-story rather than picking a winner.
 questions of the pair it holds:
 
 * ''Byte-equality'' — asks whether the pair still holds fresh: does the woven artifact's byte span
-  still match what `weave(canon)` would emit now?
+  still match what `weave(canon)` would emit from the canon as it stands?
 * ''Model-equality'' — does the edited artifact still mean its source: has the edit changed the
   document's structure in a way tangle can fold back, or only its surface bytes?
 
@@ -726,8 +726,7 @@ reroutes, and the carrier falls to text with every field it declared going unrea
 admits either head accepts a malformed carrier in silence, and silence carries the whole danger at this
 layer: the failure arrives as a document that parsed, not as an error anyone sees.
 
-Both heads once stood, and a reader written then took the wider match deliberately, against the day a
-head moved. The head has moved. The wider match now guards nothing and admits everything.
+One head stands. A reader that takes the wider match guards nothing and admits everything.
 
 **A reader MUST divide a carrier through the fence mask.** This grammar teaches its own control set, so
 a conformant corpus carries worked examples of every mark inside quote fences. An unmasked reader locks
@@ -754,7 +753,7 @@ the artifact.
 
 The name carries the whole method in one object. A touchstone assays gold by the streak the metal
 leaves on it: the test travels with the stone, anyone holding both performs it, and no assay office
-gets consulted. That IS the law this instrument answers to — a carrier stands verifiable by anyone
+gets consulted. That names the law this instrument answers to — a carrier stands verifiable by anyone
 holding it, using nothing but itself. And it seats the mirror the pairing wanted: **the Oracle speaks
 what no one can test; the Touchstone tests what no one need speak.**
 
@@ -763,7 +762,7 @@ what no one can test; the Touchstone tests what no one need speak.**
 One digest, two spellings, each where it serves. A CARRIER holds hex, because a carrier travels and
 bytes that never move as emoji meet no variation selector, no zero-width joiner and no client's own
 normalization. A PROJECTION — a card, a sheet, any artifact the wiki renders for a reader rather than
-ships to a peer — carries the rendered form, because a projection IS the reading surface.
+ships to a peer — carries the rendered form, because a projection serves as the reading surface.
 
 Hex earns the carrier on two grounds beyond transport. It carries ZERO encoding slack at every width,
 since four bits divide every byte boundary, where base32 admits sixteen spellings of a 256-bit digest's
@@ -771,8 +770,8 @@ final character and base64url four; a check compared byte-for-byte cannot afford
 lexicographic order over hex matches binary order, which base32's own alphabet does not.
 
 Keeping the glyph vocabulary out of the encoding also keeps it revisable: an alphabet frozen into the
-bytes could never improve without invalidating every carrier ever written, where an alphabet used only
-to render may be bettered later with every existing stamp still verifying.
+bytes could never improve without invalidating every carrier ever written, where a renderer may better an alphabet used only
+to render, with every existing stamp still verifying.
 
 ### The codec gets pinned, never self-described
 
@@ -789,7 +788,7 @@ goes where.
 ### The name at the foot points at itself
 
 The foot carries a name in the same vocabulary the shelves use for bodies that live elsewhere, and the
-two look identical because they ARE the same kind of name: a name for the byte-string that hashes to a
+two look identical because they share one kind of name: a name for the byte-string that hashes to a
 given value. A shelf's name says that string lives somewhere else. The foot's says that string sits in
 the hand already holding it. Position disambiguates them, and position alone does.
 
@@ -825,7 +824,7 @@ its subject to fall out of step. A span between two markers has nothing to disag
 
 **A carrier MUST stand verifiable by anyone holding it, using nothing but itself** — no registry, no
 calling home, no authority to ask. And the cut that rides beside it: **a seal proves integrity, never
-authorship.** A valid check read as "authentic canon" has been misread into a standing it never held;
+authorship.** A valid check read as "authentic canon" misreads it into a standing it never held;
 a check published wherever the artifact lives proves nothing against anyone who can write there.
 
 ### What a verdict obliges
@@ -859,7 +858,7 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
 
 ''What the check cannot answer.'' The span opens at STX, so the declaration and SOH routing heading stand
 OUTSIDE it: a carrier's grammar selector and transport bearing can move while the check holds. The root
-TOML metadata is inside the span and therefore is covered. The verdict answers one question — did the
+TOML metadata sits inside the span, so the check covers it. The verdict answers one question — did the
 document bytes survive carriage — and a reader MUST NOT take a `match` as covering bytes the span excludes.
 
 ### What stands, and what waits
@@ -912,8 +911,8 @@ the one writing a migration, a sweep, or an independent implementation. Such a w
 through the emitter rather than reproduce it: the projection path already does, and every carrier in
 this corpus that failed to render back came from a hand that went around it.
 
-A migration stands as the honest exception. A document standing in a shape the current grammar no longer
-emits cannot be rewritten by a writer that only knows the current shape, so a migration reads with the
+A migration stands as the honest exception. A writer that knows only the current shape cannot rewrite a document
+standing in a shape the current grammar never emits, so a migration reads with the
 reader, and writes with the emitter, and never composes bytes of its own.
 
 <<~/ahu>>
@@ -965,8 +964,8 @@ under that flattening escapes with the ISO/IEC 9075-14 `_xHHHH_` scheme — XML-
 self-escaping because `_x` itself escapes as `_x005F_` — so no rule naming which slot names run legal
 carries the burden of staying reversible; the escape does. RULED (see
 `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type` — Fragment identifier): a `lar:`
-fragment IS a JSON Pointer (RFC 6901), reused per RFC 8820, whose reference tokens are slot names
-(`[a-z0-9āēīōūʻ-]`, `$` reserved) — no RFC 6901 escaping arises, since no admitted slot-name glyph is
+fragment reads as a JSON Pointer (RFC 6901), reused per RFC 8820, whose reference tokens are slot names
+(`[a-z0-9āēīōūʻ-]`, `$` reserved) — no RFC 6901 escaping arises, since no admitted slot-name glyph spells
 `~`, `/`, or any byte that scheme would need to escape.
 
 !!! Tongue
@@ -994,8 +993,8 @@ mapping a mirror back to its canonical name>.
 One matrix grammar governs a carrier, and a foreign grammar enters only inside a declared, named span —
 `<<~ hana grammar-key>>...<<~/hana>>` (`lar:///ha.ka.ba/lares/api/pono/hana`). An embedded language
 supplies content inside that span; it never reaches out to shape the carrier's own structure. The rule
-matches the fence-mask law (#/weave-and-tangle): a foreign or example span stays legible without ever
-being mistaken for the grammar that holds it.
+matches the fence-mask law (#/weave-and-tangle): a foreign or example span stays legible, and no reader ever
+mistakes it for the grammar that holds it.
 
 <<~/ahu>>
 
@@ -1008,7 +1007,7 @@ A carrier holds two strata that look alike on a record and answer to different o
 directions: structure written into the declaration doubles on every projection, and an author's field
 mistaken for structure vanishes on a round trip.
 
-### The floor ~ what may be reserved at all
+### The floor ~ what a reservation may claim at all
 
 TiddlyWiki restricts no field name — since v5.2 `isValidFieldName` accepts any string. MultiWikiServer
 restricts exactly two: its resolver reads `fields: { ...fields, title, revision }` and overwrites those,
@@ -1020,7 +1019,7 @@ So this grammar reserves those and their record-stratum siblings, and nothing el
 <<~ scale reserved "title ~ the host overwrites it -> revision ~ the host overwrites it -> text ~ the body rebuilds from the frame -> modified ~ the record stratum carries it">>
 
 `type` joins them for a different reason: the host reads it to CHOOSE a deserializer, exactly as
-TiddlyWiki's own filetype registry does, so a carrier IS its type and the value re-derives on every
+TiddlyWiki's own filetype registry does, so a carrier declares its type and the value re-derives on every
 read rather than travelling in the bytes.
 
 **Every other name belongs to the author.** A carrier declaring `postamble`, `slot`, `prologue` or
@@ -1048,7 +1047,7 @@ Ask of each carriage part: **can its value hold a newline?**
 
 A TiddlyWiki `.tid` file parses its header line by line and splits the body at the first blank line
 (`boot.js`, `application/x-tiddler`). **Only `text` may carry a newline.** A value that can only survive
-inside one file format cannot travel — so a multi-line part cannot be a field anywhere, at any name.
+inside one file format cannot travel — so no field anywhere, at any name, may hold a multi-line part.
 
 <<~ scale carriage "scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it">>
 
@@ -1101,7 +1100,7 @@ sidecar pair, settled where the file list stands known.
 
 ### The graph a carrier points into
 
-A carrier can be whole and point at nothing. `lares meme check --edges` takes that second reading: which
+A carrier can read whole and point at nothing. `lares meme check --edges` takes that second reading: which
 addresses these carriers name, and which of them any carrier holds. **Run it either side of a move** —
 equal counts prove the weld held, a rise names what broke.
 
@@ -1119,7 +1118,7 @@ and a resolver must not guess.
 
 The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an ''unpronounced classifier register'' beside the propositional stream — category-marks that steer the reading without sounding in it, the determinative's office in a graphemic classifier system. ''The black speaks; the red steers.'' The body carries the proposition; the sigil layer carries the protocol for reading it — heading-vs-text, layer of authorship, trust tier, phase — the way a determinative sorts the word it silently classifies, or a rubric directs the act the text does not state.
 
-''Transmission law (ritual stance).'' A carrier travels as ''received form'': a reader stands the frame before interpreting its gloss, so one structure carries shifting readings across time without losing shape. This practice transmits through the ''inscribed channel alone'' — the marks hold the protocol, and the protocol lives only while the marks stay tended. A surface left intact while its readers forget the marks (the cautionary case: ekphonetic signs that outlived their decoders) keeps the body and loses the steering. The sigil layer earns its keep by being read //as// a classifier, not by surviving as decoration.
+''Transmission law (ritual stance).'' A carrier travels as ''received form'': a reader stands the frame before interpreting its gloss, so one structure carries shifting readings across time without losing shape. This practice transmits through the ''inscribed channel alone'' — the marks hold the protocol, and the protocol lives only while the marks stay tended. A surface left intact while its readers forget the marks (the cautionary case: ekphonetic signs that outlived their decoders) keeps the body and loses the steering. The sigil layer earns its keep when readers read it //as// a classifier, not by surviving as decoration.
 
 Field grounds: `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/classifier-channel`.
 
@@ -1257,7 +1256,7 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 !! Annex — Open Items (Informative)
 
-* ''EOT targeting (resolved for today's meaning).'' `target:` on `&#x0004;` reads `?` — a DECLARED
+* ''EOT targeting (resolved for its declared meaning).'' `target:` on `&#x0004;` reads `?` — a DECLARED
   UNRESOLVED bearing, the departing end of the one relation #/bearing-arrow names, never a gap in the
   frame. What a RESOLVED target would name — the next carrier in a chain, a bag, a bearing — stands
   open as a new capability rather than as unfinished law; whatever it admits becomes an edge the
@@ -1297,6 +1296,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mAShDguCfZepnT8tS7PO3UTDCwQeR5FaaVSQ8NCub3g
+<<^ code="&#x0003;">>ni:///sha-256;tuhGoJHsntprW6TJfwJwy_rL8r5sTGdPXvj2fdzvirg
 
 <<^ code="&#x0004;" -> to="?">>

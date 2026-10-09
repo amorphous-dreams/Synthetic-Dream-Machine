@@ -21,36 +21,36 @@ A `lar:` URI names one of three surfaces, and the KIND rides the ''first path se
 
 <<~ scale kind-planes "bags/slug ~ a composable recipe piece · MUTABLE -> wikis/slug ~ a #has bag-stack · MUTABLE -> cid/<hash> ~ a content-addressed artifact · IMMUTABLE">>
 
-* ''`bags/slug`'' — the IPNS-shaped mutable content plane: a bag (a CRDT surface, today an Automerge doc). A composable recipe piece, shared as the operator wishes.
+* ''`bags/slug`'' — the IPNS-shaped mutable content plane: a bag (a CRDT surface, an Automerge doc). A composable recipe piece, shared as the operator wishes.
 * ''`wikis/slug`'' — a `#has` bag-stack: a wiki's IDENTITY. Its per-wiki layers route off it (above the fold).
-* ''`cid/<hash>`'' — the /ipfs/ plane: the name IS the content hash, so it never changes. A frozen artifact answers to it forever. Its complement is the /ipns/ pointer — the `@oracle` `genesis-cid-*` tiddler carries a `cid:` field naming which cid stands current. `cid/` names the immutable artifact; the pointer names the current one; together they are IPFS ⋈ IPNS. Per `lar:` law `cid/<hash>` NAMES — the `genesis/cas/` store resolves bytes. This `cid/<hash>` KIND-plane IS the ''content-addressed (CAD) byte tier'': `@cad` names the content-addressed byte tier; its bytes live here (`genesis/cas`), while its handles ride the publicity-tiered bags — public `crossroads` plaintext · private `@catalog` ciphertext · system `@oracle` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>).
+* ''`cid/<hash>`'' — the /ipfs/ plane: the name carries the content hash, so it never changes. A frozen artifact answers to it forever. Its complement is the /ipns/ pointer — the `@oracle` `genesis-cid-*` tiddler carries a `cid:` field naming which cid stands current. `cid/` names the immutable artifact; the pointer names the current one; together they form IPFS ⋈ IPNS. Per `lar:` law `cid/<hash>` NAMES — the `genesis/cas/` store resolves bytes. This `cid/<hash>` KIND-plane stands as the ''content-addressed (CAD) byte tier'': `@cad` names the content-addressed byte tier; its bytes live here (`genesis/cas`), while its handles ride the publicity-tiered bags — public `crossroads` plaintext · private `@catalog` ciphertext · system `@oracle` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>).
 
 !! Identity ⋈ canon — a wiki's two addresses
 
-A wiki's IDENTITY (`wikis/slug`, its recipe/`#has`-stack) is distinct from its CANON (`bags/slug`, its published content). `wiki init` registers BOTH: the recipe under `wikis/slug` and the canonical home bag under `bags/slug`. Content resolves from the canon bag; the recipe names the stack.
+A wiki's IDENTITY (`wikis/slug`, its recipe/`#has`-stack) stands apart from its CANON (`bags/slug`, its published content). `wiki init` registers BOTH: the recipe under `wikis/slug` and the canonical home bag under `bags/slug`. Content resolves from the canon bag; the recipe names the stack.
 
 !! Meme URIs carry NO relation to bag URIs
 
-A meme moves between bags freely, or lives in several at once. Bag identity NEVER prefixes a meme's URI — lexical containment is not real. `bagsFileToUri` enacts this: `bags/<holding>/<meme-path>.md` → `lar:///<meme-path>`, the holding bag discarded from the URI, so `bags/lares/…/noosphere-boot.mem` and `bags/sdm/…/noosphere-boot.mem` project the SAME meme URI. This keeps meme-URI arity safe: the boot seed rules path segments 0–4, `@lares/api/lares/noosphere-boot` is already four, and `bags/`/`wikis/` name IDENTITY (the bag, the stack), never the content inside — so no `bags/` prefix ever rides a meme URI.
+A meme moves between bags freely, or lives in several at once. Bag identity NEVER prefixes a meme's URI — lexical containment names nothing real. `bagsFileToUri` enacts this: `bags/<holding>/<meme-path>.md` → `lar:///<meme-path>`, the holding bag discarded from the URI, so `bags/lares/…/noosphere-boot.mem` and `bags/sdm/…/noosphere-boot.mem` project the SAME meme URI. This keeps meme-URI arity safe: the boot seed rules path segments 0–4, `@lares/api/lares/noosphere-boot` already spends four, and `bags/`/`wikis/` name IDENTITY (the bag, the stack), never the content inside — so no `bags/` prefix ever rides a meme URI.
 
 !! The edit/publish shore
 
-The two disk planes are the two STATES of a meme:
+The two disk planes carry the two STATES of a meme:
 
-* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the `/wikis/{slug}/…` disk tree (`wikisFileToUri`). The `mirror-root: wikis/{slug}` `wiki init` stamps is this projection.
+* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the `/wikis/{slug}/…` disk tree (`wikisFileToUri`). The `mirror-root: wikis/{slug}` `wiki init` stamps names this projection.
 * ''`bags/{slug}`'' — the CANONICAL bag. Published content, projecting to the `/bags/{slug}/…` tree (`bagsFileToUri`).
-* ''The MOVE is the shore.'' The operator promotes a tiddler from the live wiki to the canonical bag of the same name; the projector re-projects it `/wikis/ → /bags/` (tiddler-store canon-promotion, `wiki-layer-ontology#shore-law`). Which state a meme is in reads from its URI alone.
+* ''The MOVE makes the shore.'' The operator promotes a tiddler from the live wiki to the canonical bag of the same name; the projector re-projects it `/wikis/ → /bags/` (tiddler-store canon-promotion, `wiki-layer-ontology#shore-law`). Which state holds a meme reads from its URI alone.
 
-The per-wiki live layers ride above the fold, each rooted at the wiki's identity — `wikis/{slug}/{temp,draft,working,personal}` (minted by `wikiSlotUri(slug, kind)`); the `bags/{slug}` canon rides below as the read-only, promotion-target library member. The `@working`/`@draft`/`@personal` binding is per `(PersonaGroup × recipe-fingerprint)` — the slot URI carries the address, the resolver hands over the per-fingerprint doc.
+The per-wiki live layers ride above the fold, each rooted at the wiki's identity — `wikis/{slug}/{temp,draft,working,personal}` (minted by `wikiSlotUri(slug, kind)`); the `bags/{slug}` canon rides below as the read-only, promotion-target library member. The `@working`/`@draft`/`@personal` binding keys per `(PersonaGroup × recipe-fingerprint)` — the slot URI carries the address, the resolver hands over the per-fingerprint doc.
 
 !! The two-layer model (@lares · @lararium)
 
-`lares`/`lararium` carry two layers that DO NOT compose into one wiki — the CID floor and the live edit surface are decoupled:
+`lares`/`lararium` carry two layers that DO NOT compose into one wiki — the CID floor and the live edit surface stand decoupled:
 
 * ''Frozen doctrine floor — @daemon only.'' The genesis blob (the boot seed, `noosphere-boot`, the canon that survives a wipe) rides the ''@daemon wiki-worker's `libraryBags`'', addressed by ''`cid/<hash>`'' — reproducible from the hash, unreachable by an edit. Only @daemon holds the CID `lares`/`lararium` content. @daemon runs on these frozen CIDs and its behaviour changes only when new CIDs launch to the mesh.
 * ''Live edit surface — `wikis/lares`, `wikis/lararium`.'' Operator edit surfaces over `bags/lares` / `bags/lararium` (plus their own draft/working layers). They do NOT compose the CID floor.
 
-''The decoupling is the safety.'' The boot floor is CID-frozen in @daemon and the live wikis never mount it, so editing `wikis/lares` cannot break the boot. Promotion to the mesh renders the live edits to fresh CIDs and launches them to @daemon; only then does @daemon behaviour change. Edit freely, promote deliberately, immune core sealed until mint.
+''The decoupling carries the safety.'' The boot floor stands CID-frozen in @daemon and the live wikis never mount it, so editing `wikis/lares` cannot break the boot. Promotion to the mesh renders the live edits to fresh CIDs and launches them to @daemon; only then does @daemon behaviour change. Edit freely, promote deliberately, immune core sealed until mint.
 
 ''THE DAEMON HOLDS THE ENGINE'' (operator ruling). The memetic-wikitext engine rides the @daemon
 wiki-worker, CID-frozen beside the boot seed, and every device reaches THE SAME ENGINE by hash. That
@@ -65,28 +65,28 @@ freely without touching what parses it, and promoting an edit mints a new CID ra
 running engine. The safety and the idempotence carry one mechanism: ''the engine has no edit surface
 at all'' — it answers to a hash, and a hash answers to nobody.
 
-''The engine is universal; the corpus is content.'' `@oracle` names ONE doc — the genesis island — and every wiki reaches it by ''two independent paths'' that must not be read as one:
+''The engine serves everyone; the corpus carries content.'' `@oracle` names ONE doc — the genesis island — and every wiki reaches it by ''two independent paths'' that no reader may fuse into one:
 
 * ''By CID, for its blobs — off the recipe entirely.'' The oracle doc's `blobs` carry the engine core (`engineCid`) and the memetic-wikitext plugin tiddlers (parser, grammar, all-memes modules). `pluginCidsFromIslandBlobs(islandHandle.doc()?.blobs)` derives that CID set once, and the daemon and every wiki island resolve the bytes ''from the local CAS by hash'' (the breath path), never CRDT-syncing them over the port. A wiki renders the grammar because CAS answers its hashes. No slot lays the engine, and no recipe can withhold it.
 * ''By slot, for its tiddlers — the cascade's floor.'' `expandRecipe` closes every recipe with `ORACLE_BAG`, lowest priority, so the system island's content (bag→doc oracle, `genesis-cid-engine`, `genesis-cid-plugins`) stands under every wiki, including a primary mount with no libraryBags.
 
-The catalog binds the two: `bags/oracle` → the genesis island's own doc URL, so the address a recipe floors on and the doc a CID pull reads are the same doc.
+The catalog binds the two: `bags/oracle` → the genesis island's own doc URL, so the address a recipe floors on and the doc a CID pull reads name the same doc.
 
 `@oracle` splits from the memetic corpus (`disk-projection#oracle-split`); `lares` and `lararium` never stand as the floor — they ride a wiki's `libraryBags` (the lares wiki-recipe = oracle floor + lararium bag + lares bag). `lararium` carries the engine's authored self-doc memes: corpus, never engine.
 
 !! The isomorphic wiki core
 
-One recipe expansion serves every context. `expandRecipe(recipe)` is the single slug-aware source of a wiki's slot cap-stack; the VM-free host derives a thin facet projection (`recipeHostFacets`: `wikiKey` = `wikis/slug` identity · `wikiBagId` = `bags/slug` canon · draft key · registration bags) from the same minters, so host and island name identical bags. A wiki recipe is an instance of the nameless-entity `#has`-cap-stack model — nameless (addressed by its `wikis/slug` identity), `#has` a stack of bag-caps — conforming to the palace-entity pattern behaviorally (both expand to a cap-stack), never by a shared TS interface.
+One recipe expansion serves every context. `expandRecipe(recipe)` serves as the single slug-aware source of a wiki's slot cap-stack; the VM-free host derives a thin facet projection (`recipeHostFacets`: `wikiKey` = `wikis/slug` identity · `wikiBagId` = `bags/slug` canon · draft key · registration bags) from the same minters, so host and island name identical bags. A wiki recipe instances the nameless-entity `#has`-cap-stack model — nameless (addressed by its `wikis/slug` identity), `#has` a stack of bag-caps — conforming to the palace-entity pattern behaviorally (both expand to a cap-stack), never by a shared TS interface.
 
 !! What the @catalog tracks
 
-Two registries, cleanly separated:
+Two maps, cleanly separated — each the operator's own, never a registry of others:
 
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
 * ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
 
-`@oracle` names the runtime system island, and a vessel hands ''the oracle doc itself'' to a proven peer as a content-addressed snapshot (`exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. The signed FLOW-map pointer and the snapshot it names ride the vessel's oracle WebSocket at `/oracle`, behind its own `DaemonAuthGate`: the dialer proves its key first, and only then do the pointer and snapshot frames leave. The oracle is no HTTP face — every HTTP path under `/oracle` draws the one closed door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>). `lares`/`lararium` are ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
+`@oracle` names the runtime system island, and a vessel hands ''the oracle doc itself'' to a proven peer as a content-addressed snapshot (`exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. The signed FLOW-map pointer and the snapshot it names ride the vessel's oracle WebSocket at `/oracle`, behind its own `DaemonAuthGate`: the dialer proves its key first, and only then do the pointer and snapshot frames leave. The oracle shows no HTTP face — every HTTP path under `/oracle` draws the one closed door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>). `lares`/`lararium` stand as ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
 
-<<^ code="&#x0003;">>ni:///sha-256;N6RFZZInUuCOLRsMDpxdQVf8XFivjVKE7NG8jMimJfg
+<<^ code="&#x0003;">>ni:///sha-256;Q3RRdMg5tJ6SZ0hw03ZMVKr4rTPjj8_ydjNGtOKz7ME
 
 <<^ code="&#x0004;" -> to="?">>

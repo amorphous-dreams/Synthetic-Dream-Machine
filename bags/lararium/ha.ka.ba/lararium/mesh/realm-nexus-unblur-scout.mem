@@ -186,7 +186,7 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 !!! Move first ~ high value, zero key risk
 
 # ''PROMOTE THE LAW INTO THE REPO.'' The three-plane ruling (2026-09-01: CABAL names the people · REALM the shared CRDT and resources · NEXUS the federated mesh of hardware) lives ONLY in an agent-memory file outside the tree, while `realm-bag-brief.mem:33` cites it as "the law under it" and `realm-index.ts:11` addresses `lar:///ha.ka.ba/lararium/mesh/cabal-realm-nexus-planes` — a URI resolving to nothing in `bags/`. A canon meme citing a governing law no witness, no gate and no other operator can reach reads as the sharpest single finding in this scout. It also carries the ''sorting test'' any unblur pass would apply: //stuff held in common → realm · who joins or may act → cabal · which metal runs what → Nexus//; and one open loop — a cabal carries no identity of its own, and whether it gains one stands unanswered.
-# ''POUR THE 2026-09-13 RULING INTO'' `what-a-nexus-wants.mem`. That meme stands as an admitted PLACEHOLDER (`:11`, `:26` — "minted so the talk-story that answers it has somewhere to pour"). It was shaped for exactly this.
+# ''POUR THE 2026-09-13 RULING INTO'' `what-a-nexus-wants.mem`. That meme stands as an admitted PLACEHOLDER (`:11`, `:26` — "minted so the talk-story that answers it has somewhere to pour"). Its shape answers exactly this.
 # ''RECONCILE FIVE NON-IDENTICAL DECOMPOSITIONS'' into one, citing the sorting test: `cabal-realm.mem:29` (place / vessel / realm) · the three-plane ruling · `dreamnet-architecture.mem:11` (INFRA·FLOW ⊥ SOCIAL·WHO — the word `realm` appears zero times in that file) · `first-realm-arc.mem:74-85` (cabal-realm / nexus / kahu cabal) · `dreamnet-architecture.mem:138` (a Nexus as a CONFORMANCE-VECTOR SET — a fourth sense). `first-realm-arc.mem:72` states the axiom the ruling now overrides: "A realm and a Nexus name different things, and neither contains the other." Name precisely WHICH joint remains open: `cabal-realm.mem:165` holds that the split runs through STORAGE and not through AUTHORITY.
 # ''FIX THE VERBATIM-PARALLEL PROSE'' — one law, two nouns, identical sentence: `cabal-realm.mem:183` ("two sealed REALMS interoperate only at the content-address floor") beside `nexus-topology.mem:169` ("two NEXUSES interoperate only at the content-address floor"). The blur in its purest form.
 # ''DISAMBIGUATE THE TWO `realm` ID SPACES'' in prose and type names (#/one-value-two-words) — a correctness seam wearing a naming coat.
@@ -202,13 +202,13 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 !!! MUST NOT MOVE
 
 * ''Everything in #/must-not-move, without exception'' — and `NEXUS_DOC_DOMAIN` above all, a content-address preimage.
-* ''`realmFeedPrefix` and `leaseEpochPrefix` sharing one DocId key.'' `cabal-realm.ts:70-88` argues it at length: "One name is correct; one SLOT was not." The shared key stands BY CONSTRUCTION; the measured defect ran the other way, when the two were literally one slot and feeding a realm staled its own invites.
+* ''`realmFeedPrefix` and `leaseEpochPrefix` sharing one DocId key.'' `cabal-realm.ts:70-88` argues it at length: "One name is correct; one SLOT was not." The shared key stands BY CONSTRUCTION; the measured defect ran the other way, when the two shared literally one slot and feeding a realm staled its own invites.
 * ''`social-tiddlers.ts:54` `nexusScope`'' — inside a signature preimage, so no free rename even though it reads backwards against the ruling.
 * ''`"lar/realm-feed"`'' — flag the registry gap; do not re-spell the string.
 * ''`REALM_BAG_PREFIX` / `REALM_BAG_ANNOUNCE_PREFIX`'' under `dreamnet/` — plane-mixed, and persisted.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YHBJzXEDh-8XHiL05KRF1TkH-9CgtXoaW7Oke1nAud8
+<<^ code="&#x0003;">>ni:///sha-256;j7Qcq1XVwjnKiBsL0hNZr8zI8w8-NHv0vn77zPwJSlo
 
 <<^ code="&#x0004;" -> to="?">>

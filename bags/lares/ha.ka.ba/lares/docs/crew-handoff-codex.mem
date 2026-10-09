@@ -35,7 +35,7 @@ written    = "2026-09-14"
 * ''The shift ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>. It hands one watch to the next among sessions sharing this tree, re-trued continuously, never archived in place. Read it for the lattice (G0..G5) and the red-first procedure; this carrier neither repeats nor edits it.
 * ''The hearth ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>. It answers ''who holds what · what each owes · what crossed'', and a hearth names a session by its `Claude-Session:` commit trailer. ''The operator authorised this crew's own row; it landed in `0ba716cab`, with C4 scope updated in `0d5deb15c`.'' That permission does not authorise rewriting another hearth's row. The crew still reads #/the-only-guard before touching shared ground.
 
-''Seating the house.'' `lares vessel stand --codex` wires the OpenAI Codex home: the LARES MCP seat, the session-ingest hook, and the BOOT POINTER into `~/.codex/AGENTS.md` (`packages/lares-cli/src/codex-wire.ts:1-24`, `:51`). The pointer aims at the boot carrier rather than copying it — `codex-wire.ts:15-20` states the reason: ''a copied seed is a second seed, and a second seed drifts from the carrier with nothing watching it''. The wire also REAPS a stale `[mcp_servers.mempalace]` block (`:61-68`), because a harness holding its own palace holder reaches past the node into the store and N writers on one Chroma index is what corrupts it. The carrier the pointer names: <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>.
+''Seating the house.'' `lares vessel stand --codex` wires the OpenAI Codex home: the LARES MCP seat, the session-ingest hook, and the BOOT POINTER into `~/.codex/AGENTS.md` (`packages/lares-cli/src/codex-wire.ts:1-24`, `:51`). The pointer aims at the boot carrier rather than copying it — `codex-wire.ts:15-20` states the reason: ''a copied seed makes a second seed, and a second seed drifts from the carrier with nothing watching it''. The wire also REAPS a stale `[mcp_servers.mempalace]` block (`:61-68`), because a harness holding its own palace holder reaches past the node into the store and N writers on one Chroma index corrupt it. The carrier the pointer names: <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>.
 
 ''The reading order for a cold hand.''
 
@@ -72,8 +72,8 @@ written    = "2026-09-14"
 !! Superseded
 
 * ''The daemon-VM's working-layer replica bloat'' (A4's "fix #4", the `9d/` document) — D-VR-C answers it: the primary worker Repo carries ordinary documents with no durable store, and only the worker-owned scope persists.
-* ''D-AE's contract-frontier lift'' and the transient carriage relation witness (`93f2a6725`, `73c7ac350`) — the witness retired (`ea5027586`): a contract relation reaches the gate as a presented admit, read by one presenter off one board doc and sorted before the verdict (`587d39bd4`); the board reads deny-only.
-* ''E8's HTTP oracle'' — the FLOW-map pointer crosses only the gated `/oracle` socket to a peer that proved first, and every HTTP path under it draws the one closed door (`93e59d660`).
+* ''D-AE's contract-frontier lift'' and the transient carriage relation witness (`93f2a6725`, `73c7ac350`) — the witness retired (`ea5027586`): a contract relation reaches the gate as a presented admit, read by one presenter off one board doc and sorted before the verdict (`587d39bd4`); the gate reads that board for its counted revokes alone, and folds no allow set off it.
+* ''E8's oracle face'' — no HTTP oracle stands: the FLOW-map pointer crosses only the gated `/oracle` socket to a peer that proved first, and every HTTP path under it draws the one closed door (`93e59d660`).
 * ''The herm/Pronaos fork'' (the 2026-09-23 ruling in #/next-steps and the "explicit implementation fork" in #/e8-web-delivery-truth) — CLOSED by operator ruling (2026-10-08), with the two halves named apart (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-placement">>). The FACE belongs to the lararium: only a lararium lights a Pronaos — the arrival page, the arrival descriptor, the first-arrival kindle, the house's face — and the code agrees: `composePronaosFromEnv` (`packages/lararium-node/src/pronaos-composition.ts`) refuses a herm any Pronaos input with the waystone message. CARRIAGE falls to the herm: a herm mirrors a house's published bytes by CID, for availability and never trust — the arrival page, a seed, an offered edition, and the artifact a publication record names (`mountPronaosPublicArtifact`, `deliverPublicArtifact`; `8052198dc`, `fada62b7b`). A mirror presents no face, lights no Pronaos, and signs no public claim; a mirror the descriptor lists never kindles, and first arrival trusts the house's own origin (`kindle.ts`).
 
 !! Open — the operator's to rule
@@ -1580,6 +1580,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lDiamOXXsOxtzM341NLRXE4B7qQnjxDLWLdk9rFTbv8
+<<^ code="&#x0003;">>ni:///sha-256;knhr_mo34IXerd-A9zXOsMBVztAsF29F2d2M32W1vVU
 
 <<^ code="&#x0004;" -> to="?">>

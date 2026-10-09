@@ -35,7 +35,7 @@ vitals read in `lar:///ha.ka.ba/lares/docs/er-handoff`.
 !! Rulings ~ the operator's, as approved
 
 !!! The Stable state and its consequences
-* ''Every Nexus has a charter.'' The household is its own kahu cabal: a CABAL-OF-ONE reads pono, because humans act as pluralities anyway. One "I" may hold several PersonaGroups, independent or aware of each other. A Nexus grows by adding seats, never by changing kind.
+* ''Every Nexus has a charter.'' The household stands as its own kahu cabal: a CABAL-OF-ONE reads pono, because humans act as pluralities anyway. One "I" may hold several PersonaGroups, independent or aware of each other. A Nexus grows by adding seats, never by changing kind.
 * ''Guests walk the private Nexus.'' Planes stay persona-scoped, so a guest sees its own documents plus the public and infrastructure shelf.
 * ''Add-a-face (A).'' The daemon writes the public half; the terminal seals the recovery share; seating stays a separate act.
 * ''Every leaf starts at the floor with its own root.'' A human may later JOIN a leaf to a PersonaGroup so its devices sync as one fleet; joining never takes the device's own root away.
@@ -49,7 +49,7 @@ vitals read in `lar:///ha.ka.ba/lares/docs/er-handoff`.
 * ''A backup route stands at every tier.'' Every keyslot tree, household or civic, keeps a human route (passphrase or paper); bind refuses a tree without one. Embers never stand as the only way in.
 * ''The floor key keeps the vessel's public name''; the sealed custody root derives the veil and the sovereign caps. The veil change stays destroy-class.
 * ''Unbind offers a VK rotation loudly'', every time, never folded in silently.
-* ''Locality law'': an unattended ember answers on the local link only; a relay pin must be attended. The vessel rests at the floor and raises when t embers answer; the raise lapses by non-renewal.
+* ''Locality law'': an unattended ember answers on the local link only; a relay pin wants an attending hand. The vessel rests at the floor and raises when t embers answer; the raise lapses by non-renewal.
 * ''HOT ⊥ COLD'': VK and keyhive state stay hot; the root, the recovery shares and the next-root seed unwrap per act.
 * Measuring hardware x-only ECDH (phone enclaves) before trusting an enclave-held ember: approved, deferred.
 
@@ -58,17 +58,17 @@ vitals read in `lar:///ha.ka.ba/lares/docs/er-handoff`.
 * ''The inviter's face never signs an invite'': that signature would link the inviter at redemption. The hearth's blind evaluation carries the proof instead.
 * ''V — vesting by class.'' A guest the HOST invites holds floor 1 at once; a guest a WALKER invites vests at the host's next roll. The roll reads as the household's consent to grow, and purpose labels separate the two classes without naming the minter.
 * ''W — the hearth carries a walker's own documents'' as sealed ciphertext (carry ⊥ read), under a quota per guest. The PersonaGroup holds the durable copy; hearth carriage stays a convenience, never a backup.
-* ''W reclaim.'' Quota pressure is the only trigger; lapse reads as a RATIO against the guest's own rhythm between contacts, so the host's roll cadence cancels; the most-lapsed-for-itself goes first; notice on the guest's next contact comes before any discard. Counting the host's rolls was ruled out: it measures the host's diligence, and diligence is not title.
+* ''W reclaim.'' Quota pressure alone triggers it; lapse reads as a RATIO against the guest's own rhythm between contacts, so the host's roll cadence cancels; the most-lapsed-for-itself goes first; notice on the guest's next contact comes before any discard. The ruling sets aside counting the host's rolls: it measures the host's diligence, and diligence confers no title.
 * ''N — a node may walk.'' The sorter sorts by proven relation, never by device type.
 
 !!! The cleanup of the hosted walk (B1)
-* ''The worn face hosts and walks.'' Nothing is picked by roster order; a vessel wearing no face hosts and walks nowhere. Before its first hosting act in a Nexus, a roll refuses when the hosting doc holds an act this face signed that no local state holds.
+* ''The worn face hosts and walks.'' No roster order picks anything; a vessel wearing no face hosts and walks nowhere. Before its first hosting act in a Nexus, a roll refuses when the hosting doc holds an act this face signed that no local state holds.
 * ''A herm answers the knock.'' A charterless herm answers any proven peer that knocked (`ownPlacePosture`): a waystone by class, never a broken lararium. A lararium reads its charter, and an absent or torn charter reads PRIVATE.
 * ''A boot follows `LAR_ROOT`.'' A vessel isolated under `LAR_ROOT` projects into that root, never into the tracked tree: the bags root resolves `LAR_BAGS` → the config's bags resource → `<LAR_ROOT>/bags` → the repo, and the disk projection's mirror roots resolve the named `rootDir` → `LAR_ROOT` → the repo. The isolation instruction names `LAR_ROOT`: the mirror roots never read `LAR_BAGS`, so `LAR_BAGS` alone keeps no in-tree boot out of the tracked tree.
 * ''Compartments outrank admission control.'' A walker reads its own hearth's hosting doc, never the carriage board: the carrier set stays a contract ledger read by those who hold contracts.
 
 !!! The fresh start
-* ''No pave or wipe command'' — such a command is too risky. See #/fresh-start.
+* ''No pave or wipe command'' — such a command carries too much risk. See #/fresh-start.
 
 <<~/ahu>>
 
@@ -80,16 +80,16 @@ vitals read in `lar:///ha.ka.ba/lares/docs/er-handoff`.
 * ''The knock.'' A gate answers an upgrade only on a path derived from its own key (`gate-knock`), so a dialer holding no pin draws no HTTP 101 — the WireGuard mac1 shape. The path still rides the upgrade in the clear on plain `ws`; full client-proves-first waits for Noise IK (#/the-road, R-WIRE).
 * ''Silence, one deadline.'' No denial frame and no close codes: one drop deadline drawn at accept, so verify time leaks nothing and a PRIVATE stranger looks exactly like a failed proof.
 * ''The multi-Nexus fold.'' A gate answers strangers if ANY Nexus it stands in reads OPEN. One gate key serves every Nexus a vessel carries, so this rule reduces exactly to per-Nexus posture once each Nexus carries its own wire key — not an interim.
-* ''The epoch is the CID of a public hosting act.'' A hearth-picked random id per walker would tag each walker; one signed act on one replicated doc makes a forked epoch surface as a fork. In a one-hearth Nexus the hearth relays its own doc, so a fork there stays undetectable (the CABAL-OF-ONE bound, named in canon).
-* ''The grant is a keyed tag, not a signature.'' Only the hearth verifies it, so a seized phone proves nothing to anyone else (the Lox and Signal Private Group System line).
+* ''The epoch names the CID of a public hosting act.'' A hearth-picked random id per walker would tag each walker; one signed act on one replicated doc makes a forked epoch surface as a fork. In a one-hearth Nexus the hearth relays its own doc, so a fork there stays undetectable (the CABAL-OF-ONE bound, named in canon).
+* ''The grant rides a keyed tag, never a signature.'' Only the hearth verifies it, so a seized phone proves nothing to anyone else (the Lox and Signal Private Group System line).
 * ''POPRF over ristretto255 from the pinned `@noble/curves`'': no new dependency. Labelled honestly as Privacy-Pass-shaped, not RFC 9578 wire-conformant.
 * ''The wallet mints in full, in one blind batch''; minting on demand would link by timing. One burn marker per lineage per epoch keeps the batch digest, so a retry burns nothing new.
-* ''The claim is derived, never stored, and bound to the proving leaf.'' The spent-set keeps `n → H(claim, leaf)`: a retry under the same leaf earns the identical grant; a captured claim replayed under another leaf meets silence and destroys nothing; a seizer cannot compute any lineage.
-* ''Carriage keys on the guest's PROVEN leaf.'' A hearth-issued stub would read as a bearer capability to another guest's record and as a hearth-minted cross-lineage linker. The leaf already proves on every socket, so keying on it adds no linkage the hearth lacks; a fresh leaf is a fresh carriage.
+* ''The hearth derives the claim, never stores it, and binds it to the proving leaf.'' The spent-set keeps `n → H(claim, leaf)`: a retry under the same leaf earns the identical grant; a captured claim replayed under another leaf meets silence and destroys nothing; a seizer cannot compute any lineage.
+* ''Carriage keys on the guest's PROVEN leaf.'' A hearth-issued stub would read as a bearer capability to another guest's record and as a hearth-minted cross-lineage linker. The leaf already proves on every socket, so keying on it adds no linkage the hearth lacks; a fresh leaf opens a fresh carriage.
 * ''A per-hearth hosting doc'' (`hostingDocUrl(N, gate key)`): the smallest board a walker needs — its own hearth's act chain, the same doc for every walker of that hearth, replicated by the Nexus's carriers for the cross-check.
 * ''One store door.'' A command that touches the store runs inside the standing vessel over the owner-only socket, else owns the store itself for that moment. A second Repo beside a live holder writes bytes the replica never sees.
-* ''No hearth-local deny set.'' Kapae and the roll suffice; a deny set would be a seizable list.
-* ''No node carriage.'' A node is its own durable store and no story walks its carriage; ruling N holds as a sorter property and W as the hearth's service. Node carry would be a new user story, never owed by N or W.
+* ''No hearth-local deny set.'' Kapae and the roll suffice; a deny set would make a seizable list.
+* ''No node carriage.'' A node serves as its own durable store and no story walks its carriage; ruling N holds as a sorter property and W as the hearth's service. Node carry would open a new user story, never owed by N or W.
 * ''Hosting stays on the worn persona leaf.'' ROOT-ON-FOUNDER keeps a persona root on one vessel, so one face cannot host from two stores unseen; the first-roll rail surfaces the remaining case.
 
 <<~/ahu>>
@@ -153,15 +153,15 @@ with ROUND 6 apart from it. The R-ENGINE fold builds in parallel from the start 
 
 !! The fresh start ~ by hand, reversible, never a command
 
-There is NO pave or wipe command (operator-ruled): such a command is too risky. In early alpha a fresh
+NO pave or wipe command stands (operator-ruled): such a command carries too much risk. In early alpha a fresh
 START still reads pono when it runs BY HAND: MOVE the old homes aside — rename them, never delete them, so
 the move stays reversible — then found fresh on the re-found build. Valuable data lives in git, in the
 private `claude-backup` repository, or on `D:`; a vessel home holds nothing that only it holds.
 
-The homes to move are the ones the OLD build's resolvers name — the `~/.lares` home, the XDG data homes for
+The homes to move: the ones the OLD build's resolvers name — the `~/.lares` home, the XDG data homes for
 `lares` and `lararium`, and the state home — asked of the old build at the moment of moving, never
 enumerated by hand. The new build's old-shape refusal (#/the-road, R-CUSTODY) keeps an accidental boot
-off any home that was not moved. Other Nexuses rejoin through presented admits; every old admit names an
+off any home left unmoved. Other Nexuses rejoin through presented admits; every old admit names an
 old AID and reads dead by construction.
 
 <<~/ahu>>
@@ -173,7 +173,7 @@ old AID and reads dead by construction.
 # ''The seal-roll successor's name.'' Mint it inside the standing `seal` family (`seal-seat-roll`), or choose a family word first (`charter-roll`). The name changes with the bytes either way.
 # ''A root-holding browser leaf's backup slot.'' A WebCrypto non-extractable slot allows no paper backup in-browser; does "a backup at every tier" require such a leaf to hold a paper or passphrase slot too? Lean: yes for a leaf holding a persona root; a floor-only leaf holds no tree.
 # ''The seat's cold next key at founding.'' Arm it at the Stable founding (one sheet, two labelled sections — the VK backup and the seat's next key — each read back), or leave the seat to commit later? Lean: arm it; an unarmed charter never rotates.
-# ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never is. The lenses split; re-opening W needs the operator's turned key.
+# ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never becomes. The lenses split; re-opening W needs the operator's turned key.
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
 
 <<~/ahu>>
@@ -189,6 +189,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HbRxgOyvvg7BTFtAb_Fy0nyo4WKar1KrOi-aq6Lo8No
+<<^ code="&#x0003;">>ni:///sha-256;R8mTpR6YIcNVeMpNKxMXMW9-XUHmEA3-eDHhSV1S12I
 
 <<^ code="&#x0004;" -> to="?">>

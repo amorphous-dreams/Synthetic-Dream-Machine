@@ -49,9 +49,9 @@ The corpus bags hold the written record of DreamNet's grammar:
 These bags do not contain user content, operator wikis, or social state. They carry
 ''structure'': types, laws, sigils, procedure tiddlers, architectural invariants.
 
-A kahu guardian holds `cap=admin` on these bags specifically. That capability rung is
-the same one any operator could receive on their own vessel's bags — the distinction
-is //which bag// carries the grant, not a new rung on the ABILITY_LADDER.
+A kahu guardian holds `cap=admin` on these bags specifically. That capability rung matches
+the one any operator could receive on their own vessel's bags — //which bag// carries the grant
+draws the distinction, never a new rung (`CapabilityAccess` reads `"read" | "admin"`, and no verb ladder stands).
 
 ''Use leads, and the record follows.'' Hearths speak the grammar, and what use entrenches the
 corpus-kahu lift into the corpus bags as curation. A vessel that syncs those bags inherits the
@@ -184,7 +184,7 @@ member takes a seat through the seal lineage. The three stay apart
 ''The admit travels WITH its subject.'' At the wire the subject PRESENTS its quorum-signed admit, and
 the carriage gate checks it against the shared ''DENY-only'' board — the kapae antigen, monotone, a
 set that only tightens. ''No folded allow roster gates carriage, at any scope'': a roster of who
-belongs is the one register the laws forbid (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
+belongs names the one register the laws forbid (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
 The quorum's admits stay a shared contract RECORD; the gate never folds that record into an allow set.
 
 ''What the code holds.'' `verifyPresentedAdmit` (`carriage-registry.ts`) reads a presented admit and
@@ -224,7 +224,7 @@ partial rotation. ''No Guardian takes part in a routine roll.''
 (`nextKeyCommit`, `wax-stamp.ts`). The per-seat `nextKeyDigests[]` · `nextThreshold`, `seal commit --seat`
 and the partial rotation land inside the re-found. The signed roll below stands in code.
 
-''EVERY ROLL IS SIGNED BY THE KEYS IT REVEALS.'' At least threshold of the revealed keys — the keys whose
+''THE KEYS A ROLL REVEALS SIGN IT.'' At least threshold of the revealed keys — the keys whose
 digests the prior epoch committed, which carry that epoch's authority — sign the roll over the prior
 epoch's CID, the revealed key-set, the threshold and the next commitment, under the `seal-roll` domain. A
 key a seat change adds, committed by no prior digest, signs the same bytes as its proof of possession.
@@ -275,7 +275,7 @@ forges a shared reserve seed split across guardian cards
 !!! Owed in code ~ names that blur the relations
 
 * ''The vessel key signs for two relations'' — the place's carrier seal and the wire's proof (the gate
-  key every Nexus a hearth carries shares) — where each relation wants its own face. An invite no longer
+  key every Nexus a hearth carries shares) — where each relation wants its own face. No invite
   rides it: the hearth's per-Nexus leaf signs its hosting act. The per-Nexus wire key rides the re-found.
 
 The cabal ⊥ quorum split stands in code where it can:
@@ -285,7 +285,7 @@ The cabal ⊥ quorum split stands in code where it can:
 * ''`KahuQuorumSeats`'' names the quorum's seats — a seated key-set, its threshold and the charter epoch
   it authorizes. Keys, never people.
 * ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) names the CABAL: a Keyhive membership document
-  whose members are PersonaGroups, with no threshold, AID or succession. Its digest seeds the document's
+  whose members stand as PersonaGroups, with no threshold, AID or succession. Its digest seeds the document's
   Keyhive ChangeId and rides Keyhive's signed events, so it renames only by a deliberate re-key.
 
 <<~/ahu>>
@@ -336,7 +336,7 @@ practice this means:
 model (PROPOSED) draws that corpus `cap=admin` as a ''k-of-n threshold'' — the corpus-kahu
 structurally cannot sign as one hand — over a grammar that stays ''forkable'' by
 construction, so a drifting kahu gets forked away from rather than obeyed.
-''Legitimacy flows from being BOUND, not from being trusted.'' The full four-part binding
+''Legitimacy flows from the BINDING, never from trust.'' The full four-part binding
 (constitution-outside-reach · downward-accountable · k-of-n · auditable-and-forkable),
 the steward-not-ruler doctrine, and the bounded break-glass / repair authority live at
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>.
@@ -395,6 +395,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fWE4efCiI4f3rGIh8371YJd0aaWK3cdmywMp-YhderM
+<<^ code="&#x0003;">>ni:///sha-256;njGsLo_7ZnCj7f95tJUPVK7Ne7LW8lxLmmv-DPau9kg
 
 <<^ code="&#x0004;" -> to="?">>

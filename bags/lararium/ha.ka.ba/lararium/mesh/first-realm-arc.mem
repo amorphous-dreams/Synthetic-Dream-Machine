@@ -58,9 +58,9 @@ Ordinary speech fuses these. The model runs them as four distinct acts with four
 >
 > And the quorum: three keys on one machine make a quorum ''cryptographically real and not real as a check'' — no independent hand can refuse. Record it as the honest founding state, so a later reader never mistakes a seated quorum for a distributed one.
 
-''② The realm gets FED.'' A realm mints no DID and hosts on no machine; nothing stands to create. It begins when someone feeds it, and it would cease if feeding stopped — //there is no commons without commoning// (`cabal-realm#verb-not-noun`). ''The first offering IS the founding of the realm'', never a step after it. The vessel is founded; the Cabal is fed.
+''② The realm gets FED.'' A realm mints no DID and hosts on no machine; nothing stands to create. It begins when someone feeds it, and it would cease if feeding stopped — //there is no commons without commoning// (`cabal-realm#verb-not-noun`). ''The first offering founds the realm'', never a step after it. A founder founds the vessel; the Cabal's people feed the Cabal.
 
-''③ The fleet gathers.'' The operator's own device-vessels — a laptop browser, a phone, a tablet — join the standing fleet as ''CONTRACTED'' leaves: each mints its own vessel key on-device, and the persona root signs a delegation EDGE into it from the vessel that already holds the root. ''BIND BY EDGE, NEVER BY SEED'' — a key copied between vessels //is// the collector.
+''③ The fleet gathers.'' The operator's own device-vessels — a laptop browser, a phone, a tablet — join the standing fleet as ''CONTRACTED'' leaves: each mints its own vessel key on-device, and the persona root signs a delegation EDGE into it from the vessel that already holds the root. ''BIND BY EDGE, NEVER BY SEED'' — a key copied between vessels //becomes// the collector.
 
 > These add ''no locus of cost''. Below the phase change, holds bind one principal's instruments; the gauge still reads the realm nominal, and correctly. A fleet buys reach, never depth.
 
@@ -94,17 +94,17 @@ company a human keeps collide with the mesh they stand on.
 !! What a maintenance roll must carry, wherever the ledger sits
 
 A realm's standing rides ''per-writer lease slots'' — one slot per face, the effective epoch the MAX
-over all of them. That shape is why a low roll costs nothing and a high one converges without a
+over all of them. That shape lets a low roll cost nothing and a high one converge without a
 coordinator, and it decides what a roll must prove.
 
-''A roll binds REALM, WRITER and EPOCH together.'' Each alone is liftable: a roll carried to another
-realm would offer maintenance a face never made, and a roll lifted to a higher number could never be
-undone — ''the max never decreases, so a forged high roll is IRREVERSIBLE''. The property that makes
-the lease safe under no-global-now is exactly what makes forgery unfixable.
+''A roll binds REALM, WRITER and EPOCH together.'' Each alone lifts: a roll carried to another
+realm would offer maintenance a face never made, and nothing could undo a roll lifted to a higher
+number — ''the max never decreases, so a forged high roll stays IRREVERSIBLE''. The property that makes
+the lease safe under no-global-now makes forgery unfixable.
 
 Where the slots sit under a vessel's own bag the seal asks nothing the bag did not already answer:
-one hand owns the bag. It becomes load-bearing wherever the ledger is ''shared'' — a doc every dweller
-may write, where a slot uri is guessable and the seal is the only thing tying a roll to its writer. An
+one hand owns the bag. It bears load wherever the ledger runs ''shared'' — a doc every dweller
+may write, where anyone can guess a slot uri and the seal alone ties a roll to its writer. An
 unverifiable slot reads IGNORED: never folded, never fatal.
 
 !! Three stretches the rite does not walk
@@ -112,7 +112,7 @@ unverifiable slot reads IGNORED: never folded, never fatal.
 The runbook stands ''Synthesis-Canon and complete for what it covers''. These sit outside it rather than wrong within it:
 
 # ''The fleet join'' (arc ③). Movement ② names the CONTRACTED founding mode and walks only the SELF-STOOD path. A leaf admitted into a standing fleet mints no root and carries only the edge — the ruling stands (`vessel-standing`), the commands stay unwritten, and a browser vessel differs from a node vessel by device-gated caps rather than by class.
-# ''The realm feeding'' (arc ②). No movement names the first offering. `feedCabalRealm` stands built and unwalked, and the rite goes LIVE without the realm it was founded as a seed of ever beginning.
+# ''The realm feeding'' (arc ②). No movement names the first offering. `feedCabalRealm` stands built and unwalked, and the rite goes LIVE without the realm it seeds ever beginning.
 # ''The dwelling join'' (arc ⑤). ⊕ Grow contracts carriage and welcomes users at the anon floor. Neither act seats a dweller. This one wants ''design before commands'' — the conversion act stays UN-MODELLED by ruling (`the-thing-event#unmodelled`), so what the mesh may hold is ''that a re-anchoring happened'', never what made it valid.
 
 ''And one naming law belongs here before anyone names the first realm.'' `cabal` names the SCALE, never a required word in anyone's name. This realm carries the word by its founders' choice; a Siletz realm, an ʻohana realm, a Blacksky realm name themselves in their own tongue and lose nothing structural by it.
@@ -127,6 +127,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8tAAp9wjX3d3SDUZnrzSxwVus0qSxDCbiXTDQhzn8LQ
+<<^ code="&#x0003;">>ni:///sha-256;3Ho6g8UGrwkoYwvElZPt_01Wcjlnj7pPVW9oaeARqvQ
 
 <<^ code="&#x0004;" -> to="?">>

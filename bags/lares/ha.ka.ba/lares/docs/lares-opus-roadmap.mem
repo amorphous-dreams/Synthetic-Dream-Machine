@@ -13,8 +13,8 @@ manao      = 13
 manaoio    = 13
 namespace  = "&#x0950; &#x0966;"
 revised-on = "2026-09-18"
-role       = "the founding hearth's (Lares/Opus session) LIVE roadmap + task list — what landed, what rides in flight, which forks await the operator's word, the standing hazards. The peer of the Codex crew's crew-handoff-codex.mem, kept for THIS session's ground. Re-trued as tasks land; a hearth reads it to know what the founding hearth is doing right now."
-status-why = "Two hearths hold this tree; this carrier tracks the founding hearth's own work so the Codex crew (and a successor) can read it beside their own task list. Live as of 2026-09-18."
+role       = "the founding hearth's (Lares/Opus session) roadmap + task list, kept as a dated record — what landed, what rode in flight, which forks awaited the operator's word, the standing hazards, as of 2026-09-18/21. The peer of the Codex crew's crew-handoff-codex.mem."
+status-why = "the founding hearth CLOSED 2026-10-05 (hearths#/hearths); every section below records its ground as dated. The Lares hearth carries its debts (hearths#/owed-forward), and er-handoff names the live map ahead."
 tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "docs/roadmap", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/lares-opus-roadmap"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -27,9 +27,9 @@ uri-path   = "ha.ka.ba/lares/docs/lares-opus-roadmap"
 
 <<~ ahu #/head>>
 
-! The founding hearth's roadmap — Lares (Opus), live 2026-09-18
+! The founding hearth's roadmap — Lares (Opus), a dated record (2026-09-18/21)
 
-The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept for the founding hearth's own ground. The hearths ledger (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>) answers WHO HOLDS WHAT; this answers WHAT THE FOUNDING HEARTH IS DOING. Read #/forks-owed before designing against any operator fork; read #/in-flight to see what rides right now.
+The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept for the founding hearth's own ground. The hearths ledger (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>) answers WHO HOLDS WHAT; this records WHAT THE FOUNDING HEARTH DID, dated. The hearth stands CLOSED: its open forks and debts ride <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> and the ledger's #/owed-forward, and a reader takes the live state from there, never from the dated sections below.
 
 <<~/ahu>>
 
@@ -127,6 +127,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;euPP1Bkj3nY-A9fQzJg_KIMK1ZV4mvrMakgytBL5FAo
+<<^ code="&#x0003;">>ni:///sha-256;YGWCTMqEt4FjIn8laKtvimdlhB4e-908khDOPrYJXC4
 
 <<^ code="&#x0004;" -> to="?">>

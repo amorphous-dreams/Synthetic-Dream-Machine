@@ -44,20 +44,20 @@ recoverable copy · ''seed'' plants the content from `bags/` · ''LIVE'' serves 
 ''crossroads'' stands a Herm where a family needs one (#/crossroads) · ''grow'' opens the Nexus,
 contracts fellow operators and places, and welcomes users, who walk on an invite a hosting hearth or a walker it hosts hands them (#/grow-the-nexus) · ''gather'' brings the
 operator's own vessels in as contracted leaves (#/gather-the-fleet) · ''feed'' lays the first offering, which
-IS the realm's founding (#/feed-the-realm) · ''dwell'' seats a second operator IN the realm rather than
+founds the realm (#/feed-the-realm) · ''dwell'' seats a second operator IN the realm rather than
 merely carrying for it (#/dwell).
 
 ''The last three movements run AFTER LIVE and never gate it'' — and they carry different readiness. ⊛ Gather
-runs today on built verbs, ⊙ Feed among them (its two doors landed 2026-08-07). ⊘ Dwell holds a
+runs on built verbs, ⊙ Feed among them (its two doors landed 2026-08-07). ⊘ Dwell holds a
 built vouch and a crossing that REFUSES until the operator seats the admission dials — and its conversion act
 stays un-modelled by ruling, so no command there may name a quorum, a waiting period, or a test.
 
 ''THE RITE RUNS IN TWO BRANCHES, and they want opposite virtues'' (operator ruling, 2026-07-27).
-A ''REHEARSAL'' founding runs in containers, disposably, as many times as it takes — cheapness IS
+A ''REHEARSAL'' founding runs in containers, disposably, as many times as it takes — cheapness makes
 the point and nothing stands worth backing up. A ''KEEPER'' founding runs once, on the real hearth,
 irreversibly. ''Movements ②–⑨ read the same in both''; the branches part at ① and at what a failure
 COSTS. Every rehearsal therefore doubles as a dress rehearsal of the keeper — same commands, same
-order, disposable stakes — which stops the keeper from ever being a first take.
+order, disposable stakes — which keeps the keeper from ever running as a first take.
 
 ''THE RITE STANDS ONE VESSEL; THE ARC RUNS WIDER.'' What happens across several vessels, several operators and however long the months take — a realm FED after LIVE, a fleet gathered as contracted leaves, a second operator founding independently and then DWELLING IN the first realm — rides at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/first-realm-arc">>. It names three stretches this rite does not walk: the fleet join (② names the CONTRACTED mode and walks only SELF-STOOD), the realm feeding (no movement names the first offering, and `feedCabalRealm` stands built and unwalked), and the dwelling join (⊕ Grow contracts CARRIAGE and seats no DWELLER — carriage and dwelling ride orthogonal axes).
 
@@ -83,18 +83,18 @@ tools/herm-mesh-witness.sh                                               # witne
 docker compose -f docker-compose.mesh.yml down -v                        # THE CLEAR — no backup, nothing kept
 ```
 
-''The burn IS the clear, and that inverts the danger.'' Where the keeper branch opens on the most
+''The burn enacts the clear, and that inverts the danger.'' Where the keeper branch opens on the most
 destructive command in the house, the rehearsal branch opens on one whose whole virtue reads
 //repeatable//. Run it until the sequence bores; ''boredom names the readiness the keeper needs''.
 
 !!! The second operator ~ movement ⑦
 
 ''⑦ — the door a second operator comes through.'' Movements ②–⑥ prove a hearth
-standing ALONE, and a Nexus that cannot admit a second operator is a private vessel wearing a charter. ⑦
+standing ALONE, and a Nexus that cannot admit a second operator stays a private vessel wearing a charter. ⑦
 runs both halves of the handshake with held personas (`accept-carriage` mints the joiner's contract-in,
 the quorum counter-signs it onto the members board, `revoke` supersedes) ''and the refusal'': a nym with
-no contract-in must fail closed and write nothing. A gate only ever shown saying yes has not been shown
-to be a gate.
+no contract-in must fail closed and write nothing. A gate only ever shown saying yes has proven nothing
+about gating.
 
 ''AND THE CUSTODY CROSSING HAS ITS OWN WITNESS.'' A one-vessel walk of ⑦ signs with a persona the same vessel holds, so the
 one property the ceremony exists for — that a Nexus admits a key it has ''NEVER HELD'' — goes unmeasured
@@ -109,23 +109,23 @@ npm run witness                                      # every witness, never shor
 seal home, because a contract-in binds to the charter epoch it consents under — so ''B cannot consent to
 a charter it has never seen'', and A's `founding-roster.mem` (public material: seated keys, threshold,
 epoch lineage) must travel FIRST. Holding it lets B name the epoch; it grants B no quorum, because the
-public charter is not a key.
+public charter holds no key.
 
 ''AND THE JOINER KEEPS WHAT SHE SIGNED.'' A relation has two sides and ''each side holds its own
-evidence'': the founder's is the admit on her members board, the joiner's is her own contract-in.
+evidence'': the founder holds the admit on her members board, the joiner her own contract-in.
 `accept-carriage` writes that consent beside the charter it binds to, so a vessel reads the relation
-it stands in ''without holding any partner's document''. The record is EPOCH-BOUND — a consent rooted
+it stands in ''without holding any partner's document''. The record binds to its EPOCH — a consent rooted
 behind the standing epoch consented to terms that have since moved, and grants nothing.
 
 ''AND THE RECORD PROVES ITSELF.'' Disk holds no trust: `LAR_ROOT` names the whole seal home, so a
 reading that trusted the file's PRESENCE would report a Nexus a vessel never joined. Three things
 carry it — ''the epoch stands'', ''the seal verifies'' (it binds nym and epoch together, and only the
-holder of that nym's seed can make it), and ''the nym is a root THIS vessel holds''. The third is the
-one that hides: another operator's consent is genuine evidence that //she// joined, and copying it
+holder of that nym's seed can make it), and ''the nym names a root THIS vessel holds''. The third
+hides: another operator's consent is genuine evidence that //she// joined, and copying it
 would claim a relation somebody else entered. Trust rides the signature, never the location.
 
-''The members board records, and each vessel decides.'' A stamp is a ''shared contract into the Cabal'' —
-a public, quorum-countersigned fact about who stamped in — so the board belongs on the per-Nexus
+''The members board records, and each vessel decides.'' A stamp makes a ''shared contract into the Cabal'' —
+a public, quorum-signed fact about who stamped in — so the board belongs on the per-Nexus
 shared side beside the KEL, the antigen, who-face and crossroads. ''Whether THIS vessel carries for a
 Nexus stays this vessel's own consent, at Nexus grain.'' Consenting to Nexus N covers N's future
 admits within the consented epoch, and an epoch roll forces re-consent; liberal carry stays safe
@@ -134,19 +134,19 @@ quorum-signed admit at the wire, checked against the deny-only antigen board
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>, which carries what the code holds and the cut-over it owes).
 
 ⚠ ''What an artifact that TRAVELS may carry.'' A charter travels before a partner can consent, and a
-shared board carries the stamps that contracted in — so whichever key class they name is ''published,
-and a key published once cannot be unpublished''. Three key classes stand and they do not
-interchange: a ''vessel key'' is device-minted and must never co-surface; a ''PersonaGroup root'' binds
-one human's own devices into an overlay; a ''veiled-user Handle'' is the sovereign pseudonym presented
-through the veil, and it is the only one of the three meant to be seen.
+shared board carries the stamps that contracted in — so whichever key class they name ''goes public,
+and a key once published can never go back''. Three key classes stand and they do not
+interchange: a ''vessel key'' comes device-minted and must never co-surface; a ''PersonaGroup root'' binds
+one human's own devices into an overlay; a ''veiled-user Handle'' names the sovereign pseudonym presented
+through the veil, and only it, of the three, means to be seen.
 
 ''The Handle carries the same verification and none of the exposure.'' A PersonaGroup root on a
 travelling artifact names that human's device-group — and several drawn from one vault correlate to
-each other, which is what a founding seat does when it draws every chair from one identity home. An
+each other, exactly as a founding seat does when it draws every chair from one identity home. An
 unrecognised key reads UNKNOWN rather than safe: a vessel cannot classify a key it did not mint, and a
-travelling artifact is the wrong place to guess.
+travelling artifact makes the wrong place to guess.
 
-⚠ ''AND PUBLISHABLE IS NOT THE WHOLE QUESTION.'' A Handle is MEANT to be seen — a HandleCard announces
+⚠ ''AND PUBLISHABLE ANSWERS ONLY PART OF THE QUESTION.'' A Handle MEANS to be seen — a HandleCard announces
 it, and recognition needs it ''stable''. That same stability ''correlates a human across every circle
 it stands in''. The persona tree already carries the floor one level down: `m / handle' / context' /
 circle-scope'`, the scope index derived from the circle's own doc id, so ''the same persona presents a
@@ -173,9 +173,9 @@ the rendezvous re-siting: a clean `vessel stop` unlinks its socket; a hard kill 
 next contact reaps. So a throwaway costs no containers and
 destroys nothing real; the container harness stays for what containers actually buy (rude sockets, real
 disks, a drop that drops). ''The count gets RE-MEASURED whenever a resolver moves, never carried forward'' —
-an isolation claim that ages is an isolation claim that lies, and the tenth resource (the TCP port) was
-found exactly that way. The harness ''REFUSES'' any root under the operator's home, any root naming the
-repo, and any root already carrying an identity — ''a rehearsal harness that can eat the hearth is not one''.
+an isolation claim that ages turns into an isolation claim that lies, and re-measuring found the tenth
+resource (the TCP port) exactly that way. The harness ''REFUSES'' any root under the operator's home, any root naming the
+repo, and any root already carrying an identity — ''a rehearsal harness that can eat the hearth fails as one''.
 
 ''THE SEED SET'' (operator-approved 2026-08-08): `lares` · `lararium` · `crossroads` — the two system
 bags plus the public floor, re-copied EACH cycle so cycle 2 tests the ''rite's'' idempotency rather than a
@@ -184,7 +184,7 @@ appears to.
 
 ''IT RUNS THE RITE AS WRITTEN, because founding reaches nothing outside the vessel.'' A standup that also
 pip-installed the mempalace library and stood the sensorium organs would write OUTSIDE `LAR_ROOT` and make
-an isolated founding impossible. ''The mempalace is a SIDECAR'' (operator ruling, 2026-08-08) and its own
+an isolated founding impossible. ''The mempalace runs as a SIDECAR'' (operator ruling, 2026-08-08) and its own
 header always said so. Both legs carry their own doors:
 
 ```
@@ -195,36 +195,36 @@ lares sense setup                                    # the sovereign sensorium o
 ''A vessel founds and serves carrying neither.'' A stand still REPORTS what stands and counsels the verbs,
 because naming a missing tool serves the operator and installing one behind them does not.
 
-!!! ⚠ THE UNATTENDED-REBOOT TENSION ~ named at the gate, unruled
+!!! ⚠ THE UNATTENDED-REBOOT TENSION ~ named at the gate, ruled at the floor
 
-''A sealed vessel that reboots with nobody awake REFUSES TO BOOT today.'' For one operator's laptop that
-reads fine; for a crossroads a family depends on, ''the at-rest seal converts a power cut into an outage''
+''A sealed vessel that reboots with nobody awake cannot open its archive.'' Refusing to boot would read
+fine for one operator's laptop; for a crossroads a family depends on, ''it would convert a power cut into an outage''
 — and the seal exists to protect a stolen disk, never to gate an ordinary restart.
 
 The option space and its costs live beside the reading itself (`archive-passphrase#archiveOpens`), so a
-later hand meets it where the decision happens rather than in a document beside it. ''BUILT NOW'': a hearth
+later hand meets it where the decision happens rather than in a document beside it. ''BUILT'': a hearth
 whose archive holds shut STANDS at the waking floor as a Herm — faceless by class, carrying, serving the
 public shelf, every sovereign act closed — rather than refusing to boot (`standAs`, and the boot says so in
-plain words). ''What remains UNBUILT is the unattended raise'', and one correction rides with it: the raise
-is a ①-VESSEL act held by whoever holds that vessel's opening secret, ''never a kahu quorum'' — a cabal is
-seated from Handles standing on an already-raised lararium, so that dependency closes in a circle
+plain words). ''The unattended raise remains UNBUILT'', and one correction rides with it: the raise
+stands as a ①-VESSEL act held by whoever holds that vessel's opening secret, ''never a kahu quorum'' — Handles
+standing on an already-raised lararium seat a cabal, so that dependency closes in a circle
 (waking-floor#the-raise-is-a-vessel-layer-act). The shape that reads most pono: a vessel that cannot open its archive has lost its ''caps'', never its ''floor'' — so it
 should come up ''anon at the floor'' (serving the public shelf, which needs no secret), hold every sovereign
-act closed, say loudly what it cannot do, and let an ACT unseal it after. ''And that act already has a shape
-the mesh runs'': a kahu quorum signing against the pre-rotated epoch chain, rather than a second authority
-invented beside it.
+act closed, say loudly what it cannot do, and let an ACT unseal it after. ''And that act rides machinery the mesh
+already runs'': the Nexus's own lease epoch (waking-floor#the-raise-is-a-vessel-layer-act), never a kahu quorum
+and never a second authority invented beside it.
 
 ''RULED'': passphrase-primary; no random key beside the ciphertext; never a silent degrade to weak keys.
 
 ''RULED and ENACTED'': an unattended boot ''stands at the floor''. `standAs(asked, archiveOpens)` returns the
 asked class only where the identity archive opens and `"herm"` otherwise, so a vessel whose seal stays shut
 meshes, carries, routes, and says loudly what it cannot do — it seats no persona
-(`personaSlotCeiling("herm") === 0`). Nothing degrades silently, because the floor is a NAMED standing rather
-than a weakened one: the vessel that cannot open its archive holds no key to misuse. An operator ''lights the
+(`personaSlotCeiling("herm") === 0`). Nothing degrades silently, because the floor names a standing rather
+than a weakening: the vessel that cannot open its archive holds no key to misuse. An operator ''lights the
 hearth fire'' after, and a recognised operator may RAISE caps onto it that ride their own keys and always fall
 back (waking-floor). An outage recovers; a silently unsealed identity does not — and neither happens here.
 
-A crossroads may now stand where nobody sleeps: it wakes at the floor and waits for a hand.
+A crossroads may stand where nobody sleeps: it wakes at the floor and waits for a hand.
 
 ''TWO LEGS STILL GO UN-EXERCISED, named so a green run never reads as more than it proves'':
 * `lares vessel stand --init` fans out to the AI-surface wires (`~/.claude` · `~/.codex` · `~/.copilot`). The harness
@@ -282,7 +282,7 @@ amendments landed and one hypothesis got recorded:
   key and receiving a signed edge — correct. The commands signed a payload before any joinee key existed
   — impossible: the signing call refuses without the joinee's public verifying key. ''The description
   tracked the design and the sequence tracked the past'', which reads as the most dangerous shape a
-  runbook carries, because the prose reassures the reader that the commands were checked.
+  runbook carries, because the prose reassures the reader that someone checked the commands.
 # ''THE ADMIT PAYLOAD'S CONTENTS NAMED.'' It carries one signed edge on a lineage, never a
   capability-event bundle (#/gather).
 # ''A CANDIDATE FOR THE STANDING RED, unproven.'' The unexplained fail-closed Binding Gate reports a
@@ -292,7 +292,7 @@ amendments landed and one hypothesis got recorded:
   rehearsal watches the chain length, never as a diagnosis.
 
 ''The corroboration, with its limit named.'' The founding-then-admit path stands green end-to-end in an
-automated witness (9 of 9, 2026-08-04). ''That witness is not this rite'' — it stands no containers, its
+automated witness (9 of 9, 2026-08-04). ''That witness stands apart from this rite'' — it stands no containers, its
 sockets stay polite, and no drop actually drops (#/rehearse). It corroborates the SHAPE of movements ②
 and ⊛; it substitutes for no cycle.
 
@@ -317,8 +317,8 @@ same string into both flags proves nothing, because a label-matching join would 
 ''AND THE SAME READING FOUND TWO MORE, both un-pono for the same reason'' (operator, 2026-08-07):
 
 # ''THE FOUNDING NAMES SHIPPED IN THE BUILD.'' A `FOUNDING_KAHU` constant carried three display names, so
-  the SOURCE decided who the founding kahu were and the operator merely confirmed it. ''Retired.'' The
-  scaffold now names nobody, and the roster forms at the seat from the personas that declared and stood.
+  the SOURCE decided who the founding kahu were and the operator merely confirmed it. ''Struck.'' The
+  scaffold names nobody, and the seated set forms at the seat from the personas that declared and stood.
   The threshold followed the same cut: a `2` written into a file would seat one Nexus's fairness call inside
   every Nexus that founds, so the seat derives majority and takes `--threshold` for any realm wanting another.
 # ''THE PRIOR SEAL SURVIVES A CLEAR.'' `lares vessel clear --force` preserves the identity home and the `rm -rf` cuts
@@ -363,11 +363,11 @@ Our sense named the ''waking floor'' — a vessel coming up at its minimum cap-s
 
 ''In this rite the collision turns dangerous rather than merely awkward'': a founder meets `hoʻāla` a few
 lines from the irreversible clear (#/clear), and a ʻŌlelo Hawaiʻi reader would take the two for one family.
-''A name that inverts its own meaning beside a destructive command is a trap, not a label.''
+''A name that inverts its own meaning beside a destructive command sets a trap, not a label.''
 
 ''RULED'': the pet-name goes, and the concept keeps its grounding (Direct Boot BFU/AFU · SPIRE · kubelet
-TLS bootstrap · Tang/Clevis) and its meme. ''It now reads THE WAKING FLOOR'' — plain English, operator-ruled,
-and the phrase the prose carries throughout, so handle and body now say one thing.
+TLS bootstrap · Tang/Clevis) and its meme. ''It reads THE WAKING FLOOR'' — plain English, operator-ruled,
+and the phrase the prose carries throughout, so handle and body say one thing.
 
 ''THE CHECK RAN WIDER THAN THE ONE WORD, and every near candidate failed too.'' Read against the primary
 dictionaries rather than a summary: `hoʻomaka` carries ''to begin, start, as a computer program'' — spent,
@@ -390,7 +390,7 @@ rite stands ''WALKED'': not a green report, but a ''silent document''. Cycle 2 r
 cleared tree, so the idempotency claim reads tested rather than asserted. 2m36s against the prior run's
 4m28s, because nothing rebuilt mid-cycle.
 
-''FOUR OF THE FIVE FAILURES THAT GOT HERE WERE INSTRUMENTS, NOT THE RITE'' — and each one had reported
+''FOUR OF THE FIVE FAILURES THAT GOT HERE LAY IN INSTRUMENTS, NOT THE RITE'' — and each one had reported
 green, or reported red against something innocent:
 
 <<~ has Found Impatience "read/no socket after 60s truth/the CLI budgets 120 for a cold boot ~ the harness out-waited what it measured">>
@@ -400,7 +400,7 @@ green, or reported red against something innocent:
 <<~ has Found Silent-misroute "read/1682 specs green truth/554 of 555 framed memes stopped reading as carriers ~ nothing tested detection against a swept meme">>
 
 ''The rehearsal earned its keep on the instruments alone.'' Movements ②–⑥
-were sound early; what stood between them and a green run was a harness that measured its own patience, a
+stood sound early; what stood between them and a green run was a harness that measured its own patience, a
 seed that carried somebody else's identity, a gate that inspected where it had to connect, and a probe that
 acted. ''A rite proves itself only through instruments that do not lie about it'', and every one of those
 lies passed a suite first.
@@ -415,7 +415,7 @@ lies passed a suite first.
 network'' — so ''no network traffic, no live Nexus''. Liveness reads off the lines themselves; nothing
 declares it, and nobody grants it.
 
-''WHICH ANSWERS DISSOLUTION WITHOUT AN ADMIN CAPABILITY.'' A Nexus is never dissolved — ''it goes quiet''. That
+''WHICH ANSWERS DISSOLUTION WITHOUT AN ADMIN CAPABILITY.'' No one dissolves a Nexus — ''it goes quiet''. That
 rhymes with every neighbouring ruling rather than inventing a new shape: a cabal-realm ''DISSOLVES BY COOLING''
 and never by an act; a standing lift ''EXPIRES'' and no party holds a lowering act; //nobody dissolves a Cabal
 by preventing its meetings//. ''The correct admin capability here reads as NONE.''
@@ -432,8 +432,8 @@ takes a chair by declaring a Handle and standing. A rotation then seats the rost
 pre-committed that exact successor key-set an epoch earlier, in the open, under the quorum standing then.
 ''Nobody adds or drops a kahu quietly'', and no hand holds a capability to do it.
 
-''You cannot change who holds the quorum without changing what the quorum is'' — which is why the succession
-door was already there wearing another name.
+''You cannot change who holds the quorum without changing what the quorum names'' — which explains why the succession
+door already stood there wearing another name.
 
 <<~/ahu>>
 
@@ -460,7 +460,7 @@ to a directory. A caller that ''joins its own path'' bypasses it entirely and no
 which is precisely how the seal came to sit inside a repository, off a call site reading `LAR_BAGS ?? join(root,
 "bags")`. So this stands as ''a mechanism with a named bypass rather than a guarantee'', and the discipline
 runs: a new bag asks for its directory, and a hand-rolled `join(…bags…)` invites the question why.
-''`repository` refuses outright where no repo stands configured'' — guessing a tree is the failure the axis
+''`repository` refuses outright where no repo stands configured'' — guessing a tree makes the failure the axis
 exists to prevent.
 
 <<~/ahu>>
@@ -495,7 +495,7 @@ same way. ''The silence reads exactly like success'', which makes it the worst s
 while a filtered one reported a real TS2307 in a command module — same tree, same moment, two answers. The
 witness reads per package and exits non-zero on any real error, so a type error cannot ride into a founding
 behind a clean-looking build. ''The rehearsal harness runs it too'' — the rite and its rehearsal check the
-same thing, which is the only way a green rehearsal predicts anything about the keeper branch.
+same thing — the only way a green rehearsal predicts anything about the keeper branch.
 
 ''A playwright bump strands its own browsers.'' The version pins a chromium build, so the browser suite dies
 at launch with //Executable doesn't exist// until the matching binary lands. Measured 2026-08-09; the first
@@ -503,23 +503,23 @@ run after the install threw one cold-start flake and two re-runs came back clean
 immediately after an install earns a re-run before it earns a diagnosis''.
 
 ''Walked 2026-08-09.'' The whole tree came current, built green, and stood
-1682 specs + 3318 tests with zero failures — so this movement now reports a walk rather than a plan. The
+1682 specs + 3318 tests with zero failures — so this movement reports a walk rather than a plan. The
 vendored `tiddlywiki` keeps its ''own'' eslint generation: its majors belong to that submodule, and bumping
 them from here moves the engine blob that rides inside every signed delegation preimage.
 
 ''BUMP THE DEPS BEFORE, NEVER AFTER — and the reason reads narrower than the fear.'' A runtime bump
-(automerge · noble · ws · vite) moves ''NO epoch binding'': the engine blob is vendored TW5 and the built
+(automerge · noble · ws · vite) moves ''NO epoch binding'': the engine blob vendors TW5 and the built
 plugin carries zero automerge references, both measured. It can skew the ''on-disk serde'' alone, which
 `lares vessel rite rebuild` cures identity-safe. So bumping first reads as hygiene rather than a cliff.
 
-''The surfaces that WOULD be a cliff do not move on npm at all'': `hearthTrueName` (the engine CID, signed
+''The surfaces that WOULD make a cliff do not move on npm at all'': `hearthTrueName` (the engine CID, signed
 into every device-delegation edge) and the `pluginsCid` (built from this repo's own source). Those move by
 an ACT — a TW5 submodule bump, or a commit — never by an upgrade.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
 
 ''USE `pnpm build`, never `pnpm -r build`.'' The root script builds and then STAMPS the source digest the
 freshness gate reads. A build that skips the stamp leaves the tree reading stale, so the first lifecycle
-verb rebuilds ''mid-founding'' — and a build cleans nothing now, but it still costs minutes at the worst
+verb rebuilds ''mid-founding'' — and a build cleans nothing, but it still costs minutes at the worst
 moment. `pnpm build:clean` retires the outputs first, and even that leaves `dist.prev` to come back to.
 
 ''Run this at the head of BOTH branches.'' A rehearsal that opens on a stale toolchain measures the
@@ -550,18 +550,18 @@ undo.'' A vessel that carries nothing worth keeping (the bootstrap case) crosses
 ```
 rm -rf ~/.local/share/lares/identity                # ⚠ IRREVERSIBLE: the fresh-from-void cut
 rm -rf ~/.local/share/lares/nexus                   # ⚠ IRREVERSIBLE: the prior SEAL (see below)
-lares vessel clear --force                                 # pave the vessel store (the identity home now stands empty)
+lares vessel clear --force                                 # pave the vessel store (the identity home stands empty after)
 ```
 
 ''TWO SOVEREIGN THINGS SURVIVE A CLEAR, and BOTH want cutting here.'' `lares vessel clear --force` pares the vessel store
-and preserves the state home — that boundary IS the //share substrate, not sovereignty// law, and the sovereign
+and preserves the state home — that boundary enacts the //share substrate, not sovereignty// law, and the sovereign
 root sits behind it on purpose. The Nexus SEAL sits behind it too, in its own home beside the identity
 (`<lares>/nexus/founding-roster.mem`), so a re-founding cuts both or strands itself: the seat ''FAILS CLOSED''
 against a lineage already past genesis (//advance it with rotate, never re-seat//), and the operator holds a
 fresh vessel that cannot seal.
 
-''⚠ A PRESERVING RE-PAVE ORPHANS THE VEIL ARCHIVE — now self-healed.'' A plain `lares vessel clear --force`
-ALONE — the `rm -rf identity` skipped, so the keyhive identity + `veil-archive.bin` are PRESERVED — wipes the
+''⚠ A PRESERVING RE-PAVE ORPHANS THE VEIL ARCHIVE — and the boot self-heals it.'' A plain `lares vessel clear --force`
+ALONE — the `rm -rf identity` skipped, so the keyhive identity + `veil-archive.bin` stay PRESERVED — wipes the
 daemon store but keeps the veil archive. The founder-veil key derives from a per-founding tag that lived only
 in the wiped store, so re-lighting the face mints a FRESH tag: the next lit boot loads the prior veil's
 ORPHANED archive under the new seed. This once SPLIT the provider — `whoami` read the archive's key while
@@ -572,7 +572,7 @@ and stands fresh from the seed (a loud log), re-hydrating membership — exactly
 does, done automatically (`the-seed.decides.the-identity`). The founder's own seat re-hydrates through every
 reboot shape regardless (`veil-founder-seat-survives-reboot`). ''So the fresh-from-void `rm -rf identity` cut
 above stays the clean explicit keeper act'' — cutting the orphan by hand and re-minting the veil from a fresh
-founding — but it is ''no longer REQUIRED to avoid a fatal'': a plain re-pave stands lit, re-minting the veil
+founding — but ''no fatal REQUIRES it'': a plain re-pave stands lit, re-minting the veil
 under the same seed-derived personas.
 
 ''WHY THE SEAL HOMES THERE and not in the corpus.'' It reads as a FILE by ruling — an operator backs it up,
@@ -586,7 +586,7 @@ whoever copied the code.
 
 !!! ⚠ WHAT THE CLEAR MUST NOT TOUCH ~ the library survives every founding
 
-''LARES PASS; THE LARARIUM ABIDES'' (operator-ruled). ''THREE WORDS, AND NONE OF THEM ARE SYNONYMS'':
+''LARES PASS; THE LARARIUM ABIDES'' (operator-ruled). ''THREE WORDS, AND NONE OF THEM SYNONYMS'':
 ''lares'' names the SPIRITS (agents, personas — their identity, and the vessel substrate they run on),
 ''lararium'' names the HOUSE (the acquired shelf, the sensoriums, the history), and ''lar'' names the
 NAMESPACE, the `lar:///…` URIs and every resolver in the stack. Every siting answers one question —
@@ -603,13 +603,13 @@ inside the data kind exactly as they do under XDG. `<root>/data/lares` stands be
 just as `~/.local/share/lares` stands beside `~/.local/share/lararium`. ''A house never stands where a kind
 belongs'', so a rehearsal exercises the real siting and a container never reaches the operator's own shelf.
 
-''A LAR'S KEYS ARE THAT LAR'', which is why identity stays with the spirits even though no rite re-makes it
-either. And a family's books outlast whoever reads them, which is why the shelf is the house's. ''The wipe
+''A LAR'S KEYS ARE THAT LAR'', and so identity stays with the spirits even though no rite re-makes it
+either. And a family's books outlast whoever reads them, and so the shelf belongs to the house. ''The wipe
 zone standing as a house rather than a list is the CONSEQUENCE, never the reason.'' A Lar wakes, acts and
-gives way — the substrate under `<lares>/vessel` is exactly that, reforged whole by `clear`, `bake` and
-`rebirth`, and correct to lose because a rite re-makes it from the carriers on disk. The lararium is the
-''shrine'': the place a family fed across generations and left standing when they moved. What is the
-house's stands THERE, in a home every wipe-list fails to name because it names nothing outside its own. A
+gives way — the substrate under `<lares>/vessel` does exactly that, reforged whole by `clear`, `bake` and
+`rebirth`, and correct to lose because a rite re-makes it from the carriers on disk. The lararium stands as the
+''shrine'': the place a family fed across generations and left standing when they moved. What belongs to the
+house stands THERE, in a home every wipe-list fails to name because it names nothing outside its own. A
 tier kept safe by sitting one subdirectory aside stays safe only until somebody widens a wipe by one path
 segment; a tier standing in its own house leaves no edge to widen. ''A rule that fits in one breath needs no
 warning label.''
@@ -624,9 +624,9 @@ The founding pares `<lares>/vessel` through `reset` and cuts two more by hand; `
 | the ACQUIRED library | `<lararium>/library` | ''ANOTHER HOUSE'' — books, corpora, anything poured over. It rebuilds from NOTHING |
 | the sensoriums | `<lararium>/sensoriums` | ''ANOTHER HOUSE'' — capture the machine took once and cannot take again |
 
-''The shrine holds what is the house's.'' The runtime CAS may be pared because its blobs rebuild from
+''The shrine holds what belongs to the house.'' The runtime CAS may be pared because its blobs rebuild from
 the bags carriers; an acquired body has no such path — the corpus left the repository precisely so a shelf
-could grow without the history growing with it, and the shelf is now the only copy. A sensorium reads the
+could grow without the history growing with it, and the shelf holds the only copy. A sensorium reads the
 same way: operator history and DreamNet history, captured once, with no source to re-pour from. Verify the
 shelf after the founding rather than trusting the absence of an error:
 
@@ -645,7 +645,7 @@ wipe-list needs to remember it.
 per-vessel address book sat inside a shareable directory — and anything copying that directory wholesale
 handed a fresh vessel ''another vessel's identity'': `init` reads a bootstrap present, skips re-seeding,
 and the boot resolves hearth-private docs no local store holds. A rehearsal proved it twice
-(#rehearse, fifth pass). ''`genesis/` now carries the baked island ALONE'', which makes a seed safe to
+(#rehearse, fifth pass). ''`genesis/` carries the baked island ALONE'', which makes a seed safe to
 copy, share, and re-site precisely because no identity rides inside it.
 
 ''A per-vessel artifact in a shared directory reads as a landmine
@@ -692,7 +692,7 @@ lares persona list                                  # h0/h1/h2 stand: label -> d
 * `--name` sets the ''PRIVATE label'' — what the operator calls that compartment. It rides the human's
   own fleet (that face's `persona-<tag>` plane) and ''never publicly federates''.
 * `--handle` declares the ''PUBLIC Handle'' the persona answers to. A ''local intent'', not a publish:
-  only a publicly announced Handle binds a PersonaGroup to a public glamour. The announce is its own
+  only a publicly announced Handle binds a PersonaGroup to a public glamour. The announce stands as its own
   deliberate act, `lares handle publish "<Handle>"` — the face anchors to its persona (the persona-KEL
   prefix owns it), so a lost presentation key recovers through the persona.
 * `--seat` stands the persona for a ''Kahu chair on THIS node''. It stays local — a chair names a seat
@@ -700,7 +700,7 @@ lares persona list                                  # h0/h1/h2 stand: label -> d
 
 ''THE ROSTER FORMS FROM WHAT STOOD.'' No list of founding names ships in the build: `nexus seal seat` reads
 the personas that ''declared a Handle AND stood for a chair'' and writes exactly those as the roster. A
-scaffold carrying names would make the ''SOURCE'' decide who the founding kahu are, leaving the operator to
+scaffold carrying names would make the ''SOURCE'' decide who stands as founding kahu, leaving the operator to
 confirm a legitimacy call somebody else made — and legitimacy belongs where the acts happen. A persona that
 declares and never stands ''takes no chair at all'', rather than an empty one somebody wrote down for it.
 
@@ -740,7 +740,7 @@ every verifier it meets, it links every self beneath any policy written above it
 ''⚠ ONE WORD, TWO SENSES — hold them apart.'' This rite uses ''contracted'' in both meanings and they
 never coincide: a ''CONTRACTED FOUNDING'' (this movement) names HOW a vessel came to stand; a
 ''CARRIAGE-CONTRACTED OPERATOR'' (#/grow-the-nexus) names an operator who agreed to CARRY for a Nexus.
-A self-stood hearth may be carriage-contracted; a contracted-founding Herm carries without ever
+A self-stood hearth may hold a carriage contract; a contracted-founding Herm carries without ever
 holding a civic identity. ''Founding-mode ⊥ carriage-contract.''
 
 ''A HERM STANDS CONTRACTED ALWAYS, as law rather than setting'' — its legitimacy runs kahu quorum →
@@ -856,7 +856,7 @@ and you place the card by hand. The names ride the public reserve state so `seal
 what — ''the label answers //who do I call at recovery//'', nothing more.
 
 ''The scheme's real purchase runs in the direction operators forget.'' Full compromise of the vessel yields
-''one'' share, which is nothing. The inverse matters more: ''Guardians recover WITHOUT you''. That
+''one'' share, which yields nothing. The inverse matters more: ''Guardians recover WITHOUT you''. That
 converts a death, a hospitalization, or a lost vault from the end of the lineage into a survivable event —
 and the three questions below choose Guardians for the person and for the catastrophe rite alike.
 
@@ -865,7 +865,7 @@ and the three questions below choose Guardians for the person and for the catast
 <<~ has Ask Reachability "asks/can-someone-who-is-NOT-me-find-them-on-the-worst-day ~ a guardian only you can reach recovers nothing">>
 
 ''THE NAMES MAY STAND UNASSIGNED AT FOUNDING'' — and a founder short of an answer should let them. The split
-runs 2-of-3 either way; the labels store as `unassigned` and the cards print regardless. ''Naming is a
+runs 2-of-3 either way; the labels store as `unassigned` and the cards print regardless. ''Naming makes a
 PLACEMENT act'' — handing physical cards to humans — and that act need not share an afternoon with the
 founding. Place them when you next stand in front of those two people.
 
@@ -937,8 +937,8 @@ lares vault status                                  # confirm the seal state
 ''A seal writes `sealExpected` into the CONFIG, and the clear does not remove it.'' From that moment every
 boot reads whether the archive OPENS, and a boot that cannot open it ''does not refuse — it stands at the
 WAKING FLOOR''. The vessel comes up as a crossroads: it meshes, carries, routes, serves the public shelf,
-and holds every sovereign act closed until a key arrives. Nothing degrades, because the floor is a named
-standing rather than a weakened one — a vessel that cannot open simply never rose.
+and holds every sovereign act closed until a key arrives. Nothing degrades, because the floor names a
+standing rather than a weakening — a vessel that cannot open simply never rose.
 
 ''Which changes what a missing passphrase LOOKS like, and that matters more than the mechanism.'' An
 operator expecting a refusal reads a running-but-faceless vessel as a failure and goes hunting one. The
@@ -949,7 +949,7 @@ honest reading: ''the hearth did not light''. The cure rides in the boot's own w
 and restarts nothing, so a founding that seals here by TYPING the passphrase — the honest path, the one
 the prompt exists for — walks to LIVE without carrying it forward by hand between two movements.
 
-''The env var is not a convenience; it is the standing condition of a
+''The env var serves as no convenience; it names the standing condition of a
 sealed vessel.'' Every later terminal, every reboot, every `lares vessel stand --foreground` wants it.
 That reads as the unattended-boot tension in everyday clothes (#/rehearse), and it arrives the moment the
 vault seals — not later, at some crossroads.
@@ -970,16 +970,16 @@ the rite warns about, and a DIFFERENT one than an operator expects while typing 
 reads) and leave `LARES_ARCHIVE_PASSPHRASE` unset through ②; to seal at founding and skip ④, carry both.
 Either stands — an unwitnessed choice does not.
 
-''A no-op now announces itself'': `vault seal` reports sealing NOTHING and
-writes no day-stamp, rather than printing a seal-day for work it did not do. It once stamped first and
-sealed second, so a vault that sealed nothing carried a record claiming it had.
+''A no-op announces itself'': `vault seal` reports sealing NOTHING and
+writes no day-stamp, rather than printing a seal-day for work it did not do — a stamp written before the
+seal would leave a vault that sealed nothing carrying a record claiming it had.
 
 !!! The two env vars ~ and why a bare `export` betrays you
 
 ''Two vars ride, and they answer different questions.'' `LARES_ARCHIVE_PASSPHRASE` carries the ''current''
 one (what opens the vault today); `LARES_ARCHIVE_PASSPHRASE_NEW` carries the ''target'' (what a `seal`,
 `rotate`, or `export` moves to). A first seal has no current, so only the second matters. Both exist to let a
-''non-interactive'' run proceed — the rehearsal harness reads `_NEW`, which is why a run that exported only
+''non-interactive'' run proceed — the rehearsal harness reads `_NEW`, so a run that exported only
 the base var fails at the vault with the passphrase apparently set.
 
 ```
@@ -988,7 +988,7 @@ export LARES_ARCHIVE_PASSPHRASE_NEW
 echo ${#LARES_ARCHIVE_PASSPHRASE_NEW}               # verify by LENGTH — never echo the secret
 ```
 
-''`read -rs` rather than a bare `export`, and the difference is the whole seal.'' A typed
+''`read -rs` rather than a bare `export`, and the difference carries the whole seal.'' A typed
 `export LARES_ARCHIVE_PASSPHRASE_NEW='…'` writes the secret verbatim into the shell's history file, where it
 outlives the ceremony, survives a reboot, and rides into any backup of the home directory. ''A passphrase
 that reaches disk in the clear has already failed'' — the vault protects a stolen disk, and the history file
@@ -998,7 +998,7 @@ the history; the length check confirms arrival without disclosure.
 ''IT LIVES FOR THAT SHELL ALONE.'' A new terminal starts without it, and that reads as the design rather
 than an inconvenience: the var exists so ''one ceremony'' can run unattended, never so a machine can seal
 itself forever. Putting it in `.zshrc` would leave the key beside the lock on every boot, which trades the
-whole at-rest seal for the cost of retyping — and the at-rest seal is the only thing standing between a
+whole at-rest seal for the cost of retyping — and the at-rest seal alone stands between a
 stolen disk and a sovereign identity.
 
 ''The TTY leg still goes un-exercised by the harness'' (#/rehearse), so a
@@ -1022,13 +1022,13 @@ lares vessel read                                   # LIVE — the node serves; 
 
 ''SEED, not rebirth — and the subtraction removes a trap rather than hiding one.'' Rebirth composes
 stop · clear · bake · stand · seed, which on a fresh founding tears down what ② built ninety seconds
-earlier and re-bakes a genesis nothing has touched. Only the seeding was ever needed here. Rebirth of a
+earlier and re-bakes a genesis nothing has touched. Only the seeding ever mattered here. Rebirth of a
 ''standing'' vessel stays a real motion — `lares vessel rite rebirth` — and simply not a founding step.
 
 The trap it removes: a seal writes `sealExpected` into the config, and the clear does not remove it, so
 every later daemon boot reads whether the archive opens, and one that cannot stands at the FLOOR instead of
 lighting the hearth. A movement that RESTARTS the daemon meets that reading mid-rite — and a founding would
-reach LIVE as a crossroads rather than a hearth, which reads like a failure and is not one. A movement that
+reach LIVE as a crossroads rather than a hearth, which reads like a failure and makes none. A movement that
 never restarts never meets it.
 
 ''AND THE RITE ENDS HERE, at the handover.'' `hooks resume` re-arms capture, which starts the sensorium's
@@ -1059,13 +1059,12 @@ Herm's OWN identity — stable across reboots, so a family's hearths keep dialin
 ''never a fresh random per boot''.
 
 ''DERIVES, and the word is load-bearing.'' The gate seed reads `HMAC-SHA256(RELAY_GATE_INFO,
-vesselSeed)` — the tag itself lives in the domain registry — domain-separated, never the identity seed passed through. It once WAS the seed itself, so a
-Herm published its vessel identity key as the public crossroads gate key: nothing leaked, and two trust
-domains became one correlatable pair, which is the join the veil model spends its design preventing. The
-house's own rule settles it — an HMAC `info` IS the separation.
+vesselSeed)` — the tag itself lives in the domain registry — domain-separated, never the identity seed passed through. Passing the seed through itself would publish a Herm's vessel identity key as the public crossroads
+gate key: nothing leaks, and two trust domains become one correlatable pair — the join the veil model spends
+its design preventing. The house's own rule settles it — an HMAC `info` enacts the separation.
 
 ''What a Herm holds and what it refuses.'' It carries a ''PLACE DID'' and ''NO operator DID'': the
-crossroads earns a name it can be addressed and vouched by, while ''no local human key rests there to
+crossroads earns a name others can address and vouch by, while ''no local human key rests there to
 steal''. It runs a full immune keel (it recognises Kapae bans and draws Mu) yet ''reads nothing'' —
 carry ⊥ read holds absolutely; it holds the ciphertext replica and decrypts none of it. It founds
 CONTRACTED (#/found), so it holds no seed to leak.
@@ -1088,15 +1087,15 @@ raise lives in memory only — a reboot drops the vessel back to its floor with 
 challenge named; when that Nexus's epoch rolls past it the reading simply stops coming back raised.
 ''Recognition reads a PRESENTED ADMIT, never a folded roster.'' The grant raises only when its admit
 roots on the challenge's Nexus — at the head epoch, or at an ancestor epoch its roll anchors carry to the
-head — the verifier reads it held against the deny board and the antigen, and the leaf that signed IS the
-admit's leaf; a root signing beside it refuses. The Herm chooses which boards it reads from the Nexuses it
+head — the verifier reads it held against the carriage board's counted revokes and the antigen, and the leaf
+that signed matches the admit's leaf; a root signing beside it refuses. The Herm chooses which boards it reads from the Nexuses it
 carries — its own counted carrier seal on a held charter's board, unioned with any persona-side carried
 set — and that choice seats no one. ''A Herm that carries no Nexus raises for nobody.''
 
 ''WHAT WAITS: the ask/answer verbs.'' The Herm's own half — provoking a fresh challenge on demand and
-reading a grant back — needs the door registered as a daemon verb, so today the boot output carries ONE
+reading a grant back — needs the door registered as a daemon verb, so the boot output carries ONE
 challenge and a refused answer waits for a restart. Inconvenient rather than unsafe: burning a challenge
-on refusal IS what stops anyone grinding at a nonce.
+on refusal stops anyone grinding at a nonce.
 
 ''The boundary reads STRUCTURAL, never a flag.'' A Herm that gains a persona cap ''stops reading as a
 Herm'' — it composes into an operator-class vessel and the nothing-to-steal property leaves with the
@@ -1139,8 +1138,8 @@ to anyone asking //is this human one of us//. The act that writes an entry there
 
 ''A rename that reaches the signing domain and stops at the CLI leaves the
 operator typing the one spelling nobody corrected.'' It reads as a free move — a CLI verb name carries no
-signing domain and no doc address — which is exactly why it gets deferred and then forgotten. The
-rite-commands witness now reads every instructed sub-door at its DISPATCH POSITION, so a door renamed
+signing domain and no doc address — and so it gets deferred and then forgotten. The
+rite-commands witness reads every instructed sub-door at its DISPATCH POSITION, so a door renamed
 underneath this rite fails the witness rather than the operator.
 
 ''Welcome a user'' — a user WALKS: no contract, no quorum admit, and NO roster trace
@@ -1149,7 +1148,7 @@ carries the Nexus HOSTS: `lares host roll` publishes its hosting act on its own 
 and `lares host invite` hands one `lar-invite:` string. A walker it hosts hands invites from its own
 wallet; a node walker takes one with `lares walk take` and hands one out with `lares walk invite`.
 The newcomer redeems the invite once at the host's own gate, the host burns it in its per-epoch spent-set
-and pushes a keyed grant, and no who-invited-whom is recorded or computable anywhere
+and pushes a keyed grant, and nothing anywhere records or computes who-invited-whom
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). `lares host` reads the act,
 the cap and the epoch's redemption count. A garbled or absent invite founds a vessel at the ''anon floor''. A user builds their OWN social graph — a follow lands as
 a LOCAL write to that face's own private `circles-<tag>` doc, which fleet-syncs every one of their
@@ -1177,9 +1176,9 @@ A laptop browser, a phone, a tablet. Each stands as a ''LEAF, CONTRACTED'' — i
 ''On the standing hearth'' — mint the admit payload for the joining device, under the persona root that will hold it:
 
 ''THE JOINEE MINTS FIRST, AND THE ORDER CARRIES THE PROPERTY.'' Admission ''SIGNS a key the joining
-vessel already holds''; it never issues one. So the private seed is born on the joining device and stays
+vessel already holds''; it never issues one. So the private seed comes to birth on the joining device and stays
 there, only the ''public verifying key'' crosses, and the signing call refuses to run without it —
-measured 2026-08-04, `runDeviceAdmit` throws where that key goes missing. This ordering IS what keeps the
+measured 2026-08-04, `runDeviceAdmit` throws where that key goes missing. This ordering keeps the
 QR ceremony photograph-inert: a payload names a key the holder already proved it holds.
 
 ''① On the joining vessel'' — mint the vessel key and read out its public half:
@@ -1258,13 +1257,13 @@ this edge rather than orphaning the vessel holding it.
 
 <<~ ahu #/feed-the-realm>>
 
-!! ⊙ Feed ~ the first offering IS the realm's founding (after LIVE)
+!! ⊙ Feed ~ the first offering founds the realm (after LIVE)
 
-''A realm mints no DID and hosts on no machine'', so nothing gets created — it begins when someone feeds it and would cease if feeding stopped (`cabal-realm#verb-not-noun`). ''The vessel is FOUNDED; the realm is FED.''
+''A realm mints no DID and hosts on no machine'', so nothing gets created — it begins when someone feeds it and would cease if feeding stopped (`cabal-realm#verb-not-noun`). ''A founder FOUNDS the vessel; the realm's people FEED the realm.''
 
-The machinery stands built and ''carries no CLI verb''. Until one lands, the rite goes LIVE with the realm it stood as a seed of never having begun.
+The machinery stands built and ''carries no CLI verb''. Without one, the rite goes LIVE with the realm it seeds never having begun.
 
-''TWO PLANES CARRY THE WORD //FEED//, and only one of them survives a restart.'' `feedCabalRealm` warms a `BagStowage` residency — an in-process cache keyed on a wall clock, correct where it lives and worthless as a civic record; a verb that stood up its own would report on a residency it just invented. The DURABLE feeding rides the ''per-writer lease slot'': a coordinator-free max-register in epoch coordinates with ''no clock anywhere'', which `cabal-realm-clock` folds into who-feeds-and-how-deep. ''The offering the rite means is the lease roll.''
+''TWO PLANES CARRY THE WORD //FEED//, and only one of them survives a restart.'' `feedCabalRealm` warms a `BagStowage` residency — an in-process cache keyed on a wall clock, correct where it lives and worthless as a civic record; a verb that stood up its own would report on a residency it just invented. The DURABLE feeding rides the ''per-writer lease slot'': a coordinator-free max-register in epoch coordinates with ''no clock anywhere'', which `cabal-realm-clock` folds into who-feeds-and-how-deep. ''The offering the rite means: the lease roll.''
 
 ''OWED — the smallest honest surface'', and it wants no new machinery:
 
@@ -1275,9 +1274,9 @@ lares cabal clock --realm <realm-doc-id>             # who feeds and how deep, v
 
 The second reads the capture-clock the model already argues for — ''who feeds the realm and how hard'', verdict-free, so a majority SEES a minority out-feeding them while exit stays cheap (`cabal-realm#the-unswept-corner`).
 
-''AND IT REPORTS NO //ALIVE// OR //DISSOLVED//, deliberately.'' Deriving a liveness verdict needs a rate at which unfed standing erodes, and ''no rate stands seated'' — a verb that answered anyway would be inventing the operator's calibration and handing it back as a reading. `deriveCabalRealmLiveness` still maps the in-process cache tier, which reads honestly ''only inside a running vessel''. An empty board reads UNFED and never //nobody feeds it//: under no-global-now an unsynced realm and an unfed one generate identically.
+''AND IT REPORTS NO //ALIVE// OR //DISSOLVED//, deliberately.'' Deriving a liveness verdict needs a rate at which unfed standing erodes, and ''no rate stands seated'' — a verb that answered anyway would invent the operator's calibration and hand it back as a reading. `deriveCabalRealmLiveness` still maps the in-process cache tier, which reads honestly ''only inside a running vessel''. An empty board reads UNFED and never //nobody feeds it//: under no-global-now an unsynced realm and an unfed one generate identically.
 
-> ''ONE FORK GATES BOTH VERBS, and it belongs to the operator:'' WHICH BOARD carries a realm's feeding. A deterministic per-Nexus board (the seventh sibling beside carriage · antigen · vouch · edge-kāpae · persona-KEL) would federate the clock to every carrier — and publish, by inference, which keys dwell where, which is precisely what `dwellersHolding` refuses to enumerate. The realm's own members-only substrate keeps the sight INSIDE the realm and makes the clock unreadable from outside it. The read (`realmMaintenanceFromBoard`) takes whatever doc it is handed and never asks, so the choice stays open above it.
+> ''ONE FORK GATES BOTH VERBS, and it belongs to the operator:'' WHICH BOARD carries a realm's feeding. A deterministic per-Nexus board (the seventh sibling beside carriage · antigen · vouch · edge-kāpae · persona-KEL) would federate the clock to every carrier — and publish, by inference, which keys dwell where, precisely what `dwellersHolding` refuses to enumerate. The realm's own members-only substrate keeps the sight INSIDE the realm and makes the clock unreadable from outside it. The read (`realmMaintenanceFromBoard`) takes whatever doc a caller hands it and never asks, so the choice stays open above it.
 
 <<~/ahu>>
 
@@ -1298,7 +1297,7 @@ A vouch rides as signal-2 on the lineage; the crossing prices it later, and the 
 
 ''AND THE CROSSING ITSELF REFUSES TODAY, correctly.'' `admissionDials` fail closed to null, so a founded Nexus admits nobody until the operator seats ε · β · ρ · S · α. That reads as an unmade choice standing visible rather than somebody's guess quietly enforced — and the numbers stay ''an open design seat'', never a default this rite may supply.
 
-''What CANNOT be written here, by ruling.'' The conversion act — a fed guest re-anchoring from host to realm — stays ''UN-MODELLED'' (`the-thing-event#unmodelled`). The mesh may record ''THAT a re-anchoring happened''; it must not hold what made it valid. A configurable rite would still be this stack's rite with someone else's values poured in, so no command here may name a quorum, a waiting period, a franchise, or a test. ''Each realm supplies its own.''
+''What no hand may write here, by ruling.'' The conversion act — a fed guest re-anchoring from host to realm — stays ''UN-MODELLED'' (`the-thing-event#unmodelled`). The mesh may record ''THAT a re-anchoring happened''; it must not hold what made it valid. A configurable rite would still stand as this stack's rite with someone else's values poured in, so no command here may name a quorum, a waiting period, a franchise, or a test. ''Each realm supplies its own.''
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/first-realm-arc">>
 
@@ -1380,7 +1379,7 @@ the root). The default holds — users stay light; operators carry the future.
 
 !! What a founding vessel carries besides its keys ~ declarations and the shelf
 
-Two surfaces landed after this rite was first written, and a founder meets both.
+A founder meets two surfaces beside the keys.
 
 !!! Every bag declares itself
 
@@ -1397,11 +1396,11 @@ lares bag repo add <id> --root <path>               # the registry: bags name ID
 ```
 
 ''`ADRIFT` names the row that matters'' — a bag whose bytes sit somewhere its own declaration does not point
-at. That condition, unsurfaced, is how a Nexus seal came to rest inside a repository nobody chose.
+at. That condition, unsurfaced, let a Nexus seal come to rest inside a repository nobody chose.
 
-''THE DECLARATION IS DISK-OWNED'' (operator ruling, 2026-08-08). It never enters the store and never
+''DISK OWNS THE DECLARATION'' (operator ruling, 2026-08-08). It never enters the store and never
 round-trips: seeded, a wiki edit could re-home a bag or loosen its cap-tier, and ''a declaration a rendered
-surface can move is a declaration nothing holds''. The authority stays where `lares bag declare` writes it.
+surface can move names a declaration nothing holds''. The authority stays where `lares bag declare` writes it.
 A re-founding therefore ''re-reads'' the declarations from disk and needs no act to restore them.
 
 !!! The acquired shelf
@@ -1495,6 +1494,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;91xA-kW3d_hXjEFUGHS_tZDMImtIkt_VaKc5oeTejV4
+<<^ code="&#x0003;">>ni:///sha-256;q5YKbz8xPSk-XsnJVTYHif9DWc9IU_igrRbsgITmk0w
 
 <<^ code="&#x0004;" -> to="?">>

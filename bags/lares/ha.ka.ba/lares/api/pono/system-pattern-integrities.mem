@@ -33,7 +33,7 @@ Fontany-Fuller-Zelenka local-first model. Confidence:.
 
 These encode design-time laws and named exceptions — no runtime validators.
 Witnessing constants: named so any agent, test, or operator can reference by ID.
-Enforcement is structural, not procedural.
+Structure enforces them, never procedure.
 
 Nine law clusters: MIND · ISLAND · AUTHORITY · CODEC · SYSTEM · PENTADIC · GENESIS · PEER · THRESHOLD.
 Named exceptions: CODEC_EXCEPTIONS.
@@ -409,6 +409,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6CXpIx65K1xMM-lWN80S_5o_2DV1uPq4l-gCJ_3vidw
+<<^ code="&#x0003;">>ni:///sha-256;v927ID9nLp6SOyLwdkOecGDJ1AU1NEHpwUWO4BUJKlU
 
 <<^ code="&#x0004;" -> to="?">>

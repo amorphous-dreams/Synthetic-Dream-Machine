@@ -113,7 +113,7 @@ house-held `library:` collection or arbitrary CAS bytes public.
 !! The rung ladder ~ household, crossroads, temple
 
 How much a vessel says about itself to a stranger climbs three rungs, the same three tiers Elyncia keeps:
-a household shrine, a crossroads marker, a temple. ''Each rung is opt-in above the one below; the default stays
+a household shrine, a crossroads marker, a temple. ''Each rung opts in above the one below; the default stays
 silent.'' Grounds: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility">> — a
 self-description reads as the two-finger sign, cheap to read at a distance — and
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">> — any surface that answers a
@@ -135,7 +135,7 @@ the herm holds; a listing answers only a CID the client names. Every unknown, wi
 path no face claims, a CID the herm never held, a wrong method, the well-known name itself — draws ''one
 indistinguishable closed door'': the same status, headers and body, carrying no text that names what answered.
 
-''WAYMARK.'' A herm that chooses to be found sets `herm.waymark` in its node config
+''WAYMARK.'' A herm that chooses discovery sets `herm.waymark` in its node config
 (`~/.lares/config.json`) and serves one minimal descriptor: its format, its route shapes and its bulb CID. It names
 no kindle pointer, no mirror and no carried Nexus. ''A herm never signs anything public'' — a public signature
 under a carrier's key would correlate the place with every Nexus it carries. The waymark and the temple's
@@ -143,27 +143,27 @@ descriptor hold one dispatcher key, so one vessel can never answer the well-know
 
 ''TEMPLE.'' The lararium's own Pronaos keeps its arrival descriptor whole (#/the-first-arrival). A lararium handed
 the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
-alone; on a herm that path is the closed door, since a readiness answer is a self-description.
+alone; on a herm that path draws the closed door, since a readiness answer describes the self.
 
-''THE ORACLE STANDS ON NO RUNG.'' A vessel's oracle face is no HTTP face at any rung: every HTTP path under it,
+''THE ORACLE STANDS ON NO RUNG.'' A vessel's oracle face shows no HTTP face at any rung: every HTTP path under it,
 the pointer and the snapshot included, draws the one closed door. The signed FLOW-map pointer and the snapshot it
 names cross only the vessel's oracle socket, behind the vessel's own gate handshake: the dialer proves its key
 first, the gate signs its verdict with the vessel key, and only then do the pointer frame and the snapshot frame
 leave. A stranger who opens the socket and proves nothing receives the gate's challenge and its refusal, and no
 frame of the map. The carriage, a browser vessel's reader and the mesh witnesses all read through that socket.
 
-The pointer is signed by the vessel key, the same key that signs the vessel's carry seals, and a ''proven peer''
+The vessel key signs the pointer, the same key that signs the vessel's carry seals, and a ''proven peer''
 names anyone who mints a key and proves it: the gate checks possession, not standing. So the pointer hands every
 such dialer a signature that ties this place to every Nexus whose carry seals the vessel key signs, the very
 correlation the waymark paragraph guards against. The socket narrows who reads it to dialers who prove first; it
-does not unbind the correlation. That cut is owed to the per-Nexus wire key at the re-found, where each Nexus's wire
+does not unbind the correlation. The per-Nexus wire key owes that cut at the re-found, where each Nexus's wire
 signs under its own key and no one key spans two. The gate discloses more before any proof: its `lar:challenge`
 names the vessel key to any opener, as the relay gate's does — owed to the proof-first protocol lane, where the
 dialer proves first and a stranger draws silence.
 
-''THE BULB IS THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
+''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
-so two houses holding one genesis hold one bulb CID. The charter epoch is the corm's freshness lease; a house's
+so two houses holding one genesis hold one bulb CID. The corm holds the charter epoch as its freshness lease; a house's
 joining pointers ride the stolon, the invite. Neither rides the bulb.
 
 <<~/ahu>>
@@ -257,7 +257,7 @@ local vessel enough truthful material to choose its next crossing.
 
 ''The first arrival trusts the lararium's own origin'' (operator-ruled). A device that has never booted a
 vessel holds nothing to check bytes against; whatever origin it first reaches decides what it runs. So that
-origin MUST be the house itself: ''the lararium's own Pronaos serves the kindle'' — the arrival page, the
+origin MUST stand as the house itself: ''the lararium's own Pronaos serves the kindle'' — the arrival page, the
 worker, `genesis/seed.json`, and the seed-named CAS members. Household operators reach it through
 DNS→home-LAN integrations, so the name a household types resolves to its own house on its own network.
 
@@ -399,6 +399,7 @@ without making any approach keeper of every archive, persona, or causal island i
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
@@ -413,6 +414,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uzYo0zWWa_oTaNPRxpAhnFU8ru8mbdhSkuSdcKkoxUk
+<<^ code="&#x0003;">>ni:///sha-256;6vnvEXypI-tqdd_eJq8SCyKclU3TNJ5LhZMnuDWEezc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -59,12 +59,12 @@ The boundary keeps all five available without collapsing them.
 
 !! The promotion boundary ~ who may cross, and in which direction
 
-The crossing model above says a crossing must be explicit. This says ''who makes it''.
+The crossing model above demands an explicit crossing. This says ''who makes it''.
 
-!!! Two layers, and only one is canon
+!!! Two layers, and only one holds canon
 
 * ''CANON LAYER'' — `lares/` carrier files, git-trackable, resident in a canon bag.
-* ''LIVE LAYER'' — the CRDT records materialized into TW5 and projected onto a camera. ''This layer MAY diverge locally and offline and sync later.'' Divergence is its correct behaviour, never a fault.
+* ''LIVE LAYER'' — the CRDT records materialized into TW5 and projected onto a camera. ''This layer MAY diverge locally and offline and sync later.'' Divergence reads as its correct behaviour, never a fault.
 
 !!! The crossing moves the envelope, and nothing else
 
@@ -74,7 +74,7 @@ The crossing model above says a crossing must be explicit. This says ''who makes
 
 A ''hostful'' address (`lar://host/…`) states a domain's attribution and sync scope. That reads as a fact about the ''content'', and it keeps holding for as long as the content stands. A ''hostless'' address (`lar:///…`) states a place in the graph and names no domain. Neither names a speaker: the speaker rides the ''userinfo'' subcomponent of the ''session form'' (`lar://alias:grant@host/…`), and that form answers to a different rule (below). The scheme rules every form under one grammar and separates the planes they answer to: NAME identifies, RESIDENCY answers a query, SPEECH names the speaker, and ''no plane ever answers for another'' (`lar-uri#/five-planes`).
 
-Hostful and hostless both stand lawful ''as titles'' in any bag on any layer. Every `.mem` carrier in `bags/` today reads hostless because its author ''wrote'' it hostless — a property of authorship, never a mark a crossing conferred.
+Hostful and hostless both stand lawful ''as titles'' in any bag on any layer. Every `.mem` carrier `bags/` holds reads hostless because its author ''wrote'' it hostless — a property of authorship, never a mark a crossing conferred.
 
 ⚠ ''A userinfo-bearing URI never stands as a TITLE, and reads fine everywhere else.'' A title stands as a KEY, and a key takes no tier, no redaction, and no tombstone — a tombstone marks a record deleted and leaves its key standing. So `alias × grant × host` frozen into a title replicates to every peer and outlives the grant it names (`lar-uri#/security`). A ''body'' takes all three controls, so the same URI in a record's ''text'' — a quoted turn, a link, a captured chat line — carries no such hazard and stands lawful. A captured exchange turn therefore crosses into canon carrying its speaker-aim URIs ''in its content'', titled by an address that names no speaker.
 
@@ -84,42 +84,42 @@ Hostful and hostless both stand lawful ''as titles'' in any bag on any layer. Ev
 
 Naming the live layer as one thing hides the distinction a person actually feels. Three durabilities stand, and the boundary crossing sits between the second and the third:
 
-# ''SESSION'' — pending surface state: a drag in flight, a selection, an uncommitted keystroke. ''Volatile'': it dies with the connection and belongs to one viewer. Nothing here has diverged, because nothing here has been recorded.
-# ''SHARED'' — the CRDT records. ''Durable across a disconnect and visible to every peer of the place'', and NOT canon. This is the layer whose divergence is correct behaviour.
+# ''SESSION'' — pending surface state: a drag in flight, a selection, an uncommitted keystroke. ''Volatile'': it dies with the connection and belongs to one viewer. Nothing here diverges, because nothing here carries a record.
+# ''SHARED'' — the CRDT records. ''Durable across a disconnect and visible to every peer of the place'', and NOT canon. This layer's divergence reads as correct behaviour.
 # ''CANON'' — carrier files resident in a canon bag. Reached only by the crossing below.
 
 ''The failure the split prevents:'' a surface that treats session state as shared publishes a half-finished gesture to everyone; a surface that treats shared state as session throws away work on a reconnect and calls it a refresh. Both read as one bug — "my edit vanished" — from two opposite causes, and a model with one live layer cannot tell them apart.
 
-⚠ ''A promotion never crosses two boundaries at once.'' Nothing may travel from SESSION to CANON: an unrecorded gesture has no content hash to sign and no source to name, so the receipt below could not be written even in principle. A thing is recorded before it is promoted, always in that order.
+⚠ ''A promotion never crosses two boundaries at once.'' Nothing may travel from SESSION to CANON: an unrecorded gesture has no content hash to sign and no source to name, so no hand could write the receipt below even in principle. A record precedes a promotion, always in that order.
 
-!!! The direction is the whole rule
+!!! The direction carries the whole rule
 
-''COPY-UP IS FREE. PROMOTION-DOWN IS THE PRIESTHOOD'S ACT.'' (operator ruling) A user may copy and alter a public tiddler into a more private bag — a personal shadow copy — and that path MUST stay cheap; the recipe stack runs on it. Moving in the other direction, from any private bag into canon, belongs to the ''kahu quorum's signers''.
+''COPY-UP IS FREE. PROMOTION-DOWN IS THE PRIESTHOOD'S ACT.'' (operator ruling — the threshold's two faces, held apart: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>) A user may copy and alter a public tiddler into a more private bag — a personal shadow copy — and that path MUST stay cheap; the recipe stack runs on it. Moving in the other direction, from any private bag into canon, belongs to the ''kahu quorum's signers''.
 
 The stack order makes //down// literal: ''core < canon < wiki < user < session''. Canon sits low; a shadow copy rises; a promotion descends. Canon mounts ''read-only'', so an edit seen through it copies UP by overlayfs semantics — structural, not a name check.
 
-!!! What stands today, and what does not
+!!! What holds the line, and what each half carries
 
-✓ ''The cap gate holds the line.'' Every residency verb demands `cap("admin", destBag)`, so a promotion into a canon bag is reached only by a holder of admin on it. ''Kahu = whoever holds admin on the lares/lararium canon bags'' — kahu-priest caps, held distinctly from lamplighter (infrastructure) caps even where one cabal carries both.
+✓ ''The cap gate holds the line.'' Every residency verb demands `cap("admin", destBag)`, so only a holder of admin on a canon bag reaches a promotion into it. ''Kahu = whoever holds admin on the lares/lararium canon bags'' — kahu-priest caps, held distinctly from lamplighter (infrastructure) caps even where one cabal carries both.
 
-⚠ ''THE RECORD IS MISSING, and it is the declared blocker.'' `tiddler-store` states it: //canon promotion is disabled until a Keyhive-backed proposal/receipt graph exists; `store.put()` never writes to `lares/`//. So promotion is PERMITTED by capability and RECORDED by nothing. A cap gate is a decision at a moment; ''a receipt is a record you can walk backwards'', and without one a promotion leaves no artifact to audit or revoke against. ''The receipt is the audit half of the priesthood act.''
+✓ ''THE RECORD RIDES BESIDE THE CARRIER.'' Without a receipt, promotion stands PERMITTED by capability and RECORDED by nothing. `lares meme promote` performs the crossing as a residency move and mints the receipt first (`packages/lares-cli/src/promotion-receipt.ts`, `meme-promote.ts`), writing it beside the carrier and refusing any crossing it could not record; `store.put()` still never writes to `lares/` (`tiddler-store`). A cap gate decides at a moment; ''a receipt is a record you can walk backwards'', and without one a promotion leaves no artifact to audit or revoke against. ''The receipt carries the audit half of the priesthood act.''
 
-⚠ ''The source side is loose on the residency path.'' Canon's read-only mount does not protect it there — a residency MOVE/COPY reaches the bag's own doc and mounts nothing, so only the destination check applies. `crossingDirection` holds the full rule with `needsQuorum`, and `VerbContext` carries `daemon`, `invocation`, `cap` and ''nothing that answers a bag's publicity tier''. The reader exists one package over (`bagManifest` parses `cap-tier`); the gap is the injection.
+⚠ ''The source side is loose on the residency path.'' Canon's read-only mount does not protect it there — a residency MOVE/COPY reaches the bag's own doc and mounts nothing, so only the destination check applies. `crossingDirection` holds the full rule with `needsQuorum`, and `VerbContext` carries `daemon`, `invocation`, `cap` and ''nothing that answers a bag's publicity tier''. The reader stands one package over (`bagManifest` parses `cap-tier`); the gap lies in the injection.
 
-!!! An address is stable; its bytes are versioned ~ and those are different claims
+!!! An address stays stable; its bytes carry versions ~ and those make different claims
 
-⚠ ''A carrier resident in a canon bag stands MUTABLE, and reading it as frozen inverts the model.'' A stricter law is available and reads plausible — //a promoted meme is never mutated; the only lawful write is a full replacement producing a new address// — and the corpus refutes it in practice on every working day. Carriers are edited in place, re-stamped, and committed; the address stands while the bytes move.
+⚠ ''A carrier resident in a canon bag stands MUTABLE, and reading it as frozen inverts the model.'' A stricter law is available and reads plausible — //a promoted meme is never mutated; the only lawful write is a full replacement producing a new address// — and the corpus refutes it in practice on every working day. Hands edit carriers in place, re-stamp and commit them; the address stands while the bytes move.
 
 The two properties it fuses:
 
-* ''ADDRESS STABILITY'' — the thing an address names does not become a different thing. This is what makes an edge worth writing, and it is what the corpus actually keeps.
-* ''BYTE HISTORY'' — every state the bytes passed through remains reachable. This is what git and the block check keep together: the check says //these bytes//, and the history says //which ones, when//.
+* ''ADDRESS STABILITY'' — the thing an address names does not become a different thing. That makes an edge worth writing, and the corpus actually keeps it.
+* ''BYTE HISTORY'' — every state the bytes passed through remains reachable. Git and the block check keep this together: the check says //these bytes//, and the history says //which ones, when//.
 
-''Address-per-version buys neither.'' It scatters one subject across many names, so every edge points at a snapshot and the graph decays with each edit — while the history it claims to provide is exactly what version control already holds. The distinction it was reaching for is real and lives one level up: a name may be RETIRED when the thing it names stops standing, which is an act on the graph, never a consequence of editing a file.
+''Address-per-version buys neither.'' It scatters one subject across many names, so every edge points at a snapshot and the graph decays with each edit — while version control already holds exactly the history it claims to provide. The distinction it reaches for holds and lives one level up: a name may retire when the thing it names stops standing — an act on the graph, never a consequence of editing a file.
 
-!!! The shape the receipt should take
+!!! The shape the receipt takes
 
-''A receipt is content-level provenance, not an authority record.'' A capability delegation says //who may write canon//, which the cap gate already answers. What is missing is ''what was promoted, by whom, from where'' — proposer, approver, source, destination, content hash — signed, with membership checked at the time of signing (`verifySentinelMembership`, which now stands).
+''A receipt carries content-level provenance, never an authority record.'' A capability delegation says //who may write canon//, which the cap gate already answers. The receipt carries ''what crossed, by whom, from where'' — proposer, approver, source, destination, content hash — signed, with the approver's hold on the destination read at the moment of signing (`holdsAdmin`, injected).
 
 ⚠ And it wants the ''signed-region vs attached-region'' discipline: what the signer ASSERTS rides inside the signature; what ''the world can check'' — chains, memberships, freshness — rides attached and unsigned, so refreshing evidence never wakes a cold key. //Signing evidence causes freshness coupling and pins staleness.//
 
@@ -141,8 +141,7 @@ conflicts = ["source truth", "existing invariant", "world-state docs"]
 next-crossing = "mu? | create docs meme | patch invariant | leave session-local"
 ```
 
-These fields may later become a tool schema.
-For now, they define the shape of explicit thinking.
+These fields define the shape of explicit thinking; a tool schema MAY take them up.
 
 <<~/ahu>>
 
@@ -204,6 +203,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8A4HeEHpiLJbVRB0JPeeDjFIHAwZHeKAD3MibH9sC8c
+<<^ code="&#x0003;">>ni:///sha-256;yoAD7pB8lFHDVEfJzUTUqVsfkWzic1iTBsDs9KFqtZQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -25,7 +25,7 @@ updated    = "2026-10-06"
 
 ! Emergency-room handoff — Codex crew, re-trued 2026-10-06
 
-''Scope.'' This carrier is a local reading at `650a8e475`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
+''Scope.'' This carrier holds a local reading at `650a8e475`, after `f80f56ef6`, the first emergency transfer. Revision counts change as peers commit, so a new hand runs `git rev-parse --short HEAD` and `git log f80f56ef6..HEAD --oneline` before it infers sequence. This carrier compresses the evidence a new hearth needs to begin safely; git and the parallel ER handoff carry deeper history. It does not declare a global present: a new hand reads its own `git status`, `hearths`, and the named receipts before it acts.
 
 ''Read in this order.''
 
@@ -201,5 +201,5 @@ A context-free reviewer read the preceding revision of this carrier against the 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vk1tigSZJiTV6W3B-xd7XFRxzVnhaya-khL_ffXUJeI
+<<^ code="&#x0003;">>ni:///sha-256;fjIW06Pf1PT89SutzR4FczeQEV-q0P5_TDRjd-qQPbw
 <<^ code="&#x0004;" -> to="?">>

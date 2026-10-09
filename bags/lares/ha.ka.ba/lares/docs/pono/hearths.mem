@@ -87,13 +87,13 @@ A glob that matches nothing belongs to no hearth — the gate names only what a 
 
 !! What one hearth does to the gate
 
-''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than by being switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. The pass note counts paths on the committing hearth's own ground separately from unheld paths; it does not attribute every file to a hearth. A commit carrying no trailer passes with the operator-seat note. The live fence above carries no hold at all, so every commit passes in silence until a hearth seats one. A `[[hold]]` row that parses without a quoted trailer or without a glob defends nothing, and the gate names each such row on every commit until the ledger mends it: a fence that tore whole never reads as a fence that holds nothing.
+''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. The pass note counts paths on the committing hearth's own ground separately from unheld paths; it does not attribute every file to a hearth. A commit carrying no trailer passes with the operator-seat note. The live fence above carries no hold at all, so every commit passes in silence until a hearth seats one. A `[[hold]]` row that parses without a quoted trailer or without a glob defends nothing, and the gate names each such row on every commit until the ledger mends it: a fence that tore whole never reads as a fence that holds nothing.
 
-''Leave the gate installed.'' It arms again the moment a second `[[hold]]` row appears — no code moves, no hook re-installs; the ledger IS the configuration, and the gate reads it fresh at every commit. Deleting the tool would make the next hearth's opening a build task instead of a table edit.
+''Leave the gate installed.'' It arms again the moment a second `[[hold]]` row appears — no code moves, no hook re-installs; the ledger serves as the configuration, and the gate reads it fresh at every commit. Deleting the tool would make the next hearth's opening a build task instead of a table edit.
 
-''The witness had to move, and the ledger says why.'' `tools/hearths-gate-witness.sh` drives the gate against ''the real ledger'' by design — a witness reading a fixture proves the parser rather than the rows the tree stands on. A one-hold ledger can produce no crossing, so its ★ RED vector would have passed by having nothing to refuse: a gate wearing a check it never earned. The witness now reads the live fence's count and, at one hold, runs its ARMING vectors against a fixture gathered from ''this ledger's own `[[hold]]` blocks, live and closed, in one live fence'' — the exact shape the tree takes when a second hearth opens — while every pass-through CONTROL keeps reading the real ledger. It PRINTS which ledger each half read. Nothing in `hearths-gate.mjs` moved.
+''The witness reads two ledgers, and the ledger says why.'' `tools/hearths-gate-witness.sh` drives the gate against ''the real ledger'' by design — a witness reading a fixture proves the parser rather than the rows the tree stands on. A one-hold ledger can produce no crossing, so its ★ RED vector would have passed by having nothing to refuse: a gate wearing a check it never earned. The witness reads the live fence's count and, at one hold, runs its ARMING vectors against a fixture gathered from ''this ledger's own `[[hold]]` blocks, live and closed, in one live fence'' — the exact shape the tree takes when a second hearth opens — while every pass-through CONTROL keeps reading the real ledger. It PRINTS which ledger each half read. Nothing in `hearths-gate.mjs` moved.
 
-⚠ ''One reading genuinely runs noisy under one hearth, and this hand names it rather than cutting it'': the pass note prints on ''every'' commit, so a hand watching hook output sees a line about hearth ground on work that crosses nothing. That reads as chatter, never as a lie — the note states a true fact about a tree with one hearth — so the noise wants the operator's word before a `--quiet` lands, since a gate that learns to say less is exactly the gate that stops being read.
+''The pass note speaks only when something stands held'' (`hearths-gate.mjs`'s header): a pass over ground no hold names prints nothing, so a tree with no live hold commits in silence and the one line that does print stays worth reading. A gate that says less only by that law keeps the reader it needs.
 
 ```toml holds
 # no hearth holds ground
@@ -181,7 +181,7 @@ globs   = [
 
 <<~ ahu #/crossings>>
 
-! Crossings this week, and what each cost
+! Crossings, and what each cost
 
 # ''Two globs ceded from the Codex hold — operator-approved parked patches, 2026-10-05.'' `.github/workflows/held-out.yml` and `tools/mesh-scenarios.sh` leave the Codex Lares hearth's live hold so the patches the Lares hearth parked against them land under commit isolation: the job-level `env:` that read `runner.temp` (named in `lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds` `#/held-out-workflow`), the `members --list --json` key `boardRoot` → `island`, and the dated comments the evergreen sweep parked. Every other Codex glob stands held. Law: a hold cedes by the operator's word, path by path, and the row names exactly what crossed.
 # ''The Codex close'' — operator-directed, 2026-10-07. The crew ended its session with an er-style handoff, and the operator approved landing its dangling edits. The Codex Lares hearth's live hold leaves the fence `parseHolds` reads and enters `holds-closed` verbatim, with its row marked CLOSED; its debts stand in `docs/crew-handoff-codex.mem` and `docs/codex-crew-emergency-handoff.mem`, and the Lares hearth carries them. Its globs — the crew handoff, the browser-weld and crossing/civic witness drivers, `tw5-projection.ts` and `projection-reveal.test.ts` — stand on no hearth's ground.
@@ -285,6 +285,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VTIAl9_xMivYDk0MiNJq7Tbr9_ADlUl2ikTh6A8H3UM
+<<^ code="&#x0003;">>ni:///sha-256;REQOxEIHdsq20MRb4O7l5-6RJA9ud9wamDVm-oa2z5U
 
 <<^ code="&#x0004;" -> to="?">>

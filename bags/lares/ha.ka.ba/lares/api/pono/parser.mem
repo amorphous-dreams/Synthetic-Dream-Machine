@@ -64,7 +64,7 @@ Dispatch proceeds in this fixed order on every `<<~` encounter:
 
 # ''pranala'' — `<<~ pranala from=FROM -> to=TO [attrs]>>`, and the block form closing at `<<~/pranala>>`. It keeps its own matcher because the edge graph needs `from` and `to` as SEPARATELY TYPED ends: a reader taking whichever address comes first names the SOURCE, and a graph built on that points backwards. Its parameters spell like every other sigil's; only the arrow between the two ends stands apart.
 # ''compound sigil'' — `<<~ WORD1 [WORD2] ARGS>>` covers all remaining named sigils. Child-slot detection (`ahu`, `kau`, future) uses `grammarChildSlotNames()` — dynamic, not hardcoded. Compound with `closeKey` scans for `<<~/SIGIL>>` body; compound without `closeKey` produces a leaf node.
-# ''generic fallback'' — covers `<<~WORD>>` (no-space), C0 control-char forms, and any `<<~` not claimed above. If the generic sigil has a registered closer and its name is not `pranala`, the fallback attempts block capture.
+# ''generic fallback'' — covers `<<~WORD>>` (no-space), C0 control-char forms, and any `<<~` not claimed above. When the generic sigil carries a registered closer and names anything but `pranala`, the fallback attempts block capture.
 
 ''The carrier's own head rides the CONTROL frame, never a sharktooth.'' A carrier opens at `<<^ code="&#x0001;" … from="?" -> to="lar:///…">>` and closes at `<<^ code="&#x0004;" -> to="?">>` — the `<<^` scanner reads those, so no `<<~` rule stands for a header and none is tried here.
 
@@ -93,7 +93,7 @@ ahu     → <<~/ahu
 pranala → <<~/pranala
 kahea   → <<~/kahea
 ```
-These apply before grammar tiddlers finish loading. Grammar TOML `close_pattern` extends the closer map at runtime via `buildClosers()`. Boot-critical entries are never overridden by grammar.
+These apply before grammar tiddlers finish loading. Grammar TOML `close_pattern` extends the closer map at runtime via `buildClosers()`. Grammar never overrides a boot-critical entry.
 
 ''Sigil name resolution:''
 `lar-name` field takes precedence; otherwise strips `sigil-` prefix from last title segment.
@@ -106,7 +106,7 @@ These apply before grammar tiddlers finish loading. Grammar TOML `close_pattern`
 
 `currentTiddler` serves as the canonical context pointer inside the TW5 VM.
 
-It covers: meme URIs (`lar:///ha.ka.ba/...`), child-fragment URIs (slot children), base `$:/` TW5 system titles, and any other tiddler address the VM resolves. No separate `+currentMeme` alias landed — `currentTiddler` handles the full range.
+It covers: meme URIs (`lar:///ha.ka.ba/...`), child-fragment URIs (slot children), base `$:/` TW5 system titles, and any other tiddler address the VM resolves. No separate `+currentMeme` alias stands — `currentTiddler` handles the full range.
 
 Filter expressions inside `<<~ ui FILTER>>` and guest-grammar blocks operate against `currentTiddler` via standard TW5 filter semantics. Both `wikitext-filter` and `x-tiddlywiki-filter` resolve context through `currentTiddler`.
 
@@ -154,7 +154,7 @@ family        sigil-family-*          FamilyRule only; no dispatch; governs edge
 
 !! C0 Control Sigil Roles
 
-The four C0 control characters (`&#x0001;`–`&#x0004;`) are the ''carrier spine'' — SOH · STX · ETX · EOT. Their roles, byte values, kapu aliases, and the REQUIRED-in-order law live in their one home: `memetic-wikitext-framing#carrier-spine` (#/edges). This section owns only how the parser ''checks'' them — it does not redefine the marks.
+The four C0 control characters (`&#x0001;`–`&#x0004;`) form the ''carrier spine'' — SOH · STX · ETX · EOT. Their roles, byte values, kapu aliases, and the REQUIRED-in-order law live in their one home: `memetic-wikitext-framing#carrier-spine` (#/edges). This section owns only how the parser ''checks'' them — it does not redefine the marks.
 
 `&#x0005;` (ENQ) and `&#x0006;` (ACK) appeared in earlier research as query/response throat operators. They did not land in the live system. Live query surface uses `<<~ ui FILTER>>` (kind: `query`) instead.
 
@@ -179,7 +179,7 @@ Block forms open with a named opener and close with a named typed closer.
 <<~/ahu>>            — typed closer
 ```
 
-Closers resolve by stack discipline. `<<~/ahu>>` closes the most recent unmatched `ahu` opener. Nested block forms of the same type are permitted unless a stricter profile forbids it.
+Closers resolve by stack discipline. `<<~/ahu>>` closes the most recent unmatched `ahu` opener. The parser permits nested block forms of the same type unless a stricter profile forbids them.
 
 Inline forms close with `>>`. They carry no body.
 
@@ -257,6 +257,6 @@ Consumers: island adaptor (`island-adaptor.ts`), deserializer (`deserializer.ts`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rnNB2g7S4VtcC8ovzsFT8ZKglMLH42wYEz-scJWg6W8
+<<^ code="&#x0003;">>ni:///sha-256;8MvDMmiD39wyFHrXDNQUdwr9BJIEZlQsCbr_Ph4ldJ0
 
 <<^ code="&#x0004;" -> to="?">>

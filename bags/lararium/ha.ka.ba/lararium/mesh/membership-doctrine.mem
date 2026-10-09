@@ -42,13 +42,13 @@ written    = "2026-07-21"
 
 !!! ★ BELONGING CARRIES TWO CONDITIONS — the contract, and the grammar ★
 
-''An operator belongs to a Nexus by CONTRACT and by AGREEING WITH THE GRAMMAR VECTORS traded there'' (operator-ruled). The registry records the first; the second never becomes a row, and that reads as the point rather than a gap — ''the invariant above still holds whole''. A node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and cannot be bound by what it never parsed: //contract without grammar-agreement reads as a signature over an unread page//.
+''An operator belongs to a Nexus by CONTRACT and by AGREEING WITH THE GRAMMAR VECTORS traded there'' (operator-ruled). The carriage board records the first; the second never becomes a row, and that reads as the point rather than a gap — ''the invariant above still holds whole''. A node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and nothing it never parsed can bind it: //contract without grammar-agreement reads as a signature over an unread page//.
 
-''THE SECOND CONDITION IS KEYED, NEVER AUDITED, and that is what keeps it out of the registry.'' The field's one surviving instance (MLS, RFC 9420) folds the declared grammar into the key schedule — ''disagree on the grammar and you derive a different key and fail to decrypt''. It never ASKS a peer whether it understands, because you cannot detect a peer that lies about understanding; it makes the lie non-computable. Twenty-four years of the alternative stand recorded, the same declared-critical-and-not-processed bug shipping in 2002, 2011 and 2026 across three vendors.
+''THE SECOND CONDITION RIDES A KEY, NEVER AN AUDIT, and so it never enters a registry.'' The field's one surviving instance (MLS, RFC 9420) folds the declared grammar into the key schedule — ''disagree on the grammar and you derive a different key and fail to decrypt''. It never ASKS a peer whether it understands, because you cannot detect a peer that lies about understanding; it makes the lie non-computable. Twenty-four years of the alternative stand recorded, the same declared-critical-and-not-processed bug shipping in 2002, 2011 and 2026 across three vendors.
 
 ''So the check adds no trace, no roster row, and no new authority'' — it rides where the crypto already rides, bilaterally, peer-local, exactly like the rest of this doctrine.
 
-''AND ITS SCALE IS BOUNDED, which the no-roster ruling already anticipated.'' Exclusion power is bounded by the excluder's market share: three fields built this gate correctly and three retreated under open-internet pressure. The one that held gates at the ''group'' boundary, where the members are the whole relevant population and the roster stays local. ''Deployable at Lararium and Nexus scale; at DreamNet scale it predicts the same retreat'' — which is why a bilateral leased contract per operator, and never a confederation-wide roster, is the shape that survives. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
+''AND ITS SCALE STAYS BOUNDED, which the no-roster ruling already anticipated.'' The excluder's market share bounds exclusion power: three fields built this gate correctly and three retreated under open-internet pressure. The one that held gates at the ''group'' boundary, where the members make up the whole relevant population and the membership stays local. ''Deployable at Lararium and Nexus scale; at DreamNet scale it predicts the same retreat'' — which explains why a bilateral leased contract per operator, and never a confederation-wide roster, makes the shape that survives. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
 
 — the condition stands ruled; ''its mechanism stands UNBUILT'', and a prior treatment waits on another worldline to surface from the sensorium.
 
@@ -70,7 +70,7 @@ vessel by vessel (#/identity-classes):
 <<~ has Stack OPERATOR "runs/a node vessel does/CONTRACTS with the Nexus (owes MANDATORY carriage) trace/a wax-sealed carriage contract — consensual, minimal, revocable (Kapae)">>
 <<~ has Stack USER "runs/browser-style vessels, no infra does/WALKS on an invite from any member face (boot-seeded from a node on the rhizome, own cap-stack, reads/writes through blind relays) trace/NONE — no roster, no account, no user table, no quorum admit">>
 
-''An operator contracts because carriage is a mutual obligation the mesh must check'' — a Nexus has
+''An operator contracts because carriage carries a mutual obligation the mesh must check'' — a Nexus has
 to know its infrastructure-peers to gossip the antigen and split the carry. ''A user owes nothing,
 carries nothing, so belongs in no roster'' — the node that boot-seeds a user holds no membership
 entry for it. A user turns operator by adding a node vessel and contracting; the stack shifts with
@@ -93,7 +93,7 @@ a Kahu seat in that Nexus.
 ''Cap stacks COMPOSE on a persona — combined by default, split only by the holder's own act.'' A solo
 operator holds one persona for all their local infrastructure, and every cap they hold rides it; no
 face model makes a persona split the price of a second cap stack. ''At first contract-in with other
-humans the system OFFERS a split and never forces one'', since that contract-in is where correlation
+humans the system OFFERS a split and never forces one'', since at that contract-in correlation
 across faces first starts to cost. Personas multiply for the holder's own purposes, most of them
 nothing to do with mesh upkeep.
 
@@ -137,7 +137,7 @@ An operator's membership entry carries the ''floor and nothing above it'' (opera
 ''No name, no email, no device list, no behavior.'' A quorum-signed `MembershipEntry` (the antigen's
 allow-twin, `blocked{}` ⊥ `members{}`, #carry-contract) — the operator signs "I accept carriage",
 ≥k kahu counter-sign it against the charter epoch; per-Nexus, causal-island-local, read as-of-last-
-sync (no global now, #causal-islands), revocable by Kapae. ''This is the maximum the system ever
+sync (no global now, #causal-islands), revocable by Kapae. ''This marks the maximum the system ever
 holds about a contracting operator.''
 
 ''The admit travels with its subject.'' The subject PRESENTS its quorum-signed entry at the wire, and
@@ -175,9 +175,9 @@ The law, in five clauses:
   carries no contract slot at all: a self-founded vessel with no admit for the dialed Nexus presents its
   ContactCard alone, and only the fleet edge (signed by a root the vessel does NOT hold) rides beside a card.
 
-The residual correlation, named: the vessel key is ONE key across every Nexus the vessel dials, so two
+The residual correlation, named: the vessel key spans every Nexus the vessel dials as ONE key, so two
 Nexuses that compare the wire keys they proved can still learn that one vessel stands in both — though
-never which root, nor which leaves. A per-Nexus wire key closes that, and it is owed to the re-found.
+never which root, nor which leaves. A per-Nexus wire key closes that, owed to the re-found.
 
 ''ROOT ⊥ LEAF stands as its own pair that must not fuse'', beside members ⊥ carriers and never folded
 into it. Carriage asks //may this face carry for this Nexus//; the realm asks //who stands behind this
@@ -210,27 +210,26 @@ it pins — so every walker of one hearth reads the one doc, and the Nexus's car
 cross-check. The act grants nothing and names only the hearth. One key per act derives from the leaf seed
 and the act's link (`hosting-key`), with no counter.
 
-''THE WORN FACE HOSTS'' (operator-ruled). The leaf that signs the act is the per-Nexus leaf of the face the
-vessel WEARS — the same face its walks present, one face per vessel per Nexus. Nothing is picked by roster
-order, and a vessel wearing no face hosts no one. ''ROOT-ON-FOUNDER'' keeps a face on one hosting store, and
+''THE WORN FACE HOSTS'' (operator-ruled). The per-Nexus leaf of the face the vessel WEARS signs the act — the same face its walks present, one
+face per vessel per Nexus. No roster order picks anything, and a vessel wearing no face hosts no one. ''ROOT-ON-FOUNDER'' keeps a face on one hosting store, and
 the first roll guards it: before its first act in a Nexus, a roll reads the hosting doc, and an act this face
 signed there that no local state holds refuses the roll aloud and writes nothing. A face hosting from two
 places surfaces; nothing detects it beyond that read.
 
-''THE CARRIAGE BOARD IS THE CARRIERS' LEDGER.'' The carriage board is the ALLOW-twin of the antigen: the
-carriers' contracts, their charter epoch, the quorum's countersigns, and the roll anchors — self-published
-infrastructure acts, never a guest. Its readership is the relation that holds contracts: the carriers, the
+''THE CARRIAGE BOARD KEEPS THE CARRIERS' LEDGER.'' The carriage board stands as the ALLOW-twin of the antigen: the
+carriers' contracts, their charter epoch, the quorum's signed admits and revokes, and the roll anchors — self-published
+infrastructure acts, never a guest. Its readership: the relation that holds contracts: the carriers, the
 kahu and the quorum. A walker never reads it, so the least-trusted relation never sees the Nexus's
 infrastructure graph; compartments outrank admission control.
 
-''THE INVITE IS A TOKEN, THE STANDING IS A GRANT, BOTH KEYED.'' An invite is a POPRF token
+''THE INVITE RIDES A TOKEN, THE STANDING A GRANT, BOTH KEYED.'' An invite carries a POPRF token
 (RFC 9497, ristretto255; Privacy-Pass-shaped, not RFC 9578 wire-conformant) under the epoch's key and a
 PURPOSE label (`host-invite` or `walker-invite`), carried as one `lar-invite:` string with the hearth's
-gate key and Nexus. It names no guest, and its nonce is random. The newcomer presents it AT THE HOST'S OWN
+gate key and Nexus. It names no guest, and its nonce runs random. The newcomer presents it AT THE HOST'S OWN
 GATE, inside the authenticated handshake, together with a CLAIM its own leaf seed derives from the nonce.
 The host burns the nonce in its per-epoch spent-set (`hosting-spend`): random nonces and claim digests,
 about no one, fsynced before the verdict. Each digest binds the claim to the leaf that proved over the
-redeeming socket. The same claim under the same leaf is a retry and earns the identical grant
+redeeming socket. The same claim under the same leaf reads as a retry and earns the identical grant
 (refuse-before-destroy). A different claim, or the same claim under another leaf, meets silence, and the
 burn reads before it writes, so a captured `{token, claim}` replayed under a thief's leaf destroys nothing.
 The host then pushes a GRANT (`hosting-grant`): a keyed PRF tag over the Nexus, the walker's leaf, the
@@ -238,8 +237,8 @@ epoch, a LINEAGE derived from nonce and claim, and how many rolls it survived. '
 it'', so a seized phone proves nothing to anyone else. The guest keeps its invite until a dial carrying the
 grant stands, then presents the grant on every dial.
 
-''TWO LIVE EPOCHS, NO EXCHANGE.'' Tokens and grants hold at the current and the previous epoch. A grant
-presented at the previous epoch is renewed and pushed again. A ''hard roll'' is a roll done twice: every
+''TWO LIVE EPOCHS, NO EXCHANGE.'' Tokens and grants hold at the current and the previous epoch. The host
+renews a grant presented at the previous epoch and pushes it again. A ''hard roll'' rolls twice: every
 spent-set and every grant outside the two live epochs dies with no list to walk.
 
 ''THE WALLET FILLS AT ONCE, AND IT VESTS'' (operator-ruled). A walker on a grant mints its whole allowance
@@ -248,25 +247,25 @@ invite grants its guest floor 1 at once. A WALKER-minted invite gives a budget t
 host's NEXT roll, so a chain grows at most one hop per roll. The purpose label separates the two, and it
 never identifies the minting walker. One burn marker per lineage per epoch keeps the digest of the batch,
 so a retry finds its marker and burns nothing new. Every fill drops the wallet's tokens from any epoch the
-host no longer holds live, and a hand-out takes the newest, so a walker never hands out a dead invite.
+host does not hold live, and a hand-out takes the newest, so a walker never hands out a dead invite.
 
-''WHO INVITED WHOM IS NOT COMPUTABLE.'' The blinded batch is unlinkable to the tokens it becomes, so the
+''NO ONE CAN COMPUTE WHO INVITED WHOM.'' The blinded batch stays unlinkable to the tokens it becomes, so the
 hearth learns that some walker it hosts minted some number of invites this epoch, and never whose invite
-was redeemed. The operator sees a redemption COUNT per epoch: a number, never a row. The CLI keeps the
+a newcomer redeemed. The operator sees a redemption COUNT per epoch: a number, never a row. The CLI keeps the
 three hosting verbs: `lares host` (the state and the count), `lares host roll`, `lares host invite`. While
 the vessel stands, each runs inside it, against the replica its walkers sync, so a roll reaches them with
 no restart; with no vessel standing, the CLI runs the same door and owns the store for that moment.
 
 ''A NODE MAY WALK'' (operator-ruled). The sorter sorts by PROVEN RELATION, never by device type, so a node
 vessel holding a grant sorts as a walker exactly like a browser leaf. Walking grants it no carry duty and
-leaves its own private Nexus untouched. A walker is a person, so it walks as the face its vessel WEARS:
-nothing is picked by roster order, and a vessel wearing no face walks nowhere. A node keeps its walk with
+leaves its own private Nexus untouched. A walker stands as a person, so it walks as the face its vessel WEARS:
+no roster order picks anything, and a vessel wearing no face walks nowhere. A node keeps its walk with
 three verbs: `lares walk` (where it walks, its standing there, its wallet's count), `lares walk take`
 (keep a carried invite; the vessel's hearth dial walks in on it) and `lares walk invite` (hand out the
-newest invite). A node carries none of its own documents at a hearth: it is its own durable store.
+newest invite). A node carries none of its own documents at a hearth: it serves as its own durable store.
 ''ONE HEARTH, OWED WIDER.'' A vessel holds one hearth dial, so it walks at one hearth: a take for a second
 hearth, beside a walk or a join dial that already stands, refuses aloud and writes nothing. Walking at
-several hearths at once is owed to one dial per (hearth, Nexus).
+several hearths at once waits on one dial per (hearth, Nexus).
 
 ''ONE HOP, BURNED, REMEMBERED BY NO ONE'': the host's spent-set closes the invite, no wall clock bounds it,
 the inviter carries no liability for the guest, and no record anywhere — board, host or newcomer — chains
@@ -274,25 +273,25 @@ who invited whom, because that chain would read as a roster. Membership never co
 compartments outrank admission control.
 
 ''TWO LIMITS, NAMED.'' The ''cabal-of-one equivocation bound'': in a one-hearth Nexus the hearth relays its
-own hosting doc, so a forked hosting act cannot be detected until a second carrier holds the doc. The
+own hosting doc, so nothing detects a forked hosting act until a second carrier holds the doc. The
 ''social-inference limit'': in a small household the count, the timing and who is in the room can tell the
 host whose invite came in. The cryptography removes the record. It cannot remove what the host can see.
 
-''WHAT WAITS FOR THE RE-FOUND.'' A per-Nexus wire key (today one gate key serves every Nexus a hearth
+''WHAT WAITS FOR THE RE-FOUND.'' A per-Nexus wire key (one gate key serves every Nexus a hearth
 carries, so a gate's posture folds over all of them); a sealed custody root (the hosting key derives from a
-leaf seed that is still cleartext on disk); full Noise IK (the transport and the knock path still leak to a
+leaf seed that rests cleartext on disk); full Noise IK (the transport and the knock path still leak to a
 passive watcher).
 
 ''The reputation-cost braid'' — the idea that an invite rides on the inviter's reputation as a cost
 (Sybil-resistance, accountability) — reserves to the ''Cabal tier'', never the general invite: a
 cabal is a bilateral verb two operators actively DO (#/cabal-realm), and a reputation-priced JOIN to a
-realm lives THERE, where the graph is already mutual + consented, not on the traceless general invite.
+realm lives THERE, where the graph already stands mutual + consented, not on the traceless general invite.
 ''The reservation runs as TWO DOMAINS, never one dial.'' `hosting-token` carries the hearth's POPRF
 evaluation for one Nexus and epoch, names no voucher, writes no edge, and burns at its host — the general
 invite. `cabal-invite`
 (`lar-cabal-invite/v1`) names its `voucherDid` in the clear and feeds the vouch-DAG the lineage price
-walks. ''They never collapse'': merging them destroys the tracelessness on purpose-built ground. What
-the general invite forgoes is precisely what the Cabal tier requires — an attributable voucher to
+walks. ''They never collapse'': merging them destroys the tracelessness on purpose-built ground. The
+general invite forgoes precisely what the Cabal tier requires — an attributable voucher to
 carry the cost (`admission-on-a-lineage#the-standing`).
 
 <<~/ahu>>
@@ -309,41 +308,40 @@ walker's own receipt.
 
 ''ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF.'' The hearth files a guest's
 carriage under a key it derives from the guest's PROVEN per-Nexus leaf under its own leaf seed
-(`hosting-carry`). Every grant names that leaf and every socket's leaf proof proves it, so the record is
-reached by proof alone and nothing the hearth hands out names it. A grant lapsed past two rolls is dead, and
-a guest that walks back in on a new invite under the same leaf reaches its carriage again. A fresh leaf is
-a fresh carriage, and a kapae'd leaf reaches nothing through a new one: kapae is of the leaf. Every dial on
-the leaf is a CONTACT, on the grant arm and the token arm alike, so the notice reaches a guest by a plain
+(`hosting-carry`). Every grant names that leaf and every socket's leaf proof proves it, so proof alone
+reaches the record and nothing the hearth hands out names it. A grant lapsed past two rolls dies, and
+a guest that walks back in on a new invite under the same leaf reaches its carriage again. A fresh leaf opens
+a fresh carriage, and a kapae'd leaf reaches nothing through a new one: kapae binds the leaf. Every dial on
+the leaf counts as a CONTACT, on the grant arm and the token arm alike, so the notice reaches a guest by a plain
 dial. A record holds SCALARS and the blobs: the bytes it carries, the hearth epoch it last saw the guest,
 the guest's own typical gap between contacts, and a pending mark. It never holds a lineage, a leaf or a
-grant tag. The guest keeps its own receipts. The quota bounds each guest's carriage, and a deposit past it
-is refused.
+grant tag. The guest keeps its own receipts. The quota bounds each guest's carriage, and the hearth refuses a deposit past it.
 
-''TWO BOUNDS, NAMED.'' The records are a directory of opaque rows, so a seizer of the hearth's store reads
+''TWO BOUNDS, NAMED.'' The records form a directory of opaque rows, so a seizer of the hearth's store reads
 how many guests it carries for and each row's contact rhythm — a count and a cadence, never who. A holder
 of the hearth's leaf seed can test a KNOWN leaf against the rows; that adds no linkage the hearth lacks,
 since it already sees that leaf prove. Both bounds stand until the sealed custody root closes the store at
 rest.
 
-''RECLAIM IS PONO — PRESSURE THE ONLY TRIGGER, THE GUEST'S OWN RHYTHM THE MEASURE, NOTICE BEFORE DISCARD.''
-* Nothing is evicted for lapsing alone. Only a deposit that would pass the hearth's total triggers a
+''RECLAIM RUNS PONO — PRESSURE THE ONLY TRIGGER, THE GUEST'S OWN RHYTHM THE MEASURE, NOTICE BEFORE DISCARD.''
+* Lapsing alone evicts nothing. Only a deposit that would pass the hearth's total triggers a
 reclaim.
 * A reclaim reads each guest's lapse as a RATIO against its OWN typical gap, both counted in the hearth's
 own epochs, so the hearth's cadence cancels. A hearth rolling ten times as often reads the same
 eligibility, and no flat count of epochs decides.
-* The guest most lapsed for itself goes first, and only enough are taken to cover the shortfall. A guest
-within its own rhythm is never taken while a long-lapsed one stands.
-* A taken guest is first MARKED pending. Its next contact hears the notice (`hosting/notice`), and a
-contact in a later epoch clears the mark. Its bytes are discarded only once the mark has stood unrenewed
+* The guest most lapsed for itself goes first, and the reclaim takes only enough to cover the shortfall.
+It never takes a guest within its own rhythm while a long-lapsed one stands.
+* The reclaim first MARKS a taken guest pending. Its next contact hears the notice (`hosting/notice`), and a
+contact in a later epoch clears the mark. The hearth discards its bytes only once the mark has stood unrenewed
 through the guest's own threshold again.
 
-''THE PERSONAGROUP IS THE DURABLE COPY.'' A hearth's carriage is a convenience a walker reaches from any
+''THE PERSONAGROUP HOLDS THE DURABLE COPY.'' A hearth's carriage offers a convenience a walker reaches from any
 dial. The walker's own devices hold its documents. No surface may present carriage as backup.
 
-''DILIGENCE ≠ TITLE, ANSWERED.'' A guest that keeps its own rhythm is never taken while a lapsed one stands,
+''DILIGENCE ≠ TITLE, ANSWERED.'' The reclaim never takes a guest that keeps its own rhythm while a lapsed one stands,
 but its presence buys no tenure. The quota bounds what any grant's diligence can hold. The hearth's own
 roll ends every grant it stops renewing, and a hard roll ends them all with no list to walk. Presence earns
-the guest NOTICE before its space is taken back, never title to the hearth's disk
+the guest NOTICE before the hearth takes its space back, never title to the hearth's disk
 (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-unswept-corner">>).
 
 <<~/ahu>>
@@ -352,7 +350,7 @@ the guest NOTICE before its space is taken back, never title to the hearth's dis
 
 !! What a face CARRIES ~ a capability, never a standing
 
-''INVERSION OF CONTROL, at the verification surface.'' A platform holds the roster and answers //is this one a member//, which is why the centre repays capture. Inverted: ''the face carries the credential, the group holds no list, and verification runs OFFLINE against a published key''. Nobody stands home to ask, so asking seizes nothing.
+''INVERSION OF CONTROL, at the verification surface.'' A platform holds the roster and answers //is this one a member//, which explains why the centre repays capture. Inverted: ''the face carries the credential, the group holds no list, and verification runs OFFLINE against a published key''. Nobody stands home to ask, so asking seizes nothing.
 
 |! |! a CAP |! a STANDING |
 | answers | what may I do | what do I count as |
@@ -366,7 +364,7 @@ the guest NOTICE before its space is taken back, never title to the hearth's dis
 
 ''THE GROUP OFFERING VERIFICATION — and the mode this stack REFUSES.'' An online //is this one ours// endpoint needs reachability (dead in a cut-off mesh), logs every presentation, and ''rebuilds the roster on the group's side''. What stands instead: offline verification against the published seal, and for anything richer an ''un-thresholded attestor bundle'' where members sign independently, the count crosses, and the sufficiency rule stays structurally absent.
 
-> ''AND THE GROUP NEVER VERIFIES A HUMAN.'' It attests a RELATION — //this face holds a relation with us// — and what that relation means in the world stays the group's own rite, un-modelled. ''That refusal IS the un-confiscatability'': a state can void a card because a card claims to name a person and its issuer can un-name them. Nothing here ever claimed to name a person, so no claim stands to void. Seize the device and the relation survives to be re-attested; seize a state card and the bearer reads as nobody.
+> ''AND THE GROUP NEVER VERIFIES A HUMAN.'' It attests a RELATION — //this face holds a relation with us// — and what that relation means in the world stays the group's own rite, un-modelled. ''That refusal enacts the un-confiscatability'': a state can void a card because a card claims to name a person and its issuer can un-name them. Nothing here ever claimed to name a person, so no claim stands to void. Seize the device and the relation survives to be re-attested; seize a state card and the bearer reads as nobody.
 
 <<~/ahu>>
 
@@ -400,7 +398,7 @@ carries this (partially wired, polish deferred — a 2a build).
 
 Fields that manufacture standing-to-object publish all four. ''This stack publishes three and withholds the fourth'' — and that suffices, because rival readings that disagree stay checkable ''without anyone holding the member list''.
 
-''The surface already stands, tiered.'' The @crossroads / @nexus boards ride the always-carried MANDATORY tier every contracted operator carries free; a realm's charter rides veil-public; below that, content wraps in a Handle's, a persona's, or a dyad's own crypto. ''`carry ⊥ read ⊥ contract` holds at the transport'' and now reads as model law rather than a transport detail.
+''The surface already stands, tiered.'' The @crossroads / @nexus boards ride the always-carried MANDATORY tier every contracted operator carries free; a realm's charter rides veil-public; below that, content wraps in a Handle's, a persona's, or a dyad's own crypto. ''`carry ⊥ read ⊥ contract` holds at the transport'' and reads as model law rather than a transport detail.
 
 > ''STANDING-TO-OBJECT SCOPES TO THE TIER AT WHICH A THING GETS PUBLISHED.''
 
@@ -410,10 +408,10 @@ A realm publishing its declaration at the public tier gains outside challengers;
 
 <<~ ahu #/the-transition>>
 
-!! From the house to public infrastructure ~ lock it in now
+!! From the house to public infrastructure ~ lock it in at the floor
 
 The doctrine holds identically at every scale — a one-operator house, an invite-only alpha, a
-planetary public Nexus. ''Lock the minimalism in now'': a table left soft grows the first time
+planetary public Nexus. ''Lock the minimalism in at the floor'': a table left soft grows the first time
 someone asks for "just a little telemetry." Built as the floor, it stays the floor — the mesh
 ''cannot'' surveil its users because it never stood up the surface to hold them.
 
@@ -423,6 +421,7 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
@@ -434,6 +433,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3PKW5trfLk91hUpf2vqzk14dNuLapAkgW2N9efiuuSc
+<<^ code="&#x0003;">>ni:///sha-256;4jQTOx8wqXb-97Ih3lzt6DmmqbX-jgdvJBQF4R3TjG8
 
 <<^ code="&#x0004;" -> to="?">>

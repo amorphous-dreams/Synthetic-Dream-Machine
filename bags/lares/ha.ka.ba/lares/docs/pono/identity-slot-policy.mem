@@ -11,7 +11,7 @@ mana       = 14
 manao      = 16
 manaoio    = 13
 revised-on = "2026-09-13"
-role       = "what OpenIdentitySlot's sharePolicy could key on now that the realm leg stands — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
+role       = "what OpenIdentitySlot's sharePolicy could key on with the realm leg standing — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
 status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and it runs on every leaf that dials a listening vessel, the leaf-to-leaf source owed in code (#/the-leaf-taxonomy)"
 tags       = ["docs/pono/design", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy"
@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/identity-slot-policy"
 
 <<~ ahu #/the-measurement-first>>
 
-! The measurement, before the design
+! The measurement, before the design (a dated record, 2026-09-13; `OpenIdentitySlot` leaves the tree at #/the-ruling)
 
 The standing reading calls `OpenIdentitySlot.verifyCapability`'s `return true; // alpha: open` (`packages/lararium-mesh/src/identity-slot.ts:134-136`) the most-urgent crypto hole. ''Measured, it reaches no live path at all.''
 
@@ -37,7 +37,7 @@ The standing reading calls `OpenIdentitySlot.verifyCapability`'s `return true; /
 
 <<~ ahu #/what-decides-today>>
 
-!! What decides a verdict today, in order
+!! What decided a verdict at the measurement, in order
 
 The slot is absent from this stack entirely.
 
@@ -55,7 +55,7 @@ The slot is absent from this stack entirely.
 
 <<~ ahu #/what-the-slot-could-key-on>>
 
-!! What the slot could key on, now that the realm leg stands
+!! What the slot could key on, with the realm leg standing
 
 Three readings are available to a share verdict, and NONE of them is a roster (`lar:///ha.ka.ba/lares/api/pono/registry-filter` — a compiled-about registry at any scope rejects the fork).
 
@@ -99,21 +99,21 @@ The operator ruled: ''a slot doc's verdict = the face's grant records (the joine
 
 ''It widens and never narrows.'' `compose(base)` is the realm leg's shape: the base's allow stands untouched and the ring adds ONE admit path. A wired ring can open a door and can never close one that stood — pinned against a permissive base.
 
-''And the red never measures the base.'' This carrier's own warning (#/what-a-red-would-need) said the stranger half already passes for a reason that has nothing to do with the slot; every vector asks `admitsPeer` directly, so the ring is the thing that decides.
+''And the red never measures the base.'' This carrier's own warning (#/what-a-red-would-need) said the stranger half already passes for a reason that has nothing to do with the slot; every vector asks `admitsPeer` directly, so the ring alone decides.
 
-`OpenIdentitySlot` RETIRED whole — no alias, the alpha line's own law. `LarVessel.identity` reads `IdentitySlot | null` and a vessel given none carries none, where it once carried a slot that granted everything.
+No `OpenIdentitySlot` stands — no alias, the alpha line's own law. `LarVessel.identity` reads `IdentitySlot | null`, and a vessel given none carries none; no slot grants everything.
 
 !! Two shores, one assembly
 
 `assemblePersonaGroupRing` (`packages/lararium-keyhive/src/persona-group-ring-assembly.ts`) hands the ring its inputs, and BOTH vessel shores call it — the node at `open-node-vessel.ts`, composed onto its self-slot fed gate; the browser at `open-browser-vessel.ts`, composed onto its cross-operator gate. It reads the face's four planes off the vessel's own catalog (`governedPlaneDocIds`), the face-join grant records on the PersonaGroup plane, and the founder's persona-KEL, and it binds the ONE `verifyFaceGrantRecord`. `tools/vessel-parity-witness.sh` holds the two shores to it.
 
-''Only the PROOF SOURCE differs, and neither source is a claim.''
+''Only the PROOF SOURCE differs, and neither source makes a claim.''
 
 * A NODE listens. Its `DaemonAuthGate` proves the dialer's key (the V3 proof) and the ring reads the identifier that gate proved.
 * A LEAF dials out. The gate it dials signs its `lar:auth-ok` with the gate key over the leaf's own fresh nonce (`authOkBytes`, domain `auth-ok`), the leaf checks it against the key it pinned, and `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields. A gate that cannot sign under the pin answers nothing the leaf reads as a pass. Authentication runs both ways on one socket.
-* Two LEAVES of one PersonaGroup meet through a relay. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head (an edge a rotated-away op-key signed reads as rolled past), plus a signature by the device key over the sibling's nonce and the ephemeral key the answer is sealed to. The edge rides sealed to the sibling, so the relay forwards bytes and reads no leaf↔root link.
+* Two LEAVES of one PersonaGroup meet through a relay. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head (an edge a rotated-away op-key signed reads as rolled past), plus a signature by the device key over the sibling's nonce and the ephemeral key that seals the answer. The edge rides sealed to the sibling, so the relay forwards bytes and reads no leaf↔root link.
 
-''No clock enters any of the three.'' Freshness is a nonce the verifying side chose; licensing is KEL event order and the edge's lease epoch.
+''No clock enters any of the three.'' Freshness rides a nonce the verifying side chose; licensing rides KEL event order and the edge's lease epoch.
 
 <<~/ahu>>
 
@@ -121,11 +121,11 @@ The operator ruled: ''a slot doc's verdict = the face's grant records (the joine
 
 !! The leaf taxonomy — where the ring runs
 
-The ring runs on EVERY vessel that holds a face, because a leaf is not one thing. The operator's taxonomy names three:
+The ring runs on EVERY vessel that holds a face, because a leaf comes in more than one kind. The operator's taxonomy names three:
 
 # ''A face of an operator's PersonaGroup where a listening vessel exists.'' The leaf dials a node of its own PersonaGroup; that node's gate proves the leaf, and the node's signed verdict proves the node back.
 # ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
-# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind is why the ring must run on leaves at all: with no listening vessel, no other hand could decide. The proof stands as a library (`leaf-peer-proof.ts`): it proves two device keys to each other over three frames, yet it rides no transport and binds no session, so no live sync reads its verdict. Owed in code — the lane that carries Automerge sync between leaves through a herm, with the proof bound to the session it admits.
+# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. The proof stands as a library (`leaf-peer-proof.ts`): it proves two device keys to each other over three frames, yet it rides no transport and binds no session, so no live sync reads its verdict. Owed in code — the lane that carries Automerge sync between leaves through a herm, with the proof bound to the session it admits.
 
 A leaf holds only its own device key, its own edge and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
 
@@ -135,13 +135,13 @@ A leaf holds only its own device key, its own edge and its PersonaGroup's KEL; n
 
 !! What the smallest red would need, and why none is written here
 
-The asked-for red — //a stranger asking an identity-slot doc is refused; a member of that persona's plane is admitted; the founder's own reads unchanged// — cannot stand honestly today:
+The asked-for red — //a stranger asking an identity-slot doc is refused; a member of that persona's plane is admitted; the founder's own reads unchanged// — could not stand honestly while the fork stood open:
 
 * the ''stranger'' half already passes, for a reason that has nothing to do with the slot: an identity-slot doc sits outside the deterministic federatable set and a WS peer absent from `peerIdentifierMap` draws `false` at `open-node-vessel.ts:497`. A red that goes green on that answer measures the fed gate and names the slot — the exact instrument-lie shape.
 * the ''member of that persona's plane'' half has no function to call. Writing one binds the fork above, which is the ruling.
-* the ''founder's own reads'' CONTROL is the one half that stands and is worth keeping whichever way the fork closes: the same-operator class answer must not move.
+* the ''founder's own reads'' CONTROL stands as the one half worth keeping whichever way the fork closes: the same-operator class answer must not move.
 
-''Once the fork closes, the red that pins it is ONE vector per arm'': under (A), a fleet device reads and a contracted cabal member does not; under (B), a member of the persona's plane reads and a fleet device of a DIFFERENT persona does not — which is the vector that proves the wire carries the distinction at all, and which cannot pass today; under (C), a charter holder reads and a carrier place does not. Each arm's CONTROL is the other two arms' admit drawing a refusal.
+''Once the fork closes, the red that pins it is ONE vector per arm'': under (A), a fleet device reads and a contracted cabal member does not; under (B), a member of the persona's plane reads and a fleet device of a DIFFERENT persona does not — the vector that proves the wire carries the distinction at all, and one that could not pass at the measurement; under (C), a charter holder reads and a carrier place does not. Each arm's CONTROL is the other two arms' admit drawing a refusal.
 
 <<~/ahu>>
 
@@ -155,6 +155,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sduhx1hfvE0GVvuh0D3Bhgxiw-q0BhFbK-XfBfDhLHY
+<<^ code="&#x0003;">>ni:///sha-256;ic7rRi0FGSyuyrJe-p0JXx-T8cyARNuzi1rVqKqKUe0
 
 <<^ code="&#x0004;" -> to="?">>

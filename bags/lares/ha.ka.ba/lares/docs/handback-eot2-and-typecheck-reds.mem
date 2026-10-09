@@ -69,7 +69,7 @@ at rest. No emitter carve-out. EOT2's office stays open until the relay-stream l
 the question above resolves, not by settling a relay-stream office for it, but by removing the mark.
 Every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs to a future
 transport envelope and gets its own mark when that envelope lands, never a repurposed EOT2. SYN
-(`&#x0016;`) stays the one reserved stream mark; SOH2 (`&#x0011;`) is the ONLY kapu alias this grammar
+(`&#x0016;`) stays the one reserved stream mark; SOH2 (`&#x0011;`) names the ONLY kapu alias this grammar
 stands. Dropped from `packages/lararium-memetic-frame/src/marks.ts` (FRAME_MARKS), the
 `sigil-frame-eot2.tid` tiddler (deleted, grammar-table regenerated), the control-set table and TOML
 schema rows and trust-tier range in this grammar's own framing law, and the bootstrap scanner's DC4
@@ -110,8 +110,7 @@ supplying the live lease epoch, so the gate correctly refuses.
 
 ''Fix direction (not applied by this hand — not this hand's files).'' Supply the live lease epoch the
 same way `face-join.ts`'s `gateFaceJoin` already does for its own caller, rather than loosening or
-bypassing the gate. The gate's refusal is doing its job here; the joinee boot path is the thing that
-needs to catch up to it. Never revert or weaken the gate itself.
+bypassing the gate. The gate's refusal does its job here; the joinee boot path owes the catch-up. Never revert or weaken the gate itself.
 
 <<~/ahu>>
 
@@ -119,15 +118,15 @@ needs to catch up to it. Never revert or weaken the gate itself.
 
 !! `.github/workflows/held-out.yml` — a job-env `runner.temp` read fails every push
 
-''What breaks.'' `held-out.yml:36` reads `runner.temp` inside a job-level `env:` block. `runner` context
-is unavailable there — a job's `env:` block only sees `github`, `needs`, `strategy`, `matrix`, `vars`,
+''What breaks.'' `held-out.yml:36` reads `runner.temp` inside a job-level `env:` block. A job-level `env:`
+block cannot read the `runner` context — it sees only `github`, `needs`, `strategy`, `matrix`, `vars`,
 `secrets`, and `inputs` — so GitHub rejects the whole workflow file on every push as a 0s failure (for
 example run `37309501567`). A schedule/workflow_dispatch-only file still gets validated on push; the
 trigger named in the file does not exempt it from parse-time context checks.
 
 ''Fix (not applied by this hand — Codex hearth's hold).'' Delete the job-env `ARTIFACT_DIR` line, and in
 the "Prepare held-out evidence directory" step compute the path inside a `run:` step instead, where the
-`runner` context IS available:
+`runner` context reads:
 
 ```
 run: |
@@ -137,7 +136,7 @@ run: |
 ```
 
 Later `$ARTIFACT_DIR` / `${{ env.ARTIFACT_DIR }}` uses then resolve against the step-exported value. This
-hand did not touch `.github/workflows/held-out.yml` itself — it is held by the Codex hearth.
+hand did not touch `.github/workflows/held-out.yml` itself — the Codex hearth held it.
 
 <<~/ahu>>
 
@@ -152,6 +151,6 @@ hand did not touch `.github/workflows/held-out.yml` itself — it is held by the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;prdlRgXtsmPIbPQP4BtErXjV6tapym3kP1rlqSKEnm0
+<<^ code="&#x0003;">>ni:///sha-256;7hrjyw4aMtZE7FLxqxoD0lSeKcv71NsZdruu3sXgFNs
 
 <<^ code="&#x0004;" -> to="?">>

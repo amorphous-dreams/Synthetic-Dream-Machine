@@ -30,7 +30,7 @@ written   = "2026-08-08"
 
 ''A vessel wakes at its MINIMUM available cap-stack, and gets RAISED by recognition.'' It never refuses to
 stand because something it wants stands absent; it stands at whatever floor it can reach, says what it
-cannot do, and waits to be raised. ''The raise'' names the transition.
+cannot do, and waits for a raise. ''The raise'' names the transition.
 
 ''Capability arrives by recognition; it never gates on absence.''
 
@@ -43,7 +43,7 @@ cannot do, and waits to be raised. ''The raise'' names the transition.
 An at-rest seal exists against a ''STOLEN DISK''. A vessel that REFUSES TO BOOT without its passphrase turns
 that seal into something else: an ordinary 3am power cut, with nobody awake to type, becomes an ''outage''.
 For one operator's laptop that trade reads fine. For a crossroads a family depends on it reads indefensible
-— ''the threat the seal was built for never arrived, and the seal took the place down anyway''.
+— ''the threat the seal guards against never arrived, and the seal took the place down anyway''.
 
 The refusal also mis-names what happened. A vessel that cannot open its archive has not lost its ''identity''
 — it has lost ''ACCESS TO SECRETS''. Those name different things, and only one of them should stop a node
@@ -65,7 +65,7 @@ The house already ruled this one plane over. `the-veil-ladder#the-base-model`:
 back to the floor reads as the rule, and a vessel that will not stand at all has fallen ''through'' it.
 
 ''ONE LAW, TWO OCCASIONS.'' The ladder names the floor a BURN falls to (a chosen shedding); this names the
-floor a WAKE rises from (an unchosen absence). Same floor, opposite motions — which is the tell that the
+floor a WAKE rises from (an unchosen absence). Same floor, opposite motions — the tell that the
 floor reads as real structure rather than as a special case either occasion invented.
 
 <<~/ahu>>
@@ -87,7 +87,7 @@ standing at the floor and quiet reads worse than one refusing, because a caller 
 a performed one. But the announcement ''MUST SIGN'': unsigned, it becomes a spoofable degradation signal AND
 a targeting beacon naming which vessel sits unraised (#the-breaks c).
 
-''THE RAISE REUSES MACHINERY THE MESH ALREADY RUNS'' — ''STRUCK, and the correction stands at #the-raise-is-a-vessel-layer-act.'' This paragraph proposed a kahu quorum signing the raise against the pre-rotated epoch chain. The founding order refutes it: a cabal is seated FROM declared Handles standing on an already-raised lararium, so a raise waiting on a quorum could never found the first Nexus — the dependency closes in a circle, and a kahu holding shares would become the collector this meme elsewhere forbids outright. ''What the mesh already runs and the raise MAY reuse'' reads narrower: the nonce-against-my-own-epoch-head freshness, never the quorum's authority.
+''THE RAISE REUSES MACHINERY THE MESH ALREADY RUNS'' — ''STRUCK, and the correction stands at #the-raise-is-a-vessel-layer-act.'' This paragraph proposed a kahu quorum signing the raise against the pre-rotated epoch chain. The founding order refutes it: declared Handles standing on an already-raised lararium seat a cabal, so a raise waiting on a quorum could never found the first Nexus — the dependency closes in a circle, and a kahu holding shares would become the collector this meme elsewhere forbids outright. ''What the mesh already runs and the raise MAY reuse'' reads narrower: the nonce-against-my-own-epoch-head freshness, never the quorum's authority.
 ''The vessel supplies the freshness'': it emits a nonce bound to its own epoch head and whoever raises it
 signs THAT, because a clockless vessel accepting pre-signed material accepts a bearer credential that replays
 forever (#the-breaks b).
@@ -105,7 +105,7 @@ first MUST NOT wait on the second. The arrival page needs no secret — it rides
 
 ''The first arrival trusts the lararium's own origin'', and the lararium's own Pronaos serves the kindle
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-first-arrival">>). A house unreachable while it
-waits to be raised would push that first arrival onto some other origin, and whatever origin answers first
+waits for a raise would push that first arrival onto some other origin, and whatever origin answers first
 decides what a fresh device runs. The floor serving its own arrival page keeps the first trust at home.
 
 At the floor the page kindles nothing that needs a secret the floor does not hold, and it announces nothing:
@@ -121,14 +121,14 @@ seed, seed-named CAS members and its `/.well-known/lar` descriptor exactly as a 
 
 !! The announcement ~ signed, per Nexus, to peers alone (RULED, UNBUILT)
 
-''The verifiers of the floor's announcement are its PEERS.'' A stranger at the arrival page holds no relation to
+''The floor's PEERS verify its announcement.'' A stranger at the arrival page holds no relation to
 verify it against and needs none: it reads the same page from a floor and from a raised hearth. So the
 announcement rides the socket or the relay, ''once per carried Nexus'', and NEVER `/.well-known/lar` or any other
 public surface. The floor's public bytes stay identical to a raised hearth's, and a stranger probing the house
 learns nothing of its standing (#/the-breaks (c): an unsigned announcement targets; a public one targets too).
 
 ''It signs under the domain `waking-floor-announce`'', which mints into the domain registry only when the
-announcement is built, at the re-found.
+announcement gets built, at the re-found.
 
 ''It signs with the per-Nexus wire key'' owed to the re-found, derived from the vessel seed and the Nexus AID
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>). NEVER the vessel key in public:
@@ -144,7 +144,7 @@ Nexus it carries. Each Nexus therefore reads an announcement it can verify and n
 ''A research spirit gathered outside negentropy'' (Night-Watch, 2026-08-08). The shape survives; the
 vocabulary does not.
 
-!!! ⚠ THE FLOOR IS THE HARDENED STATE, NOT THE DEGRADED ONE
+!!! ⚠ THE FLOOR STANDS AS THE HARDENED STATE, NOT THE DEGRADED ONE
 
 ''Android Direct Boot ships this, and reads it the opposite way we did.'' A phone boots into
 device-encrypted storage only; credential-encrypted storage opens on first unlock —
@@ -180,7 +180,7 @@ unblinds; Clevis `sss` already composes k-of-n over tang/TPM pins.
 
 A kahu holding shares ''becomes the collector'' — which collides
 head-on with the house's own ''bind by edge, never by seed'' law. The prior art and the standing ruling
-point the same way, which is the strongest signal available here.
+point the same way — the strongest signal available here.
 
 <<~/ahu>>
 
@@ -188,25 +188,25 @@ point the same way, which is the strongest signal available here.
 
 !! ★ ONE FLOOR — a herm grows a house when someone comes to dwell ★
 
-''There stands no second KIND of Herm.'' A crossroads nobody has raised and a hearth whose archive holds shut rest in the same state, and naming them apart freezes a difference that does not survive contact: ''any vessel at the floor may be raised when someone who can raise it arrives.'' On Elyncia this reads as the ordinary thing rather than the exception — a wayside marker gets a building raised over it and a hearth fire lit when somebody comes to dwell, and the marker was never a different kind of thing from the house. Gaia's own crossroads shrines grew the same way.
+''There stands no second KIND of Herm.'' A crossroads nobody has raised and a hearth whose archive holds shut rest in the same state, and naming them apart freezes a difference that does not survive contact: ''anyone who can raise a vessel at the floor may raise it on arrival.'' On Elyncia this reads as the ordinary thing rather than the exception — a wayside marker gets a building raised over it and a hearth fire lit when somebody comes to dwell, and the marker never stood as a different kind of thing from the house. Gaia's own crossroads shrines grew the same way.
 
-''The 2026 rhyme carries it plainest'': a tablet left on a shelf, doing nothing anyone would call infrastructure, becomes the household's sync-node the day somebody needs one — and stops being one when nobody does. Same stone, same shelf; what changed reads as ''who came''.
+''The 2026 rhyme carries it plainest'': a tablet left on a shelf, doing nothing anyone would call infrastructure, becomes the household's sync-node the day somebody needs one — and stops serving as one when nobody does. Same stone, same shelf; what changed reads as ''who came''.
 
-''SEATED ⊥ RAISED, and the pair is what lets both laws hold.'' The Herm's `personaSlotCeiling === 0` bars a ''SEATED'' persona root — a human's key RESTING on a crossroads, the one thing the class exists to prevent. A raise seats nothing: caps arrive ''WITH'' a recognised operator, ride that operator's own keys, and stop standing when the recognition stops being renewed. ''The vessel's at-rest state never changes'', so a stolen disk still yields nothing of anybody's person. Storage stays barred; presence stays welcome.
+''SEATED ⊥ RAISED, and the pair lets both laws hold.'' The Herm's `personaSlotCeiling === 0` bars a ''SEATED'' persona root — a human's key RESTING on a crossroads, the one thing the class exists to prevent. A raise seats nothing: caps arrive ''WITH'' a recognised operator, ride that operator's own keys, and stop standing when nobody renews the recognition. ''The vessel's at-rest state never changes'', so a stolen disk still yields nothing of anybody's person. Storage stays barred; presence stays welcome.
 
 ''MAY-HOLD-A-FACE ⊥ HOLDS-ONE-NOW — and `standAs` keeps the ARCHIVE question ALONE.'' `standAs(asked, archiveOpens)` answers ONE thing: what this vessel can OPEN right now. Whether a FACE stands — whether an operator has landed a PersonaGroup here — reads separately, because folding the two would make a faceless place class-`herm`, where `personaSlotCeiling("herm") === 0` bars the very face that would lift it. A face lit names what a vessel HOLDS; the archive opening names what it can OPEN, and a place founded with no face yet holds a crossroads that a founding act lifts.
 
-''So the scenario the mesh actually needs already fits'': an operator stands a Herm, joins it to a Nexus, and leaves. A recognised operator arriving later raises its caps — for a visit or for a season — and it ''always falls back to the floor'', because the raise expires rather than being taken away.
+''So the scenario the mesh actually needs already fits'': an operator stands a Herm, joins it to a Nexus, and leaves. A recognised operator arriving later raises its caps — for a visit or for a season — and it ''always falls back to the floor'', because the raise expires rather than anyone taking it away.
 
-''A REALM IS NOT A VESSEL, and the no-lease doctrine governs the first.'' `cabal-realm` rules that a member holds no grant that expires — they ''dwell'', the dwelling deposits a settled depth, and stopping leaves no deed to lapse; //a lease is a substance-object you hold between exercises, and that shape stands retired//. That law governs a REALM: a virtual relationship-place constituted by the people maintaining it. It does NOT govern INFRASTRUCTURE. A vessel's caps are not a relationship, and a marker fencing them is not a claim on anybody's standing — reading the realm law onto the vessel layer repeats the same layer error this meme already names once, one plane down.
+''A REALM STANDS APART FROM A VESSEL, and the no-lease doctrine governs the first.'' `cabal-realm` rules that a member holds no grant that expires — they ''dwell'', the dwelling deposits a settled depth, and stopping leaves no deed to lapse; //a lease makes a substance-object you hold between exercises, and this stack refuses that shape//. That law governs a REALM: a virtual relationship-place constituted by the people maintaining it. It does NOT govern INFRASTRUCTURE. A vessel's caps form no relationship, and a marker fencing them makes no claim on anybody's standing — reading the realm law onto the vessel layer repeats the same layer error this meme already names once, one plane down.
 
-''What DOES cross the layers is the caution.'' The realm doctrine's own unswept corner — //soft-state rewards whoever keeps feeding, NOT who legitimately holds the realm; a small hostile faction can out-maintain an apathetic majority// — transfers intact to any raise that renews by PRESENCE. At the infrastructure layer it reads: whoever keeps touching a vessel keeps its caps, and diligence is not the same as title. ''Any presence-renewal MUST answer that, or it hands a squatter tenure.'' The walker's carriage at a hearth answers it: presence earns a guest notice before reclaim, the quota bounds what presence can hold, and the hearth's roll ends what it stops renewing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-walkers-carriage">>).
+''What DOES cross the layers is the caution.'' The realm doctrine's own unswept corner — //soft-state rewards whoever keeps feeding, NOT who legitimately holds the realm; a small hostile faction can out-maintain an apathetic majority// — transfers intact to any raise that renews by PRESENCE. At the infrastructure layer it reads: whoever keeps touching a vessel keeps its caps, and diligence confers no title. ''Any presence-renewal MUST answer that, or it hands a squatter tenure.'' The walker's carriage at a hearth answers it: presence earns a guest notice before reclaim, the quota bounds what presence can hold, and the hearth's roll ends what it stops renewing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-walkers-carriage">>).
 
-''AN EPOCH NAMES A ROLLING WINDOW, never a scalar — and it is PER-NEXUS.'' Markers enter as a Nexus trades and fall off the far end, and that one moving set gives BOTH properties the raise needs with no clock anywhere: ''supersession'' (a newer marker arrives) and ''expiry'' (an old one rolls off), both driven by the Nexus's own events rather than by a duration anybody must agree on. A vessel standing in more than one Nexus holds more than one window, and ''a marker means nothing outside the Nexus that minted it''.
+''AN EPOCH FENCES PER NEXUS, and one frontier gives the raise BOTH properties it needs.'' A raise binds the Nexus's lease epoch: ''supersession'' (a newer grant binds a higher epoch) and ''expiry'' (an old one goes stale when the frontier rolls past it), both driven by the Nexus's own events rather than by a duration anybody must agree on, with no clock anywhere (#/the-raise-is-a-vessel-layer-act, where the rolling window of markers stands STRUCK). A vessel standing in more than one Nexus holds more than one frontier, and ''an epoch means nothing outside the Nexus that rolls it''.
 
-''AND BELONGING TO A NEXUS CARRIES TWO CONDITIONS, not one.'' A node belongs by ''contract'' — the signed carriage relation — AND by ''agreeing with the grammar vectors traded on that Nexus''. The second is not ceremony: a node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and cannot be bound by what it never parsed. ''Contract without grammar-agreement reads as a signature over an unread page.'' — the grammar half stands UNBUILT and unnamed in code; its meme names a source file that no longer exists.
+''AND BELONGING TO A NEXUS CARRIES TWO CONDITIONS, not one.'' A node belongs by ''contract'' — the signed carriage relation — AND by ''agreeing with the grammar vectors traded on that Nexus''. The second carries more than ceremony: a node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and nothing it never parsed can bind it. ''Contract without grammar-agreement reads as a signature over an unread page.'' — the grammar half stands UNBUILT and unnamed in code; its meme names a source file that does not exist.
 
-''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all — precisely the vessel this law governs. The clockless model already rules the form: a raise carries a ''corm epoch'' (a fencing token, never a timer), the vessel holds its highest-admitted epoch, and anything beneath it is refused. A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock. Deciding //stop waiting for a renewal// rides the separate LIVENESS wire (local, suspicion-accruing, never leaving its island as a timestamp anyone must agree on); acting on a wrong suspicion stays safe because the fence still holds. ''Fusing the two wires is how a global now gets smuggled back in.''
+''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all — precisely the vessel this law governs. The clockless model already rules the form: a raise carries a ''corm epoch'' (a fencing token, never a timer), the vessel holds its highest-admitted epoch, and refuses anything beneath it. A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock. Deciding //stop waiting for a renewal// rides the separate LIVENESS wire (local, suspicion-accruing, never leaving its island as a timestamp anyone must agree on); acting on a wrong suspicion stays safe because the fence still holds. ''Fusing the two wires smuggles a global now back in.''
 
 ''AND THE FENCE CARRIES TWO CONDITIONS the raise cannot hold without.''
 
@@ -218,7 +218,7 @@ point the same way, which is the strongest signal available here.
 # ''SPLIT-BRAIN NAMES THE REAL HOLE, and the liveness wire cannot see it.'' Two minters issuing the
   same epoch defeats a high-water mark exactly, because neither exceeds the other. The suspicion wire
   ''never says concurrent'' — it accrues doubt about a peer and reports nothing about the ORDER of two
-  events — so it cannot adjudicate here and must not be asked to. ''Ask the causal stamp for
+  events — so it cannot adjudicate here, and no hand may ask it to. ''Ask the causal stamp for
   concurrency; a rhythm cannot answer it.'' Either the causal stamp adjudicates with a deterministic
   tiebreak, or one minter per epoch stands enforced.
 
@@ -228,11 +228,11 @@ for calibrating a rate and load-bearing for neither ordering nor revocation. Ask
 for a tight answer smuggles the global now back under a different name, and a raise stays generous
 against a witness radius rather than tuned to it.
 
-''What stays OPEN, and it is the whole of the remaining design'': what ''recognition'' means here (which edge, presented how, verified against what), and whether a season-long raise differs from a visit by anything but its renewal interval. The house already rules the shape — the raise expires, nobody lowers it, the operator seats a renewal interval rather than a rate — so the open part reads as ''who is recognised'', never ''how does it end''.
+''What stays OPEN, the whole of the remaining design'': what ''recognition'' means here (which edge, presented how, verified against what), and whether a season-long raise differs from a visit by anything but its renewal interval. The house already rules the shape — the raise expires, nobody lowers it, the operator seats a renewal interval rather than a rate — so the open part reads as ''whom the house recognises'', never ''how does it end''.
 
-!! ★ THE RAISE IS A VESSEL-LAYER ACT — the layer error, named ★
+!! ★ THE RAISE STANDS AS A VESSEL-LAYER ACT — the layer error, named ★
 
-''A kahu quorum CANNOT be what raises a vessel, and an earlier reading put it there.'' The founding order refutes it outright: a kahu quorum is seated FROM the cabal's declared Handles, which stand on an already-raised lararium, which stands on an operator opening that vessel's own archive. ''A raise that waited on a quorum could never found the FIRST Nexus'' — the dependency closes in a circle.
+''A kahu quorum CANNOT raise a vessel.'' The founding order refutes it outright: the cabal's declared Handles seat a kahu quorum, and they stand on an already-raised lararium, which stands on an operator opening that vessel's own archive. ''A raise that waited on a quorum could never found the FIRST Nexus'' — the dependency closes in a circle.
 
 ''So the layers separate, and each names its own actor'':
 
@@ -244,15 +244,15 @@ against a witness radius rather than tuned to it.
 
 ''A quorum's acts sit at ③ and reach NO vessel's archive.'' Reading them into ① makes a kahu a share-holder, and a share-holder becomes the collector — the same law this meme already carries as ★ THE KAHU MUST NOT HOLD SHARES ★. The escrow-free shape (Tang: stateless, holding nothing) belongs at ① with a different holder, never at ③.
 
-!!! ★ AND THE MECHANISM IS THE ONE THE MESH ALREADY ROLLS — a lease, not a third invention ★
+!!! ★ AND THE MECHANISM MATCHES THE ONE THE MESH ALREADY ROLLS — a lease, not a third invention ★
 
-''A raise ENDS by non-renewal, exactly as every other grant in this house does.'' `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus is the resource; its lease epoch is the fence.
+''A raise ENDS by non-renewal, exactly as every other grant in this house does.'' `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus serves as the resource; its lease epoch, as the fence.
 
 ''Supersession and expiry come from that one mechanism, with no clock anywhere.'' A newer grant binds a higher epoch; an old one goes stale when the frontier rolls past it. A paused, forwarded or replayed raise self-revokes at the next roll — no global broadcast, no duration anybody must agree on, and a returning holder stays fenced whether or not anyone suspected it. This matters most for the vessel this law governs: ''a vessel AT THE FLOOR holds no trustworthy wall time at all''.
 
-''A draft carried a rolling WINDOW of markers here, and it is STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers is a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>.
+''A rolling WINDOW of markers stands STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers makes a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>.
 
-''The ending rides a SECOND wire, deliberately unfused.'' Deciding //stop waiting for a renewal// cannot come from safety alone — under asynchrony nothing tells a slow recogniser from a departed one. That belongs to the liveness wire: local, monotone, suspicion-accruing, never leaving its island as a timestamp anyone else must agree on. Fusing the two is how a global now gets smuggled back in.
+''The ending rides a SECOND wire, deliberately unfused.'' Deciding //stop waiting for a renewal// cannot come from safety alone — under asynchrony nothing tells a slow recogniser from a departed one. That belongs to the liveness wire: local, monotone, suspicion-accruing, never leaving its island as a timestamp anyone else must agree on. Fusing the two smuggles a global now back in.
 
 ''The unattended crossroads therefore stays a ① problem.'' A vessel whose holder sleeps needs a way to open its OWN archive without a human — not a Nexus voting on it.
 
@@ -266,7 +266,7 @@ floor on idle.''
 ''AND THE HOUSE ALREADY RULED THE CURE, one plane over.'' The identity plane holds that a standing lift
 ''EXPIRES rather than decays'', that ''no party exercises a lowering act'', and that the operator seats a
 ''renewal interval'' rather than a rate. ''Third occasion, same law'': the raise expires, nobody lowers it,
-and a vessel that stops being recognised simply stops being raised.
+and a vessel nobody recognises any longer simply falls back to its floor.
 
 ''(b) "k-of-n material PRESENTED to it" describes a BEARER CREDENTIAL.'' A vessel at the floor holds no
 clock and no trustworthy wall time, so signed material presented to it ''replays forever'' — a thief with
@@ -306,7 +306,7 @@ splits, and only the first line reads well for us:
 
 ''THE VETO READS AS THE WORST OF THE FOUR, and it reads worst precisely because it stays QUIET.'' A civic
 mesh whose function runs on sovereign acts hands a deniable, repeatable veto to whoever can reliably drop
-power — and the result is not an outage (loud, escalatable, politically legible) but ''silent capability
+power — and the result reads not as an outage (loud, escalatable, politically legible) but as ''silent capability
 suppression''. So the floor MUST make suppression loud: ''an unexplained reboot deserves treatment as a
 signal to peers, never as routine''.
 
@@ -330,7 +330,7 @@ it.''
 ''Fail-secure vs fail-open carries no settled answer.'' Vault chose fail-secure and generated exactly our
 complaint; GitHub's post-mortem concluded //fail-stop is dangerous… sometimes keep serving stale data beats
 going silent//; Android chose fail-secure AND added a timer to force more of it. ''Anyone claiming this
-settled is selling one.'' Auto-unseal splits the same way — HashiCorp ships it as the operational answer,
+settled sells one.'' Auto-unseal splits the same way — HashiCorp ships it as the operational answer,
 practitioners argue it forfeits the point.
 
 !!! The paths that do NOT carry a civic mechanism
@@ -340,18 +340,18 @@ practitioners argue it forfeits the point.
 * ''The TPM path breaks on ordinary maintenance'' — PCR7 binding fails on firmware/kernel/bootloader update,
   and `systemd-cryptenroll` refuses to re-enroll with the same PCR parameters.
 * ''Pi-class hardware carries no complete chain of trust'' without extra parts, and ''systemd-creds kills
-  fleet provisioning outright'' — credentials cannot be prepared on a machine other than the local one.
+  fleet provisioning outright'' — no machine but the local one can prepare the credentials.
   TPM and systemd-creds serve as ''local convenience'', never as
   the civic mechanism.
 
-!!! What stays RULED, and is not re-litigated by any of the above
+!!! What stays RULED, which none of the above re-litigates
 
 The KEK stays ''passphrase-primary''; a random key beside the ciphertext reads as obfuscation posing as
 isolation and gets refused; a missing passphrase ''NEVER silently degrades to weak key handling''. ''The
 floor names WHAT A VESSEL SERVES, never what it weakens.''
 
 ''OPEN'': whether an unattended boot refuses or rests, what may raise it, and the renewal interval a raise
-expires on. The boot gate throws today because ''refusing stays the safe default while the answer is
+expires on. The boot gate throws because ''refusing stays the safe default while the answer stands
 unmade'' — an outage recovers and a silently-raised identity does not.
 <<~ loulou "lar:///ha.ka.ba/lararium/node/archive-passphrase">> carries the option space where the refusal
 happens.
@@ -360,21 +360,21 @@ happens.
 
 <<~ ahu #/elyncia>>
 
-!! The Elyncia reading ~ the myth was already carrying it
+!! The Elyncia reading ~ the myth already carries it
 
 ''The fiction resolves the same tension it always described.'' After the Second Breaking, the gods bound
 guardian spirits into orichalcum at surviving ley-line nodes. A shrine ''stabilizes through use'' — fed with
 food, drink, incense, coin — and ''a fed node hums, a neglected one flickers''. The myth never said a
 neglected shrine ''vanishes''. It flickers: present, diminished, waiting to be fed.
 
-''A vessel waking at its floor IS a flickering shrine.'' It stands at its crossroads, offers what it can
+''A vessel waking at its floor stands as a flickering shrine.'' It stands at its crossroads, offers what it can
 without its keeper, and brightens when someone comes to feed it. The reciprocal bond runs exactly as the
 Lares always ran it — ''feed the Lar and it prospers you; neglect it and it turns its back'' — and turning
 its back never meant leaving the crossroads.
 
 ''AND THE PLACE-BINDING SETTLES WHICH THING SURVIVES.'' A Lar binds to a PLACE, never to a family: if the
 family moved, the Lar stayed. So a vessel that loses its operator's secrets loses ''the family's'' hold and
-keeps ''the place'' — which is precisely the floor. The myth was load-bearing here before the code needed it.
+keeps ''the place'' — which is precisely the floor. The myth bore this load before the code needed it.
 
 <<~/ahu>>
 
@@ -386,6 +386,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DBFzn4mD06_pb3QedZc1dLFcEzaDensOYJ-L4wlbzy4
+<<^ code="&#x0003;">>ni:///sha-256;dg-vTBmOKVcdhQ6qw92WVF5uX6AuMEoDAYvDxoXuhvo
 
 <<^ code="&#x0004;" -> to="?">>
