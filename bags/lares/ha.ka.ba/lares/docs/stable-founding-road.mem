@@ -64,7 +64,7 @@ vitals read in `lar:///ha.ka.ba/lares/docs/er-handoff`.
 !!! The cleanup of the hosted walk (B1)
 * ''The worn face hosts and walks.'' Nothing is picked by roster order; a vessel wearing no face hosts and walks nowhere. Before its first hosting act in a Nexus, a roll refuses when the hosting doc holds an act this face signed that no local state holds.
 * ''A herm answers the knock.'' A charterless herm answers any proven peer that knocked (`ownPlacePosture`): a waystone by class, never a broken lararium. A lararium reads its charter, and an absent or torn charter reads PRIVATE.
-* ''A boot follows `LAR_ROOT`.'' A vessel isolated under `LAR_ROOT` projects into that root, never into the tracked tree: the bags root resolves `LAR_BAGS` → the config's bags resource → `<LAR_ROOT>/bags` → the repo, and the disk projection's mirror roots resolve the named `rootDir` → `LAR_ROOT` → the repo.
+* ''A boot follows `LAR_ROOT`.'' A vessel isolated under `LAR_ROOT` projects into that root, never into the tracked tree: the bags root resolves `LAR_BAGS` → the config's bags resource → `<LAR_ROOT>/bags` → the repo, and the disk projection's mirror roots resolve the named `rootDir` → `LAR_ROOT` → the repo. The isolation instruction names `LAR_ROOT`: the mirror roots never read `LAR_BAGS`, so `LAR_BAGS` alone keeps no in-tree boot out of the tracked tree.
 * ''Compartments outrank admission control.'' A walker reads its own hearth's hosting doc, never the carriage board: the carrier set stays a contract ledger read by those who hold contracts.
 
 !!! The fresh start
@@ -175,7 +175,6 @@ old AID and reads dead by construction.
 # ''The seat's cold next key at founding.'' Arm it at the Stable founding (one sheet, two labelled sections — the VK backup and the seat's next key — each read back), or leave the seat to commit later? Lean: arm it; an unarmed charter never rotates.
 # ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never is. The lenses split; re-opening W needs the operator's turned key.
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
-# ''The projection's mirror root under `LAR_BAGS`.'' The disk projection mirrors under `--root`, else `LAR_ROOT`, else the repo, and reads neither `LAR_BAGS` nor the config's bags resource; only `bagsRoot()` reads `LAR_BAGS`. So `LAR_BAGS` alone does not keep an in-tree boot out of the tracked tree. Rule whether the mirror follows the bags root, or the instruction names `LAR_ROOT`.
 
 <<~/ahu>>
 
@@ -190,6 +189,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c5rrSD3OY5WMIPK0v-iGBu7OuDuSZghgu645eT-Qp2k
+<<^ code="&#x0003;">>ni:///sha-256;HbRxgOyvvg7BTFtAb_Fy0nyo4WKar1KrOi-aq6Lo8No
 
 <<^ code="&#x0004;" -> to="?">>
