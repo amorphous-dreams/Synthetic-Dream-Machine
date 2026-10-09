@@ -26,7 +26,7 @@ uri-path  = "ha.ka.ba/lares/docs/voices"
 ! Lararium Voices
 
 Specification for the three-layer voice-house.
-The Voice house (the Thirteen), the worker swarm, and the mask layer are defined here and in two child rooms.
+This meme and two child rooms define the Voice house (the Thirteen), the worker swarm, and the mask layer.
 This meme holds cross-layer architecture law and the canonical Voice house spec inline.
 
 <<~/ahu>>
@@ -250,6 +250,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KeDfDlssBpgq-F78IMfk0r9hQfqe_Ot3mE0oWDobN6E
+<<^ code="&#x0003;">>ni:///sha-256;5MRHEfHa5lWC2bG5PN4OLA3BKnIfXBETPIi3xf2AO5o
 
 <<^ code="&#x0004;" -> to="?">>

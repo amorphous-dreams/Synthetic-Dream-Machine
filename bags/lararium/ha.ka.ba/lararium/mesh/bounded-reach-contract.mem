@@ -26,7 +26,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/bounded-reach-contract"
 
 ''PROPOSED — design intent with an authored consistency control; no DNS provider, ACME issuance path,
 or deployment route stands built.'' This meme gives the local operator's "DNS token" a precise name:
-the ''bounded reach grant''. It is a bilateral, scoped capability contract, never a bearer token that
+the ''bounded reach grant''. It names a bilateral, scoped capability contract, never a bearer token that
 floats free of its holder, subtree, Nexus charter epoch, or ending.
 
 The contract lets an operator make a local LAN service discoverable through a memorable DreamNet name
@@ -246,6 +246,7 @@ before any deployment path opens.
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
@@ -260,6 +261,6 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hJVfhxr0Xy4wfjWPqDauPDmxPVtf6B3nWnpsCTuemaE
+<<^ code="&#x0003;">>ni:///sha-256;Eo0sPsf3LhqCNr3D9Lwa8ouVlrnYahI-aAOeHcD98Xo
 
 <<^ code="&#x0004;" -> to="?">>

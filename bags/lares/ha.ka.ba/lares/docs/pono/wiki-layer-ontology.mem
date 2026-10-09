@@ -160,7 +160,7 @@ Shareability reads off //where a name lives//, not off a flag:
 
 ''Instance mounts MUST NOT enter `@catalog`.'' Minting a registry stub for a private slot makes the private addressable — a capability leak waiting for a confused deputy. A display string for HUD/admin projections derives at render time (`{slug}/draft`) and never stores as a resolvable name. Petname doctrine grounds this: the AutomergeUrl holds the global unguessable key, `@catalog` holds the human edge-names, and an instance mount needs no edge-name because nobody else ever addresses it.
 
-''The draft FLOOR is not an instance mount, and it registers.'' Where a vessel holds no seat in a PersonaGroup, the draft slot binds to the device floor doc, keyed by the vessel's own DID (`wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`) — a doc the VESSEL holds, delegated to nobody, reached by access across its own restarts. It MUST register in `@catalog` because the catalog is the vessel's registry of the docs it holds by access, and the floor belongs to no group binding the daemon doc could carry (a binding record names a PersonaGroup × fingerprint; the floor names a device). The key names the device, never a person; it federates nothing an unseated vessel does not already hold; and `where` presents it under its slot name (`wikis/{slug}/draft`), never its key. The instance mount of a SEATED vessel — the PersonaGroup × fingerprint binding — stays where this law puts it: in the daemon doc, never the catalog. One resolver reads both (`resolveSlotDoc`, recipe-layer-model#/as-mounted).
+''The draft FLOOR stands as no instance mount, and it registers.'' Where a vessel holds no seat in a PersonaGroup, the draft slot binds to the device floor doc, keyed by the vessel's own DID (`wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`) — a doc the VESSEL holds, delegated to nobody, reached by access across its own restarts. It MUST register in `@catalog` because the catalog is the vessel's registry of the docs it holds by access, and the floor belongs to no group binding the daemon doc could carry (a binding record names a PersonaGroup × fingerprint; the floor names a device). The key names the device, never a person; it federates nothing an unseated vessel does not already hold; and `where` presents it under its slot name (`wikis/{slug}/draft`), never its key. The instance mount of a SEATED vessel — the PersonaGroup × fingerprint binding — stays where this law puts it: in the daemon doc, never the catalog. One resolver reads both (`resolveSlotDoc`, recipe-layer-model#/as-mounted).
 
 > Same law Docker operators carry in their hands without naming it: images get repository names; a container's writable layer never does. — Map-Wisp
 
@@ -196,7 +196,7 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 ''A withholding MUST name its subject.'' `[match[$:/core]then[]]` withholds by naming; a rule standing for //whatever fell this far// withholds by silence, and silence names the thing this law exists to end. Only the engine's own bytes withhold lawfully — build output, regenerable, reaching the vessel by content-address rather than by any bag.
 
-''TW5 already answers this question and we take its shape.'' `$:/config/SyncFilter` is TOTAL — `[is[tiddler]]` — minus a named exclusion list. So the cascade opens with its exclusions and ''ends in a catch-all''.
+''TW5 already answers this question and we take its shape.'' `$:/config/SyncFilter` reads TOTAL — `[is[tiddler]]` — minus a named exclusion list. So the cascade opens with its exclusions and ''ends in a catch-all''.
 
 ⚠ ''A rule MUST read the title, never construct one.'' TW5's `[[X]]` and `[title[X]]` act as CONSTRUCTORS: handed a single-tiddler source they yield `X` regardless of what that source holds, so an exclusion written either way withholds ''every write in the vessel''. `match` and `prefix` read the source; `regexp` carries the catch-all. Measured against the live filter engine, never inferred from the syntax.
 
@@ -332,6 +332,7 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
@@ -341,6 +342,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cLtiJvNOU0qvgKOCw0ZhXdicnskNwRdRn2GuHLOdsiQ
+<<^ code="&#x0003;">>ni:///sha-256;upT_mJtpp1cs5-N6xlTc_l5naLel06uXrRdApjWmKAw
 
 <<^ code="&#x0004;" -> to="?">>

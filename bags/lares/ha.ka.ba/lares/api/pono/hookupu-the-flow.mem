@@ -30,9 +30,9 @@ uri-path      = "ha.ka.ba/lares/api/pono/hookupu-the-flow"
 
 `hoʻokupu` — an offering ''laid down at a place'', etymologically //to cause growth//. It rhymes structurally with `hoʻokipa`: two `hoʻo-` causatives, hospitality and offering, the two halves of what a guest and a host do to each other.
 
-''A flow REFILLS; a stock ACCUMULATES.'' The distinction is not stylistic. Roman law records it: obligations //of the nature of money or money's worth// ''passed to the heirs like property'', while unpriced personal obligations ''died with the person''. ''Pricing and transferability convert a relation into a heritable estate'' — which is the freezing mechanism, adopted as the cure.
+''A flow REFILLS; a stock ACCUMULATES.'' The distinction carries weight beyond style. Roman law records it: obligations //of the nature of money or money's worth// ''passed to the heirs like property'', while unpriced personal obligations ''died with the person''. ''Pricing and transferability convert a relation into a heritable estate'' — the freezing mechanism, adopted as the cure.
 
-''So the medium refuses three properties'': it does not accumulate (the refresh ''discards'' the unspent remainder — carry-forward IS stock), it does not transfer between holders (you spend it ''on'' someone's contribution, never give it ''to'' them), and it carries no running total.
+''So the medium refuses three properties'': it does not accumulate (the refresh ''discards'' the unspent remainder — carry-forward makes stock), it does not transfer between holders (you spend it ''on'' someone's contribution, never give it ''to'' them), and it carries no running total.
 
 <<~/ahu>>
 
@@ -118,6 +118,6 @@ Not coincidence: the Handle already reads as ''the only one that ever federates'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EweF1aa-qJpU5Lnu0EHrVtif3e4r2YJVx4b0S2jyTeY
+<<^ code="&#x0003;">>ni:///sha-256;9itmbNU9Da0wwanl0_eFhy3Lf0j7vF105ZpZB5KNoTk
 
 <<^ code="&#x0004;" -> to="?">>

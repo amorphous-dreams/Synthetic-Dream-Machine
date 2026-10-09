@@ -38,7 +38,7 @@ Every pranala edge MUST declare a family from `KNOWN_FAMILIES`.
 Edges with unknown families fail validation at the `error` severity level.
 
 `roleRecommended` families SHOULD use roles from their canonical vocabulary.
-Free-form roles are accepted but generate lint warnings.
+The parser accepts free-form roles and raises lint warnings for them.
 
 `confidenceBounded` families (observe, transclusion) carry confidence constraints:
 the edge confidence must not exceed the source node's confidence.
@@ -170,6 +170,6 @@ spatial    = "light-blue"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eLE6kpN6tWLv_2ty80_aMm4rsvr3BHRRbWdT1qa9fCA
+<<^ code="&#x0003;">>ni:///sha-256;2-r9CtMjmcXveuKJRlguaBMUspKRA2yRNKewalNHPHE
 
 <<^ code="&#x0004;" -> to="?">>

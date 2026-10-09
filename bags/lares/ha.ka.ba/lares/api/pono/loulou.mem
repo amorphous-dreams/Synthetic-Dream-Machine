@@ -54,7 +54,7 @@ A loulou MAY carry `role` when the relation encodes a specific semantic.
 A loulou SHOULD carry relation semantics alone; dataflow, control, and reaction ride their own family sugar.
 
 `family:relation` — names an ontological or semantic connection; traversal moves source-to-target;
-propagation is none. The edge says what holds between the sockets, not what runs between them.
+no propagation runs. The edge says what holds between the sockets, not what runs between them.
 
 <<~/ahu>>
 
@@ -123,6 +123,6 @@ confidence-bounded = false
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qDs0oqyTWAQwzIPcTcWyJUjekZRc-9q0Vzv1IoyHNTU
+<<^ code="&#x0003;">>ni:///sha-256;P4ppYA-yi3_zjrnhJv83ly0EVkovhvvnvhQRVbEAbbU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -44,7 +44,7 @@ The worn family component carries the ''meaning''; the surface picks the ''rende
 
 <<~ ahu #/the-surface-law>>
 
-!! ⚠ The surface law ~ the camera is DOM-hosting, never rasterising
+!! ⚠ The surface law ~ the camera hosts DOM, never rasterises
 
 ''THE CANVAS CAMERA MUST NOT RASTERISE.'' A rasterised camera holds pixels and ''has nothing left to ask'', which forecloses every law this doctrine rests on — semantic zoom, graph primacy, the model/view boundary. Sutherland stated the objection in 1963 — //"the computer 'knows' that a 'transistor' is intended at that place… It has no need to interpret the collection of lines"//. The cost is measured elsewhere and it is not marginal: a 10k-line text field renders in ''0.49 s'' under an HTML renderer and ''90.3 s'' under a rasterising one; two independent engines (Flutter, Qt) each lost the semantic layer and had to rebuild accessibility as an opt-in, off-by-default, absolutely-positioned overlay; and a canvas move shipped with the assurance that accessibility was unaffected was ''tested and refused'' by WebAIM. ''The camera is DreamDOM — real nodes, real selection, real focus, a real accessibility tree — positioned by one shared CSS transform per layer.''
 
@@ -56,13 +56,13 @@ The worn family component carries the ''meaning''; the surface picks the ''rende
 
 !!! ⚠ What the spiral found, and what it did NOT move
 
-''No licence exposure stands.'' Measured 2026-09-02: ''no tldraw dependency in any manifest, no submodule, nothing installed'', and neither `packages/lararium-tldraw` nor `packages/dreamdeck-tldraw` exists. Three carriers named files in those packages as //sources of truth//; each is now corrected in place. ''A pointer that names a file which is not there is the same defect this house keeps finding at every scale — a claim that reads as present and is absent.''
+''No licence exposure stands.'' Measured 2026-09-02: ''no tldraw dependency in any manifest, no submodule, nothing installed'', and neither `packages/lararium-tldraw` nor `packages/dreamdeck-tldraw` exists. Three carriers named files in those packages as //sources of truth//; each reads corrected in place. ''A pointer that names a file which is not there is the same defect this house keeps finding at every scale — a claim that reads as present and is absent.''
 
 ✓ ''ADDRESSES RENAMED, WELD-TESTED FIRST (2026-09-02).'' The weld test ran before any edit: the address `camera/tldraw-root` stood at ''three meme sites and no code''; the readiness key `tldraw-doc` stood in ''`packages/lararium-mesh/src/readiness.ts`'' as well as its meme, and `READINESS_KEYS` proved to have ''no consumer anywhere'' — exported, typed, unimported, with no key used as a literal. So both moved: `camera/tldraw-root` → ''`camera/canvas-root`'', `tldraw-doc` → ''`canvas-doc`''.
 
-''BOTH ARE NOW NAMED BY SURFACE, NEVER BY IMPLEMENTATION'', and that is the whole repair. A camera is a //canvas camera// whatever document backs it; naming an address after a vendor is what made this rename necessary at all, and a surface name will not need moving when the document type changes again.
+''SURFACE NAMES BOTH, NEVER IMPLEMENTATION'' — the whole repair. A camera stands as a //canvas camera// whatever document backs it; naming an address after a vendor made this rename necessary at all, and a surface name will not need moving when the document type changes again.
 
-▢ ''OWED — a descriptive pass'': `verse-mesh`, `lar-hud`, `rooms` and the DreamDeck backlog carry vendor-named prose. No addresses among them, so none is a live pointer.
+▢ ''OWED — a descriptive pass'': `verse-mesh`, `lar-hud`, `rooms` and the DreamDeck backlog carry vendor-named prose. No addresses stand among them, so none points live.
 
 <<~/ahu>>
 
@@ -248,6 +248,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nTuIxCpFC_oRih8uUyUrqPllHN0UX8Tjn6LWJ4TT1y0
+<<^ code="&#x0003;">>ni:///sha-256;RYSUL11ufH_gx9FQL5rHUa2SS20VpRgYDuFDfa9JXwg
 
 <<^ code="&#x0004;" -> to="?">>

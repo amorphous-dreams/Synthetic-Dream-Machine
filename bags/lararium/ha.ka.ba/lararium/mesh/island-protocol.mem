@@ -39,7 +39,7 @@ Vessel entrypoints (node, browser) bind the I/O; this module names the envelopes
 
 !!! IslandGrants — typed ocap manifest capabilities
 
-The keel cut (2026-06-09) retired the `resolver` dictionary (slot URI → AutomergeUrl map, a main-owned lookup). The manifest now HANDS the island typed structural capabilities — each field arrives as a grant (ocap), never gets looked up from a vessel-owned table:
+The keel cut (2026-06-09) retired the `resolver` dictionary (slot URI → AutomergeUrl map, a main-owned lookup). The manifest HANDS the island typed structural capabilities — each field arrives as a grant (ocap), never gets looked up from a vessel-owned table:
 
 | Grant | Carries | Law |
 |---|---|---|
@@ -113,6 +113,6 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wzQ0zEzXqYoOpj72_vQBnkp44cbyZzqbz-9NQitCTNQ
+<<^ code="&#x0003;">>ni:///sha-256;_XMUhuW7UBf114M9ge1DAs3zkbicxPdn6_vfMYFHvI8
 
 <<^ code="&#x0004;" -> to="?">>

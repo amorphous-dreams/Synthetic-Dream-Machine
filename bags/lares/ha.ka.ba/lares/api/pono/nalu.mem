@@ -25,7 +25,7 @@ uri-path    = "ha.ka.ba/lares/api/pono/nalu"
 A nalu does not carry one molecule of water — it carries the entire shaped movement
 of the sea. The wave arrives as one coherent thing, composed of many.
 
-The nalu is the changeset delivery pulse — the moment when scattered writes become
+The nalu names the changeset delivery pulse — the moment when scattered writes become
 one consistent observed state delivered to all observers atomically. It is the
 architectural invariant below the grammar layer. Operators do not emit nalu; the
 engine delivers it.
@@ -138,8 +138,8 @@ itself has no sigil; the `\tick` sigil hooks into the nalu.
 
 !! Yin-Collapse Law
 
-''Law:'' The TW5 wiki (`$tw.wiki`) IS the primary synchronous reactive engine.
-The TS layer is the minimal shore around it — only what TW5 cannot do from inside.
+''Law:'' The TW5 wiki (`$tw.wiki`) serves as the primary synchronous reactive engine.
+The TS layer forms the minimal shore around it — only what TW5 cannot do from inside.
 
 ''Landed architecture (2026-05-30):''
 
@@ -282,6 +282,6 @@ edges encoded with FRU orientation assumptions need migration. See `uefn-scene.m
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SGdRqc2Br1PyMnDqIdmxVUJKPcWR1XH2zOuIrvRuXRQ
+<<^ code="&#x0003;">>ni:///sha-256;wN-rRW0QUE4CmeSS3j9pm_qgHdNBa9Kxbe2__gvBioI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -22,10 +22,10 @@ Device lifecycle hook: run this block once per //nalu// (simulation tick / refre
 Verse equivalent: `OnSimulate(StagedUpdates)<suspends>` entry point.
 
 ''Status: DEFERRED'' — full pono law spec and Hawaiian proper name await Visual Verse tick node
-confirmation (UE6 target ~2027). The //nalu// (wave) is the infrastructure concept below this;
-`\tick` is the grammar-layer hook into the nalu. See [[nalu|lar:///ha.ka.ba/lares/api/pono/nalu]] for the wave architecture.
+confirmation (UE6 target ~2027). The //nalu// (wave) names the infrastructure concept below this;
+`\tick` serves as the grammar-layer hook into the nalu. See [[nalu|lar:///ha.ka.ba/lares/api/pono/nalu]] for the wave architecture.
 
-Concurrency runtime (async-first sprint) is a prerequisite. Grammar registration only for now.
+Concurrency runtime (async-first sprint) comes first as a prerequisite. Grammar registration alone stands.
 
 <<~/ahu>>
 
@@ -37,6 +37,6 @@ Concurrency runtime (async-first sprint) is a prerequisite. Grammar registration
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Bv8Ys3XBmcLTLIaxmgNR1WGDAjOpyvpy1J9nBzwfmAw
+<<^ code="&#x0003;">>ni:///sha-256;-aX5TBDHXseuzo-fQ5KRKTcUfxPsUqcceJiMpr0dqzY
 
 <<^ code="&#x0004;" -> to="?">>

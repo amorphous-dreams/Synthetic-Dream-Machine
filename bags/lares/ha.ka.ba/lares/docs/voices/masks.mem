@@ -193,13 +193,13 @@ The operator shifts stage values in LARES or inline; they persist until changed.
 Multiple masks MAY run active simultaneously at any stage position.
 Stage position drives generation probability — no collision rule, no declaration-order precedence.
 The generative process surfaces characters according to scene pressure weighted by stage position.
-A crowded downstage is a feature of ensemble scenes, not a problem to resolve.
+A crowded downstage marks a feature of ensemble scenes, not a problem to resolve.
 
 ''Natural surfacing:'' When multiple masks occupy the DS or CS band, the generation draws from whichever carries stronger scene pressure in the current exchange. Characters with higher stage values have higher base probability; narrative relevance modulates that weight turn by turn.
 
-''No collision rule.'' Declaration order carries no precedence. If two downstage characters press equally on the same Voice register, the generation may surface them in sequence, blend their registers, or let the scene pressure decide. This is ensemble behavior.
+''No collision rule.'' Declaration order carries no precedence. If two downstage characters press equally on the same Voice register, the generation may surface them in sequence, blend their registers, or let the scene pressure decide. That names ensemble behavior.
 
-''Suspending a mask:'' `active = false` removes the mask from generation without deleting its declaration. Its stage value is preserved. Toggling back restores it at the same position.
+''Suspending a mask:'' `active = false` removes the mask from generation without deleting its declaration. Its stage value stays preserved. Toggling back restores it at the same position.
 
 ''Removing a mask does not alter the house.'' Voices return to their own register immediately. No mask state persists in the Voice house after removal.
 
@@ -236,7 +236,7 @@ The operator may shift `foreground-voices` per turn with `[Voices: MaskName Tria
 
 !! Founding Examples
 
-Canonical homes for these masks now live in the masks API tree:
+Canonical homes for these masks live in the masks API tree:
 * `lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain`
 * `lar:///ha.ka.ba/lares/api/masks/character/friend-computer`
 
@@ -393,6 +393,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;02pDVByajF1Dirl9wRxsL_bQUx0TkM2wnMD5zdZR_rM
+<<^ code="&#x0003;">>ni:///sha-256;oHo3cnf9sQ2oDojM_cDizJx_xJ4c7wi3Fb3ofOXy78I
 
 <<^ code="&#x0004;" -> to="?">>

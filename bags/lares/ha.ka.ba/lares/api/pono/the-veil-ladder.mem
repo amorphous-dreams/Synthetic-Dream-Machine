@@ -24,7 +24,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/the-veil-ladder"
 
 ! The Veil-Ladder ~ from throwaway to true-name, a self on the fed mesh
 
-A self on the DreamNet reads not as a row in a registry but as a ''ladder of veils'' — climbed and descended by choice, each rung held by ''feeding'' (attention · works · the pledge), never by a coin. ''Web3, not cryptocurrency: ritual not DNS, capability not account.'' The myth is the spec: ''Shadowrun's pre-SIN ShadowTalk'' (SINless handles, rep on the handle, a blown SIN //burned//), ''Mage's Digital Web'' (a self is a mask, a place is consensus held by attention), and ''Earthdawn's True Names'' (a published name is power — guard it), made literal.
+A self on the DreamNet reads not as a row in a registry but as a ''ladder of veils'' — climbed and descended by choice, each rung held by ''feeding'' (attention · works · the pledge), never by a coin. ''Web3, not cryptocurrency: ritual not DNS, capability not account.'' The myth writes the spec: ''Shadowrun's pre-SIN ShadowTalk'' (SINless handles, rep on the handle, a blown SIN //burned//), ''Mage's Digital Web'' (a self wears a mask, a place holds consensus by attention), and ''Earthdawn's True Names'' (a published name carries power — guard it), made literal.
 
 <<~/ahu>>
 
@@ -36,7 +36,7 @@ The veil is not binary (anon vs known). It is a ''ladder'', and reputation is ''
 
 * ''THROWAWAY anon'' — a key born for one breath: no name, no rep, gone. The privacy floor (FastJack's //anon comment//; the reason TOR exists). One vessel, one use, unlinkable by construction.
 * ''LIVED anon'' — a pseudonym that //stays//: earns a name by ''works'' (federates artifacts ≥ meme-rating, roams the open cabals), SINless and ''unpledged''. Reputation is ''BORN here'', earned solo, vouched by no one. FastJack himself.
-* ''PLEDGED Handle'' — a lived anon //promoted//: a guild member ''pledges'' the standing the anon already earned, and a ''published DID/CID'' appears on the DreamNet (a maintainer's territory), now ''multi-vessel'' (carried across devices) and ''burnable''. The pledge does not create standing — it lifts earned standing into the open, on an edge that can be slashed.
+* ''PLEDGED Handle'' — a lived anon //promoted//: a guild member ''pledges'' the standing the anon already earned, and a ''published DID/CID'' appears on the DreamNet (a maintainer's territory), ''multi-vessel'' (carried across devices) and ''burnable''. The pledge does not create standing — it lifts earned standing into the open, on an edge that can be slashed.
 
 The pledge is the shore where distributed trust (a vouch) mints a public thing (a Handle) — //which is why the Handle ceremony carries the pledge-relationship.//
 
@@ -141,6 +141,6 @@ For the citizen with ''no quorum yet'', the floor is a ''standalone recorded cod
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 
-<<^ code="&#x0003;">>ni:///sha-256;njXYmT-9lpXsMW_tYK2g6t3WWJVTG9PPBjiOkMKOLCo
+<<^ code="&#x0003;">>ni:///sha-256;-nkdDuYF_StVUPUQ7zHQXaV8IIAbrww4HX7Vq2MWDU8
 
 <<^ code="&#x0004;" -> to="?">>

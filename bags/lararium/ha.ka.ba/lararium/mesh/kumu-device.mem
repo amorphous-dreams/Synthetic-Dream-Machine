@@ -31,7 +31,7 @@ pranala tiddler edges via `extractReactionBindings`.
 ''No separate registration step.'' Adding a kumu type means authoring a type meme with
 `reaction:listenable` and `reaction:subscribable` edges. The spec derives at parse time.
 
-''Verse alignment:'' A kumu device meme is a Lararium `creative_device` equivalent.
+''Verse alignment:'' A kumu device meme stands as a Lararium `creative_device` equivalent.
 `@editable` properties = ahu slot URIs. OUTPUT pins = `KumuListenable`. INPUT pins = `KumuSubscribable`.
 
 <<~/ahu>>
@@ -196,6 +196,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4yOMbc-5ry5px9kdjqz0K7Hh8ru-MmIpkxkdnuiRnhI
+<<^ code="&#x0003;">>ni:///sha-256;5JYz2_UeRk7P-SHyfQQXUODQk8cqqwPH_p5yzXLlDEQ
 
 <<^ code="&#x0004;" -> to="?">>

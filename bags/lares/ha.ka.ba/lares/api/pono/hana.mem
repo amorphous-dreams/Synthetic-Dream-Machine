@@ -27,7 +27,7 @@ interpreter for its body — the body content carries a foreign grammar
 (JSON, YAML, code, formula), not TW5 wikitext, parsed by a registered guest interpreter. English alias: `\task`.
 
 Where `meme` sets tiddler context and `wehe` declares a procedure, `hana` declares work
-that runs through a non-TW5 grammar engine. The block is bounded: it opens, the foreign
+that runs through a non-TW5 grammar engine. The block stays bounded: it opens, the foreign
 grammar interpreter consumes the body, it closes.
 
 <<~/ahu>>
@@ -39,7 +39,7 @@ grammar interpreter consumes the body, it closes.
 A hana block MUST carry a grammar-key as its first argument.
 The grammar-key MUST identify a registered guest interpreter.
 A hana block MUST close with `<<~/hana>>`.
-A hana block body MUST be valid input for the named grammar interpreter.
+A hana block body MUST read as valid input for the named grammar interpreter.
 
 <<~/ahu>>
 
@@ -65,6 +65,6 @@ A hana block body MUST be valid input for the named grammar interpreter.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ED2CXVxGih5_cxuYqIEh-WRR47tPXvEnhob7iOAl3ZU
+<<^ code="&#x0003;">>ni:///sha-256;yIVCBeTyzw75mmetpJi9SDpVXT4AtNkFwlOkX3xZor0
 
 <<^ code="&#x0004;" -> to="?">>

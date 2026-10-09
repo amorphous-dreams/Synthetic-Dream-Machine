@@ -155,10 +155,10 @@ publishes the identity — a `_atproto.<domain>` TXT carrying `did=<did>`, ''or'
 the identity, the same way a Handle presents and the persona-KEL owns. Two designs reaching //both
 directions must agree// separately reads as convergent evidence, never as borrowing.
 
-''GAP 1 — the RETURN DIRECTION now carries a field, and its conventions stay unwritten.'' Every
+''GAP 1 — the RETURN DIRECTION carries a field, and its conventions stay unwritten.'' Every
 `HandleClaim` member holds an optional `returnLocator`, so a card states //where the far side answers//
 and a surface verify knows where to look. What each surface must //publish there// — the record type, the
-field, the exact bytes naming the prefix back — remains unstated per row. The cure rhymes and the type now
+field, the exact bytes naming the prefix back — remains unstated per row. The cure rhymes and the type
 makes room for it: ''the surface names the prefix back''.
 
 ''GAP 2 — CLOSED. The claim reads STRUCTURED.'' `HandleClaim` stands as a discriminated union on
@@ -280,6 +280,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;NeYAvK1eOWvUU8IIybJowxMDkDTc5g4WwOHVo9Tdofs
+<<^ code="&#x0003;">>ni:///sha-256;seYYY5gG1CcLYQ1yS8eMIywJa5IxMe3GXXkfFWf8wYg
 
 <<^ code="&#x0004;" -> to="?">>

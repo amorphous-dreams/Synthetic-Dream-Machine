@@ -84,7 +84,7 @@ The canonical pranala law (`lar:///ha.ka.ba/lares/api/pono/pranala`) settles thi
 The parser tracks enclosing `ahu` fragment context during scan.
 `from_socket` carries the fragment URI; `from_uri` carries the carrier URI.
 
-The parser implementation in `graph/pranala-parser` may now proceed on this basis.
+The parser implementation in `graph/pranala-parser` may proceed on this basis.
 
 <<~/ahu>>
 
@@ -169,6 +169,6 @@ The graph-traversal model this carrier cluster describes (`Locus`/`LociGraph`, B
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W970wEB9CVfXWrMjTVed0FrE9cYbjLvxwUxOdDdyuhk
+<<^ code="&#x0003;">>ni:///sha-256;U8q8hQKMOhWW3XG71j2m3ejlWUVHslclurcskha_Zqk
 
 <<^ code="&#x0004;" -> to="?">>

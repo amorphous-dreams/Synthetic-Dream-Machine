@@ -50,7 +50,7 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 
 <<~ ahu #/as-mounted>>
 
-!! The layers exactly as three composites mount them today
+!! The layers exactly as three composites mount them
 
 Three `CompositeStore` instances stand in a running node, and one shape serves the browser. Bottom row first (lowest priority); the top row wins a read. ''`default`'' marks the layer the composite's UNBAGGED writes fall into — `addLayer` re-points `writableStore` at every layer registered with `writable:true` and `defaultWritable !== false` (`packages/lararium-mesh/src/composite-store.ts:123`), so the LAST such layer holds the office. ONE law names that layer for every mounter: `slotLayerFlags` / `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) — the working slot when its handle stands, else the wiki's canon bag (the floor, never a red); the volatile temp slot NEVER holds the office. Witness: `packages/lararium-mesh/tests/composite-store.test.ts` "the default writable under the recipe layer model".
 
@@ -89,7 +89,7 @@ The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:/
 
 !!! C. The HOST composite (VM-free, one per vessel)
 
-`assembleVessel` + `mountWikiSlot` (`packages/lararium-mesh/src/open-vessel-core.ts`), invoked by `wikiCap` (`packages/lararium-tw5/src/core-caps.ts`) — which now requires the daemon cap and awaits its `workerEa`, because the draft doc resolves through the daemon's slot-doc resolver (`resolveSlotDocs`, `vessel-steps.ts`) — the SAME call the island mount makes, so host and island mount ONE draft doc for one slug.
+`assembleVessel` + `mountWikiSlot` (`packages/lararium-mesh/src/open-vessel-core.ts`), invoked by `wikiCap` (`packages/lararium-tw5/src/core-caps.ts`) — which requires the daemon cap and awaits its `workerEa`, because the draft doc resolves through the daemon's slot-doc resolver (`resolveSlotDocs`, `vessel-steps.ts`) — the SAME call the island mount makes, so host and island mount ONE draft doc for one slug.
 
 | layer (top wins) | writable | default | sync class | doc keyed by |
 |---|---|---|---|---|
@@ -107,7 +107,7 @@ The host mounts NO `working` and NO `personal` layer. A role cap composed alongs
 
 <<~ ahu #/as-routed>>
 
-!! The cascade ~ which KIND of tiddler lands where today
+!! The cascade ~ which KIND of tiddler lands where
 
 The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/lararium-tw5/tiddlers/lar-bag-paths.tid:5-18`) walks newline-separated filters against the saving title; first non-empty result names the slot, an empty operand from a NAMED rule withholds, and no match names a router gap that still lands at `current-wiki-bag` with a console warning (`island-adaptor.ts:118-160`). Every rule reads the ''title''; no rule reads a field (`island-adaptor.ts:284-289` states why: a delete runs after the tiddler has gone).
 
@@ -300,6 +300,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uId1UxGX-Y1hLmQv3o94ePzDcv9gmTIPXl8s681xcSA
+<<^ code="&#x0003;">>ni:///sha-256;OrP_4YdGcEel3v1WsyDt_nmkmLaFzDU7LSqi7WF99GA
 
 <<^ code="&#x0004;" -> to="?">>

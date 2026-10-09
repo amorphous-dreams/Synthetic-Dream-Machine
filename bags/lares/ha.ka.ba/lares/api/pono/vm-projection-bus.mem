@@ -23,12 +23,12 @@ uri-path    = "ha.ka.ba/lares/api/pono/vm-projection-bus"
 
 ! VM Pool → Projection Messaging Bus
 
-The projection bus is the coupling between the TW5 VM (widget tree, render events)
+The projection bus couples the TW5 VM (widget tree, render events)
 and the ReactionEngine (CRDT projection, meme store mutations). It carries a Verse-aligned `signalable`/`subscribable`
 asymmetry baked into the TW5 wiki event system.
 
 ''Law:'' TW5Engine does not know about ReactionEngine. ReactionEngine registers
-itself onto TW5Engine at runtime. The direction of dependency is:
+itself onto TW5Engine at runtime. The direction of dependency runs:
 `ReactionEngine → TW5Engine`, never the reverse.
 
 <<~/ahu>>
@@ -185,6 +185,6 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ewdUQ2gN6HveILLUVcj74kN40jO3HFMXuomlCiohAV8
+<<^ code="&#x0003;">>ni:///sha-256;fNar_xFHgtnqv6wY7kI9eYf0w5h715Z4Z2mZy_nnKwc
 
 <<^ code="&#x0004;" -> to="?">>

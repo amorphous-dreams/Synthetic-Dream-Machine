@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/pono-sigil"
 
 ! Pono (Sigil)
 
-''The sigils are the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
+''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
 
 //pono// — Hawaiian: rightness, correctness, balance, moral alignment; proper, fit, just.
 
@@ -40,7 +40,7 @@ the same word because a `pono` edge asserts alignment — the naming runs intent
 
 A pono edge MUST carry a FROM node and a TO node.
 A pono edge MUST express a correctness or constraint relationship.
-A pono edge MUST NOT be used for arbitrary semantic links — use pranala or loulou.
+A pono edge MUST NOT carry arbitrary semantic links — use pranala or loulou.
 An optional `role:` qualifier further specifies the constraint kind.
 
 <<~/ahu>>
@@ -65,6 +65,6 @@ An optional `role:` qualifier further specifies the constraint kind.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6glY08b74Mn918G3_SbI85gOPrpzqDdz0P5A_JSFamo
+<<^ code="&#x0003;">>ni:///sha-256;9l3NvY02XOaz237wWnHaLNsHXS52k40qHc4nBzgJMrA
 
 <<^ code="&#x0004;" -> to="?">>

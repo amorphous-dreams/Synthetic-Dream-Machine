@@ -36,7 +36,7 @@ written    = "2026-07-20"
 !! The problem dissolves, it does not solve
 
 ''You cannot revoke a capability globally and instantly in a no-global-now mesh.'' A
-partitioned peer holds a stale cap until it syncs; there is no global present to broadcast
+partitioned peer holds a stale cap until it syncs; no global present stands to broadcast
 into (#/causal-islands). Chasing a //firewall// — a perfect, instant, mesh-wide NO — chases a
 global now, and manufactures the very thing the mesh forbids.
 
@@ -178,6 +178,7 @@ cannot.
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
@@ -195,6 +196,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8cqw57dzk1PEvnHbcDd2IzP2df_T5bEV-wj0-cNQ-ts
+<<^ code="&#x0003;">>ni:///sha-256;Kiu04RLCS3AkvJQbv9-hxv7vwrQhMlXjzngO-ZhzO-M
 
 <<^ code="&#x0004;" -> to="?">>

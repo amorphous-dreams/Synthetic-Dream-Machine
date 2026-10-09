@@ -27,7 +27,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
 
 The Invented Ripple names a deferral justified by a migration cost the node never measured.
 
-The refactor reads correct and the node names it as follow-up: //it would ripple through the CLI, the MCP surface, and the witnesses.// Measured afterward: ''three files, eight sites, and no MCP consumer existed at all.'' The ripple was invented, and it was invented in the same commit that named the invariant the deferral was violating.
+The refactor reads correct and the node names it as follow-up: //it would ripple through the CLI, the MCP surface, and the witnesses.// Measured afterward: ''three files, eight sites, and no MCP consumer existed at all.'' The node invented the ripple, in the same commit that named the invariant the deferral violated.
 
 <<~/ahu>>
 
@@ -67,6 +67,6 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0fmPzZOAivMZLHWf3X0mUmU-p4sg3tT7PK7SxvqHvyA
+<<^ code="&#x0003;">>ni:///sha-256;gUwkPX5YL-uqxegcwhk4A6WM4X22jgy8MRxivH5acjQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -121,7 +121,7 @@ A Herm ''boots permissionlessly'' (its own self-certifying key, anon — no bles
 
 !!! The Herm under the sealed-sharing model ~ the blind carriage made concrete
 
-The `#has {rhizome}` carriage now names ''built code'' (the sealed-sharing model, #cap-tier, #carry-contract). ''The carriage is dumb — the node is not:'' the WAYFARER runs the immune keel, but its CARRIAGE reads nothing by construction. Made concrete:
+The `#has {rhizome}` carriage names ''built code'' (the sealed-sharing model, #cap-tier, #carry-contract). ''The carriage is dumb — the node is not:'' the WAYFARER runs the immune keel, but its CARRIAGE reads nothing by construction. Made concrete:
 
 * ''`rhizome.forward` = the authenticated carriage relay'' — it runs an Ed25519 proof-of-possession handshake, STAMPS every envelope's `from` with the sender's PROVEN key (a forged `from` never crosses), moves sealed `@cad` ciphertext (`cid = BLAKE3(ciphertext)`, verify-cap ⊥ read-cap), and reads NOTHING. "sealed mana along the leylines" now reads literal: the disclosure shore at the wire (#/lares-viales) made code. A ''standing relay'' is this cap stood always-on — the Herm's whole reason to sit at the crossroads.
 * ''custody ⊥ findability = the bag-tracker'' (#/the-shore) — a tuber announces //"I hold cid X"// into the Herm's DHT-free `cid → holders` hint index; any rhizome serves the hint. The Herm holds the HINT, never the read-cap; a fetcher re-verifies `BLAKE3(bytes)==cid` itself, so the hint stays a hint, never an authority on the bytes.
@@ -184,6 +184,7 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>
@@ -197,6 +198,6 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XWVnFfcHRg5JxD8XLULzTV8q7GthV0_wGV0m-QSLF24
+<<^ code="&#x0003;">>ni:///sha-256;N7AJaiOr4QK9OpJwfgA9drL2wDFDFllvHool1xeXA-4
 
 <<^ code="&#x0004;" -> to="?">>

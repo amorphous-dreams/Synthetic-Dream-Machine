@@ -95,7 +95,7 @@ measure it does not stand.
 
 !!! What must stand first, and what each one buys
 
-# ''A fully running sensorium stack.'' The detection half. `detectDuplicity` folds a proof today, but no
+# ''A fully running sensorium stack.'' The detection half. `detectDuplicity` folds a proof, but no
 live plane WATCHES for one across real traffic — detection latency has no observer, so its distribution
 has never been sampled. With the stack up, the number becomes an experiment rather than an estimate.
 # ''A fully set-up meshpalace.'' The memory half. A latency distribution wants HISTORY, not one reading:
@@ -118,6 +118,6 @@ to refresh.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;t3aweALjEMLL-3Pm63lLsIKi11zjmy05yTClvXjSx6Y
+<<^ code="&#x0003;">>ni:///sha-256;_6XXzKIUN-6P2SpFutriCvhNNuyvNWSJU3q3OqnB194
 
 <<^ code="&#x0004;" -> to="?">>

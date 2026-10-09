@@ -50,7 +50,7 @@ Water chooses its channel. `wai` selects //which content renders// in the docume
 A `wai` block MUST carry a TW5 filter expression as its first argument.
 A `wai` block MUST close with `<<~/wai>>` (or `<<~/if>>`).
 A `wai` block body MUST render only when the filter yields a non-empty result.
-A `wai` filter MUST be a valid TW5 filter expression, evaluated in `currentTiddler` context.
+A `wai` filter MUST read as a valid TW5 filter expression, evaluated in `currentTiddler` context.
 A `wai` block MUST NOT carry `mode=` — a conditional carries no projection posture.
 A `wai` cascade MAY chain `kahawai` (`\elseif`) branches and MUST close at most one `mukuwai` (`\else`).
 
@@ -119,6 +119,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HiEJQjlF2qH6SJNP6V_WGY95uAl688wkQAlFbqoU_b8
+<<^ code="&#x0003;">>ni:///sha-256;pYdgnUfT0KWZOxksWcQHDkdogJ-HdvsRu8vUFykcshw
 
 <<^ code="&#x0004;" -> to="?">>

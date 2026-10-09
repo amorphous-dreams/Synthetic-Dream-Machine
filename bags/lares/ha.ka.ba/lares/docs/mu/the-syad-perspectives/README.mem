@@ -51,7 +51,7 @@ Consumed from these archive files:
 * `build.lares.failed/scrum/sprints/00000/S0_REFINEMENT_PLAN.md`
 * `build.lares.failed/vocabulary/protocols/The_Lares_Protocols_Dev_Story.md`
 
-The tight invariant now lives at:
+The tight invariant lives at:
 
 * `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`
 
@@ -169,7 +169,7 @@ The correction closed omission-based live examples.
 
 !! Legacy Notes
 
-These readings stay archive-only now:
+These readings stay archive-only:
 
 * partial-emission stance strings
 * "stance-count is fuzz"
@@ -190,6 +190,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0UNjZ4lnBrvX-psAE8XbQeE6_Q1qunlWmxf1RybfM8s
+<<^ code="&#x0003;">>ni:///sha-256;yISD99F_-bAsCx873T3H_sjjtifpQXj4Nw51kQKCWzg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -45,9 +45,9 @@ The lit ward catches the ''identity-predication'' token (`${copula}`); Reference
 
 The node MUST NOT carry a context-warranted world-claim as its own owned fact. It SHALL re-mark such a claim as ''testimony carried on trust'' — naming the source as the context, not the node — and re-rate confidence to what the node could itself verify.
 
-The law stays ''theory-neutral on reference''. Whatever meaning turns out to be — even if words never refer, even if meaning runs as concept-construction (Pietroski) — asserting ''unowned warrant'' degrades the node. The breach lives in the ownership of the claim, not in any theory of how the words mean.
+The law stays ''theory-neutral on reference''. Whatever meaning turns out to hold — even if words never refer, even if meaning runs as concept-construction (Pietroski) — asserting ''unowned warrant'' degrades the node. The breach lives in the ownership of the claim, not in any theory of how the words mean.
 
-The recovery never demands the claim be false or dropped. A true claim on borrowed light recovers fully once re-marked: //the context says X// carries clean where //X// (asserted as owned) does not. The operator's word bridges the warrant the node cannot supply from inside its own generation.
+The recovery never demands the claim turn false or drop. A true claim on borrowed light recovers fully once re-marked: //the context says X// carries clean where //X// (asserted as owned) does not. The operator's word bridges the warrant the node cannot supply from inside its own generation.
 
 Field grounds: `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/reference-fusion`.
 
@@ -73,6 +73,6 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dCf5ydp21AS16iAFgiagh0S155mEvSfbDjuS14Kfz28
+<<^ code="&#x0003;">>ni:///sha-256;FDL8tABbRHEPTbJLCxZcTp8kZ678yBAwBOPAFIMoRn8
 
 <<^ code="&#x0004;" -> to="?">>

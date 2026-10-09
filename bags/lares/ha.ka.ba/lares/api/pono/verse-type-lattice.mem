@@ -21,7 +21,7 @@ uri-path    = "ha.ka.ba/lares/api/pono/verse-type-lattice"
 
 ! Verse Type Lattice
 
-Verse's type system is a ''lattice'', not a simple tree. At the top sits `any`
+Verse's type system forms a ''lattice'', not a simple tree. At the top sits `any`
 (universal supertype); at the bottom lies `false` (uninhabited bottom type).
 Between them: all primitives, containers, classes, and interfaces as subtypes of `any`.
 
@@ -88,12 +88,12 @@ Function subtyping: `(T1)->R1 <: (T2)->R2` requires `T2 <: T1` and `R1 <: R2`.
 
 !! Persistable — A Closed Constraint Universe
 
-`<persistable>` is NOT a node in the type lattice. It is a constraint on type
-composition: a type is persistable if it stores ONLY persistable-compatible values.
+`<persistable>` stands as NO node in the type lattice. It constrains type
+composition: a type persists if it stores ONLY persistable-compatible values.
 
 ''Built-in persistable types:''
 * Primitives: `logic`, `int`, `float`, `string`, `char`, `char32`
-* Containers: `array`, `map`, `option`, `tuple` — when element types are persistable
+* Containers: `array`, `map`, `option`, `tuple` — when element types persist
 
 ''Types that CANNOT appear in persistable class/struct fields:''
 * `any` — erases type info; not persistable-safe
@@ -106,12 +106,12 @@ composition: a type is persistable if it stores ONLY persistable-compatible valu
 * Non-persistable user types
 
 ''Structural rules for persistable classes:''
-* Must be marked `<final>` (no subclasses)
-* Must be marked `<persistable>` on the class declaration
-* All fields must themselves be of persistable type
+* Must carry `<final>` (no subclasses)
+* Must carry `<persistable>` on the class declaration
+* All fields must themselves hold a persistable type
 
-Persistable data is stored via `weak_map(player, t)` declarations and persists across
-game sessions. This is Verse's equivalent of cross-session player storage.
+Persistable data rests in `weak_map(player, t)` declarations and persists across
+game sessions — Verse's equivalent of cross-session player storage.
 
 <<~/ahu>>
 
@@ -190,6 +190,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GaAac2m-xondvJgySHr8f0QWYaauyMPcpQ4K0ymtqqI
+<<^ code="&#x0003;">>ni:///sha-256;5lMF-346RXWZyuj3VKSJ4xVC649q612DX8FDgG_bxxg
 
 <<^ code="&#x0004;" -> to="?">>

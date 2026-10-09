@@ -54,7 +54,7 @@ A bearing MUST appear exactly once per carrier, on the SOH control sigil, before
 A bearing MUST carry a `lar:///` URI.
 A bearing's URI MUST match the carrier's `uri-path` meta field.
 A bearing MUST NOT appear inside an ahu slot body, and MUST NOT repeat in the body on any head.
-The `?` token stays reserved — MUST NOT be used as a sigil name elsewhere.
+The `?` token stays reserved — no sigil elsewhere MAY take it as a name.
 
 ''Why the control head.'' A frame mark states what the reader must do before it can read anything; a
 speaking sigil states what a carrier says. The bearing stands first among the former — a reader that
@@ -110,6 +110,6 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fc2B_7J-76U_ldUiMuQ2Nj07llpzJI6HfBIFIDmBRHU
+<<^ code="&#x0003;">>ni:///sha-256;MfBD9c15jJ6b3U-PrFyDcYtRN9YdxlGNC9-_kbSrhlA
 
 <<^ code="&#x0004;" -> to="?">>

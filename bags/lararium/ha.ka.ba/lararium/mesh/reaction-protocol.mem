@@ -33,7 +33,7 @@ It never addresses another island, another vessel, or the network.
 * Cross-vessel routing: CRDT convergence — write outcome tiddler, observe convergence
 
 The production dispatch path runs through `reaction-router.ts` (nalu-driven).
-`ReactionGraph` is the routing table that `reaction-router.ts` populates and queries.
+`ReactionGraph` serves as the routing table that `reaction-router.ts` populates and queries.
 `fireSync` ships for direct test use only; production code MUST NOT call it directly.
 
 <<~/ahu>>
@@ -170,6 +170,6 @@ appears in production paths.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C71O01nVVx4oxNgH3YbNi1dGHuUDQC9X3TEgP8kLuP8
+<<^ code="&#x0003;">>ni:///sha-256;U1xcOFFs156g4cBTbXervbCjXAvhEekHcSXv1rtMfcw
 
 <<^ code="&#x0004;" -> to="?">>

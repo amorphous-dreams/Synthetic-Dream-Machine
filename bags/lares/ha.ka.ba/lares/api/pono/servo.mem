@@ -31,8 +31,8 @@ written   = "2026-06-29"
 A constant guesses; a ''servo'' tracks. Wherever the stack sets a numeric bound — a flush
 depth, a coalesce window, a kill-timeout — that constant starts as a guess and drifts wrong
 the moment load moves off the mean it guessed for. The servo ''measures the signal the bound''
-''protects and tunes the bound toward a set-point'', so the gate stops being a guess and starts
-being a governor.
+''protects and tunes the bound toward a set-point'', so the gate stops guessing and starts
+governing.
 
 The recognition (a 2026-06-26 survey, capture keel `capture-annotation-model#nalu-flush-hardening`):
 ''every biological collect-then-fire system servos its threshold to a set-point'' — no neuron
@@ -166,7 +166,7 @@ WITNESSED across two packages:
   It bounds a wedged mine to ≤ ceil while never false-killing a slow-but-honest one.
 
 The network ring lifts the same two-loop to the wire — ''the servo becomes congestion control'',
-the receiver's gate signalling the sender (the one piece the intra-island governor lacks today). Held
+the receiver's gate signalling the sender (the one piece the intra-island governor lacks). Held
 for the ring, not built here (`projection-nalu#network-ring`).
 
 ''The governor rides py/R too.'' The same servo law that breathes the TS
@@ -187,6 +187,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KPpihJy1IdLaMyVncG7-wMhcecqvqIrmPeUYxHX77UA
+<<^ code="&#x0003;">>ni:///sha-256;xOAXNhREcCD5gSYOUT82vabYU5ofTMK0inhFncyRPRE
 
 <<^ code="&#x0004;" -> to="?">>

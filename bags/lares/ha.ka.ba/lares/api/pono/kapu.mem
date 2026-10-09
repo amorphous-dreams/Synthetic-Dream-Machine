@@ -26,7 +26,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 ! Kapu — Above-Namespace Law (Kānāwai)
 
 Kapu names the carrier tier that operates above the base `<<~` namespace.
-A kapu carrier stands set apart: it declares elevated authority through namespace sigils or kernel-tier control characters, and its content cannot be silently overridden by carriers operating in the base namespace or below.
+A kapu carrier stands set apart: it declares elevated authority through namespace sigils or kernel-tier control characters, and no carrier operating in the base namespace or below can silently override its content.
 This meme stands as a kapu carrier — it enacts the law by presenting as a specimen of itself.
 
 <<~/ahu>>
@@ -133,6 +133,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fTkHgTSluuMyQfCWzaqJ-m0bmTrXFpf-wO_pQkO5Z6w
+<<^ code="&#x0003;">>ni:///sha-256;S96_hJtyAZDfvjqiKNCabWCYEq1LaS9Gmet4IfgKrJw
 
 <<^ code="&#x0004;" -> to="?">>

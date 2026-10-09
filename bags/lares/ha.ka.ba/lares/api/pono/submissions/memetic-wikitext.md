@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;IvgLd45kFEmHQ_4HBU2S-DdpPRgETuCkM9VPlV93cDc"
+source-check: "ni:///sha-256;iv7WaSfL6OjUxMd7GfC6FXbIlLjnUx8pIUw8FhQKdiM"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -42,7 +42,7 @@ This document holds **submission-draft** maturity. The lexical structure, dual-l
 
 **Out of scope.** The epistemic ontology (the `syad` standpoints, `saptabhaṅgī` predications, and `mu` tools) lives in `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives` and `lar:///ha.ka.ba/lares/api/mu/the-four-tools`; the Law of Fives and the attention scale live in `lar:///ha.ka.ba/lares/api/mu/the-law-of-5s` and `lar:///ha.ka.ba/lares/api/pono/attention-scale`. The operational authoring discipline lives at `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`. The live sigil registry rides the SHELF itself — every tiddler tagged `lar:///ha.ka.ba/tags/SharktoothSigil`, read straight from the wiki. No TOML parse path runs; no kernel carrier documents the runtime, because none exists to document — the SharktoothSigil tiddlers and the grammar-cache they feed ARE the runtime.
 
-**One face, not two.** This carrier is the **specification face** of `memetic-wikitext`, and now the only face: it states the language in full, while per-sigil semantics live at each sigil's own `api/pono` meme. **NO FACE RUNS THE GRAMMAR** — the SharktoothSigil tiddlers do, one per word, and the spec describes what those tiddlers already say.
+**One face, not two.** This carrier is the **specification face** of `memetic-wikitext`, and the only face: it states the language in full, while per-sigil semantics live at each sigil's own `api/pono` meme. **NO FACE RUNS THE GRAMMAR** — the SharktoothSigil tiddlers do, one per word, and the spec describes what those tiddlers already say.
 
 **Relation to the `lar:` URI specification.** Memetic-wikitext addresses content by `lar:` URIs. The `lar:` scheme — its anatomy, path arity, and resolution discipline — forms a **separate, sibling submission**: `lar:///ha.ka.ba/lares/api/pono/lar-uri` (Normative Reference [LAR-URI]). This document treats a `lar:` URI as an opaque content identity (see `URI-ref`, #grammar) and defers its internal structure to [LAR-URI]. That scheme's name reads as a mnemonic — **Latent Attention Relation** — for the naming-not-fetching posture this document keeps with it.
 

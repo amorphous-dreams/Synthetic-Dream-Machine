@@ -47,7 +47,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 <<~ ahu #/the-house-today>>
 
-!! The house today — what the founding hearth already built
+!! The house as built — what the founding hearth built
 
 !!! The source-local door, read-only, with the offering HELD
 
@@ -71,11 +71,11 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 The module header says it plainly: nothing calls this fold, so the law stands READY rather than enforced. The test weld fails when a production caller appears and names the cure. ''An auditor reading the offering path must not take a ready function for a live one.''
 
-!!! ★ THE CAUSAL SPLIT THE HOUSE NOW NAMES ★
+!!! ★ THE CAUSAL SPLIT THE HOUSE NAMES ★
 
 The offering record is immutable and content-addressed; there is no scalar currentness field to supersede it. `OfferingKapaeEntry` is a separate semantic act with an `actCid`, canonical `parents`, and a charter fence. Its fixed-point authority fold retains causal closure and returns `held`, `withdrawn`, `unsettled`, `unavailable`, or no verdict. `auditOfferingAntigen` reports rejected candidates as audit evidence without allowing them to manufacture authority. This is historical identity plus receiver-local relation evidence, never a scalar winner.
 
-!!! The announce lane now carries the complete signed record
+!!! The announce lane carries the complete signed record
 
 `offering-announce.ts` defines `PLUGIN_OFFERING_ANNOUNCE_DOMAIN`, `PluginOfferingAnnounce`, and `offeringAnnounceKey`. `writeOfferingAnnounce` keys the public record by the complete `pluginOfferingCid` and carries the signed offering itself, so two offerors announcing the same region remain distinct. `offeringAnnouncesFromDoc` shape-filters raw board records only; `verifyOfferingAnnounce` independently checks the announcement CID, the offeror signature, and the recomputed region. This is additive carriage, not a registry and not an authority verdict.
 
@@ -357,7 +357,7 @@ Independent fields under their own selection pressure each landed on a piece. Th
 
 !! The closure queue — red → cure → CONTROL
 
-The record, recompute, additive announcement, and causal antigen now stand in Mesh. The remaining work is a
+The record, recompute, additive announcement, and causal antigen stand in Mesh. The remaining work is a
 receiver and vessel story; it must not add a scalar currentness field or silently make a public board a
 registry.
 
@@ -463,6 +463,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R7N_vl3OTbROoxVobZxDmsncMFRoejMfc5wfSYCofX4
+<<^ code="&#x0003;">>ni:///sha-256;GBYU1z6VpIzih6d-SV7SQRnMhc9G4cE4DpaCc7a9RnY
 
 <<^ code="&#x0004;" -> to="?">>

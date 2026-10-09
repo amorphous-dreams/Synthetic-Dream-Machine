@@ -109,7 +109,7 @@ substrates buys what separation of hands promised and nobody delivered.
 
 ''AND THE PRECEDENT WITHDRAWN.'' ICANN's 1999 registry/registrar split separated ''roles in a market''; it
 never split ''custody of a name'' — a registrant stays one legal person under one contract. It reads as no
-prior art for quorum custody of a registration, and this meme no longer carries it as one.
+prior art for quorum custody of a registration, and this meme does not carry it as one.
 
 ''THE FIELD'S OWN NEGATIVE CASE, named:'' Matrix bakes the server domain into the user ID (`@user:example.com`),
 so `.well-known` delegation relocates the HOST and never the NAME, and the domain owner holds every identity
@@ -296,6 +296,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q42rD-EAx8YTn1Rizhg_Qi7gJZwr5MxccYpGArJnF6s
+<<^ code="&#x0003;">>ni:///sha-256;9Z-YUHOwW-Tvuj2dyaKF2fvfksSTtGKEemleurzNa5w
 
 <<^ code="&#x0004;" -> to="?">>

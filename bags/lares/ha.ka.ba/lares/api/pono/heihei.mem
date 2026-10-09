@@ -53,7 +53,7 @@ A `heihei` node's arms MUST propagate as `reaction` wires, never as a naked exec
 A `heihei` node MUST evaluate its arms serially by condition-success — never by completion-time (that contrast belongs to `holo`).
 A `case` form MUST carry a `_` default arm.
 
-The condition is a failure context, not a boolean test: the `then` arm fires when the condition succeeds, the `else` arm when it fails.
+The condition names a failure context, not a boolean test: the `then` arm fires when the condition succeeds, the `else` arm when it fails.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NIf7hhazpCu7GPnh9SWvbfuKugNYIHTJp8LNEUO31fo
+<<^ code="&#x0003;">>ni:///sha-256;p2upjCk3FNdh4hJpDzcymgddHdCeGg--nCQ9x_O_NnA
 
 <<^ code="&#x0004;" -> to="?">>

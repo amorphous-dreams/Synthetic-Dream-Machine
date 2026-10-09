@@ -136,11 +136,11 @@ Runtime: `bagScopeOf` / `qualifyStackTag` / `stackOf` and the `stack` filter ope
 
 | carrier form | rule | example |
 |---|---|---|
-| primary meme | derivation algorithm (step 2) | `bags/lares/ha.ka.ba/lares/api/pono/loci.md` |
-| child item | sibling directory named for parent's terminal path segment | `bags/lares/ha.ka.ba/lares/api/pono/loci/meta.md` |
+| primary meme | derivation algorithm (step 2) | `bags/lares/ha.ka.ba/lares/api/pono/loci.mem` |
+| child item | sibling directory named for parent's terminal path segment | `bags/lares/ha.ka.ba/lares/api/pono/loci/meta.mem` |
 
 Any carrier outside this rule reads as repair pressure, not a second lawful siting convention.
-MIGRATION NOTE: the committed canon tree still sits at the pre-ruling layout (`bags/<sub-path>.md`); the operator's load→write wave migrates it — the projector now writes only the ruled form. The meta `file-path` field = a named dual-write of this derivable fact; it retires at the migration wave.
+The committed canon tree sits at the ruled form, and the projector writes only that form. The meta `file-path` field names a dual-write of this derivable fact.
 
 !!! Live Examples
 
@@ -204,6 +204,6 @@ Convention fails when:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0QQXEPMeMRltyC2kZaYACwQ2pLdev6-7I5clEBf5bxA
+<<^ code="&#x0003;">>ni:///sha-256;f00j7Lz2SyYYdMXWCPB-QQztGrQ83PKsESM_aADIHUU
 
 <<^ code="&#x0004;" -> to="?">>

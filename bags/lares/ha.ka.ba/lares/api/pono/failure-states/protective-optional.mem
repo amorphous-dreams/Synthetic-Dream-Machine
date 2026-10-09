@@ -27,7 +27,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states/protective-optional"
 
 The Protective Optional names a compatibility shim built for a consumer that does not exist.
 
-A required parameter would break existing callers, so the node makes it optional //so every existing caller keeps its behaviour//. In an early-alpha codebase with no outside consumers, the callers being protected are ''the node's own tests'' — and the hedge lands exactly where it costs most, because the unsafe default stays live wherever a later hand forgets.
+A required parameter would break existing callers, so the node makes it optional //so every existing caller keeps its behaviour//. In an early-alpha codebase with no outside consumers, the callers it protects are ''the node's own tests'' — and the hedge lands exactly where it costs most, because the unsafe default stays live wherever a later hand forgets.
 
 <<~/ahu>>
 
@@ -43,13 +43,13 @@ A required parameter would break existing callers, so the node makes it optional
 
 <<~ ahu #/law>>
 
-In early alpha, ''an optional parameter is a question about who the node is protecting.''
+In early alpha, ''an optional parameter asks whom the node protects.''
 
 The node MUST NOT add a compat shim for consumers that do not exist (`no-lean-in-early-alpha`).
 The node SHOULD prefer a REQUIRED parameter plus a named absence-value over an optional one with a silent default.
 The node MUST let a required parameter break its own witnesses rather than defaulting past them — the breaks name the sites where the default carried a wrong answer.
 
-''The tell'': a silent default and a considered choice read identically at the call site. A named absence-value makes them differ, which is the whole of the cure.
+''The tell'': a silent default and a considered choice read identically at the call site. A named absence-value makes them differ — the whole of the cure.
 
 <<~/ahu>>
 
@@ -67,6 +67,6 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fxrw8-APxr2xajEnNqD3H5dvHyqHp_Aq80V5CkaKnRg
+<<^ code="&#x0003;">>ni:///sha-256;l2Az7myQOXU9wUZtzhKgi2ab95ESQZpG3pVK05431a8
 
 <<^ code="&#x0004;" -> to="?">>

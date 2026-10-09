@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/grammar-invariants"
 
 !! Grammar agreement ~ the second condition of belonging
 
-''A node belongs to a Nexus by CONTRACT and by AGREEING WITH THE GRAMMAR VECTORS traded there.'' A node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and cannot be bound by what it never parsed — //contract without grammar-agreement reads as a signature over an unread page//.
+''A node belongs to a Nexus by CONTRACT and by AGREEING WITH THE GRAMMAR VECTORS traded there.'' A node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and nothing it never parsed can bind it — //contract without grammar-agreement reads as a signature over an unread page//.
 
 ''This meme held a TODO naming a source file that never existed in this repo's history.'' It stands as GROUND rather than design: what the field already proved, gathered so the design lands on it instead of re-deriving it.
 
@@ -49,6 +49,6 @@ uri-path  = "ha.ka.ba/lararium/mesh/grammar-invariants"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J70nQkHRyRNazGlnNEesLJTX8cMJ6TxiZNydUNALJ3s
+<<^ code="&#x0003;">>ni:///sha-256;b65eEXswdtRMo7DKemifWwKLCITfUgSSuUguNC69TGw
 
 <<^ code="&#x0004;" -> to="?">>

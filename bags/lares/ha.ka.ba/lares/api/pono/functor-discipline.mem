@@ -137,7 +137,7 @@ abstract ⇄ concrete syntax. The architecture's own parse→render pipe ([[rend
 ''Pono reads functorial: keep the arrows — //mālama [i ka] pili//, the''
 ''keeper keeping the relations. Overcollapse reads as the forgetful functor — the map that forgets too''
 ''much, keeping the objects and erasing the morphisms.'' The kahu's verb names the whole discipline:
-//mālama// keeps what moves; a collapse that drops the arrows ''neglects'' the relations it was set to
+//mālama// keeps what moves; a collapse that drops the arrows ''neglects'' the relations it stood to
 tend — and a neglected shrine flickers ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia]]).
 
 A forgetful functor (e.g. `Grp → Set`) keeps the underlying objects and discards the //structure// that
@@ -151,7 +151,7 @@ three warded failure modes read as ''one discipline'' under this lens — each e
 
 All three name the same move: a collapse that drops the arrows. The
 cure is identical across all three — ''keep the arrows.'' The functor laws (preserve identity, preserve
-composition) ARE the coherence guarantee the architecture rests on: a collapse that preserves them
+composition) carry the coherence guarantee the architecture rests on: a collapse that preserves them
 stays sound (the byte-stable holder/palace folds), and a collapse that breaks them deviates off
 true ([[system-pattern-integrities|lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities]]). The discipline gives the off-true tells ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot]]
 #/off-true) one root: each names an arrow the node let fall.
@@ -233,7 +233,7 @@ on the coordinator. Two faults follow if it does:
 <<~ has Fault Broken-Symmetry "breaks/the functor-symmetry ~ a coordinator-side replica runs a DIFFERENT or DEGRADED map than the worker — an unparsed query carries no structural plane, so it yields a truncated Move→Vec; query-side and corpus-side stop sharing ONE functor, and 'vector-nearness ⟺ move-nearness' fails">>
 
 So the shortcut ''forgets an arrow'' — the same degradation the
-meta-law names (#/meta-law), now in the runtime-placement register: two ends of a comparison that must
+meta-law names (#/meta-law), here in the runtime-placement register: two ends of a comparison that must
 share one functor drift onto two maps. ''The honest degrade reads as ABSENCE, never a shadow path.'' A
 missing worker leg collapses to content-only fusion (a named, lesser result the operator can read);
 a coordinator-side replica running its own degraded map is dead water — it //looks// like the same answer
@@ -265,7 +265,7 @@ discipline: ''sovereign-worker primacy.''
 ''Enacted once (this session).'' The recall query-derive moved off the coordinator into the in-VM
 `@daemon` worker — the node-side derive and its disk basis-cache deleted, no fallback kept — so capture
 and recall apply the ''identical'' functor against the same grammar/state. The derive that once ran two
-places (and so risked two maps) now runs one.
+places (and so risked two maps) runs one.
 
 ''Enacted again (this session).'' The worldline reads — the registry lookup and the compare/trajectory
 derive — moved off the node coordinator into the in-VM worker: a node-side holder deleted, the reads
@@ -340,6 +340,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;g28c7RjFJvAxGA09K1v5ZmPZortfmthGcSn6u3l05Uo
+<<^ code="&#x0003;">>ni:///sha-256;z3HORoh2X2Jhuh4Exvj1JyCixZMYMQI4xCLQcBFwSkE
 
 <<^ code="&#x0004;" -> to="?">>

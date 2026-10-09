@@ -157,9 +157,9 @@ names anyone who mints a key and proves it: the gate checks possession, not stan
 such dialer a signature that ties this place to every Nexus whose carry seals the vessel key signs, the very
 correlation the waymark paragraph guards against. The socket narrows who reads it to dialers who prove first; it
 does not unbind the correlation. The per-Nexus wire key owes that cut at the re-found, where each Nexus's wire
-signs under its own key and no one key spans two. The gate discloses more before any proof: its `lar:challenge`
-names the vessel key to any opener, as the relay gate's does — owed to the proof-first protocol lane, where the
-dialer proves first and a stranger draws silence.
+signs under its own key and no one key spans two. Before any proof the gate's `lar:challenge` carries a fresh nonce
+alone and names no key (`auth-wire.ts`, `LarChallengeMsg`); it still tells an opener that a gate answers — owed to
+the proof-first protocol lane, where the dialer proves first and a stranger draws silence.
 
 ''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
@@ -414,6 +414,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6vnvEXypI-tqdd_eJq8SCyKclU3TNJ5LhZMnuDWEezc
+<<^ code="&#x0003;">>ni:///sha-256;76SkZ1hurD-6Qo0OnC6NNzPhJO79FUz6_DfZ74cDjBw
 
 <<^ code="&#x0004;" -> to="?">>

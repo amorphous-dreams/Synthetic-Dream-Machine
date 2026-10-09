@@ -28,12 +28,12 @@ Lararium's target reaches past a literal quine — it runs as a ''self-describin
 one where the content graph contains the rules, schemas, and descriptions of its
 own structure, accessible via the same capability surfaces used to access any other content.
 
-The four quine principles define when this target is reached and how to measure progress.
+The four quine principles define when the system reaches this target and how to measure progress.
 
 ''Theoretical grounding:'' TiddlyWiki (Ward Cunningham's original wiki principle —
 "the simplest online database that could possibly work") meets Smalltalk's
 live image model. In both: the environment contains its own description.
-In neither: the description is a separate documentation artifact.
+In neither: the description stands as a separate documentation artifact.
 
 <<~/ahu>>
 
@@ -253,7 +253,7 @@ source-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme 
 | 3 | Boot-time gate checks `mana`, `confidence`, `source-sha256`; meme preferred if all pass |
 | 4 | Meme is authoritative; TypeScript is fallback only |
 
-''`heleuma = "ba"`'': "ba" (Hawaiian: to carry, to bear) — the meme is now the carrier
+''`heleuma = "ba"`'': "ba" (Hawaiian: to carry, to bear) — the meme serves as the carrier
 of the pattern. The TypeScript file is the material instantiation; the meme is the wave.
 
 <<~/ahu>>
@@ -269,6 +269,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d8jEDagDRNKhQdmcIygQA6htCUXwVQP7ckNV3cNWi5Y
+<<^ code="&#x0003;">>ni:///sha-256;jq4Bw1HHj7AluBEyEAVS1WX6W4-88T7ZaTMXQaqsjGY
 
 <<^ code="&#x0004;" -> to="?">>

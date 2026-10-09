@@ -104,12 +104,12 @@ The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enact
 
 !! Standing law that bites (read the canon before arguing with it)
 
-* ''The frame stands as canon'': `@lararium/memetic-frame` — DOCTYPE → `<<^ code="&#x0001;" from="?" -> to="…">>` → `<<^ code="&#x0002;">>` → `toml meta` first in the body → body → `<<^ code="&#x0003;">>ni:///sha-256;…` → `<<^ code="&#x0004;" -> to="?">>`. Marks: SOH, SOH2 (the one kapu alias), STX, ETX, EOT; each declares its family. One span: first masked STX to first masked ETX; a second is a fault. A spelling outside the frame grammar tears the frame. See `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`.
+* ''The frame stands as canon'': `@lararium/memetic-frame` — DOCTYPE → `<<^ code="&#x0001;" from="?" -> to="…">>` → `<<^ code="&#x0002;">>` → `toml meta` first in the body → body → `<<^ code="&#x0003;">>ni:///sha-256;…` → `<<^ code="&#x0004;" -> to="?">>`. Marks: SOH, SOH2 (the one kapu alias), STX, ETX, EOT; each declares its family. One span: first masked STX to first masked ETX; a second reads as a fault. A spelling outside the frame grammar tears the frame. See `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`.
 * ''Ingest'' = decide(parse, verdict). The deserializer stands as the pure meme→tiddlers function; `verdict()` (Match · Stale · Absent · Torn · Bare) lives in the frame package; checks live in `carrier-check.ts`, composed by the ingest gate; repairs live in normalize; policy lives at each door. A stale check on a human edit warns; a torn frame refuses; text with no frame reads as bare data, UNSTABLE, never a meme.
 * ''Never refuse on the stock syncer path''; surface on the alert rail instead.
 * ''The quoteblock floor'' fences at two grains — the whole chunk inside the deserializer, so every door fences, and a child's body in place at the backstop's child gate: `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`.
 * ''An admit carries across a seal roll only through its roll anchors''; the gate reads the presented admit against the carriage board's counted revokes and the kapae antigen, folding no allow roster; the board itself carries admits, roll anchors and hosting acts (the antigen's ALLOW-twin), one presenter reads it, and the anchors reach the verifier inside the presentation's lineage.
-* ''Fragments'': every `lar:` fragment is rooted (`#/…`), one raw `#`, slot names `[a-z0-9āēīōūʻ-]`, `/` nests, `$` reserved; fragment law lives in the media type (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`).
+* ''Fragments'': every `lar:` fragment roots at `#/…`, one raw `#`, slot names `[a-z0-9āēīōūʻ-]`, `/` nests, `$` reserved; fragment law lives in the media type (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`).
 * ''Grammar lives in the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` → `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` = informative pin, `kanawai` = binding pin, `kahea` = live transclusion; HUD gauges `aperture` and `ooda-ha`.
 * ''Early alpha'': no back-compat, no shims, no legacy recovery — align stale things to the current frame and grammar. Derive, don't enumerate. Beware overcollapse: one function, one relation.
 * ''Shared tree'': never `git stash`; commit only your paths with `git commit -F <msg> --only -- <paths>`; never `--no-verify`; spirits never spawn helpers and never juggle another's uncommitted hunks; exit codes read directly, never through a pipe; a known positive proves a zero.
@@ -141,6 +141,6 @@ The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enact
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RjK5-6IIqJD9nsKxrP-9IFlJ54_frFTQRaWV63R9osg
+<<^ code="&#x0003;">>ni:///sha-256;eoPYqCqoDaNzVurR_K1p3sfu9XGVBWJe-2yyKyUOwfM
 
 <<^ code="&#x0004;" -> to="?">>

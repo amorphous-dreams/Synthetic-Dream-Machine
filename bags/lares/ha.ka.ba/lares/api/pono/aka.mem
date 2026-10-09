@@ -54,8 +54,8 @@ names a LIVE fallback layer, visible only while nothing overrides it — the opp
 frozen pin, which never yields to an override and never falls back. `aka` pins once, at the moment the
 pin resolves, and holds that pin until the carrier re-weaves.
 
-Sugar for `<<~ pranala from=? -> to=URI family=transclusion>>`. The `transclusion` family is confidence-bounded:
-a frozen embed can age from its source, so edges SHOULD carry a confidence rating when the embed is uncertain.
+Sugar for `<<~ pranala from=? -> to=URI family=transclusion>>`. The `transclusion` family carries a confidence bound:
+a frozen embed can age from its source, so edges SHOULD carry a confidence rating when the embed reads uncertain.
 
 ''English weave name: `pin`.'' `aka` weaves in English as `pin`, its own weave name, not a mirror of
 any other sigil — `pin` names the posture directly, whichever rendering the target calls for.
@@ -94,13 +94,13 @@ An aka MUST bind a source socket and a target URI.
 An aka MUST carry `family:transclusion`.
 An aka MUST leave the target unchanged.
 An aka MUST stay inert, carrying no execution pulse.
-An aka SHOULD carry `confidence` when the observation is uncertain.
+An aka SHOULD carry `confidence` when the observation reads uncertain.
 An aka MUST stay acyclic — directly and transitively.
 
 `family:transclusion` — frozen content embedding; the source shows the target's content through
-without consuming or owning it. Propagation is none: a frozen embed is pulled, not pushed.
+without consuming or owning it. No propagation runs: a reader pulls a frozen embed; nothing pushes it.
 
-The `transclusion` family is `confidence-bounded: true`. This means the parser flags aka edges
+The `transclusion` family declares `confidence-bounded: true`, so the parser flags aka edges
 that lack a confidence rating when the source-side context signals uncertainty.
 
 <<~/ahu>>
@@ -171,6 +171,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d_FBrU6XPZrjm-apzGwFuFkpJaqCCjCM_yfDmHniqLc
+<<^ code="&#x0003;">>ni:///sha-256;qfm9QAfJ9eVduUzdN53SvyTDwjeSMJrofznI35vPWu8
 
 <<^ code="&#x0004;" -> to="?">>

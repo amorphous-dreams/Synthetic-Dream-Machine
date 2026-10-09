@@ -25,7 +25,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/vessel-regions"
 
 `packages/lararium-node/src/open-node-vessel.ts` stands at ''2177 lines'', and one closure — `prepareNodeBoot` (`:363-2035`) — holds 1667 of them, 77% of the file. Two doors open over it: `openNodeVessel` (`:2037-2093`) composing a hearth, `openNodeHerm` (`:2095-2177`) composing a place.
 
-''The file reads as seven regions, and only three of them split.'' The other four form ONE object the closure hides — a share-verdict authority — and naming that object is what this plan is for. A split that cuts anywhere else moves lines and buys nothing.
+''The file reads as seven regions, and only three of them split.'' The other four form ONE object the closure hides — a share-verdict authority — and this plan exists to name that object. A split that cuts anywhere else moves lines and buys nothing.
 
 The browser's counterpart (`packages/lararium-browser/src/open-browser-vessel.ts`, 1231 lines) carries a counterpart for four regions, a partial for two, and NOTHING for the rest. `composeLararium` and `composeBrowser` both alias `composeCoreVessel` (`node-caps.ts:134` · `browser-caps.ts:21`) — the same function under two names, diverging only in the `extraCaps` array each call site passes. So a region extracted as a module lands on both substrates by construction; a region that stays inline lands on neither.
 
@@ -138,6 +138,6 @@ A tasked spirit's walk at this codebase's grain, never a human's. ''The reds com
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QJyANPl-SqDekLXRKQJtmhni2A-0nCU4UfD4VLBHd_Q
+<<^ code="&#x0003;">>ni:///sha-256;qtnemCVH9vEUnbIzxZNGfHSU8KuvVuovpthkUXCMLCc
 
 <<^ code="&#x0004;" -> to="?">>

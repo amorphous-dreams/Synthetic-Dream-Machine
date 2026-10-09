@@ -212,7 +212,7 @@ shore: it appends and never normalizes.
 
 Every turn emits a rich ''provisional-gradient-grammar'' — confidence band, lar:
 bearing, Voice, OODA-HA phase, ward state, oracle marks, Aperture, Syad stance,
-rating ladder. Today the ''lar: bearing alone'' lands structured (the
+rating ladder. The ''lar: bearing alone'' lands structured (the
 `bearing-harvest` parser → `BearingRecord`); the ''other channels render as prose''
 ''and dissolve uncaptured''.
 
@@ -276,6 +276,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mfe_ReNvuMpx6m-hiRr87eD7JSV4cxdCDpxfJkLlj_Y
+<<^ code="&#x0003;">>ni:///sha-256;lT6Rci_xkhkLLHyesBYS2vP6GAcPcwAqr9GHozF1SOo
 
 <<^ code="&#x0004;" -> to="?">>

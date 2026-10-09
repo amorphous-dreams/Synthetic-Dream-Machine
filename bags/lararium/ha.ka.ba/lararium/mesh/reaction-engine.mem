@@ -24,7 +24,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/reaction-engine"
 
 Five layers. One reactive engine per island. CRDT = the sea. Nalu = the wave. TW5 = the shore.
 
-No overlay engine. No ReactionEngine class. The TW5 wiki IS the reactive engine; the TS layer holds
+No overlay engine. No ReactionEngine class. The TW5 wiki serves as the reactive engine; the TS layer holds
 only the irreducible (CRDT, network, crypto, multi-wiki coordination). Everything else lives in the nalu.
 
 ''Prior art:''
@@ -81,17 +81,17 @@ Layer 5 — IslandMsg_Event / CRDT convergence (the crossing)
 
 !! Pipeline Laws
 
-# ''One reactive engine per island.'' The TW5 wiki ($tw.wiki) is the reactive engine for its island. No overlay dispatch layer runs beside it.
+# ''One reactive engine per island.'' The TW5 wiki ($tw.wiki) serves as the reactive engine for its island. No overlay dispatch layer runs beside it.
 
-# ''Islands fire; vessels route; CRDT resolves.'' Island → `IslandMsg_Event` → vessel → `placeVerb()` → CRDT write → convergence. This is the full cross-boundary signal path.
+# ''Islands fire; vessels route; CRDT resolves.'' Island → `IslandMsg_Event` → vessel → `placeVerb()` → CRDT write → convergence. That names the full cross-boundary signal path.
 
-# ''Promise-pipelining law.'' Islands MUST NOT wait for vessel ACK before firing the next `IslandMsg_Event`. The signal path is one-way fire. Vessels enqueue on receipt; they do not block the island.
+# ''Promise-pipelining law.'' Islands MUST NOT wait for vessel ACK before firing the next `IslandMsg_Event`. The signal path fires one way. Vessels enqueue on receipt; they do not block the island.
 
 # ''CRDT convergence = distributed promise.'' A verb written to the shared admin CRDT and a converged outcome tiddler carry the return value across vessel boundaries. No second protocol. No synchronous return channel.
 
-# ''Live-query invariant.'' `reaction-router.ts` fires only for `lar:` URIs whose `ReactionGraph` bindings include a matching listenable. Not a full-scan. Incremental per changed URI. This is the vlcn.io live-query pattern applied inside TW5's nalu.
+# ''Live-query invariant.'' `reaction-router.ts` fires only for `lar:` URIs whose `ReactionGraph` bindings include a matching listenable. Not a full-scan. Incremental per changed URI. This applies the vlcn.io live-query pattern inside TW5's nalu.
 
-# ''Layer isolation.'' MemeSyncAdaptor → TW5 is the only data ingress path. Vessels MUST NOT deliver tiddler deltas directly to islands (Island Sovereignty Law §2).
+# ''Layer isolation.'' MemeSyncAdaptor → TW5 forms the only data ingress path. Vessels MUST NOT deliver tiddler deltas directly to islands (Island Sovereignty Law §2).
 
 # ''Irreducible TS layer.'' Only four things stay in TS outside TW5: `LarTiddlerStore` (CRDT), network/WebSocket/WebRTC adapters, Keyhive cryptographic operations, `VesselIslandPool` multi-wiki coordination. Everything else belongs in the nalu.
 
@@ -169,6 +169,6 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QuXbgWKDUzlVMhVhQdsP6BEvXiBJAkU2diIzwax8yHI
+<<^ code="&#x0003;">>ni:///sha-256;gTXBoX_Yq0s2HqctkpvSQSD450Wl6ycqukDBDyNcE7s
 
 <<^ code="&#x0004;" -> to="?">>

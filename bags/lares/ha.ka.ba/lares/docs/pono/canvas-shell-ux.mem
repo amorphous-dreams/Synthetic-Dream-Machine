@@ -23,13 +23,13 @@ uri-path          = "ha.ka.ba/lares/docs/pono/canvas-shell-ux"
 
 <<~ ahu #/head>>
 
-! Canvas Shell UX ~ the canvas is primary, the chrome wraps it
+! Canvas Shell UX ~ the canvas comes first, the chrome wraps it
 
 ''Nothing here names a vendor, because nothing here depends on one.'' Every law below holds for any DOM-hosting camera (#/wikispace-canvasspace-ontology).
 
-''THE CORE LAW: the canvas is primary; UI wraps around it and never blocks it.''
+''THE CORE LAW: the canvas comes first; UI wraps around it and never blocks it.''
 
-The reference implementation studied is ''Kinopio'' (`kinopio.club`, Vue 3, open source, community-funded) — and a later field survey found the same house independently, as ''one of the category's few survivors'' and one of only two credible touch-first spatial tools. Two arrivals at one door is the cheapest evidence available that a design is load-bearing rather than a taste.
+The study takes ''Kinopio'' as its reference implementation (`kinopio.club`, Vue 3, open source, community-funded) — and a later field survey found the same house independently, as ''one of the category's few survivors'' and one of only two credible touch-first spatial tools. Two arrivals at one door give the cheapest evidence available that a design bears load rather than taste.
 
 <<~/ahu>>
 
@@ -127,6 +127,6 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;DRu-YTJi5EPaOpfmNHe6XSR_dbts3OLs8_dBrrSPg-o
+<<^ code="&#x0003;">>ni:///sha-256;iaHk7WIrrsiY0Ea8xjY9jQ3N0f7YPL0yyYVxrliJLzI
 
 <<^ code="&#x0004;" -> to="?">>

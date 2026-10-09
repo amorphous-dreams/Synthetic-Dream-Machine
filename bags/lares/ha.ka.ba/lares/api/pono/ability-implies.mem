@@ -23,7 +23,7 @@ uri-path      = "ha.ka.ba/lares/api/pono/ability-implies"
 
 <<~ ahu #/ooda-ha>>
 
-✶ two ability names arrive: `have` (what the principal holds) and `need` (what is required).
+✶ two ability names arrive: `have` (what the principal holds) and `need` (what the act requires).
 ⏿ orient: identical abilities trivially imply; `pull` functions as a relay-law exception — it implies only itself.
 ◇ decide: find both positions in ABILITY_LADDER; `have` implies `need` iff `haveIdx >= needIdx`.
 ▶ return true or false — one predicate, no side effects.
@@ -75,6 +75,6 @@ export function abilityImplies(have: OrichalcumAbility, need: OrichalcumAbility)
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dtQAIo1GN5IeXrZd-P_nTv_z_a8MG2S_5uOCaf5wk_0
+<<^ code="&#x0003;">>ni:///sha-256;hOJ1p46Df9gjPrOM03gUbQymwf9TjezDJ8yST6sy9s0
 
 <<^ code="&#x0004;" -> to="?">>

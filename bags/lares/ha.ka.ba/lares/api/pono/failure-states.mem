@@ -26,7 +26,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/failure-states"
 ! Failure States
 
 Named failure modes for the lararium carrier system.
-A failure state names a recognizable pattern of wrong action — surfaced so it can be detected and handed to hoʻoponopono for correction.
+A failure state names a recognizable pattern of wrong action — surfaced so a reader can detect it and hand it to hoʻoponopono for correction.
 
 Naming a failure mode carries no condemnation. The name itself opens the ceremony.
 
@@ -76,6 +76,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6eJWJAZTVlSh2kcaTPgTNPhIVVXHKTbm5uSIFzAzVwo
+<<^ code="&#x0003;">>ni:///sha-256;i-TiNl9r7JwC-vMigAzHKRKeRFk5z7sFghqyV7YkFWA
 
 <<^ code="&#x0004;" -> to="?">>

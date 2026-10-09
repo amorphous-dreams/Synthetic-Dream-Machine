@@ -55,7 +55,7 @@ A papalohe MUST NOT fire unless the named listenable activates.
 A papalohe MUST NOT carry `traversal:both`; reciprocal wires MUST use two parallel edges.
 
 `listenable` — the activating event at the source (e.g. `OnEliminated`, `Button.InteractedWithEvent`).
-`subscribable` — the function invoked at the target (e.g. `ShowScore`, `HandleDamage`). MAY be omitted.
+`subscribable` — the function invoked at the target (e.g. `ShowScore`, `HandleDamage`). An author MAY omit it.
 
 <<~/ahu>>
 
@@ -133,6 +133,6 @@ Two values, distinct Verse-side origins:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ejZsZyLV_D4OkgOk9ii0jP9cgt3B8VWpQEyHTPlYKCo
+<<^ code="&#x0003;">>ni:///sha-256;4FekpkZ1u85CqqGcf3Uahx4Y_1k4uIX_Zh2cqQDeawY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -118,7 +118,7 @@ The 50-new-certificates-per-registered-domain-per-week ceiling ''does'' draw one
 
 !!! The bounded reach contract ~ the local DNS token has five separate shores
 
-The operator-facing "local DNS token" now has a precise design home as a ''bounded reach grant''
+The operator-facing "local DNS token" has a precise design home as a ''bounded reach grant''
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>). It is a scoped contract over one
 operator subtree and one Nexus charter epoch, never a bearer secret and never a public operator roster.
 The grant keeps five capabilities apart: carriage, local recursive-resolver policy, bounded origin
@@ -187,17 +187,17 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 * A person's standing NEVER rides a name under these zones. Carry a host-scoped address as ''identity'' rather than as ''address'' and the arrangement repeats the failure the field has already measured — the domain owner comes to hold every identity on it.
 * Withholding a name withholds a signpost. Every key, byte, and peer relation survives it, so ''no delegation makes a landlord''.
 
-''A SEALED NEXUS IS ISOLATED ON TWO ORTHOGONAL CUTS, and severable on both.'' INFRA/carriage — no signed PEER/TRANSIT leyline to any other Nexus (carriage is deliberately signed, never auto-proposed). Content/read — a private membership plane with no public @crossroads face. It loses no self by having neither, because rendezvous ≠ identity: no seizable object stands. ''Interop comes later cheaply'' — opening a leyline signs one carriage contract and `#has-NOT {read}` survives it; across a DIFFERENT engine two Nexuses interoperate only at the content-address floor, since a blob still hashes to its CID whatever its age (the disjoint-station-set floor, #dreamnet-architecture, epoch-binding-surfaces#/the-real-mover).
+''A SEALED NEXUS STANDS ISOLATED ON TWO ORTHOGONAL CUTS, and severable on both.'' INFRA/carriage — no signed PEER/TRANSIT leyline to any other Nexus (carriage rides a deliberate signature, never an auto-proposal). Content/read — a private membership plane with no public @crossroads face. It loses no self by having neither, because rendezvous ≠ identity: no seizable object stands. ''Interop comes later cheaply'' — opening a leyline signs one carriage contract and `#has-NOT {read}` survives it; across a DIFFERENT engine two Nexuses interoperate only at the content-address floor, since a blob still hashes to its CID whatever its age (the disjoint-station-set floor, #dreamnet-architecture, epoch-binding-surfaces#/the-real-mover).
 
-The two-name design carries its own answer to the concentration it creates: ''each Nexus can resolve for the other's attestations''. That costs nothing to arrange now and stops being arrangeable once either name carries load alone.
+The two-name design carries its own answer to the concentration it creates: ''each Nexus can resolve for the other's attestations''. That costs nothing to arrange early and stops staying arrangeable once either name carries load alone.
 
 ''AND THE UNDER-OUR-NAME / THEIR-OWN-NAME FORK DISSOLVES.'' Seat identity in the ''node key'' and bind it bidirectionally to whatever name an operator presents, and the two roads stop competing: an operator takes a name under a Nexus as a zero-friction on-ramp and swaps to their own domain later ''losing nothing''. Every surviving system built exactly that, and every system that skipped it has resisted retrofit for years — a host-scoped identity proposal open since 2018 and still draft, a migration path that carries followers and loses posts, media, blocks and bookmarks.
 
 ''The seizure record settles what philosophy only suggests.'' Twenty-three domains seized in one 2014 action took over five million subdomains dark against roughly eighteen thousand malicious nodes — 99.6% overbroad, ex parte, no notice; a 2011 action put a wrongful federal child-exploitation banner on eighty-four thousand subdomains for three days; one 2023 lawsuit ended a registrar carrying some twelve million names. ''Public-suffix listing buys cookie isolation and certificate-bucket separation and NOTHING against seizure'', which supplied every catastrophic case. The bidirectional key-to-name binding reads as the only property that survives a court order aimed at somebody else entirely.
 
-''The field vindicates rendezvous≠identity five ways.'' Iroh: "dial the key, not the address" — `EndpointId` is a stable pubkey, addresses ephemeral, relays E2E-blind. Veilid: NodeId (identity) ⊥ RouteId (reachability) are separate, and raw-NodeId targeting sits behind a `footgun-nodeid-target` flag so anonymized routing is the DEFAULT. Nostr: "clients must always follow public keys, not NIP-05 addresses" — DNS is a pointer, never a registry. ATProto: the handle "is not authoritative for identity" — it resolves to the DID, and the relay is non-authoritative + reconstructible from upstream PDSes (carriage, not registry). did:webvh: the SCID survives a full domain move. Each is the severability law arrived at in production.
+''The field vindicates rendezvous≠identity five ways.'' Iroh: "dial the key, not the address" — `EndpointId` names a stable pubkey, addresses ephemeral, relays E2E-blind. Veilid: NodeId (identity) ⊥ RouteId (reachability) stand separate, and raw-NodeId targeting sits behind a `footgun-nodeid-target` flag so anonymized routing is the DEFAULT. Nostr: "clients must always follow public keys, not NIP-05 addresses" — DNS serves as a pointer, never a registry. ATProto: the handle "is not authoritative for identity" — it resolves to the DID, and the relay stays non-authoritative + reconstructible from upstream PDSes (carriage, not registry). did:webvh: the SCID survives a full domain move. Each arrives at the severability law in production.
 
-''THE LIVE ANTI-PATTERN runs at Farcaster.'' Every id mints from a SINGLE onchain IdRegistry contract + a global KeyRegistry roster + a centralized, revocable Fname registry — the compiled-global-registry the registry filter rejects, running in the wild, where rent-non-payment means network-wide data loss and credible exit holds for the account but NOT the human name (unless you pay for ENS). It is the concrete shape a Nexus name must never take.
+''THE LIVE ANTI-PATTERN runs at Farcaster.'' Every id mints from a SINGLE onchain IdRegistry contract + a global KeyRegistry roster + a centralized, revocable Fname registry — the compiled-global-registry the registry filter rejects, running in the wild, where rent-non-payment means network-wide data loss and credible exit holds for the account but NOT the human name (unless you pay for ENS). It names the concrete shape a Nexus name must never take.
 
 <<~/ahu>>
 
@@ -239,6 +239,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0A9wbNart9niGUc1BNMfHvgzzaFz6X8tlfLf9WzGM7c
+<<^ code="&#x0003;">>ni:///sha-256;RvfhEIAyHmb0kDiVx_3gNlqjlQI_F5xORE1tvUjzKWo
 
 <<^ code="&#x0004;" -> to="?">>

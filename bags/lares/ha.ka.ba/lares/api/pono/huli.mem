@@ -27,7 +27,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/huli"
 
 //huli// — Hawaiian: to turn, to reverse, to curl over. Primarily a directional motion —
 the body turns to face something. //Huli-huli// (the chicken dish) means repeatedly turned.
-The search meaning is secondary: one turns to face each item in the set in succession.
+The search meaning follows second: one turns to face each item in the set in succession.
 
 A block-container sigil with iteration semantics. Runs a TW5 filter to produce a result set;
 renders the body template once per result, with `currentTiddler` bound to each result title.
@@ -122,6 +122,6 @@ close-pattern = '<<~\/huli\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HTH4CPQjmmUKahfuP_XKAYMDODrlV1jGmVDdeDLWkzI
+<<^ code="&#x0003;">>ni:///sha-256;S0_xF59t77wRW_8Pzp4-AuVudEuW9Q4bCZOjUDm2UZ0
 
 <<^ code="&#x0004;" -> to="?">>

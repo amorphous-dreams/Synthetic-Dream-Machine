@@ -181,7 +181,7 @@ differing ''only in the extraction boundary'':
 Both route to the ''SAME `cid/` byte store + `resolveByCid`''. Stage-1 (whole-body
 transport) covers B-shaped whole bodies; Stage-2/3 add the A-shaped ''intra-ahu''
 ''extraction'' (the `#source-text` boundary) + the publicity-plane addressing. The moved
-`crossroads` library holds BOTH today — raw `.txt` books (B) and structured `.mem` memes
+`crossroads` library holds BOTH — raw `.txt` books (B) and structured `.mem` memes
 with large source ahus (A).
 
 A and B differ only where the cut falls; the byte store
@@ -299,6 +299,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qfni7LdiFvf-wKPwla_-6at-MtF_XdbYOfRrlMusU9U
+<<^ code="&#x0003;">>ni:///sha-256;vj-2rESsvOqWiVb3CWnwDwAmvQJ5SDmZu8aWnBAU5Hw
 
 <<^ code="&#x0004;" -> to="?">>

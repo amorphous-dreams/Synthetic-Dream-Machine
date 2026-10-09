@@ -167,7 +167,7 @@ Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group le
 * ''(b′) CLOSED'' — the root law got ONE spelling (`framedRootOf` reads `isMemeRoot`; all three doors inherit it; no stall — `3d0f7248a`), the fragment PUT door walls itself with 400 for every other skin (`bf9d9e04f`), and the scanner no longer counts a `kahea` CALL as a declared slot (`75e895c3e` — a second defect fell beside it: a call before its own block dropped the slot's body into no record at all).
 * ''(c′) RULED Mu, marked'' — a member's death leaves the call standing (never-invent-bytes); the ahu template distinguishes `unresolved · arriving · empty · filled` (`79420f5b5`); the served text keeps the call, the page marks it. The re-cut lean below was REFUTED by measure: a re-place lands the marker again.
 * ''(d′) CLOSED on the server'' — `native-skinny-door` re-inflates slot children in stock's own `tiddlers.json` (`61ac87090`); measured 132 tiddlers 23 798 B → 38 967 B (×1.64); dial `$:/config/lares/memes/fat-children` (default yes); the cord for //arriving// rides the same template.
-* ''(b) STANDS, and now says why'' — the backstop widening REFUTED at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` is the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door. A child's save grades only against the child's OWN authored text, and no congruence reads a fragment body as a gradeable unit. The operator's call.
+* ''(b) STANDS, and says why'' — the backstop widening REFUTED at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` is the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door. A child's save grades only against the child's OWN authored text, and no congruence reads a fragment body as a gradeable unit. The operator's call.
 
 The leans as first written, kept for the record:
 
@@ -192,6 +192,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MUmf4VmRFYPb7tZ90ooumHShaW0nQkNtrD33NB6vKn8
+<<^ code="&#x0003;">>ni:///sha-256;ila2cOHZmLy8zGyCjdO4m01_MsH0p_hGvRbXsJEkqpc
 
 <<^ code="&#x0004;" -> to="?">>

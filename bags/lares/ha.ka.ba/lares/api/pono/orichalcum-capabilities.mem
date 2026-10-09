@@ -49,8 +49,8 @@ An Orichalcum capability answers five questions:
 # ''What actions?'' `abilities` — one or more from the ability ladder (see below)
 # ''Under what Lararium truth conditions?'' `caveats` — Lararium-native predicates
 
-A cryptographically valid UCAN-shaped proof that fails any Lararium caveat is NOT authorized.
-Crypto validity is necessary but not sufficient. Semantic validity requires caveat passage.
+A cryptographically valid UCAN-shaped proof that fails any Lararium caveat authorizes NOTHING.
+Crypto validity stays necessary but never sufficient. Semantic validity requires caveat passage.
 Authority travels with the graph. Authority MUST hold in the graph, beyond crypto alone.
 
 <<~/ahu>>
@@ -297,6 +297,6 @@ the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HsAbr3AHYjtFpr12mQ92FSFEvxNMp2PNqgRMhPpkPLY
+<<^ code="&#x0003;">>ni:///sha-256;w2x7w8YrTpQm5ekcxMB8CJ9w2TcHUF6aeGk0EDm2bE8
 
 <<^ code="&#x0004;" -> to="?">>

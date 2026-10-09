@@ -326,7 +326,7 @@ The operator read the plan and sent the house back to sharpen it before the same
 # ''Phase 0 gains the Muse's second catch as a red.'' `AHU_OPEN_RE` (`src/meme-ast/ahu-scan.ts:32`) swallows `kahea`, so `collectAhuSlots` (`:101`) counts a CALL as a DECLARED slot and the ahu-drop guard (`src/ingest-gate.ts:167-178`) reads the wrong set. Red: a root whose text carries `<<~ kahea ahu #/b>>` and no `<<~ ahu #/b>>` block yields NO declared slot from `collectAhuSlots`; CONTROL: a true `<<~ ahu #/b>>` block still counts. Cure in the scanner, never in the guard. +1.0 h.
 # ''The anti-stall CONTROL rides EVERY e2e phase'', not Phase 1 alone: after each phase's vector, a later save lands its own 2xx — the one assertion that proves `syncer.js:436` did not fire. Phases 2 and 3 both touch paths the syncer drives.
 # ''The contract line for the lab.'' `docs/pono/meme-api-surface.mem` gains one sentence under the two doors: //a slot child is a tiddler; the native door lands it as one, ungated, and the root re-cuts on the server — a child's save never addresses `/memes/`//. Stranger's sentence, written where the QA lab reads. +0.5 h, in Phase 1's aftermath.
-# ''Phase 3's dial is named now.'' `$:/config/lares/memes/fat-children` (default `yes`): the skin re-inflates children only while it reads yes; the before/after byte size is reported in the commit body so the dial gets ruled against a number.
+# ''Phase 3's dial stands named.'' `$:/config/lares/memes/fat-children` (default `yes`): the skin re-inflates children only while it reads yes; the before/after byte size is reported in the commit body so the dial gets ruled against a number.
 
 Total: ''17.0 spirit-hours.''
 
@@ -410,6 +410,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gkRTkQrPrBF5usfxg0ySekJuXXQb7YucuaJwS2iZzTQ
+<<^ code="&#x0003;">>ni:///sha-256;h0LCAVb--Y5eVLJKlBTHd6hJ38llCrMIPDT0umUK5L0
 
 <<^ code="&#x0004;" -> to="?">>

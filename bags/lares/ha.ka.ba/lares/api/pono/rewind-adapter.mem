@@ -60,7 +60,7 @@ Every source app sorts into one of two families by ''what its rewind does to the
 ''Copilot-Chat crosses into Family A — byte-proven.'' The verify-gate the first cut left open (#/grounds) ''closed on the bytes'': the `.jsonl` reads as a ''JSON-patch op-log'' — the `kind:0` base op appears ''only at line 0, never compacted''; a real edit stacks ''three coexisting ops'' recoverable by replay-to-offset; ''120 of 269'' surveyed files leave their superseded ops in the append log. The docs' "truncate the tail" names the ''logical `requests[]` state'', never the physical file. So Copilot-Chat ''appends and keeps'' — it joins the fork-family. Identity rides `requestId`; the live branch reconstructs by ''replay''.
 
 ''Family B — MUTABLE-TRUNCATE.'' A rewind ''overwrites'' — it truncates the tail in place and the old turns leave the store. Here ''we become the last keeper'': our tombstone holds the only surviving trace of the road they discard.
-* ''Cursor'' — ''CONFIRMED'' hard-delete, and now ''standing alone'': with Copilot-Chat crossed over, Cursor is the ''field's only confirmed byte-level hard-delete'' — the whole surveyed noosphere speaks kāpae, one exception. A restore/edit overwrites the tail in `state.vscdb` (SQLite `cursorDiskKV`); staff-confirmed ''unrecoverable'' on the community forum.
+* ''Cursor'' — ''CONFIRMED'' hard-delete, and ''standing alone'': with Copilot-Chat crossed over, Cursor is the ''field's only confirmed byte-level hard-delete'' — the whole surveyed noosphere speaks kāpae, one exception. A restore/edit overwrites the tail in `state.vscdb` (SQLite `cursorDiskKV`); staff-confirmed ''unrecoverable'' on the community forum.
 
 The split governs one flag per adapter (`appendOnly`, #the-adapter-contract) and one behavior: whether the detector re-harvests a still-present branch (A) or stands as the sole keeper of a discarded one (B). ''Cursor sits alone on the B side of that line.''
 
@@ -259,6 +259,6 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lkT5l7EwSmY7ZDUhVnYLKyyITsSYUe_cBR4v-IRFdRY
+<<^ code="&#x0003;">>ni:///sha-256;7NZa5ynp9WO6RCb_ENWXoO2xiLYH3w8SjYdTXeEdiOQ
 
 <<^ code="&#x0004;" -> to="?">>

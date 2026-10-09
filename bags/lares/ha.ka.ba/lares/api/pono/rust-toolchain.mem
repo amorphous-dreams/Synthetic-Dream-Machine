@@ -27,7 +27,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/rust-toolchain"
 
 Three of the four nakama forks are ''Rust crates that emit wasm'': `keyhive`, `subduction`, `onomancy`. Their npm packages are ''prebuilt artefacts'' — consuming them means a fix reaches us only when upstream publishes. ''`66a6632 Fixes for CGKA access (#216)` stands in our keyhive fork's main and in no published release'': it limits transitive authority to the weakest link on the best path and stops Relay access transitively granting membership in a document's CGKA tree. A version pin cannot reach that. A ''build'' can.
 
-The toolchain is therefore not a convenience. It is ''the difference between reading a fix and running it'', and between filing an issue and sending a patch that compiles.
+The toolchain therefore serves as more than a convenience. It marks ''the difference between reading a fix and running it'', and between filing an issue and sending a patch that compiles.
 
 <<~/ahu>>
 
@@ -82,14 +82,14 @@ node build_slim.js
 
 !! The law ~ a locally-built wasm is a FLAG-DAY
 
-''A wasm we build ourselves that differs in behaviour from the published package is a flag-day against our own mesh.'' This is #213 read back at us: BeeKEM replacing path ratcheting with independently sampled secrets meant alpha.6 and alpha.8 peers could not key with each other, and that is exactly what a locally-built keyhive carrying #216 would be against a vessel running published alpha.8 — ''#216 changes authorization VERDICTS, so a patched and an unpatched node disagree about who is in a CGKA tree''. A split-brain, not a desync, and nastier for it.
+''A wasm we build ourselves that differs in behaviour from the published package declares a flag-day against our own mesh.'' This reads #213 back at us: BeeKEM replacing path ratcheting with independently sampled secrets meant alpha.6 and alpha.8 peers could not key with each other, and a locally-built keyhive carrying #216 would do exactly that against a vessel running published alpha.8 — ''#216 changes authorization VERDICTS, so a patched and an unpatched node disagree about who is in a CGKA tree''. A split-brain, not a desync, and nastier for it.
 
 So, MUST:
 
-* ''Every vessel in a mesh runs the SAME build.'' Not the same version string — the same artefact. A version string is not evidence when one side built its own.
+* ''Every vessel in a mesh runs the SAME build.'' Not the same version string — the same artefact. A version string proves nothing when one side built its own.
 * ''A local build carries its provenance.'' The fork's commit sha, the channel, the wasm-pack version, and the digest of the emitted `.wasm`, recorded where a vessel can read them. This house already binds a built blob's sha256 into `hearthTrueName` for TiddlyWiki5; the same instinct applies.
 * ''Consuming published npm stays the DEFAULT'' until a build is reproducible and recorded. Standing a toolchain buys the ability to build; it does not oblige us to ship what we build.
-* ''A patch we intend to donate gets proven in the fork FIRST'' — upstream's tests, upstream's environment — before it reaches a vessel here. A fix that only passes in our tree is a fork, not a contribution.
+* ''A patch we intend to donate gets proven in the fork FIRST'' — upstream's tests, upstream's environment — before it reaches a vessel here. A fix that only passes in our tree makes a fork, not a contribution.
 
 <<~/ahu>>
 
@@ -135,6 +135,6 @@ So, MUST:
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
-<<^ code="&#x0003;">>ni:///sha-256;rIB80s5b5kcibK-pKFGDZ4-O3jcWNbhvcdjtKhqSk5c
+<<^ code="&#x0003;">>ni:///sha-256;T9B1fMAmW8AusF6j19aJ7eKt3NwTw0Eist0PxObQVrM
 
 <<^ code="&#x0004;" -> to="?">>

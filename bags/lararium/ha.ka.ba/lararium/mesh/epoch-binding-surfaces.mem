@@ -28,7 +28,7 @@ written    = "2026-08-08"
 
 ! Epoch Binding Surfaces ~ what a dependency bump actually costs
 
-''The engine CID is not the only surface that binds to an epoch'' (operator, 2026-08-08). Five surfaces
+''The engine CID binds to an epoch, and four more surfaces do too'' (operator, 2026-08-08). Five surfaces
 bind, they bind to ''different things'', and only one of them moves when a runtime dependency does.
 
 ''This meme measures rather than reasons.'' Every row below reads off the code or a build artifact, because
@@ -224,12 +224,12 @@ co-observed points, ''no transformation exists at all, only translation by asser
 
 !! The rule for a founding
 
-''BUMP BEFORE, NEVER AFTER — and the reason is narrower than it sounds.'' A bump after founding risks the
+''BUMP BEFORE, NEVER AFTER — and the reason runs narrower than it sounds.'' A bump after founding risks the
 serde skew alone, which `lares vessel rite rebuild` cures without touching the identity. So the rule reads as ''hygiene
 rather than a cliff'': founding on current deps costs one afternoon of testing; founding on stale ones costs
 a rebuild at an inconvenient moment.
 
-''The surfaces that would be a cliff — the engine CID and the plugins CID — do not move on npm at all.''
+''The surfaces that would make a cliff — the engine CID and the plugins CID — do not move on npm at all.''
 They move when the operator bumps the TW5 submodule or when this repo's source changes, and ''both of those
 are acts, never upgrades''.
 
@@ -247,6 +247,6 @@ are acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u4sYiLyS6T0bwITm-35essLQFnDpPlYqp0TW0av44ns
+<<^ code="&#x0003;">>ni:///sha-256;h7aB12F1O5sBQjLw2TXACEQX7s7ap5Z0XDS4L9-p5yM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -104,7 +104,7 @@ named owner per step commits the one compose hunk in `open-node-vessel.ts` and `
 every other lane stops at a module boundary. Each lane's first commit carries its canon.
 
 The train: ''R-STORE ‖ R-CUSTODY → R-CHARTER (one AID train) → R-WIRE → R-ENGINE · R-EMBER · R-KAHU'',
-with ROUND 6 apart from it. The R-ENGINE fold builds in parallel from the start and may land early.
+with the lanes beside it. The R-ENGINE fold builds in parallel from the start and may land early.
 
 !!! R-STORE ~ one store door for every writer (parallel from the start; no identity bytes)
 * Route the remaining direct-store writers through the one store door: `nexus-contract`, `nexus publish`, `edge-kapae`, `nexus-kapae`, `cabal-vouch`, `device-admit`, `persona new N`. Readers route too, so none reads disk the holder has not flushed.
@@ -143,7 +143,7 @@ with ROUND 6 apart from it. The R-ENGINE fold builds in parallel from the start 
 !!! R-KAHU ~ the kahu cabal across vessels
 * S1, a quorum whose seats live on different vessels, and L1, the realm root map from the co-signed `keptBy`. Needs only the seat shape.
 
-!!! ROUND 6 ~ apart from the train (no identity bytes)
+!!! Beside the train (no identity bytes)
 * Leaf↔leaf sync through a herm, with `leaf-peer-proof` bound to the session it admits.
 * The held-out dispatch on a host-built dist, with `vessel found` on the runner.
 
@@ -189,6 +189,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R8mTpR6YIcNVeMpNKxMXMW9-XUHmEA3-eDHhSV1S12I
+<<^ code="&#x0003;">>ni:///sha-256;IUHO7S-Ux1sIoZ6UlhEYy3gwf-x3TNO9kWWVX-ECoTI
 
 <<^ code="&#x0004;" -> to="?">>

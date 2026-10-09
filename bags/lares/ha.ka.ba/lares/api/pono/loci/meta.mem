@@ -26,7 +26,7 @@ This meme does not solve weak metadata by adding new buckets. It sharpens the su
 
 ''Rating Note:'' The five-bucket structural rating (noise → data → meme → ano → kapu) is canonical for all meme law. Here `data` names structured language an AI can use without the memetic wrappers. This law governs the field set, not the rating buckets themselves. Promotion to lares/ canon is a separate ceremony.
 
-''Level Note:'' Numeric readiness, trust, mana, stage, and HUD dials now use integer Levels on `0–20`, aligned with SDM+ Levels. Level `0` means void, off, or absent only when a specific instrument permits that reading. Level `20` marks a limit case; confidence-like instruments SHOULD almost never reach it. Most living system dials SHOULD live at `1–17`; reserve `18–20` for apron, kapu, direct-address, or near-certainty pressure.
+''Level Note:'' Numeric readiness, trust, mana, stage, and HUD dials use integer Levels on `0–20`, aligned with SDM+ Levels. Level `0` means void, off, or absent only when a specific instrument permits that reading. Level `20` marks a limit case; confidence-like instruments SHOULD almost never reach it. Most living system dials SHOULD live at `1–17`; reserve `18–20` for apron, kapu, direct-address, or near-certainty pressure.
 
 <<~ ahu #/ooda-ha>>
 
@@ -216,6 +216,6 @@ Signs of gain:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qd0lkoTG5Wo1zlVoFLnHSyJpvJ-4Seuk3OqkBmR4MS4
+<<^ code="&#x0003;">>ni:///sha-256;hNlAPSIwPHyK6c_yc4CgpRq3EcL4nBGfDWLFB_8vgN8
 
 <<^ code="&#x0004;" -> to="?">>

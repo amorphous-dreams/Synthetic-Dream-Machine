@@ -53,10 +53,10 @@ Sugar for the TW5 `\procedure` pragma, first-class in memetic-wikitext as a bloc
 A wehe block MUST declare a name and optional parameter signature.
 A wehe block MUST close with `<<~/wehe>>` (or `<<~/procedure>>`).
 A wehe block MUST function as a declaration, producing no render output (not a transclusion).
-A wehe name MUST be unique within the current tiddler's procedure namespace.
+A wehe name MUST stand unique within the current tiddler's procedure namespace.
 A wehe block SHOULD use the `~` prefix convention for sigil-dispatched procedures: `<<~ wehe ~name(params)>>`.
 
-English alias `\procedure` is semantically identical. Either form MAY appear in operator memes.
+English alias `\procedure` means the identical thing. Either form MAY appear in operator memes.
 
 <<~/ahu>>
 
@@ -119,6 +119,6 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;t_AN9uJsMU4MY_O4_wZ4VhBLGopjGN-T_VNJv0WOvE8
+<<^ code="&#x0003;">>ni:///sha-256;myh985UXREAIeg2mX3B3sX_0wPtBXzNkU3fj2bDw0m0
 
 <<^ code="&#x0004;" -> to="?">>

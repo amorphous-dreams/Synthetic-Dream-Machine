@@ -50,7 +50,7 @@ In Keyhive terms: the kau instance URI becomes a UCAN resource string. Per-insta
 !! Law
 
 * Kau MUST produce exactly one instance URI: `carrierUri#fragment`.
-* The #fragment MUST be explicit in the sigil OR auto-generated as a UUID on first commit (write-back stub).
+* The #fragment MUST stand explicit in the sigil OR auto-generate as a UUID on first commit (write-back stub).
 * The instance URI MUST become the `currentTiddler` variable for the kumu body during render.
 * Kau MUST NOT produce a graph edge by itself (device wiring uses papalohe edges).
 * Each kau placement MUST create a distinct causal island: events exit the island only via papalohe.
@@ -121,6 +121,6 @@ This maps directly to the Ink & Switch island model: each automerge object opera
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QfpSAX3Y085csZ8dAa6NBW2ZAocfjQb9OaDX2S5THhU
+<<^ code="&#x0003;">>ni:///sha-256;wBeNNF0GpvvkAtGmlRSXhHLhrhPvPirig3WJo5DgGsg
 
 <<^ code="&#x0004;" -> to="?">>

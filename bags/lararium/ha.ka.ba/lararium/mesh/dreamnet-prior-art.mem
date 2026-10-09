@@ -551,7 +551,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 ''Prior art'': UCAN Revocation sub-spec; Keyhive revocation via group-CRDT; Local-First Auth revocation event
 
-''Now addressed:'' The content-resolution design splits revocation into two forward-only modes. ''authz-revoke'' drops the `#has` cap + drops the retention tag (cheap, forward-immediate) and rides a grow-only revocation-CID set that merges as a CRDT operation (Gate 2). ''content-revoke'' re-keys → new ciphertext → new cid → indirection-map update. Already-fetched bytes stay UNRECALLABLE by construction — no-global-now forbids deletion-across-caches, so the design names that boundary rather than pretending past it. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+''Addressed:'' The content-resolution design splits revocation into two forward-only modes. ''authz-revoke'' drops the `#has` cap + drops the retention tag (cheap, forward-immediate) and rides a grow-only revocation-CID set that merges as a CRDT operation (Gate 2). ''content-revoke'' re-keys → new ciphertext → new cid → indirection-map update. Already-fetched bytes stay UNRECALLABLE by construction — no-global-now forbids deletion-across-caches, so the design names that boundary rather than pretending past it. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 ---
 
@@ -566,7 +566,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 ''Prior art'': Antimatter (Braid group) — first history-pruning text CRDT; Automerge's own compaction research; Git's `gc` and pack files
 
-''Now addressed:'' The content-resolution design attacks the dominant growth term directly — ''large bodies LEAVE the CRDT''. A carrier body becomes a skinny TW5 handle (hash + hint); only small mutable metadata rides the Automerge doc, while the heavy bytes land in the `@cad` content-addressed store (Iroh/Beelay blob-doc split). The op log stops accreting media; Beelay's sedimentree names the compaction shape for the residual sync history. (Edit-history tombstone GC — Gap 2's other leg — stays open.) <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+''Addressed:'' The content-resolution design attacks the dominant growth term directly — ''large bodies LEAVE the CRDT''. A carrier body becomes a skinny TW5 handle (hash + hint); only small mutable metadata rides the Automerge doc, while the heavy bytes land in the `@cad` content-addressed store (Iroh/Beelay blob-doc split). The op log stops accreting media; Beelay's sedimentree names the compaction shape for the residual sync history. (Edit-history tombstone GC — Gap 2's other leg — stays open.) <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 ---
 
@@ -591,7 +591,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 ''Prior art'': Braid-HTTP (IETF draft); Matrix Server-Server API; Hyperswarm (topic-based peer discovery); Set reconciliation
 
-''Now addressed (discovery / anti-entropy leg):'' The content-resolution design specifies a ''DHT-free'' discovery chain for resolving content across the mesh: hint-named provider (Iroh BlobTicket `hash + NodeAddr`, discovery collapsed into the reference) → connected bag-peers `want-have` (Bitswap) → named bag-scoped tracker/rendezvous (opt-in, signed, replaceable) → declared-unresolved = PENDING (a first-class lawful state, never a thrown error). The one structurally-forced global Kademlia DHT stays BEHIND a causal-island boundary; the per-nexus `@oracle` root/index docId serves as a rendezvous ADDRESS, not a shared present. (The merge-type-negotiation envelope leg stays open.) <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+''Addressed (discovery / anti-entropy leg):'' The content-resolution design specifies a ''DHT-free'' discovery chain for resolving content across the mesh: hint-named provider (Iroh BlobTicket `hash + NodeAddr`, discovery collapsed into the reference) → connected bag-peers `want-have` (Bitswap) → named bag-scoped tracker/rendezvous (opt-in, signed, replaceable) → declared-unresolved = PENDING (a first-class lawful state, never a thrown error). The one structurally-forced global Kademlia DHT stays BEHIND a causal-island boundary; the per-nexus `@oracle` root/index docId serves as a rendezvous ADDRESS, not a shared present. (The merge-type-negotiation envelope leg stays open.) <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 ---
 
@@ -616,7 +616,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 ''Prior art'': Hypercore `core.discoveryKey` vs. `core.key`; UCAN audience field; Magenc (Spritely) capability-protected content addressing
 
-''Now addressed:'' The content-resolution design keeps the two keys strictly separate via verify-cap ⊥ read-cap (Tahoe). The address a peer advertises and verifies against reads `cid = BLAKE3(''ciphertext'')` — a discovery/verify surface that reveals nothing readable; the decryption key rides a separate CGKA/BeeKEM channel and never touches the node (node routes and verifies ciphertext, MUST NOT decrypt — the MLS Delivery-Service keel). Advertising presence for resolution exposes no read capability. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+''Addressed:'' The content-resolution design keeps the two keys strictly separate via verify-cap ⊥ read-cap (Tahoe). The address a peer advertises and verifies against reads `cid = BLAKE3(''ciphertext'')` — a discovery/verify surface that reveals nothing readable; the decryption key rides a separate CGKA/BeeKEM channel and never touches the node (node routes and verifies ciphertext, MUST NOT decrypt — the MLS Delivery-Service keel). Advertising presence for resolution exposes no read capability. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 ---
 
@@ -653,12 +653,12 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 | Strongest alignment | Local-first primacy, Automerge CRDT, CID genesis artifact, UCAN-style capability ladder, keypair sovereignty |
 | Principled divergences | Browser-tab vessel, two-axis topology (relay-floor, blind carriage), shared grammar over shared implementation |
 | Potentially risky divergences | Revocation propagation, confinement in certificate cap model, mana lattice novelty |
-| ''Gap 1'' | Explicit revocation propagation protocol — ''now addressed'' (two-mode: authz grow-only CID set + content re-key) |
-| ''Gap 2'' | CRDT compaction / document growth strategy — ''now addressed'' (large bodies leave the CRDT into `@cad`; tombstone-GC leg open) |
+| ''Gap 1'' | Explicit revocation propagation protocol — ''addressed'' (two-mode: authz grow-only CID set + content re-key) |
+| ''Gap 2'' | CRDT compaction / document growth strategy — ''addressed'' (large bodies leave the CRDT into `@cad`; tombstone-GC leg open) |
 | ''Gap 3'' | Petnames / human-readable layer over cryptographic IDs |
 | ''Gap 4'' | nexusGroup wire protocol (Braid-HTTP stays candidate) — ''discovery/anti-entropy leg addressed'' (DHT-free hint→peers→bag-tracker) |
 | ''Gap 5'' | Hybrid Logical Clocks for cross-vessel event ordering |
-| ''Gap 6'' | Discovery key / read key separation — ''now addressed'' (verify-cap ⊥ read-cap; ciphertext-address vs. decryption key) |
+| ''Gap 6'' | Discovery key / read key separation — ''addressed'' (verify-cap ⊥ read-cap; ciphertext-address vs. decryption key) |
 | ''Gap 7'' | Formal attenuation rules for ABILITY_LADDER |
 | ''Gap 8'' | Long-partition / fork reconciliation behavior |
 
@@ -670,6 +670,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
-<<^ code="&#x0003;">>ni:///sha-256;g4zsFs-TUMJbw4B43PGgWqxONzOAdczpfUOkZ2ktjOs
+<<^ code="&#x0003;">>ni:///sha-256;_hQIxFkVXZQst1OwsC7y0OwS7yEby1Gx4W5BO7mlOsk
 
 <<^ code="&#x0004;" -> to="?">>

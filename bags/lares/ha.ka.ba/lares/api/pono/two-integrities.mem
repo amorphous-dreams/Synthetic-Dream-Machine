@@ -25,9 +25,9 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 ! Two Integrities ~ a name system and a courier
 
-''Onomancy'' names. ''Subduction'' carries. They were built in one lab, share one house style — bijou varints, a four-byte schema tag with a version byte, the `Signed<T> -> Verified<T>` witness, a hand-rolled canonical codec in place of CBOR — and they ''stack with a clean seam'': subduction moves bytes for a `SedimentreeId`; onomancy answers //which document you meant// and //who may speak for it//. Onomancy declares replication out of scope in its own words: "replication and persistence belong to the substrate and the agent, never to these crates."
+''Onomancy'' names. ''Subduction'' carries. One lab built them, and they share one house style — bijou varints, a four-byte schema tag with a version byte, the `Signed<T> -> Verified<T>` witness, a hand-rolled canonical codec in place of CBOR — and they ''stack with a clean seam'': subduction moves bytes for a `SedimentreeId`; onomancy answers //which document you meant// and //who may speak for it//. Onomancy declares replication out of scope in its own words: "replication and persistence belong to the substrate and the agent, never to these crates."
 
-''Both stand pre-production and say so.'' Read onomancy as ''a design we adopt'' — extraordinary normative specs, and a reference implementation whose decision document no verb writes, so its incumbency doctrine is specified and unexercised. Read subduction as ''a library we may depend on whose threat model we must extend ourselves'' — ~109k lines of Rust, 1,043 tests, property and mutation testing, and still stamped //do not use for production//.
+''Both stand pre-production and say so.'' Read onomancy as ''a design we adopt'' — extraordinary normative specs, and a reference implementation whose decision document no verb writes, so its incumbency doctrine stands specified and unexercised. Read subduction as ''a library we may depend on whose threat model we must extend ourselves'' — ~109k lines of Rust, 1,043 tests, property and mutation testing, and still stamped //do not use for production//.
 
 <<~/ahu>>
 
@@ -37,7 +37,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 ''ONOMANCY answers the registry question we opened and could not close.'' The realm feed cannot cross because no vessel can resolve a realm's substrate from its id, and a list of every realm you belong to is the shape #the-roster forbids. A ''petname edge'' is that registry and is not a roster: it is ''resolution-only, never discovery'' — it opens a document the holder already keys and names nothing it does not. It scopes to the ''FACE'' (operator ruling: //one Persona at a time takes the blame//), so a compromise yields one face's realms rather than a multitude's.
 
-''SUBDUCTION answers the independent-operator question.'' A node runner holds no cabal-cap on the base grammar docs, and until now serving a realm meant being able to read it. Subduction syncs on ''metadata alone'' — digests, parents, boundaries, checkpoints — and declares content encryption //application responsibility//. So a vessel can ''relay a realm it cannot read''. That is the lamplighter made structural rather than promised.
+''SUBDUCTION answers the independent-operator question.'' A node runner holds no cabal-cap on the base grammar docs, and without it serving a realm means being able to read it. Subduction syncs on ''metadata alone'' — digests, parents, boundaries, checkpoints — and declares content encryption //application responsibility//. So a vessel can ''relay a realm it cannot read''. That is the lamplighter made structural rather than promised.
 
 <<~/ahu>>
 
@@ -132,6 +132,6 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
-<<^ code="&#x0003;">>ni:///sha-256;dAWSchZ0f_L50l65yCHKsObyQ0O5KKZxo899_QFYsn0
+<<^ code="&#x0003;">>ni:///sha-256;tGV-muEo-vBXegd1C9GWlFFRsuU-iegvHRZo6HfIkUs
 
 <<^ code="&#x0004;" -> to="?">>

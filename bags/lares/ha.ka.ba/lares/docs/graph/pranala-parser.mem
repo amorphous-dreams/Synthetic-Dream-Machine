@@ -28,7 +28,7 @@ uri-path    = "ha.ka.ba/lares/docs/graph/pranala-parser"
 ⏿ orient: the parser must handle four surface forms, field normalization across two vocabularies, and one unresolved design gate.
 ◇ decide: implement block and sugar forms; `? ->` gate closed — fragment-level (Option A) confirmed by canonical pranala law.
 ▶ act: specify regex patterns, extraction order, field mapping table, and the confirmed `? ->` resolution algorithm.
-↺ verify: parser produces correct `PranalaEdge` records from actual AGENTS.md source blocks; the `? ->` gate is now closed; the implementation file should implement Option A, not a stub.
+↺ verify: parser produces correct `PranalaEdge` records from actual AGENTS.md source blocks; the `? ->` gate stands closed; the implementation file should implement Option A, not a stub.
 
 <<~/ahu>>
 
@@ -221,6 +221,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mT8oPzE-PRhwBmnkbbgJHm2L8pn3YJ-pk1Ad8GyqYVs
+<<^ code="&#x0003;">>ni:///sha-256;l6WhnVco29MKL0_Xx2iMmNdE83mFAZLU5I-pXUqyFlc
 
 <<^ code="&#x0004;" -> to="?">>

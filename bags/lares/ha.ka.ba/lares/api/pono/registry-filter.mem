@@ -26,13 +26,13 @@ uri-path          = "ha.ka.ba/lares/api/pono/registry-filter"
 
 <<~ ahu #/the-law>>
 
-! The Registry Filter ~ empire reads registries; it cannot read what was never compiled
+! The Registry Filter ~ empire reads registries; it cannot read what no one compiled
 
 ''No-global-now stands as a HARD design parameter'' (operator, 2026-09-06) — it informs the causal-island doctrine and most of the identity design — and it carries a rejection rule every open fork MUST pass before a line of it is built:
 
 > ''If a fork's downstream builds a "global registry" of even ONE-NEXUS scope, the fork is REJECTED.''
 
-The stance behind the rule runs adversarial: adversity-from-empire holds this stack in the pre-SIN posture. A registry is what empire subpoenas, scrapes, and correlates; a thing never compiled offers nothing to read. The law fires at DESIGN time — a rejected fork never reaches code, so no gate needs to catch it later.
+The stance behind the rule runs adversarial: adversity-from-empire holds this stack in the pre-SIN posture. Empire subpoenas, scrapes, and correlates registries; a thing never compiled offers nothing to read. The law fires at DESIGN time — a rejected fork never reaches code, so no gate needs to catch it later.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Two deployed systems compile the registry this law forbids, and their measured p
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
 
-<<^ code="&#x0003;">>ni:///sha-256;PRp20jAvvnOjhIAd2gtYFm43Tu4_QKx0riQPPXteP8E
+<<^ code="&#x0003;">>ni:///sha-256;9mWiLcR8H7PEiLR72csubyhDu7YSfM2MYUHkP4iWhlo
 
 <<^ code="&#x0004;" -> to="?">>

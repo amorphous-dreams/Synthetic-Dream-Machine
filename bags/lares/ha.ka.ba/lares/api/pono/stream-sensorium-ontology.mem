@@ -28,7 +28,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/stream-sensorium-ontology"
 
 ! Entry ~ Stream → Sensorium, the layered unit ontology
 
-A ''sensorium'' ingests a ''stream'' — any encoded flow, AI-operator chat being one special case of one special case — and seats its smallest re-storable units for content-addressed, append-only recall. This meme names those units. The naming ran through a four-domain research swarm (event-streaming · content-addressed data · discourse-linguistics · memory-arts); each layer here speaks the ''true word'' its domain already earned, so the names carry their domains' theory for free. The tension "atom vs drawer" dissolved: they never rivalled — they name //different layers//, and the layers ''stack''.
+A ''sensorium'' ingests a ''stream'' — any encoded flow, AI-operator chat standing as one special case of one special case — and seats its smallest re-storable units for content-addressed, append-only recall. This meme names those units. The naming ran through a four-domain research swarm (event-streaming · content-addressed data · discourse-linguistics · memory-arts); each layer here speaks the ''true word'' its domain already earned, so the names carry their domains' theory for free. The tension "atom vs drawer" dissolved: they never rivalled — they name //different layers//, and the layers ''stack''.
 
 Grounded by [[lar:///ha.ka.ba/lares/docs/pattern-integrities]].
 
@@ -74,6 +74,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hZ5a2vZg7oJw7lwRAqpz0zGODqfU-DDJkOyESwWnm-Y
+<<^ code="&#x0003;">>ni:///sha-256;qjg5W46D5yQK8vXeyHHzNa6DKigHwO1xNB-5PmcH564
 
 <<^ code="&#x0004;" -> to="?">>

@@ -182,7 +182,7 @@ Negative direction:
 
 !! What Changed
 
-The character creation package now treats Aki's concept art as a three-register design:
+The character creation package treats Aki's concept art as a three-register design:
 
 # True Spider Folk body.
 # Public glamour / traveling miko presentation.
@@ -206,7 +206,7 @@ This prevents three visual systems from collapsing into one:
 * Ichi = guardian powered armor / personhood question.
 * Strandbeest-Shrine = expedition infrastructure / mobile lararium.
 
-The concept package now gives artists a clean separation of silhouettes.
+The concept package gives artists a clean separation of silhouettes.
 
 !! Table Read
 
@@ -219,6 +219,6 @@ When Aki walks into a settlement:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_UvThPSiU_uX5K_osvEtPCr496oZiq6M311u_-XuQ1s
+<<^ code="&#x0003;">>ni:///sha-256;iwnaZE2_4T0XbHaXvcWbc9ssM_VtvB910Y1RIx0Rv-A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -56,7 +56,7 @@ projection sees composite changes rather than one layer's.
 
 <<~ ahu #/the-identity-slot>>
 
-!! What the identity slot admits today
+!! What the identity slot admits
 
 The vessel takes an `IdentitySlot` or carries NONE. `identity` reads `IdentitySlot | null` and the
 constructor binds `opts.identity ?? null`, so ''no default slot stands'' — a vessel that names none
@@ -95,6 +95,6 @@ names.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 
-<<^ code="&#x0003;">>ni:///sha-256;RBKZ1LAnjcgN38FoQzJ6KnlkM45MQxEHzC8ApVS3Rt0
+<<^ code="&#x0003;">>ni:///sha-256;EzGbwrlC_9JUcXjGTQ97xmuA-NtQnIZBpw41KOVtDss
 
 <<^ code="&#x0004;" -> to="?">>

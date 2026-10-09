@@ -76,7 +76,7 @@ Phase semantics:
 
 `soh` MUST carry the carrier's URI in the `toUri` field.
 `eot` marks the return-to-caller; no payload.
-`stx` and `etx` are pure phase pivots with no payload.
+`stx` and `etx` act as pure phase pivots with no payload.
 
 <<~/ahu>>
 
@@ -129,6 +129,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dbwDuVqqnz3xamqfHUZhyM0TK0URIpt_RB28YOQ1SsY
+<<^ code="&#x0003;">>ni:///sha-256;xRB4fYMztCb2ZJtVaYaJmwqIIowVCz24lC4AHnqTOJE
 
 <<^ code="&#x0004;" -> to="?">>

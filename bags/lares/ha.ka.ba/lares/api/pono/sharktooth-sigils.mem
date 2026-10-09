@@ -20,13 +20,13 @@ uri-path  = "ha.ka.ba/lares/api/pono/sharktooth-sigils"
 
 ! Sharktooth Sigils
 
-''The sigils are the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
+''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
 
 English alias for `nihomano-sigils`. See canonical meme:
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
 
-The `<<~` outer delimiter — three marks, two teeth and a wake — is the sharktooth glyph.
+The `<<~` outer delimiter — three marks, two teeth and a wake — draws the sharktooth glyph.
 Every sigil opens with it. Every scope closes with a `>>` mirrored form.
 
 The SharktoothSigil tag (`lar:///ha.ka.ba/tags/SharktoothSigil`) names the grammar
@@ -46,6 +46,6 @@ discovered sigil set.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ga17_NYGcqi86aH8JcMXBKS9NW3qrPvBGpLULjDc17g
+<<^ code="&#x0003;">>ni:///sha-256;bDm7-x9qFf4QTLYt0TS1910a1tmAtsKkaxPQMjnmsow
 
 <<^ code="&#x0004;" -> to="?">>

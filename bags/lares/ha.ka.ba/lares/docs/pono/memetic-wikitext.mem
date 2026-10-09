@@ -102,7 +102,7 @@ Work begins before full binding settles.
 
 !! Boundary Notes
 
-The api parent now carries the submission-grade specification (abstract, conformance, ABNF, processing model, media-type, security). These concerns live in their own carriers, never the parent:
+The api parent carries the submission-grade specification (abstract, conformance, ABNF, processing model, media-type, security). These concerns live in their own carriers, never the parent:
 
 * long example ladders → here (extended docs)
 * authoring profile guidance → here
@@ -193,6 +193,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FMygwhRK9h6EG5-wCtt864rN5Tji1ykq34BVxOb-oIs
+<<^ code="&#x0003;">>ni:///sha-256;PtpTlckGtjKE4IMsXx7C_o50_VHhc067GAncPugQr0M
 
 <<^ code="&#x0004;" -> to="?">>

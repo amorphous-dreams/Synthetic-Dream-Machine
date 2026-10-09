@@ -37,7 +37,7 @@ The operator, handed that fork, answered: "needs more technical context, tiddler
 
 ''Why the fork opened at all.'' Phase 5's planned cure fell at its red (`3dfb06170`): the backstop would widen to re-place a child's ROOT, computing `placeMeme(root, readMeme(root))`. `readMeme` renders records; handing that render back to `placeMeme` computes `render(parse(render(r)))` against `render(r)` — the canonical form's own fixed point, reached by construction. Seven kinds of child edit read `noop · clean · 0 diagnostics`. The commit's own summary: ''the gate works, the INPUT is the lie.''
 
-That refutation names the shape any new proposal must survive. ''A cure that hands the grader bytes the renderer just produced grades the renderer, never the author.'' Re-measured here (#/measured row 3): `noop`, `clean`, zero diagnostics, on the very paste the seam was named for.
+That refutation names the shape any new proposal must survive. ''A cure that hands the grader bytes the renderer just produced grades the renderer, never the author.'' Re-measured here (#/measured row 3): `noop`, `clean`, zero diagnostics, on the very paste that named the seam.
 
 <<~/ahu>>
 
@@ -287,11 +287,11 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 ''Kalani-of-the-Ledger (Lorekeeper).'' Ranked by what inherits shape. Where a standing law decides a question, that outranks every argument above.
 
-!! ALREADY DECIDED — a child's save may never be REFUSED
+!! ALREADY DECIDED — no door may REFUSE a child's save
 
 `syncer-seams-roundtable.mem` `#/refusals`, first bullet, resting on `syncer.js:431-442` + `:26` + `:482-500` + `:542-545`: ''no cure may answer 4xx on a path the stock syncer drives.'' A slot child's save runs on that path by construction — the (b′) cure put it there deliberately, so the native gate would stop stalling the queue.
 
-''So Fork A's refusing reading stands already refused.'' What remains open is narrower than the question as worded: ''not whether a child's save is graded, but whether the grade is READ ALOUD.'' Every proposal below the refusal line is live; every proposal at or above it is dead on standing law. ''A reader taking one thing from this carrier should take that.''
+''So Fork A's refusing reading stands already refused.'' What remains open is narrower than the question as worded: ''not whether a door grades a child's save, but whether anyone READS the grade ALOUD.'' Every proposal below the refusal line lives; every proposal at or above it dies on standing law. ''A reader taking one thing from this carrier should take that.''
 
 !!! The population that law binds — and the one it does not
 
@@ -315,7 +315,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 `handle-card.mem` `#/public-by-design` and `handle-announce.ts:20-28`: the announce board admits ANY nym's card; `readHandleAnnounces` filters shape and certifies nothing; ''standing arrives only as a READ verdict.'' And the sharp half: ''a membership gate on the WRITE path reads as a REGRESSION, never a hardening'', because refusing at write obliges the writer to consult a set of who-may-announce, and that set IS the compiled registry the registry-filter rejects.
 
-''The honest reading of the analogy, and its limit.'' The board law governs WHO may write, not WHAT the bytes hold — the root's own door refuses on `grade: error` today, which IS a content refusal at a write path, and no law calls that a regression. ''So write-open/read-certified does not decide seam (b).'' What it supplies is a SHAPE with a strong precedent behind it: ''let the write land, and carry the verdict on the read.'' Under that shape Fork A and Fork B stop being opposites — the bytes land either way, and the only question left is whether a reading rides beside them. The (c′)/(d′) ruling already built the surface such a reading would sit on (`ahu-template-html.tid:13-15`, four states on one line).
+''The honest reading of the analogy, and its limit.'' The board law governs WHO may write, not WHAT the bytes hold — the root's own door refuses on `grade: error`, which enacts a content refusal at a write path, and no law calls that a regression. ''So write-open/read-certified does not decide seam (b).'' What it supplies is a SHAPE with a strong precedent behind it: ''let the write land, and carry the verdict on the read.'' Under that shape Fork A and Fork B stop being opposites — the bytes land either way, and the only question left is whether a reading rides beside them. The (c′)/(d′) ruling already built the surface such a reading would sit on (`ahu-template-html.tid:13-15`, four states on one line).
 
 !! DOES NOT DECIDE — registry-filter · standing ⊥ capability · single-owner
 
@@ -399,6 +399,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N0kUGE97pQIcF5NcmLpdaefVMy4qSuSYMf6YTedSyXI
+<<^ code="&#x0003;">>ni:///sha-256;Vl7cFQvDQPZBz7UR9JkgjFtDy6vgAz6Rl3yihfB6EAQ
 
 <<^ code="&#x0004;" -> to="?">>

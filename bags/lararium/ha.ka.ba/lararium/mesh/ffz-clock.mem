@@ -84,7 +84,7 @@ The discourse reads its own structure at five grains; every membership stays isl
 
 Beat alone ratchets (the grounding act, #contract); the bands around it read as ''containment'',
 derived locally. This ''re-levels'' the earlier calendar reading — the old "day" band retires
-with the shared epoch (another count-anchor); Theme now crosses island boundaries by
+with the shared epoch (another count-anchor); Theme crosses island boundaries by
 content-community, where a shared clock never could.
 
 !!! Glossary ~ island ≡ Arc, never a vessel
@@ -372,7 +372,7 @@ cascade); per-level radix is a ''profile'', never uniform; ''coprime/composite''
 anti-alias; that anchor retires as the rejected global-now (#/the-spine).
 A single monotone counter every island reads names the un-pono failure
 (`Date.now()`'s exact shape); no cross-island total-order returns. The anti-alias job it claimed
-now rides φ (#/non-interference) and the tree itself — with no shared counter, nothing aliases.
+rides φ (#/non-interference) and the tree itself — with no shared counter, nothing aliases.
 Local-first reads its own section only; a per-island ratchet (Beat) stays local and partial.
 
 !!! The implementation seat ~ the tools (design-only)
@@ -473,6 +473,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NpVGyBqbvFn58niu5aKWj-qQMp3rr3IEh5iAaVKbkgc
+<<^ code="&#x0003;">>ni:///sha-256;PSQ97r9LJRCvHaPHgL2j30vbjIl_ojlRMf-BS-hQoGs
 
 <<^ code="&#x0004;" -> to="?">>

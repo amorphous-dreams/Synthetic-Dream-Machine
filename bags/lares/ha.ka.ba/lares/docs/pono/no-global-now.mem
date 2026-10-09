@@ -40,7 +40,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 !! Currentness reframe ~ lineage, frontier, and typed fences
 
 ''CURRENT.'' This carrier's older scalar `version` and `highest-epoch-wins` language is historical mined
-testimony, not a license to make membership a numbered entity. The live design direction now reads a
+testimony, not a license to make membership a numbered entity. The live design direction reads a
 membership, carriage, or relation as a signed content-addressed act with its parent evidence. A reader
 follows the acts it has actually observed and reports a local frontier; it never claims a global current
 member, a complete roster, or a universal present. The frontier may therefore hold an act as ''held'',
@@ -354,6 +354,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2iUNenb8I1Aimul1Hw-0aQyc7oiGq9UyvILHvLHqqdQ
+<<^ code="&#x0003;">>ni:///sha-256;amOPrn16KrMZV_NK3PMT2Li7YNPCT7A94iZImU0bnI8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -40,8 +40,8 @@ No direct Hawaiian equivalent. The `~` prefix carries the Lares convention for c
 A `\widget` declaration MUST use the `~` prefix on the widget name.
 A `\widget` declaration MUST close with `<<~/widget>>`.
 A `\widget` declaration MUST function as a declaration only, producing no render output.
-The declared name MUST be unique in the current tiddler scope.
-`\widget` and `\procedure` MAY be used interchangeably for render-only bodies; use `\widget` when
+The declared name MUST stand unique in the current tiddler scope.
+An author MAY use `\widget` and `\procedure` interchangeably for render-only bodies; use `\widget` when
 the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pure wikitext.
 
 <<~/ahu>>
@@ -69,6 +69,6 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mRF6UkuMoBCBX_epOi5KWP1HSP_ZC7G4q2hSa7wFT5g
+<<^ code="&#x0003;">>ni:///sha-256;cqq48D8_LLBxEM24XdLj9kwXlVeV12WKFOsVT6QxF8I
 
 <<^ code="&#x0004;" -> to="?">>

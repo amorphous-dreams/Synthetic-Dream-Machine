@@ -213,7 +213,7 @@ they name three different things — a place in the graph, that place under a do
 sync scope, and a speaker's span. The authority carries identity like every other codepoint in the
 spelling; a comparer that strips it reports one address where the author wrote three.
 
-This rule carries more weight than it once did, because the hostless and hostful forms now stand in one
+This rule carries real weight, because the hostless and hostful forms stand in one
 store together (#/reach). A codepoint-exact comparison is the whole of what keeps
 `lar://evil.example/ha.ka.ba/lares/api/pono/lar-uri` from answering for the canon address
 `lar:///ha.ka.ba/lares/api/pono/lar-uri`: the two differ only in the authority, and every rule above —
@@ -528,6 +528,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zj6FChXWLDGW-NTaEnDtTOa6kMCJKzs1kzuaSDQuyWs
+<<^ code="&#x0003;">>ni:///sha-256;NjN5Gqrxqpwm3h_ASbp0aIDdf3Aifix2019A58sbcuk
 
 <<^ code="&#x0004;" -> to="?">>

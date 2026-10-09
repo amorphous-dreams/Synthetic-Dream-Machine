@@ -36,7 +36,7 @@ the current vocabulary. `lar-kind: pragma-alias` — the sigil serves as the dec
 
 A `\function` declaration MUST carry a valid TW5 filter expression as its body.
 A `\function` declaration stands leaf-only in practice — filter bodies ride as inline expressions.
-A `\function` name MUST be unique in current tiddler scope.
+A `\function` name MUST stand unique in current tiddler scope.
 A `\function` MUST function as a declaration only, producing no render output.
 
 Note: TW5 `\function` differs from `\procedure` — functions return filter results, procedures
@@ -69,6 +69,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kzygk36ZzGsU_9OWkXBMcw3ww-YOIQ8x7deX6jbze-8
+<<^ code="&#x0003;">>ni:///sha-256;y0z4LPpI2YYJOT5V8FaSbTv-pxo9NE9g_V_T_CjabDE
 
 <<^ code="&#x0004;" -> to="?">>

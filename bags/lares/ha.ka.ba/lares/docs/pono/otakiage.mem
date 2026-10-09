@@ -104,7 +104,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~ ahu #/the-house-today>>
 
-!! The house today ~ the vocabulary as it stands, measured
+!! The house as it stands ~ the vocabulary, measured
 
 !!! The `status` key ~ three values, a sparse convention, no gate
 
@@ -474,6 +474,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vIPdAUZ9zYuIU_24dWGvtZidXMEfTmKW3ZOMMlYjstk
+<<^ code="&#x0003;">>ni:///sha-256;uv8jfdzK9G5oTo7D8Ju9MJzbwBeK3UVFMo9u84LGeb8
 
 <<^ code="&#x0004;" -> to="?">>

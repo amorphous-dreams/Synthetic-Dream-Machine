@@ -22,14 +22,14 @@ uri-path    = "ha.ka.ba/lares/api/pono/verse-task-tree"
 
 ! Verse Task Tree
 
-The Verse async execution model is a ''forest of parent-child trees'', not an arbitrary
-DAG. Each node in the tree is an async execution context (a suspended or running task).
-Edges are parent-to-child lifetime containment edges. Cancellation tokens travel
+The Verse async execution model forms a ''forest of parent-child trees'', not an arbitrary
+DAG. Each node in the tree holds an async execution context (a suspended or running task).
+Edges carry parent-to-child lifetime containment. Cancellation tokens travel
 ''downward only'': parent → children, never upward or sideways.
 
-`spawn` is the only way to exit the tree. All other concurrency expressions —
+`spawn` offers the only way to exit the tree. All other concurrency expressions —
 `sync`, `race`, `rush`, `branch` — create children that stay inside the current tree
-and are bounded by their parent's lifetime.
+and their parent's lifetime bounds them.
 
 ''Source authority:'' Book of Verse ch. 14 (verselang.github.io/book/14_concurrency/);
 Unreal Fest 2023 "Verse Concurrency—Time Flow" PDF (Epic Games).
@@ -272,6 +272,6 @@ async-aware, deterministic semantics with the concurrency operators.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XVZSyQimxR4iKfMI6yNo2TNIWCFXtwWAPpDVfPmaLc8
+<<^ code="&#x0003;">>ni:///sha-256;BP7YXuYe1zjeHEOMdMht4Uc-O19njkmjcw-XvXm950c
 
 <<^ code="&#x0004;" -> to="?">>

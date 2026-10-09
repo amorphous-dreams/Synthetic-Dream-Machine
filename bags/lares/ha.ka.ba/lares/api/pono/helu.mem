@@ -37,7 +37,7 @@ Where `wehe` / `\procedure` declares a body that renders, `helu` declares a body
 !! Law (Kānāwai)
 
 A helu declaration MUST carry a unique function name.
-A helu body MUST be a valid TW5 filter expression.
+A helu body MUST read as a valid TW5 filter expression.
 A helu function MUST return a list of values (the filter result set).
 A helu declaration MUST register a function definition only, producing no render output.
 
@@ -70,6 +70,6 @@ TW5 equivalent:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4oJMOloS90Hm6G_b7I8WfxShQVSDgDWOC5cLrQJ0ahU
+<<^ code="&#x0003;">>ni:///sha-256;n4t9ekVNYH3RMRU0RHKYBg8w27SEsYEuLh0SbMmzc7M
 
 <<^ code="&#x0004;" -> to="?">>

@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/nihomano-sigils"
 
 ! Nihomano Sigils
 
-''The sigils are the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
+''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
 
 //niho// — Hawaiian: tooth, teeth; edge, serration. Used in //lei niho palaoa// (whale-tooth
 necklace of the aliʻi) and //niho mano// (shark tooth — the attested two-word form).
@@ -57,7 +57,7 @@ English alias: `sharktooth-sigils` — same meme, same law, different face.
 
 ''The mark reads as adopted, never minted.'' Caret notation names exactly these characters and has since the teletypes: `^A` = SOH, `^B` = STX, `^C` = ETX, `^D` = EOT. Every ASCII table and every terminal still writes them that way, so the control set takes the form the field already gave it — which the transmission law asks for directly: ''the boot travels as received form.''
 
-''THE THIRD CHARACTER STILL DECIDES'', now five ways and still with no lookahead: `<<~` opens the speaking set · `<<^` the control set · `<<!` the declaration register · `<<<` a quote fence · anything else reads a macrocall. `!` never opens a macro name, so the fifth way costs the decision nothing. A one-character decision is the property the whole carrier grammar rests on, and it is precisely why the control band took a MARK rather than moving its entity into the delimiter — an opener reading `<<&#x0001;` would land inside the macrocall token and parse as a call to a macro nobody wrote.
+''THE THIRD CHARACTER STILL DECIDES'', five ways and still with no lookahead: `<<~` opens the speaking set · `<<^` the control set · `<<!` the declaration register · `<<<` a quote fence · anything else reads a macrocall. `!` never opens a macro name, so the fifth way costs the decision nothing. A one-character decision names the property the whole carrier grammar rests on, and it explains precisely why the control band took a MARK rather than moving its entity into the delimiter — an opener reading `<<&#x0001;` would land inside the macrocall token and parse as a call to a macro nobody wrote.
 
 ''The namespace glyph stays where it lies'' — adjacent to its control character on the SOH opener. `namespace` is a head param, never a body field: the meta block that follows STX may declare its own `namespace` field, mirroring the SOH's, but the two live on opposite sides of the header/body boundary. Black speaks, red steers, and the two channels say the same thing on purpose. ''Only the SOH openers carry it''; the later controls frame and name nothing.
 
@@ -313,6 +313,6 @@ derive from those tiddlers, held to them by `tools/sigil-parity-witness.sh`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_c2PsB7wQT6yJVyHcDzjzES171YfdXqBtw2VAHR-kSc
+<<^ code="&#x0003;">>ni:///sha-256;xPlpz4lXBjfqx0Xx-AHkoErUXNNSJm0ifYXXRO-lqgk
 
 <<^ code="&#x0004;" -> to="?">>
