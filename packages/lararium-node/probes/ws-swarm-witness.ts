@@ -6,16 +6,18 @@
  *
  *   relay (in-process WebSocketServer) ← founder · vessel-B · vessel-C (each a WS client)
  *
- * The ceremony: found → INVITE (broadcast) → CONTACT (cards over WS) → ADMIT (real
- * Keyhive join) → ROSTER. Envelopes ride as opaque routing payloads, NOT Automerge sync — so
- * this carries none of the anti-relay cap-wall; a plain message relay suffices.
+ * The ceremony: found → INVITE (broadcast) → CONTACT (cards over WS) → ADMIT (the founder opens each
+ * party's dwelling in real Keyhive) → PRESENT (each party presents the admit it holds, and the founder
+ * verifies that one party on ask). No roster stands anywhere: the founder answers "does this presented
+ * party hold", never "who holds" (`dwellersHolding`). Envelopes ride as opaque routing payloads, NOT
+ * Automerge sync — so this carries none of the anti-relay cap-wall; a plain message relay suffices.
  *
  * Run: pnpm exec tsx packages/lararium-node/probes/ws-swarm-witness.ts
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import { KeyhiveProvider, InMemoryEventStore, foundCabalRealm, joinCabalRealm, cabalRealmRoster } from "@lararium/keyhive";
+import { KeyhiveProvider, InMemoryEventStore, foundCabalRealm, openDwelling, dwellersHolding } from "@lararium/keyhive";
 import { MEMBERSHIP_BROADCAST } from "@lararium/mesh";
 import { startMembershipRelay, WSMembershipChannel } from "../src/ws-membership-channel.js";
 
@@ -68,19 +70,47 @@ async function main(): Promise<void> {
   stage("3 CONTACT — both contact-cards cross the socket to the founder",
     cards.length === 2 && cards.every((c) => c.kind === "contact-card"), `cards=${cards.length}`);
 
-  // ── STAGE 4 — ADMIT over real Keyhive; ROSTER holds both ───────────────────────
-  const admitted: string[] = [];
+  // ── STAGE 4 — ADMIT: the founder opens each party's dwelling and answers with its admit ──
   for (const c of cards) {
     const { id } = await founder.receiveContactCard(new Uint8Array(Buffer.from(c.payload as string, "base64")));
-    await joinCabalRealm(founder, realm, id);
-    admitted.push(id);
+    await openDwelling(founder, realm, id);
+    await founderCh.offer({ kind: "admit", from: "founder", to: c.from, payload: { memberIdHex: id } });
   }
-  const roster = await cabalRealmRoster(founder, realm, admitted);
-  stage("4 ADMIT+ROSTER — the ceremony crossed LIVE WS; real Keyhive roster holds both PersonaGroups",
-    roster.length === 2, `roster=${roster.length}`);
+  await settle();
+  const admitB = await bCh.poll("vessel-B");
+  const admitC = await cCh.poll("vessel-C");
+  stage("4 ADMIT — each party's dwelling opens in real Keyhive, and its admit crosses the socket to it alone",
+    admitB.length === 1 && admitC.length === 1 && admitB[0]?.kind === "admit" && admitC[0]?.kind === "admit",
+    `B=${admitB.length} C=${admitC.length}`);
+
+  // ── STAGE 5 — PRESENT: each party presents the admit it holds; the founder verifies it ON ASK ──
+  for (const [ch, from, admit] of [[bCh, "vessel-B", admitB[0]], [cCh, "vessel-C", admitC[0]]] as const) {
+    await ch.offer({ kind: "present", from, to: "founder", payload: admit?.payload });
+  }
+  await settle();
+  const presented = await founderCh.poll("founder");
+  const held: string[] = [];
+  for (const p of presented) {
+    const hex = String((p.payload as { memberIdHex?: string } | undefined)?.memberIdHex ?? "");
+    if (p.kind === "present" && (await dwellersHolding(founder, realm, [hex])).length === 1) held.push(p.from);
+  }
+  stage("5 PRESENT — each party's presented admit verifies on ask against real Keyhive",
+    presented.length === 2 && held.length === 2, `presented=${presented.length} held=${held.join(",")}`);
+
+  // CONTROL — a party the founder knows but never opened a dwelling for holds nothing: the check reads Keyhive,
+  // never the fact that a party presented something.
+  const stranger = new KeyhiveProvider();
+  await stranger.init({ seed: new Uint8Array(32).fill(0xd0), eventStore: new InMemoryEventStore() });
+  const { id: strangerId } = await founder.receiveContactCard(await stranger.contactCard());
+  const strangerHolds = await dwellersHolding(founder, realm, [strangerId]);
+  stage("6 CONTROL — a known party never admitted presents and holds nothing", strangerHolds.length === 0,
+    `held=${strangerHolds.length}`);
+  await stranger.dispose();
 
   founderCh.close(); bCh.close(); cCh.close();
   await founder.dispose();
+  await vesselB.dispose();
+  await vesselC.dispose();
   await relay.close();
 
   console.log("[ws-swarm] =========================================================");

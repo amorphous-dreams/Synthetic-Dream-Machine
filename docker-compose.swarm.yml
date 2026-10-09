@@ -3,12 +3,13 @@
 # channel over a shared VOLUME (file/POST here; the live-WS relay-service rides the SAME shore,
 # chosen by deployment). Each vessel is its own container + its own Keyhive identity.
 #
-#   founder  (LAR_SWARM_ROLE=founder)  founds the place, admits the joiners, writes roster.json
-#   vessel-b (joiner) ─┐  offer contact-card over /swarm/channel → await admit
+#   founder  (LAR_SWARM_ROLE=founder)  founds the place, opens each joiner's dwelling, verifies each
+#                                      PRESENTED admit on ask
+#   vessel-b (joiner) ─┐  offer contact-card over /swarm/channel → await admit → present it → await the verdict
 #   vessel-c (joiner) ─┘
 #
 # Run:     rm -rf .swarm-run && docker compose -f docker-compose.swarm.yml up -d
-# Witness: cat .swarm-run/roster.json   (→ {"count":2,...}) + founder logs "roster=2/2"
+# Witness: founder logs "held=2/2" and exits 0 (no roster stands; each party verifies on ask)
 # Down:    docker compose -f docker-compose.swarm.yml down -v
 #
 # Dev-style (node:24-slim + mounted repo + built dist/node_modules; tsx runs the entrypoint) —

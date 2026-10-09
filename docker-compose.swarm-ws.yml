@@ -4,11 +4,11 @@
 # the swap a one-env change (LAR_SWARM_RELAY instead of LAR_SWARM_DIR).
 #
 #   relay    (relay-node)  a dumb broadcast membership relay on :8090
-#   founder  dials ws://relay:8090, founds + admits, writes roster.json (bind-mounted out)
-#   vessel-b / vessel-c    dial ws://relay:8090, offer card → await admit
+#   founder  dials ws://relay:8090, founds, opens each party's dwelling, verifies each PRESENTED admit on ask
+#   vessel-b / vessel-c    dial ws://relay:8090, offer card → await admit → present it → await the verdict
 #
-# Run:     rm -rf .swarm-run && docker compose -f docker-compose.swarm-ws.yml up -d
-# Witness: cat .swarm-run/roster.json (→ {"count":2,...}) + founder logs "roster=2/2"
+# Run:     docker compose -f docker-compose.swarm-ws.yml up --abort-on-container-exit --exit-code-from founder
+# Witness: the founder's exit code, and its log "held=2/2" (no roster stands; each party verifies on ask)
 # Down:    docker compose -f docker-compose.swarm-ws.yml down -v
 
 name: dreamnet-swarm-ws
@@ -36,13 +36,9 @@ services:
 
   founder:
     <<: *vessel
-    volumes:
-      - ".:/app"
-      - "./.swarm-run:/swarm"          # roster.json output only — the CHANNEL is WS
     environment:
       LAR_SWARM_ROLE:   "founder"
       LAR_SWARM_RELAY:  "ws://relay:8090"
-      LAR_SWARM_DIR:    "/swarm"
       LAR_SWARM_ID:     "founder"
       LAR_SWARM_SEED:   "f0"
       LAR_SWARM_EXPECT: "2"

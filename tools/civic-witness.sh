@@ -8,7 +8,8 @@
 #   crossing   (X1-X5 + anon floor)  the auth gate: admitted crosses + syncs both ways · anon denied →
 #                                     founds own island · impostor forged-sig denied · wrong-audience denied.
 #   burn       (X6)                   burning a Handle cuts NEW shared content forward-only; the floor persists.
-#   membership (MA1)                  the admit swarm forms a roster across containers (roster 2/2).
+#   membership (MA1)                  the admit swarm forms across containers: each joiner presents its admit
+#                                     and the founder verifies it on ask (held 2/2); no roster stands.
 #   kahu       (S1 civic-custody)     a public-infra kahu HOLDS a citizen's ciphertext yet CANNOT read it —
 #                                     custody ⊥ materialization; Delivery-Service, never Auth-Root.
 #   kahu-recov (S3 civic-custody)     a kahu HOLDS a citizen's recovery escrow share yet CANNOT recover
