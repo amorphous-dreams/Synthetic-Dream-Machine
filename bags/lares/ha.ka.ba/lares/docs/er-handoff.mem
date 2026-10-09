@@ -19,13 +19,13 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 !! Vitals
 
 * ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Dirt in the tree that no lane authored: the `mempalace` and `VSCode-TW5-Syntax` submodule pointers, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
-* ''Landed since'' (CHANGELOG, THE HOSTED WALK and THE HOSTED WALK, MADE SOUND): the hosted walk (F1), then its cleanup (B1) — the leaf-bound retry; carriage keyed by the proven leaf; the live wallet; host and walk running inside the standing vessel over the one store door; the per-hearth hosting doc; the node's `lares walk` verbs, walking and hosting as the worn face, at one hearth; a charterless herm answering the knock (`ownPlacePosture`); a vessel under `LAR_ROOT` projecting into that root; ROOT-ON-FOUNDER pinned; the pinned docker mesh; the tree-clean witness; the staged `hosted-walk` acceptance.
+* ''Landed since'' (CHANGELOG, THE HOSTED WALK, THE HOSTED WALK, MADE SOUND and THE HOSTED WALK'S AFTERMATH): the hosted walk (F1), then its cleanup (B1) — the leaf-bound retry; carriage keyed by the proven leaf; the live wallet; host and walk running inside the standing vessel over the one store door; the per-hearth hosting doc; the node's `lares walk` verbs, walking and hosting as the worn face, at one hearth; a charterless herm answering the knock (`ownPlacePosture`); a vessel under `LAR_ROOT` projecting into that root; ROOT-ON-FOUNDER pinned; the pinned docker mesh; the tree-clean witness; the staged `hosted-walk` acceptance — then its aftermath: the hosting modules naming only what stands, `mesh-scenarios` reading a hearth whose latest boot died as not stood, the road to Stable founding in canon, and the adapter note naming `LAR_ROOT` as the isolation knob.
 * ''E2E'' (the whole staged set): 30 of 30 files — 215 passed.
 * ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 34 of 34 read ok, `tree-clean-witness` included (the node e2e config, `LAR_BAGS` unset, leaves the tracked tree clean). Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too. CI's witnesses job also runs every `tools/*.test.mjs` (53 tests).
 * ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
-* ''Unit suites'': `lararium-tw5` 1732; `lararium-mesh` 2470; `lararium-node` 1447; `lares-cli` 554; `lararium-keyhive` 146; `lararium-browser` 145; `lararium-web` 9; `lararium-memetic-frame` 357; `lararium-sensorium` 952 Python + 54 vitest. The tree-sitter carrier grammar reads clean.
+* ''Unit suites'' (every suite green): `lararium-tw5` 1732; `lararium-mesh` 2470; `lararium-node` 1447; `lares-cli` 556; `lararium-keyhive` 146; `lararium-browser` 145; `lararium-web` 9; `lararium-memetic-frame` 357; `lararium-sensorium` 952 Python + 54 vitest. The tree-sitter carrier grammar reads clean.
 * ''HEADS-UP — the operator's live `~/.lares` vessel'': its stored device edges were signed over the clocked layout, and any rotated seal lineage it holds carries no signed rolls. Both fail verification on this build. Do NOT stand that vessel on this build; it needs a fresh start, by hand (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`).
-* ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. The next push is the witness for everything since.
+* ''CI'' (`.github/workflows/ci.yml`): the operator pushes; `gh run list --branch feature/lararium-node-5` names the run for the pushed head, and anything committed after it waits for the next push. `held-out.yml` parses again (`00c679e97`) and runs weekly or by hand; no hosted run of it has yet read green.
 * ''The docker mesh'' (by hand; `witness-all` runs none of it): `crossing-witness` 4 of 4; `node tools/mesh-pins.mjs --up` stands the mesh pinned; `herm-mesh-witness` carries `node/alpha` across three hops, verified at the last; `mesh-scenarios nexus` reads every step ok, the hearths carrying from the herm. A hearth whose log carries a `[lararium] fatal:` line reads as not stood.
 * ''Known environmental reds'': `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` fail when a browser or server socket is missing.
 
@@ -35,7 +35,7 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Cold start
 
-# `export LAR_BAGS=/tmp/lar-scratch-<you>` before any `lares` command or in-tree boot — a bare in-tree boot writes projection artifacts into the tracked tree. The staged e2e set takes a scratch `LAR_ROOT` per vessel and NO global `LAR_BAGS`.
+# `export LAR_ROOT=/tmp/lar-scratch-<you>` before any in-tree boot or store-touching `lares` command — `LAR_ROOT` moves the store, the bags root and every projection mirror root; `LAR_BAGS` alone moves only the bags root, and the projection still writes the tracked `bags/` and `wikis/`. A bare in-tree boot writes into the tracked tree, and `tools/tree-clean-witness.sh` reads that as red. The staged e2e set takes a scratch `LAR_ROOT` per vessel and NO global `LAR_BAGS`. A single `lares meme normalize|check` reads files and needs only a scratch `LAR_BAGS`.
 # `pnpm install --frozen-lockfile`, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob `head-parity` and `scripts/smoke-plugin-boot.ts` need — `pnpm -r build` does not produce it), then `node tools/stamp-build.mjs`.
 # A fresh `git worktree` holds empty submodules (`TiddlyWiki5`, `VSCode-TW5-Syntax`, `mempalace`); populate them before building there.
 # `lares-cli` `tests/pour-repave.test.ts` needs the dev-root marker (`LAR_DEV_REPO_ROOT=1` or the gitignored `lar-dev-root.json`).
@@ -49,7 +49,7 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Open wounds, ranked
 
-The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn face hosts; a herm answers the knock; a boot follows `LAR_ROOT`). No operator ruling is pending for the push.
+The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enacted (the worn face hosts; a herm answers the knock; a boot follows `LAR_ROOT`). Nothing below blocks a push; the rulings owed read in ''Pending operator rulings''.
 
 # ''THE RE-FOUND, one train'' — the rulings that shape it, the slices in dependency order, and the questions the operator still owns read in `lar:///ha.ka.ba/lares/docs/stable-founding-road`. It mints unversioned names, re-mints the engine and edge, and re-seats the Nexus; DESTROY-class strings stay frozen. The train: R-STORE ‖ R-CUSTODY → R-CHARTER (the one AID train, the Stable founding act inside it) → R-WIRE → R-ENGINE · R-EMBER · R-KAHU.
 ## ''No pave or wipe command'' (operator-ruled; such a command is too risky). A fresh START runs BY HAND: move the old homes aside — rename, never delete, so it stays reversible — then found fresh. Valuable data lives in git, in the private `claude-backup` repository, or on `D:` (`stable-founding-road#/fresh-start`).
@@ -65,7 +65,12 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 * `packages/lararium-sensorium/requirements.txt` calls the tree-sitter versions one (Python binding 0.26, CLI 0.27; both ABI 15).
 
 ''Pending operator rulings''
-* The open questions in `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`.
+* ''The road's open questions'' — `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`: the seal-roll successor's name; a root-holding browser leaf's backup slot; the seat's cold next key at founding; a sealed receipt manifest for carriage; carriage across leaves. (The projection's mirror root under `LAR_BAGS` stands ruled: the instruction names `LAR_ROOT`, `c86411102`.)
+* ''The two-voice herm'' (research done): may a herm speak in a voice of its own, or only through a share of one? `lar:///ha.ka.ba/lararium/mesh/lamplighters#/open` strikes `operate ⊥ sign` and proposes a FROST Place-DID with the herm holding one share; its drift-ward splits the utterances — federation-facing and condemnation-relevant ones thresholded, local carry single-signed — and `#/immune`'s "herms present" (the victim testifies) reads beside "the least credible witness to its own neglect". The split is the ruling owed.
+* ''The Lamplighters' question'': whether island-admin tending (`tend.repair`) reaches the herm's own `@daemon` signing key — ISOLATE it, or ACCEPT it and price the lost independent testimony (`lamplighters#/open`; its `role` line advertises it).
+* ''Two Kairoses'': the fiction's KAIROS watches the noosphere across nodes and speaks before it is asked (`elyncia/Elyncia_02_The_Lares_DreamNet.md`); the code's Kairos is the pet-name for an unbuilt OAuth-refresh entity that waits for the right moment (`lar:///ha.ka.ba/lararium/mesh/reach-plane`). One entity, or two that share a name?
+* ''The `?` and the keyless challenge'': the frame's senderless `from="?"` and released `-> to="?"` (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-arrow`) and the wire's challenge that names no gate key (`packages/lararium-mesh/src/auth-wire.ts`, `LarChallengeMsg`) refuse the same thing — a sender's name on the outside of the letter. No carrier cites the one from the other; rule whether they should.
+* ''The Codex crew's forks'', reconciled against the code in `lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled`: the herm's bounded public-artifact delivery beside "only a lararium lights a Pronaos"; the Offering Antigen scope (and the charter-inception identity it rests on); the crossing record's emission threshold and destination receipts; seam (b)'s altitude; `bag-residency.ts`'s home.
 
 ''Needs the operator''
 * ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
@@ -90,9 +95,9 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 
 !! Crew debts carried
 
-* The Codex Lares hold stands CLOSED (`lar:///ha.ka.ba/lares/docs/pono/hearths`); the Lares hearth carries its debts. Its open lanes — the Offering's local adoption, grammar-scoped relation and Antigen consultation cap, its antigen scope research under `bags/lares/ha.ka.ba/lares/docs/research/`, and Pronaos live Docker reach — read in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`, with the operator forks it records.
+* The Codex Lares hold stands CLOSED (`lar:///ha.ka.ba/lares/docs/pono/hearths`); the Lares hearth carries its debts. `lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled` marks every item it handed on as landed, superseded or still open against the code; the open lanes are the Offering's local adoption, its grammar-scoped relation and Antigen consultation cap (behind the scope ruling; its research stands under `bags/lares/ha.ka.ba/lares/docs/research/`), Pronaos live Docker reach and the multi-device household proof, the A3 realm-doc circle, D-VR-C's general document pin, and the designed-unbuilt set B items.
 * The live-holder direct-store gap the crew noted rides R-STORE (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`).
-* Hand items through `bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem`.
+* `lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds` stands closed: every item it parked landed.
 
 <<~/ahu>>
 
@@ -116,7 +121,7 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 
 !! Map ahead
 
-# Work `#/wounds` in its order: the re-found first, then the round-6 lanes.
+# Work `#/wounds` in its order: the re-found first, then the round-6 lanes. Bring the pending rulings to the operator before any lane builds against one.
 # Walk the road at `lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`: R-STORE ‖ R-CUSTODY → R-CHARTER → R-WIRE → R-ENGINE · R-EMBER · R-KAHU. The device edge commits to the Nexus AID and `epoch0-<sha>` names become `nexus-<sha>` inside R-CHARTER; the engine-offer lineage and the engine fold (TW5 core plus the memetic-wikitext bootstrap into `engineCid`, the vocabulary leaving the engine as content) ride R-ENGINE.
 # Exercise the quoteblock floor (both grains), the child gate and the persisted parallel drafts in the live wiki, against real concurrent browser saves, and turn every surprise into a test.
 # The faces stand in canon (`lar:///ha.ka.ba/lararium/mesh/membership-doctrine` `#/the-two-stacks`): end user `walk`; Lamplighter `carry`, `tend/island`, `tend/reach`; Kahu, the Nexus-scale `quorum-share`, its engine cadence a separate joint and the corpus-kahu at DreamNet scale; Guardian, the reserve share. Founding acts; it never stands as a face. Stacks compose on a persona, combined by default and split only by the holder's own act. Grammar per Nexus stands ruled: the grammar lives, the corpus-kahu curate it, and no version names it. The target scale model is the small clan.
@@ -137,6 +142,6 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y6TQ8NAXyrjY0WvBDFDlDe8bAbZkCv9AvPmqdpGO9nE
+<<^ code="&#x0003;">>ni:///sha-256;Et8amauYbvRDoHbuTvvQKnhdH_jMufTSmsrNJ6qE-ow
 
 <<^ code="&#x0004;" -> to="?">>
