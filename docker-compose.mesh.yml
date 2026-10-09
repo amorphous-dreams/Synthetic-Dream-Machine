@@ -104,6 +104,9 @@ services:
       # an undeclared Web origin refuses the boot (`origin composition`), as the staged harness declares too.
       LAR_SAME_ORIGIN: "true"
       LAR_STAND_FACE: "beta"
+      # B SEATS NO CABAL BY DEFAULT: she founds charterless and contracts into A's Nexus. A scenario that needs
+      # two independently-founded charters names B's chairs (`LAR_B_KAHU`), and she seats her own at boot.
+      LAR_STAND_KAHU: "${LAR_B_KAHU-}"
       # THE DIRECT DIAL — the member-read wire between two operators' hearths (`meme` sets both once A's
       # gate key is known; empty = no dial, the peerless shape every other reading keeps).
       LAR_JOIN_SYNC: "${LAR_B_JOIN_SYNC-}"

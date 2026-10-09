@@ -1782,28 +1782,53 @@ run_board() {
   step "the relay stands FIRST"
   if $COMPOSE up -d herm-source >/dev/null 2>&1 && up_and_answering herm-source; then ok
   else bad "the relay never answered"; clear_all; return; fi
-  local svc
-  for svc in lararium-a lararium-b; do
-    step "$svc stands, alone against a mesh already up"
-    if $COMPOSE up -d --no-deps "$svc" >/dev/null 2>&1 && up_and_answering "$svc"; then ok
-    else bad "$svc never stood"; dump_boot_failure "$svc"; clear_all; return; fi
-  done
+  step "lararium-a stands, alone against a mesh already up"
+  if $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 && up_and_answering lararium-a; then ok
+  else bad "lararium-a never stood"; dump_boot_failure lararium-a; clear_all; return; fi
 
-  # NEGATIVE ⑥b — A VESSEL IN NO NEXUS STANDS AS A PRIVATE NEXUS OF ONE. This is state (a), and it is
-  # a first-class lifecycle stage rather than a fault: "standing a hearth up and connecting it to a
-  # Nexus LATER is a first-class flow".
+  # NEGATIVE ⑥a — TWO INDEPENDENTLY-FOUNDED CHARTERS COMPUTE TWO BOARDS. The premise stands inside the step:
+  # B boots seating her OWN cabal (`LAR_B_KAHU`), so each vessel reads `charter` under a genesis epoch it
+  # founded alone. The step reads both the epochs and the BOARD each vessel computes from its own (`nexus
+  # refresh` → `realmDoc`, the reading the headline compares). Distinct epochs that still name one board is
+  # exactly the merge this guards, so the epochs alone never pass it.
   #
-  # ⚠ BOTH HEARTHS SEAT THEIR OWN CABAL AT BOOT (`LAR_STAND_KAHU`), so each already reads `charter`
-  # under its OWN genesis epoch — which is exactly what negative ⑥a needs.
+  # RED WHEN: the board derivation drops the charter's scope (both vessels compute one board), or either
+  # vessel stands no charter of its own (the premise fails and the step reads `none`, never green).
+  step "NEG a — B stands under a charter she founded herself"
+  if LAR_B_KAHU="Kahu Delta,Kahu Epsilon,Kahu Zeta" $COMPOSE up -d --no-deps lararium-b >/dev/null 2>&1 \
+     && up_and_answering lararium-b; then ok
+  else bad "B never stood under her own charter"; dump_boot_failure lararium-b; clear_all; return; fi
+
   step "NEG a — two vessels under DIFFERENT charters compute DIFFERENT boards"
-  local EA EB
+  local EA EB BA BB
   EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-  if [ -n "$EA" ] && [ -n "$EB" ] && [ "$EA" != "$EB" ]; then ok
+  BA=$($COMPOSE exec -T lararium-a $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
+  BB=$($COMPOSE exec -T lararium-b $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
+  if [ -n "$EA" ] && [ -n "$EB" ] && [ "$EA" != "$EB" ] && [ -n "$BA" ] && [ -n "$BB" ] && [ "$BA" != "$BB" ]; then ok
   else
     bad "two independently-founded vessels do not separate"
-    printf '      A: %s\n      B: %s\n' "${EA:-none}" "${EB:-none}"
+    printf '      charter A: %s
+      charter B: %s
+      board A:   %s
+      board B:   %s
+' \
+      "${EA:-none}" "${EB:-none}" "${BA:-none}" "${BB:-none}"
   fi
+
+  # B STARTS OVER CHARTERLESS for the headline: a plain charter import refuses beside a standing charter of her
+  # own, and a re-seat would re-derive the epoch. Her volume goes, and she founds afresh with no cabal.
+  step "B burns her own charter and founds afresh, charterless"
+  $COMPOSE rm -sfv lararium-b >/dev/null 2>&1
+  docker volume rm dreamnet-mesh_lararium-b-data >/dev/null 2>&1
+  local SB=""
+  if $COMPOSE up -d --no-deps lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then
+    SB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)
+  fi
+  case "$SB" in
+    ""|*'"quorumSeated":true'*) bad "B did not stand afresh without a charter"; dump_boot_failure lararium-b; clear_all; return ;;
+    *) ok ;;
+  esac
 
   # ★ THE READING. B takes A's charter by its own doors and contracts in; both must then name ONE
   # island. `nexus refresh` reports the realm doc each side derives — the two must agree.
