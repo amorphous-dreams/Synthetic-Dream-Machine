@@ -28,8 +28,10 @@ jobs:
             timeout_minutes: 45
           - driver: herm-mesh
             timeout_minutes: 45
+            mesh: "true"
           - driver: mesh-scenarios
             timeout_minutes: 225
+            mesh: "true"
     env:
       NODE_VERSION: "24"
       PNPM_VERSION: "11"
@@ -53,10 +55,20 @@ jobs:
           echo "ARTIFACT_DIR=$dir" >> "$GITHUB_ENV"
       - name: Install workspace
         run: pnpm install --frozen-lockfile
+      # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored because its
+      # sha256 IS the hearth's true name, so a fresh checkout holds none until this step renders it from the
+      # submodule — and every vessel a driver founds reads the engine it names.
+      - name: Render the TW5 core blob
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
       # The Docker files bind-mount this checkout and explicitly trust its host-built dist/. The
       # browser weld also imports the workspace's Playwright package from this install.
       - name: Build the mounted tree
         run: pnpm -r build
+      # A STAMP NAMES THE BYTES A BUILD THAT RAN CAME FROM. A step runs only after every earlier step passed, so
+      # this stamp never lands over a failed build; an unstamped dist reads stale to every freshness gate, and
+      # `lares vessel found` would rebuild mid-driver.
+      - name: Stamp the build
+        run: node tools/stamp-build.mjs .
       - name: Verify Docker Compose substrate
         run: docker compose version
       - name: Install Playwright Chromium
@@ -76,6 +88,19 @@ jobs:
       - name: Herm mesh readers read a known positive
         if: matrix.driver == 'herm-mesh'
         run: node --test tools/herm-mesh-reader.test.mjs
+      - name: Mesh pins stand in the order the compose file derives
+        if: matrix.mesh == 'true'
+        run: node --test tools/mesh-pins.test.mjs
+
+      # PINS ARE GENERATED, NEVER COPIED. Every bootstrap peer knocks with the gate key its target founded in its
+      # own container, so the herms stand one wave at a time and each wave boots against the keys read off the
+      # wave before it. A bare `compose up` stands relays whose peer entries carry no key, and those refuse aloud.
+      - name: Stand the Herm mesh in pin order
+        if: matrix.driver == 'herm-mesh'
+        shell: bash
+        run: |
+          timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 2>&1 \
+            | tee "$ARTIFACT_DIR/mesh-setup.log"
 
       - name: Run ${{ matrix.driver }}
         shell: bash
@@ -107,21 +132,17 @@ jobs:
               status=$?
               ;;
             herm-mesh)
-              run_captured "$ARTIFACT_DIR/mesh-setup.log" 10m docker compose -f docker-compose.mesh.yml up -d herm-source herm-relay herm-relay-2
-              status=$?
-              if [ "$status" -eq 0 ]; then
-                # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
-                # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
-                reader_root="$(mktemp -d)"
-                if ! run_captured "$ARTIFACT_DIR/reader-found.log" 5m env LAR_ROOT="$reader_root" node packages/lares-cli/bin/lares.mjs vessel found --skip-build; then
-                  echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
-                  status=1
-                else
-                  LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
-                  status=$?
-                fi
-                rm -rf "$reader_root"
+              # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
+              # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
+              reader_root="$(mktemp -d)"
+              if ! run_captured "$ARTIFACT_DIR/reader-found.log" 5m env LAR_ROOT="$reader_root" node packages/lares-cli/bin/lares.mjs vessel found --skip-build; then
+                echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
+                status=1
+              else
+                LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
+                status=$?
               fi
+              rm -rf "$reader_root"
               ;;
             mesh-scenarios)
               run_logged 205m bash tools/mesh-scenarios.sh all
@@ -134,10 +155,13 @@ jobs:
           esac
           exit "$status"
 
-      - name: Capture and tear down Herm mesh
-        if: always() && matrix.driver == 'herm-mesh'
+      # A mesh driver's own trap tears down on a clean exit; a job timeout signals past it, so this step holds
+      # the evidence and the teardown either way. The pins file names public gate keys only.
+      - name: Capture and tear down the mesh
+        if: always() && matrix.mesh == 'true'
         shell: bash
         run: |
+          cp .mesh-pins.env "$ARTIFACT_DIR/mesh-pins.env" 2>/dev/null || true
           {
             echo "── mesh compose state before teardown ──"
             timeout --kill-after=30s 2m docker compose -f docker-compose.mesh.yml ps
