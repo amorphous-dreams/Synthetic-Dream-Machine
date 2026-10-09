@@ -227,13 +227,15 @@ budget choices, never architectural forks.
 | Active wiki lanes | pool-managed, piscina for stateless parse | pool-managed, dedicated islands |
 | Founding ceremony | `runFoundingCeremony(repo, seed)` via `@lararium/keyhive` | same |
 | Ea gates A/B/C | ✅ passes at boot | ✅ same ceremony, same gates |
-| PersonaGroup ring | `assemblePersonaGroupRing` — proof: the key its inbound gate proved | same assembly — proof: the gate key that signed its verdict, or the device key a sibling proved through a herm over the session its proof binds (`standSiblingChannel`, one call on both shores) |
+| PersonaGroup ring | `assemblePersonaGroupRing` — grant path: the key its inbound gate proved; sibling path: the device key a sibling proved through a herm, under the PersonaGroup secret, over the session its proof binds (`standSiblingChannel`) | same assembly — grant path: the gate key that signed its verdict; sibling path: the same as the node's |
 
 Where the node vessel does more (disk projection, persistent relay, process control),
 that counts as edge adaptation, not authority. The browser vessel breathes with
 identical ea rights. The ring runs on every leaf kind — a face where a listening vessel exists, a single
 user device, and one device of a user-caps-only fleet where no vessel listens
 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy">>).
+A sibling holds standing on either shore: the ring's sibling path admits it to the face's own planes and the
+public boards, never the @daemon and never another face's planes.
 
 <<~/ahu>>
 
@@ -249,6 +251,6 @@ user device, and one device of a user-caps-only fleet where no vessel listens
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PxRf49iB1KVOEyBCZ0ayUYsqyclIYA7zv2j4Xe8nOPE
+<<^ code="&#x0003;">>ni:///sha-256;qKkN93q-ABy0fxYH2e4WhyTFAzolvC_rpyCEbZRqKU4
 
 <<^ code="&#x0004;" -> to="?">>

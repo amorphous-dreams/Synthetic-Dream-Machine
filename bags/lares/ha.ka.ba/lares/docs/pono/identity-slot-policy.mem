@@ -111,9 +111,9 @@ No `OpenIdentitySlot` stands — no alias, the alpha line's own law. `LarVessel.
 
 * A NODE listens. Its `DaemonAuthGate` proves the dialer's key (the V3 proof) and the ring reads the identifier that gate proved.
 * A LEAF dials out. The gate it dials signs its `lar:auth-ok` with the gate key over the leaf's own fresh nonce (`authOkBytes`, domain `auth-ok`), the leaf checks it against the key it pinned, and `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields. A gate that cannot sign under the pin answers nothing the leaf reads as a pass. Authentication runs both ways on one socket.
-* Two LEAVES of one PersonaGroup meet through a herm. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head (an edge a rotated-away op-key signed reads as rolled past), plus a signature by the device key over the exchange's whole transcript — both nonces, both ephemeral keys, the prover's role. The edge rides sealed to the sibling, so the herm forwards bytes and reads no leaf↔root link. The proof binds the session it admits (`LeafPeerSession`): both siblings derive per-direction keys from the very ephemerals their device keys signed, every later frame seals under them, and a hash chain orders the frames, so a herm that injects, replays or reorders one meets a refusal that names itself. `SiblingNetworkAdapter.provenKeyOf` names the device key a sibling proved.
+* Two LEAVES of one PersonaGroup meet through a herm. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head and the lease epoch the verifier holds (an edge a rotated-away op-key signed reads as rolled past; an edge bound below the held epoch reads as lapsed), plus a signature by the device key over the exchange's whole transcript — both nonces, both ephemeral keys, the prover's role. The PersonaGroup secret gates every box (#/the-persona-group-secret): a hello carries a hint only a member computes, and every box mixes the secret into its key, so a herm reads no leaf↔root link even when it acts — a hello it forges draws no box. The proof binds the session it admits (`LeafPeerSession`): both siblings derive per-direction keys from the very ephemerals their device keys signed, every later frame seals under them, and a hash chain orders the frames, so a herm that injects, replays or reorders one meets a refusal that names the relay as its suspect, and both siblings close the session and prove again. `SiblingNetworkAdapter.provenKeyOf` names the device key a sibling proved.
 
-''No clock enters any of the three.'' Freshness rides a nonce the verifying side chose; licensing rides KEL event order and the edge's lease epoch.
+''No clock enters any of the three.'' Freshness rides a nonce the verifying side chose; licensing rides KEL event order and the lease epoch the verifier holds — `standSiblingChannel` hands the proof the vessel's own read of it.
 
 <<~/ahu>>
 
@@ -125,16 +125,29 @@ The ring runs on EVERY vessel that holds a face, because a leaf comes in more th
 
 # ''A face of an operator's PersonaGroup where a listening vessel exists.'' The leaf dials a node of its own PersonaGroup; that node's gate proves the leaf, and the node's signed verdict proves the node back.
 # ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
-# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. Each device dials a herm's relay through the knock its pinned gate key derives, proves its device key at that one gate, and joins its PersonaGroup's sibling channel (`siblingChannelTag`, an opaque HMAC of the group's id). Siblings run the proof through the herm, and Automerge sync rides only the session a passing proof binds (`SiblingNetworkAdapter`, in the automerge-repo `NetworkAdapter` shape). Both vessel shores compose it by one call (`standSiblingChannel`), and the face's own KEL board re-licenses every standing session as it moves. A proven sibling reads as this face's own fleet and syncs whole, as a same-operator peer does. An impostor, a sibling whose edge the KEL head rolled past, and a frame the herm forged each meet a refusal that surfaces; none drops in silence.
+# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. Each device dials a herm's relay through the knock its pinned gate key derives, proves its device key at that one gate, and joins its PersonaGroup's sibling channels — one per secret it holds, each tag an HMAC under that secret over the herm's gate key (`siblingChannelTag`), so a non-member holding the group's id computes none and two herms see two tags. Siblings run the proof through the herm, and Automerge sync rides only the session a passing proof binds (`SiblingNetworkAdapter`, in the automerge-repo `NetworkAdapter` shape). Both vessel shores compose it by one call (`standSiblingChannel`), and the face's own KEL board re-licenses every standing session as it moves.
+
+''A proven sibling holds STANDING, and nothing more.'' The PersonaGroup ring's sibling path (`composeSiblings`, reading the device key the sibling session proved) admits it to this face's own planes and the public boards — never the vessel's @daemon, and never another face's planes. A vessel that wears many faces keeps each face's siblings to that face; neither shore shares a sibling freely. An impostor, a sibling whose edge the KEL head rolled past or whose lease lapsed, and a frame the herm forged each meet a refusal that surfaces and names its suspect (`peer`, `relay`, or `self` for a leaf a rotation revoked); none drops in silence.
 
 ''The threshold keeps two faces'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>):
 
-* ''Outward — the herm's face: carriage of sealed frames.'' The herm routes on the channel tag and the key its gate proved, and holds no session key, no edge in the clear, no group id and no document byte.
-* ''Inward — the siblings' face: the proven session.'' Only the two siblings hold its keys. The herm's stamp of a sender key must agree with the proven edge, and it never stands in for one.
+* ''Outward — the herm's face: carriage of sealed frames.'' The herm routes on the channel tags and the key its gate proved, and holds no secret, no session key, no edge in the clear — even when it acts, since a hello it forges draws no box — no group id and no document byte. Every act it takes on a session (a forged `here`, an injected frame, a frame reflected to its own sender) surfaces as a refusal that names the relay.
+* ''Inward — the siblings' face: the PersonaGroup secret and the proven session.'' Only members hold the secret, and only the two siblings hold the session's keys. The herm's stamp of a sender key must agree with the proven edge, and it never stands in for one.
 
 Nothing of the inward face rides the outward one.
 
-A leaf holds only its own device key, its own edge and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
+A leaf holds only its own device key, its own edge, its sealed secret and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
+
+<<~/ahu>>
+
+<<~ ahu #/the-persona-group-secret>>
+
+!! The PersonaGroup secret — what keeps a forged hello from reading an edge
+
+* ''Delivered at enrolment.'' When the persona root signs a DeviceDelegation it seals the group's secret to that device key beside the edge, in the same act (`enrolDevice`, `packages/lararium-mesh/src/persona-group-secret.ts`) — at founding, at device admit, and inside a contracted binding. The device's own daemon doc rests the seal, keyed by the group; it never crosses.
+* ''Derived from the root's own seed, never from the KEL.'' The KEL rides public boards. The secret derives from the op-key's seed, salted by the KEL prefix, so the root reads it again whenever it signs and keeps no copy.
+* ''Rolled with the op-key.'' A rotation seats a fresh op-key, whose seed derives the next secret, and the rotation re-enrols every remaining device — its re-delegated edge and its re-sealed secret — inside the KEL event, outside the event's content address. A revoking rotation leaves the revoked device out: it finds no seal addressed to it, holds no secret under the new head, stands revoked and says so.
+* ''A stale sibling catches up inside the seal.'' A sibling whose KEL has not yet seen a rotation says hello under its older secret, and the sibling ahead answers with the KEL suffix sealed under that secret. The stale side verifies the suffix onto its own head, lands it on its board, opens the secret the rotation sealed to it and proves again under the newest. A leaf keeps its older secrets and their channels, so the fleet never wedges on a rotation.
 
 <<~/ahu>>
 
@@ -163,6 +176,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZP8kvkUFCXKc6CISJUQ8XcxO4Ozq-K-t04AIZgnab7s
+<<^ code="&#x0003;">>ni:///sha-256;vhiS_NiEvP7CgFZ8CXzK2ICHVYKiwvunoXzhHDmLZNE
 
 <<^ code="&#x0004;" -> to="?">>
