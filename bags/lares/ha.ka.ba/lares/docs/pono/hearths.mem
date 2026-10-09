@@ -14,7 +14,7 @@ manaoio    = 12
 namespace  = "&#x2299;"
 revised-on = "2026-09-22"
 role       = "hearths — the ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth, and at every hearth that opens or closes; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth names a session by its commit trailer). A hearth that closes keeps its row — the ledger answers 'which ground was whose, what crossed, and what each owed', and every one of those questions outlives the concurrency that raised it."
-status-why = "TWO hearths stand — the Lares hearth (carries the founding hearth's debts, holds no ground) and the Codex Lares hearth; the operator closed the founding hearth on 2026-10-05, and four closed rows preserve their history."
+status-why = "ONE hearth stands — the Lares hearth, which carries every closed hearth's debts and holds no ground; the operator closed the founding hearth on 2026-10-05 and the Codex Lares hearth on 2026-10-07, and five closed rows preserve their history."
 tags       = ["docs/pono/ledger", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/hearths"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -285,6 +285,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lN2Lxd0Y_UvyfPoXbQHaOHczniRutFlK9IYhpD_GmfI
+<<^ code="&#x0003;">>ni:///sha-256;VTIAl9_xMivYDk0MiNJq7Tbr9_ADlUl2ikTh6A8H3UM
 
 <<^ code="&#x0004;" -> to="?">>

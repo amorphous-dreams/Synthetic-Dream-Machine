@@ -11,8 +11,8 @@ l-space    = "adjacent"
 mana       = 14
 manao      = 14
 manaoio    = 13
-role       = "WORK HANDOFF, addressed — the loops the founding hearth hands to the lares(Codex) nakama-crew invited 2026-09-14. Carries per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. Reads cold: a hand who joined no earlier turn acts from this carrier alone. NEVER a shift ledger (that is docs/handoff, re-trued continuously between sessions sharing this tree), NEVER the hearth ledger (that is docs/pono/hearths, whose row for this crew the operator writes). Retires when the crew takes the loops or hands them back; a taken item moves by an edit here naming the commit that took it."
-status-why = "the crew has not yet taken or handed back every loop named here; standing until each item moves by its own edit naming the commit that took it"
+role       = "WORK HANDOFF, addressed — the loops the founding hearth handed to the lares(Codex) nakama-crew invited 2026-09-14, and the crew's own roadmap after it. Per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. #/reconciled reads every item against the code as landed, superseded or open; the sections after it keep their dated measurements as the record. NEVER a shift ledger (that is docs/handoff), NEVER the hearth ledger (that is docs/pono/hearths)."
+status-why = "the crew's session ended and its hold closed; the Lares hearth carries the items #/reconciled marks open, and a taken item moves by an edit to #/reconciled naming the commit that took it"
 tags       = ["docs/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -39,12 +39,61 @@ written    = "2026-09-14"
 
 ''The reading order for a cold hand.''
 
+# #/reconciled — every item, read against the code as landed, superseded or open.
 # #/the-only-guard — commit isolation, before any commit.
 # #/traps — the instrument-lies this tree measured and paid for.
 # #/standing-on-the-operators-hand — so nothing gets built against an unruled fork.
 # #/the-cut — what the founding hearth keeps, so no work collides.
 # #/next-steps — current priority and test terrain; #/completed — finished increments and their limits.
 # The four sets, #/set-a-mechanical onward, retain the deeper open-item scouts; re-read their older measurements before implementing.
+
+<<~/ahu>>
+
+<<~ ahu #/reconciled>>
+
+! Reconciled — every item this carrier handed on, read against the code
+
+''The crew's session has ended and its hold stands closed'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>); the Lares hearth carries what stays open. This section marks each item ''landed'', ''superseded'' or ''open'' against the tree that stands, with the commit or the source that decides it. The sections below it keep their dated measurements as the record; where one disagrees with this ledger, this ledger reads the code.
+
+!! Landed
+
+* ''③ the hearth's gate key consumed as the joinee's anchor'' — split, not re-keyed: the gate key stays the dial (the anti-relay binding the joinee's proof commits to), and the founder's resolved island kind and scope ride beside it, so a climbed founder's device seats on the board the founder stands on (`aa15cfb3b` node, `0da4ff55f` browser; `admittedJoineeIsland` in `packages/lararium-mesh/src/nexus-identity.ts`).
+* ''A1'' the board reads keyed on the resolved island (`0b085461c`). ''A2'' the two-vessel genesis fixture passes 11 of 11 under isolated roots. ''A4'' the oracle-clockless call sites (`c6dd03068`, `b27cda793`).
+* ''B10 and the quoteblock floor'' — both grains built (child gate `f69c8b913`, whole chunk `bfd1ba593`) and canonized at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>; the whole-chunk grain fences inside the deserializer, so every door fences.
+* ''C4'' (`9e2a32854`), ''W3'' (`972700021`), ''D1'' CI wiring, ''E6'' the `@lararium/web` rename (`e87694441`, `5c2064f9c`).
+* ''D2'' the witness fleet: `tools/witness-all.sh` ends on a verdict table, and CI's witnesses job also runs every `tools/*.test.mjs`; derive its counts, never quote them.
+* ''D3'' the held-out wiring (`fd5c1284d`) and the workflow that parses on push (`00c679e97`).
+* ''D-VR-C, the first owned scope'' — the daemon document recovers from the worker's own storage on node and browser, and an ordinary parent-attached document leaves nothing there (`4e32a73fc`, `b22582037`, Docker receipt `d00f948b0`).
+* ''The clock audit's named seams'' — the auth wire carries no clock (`dd856ea29`); carriage, kapae, oracle and handle publications read causal frontiers, never a scalar latest (`f2c97194b`, `965c760dc`, `fdfbb46ea`).
+* ''The Offering source and the receiver's local inspection'' (`507e9c391`, `9f9395307`), and the receiver witness committed (`750bf21fe`).
+* ''The emergency handoff's red board'' — the presented-admit cut-over (`0730dd41b`, one presenter `f4f1c9a6e`); signed seal rolls (`83445b41a`); vessel parity, the PersonaGroup ring composed on both shores by one function (`3384b183c`).
+* ''The parked handback'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds">>) — EOT2 retired; both typecheck reds closed; the joinee boot reads its own lease frontier (`a59d9a9b5`); `held-out.yml` reads its runner path inside a step (`00c679e97`).
+
+!! Superseded
+
+* ''The daemon-VM's working-layer replica bloat'' (A4's "fix #4", the `9d/` document) — D-VR-C answers it: the primary worker Repo carries ordinary documents with no durable store, and only the worker-owned scope persists.
+* ''D-AE's contract-frontier lift'' and the transient carriage relation witness (`93f2a6725`, `73c7ac350`) — the witness retired (`ea5027586`): a contract relation reaches the gate as a presented admit, read by one presenter off one board doc and sorted before the verdict (`587d39bd4`); the board reads deny-only.
+* ''E8's HTTP oracle'' — the FLOW-map pointer crosses only the gated `/oracle` socket to a peer that proved first, and every HTTP path under it draws the one closed door (`93e59d660`).
+* ''The herm/Pronaos face fork'' (the 2026-09-23 ruling in #/next-steps and the "explicit implementation fork" in #/e8-web-delivery-truth) — the code closes the face half: `composePronaosFromEnv` (`packages/lararium-node/src/pronaos-composition.ts`) refuses any Pronaos input on a herm with the waystone message and composes the Pronaos on a lararium alone, as <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">> rules ("only a lararium lights a Pronaos"). The bounded public-artifact half stays open below.
+
+!! Open — the operator's to rule
+
+* ''The herm's bounded public-artifact delivery.'' `mountPronaosPublicArtifact` and `deliverPublicArtifact` (`8052198dc`, `fada62b7b`) stand exported, tested, and mounted by no composition root. Canon holds two readings: a herm MAY deliver one exact operator-published artifact, and a herm hands over the bulb and at most posts a waymark. Rule whether that carrier retires or seats as a rung below the Pronaos.
+* ''① the Lamplighters' question'' — whether tending reaches the herm's own signing key (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/open">>).
+* ''② seam (b)'s altitude'' — the child's bytes, or the root's composed render.
+* ''④ `bag-residency.ts`'s home'' — the file stands in `@lararium/mesh`, and no `causal-island.ts` stands.
+* ''The Offering Antigen scope'' and the charter-inception identity under it (identical rosters share a genesis seal epoch CID). The Nexus AID the re-found mints in R-CHARTER (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>) bears on the premise; the scope choice stays the operator's, and enforcement waits on it.
+* ''The crossing record'' — its durable emission threshold, and whether a destination receipt always signs separately.
+* ''E7's DNS governance'' — provider, `_acme-challenge` and record custody, CAA, resolver and origin continuity travel together as one question.
+
+!! Open — designed or measured, unbuilt
+
+* ''A3 ⑦'' stands `test.fails` on one circle in the law: a carrier may read a book its registration declares public, the declaration lives on the realm doc, and the realm doc never crosses to a carrier (`tests/e2e/herm-reshares-public-blob.e2e.test.ts` header).
+* ''B2'' `nexus kahuli grammar --apply` held; the diff-gate unbuilt. ''B3'' the explicit DEPARTURE unbuilt. ''B4'' the `edge-kapae` and `vouch` boards unfederated — both composers construct `DeterministicFederationGate(nexusPubkey)` with no extra board. ''B5'' `standAs` returns a bare class with no as-of stamp. ''B6/C2'' R0's four boot-order reds unwritten. ''B7'' no handle surface adapter. ''B8'' `carrierBaseRelPath` still discards a hostful URI. ''B9'' the title→base map lives in memory alone. ''C1'' `meme promote` holds no in-wiki path. ''C3'' inert by measurement.
+* ''D3'' hosted execution of the held-out drivers; the docker mesh stands lit by hand meanwhile. ''D4'' no QR decoder dependency or production decode. ''D5'' `detectDuplicity` test-only; no watcher plane.
+* ''D-VR-C'' a general document pin and its residency inventory. ''Re-anchoring'' still sorts dwellings by an injected `epochOrder`. ''The projection follow-up'' (detached render ids) stands a source audit.
+* ''E8'' the multi-device household proof (fresh browser peers through relay and oracle loss) and the effective-capability inventory across node and web assemblies.
+* ''The Offering'' generic adoption (deferred), the grammar-scoped offering relation, and the receiver's Antigen consultation cap (after the scope ruling).
 
 <<~/ahu>>
 
@@ -110,7 +159,7 @@ failure. MCP fixes remain operator-deferred.
 
 ''2026-09-23 approved-seed receipt — A2 and genesis boot pass under named limits.'' The operator approved the current dirty `genesis/seed.json` as an input; its only local difference is the actor seed, and no command rewrote it. `pnpm --filter @lararium/node exec tsx scripts/test-quine.ts` loaded the current artifact (4 blobs, 13 tiddlers), booted the TW5 engine, and found all required grammar sigils. The opt-in two-vessel mesh fixture then passed 11/11 under separate temporary vessel roots; it ships the existing built genesis artifact into each root, consumes each `runInit` bootstrap, and leaves no child process. This confirms the ordinary A2 founding/admission receipt at the current input. It does not reproduce or explain the distinct `9d/…` ~3.8 MB daemon-working-layer replay, prove a reserved Docker topology, or choose D-VR.
 
-''2026-09-23 operator rulings — selected contracts enter red-first enactment.'' **D-VR-C** is selected: ordinary daemon-worker reads remain parent-attached; only explicit resident/pinned or worker-authored documents may recover from the worker's own storage scope, and unpinned worker-only access names `document-not-resident`. **D-AE** selects relation-scoped handling: malformed/revoked evidence refuses; stale or unavailable authority mutation names refusal or pending; stale handles may render only as labeled observation; daemon replay stays connection-scoped for alpha and restart demands a fresh handshake; contract/Cabal mutation requires a current accepted frontier. A persona-free Herm MAY hold a bounded public-delivery capability only for an exact artifact named by an explicit operator publication record; alpha holds that record locally with a digest, while signed cross-operator delegation waits for its first real crossing. The operator also approved and committed the current genesis actor seed at `fd0e12603`. These rulings do not join epochs, grant a public CID document authority, merge causal islands, or turn a carrier into a peer.
+''2026-09-23 operator rulings — selected contracts enter red-first enactment.'' **D-VR-C** is selected: ordinary daemon-worker reads remain parent-attached; only explicit resident/pinned or worker-authored documents may recover from the worker's own storage scope, and unpinned worker-only access names `document-not-resident`. **D-AE** selects relation-scoped handling: malformed/revoked evidence refuses; stale or unavailable authority mutation names refusal or pending; stale handles may render only as labeled observation; daemon replay stays connection-scoped for alpha and restart demands a fresh handshake; contract/Cabal mutation requires a current accepted frontier. A persona-free Herm MAY hold a bounded public-delivery capability only for an exact artifact named by an explicit operator publication record; alpha holds that record locally with a digest, while signed cross-operator delegation waits for its first real crossing (''reconciled'': the carrier stands mounted by no composition root, and its fate against "only a lararium lights a Pronaos" stands open — #/reconciled). The operator also approved and committed the current genesis actor seed at `fd0e12603`. These rulings do not join epochs, grant a public CID document authority, merge causal islands, or turn a carrier into a peer.
 
 ''2026-09-24 selected-contract receipt — boundary after aftermath.'' `8052198dc` gives the persona-free Herm floor one local-operator public-artifact publication record: exactly one route, one CID, an independent matching SHA-256 integrity value, and only `public-artifact:deliver`; byte mutation, route/CID substitution, non-local authentication, and widened authority refuse. `fada62b7b` binds that record to an optional Node carrier that receives caller-held bytes, admits only GET/HEAD for the exact route, and verifies those bytes before response. `f2ba179c4` adds the composition guard: the finite Pronaos projection and public-artifact carrier share one dispatcher ownership key, so either mount order refuses rather than letting registration order decide a public route. Neither seam opens CAS, documents, personas, admission, deployment, or a generic public byte surface. `bec20e721` adds relation-scoped evidence states (`checked-valid`, `unavailable`, `stale`, `malformed`, `revoked`, `rejected`) for device-face delegation and daemon proof-of-possession. `a88c540fe` and `dbb85cf63` make device admission, face-join, and persona boot require their causal lease frontier; connection exchange holds daemon-PoP replay scope. `3910b497a` keeps a face-grant record pending, before it is marked judged, whenever that frontier cannot be read. `2a77929f3` briefly labelled the whole daemon worker store `resident`; `638a01741` retired that label after inspection found that one Repo may persist every observed document. D-VR-C stays selected, but no general document pin or offline worker-recovery runtime claim stands until a real per-document storage boundary does.
 
@@ -1157,7 +1206,7 @@ Node-owned mount and separate static shore remain required test arrangements for
 compete as product ontologies. No arrangement may rewrite peer symmetry, identity, document authority, read scope,
 or merge/admission capability ownership. A public arrival declaration may expose safe reach facts; the operator's
 deployment receipt holds route bindings and carries no broad read or private authority. Whether a persona-less
-Herm may light this face or only a raised Lararium may do so remains an explicit implementation fork.
+Herm may light this face or only a raised Lararium may do so remains an explicit implementation fork. ''Reconciled:'' the code lights the face on a lararium alone and refuses a herm any Pronaos input (#/reconciled).
 
 ''Parallel integrity lane — clock authority removal, staged before admission widening.'' The E8 aftermath
 removes an unused `Date.now()` from browser presence broadcast: presence remains an ephemeral DID observation
@@ -1532,6 +1581,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4wxBCxTYCktfmSo3_HpBQDqQQaZbC1tACJi-AQNtjTM
+<<^ code="&#x0003;">>ni:///sha-256;ME0jFtxwJKHnxL9nxGLXF8SPkU31CQNsFOurlQGa7Os
 
 <<^ code="&#x0004;" -> to="?">>

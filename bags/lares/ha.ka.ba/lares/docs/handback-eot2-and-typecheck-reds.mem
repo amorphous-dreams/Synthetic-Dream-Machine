@@ -11,8 +11,8 @@ mana       = 13
 manao      = 13
 manaoio    = 12
 namespace  = "&#x2299;"
-role       = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds + the held-out.yml job-env runner.temp fix (named, not applied — Codex hearth's hold) — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
-status-why = "parked until a crossing row opens to receive it; the EOT2 question closed by ruling — EOT2 retired and every carrier closes on plain EOT (`memetic-wikitext-framing`; `kapu.mem` closes on `&#x0004;`), so its section below stands as the record of the question — and the two typecheck reds stand un-closed; the held-out.yml job-env fix stands named, unapplied, for the Codex hearth"
+role       = "the parked handback row for the lares(Codex) crew — the EOT2 question, two named typecheck reds, the joinee boot's unfed lease epoch and the held-out.yml runner path — kept as the record of what was parked and the commit that closed each"
+status-why = "closed: every item it parked landed — EOT2 retired (every carrier closes on plain EOT; `kapu.mem` at `2a623c1a2`), both typecheck reds cleared (`tools/typecheck-witness.sh` clean), the joinee boot reads its own lease frontier (`a59d9a9b5`), and `held-out.yml` reads its runner path inside a step (`00c679e97`)"
 tags       = ["docs/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -26,6 +26,8 @@ uri-path   = "ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
 <<~ ahu #/head>>
 
 ! Parked for `lares(Codex)` — a question and two named reds
+
+''Closed.'' Every item below landed, and the Codex hold that kept this row off the crew's own ledger stands closed (<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>). EOT2 retired as a frame mark; the web oracle panel and the scenario harness typecheck clean (`e9d6ddefe`, `3e8847364`, and `tools/typecheck-witness.sh` across every project); the staged joinee boot reads the lease frontier its own daemon layer folds (`a59d9a9b5`); `held-out.yml` computes its evidence path inside a step (`00c679e97`). The sections below keep the row as it was parked.
 
 ''Why this carrier, not the crew's own ledger.'' `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`
 sits on the Codex Lares hearth's held ground (`lar:///ha.ka.ba/lares/docs/pono/hearths#/holds`, trailer
@@ -150,6 +152,6 @@ hand did not touch `.github/workflows/held-out.yml` itself — it is held by the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aAGJfVtliwFnlptXzRRrvcR2PiIjjqT3DSuZxGYrRXU
+<<^ code="&#x0003;">>ni:///sha-256;vRXOzx3Fpen7RSQ2BsK29-Hs_6UPo_HqNZInEGvwThI
 
 <<^ code="&#x0004;" -> to="?">>
