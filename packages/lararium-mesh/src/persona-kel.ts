@@ -517,6 +517,19 @@ export async function headOpKey(
 }
 
 /**
+ * The longest prefix of `chain` that verifies in full (structure, every rotation's quorum, every veto's
+ * signature), or the empty chain. A KEL handed with a junk, torn or stripped tail stands under what verifies
+ * before it: an event that does not verify revokes no one.
+ */
+export async function longestVerifiedPersonaKel(chain: readonly PersonaKelEvent[]): Promise<readonly PersonaKelEvent[]> {
+  for (let n = chain.length; n > 0; n--) {
+    const prefix = n === chain.length ? chain : chain.slice(0, n);
+    if ((await verifyPersonaKelFull(prefix)).ok) return prefix;
+  }
+  return [];
+}
+
+/**
  * THE GATE-WALK — THE CONTINUITY ANCHOR THE LIVE GATES RUN. Three doors present an edge through it: the
  * Binding Gate a vessel passes at boot (`boot-daemon-keyhive`), the daemon's live admission path
  * (`operator-daemon-behavior`), and the face-grant record's own verifier. Walk the persona-KEL to its CURRENT
@@ -524,18 +537,30 @@ export async function headOpKey(
  * op-key to the identifier's live head. A rotated key still verifies (a fresh edge re-issued under the new
  * head passes); an edge signed by a SUPERSEDED op-key rejects (it is no longer the head).
  *
- * FAIL-CLOSED: a broken KEL, an unsatisfied rotation quorum (always checked here — a gate trusts a head only
- * when every rotation carries its guardian quorum), or an edge that does not chain to the head all deny.
- * The edge's `deviceDid`-binding + freshness stay the caller's concern (the existing Binding-Gate checks).
+ * A BOARD WRITER CANNOT MAKE THE GATE REFUSE. The chain rides a board any relay peer or sibling writes, so an
+ * event that does not verify — a junk rotation, a torn quorum, a stripped enrolment — revokes no one: the gate
+ * stands under the longest prefix that verifies and names the tail it set aside (`unreadable`) for its caller to
+ * surface. Only a rotation that verifies moves the head, and only a head that moved past the edge refuses it.
+ *
+ * FAIL-CLOSED where nothing verifies: a chain whose inception does not verify, or an edge that does not chain to
+ * the head of the prefix that does, denies. The edge's `deviceDid`-binding + freshness stay the caller's concern
+ * (the existing Binding-Gate checks).
  */
 export async function verifyEdgeAgainstPersonaKel(
   edge:  DeviceDelegationTiddler,
   chain: readonly PersonaKelEvent[],
   opts?: { expectedEpoch?: number },
-): Promise<{ ok: boolean; reason?: string; headOpKey?: string }> {
-  const head = await headOpKey(chain, { verifyQuorums: true });
-  if (head === null) return { ok: false, reason: "persona-KEL failed structural or rotation-quorum verification" };
+): Promise<{ ok: boolean; reason?: string; headOpKey?: string; unreadable?: string }> {
+  const verified = await longestVerifiedPersonaKel(chain);
+  const unreadable = verified.length < chain.length
+    ? `the persona-KEL's tail past ${verified.length > 0 ? `seq ${verified[verified.length - 1]!.seq}` : "nothing"} does not verify (${(await verifyPersonaKelFull(chain)).reason ?? "refused"}) — the gate stands under the prefix that does`
+    : undefined;
+  const head = verified.length > 0 ? await headOpKey(verified) : null;
+  if (head === null) return { ok: false, reason: "persona-KEL failed structural or rotation-quorum verification", ...(unreadable ? { unreadable } : {}) };
   const innerOpts = opts?.expectedEpoch !== undefined ? { expectedEpoch: opts.expectedEpoch } : undefined;
   const r = await verifyDeviceDelegation(edge, head, innerOpts);
-  return r.ok ? { ok: true, headOpKey: head } : { ok: false, reason: r.reason ?? "edge does not chain to the KEL head op-key", headOpKey: head };
+  const read = unreadable ? { unreadable } : {};
+  return r.ok
+    ? { ok: true, headOpKey: head, ...read }
+    : { ok: false, reason: r.reason ?? "edge does not chain to the KEL head op-key", headOpKey: head, ...read };
 }

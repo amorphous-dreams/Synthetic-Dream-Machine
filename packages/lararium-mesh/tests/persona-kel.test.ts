@@ -226,6 +226,41 @@ describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
   });
 });
 
+describe("persona-kel — the gate-walk survives a malformed board", () => {
+  test("RED: a junk event planted on the board leaves the valid edge admitted, and names the tail it set aside", async () => {
+    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+    const foundingEdge = await buildDeviceDelegation({
+      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX), hearthTrueName: "", boundEpoch: 0,
+    });
+    // A board writer plants a "rotation" to a key of its own: its cid recomputes, and no guardian signed it.
+    const core = {
+      seq: 1, prefix: inception.prefix, opKeyDid: await didOf(SEEDS.stranger), recoverySetHash: inception.recoverySetHash,
+      nextRecoverySetHash: inception.nextRecoverySetHash, prevEventCid: inception.eventCid, provisional: false, vetoOfCid: null,
+      enrolmentDigest: enrolmentDigestOf([]),
+    };
+    const { personaEventCidOf } = await import("../src/persona-kel.js");
+    const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
+    expect(verifyPersonaKel([inception, junk])).toBe(true);                 // structurally a rotation
+    expect((await verifyPersonaKelFull([inception, junk])).ok).toBe(false);  // no quorum attests it
+    const planted = await verifyEdgeAgainstPersonaKel(foundingEdge, [inception, junk]);
+    expect(planted).toMatchObject({ ok: true, headOpKey: await didOf(SEEDS.opA), unreadable: expect.stringMatching(/tail past seq 0 does not verify/) });
+    // A torn tail past a lawful rotation stands the gate under that rotation's head.
+    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
+    const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    if (!rot.ok) throw new Error(rot.reason);
+    const torn = { ...rot.event, seq: 2, prevEventCid: rot.event.eventCid, eventCid: "pkel2-junk" };
+    const rotatedEdge = await buildDeviceDelegation({
+      personaRootSeed: SEEDS.opB, deviceVerifyingKey: await pubOf(SEEDS.vesselY), hearthTrueName: "", boundEpoch: 0,
+    });
+    expect(await verifyEdgeAgainstPersonaKel(rotatedEdge, [inception, rot.event, torn])).toMatchObject({ ok: true, headOpKey: await didOf(SEEDS.opB) });
+    // CONTROL: a truly revoking event — the lawful rotation — still refuses the edge it rolled past, junk or no junk.
+    expect((await verifyEdgeAgainstPersonaKel(foundingEdge, [inception, rot.event])).ok).toBe(false);
+    expect((await verifyEdgeAgainstPersonaKel(foundingEdge, [inception, rot.event, torn])).ok).toBe(false);
+    // CONTROL: a chain whose inception itself does not verify still denies.
+    expect((await verifyEdgeAgainstPersonaKel(foundingEdge, [{ ...inception, eventCid: "pkel0-forged" }])).ok).toBe(false);
+  });
+});
+
 describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never a clock", () => {
   // Device-delegation admission fences on the PersonaGroup's clockless lease epoch (`boundEpoch` vs.
   // `expectedEpoch`). `verifyEdgeAgainstPersonaKel` FORWARDS `opts.expectedEpoch` into the inner
