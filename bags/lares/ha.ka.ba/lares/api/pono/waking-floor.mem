@@ -26,11 +26,11 @@ written   = "2026-08-08"
 
 <<~ ahu #/head>>
 
-! Hoʻāla ~ the waking floor
+! The waking floor
 
 ''A vessel wakes at its MINIMUM available cap-stack, and gets RAISED by recognition.'' It never refuses to
 stand because something it wants stands absent; it stands at whatever floor it can reach, says what it
-cannot do, and waits to be raised. `hoʻāla` — to awaken, to rouse — names the transition.
+cannot do, and waits to be raised. ''The raise'' names the transition.
 
 ''Capability arrives by recognition; it never gates on absence.''
 
@@ -321,7 +321,7 @@ it.''
   sits on genuinely unmapped ground — the cure reads sound and nobody has standardised it.
 * ''No security analysis of boot-to-floor as a named server pattern'', and no established name for it. The
   nearest handles read ''Direct Boot / BFU→AFU'' (shipped), ''progressive trust'' (Allen), and ''node
-  attestation''. `hoʻāla` may have to name it.
+  attestation''. This carrier names it THE WAKING FLOOR.
 * ''No field reports on NBDE or TPM at Pi-class civic scale'', and no published post-mortem uses "unseal
   storm" — mass-reboot pain surfaces only as feature requests and support threads.
 
@@ -386,6 +386,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HpJ3HBjKjSZ72a-E7Q8ewMUnLpzu9aSXqHetNZLMUso
+<<^ code="&#x0003;">>ni:///sha-256;DBFzn4mD06_pb3QedZc1dLFcEzaDensOYJ-L4wlbzy4
 
 <<^ code="&#x0004;" -> to="?">>
