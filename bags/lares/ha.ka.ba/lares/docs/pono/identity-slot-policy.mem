@@ -10,9 +10,9 @@ l-space    = "stable"
 mana       = 14
 manao      = 16
 manaoio    = 13
-revised-on = "2026-09-13"
+revised-on = "2026-10-08"
 role       = "what OpenIdentitySlot's sharePolicy could key on with the realm leg standing — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
-status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and it runs on every leaf that dials a listening vessel, the leaf-to-leaf source owed in code (#/the-leaf-taxonomy)"
+status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and it runs on every leaf kind — a leaf that dials a listening vessel reads the gate's signed verdict, and a fleet with no listening vessel reads the device keys its siblings prove through a herm (#/the-leaf-taxonomy)"
 tags       = ["docs/pono/design", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -111,7 +111,7 @@ No `OpenIdentitySlot` stands — no alias, the alpha line's own law. `LarVessel.
 
 * A NODE listens. Its `DaemonAuthGate` proves the dialer's key (the V3 proof) and the ring reads the identifier that gate proved.
 * A LEAF dials out. The gate it dials signs its `lar:auth-ok` with the gate key over the leaf's own fresh nonce (`authOkBytes`, domain `auth-ok`), the leaf checks it against the key it pinned, and `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields. A gate that cannot sign under the pin answers nothing the leaf reads as a pass. Authentication runs both ways on one socket.
-* Two LEAVES of one PersonaGroup meet through a relay. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head (an edge a rotated-away op-key signed reads as rolled past), plus a signature by the device key over the sibling's nonce and the ephemeral key that seals the answer. The edge rides sealed to the sibling, so the relay forwards bytes and reads no leaf↔root link.
+* Two LEAVES of one PersonaGroup meet through a herm. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head (an edge a rotated-away op-key signed reads as rolled past), plus a signature by the device key over the exchange's whole transcript — both nonces, both ephemeral keys, the prover's role. The edge rides sealed to the sibling, so the herm forwards bytes and reads no leaf↔root link. The proof binds the session it admits (`LeafPeerSession`): both siblings derive per-direction keys from the very ephemerals their device keys signed, every later frame seals under them, and a hash chain orders the frames, so a herm that injects, replays or reorders one meets a refusal that names itself. `SiblingNetworkAdapter.provenKeyOf` names the device key a sibling proved.
 
 ''No clock enters any of the three.'' Freshness rides a nonce the verifying side chose; licensing rides KEL event order and the edge's lease epoch.
 
@@ -125,7 +125,14 @@ The ring runs on EVERY vessel that holds a face, because a leaf comes in more th
 
 # ''A face of an operator's PersonaGroup where a listening vessel exists.'' The leaf dials a node of its own PersonaGroup; that node's gate proves the leaf, and the node's signed verdict proves the node back.
 # ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
-# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. The proof stands as a library (`leaf-peer-proof.ts`): it proves two device keys to each other over three frames, yet it rides no transport and binds no session, so no live sync reads its verdict. Owed in code — the lane that carries Automerge sync between leaves through a herm, with the proof bound to the session it admits.
+# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. Each device dials a herm's relay through the knock its pinned gate key derives, proves its device key at that one gate, and joins its PersonaGroup's sibling channel (`siblingChannelTag`, an opaque HMAC of the group's id). Siblings run the proof through the herm, and Automerge sync rides only the session a passing proof binds (`SiblingNetworkAdapter`, in the automerge-repo `NetworkAdapter` shape). Both vessel shores compose it by one call (`standSiblingChannel`), and the face's own KEL board re-licenses every standing session as it moves. A proven sibling reads as this face's own fleet and syncs whole, as a same-operator peer does. An impostor, a sibling whose edge the KEL head rolled past, and a frame the herm forged each meet a refusal that surfaces; none drops in silence.
+
+''The threshold keeps two faces'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>):
+
+* ''Outward — the herm's face: carriage of sealed frames.'' The herm routes on the channel tag and the key its gate proved, and holds no session key, no edge in the clear, no group id and no document byte.
+* ''Inward — the siblings' face: the proven session.'' Only the two siblings hold its keys. The herm's stamp of a sender key must agree with the proven edge, and it never stands in for one.
+
+Nothing of the inward face rides the outward one.
 
 A leaf holds only its own device key, its own edge and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
 
@@ -152,9 +159,10 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ic7rRi0FGSyuyrJe-p0JXx-T8cyARNuzi1rVqKqKUe0
+<<^ code="&#x0003;">>ni:///sha-256;ZP8kvkUFCXKc6CISJUQ8XcxO4Ozq-K-t04AIZgnab7s
 
 <<^ code="&#x0004;" -> to="?">>
