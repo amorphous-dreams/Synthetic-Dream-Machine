@@ -117,8 +117,8 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const daemon = await repo.find<LarDoc>(f.daemonUrl as never);
     const rested = JSON.parse(tiddlerText(daemon.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupDocIdHex)]) ?? "null");
     expect(rested).toEqual(b.groupSecretSeal);
-    expect(groupSecretOpenerFromSeed(HERM_SEED)(rested)).toEqual(personaGroupSecret(OPERATOR_SEED, b.personaKelPrefix));
-    expect(groupSecretOpenerFromSeed(OPERATOR_SEED)(rested)).toBeNull();
+    expect(groupSecretOpenerFromSeed(HERM_SEED).seal(rested)).toEqual(personaGroupSecret(OPERATOR_SEED, b.personaKelPrefix));
+    expect(groupSecretOpenerFromSeed(OPERATOR_SEED).seal(rested)).toBeNull();
   });
 
   it("REFUSES an enrolment whose secret is sealed to ANOTHER device, or that carries none", async () => {

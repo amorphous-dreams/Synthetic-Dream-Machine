@@ -1,10 +1,12 @@
 /**
  * sibling-fleet — one PersonaGroup's devices as the sibling tests stand them: a founded KEL, each device
- * enrolled (its edge and its sealed PersonaGroup secret), a rotation that re-enrols the devices it keeps, an
- * in-memory relay a test can turn hostile, and the CARRY instrument that reads every frame DECODED.
+ * enrolled (its edge and its sealed PersonaGroup secret), a rotation that re-enrols the devices it keeps in the
+ * same attested act, an in-memory relay a test can turn hostile, and the CARRY instrument that reads every frame
+ * DECODED — Automerge payloads included.
  */
 import * as ed from "@noble/ed25519";
-import { Repo, type PeerId } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
+import { Repo, cbor, type PeerId } from "@automerge/automerge-repo";
 import { base64UrlDecode, hex, hexToBytes } from "../../src/crypto.js";
 import type { PersonaKelEvent } from "../../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../src/recovery-keel-core.js";
@@ -46,10 +48,11 @@ export async function enrol(root: Uint8Array, device: Uint8Array, prefix: string
 export async function rotatedKeeping(keep: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
   const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
   const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners });
-  if (!rot.ok) throw new Error(rot.reason);
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
-  return [inception, await rollEnrolments({ event: rot.event, opSeed: SEEDS.opB, devices })];
+  const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  if (!rot.ok) throw new Error(rot.reason);
+  return [inception, rot.event];
 }
 
 /** The KEL rotated twice — opB re-enrolling `first`, then opC re-enrolling `second`. */
@@ -57,10 +60,11 @@ export async function rotatedTwice(first: readonly Uint8Array[], second: readonl
   const { guardianRecoveryKeys, recoveryThreshold } = await founded();
   const once = await rotatedKeeping(first);
   const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), guardianRecoveryKeys, recoveryThreshold, guardianSigners });
-  if (!rot.ok) throw new Error(rot.reason);
   const devices = await Promise.all(second.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
-  return [...once, await rollEnrolments({ event: rot.event, opSeed: SEEDS.opC, devices })];
+  const enrolments = await rollEnrolments({ prefix: once[0]!.prefix, opSeed: SEEDS.opC, devices });
+  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  if (!rot.ok) throw new Error(rot.reason);
+  return [...once, rot.event];
 }
 
 /** A leaf under a KEL: its standing read off its enrolment and every re-enrolment the KEL carries for it. */
@@ -142,6 +146,7 @@ export function standLeaf(
   // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a legacy `sharePolicy`
   // fills announce alone and leaves a request by id wide open.
   const repo = new Repo({ network: [adapter], shareConfig: shareConfigOf(async (peerId, documentId) => sharePolicy(peerId, documentId)) });
+  adapter.bindRepo(repo);
   return { repo, adapter, refusals, self, suffixes };
 }
 
@@ -157,28 +162,45 @@ export const peersOf = (l: Leaf): PeerId[] => l.repo.peers;
 export const shutdown = async (...leaves: Leaf[]): Promise<void> => { for (const l of leaves) await l.repo.shutdown(); };
 
 // ── THE CARRY INSTRUMENT: every frame read DECODED ─────────────────────────────────────────────────────────────
+//
+// A carried string is read in every view it can hold: its UTF-8, its base64url and hex decodings, JSON or CBOR
+// inside any of those, and — for any byte run — the Automerge payload it might be: a sync message's changes, a
+// change, or a whole document, each DECODED, because Automerge deflates any column of 256 bytes or more and a
+// leaked document line past that size reads as nothing in its raw bytes.
 
 const B64URL_RE = /^[A-Za-z0-9_-]+$/;
 const HEX_RE = /^(?:[0-9a-fA-F]{2})+$/;
 
+/** Every structured reading of a byte run: JSON, CBOR, and the Automerge sync message, change or document it holds. */
+function structuresOf(bytes: Uint8Array): unknown[] {
+  const out: unknown[] = [];
+  try { out.push(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes))); } catch { /* not JSON */ }
+  try { out.push(cbor.decode(bytes)); } catch { /* not CBOR */ }
+  try { out.push(A.decodeSyncMessage(bytes).changes); } catch { /* not a sync message — each change it carries reads below */ }
+  try { out.push(A.decodeChange(bytes)); } catch { /* not a change */ }
+  try { out.push(A.toJS(A.load(bytes))); } catch { /* not a document */ }
+  return out;
+}
+
 /** Every byte view a carried string can hold: its own UTF-8, its base64url decoding, its hex decoding — and,
- *  where a view reads as JSON, every view of every string inside it. */
+ *  where a view reads as a structure, every view of every value inside it. */
 function viewsOf(text: string, depth: number, out: Uint8Array[]): void {
   out.push(new TextEncoder().encode(text));
   const decoded: Uint8Array[] = [];
   if (HEX_RE.test(text)) decoded.push(hexToBytes(text.toLowerCase()));
   if (B64URL_RE.test(text) && text.length >= 4) { try { decoded.push(base64UrlDecode(text)); } catch { /* not base64url */ } }
-  for (const bytes of decoded) {
-    out.push(bytes);
-    if (depth <= 0) continue;
-    let inner: unknown;
-    try { inner = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { continue; }
-    walk(inner, depth - 1, out);
-  }
+  for (const bytes of decoded) bytesViews(bytes, depth, out);
+}
+
+function bytesViews(bytes: Uint8Array, depth: number, out: Uint8Array[]): void {
+  out.push(bytes);
+  if (depth <= 0) return;
+  for (const inner of structuresOf(bytes)) walk(inner, depth - 1, out);
 }
 
 function walk(value: unknown, depth: number, out: Uint8Array[]): void {
   if (typeof value === "string") { viewsOf(value, depth, out); return; }
+  if (value instanceof Uint8Array) { bytesViews(value, depth, out); return; }
   if (Array.isArray(value)) { for (const v of value) walk(v, depth, out); return; }
   if (value && typeof value === "object") for (const [k, v] of Object.entries(value)) { viewsOf(k, 0, out); walk(v, depth, out); }
 }
@@ -198,7 +220,7 @@ export function carriedReads(carried: readonly string[], needle: string): boolea
     let parsed: unknown;
     try { parsed = JSON.parse(text); } catch { parsed = text; }
     const views: Uint8Array[] = [];
-    walk(parsed, 3, views);
+    walk(parsed, 5, views);
     if (views.some((v) => contains(v, bytes))) return true;
   }
   return false;

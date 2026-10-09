@@ -30,7 +30,7 @@ import type { GuardianRecoveryRegistration } from "./recovery-registration.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import {
   mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
-  type PersonaKelEvent, type PersonaRotateResult,
+  type PersonaKelEvent, type PersonaRotateResult, type SealedEnrolment,
 } from "./persona-kel.js";
 
 /**
@@ -264,11 +264,14 @@ export async function attestAndRotate(input: {
   /** A contest-window entry (Fork C): the rotation lands PROVISIONAL — kapae-reversible authority
    *  until an observer hardens it, the standing op-key's veto killing it at any causal distance. */
   readonly provisional?: boolean;
+  /** The devices this rotation RE-ENROLS, sealed by the fresh op-key (`rollEnrolments`). The guardians sign their
+   *  digest with the rotation, so rotation and re-enrolment land as one act. Absent, the rotation enrols no one. */
+  readonly enrolments?: readonly SealedEnrolment[];
 }): Promise<PersonaRotateResult> {
   const nextRecoverySetHash = input.next
     ? sealKeySetHash(input.next.guardians.map((g) => g.recoveryPubKey), input.next.threshold)
     : input.head.nextRecoverySetHash;
-  const bytes = personaRotationSigningBytes(input.head, input.freshOpKeyDid, nextRecoverySetHash, input.provisional ?? false);
+  const bytes = personaRotationSigningBytes(input.head, input.freshOpKeyDid, nextRecoverySetHash, input.provisional ?? false, input.enrolments ?? []);
   const rotationSigs: QuorumSignature[] = [];
   for (const g of input.guardianSigners) {
     rotationSigs.push({ signer: g.signer, sig: await g.sign(bytes) });
@@ -281,5 +284,6 @@ export async function attestAndRotate(input: {
     rotationSigs,
     nextRecoverySetHash,
     ...(input.provisional ? { provisional: true } : {}),
+    ...(input.enrolments ? { enrolments: input.enrolments } : {}),
   });
 }

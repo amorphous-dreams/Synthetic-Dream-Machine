@@ -135,10 +135,12 @@ export async function siblingShareDecision(
  * delegates to. Pure (given the ring set + gate), so the vessel's sharePolicy stays a
  * one-liner and the whole decision is unit-testable without booting a vessel.
  *
+ *   - a SIBLING (`siblings`) → only the sibling gate's surface crosses (`siblingShareDecision`). Sibling-ness
+ *     decides FIRST: a peer id a sibling channel proved never reads the relay or house verdict, and an id that
+ *     both a sibling and a relay peer claim reads as neither → DENY (one id names one carrier).
  *   - a relay peer with NO gate (same-operator own node, own DID) → full sovereign sync.
  *   - a gated relay peer with no documentId → DENY (deny-by-default).
  *   - a gated relay peer → only the gate's federatable surface crosses.
- *   - a SIBLING (`siblings`) → only the sibling gate's surface crosses (`siblingShareDecision`).
  *   - every other peer is IN-PROCESS → share freely (house member).
  */
 export async function federationShareDecision(
@@ -148,8 +150,11 @@ export async function federationShareDecision(
   documentId?: DocumentId,
   siblings?:  SiblingShare | null,
 ): Promise<boolean> {
+  if (siblings?.isSibling(peerId)) {
+    if (relayPeers.has(peerId)) return false;  // two carriers claim one id → deny, whichever announced last
+    return siblingShareDecision(siblings.gate(), peerId, documentId);
+  }
   if (!relayPeers.has(peerId)) {
-    if (siblings?.isSibling(peerId)) return siblingShareDecision(siblings.gate(), peerId, documentId);
     return true;                               // in-process island peer — house member
   }
   if (!fedGate)                return true;    // same-operator relay (own node) — full device sync

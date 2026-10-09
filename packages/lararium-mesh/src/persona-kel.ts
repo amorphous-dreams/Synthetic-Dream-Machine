@@ -20,16 +20,82 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/persona-kel
  */
 
-import { PERSONA_KEL_DOMAIN } from "./domains.js";
+import { PERSONA_KEL_DOMAIN, SEALED_ENROLMENT_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { sha256HexSync, canonicalJson, canonicalJsonBytes, hexToBytes } from "./crypto.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-delegation.js";
-import type { PersonaGroupEnrolment } from "./persona-group-secret.js";
+import { verifyingKeyFromDid } from "./lar-did.js";
+
+const KEY_RE = /^[0-9a-f]{64}$/;
+const SIG_RE = /^[0-9a-f]{128}$/;
+const HEX_RE = /^[0-9a-f]+$/;
 
 /** The domain the persona-KEL prefix + event bytes tag — separates a persona AID from every other hash. */
 export { PERSONA_KEL_DOMAIN } from "./domains.js";
+
+/**
+ * A rotation's ENROLMENT of one remaining device, as the persona-KEL carries it: one box sealed to that device's
+ * key, holding its re-delegated edge and the next secret together, and the fresh op-key's signature over the box.
+ * It names no device. The box's sender key is fresh, its salt binds the group, the op-key and the device, and only
+ * that device's own key opens it, so a board reader learns how many boxes ride an event and nothing of whom they
+ * address. The device finds its own by trial-open (`GroupSecretOpener.enrolment`).
+ */
+export interface SealedEnrolment {
+  readonly kind: "sealed-enrolment";
+  /** The box, hex: the sender's fresh ephemeral X25519 key, the AEAD nonce, the ciphertext. */
+  readonly e: string;
+  readonly n: string;
+  readonly c: string;
+  /** The event's op-key's signature over the box (`sealedEnrolmentBytes`). */
+  readonly sig: string;
+}
+
+/** The bytes the event's op-key signs over one sealed enrolment: the group, the op-key and the whole box. */
+export function sealedEnrolmentBytes(prefix: string, opKeyDid: string, box: Pick<SealedEnrolment, "e" | "n" | "c">): Uint8Array {
+  return canonicalJsonBytes({
+    domain:   SEALED_ENROLMENT_DOMAIN,
+    prefix,
+    opKeyDid: opKeyDid.toLowerCase(),
+    e: box.e, n: box.n, c: box.c,
+  });
+}
+
+/** True when `raw` reads as a sealed enrolment the op-key `opKeyDid` signed for the group `prefix`. */
+export async function verifySealedEnrolment(raw: unknown, prefix: string, opKeyDid: string): Promise<boolean> {
+  if (typeof raw !== "object" || raw === null) return false;
+  const s = raw as Partial<Record<keyof SealedEnrolment, unknown>>;
+  if (s.kind !== "sealed-enrolment") return false;
+  if (typeof s.e !== "string" || !KEY_RE.test(s.e)) return false;
+  if (typeof s.n !== "string" || !HEX_RE.test(s.n) || typeof s.c !== "string" || !HEX_RE.test(s.c)) return false;
+  if (typeof s.sig !== "string" || !SIG_RE.test(s.sig)) return false;
+  const key = verifyingKeyFromDid(opKeyDid);
+  if (!KEY_RE.test(key)) return false;
+  try { return await ed25519.verifyAsync(hexToBytes(s.sig), sealedEnrolmentBytes(prefix, opKeyDid, s as SealedEnrolment), hexToBytes(key)); }
+  catch { return false; }
+}
+
+/**
+ * The digest of an event's enrolment list, in order — what its content address commits, so the list the board
+ * carries is the list the rotation's quorum attested. A stripped, added, swapped or reordered enrolment moves it.
+ * An event that enrols no one commits the empty list's digest.
+ */
+export function enrolmentDigestOf(enrolments: readonly SealedEnrolment[]): string {
+  return sha256HexSync(canonicalJson({
+    domain:     PERSONA_KEL_DOMAIN,
+    part:       "enrolments",
+    enrolments: enrolments.map((x) => ({ e: x.e, n: x.n, c: x.c, sig: x.sig })),
+  }));
+}
+
+/** True when the enrolments an event carries match the digest its content address commits. */
+export function enrolmentsAttested(event: Pick<PersonaKelEvent, "enrolments" | "enrolmentDigest">): boolean {
+  const list = event.enrolments ?? [];
+  if (!Array.isArray(list)) return false;
+  try { return enrolmentDigestOf(list) === event.enrolmentDigest; } catch { return false; }
+}
+
 /**
  * One event in a persona's pre-rotated, hash-linked key-event-log. Content-addressed by `eventCid`.
  *
@@ -52,10 +118,13 @@ export interface PersonaKelEvent {
   readonly vetoOfCid:         string | null;      // a VETO names the provisional it kills; null on every other kind
   readonly rotationSigs:      readonly QuorumSignature[]; // [] at inception; ≥ threshold guardian sigs on a rotation
   readonly vetoSig?:          string | null;      // the standing op-key's signature over a veto's bytes (outside the cid, like rotationSigs)
-  /** The devices this event's op-key RE-ENROLS — each one's edge and its sealed PersonaGroup secret, signed by the
-   *  event's own op-key (`persona-group-secret`). Outside the cid, like rotationSigs: a device left out finds no
-   *  seal addressed to it, which is how a rotation revokes. */
-  readonly enrolments?:       readonly PersonaGroupEnrolment[];
+  /** The digest of the enrolment list this event carries (`enrolmentDigestOf`) — bound into the cid and the
+   *  rotation's quorum bytes, so the list is attested as one with the rotation. */
+  readonly enrolmentDigest:   string;
+  /** The devices this event's op-key RE-ENROLS — one sealed box per device, holding its edge and the next
+   *  PersonaGroup secret, signed by the event's own op-key and naming no device (`SealedEnrolment`). A device left
+   *  out finds no box that opens for it, which is how a rotation revokes. */
+  readonly enrolments?:       readonly SealedEnrolment[];
 }
 
 /** The authority fields an event's content-address + the guardian signatures BOTH bind — the fields a
@@ -64,6 +133,7 @@ export interface PersonaKelEvent {
 type PersonaEventCore = Pick<
   PersonaKelEvent,
   "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "provisional" | "vetoOfCid"
+  | "enrolmentDigest"
 >;
 
 /** The canonical bytes an event's cid commits AND each guardian rotation-signature signs over. Binding the
@@ -80,6 +150,7 @@ export function personaEventBytes(core: PersonaEventCore): Uint8Array {
     prevEventCid:    core.prevEventCid,
     provisional:     core.provisional,
     vetoOfCid:       core.vetoOfCid,
+    enrolmentDigest: core.enrolmentDigest,
   });
 }
 
@@ -96,6 +167,7 @@ export function personaEventCidOf(core: PersonaEventCore): string {
     prevEventCid:    core.prevEventCid,
     provisional:     core.provisional,
     vetoOfCid:       core.vetoOfCid,
+    enrolmentDigest: core.enrolmentDigest,
   }))}`;
 }
 
@@ -126,7 +198,10 @@ export function personaPrefixOf(inceptionOpKeyDid: string, recoverySetHash: stri
 export function mintPersonaInception(opKeyDid: string, recoverySetHash: string): PersonaKelEvent {
   const prefix = personaPrefixOf(opKeyDid, recoverySetHash);
   // The genesis set fills BOTH slots: it is the prefix's anti-swap wall AND the first rotation's authority.
-  const core: PersonaEventCore = { seq: 0, prefix, opKeyDid, recoverySetHash, nextRecoverySetHash: recoverySetHash, prevEventCid: null, provisional: false, vetoOfCid: null };
+  const core: PersonaEventCore = {
+    seq: 0, prefix, opKeyDid, recoverySetHash, nextRecoverySetHash: recoverySetHash, prevEventCid: null, provisional: false, vetoOfCid: null,
+    enrolmentDigest: enrolmentDigestOf([]),   // inception enrols no one on the KEL: each device's seal rides its enrolment
+  };
   return {
     ...core,
     eventCid:          personaEventCidOf(core),
@@ -144,7 +219,7 @@ export function mintPersonaInception(opKeyDid: string, recoverySetHash: string):
  */
 export function personaRotationSigningBytes(
   head: PersonaKelEvent, freshOpKeyDid: string, nextRecoverySetHash: string = head.nextRecoverySetHash,
-  provisional = false,
+  provisional = false, enrolments: readonly SealedEnrolment[] = [],
 ): Uint8Array {
   return personaEventBytes({
     seq:             head.seq + 1,
@@ -155,6 +230,7 @@ export function personaRotationSigningBytes(
     prevEventCid:    head.eventCid,
     provisional,                                    // the marker rides the signed bytes too
     vetoOfCid:       null,
+    enrolmentDigest: enrolmentDigestOf(enrolments), // the guardians attest the re-enrolments with the rotation
   });
 }
 
@@ -187,8 +263,12 @@ export async function mintPersonaRotation(input: {
   /** A recovery rotation entering the contest window (Fork C) — kapae-reversible authority until an
    *  observer hardens it; the standing op-key's veto kills it at any causal distance. */
   readonly provisional?: boolean;
+  /** The devices this rotation RE-ENROLS (`rollEnrolments`), each sealed and signed by the fresh op-key. Their
+   *  digest rides the cid and the quorum bytes, so rotation and enrolment land as ONE act. */
+  readonly enrolments?: readonly SealedEnrolment[];
 }): Promise<PersonaRotateResult> {
   const { head, freshOpKeyDid, recoveryRoster, recoveryThreshold, rotationSigs } = input;
+  const enrolments = input.enrolments ?? [];
   const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
   if (head.nextRecoverySetHash.length === 0) {
     return { ok: false, reason: "rotation unarmed — the head event carries no rolling recovery commitment" };
@@ -205,12 +285,21 @@ export async function mintPersonaRotation(input: {
     prevEventCid:    head.eventCid,
     provisional:     input.provisional ?? false,
     vetoOfCid:       null,
+    enrolmentDigest: enrolmentDigestOf(enrolments),
   };
+  for (const sealed of enrolments) {
+    if (!(await verifySealedEnrolment(sealed, head.prefix, freshOpKeyDid))) {
+      return { ok: false, reason: "an enrolment the fresh op-key did not seal — only the key a rotation seats re-enrols on it" };
+    }
+  }
   const quorum = await verifyRotationQuorum(core, recoveryRoster, recoveryThreshold, rotationSigs, head.nextRecoverySetHash);
   if (!quorum.ok) return { ok: false, reason: quorum.reason ?? "rotation quorum unsatisfied" };
   return {
     ok: true,
-    event: { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [...recoveryRoster], recoveryThreshold, rotationSigs: [...rotationSigs] },
+    event: {
+      ...core, eventCid: personaEventCidOf(core), recoveryRoster: [...recoveryRoster], recoveryThreshold, rotationSigs: [...rotationSigs],
+      ...(enrolments.length > 0 ? { enrolments: [...enrolments] } : {}),
+    },
   };
 }
 
@@ -232,6 +321,7 @@ function vetoCore(contested: PersonaKelEvent, standing: PersonaKelEvent): Person
     prevEventCid:    contested.prevEventCid,           // both link the same predecessor
     provisional:     false,
     vetoOfCid:       contested.eventCid,
+    enrolmentDigest: enrolmentDigestOf([]),          // a veto restores the standing key; it enrols no one
   };
 }
 
@@ -271,8 +361,12 @@ export function foldPersonaContests(events: readonly PersonaKelEvent[]): Persona
   const out: PersonaKelEvent[] = [];
   let prevCid: string | null = null;
   for (let seq = 0; bySeq.has(seq); seq++) {
-    const candidates = bySeq.get(seq)!.filter((e) => e.prevEventCid === prevCid);
-    if (candidates.length === 0) break;
+    const linked = bySeq.get(seq)!.filter((e) => e.prevEventCid === prevCid);
+    if (linked.length === 0) break;
+    // Two copies of ONE event (one cid) differ only in what rides outside their shared core. The copy whose
+    // enrolments match the digest that core commits stands; a copy a board writer stripped or padded falls. A
+    // copy with no attested twin stays, so the walk refuses its chain and the break surfaces.
+    const candidates = linked.filter((e) => enrolmentsAttested(e) || !linked.some((o) => o !== e && o.eventCid === e.eventCid && enrolmentsAttested(o)));
     const veto = candidates.find((e) => e.vetoOfCid !== null && candidates.some((c) => c.eventCid === e.vetoOfCid));
     const winner = veto ?? candidates.find((e) => e.vetoOfCid === null) ?? candidates[0]!;
     out.push(winner);
@@ -335,6 +429,8 @@ export function verifyPersonaKel(chain: readonly PersonaKelEvent[]): boolean {
   if (genesis.nextRecoverySetHash !== genesis.recoverySetHash) return false;   // inception seats ONE set in both slots
   if (genesis.provisional || genesis.vetoOfCid !== null) return false;         // an inception never contests
   if (genesis.eventCid !== personaEventCidOf(genesis)) return false;
+  // Every event's enrolment list must be the one its cid commits: a stripped, added or swapped box breaks the chain.
+  if (!chain.every(enrolmentsAttested)) return false;
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!, prev = chain[i - 1]!;
     if (e.vetoOfCid !== null) {
@@ -371,8 +467,13 @@ export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): P
     const core: PersonaEventCore = {
       seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash,
       nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
-      provisional: e.provisional, vetoOfCid: e.vetoOfCid,
+      provisional: e.provisional, vetoOfCid: e.vetoOfCid, enrolmentDigest: e.enrolmentDigest,
     };
+    for (const sealed of e.enrolments ?? []) {
+      if (!(await verifySealedEnrolment(sealed, e.prefix, e.opKeyDid))) {
+        return { ok: false, reason: `event seq ${e.seq}: an enrolment its op-key did not seal` };
+      }
+    }
     if (e.vetoOfCid !== null) {
       // A veto carries ONE signature — the standing op-key's, over its own bytes. Unverifiable → the
       // whole chain refuses (halt, never a silent pick of either head).

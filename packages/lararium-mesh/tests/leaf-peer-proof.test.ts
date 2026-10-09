@@ -311,15 +311,16 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
       expect(a.open(a.seal(bytes("reflected"))).ok).toBe(false);
     });
 
-    test("RED: a session whose edge the head rolled past refuses on relicense; a re-enrolled edge keeps it standing", async () => {
+    test("RED: a session whose edge the head rolled past reads unlicensed on relicense, and refuses nothing by itself", async () => {
       const { a } = await proven();
-      expect(await a.relicense([(await founded()).inception])).toBe(true);
-      // CONTROL: the rotation re-enrolled the peer's device — the session stands on the new edge.
-      expect(await a.relicense(await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]))).toBe(true);
-      expect(a.peerEdge.personaRootDid).toBe(await didOf(SEEDS.opB));
-      const { b } = await proven();
-      expect(await b.relicense(await rotatedKeeping([]))).toBe(false);
-      expect(b.refusal).toMatch(/not licensed by this PersonaGroup's KEL head/);
+      expect((await a.relicense([(await founded()).inception])).ok).toBe(true);   // CONTROL: the head still licenses
+      // A rotation rolls every edge the prior op-key signed past — even a device it re-enrolled, whose renewed edge
+      // rides sealed to that device alone and shows only on a fresh proof.
+      const rolled = await a.relicense(await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]));
+      expect(rolled.ok).toBe(false);
+      expect(typeof rolled.reason).toBe("string");
+      expect(a.refusal).toBeNull();
+      expect(a.peerEdge.personaRootDid).toBe(await didOf(SEEDS.opA));
     });
   });
 });

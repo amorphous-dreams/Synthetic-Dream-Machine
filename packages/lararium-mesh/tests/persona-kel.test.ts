@@ -20,7 +20,7 @@ import { buildDeviceDelegation } from "../src/device-delegation.js";
 import {
   mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
   personaPrefixOf, verifyPersonaKel, verifyPersonaKelFull, verifyRotationQuorum,
-  headOpKey, verifyEdgeAgainstPersonaKel, personaEventBytes,
+  headOpKey, verifyEdgeAgainstPersonaKel, personaEventBytes, enrolmentDigestOf,
   type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
@@ -116,6 +116,7 @@ describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstruct
       recoverySetHash: inception.recoverySetHash, nextRecoverySetHash: inception.nextRecoverySetHash,
       provisional: false, vetoOfCid: null,
       prevEventCid: inception.eventCid,
+      enrolmentDigest: enrolmentDigestOf([]),
     }));
   });
 

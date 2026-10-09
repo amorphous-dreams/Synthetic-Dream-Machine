@@ -63,8 +63,8 @@ describe("every enrolment delivers the PersonaGroup secret beside the edge", () 
     expect(await verifyGroupSecretSeal(rested)).not.toBeNull();
     expect(rested).toEqual(f.groupSecretSeal);
     const secret = personaGroupSecret(FOUNDER_SEED, f.personaKelPrefix);
-    expect(groupSecretOpenerFromSeed(FOUNDER_SEED)(f.groupSecretSeal)).toEqual(secret);
-    expect(groupSecretOpenerFromSeed(JOINEE_SEED)(f.groupSecretSeal)).toBeNull();
+    expect(groupSecretOpenerFromSeed(FOUNDER_SEED).seal(f.groupSecretSeal)).toEqual(secret);
+    expect(groupSecretOpenerFromSeed(JOINEE_SEED).seal(f.groupSecretSeal)).toBeNull();
   });
 
   test("CONTROL: a device admit carries the joinee's seal, and the joinee's own daemon doc rests it", async () => {
@@ -73,7 +73,7 @@ describe("every enrolment delivers the PersonaGroup secret beside the edge", () 
     expect(payload.groupSecretSeal.deviceKey).toBe(await pubOf(JOINEE_SEED));
     const { repo, applied } = await apply(payload);
     const rested = await restedSeal(repo, applied.daemonUrl, founder.f.personaGroupDocIdHex);
-    expect(groupSecretOpenerFromSeed(JOINEE_SEED)(rested as never)).toEqual(personaGroupSecret(FOUNDER_SEED, founder.f.personaKelPrefix));
+    expect(groupSecretOpenerFromSeed(JOINEE_SEED).seal(rested as never)).toEqual(personaGroupSecret(FOUNDER_SEED, founder.f.personaKelPrefix));
   });
 
   test("RED: an admit that carries no seal, or one sealed to another device, refuses at apply", async () => {

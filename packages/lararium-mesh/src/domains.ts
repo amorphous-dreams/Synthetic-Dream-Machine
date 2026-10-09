@@ -207,6 +207,15 @@ export const GROUP_SECRET_SEAL_INFO = mint("group-secret-seal");
 /** The root's signature over one delivery seal — the op-key vouching that this box carries its secret to this
  *  device. Its own name: a seal signature must never verify as an edge, a KEL event or any other signed thing. */
 export const GROUP_SECRET_ENROLMENT_DOMAIN = mint("group-secret-enrolment");
+/** A rotation's SEALED ENROLMENT on the persona-KEL: the fresh op-key signs each box it re-enrols a device with
+ *  under this name. The box names no device; its signature vouches only that the op-key sealed it. */
+export const SEALED_ENROLMENT_DOMAIN = mint("sealed-enrolment");
+/** Its box's HKDF `info`: the re-delegated edge and the next secret, sealed to one device key together. Apart from
+ *  `group-secret-seal`: a KEL-borne box must never open as a delivery seal, nor one as the other. */
+export const SEALED_ENROLMENT_INFO = mint("sealed-enrolment-box");
+/** The repo PEER ID a sibling stands under: a hash under this name of the device key it proved over the sibling
+ *  session. Derived, never chosen, so a sibling can name no peer another adapter carries. */
+export const SIBLING_PEER_ID_INFO = mint("sibling-peer-id");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");

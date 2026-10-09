@@ -10,6 +10,8 @@
  *   · CONTROL: two enrolled sibling leaves, no listening vessel, sync a doc; each names the other's device key;
  *   · carry ⊥ read, read DECODED: no byte of the doc, no edge field, no root key crosses in any frame's base64url,
  *     hex or nested JSON — and the instrument's own positive control finds a line hidden that way;
+ *   · carry ⊥ read past Automerge's deflate: the instrument decodes sync messages, changes and documents, so a
+ *     long line leaked in the clear reads RED, and the channel carries a long line with nothing of it readable;
  *   · RED: the channel tag needs the secret — a non-member holding the group id alone computes another;
  *   · RED: a forged hello (the herm, or any non-member) draws no box at all, and no box opens for its forger;
  *   · RED: an impostor holding a leaked secret but an edge a stranger root signed becomes no peer, said as `peer`;
@@ -22,12 +24,17 @@
  *   · RED: a stale sibling (its KEL short of the rotation) catches up inside the seal and the pair stands;
  *   · RED: a leaf the rotation left out finds no seal addressed to it, stands revoked and says so; a later
  *     rotation that re-enrols it stands it again;
- *   · RED: a KEL head that moves past a standing sibling's edge with no re-enrolment drops it on relicense.
+ *   · RED: a KEL head that moves past a standing sibling's edge closes the session inside it and the pair proves
+ *     again — a re-enrolled sibling stands with no refusal, a left-out one stands revoked and says so;
+ *   · RED: a leaf its own KEL revokes says goodbye inside each session, so no sibling stays half-open;
+ *   · RED: a junk, stripped or forged event revokes no one: the leaf names the KEL `unreadable` and keeps (or
+ *     stands under) the standing a verified KEL gives it; a leaf holding no seal stands `unsealed`.
  */
 import { describe, test, expect } from "vitest";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
+import { cbor, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import { base64UrlEncode, hex, hexToBytes } from "../src/crypto.js";
 import { SIBLING_CHANNEL_INFO, LEAF_PEER_SEAL_INFO } from "../src/domains.js";
 import { openFromSender } from "../src/sealed-box.js";
@@ -99,6 +106,40 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
       const inBox = JSON.stringify({ t: "proof", p: { step: "finish", box: { e: "00".repeat(32), n: "11", c: hex(new TextEncoder().encode(JSON.stringify({ personaRootDid: "0x" }))) } } });
       expect(carriedReads([beside], "sealed sibling channel")).toBe(true);
       expect(carriedReads([inBox], "personaRootDid")).toBe(true);
+    } finally { await shutdown(x, y); }
+  });
+
+  test("carry ⊥ read past Automerge's deflate: the instrument finds a long line leaked as a sync message, and the channel carries none", async () => {
+    const LONG = `${CONTENT} ${"lorem ipsum dolor sit amet ".repeat(40)}`;
+    // POSITIVE CONTROL: a real Automerge sync exchange leaked in the clear beside a seal — short and deflated-long.
+    for (const line of [CONTENT, LONG]) {
+      let a = A.from({ line }); let b = A.init<{ line: string }>();
+      let sa = A.initSyncState(); let sb = A.initSyncState();
+      const frames: string[] = [];
+      for (let i = 0; i < 6; i++) {
+        let m: Uint8Array | null;
+        [sa, m] = A.generateSyncMessage(a, sa);
+        if (m) {
+          const body = cbor.encode({ t: "msg", m: { type: "sync", senderId: "a", targetId: "b", documentId: "d", data: m } });
+          frames.push(JSON.stringify({ t: "seal", s: { n: "AAAA", c: base64UrlEncode(body) } }));
+          [b, sb] = A.receiveSyncMessage(b, sb, m);
+        }
+        let n: Uint8Array | null;
+        [sb, n] = A.generateSyncMessage(b, sb);
+        if (n) [a, sa] = A.receiveSyncMessage(a, sa, n);
+      }
+      expect(b.line).toBe(line);
+      expect(carriedReads(frames, "sealed sibling channel"), `a ${line.length}-char line leaked beside the seal`).toBe(true);
+      // A whole document leaked as bytes reads too.
+      expect(carriedReads([JSON.stringify({ c: base64UrlEncode(A.save(a)) })], "sealed sibling channel")).toBe(true);
+    }
+    // The channel itself carries the long line sealed: nothing of it in any decoding.
+    const { relay, x, y } = await pair();
+    try {
+      const found = await syncOne(x, y, LONG);
+      expect(found.doc()?.line).toBe(LONG);
+      expect(carriedReads(relay.carried, "sealed sibling channel")).toBe(false);
+      expect(carriedReads(relay.carried, "lorem ipsum dolor")).toBe(false);
     } finally { await shutdown(x, y); }
   });
 
@@ -238,7 +279,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     const z = standLeaf(SEEDS.deviceZ, ez, await leafUnder(SEEDS.deviceZ, ez, [inception]), relay);
     try {
       await until(() => z.refusals.some((r) => r.suspect === "self"), "the revoked leaf's own refusal");
-      expect(z.refusals.find((r) => r.suspect === "self")!.reason).toMatch(/left this device out/);
+      expect(z.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked", reason: expect.stringMatching(/left this device out/) });
       await sleep(200);
       expect(peersOf(x)).toEqual([]);
       expect(peersOf(z)).toEqual([]);
@@ -264,25 +305,107 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     } finally { await shutdown(x, z); }
   });
 
-  test("RED: a KEL head that moves past a standing sibling's edge with no re-enrolment drops it on relicense", async () => {
+  test("RED: a KEL head that moves past a standing sibling's edge closes the session and the pair proves again — a sibling the head left out stands revoked", async () => {
     const { relay, x, y, inception } = await pair();
     void relay;
     try {
       await x.adapter.relicense([inception]);          // CONTROL: a head that still licenses moves nothing
       expect(peersOf(x).length).toBe(1);
       await x.adapter.relicense(await rotatedKeeping([SEEDS.deviceX]));
-      expect(x.refusals[0]).toMatchObject({ suspect: "peer", peerKey: y.self.deviceKey, reason: expect.stringMatching(/not licensed/) });
-      await until(() => peersOf(x).length === 0, "y to leave x's peers");
+      // y hears why inside the session, proves again, catches up — and finds no seal addressed to it.
+      await until(() => y.refusals.some((r) => r.suspect === "self"), "the left-out sibling to stand revoked");
+      expect(y.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked" });
+      await until(() => peersOf(x).length === 0 && peersOf(y).length === 0, "the pair to part");
+      expect(x.refusals.filter((r) => r.suspect === "relay"), "a lawful KEL move blames no relay").toEqual([]);
     } finally { await shutdown(x, y); }
   });
 
-  test("CONTROL: a KEL head that moves with a re-enrolment for the sibling keeps the session standing", async () => {
+  test("CONTROL: a KEL head that moves with a re-enrolment for the sibling — the pair proves again under the head, with no refusal", async () => {
     const { x, y } = await pair();
     try {
-      await x.adapter.relicense(await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]));
-      expect(peersOf(x).length).toBe(1);
-      expect(x.refusals).toEqual([]);
+      const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+      await x.adapter.relicense(chain);
+      await until(() => y.adapter.kel.length === 2 && peersOf(x).length === 1 && peersOf(y).length === 1, "the pair to stand under the head");
+      expect([...x.refusals, ...y.refusals]).toEqual([]);
+      const found = await syncOne(x, y, "under the moved head");
+      expect(found.doc()?.line).toBe("under the moved head");
     } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a leaf its own KEL revokes says goodbye inside each session — its sibling closes, never syncing into a black hole", async () => {
+    const { x, y } = await pair();
+    try {
+      await y.adapter.relicense(await rotatedKeeping([SEEDS.deviceX]));   // only y learns the rotation
+      expect(y.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked" });
+      await until(() => peersOf(x).length === 0, "x to close its half");
+      expect(x.refusals[0]).toMatchObject({ suspect: "peer", peerKey: y.self.deviceKey, reason: expect.stringMatching(/its own KEL revoked it/) });
+      expect(peersOf(y)).toEqual([]);
+    } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a junk event on the board revokes no one — the leaf names the KEL unreadable and keeps its standing", async () => {
+    const { x, y, inception } = await pair();
+    try {
+      const rotated = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+      const junk = { ...rotated[1]!, rotationSigs: [] };   // a torn quorum on an inception-only chain
+      await x.adapter.relicense([inception, junk]);
+      expect(x.refusals.some((r) => r.suspect === "self" && r.cause === "revoked")).toBe(false);
+      expect(x.refusals).toEqual([expect.objectContaining({ suspect: "self", cause: "unreadable" })]);
+      await x.adapter.relicense([inception, junk]);          // one board state surfaces once
+      expect(x.refusals).toHaveLength(1);
+      expect(peersOf(x).length).toBe(1);
+      const found = await syncOne(x, y, "after the junk");
+      expect(found.doc()?.line).toBe("after the junk");
+    } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a STRIPPED enrolment on the board reads unreadable, never `self` revoked, and the pair stands", async () => {
+    const { x, y, inception } = await pair();
+    try {
+      const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+      const keyY = await pubOf(SEEDS.deviceY);
+      const open = (await import("../src/persona-group-secret.js")).groupSecretOpenerFromSeed(SEEDS.deviceY);
+      const mine = [];
+      for (const e of chain[1]!.enrolments!) if (open.enrolment(e, { prefix: inception.prefix, opKeyDid: chain[1]!.opKeyDid })) mine.push(e);
+      expect(mine).toHaveLength(1);
+      const stripped = [chain[0]!, { ...chain[1]!, enrolments: chain[1]!.enrolments!.filter((e) => !mine.includes(e)) }];
+      void keyY;
+      await y.adapter.relicense(stripped);
+      await sleep(200);
+      expect(y.refusals).toEqual([expect.objectContaining({ suspect: "self", cause: "unreadable" })]);
+      expect(peersOf(x).length).toBe(1);
+      expect(peersOf(y).length).toBe(1);
+    } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a KEL handed with a forged enrolment blames no sibling — both stand under the prefix that verifies", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const forged = { ...chain[1]!.enrolments![0]!, sig: "00".repeat(64) };
+    const tampered = [chain[0]!, { ...chain[1]!, enrolments: [forged, ...chain[1]!.enrolments!] }];
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, tampered), relay);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, tampered), relay);
+    try {
+      await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair under the verified prefix");
+      for (const r of [...x.refusals, ...y.refusals]) expect(r).toMatchObject({ suspect: "self", cause: "unreadable" });
+      expect(x.adapter.kel).toHaveLength(1);
+    } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a leaf whose seal opens for no op-key its KEL seats stands `unsealed`, never `revoked`", async () => {
+    const { inception } = await founded();
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const sealedToAnother = await enrol(SEEDS.opA, SEEDS.deviceW, inception.prefix);
+    const missing = { edge: ex.edge, seal: sealedToAnother.seal };
+    const x = standLeaf(SEEDS.deviceX, missing, await leafUnder(SEEDS.deviceX, missing, [inception]), relay);
+    try {
+      await until(() => x.refusals.length > 0, "the unsealed leaf's refusal");
+      expect(x.refusals[0]).toMatchObject({ suspect: "self", cause: "unsealed" });
+    } finally { await shutdown(x); }
   });
 });
 

@@ -24,7 +24,7 @@ import {
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
-  standSiblingChannel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  standSiblingChannel, siblingRefusalLabel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
@@ -1052,7 +1052,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
             deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
             enrolment: { edge: siblingEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
             expectedEpoch: effectiveLeaseEpoch(leaseSlots),
-            onRefusal: (r) => console.warn(`[sibling] refused (${r.suspect}${r.suspect === "peer" ? ` ${r.peerKey.slice(0, 8)}…` : ""}): ${r.reason}`),
+            onRefusal: (r) => console.warn(`[sibling] refused (${siblingRefusalLabel(r)}): ${r.reason}`),
           });
         }
       }

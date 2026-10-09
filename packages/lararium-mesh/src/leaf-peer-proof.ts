@@ -54,7 +54,7 @@ import { LEAF_CATCH_UP_SEAL_INFO, LEAF_PEER_HINT_INFO, LEAF_PEER_PROOF_DOMAIN, L
 import { ed25519VerifyHex } from "./auth-wire.js";
 import { sealToRecipient, openFromSender, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
 import { verifyEdgeAgainstPersonaKel, verifyPersonaKelFull, type PersonaKelEvent } from "./persona-kel.js";
-import { enrolledEdgeOf, type GroupSecret } from "./persona-group-secret.js";
+import type { GroupSecret } from "./persona-group-secret.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 
 const KEY_RE = /^[0-9a-f]{64}$/;
@@ -361,7 +361,7 @@ function chainNext(chain: Uint8Array, nonce: Uint8Array, ciphertext: Uint8Array)
 export class LeafPeerSession {
   readonly role:     LeafPeerRole;
   readonly peerKey:  string;
-  #peerEdge:  DeviceDelegationTiddler;
+  readonly #peerEdge: DeviceDelegationTiddler;
   #sendKey:   Uint8Array;
   #recvKey:   Uint8Array;
   #sendChain: Uint8Array;
@@ -404,7 +404,7 @@ export class LeafPeerSession {
     });
   }
 
-  /** The edge the peer stands on — the one it proved with, or the one a later rotation re-delegated to its key. */
+  /** The edge the peer proved with on this session. */
   get peerEdge(): DeviceDelegationTiddler { return this.#peerEdge; }
 
   /** Why this session refused, or null while it stands. */
@@ -440,19 +440,16 @@ export class LeafPeerSession {
   }
 
   /**
-   * Re-judge the session against a KEL this leaf now carries. The peer's edge stands while it licenses; once the
-   * moved head rolls past it, the edge the head's rotation RE-ENROLLED for the peer's own device key stands in its
-   * place (the peer proved that key on this session). A peer the rotation left out refuses, with the reason.
+   * Re-judge the session against a KEL this leaf now carries: does the edge the peer proved with still license
+   * under its head and the lease epoch held? An edge the moved head rolled past licenses no longer. The peer's
+   * renewed edge, if the head's rotation re-enrolled it, rides sealed to the peer alone, so only a fresh proof can
+   * show it: the caller closes the session and the pair proves again. The verdict refuses nothing by itself.
    */
-  async relicense(kel: readonly PersonaKelEvent[], expectedEpoch?: number): Promise<boolean> {
-    if (this.#refusal !== null) return false;
+  async relicense(kel: readonly PersonaKelEvent[], expectedEpoch?: number): Promise<{ readonly ok: boolean; readonly reason?: string }> {
+    if (this.#refusal !== null) return { ok: false, reason: this.#refusal };
     const opts = expectedEpoch !== undefined ? { expectedEpoch } : undefined;
     const licensed = await verifyEdgeAgainstPersonaKel(this.#peerEdge, kel, opts);
-    if (licensed.ok) return true;
-    const renewed = enrolledEdgeOf(kel, this.peerKey);
-    if (renewed && (await verifyEdgeAgainstPersonaKel(renewed, kel, opts)).ok) { this.#peerEdge = renewed; return true; }
-    this.refuse(`the edge is not licensed by this PersonaGroup's KEL head: ${licensed.reason ?? "refused"}`);
-    return false;
+    return licensed.ok ? { ok: true } : { ok: false, reason: licensed.reason ?? "the edge no longer licenses" };
   }
 }
 

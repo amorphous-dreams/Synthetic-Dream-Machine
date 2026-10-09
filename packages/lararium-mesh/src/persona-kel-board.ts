@@ -89,6 +89,7 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   if (typeof p["nextRecoverySetHash"] !== "string")                           return null; // the rolling commitment
   if (typeof p["provisional"] !== "boolean")                                  return null; // the contest marker
   if (p["vetoOfCid"] !== null && typeof p["vetoOfCid"] !== "string")          return null; // a veto names its contested cid
+  if (typeof p["enrolmentDigest"] !== "string")                               return null; // the cid commits the enrolment list
   const recoveryRoster = coerceStringArray(p["recoveryRoster"]);
   if (recoveryRoster === null)                                                return null;
   if (!Number.isFinite(p["recoveryThreshold"]))                              return null;
@@ -101,13 +102,10 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     if (sig === null) return null;   // a torn signature reads the whole event closed (never a partial quorum)
     rotationSigs.push(sig);
   }
-  // The enrolments ride outside the cid and verify downstream (`leafStandingUnder`); a torn list reads the whole
-  // event closed, never a partial.
+  // The enrolments are sealed boxes whose digest the cid commits. They ride through as the board holds them: the
+  // walk checks the list against that digest and each box's signature, so a torn or padded list breaks the chain
+  // where every reader sees it, never vanishing here as an event the board seems not to hold.
   const enrolRaw = p["enrolments"];
-  if (enrolRaw !== undefined && (!Array.isArray(enrolRaw) || enrolRaw.some((e) =>
-    typeof e !== "object" || e === null || typeof (e as Record<string, unknown>)["edge"] !== "object" || typeof (e as Record<string, unknown>)["seal"] !== "object"))) {
-    return null;
-  }
   // The event carries no explicit `kind` field (persona-kel events are structural); the domain lives in the
   // event bytes the cid commits, so a structural coercion + the downstream cid recompute is the real gate.
   void PERSONA_KEL_DOMAIN;
@@ -120,6 +118,7 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     nextRecoverySetHash: p["nextRecoverySetHash"],
     provisional:       p["provisional"] as boolean,
     vetoOfCid:         p["vetoOfCid"] as string | null,
+    enrolmentDigest:   p["enrolmentDigest"],
     ...(typeof p["vetoSig"] === "string" ? { vetoSig: p["vetoSig"] as string } : {}),
     recoveryRoster,
     recoveryThreshold: p["recoveryThreshold"] as number,

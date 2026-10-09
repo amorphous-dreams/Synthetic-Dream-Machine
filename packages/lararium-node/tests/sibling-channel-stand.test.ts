@@ -38,10 +38,11 @@ async function kelOf(): Promise<{ inception: PersonaKelEvent; rotate: (keep: rea
     const guardianSigners = await Promise.all(guardianSeeds.slice(0, 2).map(async (s) => ({
       signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)),
     })));
-    const rot = await attestAndRotate({ head: prov.inception, freshOpKeyDid: `0x${await pubOf(seed(52))}`, guardianRecoveryKeys, recoveryThreshold: prov.recoveryThreshold, guardianSigners });
-    if (!rot.ok) throw new Error(rot.reason);
     const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
-    return rollEnrolments({ event: rot.event, opSeed: seed(52), devices });
+    const enrolments = await rollEnrolments({ prefix: prov.inception.prefix, opSeed: seed(52), devices });
+    const rot = await attestAndRotate({ head: prov.inception, freshOpKeyDid: `0x${await pubOf(seed(52))}`, guardianRecoveryKeys, recoveryThreshold: prov.recoveryThreshold, guardianSigners, enrolments });
+    if (!rot.ok) throw new Error(rot.reason);
+    return rot.event;
   };
   return { inception: prov.inception, rotate };
 }
@@ -71,7 +72,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     return { repo, refusals, key, board };
   }
 
-  test("CONTROL, then RED: siblings sync; a rotation on the board rolls a sibling's edge past and it leaves, said aloud", async () => {
+  test("CONTROL, then RED: siblings sync; a rotation on the board that leaves a sibling out parts the pair, and the sibling says it stands revoked", async () => {
     relay = await startAuthenticatedMembershipRelay(seed(50), 0);
     const { inception, rotate } = await kelOf();
     const x = await standLeaf(seed(53), inception);
@@ -83,10 +84,12 @@ describe("standSiblingChannel — the one composition both shores call", () => {
 
     const rotation = await rotate([seed(53)]);                 // x re-enrolled, y left out
     x.board.change((d) => writePersonaKelEvent(d, rotation));
-    for (let i = 0; i < 200 && x.refusals.length === 0; i++) await sleep(20);
-    expect(x.refusals[0]).toMatchObject({ suspect: "peer", peerKey: y.key, reason: expect.stringMatching(/not licensed by this PersonaGroup's KEL head/) });
-    for (let i = 0; i < 200 && x.repo.peers.length > 0; i++) await sleep(20);
+    // x closes the session inside it; y proves again, catches up onto its own board, and finds no seal for it.
+    for (let i = 0; i < 200 && !y.refusals.some((r) => r.suspect === "self"); i++) await sleep(20);
+    expect(y.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked" });
+    for (let i = 0; i < 200 && (x.repo.peers.length > 0 || y.repo.peers.length > 0); i++) await sleep(20);
     expect(x.repo.peers).toEqual([]);
+    expect(y.repo.peers).toEqual([]);
   }, 20_000);
 
   test("RED: the held lease epoch reaches the proof — a sibling whose edge binds below it is refused as lapsed", async () => {
