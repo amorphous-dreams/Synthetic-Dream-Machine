@@ -95,12 +95,17 @@ const ROSTER = [
   {
     symbol: "assemblePersonaGroupRing",
     pkg: "@lararium/keyhive",
-    why: "the ONE PersonaGroup identity-slot ring assembly. Both shores call it and only the proof source differs: the node reads the key its inbound gate proved, a leaf reads the gate key its outbound socket proved by a signed verdict, and either reads the device key a sibling proved over the sibling session. Every leaf runs it: a face of an operator's PersonaGroup where a listening vessel exists, a single user device, and one device of a user-caps-only fleet where no vessel listens (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
+    why: "the ONE PersonaGroup identity-slot ring assembly. Both shores call it and only the grant path's proof source differs: the node reads the key its inbound gate proved, a leaf reads the gate key its outbound socket proved by a signed verdict. Both read the device key a sibling proved over the sibling session by the ring's own sibling path, which stands the sibling gate: the face's own planes and the public boards, never the @daemon, never another face's planes. Every leaf runs it: a face of an operator's PersonaGroup where a listening vessel exists, a single user device, and one device of a user-caps-only fleet where no vessel listens (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
   },
   {
     symbol: "standSiblingChannel",
     pkg: "@lararium/mesh",
-    why: "the ONE sibling-channel composition: a face's siblings prove their device edges to each other through a herm and sync over the session the proof binds. Both shores call it; only seed custody differs, riding in as the signer (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
+    why: "the ONE sibling-channel composition: a face's siblings prove their device edges to each other through a herm, under the PersonaGroup secret delivered at enrolment and the lease epoch the vessel holds, and sync over the session the proof binds. Both shores call it; only seed custody differs, riding in as the signer and the secret's opener (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
+  },
+  {
+    symbol: "verifyGroupSecretSeal",
+    pkg: "@lararium/mesh",
+    why: "the ONE read of the PersonaGroup secret's enrolment seal off the vessel's own daemon doc: a seal the op-key did not sign stands no sibling channel, on either shore (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
   },
 
   /* ── RULED ASYMMETRIC ────────────────────────────────────────────────────────────────────────
