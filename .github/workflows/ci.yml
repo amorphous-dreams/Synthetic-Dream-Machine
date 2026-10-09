@@ -114,6 +114,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # `doctype-render-parity` proves a property of ONE past commit by reading both sides of it.
+          # A depth-1 checkout holds neither, so the suite reads the whole history.
+          fetch-depth: 0
           # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
           # root. Without them the tw5 build cannot run, so every downstream job fails on an
           # artifact the repo never had a chance to produce.

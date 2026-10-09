@@ -14,6 +14,11 @@
  * block changes renders differently from its ancestor for a reason that has nothing to do with a
  * quoted positional, and the gate then reports a migration break over an unrelated sweep. What
  * this proves is a property of ONE commit, so it reads both sides of that commit and nothing else.
+ *
+ * ── THE GATE READS HISTORY ──────────────────────────────────────────────────────────────────────
+ * A depth-1 checkout holds neither commit, and every carrier then reads as having no prior form —
+ * which names the carriers when the fault belongs to the clone. Absence of the commits refuses on
+ * its own line, naming the depth, so CI's `fetch-depth: 0` on the Test job stands as the cure.
  */
 import { beforeAll, describe, expect, test } from "vitest";
 import { execSync } from "node:child_process";
@@ -37,6 +42,11 @@ describe.skipIf(wikiSkip)(`doctype render parity ${skipNote}`, () => {
   beforeAll(async () => { engine = await bootTestWiki(); });
 
   test("every migrated carrier renders what it rendered before, past its own declaration", () => {
+    const absent = [BEFORE, AFTER].filter((rev) => {
+      try { execSync(`git cat-file -e ${rev}^{commit}`, { cwd: REPO, stdio: "ignore" }); return false; }
+      catch { return true; }
+    });
+    expect(absent, `this clone holds no ${absent.join(" / ")} — a shallow checkout carries no history to compare; fetch it whole (CI: fetch-depth: 0)`).toEqual([]);
     const faults: string[] = [];
     for (const f of CARRIERS) {
       let was: string, now: string;
