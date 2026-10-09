@@ -26,7 +26,7 @@ import {
 } from "../src/leaf-peer-proof.js";
 import { SiblingNetworkAdapter, siblingPeerIdOf } from "../src/sibling-channel.js";
 import {
-  SEEDS, founded, enrol, leafUnder, memoryRelay, standLeaf, until, sleep, peersOf, shutdown,
+  SEEDS, founded, enrol, leafUnder, leafOf, memoryRelay, standLeaf, until, sleep, peersOf, shutdown,
 } from "./fixtures/sibling-fleet.js";
 
 const NODE = "operator-node-peer" as PeerId;
@@ -92,6 +92,7 @@ async function hostileSibling(relay: ReturnType<typeof memoryRelay>, self: LeafP
       }
     })();
   });
+  t.join([self.secret.secret]);
   t.send(null, { t: "here" });
   return () => t.close();
 }
@@ -103,13 +104,13 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
     let xAdapter: SiblingNetworkAdapter | null = null;
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay, {
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay, {
       sharePolicy: siblingVerdict(new Set([NODE]), new Set(), () => xAdapter),
     });
     xAdapter = x.adapter;
     x.repo.networkSubsystem.addNetworkAdapter(new OtherCarrier([NODE]));
     const ySelf = await leafUnder(SEEDS.deviceY, ey, [inception]);
-    const yAdapter = new SiblingNetworkAdapter({ transport: relay.transportFor(ySelf.deviceKey), kel: [inception], leaf: async (k) => leafUnder(SEEDS.deviceY, ey, k) });
+    const yAdapter = new SiblingNetworkAdapter({ transport: relay.transportFor(ySelf.deviceKey), kel: [inception], leaf: async (k) => leafOf(SEEDS.deviceY, ey, k) });
     const yRepo = new Repo({ peerId: NODE, network: [yAdapter], shareConfig: shareConfigOf(async () => true) });
     yAdapter.bindRepo(yRepo);
     try {
@@ -129,11 +130,11 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
     const planes = new Set<DocumentId>();
     let xAdapter: SiblingNetworkAdapter | null = null;
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay, {
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay, {
       sharePolicy: siblingVerdict(new Set([NODE]), planes, () => xAdapter),
     });
     xAdapter = x.adapter;
-    const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, [inception]), relay);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
     try {
       await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair");
       expect(peersOf(x)).toEqual([siblingPeerIdOf(y.self.deviceKey)]);
@@ -150,7 +151,7 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const relay = memoryRelay();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
     const close = await hostileSibling(relay, await leafUnder(SEEDS.deviceY, ey, [inception]), NODE);
     try {
       await until(() => x.refusals.length > 0, "the misnamed sibling's refusal");
@@ -160,7 +161,7 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     } finally { close(); await shutdown(x); }
     // CONTROL: the same hand-run sibling naming the id its key derives stands.
     const relay2 = memoryRelay();
-    const x2 = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay2);
+    const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay2);
     const ySelf = await leafUnder(SEEDS.deviceY, ey, [inception]);
     const close2 = await hostileSibling(relay2, ySelf, siblingPeerIdOf(ySelf.deviceKey));
     try {
@@ -175,10 +176,10 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
     const yKey = (await leafUnder(SEEDS.deviceY, ey, [inception])).deviceKey;
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
     x.repo.networkSubsystem.addNetworkAdapter(new OtherCarrier([siblingPeerIdOf(yKey)]));
     await until(() => x.repo.peers.includes(siblingPeerIdOf(yKey)), "the other carrier to hold the id");
-    const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, [inception]), relay);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
     try {
       await until(() => x.refusals.length > 0 && y.refusals.length > 0, "both sides to say why");
       expect(x.refusals[0]).toMatchObject({ suspect: "route", peerKey: yKey, peerId: siblingPeerIdOf(yKey) });
@@ -194,8 +195,8 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
       const relay = memoryRelay();
       const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
       const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
-      const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay);
-      const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, [inception]), relay);
+      const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
+      const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
       await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair");
       return { x, y };
     })();

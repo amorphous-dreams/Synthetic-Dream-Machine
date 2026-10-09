@@ -25,9 +25,10 @@
  * the chain's walk instead of revoking or framing a device. A revoking rotation leaves the revoked device out: no
  * box opens for it, and it holds no secret past it.
  *
- * A DEVICE'S STANDING UNDER A KEL (`leafStandingUnder`): every secret its enrolments deliver, oldest first, and the
- * newest edge the KEL re-delegated to it. A leaf keeps the older secrets so a stale sibling still meets it, and
- * hands that sibling the KEL suffix it lacks (`leaf-peer-proof`'s catch-up).
+ * A DEVICE'S STANDING UNDER A KEL (`leafStandingUnder`): every enrolment it holds, each an op-key's secret and the
+ * edge that op-key signed, oldest first. It stands under the one its KEL head sealed (`enrolmentUnderHead`) and
+ * meets its siblings under that secret alone. A leaf behind the head catches up off the public KEL, never from a
+ * sibling (`persona-kel-drop`).
  *
  * NO CLOCK: the secret's epoch is the op-key that derived it, read by KEL event order.
  *
@@ -47,7 +48,7 @@ import { sealToRecipient, openFromSender } from "./sealed-box.js";
 import { didFromVerifyingKey, verifyingKeyFromDid } from "./lar-did.js";
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-delegation.js";
 import {
-  enrolmentsAttested, sealedEnrolmentBytes, verifySealedEnrolment, type PersonaKelEvent, type SealedEnrolment,
+  enrolmentsAttested, headOpKey, sealedEnrolmentBytes, verifySealedEnrolment, type PersonaKelEvent, type SealedEnrolment,
 } from "./persona-kel.js";
 import { PERSONA_NAMESPACE } from "./lar-uris.js";
 
@@ -293,17 +294,23 @@ export async function enrolledEdgeOf(kel: readonly PersonaKelEvent[], open: Grou
   return opened.at(-1)?.edge ?? null;
 }
 
-/** What a device stands on under a KEL: every secret its enrolments deliver (oldest first) and its newest edge. */
+/** One enrolment a device holds under a KEL: the op-key that sealed it, the secret it delivered and the edge that
+ *  op-key signed for the device. */
+export interface HeldEnrolment {
+  readonly opKeyDid: string;
+  readonly secret:   Uint8Array;
+  readonly edge:     DeviceDelegationTiddler;
+}
+
+/** What a device stands on under a KEL: every enrolment it holds, oldest first by where its op-key sits. */
 export interface LeafStanding {
-  readonly secrets: readonly GroupSecret[];
-  readonly edge:    DeviceDelegationTiddler;
+  readonly held: readonly HeldEnrolment[];
 }
 
 /**
  * Read a device's standing under the KEL it carries: the enrolment it was handed (its edge and seal), plus every
  * sealed enrolment the KEL's rotations carry for its key. The handed seal counts only when the op-key it names sits
- * in the chain, signed it, and its box opens for this device; the secrets order by where their op-key sits. The
- * edge is the newest the chain re-delegated to this device, else the one it was handed.
+ * in the chain, signed it, and its box opens for this device; the enrolments order by where their op-key sits.
  */
 export async function leafStandingUnder(args: {
   readonly kel:       readonly PersonaKelEvent[];
@@ -315,17 +322,30 @@ export async function leafStandingUnder(args: {
   const key = args.deviceKey.toLowerCase();
   if (args.open.deviceKey.toLowerCase() !== key) throw new Error("[persona-group-secret] the opener stands for another device key");
   const prefix = args.kel[0]?.prefix;
-  const held = new Map<string, { at: number; secret: Uint8Array }>();
+  const held = new Map<string, { at: number; secret: Uint8Array; edge: DeviceDelegationTiddler }>();
   const handed = await verifyGroupSecretSeal(args.enrolment.seal);
   if (handed && handed.deviceKey === key && handed.prefix === prefix) {
     const at = seatOf(args.kel, handed.opKeyDid);
     const secret = at >= 0 ? args.open.seal(handed) : null;
-    if (secret) held.set(handed.opKeyDid.toLowerCase(), { at, secret });
+    if (secret) held.set(handed.opKeyDid.toLowerCase(), { at, secret, edge: args.enrolment.edge });
   }
   const opened = await openedEnrolments(args.kel, args.open);
-  for (const o of opened) held.set(o.secret.opKeyDid, { at: o.at, secret: o.secret.secret });
-  const secrets = [...held.entries()].sort((a, b) => a[1].at - b[1].at).map(([opKeyDid, h]) => ({ opKeyDid, secret: h.secret }));
-  return { secrets, edge: opened.at(-1)?.edge ?? args.enrolment.edge };
+  for (const o of opened) held.set(o.secret.opKeyDid, { at: o.at, secret: o.secret.secret, edge: o.edge });
+  return {
+    held: [...held.entries()].sort((a, b) => a[1].at - b[1].at).map(([opKeyDid, h]) => ({ opKeyDid, secret: h.secret, edge: h.edge })),
+  };
+}
+
+/**
+ * The enrolment a device stands under: the one its KEL's HEAD op-key sealed (`headOpKey`, every quorum verified, a
+ * provisional rotation conferring nothing until accepted), or null when the device holds none under the head — the
+ * head revoked it, or the KEL does not verify. A device that also holds a provisional rotation's enrolment still
+ * stands under the head, so a withheld veto never reads as a revocation.
+ */
+export async function enrolmentUnderHead(kel: readonly PersonaKelEvent[], standing: LeafStanding): Promise<HeldEnrolment | null> {
+  const head = await headOpKey(kel, { verifyQuorums: true });
+  if (head === null) return null;
+  return standing.held.find((h) => h.opKeyDid.toLowerCase() === head.toLowerCase()) ?? null;
 }
 
 /** The daemon-doc title a device's enrolment seal for one PersonaGroup rests under — sovereign, never crossing. */

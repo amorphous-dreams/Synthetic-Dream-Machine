@@ -77,8 +77,9 @@ function coerceStringArray(raw: unknown): string[] | null {
   return out;
 }
 
-/** A parsed board payload reads a KEL event only at the exact `PersonaKelEvent` shape — else null (skipped). */
-function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
+/** A parsed payload — off the board, or out of a herm's drop — reads a KEL event only at the exact
+ *  `PersonaKelEvent` shape, else null (skipped). The shape reads; trust rides the walk's verify. */
+export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   if (typeof parsed !== "object" || parsed === null) return null;
   const p = parsed as Record<string, unknown>;
   if (!Number.isInteger(p["seq"]) || (p["seq"] as number) < 0)                 return null; // no monotone seq → skip

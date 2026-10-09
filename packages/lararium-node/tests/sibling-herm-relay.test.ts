@@ -8,6 +8,9 @@
  *   · RED: a key joined on ANOTHER channel hears nothing of it; CONTROL: a key joined on both hears it once;
  *   · RED: a frame addressed to one key reaches no other key on the channel;
  *   · RED: a socket that joined no channel neither sends nor hears;
+ *   · RED: a later join REPLACES a socket's channels — it hears its new channel alone, and an empty join leaves all;
+ *   · the drop floor: a plain request apart from every proven socket reads and keeps a KEL successor; an unknown
+ *     name, a refused deposit and any other path meet one silence — a cut socket;
  *   · RED: a `from` the sender writes into its own frame never replaces the stamp;
  *   · the herm's sight (`onSiblingFrame`) holds exactly the frames it carried;
  *   · CARRY ⊥ READ, read DECODED: two enrolled sibling leaves sync a doc through the relay, and its whole sight —
@@ -22,7 +25,8 @@ import {
   hex, ed25519SignerFromSeed, dialSiblingHerm, siblingChannelTag, buildAuthResponse, mintLeafNonce, knockedUrl,
   isLarChallengeMsg, isLarAuthOkMsg, mkLarSessionMsg, MEMBERSHIP_RELAY_DOMAIN, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND,
   SiblingNetworkAdapter, enrolDevice, leafStandingUnder, groupSecretOpenerFromSeed, base64UrlEncode,
-  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
+  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate,
+  personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors,
   type SiblingTransport, type SiblingRefusal,
 } from "@lararium/mesh";
 import { startAuthenticatedMembershipRelay, type AuthenticatedMembershipRelay } from "../src/authenticated-membership-relay.js";
@@ -144,6 +148,68 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     expect(bare).toBe(false);
   }, 15_000);
 
+  test("RED: a later join REPLACES a socket's channels — it hears its new channel alone; an empty join leaves every channel", async () => {
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(84), 0);
+    const a = await dial(85, [SECRET_1]);
+    const b = await dial(86, [SECRET_2]);
+    const moving = await dial(87, [SECRET_1]);
+    await sleep(50);
+    a.t.send(null, { t: "here" });
+    await sleep(100);
+    expect(moving.heard).toEqual([{ from: a.key, frame: { t: "here" } }]);   // CONTROL: on c1, it hears c1
+    moving.t.join([SECRET_2]);
+    await sleep(50);
+    a.t.send(null, { t: "here" });
+    b.t.send(null, { t: "here" });
+    await sleep(100);
+    // It left c1 in the same act it joined c2: a's second word never reaches it, b's does.
+    expect(moving.heard).toEqual([{ from: a.key, frame: { t: "here" } }, { from: b.key, frame: { t: "here" } }]);
+    moving.t.join([]);
+    await sleep(50);
+    a.t.send(null, { t: "here" });
+    b.t.send(null, { t: "here" });
+    moving.t.send(null, { t: "here" });
+    await sleep(100);
+    expect(moving.heard).toHaveLength(2);
+    expect(b.heard.filter((h) => h.from === moving.key)).toEqual([]);
+  }, 15_000);
+
+  test("the drop floor: a plain request reads and keeps a KEL successor; every other ask meets one silence", async () => {
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(88), 0);
+    const base = `http://127.0.0.1:${relay.port}`;
+    const guardianSeeds = [61, 62, 63].map((b) => new Uint8Array(32).fill(b));
+    const guardianRecoveryKeys = await Promise.all(guardianSeeds.map(pubOf));
+    const slots = ["mine", "guardian-a", "guardian-b"] as const;
+    const prov = provisionThresholdRecoveryAtFounding({
+      foundingOpKeyDid: `0x${await pubOf(new Uint8Array(32).fill(51))}`,
+      guardians: guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null)),
+      recoveryThreshold: 2,
+    });
+    const rot = await attestAndRotate({
+      head: prov.inception, freshOpKeyDid: `0x${await pubOf(new Uint8Array(32).fill(52))}`, guardianRecoveryKeys, recoveryThreshold: 2,
+      guardianSigners: await Promise.all(guardianSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) }))),
+    });
+    if (!rot.ok) throw new Error(rot.reason);
+    const name = personaKelDropName(prov.inception.eventCid, relay.gatePubKey);
+    /** One request's whole answer: its status, or "silence" when the herm cut the socket. */
+    const ask = (path: string, init?: RequestInit) => fetch(`${base}${path}`, init).then(async (r) => ({ status: r.status, body: await r.text(), cors: r.headers.get("access-control-allow-origin") }), () => "silence" as const);
+    // An unknown name, another path, a junk deposit and a deposit under the wrong name: one silence each.
+    expect(await ask(`/drop/${name}`)).toBe("silence");
+    expect(await ask(`/drop/${"0".repeat(64)}`)).toBe("silence");
+    expect(await ask("/.well-known/lar")).toBe("silence");
+    expect(await ask(`/drop/${name}`, { method: "POST", body: "junk" })).toBe("silence");
+    expect(await ask(`/drop/${"0".repeat(64)}`, { method: "POST", body: JSON.stringify(rot.event) })).toBe("silence");
+    // The lawful deposit keeps, CORS open, and the read answers it.
+    expect(await ask(`/drop/${name}`, { method: "POST", headers: { "content-type": "text/plain" }, body: JSON.stringify(rot.event) })).toMatchObject({ status: 204, cors: "*" });
+    const read = await ask(`/drop/${name}`);
+    expect(read).toMatchObject({ status: 200, cors: "*" });
+    expect((JSON.parse((read as { body: string }).body) as Array<{ eventCid: string }>).map((e) => e.eventCid)).toEqual([rot.event.eventCid]);
+    // A leaf reaches it through its pinned address, and its reader extends the chain.
+    const herm = httpPersonaKelDropHerm(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`);
+    const pulled = await pullPersonaKelSuccessors([prov.inception], [herm]);
+    expect(pulled.kel.map((e) => e.eventCid)).toEqual([prov.inception.eventCid, rot.event.eventCid]);
+  }, 15_000);
+
   test("CARRY ⊥ READ: siblings sync a doc through the relay, and the relay's whole sight holds none of it", async () => {
     const sight: unknown[] = [];
     relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(90), 0, { onSiblingFrame: (c) => sight.push(c) });
@@ -164,10 +230,7 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
       const refusals: SiblingRefusal[] = [];
       const adapter = new SiblingNetworkAdapter({
         kel,
-        leaf: async (k) => {
-          const standing = await leafStandingUnder({ kel: k, deviceKey: key, enrolment, open: groupSecretOpenerFromSeed(device) });
-          return { deviceKey: key, sign, edge: standing.edge, kel: k, secrets: standing.secrets };
-        },
+        leaf: async (k) => ({ deviceKey: key, sign, kel: k, standing: await leafStandingUnder({ kel: k, deviceKey: key, enrolment, open: groupSecretOpenerFromSeed(device) }) }),
         transport: async () => { const t = await dialSiblingHerm({ address: `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`, deviceKey: key, sign }); open.push(t); return t; },
         onRefusal: (r) => refusals.push(r),
       });

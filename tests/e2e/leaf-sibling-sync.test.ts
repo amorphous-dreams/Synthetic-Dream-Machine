@@ -17,8 +17,10 @@
  *        refused, the refusal surfacing; it never holds a sibling's doc, nor a sibling its doc. A non-member
  *        holding no secret meets nobody at all.
  *   L3 — a stranger without the knock path meets silence: no HTTP 101 on the herm's relay port.
- *   L4 — a sibling a rotation left stale catches up inside the seal through the herm, and the pair syncs; the
- *        rotation's enrolments ride the KEL sealed and attested, so the herm's sight holds no edge of them.
+ *   L4 — a sibling a rotation left stale catches up off the herms' successor drops — a plain request on each
+ *        herm's relay port, apart from every proven socket — and the pair syncs under the head. The KEL never
+ *        rides the sibling channel, and the rotation's enrolments ride it sealed and attested, so the herm's
+ *        sight of the channel holds no event and no edge.
  *
  * The headline's mutation proof: a proof that refuses every sibling (`openProof` answering a refusal) leaves L1
  * red — the doc never arrives, so the sync rides the proof and nothing else.
@@ -38,7 +40,8 @@ import { makePersonaGroupIdentityRing } from "../../packages/lararium-mesh/src/p
 import {
   enrolDevice, rollEnrolments, leafStandingUnder, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
 } from "../../packages/lararium-mesh/src/persona-group-secret.js";
-import { SiblingNetworkAdapter, dialSiblingHerm, type SiblingRefusal } from "../../packages/lararium-mesh/src/sibling-channel.js";
+import { SiblingNetworkAdapter, dialSiblingHerm, siblingKelDropsOf, type SiblingRefusal } from "../../packages/lararium-mesh/src/sibling-channel.js";
+import { httpPersonaKelDropHerm, personaKelDropName } from "../../packages/lararium-mesh/src/persona-kel-drop.js";
 import { carriedReads } from "../../packages/lararium-mesh/tests/fixtures/sibling-fleet.js";
 
 const pubOf    = (s: Uint8Array) => ed25519VerifyingKeyFromSeed(s);
@@ -51,6 +54,9 @@ const GUARDIANS = [seed(103), seed(104), seed(105)];
 const NEXUS    = "4e".repeat(32);
 
 let herm: CarriageRelay | null = null;
+/** A second herm the leaves pin for their drops alone. */
+let second: CarriageRelay | null = null;
+let secondUrl = "";
 let relayUrl = "";
 let relayPort = 0;
 let inception: PersonaKelEvent;
@@ -68,7 +74,10 @@ const FACE_PLANES = new Set<DocumentId>();
  * A leaf of the group: a repo whose only network is the sibling channel through the herm, sharing by the verdict
  * a vessel runs — the ring's sibling path (this face's planes) over the public boards.
  */
-async function standLeaf(device: Uint8Array, enrolment: PersonaGroupEnrolment, kel: readonly PersonaKelEvent[], presents?: PersonaGroupEnrolment["edge"]): Promise<Leaf> {
+async function standLeaf(
+  device: Uint8Array, enrolment: PersonaGroupEnrolment, kel: readonly PersonaKelEvent[], presents?: PersonaGroupEnrolment["edge"],
+  drops: readonly string[] = [relayUrl, secondUrl],
+): Promise<Leaf> {
   const key = await pubOf(device);
   const sign = ed25519SignerFromSeed(device);
   const refusals: SiblingRefusal[] = [];
@@ -77,9 +86,10 @@ async function standLeaf(device: Uint8Array, enrolment: PersonaGroupEnrolment, k
     kel,
     leaf: async (k) => {
       const standing = await leafStandingUnder({ kel: k, deviceKey: key, enrolment, open: groupSecretOpenerFromSeed(device) });
-      return { deviceKey: key, sign, edge: presents ?? standing.edge, kel: k, secrets: standing.secrets };
+      return { deviceKey: key, sign, kel: k, standing: presents ? { held: standing.held.map((h) => ({ ...h, edge: presents })) } : standing };
     },
     transport: () => dialSiblingHerm({ address: relayUrl, deviceKey: key, sign }),
+    drops: siblingKelDropsOf(drops.map(httpPersonaKelDropHerm)),
     onRefusal: (r) => refusals.push(r),
     retryInterval: 500,
   });
@@ -140,9 +150,13 @@ beforeAll(async () => {
     onSiblingFrame: (carried) => { carriedByHerm.push(JSON.stringify(carried)); },
   });
   if (herm.gatePubKey !== relay.gatePubKey) throw new Error("the herm's relay stood under another gate key than the pin");
+  const portSecond = await freePort();
+  const pinSecond = await pinnedCarriageRelay(portSecond);
+  secondUrl = pinSecond.url;
+  second = await startCarriageRelay({ gateSeed: Uint8Array.from(Buffer.from(pinSecond.seedHex, "hex")), port: portSecond });
 });
 
-afterAll(async () => { await herm?.close(); });
+afterAll(async () => { await herm?.close(); await second?.close(); });
 
 describe("leaf kind 3 — siblings sync through a herm with no listening vessel", () => {
   test("L1: two siblings prove each other through the herm and sync a face-plane doc; the herm reads none of it", async () => {
@@ -218,7 +232,7 @@ describe("leaf kind 3 — siblings sync through a herm with no listening vessel"
     expect(await upgrades(knockedUrl(pin.url, pin.gatePubKey))).toBe(true);
   });
 
-  test("L4: a sibling a rotation left stale catches up inside the seal through the herm, and the pair syncs", async () => {
+  test("L4: a sibling a rotation left stale catches up off the herms' drops, and the pair syncs under the head", async () => {
     const devices = await Promise.all([seed(131), seed(132)].map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
     const rot = await attestAndRotate({
       head: inception, freshOpKeyDid: await didOf(ROTATED), guardianRecoveryKeys: guardianKeys, recoveryThreshold: 2,
@@ -227,17 +241,26 @@ describe("leaf kind 3 — siblings sync through a herm with no listening vessel"
     });
     if (!rot.ok) throw new Error(rot.reason);
     const rotated = [inception, rot.event];
-    const x = await standLeaf(seed(131), await enrol(ROOT, seed(131)), rotated);      // carries the rotation
-    const y = await standLeaf(seed(132), await enrol(ROOT, seed(132)), [inception]);  // stale
+    const sightBefore = sight().length;
+    // x carries the rotation and deposits it at both herms on its dial. y wakes stale, and pulls the move off a
+    // herm before it joins — here the second herm, which carries no sibling channel at all.
+    const x = await standLeaf(seed(131), await enrol(ROOT, seed(131)), rotated);
+    const atSecond = httpPersonaKelDropHerm(secondUrl);
+    for (let i = 0; i < 200; i++) {
+      if ((await atSecond.pull(personaKelDropName(inception.eventCid, atSecond.gatePubKey))).length > 0) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    const y = await standLeaf(seed(132), await enrol(ROOT, seed(132)), [inception], undefined, [secondUrl]);   // stale
     try {
-      await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the stale pair to stand");
+      await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the caught-up pair to stand");
       expect(y.adapter.kel.map((e) => e.eventCid)).toEqual(rotated.map((e) => e.eventCid));
       const handle = planeDoc(x, "across the rotation");
       expect(await reach(y, handle.url, 20_000)).toBe("across the rotation");
       expect([...x.refusals, ...y.refusals]).toEqual([]);
-      // The catch-up crossed sealed: the herm read no event of the suffix, no edge field and no rotated root key.
+      // The KEL never rode the sibling channel: the herm's sight holds no event of it, no edge field and no
+      // rotated root key.
       for (const secret of ["personaRootDid", rotated[1]!.eventCid, await pubOf(ROTATED)]) {
-        expect(carriedReads(sight(), secret), `the herm read ${secret.slice(0, 16)}`).toBe(false);
+        expect(carriedReads(sight().slice(sightBefore), secret), `the herm read ${secret.slice(0, 16)}`).toBe(false);
       }
     } finally {
       await x.repo.shutdown(); await y.repo.shutdown();

@@ -20,12 +20,22 @@
  *     gate drew at accept. No close code and no reason cross.
  *   · ENVELOPES — ride the admitted socket as `lar:session` frames of kind `membership/env`. An envelope addressed
  *     to a key reaches the socket proven under that key alone; only a broadcast (`*`) reaches every other socket.
- *   · SIBLING FRAMES — a leaf that joins channels (`sibling/join`, opaque tags its PersonaGroup secrets key at
- *     this herm) reaches the other keys proven on a channel it shares and no one else: a `sibling/frame` goes to
- *     the key it names, or to every key sharing one of its channels, with `from` STAMPED to the sender's proven
- *     key. The relay routes on the tags and the stamp and reads no frame — the siblings' proof and session ride
- *     inside it (`@lararium/mesh` sibling-channel), the herm's face is carriage alone. A leaf joins one channel
- *     per secret it holds, so a sibling a rotation left behind still meets the sibling that can catch it up.
+ *   · SIBLING FRAMES — a leaf that joins a channel (`sibling/join`, the opaque tag its KEL head's PersonaGroup
+ *     secret keys at this herm) reaches the other keys proven on a channel it shares and no one else: a
+ *     `sibling/frame` goes to the key it names, or to every key sharing its channel, with `from` STAMPED to the
+ *     sender's proven key. A later join REPLACES the socket's tag set, so a leaf whose head moved leaves the old
+ *     channel in the same act, and a leaf the head revoked meets on its old tag no sibling that stands under the
+ *     head. The relay routes on the tags and the stamp and reads no frame — the siblings' proof and session ride
+ *     inside it (`@lararium/mesh` sibling-channel), the herm's face is carriage alone.
+ *   · SUCCESSOR DROPS — the FLOOR voice, on a plain request apart from every proven socket: `GET /drop/<name>`
+ *     answers the persona-KEL events a drop holds, `POST /drop/<name>` keeps one (`@lararium/mesh`
+ *     persona-kel-drop). Availability by content address, never a vouch: the herm keeps only an event whose cid
+ *     recomputes and whose predecessor the name commits, within a write quota, and refuses as it likes. A name it
+ *     holds nothing under, a refused deposit and every other path meet the same silence as a closed door.
+ *
+ * WHAT THE HERM STILL SEES. The stamp it routes on is each leaf's long-lived device key, and a socket's tag set
+ * groups the keys that stand under one head, so a herm colluding with a revoked leaf reads who is online off its
+ * own gate. Per-dial transport keys bound into the siblings' proof close that; this relay does not.
  *
  * WHO IT ADMITS. A crossroads relay carries opaque envelopes for ANY proven key: it holds NO read-cap, reads NO
  * ciphertext and keeps no roster, so its sorter classes every proven key a stranger and admits it. Membership is
@@ -40,8 +50,8 @@ import type { Duplex } from "node:stream";
 import { WebSocketServer, WebSocket, type RawData } from "ws";
 import * as ed from "@noble/ed25519";
 import {
-  MEMBERSHIP_RELAY_DOMAIN, MEMBERSHIP_BROADCAST, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND,
-  hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl, pinnedRelayAddress,
+  MEMBERSHIP_RELAY_DOMAIN, MEMBERSHIP_BROADCAST, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND, PERSONA_KEL_DROP_ROUTE,
+  makePersonaKelDropStore, hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl, pinnedRelayAddress,
   type AuthVerifierShore, type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
 import { DaemonAuthGate, type SocketSorter } from "./daemon-auth-gate.js";
@@ -103,7 +113,8 @@ export async function startAuthenticatedMembershipRelay(
   opts: { readonly authTimeoutMs?: number } = {},
 ): Promise<AuthenticatedMembershipRelay> {
   const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
-  const httpServer = createServer((_req, res) => { res.socket?.destroy(); });
+  const drops = makePersonaKelDropStore({ gatePubKey });
+  const httpServer = createServer((req, res) => { serveDrop(drops, req, res); });
   const wss = new WebSocketServer({ noServer: true });
   const gate = new DaemonAuthGate(wss as unknown as ConstructorParameters<typeof DaemonAuthGate>[0], {
     ...(opts.authTimeoutMs !== undefined ? { authTimeoutMs: opts.authTimeoutMs } : {}),
@@ -120,7 +131,7 @@ export async function startAuthenticatedMembershipRelay(
     const id = gate.getIdentifierForSocket(socket as never);
     return id ? id.slice(-64).toLowerCase() : null;
   };
-  // socket → the sibling channels it joined. A later join adds to the set; a socket leaves them all on close.
+  // socket → the sibling channels it joined. A later join REPLACES the set; a socket leaves them all on close.
   const channelsOf = new Map<WebSocket, Set<string>>();
   const shareChannel = (a: WebSocket, b: WebSocket): boolean => {
     const mine = channelsOf.get(a), theirs = channelsOf.get(b);
@@ -163,9 +174,10 @@ export async function startAuthenticatedMembershipRelay(
     if (kind === SIBLING_JOIN_KIND) {
       const channels = (body as { channels?: unknown }).channels;
       if (!Array.isArray(channels)) return;
-      const joined = channelsOf.get(socket) ?? new Set<string>();
+      const joined = new Set<string>();
       for (const c of channels) if (typeof c === "string" && KEY_RE.test(c)) joined.add(c);
       if (joined.size > 0) channelsOf.set(socket, joined);
+      else channelsOf.delete(socket);
       return;
     }
     const joined = channelsOf.get(socket);
@@ -190,9 +202,46 @@ export async function startAuthenticatedMembershipRelay(
     gatePubKey,
     close: () => new Promise<void>((resolve) => {
       for (const client of wss.clients) client.terminate();
-      wss.close(() => httpServer.close(() => resolve()));
+      // A drop request's kept-alive connection would hold the close open; cut every one.
+      wss.close(() => { httpServer.close(() => resolve()); httpServer.closeAllConnections(); });
     }),
   };
+}
+
+/** The most bytes one drop deposit may carry. */
+const DROP_BODY_CAP = 256 * 1024;
+const DROP_PATH_RE = new RegExp(`^${PERSONA_KEL_DROP_ROUTE}([0-9a-f]{64})$`);
+
+/**
+ * Answer one plain request on the relay port: a successor drop's read or deposit, or silence. Silence is the cut
+ * socket every closed door shows — no status, no body, no header. A drop answers with CORS open, so a browser leaf
+ * reads it from any page; the POST takes `text/plain`, which no preflight precedes.
+ */
+function serveDrop(drops: ReturnType<typeof makePersonaKelDropStore>, req: IncomingMessage, res: import("node:http").ServerResponse): void {
+  const silence = (): void => { res.socket?.destroy(); };
+  const match = DROP_PATH_RE.exec(new URL(req.url ?? "/", "http://localhost").pathname);
+  if (!match) { silence(); return; }
+  const name = match[1]!;
+  if (req.method === "GET") {
+    const held = drops.pull(name);
+    if (held.length === 0) { silence(); return; }
+    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*" });
+    res.end(JSON.stringify(held));
+    return;
+  }
+  if (req.method !== "POST") { silence(); return; }
+  const chunks: Buffer[] = [];
+  let size = 0;
+  req.on("data", (c: Buffer) => { size += c.length; if (size > DROP_BODY_CAP) { silence(); req.destroy(); } else chunks.push(c); });
+  req.on("end", () => {
+    if (size > DROP_BODY_CAP) return;
+    let raw: unknown;
+    try { raw = JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { silence(); return; }
+    if (!drops.deposit(name, raw)) { silence(); return; }
+    res.writeHead(204, { "access-control-allow-origin": "*" });
+    res.end();
+  });
+  req.on("error", silence);
 }
 
 /** An envelope this recipient should receive (addressed or broadcast, never self) — deliver-once on poll. */

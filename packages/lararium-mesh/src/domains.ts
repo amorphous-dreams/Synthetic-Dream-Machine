@@ -190,10 +190,10 @@ export const LEAF_SESSION_INFO = mint("leaf-session");
 /** The hello's HINT: an HMAC under the PersonaGroup secret over this name, the hello's nonce and its ephemeral
  *  key, so a sibling finds which of its secrets the other holds and a non-member forges no hint. */
 export const LEAF_PEER_HINT_INFO = mint("leaf-peer-hint");
-/** The CATCH-UP seal's HKDF `info`: a sibling ahead seals the persona-KEL suffix a stale sibling lacks, under the
- *  secret they share, so the herm carries the suffix without reading it. Apart from `leaf-peer-seal`: a suffix
- *  box must never open as a proof box. */
-export const LEAF_CATCH_UP_SEAL_INFO = mint("leaf-catch-up-seal");
+/** A persona-KEL SUCCESSOR DROP's name at one herm: a hash under this name over a KEL event's cid and the herm's
+ *  gate key. The drop holds the events whose predecessor is that cid, so a leaf behind its group's head names the
+ *  successors of the head it holds, and two herms see two names. */
+export const PERSONA_KEL_DROP_DOMAIN = mint("persona-kel-drop");
 /** The SIBLING CHANNEL's rendezvous tag: an HMAC under the PersonaGroup secret over this name and the herm's
  *  gate key, the opaque label its leaves join on that herm's relay. A non-member computes no tag, and two herms
  *  see two tags. The herm routes by it and reads no PersonaGroup from it. */

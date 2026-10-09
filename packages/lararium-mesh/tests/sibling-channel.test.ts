@@ -21,11 +21,17 @@
  *   · RED: a REPLAYED frame refuses the same way;
  *   · RED: a forged `here` against a standing session surfaces, never tearing down in silence;
  *   · RED: a frame stamped with the leaf's own key surfaces, never dropping in silence;
- *   · RED: a stale sibling (its KEL short of the rotation) catches up inside the seal and the pair stands;
- *   · RED: a leaf the rotation left out finds no seal addressed to it, stands revoked and says so; a later
- *     rotation that re-enrols it stands it again;
+ *   · RED: the last leaf to wake catches up from a drop, with no sibling online, and the pair stands;
+ *   · RED: a leaf the rotation left out finds no seal addressed to it, stands revoked and says so; re-enrolled by
+ *     a later rotation, the device catches up when it wakes and stands again;
+ *   · RED: a revoked leaf alone, on its old channel through an honest herm, sees no sibling at all;
  *   · RED: a KEL head that moves past a standing sibling's edge closes the session inside it and the pair proves
  *     again — a re-enrolled sibling stands with no refusal, a left-out one stands revoked and says so;
+ *   · RED: the leaf whose KEL moved deposits the move BEFORE it closes a session, so the sibling that hears the
+ *     close finds it waiting;
+ *   · RED: a herm that withholds a drop is tolerated through a second herm; a herm that strips or swaps a
+ *     successor is refused by the reader, said as `relay`;
+ *   · RED: a withheld veto of a provisional rotation never reads the leaf as revoked: it stands under the head;
  *   · RED: a leaf its own KEL revokes says goodbye inside each session, so no sibling stays half-open;
  *   · RED: a junk, stripped or forged event revokes no one: the leaf names the KEL `unreadable` and keeps (or
  *     stands under) the standing a verified KEL gives it; a leaf holding no seal stands `unsealed`.
@@ -40,10 +46,11 @@ import { SIBLING_CHANNEL_INFO, LEAF_PEER_SEAL_INFO } from "../src/domains.js";
 import { openFromSender } from "../src/sealed-box.js";
 import { personaGroupSecret } from "../src/persona-group-secret.js";
 import { startLeafPeerProof } from "../src/leaf-peer-proof.js";
-import { siblingChannelTag } from "../src/sibling-channel.js";
+import { siblingChannelTag, siblingKelDropsOf } from "../src/sibling-channel.js";
+import { personaKelDropName } from "../src/persona-kel-drop.js";
 import {
-  SEEDS, pubOf, didOf, founded, enrol, rotatedKeeping, rotatedTwice, leafUnder, memoryRelay, standLeaf, until, sleep, peersOf,
-  shutdown, carriedReads, type Leaf,
+  SEEDS, pubOf, didOf, founded, enrol, rotatedKeeping, rotatedTwice, provisionalKeeping, leafOf, memoryRelay, memoryDropHerm,
+  standLeaf, until, sleep, peersOf, shutdown, carriedReads, type Leaf,
 } from "./fixtures/sibling-fleet.js";
 
 const CONTENT = "the sealed sibling channel carries this line and the relay reads none of it";
@@ -59,8 +66,8 @@ async function pair() {
   const relay = memoryRelay();
   const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
   const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
-  const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay);
-  const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, [inception]), relay);
+  const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
+  const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
   await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "both siblings to stand as peers");
   return { relay, x, y, inception, ex, ey };
 }
@@ -148,13 +155,17 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     try {
       // The forger holds no secret, so it can only guess a hint. It also tries the one key it might hold: the
       // group's own public facts.
-      const { frame: hello, state } = startLeafPeerProof({ secrets: [{ opKeyDid: "0x00", secret: new Uint8Array(32).fill(7) }] });
+      const { frame: hello, state } = startLeafPeerProof({ secret: { opKeyDid: "0x00", secret: new Uint8Array(32).fill(7) } });
       const before = relay.log.length;
+      const sentBefore = relay.sent.length;
       relay.inject("00".repeat(32), x.self.deviceKey, { t: "proof", p: hello });
       await sleep(300);
       const toForger = relay.log.slice(before).filter((f) => f.to === "00".repeat(32));
       const boxes = toForger.filter((f) => f.frame.t === "proof" && "box" in f.frame.p);
       expect(boxes, "x sealed nothing to a forger").toEqual([]);
+      // x answers a hello it cannot match with nothing at all, and says so: no hello back, no `here`.
+      expect(relay.sent.slice(sentBefore).filter((f) => f.to === "00".repeat(32)), "x sent the forger nothing").toEqual([]);
+      expect(x.refusals).toEqual([expect.objectContaining({ suspect: "peer", peerKey: "00".repeat(32), reason: expect.stringMatching(/stands under/) })]);
       // Whatever x answered with, nothing opens under the forger's ephemeral key without the secret.
       for (const f of toForger) {
         if (f.frame.t !== "proof" || !("box" in f.frame.p)) continue;
@@ -172,8 +183,8 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const leaked = await enrol(SEEDS.opA, SEEDS.deviceZ, inception.prefix);          // the secret, sealed to Z
     const stranger = await enrol(SEEDS.stranger, SEEDS.deviceZ, inception.prefix);   // an edge no member root signed
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception]), relay);
-    const z = standLeaf(SEEDS.deviceZ, leaked, await leafUnder(SEEDS.deviceZ, leaked, [inception]), relay, { presents: stranger.edge });
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
+    const z = standLeaf(SEEDS.deviceZ, leaked, await leafOf(SEEDS.deviceZ, leaked, [inception]), relay, { presents: stranger.edge });
     try {
       await until(() => x.refusals.length > 0, "the impostor's refusal");
       expect(x.refusals[0]).toMatchObject({ suspect: "peer", peerKey: z.self.deviceKey, reason: expect.stringMatching(/not licensed by this PersonaGroup's KEL head/) });
@@ -186,8 +197,8 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     const relay = memoryRelay();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix, 1);
     const lapsed = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix, 0);
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception], 1), relay);
-    const y = standLeaf(SEEDS.deviceY, lapsed, await leafUnder(SEEDS.deviceY, lapsed, [inception], 0), relay);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception], 1), relay);
+    const y = standLeaf(SEEDS.deviceY, lapsed, await leafOf(SEEDS.deviceY, lapsed, [inception], 0), relay);
     try {
       await until(() => x.refusals.length > 0, "the lapsed lease's refusal");
       expect(x.refusals[0]).toMatchObject({ suspect: "peer", peerKey: y.self.deviceKey, reason: expect.stringMatching(/lease stale/) });
@@ -195,8 +206,8 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     } finally { await shutdown(x, y); }
     // CONTROL: the same lapsed edge stands beside a verifier that holds the epoch it was bound at.
     const relay2 = memoryRelay();
-    const x2 = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, [inception], 0), relay2);
-    const y2 = standLeaf(SEEDS.deviceY, lapsed, await leafUnder(SEEDS.deviceY, lapsed, [inception], 0), relay2);
+    const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception], 0), relay2);
+    const y2 = standLeaf(SEEDS.deviceY, lapsed, await leafOf(SEEDS.deviceY, lapsed, [inception], 0), relay2);
     try {
       await until(() => peersOf(x2).length === 1 && peersOf(y2).length === 1, "the pair at the held epoch");
     } finally { await shutdown(x2, y2); }
@@ -249,60 +260,112 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     } finally { await shutdown(x, y); }
   });
 
-  test("RED: a stale sibling catches up inside the seal — the pair stands and the stale leaf extends its KEL", async () => {
+  /** Wait until the relay's drops hold `cid` under its predecessor's name at both herms. */
+  async function deposited(relay: ReturnType<typeof memoryRelay>, event: { eventCid: string; prevEventCid: string | null }): Promise<void> {
+    await until(() => relay.stores.every((st) => st.pull(personaKelDropName(event.prevEventCid!, st.gatePubKey)).some((e) => e.eventCid === event.eventCid)), "the move deposited at both herms");
+  }
+
+  test("RED: the last leaf to wake catches up from a drop — no sibling online — and the pair stands under the head", async () => {
     const { inception } = await founded();
     const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
     const relay = memoryRelay();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, chain), relay);           // rotated
-    const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, [inception]), relay);     // stale
+    // x rotated and deposited, then went offline: no sibling holds a session when y wakes.
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    await deposited(relay, chain[1]!);
+    await shutdown(x);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);   // stale
     try {
-      await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the stale pair to stand");
-      expect(y.suffixes.flat().map((e) => e.eventCid)).toEqual([chain[1]!.eventCid]);
+      await until(() => y.adapter.kel.length === 2, "y to pull the rotation off a drop");
       expect(y.adapter.kel.map((e) => e.eventCid)).toEqual(chain.map((e) => e.eventCid));
-      const found = await syncOne(x, y, "across the rotation");
-      expect(found.doc()?.line).toBe("across the rotation");
-      expect([...x.refusals, ...y.refusals]).toEqual([]);
-      // The suffix crossed sealed: the herm read no event of it.
-      expect(carriedReads(relay.carried, chain[1]!.eventCid)).toBe(false);
-    } finally { await shutdown(x, y); }
+      expect(y.refusals).toEqual([]);
+      // x wakes again; the pair meets under the head and syncs.
+      const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+      try {
+        await until(() => peersOf(x2).length === 1 && peersOf(y).length === 1, "the pair under the head");
+        const found = await syncOne(x2, y, "across the rotation");
+        expect(found.doc()?.line).toBe("across the rotation");
+        expect([...x2.refusals, ...y.refusals]).toEqual([]);
+        // No KEL crossed the sibling channel: the relay carried no event of it.
+        expect(carriedReads(relay.carried, chain[1]!.eventCid)).toBe(false);
+      } finally { await shutdown(x2); }
+    } finally { await shutdown(y); }
+    // CONTROL: a leaf that pins no drop stays where it stood.
+    const relay2 = memoryRelay();
+    const lone = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay2, { drops: null });
+    try { await sleep(200); expect(lone.adapter.kel).toHaveLength(1); } finally { await shutdown(lone); }
   });
 
-  test("RED: a leaf the rotation left out finds no seal addressed to it, stands revoked and says so", async () => {
+  test("RED: a leaf the rotation left out finds no seal addressed to it, stands revoked, says so and meets no one", async () => {
     const { inception } = await founded();
     const chain = await rotatedKeeping([SEEDS.deviceX]);                                 // Z revoked
     const relay = memoryRelay();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ez = await enrol(SEEDS.opA, SEEDS.deviceZ, inception.prefix);
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, chain), relay);
-    const z = standLeaf(SEEDS.deviceZ, ez, await leafUnder(SEEDS.deviceZ, ez, [inception]), relay);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    await deposited(relay, chain[1]!);
+    const z = standLeaf(SEEDS.deviceZ, ez, await leafOf(SEEDS.deviceZ, ez, [inception]), relay);
     try {
       await until(() => z.refusals.some((r) => r.suspect === "self"), "the revoked leaf's own refusal");
       expect(z.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked", reason: expect.stringMatching(/left this device out/) });
       await sleep(200);
       expect(peersOf(x)).toEqual([]);
       expect(peersOf(z)).toEqual([]);
-      // CONTROL: the revoked leaf held the old secret, yet no proof box of x's opened for it — x sent catch-ups only.
-      const toZ = relay.log.filter((f) => f.to === z.self.deviceKey && f.frame.t === "proof");
-      expect(toZ.some((f) => f.frame.t === "proof" && f.frame.p.step === "answer")).toBe(false);
+      // No frame crossed between them in either direction: z left every channel.
+      expect(relay.log.filter((f) => f.to === z.self.deviceKey || f.from === z.self.deviceKey)).toEqual([]);
     } finally { await shutdown(x, z); }
   });
 
-  test("a leaf a later rotation re-enrols stands again — and meets its sibling under the newest secret", async () => {
+  test("RED: a revoked leaf alone, on its old channel through an honest herm, sees no sibling presence", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);                 // Z revoked
+    const relay = memoryRelay();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const ez = await enrol(SEEDS.opA, SEEDS.deviceZ, inception.prefix);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, chain), relay);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, chain), relay);
+    // z keeps the old secret and pulls nothing: it waits on the old rendezvous, as a revoked leaf acting alone would.
+    const z = standLeaf(SEEDS.deviceZ, ez, await leafOf(SEEDS.deviceZ, ez, [inception]), relay, { drops: null });
+    try {
+      await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the siblings under the head");
+      await sleep(300);
+      expect(relay.log.filter((f) => f.to === z.self.deviceKey), "no sibling's frame reached z").toEqual([]);
+      expect(relay.log.filter((f) => f.from === z.self.deviceKey), "z's here reached no sibling").toEqual([]);
+      expect(peersOf(z)).toEqual([]);
+    } finally { await shutdown(x, y, z); }
+    // CONTROL: before the rotation, the same three meet on one channel and z hears its siblings.
+    const relay2 = memoryRelay();
+    const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay2);
+    const z2 = standLeaf(SEEDS.deviceZ, ez, await leafOf(SEEDS.deviceZ, ez, [inception]), relay2, { drops: null });
+    try {
+      await until(() => peersOf(x2).length === 1 && peersOf(z2).length === 1, "the pre-rotation pair");
+      expect(relay2.log.some((f) => f.to === z2.self.deviceKey)).toBe(true);
+    } finally { await shutdown(x2, z2); }
+  });
+
+  test("RED: re-enrolled by a later rotation after its revocation, the device catches up when it wakes and stands again", async () => {
     const { inception } = await founded();
     const twice = await rotatedTwice([SEEDS.deviceX], [SEEDS.deviceX, SEEDS.deviceZ]);
     const relay = memoryRelay();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ez = await enrol(SEEDS.opA, SEEDS.deviceZ, inception.prefix);
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, twice), relay);
-    const z = standLeaf(SEEDS.deviceZ, ez, await leafUnder(SEEDS.deviceZ, ez, twice.slice(0, 2)), relay);   // revoked at opB
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, twice.slice(0, 2)), relay);
+    const z = standLeaf(SEEDS.deviceZ, ez, await leafOf(SEEDS.deviceZ, ez, twice.slice(0, 2)), relay);   // revoked at opB
     try {
       await until(() => z.refusals.some((r) => r.suspect === "self"), "the revoked leaf's own refusal");
       expect(peersOf(z)).toEqual([]);
-      await z.adapter.relicense(twice);                  // opC's rotation re-enrols z
-      await until(() => peersOf(x).length === 1 && peersOf(z).length === 1, "the re-enrolled pair to stand");
-    } finally { await shutdown(x, z); }
+      await x.adapter.relicense(twice);                  // opC's rotation re-enrols z, and x deposits it
+      await deposited(relay, twice[2]!);
+    } finally { await shutdown(z); }
+    // The device wakes: it pulls before it joins, opens opC's enrolment and meets x under the head.
+    const z2 = standLeaf(SEEDS.deviceZ, ez, await leafOf(SEEDS.deviceZ, ez, twice.slice(0, 2)), relay);
+    try {
+      await until(() => peersOf(x).length === 1 && peersOf(z2).length === 1, "the re-enrolled pair to stand");
+      expect(z2.adapter.kel.map((e) => e.eventCid)).toEqual(twice.map((e) => e.eventCid));
+      expect(z2.refusals.filter((r) => r.suspect === "self")).toEqual([]);
+    } finally { await shutdown(x, z2); }
   });
 
   test("RED: a KEL head that moves past a standing sibling's edge closes the session and the pair proves again — a sibling the head left out stands revoked", async () => {
@@ -312,7 +375,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
       await x.adapter.relicense([inception]);          // CONTROL: a head that still licenses moves nothing
       expect(peersOf(x).length).toBe(1);
       await x.adapter.relicense(await rotatedKeeping([SEEDS.deviceX]));
-      // y hears why inside the session, proves again, catches up — and finds no seal addressed to it.
+      // x deposits the move and closes the session inside it; y pulls the move off a drop — and finds no seal for it.
       await until(() => y.refusals.some((r) => r.suspect === "self"), "the left-out sibling to stand revoked");
       expect(y.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked" });
       await until(() => peersOf(x).length === 0 && peersOf(y).length === 0, "the pair to part");
@@ -341,6 +404,91 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
       expect(x.refusals[0]).toMatchObject({ suspect: "peer", peerKey: y.self.deviceKey, reason: expect.stringMatching(/its own KEL revoked it/) });
       expect(peersOf(y)).toEqual([]);
     } finally { await shutdown(x, y); }
+  });
+
+  test("RED: the leaf whose KEL moved deposits the move BEFORE it closes a session, and the sibling that hears the close catches up", async () => {
+    const { relay, x, y } = await pair();
+    try {
+      const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+      const mark = relay.timeline.length;
+      await x.adapter.relicense(chain);
+      const after = relay.timeline.slice(mark);
+      const deposit = after.indexOf(`deposit ${chain[1]!.eventCid}`);
+      const close = after.findIndex((t) => t.startsWith(`frame ${x.self.deviceKey.slice(0, 8)}>${y.self.deviceKey.slice(0, 8)} seal`));
+      expect(deposit, "x deposited the move").toBeGreaterThanOrEqual(0);
+      expect(close, "x closed its session with y").toBeGreaterThanOrEqual(0);
+      expect(deposit).toBeLessThan(close);
+      await until(() => y.adapter.kel.length === 2 && peersOf(x).length === 1 && peersOf(y).length === 1, "y to catch up off the drop and the pair to stand");
+      expect([...x.refusals, ...y.refusals]).toEqual([]);
+    } finally { await shutdown(x, y); }
+  });
+
+  test("RED: a herm that withholds a drop is tolerated through a second herm; CONTROL: two withholding herms leave the leaf where it stood", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    for (const withholding of [[true, false], [true, true]] as const) {
+      const relay = memoryRelay();
+      for (const store of relay.stores) for (const e of chain.slice(1)) store.deposit(personaKelDropName(e.prevEventCid!, store.gatePubKey), JSON.parse(JSON.stringify(e)));
+      const herms = relay.stores.map((store, i) => memoryDropHerm(store, relay.timeline, withholding[i] ? { serve: () => [] } : {}));
+      const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay, { drops: siblingKelDropsOf(herms) });
+      try {
+        await sleep(300);
+        expect(y.adapter.kel, `withholding ${withholding.join("/")}`).toHaveLength(withholding[1] ? 1 : 2);
+      } finally { await shutdown(y); }
+    }
+  });
+
+  test("RED: a herm that strips or swaps a successor is refused by the reader and said as `relay`; the honest herm's copy stands", async () => {
+    const { inception } = await founded();
+    const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const forged = await rotatedKeeping([SEEDS.deviceX]);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    const relay = memoryRelay();
+    for (const store of relay.stores) store.deposit(personaKelDropName(inception.eventCid, store.gatePubKey), JSON.parse(JSON.stringify(chain[1]!)));
+    const stripped = { ...chain[1]!, enrolments: [] };
+    const swapped = { ...forged[1]!, rotationSigs: [] };
+    const hostile = memoryDropHerm(relay.stores[0]!, relay.timeline, { serve: () => [stripped, swapped] });
+    const honest = memoryDropHerm(relay.stores[1]!, relay.timeline);
+    // Alone, the hostile herm extends nothing.
+    const alone = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay, { drops: siblingKelDropsOf([hostile]) });
+    try {
+      await until(() => alone.refusals.filter((r) => r.suspect === "relay").length >= 2, "both hostile values refused");
+      expect(alone.adapter.kel).toHaveLength(1);
+      for (const r of alone.refusals) expect(r).toMatchObject({ suspect: "relay", session: null, reason: expect.stringMatching(/does not verify/) });
+    } finally { await shutdown(alone); }
+    // Beside an honest herm, the honest copy stands and the hostile values still surface.
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay, { drops: siblingKelDropsOf([hostile, honest]) });
+    try {
+      await until(() => y.adapter.kel.length === 2, "the honest copy to stand");
+      expect(y.adapter.kel[1]!.eventCid).toBe(chain[1]!.eventCid);
+      expect(y.refusals.filter((r) => r.suspect === "relay").length).toBeGreaterThanOrEqual(2);
+      expect(y.refusals.filter((r) => r.suspect === "self")).toEqual([]);
+    } finally { await shutdown(y); }
+  });
+
+  test("RED: a withheld veto of a provisional rotation never reads the leaf as revoked — it stands under the head; the veto, folded, stands it too", async () => {
+    const { inception, provisional, veto } = await provisionalKeeping([SEEDS.deviceX, SEEDS.deviceY]);
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
+    // The herm served the provisional and withheld its veto: the leaves carry the provisional, which re-enrols them.
+    const relay = memoryRelay();
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception, provisional]), relay, { drops: null });
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception, provisional]), relay, { drops: null });
+    try {
+      await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair under the head the provisional leaves standing");
+      expect([...x.refusals, ...y.refusals].filter((r) => r.suspect === "self")).toEqual([]);
+    } finally { await shutdown(x, y); }
+    // CONTROL: the veto lands through a drop, the fold kills the provisional, and the pair stands under the head.
+    const relay2 = memoryRelay();
+    for (const store of relay2.stores) for (const e of [provisional, veto]) store.deposit(personaKelDropName(inception.eventCid, store.gatePubKey), JSON.parse(JSON.stringify(e)));
+    const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception, provisional]), relay2);
+    const y2 = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay2);
+    try {
+      await until(() => x2.adapter.kel.at(-1)?.eventCid === veto.eventCid && y2.adapter.kel.at(-1)?.eventCid === veto.eventCid, "both to fold the veto");
+      await until(() => peersOf(x2).length === 1 && peersOf(y2).length === 1, "the pair under the vetoed head");
+      expect([...x2.refusals, ...y2.refusals].filter((r) => r.suspect === "self")).toEqual([]);
+    } finally { await shutdown(x2, y2); }
   });
 
   test("RED: a junk event on the board revokes no one — the leaf names the KEL unreadable and keeps its standing", async () => {
@@ -386,8 +534,8 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     const relay = memoryRelay();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
-    const x = standLeaf(SEEDS.deviceX, ex, await leafUnder(SEEDS.deviceX, ex, tampered), relay);
-    const y = standLeaf(SEEDS.deviceY, ey, await leafUnder(SEEDS.deviceY, ey, tampered), relay);
+    const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, tampered), relay);
+    const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, tampered), relay);
     try {
       await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair under the verified prefix");
       for (const r of [...x.refusals, ...y.refusals]) expect(r).toMatchObject({ suspect: "self", cause: "unreadable" });
@@ -401,7 +549,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const sealedToAnother = await enrol(SEEDS.opA, SEEDS.deviceW, inception.prefix);
     const missing = { edge: ex.edge, seal: sealedToAnother.seal };
-    const x = standLeaf(SEEDS.deviceX, missing, await leafUnder(SEEDS.deviceX, missing, [inception]), relay);
+    const x = standLeaf(SEEDS.deviceX, missing, await leafOf(SEEDS.deviceX, missing, [inception]), relay);
     try {
       await until(() => x.refusals.length > 0, "the unsealed leaf's refusal");
       expect(x.refusals[0]).toMatchObject({ suspect: "self", cause: "unsealed" });

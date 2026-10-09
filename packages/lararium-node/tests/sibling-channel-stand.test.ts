@@ -1,14 +1,15 @@
 /**
  * sibling-channel-stand.test — `standSiblingChannel`, the ONE composition both vessel shores call, stood over a
- * real herm relay: it reads the face's persona-KEL off the vessel's own board, and the board's next event
- * re-licenses the standing sessions.
+ * real herm relay beside a second herm: it reads the face's persona-KEL off the vessel's own board, the board's next
+ * event re-licenses the standing sessions, and a pull off the herms' drops lands on that same board.
  *
  *   · CONTROL: two enrolled leaves of one PersonaGroup stand their channels through the relay and sync a doc;
- *   · RED: a rotation that lands on the board re-enrols this leaf and leaves the sibling out — the sibling leaves
- *     this leaf's peers and its refusal surfaces, never a silent drop;
+ *   · RED: a rotation that lands on one leaf's board re-enrols it and leaves the sibling out — the leaf deposits it
+ *     at both herms before it closes the session, the sibling pulls it onto its own board, leaves this leaf's peers
+ *     and its refusal surfaces, never a silent drop;
  *   · RED: the lease epoch the vessel holds reaches the proof — a sibling whose edge binds below it is refused
  *     as lapsed;
- *   · RED: a herm address with no pinned gate key throws at the stand, before any dial.
+ *   · RED: a herm address with no pinned gate key, or fewer than two herms, throws at the stand, before any dial.
  */
 import { afterEach, describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -49,8 +50,14 @@ async function kelOf(): Promise<{ inception: PersonaKelEvent; rotate: (keep: rea
 
 describe("standSiblingChannel — the one composition both shores call", () => {
   let relay: AuthenticatedMembershipRelay | undefined;
+  let second: AuthenticatedMembershipRelay | undefined;
   const repos: Repo[] = [];
-  afterEach(async () => { for (const r of repos.splice(0)) await r.shutdown(); await relay?.close(); relay = undefined; });
+  afterEach(async () => {
+    for (const r of repos.splice(0)) await r.shutdown();
+    await relay?.close(); relay = undefined;
+    await second?.close(); second = undefined;
+  });
+  const herms = (): string[] => [relay!, second!].map((r) => `ws://127.0.0.1:${r.port}#${r.gatePubKey}`);
 
   async function standLeaf(
     device: Uint8Array, inception: PersonaKelEvent, lease: { expectedEpoch?: number; boundEpoch?: number } = {},
@@ -62,7 +69,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     const key = await pubOf(device);
     const refusals: SiblingRefusal[] = [];
     await standSiblingChannel({
-      repo, hermAddress: `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`, nexusPubkey: NEXUS,
+      repo, herms: herms(), nexusPubkey: NEXUS,
       personaKelPrefix: inception.prefix, deviceKey: key, sign: ed25519SignerFromSeed(device),
       enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: lease.boundEpoch ?? 0 }),
       open: groupSecretOpenerFromSeed(device),
@@ -74,6 +81,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
 
   test("CONTROL, then RED: siblings sync; a rotation on the board that leaves a sibling out parts the pair, and the sibling says it stands revoked", async () => {
     relay = await startAuthenticatedMembershipRelay(seed(50), 0);
+    second = await startAuthenticatedMembershipRelay(seed(49), 0);
     const { inception, rotate } = await kelOf();
     const x = await standLeaf(seed(53), inception);
     const y = await standLeaf(seed(54), inception);
@@ -84,7 +92,8 @@ describe("standSiblingChannel — the one composition both shores call", () => {
 
     const rotation = await rotate([seed(53)]);                 // x re-enrolled, y left out
     x.board.change((d) => writePersonaKelEvent(d, rotation));
-    // x closes the session inside it; y proves again, catches up onto its own board, and finds no seal for it.
+    // x deposits the move at both herms and closes the session inside it; y pulls it onto its own board and finds
+    // no seal for it.
     for (let i = 0; i < 200 && !y.refusals.some((r) => r.suspect === "self"); i++) await sleep(20);
     expect(y.refusals.find((r) => r.suspect === "self")).toMatchObject({ cause: "revoked" });
     for (let i = 0; i < 200 && (x.repo.peers.length > 0 || y.repo.peers.length > 0); i++) await sleep(20);
@@ -94,6 +103,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
 
   test("RED: the held lease epoch reaches the proof — a sibling whose edge binds below it is refused as lapsed", async () => {
     relay = await startAuthenticatedMembershipRelay(seed(50), 0);
+    second = await startAuthenticatedMembershipRelay(seed(49), 0);
     const { inception } = await kelOf();
     const x = await standLeaf(seed(53), inception, { expectedEpoch: 1, boundEpoch: 1 });
     const y = await standLeaf(seed(54), inception, { expectedEpoch: 0, boundEpoch: 0 });
@@ -102,16 +112,20 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     expect(x.repo.peers).toEqual([]);
   }, 20_000);
 
-  test("RED: a herm address with no pinned gate key throws at the stand", async () => {
+  test("RED: a herm address with no pinned gate key, or fewer than two herms under distinct keys, throws at the stand", async () => {
     const repo = new Repo({ network: [], sharePolicy: async () => true });
     repos.push(repo);
     const { inception } = await kelOf();
     const key = await pubOf(seed(55));
-    await expect(standSiblingChannel({
-      repo, hermAddress: "ws://127.0.0.1:9", nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
+    const stand = async (herms: string[]) => standSiblingChannel({
+      repo, herms, nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
       deviceKey: key, sign: ed25519SignerFromSeed(seed(55)),
       enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 0 }),
       open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: 0,
-    })).rejects.toThrow(/gate key/);
+    });
+    const gate = (b: number) => b.toString(16).padStart(2, "0").repeat(32);
+    await expect(stand(["ws://127.0.0.1:9", `ws://127.0.0.1:10#${gate(1)}`])).rejects.toThrow(/gate key/);
+    await expect(stand([`ws://127.0.0.1:9#${gate(1)}`])).rejects.toThrow(/at least two herms/);
+    await expect(stand([`ws://127.0.0.1:9#${gate(1)}`, `ws://127.0.0.1:10#${gate(1)}`])).rejects.toThrow(/at least two herms/);
   });
 });

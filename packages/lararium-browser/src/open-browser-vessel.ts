@@ -187,14 +187,14 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   relayGatePubKey?: string;
   /**
-   * The pinned relay address of the HERM this vessel's PersonaGroup siblings meet through
-   * (`ws://host:port#<gate key hex>`) — leaf kind 3, a fleet in which no vessel listens
-   * (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel stands
-   * its sibling channel (`standSiblingChannel`, the one composition the node vessel calls too): siblings
-   * prove their device edges to each other through the herm and sync over the session the proof binds.
-   * ABSENT → no sibling channel stands.
+   * The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
+   * (`ws://host:port#<gate key hex>`, at least two under distinct gate keys) — leaf kind 3, a fleet in which no
+   * vessel listens (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel
+   * stands its sibling channel (`standSiblingChannel`, the one composition the node vessel calls too): siblings
+   * prove their device edges to each other through the first herm and sync over the session the proof binds,
+   * and every herm carries the KEL successor drops the leaf catches up from. ABSENT → no sibling channel stands.
    */
-  siblingHerm?: string;
+  siblingHerms?: readonly string[];
   /**
    * A `device-admit/v1` payload — this vessel JOINS an existing PersonaGroup instead of FOUNDING its
    * own. The founder's root signed it, so it is self-verifying and CARRIAGE-AGNOSTIC: it may arrive by
@@ -358,7 +358,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     genesisSeed,
     genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
-    meshLeaf, admit, walkInvite, siblingHerm,
+    meshLeaf, admit, walkInvite, siblingHerms,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
 
@@ -1033,9 +1033,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // its own PersonaGroup delegated — prove their edges to each other through the pinned herm against the
       // KEL chain the Binding Gate just walked, under the PersonaGroup secret the root sealed to this device at
       // enrolment and the lease epoch this vessel holds, and sync over the session that proof binds. The herm
-      // carries sealed frames and reads none. The seed stays in these closures.
+      // carries sealed frames and reads none; every pinned herm carries the KEL drops this leaf pulls before it
+      // joins. The seed stays in these closures.
       const siblingEdge = daemonAuth.deviceEdge;
-      if (siblingHerm && siblingEdge && siblingGate) {
+      if (siblingHerms && siblingHerms.length > 0 && siblingEdge && siblingGate) {
         const group = daemonAuth.personaGroupDocIdHex;
         const sealText = tiddlerText(bootDaemonDoc?.tiddlers?.[groupSecretSealTitle(group)]);
         let sealRaw: unknown = null;
@@ -1048,7 +1049,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
           const leaseSlots = Object.entries(bootDaemonDoc?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
-            repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix,
+            repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
             enrolment: { edge: siblingEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
             expectedEpoch: effectiveLeaseEpoch(leaseSlots),

@@ -1,24 +1,29 @@
 /**
  * sibling-fleet — one PersonaGroup's devices as the sibling tests stand them: a founded KEL, each device
  * enrolled (its edge and its sealed PersonaGroup secret), a rotation that re-enrols the devices it keeps in the
- * same attested act, an in-memory relay a test can turn hostile, and the CARRY instrument that reads every frame
- * DECODED — Automerge payloads included.
+ * same attested act, an in-memory relay that routes by channel tag as the herm's does (a test can turn it
+ * hostile) beside two in-memory herms' successor drops, and the CARRY instrument that reads every frame DECODED —
+ * Automerge payloads included.
  */
 import * as ed from "@noble/ed25519";
 import * as A from "@automerge/automerge";
 import { Repo, cbor, type PeerId } from "@automerge/automerge-repo";
 import { base64UrlDecode, hex, hexToBytes } from "../../src/crypto.js";
-import type { PersonaKelEvent } from "../../src/persona-kel.js";
+import { mintVeto, type PersonaKelEvent } from "../../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../src/recovery-keel-core.js";
 import { guardianRecoveryRegistrationCard } from "../../src/recovery-registration.js";
 import {
-  enrolDevice, rollEnrolments, leafStandingUnder, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
+  enrolDevice, rollEnrolments, leafStandingUnder, enrolmentUnderHead, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
 } from "../../src/persona-group-secret.js";
 import type { LeafPeerSelf } from "../../src/leaf-peer-proof.js";
 import { shareConfigOf } from "../../src/federation-gate.js";
 import {
-  SiblingNetworkAdapter, type SiblingTransport, type SiblingWireFrame, type SiblingRefusal,
+  SiblingNetworkAdapter, siblingChannelTag, siblingKelDropsOf,
+  type SiblingTransport, type SiblingWireFrame, type SiblingRefusal, type SiblingLeaf, type SiblingKelDrops,
 } from "../../src/sibling-channel.js";
+import {
+  makePersonaKelDropStore, localPersonaKelDropHerm, type PersonaKelDropHerm, type PersonaKelDropStore,
+} from "../../src/persona-kel-drop.js";
 
 export const SEEDS = {
   opA: new Uint8Array(32).fill(11), opB: new Uint8Array(32).fill(22), opC: new Uint8Array(32).fill(77), stranger: new Uint8Array(32).fill(9),
@@ -67,33 +72,94 @@ export async function rotatedTwice(first: readonly Uint8Array[], second: readonl
   return [...once, rot.event];
 }
 
-/** A leaf under a KEL: its standing read off its enrolment and every re-enrolment the KEL carries for it. */
+/** A PROVISIONAL rotation to opB re-enrolling `keep`, and the standing op-key's veto of it. The provisional
+ *  confers nothing until accepted; the veto, folded, kills it. */
+export async function provisionalKeeping(keep: readonly Uint8Array[]): Promise<{ inception: PersonaKelEvent; provisional: PersonaKelEvent; veto: PersonaKelEvent }> {
+  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
+  const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments, provisional: true });
+  if (!rot.ok) throw new Error(rot.reason);
+  const veto = await mintVeto({ contested: rot.event, standing: inception, sign: signerOf(SEEDS.opA) });
+  return { inception, provisional: rot.event, veto };
+}
+
+/** A leaf as the adapter reads it off a KEL: its key, signer and every enrolment it holds. */
+export async function leafOf(
+  device: Uint8Array, enrolment: PersonaGroupEnrolment, kel: readonly PersonaKelEvent[], expectedEpoch?: number,
+): Promise<SiblingLeaf> {
+  const deviceKey = await pubOf(device);
+  const standing = await leafStandingUnder({ kel, deviceKey, enrolment, open: groupSecretOpenerFromSeed(device) });
+  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch } : {}) };
+}
+
+/** A leaf as it proves under a KEL: the edge and secret its head op-key sealed to it. Throws for a leaf the head
+ *  holds no enrolment of. */
 export async function leafUnder(
   device: Uint8Array, enrolment: PersonaGroupEnrolment, kel: readonly PersonaKelEvent[], expectedEpoch?: number,
 ): Promise<LeafPeerSelf> {
-  const deviceKey = await pubOf(device);
-  const standing = await leafStandingUnder({ kel, deviceKey, enrolment, open: groupSecretOpenerFromSeed(device) });
+  const leaf = await leafOf(device, enrolment, kel, expectedEpoch);
+  const under = await enrolmentUnderHead(kel, leaf.standing);
+  if (!under) throw new Error("the KEL head holds no enrolment of this device");
   return {
-    deviceKey, sign: signerOf(device), edge: standing.edge, kel, secrets: standing.secrets,
+    deviceKey: leaf.deviceKey, sign: leaf.sign, edge: under.edge, kel, secret: { opKeyDid: under.opKeyDid, secret: under.secret },
     ...(expectedEpoch !== undefined ? { expectedEpoch } : {}),
   };
 }
 
+/** The gate keys the two in-memory herms' drops derive their names under. */
+export const DROP_GATES = ["a1".repeat(32), "b2".repeat(32)] as const;
+
+/** A drop herm a test can turn hostile: `serve` rewrites what a pull reads, `accept` decides what a deposit keeps. */
+export function memoryDropHerm(store: PersonaKelDropStore, timeline: string[], opts: {
+  serve?: (values: readonly unknown[]) => readonly unknown[];
+  accept?: boolean;
+} = {}): PersonaKelDropHerm {
+  const local = localPersonaKelDropHerm(store);
+  return {
+    gatePubKey: store.gatePubKey,
+    pull: async (name) => (opts.serve ?? ((v) => v))(await local.pull(name)),
+    deposit: async (name, event) => {
+      if (opts.accept === false) return;
+      timeline.push(`deposit ${event.eventCid}`);
+      await local.deposit(name, event);
+    },
+  };
+}
+
 /**
- * An in-memory relay: it stamps every frame with the key it "proved" for the sender and routes it to the
- * addressed key (or every other member). It keeps every frame it carried, as it carried it, and `inject` lets a
- * test stand a HOSTILE relay that injects, replays or forges.
+ * An in-memory relay that routes as the herm's does: a frame reaches a member that shares one of the sender's
+ * channels (the tag each joined secret keys), addressed or to every such member; a later join REPLACES a member's
+ * channels. It stamps every frame with the key it "proved" for the sender and keeps every frame it carried, as it
+ * carried it. `inject` stands a HOSTILE relay that injects, replays or forges past the routing. Two in-memory
+ * herms' drops stand beside it (`drops`), and `timeline` orders every deposit against every frame carried.
  */
 export function memoryRelay() {
-  const members = new Map<string, { frame: Set<(from: string, f: unknown) => void>; close: Set<() => void> }>();
+  const members = new Map<string, { frame: Set<(from: string, f: unknown) => void>; close: Set<() => void>; tags: Set<string> }>();
   const carried: string[] = [];
+  const timeline: string[] = [];
   const deliver = (from: string, to: string, frame: unknown): void => {
     const text = JSON.stringify(frame);
     carried.push(text);
     queueMicrotask(() => { for (const l of members.get(to)?.frame ?? []) l(from, JSON.parse(text)); });
   };
+  const share = (a: string, b: string): boolean => {
+    const mine = members.get(a)?.tags, theirs = members.get(b)?.tags;
+    if (!mine || !theirs) return false;
+    for (const t of mine) if (theirs.has(t)) return true;
+    return false;
+  };
+  const stores = DROP_GATES.map((gatePubKey) => makePersonaKelDropStore({ gatePubKey }));
   const relay = {
     carried,
+    timeline,
+    /** The two herms' drop stores. */
+    stores,
+    /** The two herms' drops, honest. */
+    drops: stores.map((s) => memoryDropHerm(s, timeline)) as PersonaKelDropHerm[],
+    /** Every frame a member handed the relay, carried or not, with its sender and its addressee (null: its channels). */
+    sent: [] as Array<{ from: string; to: string | null; frame: SiblingWireFrame }>,
     /** Every frame the relay carried, with its sender and its addressee. */
     log: [] as Array<{ from: string; to: string; frame: SiblingWireFrame }>,
     /** Every sealed frame the relay carried from `from` to `to`, as it carried it. */
@@ -101,14 +167,17 @@ export function memoryRelay() {
     inject(from: string, to: string, frame: unknown): void { deliver(from, to, frame); },
     transportFor(key: string): () => Promise<SiblingTransport> {
       return async () => {
-        const m = { frame: new Set<(from: string, f: unknown) => void>(), close: new Set<() => void>() };
+        const m = { frame: new Set<(from: string, f: unknown) => void>(), close: new Set<() => void>(), tags: new Set<string>() };
         members.set(key, m);
         return {
-          join: () => { /* one room: every member of this relay shares it */ },
+          join: (secrets) => { m.tags = new Set(secrets.map((s) => siblingChannelTag(s, "00".repeat(32)))); },
           send: (to, frame) => {
+            relay.sent.push({ from: key, to, frame });
             if (frame.t === "seal" && to) relay.sealedFrom.push({ from: key, to, frame });
             for (const target of to ? [to] : [...members.keys()].filter((k) => k !== key)) {
+              if (!share(key, target)) continue;
               relay.log.push({ from: key, to: target, frame });
+              timeline.push(`frame ${key.slice(0, 8)}>${target.slice(0, 8)} ${frame.t}`);
               deliver(key, target, frame);
             }
           },
@@ -122,32 +191,38 @@ export function memoryRelay() {
   return relay;
 }
 
-export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: LeafPeerSelf; suffixes: PersonaKelEvent[][] }
+export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: SiblingLeaf }
 
-/** Stand a leaf on the relay: a repo whose only network is the sibling channel, sharing every doc. */
+/** Stand a leaf on the relay: a repo whose only network is the sibling channel, sharing every doc, its drops the
+ *  relay's two herms unless a test hands its own. */
 export function standLeaf(
-  device: Uint8Array, enrolment: PersonaGroupEnrolment, self: LeafPeerSelf, relay: ReturnType<typeof memoryRelay>,
+  device: Uint8Array, enrolment: PersonaGroupEnrolment, self: SiblingLeaf, relay: ReturnType<typeof memoryRelay>,
   opts: {
     readonly sharePolicy?: (peerId: PeerId, documentId?: string) => Promise<boolean>;
     /** An edge the leaf presents whatever its KEL re-delegated — an impostor's. */
     readonly presents?: LeafPeerSelf["edge"];
+    /** The drops this leaf pins; null pins none. */
+    readonly drops?: SiblingKelDrops | null;
   } = {},
 ): Leaf {
   const sharePolicy = opts.sharePolicy ?? (async () => true);
   const refusals: SiblingRefusal[] = [];
-  const suffixes: PersonaKelEvent[][] = [];
+  const drops = opts.drops === undefined ? siblingKelDropsOf(relay.drops) : opts.drops;
   const adapter = new SiblingNetworkAdapter({
     transport: relay.transportFor(self.deviceKey),
     kel: self.kel,
-    leaf: async (kel) => ({ ...(await leafUnder(device, enrolment, kel, self.expectedEpoch)), ...(opts.presents ? { edge: opts.presents } : {}) }),
-    onKelSuffix: (events) => { suffixes.push([...events]); },
+    leaf: async (kel) => {
+      const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);
+      return opts.presents ? { ...leaf, standing: { held: leaf.standing.held.map((h) => ({ ...h, edge: opts.presents! })) } } : leaf;
+    },
+    ...(drops ? { drops } : {}),
     onRefusal: (r) => refusals.push(r),
   });
   // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a legacy `sharePolicy`
   // fills announce alone and leaves a request by id wide open.
   const repo = new Repo({ network: [adapter], shareConfig: shareConfigOf(async (peerId, documentId) => sharePolicy(peerId, documentId)) });
   adapter.bindRepo(repo);
-  return { repo, adapter, refusals, self, suffixes };
+  return { repo, adapter, refusals, self };
 }
 
 export async function until(cond: () => boolean, label: string, ms = 3000): Promise<void> {

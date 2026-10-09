@@ -302,12 +302,13 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   /** The DIALED peer's gate verifying-key hex — the gate-binding the outbound V3 proof commits to (out-of-band,
    *  NEVER trusted from the wire). REQUIRED alongside `joinSyncUrl`; absent → fail-closed to inert (no dial). */
   joinGatePubKey?: string;
-  /** The pinned relay address of the HERM this vessel's PersonaGroup siblings meet through
-   *  (`ws://host:port#<gate key hex>`) — a device of a fleet that reaches its siblings by dialing out
-   *  (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel stands its
-   *  sibling channel (`standSiblingChannel`, the one composition the browser vessel calls too). ABSENT (and
-   *  `LAR_SIBLING_HERM` unset) → no sibling channel stands. */
-  siblingHerm?: string;
+  /** The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
+   *  (`ws://host:port#<gate key hex>`, at least two under distinct gate keys) — a device of a fleet that reaches
+   *  its siblings by dialing out (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands
+   *  → the vessel stands its sibling channel (`standSiblingChannel`, the one composition the browser vessel calls
+   *  too) through the first, and pulls its KEL successor drops off every one. ABSENT (and `LAR_SIBLING_HERMS`, a
+   *  comma-separated list, unset) → no sibling channel stands. */
+  siblingHerms?: readonly string[];
   /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
    *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
   joinDocUrl?: string;
@@ -1675,10 +1676,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     // The ONE composition the browser vessel calls (`standSiblingChannel`): this face's siblings prove their
     // device edges to each other through the pinned herm against the KEL chain just walked, under the
     // PersonaGroup secret the root sealed to this device at enrolment and the lease epoch this vessel holds, and
-    // sync over the session that proof binds; the herm carries sealed frames and reads none. A face whose
-    // enrolment delivered no secret stands no channel, and says so. The seed stays in these closures.
-    const siblingHerm = opts.siblingHerm ?? process.env["LAR_SIBLING_HERM"] ?? null;
-    if (siblingHerm && personaGroupDocIdHex && personaKelPrefix && deviceEdge && siblingGate) {
+    // sync over the session that proof binds; the herm carries sealed frames and reads none, and every pinned herm
+    // carries the KEL drops this leaf pulls before it joins. A face whose enrolment delivered no secret stands no
+    // channel, and says so. The seed stays in these closures.
+    const siblingHerms = opts.siblingHerms
+      ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
+    if (siblingHerms.length > 0 && personaGroupDocIdHex && personaKelPrefix && deviceEdge && siblingGate) {
       const sealRecord = tiddlerText(daemonDoc?.tiddlers?.[groupSecretSealTitle(personaGroupDocIdHex)]);
       let sealRaw: unknown = null;
       try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
@@ -1692,7 +1695,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
           if (title.startsWith(leasePrefix)) leaseSlots.push(tiddlerText(rec));
         }
         siblings = await standSiblingChannel({
-          repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix,
+          repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
           deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
           enrolment: { edge: deviceEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
           expectedEpoch: effectiveLeaseEpoch(leaseSlots),

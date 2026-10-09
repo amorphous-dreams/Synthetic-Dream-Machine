@@ -125,6 +125,7 @@ export {
 export * from "./leaf-peer-proof.js";
 export * from "./sibling-channel.js";
 export * from "./persona-group-secret.js";
+export * from "./persona-kel-drop.js";
 export type { FederationGate, SiblingShare } from "./federation-gate.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, siblingShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
@@ -175,7 +176,7 @@ export {
 } from "./carriage-board.js";
 export {
   personaKelEventsFromBoard, personaKelChainsFromBoard, personaKelChainForPrefix,
-  writePersonaKelEvent, personaKelEntryKey, PERSONA_KEL_ENTRY_PREFIX,
+  writePersonaKelEvent, personaKelEntryKey, PERSONA_KEL_ENTRY_PREFIX, coercePersonaKelEvent,
 } from "./persona-kel-board.js";
 export * from "./mu-void.js";
 export * from "./nexus-seal-seed.js";

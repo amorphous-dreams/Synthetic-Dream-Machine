@@ -47,8 +47,8 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
     expect((await verifyPersonaKelFull(chain)).ok).toBe(true);
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, chain[0]!.prefix);
     const standing = await leafStandingUnder({ kel: chain, deviceKey: await keyOf(SEEDS.deviceY), enrolment: ey, open: groupSecretOpenerFromSeed(SEEDS.deviceY) });
-    expect(standing.secrets.at(-1)!.opKeyDid).toBe(await didOf(SEEDS.opB));
-    expect(standing.secrets.at(-1)!.secret).toEqual(personaGroupSecret(SEEDS.opB, chain[0]!.prefix));
+    expect(standing.held.at(-1)!.opKeyDid).toBe(await didOf(SEEDS.opB));
+    expect(standing.held.at(-1)!.secret).toEqual(personaGroupSecret(SEEDS.opB, chain[0]!.prefix));
   });
 
   test("RED: a STRIPPED enrolment breaks the walk — the device reads no revocation off the board's word", async () => {
@@ -157,8 +157,8 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
     expect(await enrolledEdgeOf(chain, open)).toBeNull();
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const standing = await leafStandingUnder({ kel: chain, deviceKey, enrolment: ex, open });
-    expect(standing.secrets.map((s) => s.opKeyDid)).toEqual([await didOf(SEEDS.opA)]);
-    expect(standing.edge).toEqual(ex.edge);
+    expect(standing.held.map((s) => s.opKeyDid)).toEqual([await didOf(SEEDS.opA)]);
+    expect(standing.held[0]!.edge).toEqual(ex.edge);
     // CONTROL: the lawful box for the same device delivers its edge and the next secret.
     const lawful = await rotatedKeeping([SEEDS.deviceX]);
     expect((await enrolledEdgeOf(lawful, open))?.personaRootDid).toBe(opKeyDid);

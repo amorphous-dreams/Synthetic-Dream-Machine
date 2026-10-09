@@ -4,22 +4,30 @@
  * THE THRESHOLD AND ITS TWO FACES. A herm's relay stands between the leaves, and each side of it keeps its own
  * face (`api/pono/system-pattern-integrities#/threshold-pattern-integrities`):
  *   · OUTWARD — the herm's face: CARRIAGE of sealed frames. A leaf dials the herm's relay through the knock its
- *     pinned gate key derives, proves its device key there (the one gate, the one wire), and joins the channels
- *     its PersonaGroup secrets key at THAT herm (`siblingChannelTag`). The herm routes frames between the keys it
- *     proved on a shared channel and reads none of them: proof frames carry sealed boxes, session frames carry
- *     ciphertext. A non-member — one holding the group's id and no secret — computes no tag and finds no channel.
+ *     pinned gate key derives, proves its device key there (the one gate, the one wire), and joins the ONE channel
+ *     its KEL head's secret keys at THAT herm (`siblingChannelTag`); a later join replaces it. The herm routes
+ *     frames between the keys it proved on a shared channel and reads none of them: proof frames carry sealed
+ *     boxes, session frames carry ciphertext. A non-member — one holding the group's id and no secret — computes
+ *     no tag and finds no channel, and a leaf the head revoked holds an older secret only, so its channel holds no
+ *     sibling that stands under the head.
  *   · INWARD — the siblings' face: the PROVEN SESSION. Two siblings run `leaf-peer-proof` end to end through the
  *     herm, and the proof binds a session (`LeafPeerSession`) that seals every later frame. Nothing the herm knows
  *     enters it: the herm's stamp of a sender key only has to AGREE with the proven edge, never stand in for it.
  * Nothing of the inward face rides the outward one: the herm holds no session key, no secret, no edge in the
  * clear — even when it acts, since a hello it forges draws no box — no PersonaGroup id, and no document byte.
  *
- * WHO STARTS AN EXCHANGE. A leaf that joins says `here` to its channels. A leaf that hears `here` from a key it
+ * WHO STARTS AN EXCHANGE. A leaf that joins says `here` to its channel. A leaf that hears `here` from a key it
  * holds no standing session with re-proves: the lower device key initiates, the higher answers `here` back to
- * it, so each pair runs one exchange. A sibling a rotation left behind meets a sibling ahead of it on the older
- * channel both still join, and the proof hands it the KEL suffix it lacks (`leaf-peer-proof`'s catch-up); the
- * stale leaf extends its KEL (`onKelSuffix`), opens the secret the rotation sealed to it and proves again. The
- * fleet never wedges on a rotation, and a leaf the rotation left out stands revoked and says so.
+ * it, so each pair runs one exchange. A hello whose hint names no secret this leaf stands under draws no box and
+ * surfaces as a refusal.
+ *
+ * CATCH-UP RIDES THE DROPS, NEVER A SIBLING (`persona-kel-drop`). Siblings meet only under one head, so no
+ * sibling ever hands another a KEL. Every leaf pulls the successors of its head from its pinned herms before it
+ * joins, on every dial and whenever a sibling closes a session because the head rolled, and re-deposits its own
+ * head chain on every dial. A leaf whose KEL moves deposits the new chain BEFORE it closes a session, so the
+ * sibling that hears the close finds the rotation waiting. The pull lands on the leaf's own board; a stale leaf
+ * opens the enrolment the rotation sealed to it and joins the new channel, and a leaf the rotation left out
+ * stands revoked, says so, leaves its channel and keeps pulling.
  *
  * AUTOMERGE RIDES ONLY THE SESSION. `SiblingNetworkAdapter` takes the automerge-repo `NetworkAdapter` shape. A
  * sibling becomes a peer (`peer-candidate`) only once its proof passed AND it named, inside the sealed session, the
@@ -32,15 +40,18 @@
  *
  * DIVERGENCE SURFACES, AND NAMES ITS SUSPECT. Every refusal reaches `onRefusal` (and every `onRefused` listener):
  *   · `peer` — the sibling's own proof failed: an impostor's edge, an edge the KEL head rolled past or the lease
- *     lapsed, a signature that does not hold, a sibling holding no secret in common;
+ *     lapsed, a signature that does not hold, a hello under a secret this leaf does not stand under;
  *   · `relay` — the herm's carriage disturbed a session: a frame that fails the session's key or chain, a `here`
  *     or hello arriving for a standing session, a frame stamped with this leaf's own key, a proof frame for no
- *     exchange. It names the session the relay disturbed, never the sibling as its author, and the leaf tells that
- *     sibling to re-prove, so both halves close and none stands half-open;
- *   · `self` — this leaf's own standing, by cause: `revoked` (the KEL verifies and its head's rotation carries no
- *     sealed enrolment for this device), `unreadable` (the KEL as handed does not verify, so it revokes nothing and
- *     the leaf keeps the standing it last read), `unsealed` (the leaf holds no secret at all). A revoked leaf says
- *     goodbye inside every session it held, so no sibling syncs on into a leaf that proves to no one;
+ *     exchange; or a herm's drop served a successor that does not verify (`session` null). It names the session the
+ *     relay disturbed, never the sibling as its author, and the leaf tells that sibling to re-prove, so both halves
+ *     close and none stands half-open;
+ *   · `self` — this leaf's own standing, by cause: `revoked` (the KEL verifies and the leaf holds no enrolment its
+ *     head op-key sealed), `unreadable` (the KEL as handed does not verify, so it revokes nothing and the leaf
+ *     keeps the standing it last read), `unsealed` (the leaf holds no secret at all). A leaf stands while it holds
+ *     the secret its head op-key sealed, whatever newer provisional rotation it also holds, so a withheld veto never
+ *     reads as a revocation. A revoked leaf says goodbye inside every session it held, so no sibling syncs on into
+ *     a leaf that proves to no one;
  *   · `route` — the repo routes a sibling's derived peer id through another adapter, so the sibling gets no route.
  * A lawful KEL move closes a session too, without blame: a sibling whose edge the head rolled past hears why inside
  * the session and the pair proves again under the head.
@@ -61,17 +72,22 @@ import { MEMBERSHIP_RELAY_DOMAIN, SIBLING_CHANNEL_INFO, SIBLING_PEER_ID_INFO } f
 import { runPeerHandshake, isLarSessionMsg, mkLarSessionMsg } from "./auth-wire.js";
 import { knockedUrl, pinnedRelayAddress } from "./gate-knock.js";
 import {
-  startLeafPeerProof, answerLeafPeerProof, finishLeafPeerProof, acceptLeafPeerProof, openLeafCatchUp, isLeafSessionFrame,
+  startLeafPeerProof, answerLeafPeerProof, finishLeafPeerProof, acceptLeafPeerProof, isLeafSessionFrame,
   type LeafPeerSelf, type LeafPeerState, type LeafPeerFrame, type LeafPeerSession, type LeafSessionFrame,
 } from "./leaf-peer-proof.js";
-import { headOpKey, verifyPersonaKelFull, type PersonaKelEvent } from "./persona-kel.js";
+import { longestVerifiedPersonaKel, verifyPersonaKelFull, type PersonaKelEvent } from "./persona-kel.js";
 import { personaKelChainForPrefix, writePersonaKelEvent } from "./persona-kel-board.js";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "./deterministic-doc.js";
-import { leafStandingUnder, type GroupSecretOpener, type PersonaGroupEnrolment } from "./persona-group-secret.js";
+import {
+  enrolmentUnderHead, leafStandingUnder, type GroupSecretOpener, type LeafStanding, type PersonaGroupEnrolment,
+} from "./persona-group-secret.js";
+import {
+  depositPersonaKelChain, httpPersonaKelDropHerm, pullPersonaKelSuccessors, type PersonaKelDropHerm, type PersonaKelPull,
+} from "./persona-kel-drop.js";
 
 const KEY_RE = /^[0-9a-f]{64}$/;
 
-/** The session kind a leaf joins its channels under. Body: `{ channels }` — a later join adds to the set. */
+/** The session kind a leaf joins its channel under. Body: `{ channels }` — a later join REPLACES the set. */
 export const SIBLING_JOIN_KIND = "sibling/join";
 /** The session kind a sibling frame rides. Leaf → herm: `{ to, frame }` (`to` null for every channel it joined).
  *  Herm → leaf: `{ from, frame }`, `from` STAMPED with the key the herm proved for the sender. */
@@ -95,7 +111,8 @@ export type SiblingWireFrame =
 /** The herm-facing half: channel joins, frames out to a proven key (or every joined channel), frames in stamped
  *  with the sender's proven key. The herm's relay stands behind it; a test may stand any relay it likes. */
 export interface SiblingTransport {
-  /** Join the channel each secret keys at this herm. A later call adds channels; it never leaves one. */
+  /** Join the channel each secret keys at this herm, leaving every channel joined before: the set REPLACES. An
+   *  empty list leaves them all. */
   join(secrets: readonly Uint8Array[]): void;
   send(to: string | null, frame: SiblingWireFrame): void;
   onFrame(listener: (from: string, frame: unknown) => void): () => void;
@@ -106,7 +123,7 @@ export interface SiblingTransport {
 
 /** Why a leaf stands with no standing of its own to prove under. */
 export type SiblingSelfCause =
-  /** The KEL verifies, and the rotation that seated its head carries no sealed enrolment for this device. */
+  /** The KEL verifies, and this device holds no enrolment its head op-key sealed. */
   | "revoked"
   /** The KEL as the board holds it does not verify — a torn, padded, stripped or unattested event. The leaf keeps
    *  the standing it last read off a KEL that verified, and revokes nothing on the board's word. */
@@ -226,16 +243,52 @@ interface SiblingSlot {
   peerId?: PeerId;
 }
 
+/** What the adapter reads a leaf off a KEL: its device key and signer, every enrolment it holds under that KEL, and
+ *  the lease epoch it holds. The adapter stands it under the enrolment the KEL's head op-key sealed. */
+export interface SiblingLeaf {
+  readonly deviceKey: string;
+  readonly sign: (bytes: Uint8Array) => Promise<string> | string;
+  readonly kel: readonly PersonaKelEvent[];
+  readonly standing: LeafStanding;
+  readonly expectedEpoch?: number;
+}
+
+/** A leaf's pinned herms' successor drops, as the adapter reaches them. */
+export interface SiblingKelDrops {
+  /** Pull the successors of `kel` off every pinned herm: the KEL to stand under, and every value refused. */
+  pull(kel: readonly PersonaKelEvent[]): Promise<PersonaKelPull>;
+  /** Deposit `kel`'s chain at every pinned herm. A herm may refuse; nothing waits on it beyond its answer. */
+  deposit(kel: readonly PersonaKelEvent[]): Promise<void>;
+}
+
+/**
+ * The drops of a leaf's pinned herms. `land` hears the events a pull added beyond `kel` — the caller writes them to
+ * its own board, the same board every other KEL move lands on.
+ */
+export function siblingKelDropsOf(herms: readonly PersonaKelDropHerm[], land?: (events: readonly PersonaKelEvent[]) => void): SiblingKelDrops {
+  return {
+    pull: async (kel) => {
+      const pulled = await pullPersonaKelSuccessors(kel, herms);
+      const held = new Set(kel.map((e) => e.eventCid));
+      const fresh = pulled.kel.filter((e) => !held.has(e.eventCid));
+      if (fresh.length > 0) { try { land?.(fresh); } catch { /* a board's write never blocks the pull */ } }
+      return pulled;
+    },
+    deposit: (kel) => depositPersonaKelChain(kel, herms),
+  };
+}
+
 export interface SiblingNetworkAdapterOptions {
   /** Stand the herm-facing transport. Called on connect and again after a drop. */
   readonly transport: () => Promise<SiblingTransport>;
-  /** This leaf under a KEL: its device key and signer, its newest edge, its secrets, the lease epoch it holds.
-   *  Read again whenever the KEL moves (`leafStandingUnder` composes it). */
-  readonly leaf: (kel: readonly PersonaKelEvent[]) => Promise<LeafPeerSelf>;
+  /** This leaf under a KEL: its device key and signer, its enrolments, the lease epoch it holds. Read again
+   *  whenever the KEL moves (`leafStandingUnder` composes it). */
+  readonly leaf: (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf>;
   /** The PersonaGroup's persona-KEL as this leaf carries it at the start. */
   readonly kel: readonly PersonaKelEvent[];
-  /** Hears the events a catch-up extended this leaf's KEL by — the caller lands them on its own board. */
-  readonly onKelSuffix?: (events: readonly PersonaKelEvent[]) => void;
+  /** The successor drops of this leaf's pinned herms. Absent, the leaf catches up only off what its caller hands
+   *  `relicense`. */
+  readonly drops?: SiblingKelDrops;
   /** Hears every refusal, as `onRefused` listeners do. */
   readonly onRefusal?: (refusal: SiblingRefusal) => void;
   /** Delay before re-dialing a dropped herm. Paces a socket; decides nothing. */
@@ -270,11 +323,16 @@ export interface SiblingRepoRoutes {
 export class SiblingNetworkAdapter extends NetworkAdapter {
   readonly #opts: SiblingNetworkAdapterOptions;
   #kel: readonly PersonaKelEvent[];
+  /** The leaf as its KEL last read it: its key, signer and enrolments. */
+  #leaf: SiblingLeaf | null = null;
+  /** The leaf as it proves: the edge and secret its KEL head sealed to it. Null while it stands under none. */
   #self: LeafPeerSelf | null = null;
-  /** True while the KEL this leaf carries leaves it no secret under the head: it proves to no one. */
+  /** True while the KEL this leaf carries leaves it no enrolment under the head: it proves to no one. */
   #revoked = false;
   /** The last KEL this leaf read as unreadable, by its event cids — one board state surfaces once. */
   #unreadableSeen: string | null = null;
+  /** Every drop refusal already said — one refused value surfaces once. */
+  readonly #dropRefusalsSeen = new Set<string>();
   #transport: SiblingTransport | null = null;
   #unsubs: Array<() => void> = [];
   readonly #siblings = new Map<string, SiblingSlot>();
@@ -291,6 +349,8 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   readonly #refusalListeners = new Set<(refusal: SiblingRefusal) => void>();
   /** Frames judge one at a time, in arrival order: a proof's verdict lands before the next frame reads it. */
   #inbound: Promise<void> = Promise.resolve();
+  /** KEL moves judge one at a time, in arrival order: a standing read lands before the next one reads it. */
+  #licensing: Promise<void> = Promise.resolve();
 
   constructor(opts: SiblingNetworkAdapterOptions) {
     super();
@@ -315,7 +375,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     return this.#keyOfPeer.get(peerId) ?? null;
   }
 
-  /** The KEL this leaf carries, as its last catch-up or board move left it. */
+  /** The KEL this leaf carries, as its last pull or board move left it. */
   get kel(): readonly PersonaKelEvent[] { return this.#kel; }
 
   /**
@@ -359,71 +419,122 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 
   /**
-   * Stand this leaf again under a KEL it now carries: re-read its secrets and newest edge, join any channel a new
-   * secret keys, and re-judge every standing session. A session whose sibling proved with an edge the moved head
-   * rolled past closes, the sibling hears why inside it, and the pair proves again under the head — where the
-   * head re-enrolled that sibling the fresh proof stands, and where it revoked it the sibling says so itself.
+   * Stand this leaf again under a KEL it now carries. A KEL that moved is deposited at every pinned herm FIRST, so
+   * a sibling that hears the close finds the move waiting. Then every standing session is judged under the head:
+   * one whose sibling proved with an edge the head rolled past closes, the sibling hears why inside it while both
+   * still share the old channel, and only then does this leaf join the head's channel and say `here` — where the
+   * head re-enrolled that sibling it catches up and they prove again, and where it revoked it the sibling says so
+   * itself. Moves judge one at a time, in arrival order.
    */
-  async relicense(kel: readonly PersonaKelEvent[]): Promise<void> {
-    if (!(await this.#stand(kel))) return;
-    const self = this.#self;
-    if (!self || this.#revoked) return;
+  relicense(kel: readonly PersonaKelEvent[]): Promise<void> {
+    const next = this.#licensing.then(() => this.#relicense(kel));
+    this.#licensing = next.catch(() => { /* a standing read that threw keeps the standing before it */ });
+    return next;
+  }
+
+  async #relicense(offered: readonly PersonaKelEvent[]): Promise<void> {
+    const kel = await this.#readable(offered);
+    if (!kel) return;
+    const moved = this.#leaf !== null && chainKey(kel) !== chainKey(this.#kel);
+    if (moved) await this.#opts.drops?.deposit(kel).catch(() => { /* a herm may refuse: withholding */ });
+    const leaf = await this.#opts.leaf(kel);
+    const under = await enrolmentUnderHead(kel, leaf.standing);
+    const before = this.#self?.secret.opKeyDid ?? null;
+    const wasRevoked = this.#revoked;
+    this.#kel = kel;
+    this.#leaf = leaf;
+    if (!under) {
+      this.#self = null;
+      if (!this.#revoked) {
+        this.#revoked = true;
+        this.#surface(leaf.standing.held.length === 0
+          ? { suspect: "self", cause: "unsealed", reason: "this leaf holds no PersonaGroup secret sealed to it under any op-key its KEL seats — its enrolment seal is missing" }
+          : { suspect: "self", cause: "revoked", reason: "this leaf holds no enrolment its KEL head sealed — the rotation that seated the head left this device out" });
+        // GOODBYE: every sibling hears it inside its session, so none syncs on into a leaf that proves to no one.
+        for (const [key, slot] of [...this.#siblings]) {
+          if (slot.session) this.#close(key, slot.session, "revoked");
+          else this.#leave(key);
+        }
+      }
+      // A revoked leaf leaves every channel and keeps pulling: a later rotation may enrol it again.
+      this.#transport?.join([]);
+      return;
+    }
+    const self: LeafPeerSelf = {
+      deviceKey: leaf.deviceKey.toLowerCase(), sign: leaf.sign, edge: under.edge, kel,
+      secret: { opKeyDid: under.opKeyDid, secret: under.secret },
+      ...(leaf.expectedEpoch !== undefined ? { expectedEpoch: leaf.expectedEpoch } : {}),
+    };
+    this.#self = self;
+    this.#revoked = false;
+    const rolled: string[] = [];
     for (const [key, slot] of [...this.#siblings]) {
       const session = slot.session;
       if (!session) continue;
-      const verdict = await session.relicense(this.#kel, self.expectedEpoch);
+      const verdict = await session.relicense(kel, self.expectedEpoch);
       if (verdict.ok || this.#siblings.get(key)?.session !== session) continue;
       this.#close(key, session, "rolled");
-      if (self.deviceKey.toLowerCase() < key) this.#hello(key);
+      rolled.push(key);
     }
+    if (wasRevoked || before === null || before.toLowerCase() !== under.opKeyDid.toLowerCase()) {
+      // A new head's secret keys a new channel: join it alone and say `here` there.
+      this.#transport?.join([under.secret]);
+      this.#transport?.send(null, { t: "here" });
+      return;
+    }
+    for (const key of rolled) if (self.deviceKey < key) this.#hello(key);
   }
 
   /**
-   * Read this leaf's standing under `kel`. Returns false when the leaf stands as it stood: the KEL did not verify
-   * and a standing read off one that did holds. A KEL that does not verify revokes nothing: the leaf surfaces it as
-   * `unreadable` once per board state and keeps its standing, or — holding none yet — stands under the longest
-   * prefix that verifies. A KEL that verifies and leaves the leaf no secret under its head surfaces as `revoked`
-   * (or `unsealed`, when the leaf holds no secret at all); the leaf says goodbye inside every session it holds.
+   * The KEL as this leaf may read it, or null when it stands as it stood. A KEL that does not verify revokes
+   * nothing: the leaf surfaces it as `unreadable` once per board state and keeps its standing, or — holding none
+   * yet — reads the longest prefix that verifies.
    */
-  async #stand(offered: readonly PersonaKelEvent[]): Promise<boolean> {
-    let kel = offered;
-    const verified = await verifyPersonaKelFull(kel);
-    if (!verified.ok) {
-      const seen = kel.map((e) => e.eventCid).join(",");
-      if (this.#unreadableSeen !== seen) {
-        this.#unreadableSeen = seen;
-        this.#surface({ suspect: "self", cause: "unreadable", reason: `the KEL this leaf was handed does not verify: ${verified.reason ?? "refused"} — the leaf keeps the standing it last read` });
-      }
-      if (this.#self) return false;
-      kel = await longestVerifiedPrefix(kel);
+  async #readable(offered: readonly PersonaKelEvent[]): Promise<readonly PersonaKelEvent[] | null> {
+    const verified = await verifyPersonaKelFull(offered);
+    if (verified.ok) return offered;
+    const seen = chainKey(offered);
+    if (this.#unreadableSeen !== seen) {
+      this.#unreadableSeen = seen;
+      this.#surface({ suspect: "self", cause: "unreadable", reason: `the KEL this leaf was handed does not verify: ${verified.reason ?? "refused"} — the leaf keeps the standing it last read` });
     }
-    this.#kel = kel;
-    const self = await this.#opts.leaf(kel);
-    this.#self = self;
-    const head = await headOpKey(kel, { verifyQuorums: true });
-    const newest = self.secrets[self.secrets.length - 1];
-    const standing = head !== null && newest !== undefined && newest.opKeyDid.toLowerCase() === head.toLowerCase();
-    if (!standing && !this.#revoked) {
-      this.#revoked = true;
-      this.#surface(self.secrets.length === 0
-        ? { suspect: "self", cause: "unsealed", reason: "this leaf holds no PersonaGroup secret sealed to it under any op-key its KEL seats — its enrolment seal is missing" }
-        : { suspect: "self", cause: "revoked", reason: "this leaf holds no PersonaGroup secret under its KEL head — the rotation that seated the head left this device out" });
-      // GOODBYE: every sibling hears it inside its session, so none syncs on into a leaf that proves to no one.
-      for (const [key, slot] of [...this.#siblings]) {
-        if (slot.session) this.#close(key, slot.session, "revoked");
-        else this.#leave(key);
-      }
+    if (this.#leaf) return null;
+    return longestVerifiedPersonaKel(offered);
+  }
+
+  /** Pull the successors of `kel`'s head off this leaf's pinned herms and say every value refused: the KEL the
+   *  pull folds, or null when the leaf pins no drop or the pull failed. */
+  async #pull(kel: readonly PersonaKelEvent[]): Promise<readonly PersonaKelEvent[] | null> {
+    const drops = this.#opts.drops;
+    if (!drops) return null;
+    let pulled: PersonaKelPull;
+    try { pulled = await drops.pull(kel); } catch { return null; }
+    for (const reason of pulled.refused) {
+      if (this.#dropRefusalsSeen.has(reason)) continue;
+      this.#dropRefusalsSeen.add(reason);
+      this.#surface({ suspect: "relay", session: null, reason: `a herm's drop refused: ${reason}` });
     }
-    if (!standing) return true;
-    this.#transport?.join(self.secrets.map((s) => s.secret));
-    // A later rotation that re-enrols this device stands it again: it says `here` to its channels once more.
-    if (this.#revoked) { this.#revoked = false; this.#transport?.send(null, { t: "here" }); }
-    return true;
+    return pulled.kel;
+  }
+
+  /** Pull the successors of this leaf's head, and stand under the KEL the pull folds when it moved. */
+  async #catchUp(): Promise<void> {
+    await this.#licensing;
+    const kel = await this.#pull(this.#kel);
+    if (kel && chainKey(kel) !== chainKey(this.#kel)) await this.relicense(kel);
   }
 
   async #dial(): Promise<void> {
     if (this.#stopped || this.#transport) return;
-    if (!this.#self) await this.#stand(this.#kel);
+    // EVERY LEAF PULLS BEFORE IT JOINS, on every dial — a waking leaf before it first reads its own standing — and
+    // re-deposits its own head chain.
+    if (!this.#leaf) {
+      const base = (await this.#readable(this.#kel)) ?? this.#kel;
+      await this.relicense((await this.#pull(base)) ?? base);
+    } else {
+      await this.#catchUp();
+    }
+    await this.#opts.drops?.deposit(this.#kel).catch(() => { /* a herm may refuse: withholding */ });
     let transport: SiblingTransport;
     try {
       transport = await this.#opts.transport();
@@ -447,7 +558,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     ];
     this.#markReady();
     if (this.#revoked || !this.#self) return;
-    transport.join(this.#self.secrets.map((s) => s.secret));
+    transport.join([this.#self.secret.secret]);
     transport.send(null, { t: "here" });
   }
 
@@ -539,7 +650,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     this.#transport?.send(key, { t: "seal", s: frame });
   }
 
-  /** Open an exchange with `key` as its initiator, under this leaf's newest secret. */
+  /** Open an exchange with `key` as its initiator, under the secret this leaf's KEL head sealed to it. */
   #hello(key: string): void {
     const self = this.#self;
     if (!self || this.#revoked) return;
@@ -549,10 +660,10 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 
   async #onFrame(from: string, raw: unknown): Promise<void> {
-    const self = this.#self;
+    const deviceKey = this.#leaf?.deviceKey.toLowerCase();
     const transport = this.#transport;
-    if (!self || !transport) return;
-    if (from === self.deviceKey.toLowerCase()) {
+    if (!deviceKey || !transport) return;
+    if (from === deviceKey) {
       this.#refuseRelay(null, "the herm carried a frame stamped with this leaf's own key back to it", false);
       return;
     }
@@ -565,7 +676,8 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
       if (!opened?.ok) { this.#closing.delete(from); this.#refuseRelay(from, "a sealed frame arrived under a session this leaf closed, and it never sealed there", false); }
       return;
     }
-    if (this.#revoked) return;
+    const self = this.#self;
+    if (this.#revoked || !self) return;
     const slot = this.#siblings.get(from);
 
     if (frame.t === "here") {
@@ -574,7 +686,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
       // initiates, the higher says `here` back so the lower one does. An exchange already in flight answers it.
       if (slot?.session) this.#refuseRelay(from, "a here arrived for a standing session — the sibling rejoined or the herm forged it; the pair proves again", false);
       else if (slot?.proving?.role === "initiator") return;
-      if (self.deviceKey.toLowerCase() < from) this.#hello(from);
+      if (self.deviceKey < from) this.#hello(from);
       else transport.send(from, { t: "here" });
       return;
     }
@@ -586,16 +698,9 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
         const answered = await answerLeafPeerProof(self, p);
         if (answered.kind === "malformed") { this.#refuseRelay(from, `a malformed hello: ${answered.reason}`, false); return; }
         if (answered.kind === "unmatched") {
-          // No secret this leaf holds keyed that hint. A sibling AHEAD of this leaf holds newer secrets only it
-          // knows, so this leaf says hello under its own and lets the sibling hand it the catch-up. When this
-          // leaf's own hello already drew an unmatched hello back, the two hold no secret in common.
-          if (slot?.proving?.role === "initiator") { this.#refusePeer(from, "the sibling holds no PersonaGroup secret this leaf holds, nor this leaf one it holds"); return; }
-          this.#hello(from);
-          return;
-        }
-        if (answered.kind === "catch-up") {
-          this.#siblings.delete(from);
-          transport.send(from, { t: "proof", p: answered.frame });
+          // No box: the hint names no secret this leaf stands under. The sender stands under another head, holds
+          // no secret of this group, or the herm carried a hello from outside this channel.
+          this.#refusePeer(from, "the hello names no PersonaGroup secret this leaf stands under — the sender stands under another KEL head, or holds none");
           return;
         }
         this.#siblings.set(from, { proving: { role: "responder", state: answered.state } });
@@ -603,20 +708,6 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
         return;
       }
       if (!slot?.proving) { this.#refuseRelay(from, `a ${String(p.step)} arrived for no exchange this leaf opened`, false); return; }
-      if (p.step === "catch-up" && slot.proving.role === "initiator") {
-        const caught = await openLeafCatchUp(self, slot.proving.state, p);
-        if (!caught.ok) {
-          if (caught.reason.includes("does not open")) this.#refuseRelay(from, caught.reason, false);
-          else this.#refusePeer(from, caught.reason);
-          return;
-        }
-        const before = new Set(this.#kel.map((e) => e.eventCid));
-        const fresh = caught.kel.filter((e) => !before.has(e.eventCid));
-        try { this.#opts.onKelSuffix?.(fresh); } catch { /* the board's write never blocks the catch-up */ }
-        await this.relicense(caught.kel);
-        if (!this.#revoked) this.#hello(from);
-        return;
-      }
       if (p.step === "answer" && slot.proving.role === "initiator") {
         const { verdict, frame: finish } = await finishLeafPeerProof(self, slot.proving.state, p, from);
         if (!verdict.ok) { this.#refusePeer(from, verdict.reason); return; }
@@ -645,7 +736,9 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
         // The sibling closed its half and said why, inside the session the herm cannot speak in.
         this.#leave(from);
         this.#closing.set(from, session);
-        if (body.why === "rolled") { if (self.deviceKey.toLowerCase() < from) this.#hello(from); return; }
+        // The head rolled: the sibling deposited the move before it closed, so this leaf pulls it now. Where the
+        // move re-enrolled this leaf it joins the head's channel and says `here` there, and the pair proves again.
+        if (body.why === "rolled") { void this.#catchUp(); return; }
         this.#surface({ suspect: "peer", peerKey: from, reason: body.why === "revoked"
           ? "the sibling closed its session: its own KEL revoked it"
           : "the sibling closed its session: its repo routes this leaf's peer id through another adapter" });
@@ -686,13 +779,9 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 }
 
-/** The longest prefix of `kel` that verifies in full, or the empty chain. */
-async function longestVerifiedPrefix(kel: readonly PersonaKelEvent[]): Promise<readonly PersonaKelEvent[]> {
-  for (let n = kel.length - 1; n > 0; n--) {
-    const prefix = kel.slice(0, n);
-    if ((await verifyPersonaKelFull(prefix)).ok) return prefix;
-  }
-  return [];
+/** A chain's identity, by its event cids in order — two reads of one KEL compare equal. */
+function chainKey(kel: readonly PersonaKelEvent[]): string {
+  return kel.map((e) => e.eventCid).join(",");
 }
 
 /**
@@ -701,10 +790,11 @@ async function longestVerifiedPrefix(kel: readonly PersonaKelEvent[]): Promise<r
  *
  * It reads the face's persona-KEL off the vessel's own per-Nexus board, stands this leaf under it — the enrolment
  * it was handed, every re-enrolment the KEL's rotations carry, the lease epoch the vessel holds — and adds the
- * adapter over a dial to the pinned herm to the repo. A catch-up's suffix lands on the same board, and the board's
- * every change stands the leaf again, so a sibling whose edge the moved head rolled past leaves the repo with its
- * refusal said. A malformed herm address throws here, at boot: a vessel told to meet its siblings through a herm
- * it cannot pin has been told nothing it can do.
+ * adapter over a dial to the first pinned herm to the repo. Every pinned herm carries the leaf's successor drops:
+ * a pull lands on the same board, and the board's every change stands the leaf again, so a sibling whose edge the
+ * moved head rolled past leaves the repo with its refusal said. A vessel pins at least two herms, so one herm that
+ * withholds a drop is tolerated through another. A malformed herm address, or fewer than two herms, throws here, at
+ * boot: a vessel told to meet its siblings through herms it cannot pin has been told nothing it can do.
  *
  * A peer this channel yields is a device of THIS vessel's own PersonaGroup, proven over the session. It holds
  * STANDING and nothing more: the vessel's share policy hands it to the PersonaGroup ring, which admits it to its
@@ -712,8 +802,9 @@ async function longestVerifiedPrefix(kel: readonly PersonaKelEvent[]): Promise<r
  */
 export async function standSiblingChannel(opts: {
   readonly repo: Repo;
-  /** The herm's pinned relay address, `ws://host:port#<gate key hex>`. */
-  readonly hermAddress: string;
+  /** The herms' pinned relay addresses, `ws://host:port#<gate key hex>`, at least two under distinct gate keys.
+   *  The channel dials the first; every one carries the drops. */
+  readonly herms: readonly string[];
   /** The island whose persona-KEL board this vessel reads. */
   readonly nexusPubkey: string;
   readonly personaKelPrefix: string;
@@ -728,18 +819,21 @@ export async function standSiblingChannel(opts: {
   readonly expectedEpoch: number;
   readonly onRefusal?: (refusal: SiblingRefusal) => void;
 }): Promise<SiblingNetworkAdapter> {
-  pinnedRelayAddress(opts.hermAddress);
+  const drops = opts.herms.map((address) => httpPersonaKelDropHerm(address));
+  if (new Set(drops.map((d) => d.gatePubKey)).size < 2) {
+    throw new Error("a sibling channel pins at least two herms under distinct gate keys, so one herm that withholds a drop is tolerated through another");
+  }
   const board = await materializeSharedLarDoc(opts.repo, personaKelBoardDocUrl(opts.nexusPubkey), "board:persona-kel");
   const chainNow = (): readonly PersonaKelEvent[] => personaKelChainForPrefix(board.doc(), opts.personaKelPrefix) ?? [];
   const deviceKey = opts.deviceKey.toLowerCase();
   const adapter = new SiblingNetworkAdapter({
     kel: chainNow(),
-    leaf: async (kel) => {
-      const standing = await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open });
-      return { deviceKey, sign: opts.sign, edge: standing.edge, kel, secrets: standing.secrets, expectedEpoch: opts.expectedEpoch };
-    },
-    transport: () => dialSiblingHerm({ address: opts.hermAddress, deviceKey, sign: opts.sign }),
-    onKelSuffix: (events) => { board.change((draft) => { for (const e of events) writePersonaKelEvent(draft, e); }); },
+    leaf: async (kel) => ({
+      deviceKey, sign: opts.sign, kel, expectedEpoch: opts.expectedEpoch,
+      standing: await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open }),
+    }),
+    transport: () => dialSiblingHerm({ address: opts.herms[0]!, deviceKey, sign: opts.sign }),
+    drops: siblingKelDropsOf(drops, (events) => { board.change((draft) => { for (const e of events) writePersonaKelEvent(draft, e); }); }),
     ...(opts.onRefusal ? { onRefusal: opts.onRefusal } : {}),
   });
   board.on("change", () => { void adapter.relicense(chainNow()); });

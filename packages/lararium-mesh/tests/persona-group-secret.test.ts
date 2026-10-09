@@ -18,7 +18,7 @@ import { canonicalJsonBytes } from "../src/crypto.js";
 import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-kel-board.js";
 import {
   personaGroupSecret, sealGroupSecret, verifyGroupSecretSeal, groupSecretOpenerFromSeed, rollEnrolments,
-  leafStandingUnder, enrolledEdgeOf,
+  leafStandingUnder, enrolledEdgeOf, enrolmentUnderHead,
 } from "../src/persona-group-secret.js";
 import { verifyPersonaKel } from "../src/persona-kel.js";
 import { attestAndRotate } from "../src/recovery-keel-core.js";
@@ -80,19 +80,22 @@ describe("persona-group-secret — delivered at enrolment, rolled with the op-ke
     expect(right.ok && right.event.enrolments).toHaveLength(1);
   });
 
-  test("a device's standing reads every secret its enrolments deliver, oldest first, and the newest edge", async () => {
+  test("a device's standing reads every enrolment it holds, oldest first, each the secret and edge its op-key sealed", async () => {
     const { inception } = await founded();
     const chain = await rotatedKeeping([SEEDS.deviceX]);
     const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
     const standing = await leafStandingUnder({ kel: chain, deviceKey: await pubOf(SEEDS.deviceX), enrolment: ex, open: groupSecretOpenerFromSeed(SEEDS.deviceX) });
-    expect(standing.secrets.map((s) => s.opKeyDid)).toEqual([await didOf(SEEDS.opA), await didOf(SEEDS.opB)]);
-    expect(standing.secrets[1]!.secret).toEqual(personaGroupSecret(SEEDS.opB, inception.prefix));
-    expect(standing.edge.personaRootDid).toBe(await didOf(SEEDS.opB));
+    expect(standing.held.map((s) => s.opKeyDid)).toEqual([await didOf(SEEDS.opA), await didOf(SEEDS.opB)]);
+    expect(standing.held[1]!.secret).toEqual(personaGroupSecret(SEEDS.opB, inception.prefix));
+    expect(standing.held.at(-1)!.edge.personaRootDid).toBe(await didOf(SEEDS.opB));
     expect((await enrolledEdgeOf(chain, groupSecretOpenerFromSeed(SEEDS.deviceX)))?.personaRootDid).toBe(await didOf(SEEDS.opB));
     // CONTROL: under the inception alone, one secret and the edge it was handed.
     const before = await leafStandingUnder({ kel: [inception], deviceKey: await pubOf(SEEDS.deviceX), enrolment: ex, open: groupSecretOpenerFromSeed(SEEDS.deviceX) });
-    expect(before.secrets).toHaveLength(1);
-    expect(before.edge).toEqual(ex.edge);
+    expect(before.held).toHaveLength(1);
+    expect(before.held[0]!.edge).toEqual(ex.edge);
+    // It stands under the enrolment its head op-key sealed: opB's under the rotation, the handed one before it.
+    expect((await enrolmentUnderHead(chain, standing))?.opKeyDid).toBe(await didOf(SEEDS.opB));
+    expect((await enrolmentUnderHead([inception], before))?.edge).toEqual(ex.edge);
   });
 
   test("RED: a device a rotation left out holds no secret under the new head", async () => {
@@ -100,9 +103,10 @@ describe("persona-group-secret — delivered at enrolment, rolled with the op-ke
     const chain = await rotatedKeeping([SEEDS.deviceX]);
     const ez = await enrol(SEEDS.opA, SEEDS.deviceZ, inception.prefix);
     const standing = await leafStandingUnder({ kel: chain, deviceKey: await pubOf(SEEDS.deviceZ), enrolment: ez, open: groupSecretOpenerFromSeed(SEEDS.deviceZ) });
-    expect(standing.secrets.map((s) => s.opKeyDid)).toEqual([await didOf(SEEDS.opA)]);
-    expect(standing.edge).toEqual(ez.edge);
+    expect(standing.held.map((s) => s.opKeyDid)).toEqual([await didOf(SEEDS.opA)]);
+    expect(standing.held[0]!.edge).toEqual(ez.edge);
     expect(await enrolledEdgeOf(chain, groupSecretOpenerFromSeed(SEEDS.deviceZ))).toBeNull();
+    expect(await enrolmentUnderHead(chain, standing)).toBeNull();
   });
 
   test("the KEL board carries the enrolments whole, and a torn enrolment list breaks the walk where every reader sees it", async () => {
