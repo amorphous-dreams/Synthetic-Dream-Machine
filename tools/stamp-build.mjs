@@ -97,8 +97,10 @@ export function sourceDigest(dir) {
 // binds the two halves of one build: the C sources it came from AND the wasm bytes it produced, so a
 // source edit without a rebuild, or a wasm rebuilt from other bytes, both read stale.
 //
-// Struck only by the explicit `--wasm <dir>` act after `build:wasm`, never by the whole-tree stamp:
-// `pnpm -r build` compiles no wasm, and a stamp struck over a build that never ran is a lie.
+// Struck only by the explicit `--wasm <dir>` act, which the grammar package's own `build:wasm` runs
+// right after it compiles — so every wasm the house builds carries its stamp, and one command builds
+// it everywhere. Never struck by the whole-tree stamp: `pnpm -r build` compiles no wasm, and a stamp
+// struck over a build that never ran is a lie.
 // ---------------------------------------------------------------------------
 
 /** The one path a grammar-wasm stamp lives at, shared by the writer here and `corpus-read.mjs#assertWasmFresh`. */
@@ -154,7 +156,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const pkgFlagAt = process.argv.indexOf("--pkg");
   const wasmFlagAt = process.argv.indexOf("--wasm");
   if (wasmFlagAt !== -1) {
-    // Grammar-wasm mode: run right after `build:wasm`, binding the wasm to the C sources it came from.
+    // Grammar-wasm mode: `build:wasm` runs it right after compiling, binding the wasm to the C sources it came from.
     const dir = process.argv[wasmFlagAt + 1];
     if (!dir) {
       console.error("[stamp-build] --wasm requires a packages/<dir> name");

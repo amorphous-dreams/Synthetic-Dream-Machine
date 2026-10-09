@@ -233,7 +233,16 @@ jobs:
       - name: Build (the fleet measures the built tree)
         id: build
         run: pnpm build
+      # `ahu-pair-parity` reads the grammar wasm, which `pnpm build` never compiles: `*.wasm` stays
+      # gitignored and the whole-tree build leaves it out. ONE COMMAND BUILDS IT EVERYWHERE — the
+      # package's `build:wasm`, which `grammar-artifact` runs too and which strikes the wasm stamp the
+      # witness's freshness door reads. The fleet runs whatever this answers, so a failed wasm build
+      # reads as the witness naming the missing grammar rather than as a skipped fleet.
+      - name: Build the grammar wasm (ahu-pair-parity reads it)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm --filter ./packages/tree-sitter-memetic-wikitext build:wasm
       - name: Run every witness (never short-circuits; the worst exit wins)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           set -o pipefail
           tools/witness-all.sh 2>&1 | tee "$RUNNER_TEMP/witnesses.log"
@@ -451,6 +460,7 @@ jobs:
       # THE TS HOST LOADS THE WASM, SO THE WASM BUILDS FIRST. `*.wasm` is gitignored in this package;
       # a runner holds none until `build:wasm` emits it. The pinned tree-sitter CLI fetches its own
       # wasi-sdk clang and wasm-opt on first use, so the build needs neither emscripten nor docker.
+      # The same script builds it for the Witnesses job, and strikes the wasm stamp on both.
       - name: wasm builds under the pinned CLI
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run build:wasm

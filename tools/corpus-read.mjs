@@ -177,7 +177,8 @@ export function assertDistFresh(repo, distPath, toolName) {
  */
 export function assertWasmFresh(repo, dir, wasmFile, toolName) {
   const at = join(resolve(repo), "packages", dir, wasmFile);
-  const cure = `pnpm --filter ./packages/${dir} build:wasm && node tools/stamp-build.mjs . --wasm ${dir}`;
+  // A grammar package's `build:wasm` strikes its own wasm stamp, so the build IS the whole cure.
+  const cure = `pnpm --filter ./packages/${dir} build:wasm`;
   const now = wasmStampBody(repo, dir, wasmFile);
   if (now === null) {
     console.error(`[${toolName}] no built grammar at ${at}\n  cure: ${cure}`);

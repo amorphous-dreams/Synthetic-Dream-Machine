@@ -124,7 +124,7 @@ await test("the grammar wasm door: fresh holds; a missing wasm, no stamp, a C ed
     appendFileSync(join(pkg, "src", "tree_sitter", "parser.h"), "// edit\n");
     run = wasmDoor(repo);
     assert.equal(run.status, 2, "a header edit without a rebuild refuses");
-    assert.match(run.stderr, /cure: pnpm --filter \.\/packages\/g build:wasm && node tools\/stamp-build\.mjs \. --wasm g/);
+    assert.match(run.stderr, /cure: pnpm --filter \.\/packages\/g build:wasm$/m);
 
     stampWasm(repo, "g");
     writeFileSync(join(pkg, "g.wasm"), "other-wasm-bytes");
