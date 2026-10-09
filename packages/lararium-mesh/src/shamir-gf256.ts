@@ -85,32 +85,49 @@ export function splitSecret(secret: Uint8Array, threshold: number, shareCount: n
 }
 
 /**
+ * Evaluate the share polynomials at `x` by Lagrange interpolation over the given points — THE one interpolation
+ * this field module carries. `combineSecret` reads it at x=0; SLIP-39 reads it at 255 (the shared secret) and
+ * 254 (its digest) and builds its member shares through it. Any x in 0..255 may serve as a point or a target,
+ * because the caller's scheme, never this field, decides which coordinate holds the secret.
+ *
+ * A target x that names one of the points returns that point's bytes. Points need distinct x-coordinates and
+ * equal-length values; fewer points than the polynomial's degree + 1 yield a wrong answer silently, so a caller
+ * pairs this with its own validity check (a share checksum, SLIP-39's digest share).
+ */
+export function interpolateAt(points: readonly ShareBytes[], x: number): Uint8Array {
+  if (points.length === 0) throw new Error("shamir: no points to interpolate");
+  if (!Number.isInteger(x) || x < 0 || x > 255) throw new Error("shamir: x must be an integer in 0..255");
+  const len = points[0]!.ys.length;
+  if (points.some((p) => p.ys.length !== len)) throw new Error("shamir: shares differ in length");
+  const xs = points.map((p) => p.x);
+  if (xs.some((px) => !Number.isInteger(px) || px < 0 || px > 255)) throw new Error("shamir: a point's x must be an integer in 0..255");
+  if (new Set(xs).size !== xs.length) throw new Error("shamir: duplicate x-coordinate");
+
+  const hit = points.find((p) => p.x === x);
+  if (hit !== undefined) return Uint8Array.from(hit.ys);
+
+  const out = new Uint8Array(len);
+  for (let j = 0; j < points.length; j++) {
+    // Lagrange basis L_j(x) = ∏_{m≠j} (x − x_m)/(x_j − x_m) = ∏ (x ⊕ x_m)/(x_j ⊕ x_m)   (− is ⊕ in GF(2^8)).
+    let num = 1, den = 1;
+    for (let m = 0; m < points.length; m++) {
+      if (m === j) continue;
+      num = mul(num, x ^ points[m]!.x);
+      den = mul(den, points[j]!.x ^ points[m]!.x);
+    }
+    const basis = div(num, den);
+    for (let i = 0; i < len; i++) out[i]! ^= mul(points[j]!.ys[i]!, basis);
+  }
+  return out;
+}
+
+/**
  * Reconstruct the secret from `shares` via Lagrange interpolation at x=0. Needs ≥ the original
  * threshold of DISTINCT-x shares; passing fewer (or the wrong ones) yields a wrong secret silently —
  * Shamir carries no built-in validity check, so the caller pairs it with a share checksum (recovery-share).
  */
 export function combineSecret(shares: readonly ShareBytes[]): Uint8Array {
   if (shares.length < 2) throw new Error("shamir: need ≥ 2 shares to combine");
-  const len = shares[0]!.ys.length;
-  if (shares.some((s) => s.ys.length !== len)) throw new Error("shamir: shares differ in length");
-  const xs = shares.map((s) => s.x);
-  if (xs.some((x) => x === 0)) throw new Error("shamir: x=0 is the secret, never a share");
-  if (new Set(xs).size !== xs.length) throw new Error("shamir: duplicate x-coordinate");
-
-  const secret = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    let acc = 0;
-    for (let j = 0; j < shares.length; j++) {
-      // Lagrange basis L_j(0) = ∏_{m≠j} (0 − x_m)/(x_j − x_m) = ∏ x_m/(x_j ⊕ x_m)  (−x = x in GF(2^8)).
-      let num = 1, den = 1;
-      for (let m = 0; m < shares.length; m++) {
-        if (m === j) continue;
-        num = mul(num, shares[m]!.x);
-        den = mul(den, shares[j]!.x ^ shares[m]!.x);
-      }
-      acc ^= mul(shares[j]!.ys[i]!, div(num, den));
-    }
-    secret[i] = acc;
-  }
-  return secret;
+  if (shares.some((s) => s.x === 0)) throw new Error("shamir: x=0 is the secret, never a share");
+  return interpolateAt(shares, 0);
 }
