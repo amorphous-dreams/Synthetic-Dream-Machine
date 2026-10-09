@@ -100,9 +100,9 @@ export function pinsOfPeers(value, where = "LAR_PEERS") {
 /**
  * The gate pins each compose service knocks with, read off its `LAR_PEERS` default and never listed by hand:
  * `{ service: [pin name…] }` for every service under `services:`. A service that names no `LAR_PEERS` maps to
- * `[]`. The reader reads ONE spelling, a double-quoted single-line map entry; any other spelling of `LAR_PEERS`
- * (single-quoted, bare, a block scalar, a `- LAR_PEERS=` list item) throws rather than planning the service as
- * pinning nobody.
+ * `[]`. The reader reads ONE spelling, a double-quoted single-line map entry, which a YAML comment may follow; any
+ * other spelling of `LAR_PEERS` (single-quoted, bare, a block scalar, a `- LAR_PEERS=` list item) throws rather
+ * than planning the service as pinning nobody.
  */
 export function pinsNeeded(composeText) {
   const out = {};
@@ -115,7 +115,7 @@ export function pinsNeeded(composeText) {
     const head = /^  ([a-z0-9-]+):\s*$/.exec(line);
     if (head) { current = head[1]; out[current] = []; continue; }
     if (!current || !/\bLAR_PEERS\b/.test(line)) continue;
-    const peers = /^\s+LAR_PEERS:\s*"([^"]*)"\s*$/.exec(line);
+    const peers = /^\s+LAR_PEERS:\s*"([^"]*)"(?:\s+#.*)?\s*$/.exec(line);
     if (!peers) throw new Error(`${current}: LAR_PEERS at line ${n + 1} has a spelling this reader cannot read: ${line.trim()}`);
     out[current].push(...pinsOfPeers(peers[1], `${current} LAR_PEERS`));
   }

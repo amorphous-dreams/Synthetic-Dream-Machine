@@ -94,13 +94,19 @@ test("CONTROL: the one spelling the reader reads plans its pins, an override rea
   assert.deepEqual(pinsNeeded(`# LAR_PEERS: 'a column-0 comment never reads as a spelling'\n${oneService('      # LAR_PEERS: bare, inside a comment\n      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"')}`)["herm-relay"], ["HERM_SOURCE_GATE"]);
 });
 
+test("RED: the one spelling followed by a YAML comment reads its pins, never a refusal", () => {
+  assert.deepEqual(pinsNeeded(oneService('      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}" # trailing note'))["herm-relay"], ["HERM_SOURCE_GATE"]);
+  assert.deepEqual(pinsNeeded(oneService('      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"   #note, "quoted" inside'))["herm-relay"], ["HERM_SOURCE_GATE"]);
+  // CONTROL: YAML reads a `#` that touches the closing quote as no comment, so that line stays a spelling it refuses.
+  assert.throws(() => pinsNeeded(oneService('      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"#note')), /spelling this reader cannot read/);
+});
+
 test("RED: a LAR_PEERS spelling the reader cannot read throws, and never plans the service as pinning nobody", () => {
   for (const line of [
     "      LAR_PEERS: 'http://herm-source:8080#${HERM_SOURCE_GATE-}'",
     "      LAR_PEERS: http://herm-source:8080#${HERM_SOURCE_GATE-}",
     "      LAR_PEERS: >-\n        http://herm-source:8080#${HERM_SOURCE_GATE-}",
     "      - LAR_PEERS=http://herm-source:8080#${HERM_SOURCE_GATE-}",
-    '      LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}" # trailing note',
   ]) assert.throws(() => pinsNeeded(oneService(line)), /spelling this reader cannot read/, line);
   assert.throws(() => pinsNeeded(oneService('      LAR_PEERS: "http://herm-source:8080"')), /carries no pin/);
   assert.throws(() => pinsNeeded(oneService('      LAR_PEERS: "${LAR_A_PEERS-http://herm-source:8080}"')), /carries no pin/);
