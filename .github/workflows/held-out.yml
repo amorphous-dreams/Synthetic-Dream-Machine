@@ -135,6 +135,9 @@ jobs:
               # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
               # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
               reader_root="$(mktemp -d)"
+              # AN ISOLATED ROOT FOUNDS FROM THE TRACKED GENESIS. The engine CID that names the hearth rides
+              # the seed, so the reader's root carries its own copy, as every mesh container's boot copies one.
+              git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$reader_root/"
               if ! run_captured "$ARTIFACT_DIR/reader-found.log" 5m env LAR_ROOT="$reader_root" node packages/lares-cli/bin/lares.mjs vessel found --skip-build; then
                 echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
                 status=1
