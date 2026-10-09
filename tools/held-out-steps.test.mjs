@@ -7,7 +7,7 @@ import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseWorkflow, planFor, runJob, shouldRun, readEnvFile } from "./held-out-steps.mjs";
+import { parseWorkflow, planFor, runJob, shouldRun, readEnvFile, expand } from "./held-out-steps.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HELD_OUT = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
@@ -120,6 +120,17 @@ test("a bare boolean in the matrix never equals the string 'true', as the runner
   assert.equal(shouldRun("matrix.mesh == 'true'", { matrix: { mesh: "true" } }, "success"), true);
   assert.equal(shouldRun("always() && matrix.mesh == 'true'", { matrix: {} }, "failure"), false);
   assert.equal(shouldRun("always() && matrix.mesh == 'true'", { matrix: { mesh: "true" } }, "failure"), true);
+});
+
+test("a property the context lacks reads empty, as on the runner, and an upload over nothing reads RED", async () => {
+  assert.equal(expand("[${{ env.NEVER_SET }}]", { env: {} }), "[]");
+  const r = await run(fixture(`      - uses: actions/upload-artifact@v4
+        with:
+          name: evidence
+          path: \${{ env.NEVER_SET }}
+          if-no-files-found: error`), "green");
+  assert.equal(r.verdict, "RED");
+  assert.equal(r.failed, "actions/upload-artifact@v4");
 });
 
 test("$GITHUB_ENV reads plain and heredoc lines, and refuses a line it cannot read", () => {

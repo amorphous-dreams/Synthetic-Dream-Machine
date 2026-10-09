@@ -112,12 +112,15 @@ export function parseWorkflow(text) {
   return { env, matrix, steps, timeout };
 }
 
-/** Expand `${{ … }}` against the job context. An expression this reader cannot resolve throws. */
+/**
+ * Expand `${{ … }}` against the job context. A property the context lacks reads empty, as on the runner; a
+ * context or expression shape this reader cannot resolve throws.
+ */
 export function expand(text, ctx) {
   return text.replace(/\$\{\{\s*([^}]+?)\s*\}\}/g, (_, expr) => {
     const m = /^(matrix|env|github)\.([A-Za-z0-9_]+)$/.exec(expr);
-    if (!m || ctx[m[1]]?.[m[2]] === undefined) throw new Error(`held-out-steps: expression "${expr}" has no local value`);
-    return String(ctx[m[1]][m[2]]);
+    if (!m) throw new Error(`held-out-steps: expression "${expr}" has no local value`);
+    return String(ctx[m[1]]?.[m[2]] ?? "");
   });
 }
 
@@ -190,8 +193,11 @@ function runAction(step, ctx, { cwd, env, evidence }) {
       }
       return null;
     }
-    case "pnpm/action-setup":
+    case "pnpm/action-setup": {
+      // The action INSTALLS the declared major. Locally corepack provisions it under the job's own HOME.
+      if (major("pnpm", ["--version"]) !== String(w.version)) spawnSync("corepack", ["install", "-g", `pnpm@${w.version}`], { cwd, env, stdio: "inherit" });
       return major("pnpm", ["--version"]) === String(w.version) ? null : `pnpm ${w.version} does not stand (found ${major("pnpm", ["--version"])})`;
+    }
     case "actions/setup-node":
       return major("node", ["--version"]) === String(w["node-version"]) ? null : `node ${w["node-version"]} does not stand (found ${major("node", ["--version"])})`;
     case "actions/upload-artifact": {
