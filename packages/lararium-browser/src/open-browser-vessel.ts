@@ -25,7 +25,7 @@ import {
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   standSiblingChannel, siblingRefusalLabel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare,
+  leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
@@ -191,8 +191,10 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * (`ws://host:port#<gate key hex>`, at least two under distinct gate keys) — leaf kind 3, a fleet in which no
    * vessel listens (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel
    * stands its sibling channel (`standSiblingChannel`, the one composition the node vessel calls too): siblings
-   * prove their device edges to each other through the first herm and sync over the session the proof binds,
-   * and every herm carries the KEL successor drops the leaf catches up from. ABSENT → no sibling channel stands.
+   * prove their device edges to each other through every herm and sync over the session the proof binds, and
+   * every herm carries the KEL successor drops the leaf catches up from. Fewer than two, or an address that pins no
+   * gate key, and the channel refuses to stand — said on every dial and in `siblingChannel()` — while the rest of
+   * the vessel boots. ABSENT → no sibling channel stands.
    */
   siblingHerms?: readonly string[];
   /**
@@ -274,6 +276,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
    * met with silence. Either way the vessel booted: standing at its own floor is a correct outcome.
    */
   crossed: () => boolean;
+  /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
+  siblingChannel: () => SiblingChannelStatus | null;
   /**
    * Hand out one invite from this walker's wallet at the hearth it dials — the oldest unspent token, removed
    * before it returns, as the one `lar-invite:` string to carry. Null when the wallet holds none (or this vessel
@@ -1030,11 +1034,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
 
       // ── THE SIBLING CHANNEL (leaf kind 3, docs/pono/identity-slot-policy#/the-leaf-taxonomy) ────────
       // The ONE composition the node vessel calls (`standSiblingChannel`). This face's siblings — devices
-      // its own PersonaGroup delegated — prove their edges to each other through the pinned herm against the
+      // its own PersonaGroup delegated — prove their edges to each other through every pinned herm against the
       // KEL chain the Binding Gate just walked, under the PersonaGroup secret the root sealed to this device at
-      // enrolment and the lease epoch this vessel holds, and sync over the session that proof binds. The herm
+      // enrolment and the lease epoch this vessel holds, and sync over the session that proof binds. Each herm
       // carries sealed frames and reads none; every pinned herm carries the KEL drops this leaf pulls before it
-      // joins. The seed stays in these closures.
+      // joins. Herms the channel cannot stand over refuse the channel alone, never the vessel. The seed stays in
+      // these closures.
       const siblingEdge = daemonAuth.deviceEdge;
       if (siblingHerms && siblingHerms.length > 0 && siblingEdge && siblingGate) {
         const group = daemonAuth.personaGroupDocIdHex;
@@ -1414,6 +1419,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase:            "live",
     crossed: () => relayAdapter?.session != null,
+    siblingChannel: () => siblings?.status() ?? null,
     handOutInvite: () => relayPin.dial ? popInvite(walkStore, relayPin.gatePubKey, relayUrl) : Promise.resolve(null),
     carryAtHearth: (plaintext, withinMs) => relayPin.dial && relayAdapter && walkLeaf
       ? carryDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, plaintext, withinMs })

@@ -84,7 +84,7 @@ import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLabel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter,
+  leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
@@ -306,8 +306,10 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  (`ws://host:port#<gate key hex>`, at least two under distinct gate keys) — a device of a fleet that reaches
    *  its siblings by dialing out (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands
    *  → the vessel stands its sibling channel (`standSiblingChannel`, the one composition the browser vessel calls
-   *  too) through the first, and pulls its KEL successor drops off every one. ABSENT (and `LAR_SIBLING_HERMS`, a
-   *  comma-separated list, unset) → no sibling channel stands. */
+   *  too) over every one, and pulls its KEL successor drops off every one. Fewer than two, or an address that pins
+   *  no gate key, and the channel refuses to stand — said on every dial and in `siblingChannel()` — while the rest
+   *  of the vessel boots. ABSENT (and `LAR_SIBLING_HERMS`, a comma-separated list, unset) → no sibling channel
+   *  stands. */
   siblingHerms?: readonly string[];
   /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
    *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
@@ -326,6 +328,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   stopTick:  () => void;
   /** The ONE sorter this vessel's gates arm with — the oracle socket a host mounts beside the relay takes it. */
   socketSorter: SocketSorter;
+  /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
+  siblingChannel: () => SiblingChannelStatus | null;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -384,6 +388,8 @@ interface NodeBootPrep {
    *  (inert). A running crossroads a family's hearths dial to carry sealed cad bodies between each other. The two
    *  vessel entry-points fold its `close()` into their teardown so no WS server / peer socket leaks past close. */
   carriageRelay:    CarriageRelay | null;
+  /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
+  siblingChannel:   () => SiblingChannelStatus | null;
   /** The client dial-out (Socket A) — present ONLY when a peer sync URL + gate key were configured; else null
    *  (inert). The two vessel entry-points fold its `stop()` into teardown so no client socket leaks past close. */
   nexusDial:        NexusClientDial | null;
@@ -927,7 +933,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // The herm's sight of a sibling channel stays transient: the vessel hands the relay no frame observer, so carried
   // frames are routed and forgotten. A witness of that sight stands its own relay and passes its own observer.
   const carriageRelay: CarriageRelay | null = relayPort !== null && !Number.isNaN(relayPort)
-    ? await startCarriageRelay({ gateSeed: relayGateSeed, port: relayPort })
+    ? await startCarriageRelay({ gateSeed: relayGateSeed, port: relayPort, dropJournalPath: join(storageDir, "persona-kel-drops.jsonl") })
     : null;
   if (carriageRelay) {
     console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
@@ -1674,11 +1680,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
 
     // ── THE SIBLING CHANNEL (docs/pono/identity-slot-policy#/the-leaf-taxonomy) ─────────────────────
     // The ONE composition the browser vessel calls (`standSiblingChannel`): this face's siblings prove their
-    // device edges to each other through the pinned herm against the KEL chain just walked, under the
+    // device edges to each other through every pinned herm against the KEL chain just walked, under the
     // PersonaGroup secret the root sealed to this device at enrolment and the lease epoch this vessel holds, and
-    // sync over the session that proof binds; the herm carries sealed frames and reads none, and every pinned herm
+    // sync over the session that proof binds; each herm carries sealed frames and reads none, and every pinned herm
     // carries the KEL drops this leaf pulls before it joins. A face whose enrolment delivered no secret stands no
-    // channel, and says so. The seed stays in these closures.
+    // channel, and says so; herms the channel cannot stand over refuse the channel alone, never the vessel. The
+    // seed stays in these closures.
     const siblingHerms = opts.siblingHerms
       ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
     if (siblingHerms.length > 0 && personaGroupDocIdHex && personaKelPrefix && deviceEdge && siblingGate) {
@@ -2510,6 +2517,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
+    siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     daemonVm:         () => daemonVm,
@@ -2591,6 +2599,7 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
     // (Socket A) — each a no-op when none stood — so no timer / client socket leaks past close.
     stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); void p.carriageLoop?.stop(); p.nexusDial?.stop(); },
     socketSorter: p.socketSorter,
+    siblingChannel: p.siblingChannel,
   };
 }
 

@@ -29,9 +29,13 @@
  *     inside it (`@lararium/mesh` sibling-channel), the herm's face is carriage alone.
  *   · SUCCESSOR DROPS — the FLOOR voice, on a plain request apart from every proven socket: `GET /drop/<name>`
  *     answers the persona-KEL events a drop holds, `POST /drop/<name>` keeps one (`@lararium/mesh`
- *     persona-kel-drop). Availability by content address, never a vouch: the herm keeps only an event whose cid
- *     recomputes and whose predecessor the name commits, within a write quota, and refuses as it likes. A name it
- *     holds nothing under, a refused deposit and every other path meet the same silence as a closed door.
+ *     persona-kel-drop). Availability by content address, never a vouch: a deposit carries its successor and that
+ *     successor's predecessor, and the herm keeps it only when the name derives from the predecessor and the
+ *     successor verifies against it — the guardian quorum against the predecessor's committed next keys, or the
+ *     standing op-key's veto. A deposit past `PERSONA_KEL_DROP_BODY_CAP` bytes, or past one connection's budget,
+ *     meets silence before it is read; the store's byte budget lets go of the drops it heard from least lately. With a
+ *     journal path the herm keeps what it verified across a restart, re-verified when it reads the journal back. A
+ *     name it holds nothing under, a refused deposit and every other path meet the same silence as a closed door.
  *
  * WHAT THE HERM STILL SEES. The stamp it routes on is each leaf's long-lived device key, and a socket's tag set
  * groups the keys that stand under one head, so a herm colluding with a revoked leaf reads who stands online off its
@@ -45,14 +49,16 @@
  * Meme: lar:///ha.ka.ba/lararium/node/authenticated-membership-relay
  */
 
-import { createServer, type IncomingMessage } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import type { Duplex } from "node:stream";
 import { WebSocketServer, WebSocket, type RawData } from "ws";
 import * as ed from "@noble/ed25519";
 import {
   MEMBERSHIP_RELAY_DOMAIN, MEMBERSHIP_BROADCAST, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND, PERSONA_KEL_DROP_ROUTE,
-  makePersonaKelDropStore, hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl, pinnedRelayAddress,
-  type AuthVerifierShore, type MembershipChannel, type MembershipEnvelope,
+  makePersonaKelDropStore, PERSONA_KEL_DROP_BODY_CAP, hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl, pinnedRelayAddress,
+  type AuthVerifierShore, type MembershipChannel, type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
 } from "@lararium/mesh";
 import { DaemonAuthGate, type SocketSorter } from "./daemon-auth-gate.js";
 
@@ -110,11 +116,22 @@ export async function startAuthenticatedMembershipRelay(
   gateSeed: Uint8Array,
   port = 0,
   observer?: RelayAnnounceObserver,
-  opts: { readonly authTimeoutMs?: number } = {},
+  opts: {
+    readonly authTimeoutMs?: number;
+    /** Where the herm journals the drops it verified, so a restart keeps them. Absent, drops live in memory. */
+    readonly dropJournalPath?: string;
+    /** The drops' byte budget in all. */
+    readonly dropBytes?: number;
+  } = {},
 ): Promise<AuthenticatedMembershipRelay> {
   const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
-  const drops = makePersonaKelDropStore({ gatePubKey });
-  const httpServer = createServer((req, res) => { serveDrop(drops, req, res); });
+  const drops = makePersonaKelDropStore({
+    gatePubKey,
+    ...(opts.dropBytes !== undefined ? { quota: { bytes: opts.dropBytes } } : {}),
+    ...(opts.dropJournalPath ? { journal: fileDropJournal(opts.dropJournalPath) } : {}),
+  });
+  const spent = new WeakMap<object, { deposits: number; bytes: number }>();
+  const httpServer = createServer((req, res) => { serveDrop(drops, spent, req, res); });
   const wss = new WebSocketServer({ noServer: true });
   const gate = new DaemonAuthGate(wss as unknown as ConstructorParameters<typeof DaemonAuthGate>[0], {
     ...(opts.authTimeoutMs !== undefined ? { authTimeoutMs: opts.authTimeoutMs } : {}),
@@ -208,16 +225,51 @@ export async function startAuthenticatedMembershipRelay(
   };
 }
 
-/** The most bytes one drop deposit may carry. */
-const DROP_BODY_CAP = 256 * 1024;
+/** What one connection may spend on drop deposits before it meets silence: a count and a byte total. */
+export const DROP_CONNECTION_BUDGET = { deposits: 64, bytes: 1024 * 1024 } as const;
 const DROP_PATH_RE = new RegExp(`^${PERSONA_KEL_DROP_ROUTE}([0-9a-f]{64})$`);
+
+/**
+ * A drop journal on disk: one JSON line per kept deposit, appended as it lands; a whole rewrite (to a sibling file,
+ * then renamed over) when the store lets go of drops or reads the journal back. A line that does not parse reads as
+ * nothing, and every line the store reads back verifies again.
+ */
+export function fileDropJournal(path: string): PersonaKelDropJournal {
+  return {
+    load() {
+      let text: string;
+      try { text = readFileSync(path, "utf8"); } catch { return []; }
+      const out: Array<{ name: string; deposit: unknown }> = [];
+      for (const line of text.split("\n")) {
+        if (line.length === 0) continue;
+        try {
+          const v = JSON.parse(line) as { name?: unknown; deposit?: unknown };
+          if (typeof v.name === "string") out.push({ name: v.name, deposit: v.deposit });
+        } catch { /* a torn line reads as nothing */ }
+      }
+      return out;
+    },
+    append(name, deposit) {
+      try { mkdirSync(dirname(path), { recursive: true }); appendFileSync(path, `${JSON.stringify({ name, deposit })}\n`); } catch { /* a full disk keeps memory alone */ }
+    },
+    rewrite(entries) {
+      try {
+        mkdirSync(dirname(path), { recursive: true });
+        const tmp = `${path}.lar-tmp`;
+        writeFileSync(tmp, entries.map((e) => `${JSON.stringify(e)}\n`).join(""));
+        renameSync(tmp, path);
+      } catch { /* a full disk keeps memory alone */ }
+    },
+  };
+}
 
 /**
  * Answer one plain request on the relay port: a successor drop's read or deposit, or silence. Silence: the cut
  * socket every closed door shows — no status, no body, no header. A drop answers with CORS open, so a browser leaf
- * reads it from any page; the POST takes `text/plain`, which no preflight precedes.
+ * reads it from any page; the POST takes `text/plain`, which no preflight precedes. A deposit whose declared or read
+ * length passes the body cap, or that passes its connection's budget, meets silence before the store reads it.
  */
-function serveDrop(drops: ReturnType<typeof makePersonaKelDropStore>, req: IncomingMessage, res: import("node:http").ServerResponse): void {
+function serveDrop(drops: PersonaKelDropStore, spent: WeakMap<object, { deposits: number; bytes: number }>, req: IncomingMessage, res: ServerResponse): void {
   const silence = (): void => { res.socket?.destroy(); };
   const match = DROP_PATH_RE.exec(new URL(req.url ?? "/", "http://localhost").pathname);
   if (!match) { silence(); return; }
@@ -229,12 +281,24 @@ function serveDrop(drops: ReturnType<typeof makePersonaKelDropStore>, req: Incom
     res.end(JSON.stringify(held));
     return;
   }
-  if (req.method !== "POST") { silence(); return; }
+  if (req.method !== "POST" || !req.socket) { silence(); return; }
+  const budget = spent.get(req.socket) ?? { deposits: 0, bytes: 0 };
+  spent.set(req.socket, budget);
+  budget.deposits += 1;
+  const declared = Number(req.headers["content-length"] ?? "0");
+  if (budget.deposits > DROP_CONNECTION_BUDGET.deposits || declared > PERSONA_KEL_DROP_BODY_CAP) { silence(); req.destroy(); return; }
   const chunks: Buffer[] = [];
   let size = 0;
-  req.on("data", (c: Buffer) => { size += c.length; if (size > DROP_BODY_CAP) { silence(); req.destroy(); } else chunks.push(c); });
+  let cut = false;
+  req.on("data", (c: Buffer) => {
+    if (cut) return;
+    size += c.length;
+    budget.bytes += c.length;
+    if (size > PERSONA_KEL_DROP_BODY_CAP || budget.bytes > DROP_CONNECTION_BUDGET.bytes) { cut = true; silence(); req.destroy(); }
+    else chunks.push(c);
+  });
   req.on("end", () => {
-    if (size > DROP_BODY_CAP) return;
+    if (cut) return;
     let raw: unknown;
     try { raw = JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { silence(); return; }
     if (!drops.deposit(name, raw)) { silence(); return; }

@@ -88,6 +88,8 @@ export function startCarriageRelay(cfg: {
   port?: number;
   /** Every sibling frame the relay carries, exactly as it carries it — the herm's whole sight of a channel. */
   onSiblingFrame?: RelayAnnounceObserver["onSiblingFrame"];
+  /** Where the relay journals the successor drops it verified, so a restarted herm keeps them. */
+  dropJournalPath?: string;
 }): Promise<CarriageRelay> {
   return (async (): Promise<CarriageRelay> => {
     const tracker = makeBagTracker();
@@ -115,7 +117,7 @@ export function startCarriageRelay(cfg: {
         heldByHolder.delete(from);
       },
       ...(cfg.onSiblingFrame ? { onSiblingFrame: cfg.onSiblingFrame } : {}),
-    });
+    }, cfg.dropJournalPath ? { dropJournalPath: cfg.dropJournalPath } : {});
     const gatePubKey = hex(await ed.getPublicKeyAsync(cfg.gateSeed));
     return {
       port: relay.port,

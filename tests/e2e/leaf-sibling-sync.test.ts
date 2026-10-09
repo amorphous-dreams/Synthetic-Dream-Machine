@@ -21,11 +21,15 @@
  *        herm's relay port, apart from every proven socket — and the pair syncs under the head. The KEL never
  *        rides the sibling channel, and the rotation's enrolments ride it sealed and attested, so the herm's
  *        sight of the channel holds no event and no edge.
+ *   L5 — a herm that accepts a connection and never answers, pinned FIRST or LAST beside the live herm, costs the
+ *        stale leaf its deadline and no more: the leaf catches up off the live herm, pairs, and names the silent
+ *        herm as `relay`.
  *
  * The headline's mutation proof: a proof that refuses every sibling (`openProof` answering a refusal) leaves L1
  * red — the doc never arrives, so the sync rides the proof and nothing else.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
+import * as net from "node:net";
 import { Repo, interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { freePort, pinnedCarriageRelay } from "../harness/instance.js";
 import { startCarriageRelay, type CarriageRelay } from "../../packages/lararium-node/src/carriage-relay.js";
@@ -88,8 +92,8 @@ async function standLeaf(
       const standing = await leafStandingUnder({ kel: k, deviceKey: key, enrolment, open: groupSecretOpenerFromSeed(device) });
       return { deviceKey: key, sign, kel: k, standing: presents ? { held: standing.held.map((h) => ({ ...h, edge: presents })) } : standing };
     },
-    transport: () => dialSiblingHerm({ address: relayUrl, deviceKey: key, sign }),
-    drops: siblingKelDropsOf(drops.map(httpPersonaKelDropHerm)),
+    transports: [() => dialSiblingHerm({ address: relayUrl, deviceKey: key, sign })],
+    drops: siblingKelDropsOf(drops.map((a) => httpPersonaKelDropHerm(a))),
     onRefusal: (r) => refusals.push(r),
     retryInterval: 500,
   });
@@ -232,15 +236,25 @@ describe("leaf kind 3 — siblings sync through a herm with no listening vessel"
     expect(await upgrades(knockedUrl(pin.url, pin.gatePubKey))).toBe(true);
   });
 
+  /** The ONE rotation this suite's KEL makes, re-enrolling both leaves: a second rotation at the same seat would
+   *  fork the KEL, which no reader settles. */
+  let rotation: PersonaKelEvent | null = null;
+  async function rotatedChain(): Promise<PersonaKelEvent[]> {
+    if (!rotation) {
+      const devices = await Promise.all([seed(131), seed(132)].map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
+      const rot = await attestAndRotate({
+        head: inception, freshOpKeyDid: await didOf(ROTATED), guardianRecoveryKeys: guardianKeys, recoveryThreshold: 2,
+        guardianSigners: await Promise.all(GUARDIANS.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: ed25519SignerFromSeed(s) }))),
+        enrolments: await rollEnrolments({ prefix: inception.prefix, opSeed: ROTATED, devices }),
+      });
+      if (!rot.ok) throw new Error(rot.reason);
+      rotation = rot.event;
+    }
+    return [inception, rotation];
+  }
+
   test("L4: a sibling a rotation left stale catches up off the herms' drops, and the pair syncs under the head", async () => {
-    const devices = await Promise.all([seed(131), seed(132)].map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
-    const rot = await attestAndRotate({
-      head: inception, freshOpKeyDid: await didOf(ROTATED), guardianRecoveryKeys: guardianKeys, recoveryThreshold: 2,
-      guardianSigners: await Promise.all(GUARDIANS.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: ed25519SignerFromSeed(s) }))),
-      enrolments: await rollEnrolments({ prefix: inception.prefix, opSeed: ROTATED, devices }),
-    });
-    if (!rot.ok) throw new Error(rot.reason);
-    const rotated = [inception, rot.event];
+    const rotated = await rotatedChain();
     const sightBefore = sight().length;
     // x carries the rotation and deposits it at both herms on its dial. y wakes stale, and pulls the move off a
     // herm before it joins — here the second herm, which carries no sibling channel at all.
@@ -266,4 +280,32 @@ describe("leaf kind 3 — siblings sync through a herm with no listening vessel"
       await x.repo.shutdown(); await y.repo.shutdown();
     }
   });
+
+  test("L5: a herm that never answers, first or last among the pins, costs the stale leaf its deadline and no more", async () => {
+    const sockets: net.Socket[] = [];
+    const hung = net.createServer((s) => { sockets.push(s); });
+    await new Promise<void>((r) => hung.listen(0, "127.0.0.1", r));
+    const hungUrl = `ws://127.0.0.1:${(hung.address() as net.AddressInfo).port}#${"c3".repeat(32)}`;
+    try {
+      const chain = await rotatedChain();
+      for (const order of [[hungUrl, secondUrl], [secondUrl, hungUrl]]) {
+        const x = await standLeaf(seed(131), await enrol(ROOT, seed(131)), chain, undefined, [secondUrl]);
+        const atSecond = httpPersonaKelDropHerm(secondUrl);
+        for (let i = 0; i < 200; i++) {
+          if ((await atSecond.pull(personaKelDropName(inception.eventCid, atSecond.gatePubKey))).length > 0) break;
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        const y = await standLeaf(seed(132), await enrol(ROOT, seed(132)), [inception], undefined, order);   // stale
+        try {
+          await until(() => y.adapter.kel.length === 2 && peersOf(x).length === 1 && peersOf(y).length === 1, `the stale leaf caught up and paired (${order[0] === hungUrl ? "hung first" : "hung last"})`);
+          expect(y.refusals.some((r) => r.suspect === "relay" && /c3c3c3c3… answered no drop/.test(r.reason))).toBe(true);
+        } finally {
+          await x.repo.shutdown(); await y.repo.shutdown();
+        }
+      }
+    } finally {
+      for (const s of sockets) s.destroy();
+      await new Promise<void>((r) => hung.close(() => r()));
+    }
+  }, 60_000);
 });

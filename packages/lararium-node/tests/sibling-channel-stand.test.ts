@@ -9,7 +9,9 @@
  *     and its refusal surfaces, never a silent drop;
  *   · RED: the lease epoch the vessel holds reaches the proof — a sibling whose edge binds below it is refused
  *     as lapsed;
- *   · RED: a herm address with no pinned gate key, or fewer than two herms, throws at the stand, before any dial.
+ *   · RED: the channel stands over every pinned herm — the first herm closing leaves the pair syncing over the second;
+ *   · RED: a herm address with no pinned gate key, or fewer than two herms, refuses the CHANNEL alone: it dials
+ *     nothing, says why as `pins` on every dial and in its status, and never throws into the vessel's boot.
  */
 import { afterEach, describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -17,7 +19,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import {
   hex, ed25519SignerFromSeed, standSiblingChannel, enrolDevice, rollEnrolments, groupSecretOpenerFromSeed,
   materializeSharedLarDoc, personaKelBoardDocUrl, writePersonaKelEvent, provisionThresholdRecoveryAtFounding,
-  guardianRecoveryRegistrationCard, attestAndRotate, type PersonaKelEvent, type SiblingRefusal,
+  guardianRecoveryRegistrationCard, attestAndRotate, type PersonaKelEvent, type SiblingRefusal, type SiblingNetworkAdapter,
 } from "@lararium/mesh";
 import { startAuthenticatedMembershipRelay, type AuthenticatedMembershipRelay } from "../src/authenticated-membership-relay.js";
 
@@ -61,22 +63,22 @@ describe("standSiblingChannel — the one composition both shores call", () => {
 
   async function standLeaf(
     device: Uint8Array, inception: PersonaKelEvent, lease: { expectedEpoch?: number; boundEpoch?: number } = {},
-  ): Promise<{ repo: Repo; refusals: SiblingRefusal[]; key: string; board: Awaited<ReturnType<typeof materializeSharedLarDoc>> }> {
+  ): Promise<{ repo: Repo; refusals: SiblingRefusal[]; key: string; board: Awaited<ReturnType<typeof materializeSharedLarDoc>>; adapter: SiblingNetworkAdapter }> {
     const repo = new Repo({ network: [], sharePolicy: async () => true });
     repos.push(repo);
     const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(NEXUS), "board:persona-kel");
     board.change((d) => writePersonaKelEvent(d, inception));
     const key = await pubOf(device);
     const refusals: SiblingRefusal[] = [];
-    await standSiblingChannel({
-      repo, herms: herms(), nexusPubkey: NEXUS,
+    const adapter = await standSiblingChannel({
+      repo, herms: herms(), nexusPubkey: NEXUS, retryInterval: 60_000,
       personaKelPrefix: inception.prefix, deviceKey: key, sign: ed25519SignerFromSeed(device),
       enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: lease.boundEpoch ?? 0 }),
       open: groupSecretOpenerFromSeed(device),
       expectedEpoch: lease.expectedEpoch ?? 0,
       onRefusal: (r) => refusals.push(r),
     });
-    return { repo, refusals, key, board };
+    return { repo, refusals, key, board, adapter };
   }
 
   test("CONTROL, then RED: siblings sync; a rotation on the board that leaves a sibling out parts the pair, and the sibling says it stands revoked", async () => {
@@ -112,20 +114,44 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     expect(x.repo.peers).toEqual([]);
   }, 20_000);
 
-  test("RED: a herm address with no pinned gate key, or fewer than two herms under distinct keys, throws at the stand", async () => {
+  test("RED (M2): the channel stands over EVERY pinned herm — the first herm closing leaves the pair syncing over the second", async () => {
+    relay = await startAuthenticatedMembershipRelay(seed(50), 0);
+    second = await startAuthenticatedMembershipRelay(seed(49), 0);
+    const { inception } = await kelOf();
+    const x = await standLeaf(seed(53), inception);
+    const y = await standLeaf(seed(54), inception);
+    for (let i = 0; i < 200 && (x.repo.peers.length === 0 || y.repo.peers.length === 0 || x.adapter.status().carried < 2); i++) await sleep(20);
+    expect(x.adapter.status()).toMatchObject({ refusal: null, herms: 2, carried: 2 });
+    await relay.close(); relay = undefined;
+    for (let i = 0; i < 100 && x.adapter.status().carried > 1; i++) await sleep(20);
+    expect(x.repo.peers).toHaveLength(1);
+    const handle = x.repo.create<{ line: string }>({ line: "over the herm still standing" });
+    expect((await y.repo.find<{ line: string }>(handle.url as AutomergeUrl)).doc()?.line).toBe("over the herm still standing");
+  }, 20_000);
+
+  test("RED (M2): fewer than two herms, or an address with no pinned gate key, refuses the CHANNEL — said as `pins` on every dial and in status — and never throws", async () => {
     const repo = new Repo({ network: [], sharePolicy: async () => true });
     repos.push(repo);
     const { inception } = await kelOf();
     const key = await pubOf(seed(55));
-    const stand = async (herms: string[]) => standSiblingChannel({
-      repo, herms, nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
-      deviceKey: key, sign: ed25519SignerFromSeed(seed(55)),
-      enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 0 }),
-      open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: 0,
-    });
     const gate = (b: number) => b.toString(16).padStart(2, "0").repeat(32);
-    await expect(stand(["ws://127.0.0.1:9", `ws://127.0.0.1:10#${gate(1)}`])).rejects.toThrow(/gate key/);
-    await expect(stand([`ws://127.0.0.1:9#${gate(1)}`])).rejects.toThrow(/at least two herms/);
-    await expect(stand([`ws://127.0.0.1:9#${gate(1)}`, `ws://127.0.0.1:10#${gate(1)}`])).rejects.toThrow(/at least two herms/);
+    for (const [herms, why] of [
+      [["ws://127.0.0.1:9", `ws://127.0.0.1:10#${gate(1)}`], /reads no gate key/],
+      [[`ws://127.0.0.1:9#${gate(1)}`], /pins 1 herm/],
+      [[`ws://127.0.0.1:9#${gate(1)}`, `ws://127.0.0.1:10#${gate(1)}`], /pins 1 herm/],
+    ] as const) {
+      const refusals: SiblingRefusal[] = [];
+      const adapter = await standSiblingChannel({
+        repo, herms: [...herms], nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
+        deviceKey: key, sign: ed25519SignerFromSeed(seed(55)),
+        enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 0 }),
+        open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: 0, onRefusal: (r) => refusals.push(r),
+      });
+      await adapter.whenReady();
+      expect(refusals).toEqual([expect.objectContaining({ suspect: "pins", reason: expect.stringMatching(why) })]);
+      expect(adapter.status()).toMatchObject({ refusal: expect.stringMatching(why), carried: 0 });
+      adapter.connect("again" as never);
+      expect(refusals.filter((r) => r.suspect === "pins")).toHaveLength(2);
+    }
   });
 });

@@ -9,8 +9,9 @@
  *   · RED: a frame addressed to one key reaches no other key on the channel;
  *   · RED: a socket that joined no channel neither sends nor hears;
  *   · RED: a later join REPLACES a socket's channels — it hears its new channel alone, and an empty join leaves all;
- *   · the drop floor: a plain request apart from every proven socket reads and keeps a KEL successor; an unknown
- *     name, a refused deposit and any other path meet one silence — a cut socket;
+ *   · the drop floor: a plain request apart from every proven socket reads and keeps a KEL successor that verifies
+ *     against the predecessor its deposit carries; an unknown name, a refused deposit and any other path meet one
+ *     silence — a cut socket;
  *   · RED: a `from` the sender writes into its own frame never replaces the stamp;
  *   · the herm's sight (`onSiblingFrame`) holds exactly the frames it carried;
  *   · CARRY ⊥ READ, read DECODED: two enrolled sibling leaves sync a doc through the relay, and its whole sight —
@@ -198,9 +199,11 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     expect(await ask(`/drop/${"0".repeat(64)}`)).toBe("silence");
     expect(await ask("/.well-known/lar")).toBe("silence");
     expect(await ask(`/drop/${name}`, { method: "POST", body: "junk" })).toBe("silence");
-    expect(await ask(`/drop/${"0".repeat(64)}`, { method: "POST", body: JSON.stringify(rot.event) })).toBe("silence");
+    const deposit = JSON.stringify({ prev: prov.inception, event: rot.event });
+    expect(await ask(`/drop/${"0".repeat(64)}`, { method: "POST", body: deposit })).toBe("silence");
+    expect(await ask(`/drop/${name}`, { method: "POST", body: JSON.stringify(rot.event) }), "a successor with no predecessor").toBe("silence");
     // The lawful deposit keeps, CORS open, and the read answers it.
-    expect(await ask(`/drop/${name}`, { method: "POST", headers: { "content-type": "text/plain" }, body: JSON.stringify(rot.event) })).toMatchObject({ status: 204, cors: "*" });
+    expect(await ask(`/drop/${name}`, { method: "POST", headers: { "content-type": "text/plain" }, body: deposit })).toMatchObject({ status: 204, cors: "*" });
     const read = await ask(`/drop/${name}`);
     expect(read).toMatchObject({ status: 200, cors: "*" });
     expect((JSON.parse((read as { body: string }).body) as Array<{ eventCid: string }>).map((e) => e.eventCid)).toEqual([rot.event.eventCid]);
@@ -231,7 +234,7 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
       const adapter = new SiblingNetworkAdapter({
         kel,
         leaf: async (k) => ({ deviceKey: key, sign, kel: k, standing: await leafStandingUnder({ kel: k, deviceKey: key, enrolment, open: groupSecretOpenerFromSeed(device) }) }),
-        transport: async () => { const t = await dialSiblingHerm({ address: `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`, deviceKey: key, sign }); open.push(t); return t; },
+        transports: [async () => { const t = await dialSiblingHerm({ address: `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`, deviceKey: key, sign }); open.push(t); return t; }],
         onRefusal: (r) => refusals.push(r),
       });
       leaves.push({ repo: new Repo({ network: [adapter], sharePolicy: async () => true }), refusals });
