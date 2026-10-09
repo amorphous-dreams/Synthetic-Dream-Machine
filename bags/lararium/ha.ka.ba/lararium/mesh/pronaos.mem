@@ -90,9 +90,17 @@ names the first face a local composition may light from held public capabilities
 shore, reverse proxy, container composition, or future carrier may realize it; no physical placement changes the
 capability relation.
 
-''Only a lararium lights a Pronaos'' (operator-ruled). A herm stands on the lower rungs of the ladder below
-(#/the-rung-ladder): it hands over the bulb by name and, at most, posts a waymark. A herm handed any Pronaos input
-refuses before a face listens.
+''Only a lararium lights a Pronaos'' (operator-ruled). The temple rung is the house's: the arrival page, the
+arrival descriptor, the first-arrival kindle, and the house's face. A herm stands on the lower rungs of the ladder
+below (#/the-rung-ladder): it hands over the bulb by name and, at most, posts a waymark. A herm handed any Pronaos
+input refuses before a face listens.
+
+''A herm MIRRORS BY CID'' (operator-ruled). A herm may carry a house's PUBLISHED Pronaos bytes by CID, as
+carriage — for availability, never trust: the arrival page, a seed, an offered edition, one artifact an operator's
+publication record names. A mirror presents no face, lights no Pronaos, and signs no public claim. Trust stays
+with the house: a mirror the descriptor lists never kindles, and first arrival trusts the house's own origin
+(`packages/lararium-node/src/kindle.ts`). So one law reads in three places: the FACE belongs to the lararium; the
+publication record governs CARRIAGE of one named artifact; and the mirror carries bytes a house already published.
 
 The public Librarium — a public crossroads shrine of books, images, media, and deliberately offered editions —
 waits outside this carrier. A Pronaos may later route an explicit Librarium projection. It never turns the
@@ -405,6 +413,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4SS3xRbHSZoU9S_KNPj51Vi05GfC91wcVki2k8sCCxM
+<<^ code="&#x0003;">>ni:///sha-256;9kk4YRaf4xU6ygBBnlyynazQDhetBJQKoeSGDgJoisY
 
 <<^ code="&#x0004;" -> to="?">>
