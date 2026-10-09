@@ -235,7 +235,9 @@ identical ea rights. The ring runs on every leaf kind — a face where a listeni
 user device, and one device of a user-caps-only fleet where no vessel listens
 (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy">>).
 A sibling holds standing on either shore: the ring's sibling path admits it to the face's own planes and the
-public boards, never the @daemon and never another face's planes.
+public boards, never the @daemon and never another face's planes. It stands under the peer id its proven device
+key derives, and both shores read sibling-ness before any other ring, so a sibling never inherits another
+carrier's verdict.
 
 <<~/ahu>>
 
@@ -251,6 +253,6 @@ public boards, never the @daemon and never another face's planes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qKkN93q-ABy0fxYH2e4WhyTFAzolvC_rpyCEbZRqKU4
+<<^ code="&#x0003;">>ni:///sha-256;Nf6edaNWp2LFBv8KbtJEP2AQooRTIa3a02ENpJRD_wU
 
 <<^ code="&#x0004;" -> to="?">>
