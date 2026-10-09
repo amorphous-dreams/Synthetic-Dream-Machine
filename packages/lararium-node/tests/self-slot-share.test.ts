@@ -267,4 +267,20 @@ describe("a SIBLING holds standing, never the house — the sibling gate alone d
     const kapaedSibling: AntigenRing = { kapaed: new Set(["beef".repeat(16)]), presenterNym: (p) => (p === SIBLING ? "beef".repeat(16) : null) };
     expect(await sibling(FACE_A_PLANE, siblingGate, kapaedSibling)).toBe(false);
   });
+
+  test("RED: sibling-ness decides first — an id a sibling and a WS socket both claim reads as neither, even a same-operator socket", async () => {
+    for (const peerClass of ["same-operator", "contracted", undefined] as const) {
+      for (const doc of [FACE_A_PLANE, DAEMON_LIKE, CROSSROADS]) {
+        expect(await selfSlotShareDecision({
+          hasWsSocket: true, sibling: true, siblingGate, peerClass, selfSlotFedGate: fedGate,
+          antigenRing: null, membership: null, planeSeal: null, peerId: SIBLING, documentId: doc,
+        }), `${String(peerClass)} socket claiming a sibling's id`).toBe(false);
+      }
+    }
+    // CONTROL: the same-operator socket no sibling claims full-syncs, as before.
+    expect(await selfSlotShareDecision({
+      hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: fedGate, antigenRing: null, membership: null,
+      planeSeal: null, peerId: "own-node", documentId: DAEMON_LIKE,
+    })).toBe(true);
+  });
 });

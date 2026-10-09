@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 
-import { readFileSync, writeFileSync, appendFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
@@ -83,7 +83,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
 import {
-  standSiblingChannel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  standSiblingChannel, siblingRefusalLabel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter,
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
@@ -591,9 +591,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       // deterministically-federatable planes; the antigen draws Mu on a Kapae'd presenter regardless.
       return selfSlotShareDecision({
         hasWsSocket:     !!wsSocket,
-        // A SIBLING arrives on no WS socket of this gate — it rides the sibling channel, proven there. It holds
-        // standing, never the house: the sibling gate decides its every doc.
-        sibling:         !wsSocket && Boolean(siblings?.provenKeyOf(peerId as PeerId)),
+        // A SIBLING rides the sibling channel, proven there under the peer id its device key derives. It holds
+        // standing, never the house: the sibling gate decides its every doc, and sibling-ness decides first.
+        sibling:         Boolean(siblings?.provenKeyOf(peerId as PeerId)),
         siblingGate,
         peerClass:       peerClassMap.get(peerId),
         selfSlotFedGate,
@@ -923,15 +923,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   const relayPortRaw = opts.standCarriageRelayPort ?? process.env["LAR_HERM_RELAY_PORT"];
   const relayPort = relayPortRaw !== undefined && relayPortRaw !== "" ? Number(relayPortRaw) : null;
   const relayGateSeed = resolveRelayGateSeed(vesselSeed, opts.standCarriageRelayGateSeedHex ?? process.env["LAR_HERM_RELAY_SEED"]);
-  // THE HERM'S SIGHT, WITNESSED. `LAR_HERM_SIGHT_LOG` names a file the relay appends every sibling frame it
-  // carries to, exactly as it carries it — the whole of what this herm sees of a sibling channel, so a witness
-  // scans it for anything the siblings' seal should keep from it. It records nothing the herm does not already hold.
-  const sightLog = process.env["LAR_HERM_SIGHT_LOG"];
+  // The herm's sight of a sibling channel stays transient: the vessel hands the relay no frame observer, so carried
+  // frames are routed and forgotten. A witness of that sight stands its own relay and passes its own observer.
   const carriageRelay: CarriageRelay | null = relayPort !== null && !Number.isNaN(relayPort)
-    ? await startCarriageRelay({
-        gateSeed: relayGateSeed, port: relayPort,
-        ...(sightLog ? { onSiblingFrame: (carried) => { try { appendFileSync(sightLog, `${JSON.stringify(carried)}\n`); } catch { /* a witness never stops carriage */ } } } : {}),
-      })
+    ? await startCarriageRelay({ gateSeed: relayGateSeed, port: relayPort })
     : null;
   if (carriageRelay) {
     console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
@@ -1701,7 +1696,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
           deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
           enrolment: { edge: deviceEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
           expectedEpoch: effectiveLeaseEpoch(leaseSlots),
-          onRefusal: (r) => console.warn(`[sibling] refused (${r.suspect}${r.suspect === "peer" ? ` ${r.peerKey.slice(0, 8)}…` : ""}): ${r.reason}`),
+          onRefusal: (r) => console.warn(`[sibling] refused (${siblingRefusalLabel(r)}): ${r.reason}`),
         });
       }
     }
