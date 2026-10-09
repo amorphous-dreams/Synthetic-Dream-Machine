@@ -360,6 +360,10 @@ breach. Every threshold the house stands carries the shape:
 | custody | ''hot'' — held while raised | ''cold'' — unwrapped per act, then wiped |
 | the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the sealed body between STX and ETX |
 | the gate | ''silence'' and one closed door to a stranger | the walker's grant, the knock, the proven peer |
+| the identity slot | the slot doc's verdict — the DID and derived actor any reader answers | the provider's own derivation — the layer the interface ships EMPTY and gates elsewhere |
+| the network edge | the weak crossing — cheap, optimistic, admitted on a probe | the per-edge anergy — the tested lease, severed when the test fails |
+| the crossroads | the board — any stranger's read of a notice, a tombstone, a kāpae | the charter quorum's kāpae — the Nexus's own refusal, outranking any cry |
+| the sync namespace | the `lar:` title — crosses the boundary, address-bearing, corpus-walkable | the `$:/` system plane — stays browser-local, held out by the sync filter |
 
 ```toml #THR_1_TWO_FACES
 id    = "THR_1_TWO_FACES"
@@ -409,6 +413,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v927ID9nLp6SOyLwdkOecGDJ1AU1NEHpwUWO4BUJKlU
+<<^ code="&#x0003;">>ni:///sha-256;h6kg2So0cA8U1-TH31XLE5feetFg2GZTMc-npD2SpWM
 
 <<^ code="&#x0004;" -> to="?">>

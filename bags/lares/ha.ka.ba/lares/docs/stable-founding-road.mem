@@ -148,9 +148,7 @@ with the lanes beside it. The R-ENGINE fold builds in parallel from the start an
 !!! R-KAHU ~ the kahu cabal across vessels
 * S1, a quorum whose seats live on different vessels, and L1, the realm root map from the co-signed `keptBy`. Needs only the seat shape.
 
-!!! Beside the train (no identity bytes)
-* Leaf↔leaf sync through a herm, with `leaf-peer-proof` bound to the session it admits.
-* The held-out dispatch on a host-built dist, with `vessel found` on the runner.
+Beside the train, landed and off this road: leaf↔leaf sync through a herm, session-bound (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy`); the held-out dispatch, driven from a host-built dist with `vessel found` on the runner (`.github/workflows/held-out.yml`).
 
 <<~/ahu>>
 
@@ -194,6 +192,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gGw1eJ7S7cABthILoKGlYHOp8UwhhtqAcY_SVmTcolc
+<<^ code="&#x0003;">>ni:///sha-256;Q1lSb3HOY9SnIXQe_7_W4WIXROe9If0-Wmg1Yzo_Dck
 
 <<^ code="&#x0004;" -> to="?">>

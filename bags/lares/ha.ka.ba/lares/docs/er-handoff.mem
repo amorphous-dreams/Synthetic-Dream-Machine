@@ -20,6 +20,7 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 * ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Unstaged in the tree and NOT a lane's to move: `.worktrees/`, `.claude/worktrees/`, and the `mempalace` submodule pointer — never commit, stash, or revert those. The `VSCode-TW5-Syntax` pointer reads differently: the operator PINNED it at `4afa852`, the released 3.0.0, and the grammar's own head stands ahead of that pin while its 3.0.1 line runs unmerged. A lane still leaves it alone; the operator moves it, and a `git log` on that gitlink shows their pin rather than drift.
 * ''Landed since'' (CHANGELOG, THE HOSTED WALK, THE HOSTED WALK, MADE SOUND and THE HOSTED WALK'S AFTERMATH): the hosted walk (F1), then its cleanup (B1) — the leaf-bound retry; carriage keyed by the proven leaf; the live wallet; host and walk running inside the standing vessel over the one store door; the per-hearth hosting doc; the node's `lares walk` verbs, walking and hosting as the worn face, at one hearth; a charterless herm answering the knock (`ownPlacePosture`); a vessel under `LAR_ROOT` projecting into that root; ROOT-ON-FOUNDER pinned; the pinned docker mesh; the tree-clean witness; the staged `hosted-walk` acceptance — then its aftermath: the hosting modules naming only what stands, `mesh-scenarios` reading a hearth whose latest boot died as not stood, the road to Stable founding in canon, and the adapter note naming `LAR_ROOT` as the isolation knob.
+* ''Landed since (round 6 series, `c687ab03d..HEAD`, CHANGELOG):'' leaves of one PersonaGroup sync through a herm with no listening vessel, over a leaf-peer session the proof binds (per-direction keys, a hash chain, divergence surfacing); the persona-KEL fold turns verify-then-fold — only a candidate that verifies competes at each seq, a quorum-signed fork surfaces rather than a silent pick, and the three keyhive doors surface `unreadable`; the herm's drop-door admits only a successor that verifies against its carried predecessor, capped and journaled; a hung herm no longer wedges a leaf's dial; the addressed envelope and the grammar-wasm CI step; the held-out reader's github-context fidelity, genesis and provisioning fixes; `doctype-render-parity` proves off a committed before-render fixture, never off history a squash merge can erase. Measured, not assumed: run `tools/witness-all.sh` and the whole e2e set fresh before trusting a count below this line.
 * ''E2E'' (the whole staged set): 30 of 30 files — 215 passed.
 * ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 34 of 34 read ok, `tree-clean-witness` included (the node e2e config, `LAR_BAGS` unset, leaves the tracked tree clean). Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too. CI's witnesses job also runs every `tools/*.test.mjs` (53 tests).
 * ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
@@ -54,9 +55,7 @@ The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enact
 # ''THE RE-FOUND, one train'' — the rulings that shape it, the slices in dependency order, and the questions the operator still owns read in `lar:///ha.ka.ba/lares/docs/stable-founding-road`. It mints unversioned names, re-mints the engine and edge, and re-seats the Nexus; DESTROY-class strings stay frozen. The train: R-STORE ‖ R-CUSTODY → R-CHARTER (the one AID train, the Stable founding act inside it) → R-WIRE → R-ENGINE · R-EMBER · R-KAHU.
 ## ''No pave or wipe command'' (operator-ruled; such a command is too risky). A fresh START runs BY HAND: move the old homes aside — rename, never delete, so it stays reversible — then found fresh. Valuable data lives in git, in the private `claude-backup` repository, or on `D:` (`stable-founding-road#/fresh-start`).
 ## ''The live-holder gap'': `lares host` and `lares walk` route through the standing vessel's one store door; the remaining direct-store writers route in R-STORE.
-# ''Beside the train.''
-## ''Leaf↔leaf transport'' (N2): Automerge sync between leaves through a herm, with `leaf-peer-proof` bound to the session it admits (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy`).
-## ''The held-out dispatch needs'': a host-built dist, and `vessel found` on the runner.
+# ''Beside the train, landed'': leaf↔leaf sync through a herm, session-bound (`identity-slot-policy#/the-leaf-taxonomy`), and the held-out dispatch driven from a host-built dist with `vessel found` on the runner — neither rides the train any longer; see `stable-founding-road#/the-road`.
 
 ''Carried, unranked''
 * Road (iv): surface-for-review.
@@ -141,6 +140,6 @@ The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enact
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1d5eKJvm2bFSXw-uTTef5N272tH8QfSeXJz7pHiDYAs
+<<^ code="&#x0003;">>ni:///sha-256;muUjkyIx5oNkgpSzb5G1Y_EkvOxea2C29lsspYe9NxY
 
 <<^ code="&#x0004;" -> to="?">>
