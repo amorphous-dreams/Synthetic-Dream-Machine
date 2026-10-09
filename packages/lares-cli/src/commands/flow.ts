@@ -36,7 +36,8 @@ export async function cmdFlow(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log("lares sense flow — the capture topology (read-only)\n");
       console.log("  capture:     source-pointer → Python holder (serialized, native-source read)");
-      console.log(`  daemon:      sock ${daemonOpen ? "OPEN (route available)" : "closed (route unavailable)"}`);
+      // The vessel's OWN owner-only socket, in its own words — never the herm's closed-door body, a different relation.
+      console.log(`  daemon:      ${daemonOpen ? "socket up — the capture route reaches it" : "socket down — no daemon answers on this vessel's own socket"}`);
       console.log(`  palace:      ${palaceLine}`);
     },
   });
