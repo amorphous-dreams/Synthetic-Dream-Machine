@@ -81,8 +81,9 @@ services:
     # vessel: the peer is still standing. `restart: "no"` turned a transient loss permanent, so a harness
     # built to prove federation reported a dead node instead.
     #
-    # `on-failure:3` rides the race and still surfaces a real fault — a vessel that genuinely cannot boot
-    # fails three times and stays down, which reads differently from one that failed once and stood.
+    # The herms' budget (`x-herm`, where its scaling reads) rides the race and still surfaces a real fault —
+    # a vessel that genuinely cannot boot exhausts it and stays down, which reads differently from one that
+    # failed once and stood.
     restart: "on-failure:8"
 
   # OPERATOR B — a second, independent hearth. Its own root, its own keys, its own vault: A holds no
