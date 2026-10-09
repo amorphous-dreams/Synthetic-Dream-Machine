@@ -125,6 +125,10 @@ with the lanes beside it. The R-ENGINE fold builds in parallel from the start an
 * ''Re-scoped keys'': the chairs re-key to per-Nexus leaves (a root-signing seat breaches Q1-strict); the device edge and the dyad scope commit to the Nexus AID; the sentinel (the MeshCabal keyhive identity) re-keys.
 * ''Boards resolve per relation''; the keyring takes deliveries additively and never overwrites the private Nexus's secret; one fleet-join door replaces `device-admit` and `persona admit`; add-a-face (A); the bare primary-path seal import goes; the mirror guard keys on posture.
 * The staging harness founds through the one act inside the train, because the e2e set reads red from the first charter-byte change until the founding lands.
+* ''Expiry rides the epoch, never the wall clock'' (the F1 pattern: a grant lapses by non-renewal, by an epoch roll, or by its burn marker). Three sites gate on `Date.now()`, and each folds here, where the charter's epoch names the frontier a grant lapses against:
+** `persona-admit.ts:120/198/273`: the offer signs a wall-clock `expiry` into the `GrantTranscript`, and both readers gate it on the local clock.
+** `cabal-vouch.ts:74/95`, with `cabal-invite.ts:99` and `vouch-board.ts:94`: the vouch signs a 30-day `expiresAt` into the invite bytes and gates the mint on it, so one vouch minted at two instants signs two different byte strings. The invite already carries `boundEpoch`, the frontier it can lapse against.
+** `keyhive-identity-slot.ts:125/156`: the unsigned token's `expiresAtMs` gates `verifyDelegation` on the reader's clock. Measured: only tests construct `KeyhiveIdentitySlot`, and no live path calls `delegateCapability` or `verifyDelegation`, so this clock guards nothing live; its expiry gets decided where a live path first wires the slot.
 
 !!! R-WIRE ~ the per-Nexus wire key (after R-CHARTER, so every pin changes once)
 * A per-Nexus wire key derived from the sealed custody root and the Nexus AID; one gate per (Nexus, route), so knock, pin, verdict and posture read per Nexus exactly.
@@ -189,6 +193,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IUHO7S-Ux1sIoZ6UlhEYy3gwf-x3TNO9kWWVX-ECoTI
+<<^ code="&#x0003;">>ni:///sha-256;wEAWjV13i7tFRKkJFoFE-FjWyXnbbHllSCoKukgHJUs
 
 <<^ code="&#x0004;" -> to="?">>
