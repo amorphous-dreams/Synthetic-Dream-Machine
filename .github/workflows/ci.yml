@@ -300,6 +300,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: noosphere-boot.mem must stay under the 40000-char ceiling
         run: |
+          # The single quotes hold a node program whole: its backticks are JavaScript, never the shell's.
+          # shellcheck disable=SC2016
           node -e '
             const fs = require("node:fs");
             const p = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
