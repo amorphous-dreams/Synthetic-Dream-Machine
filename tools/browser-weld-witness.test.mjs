@@ -76,6 +76,9 @@ case "$FAKE_MODE" in
     echo "error when starting dev server: Error: Port is already in use"
     exit 1
     ;;
+  ready-slow)
+    /bin/sleep 0.3
+    ;;
 esac
 echo "  ➜  Local:   http://localhost:$WELD_PORT/"
 printf '%s\\n' "$$" > "$FAKE_VITE_PIDS"
@@ -117,8 +120,12 @@ esac
       PATH: `${bin}:${process.env.PATH}`,
       ARTIFACT_DIR: artifacts,
       WELD_PORT: "56991",
-      WELD_READY_ATTEMPTS: "3",
-      WELD_READY_INTERVAL: "0",
+      // A READINESS WINDOW SIZED FOR THE SLOWEST MACHINE THAT RUNS THIS. The fake announces at once, so a
+      // fast desk crosses on the first probe; a loaded runner can schedule the fake's startup after a
+      // near-zero window closes, and the drivers then never run. Ten seconds of 50ms probes costs a fast
+      // desk nothing. A case that needs the window to CLOSE first names its own, shorter one.
+      WELD_READY_ATTEMPTS: "200",
+      WELD_READY_INTERVAL: "0.05",
       WELD_READY_SETTLE_SECONDS: "0.05",
       FAKE_MODE: mode,
       FAKE_VITE_PIDS: pids,
@@ -255,6 +262,9 @@ async function testIndependentDriversAndArtifacts() {
     try {
       const { done } = run("bash", [RUNNER], { cwd: REPO, env: harness.env });
       const result = await done;
+      // The drivers' own record comes first: a runner that refused before them can exit 1 too, and
+      // that exit would otherwise match the red case's expected status while hiding why.
+      assert.equal(await exists(harness.calls), true, result.output);
       assert.equal(result.status, testCase.expectedStatus, result.output);
       assert.deepEqual(await readLines(harness.calls), ["weld", "c4"]);
       // L-Prime receipt boundary: driver output stays visible beside the Vite artifact.
@@ -283,6 +293,21 @@ async function testIndependentDriversAndArtifacts() {
   }
 }
 
+// A runner under load starts the surface late. The window waits for the announcement, so a slow
+// start reads as slow, never as a surface that refused.
+async function testSlowSurfaceStillReachesTheDrivers() {
+  const harness = await makeHarness("ready-slow");
+  try {
+    const { done } = run("bash", [RUNNER], { cwd: REPO, env: harness.env });
+    const result = await done;
+    assert.equal(await exists(harness.calls), true, result.output);
+    assert.equal(result.status, 0, result.output);
+    assert.deepEqual(await readLines(harness.calls), ["weld", "c4"]);
+  } finally {
+    await harness.dispose();
+  }
+}
+
 async function testForeignPortCannotPassReadiness() {
   const harness = await makeHarness("collision");
   try {
@@ -297,7 +322,8 @@ async function testForeignPortCannotPassReadiness() {
 }
 
 async function testDelayedForeignPortCannotPassViteReadiness() {
-  const harness = await makeHarness("collision-delayed");
+  // This fake announces a collision only after a second, so the window must close before it does.
+  const harness = await makeHarness("collision-delayed", { WELD_READY_ATTEMPTS: "3", WELD_READY_INTERVAL: "0" });
   try {
     const { done } = run("bash", [RUNNER], { cwd: REPO, env: harness.env });
     const result = await done;
@@ -342,6 +368,7 @@ await testC4TraceInstrumentsManifestHandleDispatch();
 await testC4TraceInstrumentsWorkerShoreInbound();
 await testC4TraceInstrumentsWorkerShoreRegistration();
 await testIndependentDriversAndArtifacts();
+await testSlowSurfaceStillReachesTheDrivers();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();
 await testSignalReapsTheViteProcessGroup();
