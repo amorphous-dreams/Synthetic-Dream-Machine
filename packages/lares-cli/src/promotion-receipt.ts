@@ -16,7 +16,9 @@
  * The boundary demands this discipline by name, and the split is the module's whole shape:
  *
  *   · WHAT THE SIGNER ASSERTS rides INSIDE the signature — the six fields above, plus the domain and the
- *     signer's own asserted clock reading. Moving any of them invalidates the receipt.
+ *     signer's key. Moving any of them invalidates the receipt. No clock reading rides it: no global now
+ *     (`#/causal-islands`), so the same crossing signs the same bytes, and a receipt takes its order from the
+ *     content it pins and the history of the bag it lands in, never from a reading of any clock.
  *   · WHAT THE WORLD CAN CHECK FOR ITSELF — chains, memberships, freshness — rides ATTACHED and UNSIGNED.
  *     A reader re-derives it whenever they like.
  *
@@ -69,8 +71,6 @@ export interface PromotionAssertion {
   readonly approverNym:  string;
   /** The approver's signing key at crossing. A reader resolves the chain ATTACHED; the key is asserted. */
   readonly approverKeyDid: string;
-  /** The approver's OWN clock reading. Asserted, never proven — no global now (`#/causal-islands`). */
-  readonly crossedAt:    string;
 }
 
 /** THE WHOLE RECEIPT — the signed region, its signature, and the attached region that moves freely. */
@@ -104,7 +104,6 @@ export function promotionAssertionBytes(assertion: PromotionAssertion): Uint8Arr
     proposerNym:    assertion.proposerNym,
     approverNym:    assertion.approverNym,
     approverKeyDid: assertion.approverKeyDid,
-    crossedAt:      assertion.crossedAt,
   });
 }
 
@@ -126,8 +125,6 @@ export async function mintPromotionReceipt(input: {
   /** The cap reading, injected — the module opens no keyring and resolves no delegation. */
   readonly holdsAdmin:     (nym: string, bag: string) => boolean | Promise<boolean>;
   readonly sign:           (bytes: Uint8Array) => Promise<string>;
-  /** The approver's own clock. Injected so a witness reads a fixed one. */
-  readonly now?:           () => string;
   /** The attached region to carry — unsigned, and the mint never reads it. */
   readonly attached?:      Readonly<Record<string, unknown>>;
 }): Promise<{ ok: true; receipt: PromotionReceipt } | { ok: false; reason: string }> {
@@ -155,7 +152,6 @@ export async function mintPromotionReceipt(input: {
     proposerNym:    input.proposerNym,
     approverNym:    input.approverNym,
     approverKeyDid: input.approverKeyDid,
-    crossedAt:      (input.now ?? ((): string => new Date().toISOString()))(),
   };
   const sig = await input.sign(promotionAssertionBytes(assertion));
   return { ok: true, receipt: { assertion, sig, attached: input.attached ?? {} } };

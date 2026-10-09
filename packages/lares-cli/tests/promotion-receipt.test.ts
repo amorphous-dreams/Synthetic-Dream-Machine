@@ -180,4 +180,24 @@ describe("promotion-receipt — the record a promotion leaves behind", () => {
     };
     expect(await verifyPromotionReceipt(other)).toBe(false);
   });
+
+  test("★ NO GLOBAL NOW: the same crossing signs the same bytes — no clock reading rides the assertion ★", async () => {
+    const a = await mint();
+    // Fake the clock between the two mints: a reading of it anywhere in the assertion moves the bytes.
+    const realNow = Date.now;
+    Date.now = () => realNow() + 86_400_000;
+    let b: Awaited<ReturnType<typeof mint>>;
+    try { b = await mint(); } finally { Date.now = realNow; }
+    expect(a.ok && b.ok).toBe(true);
+    if (!a.ok || !b.ok) return;
+    expect(Object.keys(a.receipt.assertion).sort()).toEqual([
+      "approverKeyDid", "approverNym", "carrierHash", "domain", "fromBag", "proposerNym", "subjectUri", "toBag",
+    ]);
+    expect(hex(promotionAssertionBytes(b.receipt.assertion))).toBe(hex(promotionAssertionBytes(a.receipt.assertion)));
+    // CONTROL: the comparison moves when an asserted field moves, so the equality above reads something.
+    const c = await mint({ carrierHash: HASH.replace(/.$/, "A") });
+    expect(c.ok).toBe(true);
+    if (!c.ok) return;
+    expect(hex(promotionAssertionBytes(c.receipt.assertion))).not.toBe(hex(promotionAssertionBytes(a.receipt.assertion)));
+  });
 });

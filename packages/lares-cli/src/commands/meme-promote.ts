@@ -84,8 +84,6 @@ export interface PromotionSeat {
   /** THE RESIDENCY MOVE, injected — the whole-carrier-group transfer, land-then-retract, title preserved. */
   move(move: PromotionMove): Promise<{ ok: true; moved: number } | { ok: false; reason: string }>;
   sign(bytes: Uint8Array): Promise<string>;
-  /** The approver's own clock. Injected so a witness reads a fixed one. */
-  now?(): string;
 }
 
 export interface PromotionPlan {
@@ -184,7 +182,6 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
     subject:        { tags },
     holdsAdmin:     (nym, bag) => seat.holdsAdmin(nym, bag),
     sign:           (bytes) => seat.sign(bytes),
-    ...(seat.now ? { now: seat.now } : {}),
     attached:       { carrierFile: plan.file, fromBag },
   });
   if (!minted.ok) return { ok: false, reason: minted.reason };

@@ -119,7 +119,7 @@ The two properties it fuses:
 
 !!! The shape the receipt takes
 
-''A receipt carries content-level provenance, never an authority record.'' A capability delegation says //who may write canon//, which the cap gate already answers. The receipt carries ''what crossed, by whom, from where'' — proposer, approver, source, destination, content hash — signed, with the approver's hold on the destination read at the moment of signing (`holdsAdmin`, injected).
+''A receipt carries content-level provenance, never an authority record.'' A capability delegation says //who may write canon//, which the cap gate already answers. The receipt carries ''what crossed, by whom, from where'' — proposer, approver, source, destination, content hash — signed, with the approver's hold on the destination read at the moment of signing (`holdsAdmin`, injected). ''No clock reading rides the signed bytes'': no global now holds, so the same crossing signs the same bytes, and a receipt takes its order from the content hash it pins and the history of the bag it lands in.
 
 ⚠ And it wants the ''signed-region vs attached-region'' discipline: what the signer ASSERTS rides inside the signature; what ''the world can check'' — chains, memberships, freshness — rides attached and unsigned, so refreshing evidence never wakes a cold key. //Signing evidence causes freshness coupling and pins staleness.//
 
@@ -203,6 +203,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yoAD7pB8lFHDVEfJzUTUqVsfkWzic1iTBsDs9KFqtZQ
+<<^ code="&#x0003;">>ni:///sha-256;O61DtLbpNsL6x4QLyPApPQcarY8IkWdnFoF2-xB5EQg
 
 <<^ code="&#x0004;" -> to="?">>

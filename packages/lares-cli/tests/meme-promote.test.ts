@@ -136,7 +136,6 @@ async function seated(opts?: { admin?: boolean; residency?: Ledger }): Promise<S
       return { ok: true as const, moved: 1 };
     },
     sign:           ed25519SignerFromSeed(SEED),
-    now:            () => "2026-09-13T00:00:00.000Z",
   };
   return { seat, moves, residency };
 }
