@@ -5,9 +5,9 @@
  * stranger meets silence.
  *
  * THE VECTOR this suite exists for: `lares host roll` beside a STANDING hearth. The hearth's process holds the
- * replica its walkers sync; a roll written through a second Repo sat on disk while the replica — and every
- * walker reading it — never saw the act, so a walker's next dial could not fill its wallet at the new epoch.
- * The roll now runs inside the standing vessel (`host-roll` over the local socket).
+ * replica its walkers sync, so a roll lands on that replica or no walker reads it: an act written through a
+ * second Repo sits on disk the replica never carries, and a walker's next dial cannot fill its wallet at the new
+ * epoch. The roll runs inside the standing vessel (`host-roll` over the local socket).
  *
  *   A   the hearth — a charter seated by its own quorum, PRIVATE; its daemon stands throughout.
  *   B   a node that walks in on A's invite (`persona wear 0` · `walk take` · stand).

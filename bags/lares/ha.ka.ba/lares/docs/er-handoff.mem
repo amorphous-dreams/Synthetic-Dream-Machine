@@ -19,15 +19,14 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 !! Vitals
 
 * ''Branch'' `feature/lararium-node-5`, ahead of `origin` — `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits; the operator pushes. Dirt in the tree that no lane authored: the `mempalace` and `VSCode-TW5-Syntax` submodule pointers, `.worktrees/`, `.claude/worktrees/`. Never commit, stash, or revert those.
-* ''Landed in the last sign-off'' (CHANGELOG `[Unreleased]`, the SIGN-OFF BATCH lines): the gate-signed `lar:auth-ok`; `lar:session` frames on an admitted socket; leaf↔leaf proof as a library; the PersonaGroup ring on both vessels through one function; the oracle crossing only to a proven peer over the gated `/oracle` socket, every HTTP path the one `CLOSED_DOOR`; `/api/health` on a lararium alone; the `hosted` invite arm and its countersign over the live session; R1 (one file, one carrier; `MemeStreamParser` gone); the carrier grammar's name-matched ahu pairing and the `ahu-pair-parity` weld; bag doors refusing a torn frame; one presenter, forks per board, findings surfaced; `rite quorum` and `needsQuorum`; the Codex hold closed and the hearths gate quiet unless held; the offering replication suite; the browser share config reading the armed gate.
 * ''Landed since'' (CHANGELOG, THE HOSTED WALK and THE HOSTED WALK, MADE SOUND): the hosted walk (F1), then its cleanup (B1) — the leaf-bound retry; carriage keyed by the proven leaf; the live wallet; host and walk running inside the standing vessel over the one store door; the per-hearth hosting doc; the node's `lares walk` verbs, walking and hosting as the worn face, at one hearth; a charterless herm answering the knock (`ownPlacePosture`); a vessel under `LAR_ROOT` projecting into that root; ROOT-ON-FOUNDER pinned; the pinned docker mesh; the tree-clean witness; the staged `hosted-walk` acceptance.
 * ''E2E'' (the whole staged set): 30 of 30 files — 215 passed.
 * ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) ends on a verdict table, one line per witness with its own exit code — count the reds there, never in the transcript. 34 of 34 read ok, `tree-clean-witness` included (the node e2e config, `LAR_BAGS` unset, leaves the tracked tree clean). Each dist-reading witness refuses a stale build by name (exit 2) — rebuild the named package, run `node tools/stamp-build.mjs . --pkg <name>`, re-run; a comment edit in a package's `src/` stales its dist too. CI's witnesses job also runs every `tools/*.test.mjs` (53 tests).
 * ''Typecheck'' (`tools/typecheck-witness.sh`): every package clean across 11 projects.
 * ''Unit suites'': `lararium-tw5` 1732; `lararium-mesh` 2470; `lararium-node` 1447; `lares-cli` 554; `lararium-keyhive` 146; `lararium-browser` 145; `lararium-web` 9; `lararium-memetic-frame` 357; `lararium-sensorium` 952 Python + 54 vitest. The tree-sitter carrier grammar reads clean.
-* ''HEADS-UP — the operator's live `~/.lares` vessel'': its stored device edges were signed over the clocked layout, and any rotated seal lineage it holds carries no signed rolls. Both fail verification on this build. Do NOT stand that vessel on this build; it needs the re-found or a re-mint.
+* ''HEADS-UP — the operator's live `~/.lares` vessel'': its stored device edges were signed over the clocked layout, and any rotated seal lineage it holds carries no signed rolls. Both fail verification on this build. Do NOT stand that vessel on this build; it needs a fresh start, by hand (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`).
 * ''CI'' (`.github/workflows/ci.yml`): the last run read a pushed head behind the local tree — `gh run list --branch feature/lararium-node-5` names it. The next push is the witness for everything since.
-* ''The docker mesh'' (by hand; `witness-all` runs none of it): `crossing-witness` 4 of 4; `node tools/mesh-pins.mjs --up` stands the mesh pinned; `herm-mesh-witness` carries `node/alpha` across three hops, verified at the last; `mesh-scenarios nexus` reads every step ok, the hearths carrying from the herm. Note: `mesh-scenarios`' `stood` reads any `[lararium]` log line, a fatal one included.
+* ''The docker mesh'' (by hand; `witness-all` runs none of it): `crossing-witness` 4 of 4; `node tools/mesh-pins.mjs --up` stands the mesh pinned; `herm-mesh-witness` carries `node/alpha` across three hops, verified at the last; `mesh-scenarios nexus` reads every step ok, the hearths carrying from the herm. A hearth whose log carries a `[lararium] fatal:` line reads as not stood.
 * ''Known environmental reds'': `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` fail when a browser or server socket is missing.
 
 <<~/ahu>>
@@ -52,29 +51,10 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn face hosts; a herm answers the knock; a boot follows `LAR_ROOT`). No operator ruling is pending for the push.
 
-# ''THE RE-FOUND, one act'' (rulings: the operator's STABLE and CUSTODY rulings; canon `lar:///ha.ka.ba/lararium/mesh/kahu`, `lar:///ha.ka.ba/lararium/mesh/membership-doctrine`). It mints unversioned names, re-mints the engine and edge, and re-seats the Nexus — never a persona or sealed-body wipe; DESTROY-class strings stay frozen.
-## ''STABLE — the founding state.''
-### One interactive founding act, under one passphrase, produces the place, persona zero, a private charter (a cabal-of-one: one seat, t=1, per-seat next digests) and the keyring keyed by `epochCid`, minted at the seat, never at boot.
-### Every Nexus has a charter; guests walk the private Nexus, their planes persona-scoped.
-### Boards resolve per relation (`nexusIdentity` returns one island today).
-### Every leaf keeps its own floor root, with its own slot beside the group face (a two-mount shape).
-### Add-a-face (A): the daemon writes the public half, the terminal seals the recovery share, seating stays a separate act.
-### Delete the bare primary-path seal import.
-### The mirror guard keys on posture.
-### The direct-store verbs (`publish`, device-admit, `persona new N`) route through the live daemon over UDS. This carries the crew's live-holder gap: a direct-store write beside a live holder lands on disk the holder never carries.
-## ''CUSTODY — the Vessel KEK.''
-### One VK seals every carrier: archives, shares, the persona root, the next-root seed and the custody root.
-### LUKS-style keyslots of Clevis `sss` trees, with pins passphrase · paper · ember · tpm; a BACKUP route (passphrase or paper) is required at every tier, and bind refuses a tree without one.
-### EMBER: Tang-shaped, per-relation, holding no share of VK. The locality law: an unattended ember answers on the local link only; a relay pin must be attended.
-### The vessel rests at the floor, then the ember raise, which lapses by non-renewal. HOT ⊥ COLD: VK and keyhive state stay hot; the root, recovery shares and next seed unwrap per act.
-### The floor key keeps the public name ⊥ the sealed custody root derives the veil.
-### `unbind` offers a VK rotation loudly, every time.
-### `vault unlock|bind|unbind|status` over UDS; `LARES_ARCHIVE_PASSPHRASE` retires.
-### The cleartext vessel seed, persona root and next-root seed get wrapped.
-### Hardware x-only ECDH measurement: deferred.
-## ''CARRIED into the re-found.'' The per-Nexus wire key (it also cuts the oracle pointer's vessel-key correlation, `lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`); per-seat `nextKeyDigests`; S1, a multi-vessel kahu quorum; L1, the realm root map from `keptBy`; the coal-only seed without `schemaVersion`; the cadence inception (t/k); the sentinel re-key; the chairs re-keyed to per-Nexus leaves, which un-owes the invite's `seat` arm; `waking-floor-announce` (`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement`). Then the island `schema_version` (~35 files) drops its counter.
-# ''ROUND 6.''
-## ''The proof-first / silence protocol lane'' (Noise IK shape): the dialer proves first and a stranger draws silence. It covers the gate's `lar:challenge` naming the vessel key to any opener, the oracle route answering distinguishably, and N8: the membership relay's unsigned second handshake collapses onto the auth wire.
+# ''THE RE-FOUND, one train'' — the rulings that shape it, the slices in dependency order, and the questions the operator still owns read in `lar:///ha.ka.ba/lares/docs/stable-founding-road`. It mints unversioned names, re-mints the engine and edge, and re-seats the Nexus; DESTROY-class strings stay frozen. The train: R-STORE ‖ R-CUSTODY → R-CHARTER (the one AID train, the Stable founding act inside it) → R-WIRE → R-ENGINE · R-EMBER · R-KAHU.
+## ''No pave or wipe command'' (operator-ruled; such a command is too risky). A fresh START runs BY HAND: move the old homes aside — rename, never delete, so it stays reversible — then found fresh. Valuable data lives in git, in the private `claude-backup` repository, or on `D:` (`stable-founding-road#/fresh-start`).
+## ''The live-holder gap'': `lares host` and `lares walk` route through the standing vessel's one store door; the remaining direct-store writers route in R-STORE.
+# ''ROUND 6'', apart from the train.
 ## ''Leaf↔leaf transport'' (N2): Automerge sync between leaves through a herm, with `leaf-peer-proof` bound to the session it admits (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy`).
 ## ''The held-out dispatch needs'': a host-built dist, and `vessel found` on the runner.
 
@@ -85,7 +65,7 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 * `packages/lararium-sensorium/requirements.txt` calls the tree-sitter versions one (Python binding 0.26, CLI 0.27; both ABI 15).
 
 ''Pending operator rulings''
-* None standing, beyond any ruling F1 asks for.
+* The open questions in `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`.
 
 ''Needs the operator''
 * ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
@@ -111,7 +91,7 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 !! Crew debts carried
 
 * The Codex Lares hold stands CLOSED (`lar:///ha.ka.ba/lares/docs/pono/hearths`); the Lares hearth carries its debts. Its open lanes — the Offering's local adoption, grammar-scoped relation and Antigen consultation cap, its antigen scope research under `bags/lares/ha.ka.ba/lares/docs/research/`, and Pronaos live Docker reach — read in `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`, with the operator forks it records.
-* The live-holder direct-store gap the crew noted rides the re-found (#/wounds, STABLE).
+* The live-holder direct-store gap the crew noted rides R-STORE (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`).
 * Hand items through `bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem`.
 
 <<~/ahu>>
@@ -124,7 +104,7 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 * ''Ingest'' = decide(parse, verdict). The deserializer is the pure meme→tiddlers function; `verdict()` (Match · Stale · Absent · Torn · Bare) lives in the frame package; checks live in `carrier-check.ts`, composed by the ingest gate; repairs live in normalize; policy lives at each door. A stale check on a human edit warns; a torn frame refuses; text with no frame is bare data, UNSTABLE, never a meme.
 * ''Never refuse on the stock syncer path''; surface on the alert rail instead.
 * ''The quoteblock floor'' fences at two grains — the whole chunk inside the deserializer, so every door fences, and a child's body in place at the backstop's child gate: `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`.
-* ''An admit carries across a seal roll only through its roll anchors''; the carriage board stays deny-only, and the anchors ride the presentation's lineage.
+* ''An admit carries across a seal roll only through its roll anchors''; the gate reads a board deny-only, never as a folded allow roster, and the anchors ride the presentation's lineage.
 * ''Fragments'': every `lar:` fragment is rooted (`#/…`), one raw `#`, slot names `[a-z0-9āēīōūʻ-]`, `/` nests, `$` reserved; fragment law lives in the media type (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`).
 * ''Grammar is the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` → `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` = informative pin, `kanawai` = binding pin, `kahea` = live transclusion; HUD gauges `aperture` and `ooda-ha`.
 * ''Early alpha'': no back-compat, no shims, no legacy recovery — align stale things to the current frame and grammar. Derive, don't enumerate. Beware overcollapse: one function, one relation.
@@ -136,8 +116,8 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 
 !! Map ahead
 
-# Work `#/wounds` in its order: the re-found first, as one act, then the round-6 lanes.
-# THE RE-FOUND TRAIN, one act, its full scope at #/wounds. R1 commits the device edge to the Nexus AID (the engine a separate claim; `epoch0-<sha>` names become `nexus-<sha>`); R2 signs the engine offer lineage, a window k hops along `prev`; R3 folds TW5 core plus the memetic-wikitext bootstrap into `engineCid`, and the vocabulary (`sigil-*.tid`) leaves the engine as content.
+# Work `#/wounds` in its order: the re-found first, then the round-6 lanes.
+# Walk the road at `lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`: R-STORE ‖ R-CUSTODY → R-CHARTER → R-WIRE → R-ENGINE · R-EMBER · R-KAHU. The device edge commits to the Nexus AID and `epoch0-<sha>` names become `nexus-<sha>` inside R-CHARTER; the engine-offer lineage and the engine fold (TW5 core plus the memetic-wikitext bootstrap into `engineCid`, the vocabulary leaving the engine as content) ride R-ENGINE.
 # Exercise the quoteblock floor (both grains), the child gate and the persisted parallel drafts in the live wiki, against real concurrent browser saves, and turn every surprise into a test.
 # The faces stand in canon (`lar:///ha.ka.ba/lararium/mesh/membership-doctrine` `#/the-two-stacks`): end user `walk`; Lamplighter `carry`, `tend/island`, `tend/reach`; Kahu, the Nexus-scale `quorum-share`, its engine cadence a separate joint and the corpus-kahu at DreamNet scale; Guardian, the reserve share. Founding acts; it never stands as a face. Stacks compose on a persona, combined by default and split only by the holder's own act. Grammar per Nexus stands ruled: the grammar lives, the corpus-kahu curate it, and no version names it. The target scale model is the small clan.
 # Rule the capture cell; then pick up the Sensorium's logic when the operator returns to it.
@@ -149,6 +129,7 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
@@ -156,6 +137,6 @@ The hosted walk and its cleanup stand, the three B1 rulings enacted (the worn fa
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MInmfEt0ScOb2-V_7zKhVGwUU0Qsyn8SNujg2DfHpoQ
+<<^ code="&#x0003;">>ni:///sha-256;y6TQ8NAXyrjY0WvBDFDlDe8bAbZkCv9AvPmqdpGO9nE
 
 <<^ code="&#x0004;" -> to="?">>

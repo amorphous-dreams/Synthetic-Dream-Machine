@@ -1,0 +1,195 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem"
+hydrate   = true
+l-space   = "stable"
+role      = "the road to STABLE FOUNDING — the operator's rulings that shape it, the design decisions the hosted walk settled and why, the re-found's slices in dependency order, and the questions still owed to the operator"
+title     = "lar:///ha.ka.ba/lares/docs/stable-founding-road"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/stable-founding-road"
+```
+
+<<~ ahu #/the-attractor>>
+
+!! The attractor ~ STABLE FOUNDING
+
+''STABLE FOUNDING'' names the state the house grows toward (operator-ruled). Once a Lararium stands, its
+base state reads STABLE: a PRIVATE personal Nexus for the operator's own devices, and a FOUNDED PERSONA
+ZERO. Everything else flows downstream of it — contracting into other Nexuses, inviting the operator's own
+PersonaGroup devices, and hosting guests who walk.
+
+This carrier holds the road there: the rulings that shape it (#/rulings), the design decisions the hosted
+walk settled and their reasons (#/decisions), the re-found's slices in dependency order (#/the-road), the
+fresh start (#/fresh-start), and the questions the operator still owns (#/open). The live wounds and the
+vitals read in `lar:///ha.ka.ba/lares/docs/er-handoff`.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! Rulings ~ the operator's, as approved
+
+!!! The Stable state and its consequences
+* ''Every Nexus has a charter.'' The household is its own kahu cabal: a CABAL-OF-ONE reads pono, because humans act as pluralities anyway. One "I" may hold several PersonaGroups, independent or aware of each other. A Nexus grows by adding seats, never by changing kind.
+* ''Guests walk the private Nexus.'' Planes stay persona-scoped, so a guest sees its own documents plus the public and infrastructure shelf.
+* ''Add-a-face (A).'' The daemon writes the public half; the terminal seals the recovery share; seating stays a separate act.
+* ''Every leaf starts at the floor with its own root.'' A human may later JOIN a leaf to a PersonaGroup so its devices sync as one fleet; joining never takes the device's own root away.
+* ''Founding persona zero belongs to standing'', never to a later verb. A capable vessel founds its private Nexus, so a "vessel with no charter" reads Mu.
+* ''Stable folds into the re-found'' as its core.
+* ''Forks report per board'': every presenter names every fork on the board it reads (the KERI watcher shape).
+
+!!! Custody ~ the Vessel KEK
+* One Vessel KEK (VK), minted at the Stable founding, lives only inside LUKS-style keyslots, each a Clevis `sss` tree. Pin kinds: passphrase · paper (SLIP-39) · ember · tpm (one share only).
+* ''EMBER'' names the Tang-shaped, per-relation device pin; it holds no share of VK. Only the blinded points cross on unlock.
+* ''A backup route stands at every tier.'' Every keyslot tree, household or civic, keeps a human route (passphrase or paper); bind refuses a tree without one. Embers never stand as the only way in.
+* ''The floor key keeps the vessel's public name''; the sealed custody root derives the veil and the sovereign caps. The veil change stays destroy-class.
+* ''Unbind offers a VK rotation loudly'', every time, never folded in silently.
+* ''Locality law'': an unattended ember answers on the local link only; a relay pin must be attended. The vessel rests at the floor and raises when t embers answer; the raise lapses by non-renewal.
+* ''HOT ⊥ COLD'': VK and keyhive state stay hot; the root, the recovery shares and the next-root seed unwrap per act.
+* Measuring hardware x-only ECDH (phone enclaves) before trusting an enclave-held ember: approved, deferred.
+
+!!! The hosted walk (F1)
+* ''(c′) adopted.'' The HOST's gate reads and burns invites. The gate sorts every socket into same-operator · contracted · walker · stranger; under PRIVATE a stranger meets silence before any session frame. The guest carries its hosting grant; the hearth stores nothing about it. Invites mint by blind POPRF evaluation, so who-invited-whom stays non-computable. Revocation runs by kapae of the guest's leaf, by non-renewal, or by an epoch roll. Sybils meet tolerance, never detection.
+* ''The inviter's face never signs an invite'': that signature would link the inviter at redemption. The hearth's blind evaluation carries the proof instead.
+* ''V — vesting by class.'' A guest the HOST invites holds floor 1 at once; a guest a WALKER invites vests at the host's next roll. The roll reads as the household's consent to grow, and purpose labels separate the two classes without naming the minter.
+* ''W — the hearth carries a walker's own documents'' as sealed ciphertext (carry ⊥ read), under a quota per guest. The PersonaGroup holds the durable copy; hearth carriage stays a convenience, never a backup.
+* ''W reclaim.'' Quota pressure is the only trigger; lapse reads as a RATIO against the guest's own rhythm between contacts, so the host's roll cadence cancels; the most-lapsed-for-itself goes first; notice on the guest's next contact comes before any discard. Counting the host's rolls was ruled out: it measures the host's diligence, and diligence is not title.
+* ''N — a node may walk.'' The sorter sorts by proven relation, never by device type.
+
+!!! The cleanup of the hosted walk (B1)
+* ''The worn face hosts and walks.'' Nothing is picked by roster order; a vessel wearing no face hosts and walks nowhere. Before its first hosting act in a Nexus, a roll refuses when the hosting doc holds an act this face signed that no local state holds.
+* ''A herm answers the knock.'' A charterless herm answers any proven peer that knocked (`ownPlacePosture`): a waystone by class, never a broken lararium. A lararium reads its charter, and an absent or torn charter reads PRIVATE.
+* ''A boot follows `LAR_ROOT`.'' A vessel isolated under `LAR_ROOT` projects into that root, never into the tracked tree: the bags root resolves `LAR_BAGS` → the config's bags resource → `<LAR_ROOT>/bags` → the repo, and the disk projection's mirror roots resolve the named `rootDir` → `LAR_ROOT` → the repo.
+* ''Compartments outrank admission control.'' A walker reads its own hearth's hosting doc, never the carriage board: the carrier set stays a contract ledger read by those who hold contracts.
+
+!!! The fresh start
+* ''No pave or wipe command'' — such a command is too risky. See #/fresh-start.
+
+<<~/ahu>>
+
+<<~ ahu #/decisions>>
+
+!! Decisions ~ what the hosted walk settled, and why
+
+* ''One sorter, inside the gate, before the verdict.'' Every gate instance (`/ws`, `/oracle`, the membership relay) sorts before `lar:auth-ok`, so posture reads once, at admission, and never again at share time. Two readers of one posture drift.
+* ''The knock.'' A gate answers an upgrade only on a path derived from its own key (`gate-knock`), so a dialer holding no pin draws no HTTP 101 — the WireGuard mac1 shape. The path still rides the upgrade in the clear on plain `ws`; full client-proves-first waits for Noise IK (#/the-road, R-WIRE).
+* ''Silence, one deadline.'' No denial frame and no close codes: one drop deadline drawn at accept, so verify time leaks nothing and a PRIVATE stranger looks exactly like a failed proof.
+* ''The multi-Nexus fold.'' A gate answers strangers if ANY Nexus it stands in reads OPEN. One gate key serves every Nexus a vessel carries, so this rule reduces exactly to per-Nexus posture once each Nexus carries its own wire key — not an interim.
+* ''The epoch is the CID of a public hosting act.'' A hearth-picked random id per walker would tag each walker; one signed act on one replicated doc makes a forked epoch surface as a fork. In a one-hearth Nexus the hearth relays its own doc, so a fork there stays undetectable (the CABAL-OF-ONE bound, named in canon).
+* ''The grant is a keyed tag, not a signature.'' Only the hearth verifies it, so a seized phone proves nothing to anyone else (the Lox and Signal Private Group System line).
+* ''POPRF over ristretto255 from the pinned `@noble/curves`'': no new dependency. Labelled honestly as Privacy-Pass-shaped, not RFC 9578 wire-conformant.
+* ''The wallet mints in full, in one blind batch''; minting on demand would link by timing. One burn marker per lineage per epoch keeps the batch digest, so a retry burns nothing new.
+* ''The claim is derived, never stored, and bound to the proving leaf.'' The spent-set keeps `n → H(claim, leaf)`: a retry under the same leaf earns the identical grant; a captured claim replayed under another leaf meets silence and destroys nothing; a seizer cannot compute any lineage.
+* ''Carriage keys on the guest's PROVEN leaf.'' A hearth-issued stub would read as a bearer capability to another guest's record and as a hearth-minted cross-lineage linker. The leaf already proves on every socket, so keying on it adds no linkage the hearth lacks; a fresh leaf is a fresh carriage.
+* ''A per-hearth hosting doc'' (`hostingDocUrl(N, gate key)`): the smallest board a walker needs — its own hearth's act chain, the same doc for every walker of that hearth, replicated by the Nexus's carriers for the cross-check.
+* ''One store door.'' A command that touches the store runs inside the standing vessel over the owner-only socket, else owns the store itself for that moment. A second Repo beside a live holder writes bytes the replica never sees.
+* ''No hearth-local deny set.'' Kapae and the roll suffice; a deny set would be a seizable list.
+* ''No node carriage.'' A node is its own durable store and no story walks its carriage; ruling N holds as a sorter property and W as the hearth's service. Node carry would be a new user story, never owed by N or W.
+* ''Hosting stays on the worn persona leaf.'' ROOT-ON-FOUNDER keeps a persona root on one vessel, so one face cannot host from two stores unseen; the first-roll rail surfaces the remaining case.
+
+<<~/ahu>>
+
+<<~ ahu #/the-road>>
+
+!! The road ~ the re-found, sliced by true dependency
+
+''The organizing law'': identity bytes (the Nexus AID, the device edge, the dyad scope, the seats, the
+sentinel) change ONCE, inside one train. ''The owner law'': each slice lands its logic in modules, and one
+named owner per step commits the one compose hunk in `open-node-vessel.ts` and `open-browser-vessel.ts`;
+every other lane stops at a module boundary. Each lane's first commit carries its canon.
+
+The train: ''R-STORE ‖ R-CUSTODY → R-CHARTER (one AID train) → R-WIRE → R-ENGINE · R-EMBER · R-KAHU'',
+with ROUND 6 apart from it. The R-ENGINE fold builds in parallel from the start and may land early.
+
+!!! R-STORE ~ one store door for every writer (parallel from the start; no identity bytes)
+* Route the remaining direct-store writers through the one store door: `nexus-contract`, `nexus publish`, `edge-kapae`, `nexus-kapae`, `cabal-vouch`, `device-admit`, `persona new N`. Readers route too, so none reads disk the holder has not flushed.
+* Delete `nexus refresh`'s throwaway-Repo board-merge bridge — a second door for the live-holder gap once every write routes.
+* Land `tools/direct-repo-witness.sh` with the last conversion, so it never lands red: no `new Repo(` in `lararium-node/src/commands/*` beyond the door's own direct branch, with a planted known positive as its control.
+
+!!! R-CUSTODY ~ the Vessel KEK (parallel with R-STORE; no identity bytes)
+* VK, keyslots and the four verbs `vault unlock · bind · unbind · status` over the socket; `vault seal|rotate|export|repair` and `LARES_ARCHIVE_PASSPHRASE` retire.
+* ''One carrier table'' names every secret at rest — the vessel seed, the persona roots, the recovery shares, the next-root seed (`.vessel-next*.json`, cold), the keyring, the hosting state, the carry scalars, the walk wallet — and the census DERIVES from it, never beside it.
+* ''One sealed writer'': sidecar → re-open → compare → rename, never sealing in place; a witness refuses any 0600 file or seal outside the table. The cleartext carrier leaves only after a SEPARATE process opened the sealed one.
+* ''The old-shape refusal'' lands first, red-first: the new build refuses a cleartext root with no slot tree, before any write.
+* The vessel KEL re-incepts with no wall clock and no version field. Fresh foundings seal from birth; nothing wraps cleartext in place.
+* The enumerable carriage rows and the leaf-testability bound close at rest here.
+
+!!! R-CHARTER ~ the one AID train (after R-STORE and R-CUSTODY)
+* ''The Stable founding act'': one interactive act under one passphrase (the VK's first slot) yields the place, persona zero, a PRIVATE charter as a cabal-of-one (one seat, t=1, per-seat next digests) and the keyring keyed by `epochCid`, minted at the seat and never at boot.
+* ''Charter shape'': per-seat pre-rotation (`nextKeyDigests`, `nextThreshold`) replacing the single next-key commit; the cadence inception cited once by the founding act; the seal-roll successor named (#/open); `epoch0-<sha>` names become `nexus-<sha>`; `genesisSealEpochCid` deleted.
+* ''Re-scoped keys'': the chairs re-key to per-Nexus leaves (a root-signing seat breaches Q1-strict); the device edge and the dyad scope commit to the Nexus AID; the sentinel (the MeshCabal keyhive identity) re-keys.
+* ''Boards resolve per relation''; the keyring takes deliveries additively and never overwrites the private Nexus's secret; one fleet-join door replaces `device-admit` and `persona admit`; add-a-face (A); the bare primary-path seal import goes; the mirror guard keys on posture.
+* The staging harness founds through the one act inside the train, because the e2e set reads red from the first charter-byte change until the founding lands.
+
+!!! R-WIRE ~ the per-Nexus wire key (after R-CHARTER, so every pin changes once)
+* A per-Nexus wire key derived from the sealed custody root and the Nexus AID; one gate per (Nexus, route), so knock, pin, verdict and posture read per Nexus exactly.
+* ''Noise IK, proof-first'': the gate emits nothing before a valid first message; the knock becomes the IK pre-message.
+* The floor announcement signs under the wire key, folded in here, so gate and announce never sign under two keys.
+* One client dial per (hearth, Nexus), so a vessel walks at more than one hearth; until then a second walk hearth refuses aloud.
+* The vessel key stops linking a walker's leaves across Nexuses on the wire (`two-maps` clause 5's residual), and the oracle pointer's vessel-key correlation goes with it (`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`).
+
+!!! R-ENGINE ~ the engine fold, then its offers
+* ''Fold'' (parallel from the start): TW5 core and the memetic-wikitext bootstrap fold into `engineCid`; the vocabulary leaves the engine as content; the coal-only seed carries no `schemaVersion`; the island `schema_version` drops its counter.
+* ''Offers'' (after R-CHARTER): the engine-offer lineage signs under the cadence threshold, adopted within a k-hop window along `prev`.
+
+!!! R-EMBER ~ the ember pin (after R-CHARTER's two-mount join)
+* A household's first ember stands on its second device, which needs the two-mount join; the slot tree ships whole in R-CUSTODY and this slice adds a pin kind.
+
+!!! R-KAHU ~ the kahu cabal across vessels
+* S1, a quorum whose seats live on different vessels, and L1, the realm root map from the co-signed `keptBy`. Needs only the seat shape.
+
+!!! ROUND 6 ~ apart from the train (no identity bytes)
+* Leaf↔leaf sync through a herm, with `leaf-peer-proof` bound to the session it admits.
+* The held-out dispatch on a host-built dist, with `vessel found` on the runner.
+
+<<~/ahu>>
+
+<<~ ahu #/fresh-start>>
+
+!! The fresh start ~ by hand, reversible, never a command
+
+There is NO pave or wipe command (operator-ruled): such a command is too risky. In early alpha a fresh
+START still reads pono when it runs BY HAND: MOVE the old homes aside — rename them, never delete them, so
+the move stays reversible — then found fresh on the re-found build. Valuable data lives in git, in the
+private `claude-backup` repository, or on `D:`; a vessel home holds nothing that only it holds.
+
+The homes to move are the ones the OLD build's resolvers name — the `~/.lares` home, the XDG data homes for
+`lares` and `lararium`, and the state home — asked of the old build at the moment of moving, never
+enumerated by hand. The new build's old-shape refusal (#/the-road, R-CUSTODY) keeps an accidental boot
+off any home that was not moved. Other Nexuses rejoin through presented admits; every old admit names an
+old AID and reads dead by construction.
+
+<<~/ahu>>
+
+<<~ ahu #/open>>
+
+!! Open ~ what the operator still owns
+
+# ''The seal-roll successor's name.'' Mint it inside the standing `seal` family (`seal-seat-roll`), or choose a family word first (`charter-roll`). The name changes with the bytes either way.
+# ''A root-holding browser leaf's backup slot.'' A WebCrypto non-extractable slot allows no paper backup in-browser; does "a backup at every tier" require such a leaf to hold a paper or passphrase slot too? Lean: yes for a leaf holding a persona root; a floor-only leaf holds no tree.
+# ''The seat's cold next key at founding.'' Arm it at the Stable founding (one sheet, two labelled sections — the VK backup and the seat's next key — each read back), or leave the seat to commit later? Lean: arm it; an unarmed charter never rotates.
+# ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never is. The lenses split; re-opening W needs the operator's turned key.
+# ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
+# ''The projection's mirror root under `LAR_BAGS`.'' The disk projection mirrors under `--root`, else `LAR_ROOT`, else the repo, and reads neither `LAR_BAGS` nor the config's bags resource; only `bagsRoot()` reads `LAR_BAGS`. So `LAR_BAGS` alone does not keep an in-tree boot out of the tracked tree. Rule whether the mirror follows the bags root, or the instruction names `LAR_ROOT`.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;c5rrSD3OY5WMIPK0v-iGBu7OuDuSZghgu645eT-Qp2k
+
+<<^ code="&#x0004;" -> to="?">>
