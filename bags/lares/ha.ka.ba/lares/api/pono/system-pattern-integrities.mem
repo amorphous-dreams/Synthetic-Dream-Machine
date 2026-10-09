@@ -13,7 +13,7 @@ manao             = 19
 manaoio           = 19
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, PENTADIC, GENESIS, and PEER pattern-integrities for the Lararium causal-island system; attention-scale register names Pulse/Beat/Measure/Arc/Theme grounded in PENTA_2_CLOCK_ALIGNMENT"
+role              = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, PENTADIC, GENESIS, PEER, and THRESHOLD (Janus: every threshold keeps two faces, never merged) pattern-integrities for the Lararium causal-island system; attention-scale register names Pulse/Beat/Measure/Arc/Theme grounded in PENTA_2_CLOCK_ALIGNMENT"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -35,7 +35,7 @@ These encode design-time laws and named exceptions — no runtime validators.
 Witnessing constants: named so any agent, test, or operator can reference by ID.
 Enforcement is structural, not procedural.
 
-Eight law clusters: MIND · ISLAND · AUTHORITY · CODEC · SYSTEM · PENTADIC · GENESIS · PEER.
+Nine law clusters: MIND · ISLAND · AUTHORITY · CODEC · SYSTEM · PENTADIC · GENESIS · PEER · THRESHOLD.
 Named exceptions: CODEC_EXCEPTIONS.
 
 <<~/ahu>>
@@ -344,6 +344,57 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
+<<~ ahu #/threshold-pattern-integrities>>
+
+!! THRESHOLD Pattern-Integrities — Janus: every threshold keeps two faces, never merged
+
+''Janus'' — Roman, kin to the Lares: ''ianua'' the door, ''ianus'' the arched passage. The Lares kept the hearth;
+Janus kept the door of the same house, facing outward and inward at once, and never folding the two into one
+compromise face. That is what makes a door a door rather than a wall (inward only) or a breach (outward only).
+The house rediscovered this shape at every threshold it built:
+
+|! threshold |! outward face |! inward face |
+| the door to the Lararium | the ''Pronaos'' — the house's declared first face to a stranger | the ''Lararium'' — persona, keys, archive, judgment |
+| the herm | the ''floor voice'' — reports what it observed, peer-cosigned; answers the knock | the ''acting voice'' — sealed, a share; speaks only toward a quorum |
+| the vessel's keys | the ''floor key'' — the public name, signs floor acts | the ''custody root'' — sealed under the vessel KEK, derives the veil |
+| custody | ''hot'' — held while raised | ''cold'' — unwrapped per act, then wiped |
+| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the sealed body between STX and ETX |
+| the gate | ''silence'' and one closed door to a stranger | the walker's grant, the knock, the proven peer |
+
+```toml #THR_1_TWO_FACES
+id    = "THR_1_TWO_FACES"
+label = "Every threshold keeps an outward face and an inward face, held separately"
+desc  = "A threshold MUST present an outward face and keep an inward face, and MUST NOT merge them into one compromise face. A design with only an inward face is a wall; one with only an outward face is a breach. Naming both faces is the first act of designing any threshold."
+```
+
+```toml #THR_2_NO_LEAK
+id    = "THR_2_NO_LEAK"
+label = "Nothing of the inward face rides the outward one"
+desc  = "Run against every threshold: what is its outward face, what is its inward face, and does anything let one leak into the other? Measured leaks this law names: a hearth-minted keep stub that let a guest's lineage follow her out (it named the guest); a cleartext vessel seed and persona root beside the floor (the inward key standing on the outward floor); a walker syncing the whole carriage board (the Nexus's infra graph on a guest's face); a herm asked to speak as a house (a waystone wearing a household's face)."
+```
+
+```toml #THR_3_THE_DOORKEEPER_OWNS_NOTHING
+id    = "THR_3_THE_DOORKEEPER_OWNS_NOTHING"
+label = "The threshold watches the passage; it owns neither the visitor nor the house"
+desc  = "Hermes stands among the Pronaoi as ESCORT, never as owner (pronaos#/mythic-binding). A threshold MAY carry, relay, or present; it MUST NOT take the visitor's name or the house's authority. Hence: only a lararium lights a Pronaos, and a herm mirrors a house's published bytes by CID for availability, never trust; who invited whom is not computable at the host's gate."
+```
+
+```toml #THR_4_REPORT_NOT_VOUCH
+id    = "THR_4_REPORT_NOT_VOUCH"
+label = "A threshold's outward face reports what it observed; claims about itself come from disjoint witnesses"
+desc  = "A threshold MAY always report what it directly observed, and MUST NOT be the sole source of a claim about itself that others will act on (the interested-witness rule; gray failure: the degraded part is the worst observer of itself). Testimony about a threshold is carried by peers and passers-by, cosigned, never self-vouched. This is why a herm keeps two voices: the floor voice reports, the sealed acting voice holds only a share."
+```
+
+```toml #THR_5_SILENCE_IS_A_FACE
+id    = "THR_5_SILENCE_IS_A_FACE"
+label = "To a stranger who cannot knock, the outward face is silence — and silence is still a face"
+desc  = "A rejection confesses that something understood the question (siege-resilience#/the-active-prober). To a stranger who brings no name, the outward face MUST read as one indistinguishable closed door or no answer at all, drawn from one deadline fixed at accept. Silence is a deliberate outward face, not the absence of one: the threshold still stands, and a knock from one who holds its name still opens it."
+```
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/mythic-binding">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility">>
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -358,6 +409,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M56x6bxUqvSyfGPnVeK9MU_2XNlTB9_DB0EcR8jkeEw
+<<^ code="&#x0003;">>ni:///sha-256;hVoK6Lhi9MZJ9JzCqcFKBzosWIkdvgFwOU8U4nc1wHo
 
 <<^ code="&#x0004;" -> to="?">>
