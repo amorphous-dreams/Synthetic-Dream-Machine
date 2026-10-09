@@ -176,6 +176,7 @@ export {
 } from "./carriage-board.js";
 export {
   personaKelEventsFromBoard, personaKelChainsFromBoard, personaKelChainForPrefix,
+  personaKelFoldsFromBoard, personaKelFoldForPrefix,
   writePersonaKelEvent, personaKelEntryKey, PERSONA_KEL_ENTRY_PREFIX, coercePersonaKelEvent,
 } from "./persona-kel-board.js";
 export * from "./mu-void.js";

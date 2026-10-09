@@ -10,12 +10,13 @@
  *   · RED: only the seed seating a rotation's op-key re-enrols on it — a box another key sealed refuses the rotation;
  *   · a device's standing reads every secret its enrolments deliver, oldest first, and the newest edge;
  *   · RED: a device a rotation left out holds no secret under the new head;
- *   · the KEL board carries the enrolments whole, and a torn enrolment list breaks the chain's walk.
+ *   · the KEL board carries the enrolments whole, and the board's one reader sets a torn enrolment list aside and
+ *     names it.
  */
 import { describe, test, expect } from "vitest";
 import { emptyLarDoc } from "../src/base-doc.js";
 import { canonicalJsonBytes } from "../src/crypto.js";
-import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-kel-board.js";
+import { writePersonaKelEvent, personaKelChainForPrefix, personaKelFoldForPrefix } from "../src/persona-kel-board.js";
 import {
   personaGroupSecret, sealGroupSecret, verifyGroupSecretSeal, groupSecretOpenerFromSeed, rollEnrolments,
   leafStandingUnder, enrolledEdgeOf, enrolmentUnderHead,
@@ -109,7 +110,7 @@ describe("persona-group-secret — delivered at enrolment, rolled with the op-ke
     expect(await enrolmentUnderHead(chain, standing)).toBeNull();
   });
 
-  test("the KEL board carries the enrolments whole, and a torn enrolment list breaks the walk where every reader sees it", async () => {
+  test("the KEL board carries the enrolments whole, and a torn enrolment list is set aside and named where every reader folds", async () => {
     const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
     const board = emptyLarDoc();
     for (const e of chain) writePersonaKelEvent(board, e);
@@ -119,8 +120,10 @@ describe("persona-group-secret — delivered at enrolment, rolled with the op-ke
     const torn = emptyLarDoc();
     writePersonaKelEvent(torn, chain[0]!);
     writePersonaKelEvent(torn, { ...chain[1]!, enrolments: [{ kind: "sealed-enrolment" } as never] });
-    const tornRead = personaKelChainForPrefix(torn, chain[0]!.prefix)!;
-    expect(tornRead.map((e) => e.seq)).toEqual([0, 1]);
-    expect(verifyPersonaKel(tornRead)).toBe(false);
+    // The torn event verifies against nothing, so the board's one reader sets it aside and names it.
+    expect(personaKelChainForPrefix(torn, chain[0]!.prefix)!.map((e) => e.seq)).toEqual([0]);
+    const fold = personaKelFoldForPrefix(torn, chain[0]!.prefix)!;
+    expect(fold.setAside.map((x) => x.event.seq)).toEqual([1]);
+    expect(fold.setAside[0]!.reason).toMatch(/enrolment/);
   });
 });

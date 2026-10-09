@@ -8,9 +8,9 @@
  * STORAGE CONVENTION (mirrors antigen-board): each KEL event rides ONE tiddler whose `text` carries the
  * event's JSON (`PersonaKelEvent`). Keying by `{prefix}/{seq}` makes the board an ADDITIVE CRDT — a rotation
  * ACCRETES a new seq under a distinct key, so a concurrent write never overwrites a standing event in place;
- * the fold (`verifyPersonaKel` / `headOpKey`), never the write, decides the authoritative head. The extractor
- * is PERMISSIVE (a torn / foreign / non-KEL tiddler is SKIPPED, never guessed) because trust rides the
- * downstream structural + quorum verify: a malformed event that slips extraction dies at `verifyPersonaKel`.
+ * the one reader (`foldPersonaContests`: verify, then fold), never the write, decides the authoritative head. The
+ * extractor is PERMISSIVE (a torn / foreign / non-KEL tiddler is SKIPPED, never guessed) because trust rides the
+ * fold: an event that slips extraction and does not verify never competes for a seat, and the fold names it.
  * FAIL CLOSED end-to-end: an absent/empty board surfaces NO chains, so a prefix resolves to a null head and
  * the Binding-Gate walk denies.
  *
@@ -22,7 +22,7 @@
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
-import { PERSONA_KEL_DOMAIN, type PersonaKelEvent, foldPersonaContests } from "./persona-kel.js";
+import { PERSONA_KEL_DOMAIN, type PersonaKelEvent, type PersonaKelFold, foldPersonaContests } from "./persona-kel.js";
 
 /**
  * The tiddler-key prefix every persona-KEL event rides under — so the log events namespace apart from a
@@ -39,8 +39,8 @@ export const PERSONA_KEL_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/persona-kel/" 
 export function personaKelEntryKey(prefix: string, seq: number, eventCid?: string): string {
   // CONTEST-AWARE KEYING (the walked clause ④'s board half): a provisional and its veto COMPETE at
   // one seq, and a `{prefix}/{seq}` slot would let last-writer-wins adjudicate a contest by accident.
-  // The cid suffix keeps both; `foldPersonaContests` picks — a verified veto beats a provisional,
-  // everywhere, always.
+  // The cid suffix keeps both; the one reader (`foldPersonaContests`) folds — a verified veto beats the provisional
+  // it names, everywhere, always.
   return eventCid === undefined
     ? `${PERSONA_KEL_ENTRY_PREFIX}${prefix}/${seq}`
     : `${PERSONA_KEL_ENTRY_PREFIX}${prefix}/${seq}/${eventCid}`;
@@ -132,7 +132,7 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
 /**
  * Extract every well-formed KEL event the board `LarDoc` carries (across ALL personas). A torn / foreign /
  * non-KEL tiddler is skipped. An absent doc surfaces the empty list (fail-closed: no events → no heads → the
- * pin-move denies). The caller groups by prefix and folds through `verifyPersonaKel` / `headOpKey`.
+ * pin-move denies). The caller groups by prefix and folds through the one reader (`foldPersonaContests`).
  */
 export function personaKelEventsFromBoard(doc: LarDoc | undefined | null): PersonaKelEvent[] {
   const tiddlers = doc?.tiddlers;
@@ -150,27 +150,40 @@ export function personaKelEventsFromBoard(doc: LarDoc | undefined | null): Perso
 }
 
 /**
- * Group the board's events into per-prefix chains, each SORTED by seq ascending — the lineage `verifyPersonaKel`
- * walks. A duplicate seq under one prefix cannot arise from the `{prefix}/{seq}` keying (Automerge LWW keeps
- * one per key); a structural break (a gap, a mis-linked cid) survives extraction and is caught at the fold, so
- * this grouping stays PERMISSIVE — it orders the events, it never adjudicates the chain.
+ * Fold the board's events, per persona prefix, through the one reader (`foldPersonaContests`): the lineage that
+ * verifies, every event it set aside and the fork it stopped at. A writer's junk folds to nothing here.
+ */
+export function personaKelFoldsFromBoard(doc: LarDoc | undefined | null): Map<string, PersonaKelFold> {
+  const byPrefix = new Map<string, PersonaKelEvent[]>();
+  for (const e of personaKelEventsFromBoard(doc)) byPrefix.set(e.prefix, [...(byPrefix.get(e.prefix) ?? []), e]);
+  const folds = new Map<string, PersonaKelFold>();
+  for (const [prefix, events] of byPrefix) folds.set(prefix, foldPersonaContests(events.sort((a, b) => a.seq - b.seq)));
+  return folds;
+}
+
+/** The fold of ONE persona prefix off the board, or null when the board carries no event under it. */
+export function personaKelFoldForPrefix(doc: LarDoc | undefined | null, prefix: string): PersonaKelFold | null {
+  return personaKelFoldsFromBoard(doc).get(prefix) ?? null;
+}
+
+/**
+ * The chain a board reader walks, per persona prefix: the lineage the one reader verified, seq ascending. Where two
+ * verified events fork one seat, both ride after that lineage, so a reader that walks the chain whole refuses it and
+ * a reader that folds it names the fork; nothing settles duplicity by order. An event that does not verify rides
+ * nowhere here — `personaKelFoldsFromBoard` names it.
  */
 export function personaKelChainsFromBoard(doc: LarDoc | undefined | null): Map<string, PersonaKelEvent[]> {
   const chains = new Map<string, PersonaKelEvent[]>();
-  for (const e of personaKelEventsFromBoard(doc)) {
-    const chain = chains.get(e.prefix) ?? [];
-    chain.push(e);
-    chains.set(e.prefix, chain);
+  for (const [prefix, fold] of personaKelFoldsFromBoard(doc)) {
+    const chain = [...fold.kel, ...(fold.fork?.events ?? [])];
+    if (chain.length > 0) chains.set(prefix, chain);
   }
-  for (const chain of chains.values()) chain.sort((a, b) => a.seq - b.seq);
-  for (const [prefix, evs] of chains) chains.set(prefix, foldPersonaContests(evs));
   return chains;
 }
 
 /**
- * The seq-sorted chain for ONE persona prefix, or null when the board carries no event under it (fail-closed:
- * a prefix the local replica has not yet synced surfaces null → the pin-move denies). The returned chain is
- * UNVERIFIED — the caller runs `verifyPersonaKel` / `headOpKey` to gate structure + quorums before trusting.
+ * The chain for ONE persona prefix (`personaKelChainsFromBoard`), or null when the board carries no event under it
+ * that verifies (fail-closed: a prefix the local replica has not yet synced surfaces null → the pin-move denies).
  */
 export function personaKelChainForPrefix(doc: LarDoc | undefined | null, prefix: string): PersonaKelEvent[] | null {
   const chain = personaKelChainsFromBoard(doc).get(prefix);

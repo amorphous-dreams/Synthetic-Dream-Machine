@@ -108,19 +108,21 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
     expect((await verifyPersonaKelFull(await mint([box!]))).ok, "CONTROL: the sealed box").toBe(true);
   });
 
-  test("two copies of ONE event on the board: the fold keeps the copy whose list the cid commits", async () => {
+  test("two copies of ONE event on the board: the fold keeps the copy whose list the cid commits, and names the other", async () => {
     const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
     const stripped = { ...chain[1]!, enrolments: chain[1]!.enrolments!.slice(1) };
     for (const order of [[stripped, chain[1]!], [chain[1]!, stripped]]) {
-      const folded = foldPersonaContests([chain[0]!, ...order]);
-      expect(folded[1]!.enrolments).toEqual(chain[1]!.enrolments);
-      expect((await verifyPersonaKelFull(folded)).ok).toBe(true);
+      const fold = foldPersonaContests([chain[0]!, ...order]);
+      expect(fold.kel[1]!.enrolments).toEqual(chain[1]!.enrolments);
+      expect((await verifyPersonaKelFull(fold.kel)).ok).toBe(true);
+      expect(fold.setAside.map((x) => x.event)).toEqual([stripped]);
     }
-    // A board that holds only the stripped copy breaks the walk, where every reader sees it.
+    // A board that holds only the stripped copy stands at the inception, and its reader names the copy it set aside.
     const board = emptyLarDoc();
     writePersonaKelEvent(board, chain[0]!);
     writePersonaKelEvent(board, stripped);
-    expect(verifyPersonaKel(personaKelChainForPrefix(board, chain[0]!.prefix)!)).toBe(false);
+    expect(personaKelChainForPrefix(board, chain[0]!.prefix)!.map((e) => e.seq)).toEqual([0]);
+    expect(foldPersonaContests([chain[0]!, stripped]).setAside[0]!.reason).toMatch(/enrolment list/);
   });
 
   test("RED: the rolled event names no device, no root, no hearth — read DECODED; CONTROL: a planted key is found", async () => {

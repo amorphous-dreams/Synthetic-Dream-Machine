@@ -243,7 +243,7 @@ describe("persona-kel — the gate-walk survives a malformed board", () => {
     expect(verifyPersonaKel([inception, junk])).toBe(true);                 // structurally a rotation
     expect((await verifyPersonaKelFull([inception, junk])).ok).toBe(false);  // no quorum attests it
     const planted = await verifyEdgeAgainstPersonaKel(foundingEdge, [inception, junk]);
-    expect(planted).toMatchObject({ ok: true, headOpKey: await didOf(SEEDS.opA), unreadable: expect.stringMatching(/tail past seq 0 does not verify/) });
+    expect(planted).toMatchObject({ ok: true, headOpKey: await didOf(SEEDS.opA), unreadable: expect.stringMatching(/do not verify and move nothing.*lineage stands at seq 0/) });
     // A torn tail past a lawful rotation stands the gate under that rotation's head.
     const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
     const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners });

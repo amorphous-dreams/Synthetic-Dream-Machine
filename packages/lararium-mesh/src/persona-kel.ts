@@ -21,7 +21,7 @@
  */
 
 import { PERSONA_KEL_DOMAIN, SEALED_ENROLMENT_DOMAIN } from "./domains.js";
-import * as ed25519 from "@noble/ed25519";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256HexSync, canonicalJson, canonicalJsonBytes, hexToBytes } from "./crypto.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
@@ -64,15 +64,24 @@ export function sealedEnrolmentBytes(prefix: string, opKeyDid: string, box: Pick
 
 /** True when `raw` reads as a sealed enrolment the op-key `opKeyDid` signed for the group `prefix`. */
 export async function verifySealedEnrolment(raw: unknown, prefix: string, opKeyDid: string): Promise<boolean> {
+  return sealedEnrolmentVerifies(raw, prefix, opKeyDid);
+}
+
+function sealedEnrolmentVerifies(raw: unknown, prefix: string, opKeyDid: string): boolean {
   if (typeof raw !== "object" || raw === null) return false;
   const s = raw as Partial<Record<keyof SealedEnrolment, unknown>>;
   if (s.kind !== "sealed-enrolment") return false;
   if (typeof s.e !== "string" || !KEY_RE.test(s.e)) return false;
   if (typeof s.n !== "string" || !HEX_RE.test(s.n) || typeof s.c !== "string" || !HEX_RE.test(s.c)) return false;
   if (typeof s.sig !== "string" || !SIG_RE.test(s.sig)) return false;
-  const key = verifyingKeyFromDid(opKeyDid);
-  if (!KEY_RE.test(key)) return false;
-  try { return await ed25519.verifyAsync(hexToBytes(s.sig), sealedEnrolmentBytes(prefix, opKeyDid, s as SealedEnrolment), hexToBytes(key)); }
+  return signatureHolds(s.sig, sealedEnrolmentBytes(prefix, opKeyDid, s as SealedEnrolment), verifyingKeyFromDid(opKeyDid));
+}
+
+/** One Ed25519 signature over `bytes` under the hex key `keyHex`; a malformed signature or key holds nothing. */
+function signatureHolds(sigHex: string, bytes: Uint8Array, keyHex: string): boolean {
+  const key = keyHex.replace(/^0x/, "").toLowerCase();
+  if (!KEY_RE.test(key) || !SIG_RE.test(sigHex)) return false;
+  try { return ed25519.verify(hexToBytes(sigHex), bytes, hexToBytes(key)); }
   catch { return false; }
 }
 
@@ -346,36 +355,6 @@ export async function mintVeto(input: {
 }
 
 /**
- * Fold contests into ONE linear lineage: at each seq, a veto naming a present provisional wins (its
- * cid carries the chain forward; the provisional and everything descending from it drop). STRUCTURAL —
- * the veto's signature verifies in `verifyPersonaKelFull`, and a gate walking full REFUSES a chain
- * whose veto does not verify (halt, never a silent pick: the Binding Gate's own discipline).
- */
-export function foldPersonaContests(events: readonly PersonaKelEvent[]): PersonaKelEvent[] {
-  const bySeq = new Map<number, PersonaKelEvent[]>();
-  for (const e of events) {
-    const list = bySeq.get(e.seq) ?? [];
-    list.push(e);
-    bySeq.set(e.seq, list);
-  }
-  const out: PersonaKelEvent[] = [];
-  let prevCid: string | null = null;
-  for (let seq = 0; bySeq.has(seq); seq++) {
-    const linked = bySeq.get(seq)!.filter((e) => e.prevEventCid === prevCid);
-    if (linked.length === 0) break;
-    // Two copies of ONE event (one cid) differ only in what rides outside their shared core. The copy whose
-    // enrolments match the digest that core commits stands; a copy a board writer stripped or padded falls. A
-    // copy with no attested twin stays, so the walk refuses its chain and the break surfaces.
-    const candidates = linked.filter((e) => enrolmentsAttested(e) || !linked.some((o) => o !== e && o.eventCid === e.eventCid && enrolmentsAttested(o)));
-    const veto = candidates.find((e) => e.vetoOfCid !== null && candidates.some((c) => c.eventCid === e.vetoOfCid));
-    const winner = veto ?? candidates.find((e) => e.vetoOfCid === null) ?? candidates[0]!;
-    out.push(winner);
-    prevCid = winner.eventCid;
-  }
-  return out;
-}
-
-/**
  * Verify a rotation's THRESHOLD-ATTEST quorum — the strictest never-reconstruct gate. FAILS CLOSED:
  *   · the revealed roster's digest MUST equal the pre-committed `recoverySetHash` (a swapped roster fails),
  *   · a signer ABSENT from the revealed roster does not count (a stranger cannot pad the quorum),
@@ -393,7 +372,14 @@ export async function verifyRotationQuorum(
    *  the genesis wall for a caller verifying an inception-adjacent rotation in isolation. */
   authorizingSetHash: string = core.recoverySetHash,
 ): Promise<{ ok: boolean; reason?: string }> {
-  if (recoveryThreshold < 1) return { ok: false, reason: "recovery threshold below 1" };
+  return rotationQuorum(core, recoveryRoster, recoveryThreshold, rotationSigs, authorizingSetHash);
+}
+
+function rotationQuorum(
+  core: PersonaEventCore, recoveryRoster: readonly string[], recoveryThreshold: number,
+  rotationSigs: readonly QuorumSignature[], authorizingSetHash: string,
+): { ok: boolean; reason?: string } {
+  if (!Number.isInteger(recoveryThreshold) || recoveryThreshold < 1) return { ok: false, reason: "recovery threshold below 1" };
   if (recoveryRoster.length < recoveryThreshold) return { ok: false, reason: "revealed roster shorter than the threshold" };
   if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== authorizingSetHash) {
     return { ok: false, reason: "revealed roster digest does not match the authorizing commitment" };
@@ -405,13 +391,69 @@ export async function verifyRotationQuorum(
     const signer = s.signer.toLowerCase();
     if (counted.has(signer))     continue;   // a signer pads the quorum at most once
     if (!rosterSet.has(signer))  continue;   // a non-roster signer never counts
-    let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(s.sig), bytes, hexToBytes(signer)); }
-    catch { ok = false; }                     // a malformed sig/key counts as no signature
-    if (ok) counted.add(signer);
+    if (signatureHolds(s.sig, bytes, signer)) counted.add(signer);   // a malformed sig/key counts as no signature
     if (counted.size >= recoveryThreshold) return { ok: true };
   }
   return { ok: false, reason: `below-threshold quorum: ${counted.size}/${recoveryThreshold} distinct valid guardian signatures` };
+}
+
+/** The bound core of an event — the fields its cid and every signature over it commit. */
+function coreOf(e: PersonaKelEvent): PersonaEventCore {
+  return {
+    seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash,
+    nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
+    provisional: e.provisional, vetoOfCid: e.vetoOfCid, enrolmentDigest: e.enrolmentDigest,
+  };
+}
+
+/** Why `e` fails as an inception, structurally, or null when it stands as one. */
+function inceptionStructureFault(e: PersonaKelEvent): string | null {
+  if (e.seq !== 0 || e.prevEventCid !== null) return "an inception carries seq 0 and no predecessor";
+  if (e.prefix !== personaPrefixOf(e.opKeyDid, e.recoverySetHash)) return "the prefix does not derive from the inception's op-key and recovery set";
+  if (e.nextRecoverySetHash !== e.recoverySetHash) return "an inception seats one recovery set in both slots";
+  if (e.provisional || e.vetoOfCid !== null) return "an inception never contests";
+  if (e.eventCid !== personaEventCidOf(e)) return "the cid does not recompute over the bound core";
+  if (!enrolmentsAttested(e)) return "the enrolment list is not the one the cid commits";
+  return null;
+}
+
+/** Why `e` fails as the successor of `prev`, structurally (no signature read), or null when it links. */
+function successorStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): string | null {
+  if (e.seq !== prev.seq + 1)                     return "the seq does not follow its predecessor's";
+  if (e.prevEventCid !== prev.eventCid)           return "the hash-link names another predecessor";
+  if (e.prefix !== prev.prefix)                   return "the identifier prefix moved";
+  if (e.recoverySetHash !== prev.recoverySetHash) return "the genesis recovery wall moved";
+  if (e.eventCid !== personaEventCidOf(e))        return "the cid does not recompute over the bound core";
+  if (!enrolmentsAttested(e))                     return "the enrolment list is not the one the cid commits";
+  if (e.vetoOfCid !== null) {
+    // A veto competes AT its contested seq: it links the same predecessor and restores the standing head's
+    // op-key and rolling commitment.
+    if (e.opKeyDid !== prev.opKeyDid)                       return "a veto seats another op-key than the standing one";
+    if (e.nextRecoverySetHash !== prev.nextRecoverySetHash) return "a veto moves the rolling recovery commitment";
+    if (e.provisional)                                      return "a veto never reads provisional";
+  }
+  return null;
+}
+
+/**
+ * Why `e` fails as the successor of `prev`, or null when it stands: the structural link, every sealed enrolment's
+ * signature under the event's op-key, and the event's authority — a rotation's guardian quorum against the
+ * predecessor's rolling commitment, or a veto's signature under the standing op-key. It reads `prev`'s bound core
+ * alone, so a herm that holds only the predecessor event checks a successor exactly as a reader walking the chain.
+ */
+export function personaSuccessorFault(prev: PersonaKelEvent, e: PersonaKelEvent): string | null {
+  const structural = successorStructureFault(prev, e);
+  if (structural) return structural;
+  for (const sealed of e.enrolments ?? []) {
+    if (!sealedEnrolmentVerifies(sealed, e.prefix, e.opKeyDid)) return "an enrolment its op-key did not seal";
+  }
+  if (e.vetoOfCid !== null) {
+    if (!e.vetoSig) return "the veto is unsigned";
+    return signatureHolds(e.vetoSig, personaEventBytes(coreOf(e)), prev.opKeyDid)
+      ? null : "the veto's signature does not verify against the standing op-key";
+  }
+  const q = rotationQuorum(coreOf(e), e.recoveryRoster, e.recoveryThreshold, e.rotationSigs, prev.nextRecoverySetHash);
+  return q.ok ? null : (q.reason ?? "rotation quorum unsatisfied");
 }
 
 /**
@@ -422,70 +464,24 @@ export async function verifyRotationQuorum(
  * which need the revealed roster). Mirrors `verifySealLineage`.
  */
 export function verifyPersonaKel(chain: readonly PersonaKelEvent[]): boolean {
-  if (chain.length === 0) return false;
-  const genesis = chain[0]!;
-  if (genesis.seq !== 0 || genesis.prevEventCid !== null) return false;
-  if (genesis.prefix !== personaPrefixOf(genesis.opKeyDid, genesis.recoverySetHash)) return false;
-  if (genesis.nextRecoverySetHash !== genesis.recoverySetHash) return false;   // inception seats ONE set in both slots
-  if (genesis.provisional || genesis.vetoOfCid !== null) return false;         // an inception never contests
-  if (genesis.eventCid !== personaEventCidOf(genesis)) return false;
-  // Every event's enrolment list must be the one its cid commits: a stripped, added or swapped box breaks the chain.
-  if (!chain.every(enrolmentsAttested)) return false;
-  for (let i = 1; i < chain.length; i++) {
-    const e = chain[i]!, prev = chain[i - 1]!;
-    if (e.vetoOfCid !== null) {
-      // a veto competes AT its contested seq: it links the same predecessor and restores the
-      // standing head's op-key and rolling commitment; its signature verifies in the full walk.
-      if (e.seq !== prev.seq + 1)                       return false;
-      if (e.prevEventCid !== prev.eventCid)             return false;
-      if (e.opKeyDid !== prev.opKeyDid)                 return false;   // only the standing holder vetoes
-      if (e.nextRecoverySetHash !== prev.nextRecoverySetHash) return false;
-      if (e.provisional)                                return false;   // a veto never reads provisional
-      if (e.recoverySetHash !== prev.recoverySetHash)   return false;
-      if (e.eventCid !== personaEventCidOf(e))          return false;
-      continue;
-    }
-    if (e.seq !== prev.seq + 1)                     return false;   // monotonic
-    if (e.prevEventCid !== prev.eventCid)           return false;   // hash-linked
-    if (e.prefix !== prev.prefix)                   return false;   // the identifier stays fixed
-    if (e.recoverySetHash !== prev.recoverySetHash) return false;   // the GENESIS wall stays fixed; the rolling slot grafts freely
-    if (e.eventCid !== personaEventCidOf(e))        return false;   // cid recomputes over the bound core
-  }
+  if (chain.length === 0 || inceptionStructureFault(chain[0]!) !== null) return false;
+  for (let i = 1; i < chain.length; i++) if (successorStructureFault(chain[i - 1]!, chain[i]!) !== null) return false;
   return true;
 }
 
 /**
- * Verify the KEL structurally AND verify EVERY rotation's threshold-attest quorum — the full assurance a
- * gate needs before trusting the head op-key. Each rotation (seq > 0) MUST carry a ≥ threshold distinct
- * guardian quorum over its own bytes; inception carries none (self-authorized). FAILS CLOSED on the first
- * structural break or unsatisfied rotation quorum.
+ * Verify the KEL structurally AND every event's authority — the full assurance a gate needs before trusting the
+ * head op-key. Each rotation (seq > 0) MUST carry a ≥ threshold distinct guardian quorum over its own bytes, each
+ * veto the standing op-key's signature, each enrolment its op-key's seal; inception carries none
+ * (self-authorized). FAILS CLOSED on the first event that does not verify, and names it.
  */
 export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): Promise<{ ok: boolean; reason?: string }> {
-  if (!verifyPersonaKel(chain)) return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / recovery-commit / cid)" };
+  if (chain.length === 0) return { ok: false, reason: "an empty chain heads nothing" };
+  const genesis = inceptionStructureFault(chain[0]!);
+  if (genesis) return { ok: false, reason: `structural integrity failed at the inception: ${genesis}` };
   for (let i = 1; i < chain.length; i++) {
-    const e = chain[i]!, prev = chain[i - 1]!;
-    const core: PersonaEventCore = {
-      seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash,
-      nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
-      provisional: e.provisional, vetoOfCid: e.vetoOfCid, enrolmentDigest: e.enrolmentDigest,
-    };
-    for (const sealed of e.enrolments ?? []) {
-      if (!(await verifySealedEnrolment(sealed, e.prefix, e.opKeyDid))) {
-        return { ok: false, reason: `event seq ${e.seq}: an enrolment its op-key did not seal` };
-      }
-    }
-    if (e.vetoOfCid !== null) {
-      // A veto carries ONE signature — the standing op-key's, over its own bytes. Unverifiable → the
-      // whole chain refuses (halt, never a silent pick of either head).
-      if (!e.vetoSig) return { ok: false, reason: `veto seq ${e.seq}: unsigned` };
-      let ok = false;
-      try { ok = await ed25519.verifyAsync(hexToBytes(e.vetoSig), personaEventBytes(core), hexToBytes(e.opKeyDid.replace(/^0x/, ""))); }
-      catch { ok = false; }
-      if (!ok) return { ok: false, reason: `veto seq ${e.seq}: signature does not verify against the standing op-key` };
-      continue;
-    }
-    const q = await verifyRotationQuorum(core, e.recoveryRoster, e.recoveryThreshold, e.rotationSigs, prev.nextRecoverySetHash);
-    if (!q.ok) return { ok: false, reason: `rotation seq ${e.seq}: ${q.reason ?? "quorum unsatisfied"}` };
+    const fault = personaSuccessorFault(chain[i - 1]!, chain[i]!);
+    if (fault) return { ok: false, reason: `${chain[i]!.vetoOfCid !== null ? "veto" : "rotation"} seq ${chain[i]!.seq}: ${fault}` };
   }
   return { ok: true };
 }
@@ -516,51 +512,156 @@ export async function headOpKey(
   return null;
 }
 
+// ── THE ONE READER: verify, then fold ───────────────────────────────────────────────────────────
+
+/** Two or more events that each verify against one predecessor and compete for its successor seat. */
+export interface PersonaKelFork {
+  /** The seq they compete at. */
+  readonly seq: number;
+  /** The competing events, each verified against the lineage's head. */
+  readonly events: readonly PersonaKelEvent[];
+}
+
+/** One event the fold set aside at a seat of the lineage, and why. */
+export interface PersonaKelSetAside {
+  readonly event: PersonaKelEvent;
+  readonly reason: string;
+}
+
+/** What the one reader reads off a heap of KEL events. */
+export interface PersonaKelFold {
+  /** The lineage that verifies, in full, up to the last seat one event alone holds. */
+  readonly kel: readonly PersonaKelEvent[];
+  /** Every event that competed for a seat of that lineage and does not verify, or a veto that yields: one naming a
+   *  hardened rotation, or one naming no provisional beside a rotation that stands. None of them moves the head. */
+  readonly setAside: readonly PersonaKelSetAside[];
+  /** Two verified events at one seat — a quorum that signed twice, or two recoveries that raced. Null when no
+   *  seat forks. The lineage stops before it. */
+  readonly fork: PersonaKelFork | null;
+}
+
 /**
- * The longest prefix of `chain` that verifies in full (structure, every rotation's quorum, every veto's
- * signature), or the empty chain. A KEL handed with a junk, torn or stripped tail stands under what verifies
- * before it: an event that does not verify revokes no one.
+ * THE ONE READER every KEL source folds through — the board, a herm's drops, a chain a caller hands. VERIFY, THEN
+ * FOLD: at each seat of the lineage only the events that verify against the head already folded may compete (a
+ * rotation by its guardian quorum against the head's rolling commitment, a veto by the head's own op-key, every
+ * enrolment by its op-key's seal). An event that does not verify never enters the pick, so a board writer, a herm or
+ * a sibling who plants one moves nothing and revokes no one; the fold names it (`setAside`).
+ *
+ * Among the verified: a veto that names a provisional competing at its seat kills that provisional and takes the
+ * seat; a veto that names a hardened rotation is set aside, so no op-key holder vetoes one. A veto whose provisional
+ * the reader never met re-seats the standing op-key and commitment, so it holds the seat only where no rotation
+ * competes for it. One survivor advances the lineage. Two or more survivors are a FORK: two quorum-signed events at one seq, which
+ * only duplicity mints. The fold never picks between them — by board order, by herm order or by any other — and
+ * stops before the seat, naming the fork for its reader to surface.
+ *
+ * Two copies of one event (one cid) differ only in what rides outside the core; the copy that verifies stands for
+ * the cid, and a copy that does not is set aside. Events off the lineage (a vetoed provisional's descendants, an
+ * orphan) are neither folded nor set aside. NO CLOCK: the fold follows KEL event order alone.
  */
-export async function longestVerifiedPersonaKel(chain: readonly PersonaKelEvent[]): Promise<readonly PersonaKelEvent[]> {
-  for (let n = chain.length; n > 0; n--) {
-    const prefix = n === chain.length ? chain : chain.slice(0, n);
-    if ((await verifyPersonaKelFull(prefix)).ok) return prefix;
+export function foldPersonaContests(events: readonly PersonaKelEvent[]): PersonaKelFold {
+  const setAside: PersonaKelSetAside[] = [];
+  const byPrev = new Map<string | null, PersonaKelEvent[]>();
+  const seen = new Set<string>();
+  for (const e of events) {
+    let key: string;
+    try { key = canonicalJson(e); } catch { continue; }
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const list = byPrev.get(e.prevEventCid) ?? [];
+    list.push(e);
+    byPrev.set(e.prevEventCid, list);
   }
-  return [];
+  /** The verified candidates for one seat, one per cid; every copy that fails is set aside. */
+  const judge = (candidates: readonly PersonaKelEvent[], fault: (e: PersonaKelEvent) => string | null): PersonaKelEvent[] => {
+    const byCid = new Map<string, PersonaKelEvent[]>();
+    for (const e of candidates) byCid.set(e.eventCid, [...(byCid.get(e.eventCid) ?? []), e]);
+    const verified: PersonaKelEvent[] = [];
+    for (const copies of byCid.values()) {
+      let stood = false;
+      for (const e of copies) {
+        const why = fault(e);
+        if (why !== null) setAside.push({ event: e, reason: why });
+        else if (!stood) { verified.push(e); stood = true; }
+      }
+    }
+    return verified;
+  };
+
+  const inceptions = judge(byPrev.get(null) ?? [], inceptionStructureFault);
+  if (inceptions.length !== 1) {
+    return { kel: [], setAside, fork: inceptions.length > 1 ? { seq: 0, events: inceptions } : null };
+  }
+  const kel: PersonaKelEvent[] = [inceptions[0]!];
+  for (;;) {
+    const head = kel[kel.length - 1]!;
+    const verified = judge(byPrev.get(head.eventCid) ?? [], (e) => personaSuccessorFault(head, e));
+    const rotations = verified.filter((e) => e.vetoOfCid === null);
+    const vetoes: PersonaKelEvent[] = [];
+    const orphans: PersonaKelEvent[] = [];
+    for (const v of verified) {
+      if (v.vetoOfCid === null) continue;
+      const named = rotations.find((r) => r.eventCid === v.vetoOfCid);
+      if (named?.provisional) vetoes.push(v);
+      else if (named) setAside.push({ event: v, reason: "a veto that names a hardened rotation — a veto kills a provisional alone" });
+      else orphans.push(v);
+    }
+    const killed = new Set(vetoes.map((v) => v.vetoOfCid));
+    let survivors = [...vetoes, ...rotations.filter((r) => !killed.has(r.eventCid))];
+    // A veto whose provisional this reader never met re-seats the standing op-key and commitment: it holds the seat
+    // only where no rotation competes, and yields to one that does.
+    if (survivors.length === 0) survivors = orphans;
+    else for (const v of orphans) setAside.push({ event: v, reason: "a veto that names no provisional at its seat, beside a rotation that stands" });
+    if (survivors.length === 0) return { kel, setAside, fork: null };
+    if (survivors.length > 1) return { kel, setAside, fork: { seq: head.seq + 1, events: survivors } };
+    kel.push(survivors[0]!);
+  }
+}
+
+/** One line naming what a fold set aside and where it forks, or null when it read every event it met. */
+export function personaKelFoldSaid(fold: PersonaKelFold): { readonly unreadable?: string; readonly fork?: string } {
+  const head = fold.kel.length > 0 ? `seq ${fold.kel[fold.kel.length - 1]!.seq}` : "nothing";
+  return {
+    ...(fold.setAside.length > 0 ? {
+      unreadable: `${fold.setAside.length} persona-KEL event(s) do not verify and move nothing (${fold.setAside.map((x) => `seq ${x.event.seq} ${x.event.eventCid.slice(0, 16)}…: ${x.reason}`).join("; ")}) — the lineage stands at ${head}`,
+    } : {}),
+    ...(fold.fork ? {
+      fork: `the persona-KEL forks at seq ${fold.fork.seq}: ${fold.fork.events.length} events that each verify compete for one seat (${fold.fork.events.map((e) => `${e.eventCid.slice(0, 16)}…`).join(", ")}) — duplicity, which no reader settles by order`,
+    } : {}),
+  };
 }
 
 /**
  * THE GATE-WALK — THE CONTINUITY ANCHOR THE LIVE GATES RUN. Three doors present an edge through it: the
  * Binding Gate a vessel passes at boot (`boot-daemon-keyhive`), the daemon's live admission path
- * (`operator-daemon-behavior`), and the face-grant record's own verifier. Walk the persona-KEL to its CURRENT
- * authoritative op-key, then verify a device-delegation edge against THAT head — the pin moves from a raw
- * op-key to the identifier's live head. A rotated key still verifies (a fresh edge re-issued under the new
- * head passes); an edge signed by a SUPERSEDED op-key rejects (it is no longer the head).
+ * (`operator-daemon-behavior`), and the face-grant record's own verifier. Fold the persona-KEL it is handed through
+ * the one reader (`foldPersonaContests`) to its CURRENT authoritative op-key, then verify a device-delegation edge
+ * against THAT head — the pin moves from a raw op-key to the identifier's live head. A rotated key still verifies (a
+ * fresh edge re-issued under the new head passes); an edge signed by a SUPERSEDED op-key rejects.
  *
- * A BOARD WRITER CANNOT MAKE THE GATE REFUSE. The chain rides a board any relay peer or sibling writes, so an
- * event that does not verify — a junk rotation, a torn quorum, a stripped enrolment — revokes no one: the gate
- * stands under the longest prefix that verifies and names the tail it set aside (`unreadable`) for its caller to
- * surface. Only a rotation that verifies moves the head, and only a head that moved past the edge refuses it.
+ * WHAT A BOARD WRITER REACHES. The chain rides a board any relay peer or sibling writes. An event that does not
+ * verify — a junk rotation, a junk veto, a torn quorum, a stripped enrolment — never competes for a seat, so it
+ * neither rolls a revocation back nor holds a lawful rotation off the head: only an event that verifies moves the
+ * head, and only a head that moved past the edge refuses it. The gate names what it set aside (`unreadable`) for
+ * its caller to surface.
  *
- * FAIL-CLOSED where nothing verifies: a chain whose inception does not verify, or an edge that does not chain to
- * the head of the prefix that does, denies. The edge's `deviceDid`-binding + freshness stay the caller's concern
- * (the existing Binding-Gate checks).
+ * FAIL-CLOSED where nothing verifies, and where the KEL forks: a chain whose inception does not verify, an edge that
+ * does not chain to the head, or two verified events at one seat (`fork`) denies — the gate admits under no head
+ * that duplicity leaves in doubt. The edge's `deviceDid`-binding + freshness stay the caller's concern (the existing
+ * Binding-Gate checks).
  */
 export async function verifyEdgeAgainstPersonaKel(
   edge:  DeviceDelegationTiddler,
   chain: readonly PersonaKelEvent[],
   opts?: { expectedEpoch?: number },
-): Promise<{ ok: boolean; reason?: string; headOpKey?: string; unreadable?: string }> {
-  const verified = await longestVerifiedPersonaKel(chain);
-  const unreadable = verified.length < chain.length
-    ? `the persona-KEL's tail past ${verified.length > 0 ? `seq ${verified[verified.length - 1]!.seq}` : "nothing"} does not verify (${(await verifyPersonaKelFull(chain)).reason ?? "refused"}) — the gate stands under the prefix that does`
-    : undefined;
-  const head = verified.length > 0 ? await headOpKey(verified) : null;
-  if (head === null) return { ok: false, reason: "persona-KEL failed structural or rotation-quorum verification", ...(unreadable ? { unreadable } : {}) };
+): Promise<{ ok: boolean; reason?: string; headOpKey?: string; unreadable?: string; fork?: string }> {
+  const fold = foldPersonaContests(chain);
+  const said = personaKelFoldSaid(fold);
+  if (said.fork) return { ok: false, reason: said.fork, ...said };
+  const head = fold.kel.length > 0 ? await headOpKey(fold.kel) : null;
+  if (head === null) return { ok: false, reason: "persona-KEL failed structural or rotation-quorum verification", ...said };
   const innerOpts = opts?.expectedEpoch !== undefined ? { expectedEpoch: opts.expectedEpoch } : undefined;
   const r = await verifyDeviceDelegation(edge, head, innerOpts);
-  const read = unreadable ? { unreadable } : {};
   return r.ok
-    ? { ok: true, headOpKey: head, ...read }
-    : { ok: false, reason: r.reason ?? "edge does not chain to the KEL head op-key", headOpKey: head, ...read };
+    ? { ok: true, headOpKey: head, ...said }
+    : { ok: false, reason: r.reason ?? "edge does not chain to the KEL head op-key", headOpKey: head, ...said };
 }

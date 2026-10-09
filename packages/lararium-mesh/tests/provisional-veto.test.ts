@@ -90,7 +90,7 @@ describe("the settlement's four clauses", () => {
     const veto = await mintVeto({
       contested: rot.event, standing: prov.inception, sign: signerOf(SEEDS.op),
     });
-    const folded = foldPersonaContests([prov.inception, rot.event, onward.event, veto]);
+    const folded = foldPersonaContests([prov.inception, rot.event, onward.event, veto]).kel;
     expect(verifyPersonaKel(folded)).toBe(true);
     expect(await headOpKey(folded), "the standing key returns; the descendants fall to kapae").toBe(foundingOpKeyDid);
     expect(folded.some((e) => e.eventCid === onward.event.eventCid), "the descendant dies with its parent").toBe(false);

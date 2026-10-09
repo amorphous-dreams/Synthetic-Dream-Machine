@@ -120,10 +120,10 @@ export function memoryDropHerm(store: PersonaKelDropStore, timeline: string[], o
   return {
     gatePubKey: store.gatePubKey,
     pull: async (name) => (opts.serve ?? ((v) => v))(await local.pull(name)),
-    deposit: async (name, event) => {
+    deposit: async (name, deposit) => {
       if (opts.accept === false) return;
-      timeline.push(`deposit ${event.eventCid}`);
-      await local.deposit(name, event);
+      timeline.push(`deposit ${deposit.event.eventCid}`);
+      await local.deposit(name, deposit);
     },
   };
 }
@@ -165,6 +165,14 @@ export function memoryRelay() {
     /** Every sealed frame the relay carried from `from` to `to`, as it carried it. */
     sealedFrom: [] as Array<{ from: string; to: string; frame: SiblingWireFrame }>,
     inject(from: string, to: string, frame: unknown): void { deliver(from, to, frame); },
+    /** The herm drops `key`'s socket: its transport closes, and the leaf hears it. */
+    drop(key: string): void {
+      const m = members.get(key);
+      members.delete(key);
+      for (const l of m?.close ?? []) l();
+    },
+    /** True while `key` holds a transport to this relay. */
+    holds(key: string): boolean { return members.has(key); },
     transportFor(key: string): () => Promise<SiblingTransport> {
       return async () => {
         const m = { frame: new Set<(from: string, f: unknown) => void>(), close: new Set<() => void>(), tags: new Set<string>() };
@@ -203,13 +211,18 @@ export function standLeaf(
     readonly presents?: LeafPeerSelf["edge"];
     /** The drops this leaf pins; null pins none. */
     readonly drops?: SiblingKelDrops | null;
+    /** More herms' relays the leaf dials beside `relay`. */
+    readonly alsoVia?: readonly ReturnType<typeof memoryRelay>[];
+    /** Delay before the leaf re-dials a herm that dropped it. */
+    readonly retryInterval?: number;
   } = {},
 ): Leaf {
   const sharePolicy = opts.sharePolicy ?? (async () => true);
   const refusals: SiblingRefusal[] = [];
   const drops = opts.drops === undefined ? siblingKelDropsOf(relay.drops) : opts.drops;
   const adapter = new SiblingNetworkAdapter({
-    transport: relay.transportFor(self.deviceKey),
+    transports: [relay, ...(opts.alsoVia ?? [])].map((r) => r.transportFor(self.deviceKey)),
+    ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
     kel: self.kel,
     leaf: async (kel) => {
       const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);

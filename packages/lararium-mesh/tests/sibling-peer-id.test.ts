@@ -110,7 +110,7 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     xAdapter = x.adapter;
     x.repo.networkSubsystem.addNetworkAdapter(new OtherCarrier([NODE]));
     const ySelf = await leafUnder(SEEDS.deviceY, ey, [inception]);
-    const yAdapter = new SiblingNetworkAdapter({ transport: relay.transportFor(ySelf.deviceKey), kel: [inception], leaf: async (k) => leafOf(SEEDS.deviceY, ey, k) });
+    const yAdapter = new SiblingNetworkAdapter({ transports: [relay.transportFor(ySelf.deviceKey)], kel: [inception], leaf: async (k) => leafOf(SEEDS.deviceY, ey, k) });
     const yRepo = new Repo({ peerId: NODE, network: [yAdapter], shareConfig: shareConfigOf(async () => true) });
     yAdapter.bindRepo(yRepo);
     try {
