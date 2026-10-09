@@ -59,3 +59,15 @@ export function knockedUrl(url: string, gatePubKey: string): string {
   u.pathname = knockPath(gatePubKey, u.pathname);
   return u.href;
 }
+
+/**
+ * A pinned dial address: `ws(s)://host[:port][/path]#<gate key hex>`. The fragment is the dialer's own pin and
+ * never rides a request. Throws on an address with no 32-byte hex key — a dial with no pin has no gate to reach.
+ */
+export function pinnedRelayAddress(url: string): { readonly url: string; readonly gatePubKey: string } {
+  const u = new URL(url);
+  const gatePubKey = u.hash.replace(/^#/, "").toLowerCase();
+  if (!KEY_RE.test(gatePubKey)) throw new Error(`a relay address names its gate key in its fragment (#<gate key hex>): ${url}`);
+  u.hash = "";
+  return { url: u.href, gatePubKey };
+}

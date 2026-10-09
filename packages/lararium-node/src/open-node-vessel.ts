@@ -82,6 +82,7 @@ import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
+import { standSiblingChannel, type SiblingNetworkAdapter } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor } from "./worker-handle.js";
@@ -298,6 +299,12 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   /** The DIALED peer's gate verifying-key hex — the gate-binding the outbound V3 proof commits to (out-of-band,
    *  NEVER trusted from the wire). REQUIRED alongside `joinSyncUrl`; absent → fail-closed to inert (no dial). */
   joinGatePubKey?: string;
+  /** The pinned relay address of the HERM this vessel's PersonaGroup siblings meet through
+   *  (`ws://host:port#<gate key hex>`) — a device of a fleet that reaches its siblings by dialing out
+   *  (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel stands its
+   *  sibling channel (`standSiblingChannel`, the one composition the browser vessel calls too). ABSENT (and
+   *  `LAR_SIBLING_HERM` unset) → no sibling channel stands. */
+  siblingHerm?: string;
   /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
    *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
   joinDocUrl?: string;
@@ -1624,6 +1631,22 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
 
+    // ── THE SIBLING CHANNEL (docs/pono/identity-slot-policy#/the-leaf-taxonomy) ─────────────────────
+    // The ONE composition the browser vessel calls (`standSiblingChannel`): this face's siblings prove their
+    // device edges to each other through the pinned herm against the KEL chain just walked, and sync over the
+    // session that proof binds; the herm carries sealed frames and reads none. A sibling's peer arrives on no
+    // WS socket of this vessel's gate, so the share verdict reads it as the fleet — whole sync, as a
+    // same-operator peer.
+    const siblingHerm = opts.siblingHerm ?? process.env["LAR_SIBLING_HERM"] ?? null;
+    let siblings: SiblingNetworkAdapter | null = null;
+    if (siblingHerm && personaGroupDocIdHex && personaKelPrefix && deviceEdge) {
+      siblings = await standSiblingChannel({
+        repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix, personaGroupDocIdHex,
+        deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed), edge: deviceEdge,
+        onRefusal: (r) => console.warn(`[sibling] refused ${r.peerKey.slice(0, 8)}…: ${r.reason}`),
+      });
+    }
+
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
     // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
@@ -1639,8 +1662,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
         personaGroupDocIdHex,
         personaRootDid: deviceEdge.personaRootDid,
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
-        // The node's proof source: the identifier this vessel's inbound DaemonAuthGate proved.
-        provenKeyOf: (peerId) => peerIdentifierMap.get(peerId),
+        // The node's proof sources: the identifier this vessel's inbound DaemonAuthGate proved, and the device
+        // key a sibling proved over the sibling session.
+        provenKeyOf: (peerId) => peerIdentifierMap.get(peerId) ?? siblings?.provenKeyOf(peerId) ?? null,
       })).compose(base);
     }
 

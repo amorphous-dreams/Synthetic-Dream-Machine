@@ -19,6 +19,11 @@
  *   · SILENCE — a bad proof, a wrong knock, anything malformed: no answer, and the socket cut at the deadline the
  *     gate drew at accept. No close code and no reason cross.
  *   · ENVELOPES — ride the admitted socket as `lar:session` frames of kind `membership/env`.
+ *   · SIBLING FRAMES — a leaf that joins a channel (`sibling/join`, an opaque tag) reaches the other keys proven on
+ *     that channel and no one else: a `sibling/frame` goes to the key it names, or to the whole channel, with
+ *     `from` STAMPED to the sender's proven key. The relay routes on the tag and the stamp and reads no frame —
+ *     the siblings' proof and session ride inside it (`@lararium/mesh` sibling-channel), the herm's face is
+ *     carriage alone.
  *
  * WHO IT ADMITS. A crossroads relay carries opaque envelopes for ANY proven key: it holds NO read-cap, reads NO
  * ciphertext and keeps no roster, so its sorter classes every proven key a stranger and admits it. Membership is
@@ -33,8 +38,8 @@ import type { Duplex } from "node:stream";
 import { WebSocketServer, WebSocket, type RawData } from "ws";
 import * as ed from "@noble/ed25519";
 import {
-  MEMBERSHIP_RELAY_DOMAIN, MEMBERSHIP_BROADCAST,
-  hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl,
+  MEMBERSHIP_RELAY_DOMAIN, MEMBERSHIP_BROADCAST, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND,
+  hex, verifyAuthProof, ed25519SignerFromSeed, runPeerHandshake, isLarSessionMsg, mkLarSessionMsg, knockedUrl, pinnedRelayAddress,
   type AuthVerifierShore, type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
 import { DaemonAuthGate, type SocketSorter } from "./daemon-auth-gate.js";
@@ -63,18 +68,8 @@ export interface AuthenticatedMembershipRelay {
 export interface RelayAnnounceObserver {
   readonly onEnvelope?: (env: MembershipEnvelope) => void;
   readonly onLeave?:    (from: string) => void;
-}
-
-/**
- * A pinned dial address: `ws(s)://host[:port][/path]#<gate key hex>`. The fragment is the dialer's own pin and
- * never rides a request. Throws on an address with no 32-byte hex key — a dial with no pin has no gate to reach.
- */
-export function pinnedRelayAddress(url: string): { readonly url: string; readonly gatePubKey: string } {
-  const u = new URL(url);
-  const gatePubKey = u.hash.replace(/^#/, "").toLowerCase();
-  if (!KEY_RE.test(gatePubKey)) throw new Error(`a relay address names its gate key in its fragment (#<gate key hex>): ${url}`);
-  u.hash = "";
-  return { url: u.href, gatePubKey };
+  /** Every sibling frame the relay carries, exactly as it carries it — the herm's whole sight of a channel. */
+  readonly onSiblingFrame?: (carried: { readonly channel: string; readonly from: string; readonly to: string | null; readonly frame: unknown }) => void;
 }
 
 /** The relay's verify shore: the card IS the peer's raw verifying key, and the V3 proof must hold under it. */
@@ -122,12 +117,18 @@ export async function startAuthenticatedMembershipRelay(
     const id = gate.getIdentifierForSocket(socket as never);
     return id ? id.slice(-64).toLowerCase() : null;
   };
+  // socket → the sibling channel it joined. One channel per socket; a later join moves it.
+  const channelOf = new Map<WebSocket, string>();
   gate.on("connection", (socket: WebSocket) => {
     const key = provenKeyOf(socket);
     // On departure, surface the proven holder so the tracker PRUNES it (an offline holder never lingers).
-    socket.once("close", () => { if (key) observer?.onLeave?.(key); });
+    socket.once("close", () => { channelOf.delete(socket); if (key) observer?.onLeave?.(key); });
   });
   gate.onSession((socket, msg) => {
+    if (msg.kind === SIBLING_JOIN_KIND || msg.kind === SIBLING_FRAME_KIND) {
+      routeSibling(socket as unknown as WebSocket, msg.kind, msg.body);
+      return;
+    }
     if (msg.kind !== MEMBERSHIP_ENVELOPE_KIND || typeof msg.body !== "object" || msg.body === null) return;
     const provenKey = provenKeyOf(socket as unknown as WebSocket);
     if (!provenKey) return;
@@ -139,6 +140,29 @@ export async function startAuthenticatedMembershipRelay(
       if (client !== socket) gate.sendSession(client, MEMBERSHIP_ENVELOPE_KIND, stamped);
     }
   });
+
+  /** Carry one sibling frame: from the proven sender, to the proven keys on its channel. Reads no frame. */
+  function routeSibling(socket: WebSocket, kind: string, body: unknown): void {
+    const from = provenKeyOf(socket);
+    if (!from || typeof body !== "object" || body === null) return;
+    if (kind === SIBLING_JOIN_KIND) {
+      const channel = (body as { channel?: unknown }).channel;
+      if (typeof channel === "string" && KEY_RE.test(channel)) channelOf.set(socket, channel);
+      return;
+    }
+    const channel = channelOf.get(socket);
+    if (!channel) return;
+    const toRaw = (body as { to?: unknown }).to;
+    const to = typeof toRaw === "string" && KEY_RE.test(toRaw.toLowerCase()) ? toRaw.toLowerCase() : null;
+    if (toRaw !== null && to === null) return;
+    const frame = (body as { frame?: unknown }).frame;
+    observer?.onSiblingFrame?.({ channel, from, to, frame });
+    for (const client of gate.clients) {
+      if (client === socket || channelOf.get(client as unknown as WebSocket) !== channel) continue;
+      if (to !== null && provenKeyOf(client as unknown as WebSocket) !== to) continue;
+      gate.sendSession(client, SIBLING_FRAME_KIND, { from, frame });
+    }
+  }
 
   await new Promise<void>((resolve) => httpServer.listen(port, resolve));
   const addr = httpServer.address();

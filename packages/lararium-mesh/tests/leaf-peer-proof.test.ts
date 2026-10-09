@@ -12,7 +12,12 @@
  *   · RED: a leaf whose edge the KEL has ROLLED PAST (the op-key that signed it was rotated away) is refused,
  *     and the same device re-delegated under the new head is licensed — event order, no clock;
  *   · RED: a relay that swaps its own ephemeral key into the exchange gains nothing the initiator accepts;
- *   · RED: a channel that proved a different sender key than the edge names is refused.
+ *   · RED: a channel that proved a different sender key than the edge names is refused;
+ *   · RED: a relay that swaps the RESPONDER's ephemeral key in the answer is refused by the initiator — the
+ *     signature covers the transcript, so no side stands a session whose key the relay chose;
+ *   · the proof binds a SESSION: both sides seal and open each other's frames in order; a frame the relay
+ *     injects, replays or reorders refuses the session, the refusal stays, and it names itself;
+ *   · a session whose edge the KEL head moved past refuses on `relicense`; a licensed edge stands.
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -28,6 +33,7 @@ import {
   type LeafPeerSelf, type LeafPeerDuplex, type LeafPeerFrame, type LeafPeerVerdict,
 } from "../src/leaf-peer-proof.js";
 import { LEAF_PEER_PROOF_DOMAIN, LEAF_PEER_SEAL_INFO } from "../src/domains.js";
+import type { LeafPeerSession } from "../src/leaf-peer-proof.js";
 
 const SEAL_INFO = new TextEncoder().encode(LEAF_PEER_SEAL_INFO);
 
@@ -117,8 +123,8 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
     const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
     const { a, b } = await exchange(x, y);
-    expect(a).toEqual({ ok: true, peerKey: y.deviceKey });
-    expect(b).toEqual({ ok: true, peerKey: x.deviceKey });
+    expect(a).toMatchObject({ ok: true, peerKey: y.deviceKey });
+    expect(b).toMatchObject({ ok: true, peerKey: x.deviceKey });
   });
 
   test("the relay carried every byte and read no edge", async () => {
@@ -164,7 +170,7 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     expect(refused.a.ok).toBe(false);
     const redelegated = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opB, SEEDS.deviceY), chain);
     const licensed = await exchange(x, redelegated);
-    expect(licensed.a).toEqual({ ok: true, peerKey: redelegated.deviceKey });
+    expect(licensed.a).toMatchObject({ ok: true, peerKey: redelegated.deviceKey });
   });
 
   test("RED: a relay that swaps its own ephemeral key into the exchange gains nothing the initiator accepts", async () => {
@@ -208,13 +214,15 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     expect(a).toEqual({ ok: false, reason: "the channel proved a different key than the edge names" });
     // CONTROL: the channel proving the edge's own key passes.
     const ok = await exchange(x, y, relay({ fromOf: { b: y.deviceKey, a: x.deviceKey } }));
-    expect(ok.a).toEqual({ ok: true, peerKey: y.deviceKey });
+    expect(ok.a).toMatchObject({ ok: true, peerKey: y.deviceKey });
   });
 
-  test("the proof bytes open on their own domain and carry no clock", () => {
-    const text = new TextDecoder().decode(leafPeerProofBytes({ nonce: "a".repeat(64), sealedTo: "b".repeat(64), proverKey: "c".repeat(64) }));
+  test("the proof bytes open on their own domain, cover the whole transcript and carry no clock", () => {
+    const transcript = { initiatorNonce: "a".repeat(64), initiatorEph: "b".repeat(64), responderNonce: "c".repeat(64), responderEph: "d".repeat(64) };
+    const text = new TextDecoder().decode(leafPeerProofBytes({ transcript, role: "responder", proverKey: "e".repeat(64) }));
     expect(JSON.parse(text).domain).toBe(LEAF_PEER_PROOF_DOMAIN);
-    expect(Object.keys(JSON.parse(text)).sort()).toEqual(["domain", "nonce", "proverKey", "sealedTo"]);
+    expect(Object.keys(JSON.parse(text)).sort()).toEqual(
+      ["domain", "initiatorEph", "initiatorNonce", "proverKey", "responderEph", "responderNonce", "role"]);
   });
 
   test("a finish read without an answer refuses rather than throws", async () => {
@@ -223,5 +231,76 @@ describe("leaf ↔ leaf proof inside one PersonaGroup, over a relay", () => {
     const { state, frame } = startLeafPeerProof();
     const r = await finishLeafPeerProof(x, state, frame);
     expect(r.verdict.ok).toBe(false);
+  });
+
+  test("RED: a relay that swaps the responder's ephemeral key in the answer stands no session it chose", async () => {
+    const { inception } = await founded();
+    const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
+    const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
+    // The box Y sealed to X's real ephemeral still opens at X; only the clear `eph` field moves. Were the
+    // signature blind to the responder's ephemeral, X would pass the proof and agree a session key with the relay.
+    const relayEph = startLeafPeerProof().state.ephPub;
+    const swap = relay({ tamper: (frame, toward) => frame.step === "answer" && toward === "a" ? { ...frame, eph: relayEph } : frame });
+    const { a } = await exchange(x, y, swap);
+    expect(a).toEqual({ ok: false, reason: "the device key did not sign this exchange" });
+  });
+
+  describe("the session a passing proof admits", () => {
+    async function proven(): Promise<{ a: LeafPeerSession; b: LeafPeerSession }> {
+      const { inception } = await founded();
+      const x = await leaf(SEEDS.deviceX, await edgeFor(SEEDS.opA, SEEDS.deviceX), [inception]);
+      const y = await leaf(SEEDS.deviceY, await edgeFor(SEEDS.opA, SEEDS.deviceY), [inception]);
+      const { a, b } = await exchange(x, y);
+      if (!a.ok || b === "no-finish" || !b.ok) throw new Error("the control exchange refused");
+      return { a: a.session, b: b.session };
+    }
+    const bytes = (s: string) => new TextEncoder().encode(s);
+    const text = (r: ReturnType<LeafPeerSession["open"]>) => r.ok ? new TextDecoder().decode(r.plaintext) : `refused: ${r.reason}`;
+
+    test("CONTROL: each side opens the other's frames in order, both ways", async () => {
+      const { a, b } = await proven();
+      const f1 = a.seal(bytes("one")); const f2 = a.seal(bytes("two"));
+      expect(text(b.open(f1))).toBe("one");
+      expect(text(b.open(f2))).toBe("two");
+      expect(text(a.open(b.seal(bytes("back"))))).toBe("back");
+      expect(a.refusal).toBeNull();
+      expect(b.refusal).toBeNull();
+    });
+
+    test("RED: a frame the relay injects refuses the session, and the refusal stays", async () => {
+      const { a, b } = await proven();
+      const forged = { n: "A".repeat(32), c: "B".repeat(40) };
+      const r = b.open(forged);
+      expect(r.ok).toBe(false);
+      expect(b.refusal).toMatch(/injected, replayed or reordered/);
+      expect(text(b.open(a.seal(bytes("after"))))).toMatch(/^refused/);   // sticky: no frame reads past a refusal
+    });
+
+    test("RED: a frame the relay REPLAYS refuses the session", async () => {
+      const { a, b } = await proven();
+      const f1 = a.seal(bytes("one"));
+      expect(text(b.open(f1))).toBe("one");
+      expect(b.open(f1).ok).toBe(false);
+      expect(b.refusal).not.toBeNull();
+    });
+
+    test("RED: frames the relay REORDERS refuse the session", async () => {
+      const { a, b } = await proven();
+      const f1 = a.seal(bytes("one")); const f2 = a.seal(bytes("two"));
+      expect(b.open(f2).ok).toBe(false);
+      expect(b.open(f1).ok).toBe(false);
+    });
+
+    test("RED: a frame sealed in one direction never opens as the other direction", async () => {
+      const { a } = await proven();
+      expect(a.open(a.seal(bytes("reflected"))).ok).toBe(false);
+    });
+
+    test("RED: a session whose edge the KEL head rolled past refuses on relicense; under a head that licenses it, it stands", async () => {
+      const { a } = await proven();
+      expect(await a.relicense([(await founded()).inception])).toBe(true);
+      expect(await a.relicense(await rotatedToOpB())).toBe(false);
+      expect(a.refusal).toMatch(/not licensed by this PersonaGroup's KEL head/);
+    });
   });
 });

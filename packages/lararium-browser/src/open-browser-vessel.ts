@@ -24,6 +24,7 @@ import {
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
+  standSiblingChannel, type SiblingNetworkAdapter,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
@@ -184,6 +185,15 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * this vessel's own verifying key (the same-operator leaf, the prior behavior — back-compat).
    */
   relayGatePubKey?: string;
+  /**
+   * The pinned relay address of the HERM this vessel's PersonaGroup siblings meet through
+   * (`ws://host:port#<gate key hex>`) — leaf kind 3, a fleet in which no vessel listens
+   * (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel stands
+   * its sibling channel (`standSiblingChannel`, the one composition the node vessel calls too): siblings
+   * prove their device edges to each other through the herm and sync over the session the proof binds.
+   * ABSENT → no sibling channel stands.
+   */
+  siblingHerm?: string;
   /**
    * A `device-admit/v1` payload — this vessel JOINS an existing PersonaGroup instead of FOUNDING its
    * own. The founder's root signed it, so it is self-verifying and CARRIAGE-AGNOSTIC: it may arrive by
@@ -347,7 +357,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     genesisSeed,
     genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
-    meshLeaf, admit, walkInvite,
+    meshLeaf, admit, walkInvite, siblingHerm,
   } = opts;
   const emit = (p: LarOpenPhase) => onPhase?.(p);
 
@@ -980,23 +990,42 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         daemonAuth,
       });
 
+      // ── THE SIBLING CHANNEL (leaf kind 3, docs/pono/identity-slot-policy#/the-leaf-taxonomy) ────────
+      // The ONE composition the node vessel calls (`standSiblingChannel`). This face's siblings — devices
+      // its own PersonaGroup delegated — prove their edges to each other through the pinned herm against the
+      // KEL chain the Binding Gate just walked, and sync over the session that proof binds. The herm carries
+      // sealed frames and reads none. A proven sibling is this face's own fleet: it never enters
+      // `relayPeers`, so it syncs whole, as a same-operator node does. The seed stays in this closure.
+      let siblings: SiblingNetworkAdapter | null = null;
+      const siblingEdge = daemonAuth.deviceEdge;
+      if (siblingHerm && siblingEdge) {
+        siblings = await standSiblingChannel({
+          repo, hermAddress: siblingHerm, nexusPubkey, personaKelPrefix,
+          personaGroupDocIdHex: daemonAuth.personaGroupDocIdHex,
+          deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed), edge: siblingEdge,
+          onRefusal: (r) => console.warn(`[sibling] refused ${r.peerKey.slice(0, 8)}…: ${r.reason}`),
+        });
+      }
+
       // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
       // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot
       // wears, its pinned root and the KEL chain the Binding Gate just walked. Only the PROOF SOURCE differs:
-      // a leaf dials out, so the key it reads for a relay peer is the gate key that peer's socket PROVED by
-      // signing this leaf's verdict (`provenKeyOf`), never a key the wire named. It widens the cross-operator
-      // gate by the face's own planes and nothing else; with no cross-operator gate armed the relay is the
-      // operator's own node and every doc already syncs, so there is nothing to widen.
+      // a leaf dials out, so the key it reads for a peer is the key that peer PROVED to this leaf — the gate
+      // key that signed this leaf's verdict on the relay socket, or the device key a sibling proved over the
+      // sibling session — never a key the wire named. It widens the cross-operator gate by the face's own
+      // planes and nothing else; with no cross-operator gate armed the relay is the operator's own node and
+      // every doc already syncs, so there is nothing to widen.
       const ringRelay = relayAdapter;
       const ringRoot = daemonAuth.deviceEdge?.personaRootDid;
-      if (fedGate && ringRelay && ringRoot) {
+      if (fedGate && ringRoot && (ringRelay || siblings)) {
         const base = fedGate;
+        const ringSiblings = siblings;
         fedGate = (await assemblePersonaGroupRing({
           catalog: makeCatalogAccessor(repo, catalogHandle.url),
           personaGroupDocIdHex: daemonAuth.personaGroupDocIdHex,
           personaRootDid: ringRoot,
           personaKel: daemonAuth.personaKel,
-          provenKeyOf: (peerId) => ringRelay.provenKeyOf(peerId),
+          provenKeyOf: (peerId) => ringSiblings?.provenKeyOf(peerId) ?? ringRelay?.provenKeyOf(peerId) ?? null,
         })).compose(base);
       }
       return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon };

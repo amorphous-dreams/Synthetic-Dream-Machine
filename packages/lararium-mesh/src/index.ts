@@ -123,6 +123,7 @@ export {
   type PersonaGroupIdentityRing, type PersonaGroupGrantReading, type PlaneCatalog,
 } from "./persona-group-ring.js";
 export * from "./leaf-peer-proof.js";
+export * from "./sibling-channel.js";
 export type { FederationGate } from "./federation-gate.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
@@ -216,7 +217,7 @@ export type {
   AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence, PresentedAdmit, PresentedAdmitArm,
   PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented,
 } from "./auth-wire.js";
-export { knockSegment, knockPath, knockedUrl } from "./gate-knock.js";
+export { knockSegment, knockPath, knockedUrl, pinnedRelayAddress } from "./gate-knock.js";
 export {
   hostingActBytes, hostingActCid, isHostingAct, verifyHostingAct, hostingKeyPair, hostingEpochOf, mintHostingAct,
   hostingActKey, writeHostingAct, hostingActsFromBoard, hostingForks,

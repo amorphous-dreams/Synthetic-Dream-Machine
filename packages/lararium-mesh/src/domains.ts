@@ -179,11 +179,17 @@ export const GATE_KNOCK_DOMAIN = mint("gate-knock");
  *  the leaf's key and the audience under this name, so a leaf reads a passing verdict only from the gate it
  *  pinned. Its own name, apart from `auth-proof`: the leaf signs that one and the gate signs this one. */
 export const AUTH_OK_DOMAIN = mint("auth-ok");
-/** A LEAF'S PROOF TO A SIBLING LEAF of one PersonaGroup: a device key signs the sibling's nonce and the
- *  ephemeral key its answer is sealed to under this name, so the proof binds to one exchange and one channel. */
+/** A LEAF'S PROOF TO A SIBLING LEAF of one PersonaGroup: a device key signs the exchange's whole transcript —
+ *  both nonces, both ephemeral keys, its role — under this name, so the proof binds to one exchange and one channel. */
 export const LEAF_PEER_PROOF_DOMAIN = mint("leaf-peer-proof");
 /** Its HKDF `info` — the seal that keeps a leaf's device edge unread by the relay carrying it. */
 export const LEAF_PEER_SEAL_INFO = mint("leaf-peer-seal");
+/** Its SESSION's HKDF `info`: the per-direction keys and chain seeds two proven siblings derive from the
+ *  ephemerals their device keys signed, so every frame after the proof rides the channel the proof admitted. */
+export const LEAF_SESSION_INFO = mint("leaf-session");
+/** The SIBLING CHANNEL's rendezvous tag: an HMAC of a PersonaGroup's id under this name, the opaque label its
+ *  leaves join on a herm's relay. The herm routes by it and reads no PersonaGroup from it. */
+export const SIBLING_CHANNEL_INFO = mint("sibling-channel");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");
