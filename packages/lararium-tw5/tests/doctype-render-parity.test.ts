@@ -8,53 +8,56 @@
  *
  * The declaration's own line differs by its quotes and stands excluded. Every other byte must hold.
  *
- * ── BOTH FORMS READ AT ONE VINTAGE ──────────────────────────────────────────────────────────────
- * The comparison holds the sweep commit against its parent, never against whatever the shelf carries
- * today. A gate reading the live file measures every later edit as a render move: a carrier whose meta
- * block changes renders differently from its ancestor for a reason that has nothing to do with a
- * quoted positional, and the gate then reports a migration break over an unrelated sweep. What
- * this proves is a property of ONE commit, so it reads both sides of that commit and nothing else.
+ * ── THE FIXTURE IS THE VINTAGE, NEVER THE CLONE'S HISTORY ───────────────────────────────────────
+ * The comparison holds one carrier's bare-declaration form against its quoted form at the sweep that
+ * moved it. Reading those two forms from git — the sweep commit and its parent — ties a RENDER test to
+ * whatever depth a clone happened to fetch: a depth-1 checkout holds neither commit, and absence of
+ * history then reads as a carrier fault, which names the wrong thing. The two forms do not change once
+ * the sweep lands, so this suite reads them from committed fixtures instead (`fixtures/doctype-render-
+ * parity/<slug>.json`, captured once from the sweep commit and its parent) — the comparison runs the
+ * same whether the clone is shallow or whole, and a shallow CI runner proves exactly what a full clone
+ * would.
  *
- * ── THE GATE READS HISTORY ──────────────────────────────────────────────────────────────────────
- * A depth-1 checkout holds neither commit, and every carrier then reads as having no prior form —
- * which names the carriers when the fault belongs to the clone. Absence of the commits refuses on
- * its own line, naming the depth, so CI's `fetch-depth: 0` on the Test job stands as the cure.
+ * THE FIXTURE IS JSON, NEVER `.mem` — ON PURPOSE. Each fixture freezes a carrier at a PAST vintage,
+ * which the TODAY's canonical-form check (`meme-check-staged`, `tools/meme-check-staged.sh`) has no
+ * reason to agree with: canon's own shape has moved since that commit. A `.mem` fixture would read as
+ * a live carrier drifted from today's form and refuse every commit that touches it. The JSON wrapper
+ * keeps the frozen bytes exactly what they were while staying outside that glob.
+ *
+ * Each fixture pair is RENDERED HERE, with the live engine, every run — a frozen pair of SOURCE texts,
+ * never a frozen render. A future grammar or renderer change that moves how either form renders still
+ * shows up as a mismatch, which is the property this suite exists to hold: the migration's declaration
+ * quoting must stay invisible to the render, under whatever engine is live today.
  */
 import { beforeAll, describe, expect, test } from "vitest";
-import { execSync } from "node:child_process";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
-const REPO = path.resolve(__dirname, "..", "..", "..");
-// The commit that carried the sweep; its parent holds the bare form.
-const BEFORE = "c1086522f~1";
-/** The sweep itself — the quoted form as that commit wrote it. */
-const AFTER = "c1086522f";
-const CARRIERS = [
-  "bags/lares/ha.ka.ba/lares/docs/pattern-integrities.mem",
-  "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem",
-  "bags/lares/ha.ka.ba/lares/docs/hud.mem",
-];
+const FIXTURE_DIR = path.resolve(__dirname, "fixtures", "doctype-render-parity");
+
+interface FixturePair { before: string; after: string; }
+
+const SLUGS = readdirSync(FIXTURE_DIR)
+  .filter((f) => f.endsWith(".json"))
+  .map((f) => f.slice(0, -".json".length))
+  .sort();
 
 describe.skipIf(wikiSkip)(`doctype render parity ${skipNote}`, () => {
   let engine: TW5Engine;
   beforeAll(async () => { engine = await bootTestWiki(); });
 
+  test("fixture pairs exist — a suite with none proves nothing", () => {
+    expect(SLUGS.length).toBeGreaterThan(0);
+  });
+
   test("every migrated carrier renders what it rendered before, past its own declaration", () => {
-    const absent = [BEFORE, AFTER].filter((rev) => {
-      try { execSync(`git cat-file -e ${rev}^{commit}`, { cwd: REPO, stdio: "ignore" }); return false; }
-      catch { return true; }
-    });
-    expect(absent, `this clone holds no ${absent.join(" / ")} — a shallow checkout carries no history to compare; fetch it whole (CI: fetch-depth: 0)`).toEqual([]);
     const faults: string[] = [];
-    for (const f of CARRIERS) {
-      let was: string, now: string;
-      try {
-        was = execSync(`git show ${BEFORE}:${JSON.stringify(f)}`, { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 });
-        now = execSync(`git show ${AFTER}:${JSON.stringify(f)}`, { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 });
-      } catch { faults.push(`${f}: no prior form to compare`); continue; }
-      if (!/^<<!DOCTYPE [^"]/m.test(was)) { faults.push(`${f}: the prior form already carried quotes, so this proves nothing`); continue; }
+    for (const slug of SLUGS) {
+      const pair: FixturePair = JSON.parse(readFileSync(path.join(FIXTURE_DIR, `${slug}.json`), "utf8"));
+      const { before: was, after: now } = pair;
+      if (!/^<<!DOCTYPE [^"]/m.test(was)) { faults.push(`${slug}: the "before" fixture already carries quotes, so this proves nothing`); continue; }
       // THE RENDER ESCAPES ITS OWN ANGLES. A strip written against the SOURCE form matches nothing
       // in HTML, and the declaration line then reads as the only divergence — which is the one
       // divergence this test exists to exclude.
@@ -65,7 +68,7 @@ describe.skipIf(wikiSkip)(`doctype render parity ${skipNote}`, () => {
       const b = strip(engine.renderText(now, "text/memetic-wikitext+tiddlywiki"));
       if (a !== b) {
         let i = 0; while (i < a.length && a[i] === b[i]) i += 1;
-        faults.push(`${f}: render moved at ${i} — ${JSON.stringify(a.slice(i, i + 60))} vs ${JSON.stringify(b.slice(i, i + 60))}`);
+        faults.push(`${slug}: render moved at ${i} — ${JSON.stringify(a.slice(i, i + 60))} vs ${JSON.stringify(b.slice(i, i + 60))}`);
       }
     }
     expect(faults).toEqual([]);
