@@ -11,7 +11,7 @@ l-space    = "adjacent"
 mana       = 14
 manao      = 14
 manaoio    = 13
-role       = "WORK HANDOFF, addressed — the loops the founding hearth handed to the lares(Codex) nakama-crew invited 2026-09-14, and the crew's own roadmap after it. Per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. #/reconciled reads every item against the code as landed, superseded or open; the sections after it keep their dated measurements as the record. NEVER a shift ledger (that is docs/handoff), NEVER the hearth ledger (that is docs/pono/hearths)."
+role       = "WORK HANDOFF, addressed — the loops the founding hearth handed to the lares(Codex) nakama-crew invited 2026-09-14, and the crew's own roadmap after it. Per item: what it names, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. #/reconciled reads every item against the code as landed, superseded or open; the sections after it keep their dated measurements as the record. NEVER a shift ledger (docs/handoff carries that), NEVER the hearth ledger (docs/pono/hearths carries that)."
 status-why = "the crew's session ended and its hold closed; the Lares hearth carries the items #/reconciled marks open, and a taken item moves by an edit to #/reconciled naming the commit that took it"
 tags       = ["docs/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
@@ -74,7 +74,7 @@ written    = "2026-09-14"
 * ''The daemon-VM's working-layer replica bloat'' (A4's "fix #4", the `9d/` document) — D-VR-C answers it: the primary worker Repo carries ordinary documents with no durable store, and only the worker-owned scope persists.
 * ''D-AE's contract-frontier lift'' and the transient carriage relation witness (`93f2a6725`, `73c7ac350`) — the witness retired (`ea5027586`): a contract relation reaches the gate as a presented admit, read by one presenter off one board doc and sorted before the verdict (`587d39bd4`); the board reads deny-only.
 * ''E8's HTTP oracle'' — the FLOW-map pointer crosses only the gated `/oracle` socket to a peer that proved first, and every HTTP path under it draws the one closed door (`93e59d660`).
-* ''The herm/Pronaos fork'' (the 2026-09-23 ruling in #/next-steps and the "explicit implementation fork" in #/e8-web-delivery-truth) — CLOSED by operator ruling (2026-10-08), with the two halves named apart (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-placement">>). The FACE is the lararium's: only a lararium lights a Pronaos — the arrival page, the arrival descriptor, the first-arrival kindle, the house's face — and the code agrees: `composePronaosFromEnv` (`packages/lararium-node/src/pronaos-composition.ts`) refuses a herm any Pronaos input with the waystone message. CARRIAGE is the herm's: a herm mirrors a house's published bytes by CID, for availability and never trust — the arrival page, a seed, an offered edition, and the artifact a publication record names (`mountPronaosPublicArtifact`, `deliverPublicArtifact`; `8052198dc`, `fada62b7b`). A mirror presents no face, lights no Pronaos, and signs no public claim; a mirror the descriptor lists never kindles, and first arrival trusts the house's own origin (`kindle.ts`).
+* ''The herm/Pronaos fork'' (the 2026-09-23 ruling in #/next-steps and the "explicit implementation fork" in #/e8-web-delivery-truth) — CLOSED by operator ruling (2026-10-08), with the two halves named apart (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-placement">>). The FACE belongs to the lararium: only a lararium lights a Pronaos — the arrival page, the arrival descriptor, the first-arrival kindle, the house's face — and the code agrees: `composePronaosFromEnv` (`packages/lararium-node/src/pronaos-composition.ts`) refuses a herm any Pronaos input with the waystone message. CARRIAGE falls to the herm: a herm mirrors a house's published bytes by CID, for availability and never trust — the arrival page, a seed, an offered edition, and the artifact a publication record names (`mountPronaosPublicArtifact`, `deliverPublicArtifact`; `8052198dc`, `fada62b7b`). A mirror presents no face, lights no Pronaos, and signs no public claim; a mirror the descriptor lists never kindles, and first arrival trusts the house's own origin (`kindle.ts`).
 
 !! Open — the operator's to rule
 
@@ -1580,6 +1580,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;phIptlw0GIzOEWpvdKyta7UiVS1G8-TZWcFmNy3GsJs
+<<^ code="&#x0003;">>ni:///sha-256;lDiamOXXsOxtzM341NLRXE4B7qQnjxDLWLdk9rFTbv8
 
 <<^ code="&#x0004;" -> to="?">>

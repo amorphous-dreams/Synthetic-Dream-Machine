@@ -44,7 +44,7 @@ updated    = "2026-10-06"
 
 ! Reconciled — this transfer, read against the code
 
-''The crew's session has ended and its hold stands closed'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>). The sections after this one keep the transfer as it was written; this one reads it against the tree that stands. The whole Codex roadmap reconciles at <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>.
+''The crew's session has ended and its hold stands closed'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>). The sections after this one keep the transfer as written; this one reads it against the tree that stands. The whole Codex roadmap reconciles at <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>.
 
 * ''Landed.'' The presented-admit cut-over and its contract witness (`0730dd41b`; one presenter reads acts and roll anchors off one board doc, `f4f1c9a6e`); the CLI seal seam (seal rolls signed by the keys they reveal, `83445b41a`); the receiver witness, committed with its harness option (`750bf21fe`); vessel parity, the PersonaGroup ring composed on both shores by one function (`3384b183c`) — the Browser's typed verified-peer seam reads the relay adapter's `provenKeyOf`, and the gate signs its verdict (`e08f210c1`).
 * ''Open, the operator's.'' The Offering Antigen scope and the charter-inception identity under it; generic adoption stays deferred, and enforcement and the receiver's consultation cap wait on the scope ruling.
@@ -201,5 +201,5 @@ A context-free reviewer read the preceding revision of this carrier against the 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UswJd_jk5BPwIojb3gw9BLBGXHc6Pc6qyERgg2zBynw
+<<^ code="&#x0003;">>ni:///sha-256;vk1tigSZJiTV6W3B-xd7XFRxzVnhaya-khL_ffXUJeI
 <<^ code="&#x0004;" -> to="?">>
