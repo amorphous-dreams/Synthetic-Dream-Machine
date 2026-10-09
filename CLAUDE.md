@@ -4,5 +4,5 @@
 
 - Keep this file thin.
 - Add only Claude-specific customizations here.
-- `bagsRoot()`/`workerRootDir` default REPO-RELATIVE (by design, so a fresh clone boots with no config). An in-tree dev/smoke boot that does not set `LAR_BAGS` (or `LAR_ROOT`/`~/.lares/config.json`) to an isolated scratch dir therefore writes real projection artifacts — including boot-side-effect pointers a private-nexus-of-one mints — straight into the tracked tree.
-- Always export `LAR_BAGS=/tmp/<scratch>` (or equivalent) before an in-tree dev/smoke boot; never boot in-tree bare.
+- `bagsRoot()` resolves `LAR_BAGS` → `config.resources.bags` → `<LAR_ROOT>/bags` → `<repo>/bags`. The disk projection's mirror roots (`workerRootDir`: `bags/{lares,lararium,crossroads}`, the self bags, `wikis/`) resolve `--root`/`rootDir` → `LAR_ROOT` → the repo and read neither `LAR_BAGS` nor the config. With neither set, a fresh clone boots REPO-RELATIVE by design.
+- So `LAR_BAGS` alone does NOT isolate an in-tree boot: the projection still writes the tracked `bags/` and `wikis/`. Isolate an in-tree dev/smoke boot with a scratch `LAR_ROOT=/tmp/<scratch>`, which moves the store, the bags root and every mirror root (genesis resolves under it too; `LAR_GENESIS` overrides). Never boot in-tree bare. e2e: a scratch `LAR_ROOT` per vessel, no global `LAR_BAGS`. `tools/tree-clean-witness.sh` reads any write into the tracked tree as red.
