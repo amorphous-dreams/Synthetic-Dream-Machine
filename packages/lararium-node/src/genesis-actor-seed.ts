@@ -1,14 +1,24 @@
 /**
  * genesis-actor-seed — the genesis bake's deterministic actor seed.
  *
- * actorSeed = sha256hex over the walked inputs: the TW5 core bytes, every `.mem` under the bags root,
- * every vendored plugin `.json`, and every plugin build attestation. Each file folds under a label that
- * names it, so a renamed or moved carrier moves the seed.
+ * THE KUPONO LAW: the actor seed folds ONLY what every Lararium shares and boots alike. That means the TW5
+ * engine core, the vendored plugin blobs the bake packs (every one of them boots in every vessel's
+ * islands), and the plugin build attestation the bake reads. It folds nothing per-operator or per-place:
+ * no working copy under `bags/`, no draft, no local state, and no stray file that stands on one machine
+ * alone. The descriptor and recipe tiddlers the seed also carries come from the mesh builder's code, not
+ * from files, so they fold through the code that mints them.
+ *
+ * WHY. The `.mem` carriers under `bags/` are the operator's working copies of what becomes public or
+ * crossroads material, and genesis carries none of them. A seed that folded them tied the genesis actor,
+ * and so `seedCid`, to every draft edit on one machine. That is a name every Lararium reads, moving on
+ * one operator's private act.
+ *
+ * ONE READER OF THE PACKED SET. `genesisPackedPluginFiles` names the plugin blobs the bake packs, and the
+ * bake's own collector reads the same function. The seed and the bake cannot drift apart: a file the
+ * bake would not pack never reaches the seed, and a file it packs always does.
  *
  * THE LABEL NAMES THE FILE WITHIN THE TREE, NEVER ON THE MACHINE. A label reads the path RELATIVE to the
- * tree root, spelled with `/`, so one commit bakes one seed from any checkout location or platform. An
- * absolute label made the seed a reading of where the bake ran, and two clones of the same commit
- * disagreed on the seed — and so on `seedCid`, the name a herm serves.
+ * tree root, spelled with `/`, so one commit bakes one seed from any checkout location or platform.
  */
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
@@ -17,27 +27,26 @@ import { sha256HexBytesSync, utf8Bytes }         from "@lararium/mesh";
 
 export interface ActorSeedInputs {
   /** The tree root every label reads relative to (the repo). */
-  readonly root:          string;
+  readonly root:             string;
   /** The vendored TW5 core blob. Folds by bytes alone; absent folds nothing. */
-  readonly corePath:      string;
-  /** The bags root walked for `.mem` carriers. */
-  readonly bagsRoot:      string;
-  /** The vendored plugin directory walked for `.json` blobs. */
-  readonly pluginsRoot:   string;
-  /** The plugin build output walked for `.attestation.json` files. */
-  readonly distPluginDir: string;
+  readonly corePath:         string;
+  /** The vendored plugin directory; its packed set reads through `genesisPackedPluginFiles`. */
+  readonly pluginsRoot:      string;
+  /** The plugin build attestations the bake reads, by path. An absent path folds nothing. */
+  readonly attestationPaths: readonly string[];
 }
 
-function walkFiles(dir: string, ext: string): string[] {
-  const results: string[] = [];
-  try {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) results.push(...walkFiles(full, ext));
-      else if (entry.name.endsWith(ext)) results.push(full);
-    }
-  } catch { /* absent — skip */ }
-  return results.sort();
+/**
+ * The plugin blobs the genesis bake packs: every `.json` standing at the TOP of the plugins directory,
+ * sorted by name. A nested directory (the standalone distribution, say) never packs, so it never folds.
+ */
+export function genesisPackedPluginFiles(pluginsRoot: string): string[] {
+  if (!existsSync(pluginsRoot)) return [];
+  return readdirSync(pluginsRoot, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith(".json"))
+    .map((e) => e.name)
+    .sort()
+    .map((name) => join(pluginsRoot, name));
 }
 
 function concatBytes(chunks: Uint8Array[]): Uint8Array {
@@ -54,7 +63,7 @@ function treeLabel(root: string, file: string): string {
 }
 
 export function deriveGenesisActorSeed(inputs: ActorSeedInputs): string {
-  const { root, corePath, bagsRoot, pluginsRoot, distPluginDir } = inputs;
+  const { root, corePath, pluginsRoot, attestationPaths } = inputs;
   const chunks: Uint8Array[] = [];
 
   if (existsSync(corePath)) {
@@ -62,17 +71,13 @@ export function deriveGenesisActorSeed(inputs: ActorSeedInputs): string {
     chunks.push(new Uint8Array(readFileSync(corePath)));
   }
 
-  for (const f of walkFiles(bagsRoot, ".mem")) {
-    chunks.push(utf8Bytes(`meme:${treeLabel(root, f)}:`));
-    chunks.push(new Uint8Array(readFileSync(f)));
-  }
-
-  for (const f of walkFiles(pluginsRoot, ".json")) {
+  for (const f of genesisPackedPluginFiles(pluginsRoot)) {
     chunks.push(utf8Bytes(`plugin:${treeLabel(root, f)}:`));
     chunks.push(new Uint8Array(readFileSync(f)));
   }
 
-  for (const f of walkFiles(distPluginDir, ".attestation.json")) {
+  for (const f of [...attestationPaths].sort()) {
+    if (!existsSync(f)) continue;
     chunks.push(utf8Bytes(`attestation:${treeLabel(root, f)}:`));
     chunks.push(new Uint8Array(readFileSync(f)));
   }

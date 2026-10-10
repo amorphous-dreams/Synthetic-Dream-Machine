@@ -88,10 +88,19 @@ hand-written folds read like an inconsistency and are the separation.
 
 !! The actor seed makes two builds the same build
 
-`actorSeed = sha256hex(sorted content hashes of every walked input)`, so two builds from identical
-source produce an identical `island.sha256`. Automerge would otherwise stamp a fresh actor per build
-and two byte-identical corpora would fold to two different artifacts — which would make the artifact
-useless as a name.
+`actorSeed = sha256hex` over the inputs the bake packs, each labelled by its path within the repo, so
+two builds of one commit, from any checkout location, produce an identical `island.sha256`. Automerge
+would otherwise stamp a fresh actor per build, and two byte-identical inputs would fold to two different
+artifacts, leaving the artifact useless as a name.
+
+''The kupono law: the seed folds only what every Lararium shares and boots alike.'' It folds the engine
+core, the plugin blobs the bake packs (every one boots in every vessel's islands) and the attestation the
+bake reads. Nothing per-operator or per-place reaches it: no working copy under `bags/`, no draft, no file
+standing on one machine alone. The `bags/` carriers hold the operator's working copies of what later
+becomes public or crossroads material; genesis carries none of them, and a seed that folded them would
+move `seedCid`, a name every Lararium reads, on one operator's private edit. One function names the
+packed set (`genesisPackedPluginFiles`), and the bake's collector and the seed both read it, so the two
+cannot drift.
 
 ''An attestation that disagrees with its blob ABORTS the build.'' A plugin whose recorded
 `pluginJsonSha256` misses the bytes on disk throws rather than vendoring; a half-true genesis is worse
@@ -109,6 +118,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;y-AS1toQFUgI7L_uPj4aZQ2x_eFV0i4TrO1S1pk4PQI
+<<^ code="&#x0003;">>ni:///sha-256;K1MBjqEeHj2DNEOlOIqQ6d4skaf0Sqe7w6LLHXTvgkA
 
 <<^ code="&#x0004;" -> to="?">>

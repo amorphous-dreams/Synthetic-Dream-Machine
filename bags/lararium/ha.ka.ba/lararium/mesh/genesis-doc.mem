@@ -121,7 +121,7 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 ''GD-4 — Two-pass CID injection stays honest, not a fixpoint.'' Pass 1: serialize without the self-ref → `preSha256`. Pass 2: inject the genesis-cid tiddler. Strip it + hash → `preSha256`. Verifiable.
 
-''GD-5 — Determinism via actorSeed.'' `actorSeed = sha256hex(sorted content hashes of all inputs)`; identical source → identical seed-derived Oracle witness and exact CAS inventory. (Note: the TW5 core itself must render deterministically — a non-deterministic vendor build skews the engine CID; resolving the engine via CAS keeps the byte plane explicit, but a reproducible core remains the clean target.)
+''GD-5 — Determinism via actorSeed.'' `actorSeed = sha256hex` over the inputs every Lararium shares and boots alike (the kupono law): the engine core, the packed plugin blobs and the attestation the bake reads, each labelled by its path within the repo. No working copy under `bags/` and no per-place file folds in. One commit → one seed-derived Oracle witness and one exact CAS inventory, from any checkout. (Note: the TW5 core itself must render deterministically — a non-deterministic vendor build skews the engine CID; resolving the engine via CAS keeps the byte plane explicit, but a reproducible core remains the clean target.)
 
 ''GD-6 — System recipes serve as substrate; user recipes do not.'' //(#what-genesis-seeds.)//
 
@@ -208,6 +208,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GZFK5ufssHacxwmX_AzC8oY89JISe4jedgGfuxoYE6A
+<<^ code="&#x0003;">>ni:///sha-256;2e7HqrJ0glYqznulMOdxuZOXIm2N0Mwa-hMExwVRqiw
 
 <<^ code="&#x0004;" -> to="?">>

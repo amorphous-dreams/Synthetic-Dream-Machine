@@ -10,15 +10,17 @@
  * reconcileWellKnownTiddlers(). Neither belongs here.
  *
  * Determinism invariant:
- *   actorSeed = sha256hex over the walked inputs, each labelled by its path WITHIN the repo
- *   (`genesis-actor-seed`). Two builds of one commit, from any checkout location, produce identical
- *   seed/CAS bytes and the same derived inventory.
+ *   The KUPONO law (`genesis-actor-seed`): actorSeed folds ONLY what every Lararium shares and boots
+ *   alike — the engine core, the plugin blobs this bake packs (read through the one shared
+ *   `genesisPackedPluginFiles`) and the attestation it reads — each labelled by its path WITHIN the repo.
+ *   Nothing per-operator or per-place folds: no bags/ working copy, no draft, no file on one machine
+ *   alone. Two builds of one commit, from any checkout location, produce identical seed/CAS bytes.
  *
  * Run via:  tsx scripts/build-genesis-island.ts
  * Or via:   pnpm --filter @lararium/node build:genesis
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync }              from "fs";
 import { join, basename, resolve }                                          from "path";
 
 import { repoRoot } from "@lararium/mesh/node";
@@ -39,7 +41,7 @@ import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/t
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
-import { deriveGenesisActorSeed } from "../src/genesis-actor-seed.js";
+import { deriveGenesisActorSeed, genesisPackedPluginFiles } from "../src/genesis-actor-seed.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -48,7 +50,6 @@ import { deriveGenesisActorSeed } from "../src/genesis-actor-seed.js";
 // One root law: the repo IS the vessel — repoRoot from mesh, never path arithmetic.
 const REPO_ROOT               = repoRoot;
 const DEFAULT_GENESIS_DIR     = join(REPO_ROOT, "genesis");
-const BAGS_ROOT               = join(REPO_ROOT, "bags");
 const LARARIUM_TW5_DIST_PLUGIN = join(REPO_ROOT, "packages", "lararium-tw5", "dist-plugin");
 const LARES_TW5_PLUGIN_ATTESTATION = join(LARARIUM_TW5_DIST_PLUGIN, "lares-memetic-wikitext.attestation.json");
 
@@ -91,8 +92,9 @@ async function collectPlugins(attestations: Map<string, PluginBuildAttestation>)
   const entries: GenesisPluginEntry[] = [];
   if (!existsSync(tw5PluginsRoot)) return entries;
 
-  for (const file of readdirSync(tw5PluginsRoot).filter(f => f.endsWith(".json")).sort()) {
-    const blob = new Uint8Array(readFileSync(join(tw5PluginsRoot, file)));
+  for (const path of genesisPackedPluginFiles(tw5PluginsRoot)) {
+    const file = basename(path);
+    const blob = new Uint8Array(readFileSync(path));
     const sha  = sha256HexBytesSync(blob);
     let id      = basename(file, ".json");
     let version = "unknown";
@@ -163,11 +165,10 @@ async function main(): Promise<void> {
   // Layer A: read files + derive actor seed.
   console.log("[genesis] deriving actor seed from content hash …");
   const actorSeed        = deriveGenesisActorSeed({
-    root:          REPO_ROOT,
-    corePath:      coreJsPath,
-    bagsRoot:      BAGS_ROOT,
-    pluginsRoot:   tw5PluginsRoot,
-    distPluginDir: LARARIUM_TW5_DIST_PLUGIN,
+    root:             REPO_ROOT,
+    corePath:         coreJsPath,
+    pluginsRoot:      tw5PluginsRoot,
+    attestationPaths: [LARES_TW5_PLUGIN_ATTESTATION],
   });
   console.log(`[genesis] actorSeed = ${actorSeed.slice(0, 16)}…`);
 
