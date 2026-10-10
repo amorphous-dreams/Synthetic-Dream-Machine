@@ -51,11 +51,15 @@ function surfaces() {
 /** The lowest port an unprivileged run can bind. Below it, a literal names an address and never a seat. */
 const FIRST_BINDABLE = 1024;
 const PORT_FORMS = [
-  /(?:127\.0\.0\.1|localhost|0\.0\.0\.0|\[::1?\]):(\d+)/g,          // an address with its port
-  /\b[A-Z_]*PORT[A-Z_]*\b\s*[:=]\s*["'`]?(\d+)/g,                   // LAR_PORT=8097 · PORT = 8231 · LAR_PORT: "8299"
-  /--port[\s=]+["'`]?(\d+)/g,                                        // --port 8080
-  /["'`]--port["'`]\s*,\s*["'`]?(\d+)/g,                             // "--port", "8080"
-  /\.listen\(\s*(\d+)/g,                                             // server.listen(8080)
+  /(?:127\.0\.0\.1|localhost|0\.0\.0\.0|\[::1?\]):(\d+)/g,                           // an address with its port
+  /(?:127\.0\.0\.1|localhost|0\.0\.0\.0|\[::1?\]):\$\{(\d+)\}/g,                     // a template-literal address: `…:${8098}`
+  // Any case, bare (`port`) or underscore-compound (`LAR_PORT` · `lar_port`) — never a bare substring match
+  // (an English word like "support" or "export" carries no standalone "port" token, so it never qualifies).
+  /\b(?:[A-Za-z]+_)?port(?:_[A-Za-z]+)?\b\s*[:=]\s*["'`]?(\d+)\b/gi,                  // PORT=8097 · port: 8231 · lar_port: "7000"
+  /\b(?:[A-Za-z]+_)?port(?:_[A-Za-z]+)?\b\s*[:=]\s*String\(\s*(\d+)\s*\)/gi,          // PORT: String(8080)
+  /--port[\s=]+["'`]?(\d+)/g,                                                         // --port 8080
+  /["'`]--port["'`]\s*,\s*["'`]?(\d+)/g,                                              // "--port", "8080"
+  /\.listen\(\s*(\d+)/g,                                                              // server.listen(8080)
 ];
 
 /** Each literal, bindable port in `text`, with its line. A line that is a comment carries no seat. */
@@ -100,27 +104,94 @@ function enclosingArray(text, at) {
   return text.slice(start);
 }
 
+/** Local TS vars bound to one literal gated-door name: `const sub = "found";` — so `[…, sub]` is a door too. */
+function gatedTsVarBindings(text, gated) {
+  const map = new Map();
+  const bind = new RegExp(`\\b(?:const|let|var)\\s+(\\w+)\\s*=\\s*["'\`](${gated.join("|")})["'\`]`, "g");
+  for (const m of text.matchAll(bind)) map.set(m[1], m[2]);
+  return map;
+}
+
 /** Every gated vessel door a TypeScript file invokes as an argv array without `--skip-build`. */
 export function ungatedTs(text, gated) {
   const hits = [];
+  const push = (index, snippet) =>
+    hits.push({ line: text.slice(0, index).split("\n").length, text: snippet.replace(/\s+/g, " ").slice(0, 160) });
+
+  // a literal second element: ["vessel", "found"]
   const door = new RegExp(`["'\`]vessel["'\`]\\s*,\\s*["'\`](${gated.join("|")})["'\`]`, "g");
   for (const m of text.matchAll(door)) {
     const argv = enclosingArray(text, m.index);
-    if (!/["'`]--skip-build["'`]/.test(argv)) {
-      hits.push({ line: text.slice(0, m.index).split("\n").length, text: argv.replace(/\s+/g, " ").slice(0, 160) });
+    if (!/["'`]--skip-build["'`]/.test(argv)) push(m.index, argv);
+  }
+
+  // a var bound to a literal gated name, substituted for the literal: `const sub = "found"; […, sub]`
+  const bindings = gatedTsVarBindings(text, gated);
+  if (bindings.size) {
+    const varDoor = /["'`]vessel["'`]\s*,\s*(\w+)\b/g;
+    for (const m of text.matchAll(varDoor)) {
+      if (!bindings.has(m[1])) continue;
+      const argv = enclosingArray(text, m.index);
+      if (!/["'`]--skip-build["'`]/.test(argv)) push(m.index, argv);
     }
   }
+
+  // a one-string argv split apart at runtime: `"vessel found".split(" ")`
+  const splitDoor = new RegExp(`["'\`]vessel\\s+(${gated.join("|")})["'\`]\\s*\\.split\\(`, "g");
+  for (const m of text.matchAll(splitDoor)) {
+    const lineStart = text.lastIndexOf("\n", m.index) + 1;
+    const lineEndAt = text.indexOf("\n", m.index);
+    const line = text.slice(lineStart, lineEndAt < 0 ? text.length : lineEndAt);
+    if (!/--skip-build/.test(line)) push(m.index, line);
+  }
+
   return hits;
 }
 
-/** Every gated vessel door a shell line runs without `--skip-build`. Comments and quoted prose carry no door. */
+/** Shell vars bound to one literal gated-door name: `SUB=found` or `export SUB="found"`. */
+function gatedShVarBindings(text, gated) {
+  const map = new Map();
+  const bind = new RegExp(`^\\s*(?:export\\s+)?(\\w+)=["']?(${gated.join("|")})["']?\\s*$`, "gm");
+  for (const m of text.matchAll(bind)) map.set(m[1], m[2]);
+  return map;
+}
+
+/** The raw line up to (but not including) a `#` that stands outside any quote — a trailing comment
+ *  carries no bytes a shell ever runs, so a `--skip-build` written only there satisfies nothing. */
+function stripTrailingComment(line) {
+  let inSingle = false, inDouble = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === "'" && !inDouble) inSingle = !inSingle;
+    else if (c === '"' && !inSingle && line[i - 1] !== "\\") inDouble = !inDouble;
+    else if (c === "#" && !inSingle && !inDouble) return line.slice(0, i);
+  }
+  return line;
+}
+
+/** Every gated vessel door a shell line runs without `--skip-build`. Comments and quoted prose carry no
+ *  door; a `-c "…"` / `eval "…"` command string, and a `$VAR` substituted for a bound literal, both do. */
 export function ungatedSh(text, gated) {
   const hits = [];
   const door = new RegExp(`\\bvessel\\s+(${gated.join("|")})\\b`);
+  const varNames = [...gatedShVarBindings(text, gated).keys()];
+  const varDoor = varNames.length ? new RegExp(`\\bvessel\\s+["']?\\$\\{?(${varNames.join("|")})\\}?["']?`) : null;
+
   text.split("\n").forEach((line, i) => {
     if (/^\s*#/.test(line)) return;
-    const bare = line.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/'[^']*'/g, "''");
-    if (door.test(bare) && !/--skip-build\b/.test(bare)) hits.push({ line: i + 1, text: line.trim() });
+    const rawNoComment = stripTrailingComment(line);
+
+    // a `-c "…"` / `eval "…"` command string really runs — scan its own contents like a shell line.
+    const quotedCmds = [...rawNoComment.matchAll(/(?:-c|eval)\s+"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+
+    // blank quoted PROSE spans — a door named in an echoed sentence carries no seat.
+    const bare = rawNoComment.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/'[^']*'/g, "''");
+
+    const matched =
+      (door.test(bare) && !/--skip-build\b/.test(bare)) ||
+      (varDoor !== null && varDoor.test(rawNoComment) && !/--skip-build\b/.test(rawNoComment)) ||
+      quotedCmds.some((c) => door.test(c) && !/--skip-build\b/.test(c));
+    if (matched) hits.push({ line: i + 1, text: line.trim() });
   });
   return hits;
 }
@@ -141,6 +212,20 @@ test("CONTROL: the port scanner reads each planted literal port, and lets an unb
   assert.deepEqual(literalPorts(`// a comment naming :8299 holds no seat`), []);
 });
 
+test("CONTROL: the port scanner also reads the lowercase, compound, templated and String()-wrapped forms", () => {
+  const planted = [
+    `openStaged({ port: 8299 })`,                        // the harness's own API — a lowercase object key
+    `const port = 8231;`,                                 // a lowercase local, no LAR_ prefix
+    `port: String(8080)`,                                 // a String()-wrapped literal
+    "fetch(`http://127.0.0.1:${8098}/x`)",                // a template-literal address
+    `srv.listen({ port: 9090 })`,                          // an object form to .listen
+    `env: { lar_port: "7000" }`,                           // a lowercase, underscore-compound env key
+  ].join("\n");
+  assert.deepEqual(literalPorts(planted).map((h) => h.port), [8299, 8231, 8080, 8098, 9090, 7000]);
+  // CONTROL: an English word that merely contains the substring "port" names no seat.
+  assert.deepEqual(literalPorts(`support: 8080\nexport const transport = 8080;`), []);
+});
+
 test("CONTROL: the gated set is derived from the CLI's own tables, and names the founding and booting doors", () => {
   const gated = gatedVesselSubs();
   for (const door of ["found", "stand", "clear"]) assert.ok(gated.includes(door), `${door} missing from ${gated}`);
@@ -150,22 +235,30 @@ test("CONTROL: the gated set is derived from the CLI's own tables, and names the
 test("CONTROL: the door scanners read each planted bare door, and pass a gated one", () => {
   const gated = gatedVesselSubs();
   const ts = [
-    `lares(["vessel", "found"]);`,
-    `await cliB(["vessel", "found", "--admit", admit]);`,
-    `spawn(process.execPath, [CLI, "vessel", "stand",\n  "--json"])`,
-    `cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);`,
-    `lares(["vessel", "stop"]);`,
+    `lares(["vessel", "found"]);`,                                           // 1
+    `await cliB(["vessel", "found", "--admit", admit]);`,                    // 2
+    `spawn(process.execPath, [CLI, "vessel", "stand",\n  "--json"])`,        // 3-4
+    `cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);`,  // 5
+    `lares(["vessel", "stop"]);`,                                            // 6
+    `const sub = "found";`,                                                  // 7
+    `cli(["vessel", sub]);`,                                                 // 8 — a var standing in for the literal
+    `"vessel found".split(" ").forEach((x) => x);`,                         // 9 — a one-string argv split apart
   ].join("\n");
-  assert.deepEqual(ungatedTs(ts, gated).map((h) => h.line), [1, 2, 3]);
+  assert.deepEqual(ungatedTs(ts, gated).map((h) => h.line), [1, 2, 3, 8, 9]);
   const sh = [
-    `run_a "A founds"   vessel stand --install`,
-    `if ! LAR_ROOT="$TB" node "$REPO/bin/lares.mjs" vessel found >"$TB/init.log" 2>&1; then`,
-    `run_b "B founds"   vessel stand --install --skip-build`,
-    `# lares vessel found resolves the true-name`,
-    `say "① vessel stand — the Nexus founds"`,
-    `as_a vessel stop`,
+    `run_a "A founds"   vessel stand --install`,                  // 1
+    `if ! LAR_ROOT="$TB" node "$REPO/bin/lares.mjs" vessel found >"$TB/init.log" 2>&1; then`, // 2
+    `run_b "B founds"   vessel stand --install --skip-build`,     // 3
+    `# lares vessel found resolves the true-name`,                // 4
+    `say "① vessel stand — the Nexus founds"`,                    // 5
+    `as_a vessel stop`,                                           // 6
+    `bash -c "vessel found"`,                                     // 7 — a door inside a quoted bash -c
+    `eval "vessel stand --install"`,                              // 8 — a door inside a quoted eval
+    `SUB=found`,                                                   // 9 — a binding, not itself a door
+    `vessel "$SUB"`,                                               // 10 — the bound var standing in for the literal
+    `lares vessel found # --skip-build`,                          // 11 — a --skip-build a comment alone carries
   ].join("\n");
-  assert.deepEqual(ungatedSh(sh, gated).map((h) => h.line), [1, 2]);
+  assert.deepEqual(ungatedSh(sh, gated).map((h) => h.line), [1, 2, 7, 8, 10, 11]);
 });
 
 // ── THE LAW, OVER THE TREE ──────────────────────────────────────────────────────────────────────────────────
