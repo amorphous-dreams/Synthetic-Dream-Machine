@@ -200,9 +200,12 @@ export function makeVesselResidency(
       const slug    = slugFromUri(wikiId);
       const wikiUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[wikiBagUri(slug)]) ?? null;
       if (!wikiUrl || !wikiUrl.startsWith("automerge:")) return null;   // unknown → park/drop
-      // The libraries the wiki's recipe record names lay at boot (`recipeFromRecord`).
+      // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
+      // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
       const rec = catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)] as LarTiddlerRecord | undefined;
-      const libraryBags = rec ? recipeFromRecord(rec, slug).libraryBags : undefined;
+      const grainRecipe = rec ? recipeFromRecord(rec, slug) : undefined;
+      const libraryBags = grainRecipe?.libraryBags;
+      const pluginOfferings = grainRecipe?.pluginOfferings;
       const { spec } = await buildWikiMountSpec(daemon, {
         activeWikiId: wikiId,
         wikiSlug:     slug,
@@ -211,6 +214,7 @@ export function makeVesselResidency(
         wikiUrl,
         catalogUrl:   catalogHandle.url,
         ...(libraryBags ? { libraryBags } : {}),
+        ...(pluginOfferings ? { pluginOfferings } : {}),
       });
       return spec;
     };

@@ -109,6 +109,10 @@ export interface PrimaryMountInputs {
   /** The library bags the wiki's recipe RECORD names (`recipeFromRecord`), top-first — laid at boot
    *  exactly where recipe-watch keeps them live, so the boot path and the live path name one stack. */
   libraryBags?: readonly SlotUri[];
+  /** The ordered signed plugin-offering CIDs this wiki's recipe RECORD names (`recipeFromRecord`,
+   *  R3 — "plugins load by recipe"). Threaded straight into the mount spec's `WikiRecipe`; the pool
+   *  resolves it through the selector + CAS before any manifest ever carries a CID. */
+  pluginOfferings?: readonly string[];
 }
 
 /** The recipe record a wiki stands on: a system wiki's from the oracle plane, a user wiki's from the
@@ -175,6 +179,7 @@ export async function buildWikiMountSpec(
   const recipe: WikiRecipe = {
     wikiSlug: inputs.wikiSlug,
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
+    ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
   };
 

@@ -138,7 +138,11 @@ describe("★ R1 — a recipe's pluginOfferings resolves through the selector st
   const offeror = async () => hex(await ed25519.getPublicKeyAsync(SEED));
 
   test("a recipe naming one verified offering carries exactly that offering's blobs as manifest.pluginCids", async () => {
-    const blob: OfferedBlob = { id: "$:/plugins/tiddlywiki/highlight", version: "0.9.0", sha256: "ab".repeat(32) };
+    const blob: OfferedBlob = {
+      id: "$:/plugins/tiddlywiki/highlight", version: "0.9.0", sha256: "ab".repeat(32),
+      // Provenance strictness: every offered blob requires one (plugin-offering.ts).
+      provenance: { source: "https://example.test/upstream", commit: "0".repeat(40), path: "p", licence: "MIT" },
+    };
     const offering = await signPluginOffering(
       { offeror: await offeror(), pluginsCid: computePluginsCid([blob]), blobs: [blob] }, sign);
     const cid = pluginOfferingCid(offering);

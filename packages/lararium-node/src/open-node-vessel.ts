@@ -44,12 +44,17 @@ import {
   type RealmBagRegistration, type CapTier, ed25519SignerFromSeed,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
-  ENGINE_CORE_ID, BagStowage, pluginCidsFromIslandBlobs,
+  ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault, type PlaneEntry,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync,
   genesisCasCidsFromOracle,
+  // R3 — plugins load by recipe (node): the fixed boot-set floor, the recipe's verified offering
+  // selection off the Crossroads board, and the CAS layer where a selected descriptor meets bytes.
+  bootSetIds, bootSetPluginCids, verifyCasBytes,
+  selectPluginBlobs, selectedPluginCids, type OfferingLookup,
+  offeringAnnouncesFromDoc, type WikiRecipe,
 }                                       from "@lararium/mesh";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
@@ -181,6 +186,53 @@ function axisIdToIndex(id: string): number {
     h = Math.imul(h, 0x01000193);
   }
   return h >>> 0;   // unsigned 32-bit
+}
+
+/**
+ * R3 — "plugins load by recipe" (node). Resolves ONE island's final manifest `pluginCids`:
+ * the fixed boot-set floor (grammar + boot shadows, read off the island/oracle doc's own blobs)
+ * UNION this wiki's own recipe's verified, byte-checked offering selection.
+ *
+ * Retires the old vessel-WIDE `pluginCidsFromIslandBlobs` hand-off (every island got the exact
+ * SAME list, with no per-recipe distinction): `bootSetPluginCids`/`bootSetIds` now name that
+ * floor computation under its right, narrower scope — one fixed INGREDIENT of a per-island
+ * resolution, never the whole answer by itself.
+ *
+ * Fail-closed throughout, in order: an offering this lookup cannot find, a lying lookup, a
+ * boot-set-collision or cross-offering duplicate claim, or any `verifyPluginOffering` code
+ * (`selectPluginBlobs`) refuses first; only THEN does a selected CID's bytes get checked against
+ * the local CAS (`verifyCasBytes`) — missing or corrupt bytes refuse by name, never silently as
+ * an empty or trimmed set.
+ */
+async function resolveNodeIslandPluginCids(opts: {
+  readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
+  readonly recipe: WikiRecipe;
+  readonly lookup: OfferingLookup;
+  readonly readBytes: (cid: string) => Uint8Array | null;
+}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+  const floorCids  = bootSetPluginCids(opts.islandBlobs);
+  const bootIds    = bootSetIds(opts.islandBlobs);
+  const offerings  = opts.recipe.pluginOfferings ?? [];
+  const selection  = await selectPluginBlobs(offerings, opts.lookup, bootIds);
+  if (!selection.ok) {
+    return { ok: false, error: `${opts.recipe.wikiSlug}: offering selection ${JSON.stringify(selection.failure)}` };
+  }
+  const selectedCids = selectedPluginCids(selection.blobs);
+  const bytesVerdict = verifyCasBytes(selectedCids, opts.readBytes, (b) => sha256HexBytesSync(b));
+  if (!bytesVerdict.ok) {
+    return { ok: false, error: `${opts.recipe.wikiSlug}: ${JSON.stringify(bytesVerdict.failure)}` };
+  }
+  // Dedup: a selected offering's CID coinciding with a floor CID would need a raw sha256 collision
+  // (practically disjoint namespaces), but a Set keeps the manifest from ever naming one CID twice.
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+}
+
+/** Build the node Crossroads board's offering lookup (R3): a verified selection re-verifies every
+ *  offering it resolves (`selectPluginBlobs` → `verifyPluginOffering`), so this lookup stays a
+ *  shape-only projection (`offeringAnnouncesFromDoc`) — never a second, redundant certify pass. */
+function nodeOfferingLookup(crossroadsDoc: LarDoc | undefined | null): OfferingLookup {
+  const byOfferingCid = new Map(offeringAnnouncesFromDoc(crossroadsDoc).map((a) => [a.offeringCid, a.offering]));
+  return (cid) => byOfferingCid.get(cid);
 }
 
 /**
@@ -1036,6 +1088,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let eventBus!:  LarEventBusImpl;         // set in makePool
+  // R3 — the Crossroads board this vessel materializes ONCE (openDaemon), read by every later
+  // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
+  let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
   let slotActiveWikiId = "";               // captured in wikiSlot
   let activeWikiSource: "boot-arg" | "daemon-marker" = "boot-arg";
@@ -1654,10 +1709,21 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       ...(deviceEdge ? { deviceEdge } : {}),
       ...(archiveBytes ? { archiveBytes } : {}),
     };
-    // The engine's plugin-tiddler CIDs — the daemon worker pulls them by CID from the fs CAS
-    // (the breath path), never CRDT-syncing the bytes over the port. Same derivation the pool
-    // feeds every wiki island; mirrors the browser vessel.
-    const pluginCids = pluginCidsFromIslandBlobs(assembly.islandHandle.doc()?.blobs);
+    // R3 — the daemon VM resolves its plugins through the SAME selector + CAS path every wiki
+    // island does (`resolveNodeIslandPluginCids`), never the retired vessel-wide hand-off. The
+    // daemon's own one-recipe-model record names no offerings today, so this call is the floor
+    // alone in practice — but it is the floor PROVEN through the selector, not assumed past it.
+    crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+    const daemonPluginResolution = await resolveNodeIslandPluginCids({
+      islandBlobs: assembly.islandHandle.doc()?.blobs,
+      recipe:      { wikiSlug: "daemon" },
+      lookup:      nodeOfferingLookup(crossroadsOfferingsHandle.doc()),
+      readBytes:   (cid) => readCasBlobFromFs(cid, casDirForStorage(storageDir)),
+    });
+    if (!daemonPluginResolution.ok) {
+      throw new Error(`[openNodeVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
+    }
+    const pluginCids = daemonPluginResolution.pluginCids;
     daemonVm = await openDaemonVm({
       repo,
       daemonUrl: bootstrap.daemonUrl,
@@ -2440,9 +2506,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       // above, so resolveDiskMirrors skips this for them — no double-project.
       { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true },
     ];
-    // The engine's plugin-tiddler CIDs — every wiki island pulls them by CID from the local
-    // CAS, the same CID plane the daemon island reads.
-    const poolPluginCids = pluginCidsFromIslandBlobs(assembly.islandHandle.doc()?.blobs);
+    // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
+    // through the selector + CAS (`resolveNodeIslandPluginCids`), never the vessel-wide floor
+    // every island used to get identically. The Crossroads board materializes once and is read
+    // fresh per mount (a later-announced offering becomes selectable without a vessel restart).
+    const casDir = casDirForStorage(storageDir);
     vmManager = new VesselIslandPool({
       mainRepo:    repo,
       storageRoot: storageDir,
@@ -2456,7 +2524,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       // slow keyhive reconverge spends it. (silence 120s / stall 360s, matching daemon-vm-core.)
       mountSilenceMs: 120_000,
       mountStallMs:   360_000,
-      ...(poolPluginCids.length ? { pluginCids: poolPluginCids } : {}),
+      resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
+        islandBlobs: assembly.islandHandle.doc()?.blobs,
+        recipe,
+        lookup:      nodeOfferingLookup(crossroadsOfferingsHandle?.doc()),
+        readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
+      }),
       diskMirrorGrant,
       onWorkerEvent: (wikiId, msg) => {
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });

@@ -17,6 +17,7 @@ import {
   type Repo,
   type IslandMsg_Event,
   type IslandStorageConfig,
+  type WikiRecipe,
 } from "@lararium/mesh";
 import { nodeNewSyncChannel, nodeSpawnWorker } from "./worker-handle.js";
 
@@ -37,8 +38,15 @@ export interface VesselIslandPoolOptions {
   mainRepo?: Repo;
   /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
   storageRoot?: string;
-  /** The engine's plugin-tiddler CIDs — every wiki island pulls them by CID from the local CAS. */
+  /** The engine's plugin-tiddler CIDs — every wiki island pulls them by CID from the local CAS.
+   *  PRE-R3 shape; superseded per-mount when `resolvePluginCids` is also supplied. */
   pluginCids?: readonly string[];
+  /** R3 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
+   *  verified offering selection). See `VesselIslandPoolCoreOptions.resolvePluginCids`. */
+  resolvePluginCids?: (recipe: WikiRecipe) => Promise<
+    | { readonly ok: true; readonly pluginCids: readonly string[] }
+    | { readonly ok: false; readonly error: string }
+  >;
   /** Held disk-write capability: canon bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean }[];
   /** Override the mount silence budget in ms (tests). */
@@ -66,6 +74,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       mainRepo: options.mainRepo ?? null,
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       ...(options.pluginCids?.length ? { pluginCids: options.pluginCids } : {}),
+      ...(options.resolvePluginCids ? { resolvePluginCids: options.resolvePluginCids } : {}),
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),
       ...(options.onEa ? { onEa: options.onEa } : {}),
       ...(options.mountSilenceMs       !== undefined ? { mountSilenceMs:       options.mountSilenceMs }       : {}),

@@ -200,7 +200,11 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
       // The libraries the wiki's recipe RECORD names lay at boot — the record and the mount struct
       // spell one stack (`recipeFromRecord`); recipe-watch keeps the same stack live.
       const rec = recipeRecordOf(assembly, slot.wikiSlug);
-      const libraryBags = rec ? recipeFromRecord(rec, slot.wikiSlug).libraryBags : undefined;
+      const primaryRecipe = rec ? recipeFromRecord(rec, slot.wikiSlug) : undefined;
+      const libraryBags = primaryRecipe?.libraryBags;
+      // R3 — plugins load by THIS wiki's own recipe; threaded straight through to the mount spec
+      // (`buildWikiMountSpec`), which the pool resolves through the selector + CAS per island.
+      const pluginOfferings = primaryRecipe?.pluginOfferings;
       await mountPrimaryWiki(pool, daemon.resolveBinding, {
         activeWikiId: slot.activeWikiId,
         wikiSlug:     slot.wikiSlug,
@@ -209,6 +213,7 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
         wikiUrl:      wikiHandle.url,
         catalogUrl:   assembly.catalogHandle.url,
         ...(libraryBags ? { libraryBags } : {}),
+        ...(pluginOfferings ? { pluginOfferings } : {}),
       });
       emit("tw5-booted");
       emit("live");
