@@ -240,14 +240,21 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status"], { cwd: repoRoot, encoding: "utf8" });
   const watchOk = watch.status === 0;
 
-  const log = run("gh", ["run", "view", String(runId), "--log"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] });
-  const verdictLine = log.split("\n").find((l) => l.includes("MERGE-VERIFY:"));
-  const viewed = JSON.parse(run("gh", ["run", "view", String(runId), "--json", "conclusion,createdAt,updatedAt,url"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] }));
-
-  deleteBranch(repoRoot, branch);
+  // The run exists on the remote and MUST be deleted whether or not reading its log succeeds — a
+  // throw from either `gh run view` call here must never leave `ci/<lane>` standing. `finally`
+  // deletes once regardless of which branch below returns or throws.
+  let verdictLine = null;
+  let viewed;
+  try {
+    const log = run("gh", ["run", "view", String(runId), "--log"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] });
+    verdictLine = log.split("\n").find((l) => l.includes("MERGE-VERIFY:")) ?? null;
+    viewed = JSON.parse(run("gh", ["run", "view", String(runId), "--json", "conclusion,createdAt,updatedAt,url"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] }));
+  } finally {
+    deleteBranch(repoRoot, branch);
+  }
 
   const ok = watchOk && viewed.conclusion === "success";
-  return { ok, runId, verdictLine: verdictLine ?? null, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
+  return { ok, runId, verdictLine, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
 }
 
 function deleteBranch(repoRoot, branch) {

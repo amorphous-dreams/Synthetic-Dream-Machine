@@ -4,10 +4,10 @@
 // same inputs, lawful, pass clean — so a gate that refused everything would still read red here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, chmodSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { evaluateMergeGate, relativeToE2eDir, readShardReports } from "./e2e-shards.mjs";
+import { evaluateMergeGate, relativeToE2eDir, readShardReports, pushLaneAndWatch } from "./e2e-shards.mjs";
 
 const TRACKED = ["tests/e2e/alpha.test.ts", "tests/e2e/beta.test.ts"];
 
@@ -217,4 +217,58 @@ test("readShardReports: a present, valid, and missing shard each read as the gat
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// ── L7: a log-fetch throw must never leave the lane branch standing ─────────────────────────────
+// Fake `git`/`gh` on PATH: the branch push, run-discovery and watch all succeed; `gh run view --log`
+// throws (a non-zero exit). The docblock claims `pushLaneAndWatch` "always deletes the branch, even
+// on a red run" — before this fix, that throw ran before `deleteBranch` and skipped it (gp1-episkopos
+// L7). This test's marker file proves the delete call ran, even though the function itself still
+// throws (the real error must still surface — cleanup must never swallow it).
+test("L7 — a log-fetch throw inside pushLaneAndWatch still deletes the lane branch", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-fakebin-"));
+  const marker = join(bin, "deleted.marker");
+  writeFileSync(
+    join(bin, "git"),
+    `#!/usr/bin/env bash
+set -e
+args="$*"
+case "$args" in
+  *"config --get core.bare"*) echo false; exit 0 ;;
+  *"rev-parse HEAD"*) echo "deadbeefcafef00d"; exit 0 ;;
+  *"push origin HEAD:refs/heads/"*) exit 0 ;;
+  *"push origin --delete "*) echo ok > "${marker}"; exit 0 ;;
+  *) exit 0 ;;
+esac
+`,
+  );
+  writeFileSync(
+    join(bin, "gh"),
+    `#!/usr/bin/env bash
+set -e
+args="$*"
+case "$args" in
+  *"run list --branch"*) echo '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]'; exit 0 ;;
+  *"run watch 42"*) exit 0 ;;
+  *"run view 42 --log"*) echo "gh: the log is gone" >&2; exit 1 ;;
+  *) exit 0 ;;
+esac
+`,
+  );
+  chmodSync(join(bin, "git"), 0o755);
+  chmodSync(join(bin, "gh"), 0o755);
+
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  try {
+    await assert.rejects(
+      () => pushLaneAndWatch({ repoRoot: tmpdir(), lane: "l7-probe", findBudgetMs: 5000, pollMs: 10 }),
+      /run view 42 --log/,
+    );
+  } finally {
+    process.env.PATH = prevPath;
+  }
+  const { existsSync } = await import("node:fs");
+  assert.ok(existsSync(marker), "deleteBranch must run even though the log fetch threw");
+  rmSync(bin, { recursive: true, force: true });
 });
