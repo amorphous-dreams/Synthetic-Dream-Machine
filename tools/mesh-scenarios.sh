@@ -1038,8 +1038,8 @@ run_meme() {
   # only that it exists and who keeps it.
   step "both sides re-fold the relation; the realm stands under ONE doc id"
   local RA RB
-  RA=$($COMPOSE exec -T lararium-a $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
 
@@ -1789,7 +1789,7 @@ run_board() {
   # NEGATIVE ⑥a — TWO INDEPENDENTLY-FOUNDED CHARTERS COMPUTE TWO BOARDS. The premise stands inside the step:
   # B boots seating her OWN cabal (`LAR_B_KAHU`), so each vessel reads `charter` under a genesis epoch it
   # founded alone. The step reads both the epochs and the BOARD each vessel computes from its own (`nexus
-  # refresh` → `realmDoc`, the reading the headline compares). Distinct epochs that still name one board is
+  # realm-bags` → `realmDoc`, the reading the headline compares). Distinct epochs that still name one board is
   # exactly the merge this guards, so the epochs alone never pass it.
   #
   # RED WHEN: the board derivation drops the charter's scope (both vessels compute one board), or either
@@ -1803,8 +1803,8 @@ run_board() {
   local EA EB BA BB
   EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-  BA=$($COMPOSE exec -T lararium-a $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
-  BB=$($COMPOSE exec -T lararium-b $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
+  BA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
+  BB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
   if [ -n "$EA" ] && [ -n "$EB" ] && [ "$EA" != "$EB" ] && [ -n "$BA" ] && [ -n "$BB" ] && [ "$BA" != "$BB" ]; then ok
   else
     bad "two independently-founded vessels do not separate"
@@ -1831,12 +1831,12 @@ run_board() {
   esac
 
   # ★ THE READING. B takes A's charter by its own doors and contracts in; both must then name ONE
-  # island. `nexus refresh` reports the realm doc each side derives — the two must agree.
+  # island. `nexus realm-bags` reports the realm doc each side derives — the two must agree.
   if ! contract_ab; then clear_all; return; fi
   step "★ under ONE charter, both vessels compute ONE board ★"
   local RA RB
-  RA=$($COMPOSE exec -T lararium-a $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else
     bad "the two sides name different boards under one charter"
