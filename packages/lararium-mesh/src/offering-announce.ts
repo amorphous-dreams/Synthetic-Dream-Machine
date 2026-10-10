@@ -102,14 +102,14 @@ export function offeringAnnouncesFromDoc(doc: LarDoc | undefined | null): Plugin
 
 /** Verify one board projection, including the CID, signature, and recomputed plugin region. */
 export async function verifyOfferingAnnounce(announce: PluginOfferingAnnounce): Promise<OfferingVerdict> {
-  if (announce?.kind !== PLUGIN_OFFERING_ANNOUNCE_DOMAIN) return { ok: false, reason: "not an offering announce" };
+  if (announce?.kind !== PLUGIN_OFFERING_ANNOUNCE_DOMAIN) return { ok: false, code: "malformed", reason: "not an offering announce" };
   try {
     if (pluginOfferingCid(announce.offering) !== announce.offeringCid) {
-      return { ok: false, reason: "the announcement CID does not match its signed offering" };
+      return { ok: false, code: "malformed", reason: "the announcement CID does not match its signed offering" };
     }
     return verifyPluginOffering(announce.offering);
   } catch {
-    return { ok: false, reason: "malformed offering announce" };
+    return { ok: false, code: "malformed", reason: "malformed offering announce" };
   }
 }
 

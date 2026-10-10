@@ -25,11 +25,53 @@ import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js"
 import { computePluginsCid } from "./genesis-doc.js";
 import { PLUGIN_OFFERING_DOMAIN } from "./domains.js";
 
-/** One blob an offering carries — the same triple the genesis region folds over. */
+/**
+ * PUBLISHER PROVENANCE — the claim this Nexus makes about where a blob's bytes came from, carried
+ * INSIDE the signed preimage (the offerings handoff's "Signed region: ... per plugin, provenance").
+ *
+ * TWO RELATIONS, NEVER FUSED (offerings-handoff.md "Who signs"):
+ *   - PUBLISHER: this Nexus signs that it offers exactly these bytes, fetched from `source` at the
+ *     immutable `commit`. That is everything the offeror's signature actually attests.
+ *   - AUTHORSHIP: `author`, when present, is carried as a bare CLAIM inside that attestation —
+ *     "Saq Imtiaz wrote Streams" — never the author's own signature. If the author ever signs, that
+ *     rides as a SEPARATE relation and a separate signature; this field never stands in for it.
+ *
+ * `dependents` names other blob ids THIS offering must carry alongside this one (the "offered only as
+ * complete pairs" rule — dynannotate+dynaview, xlsx-utils+jszip): a offering that declares a dependent
+ * but omits it refuses as `unmet-dependents`, never silently drops the pairing.
+ *
+ * `runtimes`, when present, narrows where the blob runs; absent = both. A value outside the closed set
+ * refuses as `unsupported-runtime` rather than silently passing an opaque tag through to a vessel that
+ * cannot act on it.
+ */
+export interface PluginProvenance {
+  /** The upstream source this Nexus fetched from (a URL, never a roster entry). */
+  readonly source:   string;
+  /** The IMMUTABLE upstream commit the bytes came from — never a tag, never "latest". */
+  readonly commit:   string;
+  /** The artifact's path within that commit. */
+  readonly path:     string;
+  /** An SPDX-style licence identifier (e.g. "BSD-3-Clause", "MIT"). */
+  readonly licence:  string;
+  /** AUTHORSHIP AS A CLAIM — never this offeror's own attestation standing in for the author's. */
+  readonly author?:  string;
+  /** Other blob ids this offering must also carry (the complete-pairs rule). */
+  readonly dependents?: readonly string[];
+  /** Where this blob runs; absent = both. A tag outside {"node","browser"} refuses. */
+  readonly runtimes?: readonly PluginRuntime[];
+}
+
+/** The closed set of runtimes a provenance block may name. */
+export const PLUGIN_RUNTIMES = ["node", "browser"] as const;
+export type PluginRuntime = typeof PLUGIN_RUNTIMES[number];
+
+/** One blob an offering carries — the genesis-region triple plus the PUBLISHER's provenance claim. */
 export interface OfferedBlob {
-  readonly id:      string;
-  readonly version: string;
-  readonly sha256:  string;
+  readonly id:         string;
+  readonly version:    string;
+  readonly sha256:     string;
+  /** Present on a provenance-bearing offering (R2a); absent on a bare genesis-style blob descriptor. */
+  readonly provenance?: PluginProvenance;
 }
 
 /** The signed record. Its field set IS the ruling: an offeror, a region, its blobs, one signature. */
@@ -44,10 +86,27 @@ export interface PluginOffering {
   readonly sig:        string;
 }
 
+/** Canonical provenance field order — stable under re-serialization, with array claims sorted so the
+ *  preimage never moves for writing the same set in a different order. */
+function canonicalProvenance(p: PluginProvenance): PluginProvenance {
+  return {
+    source:  p.source,
+    commit:  p.commit,
+    path:    p.path,
+    licence: p.licence,
+    ...(p.author !== undefined ? { author: p.author } : {}),
+    ...(p.dependents ? { dependents: [...p.dependents].sort() } : {}),
+    ...(p.runtimes ? { runtimes: [...p.runtimes].sort() } : {}),
+  };
+}
+
 /** Canonical descriptor order for both the signed preimage and the record CID. */
 function canonicalOfferingBlobs(blobs: readonly OfferedBlob[]): OfferedBlob[] {
   return blobs
-    .map((b) => ({ id: b.id, version: b.version, sha256: b.sha256 }))
+    .map((b) => ({
+      id: b.id, version: b.version, sha256: b.sha256,
+      ...(b.provenance ? { provenance: canonicalProvenance(b.provenance) } : {}),
+    }))
     .sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1
       : a.version < b.version ? -1 : a.version > b.version ? 1
         : a.sha256 < b.sha256 ? -1 : a.sha256 > b.sha256 ? 1 : 0);
@@ -93,21 +152,62 @@ export async function signPluginOffering(
   return { kind: PLUGIN_OFFERING_DOMAIN, ...canonical, sig };
 }
 
-export type OfferingVerdict = { readonly ok: true } | { readonly ok: false; readonly reason: string };
+/**
+ * NAMED FAILURE CODES — offerings-handoff.md R2a: "verify names each failure distinctly", so a caller
+ * can switch on `code` instead of pattern-matching free text. `reason` stays as the human-legible detail.
+ *
+ * NOT ALL NINE NAMES IN THE HANDOFF LIVE HERE. `cid-mismatch` belongs to the SELECTOR
+ * (`plugin-offering-selector.ts`): it compares a CALLER-NAMED cid against this offering's own content
+ * CID, and this module — reasoning about one offering in isolation — holds no caller-named cid to
+ * compare against. `missing-bytes` and `corrupt-bytes` belong to the CAS-reading layer R3 wires: this
+ * module and the selector carry signed DESCRIPTORS, never raw bytes, by design (an explicit ownership
+ * boundary this iteration, not an oversight — see plugin-offering-selector.ts's docblock).
+ */
+export type OfferingFailureCode =
+  | "malformed"
+  | "duplicate-plugin"
+  | "malformed-provenance"
+  | "unmet-dependents"
+  | "unsupported-runtime"
+  | "bad-signature"
+  | "fold-mismatch";
+
+export type OfferingVerdict =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly code: OfferingFailureCode; readonly reason: string };
 
 /** OfferedBlob follows the genesis/CAS convention: bare canonical lowercase SHA-256 hex. */
 const OFFERED_BLOB_SHA256 = /^[0-9a-f]{64}$/;
 
+/** An SPDX-style identifier: a plain token, never free prose (so a licence field can't carry a claim
+ *  of its own that nothing here checks). */
+const LICENCE_ID = /^[A-Za-z0-9][A-Za-z0-9.+-]*$/;
+
+function provenanceMalformed(p: PluginProvenance | undefined): boolean {
+  if (p === undefined) return false;
+  return (
+    typeof p.source !== "string" || p.source.length === 0 ||
+    typeof p.commit !== "string" || p.commit.length === 0 ||
+    typeof p.path !== "string" || p.path.length === 0 ||
+    typeof p.licence !== "string" || !LICENCE_ID.test(p.licence) ||
+    (p.author !== undefined && (typeof p.author !== "string" || p.author.length === 0)) ||
+    (p.dependents !== undefined && (!Array.isArray(p.dependents) || p.dependents.some((d) => typeof d !== "string" || d.length === 0))) ||
+    (p.runtimes !== undefined && (!Array.isArray(p.runtimes) || p.runtimes.length === 0))
+  );
+}
+
 /**
- * Verify an offering the way a TAKER must: the signature over its own bytes, AND the blobs folded back
- * to the declared region.
+ * Verify an offering the way a TAKER must: the shape (incl. any provenance block), the signature over
+ * its own bytes, AND the blobs folded back to the declared region.
  *
- * FAIL-CLOSED in both halves. A wrong domain, a malformed key, a signature that does not verify, or a
- * region that does not match the fold each refuse — and the region check runs even when the signature
- * passes, because a valid signature over a mismatched body is precisely the interesting forgery.
+ * FAIL-CLOSED throughout, cheapest/pure checks first. A wrong domain, a malformed key, a malformed or
+ * incomplete provenance claim, an unmet dependent pairing, an unsupported runtime tag, a signature that
+ * does not verify, or a region that does not match the fold each refuse with their OWN named code — and
+ * the fold check runs even when the signature passes, because a valid signature over a mismatched body
+ * is precisely the interesting forgery the fold recomputation exists to catch.
  */
 export async function verifyPluginOffering(offering: PluginOffering): Promise<OfferingVerdict> {
-  if (offering?.kind !== PLUGIN_OFFERING_DOMAIN) return { ok: false, reason: "not a plugin offering" };
+  if (offering?.kind !== PLUGIN_OFFERING_DOMAIN) return { ok: false, code: "malformed", reason: "not a plugin offering" };
   if (
     typeof offering.offeror !== "string" || !/^[0-9a-f]{64}$/i.test(offering.offeror) ||
     typeof offering.pluginsCid !== "string" || offering.pluginsCid.length === 0 ||
@@ -116,24 +216,50 @@ export async function verifyPluginOffering(offering: PluginOffering): Promise<Of
       typeof b.version !== "string" || b.version.length === 0 ||
       typeof b.sha256 !== "string" || !OFFERED_BLOB_SHA256.test(b.sha256)) ||
     typeof offering.sig !== "string" || !/^[0-9a-f]{128}$/i.test(offering.sig)
-  ) return { ok: false, reason: "malformed plugin offering" };
+  ) return { ok: false, code: "malformed", reason: "malformed plugin offering" };
+
   const ids = new Set<string>();
   for (const blob of offering.blobs) {
-    if (ids.has(blob.id)) return { ok: false, reason: "malformed plugin offering" };
+    if (ids.has(blob.id)) return { ok: false, code: "duplicate-plugin", reason: `blob id ${blob.id} appears twice in one offering` };
     ids.add(blob.id);
+  }
+
+  for (const blob of offering.blobs) {
+    if (provenanceMalformed(blob.provenance)) {
+      return { ok: false, code: "malformed-provenance", reason: `blob ${blob.id} carries a malformed provenance claim` };
+    }
+  }
+
+  // UNMET DEPENDENTS — "offered only as complete pairs" (offerings-handoff.md): a blob that names a
+  // dependent must carry it IN THIS SAME OFFERING. A half-pair never reads as a successful selection.
+  for (const blob of offering.blobs) {
+    for (const dep of blob.provenance?.dependents ?? []) {
+      if (!ids.has(dep)) {
+        return { ok: false, code: "unmet-dependents", reason: `blob ${blob.id} declares dependent ${dep}, which this offering does not carry` };
+      }
+    }
+  }
+
+  // UNSUPPORTED RUNTIME — a tag outside the closed set names nothing a vessel can act on.
+  for (const blob of offering.blobs) {
+    for (const runtime of blob.provenance?.runtimes ?? []) {
+      if (!(PLUGIN_RUNTIMES as readonly string[]).includes(runtime)) {
+        return { ok: false, code: "unsupported-runtime", reason: `blob ${blob.id} names unsupported runtime "${runtime}"` };
+      }
+    }
   }
 
   let sigOk = false;
   try {
     sigOk = await ed25519.verifyAsync(hexToBytes(offering.sig), pluginOfferingBytes(offering), hexToBytes(offering.offeror));
   } catch { sigOk = false; }                       // a malformed sig or key counts as no signature
-  if (!sigOk) return { ok: false, reason: "the offeror's signature does not verify over these bytes" };
+  if (!sigOk) return { ok: false, code: "bad-signature", reason: "the offeror's signature does not verify over these bytes" };
 
   // THE FOLD IS THE SECOND HAND. Same function the genesis bake runs, so an offering and a bake can never
   // disagree about what a collection folds to.
   const folded = computePluginsCid(offering.blobs);
   if (folded !== offering.pluginsCid) {
-    return { ok: false, reason: `the blobs fold to ${folded}, not the declared region ${offering.pluginsCid}` };
+    return { ok: false, code: "fold-mismatch", reason: `the blobs fold to ${folded}, not the declared region ${offering.pluginsCid}` };
   }
   return { ok: true };
 }

@@ -123,7 +123,9 @@ describe("inspectPluginOffering — pure local receiver evidence", () => {
 
     expect(result.status).toBe("refused");
     expect(result.verification.ok).toBe(false);
-    expect(result.reason).toMatch(/malformed/i);
+    // R2a: verifyPluginOffering now names a duplicate id by its OWN reason text ("appears twice"),
+    // distinct from the generic "malformed plugin offering" family this suite pinned before.
+    expect(result.reason).toMatch(/duplicate|appears twice/i);
     expect(reads).toBe(0);
   });
 });
