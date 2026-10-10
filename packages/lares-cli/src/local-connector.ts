@@ -92,6 +92,41 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
   });
 }
 
+/**
+ * Ask the socket WHO holds it, naming the answer — the CLI side of the same `{holder:"?"}` probe
+ * `owned-store.ts`'s `heldAs` answers. A caller naming a slow boot reads this instead of hanging mute: a vessel
+ * mid-boot (claimed, not yet serving) answers with its pid in the message; nothing standing yet answers null.
+ */
+export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<{ holder: string | null; message: string } | null> {
+  const path = udsSocketPath(dataDir);
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (v: { holder: string | null; message: string } | null): void => {
+      if (settled) return;
+      settled = true;
+      try { sock.destroy(); } catch { /* already gone */ }
+      resolve(v);
+    };
+    const sock = createConnection(path);
+    sock.setTimeout(timeoutMs);
+    sock.setEncoding("utf8");
+    let buf = "";
+    sock.once("connect", () => sock.write(JSON.stringify({ holder: "?" }) + "\n"));
+    sock.on("data", (c: string) => {
+      buf += c;
+      const nl = buf.indexOf("\n");
+      if (nl === -1) return;
+      try {
+        const line = JSON.parse(buf.slice(0, nl)) as { holder?: unknown; errorMessage?: unknown };
+        const holder = typeof line.holder === "string" ? line.holder : null;
+        done({ holder, message: typeof line.errorMessage === "string" ? line.errorMessage : "" });
+      } catch { done(null); }
+    });
+    sock.once("error",   () => done(null));
+    sock.once("timeout", () => done(null));
+  });
+}
+
 /** The local socket refused (absent/stale) — `runVerb` turns this into DaemonUnreachable. */
 export class UdsUnreachable extends Error {}
 
