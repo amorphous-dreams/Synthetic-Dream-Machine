@@ -24,7 +24,7 @@ import {
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
-  standSiblingChannel, siblingRefusalLabel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   pullAndVerifyOracle, type OraclePullResult,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
@@ -188,13 +188,13 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   relayGatePubKey?: string;
   /**
    * The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
-   * (`ws://host:port#<gate key hex>`, at least two under distinct gate keys) — leaf kind 3, a fleet in which no
+   * (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — leaf kind 3, a fleet in which no
    * vessel listens (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel
    * stands its sibling channel (`standSiblingChannel`, the one composition the node vessel calls too): siblings
    * prove their device edges to each other through every herm and sync over the session the proof binds, and
-   * every herm carries the KEL successor drops the leaf catches up from. Fewer than two, or an address that pins no
-   * gate key, and the channel refuses to stand — said on every dial and in `siblingChannel()` — while the rest of
-   * the vessel boots. ABSENT → no sibling channel stands.
+   * every herm carries the KEL successor drops the leaf catches up from. ONE herm stands it DEGRADED: withholding
+   * cannot be tolerated through one herm, said on every dial and in `siblingChannel()`. An address that pins no gate
+   * key refuses the channel, said alike. Either way the rest of the vessel boots. ABSENT → no sibling channel stands.
    */
   siblingHerms?: readonly string[];
   /**
@@ -1058,7 +1058,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
             deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
             enrolment: { edge: siblingEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
             expectedEpoch: effectiveLeaseEpoch(leaseSlots),
-            onRefusal: (r) => console.warn(`[sibling] refused (${siblingRefusalLabel(r)}): ${r.reason}`),
+            onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
           });
         }
       }

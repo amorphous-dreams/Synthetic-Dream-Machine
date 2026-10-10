@@ -63,8 +63,10 @@
  *     reads as a revocation. A revoked leaf says goodbye inside every session it held, so no sibling syncs on into
  *     a leaf that proves to no one;
  *   · `route` — the repo routes a sibling's derived peer id through another adapter, so the sibling gets no route;
- *   · `pins` — the herms this leaf pins cannot carry its channel (fewer than two, or one pinning no gate key), so
- *     the channel refuses to stand and says so on every dial; the vessel around it stands.
+ *   · `pins` — the herms this leaf pins fall short of what tolerance takes. ONE herm stands the channel DEGRADED:
+ *     it dials and syncs, and says on every dial that withholding cannot be tolerated through one herm, since what
+ *     that herm withholds no other herm answers. NO herm, or an address that pins no gate key, and the channel
+ *     refuses to stand and says so on every dial. Either way the vessel around it stands.
  * A lawful KEL move closes a session too, without blame: a sibling whose edge the head rolled past hears why inside
  * the session and the pair proves again under the head.
  *
@@ -157,9 +159,10 @@ export type SiblingRefusal =
   | { readonly suspect: "relay"; readonly session: string | null; readonly reason: string }
   /** This leaf's own standing under the KEL it carries: revoked, unreadable, unsealed or forked (`cause`). */
   | { readonly suspect: "self";  readonly cause: SiblingSelfCause; readonly reason: string }
-  /** The herms this leaf pins cannot carry its channel — fewer than two under distinct gate keys, or an address
-   *  that pins no gate key — so the channel refuses to stand, and says so on every dial. */
-  | { readonly suspect: "pins";  readonly reason: string }
+  /** The herms this leaf pins fall short of tolerance, said on every dial. `stands` true: ONE herm under its gate
+   *  key carries the channel DEGRADED — withholding cannot be tolerated through one herm. `stands` false: no herm,
+   *  or an address that pins no gate key, so the channel refuses to stand. */
+  | { readonly suspect: "pins";  readonly stands: boolean; readonly reason: string }
   /** The repo already routes this sibling's derived peer id through ANOTHER adapter, so the sibling gets no route
    *  here: a peer id never names two carriers at once. */
   | { readonly suspect: "route"; readonly peerKey: string; readonly peerId: string; readonly reason: string };
@@ -171,8 +174,14 @@ export function siblingRefusalLabel(r: SiblingRefusal): string {
     case "route": return `route ${r.peerKey.slice(0, 8)}…`;
     case "self":  return `self: ${r.cause}`;
     case "relay": return "relay";
-    case "pins":  return "pins";
+    case "pins":  return r.stands ? "pins: degraded" : "pins";
   }
+}
+
+/** One log line for a surfaced refusal: what the channel did, whom it suspects, and why. A degraded channel still
+ *  stands, so its line reads `degraded`, never `refused`. */
+export function siblingRefusalLine(r: SiblingRefusal): string {
+  return `${r.suspect === "pins" && r.stands ? "degraded" : "refused"} (${siblingRefusalLabel(r)}): ${r.reason}`;
 }
 
 /**
@@ -310,6 +319,8 @@ export interface SiblingNetworkAdapterOptions {
   readonly transports: readonly (() => Promise<SiblingTransport>)[];
   /** Why the channel refuses to stand at all: it dials nothing, and says so as `pins` on every dial. */
   readonly refusal?: string;
+  /** Why the channel stands DEGRADED: it dials and syncs, and says so as `pins` (`stands`) on every dial. */
+  readonly degraded?: string;
   /** This leaf under a KEL: its device key and signer, its enrolments, the lease epoch it holds. Read again
    *  whenever the KEL moves (`leafStandingUnder` composes it). */
   readonly leaf: (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf>;
@@ -328,6 +339,8 @@ export interface SiblingNetworkAdapterOptions {
 export interface SiblingChannelStatus {
   /** Why the channel refuses to stand, or null when it stands. */
   readonly refusal: string | null;
+  /** Why the channel stands degraded — one herm, so withholding cannot be tolerated — or null. */
+  readonly degraded: string | null;
   /** How many herms the channel pins, and over how many a transport stands. */
   readonly herms: number;
   readonly carried: number;
@@ -435,6 +448,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   status(): SiblingChannelStatus {
     return {
       refusal: this.#opts.refusal ?? null,
+      degraded: this.#opts.refusal === undefined ? this.#opts.degraded ?? null : null,
       herms: this.#opts.transports.length,
       carried: this.#transports.size,
       self: this.#selfCause,
@@ -637,10 +651,11 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   async #dial(indices: readonly number[]): Promise<void> {
     if (this.#stopped) return;
     if (this.#opts.refusal !== undefined) {
-      this.#surface({ suspect: "pins", reason: this.#opts.refusal });
+      this.#surface({ suspect: "pins", stands: false, reason: this.#opts.refusal });
       this.#markReady();
       return;
     }
+    if (this.#opts.degraded !== undefined) this.#surface({ suspect: "pins", stands: true, reason: this.#opts.degraded });
     const due = indices.filter((i) => !this.#transports.has(i) && !this.#standing.has(i));
     if (due.length === 0) return;
     for (const i of due) this.#standing.add(i);
@@ -941,9 +956,11 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
  * change stands the leaf again, so a sibling whose edge the moved head rolled past leaves the repo with its refusal
  * said.
  *
- * A vessel pins at least two herms under distinct gate keys, so one herm that withholds, floods or hangs is
- * tolerated through another. Fewer than two, or an address that pins no gate key, and the CHANNEL refuses to stand:
- * the adapter dials nothing, says why as `pins` on every dial and in `status()`, and the rest of the vessel boots.
+ * Two herms under distinct gate keys are the condition for tolerance: one herm that withholds, floods or hangs is
+ * tolerated through another. ONE herm is a named DEGRADED mode: the channel stands over it, and says on every dial
+ * and in `status()` that withholding cannot be tolerated through one herm. NO herm, or an address that pins no gate
+ * key, and the CHANNEL refuses to stand: the adapter dials nothing and says why as `pins` on every dial and in
+ * `status()`. Neither stops the rest of the vessel's boot.
  *
  * A peer this channel yields is a device of THIS vessel's own PersonaGroup, proven over the session. It holds
  * STANDING and nothing more: the vessel's share policy hands it to the PersonaGroup ring, which admits it to its
@@ -951,8 +968,8 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
  */
 export async function standSiblingChannel(opts: {
   readonly repo: Repo;
-  /** The herms' pinned relay addresses, `ws://host:port#<gate key hex>`, at least two under distinct gate keys.
-   *  The channel dials every one, and every one carries the drops. */
+  /** The herms' pinned relay addresses, `ws://host:port#<gate key hex>`: two or more under distinct gate keys for
+   *  tolerance, one for the degraded mode. The channel dials every one, and every one carries the drops. */
   readonly herms: readonly string[];
   /** The island whose persona-KEL board this vessel reads. */
   readonly nexusPubkey: string;
@@ -979,10 +996,14 @@ export async function standSiblingChannel(opts: {
     personaKelEventsFromBoard(board.doc()).filter((e) => e.prefix === opts.personaKelPrefix).sort((a, b) => a.seq - b.seq);
   let drops: PersonaKelDropHerm[] = [];
   let refusal: string | undefined;
+  let degraded: string | undefined;
   try {
     drops = opts.herms.map((address) => httpPersonaKelDropHerm(address, opts.dropDeadlineMs !== undefined ? { deadlineMs: opts.dropDeadlineMs } : {}));
-    if (new Set(drops.map((d) => d.gatePubKey)).size < 2) {
-      refusal = `the channel pins ${new Set(drops.map((d) => d.gatePubKey)).size} herm(s) under distinct gate keys and stands over at least two, so one herm that withholds, floods or hangs is tolerated through another`;
+    const gates = new Set(drops.map((d) => d.gatePubKey)).size;
+    if (gates === 0) {
+      refusal = "the channel pins no herm, so it has nothing to dial";
+    } else if (gates === 1) {
+      degraded = "the channel stands over one herm, and withholding cannot be tolerated through one herm: what that herm withholds no other herm answers — pin a second herm under its own gate key for tolerance";
     }
   } catch (err) {
     refusal = `a pinned herm address reads no gate key, so the channel pins nothing it can dial: ${(err as Error).message}`;
@@ -997,6 +1018,7 @@ export async function standSiblingChannel(opts: {
     ...(refusal === undefined
       ? { drops: siblingKelDropsOf(drops, (events) => { board.change((draft) => { for (const e of events) writePersonaKelEvent(draft, e); }); }) }
       : { refusal }),
+    ...(degraded !== undefined ? { degraded } : {}),
     ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
     ...(opts.onRefusal ? { onRefusal: opts.onRefusal } : {}),
   });

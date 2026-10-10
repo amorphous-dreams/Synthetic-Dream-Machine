@@ -10,8 +10,10 @@
  *   · RED: the lease epoch the vessel holds reaches the proof — a sibling whose edge binds below it is refused
  *     as lapsed;
  *   · RED: the channel stands over every pinned herm — the first herm closing leaves the pair syncing over the second;
- *   · RED: a herm address with no pinned gate key, or fewer than two herms, refuses the CHANNEL alone: it dials
- *     nothing, says why as `pins` on every dial and in its status, and never throws into the vessel's boot.
+ *   · RED: ONE herm stands the channel DEGRADED — two leaves sync over it, and the channel says on every dial and in
+ *     its status that withholding cannot be tolerated through one herm; CONTROL: two herms read no degraded mode;
+ *   · RED: a herm address with no pinned gate key, or no herm at all, refuses the CHANNEL alone: it dials nothing,
+ *     says why as `pins` on every dial and in its status, and never throws into the vessel's boot.
  */
 import { afterEach, describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -62,7 +64,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
   const herms = (): string[] => [relay!, second!].map((r) => `ws://127.0.0.1:${r.port}#${r.gatePubKey}`);
 
   async function standLeaf(
-    device: Uint8Array, inception: PersonaKelEvent, lease: { expectedEpoch?: number; boundEpoch?: number } = {},
+    device: Uint8Array, inception: PersonaKelEvent, lease: { expectedEpoch?: number; boundEpoch?: number } = {}, pins: readonly string[] = herms(),
   ): Promise<{ repo: Repo; refusals: SiblingRefusal[]; key: string; board: Awaited<ReturnType<typeof materializeSharedLarDoc>>; adapter: SiblingNetworkAdapter }> {
     const repo = new Repo({ network: [], sharePolicy: async () => true });
     repos.push(repo);
@@ -71,7 +73,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     const key = await pubOf(device);
     const refusals: SiblingRefusal[] = [];
     const adapter = await standSiblingChannel({
-      repo, herms: herms(), nexusPubkey: NEXUS, retryInterval: 60_000,
+      repo, herms: [...pins], nexusPubkey: NEXUS, retryInterval: 60_000,
       personaKelPrefix: inception.prefix, deviceKey: key, sign: ed25519SignerFromSeed(device),
       enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: lease.boundEpoch ?? 0 }),
       open: groupSecretOpenerFromSeed(device),
@@ -121,15 +123,36 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     const x = await standLeaf(seed(53), inception);
     const y = await standLeaf(seed(54), inception);
     for (let i = 0; i < 200 && (x.repo.peers.length === 0 || y.repo.peers.length === 0 || x.adapter.status().carried < 2); i++) await sleep(20);
-    expect(x.adapter.status()).toMatchObject({ refusal: null, herms: 2, carried: 2 });
+    expect(x.adapter.status()).toMatchObject({ refusal: null, degraded: null, herms: 2, carried: 2 });
+    expect([...x.refusals, ...y.refusals].filter((r) => r.suspect === "pins"), "CONTROL: two herms say no degraded mode").toEqual([]);
     await relay.close(); relay = undefined;
-    for (let i = 0; i < 100 && x.adapter.status().carried > 1; i++) await sleep(20);
+    // The pair may still be proving over the second herm when the first closes: wait for the pair over it.
+    for (let i = 0; i < 200 && (x.adapter.status().carried > 1 || x.repo.peers.length !== 1 || y.repo.peers.length !== 1); i++) await sleep(20);
     expect(x.repo.peers).toHaveLength(1);
+    expect(y.repo.peers).toHaveLength(1);
     const handle = x.repo.create<{ line: string }>({ line: "over the herm still standing" });
     expect((await y.repo.find<{ line: string }>(handle.url as AutomergeUrl)).doc()?.line).toBe("over the herm still standing");
   }, 20_000);
 
-  test("RED (M2): fewer than two herms, or an address with no pinned gate key, refuses the CHANNEL — said as `pins` on every dial and in status — and never throws", async () => {
+  test("RED (one herm): ONE herm stands the channel DEGRADED — the pair syncs over it, and the channel says on every dial and in status that withholding cannot be tolerated through one herm", async () => {
+    relay = await startAuthenticatedMembershipRelay(seed(50), 0);
+    const { inception } = await kelOf();
+    const one = [`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`];
+    const x = await standLeaf(seed(53), inception, {}, one);
+    const y = await standLeaf(seed(54), inception, {}, one);
+    for (let i = 0; i < 200 && (x.repo.peers.length === 0 || y.repo.peers.length === 0); i++) await sleep(20);
+    const handle = x.repo.create<{ line: string }>({ line: "over one herm, degraded" });
+    expect((await y.repo.find<{ line: string }>(handle.url as AutomergeUrl)).doc()?.line).toBe("over one herm, degraded");
+    expect(x.adapter.status()).toMatchObject({ refusal: null, degraded: expect.stringMatching(/cannot be tolerated through one herm/), herms: 1, carried: 1 });
+    expect(x.refusals).toEqual([{ suspect: "pins", stands: true, reason: expect.stringMatching(/cannot be tolerated through one herm/) }]);
+    x.adapter.connect("again" as never);
+    expect(x.refusals.filter((r) => r.suspect === "pins" && r.stands), "said on every dial").toHaveLength(2);
+    // Two addresses under ONE gate key pin one herm, and read degraded alike.
+    const twice = await standLeaf(seed(56), inception, {}, [one[0]!, `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`]);
+    expect(twice.adapter.status()).toMatchObject({ refusal: null, degraded: expect.stringMatching(/one herm/) });
+  }, 20_000);
+
+  test("RED (M2): no herm, or an address with no pinned gate key, refuses the CHANNEL — said as `pins` on every dial and in status — and never throws", async () => {
     const repo = new Repo({ network: [], sharePolicy: async () => true });
     repos.push(repo);
     const { inception } = await kelOf();
@@ -137,8 +160,7 @@ describe("standSiblingChannel — the one composition both shores call", () => {
     const gate = (b: number) => b.toString(16).padStart(2, "0").repeat(32);
     for (const [herms, why] of [
       [["ws://127.0.0.1:9", `ws://127.0.0.1:10#${gate(1)}`], /reads no gate key/],
-      [[`ws://127.0.0.1:9#${gate(1)}`], /pins 1 herm/],
-      [[`ws://127.0.0.1:9#${gate(1)}`, `ws://127.0.0.1:10#${gate(1)}`], /pins 1 herm/],
+      [[], /pins no herm/],
     ] as const) {
       const refusals: SiblingRefusal[] = [];
       const adapter = await standSiblingChannel({
@@ -148,8 +170,8 @@ describe("standSiblingChannel — the one composition both shores call", () => {
         open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: 0, onRefusal: (r) => refusals.push(r),
       });
       await adapter.whenReady();
-      expect(refusals).toEqual([expect.objectContaining({ suspect: "pins", reason: expect.stringMatching(why) })]);
-      expect(adapter.status()).toMatchObject({ refusal: expect.stringMatching(why), carried: 0 });
+      expect(refusals).toEqual([{ suspect: "pins", stands: false, reason: expect.stringMatching(why) }]);
+      expect(adapter.status()).toMatchObject({ refusal: expect.stringMatching(why), degraded: null, carried: 0 });
       adapter.connect("again" as never);
       expect(refusals.filter((r) => r.suspect === "pins")).toHaveLength(2);
     }

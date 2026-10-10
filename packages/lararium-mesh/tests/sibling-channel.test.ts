@@ -46,7 +46,7 @@ import { SIBLING_CHANNEL_INFO, LEAF_PEER_SEAL_INFO } from "../src/domains.js";
 import { openFromSender } from "../src/sealed-box.js";
 import { personaGroupSecret } from "../src/persona-group-secret.js";
 import { startLeafPeerProof } from "../src/leaf-peer-proof.js";
-import { SiblingNetworkAdapter, siblingChannelTag, siblingKelDropsOf, type SiblingRefusal } from "../src/sibling-channel.js";
+import { SiblingNetworkAdapter, siblingChannelTag, siblingKelDropsOf, siblingRefusalLine, type SiblingRefusal } from "../src/sibling-channel.js";
 import { personaKelDropName } from "../src/persona-kel-drop.js";
 import {
   SEEDS, pubOf, didOf, founded, enrol, rotatedKeeping, rotatedTwice, provisionalKeeping, leafOf, memoryRelay, memoryDropHerm,
@@ -599,8 +599,42 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     await adapter.whenReady();
     adapter.connect("x" as never);
     expect(refusals.map((r) => r.suspect)).toEqual(["pins", "pins"]);
-    expect(adapter.status()).toMatchObject({ refusal: expect.stringMatching(/at least two/), carried: 0 });
+    expect(refusals.every((r) => r.suspect === "pins" && !r.stands)).toBe(true);
+    expect(adapter.status()).toMatchObject({ refusal: expect.stringMatching(/at least two/), degraded: null, carried: 0 });
     adapter.disconnect();
+  });
+
+  test("RED (one herm): a channel told it stands DEGRADED dials its one herm and says so as `pins` on every dial and in its status; CONTROL: a refused channel reads no degraded mode", async () => {
+    const { inception } = await founded();
+    const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
+    const relay = memoryRelay();
+    const refusals: SiblingRefusal[] = [];
+    const key = await pubOf(SEEDS.deviceX);
+    const adapter = new SiblingNetworkAdapter({
+      transports: [relay.transportFor(key)], degraded: "withholding cannot be tolerated through one herm", retryInterval: 60_000,
+      kel: [inception], leaf: (kel) => leafOf(SEEDS.deviceX, ex, kel), onRefusal: (r) => refusals.push(r),
+    });
+    try {
+      adapter.connect("x" as never);
+      await adapter.whenReady();
+      await until(() => relay.holds(key), "the leaf over its one herm");
+      expect(adapter.status()).toMatchObject({ refusal: null, degraded: expect.stringMatching(/one herm/), herms: 1, carried: 1 });
+      relay.drop(key);
+      await until(() => adapter.status().carried === 0, "the herm dropped the leaf");
+      adapter.connect("x" as never);
+      await until(() => relay.holds(key), "the leaf redialed");
+      expect(refusals).toEqual([
+        { suspect: "pins", stands: true, reason: expect.stringMatching(/cannot be tolerated through one herm/) },
+        { suspect: "pins", stands: true, reason: expect.stringMatching(/cannot be tolerated through one herm/) },
+      ]);
+      expect(siblingRefusalLine(refusals[0]!)).toMatch(/^degraded \(pins: degraded\): /);
+    } finally { adapter.disconnect(); }
+    const refused = new SiblingNetworkAdapter({
+      transports: [], refusal: "the channel pins no herm", degraded: "withholding cannot be tolerated through one herm",
+      kel: [inception], leaf: (kel) => leafOf(SEEDS.deviceX, ex, kel),
+    });
+    expect(refused.status()).toMatchObject({ refusal: "the channel pins no herm", degraded: null });
+    expect(siblingRefusalLine({ suspect: "pins", stands: false, reason: "r" })).toBe("refused (pins): r");
   });
 
   test("RED (H): a herm that answers no drop request surfaces as `relay`, and the leaf catches up and pairs off the other", async () => {

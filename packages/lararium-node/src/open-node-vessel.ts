@@ -83,7 +83,7 @@ import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
 import {
-  standSiblingChannel, siblingRefusalLabel, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
@@ -303,13 +303,13 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  NEVER trusted from the wire). REQUIRED alongside `joinSyncUrl`; absent → fail-closed to inert (no dial). */
   joinGatePubKey?: string;
   /** The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
-   *  (`ws://host:port#<gate key hex>`, at least two under distinct gate keys) — a device of a fleet that reaches
-   *  its siblings by dialing out (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands
-   *  → the vessel stands its sibling channel (`standSiblingChannel`, the one composition the browser vessel calls
-   *  too) over every one, and pulls its KEL successor drops off every one. Fewer than two, or an address that pins
-   *  no gate key, and the channel refuses to stand — said on every dial and in `siblingChannel()` — while the rest
-   *  of the vessel boots. ABSENT (and `LAR_SIBLING_HERMS`, a comma-separated list, unset) → no sibling channel
-   *  stands. */
+   *  (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — a device of a fleet
+   *  that reaches its siblings by dialing out (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a
+   *  face stands → the vessel stands its sibling channel (`standSiblingChannel`, the one composition the browser
+   *  vessel calls too) over every one, and pulls its KEL successor drops off every one. ONE herm stands it
+   *  DEGRADED: withholding cannot be tolerated through one herm, said on every dial and in `siblingChannel()`. An
+   *  address that pins no gate key refuses the channel, said alike. Either way the rest of the vessel boots.
+   *  ABSENT (and `LAR_SIBLING_HERMS`, a comma-separated list, unset) → no sibling channel stands. */
   siblingHerms?: readonly string[];
   /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
    *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
@@ -1706,7 +1706,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
           deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
           enrolment: { edge: deviceEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
           expectedEpoch: effectiveLeaseEpoch(leaseSlots),
-          onRefusal: (r) => console.warn(`[sibling] refused (${siblingRefusalLabel(r)}): ${r.reason}`),
+          onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
         });
       }
     }
