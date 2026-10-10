@@ -39,6 +39,7 @@
 import { readdirSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import type { KeyClass } from "@lararium/mesh";
+import { custodyRootPath } from "./custody-root.js";
 import { archivePath, veilArchivePath } from "./identity-anchors.js";
 import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { deviceSharePath } from "./recovery-share-store.js";
@@ -151,7 +152,7 @@ function buildTable(): readonly CarrierRow[] {
           custody: "floor-plain", keyClass: null, writer: "admit-bundle" }),
 
     // ── hot: sealed under the VK, opened at unlock ─────────────────────────────────────────────
-    id({ row: "custody-root", match: file("custody-root.bin"), custody: "hot", keyClass: "device-minted",
+    id({ row: "custody-root", match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
     id({ row: "keyhive-archive", match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors", lifecycle: () => "archive" }),
