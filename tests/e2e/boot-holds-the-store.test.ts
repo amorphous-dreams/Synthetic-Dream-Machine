@@ -10,10 +10,11 @@
  * Proven:
  *   · CONTROL: with no vessel standing, `lares host` runs `via: direct`;
  *   · RED: six `lares host` loops hammer the store, three from the spawn of the daemon and three from the instant
- *     its claim stands, until well after `live`. An act
- *     that began before the vessel claimed its store may hold it (the vessel waits that act out); not one act that
- *     began after the claim runs `via: direct`, every act after `live` runs `via: daemon`, and the rendezvous name
- *     still answers the live vessel when the loops end.
+ *     its boot begins (`phase → boot`, the step before the vessel's Repo opens), until well after `live`. An act
+ *     that began before the boot may hold the store (the vessel waits that act out); not one act that began once
+ *     the boot did runs `via: direct`, every act after `live` runs `via: daemon`, and the rendezvous name still
+ *     answers the live vessel when the loops end. The window reads off the boot's own phase, never off the
+ *     claim's log line, so a claim taken late reads red.
  */
 import { afterAll, describe, expect, test } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
@@ -59,13 +60,14 @@ describe("a booting vessel holds its store", () => {
     daemon.stdout?.on("data", (d) => { bootLog += String(d); });
     daemon.stderr?.on("data", (d) => { bootLog += String(d); });
 
+    const BOOTING = "phase → boot";
     const CLAIMED = "this vessel holds its store at";
     let liveAt: number | null = null;
     const tally: Record<string, number> = {};
     const loop = async (): Promise<void> => {
       while (liveAt === null || performance.now() - liveAt < AFTER_LIVE_MS) {
         if (daemon?.exitCode !== null) return;
-        const stage = liveAt !== null ? "live" : bootLog.includes(CLAIMED) ? "claimed" : "spawned";
+        const stage = liveAt !== null ? "live" : bootLog.includes(BOOTING) ? "booting" : "spawned";
         const r = await cli(["host", "--json"]);
         const k = `${stage}:${via(r)}`;
         tally[k] = (tally[k] ?? 0) + 1;
@@ -78,21 +80,21 @@ describe("a booting vessel holds its store", () => {
       }
       liveAt = performance.now();
     })();
-    // Half the loops start at the spawn, before the claim can stand; half start the instant the claim stands, so an
-    // act begins inside the boot's held window however long each held act waits on the vessel.
-    const afterClaim = async (): Promise<void> => {
-      while (!bootLog.includes(CLAIMED) && daemon?.exitCode === null && liveAt === null) await new Promise((r) => setTimeout(r, 20));
+    // Half the loops start at the spawn, before the boot begins; half start the instant it does, so an act begins
+    // inside the boot's held window however long each held act waits on the vessel.
+    const atBoot = async (): Promise<void> => {
+      while (!bootLog.includes(BOOTING) && daemon?.exitCode === null && liveAt === null) await new Promise((r) => setTimeout(r, 20));
       await loop();
     };
-    await Promise.all([loop(), loop(), loop(), afterClaim(), afterClaim(), afterClaim(), watcher]);
+    await Promise.all([loop(), loop(), loop(), atBoot(), atBoot(), atBoot(), watcher]);
     process.stderr.write(`boot-holds-the-store tally ${JSON.stringify(tally)}\n`);
 
     expect(daemon.exitCode, bootLog.slice(-2000)).toBeNull();
     expect(bootLog).toContain("phase → live");
     expect(bootLog).toContain(CLAIMED);
-    // Acts that began once the claim stood: some met the booting vessel, and none opened the store beside it.
-    const claimed = Object.entries(tally).filter(([k]) => k.startsWith("claimed:"));
-    expect(claimed.length).toBeGreaterThan(0);
+    // Acts that began once the boot did: some met the booting vessel, and none opened the store beside it.
+    const booting = Object.entries(tally).filter(([k]) => k.startsWith("booting:"));
+    expect(booting.length).toBeGreaterThan(0);
     const direct = Object.entries(tally).filter(([k]) => k.endsWith(":direct") && !k.startsWith("spawned:"));
     expect(direct).toEqual([]);
     const live = Object.entries(tally).filter(([k]) => k.startsWith("live:"));

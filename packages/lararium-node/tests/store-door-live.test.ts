@@ -181,7 +181,9 @@ describe("the store door — a writer reaches the standing vessel's live peers",
   it("RED: a direct holder refuses while a vessel stands on the store, and its row never runs", async () => {
     const root = join(base, "standing");
     await seatVessel(root);
-    const standing = await claimStore(larDataDir());   // the vessel's rendezvous, bound
+    // The vessel's own claim, exactly as `prepareNodeBoot` takes it before its Repo opens (the boot itself is proven
+    // holding it in e2e `boot-holds-the-store`).
+    const standing = await claimStore(larDataDir(), { holder: "vessel" });
     try {
       await expect(storeDoorDirect("nexus-kapae", { action: "kapae", nym: "d".repeat(64) }, { sealHome: sealHome() }))
         .rejects.toBeInstanceOf(StoreHeld);
