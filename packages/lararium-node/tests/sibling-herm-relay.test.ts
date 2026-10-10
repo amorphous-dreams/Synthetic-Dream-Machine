@@ -39,6 +39,33 @@ const SECRET_2 = new Uint8Array(32).fill(0xb2);
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Poll `cond` until it is true, or REFUSE — naming what it waited for — once `budgetMs` elapses. A
+ *  capped loop that falls through silently when its budget runs out reads as whatever the test does
+ *  next; this throws instead, so an exhausted wait reads as the failure it is. */
+async function waitFor(cond: () => boolean, why: string, budgetMs = 5_000, stepMs = 10): Promise<void> {
+  const deadline = Date.now() + budgetMs;
+  while (!cond()) {
+    if (Date.now() >= deadline) throw new Error(`waitFor timed out after ${budgetMs}ms: ${why}`);
+    await sleep(stepMs);
+  }
+}
+
+/** Settle a group's joins by proof, never by a guessed duration: each transport sends one tagged
+ *  broadcast probe over the SAME connection its join rode, so the relay can only carry the probe
+ *  under `channelsOf.get(socket)` AFTER that socket's own join has landed (`routeSibling` returns
+ *  before `onSiblingFrame` fires when no join is on record yet) — true even for a transport alone on
+ *  its channel, since the relay's sight fires unconditionally, with or without another peer sharing it.
+ *  `dial`'s `onFrame` filters the tag out of `heard`, so it never pollutes a test's real assertions. */
+async function settleJoins(sight: readonly { readonly frame: unknown }[], group: ReadonlyArray<{ readonly t: SiblingTransport }>): Promise<void> {
+  const tag = `__settle_${Math.random().toString(36).slice(2)}__`;
+  const before = sight.length;
+  for (const { t } of group) t.send(null, { __settle: tag });
+  await waitFor(
+    () => sight.slice(before).filter((c) => (c.frame as { __settle?: unknown } | null)?.__settle === tag).length >= group.length,
+    `every one of ${group.length} join(s) to settle at the relay`,
+  );
+}
+
 describe("the herm's relay carries sibling frames by channel and proven key, and reads none", () => {
   let relay: AuthenticatedMembershipRelay | undefined;
   const open: SiblingTransport[] = [];
@@ -51,7 +78,10 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     t.join(secrets);
     open.push(t);
     const heard: Array<{ from: string; frame: unknown }> = [];
-    t.onFrame((from, frame) => heard.push({ from, frame }));
+    t.onFrame((from, frame) => {
+      if ((frame as { __settle?: unknown } | null)?.__settle !== undefined) return;   // a settlement probe, not a test frame
+      heard.push({ from, frame });
+    });
     return { key, t, heard };
   }
 
@@ -63,10 +93,11 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     const b = await dial(72, [SECRET_1]);
     const e = await dial(73, [SECRET_1, SECRET_2]);                   // a leaf holding two secrets joins both channels
     const d = await dial(74, [SECRET_2]);
-    await sleep(50);                                                   // the joins land ahead of the frames
+    await settleJoins(sight, [a, b, e, d]);                            // the joins have landed, by proof, not a guess
+    const sightFrom = sight.length;
 
     a.t.send(null, { t: "here" });
-    await sleep(100);
+    await waitFor(() => b.heard.length >= 1 && e.heard.length >= 1, "b and e to hear a's broadcast on c1");
     // CONTROL: both other keys on c1 hear it once, stamped with a's proven key — e although it joined two.
     expect(b.heard).toEqual([{ from: a.key, frame: { t: "here" } }]);
     expect(e.heard).toEqual([{ from: a.key, frame: { t: "here" } }]);
@@ -76,19 +107,20 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
 
     // RED: an addressed frame reaches only the key it names.
     a.t.send(b.key, { t: "seal", s: { n: "nn", c: "cc" } });
-    await sleep(100);
+    await waitFor(() => b.heard.length >= 2, "b to hear a's addressed frame");
     expect(b.heard.at(-1)).toEqual({ from: a.key, frame: { t: "seal", s: { n: "nn", c: "cc" } } });
     expect(e.heard).toHaveLength(1);
     expect(d.heard).toEqual([]);
 
     // CONTROL: d meets e on the channel they share, and no one else.
     d.t.send(null, { t: "here" });
-    await sleep(100);
+    await waitFor(() => e.heard.length >= 2, "e to hear d's broadcast on c2");
     expect(e.heard.at(-1)).toEqual({ from: d.key, frame: { t: "here" } });
     expect(b.heard).toHaveLength(2);
 
-    // The herm's sight holds the frames it carried, as it carried them, under the sender's channels.
-    expect(sight.map((c) => ({ channels: c.channels, from: c.from, to: c.to }))).toEqual([
+    // The herm's sight holds the frames it carried, as it carried them, under the sender's channels —
+    // sliced past the settlement probes, which carried no test frame.
+    expect(sight.slice(sightFrom).map((c) => ({ channels: c.channels, from: c.from, to: c.to }))).toEqual([
       { channels: [c1], from: a.key, to: null }, { channels: [c1], from: a.key, to: b.key },
       { channels: [siblingChannelTag(SECRET_2, relay.gatePubKey)], from: d.key, to: null },
     ]);
@@ -116,7 +148,8 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
   }
 
   test("RED: a socket that joined no channel neither sends nor hears; a forged `from` never replaces the stamp", async () => {
-    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(80), 0);
+    const sight: Array<{ readonly frame: unknown }> = [];
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(80), 0, { onSiblingFrame: (c) => sight.push(c) });
     const c1 = siblingChannelTag(SECRET_1, relay.gatePubKey);
     const a = await dial(81, [SECRET_1]);
     const b = await dial(82, [SECRET_1]);
@@ -124,17 +157,19 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     const rHeard: unknown[] = [];
     r.raw.on("message", (data: RawData) => rHeard.push(JSON.parse(data.toString())));
     try {
-      await sleep(50);
+      await settleJoins(sight, [a, b]);
       // Unjoined: its frame reaches no one, and a's frame to the channel never reaches it.
       r.raw.send(JSON.stringify(mkLarSessionMsg(SIBLING_FRAME_KIND, { to: null, frame: { t: "here" } })));
+      const bBefore = b.heard.length;
       a.t.send(null, { t: "here" });
-      await sleep(100);
+      await waitFor(() => b.heard.length > bBefore, "b to hear a's broadcast");
       expect(b.heard).toEqual([{ from: a.key, frame: { t: "here" } }]);
       expect(rHeard).toEqual([]);
-      // Joined, it writes a's key as its own `from`: b hears the frame under r's PROVEN key.
+      // Joined, it writes a's key as its own `from`: b hears the frame under r's PROVEN key. Both
+      // session messages ride the SAME connection as the join, so they land in that order without a wait.
       r.raw.send(JSON.stringify(mkLarSessionMsg(SIBLING_JOIN_KIND, { channels: [c1] })));
       r.raw.send(JSON.stringify(mkLarSessionMsg(SIBLING_FRAME_KIND, { to: b.key, frame: { t: "here" }, from: a.key })));
-      await sleep(100);
+      await waitFor(() => b.heard.length > bBefore + 1, "b to hear r's addressed frame under its proven key");
       expect(b.heard.at(-1)).toEqual({ from: r.key, frame: { t: "here" } });
       expect(b.heard.filter((h) => h.from === a.key)).toHaveLength(1);
     } finally { r.raw.close(); }
@@ -150,27 +185,38 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
   }, 15_000);
 
   test("RED: a later join REPLACES a socket's channels — it hears its new channel alone; an empty join leaves every channel", async () => {
-    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(84), 0);
+    const sight: Array<{ readonly frame: unknown }> = [];
+    relay = await startAuthenticatedMembershipRelay(new Uint8Array(32).fill(84), 0, { onSiblingFrame: (c) => sight.push(c) });
     const a = await dial(85, [SECRET_1]);
     const b = await dial(86, [SECRET_2]);
     const moving = await dial(87, [SECRET_1]);
-    await sleep(50);
+    await settleJoins(sight, [a, b, moving]);
     a.t.send(null, { t: "here" });
-    await sleep(100);
+    await waitFor(() => moving.heard.length >= 1, "moving to hear a's broadcast on c1");
     expect(moving.heard).toEqual([{ from: a.key, frame: { t: "here" } }]);   // CONTROL: on c1, it hears c1
+
     moving.t.join([SECRET_2]);
-    await sleep(50);
+    await settleJoins(sight, [moving]);                                     // the REPLACED join, settled by proof
     a.t.send(null, { t: "here" });
     b.t.send(null, { t: "here" });
-    await sleep(100);
+    await waitFor(() => moving.heard.length >= 2, "moving to hear b's broadcast on its new channel c2");
     // It left c1 in the same act it joined c2: a's second word never reaches it, b's does.
     expect(moving.heard).toEqual([{ from: a.key, frame: { t: "here" } }, { from: b.key, frame: { t: "here" } }]);
+
     moving.t.join([]);
-    await sleep(50);
+    // moving now owns no channel, so — unlike every other transition in this suite — there is no
+    // positive signal left for it to produce: a channel-less socket's own frame never reaches
+    // `onSiblingFrame` (`routeSibling` returns before it fires), so `settleJoins` cannot prove THIS
+    // one landed. A short, named settle is the one honest exception; it is bounded so a relay too
+    // slow to clear it in time fails loud (via the `toHaveLength` below), never silently.
+    await sleep(250);
     a.t.send(null, { t: "here" });
     b.t.send(null, { t: "here" });
-    moving.t.send(null, { t: "here" });
-    await sleep(100);
+    moving.t.send(null, { t: "here" });                                 // expected to land nowhere
+    // Fence on what IS provable: a's and b's own sends, issued in this same tick, have each settled at
+    // the relay (their post-leave-attempt frames rode the SAME connections, so this bounds the wait by
+    // the live relay's actual pace under load rather than a guessed duration).
+    await settleJoins(sight, [a, b]);
     expect(moving.heard).toHaveLength(2);
     expect(b.heard.filter((h) => h.from === moving.key)).toEqual([]);
   }, 15_000);
@@ -241,7 +287,7 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     }
     const [x, y] = leaves as [typeof leaves[0], typeof leaves[0]];
     try {
-      for (let i = 0; i < 200 && (x.repo.peers.length === 0 || y.repo.peers.length === 0); i++) await sleep(20);
+      await waitFor(() => x.repo.peers.length > 0 && y.repo.peers.length > 0, "both repos to see a peer", 10_000, 20);
       const LINE = "the line two siblings share and the herm carries unread";
       const handle = x.repo.create<{ line: string }>({ line: LINE });
       const found = await y.repo.find<{ line: string }>(handle.url as AutomergeUrl);
