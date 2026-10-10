@@ -31,9 +31,9 @@
 import {
   readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath,
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, makeNodePersonaDeclarationStore,
-  loadPersonaGroupRootSeed, runNexusMembersList, importCarriedCharter, carriedReadings, CarriedCharterError,
+  loadPersonaGroupRootSeed, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
-  runNexusRollAnchor, NexusContractError, type NexusRollAnchorResult,
+  NexusContractError, type NexusRollAnchorResult, type NexusMembersListResult,
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
@@ -57,6 +57,7 @@ import {
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { larSealHome } from "../env.js";
+import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -622,7 +623,8 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   let anchored: NexusRollAnchorResult | null = null;
   if (closing.sealEpochCid.length > 0) {
     try {
-      anchored = await runNexusRollAnchor({ sealHome, closing, opened });
+      const { output } = await storeVerb("nexus-roll-anchor", { closing, opened }, NexusContractError);
+      anchored = output as unknown as NexusRollAnchorResult;
     } catch (err) {
       if (!(err instanceof NexusContractError)) throw err;
       emit(args, {
@@ -820,7 +822,10 @@ async function sealShow(args: ParsedArgs): Promise<number> {
   // so it names a hand outside this vault — which is what a seated chair can never do. Unreachable
   // members read as none, which keeps the phase honest rather than optimistic.
   let contracted = 0;
-  try { contracted = (await runNexusMembersList({ sealHome })).members.length; } catch { contracted = 0; }
+  try {
+    const { output } = await storeVerb("nexus-members-list", {}, StoreDoorRefusal);
+    contracted = (output as unknown as NexusMembersListResult).members.length;
+  } catch { contracted = 0; }
   // THE CARRIED SET. One reading per charter this vessel holds, primary first. A Nexus stands in the set by a
   // consent verified at its held head or by a seated chair; a consent behind the head counts for nothing.
   const carried = await carriedReadings(sealHome);

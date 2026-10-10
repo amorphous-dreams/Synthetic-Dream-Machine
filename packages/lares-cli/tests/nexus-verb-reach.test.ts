@@ -37,7 +37,7 @@ const args = (positional: string[], flags: Record<string, boolean> = {}): Parsed
 const VERBS = [
   "seal", "kapae", "un_kapae", "contract", "revoke", "carry", "uncarry", "members",
   "accept-carriage", "admit-take", "carry-for", "posture", "rite", "kahuli", "publish", "offering",
-  "refresh", "realm-bag", "realm-bags",
+  "realm-bag", "realm-bags",
 ] as const;
 
 describe("lares nexus — every verb reaches its door", () => {
@@ -87,6 +87,15 @@ describe("lares nexus — every verb reaches its door", () => {
     // Recorded as the surface that stands, not endorsed; the split must not change it either way.
     expect(await run(["definitely-not-a-verb"], { json: false })).toMatch(/usage: lares nexus/);
     expect(await cmdNexus(args(["definitely-not-a-verb"]))).toBe(2);
+  });
+
+  /**
+   * CONTROL (K22) — `refresh` retired as a standalone door: its whole body now rides the after-roll hook every
+   * store-door write fires, so a dedicated poke no longer exists to reach. Proves the retirement by the same
+   * `unknown verb` refusal a never-built word gets, rather than by its absence from `VERBS` alone.
+   */
+  test("`nexus refresh` is retired — it reads as an unknown verb, not a door", async () => {
+    expect(await run(["refresh"])).toMatch(/unknown verb/i);
   });
 
   /** CONTROL — a bare `nexus` refuses with the usage and claims no word was unknown. */

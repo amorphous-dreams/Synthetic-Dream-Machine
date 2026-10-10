@@ -41,7 +41,7 @@ export interface CommandHelp {
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | refresh | realm-bag | realm-bags | offering>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | realm-bag | realm-bags | offering>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
       "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony",
@@ -67,8 +67,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  posture [private | open]                  read / flip the cross-Nexus federation posture",
       "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
       "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
-      "  refresh                                   re-read the charter and posture, re-fold every carried Nexus's deny",
-      "                                            board and antigen, and re-present the dial",
       "  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)",
       "            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign",
       "            [--cosign]                      consent as a named steward to a standing proposal",
@@ -85,7 +83,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares nexus contract <operator-pubkey> --json",
       "lares nexus admit-take ./admit-bundle.json",
       "lares nexus offering inspect sha256:<offering-cid>",
-      "lares nexus refresh",
     ],
   },
 

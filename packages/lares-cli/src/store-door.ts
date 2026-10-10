@@ -11,7 +11,7 @@
  * caller names exactly as it names a refusal on the direct path.
  */
 
-import { storeDoorDirect, type HearthDoorVerb } from "@lararium/node";
+import { storeDoorDirect, type StoreDoorVerb } from "@lararium/node";
 import { vesselDid, larSealHome } from "./env.js";
 import { runVerb } from "./verb-call.js";
 import { udsAlive } from "./local-connector.js";
@@ -48,7 +48,7 @@ export class StoreDoorRefusal extends Error {}
  * with the door's `verb` echo set aside.
  */
 export async function storeVerb(
-  verb: HearthDoorVerb,
+  verb: StoreDoorVerb,
   args: Record<string, unknown>,
   Refusal: new (message: string) => Error = StoreDoorRefusal,
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {

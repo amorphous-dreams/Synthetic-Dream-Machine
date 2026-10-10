@@ -44,16 +44,16 @@
 
 import { readFileSync } from "node:fs";
 import {
-  readNexusDoc, writeNexusPractice,
-  runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
-  takeAdmitBundle, AdmitBundleError,
+  runNexusAcceptCarriage, runNexusCarryFor, NexusContractError,
+  AdmitBundleError, type NexusContractResult, type NexusMembersListResult,
 } from "@lararium/node";
-import { federationPostureFromDoc, presentationFindingLine, type FederationPosture } from "@lararium/mesh";
+import { presentationFindingLine } from "@lararium/mesh";
 import { larSealHome, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
@@ -80,7 +80,6 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "kahuli":          return await cmdKahuli(args);
     case "publish":         return await cmdPublish(args);
     case "offering":        return await cmdOffering(args);
-    case "refresh":         return await cmdNexusRefresh(args);
     case "realm-bag":       return await cmdRealmBag(args);
     case "realm-bags":      return await cmdRealmBags(args);
     default:
@@ -98,63 +97,6 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
   quorum: { composes: "seal reserve · seal seat · seal show", run: runQuorumRite },
   kahuli: { composes: "kahuli grammar (· kahuli engine — held)", run: runKahuliRite },
 };
-
-/**
- * `lares nexus refresh` — re-read the disk posture, re-fold every carried Nexus's deny board and antigen, and
- * re-present the dial when what it presents moved. The JSON names that work: `posture`, one `nexuses[]` row per
- * carried Nexus (`aid`, `island`, `denyEntries`, `antigenEntries`, `held`), and this vessel's own island.
- *
- * THE DOOR AN IMPORT NEEDS. A joining operator places a partner's charter and signs a contract-in,
- * and from that moment her vessel should fold the FOUNDER's members board rather than her own. The
- * daemon re-folds on its own when carriage re-dials, so nothing was wrong — there was simply no way
- * to ask, and an operator who had just imported a charter had to wait on a reconnect she cannot see.
- *
- * The refresh also OPENS the named board on the networked repo, which is what lets a board this
- * vessel has never held arrive at all.
- */
-async function cmdNexusRefresh(args: ParsedArgs): Promise<number> {
-  try {
-    const r = await runVerb("nexus-refresh", {}, await vesselDid());
-    if (r.status === "error") {
-      emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "nexus-refresh failed" },
-                   human: () => console.error(`lares nexus refresh: ${r.errorMessage ?? "failed"}`) });
-      return 1;
-    }
-    const out = summaryOutput(r) ?? {};
-    const nexuses = Array.isArray(out["nexuses"]) ? (out["nexuses"] as Array<Record<string, unknown>>) : [];
-    // THE SHAPE NAMES WHAT THE REFRESH DID: the posture, then one row per CARRIED Nexus — its deny board, its
-    // antigen and the peers whose presented admit for it now reads held — beside this vessel's own island.
-    const data = {
-      posture:            out["posture"] ?? null,
-      nexuses:            nexuses.map((n) => ({
-        aid: n["aid"] ?? null, island: n["island"] ?? null,
-        denyEntries: n["denyEntries"] ?? 0, antigenEntries: n["antigenEntries"] ?? 0, held: n["held"] ?? 0,
-      })),
-      ownIsland:          out["boardRoot"] ?? null,
-      ownCarriageEntries: out["memberEntries"] ?? 0,
-      ownAntigenEntries:  out["antigenEntries"] ?? 0,
-      realm:              out["realm"] ?? null,
-      realmDoc:           out["realmDoc"] ?? null,
-    };
-    emit(args, {
-      ok: true, data,
-      human: () => {
-        console.log("nexus refresh — posture re-read, every carried Nexus's deny board and antigen re-folded:");
-        console.log(`  posture:     ${String(data.posture ?? "?")}`);
-        if (data.nexuses.length === 0) console.log("  carried:     none — no Nexus stands in this vessel's carried set");
-        for (const n of data.nexuses) {
-          console.log(`  carried:     ${String(n.aid).slice(0, 24)}…  deny ${String(n.denyEntries)} · antigen ${String(n.antigenEntries)} · held ${String(n.held)}`);
-        }
-        console.log(`  own island:  ${String(data.ownIsland ?? "?")}  (carriage ${String(data.ownCarriageEntries)} · antigen ${String(data.ownAntigenEntries)})`);
-      },
-    });
-    return 0;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus refresh: ${msg}`) });
-    return 1;
-  }
-}
 
 /**
  * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
@@ -284,12 +226,12 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
   try {
     const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
     const carrierSig  = action === "carry" ? (args.options["carrier"] ?? args.options["sig"]) : undefined;
-    const r = await runNexusContract({
+    const { output } = await storeVerb("nexus-contract", {
       action, nym,
       ...(contractSig ? { contractSig } : {}),
       ...(carrierSig ? { carrierSig } : {}),
-      sealHome: larSealHome(),
-    });
+    }, NexusContractError);
+    const r = output as unknown as NexusContractResult;
     emit(args, {
       ok: true,
       data: {
@@ -342,7 +284,8 @@ async function cmdMembers(args: ParsedArgs): Promise<number> {
   }
   const aid = args.options["nexus"];
   try {
-    const r = await runNexusMembersList({ sealHome: larSealHome(), ...(aid !== undefined ? { aid } : {}) });
+    const { output } = await storeVerb("nexus-members-list", aid !== undefined ? { aid } : {}, StoreDoorRefusal);
+    const r = output as unknown as NexusMembersListResult;
     emit(args, {
       ok: true,
       data: {
@@ -418,8 +361,10 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
  * `lares nexus admit-take <bundle-file>` — run by the JOINING operator on her OWN vessel: take the admit bundle a
  * founding kahu handed over (`nexus contract --json` → `data.bundle`, or the bundle object alone). The take
  * verifies it OFFLINE against the charter this vessel holds for its Nexus, refuses a leaf this vessel does not
- * hold, and keeps it under the seal home beside the consent. A running vessel then re-presents through the
- * refresh: its dial to the hearth that wrote the admit presents it. No daemon → the next boot's dial presents it.
+ * hold, and keeps it under the seal home beside the consent. Routed through the store's door (row
+ * `nexus-admit-take`): a standing vessel takes it against its own live Repo and re-presents its dial to the
+ * hearth that wrote it at once; with no vessel standing, the row keeps the bundle and the next boot's dial
+ * presents it.
  */
 async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
@@ -436,23 +381,18 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
       const inner = ((parsed["data"] as Record<string, unknown> | undefined)?.["bundle"]) ?? parsed["bundle"];
       if (inner !== undefined) text = JSON.stringify(inner);
     } catch { /* the take names the parse failure */ }
-    const r = await takeAdmitBundle({ sealHome: larSealHome(), raw: text });
-    // RE-PRESENT through the running vessel's refresh — the take drives it, never a timer.
-    let represented = false;
-    try {
-      const refresh = await runVerb("nexus-refresh", {}, await vesselDid());
-      represented = refresh.status !== "error";
-    } catch { /* no daemon — the next boot's dial presents the kept bundle */ }
+    const { output: r } = await storeVerb("nexus-admit-take", { raw: text }, AdmitBundleError);
+    const represented = r["represented"] === true;
     emit(args, {
       ok: true,
-      data: { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented },
+      data: { aid: r["aid"], nym: r["nym"], admitCid: r["admitCid"], gatePubKey: r["gatePubKey"], lineage: r["lineage"], path: r["path"], represented },
       human: () => {
         console.log("nexus admit-take — the admit verified against the charter held for its Nexus, and kept:");
-        console.log(`  nexus:   ${r.aid}`);
-        console.log(`  leaf:    ${r.nym}`);
-        console.log(`  admit:   ${r.admitCid} (lineage ${r.lineage})`);
-        console.log(`  hearth:  ${r.gatePubKey}  (the dial to this gate presents it)`);
-        console.log(`  kept at: ${r.path}`);
+        console.log(`  nexus:   ${String(r["aid"])}`);
+        console.log(`  leaf:    ${String(r["nym"])}`);
+        console.log(`  admit:   ${String(r["admitCid"])} (lineage ${String(r["lineage"])})`);
+        console.log(`  hearth:  ${String(r["gatePubKey"])}  (the dial to this gate presents it)`);
+        console.log(`  kept at: ${String(r["path"])}`);
         console.log(represented
           ? "  the running vessel re-folded and re-presents its dial"
           : "  no running vessel answered — the next boot's dial presents it");
@@ -498,48 +438,48 @@ async function cmdCarryFor(args: ParsedArgs): Promise<number> {
 /**
  * `lares nexus posture [private | open]` — read or flip the per-Nexus federation posture on the nexus charter doc
  * doc. Default PRIVATE (a Nexus develops in isolation); OPEN lets cross-Nexus foreign operators co-federate the
- * PUBLIC planes (never a private plane). No arg reads the current posture.
+ * PUBLIC planes (never a private plane). No arg reads the current posture. Routed through the store's door
+ * (row `nexus-posture`): a standing vessel flips the joint AND refolds its live gate at once; with no vessel
+ * standing, the row writes the joint and the next boot reads it.
  */
 async function cmdPosture(args: ParsedArgs): Promise<number> {
-  const sealHome = larSealHome();
   const want = args.positional[1];
-  const doc = readNexusDoc(sealHome);
-  if (want === undefined) {
-    const posture = federationPostureFromDoc(doc);
-    emit(args, {
-      ok: true,
-      data: { posture, present: doc !== null },
-      human: () => {
-        console.log(`nexus federation posture: ${posture}${doc ? "" : "  (no charter doc — default)"}`);
-        console.log(posture === "private"
-          ? `  PRIVATE — cross-Nexus foreign operators are denied co-federation; only same-Nexus members co-federate.`
-          : `  OPEN — cross-Nexus foreign operators co-federate the PUBLIC planes (never a private plane).`);
-      },
-    });
-    return 0;
-  }
-  if (want !== "private" && want !== "open") {
+  if (want !== undefined && want !== "private" && want !== "open") {
     console.error(`usage: lares nexus posture [private | open]   (got "${want}")`);
     return 2;
   }
-  if (!doc) {
-    emit(args, { ok: false, error: { code: "refused", message: "no nexus doc — run `lares nexus seal seat` before setting a posture" }, human: () => console.error("lares nexus posture: no charter doc — seat the charter first") });
+  try {
+    const { output: r } = await storeVerb("nexus-posture", want === undefined ? {} : { want }, StoreDoorRefusal);
+    const posture = String(r["posture"]);
+    if (want === undefined) {
+      emit(args, {
+        ok: true,
+        data: { posture, present: r["present"] === true },
+        human: () => {
+          console.log(`nexus federation posture: ${posture}${r["present"] ? "" : "  (no charter doc — default)"}`);
+          console.log(posture === "private"
+            ? `  PRIVATE — cross-Nexus foreign operators are denied co-federation; only same-Nexus members co-federate.`
+            : `  OPEN — cross-Nexus foreign operators co-federate the PUBLIC planes (never a private plane).`);
+        },
+      });
+      return 0;
+    }
+    emit(args, {
+      ok: true,
+      data: { posture, path: r["path"] },
+      human: () => {
+        console.log(`nexus federation posture → ${posture.toUpperCase()} (written ${String(r["path"])})`);
+        console.log(posture === "open"
+          ? `  the Nexus now co-federates the PUBLIC planes with cross-Nexus foreign operators (private planes stay sealed).`
+          : `  the Nexus keeps to itself — only same-Nexus members co-federate (the fail-closed default).`);
+        console.log(`  a standing vessel's live gate refolded at once; the next boot reads it either way.`);
+      },
+    });
+    return 0;
+  } catch (err) {
+    const msg  = err instanceof Error ? err.message : String(err);
+    const code = err instanceof StoreDoorRefusal ? "refused" : "error";
+    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus posture: ${msg}`) });
     return exitFor("error");
   }
-  const posture: FederationPosture = want;
-  // The PRACTICE joint alone, and the narrowness IS the guard: this writer never parses the seal lineage
-  // block, so the cheapest act in the house cannot reach the dearest joint in it.
-  const path = writeNexusPractice(sealHome, { federationPosture: posture }, doc);
-  emit(args, {
-    ok: true,
-    data: { posture, path },
-    human: () => {
-      console.log(`nexus federation posture → ${posture.toUpperCase()} (written ${path})`);
-      console.log(posture === "open"
-        ? `  the Nexus now co-federates the PUBLIC planes with cross-Nexus foreign operators (private planes stay sealed).`
-        : `  the Nexus keeps to itself — only same-Nexus members co-federate (the fail-closed default).`);
-      console.log(`  NOTE: a running node reads the posture as-of-boot; bounce it (or await the refresh hook) to apply a live flip.`);
-    },
-  });
-  return 0;
 }

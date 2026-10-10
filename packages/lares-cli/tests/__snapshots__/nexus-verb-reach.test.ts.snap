@@ -16,7 +16,7 @@ usage: lares nexus kahuli <engine | grammar>
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
 "lares nexus: unknown verb "definitely-not-a-verb"
-usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | refresh | realm-bag | realm-bags | offering>
+usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | realm-bag | realm-bags | offering>
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
@@ -43,8 +43,6 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   posture [private | open]                  read / flip the cross-Nexus federation posture
   rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
   kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
-  refresh                                   re-read the charter and posture, re-fold every carried Nexus's deny
-                                            board and antigen, and re-present the dial
   realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)
             [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign
             [--cosign]                      consent as a named steward to a standing proposal
@@ -60,8 +58,7 @@ Examples:
   lares nexus rite quorum
   lares nexus contract <operator-pubkey> --json
   lares nexus admit-take ./admit-bundle.json
-  lares nexus offering inspect sha256:<offering-cid>
-  lares nexus refresh"
+  lares nexus offering inspect sha256:<offering-cid>"
 `;
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `

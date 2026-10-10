@@ -5,11 +5,14 @@
  * Proven, over a real persona vault + the charter doc on disk:
  *   · a lawful rotate lands the anchor on the board FIRST: at the moment the anchor lands, the charter on disk
  *     still stands at the closing head; afterwards the board holds the anchor that opens the new head;
- *   · an anchor that cannot be signed, or does not count (`runNexusRollAnchor` refusing with
+ *   · an anchor that cannot be signed, or does not count (the `nexus-roll-anchor` door row refusing with
  *     `NexusContractError`), refuses the rotate and leaves the charter byte-identical;
  *   · CONTROL: any other fault in the anchor step throws through, and still writes no head.
  *
- * The anchor step is the real `runNexusRollAnchor` unless a test injects a fault in its place.
+ * The anchor step runs the real door row (`storeVerb("nexus-roll-anchor", …)`, direct-held since no vessel
+ * stands in this test) unless a test injects a fault in its place. The row itself — not the module-level
+ * `runNexusRollAnchor` it wraps — is where `nexus-seal.ts` now reaches it (the store's one door,
+ * `store-door-verbs.ts`), so the fault rides the same seam the rotate itself calls through.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
@@ -21,14 +24,21 @@ const anchorStep = vi.hoisted(() => ({
   charterDepthAtAnchor: [] as number[],
 }));
 
-vi.mock("@lararium/node", async (importOriginal) => {
-  const real = await importOriginal<typeof import("@lararium/node")>();
+vi.mock("../src/store-door.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/store-door.js")>();
   return {
     ...real,
-    runNexusRollAnchor: async (opts: Parameters<typeof real.runNexusRollAnchor>[0]) => {
-      anchorStep.charterDepthAtAnchor.push(real.readNexusDoc(opts.sealHome)?.sealLineage?.length ?? 0);
-      if (anchorStep.fault) throw anchorStep.fault();
-      return real.runNexusRollAnchor(opts);
+    storeVerb: async (
+      verb: Parameters<typeof real.storeVerb>[0], args: Parameters<typeof real.storeVerb>[1],
+      Refusal?: Parameters<typeof real.storeVerb>[2],
+    ) => {
+      if (verb === "nexus-roll-anchor") {
+        const { readNexusDoc } = await import("@lararium/node");
+        const { larSealHome } = await import("../src/env.js");
+        anchorStep.charterDepthAtAnchor.push(readNexusDoc(larSealHome())?.sealLineage?.length ?? 0);
+        if (anchorStep.fault) throw anchorStep.fault();
+      }
+      return real.storeVerb(verb, args, Refusal);
     },
   };
 });
