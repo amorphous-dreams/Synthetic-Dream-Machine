@@ -107,9 +107,9 @@ The train: ''R-STORE ‖ R-CUSTODY → R-CHARTER (one AID train) → R-WIRE → 
 with the lanes beside it. The R-ENGINE fold builds in parallel from the start and may land early.
 
 !!! R-STORE ~ one store door for every writer (parallel from the start; no identity bytes)
-* Route the remaining direct-store writers through the one store door: `nexus-contract`, `nexus publish`, `edge-kapae`, `nexus-kapae`, `cabal-vouch`, `device-admit`, `persona new N`. Readers route too, so none reads disk the holder has not flushed.
-* Delete `nexus refresh`'s throwaway-Repo board-merge bridge — a second door for the live-holder gap once every write routes.
-* Land `tools/direct-repo-witness.sh` with the last conversion, so it never lands red: no `new Repo(` in `lararium-node/src/commands/*` beyond the door's own direct branch, with a planted known positive as its control.
+* Every direct-store writer and reader takes the held Repo as a dependency — the standing vessel's own, or the direct holder's (`ownedStore`) for one act — never opening a second Repo of its own: `nexus-contract`'s three doors (`runNexusContract`, `runNexusRollAnchor`, `runNexusMembersList`) carry this now, mirroring `nexus-kapae` and `raise-sign`; `nexus publish`, `edge-kapae`, `cabal-vouch`, `device-admit` and `persona new N` already did. A door that opens its own never reaches a standing vessel's live peers, and none of its readers sees disk the holder has not flushed.
+* `nexus refresh`'s throwaway-Repo board-merge bridge RETIRES once every write routes — it existed only to paper over the live-holder gap a second opener created, and the gap closes at the source instead.
+* `tools/direct-repo-witness.sh` stands, scanning every `.ts` file under `lararium-node/src` with comments stripped: exactly two lawful sites (`open-node-vessel.ts`'s vessel, `owned-store.ts`'s direct holder), named; any other `new Repo(` reads DRIFT. Its own self-test runs over a fixture tree, proven by a planted third site, a doubled lawful site, and a missing one — never against the live tree, whose own count depends on `nexus refresh`'s deletion landing.
 
 !!! R-CUSTODY ~ the Vessel KEK (parallel with R-STORE; no identity bytes)
 * VK, keyslots and the four verbs `vault unlock · bind · unbind · status` over the socket; `vault seal|rotate|export|repair` and `LARES_ARCHIVE_PASSPHRASE` retire.
@@ -196,6 +196,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4ck7O5iGUTGEB0vExbk9RhT8VxF8X8WtM81X50W3XYw
+<<^ code="&#x0003;">>ni:///sha-256;T9NKYJF7HOpWKq0fp0qyh8llC4OAlN-ODVlsjE5jXmQ
 
 <<^ code="&#x0004;" -> to="?">>

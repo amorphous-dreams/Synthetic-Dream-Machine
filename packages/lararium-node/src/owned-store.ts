@@ -150,20 +150,57 @@ const unlinkIfPresent = (path: string): void => {
   try { unlinkSync(path); } catch (err) { if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err; }
 };
 
+/** How many stability looks a claimant gives a CONTENDED grave before it reads the earlier claimant as dead —
+ *  gathering the DEAD-HOLDER EVIDENCE a takeover needs, never a bare timeout. */
+const GRAVE_DEAD_PATIENCE = 20;
+const GRAVE_DEAD_INTERVAL_MS = 25;
+
 /**
  * Reap the corpse `seen` standing at `path`, as the one claimant that reaps that inode. The grave's name derives
  * from the corpse's inode, so every claimant that judged THIS corpse races for one grave name and `link` hands it
  * to exactly one. Only that claimant, and only when its grave carries the corpse's own inode, unlinks `path`: no
  * other hand removes a name that carries that inode, so the unlink removes the corpse and nothing else.
+ *
+ * A GRAVE ANOTHER CLAIMANT ALREADY HOLDS REFUSES — UNTIL INODE AND DEAD-HOLDER EVIDENCE PROVE A TAKEOVER SAFE.
+ * `link` hands the grave name to exactly one claimant; meeting it already taken could mean a live reaper mid-flight
+ * (refuse and let the retry re-read), or a reaper that crashed between its own `link` and its own `finally` unlink
+ * (a stranded grave that would otherwise block every future claim on this corpse forever — the one failure mode a
+ * lock that outlives its holder always risks). The inode evidence is immediate: if `path` no longer names `seen`'s
+ * inode, this grave blocks nothing anymore, whoever holds it. The dead-holder evidence takes a bounded patience: only
+ * after `path` keeps naming the SAME unanswering inode, and the grave keeps standing, for the WHOLE window, does
+ * this claimant conclude nobody is finishing that reap — and only then does it clear the stale grave and retry.
  */
-function reapCorpse(path: string, seen: Stats, refuse: () => StoreHeld): void {
+async function reapCorpse(path: string, seen: Stats, refuse: () => StoreHeld): Promise<void> {
   const grave = `${path}.${seen.ino}.reap`;
-  try { linkSync(path, grave); }
-  catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code === "ENOENT") return;                       // the corpse went already; look again
-    if (code === "EEXIST") throw new StoreReaping(`${refuse().message} (another claimant reaps the dead holder's name; its grave stands at ${grave})`);
-    throw err;
+  for (;;) {
+    try { linkSync(path, grave); break; }
+    catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") return;                       // the corpse went already; look again
+      if (code !== "EEXIST") throw err;
+
+      // INODE EVIDENCE, FIRST: has `path` moved on from the corpse this grave names? Then the grave, whoever
+      // holds it, blocks nothing here — step back to the outer retry, which re-reads `path`'s CURRENT state.
+      if (!sameInode(statOf(path), seen)) return;
+      if (await answers(path)) throw refuse();              // a live holder bound it while this claimant looked
+
+      // DEAD-HOLDER EVIDENCE: watch the SAME contended grave across a bounded patience window. Any sign of
+      // progress — the inode moves on, the name starts answering, or the grave itself clears — means another
+      // hand is live and finishing; step back rather than race it.
+      let stranded = true;
+      for (let i = 0; i < GRAVE_DEAD_PATIENCE; i++) {
+        await new Promise((r) => setTimeout(r, GRAVE_DEAD_INTERVAL_MS));
+        if (!sameInode(statOf(path), seen)) { stranded = false; break; }
+        if (await answers(path)) throw refuse();
+        if (!sameInode(statOf(grave), seen)) { stranded = false; break; }   // the earlier claimant finished and left
+      }
+      if (!stranded) return;                                 // let the outer retry re-read the current state
+
+      // The window closed with the SAME unanswering corpse and the SAME untouched grave throughout — the
+      // claimant that made it is gone. The grave already names this exact corpse's inode; clearing it and
+      // retrying `link` is this claimant taking the abandoned reap over, never a different corpse's grave.
+      unlinkIfPresent(grave);
+    }
   }
   try {
     if (sameInode(statOf(grave), seen)) unlinkIfPresent(path);
@@ -263,7 +300,7 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
       const seen = statOf(socketPath);
       if (seen === null) continue;                       // the name went between the link and the look
       if (await answers(socketPath)) throw refuse();
-      reapCorpse(socketPath, seen, refuse);
+      await reapCorpse(socketPath, seen, refuse);
     }
   } catch (err) {
     await close();

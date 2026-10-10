@@ -145,6 +145,51 @@ describe("claimStore — one holder at every instant", () => {
     expect(existsSync(socketOf(dir))).toBe(false);
   });
 
+  it("RED: a STRANDED .reap grave (a reaper that crashed mid-reap) refuses instantly, then a claimant takes it over once dead-holder evidence proves it safe", async () => {
+    await plantDeadSocket(dir);
+    const path = socketOf(dir);
+    const seen = statSync(path);
+    const grave = `${path}.${seen.ino}.reap`;
+    // Hand-plant the stranded grave exactly as a reaper that died between its own `linkSync` and its own
+    // `finally` unlink would leave it: a hardlink onto the corpse's OWN inode, nothing more.
+    linkSync(path, grave);
+    expect(existsSync(grave)).toBe(true);
+
+    // INSTANT: the window has not run yet, so a look taken right away still finds the grave untouched —
+    // the claim has not yet earned the right to clean it up.
+    const started = Date.now();
+    const claim = await claimStore(dir);
+    const elapsedMs = Date.now() - started;
+    try {
+      expect(await answersAt(path)).toBe(true);        // the claimant took the abandoned reap over and holds
+      // The window is bounded (20 * 25ms = 500ms) — a takeover never resolves FASTER than that window, or the
+      // "instant" assertion above would mean nothing; and it resolves well inside a 5s test timeout.
+      expect(elapsedMs).toBeGreaterThanOrEqual(450);
+    } finally { await claim.release(); }
+    expect(existsSync(path)).toBe(false);
+    expect(existsSync(grave)).toBe(false);              // the stale grave is gone, not left stranded forever
+  });
+
+  it("CONTROL: a grave that clears mid-window (the earlier claimant finishes on its own) is never treated as dead", async () => {
+    await plantDeadSocket(dir);
+    const path = socketOf(dir);
+    const seen = statSync(path);
+    const grave = `${path}.${seen.ino}.reap`;
+    linkSync(path, grave);
+    // The earlier claimant finishes its OWN reap mid-window — exactly `reapCorpse`'s own success tail, run by
+    // hand here to stand in for that other process: it reaps the corpse and unlinks its own grave, well inside
+    // the 500ms patience window this claimant is watching.
+    setTimeout(() => { unlinkSync(path); unlinkSync(grave); }, 60);
+    const started = Date.now();
+    const claim = await claimStore(dir);
+    try {
+      expect(await answersAt(path)).toBe(true);
+      // A grave that clears mid-window is "someone else finished" (stranded=false) — the claimant steps back
+      // to the outer retry at once, well short of the full 500ms dead-holder patience.
+      expect(Date.now() - started).toBeLessThan(500);
+    } finally { await claim.release(); }
+  });
+
   it("a vessel's claim waits out a direct act, then holds; a direct claim beside the vessel refuses", async () => {
     const act = await claimStore(dir);
     let vesselHeld = false;
