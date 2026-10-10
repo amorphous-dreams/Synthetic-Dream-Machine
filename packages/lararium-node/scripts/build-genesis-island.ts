@@ -10,8 +10,9 @@
  * reconcileWellKnownTiddlers(). Neither belongs here.
  *
  * Determinism invariant:
- *   actorSeed = sha256hex(sorted content hashes of all walked inputs).
- *   Two builds from identical source produce identical seed/CAS bytes and the same derived inventory.
+ *   actorSeed = sha256hex over the walked inputs, each labelled by its path WITHIN the repo
+ *   (`genesis-actor-seed`). Two builds of one commit, from any checkout location, produce identical
+ *   seed/CAS bytes and the same derived inventory.
  *
  * Run via:  tsx scripts/build-genesis-island.ts
  * Or via:   pnpm --filter @lararium/node build:genesis
@@ -23,7 +24,6 @@ import { join, basename, resolve }                                          from
 import { repoRoot } from "@lararium/mesh/node";
 import {
   sha256HexBytesSync,
-  utf8Bytes,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   buildGenesisDoc,
   verifyGenesisArtifact,
@@ -39,6 +39,7 @@ import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/t
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
+import { deriveGenesisActorSeed } from "../src/genesis-actor-seed.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -60,67 +61,6 @@ function resolveGenesisDir(): string {
   const index = args.indexOf("--genesis");
   const flagged = index !== -1 ? args[index + 1] : undefined;
   return resolve(flagged ?? process.env["LAR_GENESIS"] ?? DEFAULT_GENESIS_DIR);
-}
-
-function walkMemeFiles(dir: string): string[] {
-  const results: string[] = [];
-  try {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) results.push(...walkMemeFiles(full));
-      else if (entry.name.endsWith(".mem")) results.push(full);
-    }
-  } catch { /* absent — skip */ }
-  return results.sort();
-}
-
-function walkFiles(dir: string, ext: string): string[] {
-  const results: string[] = [];
-  try {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) results.push(...walkFiles(full, ext));
-      else if (entry.name.endsWith(ext)) results.push(full);
-    }
-  } catch { /* absent — skip */ }
-  return results.sort();
-}
-
-function concatBytes(chunks: Uint8Array[]): Uint8Array {
-  const total = chunks.reduce((sum, c) => sum + c.length, 0);
-  const out   = new Uint8Array(total);
-  let offset  = 0;
-  for (const c of chunks) { out.set(c, offset); offset += c.length; }
-  return out;
-}
-
-/** Derive deterministic actor seed from sorted content hashes of all inputs. */
-function deriveActorSeed(tw5CorePath: string): string {
-  const chunks: Uint8Array[] = [];
-
-  if (existsSync(tw5CorePath)) {
-    chunks.push(utf8Bytes("tw5-core:"));
-    chunks.push(new Uint8Array(readFileSync(tw5CorePath)));
-  }
-
-  for (const memeRoot of existsSync(BAGS_ROOT) ? [BAGS_ROOT] : []) {
-    for (const f of walkMemeFiles(memeRoot)) {
-      chunks.push(utf8Bytes(`meme:${f}:`));
-      chunks.push(new Uint8Array(readFileSync(f)));
-    }
-  }
-
-  for (const f of walkFiles(tw5PluginsRoot, ".json")) {
-    chunks.push(utf8Bytes(`plugin:${f}:`));
-    chunks.push(new Uint8Array(readFileSync(f)));
-  }
-
-  for (const f of walkFiles(LARARIUM_TW5_DIST_PLUGIN, ".attestation.json")) {
-    chunks.push(utf8Bytes(`attestation:${f}:`));
-    chunks.push(new Uint8Array(readFileSync(f)));
-  }
-
-  return sha256HexBytesSync(concatBytes(chunks));
 }
 
 function readPluginAttestations(): Map<string, PluginBuildAttestation> {
@@ -222,7 +162,13 @@ async function main(): Promise<void> {
 
   // Layer A: read files + derive actor seed.
   console.log("[genesis] deriving actor seed from content hash …");
-  const actorSeed        = deriveActorSeed(coreJsPath);
+  const actorSeed        = deriveGenesisActorSeed({
+    root:          REPO_ROOT,
+    corePath:      coreJsPath,
+    bagsRoot:      BAGS_ROOT,
+    pluginsRoot:   tw5PluginsRoot,
+    distPluginDir: LARARIUM_TW5_DIST_PLUGIN,
+  });
   console.log(`[genesis] actorSeed = ${actorSeed.slice(0, 16)}…`);
 
   const coreBlob         = new Uint8Array(readFileSync(coreJsPath));
