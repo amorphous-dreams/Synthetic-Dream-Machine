@@ -3,10 +3,19 @@
 # submission source/pair must still re-project current. Two gates, run in sequence: `exec` on the first
 # would end the hook there and the second would never fire, so each runs and its exit is kept.
 # Enable once per clone:  git config core.hooksPath .githooks
+#
+# A gate belongs to the tree that carries it. A worktree checked out from a branch that predates a gate
+# (main, before the full merge) carries neither the gate script nor the carriers it judges, so the hook
+# names the gate absent and lets that commit through; a tree that carries the script always runs it.
 REPO="$(git rev-parse --show-toplevel)" || exit 1
-"$REPO/tools/meme-check-staged.sh"
+run_gate() {
+  if [ -f "$REPO/tools/$1" ]; then "$REPO/tools/$1"; return $?; fi
+  echo "[pre-commit] this tree carries no tools/$1 — that gate does not apply here"
+  return 0
+}
+run_gate meme-check-staged.sh
 code1=$?
-"$REPO/tools/submission-currency-staged.sh"
+run_gate submission-currency-staged.sh
 code2=$?
 [ "$code1" -ne 0 ] && exit "$code1"
 exit "$code2"
