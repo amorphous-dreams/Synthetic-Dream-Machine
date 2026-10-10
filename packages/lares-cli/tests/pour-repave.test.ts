@@ -15,13 +15,45 @@
  *
  * The wing is asserted for the same reason: two verbs that fill ONE palace derived their default
  * wing two different ways, so an unflagged re-pave split its own corpus across two names.
+ *
+ * ── WHY THIS SUITE SITES ITS OWN SCRATCH `LAR_ROOT` ────────────────────────────────────────────────
+ * `repaveWing`'s fallback reaches `larRoot()`, which on a fresh clone — no `LAR_ROOT`, no
+ * `LAR_DEV_REPO_ROOT`, no local `lar-dev-root.json` marker (the marker is gitignored by design, see
+ * `env.ts`) — throws a clean "no corpus root sited" error rather than defaulting. A unit here must
+ * never lean on that marker, which stands only on a developer's own checkout: every test below sites
+ * its own scratch `LAR_ROOT` and asserts the wing THAT root derives, so the suite reads green on a
+ * bare clone exactly as it does on a machine that happens to carry the marker.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { repaveStages, runRepave, repaveWing } from "../src/commands/capture/harvest.js";
+import { wingFromDir } from "../src/wing-law.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const args = (flags: Record<string, boolean> = {}, options: Record<string, string> = {}): ParsedArgs =>
   ({ positional: [], flags, options } as unknown as ParsedArgs);
+
+// A scratch corpus root, sited fresh per test — the control for the gitignored dev marker, which
+// must never be what makes this suite pass.
+let scratchRoot: string;
+let savedLarRoot: string | undefined;
+let savedDevRepoRoot: string | undefined;
+
+beforeEach(() => {
+  savedLarRoot = process.env["LAR_ROOT"];
+  savedDevRepoRoot = process.env["LAR_DEV_REPO_ROOT"];
+  delete process.env["LAR_DEV_REPO_ROOT"];
+  scratchRoot = mkdtempSync(join(tmpdir(), "pour-repave-wing-"));
+  process.env["LAR_ROOT"] = scratchRoot;
+});
+
+afterEach(() => {
+  rmSync(scratchRoot, { recursive: true, force: true });
+  if (savedLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = savedLarRoot;
+  if (savedDevRepoRoot === undefined) delete process.env["LAR_DEV_REPO_ROOT"]; else process.env["LAR_DEV_REPO_ROOT"] = savedDevRepoRoot;
+});
 
 describe("pour --all — one door, three legs, in dependency order", () => {
   it("★ walks the tending rite's movement, in its order ★", () => {
@@ -91,12 +123,14 @@ describe("pour --all — one door, three legs, in dependency order", () => {
     });
     expect(wings.every((w) => typeof w === "string" && w.length > 0)).toBe(true);
     expect(new Set(wings).size).toBe(1);
+    expect(wings[0]).toBe(wingFromDir(scratchRoot));
   });
 
   it("★ an unflagged re-pave derives its wing from the ONE law, never per-verb ★", () => {
     // `wingFromDir` is that law. A second derivation (basename of $HOME, say) sends a bulk pass to
     // a wing the per-transcript pass never writes, and a recall over either reads half a corpus.
-    expect(repaveWing(args())).toMatch(/^wing_[a-z0-9_]+$/);
+    // Asserted against THIS test's own scratch LAR_ROOT, never the machine's ambient dev marker.
+    expect(repaveWing(args())).toBe(wingFromDir(scratchRoot));
     expect(repaveWing(args({}, { wing: "wing_explicit" }))).toBe("wing_explicit");
   });
 });

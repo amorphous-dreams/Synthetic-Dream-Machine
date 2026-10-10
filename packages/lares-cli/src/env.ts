@@ -8,8 +8,10 @@
  *   LAR_BAGS · LAR_WIKIS · LAR_GENESIS · LAR_CAS — per-resource overrides. Each resource sites
  *               INDEPENDENTLY (composable #has caps); unset → it derives off LAR_ROOT.
  *   LAR_DEV_REPO_ROOT — the named repo DEV-PRESET switch. Truthy → the repo checkout stands as the
- *               corpus root. A committed `<repo>/lar-dev-root.json` marker opts a checkout in the
- *               same way (this dev install carries one), so the local workflow keeps its zero-config feel.
+ *               corpus root. A GITIGNORED `<repo>/lar-dev-root.json` marker opts a checkout in the
+ *               same way, local to that one machine, so a developer's own workflow keeps its
+ *               zero-config feel. A fresh clone carries neither, and sites no default: every unit
+ *               that reaches `larRoot()` sites its own scratch `LAR_ROOT` rather than leaning on it.
  *   LAR_PORT  — daemon WS port. Default 8080.
  *   LAR_TARGET — harness mode selector ("staged" | "live"); the CLI ignores it, the harness reads it.
  *
@@ -34,8 +36,9 @@ const DEV_ROOT_MARKER = "lar-dev-root.json";
 
 /**
  * Whether the repo DEV-PRESET stands — a NAMED opt-in, never a silent fallback. Truthy via the
- * `LAR_DEV_REPO_ROOT` env switch (CI / one-off), or a committed `<repo>/lar-dev-root.json` marker
- * (a checkout naming ITSELF the local corpus). Absent both, the repo never sites the corpus.
+ * `LAR_DEV_REPO_ROOT` env switch (CI / one-off), or a gitignored `<repo>/lar-dev-root.json` marker
+ * (a checkout naming ITSELF the local corpus, local to that machine, never tracked). Absent both —
+ * as a fresh clone always is — the repo never sites the corpus.
  */
 export function repoPresetEnabled(): boolean {
   if (process.env["LAR_DEV_REPO_ROOT"]) return true;
@@ -55,7 +58,7 @@ export function resolveLarRoot(opts: {
   if (opts.presetEnabled) return opts.repoRoot;     // the named repo dev-preset opts in
   throw new Error(
     "no corpus root sited — set LAR_ROOT to this daemon's resource tree, or enable the repo " +
-    "dev-preset (LAR_DEV_REPO_ROOT=1, or a committed lar-dev-root.json marker). No silent repo default.",
+    "dev-preset (LAR_DEV_REPO_ROOT=1, or a gitignored lar-dev-root.json marker). No silent repo default.",
   );
 }
 
