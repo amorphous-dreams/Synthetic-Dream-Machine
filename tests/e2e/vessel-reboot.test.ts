@@ -17,7 +17,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
 import { rmSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stopChild, targetInstance, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
@@ -37,8 +37,7 @@ beforeAll(async () => {
 }, 180_000);
 
 afterAll(async () => {
-  second?.kill();
-  await new Promise((r) => setTimeout(r, 500));
+  if (second) await stopChild(second);
   if (lar.mode === "staged") rmSync(lar.root, { recursive: true, force: true });
   await lar.stop();
 });
@@ -49,9 +48,10 @@ describe("vessel reboot — a hearth survives restarting on its own fed store", 
 
     const fed = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", LARES_URI, "--yes", "--json"]);
     expect(fed.json?.["ok"]).toBe(true);
-    // let the post-LOAD flush waves settle before the stop
-    await new Promise((r) => setTimeout(r, 10_000));
 
+    // THE STOP IS THE FLUSH. The daemon's SIGTERM path flushes the main replica, every island and the daemon
+    // island before it exits, and `stopDaemonOnly` returns on that exit — so the second daemon meets the store
+    // the first one finished writing, however long the post-LOAD waves took.
     await lar.stopDaemonOnly();
 
     // SAME port as the first daemon — the live failures all rebooted on the

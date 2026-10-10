@@ -23,7 +23,8 @@ import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/auth-wire.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
+import { performance } from "node:perf_hooks";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -62,6 +63,8 @@ export interface LarInstance {
   readonly port: number;
   /** Daemon stdout+stderr captured so far (staged mode only). */
   readonly bootLog: () => string;
+  /** Each `phase → <name>` line the daemon printed, stamped with monotonic ms since the founding began. */
+  readonly bootPhases: () => readonly BootPhase[];
   /** Run the real lares CLI against THIS instance. */
   readonly cli: (args: readonly string[]) => Promise<CliResult>;
   /** Staged: kill daemon + delete root. Live: no-op (never touch a live hearth). */
@@ -71,6 +74,47 @@ export interface LarInstance {
    * boot a second daemon on the same fed store. Live: no-op.
    */
   readonly stopDaemonOnly: () => Promise<void>;
+}
+
+/** One boot phase, stamped on a monotonic clock — elapsed ms from the start of this vessel's founding. */
+export interface BootPhase {
+  readonly phase: string;
+  readonly ms: number;
+}
+
+/**
+ * Stop a child and WAIT FOR ITS EXIT — never a fixed pause.
+ *
+ * A kill is a signal, not a barrier. The daemon's SIGTERM path flushes its stores durably and then exits, and
+ * how long that takes depends on what it wrote. A fixed sleep after the signal races that flush: a re-stand on
+ * the same root meets a store the dying process still holds, and a teardown removes a tree it is still writing.
+ * The child's own `exit` event is the barrier. A child that outlives `graceMs` (the daemon's own shutdown
+ * budget is 6 s) meets SIGKILL, and the wait still ends on its exit.
+ */
+export async function stopChild(child: ChildProcess, graceMs = 15_000): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise<void>((resolve) => child.once("exit", () => resolve()));
+  child.kill("SIGTERM");
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const outlived = await Promise.race([
+    exited.then(() => false),
+    new Promise<boolean>((resolve) => { timer = setTimeout(() => resolve(true), graceMs); }),
+  ]);
+  clearTimeout(timer);
+  if (outlived) {
+    child.kill("SIGKILL");
+    await exited;
+  }
+}
+
+/**
+ * Append one record to this run's boot-phase timeline (`<LAR_E2E_RUN_DIR>/boot-phases.jsonl`), beside the JSON
+ * report the e2e config writes. A run with no run directory named keeps its timeline on the instance alone.
+ */
+function recordTimeline(record: Record<string, unknown>): void {
+  const dir = process.env["LAR_E2E_RUN_DIR"];
+  if (!dir) return;
+  try { appendFileSync(join(dir, "boot-phases.jsonl"), `${JSON.stringify(record)}\n`); } catch { /* a measurement, never a fault */ }
 }
 
 /** The real lares CLI under ONE instance's env pair — the same door `LarInstance.cli` opens. */
@@ -184,6 +228,10 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   const port = opts.port ?? await freePort();
   const env  = { LAR_ROOT: root, LAR_PORT: String(port) };
   const cli  = (args: readonly string[]) => runCli(env, args);
+  // ONE MONOTONIC ORIGIN for every stamp this vessel carries. The timeline is a measurement read by a human
+  // deciding where boot time goes; it decides nothing, and it never reads a wall clock.
+  const t0 = performance.now();
+  const since = (): number => Math.round(performance.now() - t0);
 
   try {
     await (opts.found ?? foundHearth)(cli, root);
@@ -191,40 +239,57 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
     removeStagedRoot(root);
     throw err;
   }
+  const foundMs = since();
 
-  // Boot the daemon from dist; capture its log; await `phase → live`.
+  // Boot the daemon from dist; capture its log; await `phase → live`. Each `phase →` line is stamped as it
+  // arrives; the log itself stays byte-whole, because suites read it.
   let log = "";
+  let partial = "";
+  const phases: BootPhase[] = [];
+  const capture = (d: unknown): void => {
+    const text = String(d);
+    log += text;
+    const lines = (partial + text).split("\n");
+    partial = lines.pop() ?? "";
+    for (const line of lines) {
+      const m = /phase → (\S+)/.exec(line);
+      if (m) phases.push({ phase: m[1]!, ms: since() });
+    }
+  };
   const daemon: ChildProcess = spawn(process.execPath, [NODE_MAIN, "--root", root, "--port", String(port)], {
     cwd: NODE_CWD,
     env: { ...process.env, ...env, ...(opts.daemonEnv ?? {}) },
   });
-  daemon.stdout?.on("data", (d) => { log += String(d); });
-  daemon.stderr?.on("data", (d) => { log += String(d); });
+  daemon.stdout?.on("data", capture);
+  daemon.stderr?.on("data", capture);
 
-  const liveAt = Date.now();
+  const liveBy = performance.now() + 120_000;
   await new Promise<void>((resolve, reject) => {
     const poll = setInterval(() => {
       if (log.includes("phase → live")) { clearInterval(poll); resolve(); }
       else if (daemon.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${daemon.exitCode} before live:\n${log.slice(-6000)}`)); }
-      else if (Date.now() - liveAt > 120_000) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
+      else if (performance.now() > liveBy) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
     }, 250);
   });
+  const name = root.split("/").pop() ?? root;
+  recordTimeline({ vessel: name, event: "live", foundMs, phases });
+
+  const halt = async (removeRoot: boolean): Promise<void> => {
+    const from = since();
+    await stopChild(daemon);
+    recordTimeline({ vessel: name, event: removeRoot ? "stop" : "stop-daemon-only", stopMs: since() - from });
+    if (removeRoot) removeStagedRoot(root);
+  };
 
   return {
     mode: "staged",
     root,
     port,
     bootLog: () => log,
+    bootPhases: () => phases,
     cli,
-    stop: async () => {
-      daemon.kill();
-      await new Promise((r) => setTimeout(r, 500));
-      removeStagedRoot(root);
-    },
-    stopDaemonOnly: async () => {
-      daemon.kill();
-      await new Promise((r) => setTimeout(r, 800));
-    },
+    stop: () => halt(true),
+    stopDaemonOnly: () => halt(false),
   };
 }
 
@@ -245,6 +310,7 @@ function attachLive(): LarInstance {
     root,
     port,
     bootLog: () => "",                 // a live hearth's log belongs to its operator
+    bootPhases: () => [],
     cli: (args) => runCli(env, args),
     stop: async () => { /* NEVER stop, reset, or delete a live instance */ },
     stopDaemonOnly: async () => { /* NEVER touch a live hearth's daemon */ },
@@ -295,10 +361,10 @@ export function rendezvousSocket(instance: LarInstance): string {
 /** Wait until this instance's daemon has BOUND its rendezvous — a name standing, not a listener answering. */
 export async function awaitRendezvous(instance: LarInstance, timeoutMs = 60_000): Promise<boolean> {
   const sock = rendezvousSocket(instance);
-  const deadline = Date.now() + timeoutMs;
+  const deadline = performance.now() + timeoutMs;
   for (;;) {
     if (existsSync(sock)) return true;
-    if (Date.now() > deadline) return false;
+    if (performance.now() > deadline) return false;
     await new Promise((r) => setTimeout(r, 250));
   }
 }
@@ -512,7 +578,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         const keyB = await mintVesselKey(rootB);
         const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
         if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);
-        admitted = await cliB(["vessel", "found", "--admit", admit]);
+        admitted = await cliB(["vessel", "found", "--admit", admit, "--skip-build"]);
       },
     });
     stood.push(A);
