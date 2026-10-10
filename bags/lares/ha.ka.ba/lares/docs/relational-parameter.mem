@@ -30,7 +30,7 @@ uri-path   = "ha.ka.ba/lares/docs/relational-parameter"
 > A bare arrow standing between two macro parameters names a ''relation'' between them. The parser
 > MARKS it; the binder READS it. Nothing that parses today parses differently.
 
-''This rides `dev/sdm-integration` first and reads as a donation second.'' The house builds it as its
+''This rides `develop` first — upstream master plus donation-bound fixes — and reads as a donation second.'' The house builds it as its
 own capability; the shape below keeps the upstream door open rather than assuming it.
 
 <<~/ahu>>
@@ -241,6 +241,6 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kOBZ_Dg84O3RmiO09gmuohI0P6kg-lYxVYxjZ_oWtl4
+<<^ code="&#x0003;">>ni:///sha-256;h8IFSTATavB1tZkp2uWTONeTFpGTKl9lwNVGdTSPjyk
 
 <<^ code="&#x0004;" -> to="?">>
