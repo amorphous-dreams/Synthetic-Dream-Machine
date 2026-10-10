@@ -2,19 +2,23 @@
  * persona-kel-ring — the node holder that stands the per-Nexus persona-KEL BOARD live on the main thread.
  *
  * It materializes the always-carried KEL board (mesh deterministic-doc `personaKelBoardDocUrl`) under its
- * deterministic id, keeps a per-prefix chain map folded from the board entries, and RE-FOLDS on every
- * board-doc change — so a rotation propagated across the mesh takes on the next sync (the identifier→head
- * mapping saturates by carry-contract, bounded by sync-latency, NEVER a global now). The board reads a LOCAL
- * replica: a prefix the replica has not yet synced surfaces a null head, and the Binding-Gate walk denies.
+ * deterministic id, folds every persona's events through the ONE reader (`foldPersonaContests`, as
+ * `personaKelFoldForPrefix` reads a board) and RE-FOLDS on every board-doc change — so a rotation propagated
+ * across the mesh takes on the next sync (the identifier→head mapping saturates by carry-contract, bounded by
+ * sync-latency, NEVER a global now). The board reads a LOCAL replica: a prefix the replica has not yet synced
+ * surfaces a null head, and the Binding-Gate walk denies.
  *
  * The holder serves TWO reads:
- *   · chainForPrefix(prefix) — the RAW seq-sorted key-event-log for one persona, handed to the worker at boot
- *     (threaded via daemonAuth.personaKel.chain). The worker RE-VERIFIES it — this is transport, not trust.
- *   · headOpKeyForPrefix(prefix) — the fully-verified current head op-key (structural + every rotation quorum),
- *     or null on a broken / unreachable / unquorumed chain (fail-closed). The live read a gate wants.
+ *   · chainForPrefix(prefix) — EVERY event the board holds under one persona, the verified inception first, then
+ *     seq ascending: the transport read the boot threads to the gate doors (daemonAuth.personaKel.chain). Each door
+ *     folds it again through the one reader, so the events that reader sets aside reach the door and it NAMES them
+ *     (`unreadable`) rather than meet a chain the holder already cleaned. Transport, not trust.
+ *   · headOpKeyForPrefix(prefix) — the head op-key of the lineage that verifies (structural + every rotation
+ *     quorum), or null where nothing verifies, the replica holds nothing, or the KEL forks (fail-closed).
  *
- * FAILS CLOSED: a board that never resolves (cold boot, sync not yet landed) leaves the chain map empty, so
- * every prefix resolves to a null head — a KEL that cannot reach a head DENIES, it never opens an allow path.
+ * FAILS CLOSED: a board that never resolves (cold boot, sync not yet landed) leaves the fold map empty, so every
+ * prefix resolves to a null head — a KEL that cannot reach a head DENIES, it never opens an allow path. Junk on
+ * the board moves no head: only an event that verifies competes for a seat.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/persona-kel-ring
  */
@@ -23,10 +27,12 @@ import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   type LarDoc,
   type PersonaKelEvent,
+  type PersonaKelFold,
+  foldPersonaContests,
   headOpKey,
   materializeSharedLarDoc,
   personaKelBoardDocUrl,
-  personaKelChainsFromBoard,
+  personaKelEventsFromBoard,
 } from "@lararium/mesh";
 
 /**
@@ -47,11 +53,12 @@ export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "@lararium/me
 export interface PersonaKelRingHolder {
   /** Resolves once the board has materialized + the first fold has run — boot AWAITS this before it reads a chain. */
   readonly ready: Promise<void>;
-  /** The RAW seq-sorted chain for one persona prefix, or null when the local replica carries none. UNVERIFIED
-   *  (the worker re-verifies) — this is the transport read the boot path threads into daemonAuth. */
+  /** Every event the board holds under one persona prefix — the verified inception first, then seq ascending —
+   *  or null when the local replica carries none. UNVERIFIED: each gate door folds it again through the one reader
+   *  and names what that reader sets aside. This is the transport read the boot path threads into daemonAuth. */
   chainForPrefix(prefix: string): readonly PersonaKelEvent[] | null;
-  /** The fully-verified current head op-key for one prefix (structural + every rotation quorum), or null
-   *  fail-closed on a broken / unreachable / below-quorum chain. */
+  /** The head op-key of the lineage that verifies for one prefix (structural + every rotation quorum), or null
+   *  fail-closed where nothing verifies, the replica carries nothing, or the KEL forks. */
   headOpKeyForPrefix(prefix: string): Promise<string | null>;
   /** Re-read the board entries and re-fold the chain map. Idempotent; safe to call any time. */
   refold(): void;
@@ -68,14 +75,28 @@ export interface PersonaKelRingHolder {
 export function makePersonaKelRingHolder(opts: { repo: Repo; nexusPubkey: string }): PersonaKelRingHolder {
   const { repo, nexusPubkey } = opts;
 
-  // The folded per-prefix chains — swapped whole on each refold (no partial-map window a walk could read).
-  let chains: Map<string, PersonaKelEvent[]> = new Map();
+  // Per prefix, the board's events and the one reader's fold of them — swapped whole on each refold (no
+  // partial-map window a walk could read).
+  let reads: Map<string, { readonly events: readonly PersonaKelEvent[]; readonly fold: PersonaKelFold }> = new Map();
 
   let boardHandle: DocHandle<LarDoc> | null = null;
   let onChange: (() => void) | null = null;
 
   const refold = (): void => {
-    chains = personaKelChainsFromBoard(boardHandle?.doc());
+    // Grouped per prefix and folded through the one reader exactly as `personaKelFoldsFromBoard` folds a board; the
+    // holder keeps the heap beside the fold so the doors meet what the reader set aside.
+    const byPrefix = new Map<string, PersonaKelEvent[]>();
+    for (const e of personaKelEventsFromBoard(boardHandle?.doc())) byPrefix.set(e.prefix, [...(byPrefix.get(e.prefix) ?? []), e]);
+    const next = new Map<string, { events: PersonaKelEvent[]; fold: PersonaKelFold }>();
+    for (const [prefix, heap] of byPrefix) {
+      const fold = foldPersonaContests([...heap].sort((a, b) => a.seq - b.seq));
+      // The verified lineage leads its own seats, so a door that reads the inception off `chain[0]` reads the one
+      // that verifies, never a junk copy the board holds beside it. The sort is stable, so that order holds.
+      const lineage = new Set(fold.kel);
+      const events = [...fold.kel, ...heap.filter((e) => !lineage.has(e))].sort((a, b) => a.seq - b.seq);
+      next.set(prefix, { events, fold });
+    }
+    reads = next;
   };
 
   const ready = (async (): Promise<void> => {
@@ -95,16 +116,18 @@ export function makePersonaKelRingHolder(opts: { repo: Repo; nexusPubkey: string
   return {
     ready,
     chainForPrefix(prefix: string): readonly PersonaKelEvent[] | null {
-      const chain = chains.get(prefix);
-      return chain && chain.length > 0 ? chain : null;
+      const events = reads.get(prefix)?.events;
+      return events && events.length > 0 ? events : null;
     },
     async headOpKeyForPrefix(prefix: string): Promise<string | null> {
-      const chain = chains.get(prefix);
-      if (!chain || chain.length === 0) return null;   // no chain on the local replica → no head (fail-closed)
-      // Verify structure AND every rotation quorum before returning a head — a gate trusts a head only when
-      // the whole lineage stands. Also bind the chain to the asked prefix (a mis-filed event never speaks for it).
-      if (chain[0]!.prefix !== prefix) return null;
-      return headOpKey(chain, { verifyQuorums: true });
+      const fold = reads.get(prefix)?.fold;
+      // No lineage on the local replica, or two verified events at one seat: no head (fail-closed). A fork leaves
+      // the head in doubt, and no reader settles it by order.
+      if (!fold || fold.kel.length === 0 || fold.fork) return null;
+      // Verify structure AND every rotation quorum before returning a head — a gate trusts a head only when the
+      // whole lineage stands. Also bind the lineage to the asked prefix (a mis-filed event never speaks for it).
+      if (fold.kel[0]!.prefix !== prefix) return null;
+      return headOpKey(fold.kel, { verifyQuorums: true });
     },
     refold,
     dispose(): void {
