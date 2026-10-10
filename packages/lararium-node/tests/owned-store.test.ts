@@ -225,6 +225,43 @@ describe("claimStore — one holder at every instant", () => {
     } finally { await claim.release(); }
   });
 
+  it("H1 RED→GREEN: a parked caller whose own deadline passed before the vessel served is dropped, named, and NEVER run", async () => {
+    const claim = await claimStore(dir, { holder: "vessel" });
+    try {
+      let ran = false;
+      const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20 });
+      // Outlast the caller's own 20ms deadline before the vessel ever opens its verb channel — exactly the
+      // SIGSTOP'd-boot shape the episkopos drove live: the caller has already given up by the time `handOver`
+      // finally runs.
+      await new Promise((r) => setTimeout(r, 80));
+      const drops: string[] = [];
+      claim.serve((sock) => { ran = true; sock.end(JSON.stringify({ status: "done" }) + "\n"); }, (why) => drops.push(why));
+      const line = JSON.parse(await asked) as { status: string; errorMessage: string };
+      expect(ran).toBe(false);                                     // the verb handler NEVER ran — no ghost write
+      expect(line.status).toBe("error");
+      expect(line.errorMessage).toMatch(/dropped a parked "nexus-kapae" invocation/);
+      expect(drops).toHaveLength(1);
+      expect(drops[0]).toMatch(/nexus-kapae/);
+    } finally { await claim.release(); }
+  });
+
+  it("CONTROL: a parked caller still inside its own deadline is served once handOver runs", async () => {
+    const claim = await claimStore(dir, { holder: "vessel" });
+    try {
+      let ran = false;
+      const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20_000 });
+      await new Promise((r) => setTimeout(r, 10));                 // well short of its 20s deadline
+      claim.serve((sock) => {
+        ran = true;
+        sock.setEncoding("utf8");
+        sock.on("data", (line: string) => { sock.end(JSON.stringify({ status: "done", heard: line.trim() }) + "\n"); });
+      });
+      const line = JSON.parse(await asked) as { status: string };
+      expect(ran).toBe(true);
+      expect(line.status).toBe("done");
+    } finally { await claim.release(); }
+  });
+
   it("a vessel's claim refuses beside another vessel rather than waiting on it", async () => {
     const standing = await claimStore(dir, { holder: "vessel" });
     try {

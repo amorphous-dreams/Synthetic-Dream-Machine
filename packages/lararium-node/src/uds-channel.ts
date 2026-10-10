@@ -166,7 +166,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         (err)     => fail(err instanceof Error ? err.message : String(err)),
       );
     });
-  });
+  }, (why) => log(why));
   log(`uds verb-channel on ${claim.socketPath} (perms 0600)`);
 
   return {

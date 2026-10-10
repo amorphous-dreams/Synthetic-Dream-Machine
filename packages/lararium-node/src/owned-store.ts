@@ -71,9 +71,11 @@ export interface StoreClaim {
   readonly holder: StoreHolder;
   /**
    * Answer every caller that reaches the name from here on (the vessel's verb channel takes its claim over). A
-   * vessel's claim holds each caller that arrived before, and hands it over here with its invocation unread.
+   * vessel's claim holds each caller that arrived before, and hands it over here with its invocation unread —
+   * EXCEPT a parked caller whose own deadline has already passed, which is refused by name instead of replayed;
+   * `onDrop`, when given, hears that refusal's message once per dropped caller.
    */
-  readonly serve: (onConnection: (sock: Socket) => void) => void;
+  readonly serve: (onConnection: (sock: Socket) => void, onDrop?: (why: string) => void) => void;
   /** Answer every caller from here on with a refusal naming `why` (a vessel that stops serving verbs). */
   readonly refuse: (why: string) => void;
   /** Free the name for the next holder: unlink it while it still names this holder, then close. */
@@ -203,7 +205,12 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => StoreHeld): P
     }
   }
   try {
-    if (sameInode(statOf(grave), seen)) unlinkIfPresent(path);
+    // BOTH NAMES, RIGHT BEFORE THE UNLINK. The grave's own inode proves THIS claimant still owns the reap; the
+    // RENDEZVOUS NAME's inode proves the corpse this reap targeted still stands there. Between this claimant's
+    // last look and this instant, a fresh holder could have bound `path` afresh (claiming a name a stale corpse
+    // just vacated) — checking the grave alone would then unlink that LIVE successor's name, never the corpse
+    // this reap was ever about.
+    if (sameInode(statOf(grave), seen) && sameInode(statOf(path), seen)) unlinkIfPresent(path);
   } finally { unlinkIfPresent(grave); }
 }
 
@@ -250,7 +257,20 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   };
   // A VESSEL THAT SERVES NO VERB YET HOLDS ITS CALLERS. A caller's invocation waits, unread past its first line, for
   // the verb channel that takes this claim over (`serve`); a claimant asking who holds hears at once.
-  const parked = new Set<Socket>();
+  //
+  // A PARKED CALLER CARRIES ITS OWN DEADLINE, and a dropped deadline is NEVER a quiet thing. The caller's first
+  // line already names how long IT waits (`timeoutMs`, the same number the local-connector's own flat timer
+  // races); a park that replays a line past that deadline would run a verb the caller's own process already gave
+  // up on and told its operator "failed" — a ghost write the operator has no way to know ran. So the park reads
+  // that budget off the same line (falling back to the connector's own default when it carries none) and
+  // `handOver` checks EVERY parked line against it before ever replaying one: past its deadline, the line is
+  // refused by name instead, whether or not the caller's socket itself ever signals it let go. (The socket's
+  // own `close` is read too, best-effort — `parked` drops a line the instant its close fires — but a close read
+  // while this socket stays `pause()`d can lag well behind the caller's own exit, so the deadline is the one
+  // check that never depends on that signal arriving in time.)
+  const DEFAULT_PARK_DEADLINE_MS = 30_000;
+  interface ParkedLine { readonly verb: string; readonly deadline: number }
+  const parked = new Map<Socket, ParkedLine>();
   const park = (sock: Socket): void => {
     let buf = Buffer.alloc(0);
     const onData = (chunk: Buffer): void => {
@@ -259,11 +279,12 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
       if (nl === -1) return;
       sock.off("data", onData);
       sock.pause();
-      let probe = false;
-      try { probe = (JSON.parse(buf.subarray(0, nl).toString("utf8")) as { holder?: unknown }).holder === "?"; } catch { /* a verb line */ }
-      if (probe) { try { sock.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir}`)); } catch { /* gone */ } return; }
+      let parsed: { holder?: unknown; verb?: unknown; timeoutMs?: unknown } = {};
+      try { parsed = JSON.parse(buf.subarray(0, nl).toString("utf8")) as typeof parsed; } catch { /* a non-JSON line reads as a verb line with no budget named */ }
+      if (parsed.holder === "?") { try { sock.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir}`)); } catch { /* gone */ } return; }
+      const askedMs = typeof parsed.timeoutMs === "number" && parsed.timeoutMs > 0 ? parsed.timeoutMs : DEFAULT_PARK_DEADLINE_MS;
       sock.unshift(buf);
-      parked.add(sock);
+      parked.set(sock, { verb: typeof parsed.verb === "string" ? parsed.verb : "?", deadline: Date.now() + askedMs });
       sock.on("close", () => parked.delete(sock));
     };
     sock.on("data", onData);
@@ -271,9 +292,19 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   let onConnection: (sock: Socket) => void = holder === "direct"
     ? answerHeld(`the store at ${storageDir} stays held by a direct lares command (pid ${process.pid}) for one act — run again when it ends`)
     : park;
-  const handOver = (next: (sock: Socket) => void): void => {
+  const handOver = (next: (sock: Socket) => void, onDrop?: (why: string) => void): void => {
     onConnection = next;
-    for (const sock of parked) { parked.delete(sock); next(sock); sock.resume(); }
+    for (const [sock, line] of parked) {
+      parked.delete(sock);
+      if (Date.now() >= line.deadline) {
+        const why = `the store at ${storageDir} dropped a parked "${line.verb}" invocation — its own deadline passed while this vessel still had no verb channel open, so the caller gave up before it could ever run; refusing it now rather than running it unannounced`;
+        try { sock.end(heldBy(why)); } catch { /* the caller is already gone — exactly the case this guards */ }
+        onDrop?.(why);
+        continue;
+      }
+      next(sock);
+      sock.resume();
+    }
   };
   const open = new Set<Socket>();
   const server = createServer((sock) => {
