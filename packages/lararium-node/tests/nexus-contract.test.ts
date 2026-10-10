@@ -20,12 +20,13 @@
  */
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, signerClass, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc } from "@lararium/mesh";
@@ -45,7 +46,7 @@ async function heldHands(keys: readonly string[]): Promise<{ signer: string; sig
   return hands;
 }
 import { larDataDir } from "../src/vessel-paths.js";
-import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
+import { writeNexusDoc, readNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   hasContractedInto, runNexusRollAnchor } from "../src/commands/nexus-contract.js";
 import { rollAnchorsFromBoard, rollAnchorCid, isRollAnchor, signRollAnchor, writeRollAnchor } from "@lararium/mesh";
@@ -115,7 +116,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const joinerNym = await leafOf(3);   // the persona's per-Nexus leaf, never its PersonaGroup root
     expect(joinerNym).not.toBe(roots[3]!.verifyingKey.toLowerCase());
 
-    const res = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const res = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     expect(res.nym).toBe(joinerNym);
     expect(res.parents).toEqual([]);
     expect(res.evidenceCid).toMatch(/^[0-9a-f]{64}$/);
@@ -123,7 +124,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     expect(res.contractIn).toBe("self");       // multitude-of-one: the vessel held the joiner's seed
     expect(res.memberHeld).toBe(true);
 
-    const list = await runNexusMembersList({ sealHome: sealHome() });
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
     expect(list.members).toContain(joinerNym);
     expect(list.entries).toHaveLength(1);
     expect(list.entries[0]).toMatchObject({ nym: joinerNym, action: "admit", parents: [], signers: 2, contractIn: true });
@@ -137,7 +138,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     // The joiner mints its 'accepts carriage' token (index 3 on this same vessel stands in for the joiner's vessel).
     const token = await runNexusAcceptCarriage({ handleIndex: 3, sealHome: sealHome() });
     expect(token.nym).toBe(await leafOf(3));
-    const res = await runNexusContract({ action: "admit", nym: token.nym, contractSig: token.contractSig, sealHome: sealHome() });
+    const res = await direct(runNexusContract)({ action: "admit", nym: token.nym, contractSig: token.contractSig, sealHome: sealHome() });
     expect(res.contractIn).toBe("supplied");
     expect(res.memberHeld).toBe(true);
   });
@@ -149,17 +150,17 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     // The place signs its own carrier seal with its VESSEL key (this vessel stands in for the place).
     const seal  = await runNexusCarryFor({ sealHome: sealHome() });
-    const carry = await runNexusContract({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, sealHome: sealHome() });
+    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, sealHome: sealHome() });
     expect(carry.carrierHeld).toBe(true);
     expect(carry.memberHeld).toBe(false);
 
     // An admit after the carry, on the SAME board: the operator stands a member, never a carrier, and the
     // place stays out of the member set however the board is folded.
     const joinerNym = await leafOf(3);
-    const admit = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const admit = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     expect(admit.memberHeld).toBe(true);
     expect(admit.carrierHeld).toBe(false);
-    expect((await runNexusMembersList({ sealHome: sealHome() })).members).not.toContain(seal.nym);
+    expect((await direct(runNexusMembersList)({ sealHome: sealHome() })).members).not.toContain(seal.nym);
   });
 
   it("REVOKE as a causal descendant drops membership", async () => {
@@ -168,13 +169,13 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
 
-    await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
-    const rev = await runNexusContract({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
+    await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const rev = await direct(runNexusContract)({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
     expect(rev.parents).toHaveLength(1);
     expect(rev.evidenceCid).toMatch(/^[0-9a-f]{64}$/);
     expect(rev.memberHeld).toBe(false);
 
-    const list = await runNexusMembersList({ sealHome: sealHome() });
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
     expect(list.members).not.toContain(joinerNym);
   });
 
@@ -184,7 +185,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
 
-    const first = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const first = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const aid = realmIdOfCharter(readNexusDoc(sealHome()));
     expect(first.bundle).not.toBeNull();
     expect(first.bundle!.aid).toBe(aid);
@@ -195,9 +196,9 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     expect(JSON.stringify(first.bundle)).not.toMatch(/seed|signingKey|secret/i);
 
     // A revoke emits none; the re-admit after it carries the admit and the revoke as its lineage.
-    const rev = await runNexusContract({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
+    const rev = await direct(runNexusContract)({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
     expect(rev.bundle).toBeNull();
-    const again = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const again = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     expect(again.bundle!.lineage.map(carriageEntryActCid).sort()).toEqual([first.evidenceCid, rev.evidenceCid].sort());
 
     // The joinee's door (here the same vessel, which holds leaf 3): the take verifies offline and keeps it.
@@ -212,7 +213,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
 
-    const first = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const first = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const ownVesselKey = await loadVesselVerifyingKey();
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     try {
@@ -231,7 +232,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
       await repo.flush().catch(() => { /* best effort */ });
     }
 
-    const second = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const second = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     expect(second.parents).toEqual([first.evidenceCid]);
     expect(second.memberHeld).toBe(true);
   });
@@ -244,18 +245,18 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     seatCharter([held.verifyingKey, s1, s2]);
     const joiner = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(9)));
 
-    const refused = runNexusContract({ action: "admit", nym: joiner, contractSig: "00".repeat(64), sealHome: sealHome() });
+    const refused = direct(runNexusContract)({ action: "admit", nym: joiner, contractSig: "00".repeat(64), sealHome: sealHome() });
     await expect(refused).rejects.toBeInstanceOf(NexusContractError);
     // The shared selector refuses in THIS door's words: it names the membership act, never the antigen one.
     await expect(refused).rejects.toThrow(/holds 1 seated persona-root\(s\), but a valid membership act carries 2/);
-    const list = await runNexusMembersList({ sealHome: sealHome() });
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
     expect(list.entries).toHaveLength(0);
   });
 
   it("UNSEATED charter REFUSES", async () => {
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
-    await expect(runNexusContract({ action: "admit", nym: "ab".repeat(32), contractSig: "00".repeat(64), sealHome: sealHome() }))
+    await expect(direct(runNexusContract)({ action: "admit", nym: "ab".repeat(32), contractSig: "00".repeat(64), sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);
   });
 
@@ -264,7 +265,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
     const foreign = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(42)));   // not a held persona
-    await expect(runNexusContract({ action: "admit", nym: foreign, sealHome: sealHome() }))
+    await expect(direct(runNexusContract)({ action: "admit", nym: foreign, sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);   // no contract-in obtainable → refuse
   });
 
@@ -275,8 +276,8 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     expect(sealHome()).not.toBe(larSealHome());   // the passed home is NOT the default — the split's precondition
     const joinerNym = await leafOf(3);
 
-    const res  = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
-    const list = await runNexusMembersList({ sealHome: sealHome() });
+    const res  = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
     expect(list.island).toBe(realmIdOfCharter(readNexusDoc(sealHome())));   // the charter's island, not the vessel key
     expect(res.boardUrl).toBe(carriageDocUrl(list.island));
     expect(list.members).toContain(joinerNym);
@@ -286,7 +287,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
-    await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     const ownKey = (await loadVesselVerifyingKey()).toLowerCase();
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     try {
@@ -301,9 +302,9 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
-    await expect(runNexusContract({ action: "admit", nym: roots[3]!.verifyingKey, sealHome: sealHome() }))
+    await expect(direct(runNexusContract)({ action: "admit", nym: roots[3]!.verifyingKey, sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);
-    expect((await runNexusMembersList({ sealHome: sealHome() })).entries).toHaveLength(0);
+    expect((await direct(runNexusMembersList)({ sealHome: sealHome() })).entries).toHaveLength(0);
   });
 });
 
@@ -359,9 +360,9 @@ describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup 
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const leaf = await leafOf(3);
-    const res = await runNexusContract({ action: "admit", nym: leaf, sealHome: sealHome() });
+    const res = await direct(runNexusContract)({ action: "admit", nym: leaf, sealHome: sealHome() });
     expect(res.contractIn).toBe("self");
-    const list = await runNexusMembersList({ sealHome: sealHome() });
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
     expect(list.members).toContain(leaf);
     expect(list.members).not.toContain(roots[3]!.verifyingKey.toLowerCase());
   });
@@ -388,7 +389,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const kahuNym   = roots[0]!.verifyingKey.toLowerCase();
     const joinerNym = await leafOf(3);
-    await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
 
     const { holder, repo, nexusPubkey } = await standHolder();
     try {
@@ -589,10 +590,10 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const { opened, roll } = await foundAndArm();
     const joinerNym = await leafOf(3);
     const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
-    const admitted = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const admitted = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
 
     const closing = foundingRoster(readNexusDoc(sealHome()));
-    const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    const landed = await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });
     expect(landed.parents).toContain(admitted.evidenceCid);
     roll();
     expect(realmIdOfCharter(readNexusDoc(sealHome()))).toBe(aid);   // the AID survives the roll
@@ -646,7 +647,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const { opened, roll } = await foundAndArm();
     const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
     const recogniser = await leafOf(3);
-    await runNexusContract({ action: "admit", nym: recogniser, sealHome: sealHome() });
+    await direct(runNexusContract)({ action: "admit", nym: recogniser, sealHome: sealHome() });
     const challenge = mintRaiseChallenge({ vesselId: "ab".repeat(32), nexus: aid, epoch: 1, nonce: "56".repeat(16) });
     const challengeText = JSON.stringify(challenge);
 
@@ -655,7 +656,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     expect(before.presentedAdmit.lineage.filter(isRollAnchor)).toEqual([]);
 
     const closing = foundingRoster(readNexusDoc(sealHome()));
-    await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });
     roll();
 
     // After the roll the admit roots on an ancestor epoch: the grant carries the anchor that carries it.
@@ -695,9 +696,9 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
   it("★ raise-sign surfaces two anchors opening one epoch beside the grant, and still signs ★", async () => {
     const { opened, roll } = await foundAndArm();
     const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
-    await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     const closing = foundingRoster(readNexusDoc(sealHome()));
-    const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    const landed = await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });
     const orphan = await landOrphanAnchor(closing, opened);
     roll();
     const challengeText = JSON.stringify(mintRaiseChallenge({ vesselId: "ab".repeat(32), nexus: aid, epoch: 1, nonce: "57".repeat(16) }));
@@ -711,12 +712,12 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
   it("★ the contract signer at the head hears a fork that stands off its own walk ★", async () => {
     const { opened, roll } = await foundAndArm();
     const closing = foundingRoster(readNexusDoc(sealHome()));
-    const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing, opened });
+    const landed = await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });
     const orphan = await landOrphanAnchor(closing, opened);
     roll();
     // The admit this act signs lands at the head epoch, so its own presentation steps back through no anchor —
     // and the presenter still names the roll that landed twice below it, beside a bundle it never withholds.
-    const res = await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    const res = await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     expect(res.bundle).not.toBeNull();
     expect(res.bundle!.lineage.filter(isRollAnchor)).toEqual([]);
     expect(res.findings).toEqual([{
@@ -726,18 +727,101 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
 
   it("CONTROL: a roll that landed once leaves the contract signer nothing to hear", async () => {
     const { opened, roll } = await foundAndArm();
-    await runNexusRollAnchor({ sealHome: sealHome(), closing: foundingRoster(readNexusDoc(sealHome())), opened });
+    await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing: foundingRoster(readNexusDoc(sealHome())), opened });
     roll();
-    const res = await runNexusContract({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
+    const res = await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     expect(res.bundle).not.toBeNull();
     expect(res.findings).toEqual([]);
   });
 
-  it("CONTROL: a roll whose NEW quorum this vessel does not hold REFUSES and lands no anchor", async () => {
+  it("CONTROL: a roll whose NEW quorum this vessel does not hold REFUSES and lands no anchor, and the charter bytes stay untouched", async () => {
     const { opened } = await foundAndArm();
     const closing = foundingRoster(readNexusDoc(sealHome()));
     const foreign = { ...opened, keys: ["ab".repeat(32), "cd".repeat(32), "ef".repeat(32)] };
-    await expect(runNexusRollAnchor({ sealHome: sealHome(), closing, opened: foreign })).rejects.toBeInstanceOf(NexusContractError);
+    const before = readFileSync(nexusCharterDocPath(sealHome()));
+    await expect(direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened: foreign })).rejects.toBeInstanceOf(NexusContractError);
     expect((await boardNow()).anchors).toEqual([]);
+    // THE ROTATE-ANCHOR REFUSAL LEAVES CHARTER BYTES UNCHANGED — the rotate calls the anchor BEFORE it writes
+    // the new head, precisely so a roll whose anchor cannot land writes nothing at all, not even the charter
+    // doc itself (a separate file from the carriage board the anchor rides).
+    expect(readFileSync(nexusCharterDocPath(sealHome()))).toEqual(before);
+  });
+});
+
+describe("the door row — a held Repo, never a second opener", () => {
+  /** Stand ONE live holder, a MessageChannel peer already syncing the board, and a 2-of-3 seated charter the
+   *  held persona-roots satisfy. Mirrors `store-door-live.test.ts`'s WRITERS table for this file's own door. */
+  async function standLiveAndPeer(): Promise<{
+    live: Repo; peer: Repo; boardUrl: string; close: () => Promise<void>;
+  }> {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    const ownVesselKey = await loadVesselVerifyingKey();
+    const boardUrl = carriageDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: sealHome() }));
+    const { port1, port2 } = new MessageChannel();
+    const live = new Repo({
+      storage: new NodeFSStorageAdapter(larDataDir()),
+      network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true,
+    });
+    const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
+    // The running vessel's replica and its peer's ALREADY hold the board before the write — a running vessel
+    // never meets a cold board.
+    await materializeSharedLarDoc(live, boardUrl, "board:carriage-contracts");
+    await materializeSharedLarDoc(peer, boardUrl, "board:carriage-contracts");
+    return {
+      live, peer, boardUrl,
+      close: async () => { await peer.shutdown().catch(() => {}); await live.shutdown().catch(() => {}); port1.close(); port2.close(); },
+    };
+  }
+
+  /** Wait until `read` finds what it looks for on the peer's own replica of `url` — no refresh, no restart. */
+  async function peerSees(peer: Repo, url: string, read: (doc: unknown) => boolean): Promise<boolean> {
+    const handle = await peer.find(url as Parameters<Repo["find"]>[0]);
+    for (let i = 0; i < 100; i++) {
+      if (read(handle.doc())) return true;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return false;
+  }
+
+  it("RED: runNexusContract (admit) over the held Repo reaches its live peer with no refresh", async () => {
+    const { live, peer, boardUrl, close } = await standLiveAndPeer();
+    try {
+      const joinerNym = await leafOf(3);
+      const res = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome(), repo: live });
+      expect(res.boardUrl).toBe(boardUrl);
+      // NO second Repo opened, no flush-then-reopen cycle — the live holder's OWN write, seen by its OWN peer.
+      expect(await peerSees(peer, boardUrl, (doc) => carriageEntriesFromBoard(doc as Parameters<typeof carriageEntriesFromBoard>[0]).some((e) => e.nym === joinerNym)),
+        "the live peer never saw the admit").toBe(true);
+      // MEMBERS-LIST READS HELD STATE: the SAME held repo, no new opener, reads the write at once.
+      const list = await runNexusMembersList({ sealHome: sealHome(), repo: live });
+      expect(list.members).toContain(joinerNym);
+    } finally { await close(); }
+  });
+
+  it("RED: runNexusRollAnchor over the held Repo reaches its live peer with no refresh", async () => {
+    const { live, peer, boardUrl, close } = await standLiveAndPeer();
+    try {
+      const joinerNym = await leafOf(3);
+      await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome(), repo: live });
+      const roster = foundingRoster(readNexusDoc(sealHome()));
+      const landed = await runNexusRollAnchor({ sealHome: sealHome(), closing: roster, opened: roster, repo: live });
+      expect(await peerSees(peer, boardUrl, (doc) => rollAnchorsFromBoard(doc as Parameters<typeof rollAnchorsFromBoard>[0]).some((a) => rollAnchorCid(a) === landed.anchorCid)),
+        "the live peer never saw the roll anchor").toBe(true);
+    } finally { await close(); }
+  });
+
+  it("CONTROL: with no vessel standing, the direct holder (ownedStore) writes the identical act to disk", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    const joinerNym = await leafOf(3);
+    // `direct()` holds the store for exactly this act (`ownedStore`), the same primitive `storeDoorDirect`
+    // runs with no vessel standing — no live peer, no second opener, one direct holder.
+    const res = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    expect(res.memberHeld).toBe(true);
+    const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
+    expect(list.members).toContain(joinerNym);
   });
 });

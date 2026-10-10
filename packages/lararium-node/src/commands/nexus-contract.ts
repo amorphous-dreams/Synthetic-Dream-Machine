@@ -35,8 +35,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
@@ -46,7 +45,6 @@ import {
   type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
 } from "@lararium/mesh";
-import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
 
 import {
@@ -76,7 +74,8 @@ export interface NexusContractOptions {
   readonly carrierSig?:  string;
   /** The charter DOC's authority home (the CLI supplies `larSealHome()`). */
   readonly sealHome:    string;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:        Repo;
 }
 
 export interface NexusContractResult {
@@ -218,7 +217,6 @@ export async function runNexusCarryFor(opts: {
  * it never derives authority from a scalar counter.
  */
 export async function runNexusContract(opts: NexusContractOptions): Promise<NexusContractResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const nym        = opts.nym.trim().toLowerCase();
   if (!NYM_RE.test(nym)) {
     throw new NexusContractError(`"${opts.nym}" is not a valid operator nym — expected a 64-hex ed25519 verifying key.`);
@@ -239,7 +237,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey, sealHome: opts.sealHome });
   const boardUrl    = carriageDocUrl(boardIsland);
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
 
@@ -336,7 +334,8 @@ export async function runNexusRollAnchor(opts: {
   readonly closing:     KahuQuorumSeats;
   /** The roster the roll seats, rooted on the new head's epoch cid. */
   readonly opened:      KahuQuorumSeats;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:        Repo;
 }): Promise<NexusRollAnchorResult> {
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new NexusContractError(
     `roll anchor REFUSED (fail-closed): the vessel holds ${held} persona-root(s) the new roster seats, but the anchor ` +
@@ -348,7 +347,7 @@ export async function runNexusRollAnchor(opts: {
   const ownVesselKey = await loadVesselVerifyingKey().catch(() => "");
   const boardIsland  = nodeNexusIsland({ ownVesselKey, sealHome: opts.sealHome });
   const boardUrl     = carriageDocUrl(boardIsland);
-  const repo         = new Repo({ storage: new NodeFSStorageAdapter(opts.storageDir ?? larDataDir()) });
+  const repo         = opts.repo;
   try {
     const handle  = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
     const parents = await rollAnchorParents(
@@ -453,8 +452,11 @@ export interface NexusMembersListResult {
  * charter, exactly as `runNexusContract` resolves it over the seal home, so a write and its read never land
  * on two addresses.
  */
-export async function runNexusMembersList(opts: { sealHome: string; aid?: string; storageDir?: string }): Promise<NexusMembersListResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
+export async function runNexusMembersList(opts: {
+  sealHome: string; aid?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  repo: Repo;
+}): Promise<NexusMembersListResult> {
   let home = opts.sealHome;
   if (opts.aid !== undefined) {
     const held = charterHomeFor(opts.sealHome, opts.aid);
@@ -465,7 +467,7 @@ export async function runNexusMembersList(opts: { sealHome: string; aid?: string
   const roster      = foundingRoster(doc);
   const ownVesselKey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey, sealHome: home });
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   try {
     const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(boardIsland), "board:carriage-contracts");
     const entries = carriageEntriesFromBoard(handle.doc());

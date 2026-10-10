@@ -56,6 +56,7 @@ import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusCon
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc, signLeafProof } from "@lararium/mesh";
+import { direct } from "./direct-store.js";
 
 let rootA: string;
 let rootB: string;
@@ -216,7 +217,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     expect(tokenF.sealEpochCid).toBe(A.epoch);  // bound to the OTHER hearth's charter epoch (the wax-stamp)
 
     const admitF = await asRoot(rootA, () =>
-      runNexusContract({ action: "admit", nym: freyjaAtA, contractSig: tokenF.contractSig, sealHome: A.bags }));
+      direct(runNexusContract)({ action: "admit", nym: freyjaAtA, contractSig: tokenF.contractSig, sealHome: A.bags }));
     expect(admitF.contractIn).toBe("supplied");            // the joiner's out-of-band consent, not a self-sign
     expect(admitF.sealEpochCid).toBe(A.epoch);          // the entry binds A's epoch cid (provenance)
     expect(admitF.signers).toHaveLength(2);                // exactly the 2-of-3 founding-kahu quorum
@@ -231,7 +232,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     expect(tokenJ.sealEpochCid).toBe(B.epoch);
 
     const admitJ = await asRoot(rootB, () =>
-      runNexusContract({ action: "admit", nym: joshAtB, contractSig: tokenJ.contractSig, sealHome: B.bags }));
+      direct(runNexusContract)({ action: "admit", nym: joshAtB, contractSig: tokenJ.contractSig, sealHome: B.bags }));
     expect(admitJ.contractIn).toBe("supplied");
     expect(admitJ.memberHeld).toBe(true);
 
@@ -253,7 +254,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
         expect(holder.membership.holdsCarriagePeer("peer-stranger")).toBe(false);
       } finally { holder.dispose(); }
 
-      const list = await runNexusMembersList({ sealHome: A.bags });
+      const list = await direct(runNexusMembersList)({ sealHome: A.bags });
       expect(list.members).toContain(freyjaAtA);
       expect(list.members).not.toContain(strangerNym);
 
@@ -268,7 +269,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
         expect(holder.membership.holdsCarriagePeer("peer-a")).toBe(true);            // B holds A's presented admit
       } finally { holder.dispose(); }
 
-      const list = await runNexusMembersList({ sealHome: B.bags });
+      const list = await direct(runNexusMembersList)({ sealHome: B.bags });
       expect(list.members).toContain(joshAtB);
       expect(await carriedSet(B.bags)).toEqual(new Set([A.aid, B.aid]));
     });
@@ -281,9 +282,9 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     // A nym A neither holds nor received a carriage token for — the carriage-contracts board is NOT the antigen.
     const unconsented = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(200)));
     await asRoot(rootA, async () => {
-      await expect(runNexusContract({ action: "admit", nym: unconsented, sealHome: A.bags }))
+      await expect(direct(runNexusContract)({ action: "admit", nym: unconsented, sealHome: A.bags }))
         .rejects.toBeInstanceOf(NexusContractError);   // no contract-in obtainable → fail-closed, no board write
-      const list = await runNexusMembersList({ sealHome: A.bags });
+      const list = await direct(runNexusMembersList)({ sealHome: A.bags });
       expect(list.entries).toHaveLength(0);         // nothing written
     });
   });
