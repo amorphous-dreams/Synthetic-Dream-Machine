@@ -19,6 +19,7 @@
 	path = TiddlyWiki5
 	url = git@github.com:amorphous-dreams/TiddlyWiki5.git
 	branch = develop
+	update = merge
 [submodule "VSCode-TW5-Syntax"]
 	path = VSCode-TW5-Syntax
 	url = git@github.com:joshuafontany/VSCode-TW5-Syntax.git
