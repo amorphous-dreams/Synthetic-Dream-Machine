@@ -531,21 +531,25 @@ async function main(): Promise<void> {
   // while an island writes DESYNCS the actively-written doc — the recurring
   // "working never arrived over syncPort" gap. The reliable path:
   //   1. stop new inbound work (uds + http + read-face),
-  //   2. flush the MAIN replica FIRST — the guaranteed durable floor for every doc
-  //      that has already synced (this completes before any force-exit),
+  //   2. flush the MAIN replica — the durable floor for every record that has reached it,
   //   3. tear down the wiki islands (disposeAll → each island flushes its OWN
   //      partition, incl. working, before it acks),
   //   4. tear down the daemon island gracefully (it flushes its docs + capture WAL),
-  //   5. flush MAIN again to capture anything that synced during teardown.
-  // A hard budget guards the whole sequence: if a worker jams in keyhive WASM
-  // and never acks, the force-timer fires — but ONLY after step 2 has already made
-  // the synced state durable (flush-then-force, never force-before-flush).
+  //   5. flush MAIN again to land anything that synced during teardown.
   //
-  // The budget MUST beat the incumbent-stopper's grace window: `lares vessel stand --restart`
-  // (port-control.stopIncumbent) sends SIGTERM, polls for ~8s, then SIGKILLs. So
-  // the whole graceful sequence has to FLUSH AND EXIT under 8s, else the SIGKILL it
-  // exists to avoid lands anyway. Default 6s leaves margin; the per-island
-  // handshakes resolve in <1s when responsive, and the force-timer caps a jam.
+  // THE FORCE NEVER CUTS A MAIN FLUSH. The budget arms only once step 2 has landed, and it bounds steps 3–4
+  // alone: when it fires, the teardown is abandoned, step 5 still runs, and only then does the process exit.
+  // So every record the main replica held lands whole however long either flush takes; what a force cuts is an
+  // island's own in-flight work, which re-derives from the main replica at the next stand.
+  //
+  // THE BUDGET'S BOUND, MEASURED. A stand that just LOADed a corpus keeps its wiki island busy with the load's
+  // after-waves for tens of seconds; that island cannot read its teardown before the waves drain, and answers
+  // nothing for the pool's 10 s handshake window. So a stop right after a LOAD is bounded by the budget, not by
+  // the islands (measured on the whole lares corpus: main flush ~4 s, islands silent to 10 s; the same stop after
+  // the waves drained: 271 ms whole). A whole stop therefore runs the main flush plus at most the budget plus the
+  // re-flush. A supervisor whose grace runs out first (`port-control.stopIncumbent` escalates to SIGKILL after ~8 s)
+  // cuts whatever step stands: the writes tear nothing (every save lands by rename, and a stranded temp never reads
+  // as a chunk), and the records still in memory are lost as in any crash.
   const SHUTDOWN_BUDGET_MS  = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
   const DAEMON_SHUTDOWN_MS  = Math.max(1_000, Math.floor(SHUTDOWN_BUDGET_MS / 2));
   let shuttingDown = false;
@@ -553,11 +557,15 @@ async function main(): Promise<void> {
     if (shuttingDown) return;
     shuttingDown = true;
     console.log(`[lararium] ${sig} — graceful shutdown (durable flush, budget ${SHUTDOWN_BUDGET_MS}ms)`);
-    const force = setTimeout(() => {
-      console.error("[lararium] shutdown budget exceeded — forcing exit (main replica already flushed)");
-      process.exit(0);
-    }, SHUTDOWN_BUDGET_MS);
-    force.unref?.();
+    // Each step's span rides the log (monotonic, a measurement only), so an overrun names the step that spent it.
+    const spans: string[] = [];
+    let cutting = "";
+    const step = async (name: string, run: () => Promise<unknown>): Promise<void> => {
+      const t0 = performance.now();
+      cutting = name;
+      try { await run(); } finally { spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
+    };
+    let force: ReturnType<typeof setTimeout> | undefined;
     try {
       readinessFace.dispose();
       pronaos?.dispose();
@@ -565,11 +573,18 @@ async function main(): Promise<void> {
       dispatcher.dispose();
       uds.close();
       httpServer.close();
-      await result.repo.flush();                       // floor: durable NOW, before any worker handshake
-      await result.pool.disposeAll();                  // wiki islands flush their partitions + ack
-      await result.daemon.shutdown(DAEMON_SHUTDOWN_MS); // daemon island flushes docs + capture, then acks
-      await result.repo.flush();                       // catch what synced during teardown
-      console.log("[lararium] shutdown complete — state flushed durably");
+      await step("main-flush", () => result.repo.flush());                          // the floor, never cut by the force
+      const forced = new Promise<"forced">((resolve) => { force = setTimeout(() => resolve("forced"), SHUTDOWN_BUDGET_MS); });
+      const teardown = (async () => {
+        await step("islands", () => result.pool.disposeAll());                      // wiki islands flush their partitions + ack
+        await step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS));     // daemon island flushes docs + capture, then acks
+        return "done" as const;
+      })();
+      if (await Promise.race([teardown, forced]) === "forced") {
+        console.error(`[lararium] shutdown budget exceeded — the teardown is cut during ${cutting}; the main replica flushes before exit (done: ${spans.join(" · ")})`);
+      }
+      await step("main-reflush", () => result.repo.flush());                        // land what synced during teardown
+      console.log(`[lararium] shutdown complete — the main replica flushed durably (${spans.join(" · ")})`);
     } catch (e) {
       console.error("[lararium] shutdown flush error:", e instanceof Error ? e.message : String(e));
     } finally {
