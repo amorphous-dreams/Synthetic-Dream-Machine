@@ -1,0 +1,20 @@
+{
+  "kind": "lar:///ha.ka.ba/lares/domain/plugin-offering/v1",
+  "offeror": "b0e1a48b9b6c6313898b5249927fbb80734859712fadfac017ccadb8f39daf0a",
+  "pluginsCid": "bafkreifgvxu72hroqaitsi53dtvz6t4skomopxfq6jdoirimtyay6qpb3a",
+  "blobs": [
+    {
+      "id": "$:/plugins/tiddlywiki/highlight",
+      "version": "develop@23859c84a",
+      "sha256": "628e4cb77b432705e2f1efedbf0563b5e524563fe47a9c34dade19965d0902df",
+      "provenance": {
+        "source": "https://github.com/TiddlyWiki/TiddlyWiki5",
+        "commit": "23859c84a5ac295225eb505425cd4636c693f37a",
+        "path": "plugins/tiddlywiki/highlight",
+        "licence": "BSD-3-Clause",
+        "author": "Jeremy Ruston and contributors"
+      }
+    }
+  ],
+  "sig": "b952646217d98267cde810d7254db688e58b5107f1d2ecbfe47ca783731b840dc55e6abc5913466b2360267e64db86167cb8b698c8ba44270bc20c93db096c02"
+}
