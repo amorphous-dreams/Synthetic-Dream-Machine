@@ -194,9 +194,14 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   let runId;
   const deadline = Date.now() + findBudgetMs;
   while (Date.now() < deadline) {
+    // NEVER `--workflow e2e-shards.yml` here: GitHub's API only resolves a workflow BY FILENAME
+    // once that file exists on the repo's default branch, and this lane's whole point is to prove
+    // a workflow file that lives only on a throwaway `ci/<lane>` branch. `--branch` + `--event
+    // push` finds the same run without that registration — the headSha match right below is what
+    // keeps it the ONE run this push triggered, never a stale run of a reused lane name.
     const listed = run(
       "gh",
-      ["run", "list", "--workflow", "e2e-shards.yml", "--branch", branch, "--event", "push", "--json", "databaseId,headSha", "--limit", "10"],
+      ["run", "list", "--branch", branch, "--event", "push", "--json", "databaseId,headSha", "--limit", "10"],
       { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] },
     );
     const runs = JSON.parse(listed);
