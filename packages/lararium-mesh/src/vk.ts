@@ -27,7 +27,7 @@ import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { defaultCryptoProvider, hex, type RandomProvider } from "./crypto.js";
-import { VK_CHECK_INFO } from "./custody-domain-names.js";
+import { VK_CHECK_INFO } from "./domains.js";
 import {
   readVkCarrier, splitVkFrame, joinVkFrame, VK_SEAL_MAGIC, VK_SEAL_NONCE_LENGTH, type VkCarrierReading,
 } from "./vk-envelope.js";

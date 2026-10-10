@@ -404,3 +404,14 @@ export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree } from "./
 export type { SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintVk } from "./vk.js";
 export type { VesselKey, VkOpening } from "./vk.js";
+// The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.
+export { VK_SEAL_MAGIC, VK_SEAL_NONCE_LENGTH, VK_SEAL_TAG_LENGTH, VK_SEAL_MIN_LENGTH, readVkCarrier, splitVkFrame, joinVkFrame } from "./vk-envelope.js";
+export type { VkCarrierReading } from "./vk-envelope.js";
+// SLIP-39: the paper pin's encoder, over the house's own GF(256) field ops — see `slip39`.
+export { Slip39Error, decodeShare, encodeShare, generateMnemonics, combineMnemonics, readBackMismatch } from "./slip39.js";
+export type { Slip39Share, ReadBackMismatch } from "./slip39.js";
+// The vessel's own key-event log: the inception that commits the next floor key's digest — see `vessel-kel`.
+export {
+  inceptVesselKel, mintVesselKelInception, verifyVesselKelInception, nextKeyCommitted, decodeVesselKelInception,
+} from "./vessel-kel.js";
+export type { VesselKelInception } from "./vessel-kel.js";

@@ -41,7 +41,7 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { scrypt } from "@noble/hashes/scrypt.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { defaultCryptoProvider, hex, type RandomProvider } from "./crypto.js";
-import { VK_SLOT_WRAP_INFO } from "./custody-domain-names.js";
+import { VK_SLOT_WRAP_INFO } from "./domains.js";
 import { splitSecret, combineSecret, type ShareBytes } from "./shamir-gf256.js";
 import { generateMnemonics, combineMnemonics, readBackMismatch, Slip39Error } from "./slip39.js";
 import { adoptUnwrappedVk, vkAnswersCheck, vkCheckOf, VK_LENGTH, type VesselKey } from "./vk.js";

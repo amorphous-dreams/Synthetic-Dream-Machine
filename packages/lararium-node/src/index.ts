@@ -451,6 +451,7 @@ export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
 export {
   CUSTODY_CLASSES, carrierTable, carrierCensus, vesselCustodyHomes,
   vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers,
+  vkSlotsPath, vkSealedCarriers, rotateVesselVk,
 } from "./vault-carriers.js";
 export type {
   VaultCarrier, CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry,
@@ -461,9 +462,9 @@ export type { CustodyShape, CustodyShapeReading, OldShapeOffender, OldShapeReaso
 // The custody root: the hot carrier every sovereign derivation stands on, apart from the floor key — see `custody-root`.
 export {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, mintCustodyRoot, custodyRootFromBytes, isCustodyRoot, custodyRootPath,
-  custodyDerive, custodyVeil,
+  custodyDerive, custodyVeil, openCustodyRootCarrier, sealCustodyRoot,
 } from "./custody-root.js";
-export type { CustodyRoot } from "./custody-root.js";
+export type { CustodyRoot, OpenedCustodyRoot } from "./custody-root.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,

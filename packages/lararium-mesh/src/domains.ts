@@ -94,6 +94,16 @@ export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");
  *  as a crossing record, a roll anchor, or any carriage act. */
 export const SEAL_ROLL_DOMAIN = mint("seal-roll");
 
+// ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
+/** The vessel's own key-event log: the inception that commits the next floor key's digest. */
+export const VESSEL_KEL_DOMAIN = mint("vessel-kel");
+/** The HKDF `info` every keyslot wrap derives under: a pin's KEK wrapping its share of the slot key, and the
+ *  slot key wrapping the VK. */
+export const VK_SLOT_WRAP_INFO = mint("vk-slot-wrap");
+/** The HKDF `info` of the slot tree's VK check: the keyed digest a tree carries so every writer proves the VK
+ *  in hand against the standing tree before any byte moves. */
+export const VK_CHECK_INFO = mint("vk-check");
+
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 export const PERSONA_ENROLL_DOMAIN = frozen("persona-enroll");
 export const PERSONA_GRANT_DOMAIN = frozen("persona-grant");

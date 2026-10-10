@@ -17,7 +17,7 @@
 
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { canonicalJsonBytes, sha256HexBytesSync, hex, hexToBytes, defaultCryptoProvider, type RandomProvider } from "./crypto.js";
-import { VESSEL_KEL_DOMAIN } from "./custody-domain-names.js";
+import { VESSEL_KEL_DOMAIN } from "./domains.js";
 
 export interface VesselKelInception {
   readonly t:   "icp";

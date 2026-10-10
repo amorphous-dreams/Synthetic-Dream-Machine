@@ -10,8 +10,7 @@ import { describe, test, expect } from "vitest";
 import { readVkCarrier, VK_SEAL_MAGIC, VK_SEAL_MIN_LENGTH } from "../src/vk-envelope.js";
 import { mintVk, sealUnderVk, openUnderVk } from "../src/vk.js";
 import { encodeEnvelope } from "../src/archive-envelope.js";
-import { VESSEL_KEL_DOMAIN, VK_SLOT_WRAP_INFO } from "../src/custody-domain-names.js";
-import { ALL_DOMAINS, DOMAIN_ROOT } from "../src/domains.js";
+import { ALL_DOMAINS, DOMAIN_ROOT, VESSEL_KEL_DOMAIN, VK_SLOT_WRAP_INFO } from "../src/domains.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 
@@ -97,10 +96,10 @@ describe("the readings stay apart", () => {
 });
 
 describe("the custody domain names", () => {
-  test("each reads the bare registry address its name mints, and fuses with no registered domain", () => {
+  test("each reads the bare registry address its name mints, and the registry carries it", () => {
     expect(VESSEL_KEL_DOMAIN).toBe(`${DOMAIN_ROOT}/vessel-kel`);
     expect(VK_SLOT_WRAP_INFO).toBe(`${DOMAIN_ROOT}/vk-slot-wrap`);
-    expect(ALL_DOMAINS).not.toContain(VESSEL_KEL_DOMAIN);
-    expect(ALL_DOMAINS).not.toContain(VK_SLOT_WRAP_INFO);
+    expect(ALL_DOMAINS).toContain(VESSEL_KEL_DOMAIN);
+    expect(ALL_DOMAINS).toContain(VK_SLOT_WRAP_INFO);
   });
 });
