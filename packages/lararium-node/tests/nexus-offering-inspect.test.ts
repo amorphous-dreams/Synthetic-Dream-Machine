@@ -21,7 +21,7 @@ import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPerso
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
 import { larDataDir } from "../src/vessel-paths.js";
-import { hearthDoorReactors } from "../src/hearth-door-verbs.js";
+import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { direct } from "./direct-store.js";
 
@@ -153,7 +153,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
     try {
       const offered = await runNexusPublishPlugins({ genesisDir: dir, repo: live });
-      const doors = hearthDoorReactors({ storageDir: larDataDir(), sealHome: join(root, "state", "nexus"), repo: live, dialGate: () => null });
+      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: join(root, "state", "nexus"), repo: live, dialGate: () => null });
       const row = doors["nexus-offering-inspect"];
       const out = await row({ offeringCid: offered.offeringCid }, {} as never);
       expect(out["refused"]).toBeUndefined();

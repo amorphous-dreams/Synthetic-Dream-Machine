@@ -205,7 +205,7 @@ export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
 export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 export type { WalkReading } from "./commands/walk.js";
 // ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
-export { hearthDoorReactors, storeDoorDirect, HEARTH_DOOR_VERBS, type HearthDoorVerb } from "./hearth-door-verbs.js";
+export { storeDoorReactors, storeDoorDirect, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
 export { ownedStore, claimStore, StoreHeld, type StoreClaim } from "./owned-store.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
@@ -251,11 +251,6 @@ export {
 export type {
   NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
 } from "./nexus-carriage.js";
-// The `nexus-refresh` LIVE-refold shore — re-reads the disk posture, merges the flushed carriage + antigen boards of
-// every carried Nexus into the running Repo, and re-verifies every presented admit, so an out-of-process CLI edit
-// reaches a running node without a bounce.
-export { runNexusRefresh } from "./nexus-refresh.js";
-export type { NexusRefreshDeps, NexusRefreshResult, NexusRefreshPerNexus } from "./nexus-refresh.js";
 // The cad seal's key custody (per-Nexus convergence secrets, minted-per-epoch, persisted read-all) + its FIRST
 // live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
 export { standNexusKeyring, loadNexusKeyring, installDeliveredKeyring } from "./nexus-convergence-secret-store.js";

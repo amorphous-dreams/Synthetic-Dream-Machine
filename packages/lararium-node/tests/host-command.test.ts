@@ -31,7 +31,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldNexusLeaves, nexusLeafFor } from "../src/nexus-leaf.js";
 import { runHostRoll, runHostInvite, runHostState, HostRefusal } from "../src/commands/host.js";
-import { hearthDoorReactors, storeDoorDirect } from "../src/hearth-door-verbs.js";
+import { storeDoorReactors, storeDoorDirect } from "../src/store-door-verbs.js";
 import { readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
@@ -100,7 +100,7 @@ describe("lares host — roll, invite, state", () => {
     const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     try {
       const held = await materializeSharedLarDoc(live, doc, "hosting");
-      const doors = hearthDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
+      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
       const rolled = await doors["host-roll"]({}, {} as never);
       expect(rolled["refused"]).toBeUndefined();
       expect(hostingActsFromBoard(held.doc()).map(hostingActCid)).toEqual([rolled["epoch"]]);

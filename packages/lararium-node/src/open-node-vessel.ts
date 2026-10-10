@@ -103,7 +103,6 @@ import {
 } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { nodeNexusStandsAt } from "./nexus-standing.js";
-import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
 import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
@@ -157,7 +156,7 @@ import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { serveHostingMint }                       from "./hosting-mint.js";
 import { serveHostingCarry, DEFAULT_CARRY_LIMITS } from "./hosting-carry.js";
 import { nodeWalkStore, listWalkRecords }        from "./node-walk-store.js";
-import { hearthDoorReactors }                     from "./hearth-door-verbs.js";
+import { storeDoorReactors }                      from "./store-door-verbs.js";
 import { carriedSet }                             from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
@@ -766,7 +765,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // MAP alone: a peer stands MEMBER only on an admit its socket PRESENTED, proven by the admit's own leaf over
   // this gate's nonce, held against a carried Nexus's deny board and antigen (`nexus-carriage.ts`). No board
   // admit, kahu seat or raw wire key seats anybody. FAILS CLOSED: no carried Nexus, no proof, or any verdict
-  // short of `held` leaves the peer a STRANGER (public-read only). The `nexus-refresh` verb refolds the HOLDER.
+  // short of `held` leaves the peer a STRANGER (public-read only). The after-roll hook refolds the HOLDER.
   // RE-VERDICT. The Repo caches its share verdict per (doc, peer) at the peer's admission; every live change to
   // what that verdict reads — the member set, the posture, the antigen, a realm registration — must ask the Repo
   // to read it again, or a member contracted AFTER its socket stood keeps drawing DENIED (measured: B's realm doc
@@ -818,6 +817,35 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   });
   nexusMembershipHolder = membershipHolder;
   nexusMembership = membershipHolder.membership;
+
+  /**
+   * THE ONE AFTER-WRITE HOOK — every `store-door-verbs` row that lands a board or a practice joint (a host
+   * roll, a kapae/un_kapae, a contract/revoke/carry/uncarry, a posture flip, a taken admit bundle) fires this
+   * when its write counts, and so does a reconnect on either socket after a partition. It keeps what the
+   * retired `nexus-refresh` verb did, minus the step that verb's own existence made necessary: a board write
+   * no longer lands through a SECOND opener beside the standing vessel's Repo (every door row now takes the
+   * ONE held Repo, direct from `open-node-vessel.ts` or `owned-store.ts` — `direct-repo-witness.sh`), so there
+   * is no disk-cold state to merge back in. What remains is re-folding the live holders off what the held
+   * Repo already carries (a same-process write landed in it directly; a remote peer's write already arrived by
+   * CRDT sync): re-fold the antigen and the membership leaf map, re-stand a realm freshly imported, re-verdict
+   * the Repo's cached share answers for every peer, and re-derive this vessel's own dial presentation.
+   * `nexusAid` names the hosting doc a host-roll just opened; every other caller passes nothing.
+   */
+  const afterRoll = (nexusAid?: string): void => {
+    if (nexusAid) ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(nexusAid, vesselIdentity.verifyingKey)) as DocumentId);
+    void (async () => {
+      try {
+        await antigenHolder.refold();
+        await membershipHolder.refold();
+        await realmPlane?.refresh(readNexusDoc(sealHome));
+        reverdict();
+        await representIfMoved?.();
+      } catch (e) {
+        console.log(`[nexus] after-roll refold failed: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    })();
+  };
+
   // Replay every socket that presented before the holder stood.
   for (const [peerId, binding] of peerBindings) void membershipHolder.present(peerId, binding);
   // THE ONE SORTER every gate of this vessel arms with — the relay `/ws` and the oracle socket alike. It reads
@@ -922,17 +950,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
         },
         ...(opts.carriagePollIntervalMs !== undefined ? { pollIntervalMs: opts.carriagePollIntervalMs } : {}),
         // HEAL — on a RE-connect after a drop, re-fold the antigen + carried deny boards + posture the vessel read
-        // as-of-its-last-sync (a peer's bans/revokes that landed during the partition). The SAME refold the
-        // `nexus-refresh` verb runs; here it fires automatically when the carriage transport re-dials.
-        onReconnect:  async () => {
-          await runNexusRefresh({
-            placeClass, storageDir, sealHome, nexusPubkey,
-            ownVesselKey: vesselIdentity.verifyingKey, repo,
-            antigen: antigenHolder, membership: membershipHolder,
-          });
-          await realmPlane?.refresh(readNexusDoc(sealHome));
-          reverdict();
-        },
+        // as-of-its-last-sync (a peer's bans/revokes that landed during the partition). The SAME after-roll hook
+        // every store-door write fires; here it fires automatically when the carriage transport re-dials.
+        onReconnect:  async () => afterRoll(),
         onLog:        (line) => console.log(`[carriage] ${line}`),
       })
     : null;
@@ -1465,7 +1485,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     //     rides any socket: the vessel key is one key across every Nexus, so a root edge to N would link the
     //     root to the leaf the same vessel presents (or will present) to N.
     // RE-PRESENTATION follows what this vessel holds, never a timer: a change on the dialed island's board, a
-    // `nexus-refresh`, or an `admit-take` (which drives the refresh) re-derives the presentation, and a moved
+    // the after-roll hook, or an `admit-take` (which fires it) re-derives the presentation, and a moved
     // one re-dials through the adapter's own close-and-reconnect path.
     if (joinSyncUrl) {
       try {
@@ -1505,15 +1525,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
           // A partition stales the boards this verdict reads (membership · posture · realm registrations)
           // and the Repo caches its share verdict per (doc, peer) until something asks it to read anew, so
           // a peer that comes back re-attaches at the transport and draws a verdict computed before the cut.
-          onReconnect: async () => {
-            await runNexusRefresh({
-              placeClass, storageDir, sealHome, nexusPubkey,
-              ownVesselKey: vesselIdentity.verifyingKey, repo,
-              antigen: antigenHolder, membership: membershipHolder,
-              });
-            await realmPlane?.refresh(readNexusDoc(sealHome));
-            reverdict();
-          },
+          onReconnect: async () => afterRoll(),
         });
         // The walk client rides the dial: it keeps the grant the hearth pushes, settles the invite once a grant-
         // bearing dial stands, and fills the wallet against the hearth's signed act on its hosting doc — the doc the
@@ -2110,40 +2122,16 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
 
-    // nexus-refresh — the LIVE refold an OUT-OF-PROCESS CLI edit (`lares nexus posture` / `kapae` / `contract`,
-    // each writing its own repo) needs to reach this running node, since NodeFS carries no cross-process change
-    // bus. It re-reads the disk POSTURE, merges the flushed carriage + antigen boards of this vessel's own island
-    // and every carried Nexus into the running Repo, refolds the antigen, re-verifies every presented admit
-    // against the carried deny boards, and — on a dialer — re-presents when the admit it holds for the dialed
-    // island appeared or moved. DISTINCT from the worldline `kapae` branch-mute.
-    registry.register("nexus-refresh", async () => {
-      const r = await runNexusRefresh({
-        placeClass, storageDir,
-        sealHome,
-        nexusPubkey,
-        antigen:     antigenHolder,
-        ownVesselKey: vesselIdentity.verifyingKey,
-        repo,
-        membership:  membershipHolder,
-        // Reassign the live posture the sharePolicy closure reads each call (fail-closed PRIVATE on a torn read).
-      });
-      // A charter imported after boot names a realm this vessel never stood — stand it now (idempotent).
-      await realmPlane?.refresh(readNexusDoc(sealHome));
-      reverdict();
-      await representIfMoved?.();
-      return { verb: "nexus-refresh", ...r, realm: realmPlane?.realmId() ?? null, realmDoc: realmPlane?.realmUrl() ?? null };
-    });
-
-    // THE HOSTING AND WALKING DOORS — `lares host` and `lares walk` run here while this vessel stands, against the
-    // Repo its peers sync and the walk records its walk client writes, so a roll reaches its walkers with no
-    // restart and no second Repo ever writes beside this one.
-    const doors = hearthDoorReactors({
+    // THE STORE'S DOOR TABLE — `lares host`, `lares walk`, `lares nexus kapae/posture/admit-take`, and every other
+    // store-touching verb run here while this vessel stands, against the Repo its peers sync and the walk
+    // records its walk client writes, so a roll reaches its walkers with no restart and no second Repo ever
+    // writes beside this one. `afterRoll` is the one after-write hook every row that lands a board or a
+    // practice joint fires; the retired `nexus-refresh` verb's whole body lives inside it now (`afterRoll`,
+    // above), reached by the rows instead of by a standalone CLI-dialed verb.
+    const doors = storeDoorReactors({
       storageDir, sealHome, repo,
       dialGate: () => joinGatePubKey?.toLowerCase() ?? null,
-      onRolled: (aid) => {
-        ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(aid, vesselIdentity.verifyingKey)) as DocumentId);
-        reverdict();
-      },
+      onRolled: afterRoll,
     });
     for (const [verb, reactor] of Object.entries(doors)) {
       registry.register(verb, verb === "walk-take"

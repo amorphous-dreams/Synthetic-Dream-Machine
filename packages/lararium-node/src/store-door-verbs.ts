@@ -1,5 +1,5 @@
 /**
- * hearth-door-verbs — the store's one door table: every command that touches the vessel's store, as one row.
+ * store-door-verbs — the store's one door table: every command that touches the vessel's store, as one row.
  *
  * ONE STORE, ONE HOLDER. While a vessel stands, its process holds the store: the Repo its peers sync, the walk
  * records its walk client writes, the hosting state its sorter reads. A command that opened a second Repo beside
@@ -12,6 +12,12 @@
  *   host-state · host-roll · host-invite         the hearth's hosting (`commands/host`)
  *   walk-state · walk-take · walk-invite         this vessel's walking (`commands/walk`)
  *   nexus-kapae · nexus-kapae-list               the antigen board (`commands/nexus-kapae`)
+ *   nexus-contract · nexus-roll-anchor · nexus-members-list
+ *                                                the carriage board's writer, its roll anchor and its reader
+ *                                                (`commands/nexus-contract`)
+ *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
+ *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
+ *                                                (`admit-bundle`)
  *   edge-kapae                                   the edge shadow board (`commands/edge-kapae-cmd`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
  *   device-admit                                 a device edge off the persona-KEL board (`commands/device-admit`)
@@ -28,15 +34,24 @@
  * path does. A row hands back what its command prints; the command's own process prints it, so a row that ran
  * inside the standing vessel never speaks into the vessel's log, and no secret rides a row's answer.
  *
+ * ONE AFTER-WRITE HOOK, not a refresh VERB. `onRolled` is this door's one hook for "something just landed on a
+ * board a running vessel's live readings depend on". Every row that writes a board or a practice joint — a host
+ * roll, a kapae, a carriage admit/revoke/carry/uncarry, a posture flip, a taken admit bundle — calls it after its
+ * write counts. The standing vessel supplies the one closure that re-folds its live holders, re-verdicts its
+ * Repo and re-presents its dial (`open-node-vessel.ts`); `storeDoorDirect` supplies none, because no live reading
+ * stands to refold — the next boot's own cold read picks up what a direct act wrote.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import type { Repo } from "@automerge/automerge-repo";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
+import { federationPostureFromDoc, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
 import { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
 import { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
+import { runNexusContract, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
@@ -49,34 +64,41 @@ import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
 import { makeLocalPersonaKelHeadResolver } from "./persona-admit-flow.js";
 import { ownedStore } from "./owned-store.js";
 import { larDataDir } from "./vessel-paths.js";
+import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
+import { takeAdmitBundle, AdmitBundleError } from "./admit-bundle.js";
 
 /** What the rows read off their holder. */
-export interface HearthDoorDeps {
+export interface StoreDoorDeps {
   readonly storageDir: string;
   readonly sealHome:   string;
   /** The store's one holder — the running vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:       Repo;
   /** The gate key the vessel's standing hearth dial pins, or null when it dials no hearth. */
   readonly dialGate:   () => string | null;
-  /** A roll landed a new act on the hosting doc of `nexusAid`. */
-  readonly onRolled?:  (nexusAid: string) => void;
+  /**
+   * A write just counted. `nexusAid` names the hosting doc a roll opened (host-roll only); every other caller
+   * passes nothing. Absent on `storeDoorDirect` — a direct act has no live reading to refold.
+   */
+  readonly onRolled?:  (nexusAid?: string) => void;
 }
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
-export const HEARTH_DOOR_VERBS = [
+export const STORE_DOOR_VERBS = [
   "host-state", "host-roll", "host-invite", "walk-state", "walk-take", "walk-invite",
-  "nexus-kapae", "nexus-kapae-list", "edge-kapae", "cabal-vouch", "cabal-join", "device-admit",
+  "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
+  "nexus-posture", "nexus-admit-take",
+  "edge-kapae", "cabal-vouch", "cabal-join", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
-export type HearthDoorVerb = (typeof HEARTH_DOOR_VERBS)[number];
+export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
 type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, unknown>>;
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  HostRefusal, WalkRefusal, NexusKapaeError, EdgeKapaeError, CabalVouchError, CabalJoinError,
-  NexusPublishError, NexusOfferingInspectError, RaiseSignError,
+  HostRefusal, WalkRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, CabalVouchError, CabalJoinError,
+  NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -103,7 +125,7 @@ function need(verb: string, args: Readonly<Record<string, unknown>>, key: string
 }
 
 /** The rows over one holder, by verb. */
-function storeDoorRows(deps: HearthDoorDeps): Record<HearthDoorVerb, Row> {
+function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const { storageDir, sealHome, repo } = deps;
   return {
     "host-state": () => answer("host-state", async () => ({ nexuses: await runHostState({ sealHome, storageDir }) })),
@@ -125,9 +147,60 @@ function storeDoorRows(deps: HearthDoorDeps): Record<HearthDoorVerb, Row> {
 
     "nexus-kapae": (args) => answer("nexus-kapae", async () => {
       const action = args["action"] === "un_kapae" ? "un_kapae" : "kapae";
-      return { ...(await runNexusKapae({ action, nym: need("nexus-kapae", args, "nym"), sealHome, repo, ...opt("reason", str(args["reason"])) })) };
+      const r = await runNexusKapae({ action, nym: need("nexus-kapae", args, "nym"), sealHome, repo, ...opt("reason", str(args["reason"])) });
+      deps.onRolled?.();
+      return { ...r };
     }),
     "nexus-kapae-list": () => answer("nexus-kapae-list", async () => ({ ...(await runNexusKapaeList({ sealHome, repo })) })),
+
+    "nexus-contract": (args) => answer("nexus-contract", async () => {
+      const action = args["action"] as CarriageAction;
+      const r = await runNexusContract({
+        action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
+        ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])),
+      });
+      deps.onRolled?.();
+      return { ...r };
+    }),
+    "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
+      const r = await runNexusRollAnchor({
+        sealHome, repo,
+        closing: args["closing"] as KahuQuorumSeats, opened: args["opened"] as KahuQuorumSeats,
+      });
+      deps.onRolled?.();
+      return { ...r };
+    }),
+    "nexus-members-list": (args) => answer("nexus-members-list", async () => ({
+      ...(await runNexusMembersList({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
+    })),
+
+    "nexus-posture": (args) => answer("nexus-posture", async () => {
+      const doc = readNexusDoc(sealHome);
+      const want = args["want"];
+      if (want !== "private" && want !== "open") {
+        return { posture: federationPostureFromDoc(doc), present: doc !== null, wrote: false };
+      }
+      if (!doc) {
+        throw new Error("nexus-posture REFUSED: no charter doc — run `lares nexus seal seat` before setting a posture.");
+      }
+      const posture: FederationPosture = want;
+      const path = writeNexusPractice(sealHome, { federationPosture: posture }, doc);
+      // The posture joint feeds every carried reading's primary-posture closure — a flip counts at the very
+      // next socket once the live gate re-reads it, so it rides the same hook a board write rides.
+      deps.onRolled?.();
+      return { posture, path, wrote: true };
+    }),
+
+    "nexus-admit-take": (args) => answer("nexus-admit-take", async () => {
+      const raw = need("nexus-admit-take", args, "raw");
+      const r = await takeAdmitBundle({ sealHome, raw });
+      // RE-PRESENT through the live hook when a vessel stands over this row; `storeDoorDirect` supplies none,
+      // so a bundle taken with no vessel standing simply waits for the next boot's dial to present it.
+      const represented = deps.onRolled !== undefined;
+      deps.onRolled?.(r.aid);
+      return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
+    }),
+
     "edge-kapae": (args) => answer("edge-kapae", async () => ({
       ...(await runEdgeKapae({
         edgeId: str(args["edgeId"]) ?? "", raised: args["raised"] !== false, epochCid: str(args["epochCid"]) ?? "", repo,
@@ -178,7 +251,7 @@ function storeDoorRows(deps: HearthDoorDeps): Record<HearthDoorVerb, Row> {
 }
 
 /** The door's reactors over a running vessel, by verb. */
-export function hearthDoorReactors(deps: HearthDoorDeps): Record<HearthDoorVerb, VerbReactor> {
+export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, VerbReactor> {
   return storeDoorRows(deps);
 }
 
@@ -187,7 +260,7 @@ export function hearthDoorReactors(deps: HearthDoorDeps): Record<HearthDoorVerb,
  * against that holder. A standing vessel, or another command mid-act, refuses before anything opens.
  */
 export async function storeDoorDirect(
-  verb: HearthDoorVerb,
+  verb: StoreDoorVerb,
   args: Readonly<Record<string, unknown>>,
   opts: { readonly sealHome: string; readonly storageDir?: string },
 ): Promise<Record<string, unknown>> {

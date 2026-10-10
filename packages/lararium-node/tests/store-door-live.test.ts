@@ -11,7 +11,7 @@
  *   · a direct holder refuses while a vessel stands on the store.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
@@ -20,15 +20,21 @@ import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   NEXUS_DOC_DOMAIN, genesisSealEpochCid, antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
-  verifiedVouchesFromBoard, hexToBytes, computePluginsCid, materializeSharedLarDoc, kapaeAntigenDocUrl,
+  verifiedVouchesFromBoard, hexToBytes, hex, computePluginsCid, materializeSharedLarDoc, kapaeAntigenDocUrl,
   edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER,
-  GENESIS_CID_PLUGINS_TIDDLER, type NexusDoc, type LarDoc, type GenesisSeed, type RegionEntry,
+  GENESIS_CID_PLUGINS_TIDDLER, realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
+  type NexusDoc, type LarDoc, type GenesisSeed, type RegionEntry,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import {
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey,
+  loadPersonaGroupRootSeed,
+} from "../src/node-vessel-identity.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { larDataDir } from "../src/vessel-paths.js";
-import { writeNexusDoc } from "../src/nexus-doc.js";
-import { hearthDoorReactors, storeDoorDirect, type HearthDoorVerb } from "../src/hearth-door-verbs.js";
+import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
+import { nexusLeafFor } from "../src/nexus-leaf.js";
+import { admitBundlePathFor } from "../src/admit-bundle.js";
+import { storeDoorReactors, storeDoorDirect, type StoreDoorVerb } from "../src/store-door-verbs.js";
 import { claimStore, StoreHeld } from "../src/owned-store.js";
 
 let base: string;
@@ -87,7 +93,7 @@ async function peerSees(peer: Repo, url: string, read: (doc: LarDoc) => boolean 
 
 /** What one writer is asked, and how its act reads back off a board. */
 interface Writer {
-  readonly verb: HearthDoorVerb;
+  readonly verb: StoreDoorVerb;
   readonly args: Record<string, unknown>;
   /** The board the act lands on, by this vessel's island, and the label the vessel materializes it under. */
   readonly board: (island: string) => string;
@@ -151,7 +157,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
         const boardUrl = w.board(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() }));
         await materializeSharedLarDoc(live, boardUrl as AutomergeUrl, w.label);
         await materializeSharedLarDoc(peer, boardUrl as AutomergeUrl, w.label);
-        const doors = hearthDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
+        const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
         liveOut = await doors[w.verb](w.args, {} as never);
         expect(liveOut["refused"], String(liveOut["refused"])).toBeUndefined();
         const url = String(liveOut["boardUrl"]);
@@ -192,5 +198,74 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const out = await storeDoorDirect("nexus-kapae", { action: "kapae", nym: "d".repeat(64) }, { sealHome: sealHome() });
     expect(out["refused"]).toBeUndefined();
     expect(String(out["actCid"])).toMatch(/./);
+  });
+
+  it("RED nexus-posture: a flip over a live Repo fires the after-roll hook once; CONTROL: a bare read fires it never", async () => {
+    const root = join(base, "posture-root");
+    await seatVessel(root);
+    const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const rolled: Array<string | undefined> = [];
+    try {
+      const doors = storeDoorReactors({
+        storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null,
+        onRolled: (aid) => { rolled.push(aid); },
+      });
+      // CONTROL first — a bare read never writes and never fires the hook.
+      const read = await doors["nexus-posture"]({}, {} as never);
+      expect(read["refused"]).toBeUndefined();
+      expect(read["posture"]).toBe("private");
+      expect(read["wrote"]).toBe(false);
+      expect(rolled).toEqual([]);
+
+      // RED — the flip writes the joint AND fires the hook exactly once.
+      const flipped = await doors["nexus-posture"]({ want: "open" }, {} as never);
+      expect(flipped["refused"]).toBeUndefined();
+      expect(flipped["posture"]).toBe("open");
+      expect(flipped["wrote"]).toBe(true);
+      expect(rolled).toEqual([undefined]);
+      expect(federationPostureFromDoc(readNexusDoc(sealHome()))).toBe("open");
+    } finally { await live.shutdown().catch(() => {}); }
+
+    // CONTROL — `storeDoorDirect` (no vessel standing) writes the SAME joint with no hook to fire.
+    const direct = await storeDoorDirect("nexus-posture", { want: "private" }, { sealHome: sealHome() });
+    expect(direct["refused"]).toBeUndefined();
+    expect(direct["posture"]).toBe("private");
+    expect(federationPostureFromDoc(readNexusDoc(sealHome()))).toBe("private");
+  });
+
+  it("RED nexus-admit-take: a taken bundle over a live Repo fires the after-roll hook and re-presents; CONTROL: direct keeps it with no hook", async () => {
+    const root = join(base, "admit-take-root");
+    await seatVessel(root);
+    const doc = readNexusDoc(sealHome())!;
+    const aidP = realmIdOfCharter(doc)!;
+    // The held persona's OWN per-Nexus leaf (h0, the face `seatVessel` wears) — the multitude-of-one self-admit
+    // `runNexusContract` mints in production, built here with the same pure mesh signers it uses.
+    const leaf = await nexusLeafFor(0, aidP);
+    const sign = (seedBytes: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seedBytes).then(hex);
+    const kahuSeeds = await Promise.all([0, 1].map((i) => loadPersonaGroupRootSeed(i)));
+    const quorum = await Promise.all(kahuSeeds.map(async (s) => ({ signer: await ed.getPublicKeyAsync(s).then(hex), sign: sign(s) })));
+    const consent = await signCarriageContract(leaf.verifyingKey, doc.sealEpochCid!, sign(leaf.seed));
+    const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid! }, quorum, consent);
+    const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [] });
+
+    const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const rolled: Array<string | undefined> = [];
+    try {
+      const doors = storeDoorReactors({
+        storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null,
+        onRolled: (aid) => { rolled.push(aid); },
+      });
+      const out = await doors["nexus-admit-take"]({ raw }, {} as never);
+      expect(out["refused"], String(out["refused"])).toBeUndefined();
+      expect(out["aid"]).toBe(aidP);
+      expect(out["represented"]).toBe(true);
+      expect(rolled).toEqual([aidP]);
+      expect(existsSync(admitBundlePathFor(sealHome(), aidP))).toBe(true);
+    } finally { await live.shutdown().catch(() => {}); }
+
+    // CONTROL — `storeDoorDirect` (no vessel standing) keeps the identical bundle, `represented: false`, no hook.
+    const direct = await storeDoorDirect("nexus-admit-take", { raw }, { sealHome: sealHome() });
+    expect(direct["refused"]).toBeUndefined();
+    expect(direct["represented"]).toBe(false);
   });
 });

@@ -5,7 +5,7 @@
  * board already exists, verifies the signed offering, and reports the local CAS gradient. It does
  * not create a board, fetch bytes, consult Offering Antigen, install anything, or touch genesis.
  *
- * IT READS THROUGH THE STORE'S ONE HOLDER (`hearth-door-verbs`, row `nexus-offering-inspect`): the standing vessel's
+ * IT READS THROUGH THE STORE'S ONE HOLDER (`store-door-verbs`, row `nexus-offering-inspect`): the standing vessel's
  * own Repo, or the direct holder's (`ownedStore`). It opens no Repo of its own and shuts down none it was handed —
  * inside a standing vessel the Repo it reads is the one the vessel's peers and islands sync through.
  */

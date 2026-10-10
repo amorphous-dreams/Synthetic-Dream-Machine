@@ -392,7 +392,7 @@ export interface NexusMembershipHolder {
   /** Re-read the carried Nexuses' deny boards and antigens, re-verify every standing presentation, swap the
    *  leaf map whole, and fire `onRefold`. Refolds the carrier set off this vessel's own board beside it. */
   refold(): Promise<void>;
-  /** The carried readings the last refold judged against — what `nexus-refresh` reports per Nexus. */
+  /** The carried readings the last refold judged against — what the after-roll refold reports per Nexus. */
   readings(): readonly CarriedNexusReading[];
   /** Detach every board change listener (graceful shutdown). */
   dispose(): void;
