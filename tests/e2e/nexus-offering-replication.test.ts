@@ -9,11 +9,12 @@
  */
 
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { openStagedJoinee, vesselStorageDir, type CliResult, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../../packages/lararium-node/src/commands/nexus-offering-inspect.js";
+import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -173,11 +174,15 @@ describe("source offering → receiver Crossroads evidence", () => {
     const priorRoot = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = wrongRoot;
     try {
-      await expect(runNexusInspectOffering({
+      // The receiver stands and holds its own store, so the read runs over a copy of that store, held directly.
+      const copy = join(wrongRoot, "store");
+      cpSync(vesselStorageDir(receiver), copy, { recursive: true });
+      await expect(ownedStore(copy, (repo) => runNexusInspectOffering({
         offeringCid,
-        storageDir: vesselStorageDir(receiver),
+        storageDir: copy,
         ownVesselKey: "f".repeat(64),
-      })).rejects.toBeInstanceOf(NexusOfferingInspectError);
+        repo,
+      }))).rejects.toBeInstanceOf(NexusOfferingInspectError);
     } finally {
       if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
       rmSync(wrongRoot, { recursive: true, force: true });
