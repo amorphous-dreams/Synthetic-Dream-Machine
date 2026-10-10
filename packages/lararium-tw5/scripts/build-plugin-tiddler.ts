@@ -278,7 +278,8 @@ async function main(): Promise<void> {
   writeFileSync(tsSrcPath, tsHeader + tsBody, "utf8");
 
   // Copy canonical JSON to plugins/ so automerge-docs picks it up alongside
-  // sq-streams and lararium-boot-shadows.
+  // lararium-boot-shadows (the fixed boot set; optional plugins live as signed
+  // offerings under offerings/, never in this directory).
   const pluginJsonDest = path.join(PLUGIN_DIR, "lares-memetic-wikitext.json");
   copyFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.lar.json"), pluginJsonDest);
 

@@ -1,28 +1,32 @@
 /**
  * THE HTML PROJECTION RENDERS INSIDE THE ISLAND — `lar:///ha.ka.ba/lararium/templates/meme/html`.
  *
- * TiddlyWiki's own `$:/core/templates/static.tiddler.html` renders the story river through
- * `$:/core/ui/ViewTemplate`, which transcludes EVERY `$:/tags/ViewTemplate` the wiki holds. The island
- * vends the streams plugin, whose `stream-view-template` requires `$:/plugins/sq/lib/swipeevents.js`
- * — a browser-platform library reaching `window` at load — so the core template dies inside a worker
- * where no `window` stands. The plain server renders it only because it holds no streams plugin.
- *
  * A meme projects ITSELF, never the wiki's UI cascade: the house template renders the root's title and
- * body through the core's own static frame and nothing else, so it renders the same in the island, in
- * the browser and on a plain server. The suite boots the island's composition (grammar + streams) and
- * the control (grammar alone) and asks for the same bytes-shape from both.
+ * body through the core's own static frame and nothing else, so it renders the SAME bytes whether the
+ * island carries an extra plugin or not. The suite boots the island's composition (grammar + the PoC
+ * `highlight` offering, through an EXPLICIT composition — never a boot-set member) and the control
+ * (grammar alone) and asks for the same bytes-shape from both.
+ *
+ * `highlight` replaces the formerly-vendored `sq-streams` as this suite's optional plugin (Streams is
+ * DEFERRED — golden-path-p2-recipe.md OPERATOR RULING 2026-10-10). Streams' `stream-view-template`
+ * registered a `$:/tags/ViewTemplate` reaching `window` at load, which made the point sharply — the
+ * CORE static template's own cascade crashed on it while the house template never touched it at all.
+ * `highlight` carries no view-template and adds no such hazard; the CONTROL below instead proves the
+ * weaker, still load-bearing half of the same claim directly: the island composition actually DIFFERS
+ * from the control (it carries the plugin the control does not), and the house template's output is
+ * identical regardless — the house template's isolation is not merely untested by accident.
  */
 import { describe, test, expect } from "vitest";
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { MEME_TEMPLATE, PROJECT_TARGETS } from "../src/meme-project.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
 
-/** The streams plugin the island vends, whatever version stands in `plugins/`. */
-const PLUGINS = new URL("../plugins/", import.meta.url);
-const streamsFile = readdirSync(PLUGINS).find((f) => f.startsWith("sq-streams") && f.endsWith(".json"));
-if (!streamsFile) throw new Error("meme-html-template: no sq-streams plugin stands in plugins/ — the island's composition cannot be booted");
-const STREAMS = JSON.parse(readFileSync(new URL(streamsFile, PLUGINS), "utf8")) as Record<string, unknown>;
+/** The PoC signed offering's packed plugin (R2c) — grammar-only is the control; this is the ONE
+ *  optional plugin the island's composition carries, through an explicit composition (never a
+ *  boot-set member — see `offerings/highlight/`). */
+const HIGHLIGHT_PLUGIN_PATH = new URL("../offerings/highlight/highlight-plugin.json", import.meta.url);
+const HIGHLIGHT = JSON.parse(readFileSync(HIGHLIGHT_PLUGIN_PATH, "utf8")) as Record<string, unknown>;
 const CORE_STATIC = "$:/core/templates/static.tiddler.html";
 
 const URI = "lar:///t/html";
@@ -40,10 +44,14 @@ async function placed(extraPlugins: Array<Record<string, unknown>>) {
 }
 
 describe.skipIf(wikiSkip)(`the house html template${skipNote}`, () => {
-  test("CONTROL: the core static template reaches `window` once the streams plugin stands, and renders without it", async () => {
-    const island = await placed([STREAMS]);
-    expect(() => island.render(CORE_STATIC)).toThrow(/window is not defined/);
+  test("CONTROL: the island composition actually carries highlight; the grammar-alone control does not — yet both render the house template identically", async () => {
+    const island = await placed([HIGHLIGHT]);
     const plain = await placed([]);
+    expect(island.engine.wiki.getTiddler("$:/plugins/tiddlywiki/highlight")).toBeTruthy();
+    expect(plain.engine.wiki.getTiddler("$:/plugins/tiddlywiki/highlight")).toBeFalsy();
+    // Both still boot and render the CORE static template without error — unlike Streams, `highlight`
+    // carries no `window`-reaching view-template, so it adds no cascade hazard to compare against.
+    expect(island.render(CORE_STATIC)).toMatch(/^<!doctype html>/);
     expect(plain.render(CORE_STATIC)).toMatch(/^<!doctype html>/);
   });
 
@@ -53,7 +61,7 @@ describe.skipIf(wikiSkip)(`the house html template${skipNote}`, () => {
   });
 
   test("the house template renders the root inside the island's composition — a document, the title, the heading", async () => {
-    const island = await placed([STREAMS]);
+    const island = await placed([HIGHLIGHT]);
     const html = island.face.project(URI, "html").text;
     expect(html).toMatch(/^<!doctype html>/);
     expect(html).toContain("tc-story-river");
@@ -64,7 +72,7 @@ describe.skipIf(wikiSkip)(`the house html template${skipNote}`, () => {
   });
 
   test("one law, two contexts: the plain composition renders the same document", async () => {
-    const [island, plain] = [await placed([STREAMS]), await placed([])];
+    const [island, plain] = [await placed([HIGHLIGHT]), await placed([])];
     const doc = plain.render(MEME_TEMPLATE.html);
     expect(doc).toMatch(/^<!doctype html>/);
     expect(doc).toBe(island.render(MEME_TEMPLATE.html));

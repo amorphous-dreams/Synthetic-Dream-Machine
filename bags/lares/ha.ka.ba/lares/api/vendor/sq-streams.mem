@@ -9,7 +9,7 @@ file-path          = "bags/lares/ha.ka.ba/lares/api/vendor/sq-streams.mem"
 mana               = 18
 manao              = 18
 manaoio            = 17
-role               = "vendor declaration: Streams plugin by Saq Imtiaz — hierarchical tree-of-tiddlers TW5 UI"
+role               = "deferred-offering record: Streams plugin by Saq Imtiaz — hierarchical tree-of-tiddlers TW5 UI, not yet packed"
 tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/vendor/sq-streams"
 tw5-plugin-id      = "$:/plugins/sq/streams"
@@ -26,17 +26,21 @@ A vendor declaration: this carrier names an outside artifact this tree carries, 
 provenance and its terms without opening it.
 
 ''Author'': [[Saq Imtiaz|https://github.com/saqimtiaz/streams]]
-''License'': MIT
-''Upstream'': https://saqimtiaz.github.io/streams/
+''License'': BSD-3-Clause
+''Upstream'': `saqimtiaz/streams`
 ''TW5 plugin id'': `$:/plugins/sq/streams`
 
 Streams gives TiddlyWiki a hierarchical tree-of-tiddlers surface: keyboard-driven entry, Tab to indent,
 Enter for a new node, and every node standing as an ordinary tiddler.
 
-!! Where it rests, and who reads it
+!! A deferred offering — this tree carries no packed bytes
 
-The packed plugin sits at `packages/lararium-tw5/plugins/sq-streams-1.2.24.json`. `build-plugin-tiddler.ts`
-writes the grammar's own plugin into that same directory, so the automerge-docs pickup carries both.
+Streams is DEFERRED (operator ruling): no packed plugin for it sits anywhere in this tree, and
+genesis's boot set carries nothing beyond the engine core, the grammar and the boot shadows. This
+carrier is the record of the terms an eventual offering would carry, written before the packing — a
+future `nexus-publish`-style act packs the upstream bytes, mints a signed offering naming this same
+licence and provenance, and carries it as a recipe-selected plugin (never a boot-set member) exactly
+as `offerings/highlight/` already does for the PoC.
 
 !! Two vocabularies for one tree
 
@@ -52,15 +56,18 @@ Streams and this grammar each name a tree of records, and they name it different
 grammar's names alone, so a wiki wanting Streams navigation over them writes the second pair from the
 first — the shape is already there, and only the vocabulary is missing.
 
-!! Upgrade
+!! Packing it, when the deferral lifts
 
 ```
 git clone --depth=1 https://github.com/saqimtiaz/streams.git
 ```
 
-Refresh `packages/lararium-tw5/plugins/sq-streams-<version>.json` from the clone, then state the new
-version in `tw5-plugin-version` above. ''The declaration is the record of what this tree carries'', so a
-version bumped in the file and not here leaves the tree carrying one thing and saying another.
+Pack the clone into a signed `PluginOffering` under a new `packages/lararium-tw5/offerings/streams/`
+(the shape `scripts/pack-highlight-offering.ts` already demonstrates), never back into
+`packages/lararium-tw5/plugins/` — that directory holds only the fixed boot set genesis packs, and
+Streams never joins it. State the packed version in `tw5-plugin-version` above. ''The declaration is
+the record of the terms this tree holds'', so a version packed and not reflected here leaves the
+record saying one thing and the offering carrying another.
 
 <<~/ahu>>
 
@@ -70,6 +77,6 @@ version bumped in the file and not here leaves the tree carrying one thing and s
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zjAcynOqbOY5Q011GBu_rtwB9dGtfeJ-cgGfL_6MNn8
+<<^ code="&#x0003;">>ni:///sha-256;zD5kEPAh_6w-OV3gYcfwTGwowhrH1EACKc-C4YFHTBw
 
 <<^ code="&#x0004;" -> to="?">>
