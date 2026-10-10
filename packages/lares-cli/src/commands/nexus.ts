@@ -53,7 +53,7 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { storeVerb, StoreDoorRefusal } from "../store-door.js";
+import { storeVerb, StoreDoorRefusal, pokeSealHomeRefold } from "../store-door.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
@@ -336,6 +336,9 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
   try {
     const aid = args.options["nexus"];
     const r = await runNexusAcceptCarriage({ handleIndex, sealHome: larSealHome(), ...(aid !== undefined ? { aid } : {}) });
+    // H2: the consent just written sits beside the seal home, never on this vessel's Repo — poke a standing
+    // vessel to refold at once rather than leave its live readings stale until some later board write does.
+    await pokeSealHomeRefold();
     emit(args, {
       ok: true,
       data: { aid: r.aid, nym: r.nym, sealEpochCid: r.sealEpochCid, contractSig: r.contractSig },
@@ -414,6 +417,8 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
  */
 async function cmdCarryFor(args: ParsedArgs): Promise<number> {
   try {
+    // NO POKE HERE (unlike `accept-carriage`): `runNexusCarryFor` only SIGNS — it writes nothing beside the
+    // seal home, so there is nothing for a standing vessel's live readings to have gone stale over.
     const r = await runNexusCarryFor({ sealHome: larSealHome() });
     emit(args, {
       ok: true,

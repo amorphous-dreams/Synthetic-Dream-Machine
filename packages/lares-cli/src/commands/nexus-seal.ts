@@ -57,7 +57,7 @@ import {
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { larSealHome } from "../env.js";
-import { storeVerb, StoreDoorRefusal } from "../store-door.js";
+import { storeVerb, StoreDoorRefusal, pokeSealHomeRefold } from "../store-door.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -190,7 +190,7 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "commit":  return sealCommit(args);
       case "show":    return await sealShow(args);
       case "export":  return sealExport(args);
-      case "import":  return sealImport(args);
+      case "import":  return await sealImport(args);
       case "reserve": return await cmdCharterReserve(args);
       case "grow":    return await sealGrow(args);
       default:
@@ -730,9 +730,9 @@ function sealExport(args: ParsedArgs): number {
  * REPLACE a founding. A partner charter takes `--carry`, which lands it at `carried/<aid>/` and leaves the
  * primary's bytes untouched; `accept-carriage --nexus <aid>` then consents to it.
  */
-function sealImport(args: ParsedArgs): number {
+async function sealImport(args: ParsedArgs): Promise<number> {
   const carry = args.options["carry"];
-  if (carry !== undefined) return sealImportCarry(args, carry);
+  if (carry !== undefined) return await sealImportCarry(args, carry);
   const from = args.positional[2] ?? "";
   if (!from) {
     console.error("usage: lares nexus seal import <path-to-founding-roster.mem> | --carry <path>");
@@ -777,6 +777,10 @@ function sealImport(args: ParsedArgs): number {
                  human: () => console.error(`lares nexus seal import: ${message}`) });
     return exitFor("error");
   }
+  // H2: a charter landing AFTER boot is exactly realm-plane's own "arrives after boot" case — poke a
+  // standing vessel to materialize/re-stand its realm doc at once rather than leave it inert until some
+  // later board write happens to refold.
+  await pokeSealHomeRefold();
   emit(args, { ok: true, data: { from, dest, epoch: incoming },
                human: () => { console.log(`imported → ${dest}`); console.log(`  ${v.why}`); } });
   return 0;
@@ -787,12 +791,16 @@ function sealImport(args: ParsedArgs): number {
  * writing nothing, when the charter carries no verified head, names this vessel's own Nexus, or — for an AID
  * already held — does not extend the held seal lineage.
  */
-function sealImportCarry(args: ParsedArgs, from: string): number {
+async function sealImportCarry(args: ParsedArgs, from: string): Promise<number> {
   let raw: string;
   try { raw = readFileSync(from, "utf8"); }
   catch { console.error(`lares nexus seal import --carry: cannot read ${from}`); return 4; }
   try {
     const r = importCarriedCharter(larSealHome(), raw);
+    // H2: the carried set just grew beside the seal home, never on this vessel's Repo — poke a standing
+    // vessel to refold its live readings (`readCarried`, the board/antigen folds a dial presents against) at
+    // once, rather than leave them stale until some later board write happens to refold.
+    await pokeSealHomeRefold();
     emit(args, {
       ok: true, data: { from, dest: r.path, aid: r.aid, epoch: r.sealEpochCid, outcome: r.outcome },
       human: () => {

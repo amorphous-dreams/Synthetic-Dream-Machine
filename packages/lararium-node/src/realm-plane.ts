@@ -5,7 +5,8 @@
  * announce.
  *
  * A vessel that holds no charter stands no realm — the holder is INERT (no doc, no pointer, the base gate
- * unchanged). A charter that arrives AFTER boot (`nexus seal import`, then `nexus refresh`) stands it then:
+ * unchanged). A charter that arrives AFTER boot (`nexus seal import`, carried or primary) stands it then: the
+ * import itself pokes a standing vessel's refold at once (no separate verb to run), and this holder's own
  * `refresh(charter)` re-reads the realm id and materializes on first sight; a re-read of the same realm is a
  * no-op. The realm id NEVER moves for a standing realm (a genesis epoch is fixed for life), so a different id
  * on refresh names a DIFFERENT charter — the holder re-stands on it and the prior realm's docs leave the gate.
@@ -178,7 +179,7 @@ export function makeRealmPlane(opts: {
       return rec;
     },
     async coSign({ bagUri, signer, sign }) {
-      if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — import the charter (`lares nexus seal import`) and `lares nexus refresh`");
+      if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — import the charter (`lares nexus seal import`) first");
       const nym = signer.toLowerCase();
       const proposal = realmBagRegistrationsFromDoc(realmHandle.doc())
         .find((r) => r.realmId === realmId && r.bagUri === bagUri && r.keptBy.some((k) => k.toLowerCase() === nym)
