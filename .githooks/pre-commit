@@ -9,8 +9,21 @@
 # names the gate absent and lets that commit through; a tree that carries the script always runs it.
 REPO="$(git rev-parse --show-toplevel)" || exit 1
 run_gate() {
-  if [ -f "$REPO/tools/$1" ]; then "$REPO/tools/$1"; return $?; fi
-  echo "[pre-commit] this tree carries no tools/$1 — that gate does not apply here"
+  script="$1"
+  # The INDEX, never the working tree: a staged `git rm tools/$script` beside a staged carrier must
+  # still read as absent, even while the file still sits on disk.
+  if git -C "$REPO" ls-files --cached --error-unmatch "tools/$script" >/dev/null 2>&1; then
+    "$REPO/tools/$script"; return $?
+  fi
+  if [ "$script" = "meme-check-staged.sh" ]; then
+    staged_mem="$(git -C "$REPO" diff --cached --name-only --diff-filter=ACMR -- '*.mem')"
+    if [ -n "$staged_mem" ]; then
+      echo "[pre-commit] staged .mem carrier(s) but tools/meme-check-staged.sh is absent from the index — refusing:" >&2
+      printf '%s\n' "$staged_mem" | sed 's/^/  /' >&2
+      return 1
+    fi
+  fi
+  echo "[pre-commit] this tree carries no tools/$script — that gate does not apply here"
   return 0
 }
 run_gate meme-check-staged.sh
