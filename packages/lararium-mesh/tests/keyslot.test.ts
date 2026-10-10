@@ -78,7 +78,7 @@ describe("the tree at rest", () => {
     const back = decodeSlotTree(bytes);
     expect(back.reading).toBe("readable");
     const json = JSON.parse(new TextDecoder().decode(bytes)) as { slots: Record<string, unknown>[] };
-    expect(Object.keys(json)).toEqual(["slots"]);
+    expect(Object.keys(json)).toEqual(["vkCheck", "slots"]);
     expect(Object.keys(json.slots[0]!).sort()).toEqual(["id", "nonce", "pins", "t", "wrappedVk"]);
     expect(Object.keys((json.slots[0]!.pins as Record<string, unknown>[])[0]!).sort()).toEqual(["kind", "nonce", "salt", "wrapped"]);
     expect(new TextDecoder().decode(bytes)).not.toMatch(/"v"|version|created|seq|\d{4}-\d{2}-\d{2}T/);
@@ -121,7 +121,7 @@ describe("bind", () => {
     expect(() => bindSlot(null, mintVk(), { t: 1, pins: [{ kind: "passphrase", passphrase: "" }] })).toThrow(/passphrase/);
   });
 
-  test("RED: a paper sheet that does not read back refuses, naming the first departing word", () => {
+  test("RED: a paper sheet that does not read back refuses, naming the first departing word's position", () => {
     const draft = draftPaperPin({ threshold: 1, count: 1 });
     const words = draft.sheets[0]!.split(" ");
     const typed = [...words];
@@ -163,5 +163,89 @@ describe("unbind", () => {
     const tree = bindSlot(null, mintVk(), { t: 1, pins: [right] });
     expect(() => unbindSlot(tree, tree.slots[0]!.id)).toThrow(/human route/);
     expect(() => unbindSlot(tree, "00".repeat(16))).toThrow(/no slot/);
+  });
+});
+
+/** A test that runs several scrypt derivations (~0.5 s each) needs room under a full parallel suite. */
+const SCRYPT_HEAVY = 30_000;
+
+describe("the tree commits to its VK — a keyed check that reveals nothing", () => {
+  const checkOf = (tree: SlotTree): string => (tree as SlotTree & { vkCheck: string }).vkCheck;
+
+  test("the tree carries a 32-byte keyed check of its VK: stable for one VK, apart across VKs, never the VK itself", () => {
+    const vk = mintVk();
+    const a = bindSlot(null, vk, { t: 1, pins: [right] });
+    const b = bindSlot(null, vk, { t: 1, pins: [wrong] });
+    const other = bindSlot(null, mintVk(), { t: 1, pins: [right] });
+    expect(checkOf(a)).toMatch(/^[0-9a-f]{64}$/);
+    expect(checkOf(b)).toBe(checkOf(a));
+    expect(checkOf(other)).not.toBe(checkOf(a));
+    expect(checkOf(a)).not.toBe(Buffer.from(vk).toString("hex"));
+    const back = decodeSlotTree(encodeSlotTree(a));
+    expect(back.reading === "readable" && checkOf(back.tree)).toBe(checkOf(a));
+  }, SCRYPT_HEAVY);
+
+  test("RED: binding a slot over a VK the tree does not commit to refuses, naming the mismatch", () => {
+    const tree = bindSlot(null, mintVk(), { t: 1, pins: [right] });
+    expect(() => bindSlot(tree, mintVk(), { t: 1, pins: [wrong] })).toThrow(/commit/);
+  });
+
+  test("RED: a slot spliced in from another tree opens no VK, and the note names the commitment", () => {
+    const vk = mintVk();
+    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
+    const foreign = bindSlot(null, mintVk(), { t: 1, pins: [wrong] });
+    const spliced = { ...tree, slots: [...tree.slots, foreign.slots[0]!] } as SlotTree;
+    const o = openVk(spliced, [wrong]);
+    expect(o.reading).toBe("no-slot-opens");
+    expect(o.reading === "no-slot-opens" && o.notes.some((n) => /commit/.test(n))).toBe(true);
+    const ok = openVk(spliced, [right]);
+    expect(ok.reading === "opens" && vkEquals(ok.vk, vk)).toBe(true);
+  }, SCRYPT_HEAVY);
+
+  test("RED: a tree at rest with no check, or a malformed one, reads unreadable", () => {
+    const bytes = encodeSlotTree(bindSlot(null, mintVk(), { t: 1, pins: [right] }));
+    const json = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
+    delete json.vkCheck;
+    expect(decodeSlotTree(new TextEncoder().encode(JSON.stringify(json))).reading).toBe("unreadable");
+    json.vkCheck = "zz";
+    expect(decodeSlotTree(new TextEncoder().encode(JSON.stringify(json))).reading).toBe("unreadable");
+  });
+});
+
+describe("one slot binds each human route once", () => {
+  test("RED: a 2-of-2 slot refuses the same passphrase twice, NFKC-equal spellings included", () => {
+    const vk = mintVk();
+    expect(() => bindSlot(null, vk, { t: 2, pins: [right, right] })).toThrow(/twice/);
+    const composed = { kind: "passphrase", passphrase: "café hearth" } as const;
+    const decomposed = { kind: "passphrase", passphrase: "café hearth" } as const;
+    expect(() => bindSlot(null, vk, { t: 2, pins: [composed, decomposed] })).toThrow(/twice/);
+  });
+
+  test("RED: a slot refuses one paper secret bound as two pins", () => {
+    const { confirmed } = confirmedPaper();
+    expect(() => bindSlot(null, mintVk(), { t: 2, pins: [{ kind: "paper", confirmed }, { kind: "paper", confirmed }] })).toThrow(/twice/);
+  });
+
+  test("CONTROL: two distinct passphrases bind a 2-of-2 slot, and one passphrase in two slots stands", () => {
+    const vk = mintVk();
+    const tree = bindSlot(null, vk, { t: 2, pins: [right, wrong] });
+    const o = openVk(tree, [right, wrong]);
+    expect(o.reading === "opens" && vkEquals(o.vk, vk)).toBe(true);
+    expect(bindSlot(tree, vk, { t: 1, pins: [right] }).slots.length).toBe(2);
+  }, SCRYPT_HEAVY);
+});
+
+describe("the paper read-back refusal names a position, never a word", () => {
+  test("RED: the refusal echoes no word of the printed sheet and no typed word", () => {
+    for (let trial = 0; trial < 8; trial++) {
+      const draft = draftPaperPin({ threshold: 1, count: 1 });
+      const words = draft.sheets[0]!.split(" ");
+      const typed = [...words];
+      typed[7] = words[7] === "academic" ? "acid" : "academic";
+      let msg = "";
+      try { confirmPaperPin(draft, [typed.join(" ")]); } catch (e) { msg = (e as Error).message; }
+      expect(msg).toMatch(/sheet 1, word 8/);
+      for (const w of new Set([...words, typed[7]!])) expect(msg).not.toMatch(new RegExp(`\\b${w}\\b`));
+    }
   });
 });
