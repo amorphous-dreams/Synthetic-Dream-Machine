@@ -64,6 +64,9 @@ export function parseTaploFields(
     const dups = duplicateTomlKeys(toml);
     if (dups.length > 0) {
       for (const d of dups) warnings.push(`${context} ${duplicateKeyMessage(d)}`);
+      if (dups.length >= TOML_REDEFINE_NAMED_MAX) {
+        warnings.push(`${context} the walk names no more than ${TOML_REDEFINE_NAMED_MAX} redefinitions; any further ones stand unnamed, and the body refuses whole`);
+      }
     } else {
       warnings.push(`${context} TOML parse error: ${e}`);
     }
@@ -81,6 +84,10 @@ export function parseTaploFields(
 // redefinition is — a key inside a multi-line string, or the same key under two
 // different tables, is not one. A body that fails for any OTHER reason stops
 // the walk: that is a parse error, named by its own channel.
+//
+// Each named redefinition costs one parse of the whole body, and a body can
+// arrive from a peer. The walk names at most TOML_REDEFINE_NAMED_MAX, so its
+// cost stays linear in the body; past that the body still refuses whole.
 // ---------------------------------------------------------------------------
 
 /** One redefinition: the key (or `[table]` header) as written, and its 1-based line in the body. */
@@ -93,10 +100,13 @@ export interface TomlDuplicateKey {
  *  control (`tests/toml-redefine-message.test.ts`) reds the day the parser's wording moves. */
 export const TOML_REDEFINE_MESSAGE = /redefine an already defined/i;
 
+/** The most redefinitions one walk names; each costs a whole-body parse. */
+export const TOML_REDEFINE_NAMED_MAX = 32;
+
 export function duplicateTomlKeys(toml: string): TomlDuplicateKey[] {
   const lines = toml.split("\n");
   const out: TomlDuplicateKey[] = [];
-  for (let guard = 0; guard <= lines.length; guard += 1) {
+  for (let guard = 0; guard <= lines.length && out.length < TOML_REDEFINE_NAMED_MAX; guard += 1) {
     try {
       smolParse(lines.join("\n"));
       return out;
