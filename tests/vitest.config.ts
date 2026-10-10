@@ -25,7 +25,10 @@ export default defineConfig({
     // to be turned off on purpose.
     isolate: true,
     environment: "node",
-    include: ["e2e/**/*.test.ts", "harness/**/*.test.ts"],
+    // `harness/**` is the harness's OWN unit suite (vitest.harness.config.ts), never the e2e set: it
+    // carries no vessel boot, so it needs none of this config's e2e pacing below, and `pnpm -r test`
+    // (which skips `tests/` entirely, absent a plain `test` script) is what runs it, not this one.
+    include: ["e2e/**/*.test.ts"],
     // A SCRATCH PROBE IS NEVER COLLECTED. A `zz-*` or `__probe-*` file dropped into `e2e/` would join every
     // other run's whole set while it exists; `tools/e2e-harness-law.test.mjs` lists a planted one to prove it.
     exclude: [...configDefaults.exclude, "**/zz-*", "**/__probe-*"],
