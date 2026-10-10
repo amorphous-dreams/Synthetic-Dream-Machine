@@ -1,5 +1,11 @@
-/** `lares nexus offering inspect <offering-cid>` — read one exact local gift. */
-import { runNexusInspectOffering, NexusOfferingInspectError } from "@lararium/node";
+/**
+ * `lares nexus offering inspect <offering-cid>` — read one exact local gift.
+ *
+ * The read routes through the store's door (`storeVerb`, row `nexus-offering-inspect`): inside the standing vessel
+ * against the Repo it holds, or here, holding the store for the moment of the read, when none stands.
+ */
+import { NexusOfferingInspectError, type NexusOfferingInspectResult } from "@lararium/node";
+import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -18,10 +24,11 @@ export async function cmdOffering(args: ParsedArgs): Promise<number> {
     return refuseUsage(args, "nexus offering", helpLines("nexus offering"), verb === "inspect" && !cid ? "name one offering CID" : undefined);
   }
   try {
-    const result = await runNexusInspectOffering({ offeringCid: cid });
+    const { output, via } = await storeVerb("nexus-offering-inspect", { offeringCid: cid }, NexusOfferingInspectError);
+    const result = output as unknown as NexusOfferingInspectResult;
     emit(args, {
       ok: true,
-      data: result as unknown as Record<string, unknown>,
+      data: { ...result, via } as unknown as Record<string, unknown>,
       human: () => {
         console.log("nexus offering inspect — local immutable gift:");
         console.log(`  offering: ${result.offeringCid}`);

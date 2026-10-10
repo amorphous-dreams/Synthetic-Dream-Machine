@@ -4,10 +4,13 @@
  * This is deliberately a read seam. It opens the deterministic Crossroads board only when the
  * board already exists, verifies the signed offering, and reports the local CAS gradient. It does
  * not create a board, fetch bytes, consult Offering Antigen, install anything, or touch genesis.
+ *
+ * IT READS THROUGH THE STORE'S ONE HOLDER (`hearth-door-verbs`, row `nexus-offering-inspect`): the standing vessel's
+ * own Repo, or the direct holder's (`ownedStore`). It opens no Repo of its own and shuts down none it was handed —
+ * inside a standing vessel the Repo it reads is the one the vessel's peers and islands sync through.
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   crossroadsDocUrl,
   inspectPluginOffering,
@@ -26,6 +29,8 @@ export class NexusOfferingInspectError extends Error {}
 
 export interface NexusOfferingInspectOptions {
   readonly offeringCid: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo: Repo;
   readonly storageDir?: string;
   readonly casDir?: string;
   readonly ownVesselKey?: string;
@@ -101,45 +106,41 @@ export async function runNexusInspectOffering(
   const storageDir = opts.storageDir ?? larDataDir();
   const vesselKey = opts.ownVesselKey ?? await loadVesselVerifyingKey();
   const boardUrl = crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const { repo } = opts;
+  let board: { doc(): LarDoc | undefined };
   try {
-    let board: { doc(): LarDoc | undefined };
-    try {
-      board = await resolveBootDoc<LarDoc>(repo, boardUrl, {
-        tideline: "hearth-private", label: "board:crossroads", expectPresent: true,
-      });
-    } catch {
-      throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
-    }
-    const record = board.doc()?.tiddlers?.[offeringAnnounceKey(opts.offeringCid)];
-    if (record === undefined) {
-      throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
-    }
-    const announce = parseAnnounce(record, opts.offeringCid);
-    const casDir = opts.casDir ?? casDirForStorage(storageDir);
-    const observed = await inspectPluginOffering({
-      offeringCid: opts.offeringCid,
-      offering: announce.offering,
-      read: (cid) => readCasBlobFromFs(cid, casDir),
+    board = await resolveBootDoc<LarDoc>(repo, boardUrl, {
+      tideline: "hearth-private", label: "board:crossroads", expectPresent: true,
     });
-    if (!observed.verification.ok) {
-      throw new NexusOfferingInspectError(`offering ${opts.offeringCid} refused: ${observed.verification.reason}`);
-    }
-    const byteStatus = observed.status === "corrupt"
-      ? "invalid"
-      : observed.status === "pending"
-        ? "partial"
-        : "complete";
-    return {
-      offeringCid: opts.offeringCid,
-      boardUrl,
-      transport: { status: "complete", source: "local-crossroads", remoteFetch: false },
-      inspection: { status: "verified", byteStatus, adoption: "not-requested" },
-      verification: observed.verification,
-      bytes: { held: observed.bytes.held, missing: observed.bytes.pending, invalid: observed.bytes.corrupt },
-      antigen: { status: "unavailable", reason: "not-configured" },
-    };
-  } finally {
-    await repo.shutdown().catch(() => { /* inspection is already complete */ });
+  } catch {
+    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
   }
+  const record = board.doc()?.tiddlers?.[offeringAnnounceKey(opts.offeringCid)];
+  if (record === undefined) {
+    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} is not present on the local Crossroads board`);
+  }
+  const announce = parseAnnounce(record, opts.offeringCid);
+  const casDir = opts.casDir ?? casDirForStorage(storageDir);
+  const observed = await inspectPluginOffering({
+    offeringCid: opts.offeringCid,
+    offering: announce.offering,
+    read: (cid) => readCasBlobFromFs(cid, casDir),
+  });
+  if (!observed.verification.ok) {
+    throw new NexusOfferingInspectError(`offering ${opts.offeringCid} refused: ${observed.verification.reason}`);
+  }
+  const byteStatus = observed.status === "corrupt"
+    ? "invalid"
+    : observed.status === "pending"
+      ? "partial"
+      : "complete";
+  return {
+    offeringCid: opts.offeringCid,
+    boardUrl,
+    transport: { status: "complete", source: "local-crossroads", remoteFetch: false },
+    inspection: { status: "verified", byteStatus, adoption: "not-requested" },
+    verification: observed.verification,
+    bytes: { held: observed.bytes.held, missing: observed.bytes.pending, invalid: observed.bytes.corrupt },
+    antigen: { status: "unavailable", reason: "not-configured" },
+  };
 }

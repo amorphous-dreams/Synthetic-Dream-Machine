@@ -20,6 +20,8 @@
  *   persona-new                                  a face onto a standing place (`commands/init`)
  *   persona-kel-head                             a persona-KEL head off the local board (`persona-admit-flow`)
  *   nexus-publish                                the Crossroads offering (`commands/nexus-publish`)
+ *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
+ *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
  *
  * A REFUSAL is an answer, never a fault: it comes back as `{ refused }`, so the CLI names it exactly as the direct
@@ -42,6 +44,7 @@ import { runDeviceAdmit } from "./commands/device-admit.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
 import { runFoundTheFace } from "./commands/init.js";
 import { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
+import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
 import { makeLocalPersonaKelHeadResolver } from "./persona-admit-flow.js";
 import { ownedStore } from "./owned-store.js";
@@ -64,7 +67,7 @@ export const HEARTH_DOOR_VERBS = [
   "host-state", "host-roll", "host-invite", "walk-state", "walk-take", "walk-invite",
   "nexus-kapae", "nexus-kapae-list", "edge-kapae", "cabal-vouch", "cabal-join", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
-  "nexus-publish", "raise-sign",
+  "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
 export type HearthDoorVerb = (typeof HEARTH_DOOR_VERBS)[number];
 
@@ -73,7 +76,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
   HostRefusal, WalkRefusal, NexusKapaeError, EdgeKapaeError, CabalVouchError, CabalJoinError,
-  NexusPublishError, RaiseSignError,
+  NexusPublishError, NexusOfferingInspectError, RaiseSignError,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -165,6 +168,9 @@ function storeDoorRows(deps: HearthDoorDeps): Record<HearthDoorVerb, Row> {
       head: await (await makeLocalPersonaKelHeadResolver(repo))(need("persona-kel-head", args, "prefix")),
     })),
     "nexus-publish": () => answer("nexus-publish", async () => ({ ...(await runNexusPublishPlugins({ repo })) })),
+    "nexus-offering-inspect": (args) => answer("nexus-offering-inspect", async () => ({
+      ...(await runNexusInspectOffering({ offeringCid: need("nexus-offering-inspect", args, "offeringCid"), storageDir, repo })),
+    })),
     "raise-sign": (args) => answer("raise-sign", async () => ({
       ...(await runRaiseSign({ challengeText: str(args["challengeText"]) ?? "", handleIndex: int(args["handleIndex"]) ?? 0, sealHome, repo })),
     })),
