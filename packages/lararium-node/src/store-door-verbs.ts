@@ -78,15 +78,20 @@ export interface StoreDoorDeps {
   /**
    * A write just counted. `nexusAid` names the hosting doc a roll opened (host-roll only); every other caller
    * passes nothing. Absent on `storeDoorDirect` — a direct act has no live reading to refold.
+   *
+   * A caller MAY return `true` to claim it re-presented this write live (never a promise — the refold itself
+   * stays fire-and-forget, so there is nothing for this row to await); any other return (including plain
+   * `void`) claims NOTHING about the outcome. A row that reads `represented` off this return, rather than off
+   * whether the hook merely EXISTS, never claims a live re-presentation it has no evidence for.
    */
-  readonly onRolled?:  (nexusAid?: string) => void;
+  readonly onRolled?:  (nexusAid?: string) => boolean | void;
 }
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "host-state", "host-roll", "host-invite", "walk-state", "walk-take", "walk-invite",
   "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
-  "nexus-posture", "nexus-admit-take",
+  "nexus-posture", "nexus-admit-take", "seal-home-refold",
   "edge-kapae", "cabal-vouch", "cabal-join", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
@@ -196,9 +201,24 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const r = await takeAdmitBundle({ sealHome, raw });
       // RE-PRESENT through the live hook when a vessel stands over this row; `storeDoorDirect` supplies none,
       // so a bundle taken with no vessel standing simply waits for the next boot's dial to present it.
-      const represented = deps.onRolled !== undefined;
-      deps.onRolled?.(r.aid);
+      // `represented` reads the hook's OWN claim, never merely whether a vessel stands to call it: a vessel
+      // standing proves this row COULD try to re-present, not that it DID — the hook is the only one in a
+      // position to say which, and absent a truthful `true` from it, this never claims a live re-presentation
+      // it has no evidence for.
+      const represented = deps.onRolled?.(r.aid) === true;
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
+    }),
+
+    // A WRITE LANDED BESIDE THE SEAL HOME, NOT ON THE REPO. `accept-carriage`, `carry-for` and a carried
+    // `seal import` sign or keep bytes under `sealHome` directly (a consent, a carrier seal, a grown carried
+    // set) — none of them touch this vessel's Repo, so none of them belong on this table as a WRITE row of
+    // their own. But a standing vessel's live readings (`readCarried`, the antigen/board folds its dial
+    // presents against) refold only on this same hook, so a caller that just changed one of those files pokes
+    // it here: no Repo read, no write of its own, just the SAME refold every other row already triggers.
+    "seal-home-refold": () => answer("seal-home-refold", async () => {
+      const claimed  = deps.onRolled?.();
+      const attempted = deps.onRolled !== undefined;
+      return { attempted, refolded: claimed === true };
     }),
 
     "edge-kapae": (args) => answer("edge-kapae", async () => ({
