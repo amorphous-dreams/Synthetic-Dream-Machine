@@ -34,11 +34,17 @@
  *
  * Where a writer exports its own path function, the row spells its filename through it, so a writer that
  * moves takes the row with it. Login-keyed identity filenames carry an optional `-<login>` segment.
+ *
+ * ── THE VK ROTATION READS THESE ROWS ────────────────────────────────────────────────────────────
+ * Every `hot` and `cold` carrier standing is a VK-sealed carrier (`vkSealedCarriers`), named by its home and
+ * its file, and `rotateVesselVk` hands exactly that list to the sealed writer's rotation. No caller picks the
+ * carriers a rotation re-seals; the writer then checks the list against every file the homes hold, so a
+ * VK-sealed file no row names refuses the rotation rather than staying behind under a retired VK.
  */
 
 import { readdirSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
-import type { KeyClass } from "@lararium/mesh";
+import { rotateVk, type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type VesselKey } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, veilArchivePath } from "./identity-anchors.js";
 import { reserveMineSharePath } from "./seal-reserve-store.js";
@@ -57,6 +63,11 @@ export interface CustodyHomes {
   readonly identity: string;
   readonly storage:  string;
   readonly seal:     string;
+}
+
+/** The slot tree's path: the one file outside the VK that wraps it. */
+export function vkSlotsPath(identityDir: string = larIdentityDir()): string {
+  return join(identityDir, "vk-slots.bin");
 }
 
 /** The homes the running vessel's own resolvers name. */
@@ -136,7 +147,7 @@ function buildTable(): readonly CarrierRow[] {
          writer: "node-vessel-identity (founding)" }),
     id({ row: "vessel-kel", match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding)" }),
-    id({ row: "vk-slots", match: file("vk-slots.bin"), custody: "floor", keyClass: null,
+    id({ row: "vk-slots", match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind" }),
 
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────
@@ -186,6 +197,8 @@ function buildTable(): readonly CarrierRow[] {
          writer: "node-circle-store" }),
     id({ row: "reserve-state", match: file("seal-reserve-state.json"), custody: "hot", keyClass: null,
          writer: "seal-reserve-store" }),
+    id({ row: "seal-day", match: file(".archive-seal-day.json"), custody: "hot", keyClass: null,
+         writer: "vault seal (the seal-day stamp)" }),
     row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
     row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
@@ -272,6 +285,33 @@ export function carrierCensus(homes: CustodyHomes): CarrierEntry[] {
 /** The identity home's carriers alone — the key census and the seal lifecycle ask this home only. */
 export function identityCarrierCensus(identityDir: string): CarrierEntry[] {
   return censusHome("identity", identityDir);
+}
+
+// ── the VK-sealed carriers, derived from the rows ────────────────────────────────────────────────
+
+/** Every hot and cold carrier standing in `homes`, as the sealed writer names it: `<home>/<file>`. */
+export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
+  return carrierCensus(homes)
+    .filter((e) => e.custody === "hot" || e.custody === "cold")
+    .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path }));
+}
+
+/**
+ * Rotate the vessel's VK over every VK-sealed carrier the table names in `homes`, binding `slots` over the new
+ * VK at the identity home's slot tree. The sealed writer proves `oldVk` against the standing tree and refuses a
+ * VK-sealed file the census omits, before any write.
+ */
+export async function rotateVesselVk(args: {
+  readonly io:     CustodyIo;
+  readonly homes:  CustodyHomes;
+  readonly oldVk:  VesselKey;
+  readonly newVk:  VesselKey;
+  readonly slots:  readonly SlotSpec[];
+}): Promise<SlotTree> {
+  return rotateVk({
+    io: args.io, treePath: vkSlotsPath(args.homes.identity), carriers: vkSealedCarriers(args.homes),
+    oldVk: args.oldVk, newVk: args.newVk, slots: args.slots,
+  });
 }
 
 // ── the passphrase seal lifecycle, derived from the rows ─────────────────────────────────────────
