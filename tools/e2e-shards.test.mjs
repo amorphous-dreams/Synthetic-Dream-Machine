@@ -15,7 +15,7 @@ const TRACKED = ["tests/e2e/alpha.test.ts", "tests/e2e/beta.test.ts"];
 function goodReport(filePaths, nTestsPerFile = 1) {
   const testResults = filePaths.map((name) => ({ name, status: "passed" }));
   const nTotal = filePaths.length * nTestsPerFile;
-  return { numTotalTests: nTotal, numFailedTests: 0, success: true, testResults };
+  return { numTotalTests: nTotal, numPassedTests: nTotal, numFailedTests: 0, success: true, testResults };
 }
 
 function shardReportsFor(map) {
@@ -149,8 +149,8 @@ test("RED — a file the shards ran that is not in the tracked set refuses by na
   );
 });
 
-// ── a duplicate run of the same file across two shards still unions to ONE name ────────────────
-test("CONTROL — the same file named by two shards (a sharding overlap) still reads as one executed file", () => {
+// ── RED 5d: a file more than one shard ran refuses by name (never collapses silently) ───────────
+test("RED — the same file run by two shards (a sharding overlap) refuses by name", () => {
   const verdict = evaluateMergeGate({
     shardCount: 2,
     shardReports: shardReportsFor({
@@ -159,8 +159,29 @@ test("CONTROL — the same file named by two shards (a sharding overlap) still r
     }),
     trackedFiles: TRACKED,
   });
-  assert.equal(verdict.ok, true, verdict.problems.join("; "));
-  assert.equal(verdict.executedFileCount, 2);
+  assert.equal(verdict.ok, false);
+  assert.ok(
+    verdict.problems.some((p) => p.includes("file-union mismatch") && p.includes("alpha.test.ts") && p.includes("shards=[1,2]")),
+    verdict.problems.join("; "),
+  );
+});
+
+// ── RED: an all-skipped shard (zero PASSING tests) refuses even though numTotalTests > 0 ────────
+test("RED — a shard with only pending/skipped tests (numPassedTests: 0) refuses as zero-test", () => {
+  const verdict = evaluateMergeGate({
+    shardCount: 1,
+    shardReports: shardReportsFor({
+      1: {
+        report: {
+          numTotalTests: 3, numPendingTests: 3, numPassedTests: 0, numFailedTests: 0, success: true,
+          testResults: [{ name: "/runner/a/tests/e2e/alpha.test.ts" }, { name: "/runner/a/tests/e2e/beta.test.ts" }],
+        },
+      },
+    }),
+    trackedFiles: TRACKED,
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.problems.some((p) => p.includes("zero-test shard") && p.includes("pending=3")), verdict.problems.join("; "));
 });
 
 // ── relativeToE2eDir ─────────────────────────────────────────────────────────────────────────────

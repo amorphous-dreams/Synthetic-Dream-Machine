@@ -63,7 +63,9 @@ export function relativeToE2eDir(path) {
 export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
   const problems = [];
   let totalTests = 0;
-  const executedFiles = new Set();
+  // Which shard(s) ran each file — `--shard=k/N` partitions test FILES disjointly by design, so a
+  // file read by more than one shard is a sharding fault, never a lawful overlap to collapse quietly.
+  const shardsOfFile = new Map();
   const byShard = new Map(shardReports.map((r) => [r.shard, r]));
 
   for (let shard = 1; shard <= shardCount; shard++) {
@@ -79,24 +81,42 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
     const r = entry.report;
     const nTotal = Number(r.numTotalTests ?? 0);
     const nFailed = Number(r.numFailedTests ?? 0);
+    // `numPassedTests`, never `numTotalTests` alone — an all-skipped/all-pending shard counts its
+    // skips as "tests" and would otherwise read as a clean run that verified nothing (the silent-zero
+    // door the episkopos named: numTotalTests:3, numPendingTests:3, numPassedTests:0 read ok:true).
+    const nPassed = Number(r.numPassedTests ?? 0);
     const success = r.success !== false;
-    if (nTotal === 0) problems.push(`zero-test shard: shard ${shard} reported zero tests`);
+    if (nPassed === 0) {
+      problems.push(
+        `zero-test shard: shard ${shard} reported zero passing tests (total=${nTotal}, pending=${Number(r.numPendingTests ?? 0)})`,
+      );
+    }
     if (nFailed > 0 || !success) problems.push(`red shard: shard ${shard} failed (${nFailed} failing test(s))`);
     totalTests += nTotal;
     for (const tr of r.testResults ?? []) {
-      if (typeof tr.name === "string") executedFiles.add(relativeToE2eDir(tr.name));
+      if (typeof tr.name !== "string") continue;
+      const file = relativeToE2eDir(tr.name);
+      const shards = shardsOfFile.get(file) ?? new Set();
+      shards.add(shard);
+      shardsOfFile.set(file, shards);
     }
   }
 
   if (totalTests === 0) problems.push("zero total: every shard combined reported zero tests");
 
+  const executedFiles = new Set(shardsOfFile.keys());
   const tracked = new Set(trackedFiles.map(relativeToE2eDir));
   const missing = [...tracked].filter((f) => !executedFiles.has(f)).sort();
   const extra = [...executedFiles].filter((f) => !tracked.has(f)).sort();
-  if (missing.length > 0 || extra.length > 0) {
+  const duplicated = [...shardsOfFile.entries()]
+    .filter(([, shards]) => shards.size > 1)
+    .map(([file, shards]) => `${file} (shards=[${[...shards].sort((a, b) => a - b).join(",")}])`)
+    .sort();
+  if (missing.length > 0 || extra.length > 0 || duplicated.length > 0) {
     const parts = [];
     if (missing.length > 0) parts.push(`never run=[${missing.join(", ")}]`);
     if (extra.length > 0) parts.push(`run but untracked=[${extra.join(", ")}]`);
+    if (duplicated.length > 0) parts.push(`run by more than one shard=[${duplicated.join(", ")}]`);
     problems.push(`file-union mismatch: the shards' executed files differ from the tracked e2e set (${parts.join("; ")})`);
   }
 
