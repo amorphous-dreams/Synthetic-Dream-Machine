@@ -36,8 +36,9 @@
  *
  * THE LEAF'S FACE. Every leaf pulls before it joins its channel, on every dial and whenever a sibling closes a
  * session because the head rolled. Every leaf re-deposits its own head chain, so a herm that restarted or let go
- * heals. A leaf pins at least two herms and asks them all at once, each under a deadline and a body cap: one herm
- * that withholds, floods or hangs costs the leaf no more than its deadline, and the others carry the move.
+ * heals. A leaf asks every herm it pins at once, each under a deadline and a body cap: across two herms or more, one
+ * that withholds, floods or hangs costs the leaf no more than its deadline, and the others carry the move. A leaf
+ * pinning one herm stands degraded and says so on every dial: nothing carries the move past that herm's silence.
  * Withholding stays undetectable from one herm: a truncated suffix verifies, so it reads as "no rotation yet".
  *
  * THE READER FOLDS (`pullPersonaKelSuccessors`) through the one reader (`foldPersonaContests`: verify, then fold). It
