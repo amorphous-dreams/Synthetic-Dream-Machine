@@ -18,7 +18,8 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 PORT="${WELD_PORT:-5173}"
-READY_ATTEMPTS="${WELD_READY_ATTEMPTS:-60}"
+# 240 × 0.5 s: a cold `npx vite` after a Chromium install on a loaded runner can take past 30 s to spawn.
+READY_ATTEMPTS="${WELD_READY_ATTEMPTS:-240}"
 READY_INTERVAL="${WELD_READY_INTERVAL:-0.5}"
 READY_SETTLE_SECONDS="${WELD_READY_SETTLE_SECONDS:-0.2}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-}"

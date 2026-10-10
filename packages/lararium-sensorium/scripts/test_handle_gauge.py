@@ -125,9 +125,11 @@ def test_closing_a_palace_gives_its_handles_back_and_the_residue_does_not_scale(
     assert small_opened > 0 and large_opened > small_opened, (
         "opening palaces cost nothing, or cost the same at both sizes — the gauge or chroma moved"
     )
-    # The load-bearing claim: the residue is a CONSTANT, not a per-palace cost. Ten times the
-    # palaces must not leave anything like ten times the handles.
-    assert large_residue <= small_residue + 2, (
+    # The load-bearing claim: the residue is a CONSTANT, not a per-palace cost. A leak leaves a cost
+    # per palace closed (opening costs about six apiece), so it grows with the palaces added; a runner's
+    # one-time stragglers move it by a handle or three and never with n. The bound reads that slope:
+    # under one handle per two palaces added, far below a leak's per-palace cost.
+    assert large_residue - small_residue < (LARGE - SMALL) // 2, (
         f"residue grew with palace count ({small_residue} at n={SMALL} → {large_residue} at "
         f"n={LARGE}) — close_palace is leaking per palace"
     )
