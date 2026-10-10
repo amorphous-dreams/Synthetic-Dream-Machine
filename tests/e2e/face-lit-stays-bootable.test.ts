@@ -31,6 +31,7 @@ import { mkdtempSync, rmSync, cpSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
+import { freePort } from "../harness/instance.js";
 
 const REPO = new URL("../..", import.meta.url).pathname;
 const CLI  = join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
@@ -38,11 +39,13 @@ const CLI  = join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
 /** A SHORT root, always. A deep one refuses the socket bind for reasons that have nothing to do with this
  *  claim, and a test that failed for that would accuse the wrong joint (`rendezvous-path`). */
 let root = "";
+/** The OS's port for this run, so a second copy of this file stands beside it rather than refusing it. */
+let port = 0;
 
 function lares(args: string[], env: Record<string, string> = {}): string {
   return execFileSync("node", [CLI, ...args], {
     cwd: REPO, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, LAR_ROOT: root, LAR_PORT: "8299", ...env },
+    env: { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), ...env },
   });
 }
 
@@ -55,7 +58,8 @@ function daemonUrlFromBootstrap(): string | null {
 }
 
 describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    port = await freePort();
     root = mkdtempSync(join(tmpdir(), "lares-face-"));
     cpSync(join(REPO, "genesis"), join(root, "genesis"), { recursive: true });
   });
@@ -64,7 +68,9 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
   test("founding the PLACE names a daemon document", () => {
     // VACUITY GATE. Every claim below compares against this id; if founding names none, the comparisons
     // would pass by having nothing to disagree with.
-    lares(["vessel", "found"]);
+    // A test builds nothing: every gated vessel door rides `--skip-build`, so the run measures the dist that
+    // stands and never rewrites it beneath a concurrent run.
+    lares(["vessel", "found", "--skip-build"]);
     expect(daemonUrlFromBootstrap()).toMatch(/^automerge:/);
   });
 
@@ -85,7 +91,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
   test("★ the vessel then BOOTS — it does not answer `hearth-private doc unavailable` ★", () => {
     // THE CLAIM. A place that lit a face must still stand. The mesh's hearth failed exactly here, on a
     // stable document id, through three restarts.
-    const out = lares(["vessel", "stand"]);
+    const out = lares(["vessel", "stand", "--skip-build"]);
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);
     const report = JSON.parse(out.slice(out.indexOf("{")));
@@ -100,7 +106,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // answered names nothing about whether THIS island's own daemon doc stands, and a boot that reported
     // "local corruption (no peer carries it)" would be reading an absence somewhere else as damage here.
     lares(["vessel", "stop"]);
-    const out = lares(["vessel", "stand"], { LAR_PEERS: `http://127.0.0.1:9/never-stands#${"ab".repeat(32)}` });
+    const out = lares(["vessel", "stand", "--skip-build"], { LAR_PEERS: `http://127.0.0.1:9/never-stands#${"ab".repeat(32)}` });
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);
   });

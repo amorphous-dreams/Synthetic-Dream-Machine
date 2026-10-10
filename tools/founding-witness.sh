@@ -25,11 +25,11 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 REPO=$PWD
 
-# DIST-FRESHNESS PREFLIGHT. The two inline `node --input-type=module -e` blocks below import
-# `packages/lararium-mesh/dist/index.js` BY PATH, outside `distModule`'s own guard. `vessel found`
-# and `persona new` run through the CLI's own fresh-build gate (`build-freshness.ts`) and need no
-# second check here; this witness's own direct reads of the mesh dist do.
-node "$REPO/tools/corpus-read.mjs" --assert-fresh "$REPO/packages/lararium-mesh/dist/index.js"
+# DIST-FRESHNESS PREFLIGHT. A WITNESS BUILDS NOTHING: `vessel found` rides `--skip-build`, so the CLI's
+# fresh-build gate never rewrites the shared dist beneath a concurrent run. The witness therefore asks
+# freshness itself, of the CLI it drives and of the mesh dist its two inline `node --input-type=module -e`
+# blocks import BY PATH, and a stale build refuses here naming its cure.
+node "$REPO/tools/corpus-read.mjs" --assert-fresh "$REPO/packages/lares-cli/dist/src/bin/lares.js" "$REPO/packages/lararium-mesh/dist/index.js"
 if [ $? -ne 0 ]; then exit 2; fi
 
 TB=$(mktemp -d -t lares-founding-witness-XXXXXX)
@@ -39,7 +39,7 @@ trap 'rm -rf "$TB"' EXIT
 git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$TB/" 2>/dev/null
 
 echo "founding-witness: founding under $TB"
-if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found >"$TB/init.log" 2>&1; then
+if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --skip-build >"$TB/init.log" 2>&1; then
   echo "  FOUNDING FAILED — tail of the log:"; tail -15 "$TB/init.log" | sed 's/^/    /'; exit 1
 fi
 

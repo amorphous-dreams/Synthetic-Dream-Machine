@@ -22,12 +22,12 @@
  *   R4 — a herm refuses hearth-scoped acts LEGIBLY     · refusal is a feature of the floor
  *   R5 — a herm LIFTS into a lararium                  · the cap-stack transition the runbook's rite performs
  */
-import { describe, test, expect, afterAll } from "vitest";
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync, spawn } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
+import { freePort, stageDir } from "../harness/instance.js";
 
 /**
  * The herm's rendezvous — DERIVED from its root, never hunted under it.
@@ -47,7 +47,8 @@ function sockStands(r: string): boolean { return existsSync(rendezvousFor(r)); }
 
 const REPO = new URL("../..", import.meta.url).pathname;
 const CLI  = join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
-const PORT = 8231;
+/** The OS's port for this run — every stand, stop and read below keys on it, so two copies never meet. */
+let PORT = 0;
 
 let root = "";
 
@@ -94,7 +95,7 @@ async function askVerb(verb: string, args: Record<string, unknown>, ceilingMs: n
 
 /** A herm's own root: the tracked genesis, and nothing else. No face is ever lit here. */
 function standHermRoot(): string {
-  const r = mkdtempSync(join(tmpdir(), "lares-herm-"));
+  const r = mkdtempSync(join(stageDir(), "lares-herm-"));
   execFileSync("bash", ["-lc", `cd ${REPO} && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "${r}/"`]);
   return r;
 }
@@ -187,6 +188,8 @@ async function readerOf(r: string): Promise<import("../../packages/lararium-mesh
   try { return await loadLeafIdentity(); }
   finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
 }
+
+beforeAll(async () => { PORT = await freePort(); });
 
 afterAll(async () => {
   try {

@@ -67,19 +67,35 @@ note() { printf '      \033[90m%s\033[0m\n' "$*"; }
 A_ROOT=$(mktemp -d /tmp/lares-contract-A-XXXXXX)
 B_ROOT=$(mktemp -d /tmp/lares-contract-B-XXXXXX)
 XFER=$(mktemp -d /tmp/lares-contract-xfer-XXXXXX)
-cleanup() { rm -rf "$A_ROOT" "$B_ROOT" "$XFER"; }
+
+# ── THE OS NAMES BOTH PORTS ─────────────────────────────────────────────────────────────────────────────────
+# A literal port refuses a second copy of this witness, and the second reads as a founding fault. One node
+# process holds both listeners open at once before it releases them, so the two ports are distinct.
+read -r A_PORT B_PORT < <(node -e '
+const net = require("node:net");
+const take = () => new Promise((ok) => { const s = net.createServer(); s.listen(0, "127.0.0.1", () => ok(s)); });
+Promise.all([take(), take()]).then((ss) => { console.log(ss.map((s) => s.address().port).join(" ")); ss.forEach((s) => s.close()); });
+')
+if [ -z "${A_PORT:-}" ] || [ -z "${B_PORT:-}" ]; then echo "contract-witness: the OS named no free ports" >&2; exit 2; fi
+
+# Both vessels stand DETACHED, so the witness stops each before it removes the root beneath it.
+cleanup() {
+  ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT"; node "$LARES" vessel stop >/dev/null 2>&1 )
+  ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT"; node "$LARES" vessel stop >/dev/null 2>&1 )
+  rm -rf "$A_ROOT" "$B_ROOT" "$XFER"
+}
 trap cleanup EXIT
 
 # Each vessel runs in its OWN environment. A subshell per call keeps A's LAR_ROOT from leaking into B's —
 # a single exported root would silently make this a one-vessel test again, which is the exact failure the
 # harness exists to rule out.
-as_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT=8097 LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; node "$LARES" "$@" ); }
-as_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT=8098 LARES_ARCHIVE_PASSPHRASE_NEW="witness-B"; node "$LARES" "$@" ); }
+as_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; node "$LARES" "$@" ); }
+as_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-B"; node "$LARES" "$@" ); }
 run_a() { step "$1"; shift; if out=$(as_a "$@" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
 run_b() { step "$1"; shift; if out=$(as_b "$@" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
 # `as_a` PREFIXES the binary, so a pipeline cannot ride it — `as_a sh -c ...` hands `sh` to the CLI as a
 # subcommand. A grep-the-output check needs a shell that inherits the vessel's environment instead.
-sh_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT=8097 LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; sh -c "$1" ); }
+sh_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; sh -c "$1" ); }
 run_sh_a() { step "$1"; if out=$(sh_a "$2" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
 
 say "contract-witness — two vessels, no shared key"
@@ -87,6 +103,11 @@ echo "  A (the Nexus):  $A_ROOT"
 echo "  B (the joiner): $B_ROOT"
 
 say "⓪ preflight"
+# A WITNESS BUILDS NOTHING. Every gated vessel door below rides `--skip-build`, so the witness measures the
+# dist that stands and never rewrites it beneath a concurrent run; a dist built from older source refuses
+# here, naming its cure, rather than running superseded logic.
+step "the CLI dist was built from the source it stands beside"
+if fresh=$(node "$REPO_ROOT/tools/corpus-read.mjs" --assert-fresh "$LARES" 2>&1); then ok; else bad "stale dist"; printf '%s\n' "$fresh" | sed 's/^/      /'; exit 2; fi
 step "the binary answers"
 if node "$LARES" help >/dev/null 2>&1; then ok; else bad "build first: pnpm build"; exit 1; fi
 
@@ -105,7 +126,7 @@ seed_genesis() {
 say "① vessel A — the Nexus founds and seats its quorum"
 step "seed A's genesis (the hearth true-name lives there)"
 if seed_genesis "$A_ROOT"; then ok; else bad "cp genesis"; fi
-run_a "A founds"                        vessel stand --install
+run_a "A founds"                        vessel stand --install --skip-build
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
 # with green that means nothing — the cascade a founding check must refuse.
 if [ "$FAILED" -ne 0 ]; then
@@ -145,7 +166,7 @@ say "② vessel B — an INDEPENDENT operator founds their own hearth"
 step "seed B's genesis"
 if seed_genesis "$B_ROOT"; then ok; else bad "cp genesis"; fi
 BEFORE=$FAILED
-run_b "B founds (own device key, own vault)"  vessel stand --install
+run_b "B founds (own device key, own vault)"  vessel stand --install --skip-build
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
   exit "$FAILED"
@@ -340,8 +361,8 @@ switch (mode) {
   default: console.error(`s6: unknown mode ${mode}`); process.exit(2);
 }
 JSEOF
-s6_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT=8097 LARES_ARCHIVE_PASSPHRASE_NEW="witness-A" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
-s6_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT=8098 LARES_ARCHIVE_PASSPHRASE_NEW="witness-B" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+s6_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+s6_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-B" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
 PRESENTED="$XFER/presented-admit.json"
 
 # ── ⑤ S6 — B's admit as a PRESENTATION ───────────────────────────────────────────────────────────────
