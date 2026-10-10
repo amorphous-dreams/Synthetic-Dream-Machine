@@ -12,7 +12,7 @@ services:
     networks: [pronaos]
 
   nginx:
-    image: nginx:1.29-alpine
+    image: nginx:1.30-alpine
     depends_on: [upstream]
     ports:
       - "127.0.0.1:${PRONAOS_NGINX_PORT:-18432}:8080"

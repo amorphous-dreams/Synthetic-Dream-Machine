@@ -39,7 +39,7 @@
   "devDependencies": {
     "@vitest/browser": "4.1.11",
     "@vitest/browser-playwright": "4.1.11",
-    "tsx": "4.23.13",
+    "tsx": "4.23.15",
     "vite-plugin-wasm": "3.6.0",
     "vitest": "4.1.11"
   }

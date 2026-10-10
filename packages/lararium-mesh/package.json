@@ -107,7 +107,7 @@
     "dev": "tsx src/index.ts"
   },
   "devDependencies": {
-    "tsx": "4.23.13",
+    "tsx": "4.23.15",
     "vitest": "4.1.11"
   },
   "dependencies": {
@@ -115,7 +115,6 @@
     "@automerge/automerge-repo": "2.6.0-alpha.3",
     "@automerge/automerge-repo-network-messagechannel": "2.6.0-alpha.3",
     "@automerge/automerge-repo-network-websocket": "2.6.0-alpha.3",
-    "@inkandswitch/onomancy": "0.2.0",
     "@noble/ciphers": "2.4.0",
     "@noble/curves": "2.4.0",
     "@noble/ed25519": "3.2.0",

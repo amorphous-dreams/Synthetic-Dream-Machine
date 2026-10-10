@@ -104,7 +104,7 @@ docker run -d --rm --name "$mutated_id" --network "$network" \
   -p "127.0.0.1::8080" \
   -v "$mutated:/etc/nginx/nginx.conf:ro" \
   -v "$SCRIPT_DIR/public:/usr/share/nginx/html:ro" \
-  nginx:1.29-alpine >/dev/null
+  nginx:1.30-alpine >/dev/null
 cleanup_mutated() { docker rm -f "$mutated_id" >/dev/null 2>&1 || true; rm -f "$mutated"; }
 trap 'cleanup_mutated; cleanup' EXIT HUP INT TERM
 mutated_port=$(docker port "$mutated_id" 8080/tcp | sed 's/.*://')

@@ -27,7 +27,7 @@ deploy/pronaos-nginx-reference-witness/test.sh
 ```
 
 The test uses a unique Compose project and removes its containers and network
-on exit. It uses only the official `nginx:1.29-alpine` and `node:24-alpine`
+on exit. It uses only the official `nginx:1.30-alpine` and `node:24-alpine`
 images.
 
 The cache split remains deliberate. The index and seed act as inspectable
