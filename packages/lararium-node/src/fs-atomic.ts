@@ -11,12 +11,15 @@
  *     atomic pointer-swap but NOT durability — a crash can leave the swap or the bytes un-flushed.
  *
  * The temp rides the SAME directory as the target (so the rename stays intra-filesystem = atomic) and
- * carries the pid (so concurrent writers never share a temp path).
+ * carries the pid, so two processes never share a temp path. A sync write runs whole before the next
+ * starts, so the pid alone parts its writers; async writes of one path overlap inside one process, so
+ * each async write's temp also carries its own random suffix.
  */
 
 import { writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, mkdirSync, chmodSync } from "node:fs";
 import { open, rename, rm } from "node:fs/promises";
 import { dirname } from "node:path";
+import { randomUUID } from "node:crypto";
 
 /**
  * Async sibling of `atomicWriteFileSync` — the same temp → fsync → rename → fsync-dir
@@ -26,7 +29,7 @@ import { dirname } from "node:path";
  * persists the rename's dirent. Same crash-atomicity guarantee, non-blocking shape.
  */
 export async function atomicWriteFile(path: string, data: string | Uint8Array): Promise<void> {
-  const tmp = `${path}.${process.pid}.tmp`;
+  const tmp = `${path}.${process.pid}.${randomUUID()}.tmp`;
   try {
     const fh = await open(tmp, "w");
     try {

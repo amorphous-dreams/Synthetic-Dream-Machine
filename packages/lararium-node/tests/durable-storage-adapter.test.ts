@@ -56,6 +56,25 @@ describe("DurableNodeFSStorageAdapter", () => {
     expect(back && [...back]).toEqual([2, 2]);        // fresh, not the primed [1,1,1]
   });
 
+  test("two saves of one key in flight together both land, the later call's bytes last", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    const a = new DurableNodeFSStorageAdapter(dir);
+    // The earlier save carries the larger chunk, so a write that did not wait would land it last.
+    await Promise.all([a.save(KEY, new Uint8Array(4 * 1024 * 1024).fill(1)), a.save(KEY, Uint8Array.from([2, 2, 2]))]);
+    const shard = join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot", "head0");
+    expect([...readFileSync(shard)]).toEqual([2, 2, 2]);
+  });
+
+  test("two adapters on one store saving one key together both land — no shared temp renames the other away", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    const a = new DurableNodeFSStorageAdapter(dir);
+    const b = new DurableNodeFSStorageAdapter(dir);
+    await Promise.all([a.save(KEY, Uint8Array.from([1, 1])), b.save(KEY, Uint8Array.from([2, 2, 2]))]);
+    const shard = join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot", "head0");
+    expect([[1, 1], [2, 2, 2]]).toContainEqual([...readFileSync(shard)]);
+    expect(readdirSync(join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot")).filter((n) => n.includes(".tmp"))).toHaveLength(0);
+  });
+
   test("strands no temp file in the shard dir after a save", async () => {
     const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
     const a = new DurableNodeFSStorageAdapter(dir);
