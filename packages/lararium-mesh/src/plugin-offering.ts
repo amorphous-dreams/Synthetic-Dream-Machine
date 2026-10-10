@@ -70,7 +70,9 @@ export interface OfferedBlob {
   readonly id:         string;
   readonly version:    string;
   readonly sha256:     string;
-  /** Present on a provenance-bearing offering (R2a); absent on a bare genesis-style blob descriptor. */
+  /** Provenance strictness: `verifyPluginOffering` REQUIRES this on every blob of a signed offering
+   *  (optional at the type level only so a bare genesis-style `RegionEntry` — never an actual signed
+   *  `PluginOffering` — stays structurally assignable here; `computePluginsCid` folds both shapes). */
   readonly provenance?: PluginProvenance;
 }
 
@@ -183,8 +185,28 @@ const OFFERED_BLOB_SHA256 = /^[0-9a-f]{64}$/;
  *  of its own that nothing here checks). */
 const LICENCE_ID = /^[A-Za-z0-9][A-Za-z0-9.+-]*$/;
 
+/** The closed field set a provenance block may carry — the SAME set `canonicalProvenance` picks by
+ *  name when it builds the signed preimage. An extra key beyond this set would still verify (the
+ *  canonicalizer silently drops it before hashing) while riding along UNSIGNED on the same CID —
+ *  exactly the hole "no unsigned field may ride the same CID" (provenance strictness) closes. */
+const PROVENANCE_FIELDS: ReadonlySet<string> = new Set(["source", "commit", "path", "licence", "author", "dependents", "runtimes"]);
+
+/** The closed field set one offered blob may carry — mirrors `canonicalOfferingBlobs`' pick list. */
+const OFFERED_BLOB_FIELDS: ReadonlySet<string> = new Set(["id", "version", "sha256", "provenance"]);
+
+function hasUnknownKeys(obj: object, allowed: ReadonlySet<string>): boolean {
+  return Object.keys(obj).some((k) => !allowed.has(k));
+}
+
+/**
+ * Every offered blob now REQUIRES provenance (provenance strictness): `p === undefined` refuses
+ * rather than passing as a bare genesis-style descriptor. A provenance block (or the blob
+ * carrying it) with any field outside the closed set above ALSO refuses — an unsigned extra field
+ * riding the same CID is precisely what the canonicalizer's silent pick-list would otherwise hide.
+ */
 function provenanceMalformed(p: PluginProvenance | undefined): boolean {
-  if (p === undefined) return false;
+  if (p === undefined) return true;
+  if (hasUnknownKeys(p, PROVENANCE_FIELDS)) return true;
   return (
     typeof p.source !== "string" || p.source.length === 0 ||
     typeof p.commit !== "string" || p.commit.length === 0 ||
@@ -212,7 +234,8 @@ export async function verifyPluginOffering(offering: PluginOffering): Promise<Of
     typeof offering.offeror !== "string" || !/^[0-9a-f]{64}$/i.test(offering.offeror) ||
     typeof offering.pluginsCid !== "string" || offering.pluginsCid.length === 0 ||
     !Array.isArray(offering.blobs) || offering.blobs.some((b) =>
-      !b || typeof b.id !== "string" || b.id.length === 0 ||
+      !b || typeof b !== "object" || hasUnknownKeys(b, OFFERED_BLOB_FIELDS) ||
+      typeof b.id !== "string" || b.id.length === 0 ||
       typeof b.version !== "string" || b.version.length === 0 ||
       typeof b.sha256 !== "string" || !OFFERED_BLOB_SHA256.test(b.sha256)) ||
     typeof offering.sig !== "string" || !/^[0-9a-f]{128}$/i.test(offering.sig)

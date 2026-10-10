@@ -26,6 +26,8 @@ async function offeringFor(bytes: Uint8Array): Promise<{ offering: PluginOfferin
     id: "$:/plugins/example/one",
     version: "alpha",
     sha256: sha256HexBytesSync(bytes),
+    // Provenance strictness: every offered blob requires one (plugin-offering.ts).
+    provenance: { source: "https://example.test/upstream", commit: "0".repeat(40), path: "p", licence: "MIT" },
   } as const;
   const offering = await signPluginOffering(
     { offeror: await offeror(), pluginsCid: computePluginsCid([blob]), blobs: [blob] }, sign,

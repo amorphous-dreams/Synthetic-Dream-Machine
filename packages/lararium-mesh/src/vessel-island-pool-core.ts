@@ -38,7 +38,7 @@ import type {
   IslandMsg_TeardownAck,
   WikiMsg_VerbResult,
 } from "./island-protocol.js";
-import type { WikiMountSpec } from "./wiki-recipe.js";
+import type { WikiMountSpec, WikiRecipe } from "./wiki-recipe.js";
 import type { ResidencyTemperature } from "./bag-residency.js";
 
 // ── Slots — two-state thermal axis (wela/anu) + orthogonal pin flag ──────────
@@ -113,8 +113,25 @@ export interface VesselIslandPoolCoreOptions {
   /** Called when an island emits a verse-event reaction. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event) => void;
   /** The engine's plugin-tiddler CIDs — every wiki island resolves them by CID from the local
-   *  CAS (the breath path), the same set the daemon island gets. Constant per genesis. */
+   *  CAS (the breath path), the same set the daemon island gets. Constant per genesis.
+   *  PRE-R3 shape: a vessel-WIDE floor every island gets identically. When `resolvePluginCids`
+   *  is ALSO supplied, a mount's final pluginCids come from that resolution instead (R3 — plugins
+   *  load by the WIKI'S OWN recipe); this field then has no effect on node, where R3 lands. The
+   *  browser pool (iteration 3) keeps reading this field alone — nothing here changes for it. */
   pluginCids?: readonly string[];
+  /**
+   * R3 — resolve ONE mount's own `spec.recipe` into the CIDs its manifest should carry (the
+   * fixed boot-set floor UNION this wiki's verified, byte-checked offering selection). Absent =
+   * every island gets the flat `pluginCids` floor above (the pre-R3 / browser reading). Present =
+   * called once per activation, BEFORE the worker spawns; a refusal here throws, so a wiki whose
+   * recipe names an unresolvable, colliding, or byte-missing offering never reads as an empty or
+   * successful mount — it fails the activation outright, exactly like any other mount failure
+   * (counted in the same OTP intensity ledger).
+   */
+  resolvePluginCids?: (recipe: WikiRecipe) => Promise<
+    | { readonly ok: true; readonly pluginCids: readonly string[] }
+    | { readonly ok: false; readonly error: string }
+  >;
   /**
    * Called when the island's `ea` declaration lands — the island speaks
    * "sovereignty, breath, life" and the vessel RESPONDS (never a synthetic
@@ -157,6 +174,7 @@ export class VesselIslandPoolCore {
   private readonly _diskMirrorGrant: DiskMirrorGrant;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event) => void) | null;
   private readonly _pluginCids:     readonly string[];
+  private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"] | null;
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _pendingWikiVerbs = new Map<string, {
     resolve: (r: Record<string, unknown>) => void;
@@ -175,6 +193,7 @@ export class VesselIslandPoolCore {
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
     this._pluginCids      = opts.pluginCids ?? [];
+    this._resolvePluginCids = opts.resolvePluginCids ?? null;
     this._onEa            = opts.onEa ?? null;
     this._mountSilenceMs       = opts.mountSilenceMs ?? HANDSHAKE_TIMEOUT_MS;
     this._mountStallMs         = opts.mountStallMs ?? 3 * this._mountSilenceMs;
@@ -262,6 +281,22 @@ export class VesselIslandPoolCore {
     // mount mechanism — one authority, no second collector. `pinned` still rides the
     // slot below (the collector reads pin-exemption on its own side).
 
+    // R3 — PLUGINS LOAD BY THIS WIKI'S OWN RECIPE. Resolved BEFORE any port/worker exists, so a
+    // refused selection (unknown offering, cid-mismatch, a duplicate or boot-set-collision claim,
+    // missing or corrupt bytes) never spends a worker spawn — it fails the activation outright,
+    // counted in the SAME intensity ledger as any other mount failure, never a silent empty
+    // success. Absent `resolvePluginCids` (the browser pool, pre-R3): unchanged, flat floor.
+    let pluginCids = this._pluginCids;
+    if (this._resolvePluginCids) {
+      const resolved = await this._resolvePluginCids(spec.recipe);
+      if (!resolved.ok) {
+        failures.push(Date.now());
+        this._mountFailures.set(wikiId, failures);
+        throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
+      }
+      pluginCids = resolved.pluginCids;
+    }
+
     const { mainPort, syncPort } = this._host.newSyncChannel();
     if (this._mainRepo) attachMessageChannelSync(this._mainRepo, mainPort);
 
@@ -281,7 +316,7 @@ export class VesselIslandPoolCore {
       {
         ...(storage            ? { storage }     : {}),
         ...(diskMirrors.length ? { diskMirrors } : {}),
-        ...(this._pluginCids.length ? { pluginCids: this._pluginCids } : {}),
+        ...(pluginCids.length ? { pluginCids } : {}),
       },
     );
 

@@ -62,6 +62,13 @@ export interface GenesisCasManifest {
  * JSON blob, by sha256. The daemon AND every wiki island resolve these by CID from
  * the local CAS (the breath path), never CRDT-syncing the bytes. One derivation,
  * fed to every island of the runtime.
+ *
+ * PRE-R3 SHAPE, STILL THE BROWSER'S READING (iteration 3 retires it there too): every island got
+ * the SAME vessel-wide list, with no per-recipe distinction. The node vessel no longer calls this
+ * directly — `bootSetPluginCids` below names the identical floor computation under the RIGHT
+ * scope (one fixed ingredient of a per-island resolution, never the whole answer by itself); see
+ * `resolveIslandPluginCids` for how a node island folds it together with its own recipe's
+ * verified offering selection.
  */
 export function pluginCidsFromIslandBlobs(
   blobs: Record<string, CasBlobLike> | undefined,
@@ -69,6 +76,73 @@ export function pluginCidsFromIslandBlobs(
   return Object.values(blobs ?? {})
     .filter((b) => b.id !== ENGINE_CORE_ID && b.mimeType === "application/json" && typeof b.sha256 === "string")
     .map((b) => b.sha256 as string);
+}
+
+/**
+ * bootSetPluginCids — the FIXED floor's plugin-tiddler CIDs (grammar + boot shadows), read
+ * straight off an island doc's blobs. Every island gets this ingredient regardless of its own
+ * recipe; it never moves per-wiki, only per-genesis-bake. See `resolveIslandPluginCids`.
+ */
+export function bootSetPluginCids(
+  blobs: Record<string, CasBlobLike> | undefined,
+): readonly string[] {
+  return Object.values(blobs ?? {})
+    .filter((b) => b.id !== ENGINE_CORE_ID && b.mimeType === "application/json" && typeof b.sha256 === "string")
+    .map((b) => b.sha256 as string);
+}
+
+/**
+ * bootSetIds — every blob id an island doc carries (engine core + grammar + boot shadows,
+ * genesis's own invariant after streams retirement). This is the id-namespace an offering's
+ * blob id must NEVER collide with (M3, `boot-set-collision` in `plugin-offering-selector.ts`):
+ * a third-party offering shadowing the fixed floor would let "no candidate earns boot status"
+ * and "a second grammar risks ambiguous routing" both happen for real.
+ */
+export function bootSetIds(
+  blobs: Record<string, CasBlobLike> | undefined,
+): ReadonlySet<string> {
+  return new Set(
+    Object.values(blobs ?? {})
+      .map((b) => b.id)
+      .filter((id): id is string => typeof id === "string"),
+  );
+}
+
+/**
+ * CasBytesFailure — the layer where a verified blob DESCRIPTOR (a recipe-selected offering's
+ * CID) meets the actual bytes a local CAS resolver holds. `missing-bytes` names a CID this CAS
+ * cannot resolve at all; `corrupt-bytes` names bytes present under a CID that does not rehash to
+ * it. See `plugin-offering-selector.ts`'s docblock: the selector and the lone-offering verify
+ * reason over signed DESCRIPTORS only and deliberately never fetch a byte — this is the one place
+ * descriptors meet bytes, so it is the one place these two codes get minted.
+ */
+export type CasBytesFailure =
+  | { readonly code: "missing-bytes"; readonly cid: string }
+  | { readonly code: "corrupt-bytes"; readonly cid: string; readonly computed: string };
+
+export type CasBytesVerdict =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly failure: CasBytesFailure };
+
+/**
+ * verifyCasBytes — fail-closed, by name. A selection whose descriptors already verified
+ * (signature, fold, provenance — `verifyPluginOffering`/`selectPluginBlobs`) but whose bytes
+ * never arrived, or arrived corrupt, NEVER reads as a successful mount: "missing or corrupt
+ * bytes fail closed by name" (golden-path-p2-recipe.md REFINEMENTS #7), never silently as an
+ * empty or trimmed set. Pure: the caller supplies the CAS read and the hash function.
+ */
+export function verifyCasBytes(
+  cids:     readonly string[],
+  readBytes: (cid: string) => Uint8Array | null,
+  hashHex:   (bytes: Uint8Array) => string,
+): CasBytesVerdict {
+  for (const cid of cids) {
+    const bytes = readBytes(cid);
+    if (!bytes) return { ok: false, failure: { code: "missing-bytes", cid } };
+    const computed = hashHex(bytes);
+    if (computed !== cid) return { ok: false, failure: { code: "corrupt-bytes", cid, computed } };
+  }
+  return { ok: true };
 }
 
 /**

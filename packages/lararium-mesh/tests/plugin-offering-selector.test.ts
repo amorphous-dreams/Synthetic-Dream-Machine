@@ -7,7 +7,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
-import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginOffering } from "../src/plugin-offering.js";
+import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginOffering, type PluginProvenance } from "../src/plugin-offering.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "../src/plugin-offering-selector.js";
 
 const SEED_A = new Uint8Array(32).fill(21);
@@ -20,8 +20,10 @@ async function offer(seed: Uint8Array, blobs: readonly OfferedBlob[]): Promise<P
     { offeror: await keyFor(seed), pluginsCid: computePluginsCid(blobs), blobs }, signerFor(seed));
 }
 
-const HIGHLIGHT: OfferedBlob = { id: "$:/plugins/tiddlywiki/highlight", version: "0.9.0", sha256: "aa".repeat(32) };
-const DYNAVIEW:  OfferedBlob = { id: "$:/plugins/tiddlywiki/dynaview",  version: "0.1.0", sha256: "bb".repeat(32) };
+// Provenance strictness: every offered blob requires one (plugin-offering.ts).
+const PROV: PluginProvenance = { source: "https://example.test/upstream", commit: "0".repeat(40), path: "p", licence: "MIT" };
+const HIGHLIGHT: OfferedBlob = { id: "$:/plugins/tiddlywiki/highlight", version: "0.9.0", sha256: "aa".repeat(32), provenance: PROV };
+const DYNAVIEW:  OfferedBlob = { id: "$:/plugins/tiddlywiki/dynaview",  version: "0.1.0", sha256: "bb".repeat(32), provenance: PROV };
 
 function lookupOf(...offerings: PluginOffering[]): OfferingLookup {
   const byCid = new Map(offerings.map((o) => [pluginOfferingCid(o), o]));
@@ -135,5 +137,47 @@ describe("the list round-trips exactly into the manifest's pluginCids shape", ()
 
   test("CONTROL — an empty selection yields an empty pluginCids list", () => {
     expect(selectedPluginCids([])).toEqual([]);
+  });
+});
+
+/**
+ * ★ M3 — the fixed boot set is UNCLAIMABLE: an offering naming one of its ids refuses the
+ * WHOLE selection, never a silent pass that lets a third-party offering shadow the floor. ★
+ */
+describe("★ the boot set never comes up for claim ★", () => {
+  const GRAMMAR_ID = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
+  const BOOT_SET = new Set([GRAMMAR_ID, "lararium-boot-shadows"]);
+
+  test("an offering whose blob id names the house grammar refuses as boot-set-collision", async () => {
+    const shadow: OfferedBlob = { id: GRAMMAR_ID, version: "0.0.1", sha256: "dd".repeat(32), provenance: PROV };
+    const offering = await offer(SEED_A, [shadow]);
+    const cid = pluginOfferingCid(offering);
+    const result = await selectPluginBlobs([cid], lookupOf(offering), BOOT_SET);
+    expect(result).toEqual({ ok: false, failure: { code: "boot-set-collision", id: GRAMMAR_ID, offeringCid: cid } });
+  });
+
+  test("CONTROL — the SAME offering selects ok when the caller passes no bootSetIds (pre-R3 callers unaffected)", async () => {
+    const shadow: OfferedBlob = { id: GRAMMAR_ID, version: "0.0.1", sha256: "dd".repeat(32), provenance: PROV };
+    const offering = await offer(SEED_A, [shadow]);
+    const cid = pluginOfferingCid(offering);
+    const result = await selectPluginBlobs([cid], lookupOf(offering));
+    expect(result).toEqual({ ok: true, blobs: [shadow] });
+  });
+
+  test("CONTROL — an ordinary offering (no boot-set id) still selects ok with bootSetIds wired", async () => {
+    const offering = await offer(SEED_A, [HIGHLIGHT]);
+    const cid = pluginOfferingCid(offering);
+    const result = await selectPluginBlobs([cid], lookupOf(offering), BOOT_SET);
+    expect(result).toEqual({ ok: true, blobs: [HIGHLIGHT] });
+  });
+
+  test("the boot-set-collision check fires BEFORE duplicate-plugin — the floor is unclaimable, not merely already claimed", async () => {
+    const shadow: OfferedBlob = { id: GRAMMAR_ID, version: "0.0.1", sha256: "dd".repeat(32), provenance: PROV };
+    const offA = await offer(SEED_A, [shadow]);
+    const offB = await offer(SEED_B, [{ ...shadow, sha256: "ee".repeat(32) }]);
+    const cidA = pluginOfferingCid(offA);
+    const cidB = pluginOfferingCid(offB);
+    const result = await selectPluginBlobs([cidA, cidB], lookupOf(offA, offB), BOOT_SET);
+    expect(result).toEqual({ ok: false, failure: { code: "boot-set-collision", id: GRAMMAR_ID, offeringCid: cidA } });
   });
 });

@@ -242,9 +242,14 @@ export interface WikiRecipe {
    * (the selector refuses a collision instead — see that module's docblock — so order names
    * precedence for everything EXCEPT the one case the selector already fails closed on).
    *
-   * Absent or empty = no optional plugins load. This list never names the Lararium boot set
-   * (engine core, memetic-wikitext grammar, boot shadows) — that floor stays fixed and travels
-   * through `coreHash`/`pluginCids` on the manifest independently of any recipe.
+   * Absent or empty = no optional plugins load. This list never NAMES the Lararium boot set
+   * (engine core, memetic-wikitext grammar, boot shadows) — a blob id inside the fixed floor
+   * refuses the WHOLE selection as `boot-set-collision` (M3), so no recipe can shadow it. The
+   * floor's OWN computation stays independent of any recipe (it travels through `coreHash` plus
+   * a fixed-blob derivation off the island doc); a per-island resolver then folds that floor
+   * together with THIS recipe's verified selection into the one `pluginCids` the manifest
+   * carries (see `island-protocol.ts`'s `IslandMsg_Manifest.pluginCids` docblock) — the recipe
+   * never SOURCES the floor, even though the wire field ends up carrying both.
    */
   readonly pluginOfferings?: readonly string[];
 }
@@ -409,12 +414,30 @@ export function recipeFromRecord(rec: LarTiddlerRecord, slug: string): WikiRecip
  * appear in a `sha256:`-prefixed CID so no `[[...]]` quoting) or a JS/JSON array, exactly the
  * `bag-stack` convention (`bag-stack-from-rec.ts`). ORDER IS PRESERVED (no reverse): unlike
  * `bag-stack`, this list carries no cascade-vs-storage inversion — the record's order IS the
- * recipe's order. Returns [] for null/undefined/unrecognised types.
+ * recipe's order.
+ *
+ * FAIL-CLOSED (M4): returns [] ONLY for an absent field (null/undefined — "this record names no
+ * offerings"). Any OTHER shape the field cannot honestly carry THROWS rather than silently
+ * normalizing into an empty or trimmed list — a non-string array entry, or a field that is
+ * neither a string nor an array, is a torn record, never an empty recipe. REFINEMENT 7:
+ * "an absent offering never reads as an empty or successful recipe" extends here to the FIELD
+ * itself — a malformed field must never read as an empty one either.
  */
 export function parsePluginOfferings(raw: unknown): string[] {
-  if (Array.isArray(raw)) return (raw as unknown[]).filter((x): x is string => typeof x === "string");
-  if (typeof raw === "string") return raw.trim().split(/\s+/).filter(Boolean);
-  return [];
+  if (raw === undefined || raw === null) return [];
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    return trimmed.length ? trimmed.split(/\s+/) : [];
+  }
+  if (Array.isArray(raw)) {
+    return raw.map((entry, i) => {
+      if (typeof entry !== "string") {
+        throw new Error(`plugin-offerings[${i}] is a ${typeof entry}, not a string — a malformed entry refuses rather than being silently dropped`);
+      }
+      return entry;
+    });
+  }
+  throw new Error(`plugin-offerings field is a ${typeof raw}, neither a list string nor an array — a malformed field refuses rather than reading as an empty recipe`);
 }
 
 /**

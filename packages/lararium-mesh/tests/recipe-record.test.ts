@@ -112,3 +112,29 @@ describe("★ the recipe's plugin-offerings list round-trips through the record 
     expect(recipeFromRecord(tampered, "solo").pluginOfferings).toEqual([OFF_A]);
   });
 });
+
+/**
+ * ★ M4 — a malformed `plugin-offerings` field REFUSES; it never silently normalizes into an
+ * empty or trimmed recipe. (`parsePluginOfferings`, read through `recipeFromRecord`.) ★
+ */
+describe("★ a malformed plugin-offerings field refuses, never reads as an empty recipe ★", () => {
+  const recordWith = (raw: unknown): LarTiddlerRecord => ({
+    tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working"), "plugin-offerings": raw as never },
+  });
+
+  test("CONTROL — an absent field reads as no offerings, the lawful empty case", () => {
+    expect(recipeFromRecord({ tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working") } }, "solo").pluginOfferings).toBeUndefined();
+  });
+
+  test("a bare number REFUSES — it must NOT silently read as an empty recipe", () => {
+    expect(() => recipeFromRecord(recordWith(42), "solo")).toThrow(/plugin-offerings field is a number/);
+  });
+
+  test("an array carrying a non-string entry REFUSES — it must NOT silently drop the junk and keep the rest", () => {
+    expect(() => recipeFromRecord(recordWith(["sha256:" + "aa".repeat(32), 42, null]), "solo")).toThrow(/plugin-offerings\[1\] is a number/);
+  });
+
+  test("a plain object REFUSES", () => {
+    expect(() => recipeFromRecord(recordWith({ not: "a list" }), "solo")).toThrow(/plugin-offerings field is a object/);
+  });
+});

@@ -19,7 +19,7 @@ import { hex } from "../src/crypto.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
 import {
   pluginOfferingBytes, pluginOfferingCid, signPluginOffering, verifyPluginOffering,
-  type OfferedBlob, type PluginProvenance,
+  type OfferedBlob, type PluginProvenance, type PluginOffering,
 } from "../src/plugin-offering.js";
 import { PLUGIN_OFFERING_DOMAIN } from "../src/domains.js";
 
@@ -27,9 +27,14 @@ const SEED = new Uint8Array(32).fill(21);
 const signer = async (bytes: Uint8Array): Promise<string> => hex(await ed.signAsync(bytes, SEED));
 const offerorKey = async (): Promise<string> => hex(await ed.getPublicKeyAsync(SEED));
 
+// Provenance strictness: every offered blob now REQUIRES a provenance claim (no more bare
+// genesis-style descriptors inside a SIGNED offering), so the shared fixture carries one.
+const BASE_PROV: PluginProvenance = {
+  source: "https://example.test/upstream", commit: "0".repeat(40), path: "plugins/fixture", licence: "MIT",
+};
 const BLOBS: readonly OfferedBlob[] = [
-  { id: "$:/plugins/sq/streams", version: "1.2.0", sha256: "aa".repeat(32) },
-  { id: "$:/plugins/joe/notes",  version: "0.4.1", sha256: "bb".repeat(32) },
+  { id: "$:/plugins/sq/streams", version: "1.2.0", sha256: "aa".repeat(32), provenance: BASE_PROV },
+  { id: "$:/plugins/joe/notes",  version: "0.4.1", sha256: "bb".repeat(32), provenance: BASE_PROV },
 ];
 
 async function offer(blobs: readonly OfferedBlob[]) {
@@ -166,6 +171,47 @@ describe("★ publisher provenance ★", () => {
     const offering = await signPluginOffering(
       { offeror: await offerorKey(), pluginsCid: computePluginsCid(noAuthor), blobs: noAuthor }, signer);
     await expect(verifyPluginOffering(offering)).resolves.toEqual({ ok: true });
+  });
+
+  test("★ PROVENANCE STRICTNESS — a blob with NO provenance at all refuses by code malformed-provenance ★", async () => {
+    const bare = [{ id: PROVENANCE_BLOBS[0]!.id, version: PROVENANCE_BLOBS[0]!.version, sha256: PROVENANCE_BLOBS[0]!.sha256 }];
+    const offering = await signPluginOffering(
+      { offeror: await offerorKey(), pluginsCid: computePluginsCid(bare), blobs: bare }, signer);
+    const verdict = await verifyPluginOffering(offering);
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.code).toBe("malformed-provenance");
+  });
+
+  test("★ MUTATION PROOF — a bare blob verifies once provenance is restored (the control for the test above) ★", async () => {
+    const offering = await offer(PROVENANCE_BLOBS);
+    await expect(verifyPluginOffering(offering)).resolves.toEqual({ ok: true });
+  });
+
+  test("★ an UNKNOWN field on the provenance block refuses by code malformed-provenance — no unsigned field may ride the same CID ★", async () => {
+    // Sign cleanly FIRST, then splice the extra field onto the already-signed object. Signing (and the
+    // signature recomputation inside verify) both canonicalize blobs by a fixed pick-list, so an extra
+    // field present only in the INPUT to signPluginOffering would vanish before it ever reached verify —
+    // that is precisely the hole this check closes, so the test must recreate the hole: bytes physically
+    // on the wire that the signature's own preimage recomputation would silently ignore.
+    const offering = await offer(PROVENANCE_BLOBS);
+    const withExtra = {
+      ...offering,
+      blobs: [{ ...offering.blobs[0]!, provenance: { ...offering.blobs[0]!.provenance, extra: "unsigned-passenger" } }],
+    } as unknown as PluginOffering;
+    const verdict = await verifyPluginOffering(withExtra);
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.code).toBe("malformed-provenance");
+  });
+
+  test("★ an UNKNOWN field on the BLOB itself refuses by code malformed — the canonicalizer would have dropped it silently ★", async () => {
+    const offering = await offer(PROVENANCE_BLOBS);
+    const withExtra = {
+      ...offering,
+      blobs: [{ ...offering.blobs[0]!, extraField: "unsigned-passenger" }],
+    } as unknown as PluginOffering;
+    const verdict = await verifyPluginOffering(withExtra);
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.code).toBe("malformed");
   });
 });
 

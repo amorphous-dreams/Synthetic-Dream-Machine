@@ -29,6 +29,13 @@
  * claims an id; a later offering naming it again refuses the WHOLE selection — never a silent override,
  * never a silent drop.
  *
+ * ── THE BOOT SET NEVER COMES UP FOR CLAIM (M3) ──────────────────────────────────────────────────
+ * A caller MAY pass `bootSetIds` — the fixed floor's own blob ids (engine core, grammar, boot
+ * shadows; see `cas.ts#bootSetIds`). An offering naming one of them refuses the WHOLE selection as
+ * `boot-set-collision`, checked BEFORE the duplicate-plugin claim: the floor is not merely claimed
+ * by nobody, it is UNCLAIMABLE. Without `bootSetIds` (a caller that has not wired R3 yet) this check
+ * simply never fires — the pre-R3 reading survives unchanged.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/plugin-offering-selector
  */
 
@@ -43,13 +50,15 @@ import { pluginOfferingCid, verifyPluginOffering, type OfferedBlob, type Offerin
 export type OfferingLookup = (cid: string) => PluginOffering | undefined;
 
 /** The ONE failure the lone-offering verify (`verifyPluginOffering`) cannot name on its own — a
- *  caller-named CID that the resolved offering itself does not answer to. */
-export type SelectorOnlyFailureCode = "unknown" | "cid-mismatch" | "duplicate-plugin";
+ *  caller-named CID that the resolved offering itself does not answer to, or a collision this
+ *  selector alone can see (another offering already claimed the id; the fixed boot set owns it). */
+export type SelectorOnlyFailureCode = "unknown" | "cid-mismatch" | "duplicate-plugin" | "boot-set-collision";
 
 export type SelectionFailure =
   | { readonly code: "unknown"; readonly cid: string }
   | { readonly code: "cid-mismatch"; readonly cid: string; readonly computed: string }
   | { readonly code: "duplicate-plugin"; readonly id: string; readonly offeringCid: string; readonly firstOfferingCid: string }
+  | { readonly code: "boot-set-collision"; readonly id: string; readonly offeringCid: string }
   | { readonly code: OfferingFailureCode; readonly cid: string; readonly reason: string };
 
 export type SelectionVerdict =
@@ -65,6 +74,7 @@ export type SelectionVerdict =
 export async function selectPluginBlobs(
   offeringCids: readonly string[],
   lookup: OfferingLookup,
+  bootSetIds?: ReadonlySet<string>,
 ): Promise<SelectionVerdict> {
   const blobs: OfferedBlob[] = [];
   const claimedBy = new Map<string, string>(); // plugin id -> the offering CID that first claimed it
@@ -83,6 +93,13 @@ export async function selectPluginBlobs(
     if (!verdict.ok) return { ok: false, failure: { code: verdict.code, cid, reason: verdict.reason } };
 
     for (const blob of offering.blobs) {
+      // BOOT-SET COLLISION (M3) — an offering naming the fixed floor's own id (the grammar, a boot
+      // shadow, the engine core) refuses the WHOLE selection. Checked before duplicate-plugin so the
+      // boot-set is never read as merely "already claimed by a prior offering" — it is never claimable
+      // at all.
+      if (bootSetIds?.has(blob.id)) {
+        return { ok: false, failure: { code: "boot-set-collision", id: blob.id, offeringCid: cid } };
+      }
       const firstOfferingCid = claimedBy.get(blob.id);
       if (firstOfferingCid !== undefined) {
         return { ok: false, failure: { code: "duplicate-plugin", id: blob.id, offeringCid: cid, firstOfferingCid } };

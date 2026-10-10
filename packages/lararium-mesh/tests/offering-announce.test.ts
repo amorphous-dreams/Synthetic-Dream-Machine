@@ -6,6 +6,7 @@ import {
   pluginOfferingCid,
   signPluginOffering,
   type OfferedBlob,
+  type PluginProvenance,
 } from "../src/plugin-offering.js";
 import {
   PLUGIN_OFFERING_ANNOUNCE_DOMAIN,
@@ -19,9 +20,11 @@ import {
 } from "../src/offering-announce.js";
 import { emptyLarDoc, mutableLarRecord, type LarDoc } from "../src/base-doc.js";
 
+// Provenance strictness: every offered blob requires one (plugin-offering.ts).
+const PROV: PluginProvenance = { source: "https://example.test/upstream", commit: "0".repeat(40), path: "p", licence: "MIT" };
 const BLOBS: readonly OfferedBlob[] = [
-  { id: "$:/plugins/alpha/a", version: "1.0.0", sha256: "aa".repeat(32) },
-  { id: "$:/plugins/alpha/b", version: "1.0.0", sha256: "bb".repeat(32) },
+  { id: "$:/plugins/alpha/a", version: "1.0.0", sha256: "aa".repeat(32), provenance: PROV },
+  { id: "$:/plugins/alpha/b", version: "1.0.0", sha256: "bb".repeat(32), provenance: PROV },
 ];
 
 const seedOf = (n: number) => new Uint8Array(32).fill(n);
