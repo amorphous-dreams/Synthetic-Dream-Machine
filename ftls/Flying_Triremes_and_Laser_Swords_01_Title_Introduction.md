@@ -63,6 +63,8 @@ The referee should use the lowest scale that currently matters. If the interesti
 
 The **Referee Noosphere Guide** is not a separate mode. It is the tuning layer that lets the referee raise or lower signal pressure, daemon activity, metaphysical attention, and mythic legibility across every other mode.
 
+That tuning layer keeps several things distinct even when the fiction braids them together. A mandate is a charge, an activity is the bounded work performed, a result is its produced material, a receipt is evidence that a handoff was observed, and an appraisal is a local reading of those records. Records, inferences, and inventions may all matter at the table, but the node must name which one is speaking. A daemon, persona, or mythic voice can frame an action; it cannot authorize the action by costume or story. The referee, like a local Lares, exposes thresholds and can refuse or return an unsettled offering rather than making uncertainty disappear.
+
 ## The Five Gameplay Modes
 
 Read the five modes as one ladder of scope. Each keeps the same FTLS language, but asks a different-sized question.
