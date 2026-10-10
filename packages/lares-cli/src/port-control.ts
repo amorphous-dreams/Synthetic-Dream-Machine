@@ -147,51 +147,78 @@ export interface BootPhase {
 }
 
 /**
- * A declared boot budget ran out with the port still unbound, or ran out past every named phase. Names
- * whoever still holds the port (or that nobody discoverable does) — the caller's only recourse from here is
- * its own decision; this door never opens anything of its own on this refusal (never a fallback to a direct
- * act beside whatever boots the port).
+ * A declared boot budget ran out with the resource still unbound, or ran out past every named phase. Names
+ * whoever still holds it (or that nobody discoverable does) — the caller's only recourse from here is its own
+ * decision; this door never opens anything of its own on this refusal (never a fallback to a direct act
+ * beside whatever boots the resource). `resource` names what this budget waited on (`"port 5177"`, `"the
+ * vessel's store door"`) — whatever `holderPids` names holders of.
  */
 export class SlowBootTimeout extends Error {
   constructor(
     readonly phase: string,
-    readonly port: number,
+    readonly resource: string,
     readonly holderPids: readonly number[],
   ) {
     super(
       holderPids.length > 0
-        ? `boot budget spent in phase "${phase}": port ${port} is still held by pid(s) ${holderPids.join(", ")} — waiting ends here, never a fallback to a direct act of this caller's own.`
-        : `boot budget spent in phase "${phase}": port ${port} answers to no discoverable holder — waiting ends here, never a fallback to a direct act of this caller's own.`,
+        ? `boot budget spent in phase "${phase}": ${resource} is still held by pid(s) ${holderPids.join(", ")} — waiting ends here, never a fallback to a direct act of this caller's own.`
+        : `boot budget spent in phase "${phase}": ${resource} answers to no discoverable holder — waiting ends here, never a fallback to a direct act of this caller's own.`,
     );
   }
 }
 
 /**
- * Wait for `port` to accept connections, spending a DECLARED budget PER NAMED BOOT PHASE rather than one
+ * Wait on whatever `probe`/`holderPids` read, spending a DECLARED budget PER NAMED BOOT PHASE rather than one
  * flat deadline. `phase()` reads which phase is current at each poll (a caller's own boot-log tail, e.g.
  * "starting" → "ready"), so a slow-but-live phase spends only its own allowance and a phase change resets the
- * clock to the new phase's — the same adaptive-window shape a live boot log already earns elsewhere, now a
- * primitive this door owns. Exhausting the CURRENT phase's budget with the port still unbound and no phase
- * change REFUSES by naming the holder (`SlowBootTimeout`) — it never falls back to opening a direct act of
- * the caller's own; a slow boot stays a slow boot, reported, not routed around.
+ * clock to the new phase's. Exhausting the CURRENT phase's budget with `probe` still false and no phase change
+ * REFUSES by naming the holder (`SlowBootTimeout`) — it never falls back to a direct act of the caller's own.
+ * `until`, checked once per poll, ends the wait quietly (resolves) the instant it reads true — for a caller
+ * racing this against its own settling act, so the wait itself owns no timer nobody is going to read.
+ * `waitForPortBudgeted` is the TCP-port instance of this; any other resource (a UDS rendezvous, a claim) wires
+ * its own `probe`/`holderPids` straight in here instead of forcing itself through a port number.
+ */
+export async function waitForResourceBudgeted(
+  resource: string,
+  phases: readonly BootPhase[],
+  opts: {
+    phase: () => string | Promise<string>;
+    probe: () => Promise<boolean>;
+    holderPids: () => readonly number[] | Promise<readonly number[]>;
+    pollMs?: number;
+    until?: () => boolean;
+  },
+): Promise<void> {
+  const pollMs = opts.pollMs ?? 200;
+  const budgetOf = new Map(phases.map((p) => [p.name, p.budgetMs]));
+
+  let curName     = await opts.phase();
+  let curDeadline = Date.now() + (budgetOf.get(curName) ?? 0);
+  for (;;) {
+    if (opts.until?.()) return;
+    if (await opts.probe()) return;
+    const name = await opts.phase();
+    if (name !== curName) { curName = name; curDeadline = Date.now() + (budgetOf.get(curName) ?? 0); }
+    if (Date.now() >= curDeadline) throw new SlowBootTimeout(curName, resource, await opts.holderPids());
+    await sleep(pollMs);
+  }
+}
+
+/**
+ * Wait for `port` to accept connections, spending a DECLARED budget PER NAMED BOOT PHASE rather than one
+ * flat deadline — the TCP-port instance of {@link waitForResourceBudgeted}.
  */
 export async function waitForPortBudgeted(
   port: number,
   phases: readonly BootPhase[],
   opts: { phase: () => string; pollMs?: number; probe?: (port: number) => Promise<boolean>; holderPids?: (port: number) => number[] },
 ): Promise<void> {
-  const pollMs = opts.pollMs ?? 200;
   const probe       = opts.probe      ?? probePort;
   const holderPidsOf = opts.holderPids ?? portHolderPids;
-  const budgetOf = new Map(phases.map((p) => [p.name, p.budgetMs]));
-
-  let curName     = opts.phase();
-  let curDeadline = Date.now() + (budgetOf.get(curName) ?? 0);
-  for (;;) {
-    if (await probe(port)) return;
-    const name = opts.phase();
-    if (name !== curName) { curName = name; curDeadline = Date.now() + (budgetOf.get(curName) ?? 0); }
-    if (Date.now() >= curDeadline) throw new SlowBootTimeout(curName, port, holderPidsOf(port));
-    await sleep(pollMs);
-  }
+  return waitForResourceBudgeted(`port ${port}`, phases, {
+    phase:      opts.phase,
+    ...(opts.pollMs !== undefined ? { pollMs: opts.pollMs } : {}),
+    probe:      () => probe(port),
+    holderPids: () => holderPidsOf(port),
+  });
 }

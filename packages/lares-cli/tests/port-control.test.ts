@@ -13,7 +13,7 @@
  *     that opens inside the new phase's budget resolves.
  */
 import { describe, expect, it, vi } from "vitest";
-import { stopIncumbent, waitForPortBudgeted, SlowBootTimeout, type StopResult } from "../src/port-control.js";
+import { stopIncumbent, waitForPortBudgeted, waitForResourceBudgeted, SlowBootTimeout, type StopResult } from "../src/port-control.js";
 
 const PORT = 54_321;
 
@@ -115,5 +115,61 @@ describe("waitForPortBudgeted — a declared budget per named boot phase", () =>
     const started = Date.now();
     await waitForPortBudgeted(54_324, PHASES, { phase: () => "starting", pollMs: 5, probe: async () => true });
     expect(Date.now() - started).toBeLessThan(30);
+  });
+});
+
+describe("waitForResourceBudgeted — the non-port generalization (M1)", () => {
+  const PHASES = [
+    { name: "starting", budgetMs: 40 },
+    { name: "ready",    budgetMs: 200 },
+  ] as const;
+
+  it("RED: a non-port resource that never settles exhausts its own phase budget, naming the resource and the holder", async () => {
+    await expect(
+      waitForResourceBudgeted("the vessel's store door", PHASES, {
+        phase: () => "starting", pollMs: 5, probe: async () => false, holderPids: () => [4242],
+      }),
+    ).rejects.toSatisfy((e: unknown) => {
+      expect(e).toBeInstanceOf(SlowBootTimeout);
+      const err = e as SlowBootTimeout;
+      expect(err.phase).toBe("starting");
+      expect(err.resource).toBe("the vessel's store door");
+      expect(err.holderPids).toEqual([4242]);
+      expect(err.message).toMatch(/the vessel's store door is still held by pid\(s\) 4242/);
+      return true;
+    });
+  });
+
+  it("CONTROL: `until` ends the wait quietly the instant it reads true, never throwing", async () => {
+    let done = false;
+    setTimeout(() => { done = true; }, 15);
+    await expect(
+      waitForResourceBudgeted("the vessel's store door", PHASES, {
+        phase: () => "starting", pollMs: 5, probe: async () => false, holderPids: () => [], until: () => done,
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("async phase/probe/holderPids are awaited (an async holder read is honoured, not just a sync one)", async () => {
+    await expect(
+      waitForResourceBudgeted("async resource", PHASES, {
+        phase: async () => "starting", pollMs: 5, probe: async () => false,
+        holderPids: async () => [9],
+      }),
+    ).rejects.toSatisfy((e: unknown) => {
+      expect((e as SlowBootTimeout).holderPids).toEqual([9]);
+      return true;
+    });
+  });
+
+  it("MUTATION PROOF: `waitForPortBudgeted`'s own RED test above still exercises the SAME shared loop", async () => {
+    // waitForPortBudgeted is now a thin wrapper over waitForResourceBudgeted; a port-shaped resource string
+    // (`"port <n>"`) proves the wrapper still routes through the generalized primitive, not a parallel copy.
+    await expect(
+      waitForPortBudgeted(54_399, PHASES, { phase: () => "starting", pollMs: 5, probe: async () => false, holderPids: () => [1] }),
+    ).rejects.toSatisfy((e: unknown) => {
+      expect((e as SlowBootTimeout).resource).toBe("port 54399");
+      return true;
+    });
   });
 });
