@@ -229,6 +229,24 @@ export interface WikiRecipe {
    * unrecognized version falls back to identityLens.
    */
   readonly lenses?: ReadonlyMap<string, RecordLens>;
+
+  /**
+   * THE RECIPE'S PLUGIN LIST — an ORDERED list of whole signed plugin-offering CIDs
+   * (`pluginOfferingCid`, from `./plugin-offering.js`). "A recipe selects ordered whole signed
+   * offerings, never subsets" (the ki-handoff ruling): mount resolves each CID through the
+   * Crossroads board, verifies it (signature + `pluginsCid` fold), and passes only the resulting
+   * blob set to the island — through `selectPluginBlobs` (`./plugin-offering-selector.js`), never
+   * by reading a half-trusted list straight off the record.
+   *
+   * ORDER IS MEANINGFUL: first offering's blobs win a plugin-id collision inside the selection
+   * (the selector refuses a collision instead — see that module's docblock — so order names
+   * precedence for everything EXCEPT the one case the selector already fails closed on).
+   *
+   * Absent or empty = no optional plugins load. This list never names the Lararium boot set
+   * (engine core, memetic-wikitext grammar, boot shadows) — that floor stays fixed and travels
+   * through `coreHash`/`pluginCids` on the manifest independently of any recipe.
+   */
+  readonly pluginOfferings?: readonly string[];
 }
 
 /**
@@ -378,19 +396,46 @@ export function structuralSlots(slug: string): ReadonlySet<SlotUri> {
 export function recipeFromRecord(rec: LarTiddlerRecord, slug: string): WikiRecipe {
   const structural = structuralSlots(slug);
   const libraryBags = bagStackFromRec(rec).filter((uri) => !structural.has(uri)).reverse();
-  return { wikiSlug: slug, ...(libraryBags.length > 0 ? { libraryBags } : {}) };
+  const pluginOfferings = parsePluginOfferings(rec.tiddler["plugin-offerings"]);
+  return {
+    wikiSlug: slug,
+    ...(libraryBags.length > 0 ? { libraryBags } : {}),
+    ...(pluginOfferings.length > 0 ? { pluginOfferings } : {}),
+  };
+}
+
+/**
+ * Parse a `plugin-offerings` tiddler field — a TW5 list string (space-separated; no spaces
+ * appear in a `sha256:`-prefixed CID so no `[[...]]` quoting) or a JS/JSON array, exactly the
+ * `bag-stack` convention (`bag-stack-from-rec.ts`). ORDER IS PRESERVED (no reverse): unlike
+ * `bag-stack`, this list carries no cascade-vs-storage inversion — the record's order IS the
+ * recipe's order. Returns [] for null/undefined/unrecognised types.
+ */
+export function parsePluginOfferings(raw: unknown): string[] {
+  if (Array.isArray(raw)) return (raw as unknown[]).filter((x): x is string => typeof x === "string");
+  if (typeof raw === "string") return raw.trim().split(/\s+/).filter(Boolean);
+  return [];
 }
 
 /**
  * The record fields a minter writes for a recipe — the inverse of `recipeFromRecord`. `bag-stack`
  * is the expanded cascade bottom-up minus the instance slots (the oracle floor, the libraries, the
  * wiki's own canon); `writable-bag` names the working slot, the ONE default writable the mount lays.
- * The catalog registry never rides a bag-stack: it is an ACCESS grant, never a layer.
+ * The catalog registry never rides a bag-stack: it is an ACCESS grant, never a layer. `plugin-offerings`
+ * carries the ordered CID list verbatim — present only when the recipe names at least one offering, so
+ * an unadorned recipe round-trips with no stray empty field.
  */
-export function recipeRecordFields(r: WikiRecipe): { label: string; "bag-stack": string; "writable-bag": string } {
+export function recipeRecordFields(
+  r: WikiRecipe,
+): { label: string; "bag-stack": string; "writable-bag": string; "plugin-offerings"?: string } {
   const instance = new Set<SlotUri>(WIKI_SLOT_KINDS.map((k) => wikiSlotUri(r.wikiSlug, k)));
   const stack = [...expandRecipe(r)].reverse().filter((uri) => !instance.has(uri));
-  return { label: r.wikiSlug, "bag-stack": stack.join(" "), "writable-bag": wikiSlotUri(r.wikiSlug, "working") };
+  return {
+    label: r.wikiSlug,
+    "bag-stack": stack.join(" "),
+    "writable-bag": wikiSlotUri(r.wikiSlug, "working"),
+    ...(r.pluginOfferings?.length ? { "plugin-offerings": r.pluginOfferings.join(" ") } : {}),
+  };
 }
 
 // Write routing happens via the in-wiki `lar:///ha.ka.ba/lararium/config/bag-paths` cascade

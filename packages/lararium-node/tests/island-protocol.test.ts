@@ -27,12 +27,21 @@ import {
   mkDaemonWorldlineTrajectoryRequest,
   mkDaemonWorldlineTrajectoryResult,
   delegationEdge,
+  signPluginOffering,
+  pluginOfferingCid,
+  selectPluginBlobs,
+  selectedPluginCids,
+  computePluginsCid,
   type IslandMsg_TeardownAck,
   type IslandMsg_Ea,
   type IslandMsg_Event,
   type IslandStorageConfig,
   type WikiRecipe,
+  type OfferedBlob,
+  type OfferingLookup,
 } from "@lararium/mesh";
+import * as ed25519 from "@noble/ed25519";
+import { hex } from "@lararium/mesh/crypto";
 
 // Path to the teardown-echo fixture (plain ESM — no ts-jest compilation needed).
 const FIXTURE_URL = new URL("./fixtures/teardown-echo.mjs", import.meta.url);
@@ -113,6 +122,55 @@ describe("WikiRecipe + grants — manifest payload shape", () => {
     expect(msg.grants.islandUrl).toBe("automerge:engine");
     expect(msg.grants.wikiUrl).toBeUndefined();
     expect(isVesselToIslandMsg(msg)).toBe(true);
+  });
+});
+
+// ── R1: recipe.pluginOfferings → selectPluginBlobs → manifest.pluginCids ───
+//
+// "carried through the record → mount spec → manifest" (golden-path-p2-recipe.md R1). This proves
+// the WHOLE line, not just the manifest's own shape: a recipe naming a verified offering's CID
+// resolves, through the selector, to exactly the sha256 set mkManifest carries — never a half-trusted
+// CID read straight off the recipe.
+
+describe("★ R1 — a recipe's pluginOfferings resolves through the selector straight into the manifest ★", () => {
+  const SEED = new Uint8Array(32).fill(7);
+  const sign = async (bytes: Uint8Array) => hex(await ed25519.signAsync(bytes, SEED));
+  const offeror = async () => hex(await ed25519.getPublicKeyAsync(SEED));
+
+  test("a recipe naming one verified offering carries exactly that offering's blobs as manifest.pluginCids", async () => {
+    const blob: OfferedBlob = { id: "$:/plugins/tiddlywiki/highlight", version: "0.9.0", sha256: "ab".repeat(32) };
+    const offering = await signPluginOffering(
+      { offeror: await offeror(), pluginsCid: computePluginsCid([blob]), blobs: [blob] }, sign);
+    const cid = pluginOfferingCid(offering);
+    const lookup: OfferingLookup = (c) => (c === cid ? offering : undefined);
+
+    const recipe: WikiRecipe = { wikiSlug: "demo", pluginOfferings: [cid] };
+    const selection = await selectPluginBlobs(recipe.pluginOfferings ?? [], lookup);
+    expect(selection.ok).toBe(true);
+    if (!selection.ok) return;
+
+    const { port2: syncPort } = new MessageChannel();
+    const msg = mkManifest(
+      "lar:///demo", syncPort as unknown as globalThis.MessagePort, recipe,
+      { islandUrl: "automerge:engine" }, null, { pluginCids: selectedPluginCids(selection.blobs) },
+    );
+    syncPort.close();
+    expect(msg.pluginCids).toEqual([blob.sha256]);
+    expect(msg.recipe.pluginOfferings).toEqual([cid]);
+  });
+
+  test("CONTROL — an empty recipe.pluginOfferings carries no pluginCids at all (no optional plugins load)", async () => {
+    const recipe: WikiRecipe = { wikiSlug: "demo" };
+    const selection = await selectPluginBlobs(recipe.pluginOfferings ?? [], () => undefined);
+    expect(selection).toEqual({ ok: true, blobs: [] });
+
+    const { port2: syncPort } = new MessageChannel();
+    const msg = mkManifest(
+      "lar:///demo", syncPort as unknown as globalThis.MessagePort, recipe,
+      { islandUrl: "automerge:engine" }, null, { pluginCids: selectedPluginCids(selection.blobs) },
+    );
+    syncPort.close();
+    expect(msg.pluginCids).toBeUndefined(); // mkManifest omits an empty pluginCids list entirely
   });
 });
 

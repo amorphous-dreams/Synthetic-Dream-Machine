@@ -162,6 +162,16 @@ export interface IslandMsg_Manifest {
    * resolves these — and the core (coreHash) — via the host's content-addressed
    * `resolveByCid` (local CAS), NOT by reading a CRDT-synced blob doc. Absent → the
    * worker falls back to reading blobs off the oracle doc (node / pre-CAS path).
+   *
+   * THE RECIPE → SELECTOR → MANIFEST LINE (RECIPE: plugins load by recipe). The vessel never reads
+   * `recipe.pluginOfferings` straight into this field: it resolves that ordered CID list through
+   * `selectPluginBlobs` (`plugin-offering-selector.ts`) — which verifies each named offering whole
+   * (signature, `pluginsCid` fold, provenance) and refuses a duplicate plugin id across offerings —
+   * then derives this field with `selectedPluginCids(selection.blobs)`. `pluginCids` on the wire is
+   * therefore always a VERIFIED selection's sha256 set, in the recipe's order, never a half-trusted
+   * CID list read straight off a record. An empty or absent `recipe.pluginOfferings` selects nothing,
+   * which is why this field stays optional: the Lararium boot set (engine core, grammar, boot shadows)
+   * never rides it, and loads with no optional plugin until a recipe names one.
    */
   pluginCids?: readonly string[];
   /** Slot structure for this wiki — wikiSlug + optional libraryBags. */

@@ -66,3 +66,49 @@ describe("★ the recipe record ↔ the mount struct ★", () => {
     );
   });
 });
+
+/**
+ * ★ R1 — plugin-offerings round-trips through the record, in order, with no overloading of bag-stack. ★
+ */
+describe("★ the recipe's plugin-offerings list round-trips through the record ★", () => {
+  const OFF_A = "sha256:" + "aa".repeat(32);
+  const OFF_B = "sha256:" + "bb".repeat(32);
+
+  test("CONTROL — a recipe naming no offerings writes no plugin-offerings field at all", () => {
+    const fields = recipeRecordFields({ wikiSlug: "solo" });
+    expect(fields).not.toHaveProperty("plugin-offerings");
+    expect(recipeFromRecord({ tiddler: { title: recipeUri("catalog", "solo"), ...fields } }, "solo").pluginOfferings).toBeUndefined();
+  });
+
+  test("one offering round-trips to exactly itself", () => {
+    const rec: LarTiddlerRecord = { tiddler: { title: recipeUri("catalog", "solo"), ...recipeRecordFields({ wikiSlug: "solo", pluginOfferings: [OFF_A] }) } };
+    expect(rec.tiddler["plugin-offerings"]).toBe(OFF_A);
+    expect(recipeFromRecord(rec, "solo").pluginOfferings).toEqual([OFF_A]);
+  });
+
+  test("ORDER HOLDS across a round-trip — the record never silently reorders the list", () => {
+    for (const order of [[OFF_A, OFF_B], [OFF_B, OFF_A]]) {
+      const rec: LarTiddlerRecord = { tiddler: { title: recipeUri("catalog", "solo"), ...recipeRecordFields({ wikiSlug: "solo", pluginOfferings: order }) } };
+      expect(recipeFromRecord(rec, "solo").pluginOfferings).toEqual(order);
+    }
+  });
+
+  test("plugin-offerings never rides bag-stack — a library bag and an offering CID never collide fields", () => {
+    const rec: LarTiddlerRecord = {
+      tiddler: {
+        title: recipeUri("catalog", "sdm"),
+        ...recipeRecordFields({ wikiSlug: "sdm", libraryBags: [LARES_BAG], pluginOfferings: [OFF_A] }),
+      },
+    };
+    expect(bagStackFromRec(rec)).not.toContain(OFF_A);
+    expect(recipeFromRecord(rec, "sdm").libraryBags).toEqual([LARES_BAG]);
+    expect(recipeFromRecord(rec, "sdm").pluginOfferings).toEqual([OFF_A]);
+  });
+
+  test("★ MUTATION PROOF — a hand-tampered record that drops one offering CID loses exactly that CID on read-back ★", () => {
+    const rec: LarTiddlerRecord = { tiddler: { title: recipeUri("catalog", "solo"), ...recipeRecordFields({ wikiSlug: "solo", pluginOfferings: [OFF_A, OFF_B] }) } };
+    expect(recipeFromRecord(rec, "solo").pluginOfferings).toEqual([OFF_A, OFF_B]);
+    const tampered = { ...rec, tiddler: { ...rec.tiddler, "plugin-offerings": OFF_A } };
+    expect(recipeFromRecord(tampered, "solo").pluginOfferings).toEqual([OFF_A]);
+  });
+});
