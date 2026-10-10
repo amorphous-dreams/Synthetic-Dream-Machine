@@ -17,10 +17,16 @@
 # of a review, every time the house asks.
 #
 # ── WHAT IT SCANS ────────────────────────────────────────────────────────────────────────────────
-# Every `.ts` file under `packages/lararium-node/src` (dist and tests excluded — a test may plant a
-# Repo of its own to inspect a fixture, which is not a door), with comments stripped so a docblock
-# that NAMES the old shape to explain why it is wrong never counts as a site. `DIRECT_REPO_ROOT`
-# overrides the scan root for a self-test fixture; default is the repo this script sits in.
+# Every `.ts` file under `packages/lararium-node/src` AND `packages/lares-cli/src` (dist and tests
+# excluded — a test may plant a Repo of its own to inspect a fixture, which is not a door), with
+# comments stripped so a docblock that NAMES the old shape to explain why it is wrong never counts as
+# a site. `DIRECT_REPO_ROOT` overrides the scan root for a self-test fixture; default is the repo
+# this script sits in.
+#
+# A site counts under whatever LOCAL NAME each file imports `Repo` from `@automerge/automerge-repo`
+# AS — `import { Repo as R } from "@automerge/automerge-repo"` then `new R(` is the same door as
+# `new Repo(`, read PER FILE because two files may alias it differently. A file that imports no such
+# binding falls back to the literal `Repo`, so a planted `new Repo(` with no import still counts.
 #
 # Exit 0 = exactly the two named sites, and no other. Exit 1 = named, every site found, with the two
 # lawful ones marked and every other flagged as the drift this witness exists to catch.
@@ -33,14 +39,18 @@ python3 - "$ROOT" <<'PY'
 import pathlib, re, sys
 
 root = pathlib.Path(sys.argv[1])
-src = root / "packages" / "lararium-node" / "src"
-if not src.is_dir():
-    print(f"[direct-repo] no source tree at {src}")
+scan_roots = [
+    root / "packages" / "lararium-node" / "src",
+    root / "packages" / "lares-cli" / "src",
+]
+scan_roots = [p for p in scan_roots if p.is_dir()]
+if not scan_roots:
+    print(f"[direct-repo] no source tree found under {root}")
     sys.exit(1)
 
 LAWFUL = {
-    "open-node-vessel.ts": "the standing vessel's own Repo, opened once at boot",
-    "owned-store.ts":      "the direct holder's Repo (`ownedStore`), opened for one act",
+    "lararium-node/src/open-node-vessel.ts": "the standing vessel's own Repo, opened once at boot",
+    "lararium-node/src/owned-store.ts":      "the direct holder's Repo (`ownedStore`), opened for one act",
 }
 
 def strip_comments(text: str) -> str:
@@ -48,20 +58,38 @@ def strip_comments(text: str) -> str:
     text = re.sub(r"^\s*//.*$", "", text, flags=re.MULTILINE)
     return text
 
-SITE = re.compile(r"\bnew\s+Repo\s*\(")
+IMPORT = re.compile(r"""import\s*\{([^}]*)\}\s*from\s*["']@automerge/automerge-repo["']""")
+
+def repo_local_name(code: str) -> str:
+    """The local binding this file's `@automerge/automerge-repo` import gives `Repo` — its own alias
+    if one stands, else the literal `Repo` (also the fallback for a file with no such import, so a
+    planted bare `new Repo(` still counts)."""
+    for m in IMPORT.finditer(code):
+        for spec in m.group(1).split(","):
+            spec = spec.strip()
+            if not spec:
+                continue
+            parts = re.split(r"\s+as\s+", spec)
+            if parts[0].strip() == "Repo":
+                return parts[1].strip() if len(parts) > 1 else "Repo"
+    return "Repo"
 
 found: dict[str, int] = {}
-for path in sorted(src.rglob("*.ts")):
-    if "/tests/" in str(path) or path.name.endswith(".test.ts"):
-        continue
-    code = strip_comments(path.read_text(encoding="utf8"))
-    n = len(SITE.findall(code))
-    if n > 0:
-        found[path.relative_to(src).as_posix()] = n
+for src in scan_roots:
+    pkg_label = src.parent.name  # "lararium-node" / "lares-cli"
+    for path in sorted(src.rglob("*.ts")):
+        if "/tests/" in str(path) or path.name.endswith(".test.ts"):
+            continue
+        code = strip_comments(path.read_text(encoding="utf8"))
+        local = repo_local_name(code)
+        site = re.compile(r"\bnew\s+" + re.escape(local) + r"\s*\(")
+        n = len(site.findall(code))
+        if n > 0:
+            found[f"{pkg_label}/src/{path.relative_to(src).as_posix()}"] = n
 
 total = sum(found.values())
 status = 0
-print(f"[direct-repo] {total} `new Repo(` site(s) under {src}")
+print(f"[direct-repo] {total} `new Repo(` site(s) under {', '.join(str(p) for p in scan_roots)}")
 for name, n in sorted(found.items()):
     if name in LAWFUL:
         print(f"  ok      {name} ×{n} — {LAWFUL[name]}")

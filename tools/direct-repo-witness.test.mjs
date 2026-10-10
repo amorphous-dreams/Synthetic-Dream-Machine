@@ -63,8 +63,8 @@ async function withFixture(extraFiles, check) {
 await test("CONTROL: exactly the two lawful sites reads green", async () => {
   await withFixture({}, (run) => {
     assert.equal(run.status, 0, run.stdout + run.stderr);
-    assert.match(run.stdout, /ok\s+open-node-vessel\.ts/);
-    assert.match(run.stdout, /ok\s+owned-store\.ts/);
+    assert.match(run.stdout, /ok\s+lararium-node\/src\/open-node-vessel\.ts/);
+    assert.match(run.stdout, /ok\s+lararium-node\/src\/owned-store\.ts/);
     assert.match(run.stdout, /^\[direct-repo\] 2 `new Repo\(` site\(s\)/m);
   });
 });
@@ -79,9 +79,9 @@ export async function runSomeNewDoor() {
 `,
   }, (run) => {
     assert.notEqual(run.status, 0, run.stdout + run.stderr);
-    assert.match(run.stdout, /DRIFT\s+commands\/some-new-door\.ts/);
-    assert.match(run.stdout, /ok\s+open-node-vessel\.ts/);   // the two lawful sites still read clean
-    assert.match(run.stdout, /ok\s+owned-store\.ts/);
+    assert.match(run.stdout, /DRIFT\s+lararium-node\/src\/commands\/some-new-door\.ts/);
+    assert.match(run.stdout, /ok\s+lararium-node\/src\/open-node-vessel\.ts/);   // the two lawful sites still read clean
+    assert.match(run.stdout, /ok\s+lararium-node\/src\/owned-store\.ts/);
   });
 });
 
@@ -94,7 +94,7 @@ await test("RED: a lawful file carrying a SECOND Repo of its own reads red", asy
     await writeFile(join(src, "owned-store.ts"), OWNED_STORE_BODY);
     const run = spawnSync("bash", [SCRIPT], { cwd: ROOT, encoding: "utf8", env: { ...process.env, DIRECT_REPO_ROOT: dir } });
     assert.notEqual(run.status, 0, run.stdout + run.stderr);
-    assert.match(run.stdout, /DRIFT\s+open-node-vessel\.ts carries 2 sites/);
+    assert.match(run.stdout, /DRIFT\s+lararium-node\/src\/open-node-vessel\.ts carries 2 sites/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
@@ -106,7 +106,7 @@ await test("RED: a lawful site missing entirely is named, not silently averaged 
     await writeFile(join(src, "owned-store.ts"), OWNED_STORE_BODY);   // open-node-vessel.ts absent entirely
     const run = spawnSync("bash", [SCRIPT], { cwd: ROOT, encoding: "utf8", env: { ...process.env, DIRECT_REPO_ROOT: dir } });
     assert.notEqual(run.status, 0, run.stdout + run.stderr);
-    assert.match(run.stdout, /MISSING\s+open-node-vessel\.ts/);
+    assert.match(run.stdout, /MISSING\s+lararium-node\/src\/open-node-vessel\.ts/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
@@ -123,4 +123,42 @@ export function runDocsOnly() { return null; }
     assert.equal(run.status, 0, run.stdout + run.stderr);
     assert.doesNotMatch(run.stdout, /docs-only/);
   });
+});
+
+await test("RED (L3): an aliased `Repo` import still counts as a site — `import { Repo as R }` then `new R(`", async () => {
+  await withFixture({
+    "commands/aliased-door.ts": `
+import { Repo as R } from "@automerge/automerge-repo";
+export async function runAliasedDoor() {
+  const repo = new R({ storage: new NodeFSStorageAdapter("z") });
+  return repo;
+}
+`,
+  }, (run) => {
+    assert.notEqual(run.status, 0, run.stdout + run.stderr);
+    assert.match(run.stdout, /DRIFT\s+lararium-node\/src\/commands\/aliased-door\.ts/);
+  });
+});
+
+await test("RED (L3): a `new Repo(` planted in packages/lares-cli/src is no longer a blind spot", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "direct-repo-witness-"));
+  const nodeSrc = join(dir, "packages", "lararium-node", "src");
+  const cliSrc = join(dir, "packages", "lares-cli", "src");
+  await mkdir(nodeSrc, { recursive: true });
+  await mkdir(join(cliSrc, "commands"), { recursive: true });
+  try {
+    await writeFile(join(nodeSrc, "open-node-vessel.ts"), VESSEL_BODY);
+    await writeFile(join(nodeSrc, "owned-store.ts"), OWNED_STORE_BODY);
+    await writeFile(join(cliSrc, "commands", "some-cli-door.ts"), `
+export async function runSomeCliDoor() {
+  const repo = new Repo({ storage: new NodeFSStorageAdapter("w") });
+  return repo;
+}
+`);
+    const run = spawnSync("bash", [SCRIPT], { cwd: ROOT, encoding: "utf8", env: { ...process.env, DIRECT_REPO_ROOT: dir } });
+    assert.notEqual(run.status, 0, run.stdout + run.stderr);
+    assert.match(run.stdout, /DRIFT\s+lares-cli\/src\/commands\/some-cli-door\.ts/);
+    assert.match(run.stdout, /ok\s+lararium-node\/src\/open-node-vessel\.ts/);
+    assert.match(run.stdout, /ok\s+lararium-node\/src\/owned-store\.ts/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });
