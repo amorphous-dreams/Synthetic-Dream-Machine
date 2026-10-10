@@ -162,6 +162,18 @@ async function main(): Promise<void> {
     );
   }
 
+  // The actor seed folds this attestation BY NAME (deriveGenesisActorSeed's own law reads an absent
+  // path as "folds nothing" — correct for a seed derivation that must never throw on a partial tree,
+  // but wrong for a BAKE: a bake that proceeds anyway mints a different, unattested seed and calls it
+  // the same act. Refuse here, before the fold, rather than mint silently.
+  if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) {
+    throw new Error(
+      `[genesis] plugin build attestation missing: ${LARES_TW5_PLUGIN_ATTESTATION}\n` +
+      `  → the actor seed folds it; baking without it would silently mint an unattested seed\n` +
+      `  → run: pnpm --filter @lararium/tw5 build:plugin`,
+    );
+  }
+
   // Layer A: read files + derive actor seed.
   console.log("[genesis] deriving actor seed from content hash …");
   const actorSeed        = deriveGenesisActorSeed({
