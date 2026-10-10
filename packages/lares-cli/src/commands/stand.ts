@@ -90,17 +90,24 @@ function readStandingMarker(): string | null {
 /**
  * Free the port so the lift's next stand boots fresh, and say how it went.
  *
- * `stopIncumbent` already polls until the port actually frees — SIGTERM, then SIGKILL past its grace —
- * so nothing here needs to wait behind it. What it returns MATTERS: `forced` means the daemon met
- * SIGKILL and never finished the durable flush it runs on SIGTERM, and a lift that booted over that
- * silently would hand the next vessel a store written mid-sentence with nothing said. A port still
- * held after both signals throws, and swallowing that would surface later as a confusing bind failure
- * instead of the fault itself.
+ * `stopIncumbent` polls until the port actually frees on the incumbent's OWN exit — a graceful SIGTERM,
+ * never an escalation to SIGKILL, which could tear a save the crash-atomic adapter's guarantee never
+ * promised to survive a deliberate kill. So nothing here waits BEHIND it; it simply waits OUT it. A daemon
+ * that outlives its grace is NAMED, once, rather than left wedged in silence — the wait keeps going past
+ * the name, because this door never decides for the caller with a second signal.
  */
 async function freePortForLift(port: number): Promise<string | null> {
   const { stopIncumbent } = await import("../port-control.js");
-  const r = await stopIncumbent(port);
-  return r.forced ? "the incumbent met SIGKILL and never flushed — its last writes may be short" : null;
+  let wedged: string | null = null;
+  await stopIncumbent(port, {
+    onPastGrace: (pids) => {
+      wedged = pids.length > 0
+        ? `the incumbent on :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
+        : `the incumbent on :${port} is past its grace, held by no discoverable pid — waiting on its own exit`;
+      console.log(`[lares vessel stand] ${wedged}`);
+    },
+  });
+  return null;
 }
 
 export async function cmdStand(args: ParsedArgs): Promise<number> {

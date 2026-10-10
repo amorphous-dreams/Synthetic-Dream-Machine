@@ -101,21 +101,28 @@ function cmdReadSensorium(args: ParsedArgs): number {
 }
 
 /**
- * `lares vessel stop` — halt the daemon on the port (graceful → force), the pair to
- * `lares vessel stand`. Pure port-control (no vm boot, no wipe): SIGTERM the incumbent, escalate to
- * SIGKILL if it lingers, and report which. A free port reads as already-stopped, not an error.
- * It ENDS a vessel and nothing else — `vessel stand --restart` stops then stands, `hooks pause`
- * suppresses capture alone.
+ * `lares vessel stop` — halt the daemon on the port, the pair to `lares vessel stand`. Pure port-control
+ * (no vm boot, no wipe): SIGTERM the incumbent and wait on its OWN real exit — never a forced SIGKILL, which
+ * could tear a save the crash-atomic adapter's guarantee never promised to survive a deliberate kill. A free
+ * port reads as already-stopped, not an error. A wedged daemon past its grace is NAMED, once, rather than
+ * left to hang silently; the wait itself keeps going. It ENDS a vessel and nothing else — `vessel stand
+ * --restart` stops then stands, `hooks pause` suppresses capture alone.
  */
 export async function cmdStop(args: ParsedArgs): Promise<number> {
   const port = larPort();
-  const r = await stopIncumbent(port);
+  const r = await stopIncumbent(port, {
+    onPastGrace: (pids) => console.log(
+      pids.length > 0
+        ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit, never a forced kill`
+        : `[lares] :${port} is past its grace, held by no discoverable pid — waiting on its own exit, never a forced kill`,
+    ),
+  });
   emit(args, {
     ok: true,
     data: { port, stopped: r.stopped, forced: r.forced },
     human: () => console.log(
       r.stopped
-        ? `[lares] stopped the daemon on :${port} (${r.forced ? "forced — SIGKILL" : "graceful — SIGTERM"})`
+        ? `[lares] stopped the daemon on :${port} (graceful — SIGTERM)`
         : `[lares] :${port} already free — no daemon to stop`,
     ),
   });

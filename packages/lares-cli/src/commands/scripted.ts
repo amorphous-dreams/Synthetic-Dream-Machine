@@ -132,9 +132,15 @@ export async function cmdClear(args: ParsedArgs): Promise<number> {
   // still name what was holding it.
   const { stopIncumbent } = await import("../port-control.js");
   try {
-    const r = await stopIncumbent(port);
+    const r = await stopIncumbent(port, {
+      onPastGrace: (pids) => console.log(
+        pids.length > 0
+          ? `[lares vessel clear] :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
+          : `[lares vessel clear] :${port} is past its grace, held by no discoverable pid — waiting on its own exit`,
+      ),
+    });
     console.log(r.stopped
-      ? `[lares vessel clear] stopped the incumbent on :${port} (${r.forced ? "forced" : "graceful"})`
+      ? `[lares vessel clear] stopped the incumbent on :${port} (graceful)`
       : `[lares vessel clear] :${port} already free`);
   } catch (e) {
     // FAIL CLOSED. Wiping a store out from under a process that survived the stop is precisely the
@@ -189,16 +195,23 @@ export async function cmdRiteRefresh(args: ParsedArgs): Promise<number> {
 /**
  * `lares vessel stand --restart` — converge to ONE live vessel for the dev/test loop. Idempotent
  * from ANY prior state (running / stale / none): stop the incumbent by ACCESS to the
- * OS port-table (graceful SIGTERM → poll port-free → bounded SIGKILL fallback — no PID
- * file, no supervisor), optional `--fresh` wipe, then serve. The port is the single-
- * instance capability, so EADDRINUSE never bites. `serve` stays fail-fast.
+ * OS port-table (graceful SIGTERM, waited out to its own real exit — never a forced SIGKILL,
+ * no PID file, no supervisor), optional `--fresh` wipe, then serve. The port is the single-
+ * instance capability, so EADDRINUSE never bites. A daemon past its grace is NAMED, not left
+ * to hang silently; `serve` stays fail-fast.
  */
 export async function cmdRestart(args: ParsedArgs): Promise<number> {
   const port = Number(args.options["port"] ?? process.env["LAR_PORT"] ?? "8080");
   const { stopIncumbent } = await import("../port-control.js");
   try {
-    const r = await stopIncumbent(port);
-    if (r.stopped) console.log(`[lares vessel stand --restart] stopped incumbent on :${port} (${r.forced ? "forced" : "graceful"})`);
+    const r = await stopIncumbent(port, {
+      onPastGrace: (pids) => console.log(
+        pids.length > 0
+          ? `[lares vessel stand --restart] :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
+          : `[lares vessel stand --restart] :${port} is past its grace, held by no discoverable pid — waiting on its own exit`,
+      ),
+    });
+    if (r.stopped) console.log(`[lares vessel stand --restart] stopped incumbent on :${port} (graceful)`);
     else           console.log(`[lares vessel stand --restart] :${port} already free`);
   } catch (e) {
     console.error(`[lares vessel stand --restart] ${e instanceof Error ? e.message : String(e)}`);
@@ -219,10 +232,10 @@ export async function cmdRestart(args: ParsedArgs): Promise<number> {
  * faults (`tag for enum is not valid`). The cure is to REBUILD the genesis engine
  * under the current deps — NOT to wipe storage and NEVER to touch identity.
  *
- * Idempotent: stop the incumbent on the port (graceful→force, as a restart does),
- * rebuild genesis under the explicitly-resolved root, then serve. No store wipe,
- * no key/card touch — the operator's DID survives untouched. Reserve `vessel clear`
- * for true re-founding; reach for this flow first on a dep-bump fault.
+ * Idempotent: stop the incumbent on the port (graceful SIGTERM, waited out to its own real
+ * exit — never a forced SIGKILL, as a restart does), rebuild genesis under the explicitly-resolved
+ * root, then serve. No store wipe, no key/card touch — the operator's DID survives untouched.
+ * Reserve `vessel clear` for true re-founding; reach for this flow first on a dep-bump fault.
  */
 export async function cmdRiteRebuild(args: ParsedArgs): Promise<number> {
   const root       = args.options["root"] ?? process.env["LAR_ROOT"] ?? REPO_ROOT;
@@ -230,8 +243,14 @@ export async function cmdRiteRebuild(args: ParsedArgs): Promise<number> {
   const port = Number(args.options["port"] ?? process.env["LAR_PORT"] ?? "8080");
   const { stopIncumbent } = await import("../port-control.js");
   try {
-    const r = await stopIncumbent(port);
-    if (r.stopped) console.log(`[lares vessel rite rebuild] stopped incumbent on :${port} (${r.forced ? "forced" : "graceful"})`);
+    const r = await stopIncumbent(port, {
+      onPastGrace: (pids) => console.log(
+        pids.length > 0
+          ? `[lares vessel rite rebuild] :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
+          : `[lares vessel rite rebuild] :${port} is past its grace, held by no discoverable pid — waiting on its own exit`,
+      ),
+    });
+    if (r.stopped) console.log(`[lares vessel rite rebuild] stopped incumbent on :${port} (graceful)`);
     else           console.log(`[lares vessel rite rebuild] :${port} already free`);
   } catch (e) {
     console.error(`[lares vessel rite rebuild] ${e instanceof Error ? e.message : String(e)}`);
