@@ -215,14 +215,16 @@ A witness drift states the local condition it could not verify. Repair only that
 
 !! 7 · Settle the host — stand, back up, update, heal, in that order
 
-One sequence carries a host from "installed" to "settled", and the order holds the safety: the Linux stand first, so its `wsl.conf` change rides the same restart as everything else; the backup before the engine moves; the engine before the heal, since `--compact` ships only in 3.0.1 and later. The shutdown in step 3 ends every WSL session, so the sequence waits for a boundary the operator chooses. "Heal" means compact — returning the gap between the vhdx on disk and the data inside it to Windows, changing nothing inside. Sparse changes how the disk allocates and stays opt-in (section 3).
+One sequence carries a host from "installed" to "settled", and the order holds the safety: the Linux stand first, so its `wsl.conf` change rides the same restart as everything else; the backup before the engine moves; the engine before the heal, since `--compact` ships only in 3.0.1 and later. The shutdown at step 1 ends every WSL session, so the sequence waits for a boundary the operator chooses. "Heal" means compact — returning the gap between the vhdx on disk and the data inside it to Windows, changing nothing inside. Sparse changes how the disk allocates and stays opt-in (section 3).
 
 ```sh
 # inside the distro, before anything stops
 # 0a. settle the work in progress: commit what you keep; close the test runs
+# 0b. the Linux stand — its wsl.conf change rides the same restart as the rest
 tools/wsl2/stand-linux.sh --dry-run && tools/wsl2/stand-linux.sh     # asks for sudo once
-# 0b. clear stale caches first, so the backup carries less: docker builder/image prune, pip/npm caches, /tmp
-sudo fstrim -v /                                                    # mark freed ext4 blocks, or compact reclaims nothing from them
+# 0c. clear stale caches, so the backup carries less: docker builder/image prune, pip/npm caches, /tmp
+# 0d. mark every freed ext4 block, or compact reclaims nothing from them
+sudo fstrim -v /
 ```
 
 ```powershell
@@ -313,5 +315,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ADSEtSGbnih6T8VulVhLwxd1vq-5Q9CLrzoNsQn1QBo
+<<^ code="&#x0003;">>ni:///sha-256;8a6r7BttDgh8C828NY9Gb13qIvrNtCFmTmtxQ2QXuvk
 <<^ code="&#x0004;" -> to="?">>
