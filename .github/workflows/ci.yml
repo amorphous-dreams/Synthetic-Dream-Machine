@@ -28,7 +28,15 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    # `branches` and `branches-ignore` cannot both sit under the same `push:` event (GitHub
+    # workflow syntax), so this replaces the blanket `branches: ["**"]` rather than sitting beside
+    # it — the two names mean the same "every branch" before the exclusion.
+    #
+    # A lane push to `ci/<lane>` is e2e-shards.yml's own single-fire trigger (tools/e2e-shards.mjs
+    # pushes it and watches that ONE run). Without this exclusion the same push would also raise the
+    # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
+    # throwaway proof run) would cost a full CI run every time.
+    branches-ignore: ["ci/**"]
   pull_request:
     branches: [main]
 
