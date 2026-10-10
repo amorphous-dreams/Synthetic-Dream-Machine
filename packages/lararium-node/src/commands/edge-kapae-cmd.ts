@@ -17,14 +17,12 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
   signEdgeKapae, writeEdgeKapae, edgeKapaeActsFromBoard, edgeKapaeActCid, edgeKapaeBytes, shadowSetFromBoard,
   edgeKapaeBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, hexToBytes,
 } from "@lararium/mesh";
-import { larDataDir } from "../vessel-paths.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
@@ -43,7 +41,8 @@ export interface EdgeKapaeOptions {
   readonly handleIndex?: number;
   /** Explicit causal parents; absent means the currently observed local frontier. */
   readonly parents?:     readonly string[];
-  readonly storageDir?:  string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:       Repo;
 }
 
 export interface EdgeKapaeResult {
@@ -60,7 +59,6 @@ export interface EdgeKapaeResult {
 
 /** Land one kāpae act on the Nexus board. `now` never enters — an act roots on an epochCid, never a clock. */
 export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const edgeId     = opts.edgeId.trim();
   const epochCid      = opts.epochCid.trim();
 
@@ -84,7 +82,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   const boardUrl    = edgeKapaeBoardDocUrl(boardIsland);
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
     ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
   try {

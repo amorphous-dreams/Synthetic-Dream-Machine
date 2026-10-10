@@ -9,8 +9,7 @@
  * publish in a human's name; an unset selector therefore refuses instead of choosing handle zero.
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   crossroadsDocUrl,
   ed25519SignerFromSeed,
@@ -22,7 +21,6 @@ import {
   type PluginOffering,
 } from "@lararium/mesh";
 import { readGenesisCasManifest } from "../genesis-artifact.js";
-import { larDataDir } from "../vessel-paths.js";
 import {
   loadActivePersonaIndex,
   loadPersonaGroupRootSeed,
@@ -35,7 +33,8 @@ import { nodeNexusIsland } from "../nexus-standing.js";
 export class NexusPublishError extends Error {}
 
 export interface NexusPublishPluginsOptions {
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo: Repo;
   readonly genesisDir?: string;
 }
 
@@ -50,7 +49,7 @@ export interface NexusPublishPluginsResult {
 
 /** Sign and announce the local genesis plugin collection on this vessel's Nexus Crossroads. */
 export async function runNexusPublishPlugins(
-  opts: NexusPublishPluginsOptions = {},
+  opts: NexusPublishPluginsOptions,
 ): Promise<NexusPublishPluginsResult> {
   const handleIndex = await loadActivePersonaIndex();
   if (handleIndex === undefined) {
@@ -94,7 +93,7 @@ export async function runNexusPublishPlugins(
 
   const vesselKey = await loadVesselVerifyingKey();
   const boardUrl = crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(opts.storageDir ?? larDataDir()) });
+  const repo = opts.repo;
   try {
     const board = await materializeSharedLarDoc(repo, boardUrl, "board:crossroads");
     // The key is the complete signed offering CID. Re-running therefore replaces only the same exact

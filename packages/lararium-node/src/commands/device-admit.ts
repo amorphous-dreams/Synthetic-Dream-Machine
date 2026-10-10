@@ -3,9 +3,12 @@
  *
  * Node-specific shores (only these belong here):
  *   - readFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
- *   - NodeFSStorageAdapter + findWithProgress for daemon doc access
+ *   - findWithProgress on the store's one holder for daemon doc access — the standing vessel's own Repo
+ *     when the door runs inside it, the direct holder's (`ownedStore`) when no vessel stands
  *   - loadVesselSigningSeed (disk keypair)
- *   - writeFileSync / process.stdout.write for output
+ *
+ * The door hands back the minted payload and its carried form; the caller's own process writes or prints
+ * them, so a door that ran inside the standing vessel never speaks into the vessel's log.
  *
  * All ceremony logic (Keyhive hydration, Gate B/C self-check, payload construction)
  * lives in @lararium/keyhive (runDeviceAdmitCore) and runs identically in any vessel.
@@ -14,10 +17,8 @@
  * A second OPERATOR joins a Nexus by carriage contract (`lares nexus accept-carriage` + `lares nexus contract`) — a different axis (ceremony.ts stubs).
  */
 
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import type { AutomergeUrl } from "@automerge/automerge-repo";
+import { existsSync, readFileSync } from "fs";
+import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -25,7 +26,7 @@ import {
   leaseEpochPrefix, effectiveLeaseEpoch,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
-import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
+import { larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload, type CarriedAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
@@ -47,8 +48,8 @@ export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive"
  * island while its own boot reads the charter board.
  *
  * AND THE RESOLVED KEY ALONE DOES NOT SUFFICE — THE BOARD ITSELF MUST CARRY THE CHAIN TOO. Founding
- * seats a climbed founder's inception on the island BELOW, and this door never boots through
- * `open-node-vessel.ts` (it opens the store directly and exits — the module docblock above says so).
+ * seats a climbed founder's inception on the island BELOW, and this door runs against whichever holder
+ * stands — the vessel that booted before the climb, or the direct holder that never boots at all.
  * So `runDeviceAdmit` carries the chain itself: right before it reads the board at `boardIsland`, it
  * calls the SAME `carryPersonaKelUpTheGradient` the boot calls, fed by `nodeNexusIslandsBelow` off
  * this identical resolution — never a second, hand-built ranking. A sound climbed founding therefore
@@ -74,9 +75,9 @@ export function admitBoardIsland(ownVesselKey: string): string {
 }
 
 export interface DeviceAdmitOptions {
-  readonly storageDir?:    string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:           Repo;
   readonly genesisDir?:    string;
-  readonly outPath?:       string;
   readonly syncUrl?:       string;
   /** The joining vessel's PUBLIC Ed25519 verifying-key hex — the delegate the founder's root signs. */
   readonly joineeVerifyingKey: string;
@@ -86,18 +87,24 @@ export interface DeviceAdmitOptions {
   readonly hearthDaemonUrl?: string | null;
 }
 
-function defaultDirs(): { storageDir: string; genesisDir: string } {
+/** What the door mints: the signed edge, and the form a joinee founds against. */
+export interface DeviceAdmitResult {
+  /** The signed edge as the ceremony minted it — the bytes the carried `#admit=` fragment encodes. */
+  readonly payload: DeviceAdmitPayload;
+  /** The edge with the hearth's dial pin and resolved island beside it — the file `vessel found --admit` reads. */
+  readonly carried: CarriedAdmitPayload;
+}
+
+function defaultDirs(): { genesisDir: string } {
   return {
-    storageDir: larDataDir(),        // the vessel substrate → <lares>/vessel
     // Baked seed rides the composable genesis cap (LAR_GENESIS → ~/.lares/config.json →
     // repo-relative <corpus>/genesis). Checked-in by default; a no-config boot lands on the repo seed.
     genesisDir: daemonGenesisDir(),
   };
 }
 
-export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAdmitPayload> {
+export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAdmitResult> {
   const defaults   = defaultDirs();
-  const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
   const bootstrap  = larBootstrapPath();
 
@@ -143,7 +150,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
 
   // Open daemon doc to read cap events + personaGroupAgentIdHex.
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   const progress    = repo.findWithProgress(daemonUrl as AutomergeUrl);
   // automerge-repo 2.6: whenReady() resolves the handle when ready, rejects on
   // unavailable; race it against a 5s timeout.
@@ -175,17 +182,17 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const founderVesselKey = await loadVesselVerifyingKey();
   const boardIsland      = admitBoardIsland(founderVesselKey);
-  // ── CARRY ON READ — a store-direct door names its own sources rather than trusting a boot to have run ──
+  // ── CARRY ON READ — a door names its own sources rather than trusting a boot to have run ──
   // `open-node-vessel.ts` carries the pinned chain onto the resolved island right before its OWN board
-  // read, at every boot. This door NEVER boots (module docblock above: it opens the store directly and
-  // exits), so the ordinary walk `vessel found` → `persona new 0` → `nexus rite quorum` → `device-admit`
+  // read, at every boot. A rite since that boot may have moved the island, and a direct holder never
+  // boots at all, so the ordinary walk `vessel found` → `persona new 0` → `nexus rite quorum` → `device-admit`
   // reaches this line with no daemon restart between the climb and the call. Composing the carry HERE,
   // fed by `nodeNexusIslandsBelow` off the identical resolution `admitBoardIsland` above already ran,
   // lets a sound climbed founding admit with no restart owed — the resolution names one ranking,
   // and both reads of it stay that one ranking.
   //
   // This mirrors the boot's own seam rather than sprinkling a carry onto the rite that moved the
-  // island: a store-direct door names ITS sources at the point it reads, a booted daemon names them at
+  // island: a door names ITS sources at the point it reads, a booted daemon names them at
   // the point it boots, and neither enumerates the rites that can move an island. `persona-kel-climb.ts`
   // states the carry's own idempotence and gradient-only direction; this call inherits both by
   // composing the same function rather than a second implementation of it.
@@ -278,26 +285,5 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
       hearthIslandScope: founderIdentity.scope,
     } : {}),
   };
-  const json = JSON.stringify(carried, null, 2);
-  if (opts.outPath) {
-    writeFileSync(opts.outPath, json, "utf8");
-    console.log(`[lares device-admit] payload written to ${opts.outPath}`);
-  } else {
-    process.stdout.write(json + "\n");
-  }
-
-  // The CARRIED form. The payload is a signed capability, so it needs no trusted channel and no
-  // reachable issuer: a hostile carrier may WITHHOLD it, never forge it. It rides in the URL FRAGMENT,
-  // which browsers do not transmit — so the bytes reach the vessel by whatever the human used (a paste,
-  // a QR held up to a screen, a file on a stick) and touch no network on the way.
-  //
-  // The alternative — a `GET /admit/<key>` the vessel calls — makes the vessel a client PETITIONING an
-  // authority for its own admission, and it demands that authority be REACHABLE at the moment of asking.
-  // That is a global now, and this house does not have one.
-  const b64 = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
-  console.log("");
-  console.log("[lares device-admit] carry this to the joining vessel — the fragment never leaves the browser:");
-  console.log(`  #admit=${b64}`);
-
-  return payload;
+  return { payload, carried };
 }

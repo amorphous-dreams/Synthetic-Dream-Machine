@@ -31,7 +31,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdirSync, rmSync, existsSync, readFileSync, cpSync } from "fs";
+import { mkdirSync, rmSync, existsSync, readFileSync, cpSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { Repo } from "@automerge/automerge-repo";
@@ -48,6 +48,7 @@ import { InMemoryEventStore } from "@lararium/keyhive";
 import { runInit, runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
 import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { direct } from "../direct-store.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation directories
@@ -155,7 +156,7 @@ let vesselBBootstrapPath = "";
 beforeAll(async () => {
   // Step 1 — founding ceremony
   const initA = await withLarRoot(VESSEL_A.root, () =>
-    runInit({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
+    direct(runInit)({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
   vesselABootstrapPath = initA.bootstrapPath;
   if (vesselABootstrapPath !== join(VESSEL_A.storage, "social-bootstrap.json")) {
     throw new Error(`Vessel A: runInit returned an unexpected bootstrap path: ${vesselABootstrapPath}`);
@@ -165,7 +166,7 @@ beforeAll(async () => {
   // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and `runDeviceAdmit` (Step 3)
   // needs the face's sentinel oracle IDs to sign an edge — mirrors the founder in `persona-ring-cross-operator-admit`.
   await withLarRoot(VESSEL_A.root, () =>
-    runFoundTheFace({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
+    direct(runFoundTheFace)({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
 
   const bootstrapA  = readBootstrap(vesselABootstrapPath);
   const daemonUrlA   = bootstrapA[DAEMON_BAG_ID]?.text;
@@ -182,18 +183,19 @@ beforeAll(async () => {
   const vesselB = await withLarRoot(VESSEL_B.root, () => generateOrLoadVesselIdentity());
 
   // Step 3 — A's PersonaGroup root signs B's edge
-  await withLarRoot(VESSEL_A.root, () => runDeviceAdmit({
+  const minted = await withLarRoot(VESSEL_A.root, () => direct(runDeviceAdmit)({
       storageDir:         VESSEL_A.storage,
       genesisDir:         VESSEL_A.genesis,
-      outPath:            ADMIT_FILE,
       syncUrl:            "ws://localhost:3000/automerge",
       joineeVerifyingKey: vesselB.verifyingKey,
     }));
+  // The door hands back the carried form; the caller writes the file a joinee founds against.
+  writeFileSync(ADMIT_FILE, JSON.stringify(minted.carried, null, 2), "utf8");
   admitPayload = JSON.parse(readFileSync(ADMIT_FILE, "utf8"));
 
   // Step 4 — Vessel B founds against the signed payload
   const initB = await withLarRoot(VESSEL_B.root, () =>
-    runInit({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
+    direct(runInit)({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
   vesselBBootstrapPath = initB.bootstrapPath;
   if (vesselBBootstrapPath !== join(VESSEL_B.storage, "social-bootstrap.json")) {
     throw new Error(`Vessel B: runInit returned an unexpected bootstrap path: ${vesselBBootstrapPath}`);

@@ -23,6 +23,7 @@ import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
+import { direct } from "./direct-store.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -58,9 +59,9 @@ async function foreignNym(seedByte: number): Promise<string> {
 describe("cabal join — the crossing, and what it refuses", () => {
   it("admits a joiner the realm vouched for, and names the voucher the co-pay charges", async () => {
     const joiner = await foreignNym(7);
-    await runCabalVouch({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER }, NOW);
 
-    const v = await runCabalJoin({ realm: REALM, applicant: joiner });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
 
     expect(v.admitted).toBe(true);
     // The co-pay charges the hand that staked; an admission that forgot who vouched charges nobody.
@@ -69,7 +70,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
   it("refuses a joiner nobody vouched for — invite-only is the fail-closed default", async () => {
     const stranger = await foreignNym(8);
-    const v = await runCabalJoin({ realm: REALM, applicant: stranger });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: stranger });
 
     expect(DEFAULT_JOIN_POLICY.kind).toBe("invite-only");
     expect(v.admitted).toBe(false);
@@ -78,20 +79,20 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
   it("★ a refusal ANERGIZES — the applicant stays at the floor and is never banned ★", async () => {
     const stranger = await foreignNym(9);
-    await runCabalJoin({ realm: REALM, applicant: stranger });
+    await direct(runCabalJoin)({ realm: REALM, applicant: stranger });
 
     // Kapae takes a quorum. A ban on failed presentation would let any hand block a face by
     // presenting a bad invite in its name.
-    const v = await runCabalJoin({ realm: REALM, applicant: stranger });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: stranger });
     expect(v.refusal).toBe("no-invite");
     expect(v.banned).toBeUndefined();
   });
 
   it("refuses an invite that names a different realm", async () => {
     const joiner = await foreignNym(10);
-    await runCabalVouch({ joiner, realm: OTHER_REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: OTHER_REALM, expiresAt: LATER }, NOW);
 
-    const v = await runCabalJoin({ realm: REALM, applicant: joiner });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("no-invite");   // none for THIS realm — the board is read per-realm
   });
@@ -99,10 +100,10 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("★ an invite is never BEARER — it names its joiner ★", async () => {
     const named = await foreignNym(11);
     const thief = await foreignNym(12);
-    await runCabalVouch({ joiner: named, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner: named, realm: REALM, expiresAt: LATER }, NOW);
 
     // The thief presents against a board that carries a valid invite — for somebody else.
-    const v = await runCabalJoin({ realm: REALM, applicant: thief });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: thief });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("no-invite");
   });
@@ -110,11 +111,11 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("refuses an invite whose vouch has lapsed — the realm rolled its fence past it", async () => {
     const joiner = await foreignNym(13);
     // Minted bound at the realm's genesis epoch, which is where a fresh realm stands.
-    await runCabalVouch({ joiner, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
 
     // THE ROLL IS THE LAPSE, and it takes no clock. A reading that lapsed by timestamp could be
     // un-lapsed by the applicant's own machine, which is the one hand that must not hold the dial.
-    const v = await runCabalJoin({ realm: REALM, applicant: joiner, epoch: 1 });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 1 });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("expired");
   });
@@ -128,22 +129,22 @@ describe("cabal join — the crossing, and what it refuses", () => {
     );
     expect(await verify(new Uint8Array(), forged.sig, forged.voucherDid)).toBe(false);
 
-    const v = await runCabalJoin({ realm: REALM, applicant: joiner, invite: forged });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, invite: forged });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("bad-signature");
   });
 
   it("refuses before reading a board when the realm is not 64 hex", async () => {
-    await expect(runCabalJoin({ realm: "not-a-realm", applicant: await foreignNym(16) }))
+    await expect(direct(runCabalJoin)({ realm: "not-a-realm", applicant: await foreignNym(16) }))
       .rejects.toBeInstanceOf(CabalJoinError);
   });
 
   it("★ the crossing folds the DAG ITSELF, so the per-voucher cap cannot be skipped ★", async () => {
     // `capped` exists only on the lineage shore — `admitToRealm` returns no such field.
     const joiner = await foreignNym(17);
-    await runCabalVouch({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER }, NOW);
 
-    const v = await runCabalJoin({ realm: REALM, applicant: joiner, now: NOW, maxVouchesPerVoucher: 1 });
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW, maxVouchesPerVoucher: 1 });
 
     // What the fold turned away rides back rather than vanishing, so a caller reads the budget spent
     // instead of trusting a graph that came back quietly shorter than the invites handed in.
@@ -166,8 +167,8 @@ describe("cabal join — the crossing, and what it refuses", () => {
     expect(nodeNexusIsland({ ownVesselKey: vesselKey })).not.toBe(vesselKey);
 
     const joiner = await foreignNym(18);
-    await runCabalVouch({ joiner, realm: REALM, expiresAt: LATER }, NOW);
-    const v = await runCabalJoin({ realm: REALM, applicant: joiner, now: NOW });
+    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW });
 
     expect(v.refusal).toBeUndefined();
     expect(v.admitted).toBe(true);

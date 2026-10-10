@@ -16,8 +16,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/persona-admit-flow
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   mintEnrollmentOffer, sealPersonaGrant, openPersonaGrant, mintJoinAck, verifyJoinAck,
   headOpKey, personaKelChainForPrefix, personaKelBoardDocUrl, materializeSharedLarDoc,
@@ -32,7 +31,6 @@ import {
 } from "./persona-admit-carriage.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
-import { larDataDir } from "./vessel-paths.js";
 import {
   recordAdmittedPersona, stashEnrollmentSecret, peekEnrollmentSecrets, takeEnrollmentSecret,
   stashSentMemo, takeSentMemo,
@@ -141,15 +139,14 @@ async function render(carriage: string): Promise<HopRender> {
 /**
  * Build the ruling-#3 head resolver off THIS vessel's LOCAL persona-KEL board replica: a prefix → its CURRENT
  * head op-key (verifying the KEL's structure + rotation quorums), or null when the prefix is unknown / unsynced
- * (fail-closed). A throwaway repo reads the flushed board without disturbing a running vessel. The open step
+ * (fail-closed). `repo` names the store's one holder — the standing vessel's own Repo, or the direct holder's
+ * (`ownedStore`) — so the read meets the replica the vessel itself folds. The open step
  * checks the grant's op-key IS this head (rotate-not-resurrect); a same-Nexus target already carries the
  * granter's persona-KEL (it federates once), a cross-Nexus one that lacks it draws the fail-closed refusal.
  */
-export async function makeLocalPersonaKelHeadResolver(dir?: string): Promise<(prefix: string) => Promise<string | null>> {
-  const dataDir = dir ?? larDataDir();
+export async function makeLocalPersonaKelHeadResolver(repo: Repo): Promise<(prefix: string) => Promise<string | null>> {
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(dataDir) });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   return async (prefix: string): Promise<string | null> => {
     const chain = personaKelChainForPrefix(board.doc(), prefix);

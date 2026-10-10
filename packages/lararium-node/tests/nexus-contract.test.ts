@@ -61,6 +61,7 @@ import { runRaiseSign } from "../src/commands/raise-sign.js";
 import { mintRaiseChallenge, verifyRaiseGrant } from "@lararium/mesh";
 import { takeAdmitBundle, readKeptAdmitBundle } from "../src/admit-bundle.js";
 import { carriageEntryActCid } from "@lararium/mesh";
+import { direct } from "./direct-store.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -650,7 +651,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const challengeText = JSON.stringify(challenge);
 
     // CONTROL, before the roll: the admit sits at the head and raises.
-    const { grant: before } = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    const { grant: before } = await direct(runRaiseSign)({ challengeText, handleIndex: 3, sealHome: sealHome() });
     expect(before.presentedAdmit.lineage.filter(isRollAnchor)).toEqual([]);
 
     const closing = foundingRoster(readNexusDoc(sealHome()));
@@ -658,7 +659,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     roll();
 
     // After the roll the admit roots on an ancestor epoch: the grant carries the anchor that carries it.
-    const { grant, findings } = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    const { grant, findings } = await direct(runRaiseSign)({ challengeText, handleIndex: 3, sealHome: sealHome() });
     expect(grant.byNym).toBe(recogniser);
     expect(grant.presentedAdmit.lineage.filter(isRollAnchor)).toHaveLength(1);
     expect(findings).toEqual([]);   // CONTROL: one anchor opens the head epoch — nothing to surface
@@ -700,7 +701,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const orphan = await landOrphanAnchor(closing, opened);
     roll();
     const challengeText = JSON.stringify(mintRaiseChallenge({ vesselId: "ab".repeat(32), nexus: aid, epoch: 1, nonce: "57".repeat(16) }));
-    const { grant, findings } = await runRaiseSign({ challengeText, handleIndex: 3, sealHome: sealHome() });
+    const { grant, findings } = await direct(runRaiseSign)({ challengeText, handleIndex: 3, sealHome: sealHome() });
     expect(grant.presentedAdmit.lineage.filter(isRollAnchor).map(rollAnchorCid)).toEqual([landed.anchorCid]);
     expect(findings).toEqual([{
       kind: "anchors-open-one-epoch", epochCid: opened.sealEpochCid, anchorCids: [landed.anchorCid, rollAnchorCid(orphan)].sort(),

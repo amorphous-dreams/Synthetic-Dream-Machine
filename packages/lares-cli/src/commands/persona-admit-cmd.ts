@@ -29,12 +29,13 @@
 
 import { ed25519SignerFromSeed, type PersonaRef } from "@lararium/mesh";
 import {
-  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow, makeLocalPersonaKelHeadResolver,
+  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
   listAdmittedPersonas, clearPersonaAdmitPending,
   loadVesselSigningSeed, loadVesselVerifyingKey,
   loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
 } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
+import { storeVerb } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
@@ -94,7 +95,11 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const grantCarriage = String(args.options["grant"] ?? "");
         if (!grantCarriage) throw new UsageError("open needs --grant <carriage> (the granter's QR#2)");
         const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
-        const resolveHeadOpKey = await makeLocalPersonaKelHeadResolver();
+        // The head reads off the store's one holder — the standing vessel's replica when one stands.
+        const resolveHeadOpKey = async (p: string): Promise<string | null> => {
+          const head = (await storeVerb("persona-kel-head", { prefix: p })).output["head"];
+          return typeof head === "string" ? head : null;
+        };
         const r = await openAdmitFlow({ grantCarriage, resolveHeadOpKey, deviceSigner });
         if ("error" in r) throw new UsageError(r.error);
         emit(args, {

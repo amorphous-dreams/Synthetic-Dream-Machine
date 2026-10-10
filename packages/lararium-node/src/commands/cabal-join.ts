@@ -11,8 +11,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
   verifiedVouchesFromBoard, vouchBoardDocUrl, materializeSharedLarDoc,
@@ -21,7 +20,7 @@ import {
   type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
-import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
+import { larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 
@@ -113,7 +112,8 @@ export interface CabalJoinOptions {
   readonly maxVouchesPerVoucher?: number;
   readonly policy?:   CabalJoinPolicy;
   readonly dials?:    AdmissionDials;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:       Repo;
 }
 
 export type CabalJoinResult = LineageAdmission;
@@ -124,7 +124,6 @@ const verifyOffline = (bytes: Uint8Array, sigHex: string, voucherDid: string): P
 export async function runCabalJoin(
   opts: CabalJoinOptions,
 ): Promise<CabalJoinResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const realm = opts.realm.trim().toLowerCase();
   const applicant = opts.applicant.trim().toLowerCase();
 
@@ -143,7 +142,7 @@ export async function runCabalJoin(
   }
 
   let boardEpoch = 0;
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo = opts.repo;
   let issued: CabalInvite[];
   try {
     // THE BOARD KEYS ON THE NEXUS, never the vessel key — the same island `cabal vouch` writes. On a

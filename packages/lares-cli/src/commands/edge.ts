@@ -21,8 +21,9 @@
  * dropped everywhere it matters.
  */
 
-import { runEdgeKapae, EdgeKapaeError } from "@lararium/node";
+import { EdgeKapaeError, type EdgeKapaeResult } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
+import { storeVerb } from "../store-door.js";
 import { refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 
@@ -45,10 +46,10 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
     return 2;
   }
   try {
-    const r = await runEdgeKapae({
+    const r = (await storeVerb("edge-kapae", {
       edgeId, epochCid, raised: verb === "kapae",
       ...(handleIndex !== undefined ? { handleIndex } : {}),
-    });
+    }, EdgeKapaeError)).output as unknown as EdgeKapaeResult;
     console.log(r.raised ? "RAISED — the relationship stands aside" : "LOWERED — the relationship stands again");
     console.log(`  edge:     ${r.edgeId}`);
     console.log(`  act-cid:  ${r.actCid}`);

@@ -5,7 +5,7 @@
  * `carryContractShareDecision`) already stand; this is the writer they were missing.
  *
  * Node-specific shores (only these belong here):
- *   - Repo + NodeFSStorageAdapter over the vessel store (the offline board-doc access, mirroring device-admit)
+ *   - the store's one holder (`repo`): the standing vessel's own Repo, or the direct holder's (`ownedStore`)
  *   - readNexusDoc off `bags/nexus` (the roster's authority home) → foundingRoster
  *   - the held-quorum selector (`held-quorum`) + loadPersonaGroupRootSeed (founder-held signing seeds)
  *   - loadVesselVerifyingKey (the node's own gate key — the board's per-island deterministic address seed)
@@ -26,15 +26,13 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   antigenEntriesFromBoard, antigenActCid, writeAntigenEntry, signAntigenEntry,
   makeMultiSigQuorumVerifier, foldAntigenSet, isKapaed, foundingRoster,
   kapaeAntigenDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type KapaeAction, type KapaeAntigenEntry, type KahuQuorumSeats,
 } from "@lararium/mesh";
-import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
@@ -52,8 +50,8 @@ export interface NexusKapaeOptions {
   readonly reason?:    string;
   /** The charter DOC's authority home (the CLI supplies `larSealHome()`). */
   readonly sealHome:    string;
-  /** The Automerge Repo store (defaults to the node vessel store). */
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:       Repo;
 }
 
 export interface NexusKapaeResult {
@@ -105,7 +103,6 @@ const subQuorum = (held: number, k: number): NexusKapaeError => new NexusKapaeEr
  * nym, or a self-verify miss all REFUSE with nothing written.
  */
 export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapaeResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const nym        = opts.nym.trim().toLowerCase();
   if (!NYM_RE.test(nym)) {
     throw new NexusKapaeError(`"${opts.nym}" is not a valid presenter nym — expected a 64-hex ed25519 verifying key.`);
@@ -117,7 +114,7 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   const boardUrl    = kapaeAntigenDocUrl(boardIsland);
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:kapae-antigen");
 
@@ -178,13 +175,12 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
 
 /** Read the currently-Kapae'd set + the raw board entries (the `--list` fold). Read-only; materializes a blank
  *  board on a cold first boot (denies nobody). FAILS CLOSED to the empty set on an unseated charter. */
-export async function runNexusKapaeList(opts: { sealHome: string; storageDir?: string }): Promise<NexusKapaeListResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
+export async function runNexusKapaeList(opts: { readonly sealHome: string; readonly repo: Repo }): Promise<NexusKapaeListResult> {
   const roster     = foundingRoster(readNexusDoc(opts.sealHome));
 
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   try {
     const handle  = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(boardIsland), "board:kapae-antigen");
     const entries = antigenEntriesFromBoard(handle.doc());

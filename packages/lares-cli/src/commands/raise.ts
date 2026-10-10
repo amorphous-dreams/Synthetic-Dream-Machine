@@ -18,11 +18,12 @@
  * output; hand that text here, hand the grant back.
  */
 
-import { runRaiseSign, RaiseSignError } from "@lararium/node";
+import { RaiseSignError, type RaiseSignResult } from "@lararium/node";
 import { presentationFindingLine } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { storeVerb } from "../store-door.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "raise", helpLines("raise"), detail);
@@ -49,7 +50,7 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
   }
 
   try {
-    const { grant, findings } = await runRaiseSign({ challengeText, handleIndex });
+    const { grant, findings } = (await storeVerb("raise-sign", { challengeText, handleIndex }, RaiseSignError)).output as unknown as RaiseSignResult;
     emit(args, {
       ok: true,
       data: { challenge: { ...grant.challenge }, byNym: grant.byNym, sig: grant.sig, presentedAdmit: grant.presentedAdmit, findings },

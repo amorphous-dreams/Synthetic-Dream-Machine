@@ -21,6 +21,7 @@ import {
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
+import { direct } from "./direct-store.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -59,7 +60,7 @@ async function boardState(authority: string) {
 
 describe("runEdgeKapae — a relationship set aside, and taken back", () => {
   it("RAISES, and the shadow stands under the signer that raised it", async () => {
-    const r = await runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH });
+    const r = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true, epochCid: EPOCH });
 
     expect(r.actCid).toMatch(/^sha256:/);
     expect(r.parents).toEqual([]);
@@ -71,8 +72,8 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
   });
 
   it("★ the CLI selects the observed causal head, so a lower supersedes by lineage ★", async () => {
-    const up   = await runEdgeKapae({ edgeId: EDGE, raised: true,  epochCid: EPOCH });
-    const down = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH });
+    const up   = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true,  epochCid: EPOCH });
+    const down = await direct(runEdgeKapae)({ edgeId: EDGE, raised: false, epochCid: EPOCH });
 
     expect(down.parents).toEqual([up.actCid]);
     expect(down.actCid).toMatch(/^sha256:/);
@@ -84,21 +85,21 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
   });
 
   it("★ an explicit causal parent makes the lower a deliberate descendant ★", async () => {
-    const up   = await runEdgeKapae({ edgeId: EDGE, raised: true,  epochCid: EPOCH });
-    const tie  = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH, parents: [up.actCid] });
+    const up   = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true,  epochCid: EPOCH });
+    const tie  = await direct(runEdgeKapae)({ edgeId: EDGE, raised: false, epochCid: EPOCH, parents: [up.actCid] });
 
     expect(tie.parents).toEqual([up.actCid]);
     expect(tie.shadowStands).toBe(false);
   });
 
   it("rejects a raw CID-poisoned board act when selecting the next frontier", async () => {
-    const up = await runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH });
+    const up = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true, epochCid: EPOCH });
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const handle = await materializeSharedLarDoc(repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
     const poisoned = { ...up, actCid: "sha256:raw-poison" };
     handle.change((d) => { d.tiddlers["raw-poison"] = mutableLarRecord("raw-poison", { text: JSON.stringify(poisoned) }, "test"); });
     await repo.flush();
-    const down = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH });
+    const down = await direct(runEdgeKapae)({ edgeId: EDGE, raised: false, epochCid: EPOCH });
     expect(down.parents).toEqual([up.actCid]);
     await repo.shutdown();
   });
@@ -113,14 +114,14 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
     const handle = await materializeSharedLarDoc(repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
     handle.change((d) => { d.tiddlers["unavailable-branch"] = mutableLarRecord("unavailable-branch", { text: JSON.stringify(branch) }, "test"); });
     await repo.flush();
-    const next = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH });
+    const next = await direct(runEdgeKapae)({ edgeId: EDGE, raised: false, epochCid: EPOCH });
     expect(next.parents).toEqual([]);
     expect(next.shadowStands).toBe(false);
     await repo.shutdown();
   });
 
   it("the write asserts NO authority — an act lands, and a reader under a different authority drops it", async () => {
-    const r = await runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH });
+    const r = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true, epochCid: EPOCH });
     expect(r.shadowStands).toBe(true);
 
     // the same board, read by someone who holds a DIFFERENT key as the edge's authority
@@ -131,8 +132,8 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
   });
 
   it("acts on DIFFERENT edges never contend — each has its own founded head", async () => {
-    const a = await runEdgeKapae({ edgeId: "edge-a", raised: true, epochCid: EPOCH });
-    const b = await runEdgeKapae({ edgeId: "edge-b", raised: true, epochCid: EPOCH });
+    const a = await direct(runEdgeKapae)({ edgeId: "edge-a", raised: true, epochCid: EPOCH });
+    const b = await direct(runEdgeKapae)({ edgeId: "edge-b", raised: true, epochCid: EPOCH });
     expect(a.parents).toEqual([]);
     expect(b.parents).toEqual([]);
 
@@ -141,9 +142,9 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
   });
 
   it("REFUSES a blank edge, a blank epochCid, and an unheld root", async () => {
-    await expect(runEdgeKapae({ edgeId: "  ", raised: true, epochCid: EPOCH })).rejects.toThrow(EdgeKapaeError);
-    await expect(runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: "  " })).rejects.toThrow(EdgeKapaeError);
-    await expect(runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH, handleIndex: 99 }))
+    await expect(direct(runEdgeKapae)({ edgeId: "  ", raised: true, epochCid: EPOCH })).rejects.toThrow(EdgeKapaeError);
+    await expect(direct(runEdgeKapae)({ edgeId: EDGE, raised: true, epochCid: "  " })).rejects.toThrow(EdgeKapaeError);
+    await expect(direct(runEdgeKapae)({ edgeId: EDGE, raised: true, epochCid: EPOCH, handleIndex: 99 }))
       .rejects.toThrow(EdgeKapaeError);
   });
 });

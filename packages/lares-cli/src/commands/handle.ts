@@ -21,11 +21,12 @@
  */
 import { readFileSync } from "node:fs";
 import type { ParsedArgs } from "../parse-args.js";
-import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, loadNodeHandleBook } from "@lararium/node";
+import { loadNodeHandleBook } from "@lararium/node";
 import {
   verifyAttestation, normalizeHandleClaim, handleClaimFrom, handleClaimSubject, HANDLE_CLAIM_SURFACES,
-  type HandleAttestation, type HandleKelEvent,
+  type HandleAttestation, type HandleKelEvent, type HandleCard,
 } from "@lararium/mesh";
+import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 
@@ -35,6 +36,14 @@ function declared(verb: string, willDo: string, mint: string): number {
   console.error(`  the KEL mint stands (@lararium/mesh ${mint}); the vessel-side orchestration awaits its pass.`);
   console.error(`  canon: lar:///ha.ka.ba/lararium/mesh/handle-card`);
   return 3;
+}
+
+/**
+ * The persona a handle act names, as a door argument. ONE STORE DOOR: every handle act reads and writes the
+ * WHO board on the store's one holder — inside the standing vessel when one stands, here otherwise.
+ */
+function personaOf(args: ParsedArgs): { handleIndex?: number } {
+  return args.options["persona"] === undefined ? {} : { handleIndex: Number(args.options["persona"]) };
 }
 
 /** Refuse through the ONE choke point, so an agent under `--json` reads a verdict and never bare prose. */
@@ -47,9 +56,7 @@ async function handlePublish(args: ParsedArgs): Promise<number> {
   if (!glamour) {
     return refuse(args, 'publish wants a glamour (display name): lares handle publish "Guru-Josh"');
   }
-  const opts: Parameters<typeof runHandlePublish>[0] = { glamour };
-  if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
-  const card = await runHandlePublish(opts);
+  const card = (await storeVerb("handle-publish", { glamour, ...personaOf(args) })).output["card"] as HandleCard;
   console.log(`[lares handle] published "${card.glamour}" — nym ${card.nym.slice(0, 24)}… (act ${card.actCid.slice(0, 16)}…, ${card.parents.length} parent(s))`);
   return 0;
 }
@@ -224,9 +231,7 @@ async function handleAttest(args: ParsedArgs): Promise<number> {
   if (!claim) {
     return refuse(args, `no adapter answers surface "${surface}" with subject "${subject}" — the surfaces are ${HANDLE_CLAIM_SURFACES.join(" · ")}`);
   }
-  const opts: Parameters<typeof runHandleAttest>[0] = { claim };
-  if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
-  const statement = await runHandleAttest(opts);
+  const statement = (await storeVerb("handle-attest", { claim, ...personaOf(args) })).output["statement"] as HandleAttestation;
   // A standalone signed statement the operator carries out-of-band; a reader verifies it against the surface.
   console.log(JSON.stringify(statement));
   return 0;
@@ -237,19 +242,17 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
   switch (sub) {
     case "publish": return await handlePublish(args);
     case "rotate": {
-      const opts: Parameters<typeof runHandleRotate>[0] = {};
-      if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
-      const card = await runHandleRotate(opts);
+      const card = (await storeVerb("handle-rotate", { ...personaOf(args) })).output["card"] as HandleCard;
       console.log(`[lares handle] rotated "${card.glamour}" — nym ${card.nym.slice(0, 24)}… seats a fresh key (act ${card.actCid.slice(0, 16)}…, ${card.parents.length} parent(s))`);
       return 0;
     }
     case "graft":
       return declared("graft", "turn the presenting owner-set over (succession); TRUE k-of-n graft governance rides declared", "mintHandleGraft");
     case "burn": {
-      const opts: Parameters<typeof runHandleBurn>[0] = {};
-      if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
-      if (args.flags["from-persona"] === true) Object.assign(opts, { fromPersona: true });   // owner-burn (from above)
-      const card = await runHandleBurn(opts);
+      const card = (await storeVerb("handle-burn", {
+        ...personaOf(args),
+        ...(args.flags["from-persona"] === true ? { fromPersona: true } : {}),   // owner-burn (from above)
+      })).output["card"] as HandleCard;
       const hand = args.flags["from-persona"] === true ? "the persona buried it from above" : "the seated key buried it";
       console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… is terminal, readers refuse it (${hand})`);
       return 0;

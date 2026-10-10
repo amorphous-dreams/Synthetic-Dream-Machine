@@ -10,7 +10,7 @@ import {
   GENESIS_CID_PLUGINS_TIDDLER, sha256HexBytesSync, type GenesisSeed, type RegionEntry,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
-import { runNexusPublishPlugins } from "@lararium/node";
+import { runNexusPublishPlugins, ownedStore } from "@lararium/node";
 import { larDataDir } from "@lararium/node";
 
 const args = (positional: string[], flags: Record<string, boolean> = {}): ParsedArgs =>
@@ -68,7 +68,7 @@ describe("lares nexus offering inspect — CLI boundary", () => {
   it("reports completed local transport separately from verified observation and adoption", async () => {
     const { dir, bytes } = seedGenesis();
     await stand();
-    const offered = await runNexusPublishPlugins({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await ownedStore(larDataDir(), (repo) => runNexusPublishPlugins({ genesisDir: dir, repo }));
     expect(offered.offering.blobs[0]?.sha256).toMatch(/^[0-9a-f]{64}$/);
     mkdirSync(join(larDataDir(), "cas"), { recursive: true });
     writeFileSync(join(larDataDir(), "cas", offered.offering.blobs[0]!.sha256), bytes);

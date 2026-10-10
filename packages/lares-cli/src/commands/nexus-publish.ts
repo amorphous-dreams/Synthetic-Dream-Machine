@@ -24,9 +24,10 @@
 import {
   readGenesisPluginsCid,
   readGenesisCasManifest,
-  runNexusPublishPlugins,
   NexusPublishError,
+  type NexusPublishPluginsResult,
 } from "@lararium/node";
+import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -64,7 +65,7 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
 
   if (args.flags["apply"]) {
     try {
-      const result = await runNexusPublishPlugins();
+      const result = (await storeVerb("nexus-publish", {}, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
       emit(args, {
         ok: true,
         data: {

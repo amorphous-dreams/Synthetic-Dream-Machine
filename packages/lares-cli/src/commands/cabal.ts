@@ -31,7 +31,11 @@
  */
 
 import { realmStanding } from "@lararium/mesh";
-import { runCabalVouch, CabalVouchError, runCabalJoin, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "@lararium/node";
+import {
+  CabalVouchError, CabalJoinError, loadPersonaGroupRootVerifyingKey, listPersonaRoots,
+  type CabalVouchResult, type CabalJoinResult,
+} from "@lararium/node";
+import { storeVerb } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -179,11 +183,11 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
   }
 
   try {
-    const r = await runCabalVouch({
+    const r = (await storeVerb("cabal-vouch", {
       joiner, realm,
       ...(args.options["expires"] !== undefined ? { expiresAt: args.options["expires"] } : {}),
       ...(handleIndex !== undefined ? { handleIndex } : {}),
-    });
+    }, CabalVouchError)).output as unknown as CabalVouchResult;
     console.log(r.reMinted ? "RE-VOUCHED (one edge, not two)" : "VOUCHED");
     console.log(`  voucher:   ${r.voucherDid}`);
     console.log(`  joiner:    ${r.joiner}`);
@@ -213,10 +217,10 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
       throw new CabalUsageError(`--cap expects an integer out-degree ceiling, got "${capRaw}"`);
     }
 
-    const v = await runCabalJoin({
+    const v = (await storeVerb("cabal-join", {
       realm, applicant,
       ...(cap !== undefined ? { maxVouchesPerVoucher: cap } : {}),
-    });
+    }, CabalJoinError)).output as unknown as CabalJoinResult;
 
     emit(args, {
       ok: true,

@@ -21,11 +21,10 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { runHostState, runHostRoll, runHostInvite, HostRefusal } from "@lararium/node";
-import { larSealHome } from "../env.js";
+import { HostRefusal } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { throughStoreDoor } from "../store-door.js";
+import { storeVerb } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 function nexusOf(args: ParsedArgs): string | undefined {
@@ -40,13 +39,6 @@ function refuse(args: ParsedArgs, verb: string, err: unknown): number {
   return exitFor(code);
 }
 
-/** Run a host door through the store door; a door's refusal comes back as a `HostRefusal`, as on the direct path. */
-async function hostDoor(verb: string, args: Record<string, unknown>, direct: () => Promise<Record<string, unknown>>): Promise<{ output: Record<string, unknown>; via: string }> {
-  const r = await throughStoreDoor({ verb, args, direct });
-  if (typeof r.output["refused"] === "string") throw new HostRefusal(r.output["refused"]);
-  return r;
-}
-
 export async function cmdHost(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (sub === undefined) return hostState(args);
@@ -59,7 +51,7 @@ interface HostedRow { nexusAid: string; epoch: string; previousEpoch: string | n
 
 async function hostState(args: ParsedArgs): Promise<number> {
   try {
-    const { output, via } = await hostDoor("host-state", {}, async () => ({ nexuses: await runHostState({ sealHome: larSealHome() }) }));
+    const { output, via } = await storeVerb("host-state", {}, HostRefusal);
     const hosted = (output["nexuses"] ?? []) as HostedRow[];
     emit(args, {
       ok: true,
@@ -87,7 +79,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
   try {
     const nexusAid = nexusOf(args);
     const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(cap !== undefined ? { cap } : {}) };
-    const { output: r, via } = await hostDoor("host-roll", vargs, async () => ({ ...(await runHostRoll({ sealHome: larSealHome(), ...vargs })) }));
+    const { output: r, via } = await storeVerb("host-roll", vargs, HostRefusal);
     emit(args, {
       ok: true,
       data: { nexusAid: r["nexusAid"], epoch: r["epoch"], previous: r["previous"], cap: r["cap"], docUrl: r["docUrl"], act: r["act"], via },
@@ -110,7 +102,7 @@ async function hostInvite(args: ParsedArgs): Promise<number> {
   try {
     const nexusAid = nexusOf(args);
     const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(relay ? { relay } : {}) };
-    const { output: r, via } = await hostDoor("host-invite", vargs, async () => ({ ...(await runHostInvite({ sealHome: larSealHome(), ...vargs })) }));
+    const { output: r, via } = await storeVerb("host-invite", vargs, HostRefusal);
     emit(args, {
       ok: true,
       data: { nexusAid: r["nexusAid"], epoch: r["epoch"], invite: r["invite"], via },

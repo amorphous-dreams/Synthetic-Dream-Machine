@@ -18,15 +18,13 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
   signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites,
   vouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, hexToBytes,
   type CabalInvite,
 } from "@lararium/mesh";
-import { larDataDir } from "../vessel-paths.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
@@ -48,7 +46,8 @@ export interface CabalVouchOptions {
   readonly boundEpoch?: number;
   /** WHICH held persona root vouches — the human's own face. Absent → the first held root. */
   readonly handleIndex?: number;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:       Repo;
 }
 
 export interface CabalVouchResult {
@@ -81,7 +80,6 @@ function defaultExpiry(now: number): string {
  * now and a test must stand at a chosen instant.
  */
 export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): Promise<CabalVouchResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const joiner     = opts.joiner.trim().toLowerCase();
   const realm      = opts.realm.trim().toLowerCase();
 
@@ -132,7 +130,7 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   const boardUrl    = vouchBoardDocUrl(boardIsland);
-  const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo        = opts.repo;
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
     ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
   try {

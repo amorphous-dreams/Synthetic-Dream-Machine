@@ -27,7 +27,7 @@
 import {
   loadPersonaGroupRootVerifyingKey, wearPersona, listPersonaRoots, loadActivePersonaIndex,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
-  runFoundTheFace, faceStands,
+  faceStands, armRecoveryAtFounding, type FoundFaceResult,
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
@@ -36,6 +36,7 @@ import {
 } from "@lararium/mesh";
 import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
 import { larDataDir } from "../env.js";
+import { storeVerb } from "../store-door.js";
 import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, fleetPeerDid,
 } from "../daemon-persona-store.js";
@@ -160,13 +161,23 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   //
   // Every added compartment rides beside the founding face, so a vessel with no group refuses them:
   // persona h1 inside no PersonaGroup would mint a root the Binding Gate could never walk to.
-  let founded: Awaited<ReturnType<typeof runFoundTheFace>>;
-  if (index === 0) {
-    founded = await runFoundTheFace({ storageDir: larDataDir() });
-  } else if (!faceStands()) {
+  //
+  // ONE STORE DOOR: the face founds on the store's one holder — inside the standing vessel when one stands (the
+  // floor lifts on its next stand), here otherwise.
+  if (index !== 0 && !faceStands()) {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
-  } else {
-    founded = await runFoundTheFace({ storageDir: larDataDir(), handleIndex: index });
+  }
+  const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
+
+  // The recovery leg arms with the face, in THIS process: the device share seals beside the veil, and the two
+  // off-device carriers print to the operator alone — never into a standing vessel's outcome record.
+  const armed = await armRecoveryAtFounding(larDataDir(), index);
+  if (armed.minted) {
+    console.log(`[lares persona new] recovery armed for h${index} — the device share sealed into the identity home.`);
+    console.log("  SHARES ARE KEYS: the two carriers below, together, reconstruct this persona's root. Write the");
+    console.log("  recorded code down and keep it off this device; hand the escrow carrier to ONE peer you trust.");
+    console.log(`  recorded-code   ${armed.recordedCode}`);
+    console.log(`  escrow-carrier  ${armed.escrowCarrier}`);
   }
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one

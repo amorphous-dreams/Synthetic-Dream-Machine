@@ -15,6 +15,7 @@ import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPerso
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
 import { larDataDir } from "../src/vessel-paths.js";
+import { direct } from "./direct-store.js";
 
 let root: string;
 let priorRoot: string | undefined;
@@ -57,7 +58,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
   it("verifies one board gift and reports held/missing local bytes without consulting Antigen", async () => {
     const { dir, cid, bytes } = seedGenesis();
     await stand();
-    const offered = await runNexusPublishPlugins({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await direct(runNexusPublishPlugins)({ genesisDir: dir, storageDir: larDataDir() });
     expect(offered.offering.blobs[0]?.sha256).toMatch(/^[0-9a-f]{64}$/);
     mkdirSync(join(larDataDir(), "cas"), { recursive: true });
     writeFileSync(join(larDataDir(), "cas", cid), bytes);
@@ -102,7 +103,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
   it("refuses a malformed record at the exact board key", async () => {
     const { dir } = seedGenesis();
     await stand();
-    const offered = await runNexusPublishPlugins({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await direct(runNexusPublishPlugins)({ genesisDir: dir, storageDir: larDataDir() });
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     board.change((doc) => { doc.tiddlers[offeringAnnounceKey(offered.offeringCid)] = { tiddler: { title: offeringAnnounceKey(offered.offeringCid), text: "not-json" }, meta: { authority: "test" } }; });
@@ -115,7 +116,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
   it("refuses a signed offering placed beneath the wrong Crossroads wrapper domain", async () => {
     const { dir } = seedGenesis();
     await stand();
-    const offered = await runNexusPublishPlugins({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await direct(runNexusPublishPlugins)({ genesisDir: dir, storageDir: larDataDir() });
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     const key = offeringAnnounceKey(offered.offeringCid);

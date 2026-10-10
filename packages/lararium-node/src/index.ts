@@ -188,13 +188,13 @@ export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey } from "./synced-tree.js";
 export { bagsFileToUri, wikisFileToUri } from "./bag-paths.js";
 
-export { runInit, runFoundTheFace, faceStands } from "./commands/init.js";
+export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
 export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from "./commands/init.js";
 
 export { runDeviceAdmit } from "./commands/device-admit.js";
-export type { DeviceAdmitOptions, DeviceAdmitPayload } from "./commands/device-admit.js";
+export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "./commands/device-admit.js";
 export { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, resolveOwnerBurnHand } from "./commands/handle.js";
 export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, HandleAttestOptions, OwnerAuthHand } from "./commands/handle.js";
 
@@ -204,6 +204,9 @@ export { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./command
 export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
 export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 export type { WalkReading } from "./commands/walk.js";
+// ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
+export { hearthDoorReactors, storeDoorDirect, HEARTH_DOOR_VERBS, type HearthDoorVerb } from "./hearth-door-verbs.js";
+export { ownedStore, claimStore, StoreHeld, type StoreClaim } from "./owned-store.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
   readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir,
@@ -225,6 +228,7 @@ export type { EdgeKapaeOptions, EdgeKapaeResult } from "./commands/edge-kapae-cm
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";
+export type { RaiseSignResult } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   runNexusRollAnchor, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
 // The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.

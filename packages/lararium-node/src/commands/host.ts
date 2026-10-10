@@ -24,8 +24,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   hostingDocUrl, materializeSharedLarDoc, writeHostingAct, hostingActsFromBoard, hostingActCid, mintHostToken, encodeInvite,
   type HostingAct,
@@ -99,12 +98,12 @@ export interface HostRollResult {
 }
 
 /**
- * ROLL the hearth's hosting epoch in N and land the new act on its hosting doc. `repo` is the running vessel's
- * own Repo when the vessel stands (the act reaches its walkers' sync at once); absent, the door opens the store
- * itself and flushes before it returns.
+ * ROLL the hearth's hosting epoch in N and land the new act on its hosting doc. `repo` names the store's one
+ * holder: the running vessel's own Repo when the vessel stands (the act reaches its walkers' sync at once), or
+ * the direct holder's (`ownedStore`) when none stands.
  */
 export async function runHostRoll(opts: {
-  readonly sealHome: string; readonly storageDir?: string; readonly nexusAid?: string; readonly cap?: number; readonly repo?: Repo;
+  readonly sealHome: string; readonly storageDir?: string; readonly nexusAid?: string; readonly cap?: number; readonly repo: Repo;
 }): Promise<HostRollResult> {
   const storageDir = opts.storageDir ?? larDataDir();
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
@@ -124,14 +123,7 @@ export async function runHostRoll(opts: {
     await repo.flush();
     return rolled;
   };
-  let rolled: { act: HostingAct; state: HostingState };
-  if (opts.repo) {
-    rolled = await land(opts.repo);
-  } else {
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
-    try { rolled = await land(repo); } finally { await repo.shutdown().catch(() => { /* best-effort */ }); }
-  }
-  const { act, state } = rolled;
+  const { act, state } = await land(opts.repo);
   return { nexusAid: aid, act, epoch: hostingActCid(act), previous: state.previous ? hostingActCid(state.previous) : null, cap: act.cap, docUrl };
 }
 

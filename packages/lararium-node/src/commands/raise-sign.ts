@@ -24,8 +24,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor
  */
 
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl,
   materializeSharedLarDoc, presentationFromBoardDoc, presentationFindingLine,
@@ -33,7 +32,7 @@ import {
 } from "@lararium/mesh";
 
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
-import { larDataDir, larSealHome } from "../vessel-paths.js";
+import { larSealHome } from "../vessel-paths.js";
 import { charterHomeFor } from "../carried-set.js";
 import { readNexusDoc } from "../nexus-doc.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
@@ -80,8 +79,8 @@ export interface RaiseSignResult {
 export async function runRaiseSign(opts: {
   challengeText: string;
   handleIndex:   number;
-  /** The data dir whose replica holds the Nexus's carriage board. Defaults to `larDataDir()`. */
-  storageDir?:   string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). Its replica holds the Nexus's carriage board. */
+  repo:          Repo;
   /** The seal home holding the Nexus's charter. Defaults to `larSealHome()`. */
   sealHome?:     string;
 }): Promise<RaiseSignResult> {
@@ -108,7 +107,7 @@ export async function runRaiseSign(opts: {
   if (!leaf) throw new RaiseSignError(`this vessel holds no persona at h${opts.handleIndex}.`);
 
   const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home });
-  const repo   = new Repo({ storage: new NodeFSStorageAdapter(opts.storageDir ?? larDataDir()) });
+  const repo   = opts.repo;
   let read;
   try {
     const handle = await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts");

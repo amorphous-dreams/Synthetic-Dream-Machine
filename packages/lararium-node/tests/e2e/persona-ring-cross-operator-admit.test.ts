@@ -71,6 +71,7 @@ import {
 import { generateOrLoadVesselIdentity } from "../../dist/src/node-vessel-identity.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { direct } from "../direct-store.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -160,8 +161,8 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
 
   beforeAll(async () => {
     // ── Found + wear a face ──────────────────────────────────────────────────────────────────
-    await withLarRoot(FOUNDER.root, () => runInit({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
-    await withLarRoot(FOUNDER.root, () => runFoundTheFace({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
+    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
+    await withLarRoot(FOUNDER.root, () => direct(runFoundTheFace)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
 
     const anchors = await withLarRoot(FOUNDER.root, async () => loadIdentityAnchors(0));
     if (!anchors?.deviceEdge || !anchors.personaGroupDocIdHex) {

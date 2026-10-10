@@ -17,10 +17,14 @@
  * import between them is a reader trap, so this takes the `-cmd` suffix the house already uses where a
  * child holds command handlers (`bag-declare-cmd.ts`, `persona-admit-cmd.ts`).
  *
+ * ONE STORE DOOR. While the vessel stands, the act runs inside it (`nexus-kapae` over the local socket), so a ban
+ * lands on the replica the running gate folds; with no vessel standing, it runs here, holding the store for the
+ * moment of the act (`store-door`).
+ *
  * This door holds no reference back into `nexus.ts`; the dependency runs one way, parent to child.
  */
-import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "@lararium/node";
-import { larSealHome } from "../env.js";
+import { NexusKapaeError, type NexusKapaeResult, type NexusKapaeListResult } from "@lararium/node";
+import { storeVerb } from "../store-door.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -51,7 +55,7 @@ export async function cmdUnKapae(args: ParsedArgs): Promise<number> {
 async function kapaeRaise(args: ParsedArgs, action: "kapae" | "un_kapae", nym: string): Promise<number> {
   const reason = args.options["reason"];
   try {
-    const r = await runNexusKapae({ action, nym, ...(reason ? { reason } : {}), sealHome: larSealHome() });
+    const r = (await storeVerb("nexus-kapae", { action, nym, ...(reason ? { reason } : {}) }, NexusKapaeError)).output as unknown as NexusKapaeResult;
     emit(args, {
       ok: true,
       data: {
@@ -80,7 +84,7 @@ async function kapaeRaise(args: ParsedArgs, action: "kapae" | "un_kapae", nym: s
 
 async function kapaeList(args: ParsedArgs): Promise<number> {
   try {
-    const r = await runNexusKapaeList({ sealHome: larSealHome() });
+    const r = (await storeVerb("nexus-kapae-list", {}, NexusKapaeError)).output as unknown as NexusKapaeListResult;
     emit(args, {
       ok: true,
       data: {

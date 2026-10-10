@@ -35,6 +35,7 @@ import {
   wearPersona,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
+import { direct } from "./direct-store.js";
 
 let root: string;
 let priorRoot: string | undefined;
@@ -95,12 +96,12 @@ describe("runNexusPublishPlugins — immutable offering boundary", () => {
     const seedBefore = readFileSync(join(genesisDir, "seed.json"), "utf8");
     await standPersona();
 
-    const first = await runNexusPublishPlugins({ genesisDir, storageDir: larDataDir() });
+    const first = await direct(runNexusPublishPlugins)({ genesisDir, storageDir: larDataDir() });
     expect(first.offeringCid).toBe(pluginOfferingCid(first.offering));
     expect(first.boardUrl).toBe(crossroadsDocUrl(await loadVesselVerifyingKey()));
     expect(first.blobCount).toBe(1);
 
-    const second = await runNexusPublishPlugins({ genesisDir, storageDir: larDataDir() });
+    const second = await direct(runNexusPublishPlugins)({ genesisDir, storageDir: larDataDir() });
     expect(second.offeringCid).toBe(first.offeringCid);
     expect(second.offering).toEqual(first.offering);
 
@@ -120,14 +121,14 @@ describe("runNexusPublishPlugins — immutable offering boundary", () => {
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
 
-    await expect(runNexusPublishPlugins({ genesisDir, storageDir: larDataDir() }))
+    await expect(direct(runNexusPublishPlugins)({ genesisDir, storageDir: larDataDir() }))
       .rejects.toBeInstanceOf(NexusPublishError);
     expect(readFileSync(join(genesisDir, "seed.json"), "utf8")).toContain("example/one");
   });
 
   it("refuses when the genesis seed is absent before opening a board", async () => {
     await standPersona();
-    await expect(runNexusPublishPlugins({ genesisDir: join(root, "missing-genesis"), storageDir: larDataDir() }))
+    await expect(direct(runNexusPublishPlugins)({ genesisDir: join(root, "missing-genesis"), storageDir: larDataDir() }))
       .rejects.toBeInstanceOf(NexusPublishError);
   });
 });

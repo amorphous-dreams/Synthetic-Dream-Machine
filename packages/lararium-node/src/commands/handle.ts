@@ -4,15 +4,13 @@
  * A Handle is a persona's outward face: a self-certifying card carrying its glamour, put on the Nexus's WHO
  * board so the relay carries it to peers. The card anchors to its persona — the daemon doc's persona-KEL
  * prefix seats as the face's owner, so a lost presentation key recovers THROUGH the persona rather than
- * orphaning the face. This adapter opens the store, loads the persona seed + prefix, resolves the WHO board,
+ * orphaning the face. This adapter reads the store's one holder, loads the persona seed + prefix, resolves the WHO board,
  * and mints + announces.
  *
  * Only the disk/store shores belong here; the mint logic (the veiled key, the causal publication frontier, the announce)
  * is platform-blind in @lararium/mesh (publishPersonaGlamour), the very code a browser vessel runs.
  */
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
+import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import { readFileSync, existsSync } from "node:fs";
 import {
   DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, materializeSharedLarDoc, whoBoardDocUrl,
@@ -24,7 +22,7 @@ import {
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
-import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
+import { larBootstrapPath } from "../vessel-paths.js";
 import {
   loadPersonaGroupRootSeed, loadVesselVerifyingKey, makeNodePublicHandleStore, loadActivePersonaIndex,
 } from "../node-vessel-identity.js";
@@ -35,7 +33,8 @@ export interface HandlePublishOptions {
   readonly glamour: string;
   /** Which persona publishes; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:         Repo;
 }
 
 /**
@@ -44,7 +43,6 @@ export interface HandlePublishOptions {
  * id (nexusPubkey = this vessel's verifying key), so the announce lands on the island board the relay syncs.
  */
 export async function runHandlePublish(opts: HandlePublishOptions): Promise<HandleCard> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const bootstrap  = larBootstrapPath();
   if (!existsSync(bootstrap)) {
     throw new Error(`[lares handle publish] ${bootstrap} not found — run \`lares vessel found\` first.`);
@@ -57,7 +55,7 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
     throw new Error("[lares handle publish] daemon doc URL missing from social-bootstrap.json — run `lares vessel found`.");
   }
 
-  const repo     = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo     = opts.repo;
   const progress = repo.findWithProgress(daemonUrl as AutomergeUrl);
   const daemonHandle = await Promise.race([
     progress.whenReady(),
@@ -85,7 +83,6 @@ interface OwnFaceContext {
   readonly repo:         Repo;
   readonly daemonDoc:    LarDoc;
   readonly board:        DocHandle<LarDoc>;
-  readonly storageDir:   string;
   readonly handleIndex:  number;
   readonly seed:         Uint8Array;
   readonly record:       PersonaPublicHandleRecord;
@@ -100,8 +97,7 @@ interface OwnFaceContext {
  * seed, find the announced nym + one settled verified chain off the board, and derive the seated handle-key signer.
  * The shared boot for burn and attest supplies only its own act over this context.
  */
-async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?: number): Promise<OwnFaceContext> {
-  const storageDir = storageDirOpt ?? larDataDir();
+async function openOwnFace(verb: string, repo: Repo, handleIndexOpt?: number): Promise<OwnFaceContext> {
   const bootstrap  = larBootstrapPath();
   if (!existsSync(bootstrap)) {
     throw new Error(`[lares handle ${verb}] ${bootstrap} not found — run \`lares vessel found\` first.`);
@@ -113,7 +109,6 @@ async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?
   if (!daemonUrl) {
     throw new Error(`[lares handle ${verb}] daemon doc URL missing from social-bootstrap.json — run \`lares vessel found\`.`);
   }
-  const repo     = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const progress = repo.findWithProgress(daemonUrl as AutomergeUrl);
   const daemonHandle = await Promise.race([
     progress.whenReady(),
@@ -143,7 +138,7 @@ async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?
   const veiled  = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
   const veiledSigner = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
 
-  return { repo, daemonDoc, board, storageDir, handleIndex, seed, record, chain, headCid, veiledSigner };
+  return { repo, daemonDoc, board, handleIndex, seed, record, chain, headCid, veiledSigner };
 }
 
 /** The owning persona's authorizing hand — the member prefix, its head op-key, and a signer for that key. The
@@ -196,7 +191,8 @@ export async function resolveOwnerBurnHand(opts: {
 export interface HandleBurnOptions {
   /** Which persona's face to bury; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:         Repo;
   /** Bury the face from ABOVE — the owning persona (its head op-key) signs, not the seated handle key. */
   readonly fromPersona?: boolean;
 }
@@ -210,7 +206,7 @@ export interface HandleBurnOptions {
  * wants the persona head op-key signer wired.
  */
 export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard> {
-  const face = await openOwnFace("burn", opts.storageDir, opts.handleIndex);
+  const face = await openOwnFace("burn", opts.repo, opts.handleIndex);
 
   // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
   // checking the sig, so even an owner-burn of a lost key lands; a well-formed card just keeps the lineage clean.
@@ -256,7 +252,8 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
 export interface HandleRotateOptions {
   /** Which persona's face to rotate; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:         Repo;
 }
 
 /**
@@ -269,7 +266,7 @@ export interface HandleRotateOptions {
  * causal publication frontier a peer's HandleBook holds to.
  */
 export async function runHandleRotate(opts: HandleRotateOptions): Promise<HandleCard> {
-  const face = await openOwnFace("rotate", opts.storageDir, opts.handleIndex);
+  const face = await openOwnFace("rotate", opts.repo, opts.handleIndex);
 
   // The OWNING PERSONA authorizes rotation. Resolve its verified head op-key off the per-Nexus persona-KEL board.
   const prefixEntry = (face.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as { tiddler?: { text?: string } } | undefined;
@@ -317,7 +314,8 @@ export interface HandleAttestOptions {
    *  names (+ optionally where the return leg lives). Prose reaches no adapter, so the type refuses it. */
   readonly claim: HandleClaim;
   readonly handleIndex?: number;
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:         Repo;
 }
 
 /**
@@ -333,6 +331,6 @@ export async function runHandleAttest(opts: HandleAttestOptions): Promise<Handle
   if (!normalizeHandleClaim(opts.claim)) {
     throw new Error("[lares handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
   }
-  const face = await openOwnFace("attest", opts.storageDir, opts.handleIndex);
+  const face = await openOwnFace("attest", opts.repo, opts.handleIndex);
   return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
 }

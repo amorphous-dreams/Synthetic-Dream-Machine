@@ -2,7 +2,8 @@
  * runInit — Node adapter: one-time social-plane bootstrap for a new Lararium node.
  *
  * Node-specific shores (only these belong here):
- *   - NodeFSStorageAdapter for Automerge repo
+ *   - the store's one holder (`repo`): the direct holder's for a founding (`ownedStore`), with no vessel
+ *     standing; the standing vessel's own Repo, or the direct holder's, for a face
  *   - generateOrLoadVesselIdentity / loadVesselSigningSeed (disk keypair)
  *   - writeFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
  *   - the composable genesis cap (daemonGenesisDir) for default directory resolution
@@ -18,8 +19,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import type { Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
   PERSONA_GROUP_DOC_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
@@ -48,6 +48,9 @@ import {
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
 
 export interface InitOptions {
+  /** The direct holder's Repo (`ownedStore`) over this vessel's store — a founding runs with no vessel standing. */
+  readonly repo:        Repo;
+  /** The directory `repo` holds. Defaults to `larDataDir()`. */
   readonly storageDir?: string;
   readonly genesisDir?: string;
   readonly force?:      boolean;
@@ -142,7 +145,7 @@ function readPackedTiddlers(path: string): PackedTiddlers {
   return packed.tiddlers ?? {};
 }
 
-export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
+export async function runInit(opts: InitOptions): Promise<InitResult> {
   const defaults   = defaultDirs();
   const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
@@ -191,7 +194,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
   const operatorIdentity = await generateOrLoadVesselIdentity();
   console.log(`[lares vessel found] operator verifyingKey  ${operatorIdentity.verifyingKey.slice(0, 16)}…`);
 
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo = opts.repo;
 
   if (opts.admitPayloadPath) {
     // ── Vessel-admission path = the UPGRADE event (a fresh vessel joins a PersonaGroup) ──
@@ -310,7 +313,8 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
 // ---------------------------------------------------------------------------
 
 export interface FoundFaceOptions {
-  readonly storageDir?: string;
+  /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
+  readonly repo:        Repo;
   readonly genesisDir?: string;
   /** WHICH face to found. 0 (default) = the founding face — it MOUNTS: writes the singular daemon-doc pins
    *  and the sentinel bootstrap entry, EXACTLY as before. N>0 = an ADDITIONAL compartment (Path 1,
@@ -343,8 +347,10 @@ export interface RecoveryArmed {
 }
 
 /**
- * ARM RECOVERY AT THE FOUNDING — the device share mints where the persona root mints. Absent by choice and
- * absent by omission read identical from outside; only the mint at founding tells them apart. The root at
+ * ARM RECOVERY AT THE FOUNDING — the device share mints in the same `persona new` act that founds the face,
+ * in the operator's own process, so the two off-device shares print to the operator alone and never ride a
+ * standing vessel's outcome record. Absent by choice and absent by omission read identical from outside;
+ * only the mint at founding tells them apart. The root at
  * `handleIndex` splits 2-of-3 {device, recorded-code, escrow-peer} ONCE: the device share seals into the
  * identity home under the live seal policy (the same carrier set the veil rides — `archive-passphrase`
  * names it, so `vault seal`/`rotate` carry it), and the two off-device shares return for the operator to
@@ -374,9 +380,8 @@ export async function armRecoveryAtFounding(storageDir: string, handleIndex: num
  * inception, veil, `anchors-hN`) and writes only a register-many bootstrap PLANE ENTRY the boot consumes;
  * it writes no mount pin, so the mounted face stands byte-unchanged. Wearing it is a later act.
  */
-export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<FoundFaceResult> {
+export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFaceResult> {
   const defaults    = defaultDirs();
-  const storageDir  = opts.storageDir ?? defaults.storageDir;
   const genesisDir  = opts.genesisDir ?? defaults.genesisDir;
   const handleIndex = opts.handleIndex ?? 0;
   const mounts      = handleIndex === 0;
@@ -417,7 +422,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
 
   const vesselIdentity = await generateOrLoadVesselIdentity();
   const vesselSeed     = await loadVesselSigningSeed();
-  const repo           = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const repo           = opts.repo;
   const daemonHandle   = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
 
   // The persona ROOT for THIS face — the human's side. It only ever SIGNS; the per-vessel key stays the
@@ -425,17 +430,6 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
   // face seats at h0.
   await generateOrLoadPersonaGroupRoot(handleIndex);
   const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
-
-  // The recovery leg arms with the root: the device share seals beside the veil, the two off-device
-  // carriers say aloud that shares are keys and leave by the operator's hand.
-  const armed = await armRecoveryAtFounding(storageDir, handleIndex);
-  if (armed.minted) {
-    console.log(`[lares persona new] recovery armed for h${handleIndex} — the device share sealed into the identity home.`);
-    console.log("  SHARES ARE KEYS: the two carriers below, together, reconstruct this persona's root. Write the");
-    console.log("  recorded code down and keep it off this device; hand the escrow carrier to ONE peer you trust.");
-    console.log(`  recorded-code   ${armed.recordedCode}`);
-    console.log(`  escrow-carrier  ${armed.escrowCarrier}`);
-  }
 
   // THE VEIL SURVIVES A PRESERVING RE-PAVE. The founder-veil derives from (vesselSeed, veilTag); the tag
   // is minted per-founding and lived ONLY in the wiped daemon doc, so a re-light after `vessel clear --force`
