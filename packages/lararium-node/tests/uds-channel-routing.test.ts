@@ -11,7 +11,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { mkdtempSync, existsSync } from "node:fs";
+import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
@@ -21,6 +21,7 @@ import {
   SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX, type LarDoc,
 } from "@lararium/mesh";
 import { startUdsChannel } from "../src/uds-channel.js";
+import { claimStore, StoreHeld } from "../src/owned-store.js";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; }
 
@@ -54,7 +55,8 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const targetHandle = repo.create<LarDoc>(emptyLarDoc());
 
     const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
-    const socketPath = join(dir, "lares.sock");
+    const claim = await claimStore(dir, { holder: "vessel" });
+    const socketPath = claim.socketPath;
 
     const CARRIER_URI = "lar:///ha.ka.ba/bags/target/doc/manifesto";
     const CARRIER_BODY = "THE-WHOLE-CARRIER-BODY-that-must-never-touch-daemon";
@@ -80,7 +82,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
         });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       },
-      socketPath,
+      claim,
     });
 
     try {
@@ -113,6 +115,26 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
       expect(landed?.tiddler.text).toBe(CARRIER_BODY);
     } finally {
       channel.close();
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  test("a closed channel keeps its vessel's claim: callers hear the stop by name, and no direct holder binds beside it", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    try {
+      const channel = startUdsChannel({ daemonHandle: repo.create<LarDoc>(emptyLarDoc()), placeVerb: () => { /* none */ }, claim });
+      channel.close();
+      const answer = await sendInvocation(claim.socketPath, { verb: "act", args: {}, requestedBy: "did:key:test-operator" });
+      expect(answer["status"]).toBe("error");
+      expect(String(answer["errorMessage"])).toMatch(/on this store stops/);
+      await expect(claimStore(dir)).rejects.toBeInstanceOf(StoreHeld);
+    } finally {
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
+    }
+    expect(existsSync(claim.socketPath)).toBe(false);
   });
 });

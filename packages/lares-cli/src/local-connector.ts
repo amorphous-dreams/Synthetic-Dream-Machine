@@ -14,7 +14,7 @@
  */
 
 import { createConnection } from "node:net";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
@@ -90,18 +90,6 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
     sock.once("error",   () => done(false));   // ECONNREFUSED on a stale inode → DOWN, never an error
     sock.once("timeout", () => done(false));   // bound but wedged answers as down, which serves the caller
   });
-}
-
-/**
- * Clear a socket file that answers to nobody, and say whether it cleared one.
- *
- * A stale inode does more than mislead — it KEEPS the lie alive. Reaping it ahead of a start makes the
- * next presence check mean what it says. It never touches a LIVE socket: the caller hands a liveness
- * verdict in, so this can only ever clear a corpse.
- */
-export function reapStaleSocket(alive: boolean, dataDir?: string): boolean {
-  if (alive || !udsSocketPresent(dataDir)) return false;
-  try { unlinkSync(udsSocketPath(dataDir)); return true; } catch { return false; }
 }
 
 /** The local socket refused (absent/stale) — `runVerb` turns this into DaemonUnreachable. */

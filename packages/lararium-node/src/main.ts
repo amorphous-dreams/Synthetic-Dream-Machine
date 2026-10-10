@@ -54,7 +54,7 @@ import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { startUdsChannel }              from "./uds-channel.js";
-import { rendezvousPath, rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
+import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
 import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
@@ -388,13 +388,12 @@ async function main(): Promise<void> {
     // ~104-byte cap the data home has never heard of; siting it beside the substrate made it inherit the
     // substrate's depth, and a deep root then refused to bind while everything else stood. Both sides
     // derive from the SAME resolved dir, so the client finds what this bound.
-    const hermSocketPath = rendezvousPath({ root: storageDir, uid: process.getuid?.() ?? 0 });
-    mkdirSync(rendezvousDir(process.getuid?.() ?? 0), { recursive: true, mode: 0o700 });
+    // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
     publishStanding(storageDir, standing, faceLit);
     const hermUds = startUdsChannel({
       daemonHandle: herm.daemon.daemonHandle,
       placeVerb:    (o) => herm.daemon.placeVerb(o),
-      socketPath:   hermSocketPath,
+      claim:        herm.storeClaim,
       onLog: (line) => console.log(`[herm] ${line}`),
     });
     readinessState.markReady();
@@ -505,8 +504,7 @@ async function main(): Promise<void> {
   // for remote mesh peers. (lar:///…/api/lares-lararium-binding)
   // Same rendezvous law as the herm branch above: derived from the resolved substrate dir, sited where a
   // logout cannot reach it (operator ruling — a lararium serves as civic infrastructure).
-  const socketPath = rendezvousPath({ root: storageDir, uid: process.getuid?.() ?? 0 });
-  mkdirSync(rendezvousDir(process.getuid?.() ?? 0), { recursive: true, mode: 0o700 });
+  // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
   // WHAT THIS VESSEL STANDS AS, published beside the socket that serves it. A standing is decided at
   // boot from the face found then, so a caller holding a face lit AFTERWARD has no way to see the
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel
@@ -515,7 +513,7 @@ async function main(): Promise<void> {
   const uds = startUdsChannel({
     daemonHandle: result.daemon.daemonHandle,
     placeVerb:    (o) => result.daemon.placeVerb(o),
-    socketPath,
+    claim:        result.storeClaim,
     onLog: (line) => console.log(`[lararium] ${line}`),
   });
   readinessState.markReady();

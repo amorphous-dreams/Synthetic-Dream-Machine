@@ -9,7 +9,7 @@
  *   · RED: a save that dies mid-chunk under the holder's Repo leaves no torn chunk on disk; CONTROL (a planted
  *     known positive): the same fault under the stock adapter tears a chunk, so the instrument sees a tear.
  */
-import { promises as fsp, mkdtempSync, rmSync, writeFileSync, readdirSync, readFileSync, statSync, mkdirSync } from "node:fs";
+import { promises as fsp, mkdtempSync, rmSync, writeFileSync, readdirSync, readFileSync, statSync, mkdirSync, existsSync, linkSync, unlinkSync } from "node:fs";
 import { createConnection } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -26,12 +26,12 @@ afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
 
 const socketOf = (d: string): string => rendezvousPath({ root: d, uid: process.getuid?.() ?? 0 });
 
-function ask(path: string): Promise<string> {
+function ask(path: string, line: Record<string, unknown> = { verb: "kapae", requestedBy: "did:test" }): Promise<string> {
   return new Promise((resolve, reject) => {
     const sock = createConnection(path);
     let buf = "";
     sock.setEncoding("utf8");
-    sock.on("connect", () => sock.write(JSON.stringify({ verb: "kapae", requestedBy: "did:test" }) + "\n"));
+    sock.on("connect", () => sock.write(JSON.stringify(line) + "\n"));
     sock.on("data", (c: string) => { buf += c; });
     sock.on("end", () => resolve(buf));
     sock.on("error", reject);
@@ -84,6 +84,107 @@ describe("ownedStore — one holder", () => {
     writeFileSync(socketOf(dir), "");
     const wrote = await ownedStore(dir, async (repo) => repo.create<{ n: number }>({ n: 7 }).url);
     expect(wrote).toMatch(/^automerge:/);
+  });
+});
+
+/** Whether a listener answers at `path` (a refused or absent socket reads as none). */
+function answersAt(path: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const sock = createConnection(path);
+    sock.once("connect", () => { sock.destroy(); resolve(true); });
+    sock.once("error", () => resolve(false));
+  });
+}
+
+/** Leave a DEAD socket at the store's rendezvous name: a socket inode no listener holds, as a killed holder leaves it. */
+async function plantDeadSocket(d: string): Promise<void> {
+  const path = socketOf(d);
+  const keep = `${path}.keep`;
+  const ghost = await claimStore(d);
+  linkSync(path, keep);
+  await ghost.release();
+  if (!existsSync(path)) linkSync(keep, path);
+  unlinkSync(keep);
+}
+
+describe("claimStore — one holder at every instant", () => {
+  it("RED: a released holder never removes a name that another holder bound in the meantime", async () => {
+    const path = socketOf(dir);
+    const first = await claimStore(dir);
+    // The name moves on behind the first holder's back (a holder before this law unlinked any socket standing
+    // there), and a second holder binds it afresh.
+    unlinkSync(path);
+    const second = await claimStore(dir);
+    await first.release();
+    expect(existsSync(path)).toBe(true);
+    expect(await answersAt(path)).toBe(true);
+    await expect(claimStore(dir)).rejects.toBeInstanceOf(StoreHeld);
+    await second.release();
+    expect(existsSync(path)).toBe(false);
+  });
+
+  it("RED: claimants racing over one dead socket never both bind — exactly one holds", async () => {
+    await plantDeadSocket(dir);
+    expect(existsSync(socketOf(dir))).toBe(true);
+    expect(await answersAt(socketOf(dir))).toBe(false);
+    const raced = await Promise.allSettled(Array.from({ length: 8 }, () => claimStore(dir)));
+    const held = raced.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+    const refused = raced.flatMap((r) => (r.status === "rejected" ? [r.reason as unknown] : []));
+    try {
+      expect(held).toHaveLength(1);
+      expect(refused.every((e) => e instanceof StoreHeld)).toBe(true);
+      expect(await answersAt(socketOf(dir))).toBe(true);
+    } finally { for (const h of held) await h.release(); }
+  });
+
+  it("CONTROL: a lone claimant over a dead socket reaps it and holds", async () => {
+    await plantDeadSocket(dir);
+    const claim = await claimStore(dir);
+    try { expect(await answersAt(socketOf(dir))).toBe(true); }
+    finally { await claim.release(); }
+    expect(existsSync(socketOf(dir))).toBe(false);
+  });
+
+  it("a vessel's claim waits out a direct act, then holds; a direct claim beside the vessel refuses", async () => {
+    const act = await claimStore(dir);
+    let vesselHeld = false;
+    const vessel = claimStore(dir, { holder: "vessel", awaitDirect: true }).then((c) => { vesselHeld = true; return c; });
+    // The vessel's claim stands open on the direct holder's name while that act runs.
+    await new Promise((r) => setImmediate(r));
+    expect(vesselHeld).toBe(false);
+    await act.release();
+    const claim = await vessel;
+    try {
+      expect(vesselHeld).toBe(true);
+      await expect(claimStore(dir)).rejects.toBeInstanceOf(StoreHeld);
+      const who = JSON.parse(await ask(socketOf(dir), { holder: "?" })) as { status: string; errorMessage: string; holder: string };
+      expect(who.holder).toBe("vessel");
+      expect(who.errorMessage).toMatch(/a vessel \(pid \d+\) holds the store/);
+    } finally { await claim.release(); }
+  });
+
+  it("a vessel that serves no verb yet holds its callers, and its channel answers them once it takes the claim over", async () => {
+    const claim = await claimStore(dir, { holder: "vessel" });
+    try {
+      let answered = false;
+      const asked = ask(socketOf(dir)).then((line) => { answered = true; return line; });
+      await new Promise((r) => setTimeout(r, 50));
+      expect(answered).toBe(false);
+      claim.serve((sock) => {
+        sock.setEncoding("utf8");
+        sock.on("data", (line: string) => { sock.end(JSON.stringify({ status: "done", heard: line.trim() }) + "\n"); });
+      });
+      const line = JSON.parse(await asked) as { status: string; heard: string };
+      expect(line.status).toBe("done");
+      expect(JSON.parse(line.heard)).toMatchObject({ verb: "kapae" });
+    } finally { await claim.release(); }
+  });
+
+  it("a vessel's claim refuses beside another vessel rather than waiting on it", async () => {
+    const standing = await claimStore(dir, { holder: "vessel" });
+    try {
+      await expect(claimStore(dir, { holder: "vessel", awaitDirect: true })).rejects.toBeInstanceOf(StoreHeld);
+    } finally { await standing.release(); }
   });
 });
 

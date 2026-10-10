@@ -25,6 +25,7 @@ import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { DocHandle, AutomergeUrl, DocumentId, PeerId } from "@automerge/automerge-repo";
 import { Repo, interpretAsDocumentId }  from "@automerge/automerge-repo";
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
+import { claimStore, type StoreClaim } from "./owned-store.js";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "isomorphic-ws";
 import type {
@@ -330,6 +331,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   socketSorter: SocketSorter;
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
   siblingChannel: () => SiblingChannelStatus | null;
+  /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
+  storeClaim: StoreClaim;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -349,6 +352,8 @@ export interface NodeHermResult {
   carriageRelayGatePubKey: string | null;
   /** The ONE sorter this vessel's gates arm with. */
   socketSorter:     SocketSorter;
+  /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
+  storeClaim:       StoreClaim;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
   dispose:          () => Promise<void>;
 }
@@ -359,6 +364,8 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 /** The atoms + keel + boot closures both node cap-stacks compose over (built ONCE per boot). */
 interface NodeBootPrep {
   repo:             Repo;
+  /** The store's claim, taken before the Repo opened and held for the vessel's life. */
+  storeClaim:       StoreClaim;
   catalogHandle:    DocHandle<LarDoc>;
   /** This vessel's own daemon doc — the plane a caller writes a verb SUMMONS onto (VesselResult carries it
    *  out, so a host surface can ask this vessel rather than only render it).
@@ -438,6 +445,18 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
 
   emit("boot");
+
+  // ── 0. The claim — ONE STORE, ONE HOLDER, AT EVERY INSTANT ──────────────────
+  // The vessel binds its store's rendezvous name BEFORE its Repo opens, the same claim a direct lares command
+  // takes for its act (`claimStore`), and holds it for its whole life: through the boot every caller that reaches
+  // the name waits on this vessel's verb channel, so no command opens a second Repo beside this one while it boots.
+  // A direct act mid-flight is waited out; another vessel on this store refuses the boot by name.
+  const storeClaim = await claimStore(storageDir, {
+    holder: "vessel",
+    awaitDirect: true,
+    onAwait: (heldBy) => console.log(`[lararium] the store waits on a direct act before this vessel opens it: ${heldBy}`),
+  });
+  console.log(`[lararium] this vessel holds its store at ${storeClaim.socketPath}`);
 
   // ── 1. Repo — NodeFS storage + WebSocket relay behind the DaemonAuthGate ─────
   const storage = new DurableNodeFSStorageAdapter(storageDir);
@@ -2512,7 +2531,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   };
 
   return {
-    repo, catalogHandle, vesselSeed, nexusPubkey, socketSorter,
+    repo, storeClaim, catalogHandle, vesselSeed, nexusPubkey, socketSorter,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
@@ -2600,6 +2619,7 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
     stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); void p.carriageLoop?.stop(); p.nexusDial?.stop(); },
     socketSorter: p.socketSorter,
     siblingChannel: p.siblingChannel,
+    storeClaim: p.storeClaim,
   };
 }
 
@@ -2685,6 +2705,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     carriageRelayPort:       p.carriageRelay?.port ?? null,
     carriageRelayGatePubKey: p.carriageRelay?.gatePubKey ?? null,
     socketSorter:     p.socketSorter,
+    storeClaim:       p.storeClaim,
     dispose: async () => {
       setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
       await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak

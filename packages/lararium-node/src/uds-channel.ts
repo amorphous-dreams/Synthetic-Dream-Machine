@@ -22,6 +22,11 @@
  * still writes a summons over WS sync (that path keeps content in the CRDT by
  * necessity — no channel bypasses the network); the co-located path skips it.
  *
+ * THE CHANNEL SERVES ITS VESSEL'S CLAIM. The vessel claimed the store's rendezvous name before it opened its Repo
+ * (`claimStore`), and that one socket answers here once the vessel serves verbs: no second bind, no instant when
+ * the name stands free, and no unlink of a path some other holder answers at. Closing the channel refuses every
+ * later caller by name while the vessel flushes; the claim itself lets go only with the vessel.
+ *
  * Auth (v1): socket perms 0600 (owner-only) gate PRESENCE — only the operator's own
  * uid opens it; the requestedBy did rides the summons for cap-derivation. A signed
  * Ed25519 proof over the socket is the federation/attenuation hardening (follow-on);
@@ -29,8 +34,7 @@
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
-import { createServer, type Server } from "node:net";
-import { existsSync, unlinkSync, chmodSync } from "node:fs";
+import type { Socket } from "node:net";
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, AutomergeDocStore, CompositeStore,
@@ -41,6 +45,7 @@ import {
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
 // behind a capture pass) is never false-killed the way a fixed 30s cliff killed them.
 import { adaptiveTimeoutMs, recordMineDuration, verbBudgetMs } from "@lararium/mempalace";
+import type { StoreClaim } from "./owned-store.js";
 
 export interface UdsChannelOptions {
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
@@ -53,8 +58,8 @@ export interface UdsChannelOptions {
    * this channel awaits via `daemonHandle`.
    */
   readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;
-  /** Socket path — both sides derive the RENDEZVOUS, `/tmp/lares-<uid>/<digest>.sock` (`rendezvousPath`). */
-  readonly socketPath: string;
+  /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
+  readonly claim: StoreClaim;
   /** Per-verb await budget (default 30s — recall cold-starts chromadb). */
   readonly timeoutMs?: number;
   readonly onLog?: (line: string) => void;
@@ -72,12 +77,9 @@ interface Invocation {
 export interface UdsChannel { close: () => void; }
 
 export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
-  const { daemonHandle, socketPath } = opts;
+  const { daemonHandle, claim } = opts;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
-
-  // Stale-socket cleanup — bind fails on a leftover path (daemon crash / restart).
-  try { if (existsSync(socketPath)) unlinkSync(socketPath); } catch { /* ignore */ }
 
   // One READ-ONLY composite over the warm daemon handle — the channel reads the
   // durable outcome tiddler back through it (never writes the summons here; the
@@ -146,7 +148,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
     });
   };
 
-  const server: Server = createServer((sock) => {
+  claim.serve((sock: Socket) => {
     let buf = "";
     sock.setEncoding("utf8");
     const fail = (msg: string) => { try { sock.end(JSON.stringify({ status: "error", errorMessage: msg }) + "\n"); } catch { /* gone */ } };
@@ -164,19 +166,10 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         (err)     => fail(err instanceof Error ? err.message : String(err)),
       );
     });
-    sock.on("error", () => { /* client vanished mid-call — nothing to do */ });
   });
-
-  server.on("error", (e) => log(`uds error: ${e instanceof Error ? e.message : String(e)}`));
-  server.listen(socketPath, () => {
-    try { chmodSync(socketPath, 0o600); } catch { /* best effort — perms gate presence */ }
-    log(`uds verb-channel on ${socketPath} (perms 0600)`);
-  });
+  log(`uds verb-channel on ${claim.socketPath} (perms 0600)`);
 
   return {
-    close: () => {
-      try { server.close(); } catch { /* ignore */ }
-      try { if (existsSync(socketPath)) unlinkSync(socketPath); } catch { /* ignore */ }
-    },
+    close: () => { claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`); },
   };
 }

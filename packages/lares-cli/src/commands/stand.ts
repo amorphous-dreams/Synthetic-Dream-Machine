@@ -26,7 +26,7 @@ import { fatalLine } from "@lararium/node";
 import { faceStandsOnDisk } from "../floor-cure.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
-import { udsAlive, reapStaleSocket } from "../local-connector.js";
+import { udsAlive } from "../local-connector.js";
 import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
@@ -163,12 +163,11 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   // one transport, the sock — lares↔lararium binding).
   // LIVENESS CONNECTS. A file-existence check reported a long-dead vessel as serving, and THIS line
   // consulted it before deciding whether to stand the node — so the vessel stayed down BECAUSE the corpse
-  // of its socket kept reporting it up. A stale inode now reads as down and gets reaped, so the next
-  // reader meets a path that means what it says.
+  // of its socket kept reporting it up. A stale inode reads as down. The vessel's own claim reaps it as it binds
+  // the name (`claimStore`): one reaper per corpse, so no unlink here can land on a name a holder has since bound.
   let nodeUp = await udsAlive();
-  const reaped = reapStaleSocket(nodeUp);
   let started = false;
-  let nodeNote = nodeUp ? "attached (already serving)" : reaped ? "cleared a stale socket (nothing answered there)" : "";
+  let nodeNote = nodeUp ? "attached (already serving)" : "";
 
   // IDEMPOTENT TO INTENT, NEVER MERELY TO PRESENCE. A vessel reads its standing once, at boot, from the
   // face it found then — so a face lit afterward leaves a daemon serving the public shelf and refusing
@@ -207,9 +206,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   }
 
   if (!nodeUp && observeOnly) {
-    nodeNote = reaped
-      ? "down — cleared a stale socket; `--observe` withholds the stand, so run `lares vessel stand` to serve"
-      : "down — `--observe` withholds the stand; run `lares vessel stand` to serve";
+    nodeNote = "down — `--observe` withholds the stand; run `lares vessel stand` to serve";
   } else if (!nodeUp) {
     const distMain = join(repoRoot, "packages", "lararium-node", "dist", "src", "main.js");
     if (!existsSync(distMain)) {
