@@ -22,7 +22,8 @@ FROM node:${NODE_VERSION}-slim AS deps
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+# The exact pnpm package.json `packageManager` names; any other pnpm writes a different lock.
+RUN npm install -g pnpm@11.28.5
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* tsconfig.base.json ./
 COPY TiddlyWiki5/package.json                         TiddlyWiki5/

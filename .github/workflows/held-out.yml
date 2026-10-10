@@ -34,7 +34,9 @@ jobs:
             mesh: "true"
     env:
       NODE_VERSION: "24"
-      PNPM_VERSION: "11"
+      # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
+      # written by any other pnpm rewrites its peer suffixes on its next write.
+      PNPM_VERSION: "11.28.5"
 
     steps:
       - uses: actions/checkout@v4

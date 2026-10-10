@@ -76,7 +76,7 @@ services:
       LAR_PORT: "4321"
       <<: *auth-env
     command: >
-      sh -c "npm install -g pnpm &&
+      sh -c "npm install -g pnpm@11.28.5 &&
              pnpm install &&
              pnpm -r build &&
              node --import tsx/esm --watch packages/lararium-node/src/main.ts"
@@ -158,7 +158,7 @@ services:
     environment:
       NODE_ENV: development
     command: >
-      sh -c "npm install -g pnpm &&
+      sh -c "npm install -g pnpm@11.28.5 &&
              pnpm install &&
              pnpm --filter @lararium/mcp exec tsx --watch src/stdio.ts"
     stdin_open: true

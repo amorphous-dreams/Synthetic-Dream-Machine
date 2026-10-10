@@ -249,14 +249,24 @@ function runShell(shell, file, { cwd, env, deadline }) {
   });
 }
 
+/** A tool's version stands at the grain the workflow declares it: `"24"` names a major, so any 24.x
+ *  stands; `"11.28.5"` names one exact release, so only that release stands. */
+export function versionStands(declared, found) {
+  if (found == null) return false;
+  const want = String(declared).replace(/^v/, "");
+  const got = String(found).trim().replace(/^v/, "");
+  return want.includes(".") ? got === want : got.split(".")[0] === want;
+}
+
 /** The local fact each action guarantees on a hosted runner. */
 function runAction(step, ctx, { cwd, env, evidence }) {
   const [action] = step.uses.split("@");
   const w = Object.fromEntries(Object.entries(step.with ?? {}).map(([k, v]) => [k, expand(v, { ...ctx, env: { ...ctx.env, ...env } })]));
-  const major = (cmd, args) => {
+  const version = (cmd, args) => {
     const r = spawnSync(cmd, args, { cwd, env, encoding: "utf8" });
-    return r.status === 0 ? String(r.stdout).trim().replace(/^v/, "").split(".")[0] : null;
+    return r.status === 0 ? String(r.stdout).trim().replace(/^v/, "") : null;
   };
+  const major = (cmd, args) => version(cmd, args)?.split(".")[0] ?? null;
   switch (action) {
     case "actions/checkout": {
       const head = spawnSync("git", ["rev-parse", "--verify", "HEAD"], { cwd, encoding: "utf8" });
@@ -269,9 +279,9 @@ function runAction(step, ctx, { cwd, env, evidence }) {
       return null;
     }
     case "pnpm/action-setup": {
-      // The action INSTALLS the declared major. Locally corepack provisions it under the job's own HOME.
-      if (major("pnpm", ["--version"]) !== String(w.version)) spawnSync("corepack", ["install", "-g", `pnpm@${w.version}`], { cwd, env, stdio: "inherit" });
-      return major("pnpm", ["--version"]) === String(w.version) ? null : `pnpm ${w.version} does not stand (found ${major("pnpm", ["--version"])})`;
+      // The action INSTALLS the declared version. Locally corepack provisions it under the job's own HOME.
+      if (!versionStands(w.version, version("pnpm", ["--version"]))) spawnSync("corepack", ["install", "-g", `pnpm@${w.version}`], { cwd, env, stdio: "inherit" });
+      return versionStands(w.version, version("pnpm", ["--version"])) ? null : `pnpm ${w.version} does not stand (found ${version("pnpm", ["--version"])})`;
     }
     case "actions/setup-node":
       return major("node", ["--version"]) === String(w["node-version"]) ? null : `node ${w["node-version"]} does not stand (found ${major("node", ["--version"])})`;

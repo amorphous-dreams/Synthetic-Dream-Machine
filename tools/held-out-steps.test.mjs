@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { parseWorkflow, planFor, runJob, shouldRun, readEnvFile, expand, githubContext } from "./held-out-steps.mjs";
+import { parseWorkflow, planFor, runJob, shouldRun, readEnvFile, expand, githubContext, versionStands } from "./held-out-steps.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HELD_OUT = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
@@ -263,4 +263,26 @@ test("no held-out step leans on this machine: no home paths, no host lock files,
     assert.doesNotMatch(line, /\/home\/|~\/\.lares|\$HOME\/\.lares|lar-e2e\.lock|\/tmp\//, line);
   }
   assert.ok(existsSync(join(ROOT, "tools/held-out-steps.mjs")));
+});
+
+test("RED: an exact pnpm pin stands only on that exact release; a major pin stands on any release of its major", () => {
+  assert.equal(versionStands("11.28.5", "11.28.5"), true);
+  assert.equal(versionStands("11.28.5", "11.5.0"), false, "a sibling release of the same major must not stand for an exact pin");
+  assert.equal(versionStands("11.28.5", "12.10.1"), false);
+  assert.equal(versionStands("11.28.5", null), false, "a tool that does not run never stands");
+  // CONTROL: the major grain still reads as the runner reads `node-version: "24"`.
+  assert.equal(versionStands("24", "v24.15.0"), true);
+  assert.equal(versionStands("24", "26.1.0"), false);
+});
+
+test("every workflow pins ONE exact pnpm, the same release package.json `packageManager` names", () => {
+  const pm = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).packageManager;
+  assert.match(pm ?? "", /^pnpm@\d+\.\d+\.\d+$/, "package.json names no exact pnpm");
+  const exact = pm.slice("pnpm@".length);
+  for (const name of ["ci.yml", "held-out.yml"]) {
+    const pins = [...readFileSync(join(ROOT, ".github/workflows", name), "utf8").matchAll(/PNPM_VERSION:\s*"([^"]*)"/g)].map((m) => m[1]);
+    assert.ok(pins.length > 0, `${name} declares no PNPM_VERSION`);
+    for (const pin of pins) assert.equal(pin, exact, `${name} pins pnpm ${pin}, package.json names ${exact}`);
+  }
+  assert.match(readFileSync(join(ROOT, "Dockerfile"), "utf8"), new RegExp(`npm install -g pnpm@${exact.replaceAll(".", "\\.")}\\b`), "the Dockerfile installs another pnpm");
 });

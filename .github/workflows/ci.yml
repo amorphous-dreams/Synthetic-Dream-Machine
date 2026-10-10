@@ -38,7 +38,9 @@ concurrency:
 
 env:
   NODE_VERSION: "24"
-  PNPM_VERSION: "11"
+  # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
+  # written by any other pnpm rewrites its peer suffixes on its next write.
+  PNPM_VERSION: "11.28.5"
   # The published tiddlywiki the plugin proves it drops into (the `pristine-upstream` job). ONE
   # version, one place: the job's name, its cache key, its pack and its log-line check all read it.
   TW5_PRISTINE: "5.4.1"
