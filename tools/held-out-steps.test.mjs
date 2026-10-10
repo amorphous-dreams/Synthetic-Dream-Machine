@@ -286,3 +286,30 @@ test("every workflow pins ONE exact pnpm, the same release package.json `package
   }
   assert.match(readFileSync(join(ROOT, "Dockerfile"), "utf8"), new RegExp(`npm install -g pnpm@${exact.replaceAll(".", "\\.")}\\b`), "the Dockerfile installs another pnpm");
 });
+
+test("RED: an action pinned by SHA reads its ref without the trailing tag comment, as the runner reads it", async () => {
+  const sha = "cf430e030ddbb5b0abf93d22962f4752f3646cd9";
+  const wf = parseWorkflow(fixture(`      - uses: actions/upload-artifact@${sha} # v7.0.2
+        with:
+          name: evidence # the comment never reaches the input
+          path: "\${{ env.NEVER_SET }}" # nor after a closing quote
+          if-no-files-found: error`));
+  const [step] = wf.steps;
+  assert.equal(step.uses, `actions/upload-artifact@${sha}`);
+  assert.equal(step.with.name, "evidence");
+  assert.equal(step.with.path, "${{ env.NEVER_SET }}");
+  const r = await run(fixture(`      - uses: actions/upload-artifact@${sha} # v7.0.2
+        with:
+          name: evidence
+          path: \${{ env.NEVER_SET }}
+          if-no-files-found: error`), "green");
+  assert.equal(r.failed, `actions/upload-artifact@${sha}`);
+});
+
+test("every action every workflow uses is pinned by a full commit SHA, with its release tag beside it", () => {
+  for (const name of ["ci.yml", "held-out.yml", "notify-pages.yml"]) {
+    const uses = [...readFileSync(join(ROOT, ".github/workflows", name), "utf8").matchAll(/^\s*(?:-\s+)?uses:\s*(.*)$/gm)].map((m) => m[1].trim());
+    assert.ok(uses.length > 0, `${name} uses no action`);
+    for (const u of uses) assert.match(u, /^[\w.-]+\/[\w.-]+@[0-9a-f]{40} # v\d+\.\d+\.\d+$/, `${name}: "${u}" is not pinned by SHA with its tag`);
+  }
+});

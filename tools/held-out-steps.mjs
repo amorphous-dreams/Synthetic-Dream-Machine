@@ -37,9 +37,12 @@ const STEP_KEYS = new Set(["name", "if", "run", "uses", "shell", "with"]);
 const WORKFLOW_KEYS = new Set(["name", "on", "permissions", "jobs"]);
 const JOB_KEYS = new Set(["name", "runs-on", "timeout-minutes", "strategy", "env", "steps"]);
 
+// A ` #` after a plain scalar, or after a quoted one's closing quote, opens a YAML comment: an action pinned
+// by SHA carries its release tag there (`uses: actions/checkout@<sha> # v7.0.1`), and the runner never reads it.
 const unquote = (v) => {
   const t = v.trim();
-  return /^(["']).*\1$/.test(t) ? t.slice(1, -1) : t;
+  const quoted = /^(["'])(.*)\1(?:\s+#.*)?$/.exec(t);
+  return quoted ? quoted[2] : t.replace(/\s+#.*$/, "");
 };
 // A matrix value keeps its YAML type: a bare `true` reads boolean, and the runner compares a boolean against a
 // string by number, so `matrix.x == 'true'` over a bare `true` reads FALSE there and must read false here.
