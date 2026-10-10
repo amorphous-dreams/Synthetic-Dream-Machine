@@ -1,0 +1,259 @@
+#!/usr/bin/env node
+/**
+ * e2e-shards — the sharded e2e lane's only two doors: the merge gate that fails closed inside
+ * `.github/workflows/e2e-shards.yml`, and the push/watch/delete helper that runs that lane from a
+ * desk or from any other spirit's hand.
+ *
+ * ── THE MERGE GATE (`merge-verify`) ──────────────────────────────────────────────────────────────
+ * `evaluateMergeGate` is the whole law, exported as a pure function so `e2e-shards.test.mjs` can
+ * plant a bad report set and watch it refuse WITHOUT a GitHub run, a network call, or a real
+ * vitest process. The CLI door (`merge-verify`) only reads files off disk and git, then hands them
+ * to the same function the merge job calls in anger — there is no second copy of the law.
+ *
+ * `vitest --merge-reports` (the documented sharded-report merge) reads SILENT ZERO when a shard's
+ * blob never arrived: it exits 0 and prints "no tests" rather than naming what is missing. This
+ * gate never trusts that exit code. It reads each shard's OWN per-shard JSON report instead — the
+ * `--outputFile.json=.vitest/blob/report-shard-<k>.json` every shard writes alongside its blob —
+ * and refuses closed on every one of:
+ *   - a missing or unparseable artifact (a shard directory absent, or its JSON corrupt);
+ *   - a shard reporting zero tests;
+ *   - any failing test, in any shard;
+ *   - a zero total across every shard combined;
+ *   - a union of executed files that differs from the tracked `tests/e2e/*.test.ts` set — a file
+ *     no shard ran, or a file more than one shard ran, both read here.
+ *
+ * ── THE HELPER (`push`) ──────────────────────────────────────────────────────────────────────────
+ * Pushes HEAD to `ci/<lane>`, finds the ONE run that push triggered (by head SHA, never by name
+ * alone — a reused lane name must never pick up a stale run), watches it with `gh run watch`,
+ * reads its conclusion, deletes the branch, and exits non-zero on any red. It NEVER also dispatches
+ * — `e2e-shards.yml` carries `workflow_dispatch` for a human's own hand, not for this helper to
+ * double-fire on top of its own push.
+ */
+
+import { execFileSync, spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+
+// ── the merge gate's pure law ───────────────────────────────────────────────────────────────────
+
+/**
+ * The e2e dir's test-file name relative to `e2e/` — strips whatever absolute-path prefix a runner
+ * (desk or hosted, their checkouts never sit at the same path) put in front of it, so a path from
+ * a local run and a path from `${{ runner.temp }}` compare equal. Vitest's JSON reporter names a
+ * test FILE by its absolute path (`testResults[].name`); `git ls-files` names it repo-relative.
+ * Both carry a literal `e2e/<rest>` tail, which is the one thing they agree on.
+ */
+export function relativeToE2eDir(path) {
+  const posix = path.replaceAll("\\", "/");
+  const marker = "e2e/";
+  const at = posix.lastIndexOf(marker);
+  if (at === -1) return posix;
+  return posix.slice(at + marker.length);
+}
+
+/**
+ * The merge law, pure: no filesystem, no process, no git. `shardReports` is an array of
+ * `{ shard, report, parseError }` for shard numbers `1..shardCount` (a shard absent from the array
+ * reads as missing, exactly as an absent artifact directory would). `trackedFiles` is the
+ * `tests/e2e/*.test.ts` set, in whatever path form `git ls-files` gives it.
+ *
+ * Returns `{ ok, problems, totalTests, executedFileCount }`. `problems` is empty iff `ok`; every
+ * entry names ONE of the five refusals above, never a bundled "something is wrong".
+ */
+export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
+  const problems = [];
+  let totalTests = 0;
+  const executedFiles = new Set();
+  const byShard = new Map(shardReports.map((r) => [r.shard, r]));
+
+  for (let shard = 1; shard <= shardCount; shard++) {
+    const entry = byShard.get(shard);
+    if (!entry) {
+      problems.push(`missing artifact: shard ${shard} of ${shardCount} never reported`);
+      continue;
+    }
+    if (entry.parseError || entry.report == null) {
+      problems.push(`unparseable artifact: shard ${shard} (${entry.parseError ?? "no report body"})`);
+      continue;
+    }
+    const r = entry.report;
+    const nTotal = Number(r.numTotalTests ?? 0);
+    const nFailed = Number(r.numFailedTests ?? 0);
+    const success = r.success !== false;
+    if (nTotal === 0) problems.push(`zero-test shard: shard ${shard} reported zero tests`);
+    if (nFailed > 0 || !success) problems.push(`red shard: shard ${shard} failed (${nFailed} failing test(s))`);
+    totalTests += nTotal;
+    for (const tr of r.testResults ?? []) {
+      if (typeof tr.name === "string") executedFiles.add(relativeToE2eDir(tr.name));
+    }
+  }
+
+  if (totalTests === 0) problems.push("zero total: every shard combined reported zero tests");
+
+  const tracked = new Set(trackedFiles.map(relativeToE2eDir));
+  const missing = [...tracked].filter((f) => !executedFiles.has(f)).sort();
+  const extra = [...executedFiles].filter((f) => !tracked.has(f)).sort();
+  if (missing.length > 0 || extra.length > 0) {
+    const parts = [];
+    if (missing.length > 0) parts.push(`never run=[${missing.join(", ")}]`);
+    if (extra.length > 0) parts.push(`run but untracked=[${extra.join(", ")}]`);
+    problems.push(`file-union mismatch: the shards' executed files differ from the tracked e2e set (${parts.join("; ")})`);
+  }
+
+  return { ok: problems.length === 0, problems, totalTests, executedFileCount: executedFiles.size };
+}
+
+// ── reading the merge job's disk state into the pure law ──────────────────────────────────────────
+
+/**
+ * Reads `<artifactsDir>/e2e-shard-<k>/report-shard-<k>.json` for every `k` in `1..shardCount` —
+ * the exact layout `e2e-shards.yml` uploads under (one artifact per shard, downloaded by
+ * `download-artifact` into one subdirectory per artifact name). A shard whose directory or file
+ * is absent reads as missing; a shard whose file fails to parse reads as unparseable — neither
+ * throws here, because the GATE names both, not this reader.
+ */
+export function readShardReports(artifactsDir, shardCount) {
+  const out = [];
+  for (let shard = 1; shard <= shardCount; shard++) {
+    const dir = join(artifactsDir, `e2e-shard-${shard}`);
+    const file = join(dir, `report-shard-${shard}.json`);
+    if (!existsSync(file)) continue; // the gate reads this as "missing artifact"
+    try {
+      const report = JSON.parse(readFileSync(file, "utf8"));
+      out.push({ shard, report });
+    } catch (err) {
+      out.push({ shard, report: null, parseError: String(err && err.message ? err.message : err) });
+    }
+  }
+  return out;
+}
+
+/** `git ls-files tests/e2e/*.test.ts`, run from `repoRoot` — the tracked set the gate compares against. */
+export function trackedE2eFiles(repoRoot) {
+  const out = execFileSync("git", ["ls-files", "tests/e2e/*.test.ts"], { cwd: repoRoot, encoding: "utf8" });
+  return out.split("\n").map((s) => s.trim()).filter(Boolean);
+}
+
+function cliMergeVerify(args) {
+  const artifactsDir = resolve(readFlag(args, "--artifacts-dir") ?? "artifacts");
+  const shardCount = Number(readFlag(args, "--shard-count") ?? "4");
+  const repoRoot = resolve(readFlag(args, "--repo-root") ?? ".");
+
+  const shardReports = readShardReports(artifactsDir, shardCount);
+  const trackedFiles = trackedE2eFiles(repoRoot);
+  const verdict = evaluateMergeGate({ shardCount, shardReports, trackedFiles });
+
+  // One grep-able line, read both by a human in the log and by `e2e-shards.mjs push` watching the
+  // same run from outside — the helper never re-derives the verdict from raw JSON over the wire.
+  console.log(
+    `MERGE-VERIFY: ok=${verdict.ok} shards=${shardCount} totalTests=${verdict.totalTests} ` +
+    `executedFiles=${verdict.executedFileCount} trackedFiles=${trackedFiles.length}`,
+  );
+  for (const problem of verdict.problems) console.error(`MERGE-VERIFY problem: ${problem}`);
+
+  process.exitCode = verdict.ok ? 0 : 1;
+}
+
+function readFlag(args, name) {
+  const i = args.indexOf(name);
+  return i === -1 ? undefined : args[i + 1];
+}
+
+// ── the push/watch/delete helper ───────────────────────────────────────────────────────────────────
+
+/** `git`/`gh`, run synchronously; throws with the command's own stderr on a non-zero exit. */
+function run(cmd, cmdArgs, opts = {}) {
+  const result = spawnSync(cmd, cmdArgs, { encoding: "utf8", ...opts });
+  if (result.status !== 0) {
+    const label = `${cmd} ${cmdArgs.join(" ")}`;
+    throw new Error(`${label} exited ${result.status}: ${(result.stderr || result.stdout || "").trim()}`);
+  }
+  return result.stdout;
+}
+
+/** `core.bare` must read `false` both sides of any git-structure operation this helper performs. */
+function assertNotBare(repoRoot) {
+  const bare = run("git", ["-C", repoRoot, "config", "--get", "core.bare"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
+  if (bare === "true") throw new Error(`core.bare reads true at ${repoRoot} — refusing to push or delete a branch here`);
+}
+
+/**
+ * Pushes HEAD to `ci/<lane>`, finds the ONE run that push triggered (matched by head SHA, within
+ * `findBudgetMs`), watches it with `gh run watch --exit-status`, reads the merge job's own
+ * `MERGE-VERIFY` log line as the verdict, deletes the remote branch, and returns
+ * `{ ok, shardCounts, totalTests, run }`. Always deletes the branch, even on a red run — a proof
+ * branch left standing after a red read is exactly the kind of debris this lane must not leave.
+ */
+export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000, pollMs = 3000 }) {
+  assertNotBare(repoRoot);
+  const branch = `ci/${lane}`;
+  const headSha = run("git", ["-C", repoRoot, "rev-parse", "HEAD"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
+
+  run("git", ["-C", repoRoot, "push", "origin", `HEAD:refs/heads/${branch}`], { stdio: ["ignore", "pipe", "pipe"] });
+
+  let runId;
+  const deadline = Date.now() + findBudgetMs;
+  while (Date.now() < deadline) {
+    const listed = run(
+      "gh",
+      ["run", "list", "--workflow", "e2e-shards.yml", "--branch", branch, "--event", "push", "--json", "databaseId,headSha", "--limit", "10"],
+      { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] },
+    );
+    const runs = JSON.parse(listed);
+    const match = runs.find((r) => r.headSha === headSha);
+    if (match) { runId = match.databaseId; break; }
+    await new Promise((r) => setTimeout(r, pollMs));
+  }
+  if (!runId) {
+    deleteBranch(repoRoot, branch);
+    throw new Error(`no e2e-shards.yml run appeared for ${branch}@${headSha} within ${findBudgetMs}ms`);
+  }
+
+  // Watches to completion; a red run makes `gh run watch --exit-status` itself exit non-zero, so
+  // the watch result alone already answers "red or not" — this helper still reads the log line
+  // below for the shard counts and totals the report asks for.
+  const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status"], { cwd: repoRoot, encoding: "utf8" });
+  const watchOk = watch.status === 0;
+
+  const log = run("gh", ["run", "view", String(runId), "--log"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] });
+  const verdictLine = log.split("\n").find((l) => l.includes("MERGE-VERIFY:"));
+  const viewed = JSON.parse(run("gh", ["run", "view", String(runId), "--json", "conclusion,createdAt,updatedAt,url"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] }));
+
+  deleteBranch(repoRoot, branch);
+
+  const ok = watchOk && viewed.conclusion === "success";
+  return { ok, runId, verdictLine: verdictLine ?? null, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
+}
+
+function deleteBranch(repoRoot, branch) {
+  // Best-effort: a branch already gone (deleted by a retry, or never actually pushed because the
+  // run-discovery failed first) must not mask the real verdict with a cleanup error.
+  spawnSync("git", ["-C", repoRoot, "push", "origin", "--delete", branch], { stdio: ["ignore", "pipe", "pipe"] });
+}
+
+async function cliPush(args, repoRoot) {
+  const lane = args[0];
+  if (!lane) { console.error("usage: e2e-shards.mjs push <lane>"); process.exitCode = 1; return; }
+  assertNotBare(repoRoot);
+  const result = await pushLaneAndWatch({ repoRoot, lane });
+  console.log(`run ${result.runId}: conclusion=${result.conclusion} url=${result.url}`);
+  if (result.verdictLine) console.log(result.verdictLine);
+  assertNotBare(repoRoot);
+  process.exitCode = result.ok ? 0 : 1;
+}
+
+// ── CLI entry ───────────────────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const [sub, ...rest] = process.argv.slice(2);
+  const repoRoot = resolve(".");
+  if (sub === "merge-verify") { cliMergeVerify(rest); return; }
+  if (sub === "push") { await cliPush(rest, repoRoot); return; }
+  console.error("usage: e2e-shards.mjs merge-verify --artifacts-dir <dir> --shard-count <n>");
+  console.error("       e2e-shards.mjs push <lane>");
+  process.exitCode = 1;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
