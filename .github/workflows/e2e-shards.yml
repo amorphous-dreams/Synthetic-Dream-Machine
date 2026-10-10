@@ -1,0 +1,145 @@
+name: E2E shards
+
+# The e2e set (tests/e2e/*.test.ts, run under tests/vitest.config.ts) split four ways across a
+# vitest shard matrix, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
+# frozen install, its own TW5 core render, its own build, then only its slice of the suite. A
+# merge job reassembles every shard's report and FAILS CLOSED unless all four answered, none
+# failed, none ran zero tests, and the union of files the shards actually ran is EXACTLY the
+# tracked tests/e2e set — a quiet red (a shard that silently ran nothing, or a file nobody ran)
+# must read exactly as loud as a failing assertion. `tools/e2e-shards.mjs#evaluateMergeGate`
+# carries that law; this job's "Merge gate" step is its only caller in anger.
+#
+# THIS LANE NEVER FIRES FROM AN ORDINARY PUSH. It exists for `tools/e2e-shards.mjs`, which pushes
+# a throwaway `ci/<lane>` branch, watches the ONE run that push triggers, reads this workflow's
+# verdict, and deletes the branch — never a second `workflow_dispatch` on top of that push (see
+# the helper's docblock). `ci.yml`'s own push trigger excludes `ci/**` for the same reason: one
+# push, one verdict, never two matrices plus full CI for the same commit.
+#
+# ONE BUILD PER SHARD. A single build shared across runners would need its own artifact-transfer
+# job this lane does not carry; four independent builds cost more CPU-minutes but no coordination,
+# and the repo is public, so Linux minutes bill to net $0 against the org's usage.
+
+on:
+  push:
+    branches: ["ci/**"]
+  workflow_dispatch: {}
+
+concurrency:
+  group: e2e-shards-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  # ONE pnpm, exact: the same string ci.yml and the Dockerfile pin. A lock written by any other
+  # pnpm rewrites its peer suffixes on its next write.
+  PNPM_VERSION: "11.28.5"
+  # The one count every piece of this workflow reads: the matrix below, the shard's own
+  # `--shard=k/N` argument, and the merge gate's "did all N answer" check.
+  SHARD_COUNT: "4"
+
+jobs:
+  # ─── shard (4-way) ──────────────────────────────────────────────────────────────────────────
+  shard:
+    name: Shard ${{ matrix.shard }}/4
+    runs-on: ubuntu-latest
+    strategy:
+      # A red shard must never cancel its siblings — the merge gate needs to see ALL FOUR
+      # verdicts to tell "one shard failed" apart from "one shard never got to answer".
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import root;
+          # the e2e set stages real vessels from the built CLI, which needs both.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Render the TW5 core blob (genesis bakes from it)
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
+      - name: Build (vessels run from dist)
+        run: pnpm build
+      - name: Run this shard's slice of tests/e2e
+        working-directory: tests
+        env:
+          # Explicit siting for this runner, never the gitignored `lar-dev-root.json` dev-preset
+          # marker a desk checkout might carry — a fresh clone (and every hosted runner) has
+          # neither, and `larRoot()` throws a clean error rather than silently sitting the repo
+          # checkout as the corpus. Each shard gets its own directory; the shards never share a VM.
+          LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.shard }}
+        run: |
+          mkdir -p "$LAR_ROOT"
+          npx vitest run --config vitest.config.ts \
+            --shard="${{ matrix.shard }}/${{ env.SHARD_COUNT }}" \
+            --reporter=blob --reporter=json \
+            --outputFile.json=".vitest/blob/report-shard-${{ matrix.shard }}.json"
+        timeout-minutes: 45
+      - name: Upload this shard's blob + JSON report (always, even on a red shard)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-shard-${{ matrix.shard }}
+          path: tests/.vitest/blob/
+          retention-days: 3
+          # A shard that crashed before vitest ever wrote a blob must still show up as an
+          # artifact-less entry the merge gate can name as missing, never as a step that is
+          # itself silently green because it had nothing to upload.
+          if-no-files-found: warn
+
+  # ─── merge (fails closed) ──────────────────────────────────────────────────────────────────────
+  merge:
+    name: Merge shard reports
+    needs: shard
+    # Runs whatever the shards answered — a job gated on `needs.shard.result == 'success'` would
+    # let one red shard SKIP the merge gate instead of failing it, and a skipped required check
+    # reads as "nothing to report" rather than as the red this lane exists to surface.
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # No build needed here — this job reads only `git ls-files tests/e2e` (tracked at the
+          # top level, no submodule content) and the shard artifacts downloaded below — but the
+          # pnpm workspace's own lockfile names TiddlyWiki5 (the submodule) as an importer, so
+          # `pnpm install --frozen-lockfile` refuses a non-recursive checkout outright (its
+          # package.json is simply absent): the live proof run caught exactly this.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Download every shard's artifact (one subdirectory per shard, by artifact name)
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: artifacts
+        continue-on-error: true
+        # A shard that uploaded nothing (it crashed before the upload step, or the step above
+        # warned with no files) leaves this download with fewer than 4 subdirectories rather than
+        # failing the step — the merge gate below is what must name that as "missing artifact:
+        # shard N", not a bare download failure with no named shard.
+      - name: Collect every shard's blob into one directory (vitest's documented merge input)
+        run: |
+          mkdir -p merged-blobs
+          find artifacts -name 'blob-*.json' -exec cp {} merged-blobs/ \; 2>/dev/null || true
+      - name: vitest --merge-reports (the documented sharded-report merge flow)
+        working-directory: tests
+        # `--merge-reports` reads previously recorded blobs and reports; it runs no test file
+        # itself. It stays its own step, separate from the merge gate below, because vitest's own
+        # merge reads SILENT ZERO when blobs are missing (exit 0, "no tests") — the gate step
+        # names that loudly instead of trusting this command's exit code.
+        run: |
+          npx vitest run --config vitest.config.ts --merge-reports=../merged-blobs \
+            --reporter=default --reporter=json --outputFile.json=../merged-report.json || true
+      - name: Merge gate — fails closed on any missing, empty, red or mismatched shard
+        run: node tools/e2e-shards.mjs merge-verify --artifacts-dir artifacts --shard-count "${{ env.SHARD_COUNT }}"
