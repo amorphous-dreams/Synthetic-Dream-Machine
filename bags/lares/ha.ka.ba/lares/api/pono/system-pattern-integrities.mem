@@ -358,7 +358,7 @@ breach. Every threshold the house stands carries the shape:
 | the herm | the ''floor voice'' — reports what it observed, peer-cosigned; answers the knock | the ''acting voice'' — sealed, a share; speaks only toward a quorum |
 | the vessel's keys | the ''floor key'' — the public name, signs floor acts | the ''custody root'' — sealed under the vessel KEK, derives the veil |
 | custody | ''hot'' — held while raised | ''cold'' — unwrapped per act, then wiped |
-| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the sealed body between STX and ETX |
+| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the checked body between STX and ETX (sealed once carrier signing lands) |
 | the gate | ''silence'' and one closed door to a stranger | the walker's grant, the knock, the proven peer |
 | the identity slot | the slot doc's verdict — the DID and derived actor any reader answers | the provider's own derivation — the layer the interface ships EMPTY and gates elsewhere |
 | the network edge | the weak crossing — cheap, optimistic, admitted on a probe | the per-edge anergy — the tested lease, severed when the test fails |
@@ -374,7 +374,7 @@ desc  = "A threshold MUST present an outward face and keep an inward face, and M
 ```toml #THR_2_NO_LEAK
 id    = "THR_2_NO_LEAK"
 label = "Nothing of the inward face rides the outward one"
-desc  = "The test, run against every threshold: name its outward face, name its inward face, and ask what lets one leak into the other. Leaks this law catches: a host-minted stub that lets a guest's lineage follow her out and names her; a cleartext vessel seed or persona root standing beside the floor; a walker syncing the whole carriage board, which puts the Nexus's infra graph on a guest's face; a herm asked to speak as a house, which puts a household's face on a waystone."
+desc  = "The test, run against every threshold: name its outward face, name its inward face, and ask what lets one leak into the other. Leaks this law catches: a host-minted stub that lets a guest's lineage follow her out and names her; a cleartext vessel seed or persona root standing beside the floor; a walker syncing the whole carriage board, which puts the Nexus's infra graph on a guest's face; a herm asked to speak as a house, which puts a household's face on a waystone. One leak recurs at every threshold that carries a party across it: a NAME on the outside. The outside carries only what its reader already holds or resolves — a bearing to an address, or the reader's own out-of-band pin — and a party's identity rides only inside the span a check or a proof covers. Hence a carrier's heading reads `from=\"?\"` and its authorship begins after STX (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-arrow`), and the wire never names the gate key a dialer proves to — the dialer's pin, which Noise IK carries as its `<- s` pre-message (`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`). The release's `-> to=\"?\"` hands the initiative back (`lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands`) and answers a different question; THR_5 governs the gate's silence and not the carrier."
 ```
 
 ```toml #THR_3_THE_DOORKEEPER_OWNS_NOTHING
@@ -413,6 +413,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h6kg2So0cA8U1-TH31XLE5feetFg2GZTMc-npD2SpWM
+<<^ code="&#x0003;">>ni:///sha-256;m8eHOmYiIFyeGzOaCadNYanUnOeb6sEduBcwY0pdTow
 
 <<^ code="&#x0004;" -> to="?">>

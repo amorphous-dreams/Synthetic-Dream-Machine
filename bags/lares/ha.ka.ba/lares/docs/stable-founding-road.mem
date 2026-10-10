@@ -137,6 +137,8 @@ with the lanes beside it. The R-ENGINE fold builds in parallel from the start an
 * One client dial per (hearth, Nexus), so a vessel walks at more than one hearth; until then a second walk hearth refuses aloud.
 * The vessel key stops linking a walker's leaves across Nexuses on the wire (`two-maps` clause 5's residual), and the oracle pointer's vessel-key correlation goes with it (`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`).
 * ''Per-dial transport keys on the sibling channel'': a leaf proves to a herm under a key fresh per dial, and the leaf-peer transcript binds that key in place of the device key the relay stamps, so a herm colluding with a revoked leaf reads no sibling's device key off its own gate (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-persona-group-secret`).
+* ''Owed (a), the dialer's name rides the clear'': the dialer's ContactCard crosses in cleartext in `lar:auth` over plain `ws://` (`packages/lararium-mesh/src/auth-wire.ts:181-183`) — a live THR_2 leak that Noise IK's encrypted first message cures, the dialer's static riding inside message one instead.
+* ''Owed (b), the knock tests offline'': the knock path computes an HMAC of the public gate key (`packages/lararium-mesh/src/gate-knock.ts:36-44`); an observer holding candidate keys tests a sniffed knock offline, so not echoing the key protects only against an observer with no candidates.
 
 !!! R-ENGINE ~ the engine fold, then its offers
 * ''Fold'' (parallel from the start): TW5 core and the memetic-wikitext bootstrap fold into `engineCid`; the vocabulary leaves the engine as content; the coal-only seed carries no `schemaVersion`; the island `schema_version` drops its counter.
@@ -192,6 +194,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q1lSb3HOY9SnIXQe_7_W4WIXROe9If0-Wmg1Yzo_Dck
+<<^ code="&#x0003;">>ni:///sha-256;CZ_yq9WohNLUj-PkIlrI3cyDjOHj_j3mbRDYT9Kziew
 
 <<^ code="&#x0004;" -> to="?">>

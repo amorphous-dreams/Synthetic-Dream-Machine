@@ -68,7 +68,7 @@ The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enact
 * ''The two-voice herm'' (research done): may a herm speak in a voice of its own, or only through a share of one? `lar:///ha.ka.ba/lararium/mesh/lamplighters#/open` strikes `operate ⊥ sign` and proposes a FROST Place-DID with the herm holding one share; its drift-ward splits the utterances — federation-facing and condemnation-relevant ones thresholded, local carry single-signed — and `#/immune`'s "herms present" (the victim testifies) reads beside "the least credible witness to its own neglect". The split stands as the ruling owed.
 * ''The Lamplighters' question'': whether island-admin tending (`tend.repair`) reaches the herm's own `@daemon` signing key — ISOLATE it, or ACCEPT it and price the lost independent testimony (`lamplighters#/open`; its `role` line advertises it).
 * ''Two Kairoses'': the fiction's KAIROS watches the noosphere across nodes and speaks unasked (`elyncia/Elyncia_02_The_Lares_DreamNet.md`); the code's Kairos names, as a pet-name, an unbuilt OAuth-refresh entity that waits for the right moment (`lar:///ha.ka.ba/lararium/mesh/reach-plane`). One entity, or two that share a name?
-* ''The `?` and the keyless challenge'': the frame's senderless `from="?"` and released `-> to="?"` (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-arrow`) and the wire's challenge that names no gate key (`packages/lararium-mesh/src/auth-wire.ts`, `LarChallengeMsg`) refuse the same thing — a sender's name on the outside of the letter. No carrier cites the one from the other; rule whether they should.
+* ''The `?` and the unechoed gate key'' — ruled DISTINCT, related only through THR_1. The frame's `from="?"` and `-> to="?"` declare an UNRESOLVED bearing — the carrier's origin and next hop stand unknown, and authorship rides inside the checked span (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-arrow`). The gate's `lar:challenge` withholds a known key — the dialer verifies against its own pin, and an echoed key would confirm the gate to a replayer (`packages/lararium-mesh/src/auth-wire.ts`, `LarChallengeMsg`). One declares ignorance at the grammar layer; the other withholds knowledge at the transport layer. Neither cites the other; both stand as outward faces in `lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities` (the carrier row and the gate row), which carries their only shared law. R-WIRE retires the challenge (Noise IK `<- s`: the responder's key never rides the wire), so a direct citation would anchor on a deleted interface.
 * ''The Codex crew's forks'', reconciled against the code in `lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled`: the Offering Antigen scope (and the charter-inception identity it rests on); the crossing record's emission threshold and destination receipts; seam (b)'s altitude; `bag-residency.ts`'s home.
 
 ''Needs the operator''
@@ -140,6 +140,6 @@ The hosted walk, its cleanup and its aftermath stand, the three B1 rulings enact
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;muUjkyIx5oNkgpSzb5G1Y_EkvOxea2C29lsspYe9NxY
+<<^ code="&#x0003;">>ni:///sha-256;s_4U-WE12WKF5bMMqf-1VNldLgjxDZTAHp2-KshFTDY
 
 <<^ code="&#x0004;" -> to="?">>

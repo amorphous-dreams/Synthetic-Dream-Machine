@@ -158,7 +158,7 @@ such dialer a signature that ties this place to every Nexus whose carry seals th
 correlation the waymark paragraph guards against. The socket narrows who reads it to dialers who prove first; it
 does not unbind the correlation. The per-Nexus wire key owes that cut at the re-found, where each Nexus's wire
 signs under its own key and no one key spans two. Before any proof the gate's `lar:challenge` carries a fresh nonce
-alone and names no key (`auth-wire.ts`, `LarChallengeMsg`); it still tells an opener that a gate answers — owed to
+alone and echoes no gate key (the dialer holds the pin) (`auth-wire.ts`, `LarChallengeMsg`); it still tells an opener that a gate answers — owed to
 the proof-first protocol lane, where the dialer proves first and a stranger draws silence.
 
 ''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
@@ -414,6 +414,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;76SkZ1hurD-6Qo0OnC6NNzPhJO79FUz6_DfZ74cDjBw
+<<^ code="&#x0003;">>ni:///sha-256;SNI5uRSjqOH37KPbZa3XuhIBwZI8kvU-I4PEbi6GeMY
 
 <<^ code="&#x0004;" -> to="?">>
