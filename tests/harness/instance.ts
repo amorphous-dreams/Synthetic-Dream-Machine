@@ -358,12 +358,19 @@ export function rendezvousSocket(instance: LarInstance): string {
   return rendezvousPath({ root: vesselStorageDir(instance), uid: process.getuid?.() ?? 0 });
 }
 
-/** Wait until this instance's daemon has BOUND its rendezvous — a name standing, not a listener answering. */
+/**
+ * Wait until this instance's daemon SERVES its rendezvous — its verb channel has taken the store's claim over.
+ *
+ * A vessel binds the name before its Repo opens (`claimStore`) and holds callers there until its channel serves, so a
+ * name standing says only that a vessel holds the store. A staged daemon names the moment its channel serves in its
+ * own log, after every line of its live banner (the gate key a joinee dials among them); a live hearth already serves.
+ */
 export async function awaitRendezvous(instance: LarInstance, timeoutMs = 60_000): Promise<boolean> {
   const sock = rendezvousSocket(instance);
   const deadline = performance.now() + timeoutMs;
+  const serves = (): boolean => instance.mode !== "staged" || instance.bootLog().includes("uds verb-channel on");
   for (;;) {
-    if (existsSync(sock)) return true;
+    if (existsSync(sock) && serves()) return true;
     if (performance.now() > deadline) return false;
     await new Promise((r) => setTimeout(r, 250));
   }

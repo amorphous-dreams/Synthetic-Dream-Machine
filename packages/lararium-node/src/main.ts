@@ -533,8 +533,8 @@ async function main(): Promise<void> {
   //   1. stop new inbound work (uds + http + read-face),
   //   2. flush the MAIN replica — the durable floor for every record that has reached it,
   //   3. tear down the wiki islands (disposeAll → each island flushes its OWN
-  //      partition, incl. working, before it acks),
-  //   4. tear down the daemon island gracefully (it flushes its docs + capture WAL),
+  //      partition, incl. working, before it acks), and BESIDE them
+  //   4. the daemon island gracefully (it flushes its docs + capture WAL),
   //   5. flush MAIN again to land anything that synced during teardown.
   //
   // THE FORCE NEVER CUTS A MAIN FLUSH. The budget arms only once step 2 has landed, and it bounds steps 3–4
@@ -559,11 +559,11 @@ async function main(): Promise<void> {
     console.log(`[lararium] ${sig} — graceful shutdown (durable flush, budget ${SHUTDOWN_BUDGET_MS}ms)`);
     // Each step's span rides the log (monotonic, a measurement only), so an overrun names the step that spent it.
     const spans: string[] = [];
-    let cutting = "";
+    const running = new Set<string>();
     const step = async (name: string, run: () => Promise<unknown>): Promise<void> => {
       const t0 = performance.now();
-      cutting = name;
-      try { await run(); } finally { spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
+      running.add(name);
+      try { await run(); } finally { running.delete(name); spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
     };
     let force: ReturnType<typeof setTimeout> | undefined;
     try {
@@ -575,13 +575,14 @@ async function main(): Promise<void> {
       httpServer.close();
       await step("main-flush", () => result.repo.flush());                          // the floor, never cut by the force
       const forced = new Promise<"forced">((resolve) => { force = setTimeout(() => resolve("forced"), SHUTDOWN_BUDGET_MS); });
-      const teardown = (async () => {
-        await step("islands", () => result.pool.disposeAll());                      // wiki islands flush their partitions + ack
-        await step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS));     // daemon island flushes docs + capture, then acks
-        return "done" as const;
-      })();
+      // The two teardowns run side by side: a wiki island busy past the budget never holds the daemon island's own
+      // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it.
+      const teardown = Promise.all([
+        step("islands", () => result.pool.disposeAll()),                            // wiki islands flush their partitions + ack
+        step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS)),           // daemon island flushes docs + capture, then acks
+      ]).then(() => "done" as const);
       if (await Promise.race([teardown, forced]) === "forced") {
-        console.error(`[lararium] shutdown budget exceeded — the teardown is cut during ${cutting}; the main replica flushes before exit (done: ${spans.join(" · ")})`);
+        console.error(`[lararium] shutdown budget exceeded — the teardown is cut (still running: ${[...running].join(", ")}); the main replica flushes before exit (done: ${spans.join(" · ")})`);
       }
       await step("main-reflush", () => result.repo.flush());                        // land what synced during teardown
       console.log(`[lararium] shutdown complete — the main replica flushed durably (${spans.join(" · ")})`);
