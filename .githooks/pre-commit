@@ -23,6 +23,31 @@ run_gate() {
       return 1
     fi
   fi
+  # L7: the `.mem` carrier check above gated only `.mem` — a staged SUBMISSION source or pair (the shelf's
+  # own `.md`/`.md.meta`, or a `.mem` a staged meta names as its `source:`) still passed silently whenever
+  # `submission-currency-staged.sh` happened to be absent from the index. This gates the SAME set that
+  # script would have checked, fail-closed exactly as the `.mem` branch above does.
+  if [ "$script" = "submission-currency-staged.sh" ]; then
+    shelf="bags/lares/ha.ka.ba/lares/api/pono/submissions"
+    staged="$(git -C "$REPO" diff --cached --name-only --diff-filter=ACMR)"
+    involved="$(printf '%s\n' "$staged" | grep -F "$shelf/" || true)"
+    for meta in "$REPO/$shelf"/*.md.meta; do
+      [ -f "$meta" ] || continue
+      source_uri="$(sed -n 's/^source: //p' "$meta" | head -n 1)"
+      [ -z "$source_uri" ] && continue
+      src="bags/lares/${source_uri#lar:///}.mem"
+      if printf '%s\n' "$staged" | grep -qxF "$src"; then
+        involved="$involved
+$src"
+      fi
+    done
+    involved="$(printf '%s\n' "$involved" | sed '/^$/d')"
+    if [ -n "$involved" ]; then
+      echo "[pre-commit] staged submission source/pair file(s) but tools/submission-currency-staged.sh is absent from the index — refusing:" >&2
+      printf '%s\n' "$involved" | sed 's/^/  /' >&2
+      return 1
+    fi
+  fi
   echo "[pre-commit] this tree carries no tools/$script — that gate does not apply here"
   return 0
 }

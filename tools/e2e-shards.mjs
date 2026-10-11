@@ -66,6 +66,9 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
   // Which shard(s) ran each file — `--shard=k/N` partitions test FILES disjointly by design, so a
   // file read by more than one shard is a sharding fault, never a lawful overlap to collapse quietly.
   const shardsOfFile = new Map();
+  // Per-FILE passed/skipped tallies, summed across whichever shard(s) ran it (L2).
+  const passedByFile = new Map();
+  const skippedByFile = new Map();
   const byShard = new Map(shardReports.map((r) => [r.shard, r]));
 
   for (let shard = 1; shard <= shardCount; shard++) {
@@ -99,6 +102,27 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
       const shards = shardsOfFile.get(file) ?? new Set();
       shards.add(shard);
       shardsOfFile.set(file, shards);
+      // L2: a shard's OWN zero-pass check (above) reads the whole shard, so a file whose tests all
+      // skipped — a `describe.skipIf`, a skipping `beforeAll` that never throws — reads clean the
+      // instant one OTHER file in the same shard passes anything at all. Count each file's own
+      // passed/skipped tally too, off `assertionResults` when the reporter carries it, else off the
+      // file's own aggregate `status` (one test's worth, best-effort, when no per-assertion detail
+      // rides along) — so an all-skipped FILE refuses by name even inside an otherwise-green shard.
+      const assertions = Array.isArray(tr.assertionResults) ? tr.assertionResults : null;
+      const filePassed = assertions
+        ? assertions.filter((a) => a?.status === "passed").length
+        : (tr.status === "passed" ? 1 : 0);
+      const fileSkipped = assertions
+        ? assertions.filter((a) => a?.status === "pending" || a?.status === "skipped" || a?.status === "todo").length
+        : (tr.status === "skipped" || tr.status === "pending" || tr.status === "todo" ? 1 : 0);
+      passedByFile.set(file, (passedByFile.get(file) ?? 0) + filePassed);
+      skippedByFile.set(file, (skippedByFile.get(file) ?? 0) + fileSkipped);
+    }
+  }
+
+  for (const [file, skipped] of skippedByFile) {
+    if (skipped > 0 && (passedByFile.get(file) ?? 0) === 0) {
+      problems.push(`all-skipped file: ${file} ran 0 passing tests (skipped/pending=${skipped})`);
     }
   }
 
@@ -244,17 +268,22 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   // throw from either `gh run view` call here must never leave `ci/<lane>` standing. `finally`
   // deletes once regardless of which branch below returns or throws.
   let verdictLine = null;
+  let verdictLines = [];
   let viewed;
   try {
     const log = run("gh", ["run", "view", String(runId), "--log"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] });
-    verdictLine = log.split("\n").find((l) => l.includes("MERGE-VERIFY:")) ?? null;
+    // L2: EVERY `MERGE-VERIFY` line, not only the one-line summary — a red merge names its problems
+    // on their OWN `MERGE-VERIFY problem:` lines, and a caller that read only the summary line saw
+    // `ok=false` with no idea which of the five refusals fired.
+    verdictLines = log.split("\n").filter((l) => l.includes("MERGE-VERIFY"));
+    verdictLine = verdictLines.find((l) => l.includes("MERGE-VERIFY:")) ?? null;
     viewed = JSON.parse(run("gh", ["run", "view", String(runId), "--json", "conclusion,createdAt,updatedAt,url"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] }));
   } finally {
     deleteBranch(repoRoot, branch);
   }
 
   const ok = watchOk && viewed.conclusion === "success";
-  return { ok, runId, verdictLine, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
+  return { ok, runId, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
 }
 
 function deleteBranch(repoRoot, branch) {
@@ -269,7 +298,11 @@ async function cliPush(args, repoRoot) {
   assertNotBare(repoRoot);
   const result = await pushLaneAndWatch({ repoRoot, lane });
   console.log(`run ${result.runId}: conclusion=${result.conclusion} url=${result.url}`);
-  if (result.verdictLine) console.log(result.verdictLine);
+  // L2: print every MERGE-VERIFY line this run logged, not just the one-line summary — the problem
+  // lines are the ONLY place a red merge names which of the five refusals fired.
+  for (const line of result.verdictLines?.length ? result.verdictLines : (result.verdictLine ? [result.verdictLine] : [])) {
+    console.log(line);
+  }
   assertNotBare(repoRoot);
   process.exitCode = result.ok ? 0 : 1;
 }

@@ -184,6 +184,61 @@ test("RED — a shard with only pending/skipped tests (numPassedTests: 0) refuse
   assert.ok(verdict.problems.some((p) => p.includes("zero-test shard") && p.includes("pending=3")), verdict.problems.join("; "));
 });
 
+// ── RED (L2): one FILE all-skipped inside an otherwise-passing shard — the shard's OWN zero-pass
+// check never fires (SOME test in the shard passed), so only a per-file tally catches it. This is
+// the exact shape gp2-episkopos measured live: `nexus-offering-replication`'s 2/2 skipped beforeAll
+// read clean in CI except for `success:false` — a `describe.skipIf`, never throwing, would have
+// read clean outright.
+test("RED (L2) — a file that ran but every one of its tests skipped refuses by name, even beside a passing file in the same shard", () => {
+  const verdict = evaluateMergeGate({
+    shardCount: 1,
+    shardReports: shardReportsFor({
+      1: {
+        report: {
+          numTotalTests: 3, numPassedTests: 1, numPendingTests: 2, numFailedTests: 0, success: true,
+          testResults: [
+            { name: "/runner/a/tests/e2e/alpha.test.ts", status: "passed", assertionResults: [{ status: "passed" }] },
+            {
+              name: "/runner/a/tests/e2e/beta.test.ts", status: "pending",
+              assertionResults: [{ status: "pending" }, { status: "pending" }],
+            },
+          ],
+        },
+      },
+    }),
+    trackedFiles: TRACKED,
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(
+    verdict.problems.some((p) => p.includes("all-skipped file") && p.includes("beta.test.ts") && p.includes("skipped/pending=2")),
+    verdict.problems.join("; "),
+  );
+});
+
+// ── CONTROL (L2): the same shape, but beta.test.ts carries at least one PASSED assertion — never refuses
+test("CONTROL (L2) — a file with at least one passing assertion never reads as all-skipped", () => {
+  const verdict = evaluateMergeGate({
+    shardCount: 1,
+    shardReports: shardReportsFor({
+      1: {
+        report: {
+          numTotalTests: 3, numPassedTests: 2, numPendingTests: 1, numFailedTests: 0, success: true,
+          testResults: [
+            { name: "/runner/a/tests/e2e/alpha.test.ts", status: "passed", assertionResults: [{ status: "passed" }] },
+            {
+              name: "/runner/a/tests/e2e/beta.test.ts", status: "passed",
+              assertionResults: [{ status: "passed" }, { status: "pending" }],
+            },
+          ],
+        },
+      },
+    }),
+    trackedFiles: TRACKED,
+  });
+  assert.equal(verdict.ok, true, verdict.problems.join("; "));
+  assert.ok(!verdict.problems.some((p) => p.includes("all-skipped file")));
+});
+
 // ── relativeToE2eDir ─────────────────────────────────────────────────────────────────────────────
 test("relativeToE2eDir strips whatever prefix sits in front of e2e/, on either path style", () => {
   assert.equal(relativeToE2eDir("/home/joshu/repo/tests/e2e/foo.test.ts"), "foo.test.ts");

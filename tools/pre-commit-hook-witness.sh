@@ -51,6 +51,25 @@ if OUT=$(cd "$WORK" && "$HOOK" 2>&1); then bad "passed a staged removal of the g
 elif printf '%s' "$OUT" | grep -q 'meme-check-staged.sh is absent'; then ok
 else bad "refused for another reason"; printf '%s\n' "$OUT" | tail -5 | sed 's/^/      /'; fi
 
-if [ "$FAILED" -eq 0 ]; then echo "pre-commit-hook-witness: the hook refuses a staged .mem with its gate absent, and passes a .mem-free staging"
+step "④ RED (L7): a staged submission source, NO submission-currency-staged.sh at all → the hook refuses"
+git -C "$WORK" reset -q --hard
+SHELF="$WORK/bags/lares/ha.ka.ba/lares/api/pono/submissions"
+mkdir -p "$SHELF" "$WORK/bags/lares/ha.ka.ba/lares/scratch"
+printf 'source: lar:///ha.ka.ba/lares/scratch/witness-source\n' > "$SHELF/witness.md.meta"
+echo "# witness pair" > "$SHELF/witness.md"
+echo '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>' \
+  > "$WORK/bags/lares/ha.ka.ba/lares/scratch/witness-source.mem"
+git -C "$WORK" add "$SHELF/witness.md" "$SHELF/witness.md.meta" "$WORK/bags/lares/ha.ka.ba/lares/scratch/witness-source.mem"
+if OUT=$(cd "$WORK" && "$HOOK" 2>&1); then bad "passed a staged submission source/pair with the gate script absent"
+elif printf '%s' "$OUT" | grep -q 'submission-currency-staged.sh is absent'; then ok
+else bad "refused without naming the absent gate"; printf '%s\n' "$OUT" | tail -5 | sed 's/^/      /'; fi
+
+step "⑤ CONTROL (L7): no staged submission source/pair → the hook passes the submission gate"
+git -C "$WORK" reset -q
+echo hello2 > "$WORK/note2.txt"
+git -C "$WORK" add note2.txt
+if (cd "$WORK" && "$HOOK" >/dev/null 2>&1); then ok; else bad "refused with no submission source/pair staged"; fi
+
+if [ "$FAILED" -eq 0 ]; then echo "pre-commit-hook-witness: the hook refuses a staged .mem or submission source/pair with its matching gate absent, and passes a staging that touches neither"
 else echo "pre-commit-hook-witness: $FAILED check(s) failed"; fi
 exit "$FAILED"
