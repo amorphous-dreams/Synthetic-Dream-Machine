@@ -15,6 +15,7 @@
 
 import { createConnection } from "node:net";
 import { existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
@@ -93,15 +94,48 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
 }
 
 /**
- * Ask the socket WHO holds it, naming the answer — the CLI side of the same `{holder:"?"}` probe
- * `owned-store.ts`'s `heldAs` answers. A caller naming a slow boot reads this instead of hanging mute: a vessel
- * mid-boot (claimed, not yet serving) answers with its pid in the message; nothing standing yet answers null.
+ * PIDs with the rendezvous socket FILE open at `path` — the UDS twin of `port-control.ts`'s
+ * `portHolderPids`. `lsof -t <path>` names every process holding that exact name open, which for a
+ * rendezvous socket is its one listener (M4: this is what names a WEDGED holder, since nothing else
+ * can). Excludes our own PID. Empty = no owner found (no `lsof`, or the OS reports none).
  */
-export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<{ holder: string | null; message: string } | null> {
+export function socketHolderPids(path: string): number[] {
+  const self = process.pid;
+  const uniq = (ns: number[]): number[] => [...new Set(ns)].filter((n) => n > 0 && n !== self);
+  try {
+    const out = execFileSync("lsof", ["-t", path], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return uniq(out.split(/\s+/).filter((s) => s.length > 0).map(Number).filter(Number.isFinite));
+  } catch { return []; }
+}
+
+/**
+ * Ask the socket WHO holds it, naming the answer — the CLI side of the same `{holder:"?"}` probe
+ * `owned-store.ts`'s `heldAs` answers.
+ *
+ * TWO READINGS OF "NOTHING ANSWERED", NEVER FUSED (M4). Before this, every non-answer — an immediate
+ * `ECONNREFUSED`/`ENOENT` (nobody there at all) AND a connection the OS accepted into its backlog but
+ * whose process never read a byte (frozen, SIGSTOPped, wedged) — read as the SAME `null`, "no
+ * discoverable holder". A live probe proved the difference matters: a SIGSTOPped holder answered
+ * `null` at its timeout exactly as an unbound socket would, so a caller budgeting "unbound" patience
+ * for a holder that was there the whole time spent the WRONG patience and named the wrong story.
+ *   - `error` (ECONNREFUSED/ENOENT, before any `connect`) → UNBOUND: `null`, nothing to connect to.
+ *   - `timeout` after a successful `connect` but before any line arrives → WEDGED: something accepted
+ *     the connection and then never answered. `socketHolderPids` names it when it can.
+ *   - a parsed line within the timeout → PARKED: a vessel mid-boot, claimed but not yet serving verbs,
+ *     answering its own `{holder:"?"}` probe live (the ordinary slow-but-live boot).
+ */
+export interface WhoHoldsAnswer {
+  readonly phase:   "parked" | "wedged";
+  readonly holder:  string | null;
+  readonly message: string;
+}
+
+export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<WhoHoldsAnswer | null> {
   const path = udsSocketPath(dataDir);
   return new Promise((resolve) => {
     let settled = false;
-    const done = (v: { holder: string | null; message: string } | null): void => {
+    let connected = false;
+    const done = (v: WhoHoldsAnswer | null): void => {
       if (settled) return;
       settled = true;
       try { sock.destroy(); } catch { /* already gone */ }
@@ -111,7 +145,7 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<{ 
     sock.setTimeout(timeoutMs);
     sock.setEncoding("utf8");
     let buf = "";
-    sock.once("connect", () => sock.write(JSON.stringify({ holder: "?" }) + "\n"));
+    sock.once("connect", () => { connected = true; sock.write(JSON.stringify({ holder: "?" }) + "\n"); });
     sock.on("data", (c: string) => {
       buf += c;
       const nl = buf.indexOf("\n");
@@ -119,11 +153,18 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<{ 
       try {
         const line = JSON.parse(buf.slice(0, nl)) as { holder?: unknown; errorMessage?: unknown };
         const holder = typeof line.holder === "string" ? line.holder : null;
-        done({ holder, message: typeof line.errorMessage === "string" ? line.errorMessage : "" });
+        done({ phase: "parked", holder, message: typeof line.errorMessage === "string" ? line.errorMessage : "" });
       } catch { done(null); }
     });
     sock.once("error",   () => done(null));
-    sock.once("timeout", () => done(null));
+    sock.once("timeout", () => {
+      if (!connected) { done(null); return; }                   // never even connected — genuinely unbound
+      const pids = socketHolderPids(path);
+      const message = pids.length > 0
+        ? `a listener at ${path} accepted the connection but gave no answer within ${timeoutMs}ms — frozen or wedged, still held by pid(s) ${pids.join(", ")}`
+        : `a listener at ${path} accepted the connection but gave no answer within ${timeoutMs}ms — frozen or wedged, answers to no discoverable pid`;
+      done({ phase: "wedged", holder: null, message });
+    });
   });
 }
 

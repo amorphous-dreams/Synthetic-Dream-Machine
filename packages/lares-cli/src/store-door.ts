@@ -42,20 +42,25 @@ export type StoreDoorVia = "daemon" | "direct";
 
 /**
  * This door's own patience for a store it cannot yet reach serving verbs: the rendezvous name may stand with
- * no answer at all yet (the vessel still opening its claim), or stand PARKED (claimed, but its boot has not
- * yet opened a verb channel — `owned-store.ts`'s `park`). Each phase spends its OWN budget, so a slow-but-live
- * boot earns more patience than a name nothing answers at all, and a timeout NAMES the pid still holding
- * rather than a flat "timed out after 30000ms".
+ * no answer at all yet (the vessel still opening its claim), stand PARKED (claimed, but its boot has not yet
+ * opened a verb channel — `owned-store.ts`'s `park`), or stand WEDGED (M4: something accepted the connection
+ * and then never answered at all — frozen, not merely slow-but-live). Each phase spends its OWN budget, so a
+ * slow-but-live boot earns more patience than a name nothing answers at all, a wedged holder earns its own
+ * bounded patience distinct from both, and a timeout NAMES the pid still holding rather than a flat "timed
+ * out after 30000ms".
  */
 export const STORE_DOOR_PHASES: readonly BootPhase[] = [
   { name: "unbound", budgetMs: 10_000 },
   { name: "parked",  budgetMs: 45_000 },
+  { name: "wedged",  budgetMs: 10_000 },
 ];
 
-/** The pid named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`), or none. */
+/** The pid(s) named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`, or M4's wedged
+ *  `"…still held by pid(s) 1234, 5678"`), or none. */
 const pidsNamedIn = (message: string): readonly number[] => {
-  const m = /pid (\d+)/.exec(message);
-  return m ? [Number(m[1])] : [];
+  const m = /pid\(?s?\)?\s+([\d, ]+)/.exec(message);
+  if (!m) return [];
+  return m[1]!.split(",").map((s) => Number(s.trim())).filter(Number.isFinite);
 };
 
 /**
@@ -87,7 +92,7 @@ export async function throughStoreDoor(opts: {
       phase: async () => {
         const met = await whoHolds();
         lastMessage = met?.message ?? "";
-        return met === null ? "unbound" : "parked";
+        return met === null ? "unbound" : met.phase;
       },
       holderPids: () => pidsNamedIn(lastMessage),
     }).then((): { readonly quiet: true } => ({ quiet: true }));

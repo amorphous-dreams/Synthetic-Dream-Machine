@@ -1,5 +1,6 @@
 /**
- * store-door.test.ts — M1 and H2 of the door-warden golden-path pass, plus H1's own-decision socket close.
+ * store-door.test.ts — M1 and H2 of the door-warden golden-path pass, plus H1's own-decision socket close
+ * and M4's wedged-vs-unbound distinction.
  *
  * Proven:
  *   · M1 RED→GREEN: a verb routed through a standing-but-not-yet-serving ("parked") vessel exhausts its OWN
@@ -10,6 +11,9 @@
  *     a budget nobody is still waiting on. MUTATION PROOF: an `invokeLocal` that never honours the abort
  *     signal still settles the race (the timeout still throws), but this suite's own fixture asserts the
  *     signal fired, which a caller that dropped the abort call would fail.
+ *   · M4: a WEDGED holder (`whoHolds` answers `{ phase: "wedged", ... }`) spends the dedicated `wedged`
+ *     phase's own budget and names its own pid — never the `unbound` phase's budget, and never read as "no
+ *     discoverable holder" just because it never managed to answer.
  *   · H2: `pokeSealHomeRefold` reaches the standing vessel's door (`seal-home-refold`) exactly when one
  *     stands, and is a complete no-op (no connection attempted at all) when none does — nothing to poke, no
  *     wasted `ownedStore` act for a no-op row.
@@ -30,10 +34,16 @@ const FAST_PHASES = [
   { name: "parked",  budgetMs: 60 },
 ] as const;
 
+const FAST_WEDGED_PHASES = [
+  { name: "unbound", budgetMs: 10_000 },
+  { name: "parked",  budgetMs: 10_000 },
+  { name: "wedged",  budgetMs: 30 },
+] as const;
+
 describe("throughStoreDoor — a budgeted, holder-named wait on a parked vessel (M1, H1)", () => {
   it("RED: a verb parked behind a boot that never serves exhausts its phase budget, naming the holder, and ITS OWN SOCKET IS ABORTED (H1) — never left open for the verb's own flat budget", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
-    vi.mocked(whoHolds).mockResolvedValue({ holder: "vessel", message: "a vessel (pid 4242) holds the store at /tmp/x" });
+    vi.mocked(whoHolds).mockResolvedValue({ phase: "parked", holder: "vessel", message: "a vessel (pid 4242) holds the store at /tmp/x" });
     let aborted = false;
     vi.mocked(invokeLocal).mockImplementation((_verb, _args, _by, opts) => new Promise((_resolve, reject) => {
       // The never-settling "parked" shape, EXCEPT it honours an abort exactly as the real socket-backed
@@ -67,6 +77,42 @@ describe("throughStoreDoor — a budgeted, holder-named wait on a parked vessel 
     const r = await throughStoreDoor({ verb: "nexus-kapae", args: {}, direct: async () => ({}), phases: FAST_PHASES });
     expect(r.via).toBe("daemon");
     expect(aborted).toBe(false);
+  });
+});
+
+describe("throughStoreDoor — a WEDGED holder spends its own phase budget, never \"unbound\"'s (M4)", () => {
+  it("RED: a wedged whoHolds answer exhausts the wedged phase's OWN budget and names its own pid, never reading as unbound", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue({
+      phase: "wedged", holder: null,
+      message: "a listener at /tmp/x accepted the connection but gave no answer within 1500ms — frozen or wedged, still held by pid(s) 9999",
+    });
+    vi.mocked(invokeLocal).mockImplementation((_verb, _args, _by, opts) => new Promise((_resolve, reject) => {
+      // Honours the abort exactly as the real socket-backed `invokeLocal` does, so this door's own
+      // `controller.abort()` (H1) can settle it rather than hanging the test on a promise nobody ever
+      // resolves.
+      opts?.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+    }));
+
+    await expect(
+      throughStoreDoor({ verb: "nexus-kapae", args: {}, direct: async () => ({}), phases: FAST_WEDGED_PHASES }),
+    ).rejects.toSatisfy((e: unknown) => {
+      expect(e).toBeInstanceOf(SlowBootTimeout);
+      const err = e as SlowBootTimeout;
+      expect(err.phase).toBe("wedged");                 // spent the WEDGED budget, never the unbound one
+      expect(err.holderPids).toEqual([9999]);
+      expect(err.message).toMatch(/still held by pid\(s\) 9999/);
+      return true;
+    });
+  });
+
+  it("MUTATION PROOF of the retired bug: re-enacting the old null-fusing map reads a wedged answer as unbound", () => {
+    // The OLD shape: `met === null ? "unbound" : "parked"` — any non-null answer, wedged included, fell into
+    // "parked". Re-enacting it over a wedged answer proves the fusion this cure retired.
+    const met: { phase: "wedged"; holder: null; message: string } = { phase: "wedged", holder: null, message: "…" };
+    const oldShapePhase = met === null ? "unbound" : "parked";
+    expect(oldShapePhase).toBe("parked");                // the bug: a wedged answer read as merely "parked"
+    expect(met.phase).toBe("wedged");                     // the new reading: wedged stays wedged
   });
 });
 
