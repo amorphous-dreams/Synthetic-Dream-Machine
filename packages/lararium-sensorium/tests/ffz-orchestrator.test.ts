@@ -402,12 +402,6 @@ describe("computePlaneDrifts — the 3-plane pre-pass", () => {
     expect(fd).toBe(0); // form coherent
     expect(sd).toBeGreaterThan(0.9); // the lone structure shift
   });
-
-  test("backward-compatible — a 2-arg call still yields [content, form]", () => {
-    const form = new Map<string, readonly number[]>([["sha", hot(0, 4)]]);
-    const recs = [0, 1].map((c) => fdrawer(c, hot(0, 8), "sha"));
-    for (const r of recs) expect(computePlaneDrifts(recs, form).get(r.id)).toEqual([0, 0]);
-  });
 });
 
 describe("deriveMeasureLabels — the structure plane (N=3 quorum)", () => {
@@ -461,18 +455,20 @@ describe("deriveMeasureLabels — the structure plane (N=3 quorum)", () => {
     expect(r.planes).toBe(2); // structure never joins ⇒ content + form only
   });
 
-  test("graceful — structure joins but form absent runs N=2 (content + structure)", () => {
-    const { recs, struct } = session3(() => hot(0, 8), () => 0, () => 0);
-    const r = deriveMeasureLabels(recs, {}, undefined, struct);
-    expect(r.planes).toBe(2);
-  });
-
   test("1/2-plane paths IDENTICAL when no structure reader is wired (absent-shore parity)", () => {
     const { recs, form } = session3((c) => hot(c >= 5 ? 1 : 0, 8), (c) => (c >= 5 ? 1 : 0), (c) => (c >= 5 ? 1 : 0));
     const twoPlane = deriveMeasureLabels(recs, {}, form); // no structBySha
     expect(twoPlane.planes).toBe(2);
     const onePlane = deriveMeasureLabels(recs); // no form, no struct
     expect(onePlane.planes).toBe(1);
+  });
+
+  test("structure NEVER rides without form — a joining struct with no form drops to content-only (N=1)", () => {
+    // the retired shape: previously this ran N=2 (content+structure); structure now rides
+    // ONLY alongside a joining form, so an absent form drops the whole session to ROUTE 3.
+    const { recs, struct } = session3(() => hot(0, 8), () => 0, () => 0);
+    const r = deriveMeasureLabels(recs, {}, undefined, struct);
+    expect(r.planes).toBe(1);
   });
 });
 
@@ -527,12 +523,6 @@ describe("orchestrateWing — the structure plane wired (N=3)", () => {
     expect(res.planesPresent).toBe(2);
   });
 
-  test("structure-only reader (no form) runs N=2 through the pipeline", () => {
-    const { reader, struct } = struct3Session();
-    const w = capture();
-    const res = orchestrateWing("wing_s", { readEmbeddings: reader, readStructureVectors: () => struct, writePatches: w.writePatches });
-    expect(res.planesPresent).toBe(2);
-  });
 });
 
 // ───────────────────────────────────────────────────────────────────────────

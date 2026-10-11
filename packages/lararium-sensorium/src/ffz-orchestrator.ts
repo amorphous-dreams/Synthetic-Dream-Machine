@@ -303,30 +303,30 @@ function makeJoinTracker(bySha: ReadonlyMap<string, readonly number[]>) {
  *   STRUCTURE — present iff `structBySha` is supplied: the joined structure-vector's drift,
  *               the SAME tracker against the structurepalace AST-shape vectors (the 3rd quorum plane).
  *
- * Backward-compatible: called with `(vectors, formMap)` it yields `[content, form]` (today's
- * 2-plane output exactly); with `(vectors, formMap, structMap)` it yields `[content, form,
- * structure]`; with `(vectors, undefined, structMap)` it yields `[content, structure]`. No
- * gong-feedback reseed here (a pure pre-pass; the gong is decided downstream in {@link
- * quorumStep}). The servo's per-plane EWMA-z standardizes the scales, so the raw drift
- * magnitudes need not match across planes.
+ * `formBySha` is REQUIRED — the form plane always rides (plane-1); there is no 1-plane or
+ * structure-without-form shape here (callers needing content-only never call this pre-pass at
+ * all — see {@link deriveMeasureLabels}'s ROUTE 3). `structBySha`, when supplied, adds the 3rd
+ * plane: `(vectors, formMap, structMap)` yields `[content, form, structure]`; with no
+ * `structBySha` it yields `[content, form]`. No gong-feedback reseed here (a pure pre-pass; the
+ * gong is decided downstream in {@link quorumStep}). The servo's per-plane EWMA-z standardizes
+ * the scales, so the raw drift magnitudes need not match across planes.
  */
 export function computePlaneDrifts(
   sessionVectors: readonly DrawerVector[],
-  formBySha?: ReadonlyMap<string, readonly number[]>,
+  formBySha: ReadonlyMap<string, readonly number[]>,
   structBySha?: ReadonlyMap<string, readonly number[]>,
 ): Map<string, readonly number[]> {
   const drifts = new Map<string, readonly number[]>();
   let contentCentroid: readonly number[] | null = null;
   let contentCount = 0;
-  const formTracker = formBySha ? makeJoinTracker(formBySha) : undefined;
+  const formTracker = makeJoinTracker(formBySha);
   const structTracker = structBySha ? makeJoinTracker(structBySha) : undefined;
   for (const v of sessionVectors) {
     const c = centroidDriftStep(contentCentroid, v.embedding, contentCount);
     contentCentroid = c.centroid;
     contentCount += 1;
 
-    const drift: number[] = [c.drift];
-    if (formTracker) drift.push(formTracker(v.verbatimSha));
+    const drift: number[] = [c.drift, formTracker(v.verbatimSha)];
     if (structTracker) drift.push(structTracker(v.verbatimSha));
     drifts.set(v.id, drift);
   }
@@ -338,10 +338,12 @@ export function computePlaneDrifts(
  * a segment LABEL per drawer id. ALWAYS routes through {@link quorumStep} (the C-0 collapse —
  * content is plane-0). Three routes, in precedence:
  *
- *   1. FORM (2-plane) — a `formBySha` reader is wired AND this session joins it: the
- *      {@link computePlaneDrifts} pre-pass derives `[content, form]` drifts and the quorum runs
- *      at N=2 (content plane-0, form plane-1). `effGong = min(quorumGong, 2) = 2` ⇒ BOTH planes
- *      must co-fire to gong; a lone form scream reads `conflict` (the tension-moment).
+ *   1. FORM (2- or 3-plane) — a `formBySha` reader is wired AND this session joins it: the
+ *      {@link computePlaneDrifts} pre-pass derives `[content, form]` (or, with a joining
+ *      `structBySha` too, `[content, form, structure]`) drifts and the quorum runs at N=2 or 3.
+ *      `effGong = min(quorumGong, N) = N` ⇒ EVERY present plane must co-fire to gong; a lone
+ *      scream on any one plane reads `conflict` (the tension-moment). Structure NEVER rides
+ *      without form — a struct-only join (no form) falls through to ROUTE 3 (content-only).
  *   2. EXPLICIT planes — a multi-plane `planes` drift feed rides the records (the test/deferred
  *      3-plane path): fuse them directly.
  *   3. CONTENT-only (1-plane) — derive the content drift from the embeddings
@@ -359,17 +361,20 @@ export function deriveMeasureLabels(
   let gongs = 0;
   let conflicts = 0;
 
-  // ROUTE 1 — the FORM and/or STRUCTURE plane(s) when a reader is wired and this session joins
-  // it. Content is always plane-0; form (plane-1) and structure (the next plane) ride only when
-  // their map is non-empty AND a drawer's verbatim_sha joins it. The quorum runs at N = the count
-  // of present planes (2 = content+one, 3 = content+form+structure); the per-plane EWMA-z + ZCA
-  // whitening + co-firing ladder are PLANE-AGNOSTIC, so the 3rd plane drops in with no new math.
+  // ROUTE 1 — the FORM plane (required) plus, riding on top of it, the STRUCTURE plane, each
+  // when a reader is wired and this session joins it. Content is always plane-0; form (plane-1)
+  // rides whenever its map is non-empty AND a drawer's verbatim_sha joins it; structure (plane-2)
+  // rides the SAME way but ONLY alongside a joining form — {@link computePlaneDrifts} takes
+  // `formBySha` as a required argument, so structure never engages standalone. The quorum runs
+  // at N = the count of present planes (2 = content+form, 3 = content+form+structure); the
+  // per-plane EWMA-z + ZCA whitening + co-firing ladder are PLANE-AGNOSTIC, so the 3rd plane
+  // drops in with no new math.
   const joins = (m: ReadonlyMap<string, readonly number[]> | undefined): boolean =>
     m != null && m.size > 0 && sessionVectors.some((v) => v.verbatimSha != null && m.has(v.verbatimSha));
   const formMap = joins(formBySha) ? formBySha : undefined;
-  const structMap = joins(structBySha) ? structBySha : undefined;
-  if (formMap || structMap) {
-    const n = 1 + (formMap ? 1 : 0) + (structMap ? 1 : 0);
+  const structMap = formMap && joins(structBySha) ? structBySha : undefined;
+  if (formMap) {
+    const n = 2 + (structMap ? 1 : 0);
     const planeDrifts = computePlaneDrifts(sessionVectors, formMap, structMap);
     const zero = new Array(n).fill(0) as number[];
     let st = quorumServoInit(n);
