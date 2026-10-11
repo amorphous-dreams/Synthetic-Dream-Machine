@@ -183,7 +183,10 @@ export class KeyedCoalesceGate<K> implements ProjectionGate {
     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
     this.servo = opts.servo;
-    this.now = opts.now ?? (() => Date.now());
+    // This flush's own local cost measurement (the servo's adaptive window) — never a
+    // cross-vessel or persisted comparison — so the default clock reads monotonic: a wall-clock
+    // jump must not distort the EWMA the servo steers by.
+    this.now = opts.now ?? (() => performance.now());
     this.ewmaAlpha = opts.ewmaAlpha ?? 0.2;
     this.ewmaCostMs = opts.servo ? opts.servo.targetMs : 0; // seed at target → no adapt before data
   }

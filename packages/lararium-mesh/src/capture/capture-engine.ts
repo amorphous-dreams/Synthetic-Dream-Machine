@@ -192,7 +192,12 @@ export interface CaptureEngine {
 /** Compose the self-regulating dual-family cell from a vessel's substrate shores. */
 export function makeCaptureEngine(shores: CaptureEngineShores): CaptureEngine {
   const { reserve, annotate } = shores;
-  const now = shores.now ?? (() => Date.now());
+  // Flush age, the EWMA cost, and the arrival-rate window below are ALL this engine's own local
+  // pacing — never a cross-vessel or persisted comparison — so the default clock reads
+  // monotonic: an adversarial or operator wall-clock jump can stall a flush forever (set-back)
+  // or flush early / collapse the backoff instantly (set-forward) under `Date.now()`, but not
+  // under `performance.now()`.
+  const now = shores.now ?? (() => performance.now());
   let gate = shores.gate ?? PONO_FLUSH_GATE;
   let live = true;
 

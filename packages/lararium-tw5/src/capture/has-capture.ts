@@ -104,15 +104,20 @@ export function hasCapture(opts: CaptureCapOptions): IslandCap {
       // The tick RE-THROWS a flush failure (engine signals the caller); the driver MUST catch it —
       // a telemetry flush error rides the nalu's WAL/backoff and MUST NEVER crash the vessel (an
       // unhandled rejection from `void e.tick()` killed the daemon: drop-honesty over silent death).
+      // `tick`'s clock drives flush-age, backoff, and the EWMA/λ derivation loop — ALL of this
+      // engine's own LOCAL pacing, never a cross-vessel or persisted comparison — so it reads
+      // `performance.now()`, matching the engine's own default clock (`makeCaptureEngine`): an
+      // adversarial or operator wall-clock jump can neither stall a flush forever (set-back)
+      // nor flush early / collapse the backoff instantly (set-forward).
       timer = setInterval(() => {
-        e.tick(Date.now()).catch((err: unknown) => {
+        e.tick(performance.now()).catch((err: unknown) => {
           console.warn(`[has-capture] tick flush failed — WAL/backoff will retry: ${err instanceof Error ? err.message : String(err)}`);
         });
       }, tickMs);
       return async () => {
         if (timer) clearInterval(timer);
         try {
-          await e.tick(Date.now()); // graceful final flush (the WAL also recovers any unfilled batch)
+          await e.tick(performance.now()); // graceful final flush (the WAL also recovers any unfilled batch)
         } catch {
           /* WAL recovers it on next boot */
         }

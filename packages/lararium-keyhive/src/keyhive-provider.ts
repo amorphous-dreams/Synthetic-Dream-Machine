@@ -678,11 +678,13 @@ export class KeyhiveProvider implements CapabilityProvider {
     let ingested = 0, skipped = 0;
     for (let i = 0; i < byteSlices.length; ) {
       const slice = byteSlices.slice(i, i + gate.depth) as Uint8Array[];
-      const t0 = Date.now();
+      // A local replay-chunk cost measurement that steers the NEXT chunk's depth — pacing, never
+      // admission — so it reads a monotonic clock; a wall-clock jump must not distort the servo.
+      const t0 = performance.now();
       const r = await ingestTolerant(slice, (batch) => kh.ingestEventsBytes(batch as Uint8Array[]));
       ingested += r.ingested; skipped += r.skipped;
       i += slice.length;
-      gate = adaptGate(gate, Date.now() - t0, TARGET_MS);                            // servo the depth toward the set-point
+      gate = adaptGate(gate, performance.now() - t0, TARGET_MS);                     // servo the depth toward the set-point
       if (i < byteSlices.length) await new Promise<void>((res) => setImmediate(res)); // let the loop breathe
     }
     return { ingested, skipped };

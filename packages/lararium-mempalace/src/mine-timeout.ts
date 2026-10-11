@@ -140,9 +140,12 @@ export class MineHangError extends Error {
  */
 export function timeMine<T>(pathKey: string, run: (timeoutMs: number) => T, items = 1): T {
   const timeoutMs = adaptiveTimeoutMs(pathKey, items);
-  const t0 = Date.now();
+  // The duration measurement trains the EWMA that sets a FUTURE bounded subprocess timeout —
+  // local pacing, never admission — so it reads a monotonic clock. A wall-clock jump must not
+  // inflate a future wait (forward) or teach the EWMA an ignored negative sample (set-back).
+  const t0 = performance.now();
   const r = run(timeoutMs);
-  recordMineDuration(pathKey, Date.now() - t0, items);
+  recordMineDuration(pathKey, performance.now() - t0, items);
   return r;
 }
 
@@ -151,9 +154,9 @@ export async function timeMineAsync<T>(
   pathKey: string, run: (timeoutMs: number) => Promise<T>, items = 1,
 ): Promise<T> {
   const timeoutMs = adaptiveTimeoutMs(pathKey, items);
-  const t0 = Date.now();
+  const t0 = performance.now();
   const r = await run(timeoutMs);
-  recordMineDuration(pathKey, Date.now() - t0, items);
+  recordMineDuration(pathKey, performance.now() - t0, items);
   return r;
 }
 
