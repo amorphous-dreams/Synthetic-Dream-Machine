@@ -239,6 +239,54 @@ test("CONTROL (L2) — a file with at least one passing assertion never reads as
   assert.ok(!verdict.problems.some((p) => p.includes("all-skipped file")));
 });
 
+// ── RED (L-f): a file that registered ZERO tests of any kind (not even a skip) refuses by name ────
+test("RED (L-f) — a file with zero passed, zero skipped, zero failed refuses as an empty file, even beside a passing file in the same shard", () => {
+  const verdict = evaluateMergeGate({
+    shardCount: 1,
+    shardReports: shardReportsFor({
+      1: {
+        report: {
+          numTotalTests: 1, numPassedTests: 1, numPendingTests: 0, numFailedTests: 0, success: true,
+          testResults: [
+            { name: "/runner/a/tests/e2e/alpha.test.ts", status: "passed", assertionResults: [{ status: "passed" }] },
+            // beta.test.ts ran (it appears in testResults — a `describe.skip`'d whole file, say) but
+            // carries NO assertionResults at all and no useful top-level `status` either.
+            { name: "/runner/a/tests/e2e/beta.test.ts", assertionResults: [] },
+          ],
+        },
+      },
+    }),
+    trackedFiles: TRACKED,
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(
+    verdict.problems.some((p) => p.includes("empty file") && p.includes("beta.test.ts") && p.includes("0 passed, 0 skipped, 0 failed")),
+    verdict.problems.join("; "),
+  );
+});
+
+// ── CONTROL (L-f): a file with at least a skip (never zero) never reads as empty ───────────────────
+test("CONTROL (L-f) — a file with at least one skipped assertion never reads as empty (it still reads all-skipped instead)", () => {
+  const verdict = evaluateMergeGate({
+    shardCount: 1,
+    shardReports: shardReportsFor({
+      1: {
+        report: {
+          numTotalTests: 1, numPassedTests: 1, numPendingTests: 1, numFailedTests: 0, success: true,
+          testResults: [
+            { name: "/runner/a/tests/e2e/alpha.test.ts", status: "passed", assertionResults: [{ status: "passed" }] },
+            { name: "/runner/a/tests/e2e/beta.test.ts", assertionResults: [{ status: "pending" }] },
+          ],
+        },
+      },
+    }),
+    trackedFiles: TRACKED,
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(!verdict.problems.some((p) => p.includes("empty file")));
+  assert.ok(verdict.problems.some((p) => p.includes("all-skipped file") && p.includes("beta.test.ts")));
+});
+
 // ── relativeToE2eDir ─────────────────────────────────────────────────────────────────────────────
 test("relativeToE2eDir strips whatever prefix sits in front of e2e/, on either path style", () => {
   assert.equal(relativeToE2eDir("/home/joshu/repo/tests/e2e/foo.test.ts"), "foo.test.ts");

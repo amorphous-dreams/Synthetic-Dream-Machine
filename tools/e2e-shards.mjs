@@ -66,9 +66,10 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
   // Which shard(s) ran each file — `--shard=k/N` partitions test FILES disjointly by design, so a
   // file read by more than one shard is a sharding fault, never a lawful overlap to collapse quietly.
   const shardsOfFile = new Map();
-  // Per-FILE passed/skipped tallies, summed across whichever shard(s) ran it (L2).
+  // Per-FILE passed/skipped/failed tallies, summed across whichever shard(s) ran it (L2, L-f).
   const passedByFile = new Map();
   const skippedByFile = new Map();
+  const failedByFile = new Map();
   const byShard = new Map(shardReports.map((r) => [r.shard, r]));
 
   for (let shard = 1; shard <= shardCount; shard++) {
@@ -115,8 +116,12 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
       const fileSkipped = assertions
         ? assertions.filter((a) => a?.status === "pending" || a?.status === "skipped" || a?.status === "todo").length
         : (tr.status === "skipped" || tr.status === "pending" || tr.status === "todo" ? 1 : 0);
+      const fileFailed = assertions
+        ? assertions.filter((a) => a?.status === "failed").length
+        : (tr.status === "failed" ? 1 : 0);
       passedByFile.set(file, (passedByFile.get(file) ?? 0) + filePassed);
       skippedByFile.set(file, (skippedByFile.get(file) ?? 0) + fileSkipped);
+      failedByFile.set(file, (failedByFile.get(file) ?? 0) + fileFailed);
     }
   }
 
@@ -124,6 +129,14 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
     if (skipped > 0 && (passedByFile.get(file) ?? 0) === 0) {
       problems.push(`all-skipped file: ${file} ran 0 passing tests (skipped/pending=${skipped})`);
     }
+  }
+  // L-f: a file that registered zero tests at all — zero passed, zero skipped, zero failed — names
+  // nothing the per-file skip check above can catch (that check fires only on a NONZERO skip count).
+  // `describe.skip`'ing an entire file, or a suite the reporter otherwise records no assertions for,
+  // read as a lawfully "executed" file (it appears in `testResults`) that verified literally nothing.
+  for (const file of shardsOfFile.keys()) {
+    const total = (passedByFile.get(file) ?? 0) + (skippedByFile.get(file) ?? 0) + (failedByFile.get(file) ?? 0);
+    if (total === 0) problems.push(`empty file: ${file} registered zero tests of any kind (0 passed, 0 skipped, 0 failed)`);
   }
 
   if (totalTests === 0) problems.push("zero total: every shard combined reported zero tests");
