@@ -107,6 +107,9 @@ COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli
 #   /state      one durable per-vessel directory — vessel homes AND custody (keys). Never in a layer.
 #   /workspace  the editable corpus — bags/ and wikis/ the projection reads and writes.
 # The image declares them so an unmounted run lands in an anonymous volume, never in the image layers.
+# Created and chowned BEFORE the VOLUME lines: an anonymous volume copies its mount point's ownership from the
+# image, so an unmounted run reads node:node here, never root-owned.
+RUN mkdir -p /state /workspace && chown node:node /state /workspace
 VOLUME /state
 VOLUME /workspace
 
@@ -128,26 +131,17 @@ ENV LAR_PORT=4321
 
 EXPOSE 4321
 
-# THE ONE-HOLDER GUARD AT THE STATE MOUNT. The store's own claim is a socket in the container's /tmp, so it
-# excludes only holders that share one /tmp; two containers on one /state each read the other as absent
-# (measured: a second container founded over a standing vessel with no refusal). This takes an advisory
-# flock on /state itself before the process starts — a kernel lock dies with its holder, so nothing strands —
-# and every container ENTRYPOINT runs through it. It guards the CONTAINERS; exec'd CLI calls share the
-# holder's container and need no lock of their own.
-COPY --chmod=0755 <<'HOLDER' /app/holder-guard.sh
-#!/bin/sh
-LOCK="${LARES_HOLDER_LOCK:-${LAR_ROOT:-/state}/.lares-holder.lock}"
-exec 9>>"$LOCK" || { echo "[holder-guard] cannot open $LOCK — is the state mount writable by this uid?" >&2; exit 73; }
-flock -n 9 || { echo "[holder-guard] refused: another container holds $LAR_ROOT (one store, one holder). Stop it, then start this one." >&2; exit 75; }
-exec "$@"
-HOLDER
+# THE ONE-HOLDER LAW rides the store itself. The store takes a claim at /state/.holder (a socket on the state
+# mount) before it opens, so a second holder on the same /state refuses with StoreHeld whichever container,
+# namespace or entrypoint it came through. The image wraps nothing: `docker run --entrypoint node` meets the
+# same refusal as the default entrypoint. Exec'd CLI calls share the holder's container.
 
 # NON-ROOT. The uid/gid come from the environment at RUN time (compose `user: "${LARES_UID}:${LARES_GID}"`),
 # so a bind-mounted /state and /workspace stay editable by the host operator. Nothing here pins one.
 USER node
 
-# The daemon's flags (space-separated: `--root=/x` is read as no flag by main.js and the CLI alike).
-ENTRYPOINT ["/app/holder-guard.sh", "node", "packages/lararium-node/dist/src/main.js"]
+# The daemon's flags (`--root /x` and `--root=/x` read alike; main.js and the CLI refuse a flag nobody reads).
+ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]
 CMD ["--root", "/workspace", "--genesis", "/app/genesis"]
 
 # ---------------------------------------------------------------------------

@@ -20,10 +20,9 @@
 #                     vessel (the name a browser or peer dials; HTTPS needs a WSS-capable name)
 #   LAR_PEERS         pinned peers, `<url>#<gate key>` comma-separated (empty: a sovereign hearth alone)
 #
-# THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store's own claim lives in the
-# container's /tmp, so it cannot see ANOTHER container; the image's entrypoint (holder-guard.sh) therefore takes
-# an advisory flock on /state/.lares-holder.lock, and a second container on the same /state refuses by name.
-# Never run a one-shot CLI container beside the daemon. Reach the standing vessel with
+# THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store takes its own claim at
+# /state/.holder, a socket on the state mount, so a second container on the same /state refuses with StoreHeld
+# through any entrypoint. Never run a one-shot CLI container beside the daemon. Reach the standing vessel with
 #   docker compose -f docker-compose.surface.yml exec lares node packages/lares-cli/bin/lares.mjs <verb…>
 # so the CLI shares the daemon's /tmp (the UDS rendezvous), uid and environment. The UDS lives in the
 # container's own tmpfs /tmp: never bind it to the host, never share it between two containers, never put it
@@ -31,6 +30,7 @@
 #
 # FOUNDING is an offline act on the store: with the vessel stopped,
 #   docker compose -f docker-compose.surface.yml --profile found run --rm found
+# The host shims (tools/lares-container.sh, tools/lares-container.ps1) wrap up, down, found, logs and the exec.
 # The engine has no Docker socket and gets none: engine control stays with the host.
 #
 # WSL2/hosts: bind mounts from /mnt/c (9P) are slow and change ownership/metadata semantics; keep both mounts on
@@ -100,7 +100,7 @@ services:
   found:
     <<: *vessel
     profiles: [found]
-    entrypoint: ["/app/holder-guard.sh", "node", "packages/lares-cli/bin/lares.mjs"]
+    entrypoint: ["node", "packages/lares-cli/bin/lares.mjs"]
     command: ["vessel", "found", "--skip-build", "--root", "/state", "--genesis", "/app/genesis"]
     restart: "no"
 
