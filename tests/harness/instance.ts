@@ -18,7 +18,7 @@
  * exercise the live model, not fixtures).
  */
 
-import { spawn, type ChildProcess } from "node:child_process";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/auth-wire.js";
@@ -122,7 +122,23 @@ export function cliFor(env: Record<string, string>): (args: readonly string[]) =
   return (args) => runCli(env, args);
 }
 
+/**
+ * A founding seals custody from birth and gathers its human route from a TTY alone, so a scripted harness names the
+ * route EXPLICITLY: before any `vessel found` / `vessel clear` it founds the scratch root's custody with a fixed test
+ * passphrase (`tools/seed-test-custody.mjs`, idempotent). The product carries no bypass for this.
+ */
+const FOUNDING_VERBS = new Set(["found", "clear"]);
+function seedCustodyFor(env: Record<string, string>, args: readonly string[]): void {
+  if (args[0] !== "vessel" || !FOUNDING_VERBS.has(args[1] ?? "")) return;
+  const at = args.findIndex((a) => a === "--root" || a.startsWith("--root="));
+  const named = at < 0 ? undefined : args[at]!.includes("=") ? args[at]!.split("=").slice(1).join("=") : args[at + 1];
+  const root = named ?? env["LAR_ROOT"] ?? process.env["LAR_ROOT"];
+  if (!root) return;
+  execFileSync(process.execPath, [join(REPO_ROOT, "tools", "seed-test-custody.mjs"), root], { stdio: "pipe" });
+}
+
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {
+  seedCustodyFor(env, args);
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [CLI_BIN, ...args], {
       env: { ...process.env, ...env },

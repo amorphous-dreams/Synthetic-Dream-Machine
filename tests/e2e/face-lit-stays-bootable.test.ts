@@ -70,6 +70,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // would pass by having nothing to disagree with.
     // A test builds nothing: every gated vessel door rides `--skip-build`, so the run measures the dist that
     // stands and never rewrites it beneath a concurrent run.
+    execFileSync("node", [join(REPO, "tools", "seed-test-custody.mjs"), root], { stdio: "ignore" });   // the harness names the founding route
     lares(["vessel", "found", "--skip-build"]);
     expect(daemonUrlFromBootstrap()).toMatch(/^automerge:/);
   });

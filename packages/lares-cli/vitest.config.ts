@@ -11,5 +11,6 @@ export default defineConfig({
     isolate: true,
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    setupFiles: ["tests/support/found-route.ts"],
   },
 });

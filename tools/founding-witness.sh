@@ -39,6 +39,8 @@ trap 'rm -rf "$TB"' EXIT
 git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$TB/" 2>/dev/null
 
 echo "founding-witness: founding under $TB"
+# The founding seals custody from birth; the scripted witness names its test route explicitly.
+node "$REPO/tools/seed-test-custody.mjs" "$TB" || { echo "  could not seed the test custody route"; exit 1; }
 if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --skip-build >"$TB/init.log" 2>&1; then
   echo "  FOUNDING FAILED — tail of the log:"; tail -15 "$TB/init.log" | sed 's/^/    /'; exit 1
 fi

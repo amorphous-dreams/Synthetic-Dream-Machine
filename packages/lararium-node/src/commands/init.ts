@@ -26,7 +26,9 @@ import {
   nexusIdentity, nexusScopeOrThrow, realmIdOfCharter,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
-import { larDataDir, larBootstrapPath, larSealHome } from "../vessel-paths.js";
+import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
+import { FsCustodyIo } from "../custody-io.js";
+import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
 import { hearthDialTiddlers, readHearthDialPin } from "../hearth-dial-pin.js";
 import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
@@ -40,7 +42,7 @@ import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
 } from "../node-vessel-identity.js";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import type { LarDoc } from "@lararium/mesh";
+import type { LarDoc, SlotSpec } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
   foundThePlace, foundTheFace, runApplyAdmitPayload,
@@ -60,6 +62,11 @@ export interface InitOptions {
    * Use for same-operator second vessel. A second OPERATOR joins by carriage contract-receive.
    */
   readonly admitPayloadPath?: string;
+  /**
+   * The human route the founding binds. REQUIRED: a founding seals the slot tree and the custody root from birth,
+   * and a vessel with no passphrase or paper route has no way back in, so a founding without one refuses by name.
+   */
+  readonly custody: { readonly slots: readonly SlotSpec[] };
 }
 
 export interface InitResult {
@@ -171,6 +178,13 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     console.log(`  Re-light each one (the root loads, it is not re-minted):  lares persona new ${standingRoots[0]} --name '<label>'`);
   }
 
+  // THE ROUTE IS CHECKED BEFORE THE FIRST MUTATION: a founding that binds no human route writes nothing. A tree
+  // already standing needs no new route (the VK and its slots stay), so only a founding of custody demands one.
+  const custodyHomes = { identity: larIdentityDir(), storage: storageDir, seal: larSealHome() };
+  const custodyIo = new FsCustodyIo(custodyHomes);
+  const custodyStands = await custodyTreeStands(custodyIo, custodyHomes);
+  if (!custodyStands) assertFoundingRoute(opts.custody?.slots ?? []);
+
   mkdirSync(storageDir, { recursive: true });
   mkdirSync(genesisDir, { recursive: true });
 
@@ -189,6 +203,17 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
       "  Founding an ISOLATED root (LAR_ROOT)? Seed the tracked genesis into it first:\n" +
       "    (cd <repo> && git ls-files -z genesis/ | xargs -0 -I{} cp --parents \"{}\" \"$LAR_ROOT/\")",
     );
+  }
+
+  // ── CUSTODY SEALS FROM BIRTH, BEFORE THE FIRST IDENTITY FILE ─────────────────────────────────
+  // The slot tree and the custody root land first, so a store that already holds a carrier refuses
+  // (`OldShapeRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
+  // sealed custody: the VK stays, and nothing here re-mints it.
+  if (custodyStands) {
+    console.log("[lares vessel found] custody already sealed (vk-slots.bin stands) — the VK and its slots stay as they are.");
+  } else {
+    await foundCustody({ io: custodyIo, homes: custodyHomes, slots: opts.custody.slots });
+    console.log("[lares vessel found] custody sealed from birth: vk-slots.bin and the custody root.");
   }
 
   const operatorIdentity = await generateOrLoadVesselIdentity();

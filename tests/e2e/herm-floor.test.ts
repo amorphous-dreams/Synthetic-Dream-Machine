@@ -204,6 +204,7 @@ afterAll(async () => {
 describe("the herm — the floor of the lararium cap stack", () => {
   test("R1 — a herm reaches live: found, stood, and NO face ever lit", async () => {
     root = standHermRoot();
+    execFileSync(process.execPath, [join(REPO, "tools", "seed-test-custody.mjs"), root], { stdio: "ignore" });   // the harness names the founding route
     execFileSync(process.execPath, [CLI, "vessel", "found", "--skip-build"], {
       env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
     });

@@ -1,0 +1,261 @@
+/**
+ * custody-session.test — a founding seals custody from birth, on real files through the production port.
+ *
+ * Every proof carries a CONTROL (the same act without the fault) and a MUTATION (the fault moved by one byte):
+ *   · found with no slot refuses by name and writes nothing; with a slot it stands (tree + sealed custody root);
+ *   · found over today's cleartext founding output refuses `OldShapeRefusal`, the directory hash unchanged;
+ *   · found, drop the process, unlock from disk: the custody root opens and derives the same veil;
+ *   · a wrong passphrase reads `no-slot-opens` and destroys nothing (a one-byte tamper of the tree reads the same);
+ *   · unbind of the last route refuses; a bind then an unbind returns the rotation offer untouched;
+ *   · a rotation moves the VK: the old credential's VK opens nothing, the new tree opens the custody root;
+ *   · status opens nothing, names the tree's slots, and reads an unconverted row `bare`;
+ *   · `runInit` itself: no route refuses before the first byte, a route leaves `vk-slots.bin` and a sealed root.
+ */
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { createHash } from "node:crypto";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { OldShapeRefusal, VK_SEAL_MAGIC } from "@lararium/mesh";
+import { FsCustodyIo } from "../src/custody-io.js";
+import { custodyRootPath, custodyVeil, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
+import {
+  bindCustodySlot, custodyStatus, CustodyFoundingRefused, foundCustody, rotateCustody, unbindCustodySlot, unlockCustody,
+} from "../src/custody-session.js";
+import { vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
+import { larIdentityDir, larSealHome } from "../src/vessel-paths.js";
+import { runInit } from "../src/commands/init.js";
+import { ownedStore } from "../src/owned-store.js";
+import { TEST_CUSTODY, TEST_PASSPHRASE, TEST_SLOT, foundDirect } from "./found-route.js";
+
+let root: string;
+let homes: CustodyHomes;
+let io: FsCustodyIo;
+const passphrase = (p: string) => ({ kind: "passphrase" as const, passphrase: p });
+const slotOf = (p: string) => ({ t: 1, pins: [passphrase(p)] });
+
+beforeEach(() => {
+  root = mkdtempSync(join(tmpdir(), "lar-custody-session-"));
+  homes = { identity: join(root, "identity"), storage: join(root, "vessel"), seal: join(root, "nexus") };
+  mkdirSync(homes.identity, { recursive: true });
+  io = new FsCustodyIo(homes);
+});
+afterEach(() => { rmSync(root, { recursive: true, force: true }); });
+
+/** Every file under `dir`, by relative path, to its sha256 — the directory as bytes. */
+function hashes(dir: string, base = dir): Record<string, string> {
+  if (!existsSync(dir)) return {};
+  const out: Record<string, string> = {};
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) Object.assign(out, hashes(p, base));
+    else if (statSync(p).isFile()) out[p.slice(base.length)] = createHash("sha256").update(readFileSync(p)).digest("hex");
+  }
+  return out;
+}
+
+describe("foundCustody", () => {
+  test("RED: no slot refuses by name and writes nothing — CONTROL: one slot founds", async () => {
+    const before = hashes(root);
+    await expect(foundCustody({ io, homes, slots: [] })).rejects.toBeInstanceOf(CustodyFoundingRefused);
+    expect(hashes(root)).toEqual(before);
+    expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
+
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    expect(existsSync(vkSlotsPath(homes.identity))).toBe(true);
+    const sealed = readFileSync(custodyRootPath(homes.identity));
+    expect(Array.from(sealed.subarray(0, VK_SEAL_MAGIC.length))).toEqual(Array.from(VK_SEAL_MAGIC));
+    expect(f.tree.slots).toHaveLength(1);
+  });
+
+  test("RED: over today's cleartext founding output it refuses OldShapeRefusal, the directory hash unchanged — CONTROL: a clean home founds", async () => {
+    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"personaGroupDocIdHex":"00"}', { mode: 0o600 });
+    const before = hashes(root);
+    await expect(foundCustody({ io, homes, slots: [TEST_SLOT] })).rejects.toBeInstanceOf(OldShapeRefusal);
+    expect(hashes(root)).toEqual(before);
+    expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
+
+    rmSync(join(homes.identity, "anchors-h0.json"));
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    expect(existsSync(vkSlotsPath(homes.identity))).toBe(true);
+  });
+});
+
+describe("unlockCustody", () => {
+  test("found, drop the process, unlock from disk: the custody root opens and derives the same veil", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const veil = await custodyVeil(f.root, "group-tag");
+
+    const fresh = new FsCustodyIo(homes);                       // nothing carried over but the disk
+    const u = await unlockCustody({ io: fresh, homes, credentials: [passphrase(TEST_PASSPHRASE)] });
+    expect(u.reading).toBe("opens");
+    if (u.reading !== "opens") throw new Error("unreachable");
+    const opened = await openCustodyRootCarrier({ io: fresh, vk: u.vk, identityDir: homes.identity });
+    expect(opened.reading).toBe("opens");
+    if (opened.reading !== "opens") throw new Error("unreachable");
+    expect(await custodyVeil(custodyRootFromBytes(opened.opened), "group-tag")).toEqual(veil);
+  });
+
+  test("RED: a wrong passphrase reads no-slot-opens and destroys nothing — CONTROL: the right one opens; MUTATION: a tampered tree reads the same", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const before = hashes(root);
+
+    const wrong = await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE + "x")] });
+    expect(wrong.reading).toBe("no-slot-opens");
+    expect(hashes(root)).toEqual(before);
+
+    expect((await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE)] })).reading).toBe("opens");
+    expect(hashes(root)).toEqual(before);
+
+    // MUTATION: the right passphrase over a tree whose wrapped VK moved by one byte opens nothing — and still destroys nothing.
+    const path = vkSlotsPath(homes.identity);
+    const tree = JSON.parse(readFileSync(path, "utf8")) as { slots: { wrappedVk: string }[] };
+    const w = tree.slots[0]!.wrappedVk;
+    tree.slots[0]!.wrappedVk = (w[0] === "0" ? "1" : "0") + w.slice(1);
+    writeFileSync(path, JSON.stringify(tree));
+    const tampered = hashes(root);
+    expect((await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE)] })).reading).toBe("no-slot-opens");
+    expect(hashes(root)).toEqual(tampered);
+  });
+
+  test("an absent tree and an unreadable tree read by name", async () => {
+    expect(await unlockCustody({ io, homes, credentials: [passphrase("a")] })).toEqual({ reading: "tree-absent" });
+    writeFileSync(vkSlotsPath(homes.identity), "not a tree");
+    const u = await unlockCustody({ io, homes, credentials: [passphrase("a")] });
+    expect(u.reading).toBe("tree-unreadable");
+  });
+});
+
+describe("bind, unbind", () => {
+  test("RED: unbinding the last route refuses — CONTROL: bind a second slot, then the first unbinds and the offer comes back untouched", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const only = f.tree.slots[0]!.id;
+    const before = hashes(root);
+    await expect(unbindCustodySlot({ io, homes, vk: f.vk, slotId: only })).rejects.toThrow(/last slot/);
+    expect(hashes(root)).toEqual(before);
+
+    const bound = await bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("second route") });
+    expect(bound.tree.slots).toHaveLength(2);
+    const out = await unbindCustodySlot({ io, homes, vk: f.vk, slotId: only });
+    expect(out.rotationOffer).toMatch(/rotat/i);
+    expect(out.tree.slots.map((s) => s.id)).toEqual([bound.slotId]);
+    expect((await unlockCustody({ io, homes, credentials: [passphrase("second route")] })).reading).toBe("opens");
+    expect((await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE)] })).reading).toBe("no-slot-opens");
+  });
+
+  test("bind refuses a VK the tree does not commit to", async () => {
+    const a = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const other = new FsCustodyIo({ identity: join(root, "i2"), storage: join(root, "v2"), seal: join(root, "n2") });
+    mkdirSync(join(root, "i2"), { recursive: true });
+    const b = await foundCustody({ io: other, homes: { identity: join(root, "i2"), storage: join(root, "v2"), seal: join(root, "n2") }, slots: [TEST_SLOT] });
+    expect(b.vk).not.toEqual(a.vk);
+    await expect(bindCustodySlot({ io, homes, vk: b.vk, spec: slotOf("x") })).rejects.toThrow();
+  });
+});
+
+describe("rotateCustody", () => {
+  test("a rotation moves the VK: the old passphrase reads no-slot-opens, the new route opens the same custody root", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const veil = await custodyVeil(f.root, "group-tag");
+    const r = await rotateCustody({ io, homes, oldVk: f.vk, slots: [slotOf("rotated")] });
+    expect(r.vk).not.toEqual(f.vk);
+
+    expect((await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE)] })).reading).toBe("no-slot-opens");
+    const u = await unlockCustody({ io, homes, credentials: [passphrase("rotated")] });
+    expect(u.reading).toBe("opens");
+    if (u.reading !== "opens") throw new Error("unreachable");
+    const opened = await openCustodyRootCarrier({ io, vk: u.vk, identityDir: homes.identity });
+    if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
+    expect(await custodyVeil(custodyRootFromBytes(opened.opened), "group-tag")).toEqual(veil);
+    // CONTROL: the old VK opens nothing now.
+    expect((await openCustodyRootCarrier({ io, vk: f.vk, identityDir: homes.identity })).reading).not.toBe("opens");
+  });
+});
+
+describe("custodyStatus", () => {
+  test("opens nothing: names the slots and pin kinds, reads the sealed root `sealed` and an unconverted row `bare`", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"a":1}', { mode: 0o600 });
+    const before = hashes(root);
+    const s = await custodyStatus({ io, homes });
+    expect(hashes(root)).toEqual(before);
+    expect(s.tree.reading).toBe("readable");
+    if (s.tree.reading !== "readable") throw new Error("unreachable");
+    expect(s.tree.slots.map((x) => x.pins)).toEqual([["passphrase"]]);
+    const byRow = new Map(s.rows.map((r) => [r.row, r]));
+    expect(byRow.get("custody-root")?.reading).toBe("sealed");
+    expect(byRow.get("anchors")?.reading).toBe("bare");
+    expect(byRow.get("anchors")?.custody).toBe("hot");
+  });
+  test("an unfounded home reads the tree absent", async () => {
+    expect((await custodyStatus({ io, homes })).tree).toEqual({ reading: "absent" });
+  });
+});
+
+describe("runInit seals custody from birth", () => {
+  const GENESIS = join(import.meta.dirname, "..", "..", "..", "genesis");
+  test("RED: no route refuses before the first byte — CONTROL: a route leaves vk-slots.bin and a sealed custody root; MUTATION: the old shape refuses", async () => {
+    if (!existsSync(join(GENESIS, "seed.json"))) throw new Error("no built genesis — run `pnpm --filter @lararium/node build:genesis`");
+    const r = mkdtempSync(join(tmpdir(), "lar-found-seals-"));
+    try {
+      const storage = join(r, "data", "lares", "vessel");
+      const genesis = join(r, "genesis");
+      cpSync(GENESIS, genesis, { recursive: true, filter: (s) => !s.endsWith("social-bootstrap.json") });
+      mkdirSync(storage, { recursive: true });
+
+      const noRoute = await withLarRoot(r, async () => {
+        const before = hashes(larIdentityDir());
+        let refused: unknown = null;
+        try { await ownedStore(storage, (repo) => runInit({ repo, storageDir: storage, genesisDir: genesis, custody: { slots: [] } })); }
+        catch (e) { refused = e; }
+        return { refused, same: JSON.stringify(hashes(larIdentityDir())) === JSON.stringify(before) && !existsSync(join(storage, "social-bootstrap.json")), idHome: larIdentityDir() };
+      });
+      expect(noRoute.refused).toBeInstanceOf(CustodyFoundingRefused);
+      expect(noRoute.same).toBe(true);
+      expect(existsSync(join(noRoute.idHome, "vk-slots.bin"))).toBe(false);
+
+      const idHome = await withLarRoot(r, async () => {
+        await foundDirect({ storageDir: storage, genesisDir: genesis });
+        return larIdentityDir();
+      });
+      expect(existsSync(join(idHome, "vk-slots.bin"))).toBe(true);
+      const sealed = readFileSync(join(idHome, "custody-root.bin"));
+      expect(Array.from(sealed.subarray(0, VK_SEAL_MAGIC.length))).toEqual(Array.from(VK_SEAL_MAGIC));
+
+      const live = await withLarRoot(r, async () => {
+        const h = { identity: larIdentityDir(), storage, seal: larSealHome() };
+        const c = new FsCustodyIo(h);
+        const right = await unlockCustody({ io: c, homes: h, credentials: [passphrase(TEST_PASSPHRASE)] });
+        const snapshot = hashes(r);
+        const wrong = await unlockCustody({ io: c, homes: h, credentials: [passphrase("not the route")] });
+        return { right: right.reading, wrong: wrong.reading, intact: JSON.stringify(hashes(r)) === JSON.stringify(snapshot) };
+      });
+      expect(live).toEqual({ right: "opens", wrong: "no-slot-opens", intact: true });
+
+      // A tree already standing needs no new route: a re-seed with none runs and leaves the tree's bytes alone.
+      const treeBefore = readFileSync(join(idHome, "vk-slots.bin"));
+      await withLarRoot(r, () => ownedStore(storage, (repo) =>
+        runInit({ repo, storageDir: storage, genesisDir: genesis, force: true, custody: { slots: [] } })));
+      expect(readFileSync(join(idHome, "vk-slots.bin")).equals(treeBefore)).toBe(true);
+
+      // MUTATION: a founding over cleartext identity output with no tree (the old shape) refuses and moves no byte.
+      const old = mkdtempSync(join(tmpdir(), "lar-found-old-"));
+      try {
+        const oStorage = join(old, "data", "lares", "vessel");
+        const oGenesis = join(old, "genesis");
+        cpSync(genesis, oGenesis, { recursive: true });
+        mkdirSync(oStorage, { recursive: true });
+        const oldHome = await withLarRoot(old, async () => larIdentityDir());
+        mkdirSync(oldHome, { recursive: true });
+        writeFileSync(join(oldHome, "anchors-h0.json"), '{"personaGroupDocIdHex":"00"}', { mode: 0o600 });
+        const before = hashes(oldHome);
+        const err = await withLarRoot(old, async () => {
+          try { await foundDirect({ storageDir: oStorage, genesisDir: oGenesis }); return null; } catch (e) { return e; }
+        });
+        expect(err).toBeInstanceOf(OldShapeRefusal);
+        expect(hashes(oldHome)).toEqual(before);   // the store's own adapter-id marker aside, no identity byte moved
+      } finally { rmSync(old, { recursive: true, force: true }); }
+    } finally { rmSync(r, { recursive: true, force: true }); }
+  }, 60_000);
+});

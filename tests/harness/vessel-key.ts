@@ -7,7 +7,7 @@
  * loads from, so the key the founder admits is the key the joiner's daemon boots on.
  */
 
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { join } from "node:path";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -15,6 +15,9 @@ const IDENTITY  = join(REPO_ROOT, "packages/lararium-node/dist/src/node-vessel-i
 
 /** The joiner's Ed25519 verifying key (hex), minted under `root` if absent. */
 export function mintVesselKey(root: string): Promise<string> {
+  // A founding seals custody before the first identity file, so the joiner's custody is founded (with the harness's
+  // explicit test route) before its key mints; the later `vessel found --admit` then finds the tree standing.
+  execFileSync(process.execPath, [join(REPO_ROOT, "tools", "seed-test-custody.mjs"), root], { stdio: "pipe" });
   const script =
     `import { generateOrLoadVesselIdentity } from ${JSON.stringify(IDENTITY)};\n` +
     `const id = await generateOrLoadVesselIdentity();\n` +

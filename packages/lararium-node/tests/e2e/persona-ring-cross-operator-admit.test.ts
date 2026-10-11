@@ -65,7 +65,7 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 // worker path resolves inside dist/src/ end to end. `@lararium/mesh|keyhive|tw5` stay on the vitest
 // alias (src); none of them spawn a worker off their own `import.meta.url`.
 import {
-  runInit, runFoundTheFace, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
+  runFoundTheFace, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
   larSealHome, writeNexusDoc,
 } from "../../dist/src/index.js";
 import { generateOrLoadVesselIdentity } from "../../dist/src/node-vessel-identity.js";
@@ -75,6 +75,7 @@ import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
 const CHARTER_GENESIS = genesisCharterEpoch(["a".repeat(64)], 1, "");
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
+import { foundDirect } from "../found-route.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -164,7 +165,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
 
   beforeAll(async () => {
     // ── Found + wear a face ──────────────────────────────────────────────────────────────────
-    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
+    await withLarRoot(FOUNDER.root, () => foundDirect({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
     await withLarRoot(FOUNDER.root, () => direct(runFoundTheFace)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
 
     const anchors = await withLarRoot(FOUNDER.root, async () => loadIdentityAnchors(0));

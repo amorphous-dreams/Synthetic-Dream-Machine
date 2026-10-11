@@ -15,9 +15,22 @@
  *   --admit FILE     Apply a device-admit/v1 JSON payload instead of founding a new Nexus.
  */
 
-import { runInit, ownedStore, StoreHeld } from "@lararium/node";
+import type { SlotSpec } from "@lararium/mesh";
+import { runInit, ownedStore, StoreHeld, CustodyFoundingRefused } from "@lararium/node";
 import { larDataDir, larGenesisDir } from "../env.js";
 import type { ParsedArgs } from "../parse-args.js";
+
+/**
+ * The founding route: the human route (a passphrase or paper pin) the custody binds at birth.
+ *
+ * A founding seals custody from birth, so `runInit` REQUIRES a route. This is the one seam that gathers it. Until
+ * the TTY gatherer lands (road lane 13, the `vault` door) it gathers none, so `lares vessel found` refuses by name
+ * rather than found a vessel whose custody rests bare. A test installs its own (`tests/support/found-route.ts`);
+ * no flag and no env var carries a credential.
+ */
+export type FoundingRoute = () => Promise<readonly SlotSpec[]>;
+let gatherRoute: FoundingRoute = async () => [];
+export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = gather; }
 
 export async function cmdFound(args: ParsedArgs): Promise<number> {
   // ONLY an explicit --root sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
@@ -27,12 +40,18 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
   const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
   const admitPayloadPath = args.options["admit"];
   try {
+    const slots = await gatherRoute();
     await ownedStore(storageDir, (repo) => runInit({
-      repo, storageDir, genesisDir,
+      repo, storageDir, genesisDir, custody: { slots },
       ...(args.flags["force"] ? { force: true } : {}),
       ...(admitPayloadPath ? { admitPayloadPath } : {}),
     }));
   } catch (err) {
+    if (err instanceof CustodyFoundingRefused) {
+      console.error(`[lares vessel found] refused: ${err.message}`);
+      console.error("  a founding seals custody from birth and binds a human route; none was gathered.");
+      return 1;
+    }
     if (!(err instanceof StoreHeld)) throw err;
     console.error(`[lares vessel found] refused: ${err.message}`);
     console.error("  a founding runs with no vessel standing — stop the standing vessel, then found.");

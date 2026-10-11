@@ -468,6 +468,12 @@ export {
   custodyDerive, custodyVeil, openCustodyRootCarrier, sealCustodyRoot,
 } from "./custody-root.js";
 export type { CustodyRoot, OpenedCustodyRoot } from "./custody-root.js";
+// The custody session: found, unlock, bind, unbind, rotate and read the vessel's key custody — see `custody-session`.
+export {
+  foundCustody, unlockCustody, bindCustodySlot, unbindCustodySlot, rotateCustody, custodyStatus,
+  custodyTreeStands, assertFoundingRoute, CustodyFoundingRefused,
+} from "./custody-session.js";
+export type { CustodyUnlock, CustodyStatus, CustodyStatusRow } from "./custody-session.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,

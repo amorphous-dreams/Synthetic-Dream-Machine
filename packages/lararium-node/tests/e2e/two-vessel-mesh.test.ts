@@ -45,10 +45,11 @@ import {
   HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
 import { InMemoryEventStore } from "@lararium/keyhive";
-import { runInit, runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
+import { runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
 import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
+import { foundDirect, sealTestCustody } from "../found-route.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation directories
@@ -156,7 +157,7 @@ let vesselBBootstrapPath = "";
 beforeAll(async () => {
   // Step 1 — founding ceremony
   const initA = await withLarRoot(VESSEL_A.root, () =>
-    direct(runInit)({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
+    foundDirect({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
   vesselABootstrapPath = initA.bootstrapPath;
   if (vesselABootstrapPath !== join(VESSEL_A.storage, "social-bootstrap.json")) {
     throw new Error(`Vessel A: runInit returned an unexpected bootstrap path: ${vesselABootstrapPath}`);
@@ -180,7 +181,7 @@ beforeAll(async () => {
   // ceremony stay photograph-inert, and why `runDeviceAdmit` refuses to run without that key.
   // `generateOrLoadVesselIdentity` reads through on a second call, so B's `runInit` below loads this
   // same identity rather than minting a second one.
-  const vesselB = await withLarRoot(VESSEL_B.root, () => generateOrLoadVesselIdentity());
+  const vesselB = await withLarRoot(VESSEL_B.root, async () => { await sealTestCustody(); return generateOrLoadVesselIdentity(); });
 
   // Step 3 — A's PersonaGroup root signs B's edge
   const minted = await withLarRoot(VESSEL_A.root, () => direct(runDeviceAdmit)({
@@ -195,7 +196,7 @@ beforeAll(async () => {
 
   // Step 4 — Vessel B founds against the signed payload
   const initB = await withLarRoot(VESSEL_B.root, () =>
-    direct(runInit)({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
+    foundDirect({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
   vesselBBootstrapPath = initB.bootstrapPath;
   if (vesselBBootstrapPath !== join(VESSEL_B.storage, "social-bootstrap.json")) {
     throw new Error(`Vessel B: runInit returned an unexpected bootstrap path: ${vesselBBootstrapPath}`);
