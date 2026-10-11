@@ -116,7 +116,7 @@ describe.skipIf(skipReason)(
         workerScriptUrl: ISLAND_JS,
         mainRepo:        vesselRepo,
         storageRoot:     cas.storageDir,
-        ...(cas.pluginCids.length ? { pluginCids: cas.pluginCids } : {}),
+        resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
         onWorkerEvent:   (_id, msg) => { console.log("[test] onWorkerEvent:", JSON.stringify(msg)); events.push(msg); },
       });
 
@@ -198,7 +198,7 @@ describe.skipIf(skipReason)(
         workerScriptUrl: ISLAND_JS,
         mainRepo:        vesselRepo,
         storageRoot:     cas.storageDir,
-        ...(cas.pluginCids.length ? { pluginCids: cas.pluginCids } : {}),
+        resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
         onWorkerEvent:   (_id, msg) => {
           if (msg.payload["verb"]) verbEvents.push(msg);
         },

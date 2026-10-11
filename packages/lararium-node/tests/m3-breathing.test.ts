@@ -128,7 +128,7 @@ describe.skipIf(skipReason)(
           workerScriptUrl: ISLAND_JS,
           mainRepo:        vesselRepo,
           storageRoot:     cas.storageDir,
-          ...(cas.pluginCids.length ? { pluginCids: cas.pluginCids } : {}),
+          resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
           onWorkerEvent:   (_id, msg) => events.push(msg),
         });
 

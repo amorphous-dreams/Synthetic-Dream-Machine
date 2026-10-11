@@ -69,7 +69,7 @@ describe.skipIf(skipReason)(`§6 blob sovereignty — island reads coreBlob from
       workerScriptUrl: ISLAND_JS,
       mainRepo:        vesselRepo,
       storageRoot:     cas.storageDir,
-      ...(cas.pluginCids.length ? { pluginCids: cas.pluginCids } : {}),
+      resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
     });
 
     try {
