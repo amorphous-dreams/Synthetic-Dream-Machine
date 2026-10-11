@@ -14,6 +14,9 @@
  *   lares sense <sensorium> ki   the coupling verdict — readable peers · shared units · fuse|hold-open · note
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cohomological-gate
+ *
+ * OWED (operator, 2026-10-11): a house-grammar `|en` alias `couple` flowing to this same module — declared by
+ * the house grammar's alias layer, never a hand-wired second entry in the `sense` door table.
  */
 
 import { readCoupling, memorySensoriumDir } from "@lararium/node";

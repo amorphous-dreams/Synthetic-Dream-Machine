@@ -10,12 +10,12 @@
  *
  *   lares sense recall <keywords...>          semantic search (default)
  *   lares sense recall <kw> --wing <w>        filter to one project wing
- *   lares sense recall <kw> --k <n>           cap results (default 5)
+ *   lares sense recall <kw> --k <n>           cap results (default 5); --limit reads as the same cap
  *   lares sense recall --imago <id>           fetch one imago verbatim
  *   lares sense recall --list [--wing <w>]    list imagines (no query)
  *
- * The `--k` name mirrors the isomorphic MCP tool arg (`recall(query, k)`) — the only spelling (THE
- * VESSEL DOOR: no aliases; the retired `--limit` now reads as an unrecognized flag, never a quiet synonym).
+ * The `--k` name mirrors the isomorphic MCP tool arg (`recall(query, k)`). `--limit` names the same cap
+ * (operator-kept, 2026-10-11): `--k` wins when both ride one call.
  *
  * STAMP FILTERS — compose with the search or the list (honest counts, never a
  * silent drop): --voice <name> · --band <canon|synthesis|provisional|raw> ·
@@ -47,8 +47,8 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
   const query   = args.positional.join(" ").trim();
   const imago   = args.options["imago"];
   const wing    = args.options["wing"];
-  // `--k` mirrors the MCP tool arg — the only spelling (no `--limit` alias).
-  const limit   = args.options["k"];
+  // `--k` mirrors the MCP tool arg; `--limit` names the same cap (`--k` wins).
+  const limit   = args.options["k"] ?? args.options["limit"];
   const wantList = args.flags["list"];
   // The provenance filters (agent · surface) + the block-taxonomy filters (speaker · channel · function)
   // — a filter alone implies --list. speaker="operator" surfaces the operator's steering as its own

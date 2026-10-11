@@ -17,6 +17,9 @@
  *   lares sense <sensorium> li   the gluing verdict — readable planes · shared cids · radius · fuse|hold-open · note
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cohomological-gate
+ *
+ * OWED (operator, 2026-10-11): a house-grammar `|en` alias `cohere` flowing to this same module — declared by
+ * the house grammar's alias layer, never a hand-wired second entry in the `sense` door table.
  */
 
 import { readCohere, memorySensoriumDir } from "@lararium/node";

@@ -15,6 +15,9 @@
  *   lares sense [<sensorium>] jing   the coherence verdict — readable lobes · coheres · radius · offending lobe · note
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/the-lattice
+ *
+ * OWED (operator, 2026-10-11): a house-grammar `|en` alias `square` flowing to this same module — declared by
+ * the house grammar's alias layer, never a hand-wired second entry in the `sense` door table.
  */
 
 import { readJing, meshSensoriumDir } from "@lararium/node";

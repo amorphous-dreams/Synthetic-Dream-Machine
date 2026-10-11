@@ -102,13 +102,18 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   meta:      cmdMeta,
   // The human-query INSTRUMENTS over the poured sensorium — rhythm (rejim), change-points (analyze), and
   // the Ki coupling verdict (ki) and the Li gluing verdict (li) — the cosheaf ⊥ sheaf dual. rejim +
-  // analyze read/compute; ki + li read TS-native (no daemon; the H¹ hull lives in @mesh). THE VESSEL
-  // DOOR: no aliases — the retired `couple`/`cohere`/`square` spellings answer `unknown command`.
+  // analyze read/compute; ki + li read TS-native (no daemon; the H¹ hull lives in @mesh).
+  //
+  // OWED (operator, 2026-10-11): a HOUSE-GRAMMAR `|en` alias layer over these three verbs — `couple` for
+  // `ki`, `cohere` for `li`, `square` for `jing` — each flowing to the SAME module, declared by the house
+  // grammar rather than hand-wired here. Until that layer stands, only the three names below answer; an
+  // English spelling reads as an unknown verb and draws the usage refusal.
   rejim:     cmdRejim,
   analyze:   cmdAnalyze,
-  ki:        cmdKi,
-  li:        cmdLi,
+  ki:        cmdKi,       // owed |en alias: `couple` — the coupling verdict, the same H¹ gate
+  li:        cmdLi,       // owed |en alias: `cohere` — the gluing verdict, the li-radius + the same H¹ gate
   jing:      cmdJing,     // 勁 — the li∘ki square: does a child-host's grain round-trip with its flow?
+                          // owed |en alias: `square` — the joint read, neither li nor ki
   // The cross-plane witness — the last MCP tool that had no CLI door (surface-parity).
   "plane-record": cmdPlaneRecord,
   "couple-r": cmdCoupleR, // the R effective-TE coupling reference (coupling.R) — the py/R twin of ki, the
