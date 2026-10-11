@@ -21,13 +21,22 @@ class FakeRelayAdapter {
 const GATE = "ab".repeat(32);
 
 describe("browser connection state", () => {
-  test("RED: configured relay without a gate pin has a named missing-pin state", () => {
-    const state = createBrowserConnectionState({ dial: false, reason: "no gate key pinned" });
+  test("a configured relay without a gate pin has a named missing-pin state", () => {
+    const state = createBrowserConnectionState({ dial: false, reason: "no gate key pinned" }, false);
     expect(state.getSnapshot()).toMatchObject({ status: "missing-pin", reason: "no gate key pinned" });
   });
 
+  test("a valid pin without a contact card names why no adapter can stand", () => {
+    const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE }, false);
+    expect(state.getSnapshot()).toEqual({
+      status: "blocked",
+      gatePubKey: GATE,
+      reason: "no social contact card is available for the pinned relay crossing",
+    });
+  });
+
   test("CONTROL: a verified adapter join publishes its gate-bound identity and disconnect", () => {
-    const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE });
+    const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE }, true);
     const adapter = new FakeRelayAdapter();
     const transitions: string[] = [];
     state.subscribe((snapshot) => transitions.push(snapshot.status));
@@ -46,7 +55,7 @@ describe("browser connection state", () => {
   });
 
   test("a refused handshake names its reason instead of collapsing into disconnection", () => {
-    const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE });
+    const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE }, true);
     const adapter = new FakeRelayAdapter();
     observeRelayConnection(state, adapter);
 

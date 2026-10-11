@@ -504,7 +504,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // DURABLY to this vessel's own store before any dial; otherwise the record this vessel already holds for that
   // hearth, if any.
   const relayPin = relayPinFor(relayUrl, relayGatePubKey);
-  const connectionState = createBrowserConnectionState(relayPin);
   if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
   const walkStore = browserWalkStore(idbName);
   const walk: WalkRecord | null = relayPin.dial ? await (async () => {
@@ -651,6 +650,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     bootKeyWrites.bootstrap = bootstrap;
   }
   const social = bootstrap;   // narrowed (defined past this point)
+  // A pin chooses which gate to knock; the local contact card supplies peer proof. Name the missing
+  // proof here instead of leaving the page pinned while no adapter can stand.
+  const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));
+  if (relayPin.dial && !social.contactCard) {
+    console.warn("[lararium-browser] no social contact card is available for the pinned relay crossing");
+  }
   // THE PROOF THIS VESSEL CARRIES TO A PEER'S ORACLE. Peers prove first: an oracle map crosses only a socket
   // whose dialer passed the peer's gate, so the carriage and the page's reader prove this vessel's own key and
   // founding card there. The seed stays inside this closure. No card cached → nothing to prove with.

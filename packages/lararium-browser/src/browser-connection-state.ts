@@ -4,6 +4,7 @@ import type { RelayPin } from "./browser-relay-pin.js";
 export type BrowserConnectionSnapshot =
   | { readonly status: "local" }
   | { readonly status: "missing-pin"; readonly reason: string }
+  | { readonly status: "blocked"; readonly gatePubKey: string; readonly reason: string }
   | { readonly status: "pinned"; readonly gatePubKey: string }
   | { readonly status: "connecting"; readonly gatePubKey: string }
   | { readonly status: "refused"; readonly gatePubKey: string; readonly reason: string }
@@ -57,12 +58,18 @@ function sameSnapshot(a: BrowserConnectionSnapshot, b: BrowserConnectionSnapshot
 }
 
 /** Start with the reason the vessel can or cannot dial; a live session arrives through the adapter observer. */
-export function createBrowserConnectionState(pin: RelayPin): BrowserConnectionState & {
+export function createBrowserConnectionState(pin: RelayPin, hasContactCard: boolean): BrowserConnectionState & {
   /** @internal Lifecycle writer used by observeRelayConnection. */
   transition(snapshot: BrowserConnectionSnapshot): void;
 } {
   const initial: BrowserConnectionSnapshot = pin.dial
-    ? { status: "pinned", gatePubKey: pin.gatePubKey }
+    ? hasContactCard
+      ? { status: "pinned", gatePubKey: pin.gatePubKey }
+      : {
+          status: "blocked",
+          gatePubKey: pin.gatePubKey,
+          reason: "no social contact card is available for the pinned relay crossing",
+        }
     : pin.reason
       ? { status: "missing-pin", reason: pin.reason }
       : { status: "local" };
