@@ -177,7 +177,15 @@ export async function stopIncumbent(
     if (!stillHeld) return { stopped: true };
     if (!warned && performance.now() >= graceDeadline) {
       warned = true;
-      const held = holderPidsOf(port);
+      // NEVER RE-READ THE PORT PAST GRACE (H5′). `main.ts`'s own teardown closes the http listener — the
+      // very thing `portHolderPids` reads the OS table FOR — as its FIRST step, well before the holder it
+      // signalled has actually exited. So a past-grace `holderPidsOf(port)` read lands on an ALREADY-FREED
+      // port and finds nobody, and a `--cut` built on that read signals nobody: the honest wait this door
+      // owes (never escalating past the operator's own SECOND signal) silently became unreachable instead.
+      // The only pids a cut can ever mean to reach are the ones THIS DOOR ITSELF SIGNALLED at the top —
+      // filtered to those still answering `pidAlive` (the unconditional floor, same one `stillHeld` reads):
+      // a pid that has truly exited is never worth signalling again, and never worth naming as "still held".
+      const held = pids.filter(pidAlive);
       opts.onPastGrace(held);
       // `--cut`: deliver the operator's own second signal once, past the grace already reported. Never a
       // ladder past this one further SIGTERM, never a SIGKILL — the vessel's own shutdown decides what a

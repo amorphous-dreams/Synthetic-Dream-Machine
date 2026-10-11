@@ -13,9 +13,28 @@
  *     that opens inside the new phase's budget resolves.
  */
 import { describe, expect, it, vi } from "vitest";
+import { spawn } from "node:child_process";
 import { stopIncumbent, waitForPortBudgeted, waitForResourceBudgeted, SlowBootTimeout, type StopResult } from "../src/port-control.js";
 
 const PORT = 54_321;
+
+/**
+ * `stopIncumbent`'s floor (`pidAlive`) signals the real global `process.kill(pid, 0)` — never a test seam
+ * of its own. To drive a FAKE pid's liveness through tests that already mock `holderPids`/`probe`/`kill`
+ * against a fictional process, spy `process.kill` itself: a signal-0 probe for `pid` reads alive while
+ * `aliveFn(pid)` holds, and ESRCH once it does not. Every OTHER signal (the real SIGTERM sends, which ride
+ * the door's own injected `kill` option, never `process.kill`) passes through untouched.
+ */
+function withPidAliveSpy<T>(aliveFn: (pid: number) => boolean, fn: () => Promise<T>): Promise<T> {
+  const spy = vi.spyOn(process, "kill").mockImplementation(((pid: number, signal?: string | number) => {
+    if (signal === 0) {
+      if (!aliveFn(pid)) { const e = new Error("ESRCH") as NodeJS.ErrnoException; e.code = "ESRCH"; throw e; }
+      return true;
+    }
+    return true;
+  }) as typeof process.kill);
+  return fn().finally(() => spy.mockRestore());
+}
 
 describe("stopIncumbent — the holder's real exit, never a forced one", () => {
   it("RED: a delayed flush keeps the stop PENDING past its grace, with no SIGKILL ever sent", async () => {
@@ -25,10 +44,10 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     const holderPids = () => [4242];
     let pastGraceHeldPids: readonly number[] | null = null;
 
-    const result = await stopIncumbent(PORT, {
+    const result = await withPidAliveSpy(() => Date.now() < heldUntil, () => stopIncumbent(PORT, {
       graceMs: 40, pollMs: 10, probe, holderPids, kill,
       onPastGrace: (pids) => { pastGraceHeldPids = pids; },
-    });
+    }));
 
     expect(result).toEqual<StopResult>({ stopped: true });
     expect(kill).toHaveBeenCalledWith(4242, "SIGTERM");
@@ -84,10 +103,10 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     let heldUntil = Date.now() + 300;
     const probe = async () => Date.now() < heldUntil;
     const holderPids = () => [4242];
-    const result = await stopIncumbent(PORT, {
+    const result = await withPidAliveSpy(() => Date.now() < heldUntil, () => stopIncumbent(PORT, {
       graceMs: 20, pollMs: 5, probe, holderPids, kill, cut: true,
       onPastGrace: () => {},
-    });
+    }));
     expect(result).toEqual<StopResult>({ stopped: true });
     // The initial SIGTERM plus exactly one cut SIGTERM — never a SIGKILL, never a third signal.
     expect(kill).toHaveBeenCalledTimes(2);
@@ -95,6 +114,44 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     expect(kill).toHaveBeenNthCalledWith(2, 4242, "SIGTERM");
     expect(kill).not.toHaveBeenCalledWith(expect.anything(), "SIGKILL");
     void heldUntil;
+  });
+
+  it("H5′ RED→GREEN: --cut reaches the CAPTURED pid even once a past-grace port re-read would find nobody", async () => {
+    // Mirrors main.ts's own ordering: the http listener (and so the port) frees almost INSTANTLY once the
+    // first SIGTERM lands, well before the holder's own teardown actually finishes — so a past-grace
+    // RE-READ of the OS port table (`holderPids(port)`) already answers [] by the time grace is spent,
+    // while the real holder (mocked via `holderAlive`, exactly as `commands/read.ts` wires `udsAlive`)
+    // stands alive well past it. The fix never re-reads the port at that point; it signals the pids it
+    // itself signalled at the top (captured BEFORE the port froze), filtered by their own real liveness.
+    const kill = vi.fn();
+    let portFreed = false;
+    setTimeout(() => { portFreed = true; }, 2);     // the port frees almost at once — main.ts's own order
+    let holderLetGo = false;
+    setTimeout(() => { holderLetGo = true; }, 30);  // the real holder exits well after grace is spent
+    const probe = async () => true;                 // irrelevant once holderAlive is wired
+    const holderPids = () => (portFreed ? [] : [4242]);   // THE RE-READ FAULT: [] by the time grace fires
+    const holderAlive = async () => !holderLetGo;
+    let pastGraceHeldPids: readonly number[] | null = null;
+
+    const result = await withPidAliveSpy(() => !holderLetGo, () => stopIncumbent(PORT, {
+      graceMs: 10, pollMs: 5, probe, holderPids, kill, cut: true, holderAlive,
+      onPastGrace: (pids) => { pastGraceHeldPids = pids; },
+    }));
+    expect(result).toEqual<StopResult>({ stopped: true });
+    expect(pastGraceHeldPids).toEqual([4242]);      // named the real holder, never the stale []
+    expect(kill).toHaveBeenCalledTimes(2);          // the initial SIGTERM plus exactly one cut SIGTERM
+    expect(kill).toHaveBeenNthCalledWith(1, 4242, "SIGTERM");
+    expect(kill).toHaveBeenNthCalledWith(2, 4242, "SIGTERM");
+  });
+
+  it("H5′ MUTATION PROOF: re-reading the port at past-grace (the retired shape) would have reached nobody", async () => {
+    // Re-enact the retired shape by hand: naming the held pids off a past-grace `holderPids(port)` call,
+    // exactly as the code once did, against the SAME port-frees-before-holder-exits timeline above.
+    let portFreed = true;   // by the time grace would fire, main.ts's own ordering already froze the port
+    const holderPids = () => (portFreed ? [] : [4242]);
+    const heldAtPastGrace = holderPids();
+    expect(heldAtPastGrace).toEqual([]);   // nobody to cut — the retired re-read shape's own fault
+    void portFreed;
   });
 
   it("without `cut`, past grace delivers no second signal at all (the default stays report-only)", async () => {
@@ -190,10 +247,10 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
       // `Date.now()`-based deadline would either never fire (set-back) or fire instantly (set-forward).
       setTimeout(() => { wallOffsetMs = -365 * 24 * 60 * 60 * 1000; }, 10);
       setTimeout(() => { wallOffsetMs = 365 * 24 * 60 * 60 * 1000; }, 20);
-      const result = await stopIncumbent(PORT, {
+      const result = await withPidAliveSpy(() => realNow() < heldUntil, () => stopIncumbent(PORT, {
         graceMs: 40, pollMs: 5, probe, holderPids: () => [4242], kill,
         onPastGrace: (pids) => { pastGraceHeldPids = pids; },
-      });
+      }));
       const elapsedMonotonic = performance.now() - t0;
       expect(result).toEqual<StopResult>({ stopped: true });
       expect(pastGraceHeldPids).toEqual([4242]);
@@ -206,6 +263,51 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
       Date.now = realNow;
     }
   });
+});
+
+describe("stopIncumbent — H5′ LIVE: a real hung-teardown child, cut delivered through to a real second SIGTERM", () => {
+  it("--cut reaches the REAL child even once the port itself reads free well before the child exits", async () => {
+    // A real child process stands in for the vessel's own hung teardown (`main.ts`'s own convention: a
+    // first SIGTERM starts a graceful shutdown; a SECOND SIGTERM — `--cut`'s own signal — cuts it, exit
+    // 75). `kill` here frees the mocked "port" on the FIRST SIGTERM it sends — mirroring main.ts closing
+    // its http listener as its very first teardown step — well before the child has actually exited, so
+    // a past-grace RE-READ of that "port" finds nobody. `pidAlive`'s floor rides the REAL
+    // `process.kill(pid, 0)` against this REAL child — no mock needed for it at all.
+    const child = spawn(process.execPath, [
+      "-e",
+      // Prints "ready" only once the SIGTERM handler is actually REGISTERED — spawning the process and
+      // the process having run far enough to attach its own handler are two different moments; sending
+      // a signal in the gap between them hits Node's own DEFAULT SIGTERM action (terminate) instead of
+      // this handler, which would read as the child dying with no code at all rather than proving anything.
+      "let n=0; process.on('SIGTERM',()=>{n++; if(n>=2) process.exit(75);}); process.stdout.write('ready\\n'); setInterval(()=>{},1000);",
+    ]);
+    try {
+      const pid: number = await new Promise((resolve, reject) => {
+        let buf = "";
+        child.stdout.on("data", (c: Buffer) => {
+          buf += c.toString();
+          if (buf.includes("ready")) resolve(child.pid!);
+        });
+        child.once("error", reject);
+        child.once("exit", (code) => reject(new Error(`child exited before signalling ready (code ${code})`)));
+      });
+      let portFreed = false;
+      const probe = async (): Promise<boolean> => !portFreed;
+      const realKill = (p: number, sig: NodeJS.Signals): void => { if (sig === "SIGTERM") portFreed = true; process.kill(p, sig); };
+      const resultPromise = stopIncumbent(54_998, {
+        graceMs: 50, pollMs: 10, probe,
+        holderPids: () => (portFreed ? [] : [pid]),   // THE RE-READ FAULT, live: [] once the "port" frees
+        kill: realKill, cut: true,
+        onPastGrace: () => {},
+      });
+      const exitPromise = new Promise<number>((resolve) => child.once("exit", (code) => resolve(code ?? -1)));
+      const [result, exitCode] = await Promise.all([resultPromise, exitPromise]);
+      expect(exitCode).toBe(75);                         // the child saw its SECOND SIGTERM — the cut landed
+      expect(result).toEqual<StopResult>({ stopped: true });
+    } finally {
+      if (child.exitCode === null && !child.killed) child.kill("SIGKILL");
+    }
+  }, 10_000);
 });
 
 describe("waitForPortBudgeted — a declared budget per named boot phase", () => {
