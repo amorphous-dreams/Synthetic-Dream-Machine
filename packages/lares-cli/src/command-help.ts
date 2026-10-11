@@ -487,14 +487,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "never buys out-degree.",
     examples: [
       "lares cabal vouch <joiner-nym> --realm <realm-doc-id>          # dilutes you, admits nobody",
-      "lares cabal vouch <joiner-nym> --realm <id> --expires 2027-01-01T00:00:00Z",
       "lares cabal join --realm <realm-doc-id>                        # PRESENT and cross",
       "lares cabal feed --realm <realm-doc-id>                        # the OFFERING — roll your lease slot",
       "lares cabal clock --realm <realm-doc-id>                       # who feeds this realm, and how deep",
     ],
     flags: [
       "--realm <doc-id>   the cabal-realm every verb here addresses",
-      "--expires <iso>    (vouch) an ISO-8601 horizon on the stake",
       "--as <root-index>  which held persona root signs",
       "--cap <n>          (join) the price ceiling this crossing accepts",
     ],

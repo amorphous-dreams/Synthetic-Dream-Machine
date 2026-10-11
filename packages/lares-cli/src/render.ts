@@ -83,6 +83,11 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // "the work faulted" (4); the vessel settled this id and then let its result go, which reads
   // closer to "ask a different way" than to either of those.
   "retention-gap":     6,
+  // THE SAME EXIT FAMILY (6): the ledger's own fact for this id is UNREADABLE (a torn tiddler the
+  // channel's `parseReceiptFact` refuses — G2, `uds-channel.ts`), told apart from both a genuine
+  // `abandoned` verdict and a retention-evicted one. The cure is a fresh request id, never a retry
+  // under the torn one.
+  "receipt-fact-torn": 6,
   error:               1,
 };
 

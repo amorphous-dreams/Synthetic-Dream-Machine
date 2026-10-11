@@ -52,6 +52,14 @@ export interface SubmitResult {
    * the machine-readable twin `verb-call.ts`'s `refusalCode` keys exit codes from.
    */
   readonly refusal?: { readonly reason: string };
+  /**
+   * The PRIOR request id this answer's effect was actually decided under (G1/G2, H7) — present
+   * only when the daemon's own effect index answered a repeat attempt with an earlier `done`
+   * outcome rather than running the verb again (`uds-channel.ts`'s `readOutcomeFor` /
+   * the awaited-outcome answer carry it as `effect-of` on the wire). Absent means this attempt
+   * ran for real. Additive: an older daemon build that never sends it reads exactly as before.
+   */
+  readonly effectOf?: string;
 }
 
 export function summaryOutput(result: SubmitResult): Record<string, unknown> | undefined {

@@ -69,6 +69,9 @@ export interface VerbFailure {
  *                                             with DIFFERENT content; minting a fresh id is the cure.
  *   retention-gap                          → retention-gap (the 6-family) — the receipt ring
  *                                             evicted this id's outcome past its retention bound.
+ *   receipt-fact-torn                      → receipt-fact-torn (the 6-family) — the ledger's own
+ *                                             fact for this id is unreadable (a torn tiddler the
+ *                                             channel refuses to arbitrate over); mint a fresh id.
  *
  * An unrecognized reason (a future server-side addition this build predates) falls to `verb-error`
  * rather than crashing or silently inventing a code — the additive contract means an older CLI
@@ -79,6 +82,7 @@ export function refusalCode(reason: string): string {
     case "abandoned":                            return "request-abandoned";
     case "request-id-reused-with-changed-input":  return "request-id-reused";
     case "retention-gap":                        return "retention-gap";
+    case "receipt-fact-torn":                    return "receipt-fact-torn";
     default:                                     return "verb-error";
   }
 }

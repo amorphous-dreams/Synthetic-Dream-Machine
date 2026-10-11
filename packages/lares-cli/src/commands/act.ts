@@ -96,7 +96,8 @@ function printUsage(): void {
   console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
-  console.error("  CLEAR / DROP       --bag <bag>");
+  console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
+  console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
   console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>] [--in-wiki]");
   console.error("");
@@ -152,17 +153,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const submitName = inWiki ? "wiki-act" : "REPACK";
   const submitArgs = inWiki ? { verb: "REPACK", args: repackArgs } : repackArgs;
 
-  // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb
-  // (REPACK included, E1 commit 4′). A caller-generated requestId nonce, before dispatch — a FRESH
-  // id every attempt, so a retry after an abandoned/unknown outcome actually dispatches again
-  // rather than reusing an id this vessel may have already settled forever; the effectKey still
-  // rides every attempt, so the daemon's own effect index answers a repeat attempt that DID land
-  // without re-running it.
-  const repackEffectKey  = await taskContentId({ subject: fromBag, command: submitName, args: submitArgs, nonce: "" });
+  // REPACK READS — it registers as a QUERY verb (no residency mutation, no effect record), so it
+  // carries NO effectKey (H7). An effect-dedup key names a MUTATION this attempt would produce; a
+  // read produces none, and a re-render from the same aside provenance is always safe to repeat —
+  // there is no "ran twice" to guard against. Only `requestId` rides, a fresh nonce every attempt.
   const repackRequestId  = newRequestId();
   let result;
   try {
-    result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId, effectKey: repackEffectKey });
+    result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // THE SAME TWO FAULTS, TOLD APART. REPACK rides the default budget rather than a derived one, so its
@@ -183,7 +181,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
           emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
         }
-        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares receipt ${repackRequestId}\`. A fresh attempt mints its own id; the effect index answers a repeat of a landed effect — if this attempt DID land, the daemon's effect index (key ${repackEffectKey}) answers the re-run with the same outcome rather than repacking twice.`;
+        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares receipt ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
@@ -238,11 +236,23 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // Build the kebab-case args bag per residency-actions encoding.
   const actionArgs: Record<string, unknown> = {};
   let carrierCount = 0;
+  // `changeId` is EVERY verb's own CHANGE nonce (H7/M10) — the identity of the logical change an
+  // operator intends, told apart from `requestId` (a fresh dispatch attempt) below. ADD/COPY/MOVE
+  // and LOAD already ride it on the wire as part of `actionArgs` (it names which Work moves where);
+  // CLEAR/DROP/CREATE have no such content to distinguish one change from the next, so `--change-id`
+  // rides CLI-side only, folded into the effect key's own nonce — it never reaches the wire args
+  // (no mesh change). `nonce` is that fold: `""` for a verb whose wire args already carry the
+  // change's identity (a re-send of identical args IS a re-send of the identical change, so the
+  // content-addressed effectKey needs no extra salt); `changeId` itself for a verb whose wire args
+  // carry none, so two DISTINCT changes to the same bag (two separate CLEARs) must not collapse onto
+  // one effectKey merely because `{bag:...}` reads the same both times.
+  let changeId: string;
+  let nonce = "";
   if (isTransferVerb(verb)) {
     const title    = args.options["title"];
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
-    const changeId = args.options["change-id"] ?? newChangeId();
+    changeId = args.options["change-id"] ?? newChangeId();
     if (!title || !fromBag || !toBag) {
       console.error(`lares act ${verb}: --title, --from, --to all required`);
       return 2;
@@ -257,6 +267,8 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       console.error(`lares act ${verb}: --bag required`);
       return 2;
     }
+    changeId = args.options["change-id"] ?? newChangeId();
+    nonce = changeId;
     actionArgs["bag"] = bag;
   } else if (verb === "CREATE") {
     const bag = args.options["bag"];
@@ -274,13 +286,15 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       return 2;
     }
     const plane = planeOpt === "oracle" ? "oracle" : "catalog";
+    changeId = args.options["change-id"] ?? newChangeId();
+    nonce = changeId;
     actionArgs["bag"]   = bag;
     actionArgs["plane"] = plane;
   } else {
     // verb === "LOAD"
     const sourceUri = args.options["source-uri"];
     const toBag     = args.options["to"];
-    const changeId  = args.options["change-id"] ?? newChangeId();
+    changeId = args.options["change-id"] ?? newChangeId();
     if (!sourceUri || !toBag) {
       console.error(`lares act LOAD: --source-uri and --to required`);
       return 2;
@@ -414,7 +428,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // again win "run" once this vessel had recorded it abandoned). `effectKey` still rides every
   // attempt, so the daemon's own effect index answers a repeat attempt that DID land with the
   // prior `done` outcome, never running the verb twice.
-  const effectKey = await taskContentId({ subject, command: submitName, args: submitArgs, nonce: "" });
+  const effectKey = await taskContentId({ subject, command: submitName, args: submitArgs, nonce });
   const requestId = newRequestId();
   // The ACK budget scales with the gesture: a directory-batch LOAD chews one
   // island frame per carrier, so a flat budget times out the ACK while the verb
@@ -448,31 +462,35 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       } else if (receipt?.state === "abandoned") {
         // M3′: its own code, never `outcome-unknown` — this vessel has already settled the
         // question "did it run"; the answer is no, and it never will under this id.
-        const hint = "this vessel already refused this request before commit — it never ran. Re-run to try again.";
+        const hint = `this vessel already refused this request before commit — it never ran. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change.`;
         emit(args, {
           ok: false, requestId, error: { code: "request-abandoned", message: msg, hint },
           human: () => { console.error(`lares act: request abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          data: { changeId },
         });
         return exitFor("request-abandoned");
       } else if (receipt?.state === "evicted") {
         // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
         // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer exists.
-        const hint = "this vessel's receipt ring evicted this request before it could be re-read — mint a fresh request id and retry.";
+        const hint = "this change's record was evicted; mint a fresh `--change-id` to run it as a new change.";
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
           human: () => { console.error(`lares act: retention gap. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          data: { changeId },
         });
         return exitFor("retention-gap");
       } else {
         // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4, generalized E1 commit
-        // 4′). requestId is now a FRESH nonce every verb's own attempt alone owns — re-running
-        // never reads IT back (a fresh attempt mints its own) — so the hint reads the SAME for
-        // every verb; it always names the carrierCount that set the budget (0 for a non-LOAD verb)
-        // and names LOAD's own per-carrier arithmetic only when this attempt actually is one.
-        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-running is always safe here: a fresh attempt mints its own id; the effect index answers a repeat of a landed effect, so it can never collide with whatever this attempt settles to — if this attempt DID land, the daemon's effect index (key ${effectKey}) answers the re-run with the same outcome rather than running it twice. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        // 4′), AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
+        // mints a NEW change, which is exactly the double-run this hint exists to prevent. requestId
+        // is now a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
+        // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
+        // retry rather than a new change: reuse `--change-id`.
+        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
           human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          data: { changeId },
         });
         return exitFor("outcome-unknown");
       }
@@ -483,6 +501,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       emit(args, {
         ok: false, error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
         human: () => { console.error(`lares act: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+        data: { changeId },
       });
       return exitFor(f.code);
     }
@@ -502,21 +521,28 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: false, requestId: result.requestId, error: { code, message: msg },
       human: () => console.error(`${verb} failed: ${msg}`),
+      data: { changeId },
     });
     return exitFor(code);
   }
 
   const summary = summaryOutput(result) ?? {};
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
+  // H7: `effectOf` surfaces when the daemon's own effect index answered THIS attempt with a PRIOR
+  // attempt's landed outcome, rather than running the verb again — the CLI's own telling of "that
+  // already landed" distinct from "I just landed it".
+  const effectOf = result.effectOf;
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { verb, ...summary, audit: auditUri },
+    data: { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) },
     human: () => {
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;
         const wt = Array.isArray(summary["wouldTombstone"]) ? summary["wouldTombstone"].length : 0;
         console.log(`${verb} --dry-run: would land ${wl}, tombstone ${wt} — NOTHING committed (req ${result.requestId.slice(0, 8)})`);
+      } else if (effectOf !== undefined) {
+        console.log(`${verb} ✓ already landed by request ${effectOf} — not re-run (req ${result.requestId.slice(0, 8)})`);
       } else {
         console.log(`${verb} ✓ applied locally (req ${result.requestId.slice(0, 8)})`);
       }
