@@ -5,7 +5,7 @@
 # Stages:
 #   deps         — install workspace deps (layer-cached)
 #   build        — compile the Node runtime dependency graph + Vite web surface
-#   serve        — lararium-node peer with optional receipt-backed Pronaos arrival
+#   serve        — the product image: daemon + CLI + genesis + web; state and corpus arrive as mounts
 #   mcp-runtime  — minimal stdio MCP server
 #
 # Auth env vars (all optional — graceful fallback to local-dev):
@@ -93,13 +93,32 @@ COPY --from=build /app/packages/lararium-web/public         ./packages/lararium-
 COPY --from=build /app/.pronaos-build/pronaos-artifact.json ./pronaos-build/pronaos-artifact.json
 COPY --from=build /app/genesis                             ./genesis
 
-# lares/ mounted at runtime — never baked in
-VOLUME /app/lares
+# THE CLI RIDES THE IMAGE. A host-installed CLI would resolve HOST paths; this one shares the daemon's /tmp
+# (the UDS rendezvous), uid and environment when reached through `docker compose exec`.
+COPY --from=build /app/packages/lararium-memetic-frame/node_modules ./packages/lararium-memetic-frame/node_modules
+COPY --from=build /app/packages/lararium-memetic-frame/dist         ./packages/lararium-memetic-frame/dist
+COPY --from=build /app/packages/lararium-memetic-frame/package.json ./packages/lararium-memetic-frame/package.json
+COPY --from=build /app/packages/lares-cli/node_modules      ./packages/lares-cli/node_modules
+COPY --from=build /app/packages/lares-cli/dist              ./packages/lares-cli/dist
+COPY --from=build /app/packages/lares-cli/bin               ./packages/lares-cli/bin
+COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli/package.json
 
-# Automerge island persistence — mount a named volume in production
-VOLUME /app/.lararium-data
+# THE TWO MOUNTS (the deployment contract; docker-compose.surface.yml wires them):
+#   /state      one durable per-vessel directory — vessel homes AND custody (keys). Never in a layer.
+#   /workspace  the editable corpus — bags/ and wikis/ the projection reads and writes.
+# The image declares them so an unmounted run lands in an anonymous volume, never in the image layers.
+VOLUME /state
+VOLUME /workspace
 
 ENV NODE_ENV=production
+# EXPLICIT ROOTS. LAR_BAGS alone does not isolate the projection mirrors; the daemon also takes
+# `--root /workspace` (see CMD). LAR_ROOT moves the vessel's XDG homes under /state.
+ENV LAR_ROOT=/state \
+    LAR_BAGS=/workspace/bags \
+    LAR_WIKIS=/workspace/wikis \
+    LAR_GENESIS=/app/genesis
+# A HOME for an arbitrary runtime uid (`user:` in compose) that has no passwd entry.
+ENV HOME=/tmp
 # Peer port — single surface: WS /ws + GET /api/health
 ENV LAR_PORT=4321
 # Auth env vars — set via docker compose or -e flags
@@ -109,7 +128,27 @@ ENV LAR_PORT=4321
 
 EXPOSE 4321
 
-ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]
+# THE ONE-HOLDER GUARD AT THE STATE MOUNT. The store's own claim is a socket in the container's /tmp, so it
+# excludes only holders that share one /tmp; two containers on one /state each read the other as absent
+# (measured: a second container founded over a standing vessel with no refusal). This takes an advisory
+# flock on /state itself before the process starts — a kernel lock dies with its holder, so nothing strands —
+# and every container ENTRYPOINT runs through it. It guards the CONTAINERS; exec'd CLI calls share the
+# holder's container and need no lock of their own.
+COPY --chmod=0755 <<'HOLDER' /app/holder-guard.sh
+#!/bin/sh
+LOCK="${LARES_HOLDER_LOCK:-${LAR_ROOT:-/state}/.lares-holder.lock}"
+exec 9>>"$LOCK" || { echo "[holder-guard] cannot open $LOCK — is the state mount writable by this uid?" >&2; exit 73; }
+flock -n 9 || { echo "[holder-guard] refused: another container holds $LAR_ROOT (one store, one holder). Stop it, then start this one." >&2; exit 75; }
+exec "$@"
+HOLDER
+
+# NON-ROOT. The uid/gid come from the environment at RUN time (compose `user: "${LARES_UID}:${LARES_GID}"`),
+# so a bind-mounted /state and /workspace stay editable by the host operator. Nothing here pins one.
+USER node
+
+# The daemon's flags (space-separated: `--root=/x` is read as no flag by main.js and the CLI alike).
+ENTRYPOINT ["/app/holder-guard.sh", "node", "packages/lararium-node/dist/src/main.js"]
+CMD ["--root", "/workspace", "--genesis", "/app/genesis"]
 
 # ---------------------------------------------------------------------------
 # Stage 4: mcp-runtime — minimal stdio MCP server (unchanged)

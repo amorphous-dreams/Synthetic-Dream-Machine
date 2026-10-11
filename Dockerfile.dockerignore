@@ -1,0 +1,18 @@
+# Build-context hygiene for `Dockerfile`: the image builds from tracked sources and its own pnpm install.
+# Host install/build output would overlay the image's (symlinks into a host store), and a vessel's keys or
+# state must never ride a layer.
+.git
+.claude
+.worktrees
+**/node_modules
+**/dist
+**/.pnpm-store
+.pronaos-build
+wikis
+mempalace
+VSCode-TW5-Syntax
+.env
+.env.*
+**/*.log
+**/lares-state
+**/.lares

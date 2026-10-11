@@ -1,0 +1,127 @@
+# The SURFACE deployment: ONE vessel in the product image, on any host (Gaia parent/daughter, Linux box, Pi,
+# VPS herm, Elyncia's portable figure). The image carries the executable spirit (daemon + CLI + genesis + web);
+# everything that belongs to a household arrives as environment and two host mounts. Per-surface differences
+# are ENVIRONMENT, never another file.
+#
+#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys).
+#               Back it up separately. It never rides an image layer, a build arg or an env var.
+#   /workspace  the editable corpus (bags/, wikis/) the disk projection reads and writes.
+#
+# Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
+#   LARES_STATE       host path mounted at /state      (put it on a LOCAL LINUX filesystem; on Win11 keep it
+#                     inside the WSL distro, never /mnt/c — see the hazards below)
+#   LARES_WORKSPACE   host path mounted at /workspace
+# Optional:
+#   LARES_UID / LARES_GID   the uid:gid the vessel runs as (default 1000:1000). Match the host operator, so
+#                           files in both mounts stay editable from the host. CLI and daemon share it.
+#   LARES_PORT        published relay/web port (default 4321)       LARES_BIND  host interface (default 127.0.0.1;
+#                     set 0.0.0.0 or a LAN address to serve the house)
+#   LARES_IMAGE       image reference (default lares-surface:local)  LAR_PUBLIC_URL  the REACHABLE face of this
+#                     vessel (the name a browser or peer dials; HTTPS needs a WSS-capable name)
+#   LAR_PEERS         pinned peers, `<url>#<gate key>` comma-separated (empty: a sovereign hearth alone)
+#
+# THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store's own claim lives in the
+# container's /tmp, so it cannot see ANOTHER container; the image's entrypoint (holder-guard.sh) therefore takes
+# an advisory flock on /state/.lares-holder.lock, and a second container on the same /state refuses by name.
+# Never run a one-shot CLI container beside the daemon. Reach the standing vessel with
+#   docker compose -f docker-compose.surface.yml exec lares node packages/lares-cli/bin/lares.mjs <verb…>
+# so the CLI shares the daemon's /tmp (the UDS rendezvous), uid and environment. The UDS lives in the
+# container's own tmpfs /tmp: never bind it to the host, never share it between two containers, never put it
+# on a Windows share (its claim hard-links a staging socket, which a 9P/SMB filesystem may refuse).
+#
+# FOUNDING is an offline act on the store: with the vessel stopped,
+#   docker compose -f docker-compose.surface.yml --profile found run --rm found
+# The engine has no Docker socket and gets none: engine control stays with the host.
+#
+# WSL2/hosts: bind mounts from /mnt/c (9P) are slow and change ownership/metadata semantics; keep both mounts on
+# ext4 inside the distro. Durability of the store rests on the host disk honoring fsync — a VM, network
+# filesystem or controller cache can lie, and the daemon cannot tell.
+
+name: lares-surface
+
+x-vessel: &vessel
+  image: ${LARES_IMAGE:-lares-surface:local}
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: serve
+  user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+  volumes:
+    - type: bind
+      source: ${LARES_STATE:?set LARES_STATE to the per-vessel state directory on the host}
+      target: /state
+    - type: bind
+      source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the corpus directory on the host}
+      target: /workspace
+  # The explicit roots. The image bakes the same four; they are restated so a reader of THIS file sees the
+  # contract. LAR_BAGS alone does not isolate the projection mirrors — the daemon also takes --root /workspace.
+  environment: &roots
+    LAR_ROOT: /state
+    LAR_BAGS: /workspace/bags
+    LAR_WIKIS: /workspace/wikis
+    LAR_GENESIS: /app/genesis
+    LAR_PORT: "4321"
+  # The UDS rendezvous (/tmp/lares-<uid>/…) stays INSIDE this container.
+  tmpfs:
+    - /tmp:mode=1777
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  # The standing vessel. Unprofiled: `docker compose up` stands it.
+  lares:
+    <<: *vessel
+    environment:
+      <<: *roots
+      LAR_PUBLIC_URL: ${LAR_PUBLIC_URL:-http://localhost:${LARES_PORT:-4321}}
+      LAR_PEERS: ${LAR_PEERS:-}
+      # The relay, oracle and Web surface share the one HTTP origin this vessel serves; a vessel that leaves
+      # its Web origin undeclared refuses to boot.
+      LAR_SAME_ORIGIN: "true"
+      # The Web shore and its finite receipt ride as two explicit inputs; copying the bytes alone never widens
+      # Node's route ownership. Only a Lararium (a vessel with a lit face) mounts them — see `herm` below.
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
+    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports:
+      - "${LARES_BIND:-127.0.0.1}:${LARES_PORT:-4321}:4321"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  # The offline founding act (optional service → profile). Holds the store for its act; refuses by name while
+  # a vessel stands on it.
+  found:
+    <<: *vessel
+    profiles: [found]
+    entrypoint: ["/app/holder-guard.sh", "node", "packages/lares-cli/bin/lares.mjs"]
+    command: ["vessel", "found", "--skip-build", "--root", "/state", "--genesis", "/app/genesis"]
+    restart: "no"
+
+  # The VPS-herm surface: the same image standing wiki-less (the carriage crossroads). A herm handed any
+  # LAR_PRONAOS_* input refuses to boot, so it is its own service. It takes the SAME /state as `lares` would, so
+  # run ONE of the two (the one-holder law refuses the second); a host picks its surface by `up lares` or
+  # `--profile herm up herm`.
+  herm:
+    <<: *vessel
+    profiles: [herm]
+    environment:
+      <<: *roots
+      LAR_RECIPE: herm
+      LAR_HERM_RELAY_PORT: "8090"
+      LAR_PUBLIC_URL: ${LAR_PUBLIC_URL:-http://localhost:${LARES_PORT:-4321}}
+      LAR_PEERS: ${LAR_PEERS:-}
+      LAR_SAME_ORIGIN: "true"
+    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports:
+      - "${LARES_BIND:-127.0.0.1}:${LARES_PORT:-4321}:4321"
+      - "${LARES_BIND:-127.0.0.1}:${LARES_RELAY_PORT:-8090}:8090"
