@@ -120,6 +120,93 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     }
   });
 
+  test("H1′ RED: a peer that already hung up before this vessel could dispatch never runs the verb", async () => {
+    // gp3-episkopos H1′: `serve`'s data handler dispatched `runVerb` the INSTANT a line parsed, with
+    // no check for a peer that had already hung up (or a frozen vessel that only got around to
+    // reading the line long after the caller gave up and destroyed its own end — `probe-h1.sh
+    // livefreeze`, live). This models the cooperative half of that shape: a caller that writes its
+    // line and ends in the SAME breath, before this vessel's deferred dispatch ever gets its turn.
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    const placed: Placed[] = [];
+    const channel = startUdsChannel({ daemonHandle, placeVerb: (o) => { placed.push(o as Placed); }, claim });
+    try {
+      await waitForSocket(claim.socketPath);
+      const sock = createConnection(claim.socketPath);
+      await new Promise<void>((resolve, reject) => { sock.once("connect", resolve); sock.once("error", reject); });
+      sock.end(JSON.stringify({ verb: "nexus-kapae", args: {}, requestedBy: "did:key:test" }) + "\n");
+      await new Promise<void>((resolve) => sock.once("close", resolve));
+      // Real time, not a bare tick: the SERVER side's own `end`/`close` notification for a half-closed
+      // real socket rides its own kernel I/O callback, which can land a poll cycle behind the client's
+      // own `close` — a bare `setImmediate` raced ahead of it and false-reddened this exact assertion.
+      await new Promise((r) => setTimeout(r, 100));
+      expect(placed).toHaveLength(0);               // the verb handler NEVER ran — no ghost write
+    } finally {
+      channel.close();
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("H1′ RED: a line that already carries a past deadlineAt refuses by name, even on a socket still open", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    const placed: Placed[] = [];
+    const channel = startUdsChannel({ daemonHandle, placeVerb: (o) => { placed.push(o as Placed); }, claim });
+    try {
+      await waitForSocket(claim.socketPath);
+      const answer = await sendInvocation(claim.socketPath, {
+        verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", deadlineAt: Date.now() - 1_000,
+      });
+      expect(answer["status"]).toBe("error");
+      expect(String(answer["errorMessage"])).toMatch(/caller's own deadline passed/);
+      expect(placed).toHaveLength(0);
+    } finally {
+      channel.close();
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("CONTROL (H1′): a deadlineAt safely in the future still dispatches normally", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const targetHandle = repo.create<LarDoc>(emptyLarDoc());
+    const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    const placed: Placed[] = [];
+    const channel = startUdsChannel({
+      daemonHandle,
+      placeVerb: (o) => {
+        placed.push(o as Placed);
+        const outcome = concludeVerb({
+          requestId: o.requestId, verb: o.verb, status: "done",
+          requestedBy: o.requestedBy, cause: "test-worker", batchMode: "best-effort",
+          results: { summary: { ok: true } },
+        });
+        daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      },
+      claim,
+    });
+    try {
+      await waitForSocket(claim.socketPath);
+      const answer = await sendInvocation(claim.socketPath, {
+        verb: "act", args: { toBag: targetHandle.url }, requestedBy: "did:key:test", requestId: "req-h1prime-control",
+        deadlineAt: Date.now() + 60_000,
+      });
+      expect(answer["status"]).toBe("done");
+      expect(placed).toHaveLength(1);
+    } finally {
+      channel.close();
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("a closed channel keeps its vessel's claim: callers hear the stop by name, and no direct holder binds beside it", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));

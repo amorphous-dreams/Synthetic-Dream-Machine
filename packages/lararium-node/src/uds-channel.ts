@@ -72,6 +72,12 @@ interface Invocation {
   requestId?: string;
   /** The caller's own budget, raising the servo's wait within this side's ceiling. Read, never trusted. */
   timeoutMs?: number;
+  /**
+   * The caller's own absolute give-up instant (same-host epoch ms, H1′ — `local-connector.ts`'s
+   * `invokeLocal`). A line read past this already outlived the caller's own patience, whatever froze
+   * this vessel between the write and the read.
+   */
+  deadlineAt?: number;
 }
 
 export interface UdsChannel { close: () => void; }
@@ -161,10 +167,31 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       let inv: Invocation;
       try { inv = JSON.parse(line) as Invocation; } catch { return fail("bad invocation json"); }
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
-      runVerb(inv).then(
-        (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
-        (err)     => fail(err instanceof Error ? err.message : String(err)),
-      );
+      // H1′: DEFER DISPATCH, NOT SYNCHRONOUSLY. A vessel frozen between the caller's write and this
+      // read can thaw well after the caller gave up and destroyed its own end — its FIN/RST sits
+      // queued right behind this very `data` event, undelivered only because this process could not
+      // run at all. A dispatch made SYNCHRONOUSLY inside this handler runs the verb before that
+      // notification ever gets its own turn. ONE `setImmediate` is not enough: `data` and the
+      // underlying EOF can land in two separate libuv poll passes (the data chunk resolves this read,
+      // the FIN surfaces only on the NEXT one) — measured live, a single deferred tick still saw
+      // `readableEnded: false` for an already-half-closed peer. Nesting a second `setImmediate` lets
+      // that extra poll pass run first. A live caller never half-closes before its own answer, so an
+      // end seen here always means abandonment.
+      setImmediate(() => setImmediate(() => {
+        if (sock.destroyed || sock.readableEnded) {
+          log(`dropped a hung-up "${inv.verb}" invocation — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced`);
+          return;
+        }
+        if (typeof inv.deadlineAt === "number" && Date.now() > inv.deadlineAt) {
+          return fail(
+            `the caller's own deadline passed before this vessel could read "${inv.verb}" — refusing rather than running it unannounced`,
+          );
+        }
+        runVerb(inv).then(
+          (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
+          (err)     => fail(err instanceof Error ? err.message : String(err)),
+        );
+      }));
     });
   }, (why) => log(why));
   log(`uds verb-channel on ${claim.socketPath} (perms 0600)`);
