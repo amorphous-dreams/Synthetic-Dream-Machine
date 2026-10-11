@@ -194,6 +194,12 @@ describe("a reference NAMES, and refuses what could walk out of the tier", () =>
   let root: string;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-libref-"));
+    // L9 — this block must pin its OWN scratch LAR_ROOT like its siblings above: an ambient
+    // LAR_ROOT (the house law's own isolated-run convention) would otherwise outrank the absent
+    // override here, so "the index carries names" test's acquire writes land under the AMBIENT
+    // shelf rather than this test's own `root`, and the next test's "empty shelf" reads that
+    // leftover `c` collection back — a scratch root should isolate harder than this, not less.
+    setEnv("LAR_ROOT", root);
     setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
     setEnv("XDG_DATA_HOME", join(root, "xdgdata"));
     setEnv("LAR_LIBRARY", undefined);

@@ -17,13 +17,23 @@
 
 import { mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { pluginCidsFromIslandBlobs, type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { standNexusKeyring } from "../src/nexus-convergence-secret-store.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
+
+// L9 — this plane pins the repo's OWN tracked genesis dir (`<repo>/genesis`), derived from THIS
+// file's own path, never the ambient `LAR_GENESIS`/`LAR_ROOT`-resolved one (`defaultGenesisDir`
+// inside genesis-artifact.ts). The house law isolates a dev/smoke boot with a scratch `LAR_ROOT`,
+// so a unit suite that leans on the ambient default reads the SCRATCH root's (genesis-less)
+// `<LAR_ROOT>/genesis` instead of the tracked seed the moment a caller sets one — "[cas-test-setup]
+// genesis seed absent" with no code fault at all. This plane's own fixtures stay isolated from
+// that lever: they always mirror the ONE tracked seed, under a scratch LAR_ROOT or none.
+const REPO_GENESIS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "genesis");
 
 export interface CasSetup {
   /** Pool storageRoot — the CAS lives at `<storageDir>/cas`. */
@@ -39,7 +49,7 @@ export interface CasSetup {
  * bytes come from genesis/cas/<cid> (via the seed-derived inventory), the plugin CIDs from
  * the genesis doc's blob metadata. `genesisDir` defaults to the repo's genesis/ dir.
  */
-export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir?: string): CasSetup {
+export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir: string = REPO_GENESIS_DIR): CasSetup {
   const storageDir = mkdtempSync(join(tmpdir(), "lar-cas-test-"));
   const manifest = readGenesisCasManifest(genesisDir);
   if (!manifest) {
