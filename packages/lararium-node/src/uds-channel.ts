@@ -170,6 +170,11 @@ export class VesselWaitExpired extends Error {
  */
 class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
+  /** requestIds this ledger has read as TORN — a tiddler under {@link RECEIPT_FACT_URI_PREFIX} that
+   *  {@link parseReceiptFact} rejects (an unreadable shape, never "never seen"). Distinct from
+   *  absent: `get()` answers `"torn"` for these, never `null`, so a caller cannot mistake an
+   *  unreadable record for a fresh id. */
+  private readonly torn = new Set<string>();
   /** requestIds in ascending `seq` order — the eviction queue. Seeded from the store at first use,
    *  then kept current by every `record()` this process makes. */
   private readonly order: string[] = [];
@@ -188,36 +193,53 @@ class FactLedger {
 
   /** Seed the cache + eviction order + seq counter from the durable store, once. Every public
    *  method awaits this first, so a connection arriving before the scan finishes still reads a
-   *  consistent (if momentarily blocked) ledger rather than a false "never seen". */
+   *  consistent (if momentarily blocked) ledger rather than a false "never seen". `nextSeq`
+   *  advances past the HIGHEST raw `seq` field this scan reads — TORN OR NOT: a torn record still
+   *  claimed that seq when some earlier process minted it, so a fresh mint here must never reuse
+   *  it, even though the torn record itself never joins the cache/order (it is tracked in
+   *  {@link torn} instead, and never seeds nor plays an eviction victim). */
   private ensureSeeded(): Promise<void> {
     if (this.seeded) return this.seeded;
     this.seeded = (async () => {
       const titles = await this.composite.listVisible();
       const facts: ReceiptFact[] = [];
+      let maxRawSeq = -1;
       for (const title of titles) {
         if (!title.startsWith(RECEIPT_FACT_URI_PREFIX)) continue;
         const rec = await this.composite.get(title);
         if (!rec) continue;
-        const fact = parseReceiptFact(rec.tiddler as Record<string, unknown>);
+        const raw = rec.tiddler as Record<string, unknown>;
+        const rawSeqField = raw["seq"];
+        const rawSeq = typeof rawSeqField === "string" ? Number.parseInt(rawSeqField, 10)
+                     : typeof rawSeqField === "number" ? rawSeqField
+                     : NaN;
+        if (!Number.isNaN(rawSeq) && rawSeq > maxRawSeq) maxRawSeq = rawSeq;
+        const fact = parseReceiptFact(raw);
         if (fact) facts.push(fact);
+        else this.torn.add(title.slice(RECEIPT_FACT_URI_PREFIX.length));
       }
       facts.sort((a, b) => a.seq - b.seq);
       for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); }
-      this.nextSeq = facts.length > 0 ? facts[facts.length - 1]!.seq + 1 : 0;
+      this.nextSeq = maxRawSeq + 1;
     })();
     return this.seeded;
   }
 
-  /** Read-through: cache first, then the durable fact store. Never arbitrates, never dispatches. */
-  async get(requestId: string): Promise<ReceiptFact | null> {
+  /** Read-through: cache first, then the durable fact store. Never arbitrates, never dispatches.
+   *  Answers `"torn"` — distinct from `null` (absent, never seen) — for a tiddler under
+   *  {@link RECEIPT_FACT_URI_PREFIX} that {@link parseReceiptFact} rejects: a reader that collapsed
+   *  the two would read an unreadable record as a fresh id and run it unannounced. */
+  async get(requestId: string): Promise<ReceiptFact | null | "torn"> {
     await this.ensureSeeded();
+    if (this.torn.has(requestId)) return "torn";
     const cached = this.cache.get(requestId);
     if (cached !== undefined) return cached;
     const rec = await this.composite.get(FactLedger.factTitle(requestId));
     if (!rec) return null;
     const fact = parseReceiptFact(rec.tiddler as Record<string, unknown>);
-    if (fact) this.cache.set(requestId, fact);
-    return fact;
+    if (fact) { this.cache.set(requestId, fact); return fact; }
+    this.torn.add(requestId);
+    return "torn";
   }
 
   /** Mint a NEW fact (committed, abandoned, or a first non-UDS-path observation) — assigns the next
@@ -242,12 +264,16 @@ class FactLedger {
    * alone. `abandoned` refuses on STATE ALONE, whatever the digest says — {@link cancel} is the ONE
    * writer that records no digest (an explicit withdrawal carries no content claim to compare);
    * every other fact this ledger ever writes carries one (early alpha, no legacy data, no shim —
-   * absence never reads as "unverifiable", only as "cancelled").
+   * absence never reads as "unverifiable", only as "cancelled"). A TORN fact (a receipt record
+   * under this id that {@link parseReceiptFact} rejects) refuses `receipt-fact-torn` by name,
+   * ahead of every other check, and is never written over — this ledger does not guess what a
+   * prior process meant to record.
    */
   async arbitrate(requestId: string, inputDigest: string):
     | Promise<{ readonly verdict: "run" }
-      | { readonly verdict: "refuse"; readonly reason: "abandoned" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" }> {
+      | { readonly verdict: "refuse"; readonly reason: "abandoned" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" | "receipt-fact-torn" }> {
     const existing = await this.get(requestId);
+    if (existing === "torn") return { verdict: "refuse", reason: "receipt-fact-torn" };
     if (existing) {
       if (existing.state === "evicted") return { verdict: "refuse", reason: "retention-gap" };
       if (existing.state === "abandoned") return { verdict: "refuse", reason: "abandoned" };
@@ -294,6 +320,7 @@ class FactLedger {
    */
   async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined): Promise<void> {
     const existing = await this.get(requestId);
+    if (existing === "torn") return; // never write over an unreadable fact — leave it torn, not guessed
     if (existing) {
       if (existing.terminal === status || existing.state === "evicted") return; // already recorded / already dropped
       const digest = existing.inputDigest ?? inputDigest;
@@ -399,6 +426,12 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       // evicted-effect guard), told back in the SAME additive shape the socket's own direct
       // refusals already use (`fail()` below), never as a second, differently-shaped field.
       ...(typeof fields["refusal"] === "string" ? { refusal: { reason: fields["refusal"] } } : {}),
+      // D1 effect-dedup (P2.5 iter 6, G2): the worker's own `concludeVerb({effectOf})` names the
+      // PRIOR requestId whose effect this outcome answers under a fresh attempt — surfaced here so
+      // every reader of a terminal outcome (a fresh dispatch's own await, OR a legitimate
+      // concurrent re-read of an id this process already committed) can tell a dedup answer from a
+      // verb this attempt actually ran.
+      ...(typeof fields["effect-of"] === "string" ? { effectOf: fields["effect-of"] } : {}),
     };
   };
 
@@ -462,6 +495,13 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
    *  `evicted`, which are this ledger's own terminal verdicts. */
   const answerReceipt = async (requestId: string): Promise<ReceiptAnswer> => {
     const fact = await ledger.get(requestId);
+    if (fact === "torn") {
+      return {
+        requestId, state: "error",
+        errorMessage: `this vessel's receipt for request ${requestId} is unreadable — mint a fresh request id`,
+        refusal: { reason: "receipt-fact-torn" },
+      };
+    }
     if (fact) {
       if (fact.state === "abandoned") return { requestId, state: "abandoned" };
       if (fact.state === "evicted")   return { requestId, state: "evicted" };
@@ -582,6 +622,8 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
             ? `this vessel already refused request ${requestId} before commit — mint a fresh request id`
             : verdict.reason === "retention-gap"
             ? `this vessel's receipt ring evicted request ${requestId} before it could be re-read — mint a fresh request id`
+            : verdict.reason === "receipt-fact-torn"
+            ? `this vessel's receipt for request ${requestId} is unreadable — mint a fresh request id`
             : `request ${requestId} was already used with different arguments — mint a fresh request id`;
           return fail(why, verdict.reason);
         }

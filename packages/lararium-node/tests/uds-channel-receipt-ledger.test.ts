@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, concludeVerb, verbInputDigest, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, type LarDoc } from "@lararium/mesh";
 import { startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 
@@ -283,6 +283,73 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       const answer = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-fresh-control" });
       expect(answer["status"]).toBe("done");
       expect(counter.n).toBe(1);
+    } finally { await v.teardown(); }
+  });
+
+  test("a TORN receipt fact (no input-digest on a non-abandoned record) refuses `receipt-fact-torn`, by name, with NO run — and is never written over", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const requestId = "req-torn-committed";
+      // Write a raw, torn receipt-fact tiddler directly into the daemon doc — a `committed` fact
+      // (a non-`abandoned` state, which `parseReceiptFact`/ReceiptFactClaimed REQUIRES a digest
+      // on) with NO `input-digest` at all. This models a record some other writer left unreadable
+      // (never produced by this ledger itself, which always stamps a digest on a claimed state).
+      v.daemonHandle.change((doc) => {
+        const title = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
+        doc.tiddlers[title] = {
+          title, "request-id": requestId, state: "committed", seq: "0",
+        } as unknown as LarDoc["tiddlers"][string];
+      });
+
+      await v.restart(); // a fresh FactLedger must re-seed and still read this as TORN, not absent
+
+      const dispatch = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId });
+      expect(counter.n).toBe(0); // never dispatched
+      expect(dispatch["status"]).toBe("error");
+      expect(String(dispatch["errorMessage"])).toMatch(/receipt for request req-torn-committed is unreadable/);
+      expect((dispatch["refusal"] as { reason?: string } | undefined)?.reason).toBe("receipt-fact-torn");
+
+      // A later mint under a FRESH id still works — the torn record never corrupts the seq
+      // counter or the ledger's ability to arbitrate anything else.
+      const fresh = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-after-torn" });
+      expect(fresh["status"]).toBe("done");
+      expect(counter.n).toBe(1);
+
+      // CONTROL: an absent id (never written at all) runs normally — proves the torn check
+      // never swallows a genuinely fresh id.
+      const control = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-torn-control-absent" });
+      expect(control["status"]).toBe("done");
+      expect(counter.n).toBe(2);
+    } finally { await v.teardown(); }
+  });
+
+  test("`effectOf` rides the terminal outcome's answer — a dedup copy carries the prior requestId, a fresh run carries none", async () => {
+    const v = await Vessel.boot({
+      placeVerbImpl: (p, daemonHandle) => {
+        // The dispatcher's own effect-dedup shape: this outcome is a COPY of a PRIOR attempt
+        // (`req-effect-prior`), so it stamps `effectOf` naming that prior requestId rather than
+        // running the handler fresh.
+        const outcome = concludeVerb({
+          requestId: p.requestId, verb: p.verb, status: "done",
+          requestedBy: p.requestedBy, cause: "effect-dedup", batchMode: "best-effort",
+          results: { summary: { ok: true } }, effectOf: "req-effect-prior",
+        });
+        daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      },
+    });
+    try {
+      const dedup = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-effect-copy" });
+      expect(dedup["status"]).toBe("done");
+      expect(dedup["effectOf"]).toBe("req-effect-prior");
+
+      // CONTROL: a fresh (non-dedup) outcome carries no `effectOf` at all.
+      const v2 = await Vessel.boot({ placeVerbImpl: doneWorker({ n: 0 }) });
+      try {
+        const fresh = await sendLine(v2.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-effect-fresh" });
+        expect(fresh["status"]).toBe("done");
+        expect(fresh["effectOf"]).toBeUndefined();
+      } finally { await v2.teardown(); }
     } finally { await v.teardown(); }
   });
 
