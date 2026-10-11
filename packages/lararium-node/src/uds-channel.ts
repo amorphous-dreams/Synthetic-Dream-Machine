@@ -59,7 +59,7 @@ export interface UdsChannelOptions {
    * The worker still writes the durable outcome to `bags/daemon/outcomes/<id>`, which
    * this channel awaits via `daemonHandle`.
    */
-  readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;
+  readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string }) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim;
   /**
@@ -89,6 +89,16 @@ interface Invocation {
   requestId?: string;
   /** The caller's own budget, raising the servo's wait within this side's ceiling. Read, never trusted. */
   timeoutMs?: number;
+  /**
+   * The effect this attempt would produce (D1, P2.5 iter 4 commit 4) — a caller-side
+   * CONTENT-ADDRESSED key, distinct from `requestId` (a fresh nonce per attempt). Forwarded
+   * verbatim to `placeVerb` → the worker's `VesselPlaceVerbRequest.effectKey` (already wired,
+   * commit 1/2) → the dispatcher's own effect index, which answers a repeat attempt under a
+   * NEW requestId with the prior `done` outcome rather than running the handler twice. This
+   * channel never reads it for arbitration (that stays keyed on `requestId` + the plain
+   * verb/args/requestedBy digest) — only the worker-side effect index consults it.
+   */
+  effectKey?: string;
 }
 
 /** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
@@ -412,6 +422,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       args:        inv.args ?? {},
       requestedBy: inv.requestedBy,
       requestId,
+      ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
     return awaitOutcome(inv.verb, requestId, inv.timeoutMs);
   };

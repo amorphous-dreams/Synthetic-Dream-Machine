@@ -26,7 +26,7 @@ import { emptyLarDoc, concludeVerb, type LarDoc } from "@lararium/mesh";
 import { startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 
-interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; }
+interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string; }
 
 function sendLine(socketPath: string, line: unknown): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
@@ -249,6 +249,26 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       const answer = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-fresh-control" });
       expect(answer["status"]).toBe("done");
       expect(counter.n).toBe(1);
+    } finally { await v.teardown(); }
+  });
+
+  test("effectKey rides from the wire Invocation to `placeVerb` unchanged (D1 commit 4/4) — the one link the worker-side effect index (commit 2) depends on", async () => {
+    const placed: Placed[] = [];
+    const v = await Vessel.boot({
+      placeVerbImpl: (p, daemonHandle) => { placed.push(p); doneWorker({ n: 0 })(p, daemonHandle); },
+    });
+    try {
+      await sendLine(v.socketPath, {
+        verb: "nexus-kapae", args: {}, requestedBy: "did:key:test",
+        requestId: "req-effectkey-a", effectKey: "sha256:effect-a",
+      });
+      expect(placed).toHaveLength(1);
+      expect(placed[0]!.effectKey).toBe("sha256:effect-a");
+
+      // CONTROL: an invocation carrying no effectKey forwards none (never a fabricated one).
+      await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-effectkey-b" });
+      expect(placed).toHaveLength(2);
+      expect(placed[1]!.effectKey).toBeUndefined();
     } finally { await v.teardown(); }
   });
 });
