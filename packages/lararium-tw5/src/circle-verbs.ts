@@ -30,10 +30,12 @@
  * picking a winner.
  *
  * LEGACY READ, not a shim: an un-dotted `mbr+:<nym>` (any value at all — the old Lamport counter, the old ISO
- * string, cold-boot-ceremony's former genesis stamp) parses as an add-dot with dot `""` that observed NOTHING.
- * Any remove — dotted or legacy — then dominates it (the value is never compared), and only a causally-later
- * dotted re-follow (one that observes that remove) brings the nym back. `cold-boot-ceremony.ts` mints the
- * DOTTED form now, so a fresh genesis follow is unfollowable from the moment it is born.
+ * string, cold-boot-ceremony's former genesis stamp) parses as an add-dot with the RESERVED dot id `"~"`
+ * (`LEGACY_DOT`, never `""` — an empty dot id cannot survive the comma-join/split round-trip, which would
+ * silently drop the fact that a later write observed it) that observed NOTHING. Any remove — dotted or
+ * legacy — then dominates it (the value is never compared), and only a causally-later dotted re-follow (one
+ * that observes that remove) brings the nym back. `cold-boot-ceremony.ts` mints the DOTTED form now, so a
+ * fresh genesis follow is unfollowable from the moment it is born.
  *
  * Because every dot is its own key, a concurrent follow and unfollow of DIFFERENT nyms — or an add and a
  * remove of the SAME nym from different replicas — touch disjoint field keys, so Automerge's field-merge
@@ -71,25 +73,29 @@ export interface CircleVerbOptions {
   readonly tw5?: TW5Engine;
   /**
    * THIS vessel's own replica id — minted dots are keyed `<replica>.<n>`, so two devices never collide on
-   * the same dot even when neither has seen the other's write. The caller should inject its own device key
-   * (the same identity `cold-boot-ceremony` derives its `did` from) so the fleet's dots stay disjoint by
-   * construction. OPTIONAL for back-compat with the one standing production call site
-   * (`operator-daemon-behavior.ts`, out of this builder's lane) and every existing test: omitted falls back
-   * to `DEFAULT_REPLICA`, which is SAFE for a single-device circle (no other replica ever mints that id) and
-   * a known gap for a genuinely multi-device fleet until that call site injects its own `daemonAuth`-derived
-   * DID here.
+   * the same dot even when neither has seen the other's write. REQUIRED (alpha line, no back-compat): the
+   * caller injects its own device key (the same identity `cold-boot-ceremony` derives its `did` from — see
+   * `operator-daemon-behavior.ts`, which derives it off `daemonAuth.vesselVerifyingKey`) so the fleet's dots
+   * stay disjoint by construction. A single-device caller may still pass any stable string of its own.
    */
-  readonly replica?: string;
+  readonly replica: string;
 }
-
-/** The fallback replica id when a caller injects none — safe for one device, a named gap for a fleet. */
-const DEFAULT_REPLICA = "local";
 
 /** The per-nym unfollow stamp: `mbr-:<nym>` (legacy) or `mbr-:<nym>#<dot>` holds the remove DOT. */
 const MEMBER_RM_PREFIX = "mbr-:";
 
 /** Separates a dotted field key's nym from its dot: `mbr+:<nym>#<replica>.<n>`. */
 const DOT_SEP = "#";
+
+/**
+ * The reserved dot id a LEGACY, undotted stamp (`mbr+:<nym>` / `mbr-:<nym>`, any value) parses as. Never `""`:
+ * an empty dot id cannot round-trip through the comma-joined observed-set value (`[""].join(",")` yields `""`,
+ * which `parseObservedSet` then reads back as the EMPTY set on the next write that observed it — silently
+ * losing the fact that a legacy dot was ever seen, and misreporting a sequential remove-after-legacy-add as
+ * concurrent). `"~"` is not a legal `<replica>.<n>` substring (replicas never mint it), so it never collides
+ * with a real dot and survives every split/join/filter round-trip intact.
+ */
+const LEGACY_DOT = "~";
 
 function strArg(args: Record<string, unknown>, key: string): string {
   return typeof args[key] === "string" ? (args[key] as string).trim() : "";
@@ -98,8 +104,9 @@ function strArg(args: Record<string, unknown>, key: string): string {
 /** The circle tiddler's mutable field bag (title + arbitrary fields, incl. the per-nym stamps). */
 type CircleFields = Record<string, unknown>;
 
-/** One parsed add- or remove-dot for a nym: its own dot id (`""` for a legacy, undotted stamp) and the set of
- *  opposite-kind dots it OBSERVED at write time (always empty for a legacy stamp — it observed nothing). */
+/** One parsed add- or remove-dot for a nym: its own dot id (`LEGACY_DOT` for a legacy, undotted stamp) and
+ *  the set of opposite-kind dots it OBSERVED at write time (always empty for a legacy stamp — it observed
+ *  nothing). */
 interface DotEntry {
   readonly dot:      string;
   readonly observed: ReadonlySet<string>;
@@ -112,13 +119,13 @@ function parseObservedSet(value: unknown): ReadonlySet<string> {
   return new Set(value.split(",").filter((s) => s.length > 0));
 }
 
-/** Split a field key on its prefix, returning the nym and its dot (`""` when the key carries no `#dot` —
- *  the legacy, undotted shape every pre-M5 writer still mints). */
+/** Split a field key on its prefix, returning the nym and its dot (`LEGACY_DOT` when the key carries no
+ *  `#dot` — the legacy, undotted shape every pre-M5 writer still mints). */
 function parseDotKey(key: string, prefix: string): { nym: string; dot: string } | null {
   if (!key.startsWith(prefix)) return null;
   const rest = key.slice(prefix.length);
   const i = rest.indexOf(DOT_SEP);
-  return i === -1 ? { nym: rest, dot: "" } : { nym: rest.slice(0, i), dot: rest.slice(i + DOT_SEP.length) };
+  return i === -1 ? { nym: rest, dot: LEGACY_DOT } : { nym: rest.slice(0, i), dot: rest.slice(i + DOT_SEP.length) };
 }
 
 /** Collect every add- or remove-dot on this tiddler, grouped by nym. */
@@ -236,7 +243,7 @@ function renderCircle(tw5: TW5Engine | undefined, circle: string, members: reado
  * A non-system circle the operator names is BORN here (kind "Circle"). Writes ONLY the circles doc — never a board.
  */
 export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
-  const replica = opts.replica ?? DEFAULT_REPLICA;
+  const replica = opts.replica;
   return async (args) => {
     const circle = strArg(args, "circle");
     const nym    = strArg(args, "nym");
@@ -280,7 +287,7 @@ export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
  * remove of an absent nym is a no-op; an absent circle stays uncreated). LOCAL to the circles doc — never a board.
  */
 export function makeCircleRemoveReactor(opts: CircleVerbOptions): VerbReactor {
-  const replica = opts.replica ?? DEFAULT_REPLICA;
+  const replica = opts.replica;
   return async (args) => {
     const circle = strArg(args, "circle");
     const nym    = strArg(args, "nym");

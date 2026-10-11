@@ -35,8 +35,8 @@ function seededCircles(): MemoryTiddlerStore {
 function reactorsOver(store: MemoryTiddlerStore, opts?: { tw5?: TW5Engine; replica?: string }) {
   return makeCircleReactors({
     resolveStore: async () => store,
+    replica: opts?.replica ?? "test-replica",
     ...(opts?.tw5 ? { tw5: opts.tw5 } : {}),
-    ...(opts?.replica ? { replica: opts.replica } : {}),
   });
 }
 
@@ -144,6 +144,86 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     const { remove } = reactorsOver(store);
     await remove({ circle: "following", nym: NYM_A }, CTX);
     expect(membersOf(store, "following")).toEqual([]);
+  });
+
+  test("M5 PROOF 1e — a pre-M5 (C2-era) undotted follow+unfollow pair, then a SEQUENTIAL re-follow (want present)", async () => {
+    // L1 shape (probe-m5-legacy.mjs): a legacy writer stamped BOTH an undotted add and an undotted remove
+    // (the old Lamport-counter shape) before this replica ever wrote a dot. A fresh, sequential re-follow
+    // reads the circle via this reactor (which observes every remove-dot it can presently see, dotted or
+    // legacy) and must dominate both legacy stamps.
+    const store = seededCircles();
+    const fields = stampFieldsOf(store, "following");
+    const seeded = {
+      ...fields,
+      [`${MEMBER_ADD_PREFIX}${NYM_A}`]: "00000000000000000001",
+      [`mbr-:${NYM_A}`]:                "00000000000000000002",
+    };
+    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
+    expect(membersOf(store, "following")).toEqual([]);   // the legacy remove already dominates
+
+    const { add } = reactorsOver(store, { replica: "dev-fresh" });
+    await add({ circle: "following", nym: NYM_A }, CTX);
+    expect(membersOf(store, "following")).toEqual([NYM_A]);
+  });
+
+  test("M5 PROOF 1f — a legacy ISO follow, then a SEQUENTIAL dotted unfollow reads absent, NEVER concurrent", async () => {
+    // L2 shape: a legacy ISO-stamped follow (cold-boot-ceremony's former genesis shape), unfollowed by this
+    // same reactor — which observes the legacy add-dot (the reserved `"~"` token, not `""`) — must read
+    // present:[] AND concurrent:[] (the remove causally observed the add; this is not true concurrency).
+    const store = seededCircles();
+    const fields = stampFieldsOf(store, "following");
+    const seeded = { ...fields, [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
+    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
+
+    const { remove } = reactorsOver(store, { replica: "dev-fresh" });
+    await remove({ circle: "following", nym: NYM_A }, CTX);
+    const { present, concurrent } = foldMembersDetailed(stampFieldsOf(store, "following"));
+    expect(present).toEqual([]);
+    expect(concurrent).toEqual([]);   // sequential, not concurrent — the legacy dot WAS observed
+  });
+
+  test("MUTATION PROOF — a legacy dot id of \"\" (not the reserved \"~\" token) LOSES the observation on the "
+    + "comma-join round-trip and misreports a sequential remove as CONCURRENT", () => {
+    // Fixed shape (what the real reactor actually writes for the M5 PROOF 1f scenario): the remove's own dot
+    // observed the legacy add's RESERVED dot id "~", which survives `[...].join(",")` intact.
+    const fixedFields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: "legacy-value", [`mbr-:${NYM_A}#dev.0`]: "~" };
+    const fixed = foldMembersDetailed(fixedFields);
+    expect(fixed.present).toEqual([]);
+    expect(fixed.concurrent).toEqual([]);   // correctly read as sequential (observed)
+
+    // Buggy shape: if the legacy dot id were "" instead of "~", the SAME sequential remove's own
+    // observed-set would have been minted as `[""].join(",")` === "" — indistinguishable from "observed
+    // nothing". Feeding that exact (lossy) representation to the SAME real fold:
+    const buggyFields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: "legacy-value", [`mbr-:${NYM_A}#dev.0`]: "" };
+    const buggy = foldMembersDetailed(buggyFields);
+    expect(buggy.present).toEqual([]);          // remove still wins either way
+    expect(buggy.concurrent).toEqual([NYM_A]);  // but now FALSELY flagged concurrent — the bug "~" fixes
+  });
+
+  test("M5 PROOF 5 — two devices with DISTINCT replica ids keep a concurrent unfollow visible across the merge (A∥B)", async () => {
+    // F1-CONTROL shape (probe-m5-legacy.mjs): replica devA and replica devB each independently unfollow X from
+    // the SAME base state (disjoint dots — different replicas never collide); devA then re-follows, observing
+    // only its OWN remove (not devB's, which it has not merged yet). The key-wise merge of both forks must
+    // still name X concurrent — devB's unobserved remove is never silently dropped.
+    const base = { text: "", id: "following", displayName: "Following", kind: "System", createdAt: "", [`${MEMBER_ADD_PREFIX}${NYM_A}#base.0`]: "" };
+    const seed = () => {
+      const s = new MemoryTiddlerStore(CIRCLES_INNER);
+      s._seed(mutableLarRecord(circleTiddlerUri("following"), { ...base }, "lararium-seed"));
+      return s;
+    };
+    const storeA = seed(), storeB = seed();
+    await reactorsOver(storeA, { replica: "devA" }).remove({ circle: "following", nym: NYM_A }, CTX);
+    await reactorsOver(storeB, { replica: "devB" }).remove({ circle: "following", nym: NYM_A }, CTX);
+    await reactorsOver(storeA, { replica: "devA" }).add({ circle: "following", nym: NYM_A }, CTX);   // A re-follows, observing only ITS OWN remove
+
+    const merged = { ...stampFieldsOf(storeB, "following"), ...stampFieldsOf(storeA, "following") };
+    const { present, concurrent } = foldMembersDetailed(merged);
+    expect(present).not.toContain(NYM_A);       // remove still wins
+    expect(concurrent).toEqual([NYM_A]);        // B's remove and A's re-add never observed each other
+
+    // CONTROL: distinct replicas never collide on a dot — devA's and devB's own remove-dots stay disjoint.
+    const removeDots = Object.keys(merged).filter((k) => k.startsWith(`mbr-:${NYM_A}#`));
+    expect(removeDots.sort()).toEqual([`mbr-:${NYM_A}#devA.0`, `mbr-:${NYM_A}#devB.0`]);
   });
 
   test("M5 PROOF 2 — genuine CONCURRENCY: an unfollow that never saw a re-follow (and vice versa) reads absent and is NAMED", () => {
