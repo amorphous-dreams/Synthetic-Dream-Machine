@@ -6,7 +6,7 @@
 //   <root>/.lar-test-scratch      written here, at stage time, by the harness that mints the root
 //
 // The door refuses a root without the marker, by name (TestDoorRefusal). This stager refuses to mark a root that
-// already holds a standing custody tree: a tree that predates the marker belongs to a vessel, never to a harness.
+// already holds a standing custody tree or any identity carrier: a tree or carrier that predates the marker belongs to a vessel, never to a harness.
 // The marker carries no secret and grants no capability beyond this one test door.
 //
 // Usage: node tools/test-scratch-marker.mjs <ROOT>       (idempotent; creates ROOT)
@@ -30,8 +30,15 @@ export async function stageScratchMarker(root) {
     const here = fileURLToPath(new URL(".", import.meta.url));
     const node = await import(pathToFileURL(resolve(here, "../packages/lararium-node/dist/src/index.js")).href);
     const homes = { identity: node.larIdentityDir(), storage: node.larDataDir(), seal: node.larSealHome() };
-    if (existsSync(dir) && (await node.custodyTreeStands(new node.FsCustodyIo(homes), homes))) {
-      throw new Error(`test-scratch-marker: refusing ${dir} — a custody tree already stands there, so no harness staged it`);
+    if (existsSync(dir)) {
+      const io = new node.FsCustodyIo(homes);
+      if (await node.custodyTreeStands(io, homes)) {
+        throw new Error(`test-scratch-marker: refusing ${dir} — a custody tree already stands there, so no harness staged it`);
+      }
+      // Any identity carrier, tree or no tree, predates the marker: it belongs to a vessel.
+      if ((await io.list()).length > 0) {
+        throw new Error(`test-scratch-marker: refusing ${dir} — identity carriers already stand there, so no harness staged it`);
+      }
     }
   } finally {
     if (prior === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior;

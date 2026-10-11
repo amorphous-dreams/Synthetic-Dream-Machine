@@ -28,5 +28,11 @@ const node = await import(pathToFileURL(resolve(here, "../packages/lararium-node
 const homes = { identity: node.larIdentityDir(), storage: node.larDataDir(), seal: node.larSealHome() };
 const io = new node.FsCustodyIo(homes);
 if (!(await node.custodyTreeStands(io, homes))) {
-  await node.foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] });
+  try {
+    await node.foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }] });
+  } catch (e) {
+    if (e?.name !== "OldShapeRefusal") throw e;
+    console.error(`OldShapeRefusal: ${root} holds identity carriers and no custody tree — nothing was written (${e.standing.length + e.unlisted.length} carrier(s) stand)`);
+    process.exit(2);
+  }
 }

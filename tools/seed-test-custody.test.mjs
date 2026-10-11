@@ -62,3 +62,42 @@ test("the stager refuses to mark a root that already holds a custody tree", () =
 test("no argument refuses with usage", () => {
   assert.equal(spawnSync(process.execPath, [DOOR], { encoding: "utf8" }).status, 2);
 });
+
+// A root that holds identity carriers and no tree belongs to a vessel, never to a harness. The shape: a founded
+// custody whose slot tree went missing, so the sealed custody root stands with nothing committing to it.
+const orphanCarrierRoot = () => {
+  const root = fresh();
+  assert.equal(run(STAGER, root).status, 0);
+  assert.equal(run(DOOR, root).status, 0);
+  rmSync(join(root, "data", "lares", "identity", "vk-slots.bin"));
+  return root;
+};
+
+test("CONTROL: an empty root stages", () => {
+  const root = fresh();
+  try { assert.equal(run(STAGER, root).status, 0); } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("the stager refuses a root that holds identity carriers and no tree", () => {
+  const root = orphanCarrierRoot();
+  try {
+    rmSync(join(root, MARKER_NAME));
+    const r = run(STAGER, root);
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /identity carriers already stand/);
+    assert.equal(existsSync(join(root, MARKER_NAME)), false);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("the door names OldShapeRefusal on one line over a marked root with carriers and no tree, and writes nothing", () => {
+  const root = orphanCarrierRoot();
+  const identity = join(root, "data", "lares", "identity");
+  try {
+    const before = readdirSync(identity).sort();
+    const r = run(DOOR, root);
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /^OldShapeRefusal: /);
+    assert.equal(r.stderr.trim().split("\n").length, 1, r.stderr);
+    assert.deepEqual(readdirSync(identity).sort(), before);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
