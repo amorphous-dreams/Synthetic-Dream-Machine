@@ -107,14 +107,21 @@ function cmdReadSensorium(args: ParsedArgs): number {
  * port reads as already-stopped, not an error. A wedged daemon past its grace is NAMED, once, rather than
  * left to hang silently; the wait itself keeps going. It ENDS a vessel and nothing else — `vessel stand
  * --restart` stops then stands, `hooks pause` suppresses capture alone.
+ *
+ * `--cut` (M4) — past the already-reported grace, deliver the holder ONE further signal (never a
+ * SIGKILL): the operator's own SECOND signal, which the vessel's own shutdown (main.ts) reads as the
+ * event that cuts a hung teardown and exits 75. Without `--cut` this stays exactly as above — a report,
+ * never a decision this door makes for the vessel.
  */
 export async function cmdStop(args: ParsedArgs): Promise<number> {
   const port = larPort();
+  const cut = args.flags["cut"] === true;
   const r = await stopIncumbent(port, {
+    cut,
     onPastGrace: (pids) => console.log(
       pids.length > 0
-        ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit, never a forced kill`
-        : `[lares] :${port} is past its grace, held by no discoverable pid — waiting on its own exit, never a forced kill`,
+        ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
+        : `[lares] :${port} is past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
     ),
   });
   emit(args, {
