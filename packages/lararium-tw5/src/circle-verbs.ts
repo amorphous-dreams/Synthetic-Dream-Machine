@@ -49,8 +49,34 @@ export interface CircleVerbOptions {
   readonly tw5?: TW5Engine;
 }
 
-/** The per-nym unfollow stamp: `mbr-:<nym>` holds the remove timestamp (a nym left; remove-wins on a tie). */
+/** The per-nym unfollow stamp: `mbr-:<nym>` holds the remove STAMP (a nym left; remove-wins on a tie). */
 const MEMBER_RM_PREFIX = "mbr-:";
+
+/**
+ * A stamp is a CAUSAL LAMPORT COUNTER, never a wall-clock reading — a fixed-width zero-padded decimal so string
+ * `>` compare orders it exactly like a number would (preserving `foldMembers`' existing string comparisons with
+ * no change to their shape). `STAMP_WIDTH` bounds the counter at 1e20 ticks, which no circle tiddler reaches.
+ */
+const STAMP_WIDTH = 20;
+
+/**
+ * Mint the NEXT causal stamp for a write landing on this circle tiddler: one past the highest stamp this writer
+ * has OBSERVED among the tiddler's own add/remove fields. A writer can only ever advance beyond what it has
+ * locally seen (its own causal past) — never a device wall clock, which an adversarial clock can set. Two
+ * writers acting with no knowledge of each other's write (genuinely CONCURRENT) may mint the SAME counter; that
+ * tie is not silently broken here — `foldMembers`' existing remove-wins-on-tie rule is the one stated policy for
+ * it, documented at the fold, never invented per-call.
+ */
+function nextStamp(fields: CircleFields): string {
+  let max = -1;
+  for (const [key, value] of Object.entries(fields)) {
+    if (typeof value !== "string") continue;
+    if (!key.startsWith(MEMBER_ADD_PREFIX) && !key.startsWith(MEMBER_RM_PREFIX)) continue;
+    const n = Number.parseInt(value, 10);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  return String(max + 1).padStart(STAMP_WIDTH, "0");
+}
 
 function strArg(args: Record<string, unknown>, key: string): string {
   return typeof args[key] === "string" ? (args[key] as string).trim() : "";
@@ -61,10 +87,11 @@ type CircleFields = Record<string, unknown>;
 
 /**
  * Fold a circle tiddler's fields into the PRESENT nym set — the per-nym CRDT read. Each nym carries an add
- * timestamp (its `mbr+:` stamp) and a remove timestamp (its `mbr-:` stamp). A nym is PRESENT iff it has an
- * add stamp AND its remove stamp does not supersede it (`addedAt > removedAt`) — so remove WINS on a tie, and
- * a strictly-later re-follow resurrects it. Sorted, so two devices reading the same merged doc converge on
- * one ordering.
+ * stamp (its `mbr+:` stamp) and a remove stamp (its `mbr-:` stamp), each a CAUSAL counter (never wall time —
+ * see `nextStamp`). A nym is PRESENT iff it has an add stamp AND its remove stamp does not supersede it
+ * (`addedAt > removedAt`) — so remove WINS on a tie (including the tie a genuinely concurrent add/remove mints),
+ * and a strictly-later (causally-advanced) re-follow resurrects it. Sorted, so two devices reading the same
+ * merged doc converge on one ordering.
  */
 export function foldMembers(fields: CircleFields): string[] {
   const added   = new Map<string, string>();
@@ -128,11 +155,13 @@ export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
     if (!nym)    throw new Error("circle-add: `nym` is required");
     const store = await opts.resolveStore();
     const { fields: prevFields, members: prev } = await readCircle(store, circle);
-    const added   = !prev.includes(nym);
-    const now     = new Date().toISOString();
+    const added = !prev.includes(nym);
+    const stamp = nextStamp(prevFields);
     // Stamp ONLY this nym's add key — every OTHER member field rides through untouched (the `...prevFields`
     // spread re-asserts them, so the whole-record merge never drops a fleet-mate's key). A re-follow sets a
-    // fresh, strictly-later add stamp that supersedes any standing remove — the fold reads it present again.
+    // fresh, causally-advanced add stamp that supersedes any standing remove — the fold reads it present again.
+    // `createdAt` is a RENDER-ADVISORY timestamp only (never read by the fold) — the one wall-clock reading
+    // left in this reactor, kept for a human to see when the circle was born.
     const next: LarTiddlerRecord = {
       tiddler: {
         ...prevFields,
@@ -140,12 +169,12 @@ export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
         id:          circle,
         displayName: (typeof prevFields["displayName"] === "string" && prevFields["displayName"]) || circle,
         kind:        (typeof prevFields["kind"] === "string" && prevFields["kind"]) || "Circle",
-        createdAt:   (typeof prevFields["createdAt"] === "string" && prevFields["createdAt"]) || now,
-        [`${MEMBER_ADD_PREFIX}${nym}`]: now,
+        createdAt:   (typeof prevFields["createdAt"] === "string" && prevFields["createdAt"]) || new Date().toISOString(),
+        [`${MEMBER_ADD_PREFIX}${nym}`]: stamp,
       } as LarTiddlerRecord["tiddler"],
       meta: { authority: "lares-verb" },
     };
-    await store.put(next, { kind: "lares-verb", requestId: `circle-add-${now}-${nym.slice(0, 8)}` });
+    await store.put(next, { kind: "lares-verb", requestId: `circle-add-${stamp}-${nym.slice(0, 8)}` });
     const members = foldMembers(next.tiddler as CircleFields);
     renderCircle(opts.tw5, circle, members);
     return { verb: "circle-add", circle, nym, members, added, federated: false };
@@ -170,12 +199,12 @@ export function makeCircleRemoveReactor(opts: CircleVerbOptions): VerbReactor {
     // (remove-wins). An absent circle stays uncreated (nothing to unfollow). Only this one key is touched.
     let members = prev.filter((m) => m !== nym);
     if (record) {
-      const now = new Date().toISOString();
+      const stamp = nextStamp(prevFields);
       const next: LarTiddlerRecord = {
-        tiddler: { ...prevFields, title: circleTiddlerUri(circle), [`${MEMBER_RM_PREFIX}${nym}`]: now } as LarTiddlerRecord["tiddler"],
+        tiddler: { ...prevFields, title: circleTiddlerUri(circle), [`${MEMBER_RM_PREFIX}${nym}`]: stamp } as LarTiddlerRecord["tiddler"],
         meta: { authority: "lares-verb" },
       };
-      await store.put(next, { kind: "lares-verb", requestId: `circle-remove-${now}-${nym.slice(0, 8)}` });
+      await store.put(next, { kind: "lares-verb", requestId: `circle-remove-${stamp}-${nym.slice(0, 8)}` });
       members = foldMembers(next.tiddler as CircleFields);
     }
     renderCircle(opts.tw5, circle, members);

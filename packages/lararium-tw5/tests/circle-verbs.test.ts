@@ -104,8 +104,8 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     expect(again["removed"]).toBe(false);
     expect(membersOf(store, "following")).toEqual([NYM_B]);
 
-    // a strictly-later re-follow supersedes the remove stamp → present again (resurrection)
-    await new Promise((r) => setTimeout(r, 2));   // ensure a strictly-later ISO add stamp
+    // a causally-later re-follow supersedes the remove stamp → present again (resurrection). The stamp is a
+    // Lamport counter minted from what THIS write observes (no wall clock, no sleep needed to order it).
     await add({ circle: "following", nym: NYM_A }, CTX);
     expect(membersOf(store, "following")).toEqual([NYM_A, NYM_B]);
   });
@@ -123,8 +123,9 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
   });
 
   test("CONCURRENT-MERGE: add-on-fork-A + remove-on-fork-B merge to remove-wins with NO lost add", async () => {
-    // Both replicas descend from a base where NYM_A is already followed (a standing `mbr+:NYM_A` stamp).
-    const t0 = new Date(1_000_000).toISOString();
+    // Both replicas descend from a base where NYM_A is already followed (a standing `mbr+:NYM_A` stamp) — a
+    // causal counter, never a wall-clock reading.
+    const t0 = "00000000000000000000";
     const baseFields = { text: "", id: "following", displayName: "Following", kind: "System", createdAt: "", [`mbr+:${NYM_A}`]: t0 };
     const seed = () => {
       const s = new MemoryTiddlerStore(CIRCLES_INNER);
@@ -148,14 +149,64 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     expect(present).not.toContain(NYM_A);   // REMOVE-WINS — B's later unfollow supersedes the standing follow
   });
 
-  test("REMOVE-WINS on a strict tie: an equal add/remove timestamp folds to absent", () => {
-    const t = new Date(3_000_000).toISOString();
-    // The fold reads present iff `addedAt > removedAt` (strict) — so an EQUAL-timestamp add + remove folds to
-    // absent: on a genuine tie, remove wins (never a coin-flip that could resurrect a banned/dropped nym).
+  test("REMOVE-WINS on a strict tie: an equal add/remove STAMP (a causal counter, never a timestamp) folds to absent", () => {
+    const t = "00000000000000000003";
+    // The fold reads present iff `addedAt > removedAt` (strict) — so an EQUAL-stamp add + remove folds to
+    // absent: on a genuine tie (including two genuinely concurrent writers), remove wins (never a coin-flip
+    // that could resurrect a banned/dropped nym).
     expect(foldMembers({ [`mbr+:${NYM_A}`]: t, [`mbr-:${NYM_A}`]: t })).toEqual([]);
-    // A strictly-later add DOES win (a deliberate re-follow after an unfollow).
-    const later = new Date(4_000_000).toISOString();
+    // A causally-later (strictly greater counter) add DOES win (a deliberate re-follow after an unfollow).
+    const later = "00000000000000000004";
     expect(foldMembers({ [`mbr+:${NYM_A}`]: later, [`mbr-:${NYM_A}`]: t })).toEqual([NYM_A]);
+  });
+
+  test("CLOCKLESS: a set-back and a set-forward system clock leave every stamp and verdict unchanged", async () => {
+    const realDateNow = Date.now;
+    const store = seededCircles();
+    const { add, remove } = reactorsOver(store);
+    try {
+      Date.now = () => 1_000; // set WAY back
+      await add({ circle: "following", nym: NYM_A }, CTX);
+      Date.now = () => 9_999_999_999_999; // set WAY forward
+      await add({ circle: "following", nym: NYM_B }, CTX);
+      Date.now = () => 500; // back again, mid-sequence
+      const out = await remove({ circle: "following", nym: NYM_A }, CTX);
+      expect(out["removed"]).toBe(true);
+      expect(membersOf(store, "following")).toEqual([NYM_B]);
+      // The stamps minted across the clock swings are a STRICTLY increasing causal counter, never a reading
+      // of the (tampered) wall clock.
+      const fields = stampFieldsOf(store, "following");
+      const a = Number.parseInt(fields[`mbr+:${NYM_A}`] as string, 10);
+      const b = Number.parseInt(fields[`mbr+:${NYM_B}`] as string, 10);
+      const rmA = Number.parseInt(fields[`mbr-:${NYM_A}`] as string, 10);
+      expect(a).toBeLessThan(b);
+      expect(b).toBeLessThan(rmA);
+    } finally {
+      Date.now = realDateNow;
+    }
+  });
+
+  test("MUTATION PROOF: reverting the causal stamp to a wall-clock ISO read breaks the clockless proof above", () => {
+    // Simulates the bug `nextStamp` fixes: minting a stamp from `Date.now()`/`toISOString()` instead of the
+    // tiddler's own observed counters. Re-running the SAME clock-tamper sequence through that reverted shape
+    // would read the LATER add (NYM_B, minted under the far-future clock) as "before" a remove minted moments
+    // later under a set-BACK clock — the exact inversion this file guards against.
+    const wallClockStamp = () => new Date(Date.now()).toISOString();
+    const realDateNow = Date.now;
+    try {
+      Date.now = () => 9_999_999_999_999;
+      const laterByWallClock = wallClockStamp();
+      Date.now = () => 500;
+      const earlierByWallClock = wallClockStamp();
+      // The reverted (buggy) shape would store `laterByWallClock` as NYM_B's add and `earlierByWallClock` as a
+      // SUBSEQUENT remove — and a wall-clock compare reads the remove as EARLIER than the add it followed.
+      expect(earlierByWallClock < laterByWallClock).toBe(true);
+      expect(foldMembers({ [`mbr+:${NYM_B}`]: laterByWallClock, [`mbr-:${NYM_B}`]: earlierByWallClock })).toEqual([NYM_B]);
+      // ^ WRONG under a set-back clock: the remove that actually happened SECOND folds as though it happened
+      // FIRST. `nextStamp`'s causal counter cannot produce this inversion — proven by the test above.
+    } finally {
+      Date.now = realDateNow;
+    }
   });
 
   test("a follow of a NEW circle the operator names is born (kind Circle)", async () => {
