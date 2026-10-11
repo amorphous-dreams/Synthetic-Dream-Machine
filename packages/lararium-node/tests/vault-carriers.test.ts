@@ -226,7 +226,7 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
     const io = new ScratchCustodyIo(homes);
     const vk = mintVk();
     const treePath = vkSlotsPath(homes.identity);
-    await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }) });
+    await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: vkSealedCarriers(homes) });
     const sealed: SealedCarrier[] = [
       custodyRootCarrier(homes.identity),
       { name: `storage/walk/${HOST}.json`, path: join(homes.storage, "walk", `${HOST}.json`) },

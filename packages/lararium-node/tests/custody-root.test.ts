@@ -20,7 +20,7 @@ import {
   custodyVeil, isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,
 } from "../src/custody-root.js";
 import { resolveRelayGateSeed } from "../src/carriage-relay.js";
-import { carrierTable, vkSlotsPath } from "../src/vault-carriers.js";
+import { carrierTable, vkSealedCarriers, vkSlotsPath } from "../src/vault-carriers.js";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 
 const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");
@@ -35,7 +35,7 @@ async function founded(): Promise<{ io: ScratchCustodyIo; vk: VesselKey; identit
   const io = new ScratchCustodyIo(homes);
   const vk = mintVk();
   const treePath = vkSlotsPath(homes.identity);
-  await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "fixture" }] }) });
+  await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "fixture" }] }), carriers: vkSealedCarriers(homes) });
   return { io, vk, identity: homes.identity, treePath, drop };
 }
 

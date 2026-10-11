@@ -13,8 +13,9 @@ import { KEY_CLASSES, isKeyClass, vesselKeyCensus, type KeyClass } from "../src/
 import { vaultCarrierFiles } from "../src/vault-carriers.js";
 
 describe("the key-class vocabulary is closed", () => {
-  test("three classes, and an unknown spelling refuses at the guard", () => {
-    expect([...KEY_CLASSES]).toEqual(["device-minted", "seed", "cloud-synced"]);
+  test("four classes, and an unknown spelling refuses at the guard", () => {
+    expect([...KEY_CLASSES]).toEqual(["device-minted", "seed", "cloud-synced", "relation"]);
+    expect(isKeyClass("relation")).toBe(true);
     expect(isKeyClass("device-minted")).toBe(true);
     expect(isKeyClass("cloud-synced")).toBe(true);
     expect(isKeyClass("passkey")).toBe(false);
