@@ -134,7 +134,8 @@ stage_custody() {
 }
 assert_founded() {
   step "$2's founding left an identity on disk"
-  if [ -n "$(find "$1" -name '.vessel-key-*.json' -type f -print -quit 2>/dev/null)" ]; then ok
+  # The social bootstrap is the founding's invariant artifact: it stands under every identity name, with or without a git email.
+  if [ -f "$1/data/lares/vessel/social-bootstrap.json" ]; then ok
   else bad "NoIdentityAfterFounding"; say "ABANDONED — $2's founding wrote no identity; every check below would measure an unfounded vessel."; exit 2; fi
 }
 
