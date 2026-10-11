@@ -27,6 +27,11 @@ export type { BrowserVesselOptions, BrowserVesselResult } from "./open-browser-v
 
 export type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 
+export { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
+export type {
+  BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState, RelayConnectionAdapter,
+} from "./browser-connection-state.js";
+
 export {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, loadBrowserDeviceKey,
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,

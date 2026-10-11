@@ -46,6 +46,8 @@ import {
   type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
+import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
+import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, browserWalkLeaf } from "./browser-walk.js";
 import {
   MemoryTiddlerStore,
@@ -278,6 +280,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
    * met with silence. Either way the vessel booted: standing at its own floor is a correct outcome.
    */
   crossed: () => boolean;
+  /** Reactive crossing snapshot for the served page; peer identity carries the pinned gate key. */
+  connectionState: BrowserConnectionState;
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
   siblingChannel: () => SiblingChannelStatus | null;
   /**
@@ -500,6 +504,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // DURABLY to this vessel's own store before any dial; otherwise the record this vessel already holds for that
   // hearth, if any.
   const relayPin = relayPinFor(relayUrl, relayGatePubKey);
+  const connectionState = createBrowserConnectionState(relayPin);
   if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
   const walkStore = browserWalkStore(idbName);
   const walk: WalkRecord | null = relayPin.dial ? await (async () => {
@@ -700,6 +705,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     const adapter = new LarWSClientAdapter({
       url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayPin.gatePubKey,
     });
+    observeRelayConnection(connectionState, adapter);
     relayAdapter = adapter;
     if (walking && walkLeaf && walk) {
       // The wallet fills against the hearth's signed act for the grant's epoch, read off that hearth's hosting doc
@@ -1490,6 +1496,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase:            "live",
     crossed: () => relayAdapter?.session != null,
+    connectionState,
     siblingChannel: () => siblings?.status() ?? null,
     handOutInvite: () => relayPin.dial ? popInvite(walkStore, relayPin.gatePubKey, relayUrl) : Promise.resolve(null),
     carryAtHearth: (plaintext, withinMs) => relayPin.dial && relayAdapter && walkLeaf
