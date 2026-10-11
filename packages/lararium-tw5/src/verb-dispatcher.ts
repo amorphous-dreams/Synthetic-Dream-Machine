@@ -51,7 +51,7 @@ import {
   OUTCOME_URI_PREFIX,
   verbInputDigest,
 } from "@lararium/mesh";
-import { dispatchVerb, placeVerb, copyEffectOutcome, EFFECT_URI_PREFIX } from "./verb-vm.js";
+import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
@@ -266,17 +266,30 @@ export class VerbDispatcher {
     const priorRequestId = priorFact ? String(priorFact.tiddler["request-id"] ?? "") : "";
     if (priorRequestId) {
       const priorOutcome = await this.opts.daemon.getLive(OUTCOME_URI_PREFIX + priorRequestId);
-      const priorDigest = priorOutcome ? String(priorOutcome.tiddler["input-digest"] ?? "") : undefined;
-      if (priorOutcome && priorDigest === inputDigest) {
+      if (!priorOutcome) {
+        // The effect index still names a prior requestId, but that attempt's own outcome
+        // is GONE (evicted by the CAS sweep's retention window) — the dedup shortcut has
+        // nothing to copy from, and a fresh-run fallthrough would silently re-perform an
+        // effect whose prior record a caller can no longer check. Conclude THIS attempt
+        // as refused; never run the handler.
+        console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
+        await writeOutcome(this.opts.daemon, {
+          invocation, status: "error",
+          errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained`,
+          refusal: "retention-gap",
+        });
+        removeVerb(this.opts.daemonVm, invocation.title);
+        return;
+      }
+      const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
+      if (priorDigest === inputDigest) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
         await copyEffectOutcome(this.opts.daemonVm, this.opts.daemon, invocation, {
           priorRequestId, priorResults, inputDigest,
         });
         return;
       }
-      if (priorOutcome) {
-        console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
-      }
+      console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
     await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation));
@@ -295,11 +308,28 @@ export class VerbDispatcher {
         const invocation = parseVerb(tw5Tiddler.fields);
         if (!invocation || invocation.status !== "pending" || this.inFlight.has(invocation.requestId)) continue;
         this.inFlight.add(invocation.requestId);
-        void this.opts.daemon.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then((prior) => {
+        void this.opts.daemon.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
           // Durable idempotency — the CRDT is the dedup store: a verb whose
           // outcome already landed has already taken effect, so skip re-execution
           // (exactly-once EFFECT, not delivery). See project_asymmetric_peer_handoff.
-          if (prior) return undefined;
+          if (prior) {
+            // Redelivery check: this requestId already has a landed outcome, which stamped
+            // its own input digest. A REDELIVERED invocation carrying the SAME requestId but
+            // DIFFERENT content never matches it — never a legitimate re-send, so it's worth
+            // naming (by requestId + verb) even though the outcome, once landed, is never
+            // re-derived either way.
+            const priorDigest = prior.tiddler["input-digest"];
+            if (typeof priorDigest === "string") {
+              const redeliveredDigest = await verbInputDigest({
+                verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+                ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
+              });
+              if (redeliveredDigest !== priorDigest) {
+                console.warn(`[verb-dispatcher] requestId "${invocation.requestId}" (verb "${invocation.action}") redelivered with a changed input digest against its already-landed outcome — skipping re-execution, not re-deriving`);
+              }
+            }
+            return undefined;
+          }
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
           if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation);

@@ -124,6 +124,9 @@ export async function writeOutcome(
     status:        "done" | "error";
     result?:       Record<string, unknown>;
     errorMessage?: string;
+    /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside
+     *  `errorMessage`; see `concludeVerb`. */
+    refusal?:      string;
   },
 ): Promise<void> {
   const origin = { kind: "lares-verb" as const, requestId: opts.invocation.requestId };
@@ -151,6 +154,7 @@ export async function writeOutcome(
       },
     },
     ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
+    ...(opts.refusal      !== undefined && { refusal:      opts.refusal }),
     inputDigest,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });

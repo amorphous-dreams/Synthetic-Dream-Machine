@@ -14,7 +14,7 @@
  * string. Concurrent same-effectKey attempts serialize through `inFlightEffect`.
  */
 
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import {
   CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY,
 } from "@lararium/mesh";
@@ -88,6 +88,59 @@ async function outcomeOf(daemon: CompositeStore, requestId: string) {
   const results = JSON.parse(String(rec.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
   return { fields: rec.tiddler, results };
 }
+
+describe("VerbDispatcher — redelivered requestId vs. the already-landed outcome's stamped digest", () => {
+  test("a redelivered requestId carrying a CHANGED digest against its landed outcome is skipped and logged by name; a matching redelivery is skipped silently (control)", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("do-redeliver", async (args) => {
+      runCount++;
+      return { ran: runCount, echo: args["x"] };
+    });
+
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    dispatcher.start();
+
+    dispatcher.placeVerb({
+      verb: "do-redeliver", args: { x: 1 }, requestedBy: "did:key:test", requestId: "req-redeliver",
+    });
+    await settle();
+    expect(runCount).toBe(1);
+    const landed = await outcomeOf(daemon, "req-redeliver");
+    expect(landed?.fields.status).toBe("done");
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    // CONTROL — an exact redelivery (same requestId, same args) is the ordinary idempotent
+    // case: skipped, no handler run, nothing worth naming since content matches.
+    dispatcher.placeVerb({
+      verb: "do-redeliver", args: { x: 1 }, requestedBy: "did:key:test", requestId: "req-redeliver",
+    });
+    await settle();
+    expect(runCount).toBe(1);
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    // A redelivery under the SAME requestId but DIFFERENT content — a changed digest against
+    // the already-landed outcome's stamped one. It must still be SKIPPED (the landed outcome
+    // is never re-derived), but logged by name so the mismatch doesn't vanish silently.
+    dispatcher.placeVerb({
+      verb: "do-redeliver", args: { x: 999 }, requestedBy: "did:key:test", requestId: "req-redeliver",
+    });
+    await settle();
+
+    expect(runCount).toBe(1); // still skipped — never re-runs the handler
+    const stillLanded = await outcomeOf(daemon, "req-redeliver");
+    expect(stillLanded?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 1, echo: 1 }); // unchanged
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0]?.[0]).toContain("req-redeliver");
+    expect(warnSpy.mock.calls[0]?.[0]).toContain("do-redeliver");
+
+    warnSpy.mockRestore();
+    dispatcher.stop();
+  });
+});
 
 describe("VerbDispatcher — effect dedup (D1)", () => {
   test("a second attempt under a NEW requestId with the SAME effectKey answers with effect-of and the handler runs ONCE; a changed digest skips the shortcut and runs fresh", async () => {
@@ -227,6 +280,99 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     expect(second?.fields.status).toBe("done");
     expect(second?.fields["effect-of"]).toBe("req-slow-1");
     expect(second?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 1, echo: 7 });
+
+    dispatcher.stop();
+  });
+
+  test("E1 — an effect-index hit whose prior outcome is EVICTED refuses (retention-gap) and never runs the handler; a digest-mismatch control falls through to a fresh run", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("do-evictable", async (args) => {
+      runCount++;
+      return { ran: runCount, echo: args["x"] };
+    });
+
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    dispatcher.start();
+
+    // First attempt lands normally — handler runs once, effect index + outcome both written.
+    dispatcher.placeVerb({
+      verb: "do-evictable", args: { x: 1 }, requestedBy: "did:key:test",
+      requestId: "req-evict-1", effectKey: "eff-evict",
+    });
+    await settle();
+    expect(runCount).toBe(1);
+    const first = await outcomeOf(daemon, "req-evict-1");
+    expect(first?.fields.status).toBe("done");
+    const factBefore = await daemon.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    expect(factBefore?.tiddler["request-id"]).toBe("req-evict-1");
+
+    // Simulate a CAS-sweep eviction: the outcome tiddler is gone, but the effect-index
+    // fact (a separate bag write) survives — exactly the retention-gap shape.
+    await daemon.tombstone(OUTCOME_URI_PREFIX + "req-evict-1", { kind: "lares-verb", requestId: "req-evict-1" });
+    expect(await outcomeOf(daemon, "req-evict-1")).toBeNull();
+    const factAfter = await daemon.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    expect(factAfter?.tiddler["request-id"]).toBe("req-evict-1"); // the index survives the eviction
+
+    // A SECOND attempt, same effectKey, SAME args (digest would have matched the gone outcome)
+    // — the dedup shortcut has nothing to copy from. It must REFUSE, not run the handler.
+    dispatcher.placeVerb({
+      verb: "do-evictable", args: { x: 1 }, requestedBy: "did:key:test",
+      requestId: "req-evict-2", effectKey: "eff-evict",
+    });
+    await settle();
+
+    expect(runCount).toBe(1); // handler did NOT run for the evicted-effect attempt
+    const second = await outcomeOf(daemon, "req-evict-2");
+    expect(second?.fields.status).toBe("error");
+    expect(second?.fields.refusal).toBe("retention-gap");
+    // The refused attempt is itself an "error" outcome, which writeOutcome's own law never
+    // indexes — so it did NOT clobber the effect-index fact with its own (non-)result; the
+    // index still names the original, now-evicted req-evict-1, and a future retention policy
+    // can tell "the thing this index points at is gone" from "nothing was ever indexed" — the
+    // two read differently on purpose.
+    const factAfterRefusal = await daemon.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    expect(factAfterRefusal?.tiddler["request-id"]).toBe("req-evict-1");
+
+    dispatcher.stop();
+  });
+
+  test("CONTROL (eviction-guard specificity) — an effect-index hit whose prior outcome is STILL LIVE dedups normally, same effectKey shape as the eviction test above", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const daemon = makeDaemon();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("do-evictable-live", async (args) => {
+      runCount++;
+      return { ran: runCount, echo: args["x"] };
+    });
+
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon, registry });
+    dispatcher.start();
+
+    dispatcher.placeVerb({
+      verb: "do-evictable-live", args: { x: 1 }, requestedBy: "did:key:test",
+      requestId: "req-live-1", effectKey: "eff-live",
+    });
+    await settle();
+    expect(runCount).toBe(1);
+
+    // No eviction this time — the prior outcome is untouched. A same-args retry must still
+    // take the ordinary effect-of dedup path, NOT the retention-gap refusal — proving the
+    // new guard fires only when the prior outcome is actually gone.
+    dispatcher.placeVerb({
+      verb: "do-evictable-live", args: { x: 1 }, requestedBy: "did:key:test",
+      requestId: "req-live-2", effectKey: "eff-live",
+    });
+    await settle();
+
+    expect(runCount).toBe(1); // dedup shortcut, not a refusal and not a fresh run
+    const second = await outcomeOf(daemon, "req-live-2");
+    expect(second?.fields.status).toBe("done");
+    expect(second?.fields["effect-of"]).toBe("req-live-1");
+    expect(second?.fields.refusal).toBeUndefined();
 
     dispatcher.stop();
   });
