@@ -105,19 +105,20 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
 });
 
 // ── GRACE AND PIN, NO GLOBAL NOW (basket-one #/grace-and-pin, ruled 2026-09-11; retired 2026-10-10) ──────────
-// A PIN `{cid, tier, holder, expiry}` beside the bag's caps holds its blob past any grace; the grace itself
+// A PIN `{cid, tier, holder, fence?}` beside the bag's caps holds its blob past any grace; the grace itself
 // reads PER TIER off the realm's baseline (`graceForTier`), so two unreferenced blobs of different tiers
 // sweep at different ages. A pin stands by PRESENCE in the array `casSweep` is handed — never by comparing
-// `expiry` to now. `expiry` stays on the wire shape (mesh's `PinCap`) as ADVISORY DISPLAY ONLY; this suite
-// proves `casSweep` never reads it, with a pin that would read "expired" by any wall clock still holding,
-// and one that would read "standing forever" sweeping the instant its sidecar entry is withdrawn.
+// a clock. `PinCap` (mesh) carries NO `expiry` field at all (M7); this suite proves `casSweep` never reads
+// even the OPTIONAL `fence` to decide a sweep, with a pin that carries one a far-forward clock would have
+// no bearing on still holding, and one absent from the array sweeping the instant its sidecar entry is
+// withdrawn.
 import { graceForTier, type PinCap } from "@lararium/mesh";
 
 describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
   test("a pinned unreferenced blob never sweeps while the pin stands (present)", () => {
     const b = blob("a working the Librarian will re-stand");
     writeCasEntriesFs([b], casDir);
-    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() + 86_400_000 }];
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1" }];
     const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins });
     expect(r.swept).toEqual([]);
     expect(r.pinned).toEqual([b.cid]);
@@ -134,13 +135,13 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     expect(r.swept).toEqual([b.cid]);
   });
 
-  test("CONTROL — SET-BACK and SET-FORWARD: an `expiry` field that reads expired by a far-forward clock, or\n" +
-       "        standing by a far-back one, changes NEITHER verdict — only presence in `pins` decides", () => {
-    const standing = blob("a pin whose expiry a forward jump would have ended");
+  test("CONTROL — SET-BACK and SET-FORWARD: a mocked wall clock changes NEITHER verdict — only presence\n" +
+       "        in `pins` decides, whether or not a `fence` rides along", () => {
+    const standing = blob("a pin whose optional fence a forward jump would have no bearing on");
     const released = blob("an unpinned blob a backward jump would 'revive'");
     writeCasEntriesFs([standing, released], casDir);
     const realNow = Date.now();
-    const pins: PinCap[] = [{ cid: standing.cid, tier: "veil", holder: "vessel-1", expiry: realNow - 1 }]; // "expired" by any real clock
+    const pins: PinCap[] = [{ cid: standing.cid, tier: "veil", holder: "vessel-1", fence: realNow - 1 }];
     for (const skew of [-10 * 365 * 86_400_000, 10 * 365 * 86_400_000]) {   // 10y back, 10y forward
       vi.spyOn(Date, "now").mockReturnValue(realNow + skew);
       try {
@@ -201,7 +202,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       registry, casDir,
       references: async () => [],
       protect: new Set(genesis.blobs.map((b) => b.cid)),
-      pins: () => [{ cid: kept.cid, tier: "veil", holder: "operator", expiry: Date.now() + 86_400_000 }],
+      pins: () => [{ cid: kept.cid, tier: "veil", holder: "operator" }],
       realmClock: () => clockAt(epoch),
       log: () => {},
     });

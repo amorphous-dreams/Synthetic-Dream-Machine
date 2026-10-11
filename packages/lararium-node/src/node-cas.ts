@@ -19,6 +19,7 @@ import {
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
+import { atomicWriteFileSync } from "./fs-atomic.js";
 
 /** The CAS dir for a vessel rooted at `storageDir` (`<lares>/vessel` → `<lares>/vessel/cas`). The
  *  runtime-cas OVERRIDE (`LAR_CAS` → `config.vessel.cas`) wins when sited — the SAME lever the CLI stager
@@ -164,11 +165,12 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
 //
 // A PIN CARRIES NO CLOCK. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
 // it, `releaseCas` removes it, and PRESENCE in the set the sweep reads IS "standing" — no comparison
-// against now, set-back or set-forward, changes that verdict. `PinCap.expiry` (@lararium/mesh) stays
-// on the wire shape for callers that still populate it, but this file never reads it to decide
-// anything: it is ADVISORY DISPLAY ONLY (standing law: a wall clock never decides a verdict). The
-// mesh-level `pinnedCids` helper applies exactly the wall-clock filter this house retired, so this
-// file no longer calls it — ending a pin is an EXPLICIT act (`releaseCas`), or the next pin for the
+// against now, set-back or set-forward, changes that verdict. `PinCap` (@lararium/mesh) carries NO
+// `expiry` field at all (M7 — the field left the record entirely, never merely unread); its OPTIONAL
+// `fence` names a holder's own boot epoch for a caller that wants causal supersession, but this file's
+// own sweep still never reads it — presence in the sidecar alone decides here. The mesh-level
+// `pinnedCids` helper applies exactly the fence filter a caller WITH a fence to compare wants, so this
+// file still never calls it — ending a pin is an EXPLICIT act (`releaseCas`), or the next pin for the
 // same cid superseding the one it replaces (`pinCas`'s replace-by-cid).
 
 /** A cleartext CAS file name — hex sha256. Anything else in the dir (a sidecar) is never a blob. */
@@ -245,21 +247,30 @@ export function casSweep(opts: CasSweepOptions): CasSweepResult {
 
 const PINS_FILE = ".pins.json";
 
-/** The pins a CAS dir holds — an absent or torn sidecar reads as no pins. */
+/** The pins a CAS dir holds — an absent or torn sidecar reads as no pins. `fence` (M7) is OPTIONAL: a
+ *  record carrying none is a VALID pin (presence-only), not a torn one — only `cid`/`holder`/`tier`
+ *  are required, and a stray `fence` of the wrong type fails the record as torn rather than dropping
+ *  just that field silently. The retired `expiry` field, if an older sidecar still carries it, is
+ *  simply ignored: this reader never looks for it, so it round-trips as dead weight on rewrite until
+ *  the next `pinCas`/`releaseCas` rewrites the record without it. */
 export function readCasPins(casDir: string): PinCap[] {
   try {
     const raw = JSON.parse(readFileSync(join(casDir, PINS_FILE), "utf8")) as unknown;
     if (!Array.isArray(raw)) return [];
-    return raw.filter((p): p is PinCap =>
-      !!p && typeof p === "object" && typeof (p as PinCap).cid === "string" && typeof (p as PinCap).expiry === "number"
-      && typeof (p as PinCap).holder === "string" && typeof (p as PinCap).tier === "string");
+    return raw
+      .filter((p): p is PinCap =>
+        !!p && typeof p === "object" && typeof (p as PinCap).cid === "string"
+        && typeof (p as PinCap).holder === "string" && typeof (p as PinCap).tier === "string"
+        && ((p as PinCap).fence === undefined || typeof (p as PinCap).fence === "number"))
+      .map((p) => ({ cid: p.cid, tier: p.tier, holder: p.holder, ...(p.fence !== undefined ? { fence: p.fence } : {}) }));
   } catch { return []; }
 }
 
-/** Write the pins whole. */
+/** Write the pins whole — temp + rename (M7), never a bare `writeFileSync`: a reader mid-write (another
+ *  CLI invocation, the sweep's own read) must never observe a torn `.pins.json`. */
 export function writeCasPins(casDir: string, pins: readonly PinCap[]): void {
   mkdirSync(casDir, { recursive: true });
-  writeFileSync(join(casDir, PINS_FILE), JSON.stringify(pins, null, 2) + "\n");
+  atomicWriteFileSync(join(casDir, PINS_FILE), JSON.stringify(pins, null, 2) + "\n");
 }
 
 /** Add (or replace, by cid) one pin. Returns the standing set. */

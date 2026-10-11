@@ -1,10 +1,9 @@
 /**
  * cas-pin.test.ts — `lares bag cas`'s pinned-blob reflection reads a pin by PRESENCE in the `.pins.json`
- * sidecar (basket-one #/grace-and-pin, retired to NO GLOBAL NOW 2026-10-10), never by comparing
- * `PinCap.expiry` against `Date.now()`. `expiry` stays on the wire shape but is ADVISORY DISPLAY ONLY —
- * CAS retention law: a wall clock never decides whether a pin holds. The proofs:
- *   · a freshly pinned cid reads `pinned` even with an `expiry` set to a timestamp already in the past
- *     (what a wall-clock gate would call "expired" the instant it is written);
+ * sidecar (basket-one #/grace-and-pin, retired to NO GLOBAL NOW 2026-10-10). `PinCap` carries NO
+ * `expiry` field at all (M7) — only an OPTIONAL causal `fence`, which this CLI door never sets, so
+ * every pin it writes holds by PRESENCE alone, forever, until an explicit `--release`. The proofs:
+ *   · a freshly pinned cid reads `pinned` with no fence at all — nothing a wall clock could call "expired";
  *   · `--release` (here, `releaseCas` directly) drops it from `pinned` immediately, with no clock involved;
  *   · CONTROL: a SET-BACK and a SET-FORWARD wall clock (mocked `Date.now`) change neither verdict.
  */
@@ -31,12 +30,12 @@ function emptyDirs(): { casDir: string; bagsDir: string; wikisDir: string; genes
   return { casDir, bagsDir: join(root, "bags"), wikisDir: join(root, "wikis"), genesisDir: join(root, "genesis") };
 }
 
-describe("readCas — pinned reflects PRESENCE in the sidecar, never `expiry` vs now", () => {
-  test("a pin stands even with `expiry` already in the past at write time", () => {
+describe("readCas — pinned reflects PRESENCE in the sidecar, never a wall clock", () => {
+  test("a pin with no `fence` at all stands — nothing a clock-shaped reading could call expired", () => {
     const b = "a blob the operator means to keep";
     const cid = cidOf(b);
     writeFileSync(join(casDir, cid), b);
-    pinCas(casDir, { cid, tier: "veil", holder: "operator", expiry: Date.now() - 1 });   // "expired" on arrival
+    pinCas(casDir, { cid, tier: "veil", holder: "operator" });
     const r = readCas(emptyDirs());
     expect(r.pinned).toEqual([cid]);
   });
@@ -45,7 +44,7 @@ describe("readCas — pinned reflects PRESENCE in the sidecar, never `expiry` vs
     const b = "a blob released right away";
     const cid = cidOf(b);
     writeFileSync(join(casDir, cid), b);
-    pinCas(casDir, { cid, tier: "veil", holder: "operator", expiry: Date.now() + 86_400_000 }); // "standing for a day"
+    pinCas(casDir, { cid, tier: "veil", holder: "operator" });
     expect(readCas(emptyDirs()).pinned).toEqual([cid]);
     releaseCas(casDir, cid);
     expect(readCas(emptyDirs()).pinned).toEqual([]);
@@ -57,8 +56,8 @@ describe("readCas — pinned reflects PRESENCE in the sidecar, never `expiry` vs
     const sCid = cidOf(standing), rCid = cidOf(released);
     writeFileSync(join(casDir, sCid), standing);
     writeFileSync(join(casDir, rCid), released);
-    pinCas(casDir, { cid: sCid, tier: "veil", holder: "operator", expiry: Date.now() + 1 });
-    pinCas(casDir, { cid: rCid, tier: "veil", holder: "operator", expiry: Date.now() + 86_400_000 });
+    pinCas(casDir, { cid: sCid, tier: "veil", holder: "operator" });
+    pinCas(casDir, { cid: rCid, tier: "veil", holder: "operator" });
     releaseCas(casDir, rCid);   // released before any clock skew — it must stay released under either skew
 
     const realNow = Date.now();

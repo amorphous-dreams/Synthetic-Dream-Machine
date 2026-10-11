@@ -196,15 +196,6 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `PinCap.expiry` (@lararium/mesh) stays on the wire shape, but no verdict here ever reads it — a wall
- * clock never decides whether a pin holds (standing law). A pinned blob's actual lifetime is `pinCas` /
- * `releaseCas`: presence in the `.pins.json` sidecar IS "standing". This fixed, far-future value is
- * written purely so the field round-trips through JSON as a number (never `Infinity`, which serializes
- * to `null`); treat it as ADVISORY DISPLAY ONLY, never meaningful.
- */
-const ADVISORY_PIN_EXPIRY = Number.MAX_SAFE_INTEGER;
-
-/**
  * `lares bag cas --pin <cid> [--tier <t>] [--holder <name>]` / `--release <cid>` — PIN at cid grain
  * (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until this
  * same vessel explicitly `--release`s it, or re-pins the cid (replace-by-cid). No clock, no expiry
@@ -219,7 +210,7 @@ function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   } else {
     const tier = parseCapTier(args.options["tier"] ?? "veil");
     const holder = args.options["holder"] ?? "operator";
-    pins = pinCas(casDir, { cid: pin, tier, holder, expiry: ADVISORY_PIN_EXPIRY });
+    pins = pinCas(casDir, { cid: pin, tier, holder });
   }
   emit(args, {
     ok: true,
