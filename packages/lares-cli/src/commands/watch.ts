@@ -67,14 +67,16 @@ function isNoise(rel: string): boolean {
  * answer. Pulled out of `cmdWatch`'s closure so it stands as one weldable, directly-testable fact.
  */
 export function dueDeletions(
-  pending:   ReadonlyMap<string, { readonly syncedHash: string; readonly armedAt: number }>,
+  pending:   ReadonlyMap<string, { readonly syncedHash: string; readonly armedAt: number; readonly file?: string }>,
   addHashes: ReadonlySet<string>,
   nowMs:     number,
   graceMs:   number,
 ): PendingDeletion[] {
   const ride: PendingDeletion[] = [];
   for (const [uri, p] of pending) {
-    if (nowMs - p.armedAt >= graceMs || addHashes.has(p.syncedHash)) ride.push({ uri, syncedHash: p.syncedHash });
+    if (nowMs - p.armedAt >= graceMs || addHashes.has(p.syncedHash)) {
+      ride.push({ uri, syncedHash: p.syncedHash, file: p.file ?? uri });
+    }
   }
   return ride;
 }

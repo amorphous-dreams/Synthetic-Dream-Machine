@@ -246,7 +246,11 @@ export function resolveRenames(rows: ScanRow[], toBag: string, tree: SyncedTree)
     const srcHash = tree.get(syncedTreeKey(toBag, src));
     if (srcHash === null) return r;             // the index and the map disagree — decline, never guess
     claimedSources.add(src);
-    renameDeletions.push({ uri: src, syncedHash: srcHash });
+    // No separate on-disk path exists for the vanished `src` uri in a whole-source scan (only the row's OWN
+    // `file`, the rename's new home, is ever touched) — `file` here is unused downstream (`submitIngest`
+    // narrows to `{uri, syncedHash}` on the wire) and exists only to satisfy the shared `PendingDeletion`
+    // shape M9 needs for the watcher's causal rescan, which this whole-scan path never runs.
+    renameDeletions.push({ uri: src, syncedHash: srcHash, file: r.file });
     return { ...r, status: "renamed" as ScanStatus, renameFrom: src };
   });
   return { rows: out, renameDeletions };

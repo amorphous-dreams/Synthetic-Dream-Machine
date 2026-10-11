@@ -28,13 +28,13 @@ describe("dueDeletions — monotonic patience, content-settled pairing, no wall 
   test("past the grace (monotonic span elapsed) → DUE, rides", () => {
     const pending = new Map([["lar:///t.w.b/gone", { syncedHash: "h1", armedAt: 1_000 }]]);
     const ride = dueDeletions(pending, new Set(), /* now */ 2_001, /* grace */ 1_000);
-    expect(ride).toEqual([{ uri: "lar:///t.w.b/gone", syncedHash: "h1" }]);
+    expect(ride).toEqual([{ uri: "lar:///t.w.b/gone", syncedHash: "h1", file: "lar:///t.w.b/gone" }]);
   });
 
   test("under the grace but PAIRED by a rename's shared hash → rides EARLY, by content", () => {
     const pending = new Map([["lar:///t.w.b/old-name", { syncedHash: "h-shared", armedAt: 1_000 }]]);
     const ride = dueDeletions(pending, new Set(["h-shared"]), /* now */ 1_050, /* grace */ 60_000);
-    expect(ride).toEqual([{ uri: "lar:///t.w.b/old-name", syncedHash: "h-shared" }]);
+    expect(ride).toEqual([{ uri: "lar:///t.w.b/old-name", syncedHash: "h-shared", file: "lar:///t.w.b/old-name" }]);
   });
 
   test("CONTROL — SET-BACK and SET-FORWARD: a mocked `Date.now` ten years either way changes neither verdict", () => {
