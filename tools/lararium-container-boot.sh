@@ -29,9 +29,10 @@ if [ ! -f "$LAR_ROOT/data/lares/vessel/social-bootstrap.json" ]; then
   #   · ATTACHED (`docker compose run --rm -it <service>`): the CLI prompts on the terminal.
   #   · A DISPOSABLE TEST HARNESS (the mesh scenarios, the rehearsal): the compose file declares the root scratch with
   #     LAR_STAGE_DIR, and the existing test door founds the custody under a fixed test passphrase first. The door
-  #     refuses any root outside temp, stage or `.mesh-test` paths, so it cannot found a real hearth.
+  #     refuses any root without the staging marker (`.lar-test-scratch`), which this boot writes only under LAR_STAGE_DIR.
   # Neither shape standing, the founding below refuses BY NAME (CredentialTtyRefusal) and says how to run it attached.
   if [ -n "${LAR_STAGE_DIR:-}" ]; then
+    node tools/test-scratch-marker.mjs "$LAR_ROOT"
     node tools/seed-test-custody.mjs "$LAR_ROOT"
   fi
   node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build

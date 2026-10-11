@@ -27,6 +27,7 @@ cp -r "$REPO"/genesis/cas "$DIR/genesis/" 2>/dev/null || true   # the CAS substr
 # 3. Found identity + social-bootstrap into the isolated root (non-interactive, idempotent).
 echo "[found] founding Lararium into $DIR…"
 # A founding seals custody from birth and gathers its route from a TTY; this scripted harness names a test route.
+node "$REPO/tools/test-scratch-marker.mjs" "$DIR"
 node "$REPO/tools/seed-test-custody.mjs" "$DIR"
 LAR_ROOT="$DIR" lares vessel found
 

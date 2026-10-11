@@ -13,7 +13,7 @@
 #
 # THE HUMAN ROUTE. A real founding gathers its route from a TTY (docker compose run --rm -it …). A rehearsal is the
 # disposable branch: docker-compose.mesh.yml declares each volume scratch (LAR_STAGE_DIR) and the boot script names
-# a test route through tools/seed-test-custody.mjs, which refuses any root outside scratch. No production bypass flag,
+# a test route through tools/seed-test-custody.mjs, which refuses any root without the staging marker. No production bypass flag,
 # no env passphrase: a hearth with no LAR_STAGE_DIR refuses its founding by name.
 #
 # WHAT A CYCLE WITNESSES (each by exit code, no metaphysics):

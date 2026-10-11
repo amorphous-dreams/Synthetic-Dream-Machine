@@ -41,6 +41,7 @@ import { performance } from "node:perf_hooks";
 function removeStagedRoot(root: string): void {
   rmSync(root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
 }
+import { seedTestCustody } from "./test-door.js";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -134,7 +135,7 @@ function seedCustodyFor(env: Record<string, string>, args: readonly string[]): v
   const named = at < 0 ? undefined : args[at]!.includes("=") ? args[at]!.split("=").slice(1).join("=") : args[at + 1];
   const root = named ?? env["LAR_ROOT"] ?? process.env["LAR_ROOT"];
   if (!root) return;
-  execFileSync(process.execPath, [join(REPO_ROOT, "tools", "seed-test-custody.mjs"), root], { stdio: "pipe" });
+  seedTestCustody(root);
 }
 
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {

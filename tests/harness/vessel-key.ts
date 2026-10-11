@@ -9,6 +9,7 @@
 
 import { execFileSync, spawn } from "node:child_process";
 import { join } from "node:path";
+import { seedTestCustody } from "./test-door.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const IDENTITY  = join(REPO_ROOT, "packages/lararium-node/dist/src/node-vessel-identity.js");
@@ -17,7 +18,7 @@ const IDENTITY  = join(REPO_ROOT, "packages/lararium-node/dist/src/node-vessel-i
 export function mintVesselKey(root: string): Promise<string> {
   // A founding seals custody before the first identity file, so the joiner's custody is founded (with the harness's
   // explicit test route) before its key mints; the later `vessel found --admit` then finds the tree standing.
-  execFileSync(process.execPath, [join(REPO_ROOT, "tools", "seed-test-custody.mjs"), root], { stdio: "pipe" });
+  seedTestCustody(root);
   const script =
     `import { generateOrLoadVesselIdentity } from ${JSON.stringify(IDENTITY)};\n` +
     `const id = await generateOrLoadVesselIdentity();\n` +

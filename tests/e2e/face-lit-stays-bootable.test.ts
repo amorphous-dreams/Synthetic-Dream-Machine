@@ -32,6 +32,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { freePort } from "../harness/instance.js";
+import { seedTestCustody } from "../harness/test-door.js";
 
 const REPO = new URL("../..", import.meta.url).pathname;
 const CLI  = join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
@@ -70,7 +71,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // would pass by having nothing to disagree with.
     // A test builds nothing: every gated vessel door rides `--skip-build`, so the run measures the dist that
     // stands and never rewrites it beneath a concurrent run.
-    execFileSync("node", [join(REPO, "tools", "seed-test-custody.mjs"), root], { stdio: "ignore" });   // the harness names the founding route
+    seedTestCustody(root, "ignore");   // the harness names the founding route
     lares(["vessel", "found", "--skip-build"]);
     expect(daemonUrlFromBootstrap()).toMatch(/^automerge:/);
   });
