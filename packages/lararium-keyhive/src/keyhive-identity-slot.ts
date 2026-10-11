@@ -49,6 +49,17 @@ export interface KeyhiveIdentitySlotOpts {
   readonly provider: CapabilityProvider;
   /** This vessel's DID — the presenter asserted by verifyCapability (self). */
   readonly did: string;
+  /**
+   * §2c — resolve bagUrl's CURRENT effective lease epoch (clockless; the caller composes this off
+   * `epoch-lease.ts`'s `effectiveLeaseEpoch` against its own board read). INJECTED rather than imported
+   * directly: this package stays decoupled from the board/materialize machinery that resolves an epoch, so a
+   * caller names its own composition. The SAME function is read at mint time (stamps `boundEpoch` onto the
+   * token) and at verify time (the fence's "current epoch") — both calls route through this one closure, so a
+   * granter and a verifier sharing a slot instance always read the SAME epoch authority. Omitted entirely →
+   * mint stamps `boundEpoch: null`, and `verifyDelegation`'s fence then refuses every token this slot ever
+   * mints (an unfenced mint is a refused verify, never a silent open gate).
+   */
+  readonly leaseEpochOf?: (bagUrl: string) => Promise<number | null> | number | null;
 }
 
 /**
@@ -70,6 +81,14 @@ interface KeyhiveTokenPayload {
    *  not. Real time-boxing waits on a provider expiry surface. */
   readonly expiresAtMs:  number | null;
   readonly bytesHex:     string;
+  /**
+   * §2c — the lease epoch (`epoch-lease.ts`, clockless) read off `leaseEpochOf(bagUrl)` AT MINT TIME, or `null`
+   * when the slot was constructed with no `leaseEpochOf` (or the resolver itself returned/threw null). This is
+   * the FENCE `verifyDelegation` checks before `expiresAtMs`: a token minted at epoch E refuses the moment the
+   * bag's effective epoch has rolled past E, independent of any wall clock. Council ruling 6: a verifier that
+   * cannot read the current epoch reports an INCOMPLETE VIEW (refuse), never "expired" and never "standing".
+   */
+  readonly boundEpoch:   number | null;
 }
 
 /** "edit" is the interface's write verb; the provider's write rung is "admin". */
@@ -77,13 +96,30 @@ function accessFor(ability: "read" | "edit"): CapabilityAccess {
   return ability === "edit" ? "admin" : "read";
 }
 
+/** Best-effort resolve a (possibly async, possibly throwing) `leaseEpochOf` to a finite epoch or `null` — a
+ *  resolver fault reads as "unreadable", never a thrown fault that would crash the mint/verify call site. */
+async function readLeaseEpoch(
+  leaseEpochOf: ((bagUrl: string) => Promise<number | null> | number | null) | undefined,
+  bagUrl: string,
+): Promise<number | null> {
+  if (!leaseEpochOf) return null;
+  try {
+    const v = await leaseEpochOf(bagUrl);
+    return typeof v === "number" && Number.isFinite(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 export class KeyhiveIdentitySlot implements IdentitySlot {
   readonly did: string;
   readonly #provider: CapabilityProvider;
+  readonly #leaseEpochOf?: (bagUrl: string) => Promise<number | null> | number | null;
 
   constructor(opts: KeyhiveIdentitySlotOpts) {
     this.#provider = opts.provider;
     this.did       = opts.did;
+    if (opts.leaseEpochOf) this.#leaseEpochOf = opts.leaseEpochOf;
   }
 
   /**
@@ -117,6 +153,10 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
       bagUrl:   docUrl,
       access:   accessFor(ability),
     });
+    // §2c — stamp the FENCE at mint time: the bag's effective lease epoch right now, via the SAME injected
+    // resolver `verifyDelegation` reads later. No `leaseEpochOf` (or a resolver that read nothing) stamps
+    // `null`, which the verify-side fence then refuses — an unfenced mint is a refused verify, not an open one.
+    const boundEpoch = await readLeaseEpoch(this.#leaseEpochOf, docUrl);
     const payload: KeyhiveTokenPayload = {
       delegationId: result.delegationId,
       audience:     toDid,
@@ -124,6 +164,7 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
       access:       accessFor(ability),
       expiresAtMs:  expiresIn === undefined ? null : Date.now() + expiresIn * 1000,
       bytesHex:     bytesToHex(result.bytes),
+      boundEpoch,
     };
     return JSON.stringify(payload);
   }
@@ -142,6 +183,13 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
    * cryptographically bind the presenting peer to the token — that binding is
    * the WASM sync-time membership proof. It never returns a bare `true`: every
    * clear rides real accessForDoc for the named audience.
+   *
+   * ORDER (§2c, load-bearing — do not reshuffle): (1) parse, (2) bag-scope, (3) `provider.verify` (the real
+   * revocation-aware barrier), (4) the clockless EPOCH FENCE, (5) THEN `expiresAtMs` — the wall-clock guard,
+   * kept as a SECOND, RETIRING guard now that the fence is load-bearing (a prepared, not-yet-applied patch
+   * drops this last line once the fence alone is trusted to stand). The fence sits AFTER revocation so a
+   * presenter already denied by `provider.verify` reads that refusal, never a fence refusal that would read
+   * as "the lease rolled" when the real cause is "never had the cap" / "since revoked".
    */
   async verifyDelegation(token: CapabilityToken, docUrl: string): Promise<boolean> {
     if (token === null) return false;   // no open default: absent token = deny
@@ -153,14 +201,28 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
     }
     if (typeof payload !== "object" || payload === null) return false;   // a body that names nothing = deny
     if (payload.bagUrl !== docUrl) return false;   // token scoped to another bag
-    if (payload.expiresAtMs !== null && Date.now() > payload.expiresAtMs) return false;
 
     const res = await this.#provider.verify({
       presenter: payload.audience,
       bagUrl:    docUrl,
       access:    payload.access,
     });
-    return res.ok;
+    if (!res.ok) return false;
+
+    // §2c — the epoch fence: council ruling 6 — a verifier that cannot read the CURRENT epoch reports an
+    // INCOMPLETE VIEW (refuse), never "expired" and never "standing". A token minted with no `boundEpoch`
+    // (no `leaseEpochOf` at mint) refuses here too — an unfenced mint never reads as fenced-and-current.
+    const boundEpoch = payload.boundEpoch ?? null;
+    if (boundEpoch === null) return false;
+    const currentEpoch = await readLeaseEpoch(this.#leaseEpochOf, docUrl);
+    if (currentEpoch === null) return false;           // unreadable epoch — incomplete view, refuse
+    if (currentEpoch > boundEpoch) return false;        // the lease rolled past the epoch this was minted at
+
+    // RETIRING (second guard) — the wall-clock expiry. Kept until the prepared patch (not yet applied) drops
+    // it; the fence above is already the load-bearing gate.
+    if (payload.expiresAtMs !== null && Date.now() > payload.expiresAtMs) return false;
+
+    return true;
   }
 
   /**
