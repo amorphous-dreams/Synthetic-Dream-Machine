@@ -168,11 +168,11 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
 // left the record entirely, never merely unread). Its OPTIONAL `fence` names a holder's OWN boot epoch
 // at pin time (M7′): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `fence` —
 // the operator's own explicit, standing-forever pin), but a pin that DOES carry a `fence` (a `--held`
-// pin) is a CAUSAL supersession, never a span — `casSweep`'s `currentFence` option, when a caller supplies
-// this vessel's OWN current boot epoch, reads it through the mesh-level `pinnedCids` (the SAME law
-// `cas-caps.ts` states): held while `currentFence <= fence`, superseded the moment a later boot moves past
-// it. No `currentFence` supplied (the production default until a caller threads one through) → every pin
-// reads presence-only, exactly as before the fence ever existed. Ending a pin is always one of: an
+// pin) is a CAUSAL supersession, never a span — `casSweep`'s REQUIRED `currentFence` option, this vessel's
+// OWN current boot epoch, reads it through the mesh-level `pinnedCids` (the SAME law `cas-caps.ts` states):
+// held while `currentFence <= fence`, superseded the moment a later boot moves past it; a bare pin with no
+// `fence` of its own still reads presence-only regardless of `currentFence`, exactly as before the fence
+// ever existed. Ending a pin is always one of: an
 // EXPLICIT `releaseCas`, the next pin for the same cid superseding the one it replaces (`pinCas`'s
 // replace-by-cid), or — for a `--held` pin alone — this vessel's own next boot.
 
@@ -212,15 +212,18 @@ export interface CasSweepOptions {
    *  "released" and "absent from `pins`" are the same fact. */
   readonly pins?:      readonly PinCap[];
   /**
-   * This vessel's CURRENT boot epoch (M7′, `owned-store.ts`'s `StoreClaim.bootEpoch`) — the fence a `--held`
-   * pin's own stamped `fence` is read against (`pinnedCids` — the SAME law `cas-caps.ts` states: absent
-   * `fence` on a pin holds regardless, i.e. presence-only; a pin WITH a `fence` holds only while
-   * `currentFence` has not yet moved past it). Omitted → every pin holds presence-only, exactly as before
-   * the fence ever read — this bare `casSweep` primitive stays usable without a boot epoch in hand (a unit
-   * test, a tool with no vessel claim); the PRODUCTION caller (`installCasSweep`, below) requires its own
-   * `currentFence` and always supplies this field (M7″ closes the gap this comment once named).
+   * This vessel's CURRENT boot epoch (M7′/M7″, `owned-store.ts`'s `StoreClaim.bootEpoch`) — the fence a
+   * `--held` pin's own stamped `fence` is read against (`pinnedCids` — the SAME law `cas-caps.ts` states:
+   * absent `fence` on a pin holds regardless, i.e. presence-only; a pin WITH a `fence` holds only while
+   * `currentFence` has not yet moved past it). REQUIRED (alpha line, no back-compat — M7″ G3): every caller,
+   * production or test, threads its own epoch through — never guessed. `0` is the fence law's OWN floor
+   * ("no boot has happened yet"): every `--held` pin reads as still standing against it (`0 <= fence` for
+   * any non-negative fence), so a caller with no real epoch to give is never safe passing `0` AS IF it were
+   * a genuine epoch — it must withhold the sweep instead (`open-node-vessel.ts`'s shape beside
+   * `genesisProtect === "unreadable"`). Only the ABSENCE of a pin's own `fence` field reads as a
+   * standing-forever pin; the absence of THIS option is no longer representable at all.
    */
-  readonly currentFence?: number;
+  readonly currentFence: number;
   /** Name what would sweep; delete nothing. */
   readonly dryRun?:    boolean;
 }
@@ -238,13 +241,11 @@ export interface CasSweepResult {
 
 /** Mark-and-sweep the cleartext CAS from the derived references + the genesis protect set. */
 export function casSweep(opts: CasSweepOptions): CasSweepResult {
-  // M7′: `currentFence` supplied → a `--held` pin (one stamped with a `fence`) holds only while this
-  // vessel's current epoch has not yet moved past it (`pinnedCids`); a presence-only pin (no `fence`) still
-  // holds regardless, same as always. No `currentFence` → every pin reads presence-only (the old shape),
-  // never a clock, never a made-up epoch.
-  const standing = opts.currentFence !== undefined
-    ? pinnedCids(opts.pins ?? [], opts.currentFence)
-    : new Set((opts.pins ?? []).map((p) => p.cid));   // presence IS standing — no clock read
+  // M7″: a `--held` pin (one stamped with a `fence`) holds only while this vessel's current epoch has not
+  // yet moved past it (`pinnedCids`); a presence-only pin (no `fence`) still holds regardless, same as
+  // always. `currentFence` is REQUIRED — there is no more caller-side fallback that reads every pin as
+  // presence-only regardless of its own stamped fence.
+  const standing = pinnedCids(opts.pins ?? [], opts.currentFence);
   const swept: string[] = [], kept: string[] = [], protectedCids: string[] = [], pinned: string[] = [];
   for (const { cid } of listCasBlobs(opts.casDir)) {
     if (opts.protect.has(cid)) { protectedCids.push(cid); continue; }

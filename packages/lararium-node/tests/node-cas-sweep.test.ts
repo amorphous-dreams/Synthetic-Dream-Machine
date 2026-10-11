@@ -52,11 +52,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("a landed pointer holds its blob; DROP the bag → grace 0 sweeps it", () => {
     const photo = blob("png bytes");
     writeCasEntriesFs([photo], casDir);
-    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0, ageOf: () => OLD });
+    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
     expect(held.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
     // DROP <bag> — the bag's records leave the composite, so the derived count reads zero.
-    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0, ageOf: () => OLD });
+    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
     expect(dropped.swept).toEqual([photo.cid]);
     expect(existsSync(join(casDir, photo.cid))).toBe(false);
   });
@@ -64,7 +64,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("CONTROL: a genesis blob never sweeps, referenced by nothing", () => {
     const core = blob("the engine core");
     writeCasEntriesFs([core], casDir);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0, ageOf: () => OLD });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0, ageOf: () => OLD, currentFence: 0 });
     expect(r.swept).toEqual([]);
     expect(r.protected).toEqual([core.cid]);
     expect(existsSync(join(casDir, core.cid))).toBe(true);
@@ -76,7 +76,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     const two = [pointer("lares", "lar:///t.w.b/photo", photo.cid), pointer("crossroads", "lar:///t.w.b/photo", photo.cid)];
     expect(casReferences(two).get(photo.cid)?.size).toBe(2);
     const afterDrop = two.filter((e) => e.bagId !== "lares");
-    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0, ageOf: () => OLD });
+    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
     expect(r.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
   });
@@ -84,10 +84,10 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("the grace holds a young unreferenced blob; a dry run deletes nothing", () => {
     const fresh = blob("just staged, not yet landed");
     writeCasEntriesFs([fresh], casDir);
-    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000, ageOf: () => YOUNG });
+    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000, ageOf: () => YOUNG, currentFence: 0 });
     expect(young.swept).toEqual([]);
     expect(young.kept).toContain(fresh.cid);
-    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true, ageOf: () => OLD });
+    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true, ageOf: () => OLD, currentFence: 0 });
     expect(dry.swept).toEqual([fresh.cid]);
     expect(existsSync(join(casDir, fresh.cid))).toBe(true);
   });
@@ -96,7 +96,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     writeFileSync(join(casDir, "operator-sidecar.txt"), "{}");
     const b = blob("x");
     writeCasEntriesFs([b], casDir);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
     expect(r.swept).toEqual([b.cid]);
     expect(existsSync(join(casDir, "operator-sidecar.txt"))).toBe(true);
     writeCasEntriesFs([b], casDir);
@@ -119,7 +119,7 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     const b = blob("a working the Librarian will re-stand");
     writeCasEntriesFs([b], casDir);
     const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1" }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 0 });
     expect(r.swept).toEqual([]);
     expect(r.pinned).toEqual([b.cid]);
     expect(existsSync(join(casDir, b.cid))).toBe(true);
@@ -130,7 +130,7 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     writeCasEntriesFs([b], casDir);
     // `releaseCas` would have dropped it from the sidecar before this array was read — the production
     // caller never passes a withdrawn pin, so an absent pin is exactly what a release looks like here.
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins: [] });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins: [], currentFence: 0 });
     expect(r.pinned).toEqual([]);
     expect(r.swept).toEqual([b.cid]);
   });
@@ -146,7 +146,7 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
       vi.spyOn(Date, "now").mockReturnValue(realNow + skew);
       try {
         // dryRun: the same two files must still be standing for the NEXT skew's reading too.
-        const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, dryRun: true });
+        const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, dryRun: true, currentFence: 0 });
         expect(r.pinned, `skew ${skew}`).toEqual([standing.cid]);     // present → still stands
         expect(r.swept, `skew ${skew}`).toEqual([released.cid]);      // absent → still sweeps, every time
       } finally { vi.restoreAllMocks(); }
@@ -161,7 +161,7 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     const rollsOld = 2;
     const tierOf = (cid: string) => (cid === veil.cid ? "veil" : "public") as const;
     const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0,
-                         ageOf: () => rollsOld,
+                         ageOf: () => rollsOld, currentFence: 0,
                          graceFor: (cid) => graceForTier(tierOf(cid), 1) });
     expect(r.swept).toEqual([pub.cid]);
     expect(r.kept).toContain(veil.cid);
@@ -204,13 +204,8 @@ describe("casSweep — M7′ the boot-epoch FENCE a `--held` pin reads against",
     expect(r.swept).toEqual([]);
   });
 
-  test("MUTATION PROOF: omitting `currentFence` reverts to presence-only — a would-be-superseded `--held` pin still keeps", () => {
-    const b = blob("a held pin read with no currentFence supplied");
-    writeCasEntriesFs([b], casDir);
-    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", fence: 3 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins });   // no currentFence
-    expect(r.pinned).toEqual([b.cid]);   // the gap M7′ names as still open until a caller threads the epoch in
-  });
+  // `CasSweepOptions.currentFence` is now REQUIRED (M7″ closed, G3 c4) — there is no more "omit it" escape to
+  // prove here; TypeScript itself refuses a `casSweep` call with no `currentFence` at every call site above.
 });
 
 describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", () => {
@@ -700,3 +695,60 @@ describe("installCasSweep — M7″ the production sweep threads a live `current
     } finally { sweep.stop(); }
   });
 });
+
+// ── G3 c4: `open-node-vessel.ts` drops its `?? 0` fallback on `currentFence` ───────────────────────────────
+// A SOURCE WELD (text, never behaviour — the boot function is too deep to unit-exercise directly): a claim
+// with no `bootEpoch` (a non-"vessel" holder; today's one caller always claims `holder: "vessel"`, so this
+// is a type-level defensive branch, never a reachable live path) WITHHOLDS the sweep by name, the SAME shape
+// as the `genesisProtect === "unreadable"` branch beside it — fail toward KEEPING every blob, never toward a
+// silently-defaulted epoch. The retired `?? 0` shape is the one this guards against: feeding `pinnedCids` a
+// literal `0` is the identity element of "has this epoch moved past the stamp" (`0 <= fence` for any
+// non-negative fence), so it can never ITSELF supersede a `--held` pin — its danger runs the OTHER way, the
+// one M7′/M7″'s own comments name repeatedly ("fails open toward deletion" is the feared direction for a
+// stray field; here the symmetric fear is "fails closed toward never retiring"): a silently-assumed epoch 0
+// would read a pin fenced at any real boot as still standing forever, masking the very supersession a live
+// reboot is supposed to produce. Withholding the sweep outright (rather than defaulting the fence) is why
+// this never has the chance to mask anything.
+import { readFileSync as readSrcFileSync } from "node:fs";
+import { join as joinPath } from "node:path";
+
+const VESSEL_SRC = readSrcFileSync(joinPath(__dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+// Strip comments first — a doc comment naming the retired shape must not satisfy the weld.
+const VESSEL_CODE = VESSEL_SRC.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
+describe("open-node-vessel's cas-sweep wiring — G3 c4, no `?? 0` fallback on `currentFence`", () => {
+  test("the strip left the file — the base arm survives (anti-vacuity)", () => {
+    expect(VESSEL_CODE, "the comment strip ate the file — every assertion below would pass over ash")
+      .toMatch(/installCasSweep\(/);
+  });
+
+  test("CONTROL: the live wire threads `storeClaim.bootEpoch` straight through — no `?? 0` fallback anywhere in the file", () => {
+    expect(VESSEL_CODE).not.toMatch(/bootEpoch\s*\?\?\s*0/);
+  });
+
+  test("a claim with no bootEpoch withholds the sweep, named, the SAME shape as the unreadable-genesis branch beside it", () => {
+    expect(VESSEL_CODE).toMatch(/storeClaim\.bootEpoch\s*===\s*undefined/);
+    // Both withhold branches log "withholding the sweep" — the genesis-unreadable one and this one.
+    const withholds = VESSEL_CODE.match(/withholding the sweep/g) ?? [];
+    expect(withholds.length).toBe(2);
+  });
+
+  test("MUTATION: reintroducing `?? 0` could only ever mask a real supersession, never fabricate one — `pinnedCids`\n" +
+       "        reads a literal 0 as the identity epoch (0 <= any non-negative fence), so it never itself drops a\n" +
+       "        `--held` pin; the withhold branch exists so an undefined epoch is never silently READ as epoch 0", () => {
+    const heldFenceAtRealBoot = 5;
+    const oldShapeCurrentFence = (undefined as number | undefined) ?? 0;   // the retired `?? 0` formula
+    expect(pinnedCidsFor(oldShapeCurrentFence, heldFenceAtRealBoot).size, "0 <= 5 — the pin reads HELD, not superseded")
+      .toBe(1);
+    // The fixed shape never reaches this computation at all for an undefined epoch — it withholds the whole
+    // sweep instead, which is strictly safer than computing ANY fence comparison off a guessed epoch.
+  });
+});
+
+/** The exact law `@lararium/mesh`'s `pinnedCids` states, reproduced only to pin the MUTATION proof above to a
+ *  value this test file does not import a live dependency to recompute. */
+function pinnedCidsFor(currentFence: number, fence: number): Set<string> {
+  const out = new Set<string>();
+  if (currentFence <= fence) out.add("x");
+  return out;
+}

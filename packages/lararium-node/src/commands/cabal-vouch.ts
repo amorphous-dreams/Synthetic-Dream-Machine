@@ -99,12 +99,10 @@ async function resolveBoundEpoch(realm: string, repo: Repo): Promise<number> {
 /**
  * Mint one vouch and land it on the Nexus's vouch board.
  *
- * `now` rides as a parameter rather than a read of the wall clock, because a causal island holds no global
- * now and a test must stand at a chosen instant. It decides NOTHING about whether the mint runs — kept for
- * call-site compatibility; nothing in this function reads it any more.
+ * Takes no `now`: a causal island holds no global now, and nothing here ever decided on the wall clock —
+ * the fence that actually gates is `boundEpoch`, the realm's own lease epoch (evergreen sweep, G3).
  */
-export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): Promise<CabalVouchResult> {
-  void now;
+export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouchResult> {
   const joiner     = opts.joiner.trim().toLowerCase();
   const realm      = opts.realm.trim().toLowerCase();
 
