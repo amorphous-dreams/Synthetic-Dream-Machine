@@ -153,6 +153,15 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
 }
 
 export async function cmdRead(args: ParsedArgs): Promise<number> {
+  // An explicit --root moves the whole reading, as it does for `vessel found` (never a default).
+  if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
+  // The one named lens is `vessel`; any other positional names a door that does not exist (`sensorium`
+  // retired with no alias), so it refuses by name rather than answering as the bare node read.
+  const lens = args.positional[0];
+  if (lens !== undefined && lens !== "vessel") {
+    console.error(`lares vessel read: unknown lens "${lens}" (the one lens is \`vessel\`; bare \`read\` is the node health reading)`);
+    return 2;
+  }
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).
   if (args.flags["palaces"] === true) return cmdReadPalaces(args);
   // The named lens: the deep vessel probe. `sensorium` retired (THE VESSEL DOOR: no aliases) — the

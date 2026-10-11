@@ -9,15 +9,14 @@
  *
  * Flags:
  *   --force          Re-seed even when bootstrap artifact exists.
- *   --root DIR       Isolate storage + genesis under DIR (overrides LAR_ROOT env).
+ *   --root DIR       (or --root=DIR) Isolate storage + genesis under DIR (overrides LAR_ROOT env).
  *   --storage DIR    Explicit override for Automerge NodeFS storage directory.
- *   --genesis DIR    Explicit override for genesis/ directory.
+ *   --genesis DIR    Explicit override for genesis/ directory (else LAR_GENESIS, else <root>/genesis).
  *   --admit FILE     Apply a device-admit/v1 JSON payload instead of founding a new Nexus.
  */
 
-import { join } from "node:path";
 import { runInit, ownedStore, StoreHeld } from "@lararium/node";
-import { larDataDir, larRoot } from "../env.js";
+import { larDataDir, larGenesisDir } from "../env.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 export async function cmdFound(args: ParsedArgs): Promise<number> {
@@ -25,7 +24,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   // storage (runtime) → <lares>/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
   const storageDir = args.options["storage"] ?? larDataDir();
-  const genesisDir = args.options["genesis"] ?? join(larRoot(), "genesis");
+  const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
   const admitPayloadPath = args.options["admit"];
   try {
     await ownedStore(storageDir, (repo) => runInit({

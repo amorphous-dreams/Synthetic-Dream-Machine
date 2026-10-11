@@ -81,9 +81,13 @@ import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
   const args = process.argv.slice(2);
+  const named = new Set<string>(["--debug"]);   // `--debug` rides `vessel stand --foreground --debug`; nothing here reads it yet
   const get  = (flag: string, env: string, fallback: string) => {
+    named.add(flag);
+    const joined = args.find((a) => a.startsWith(`${flag}=`));          // `--k=v` reads as `--k v`
     const i = args.indexOf(flag);
-    return (i !== -1 ? args[i + 1] : undefined) ?? process.env[env] ?? fallback;
+    const spaced = i !== -1 && !(args[i + 1] ?? "--").startsWith("--") ? args[i + 1] : undefined;
+    return (joined !== undefined ? joined.slice(flag.length + 1) : spaced) ?? process.env[env] ?? fallback;
   };
   const cfg        = loadLaresConfig();   // per-daemon resource overrides (~/.lares/config.json)
   const rootDir    = resolve(get("--root", "LAR_ROOT", REPO_ROOT));   // corpus root (genesis)
@@ -99,11 +103,19 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
   // `--recipe` names the operator-facing flag; what it carries is a STANDING this vessel asks to
   // stand as, never a kind it is. "Recipe" belongs to the pinned wiki's composition alone.
   const askedStanding = (get("--recipe", "LAR_RECIPE", "lararium") === "herm" ? "herm" : "lararium") as AskedStanding;
+  const port   = Number(get("--port", "LAR_PORT", "8080"));
+  const wikiId = get("--wiki", "LAR_WIKI", "lares");
+  // A flag nothing above names is refused by name: it used to vanish, and a vessel booted on the wrong root.
+  const stray = args.find((a) => a.startsWith("--") && !named.has(a.split("=", 1)[0] as string));
+  if (stray !== undefined) {
+    console.error(`lararium-node: unknown flag ${stray.split("=", 1)[0]} (reads ${[...named].sort().join(" ")})`);
+    process.exit(2);
+  }
   return {
-    port:       Number(get("--port", "LAR_PORT", "8080")),
+    port,
     storageDir,
     genesisDir,
-    wikiId:     get("--wiki", "LAR_WIKI", "lares"),
+    wikiId,
     rootDir,
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
     askedStanding,

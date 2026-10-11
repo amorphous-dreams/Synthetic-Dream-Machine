@@ -438,6 +438,9 @@ function printHelp(): void {
   console.log("\nThe status output teaches kill-the-spawner-not-the-children; quiesce is idempotent.");
 }
 
+/** The verbs this door wraps itself; every other verb passes through to the vendored CLI and its own parser. */
+export const MEMPALACE_OWN_VERBS: readonly string[] = ["install", "setup", "harvest", "repave", "status", "quiesce", "resume", "help"];
+
 export async function cmdMempalace(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   // `--help-mempalace` (or `help mempalace`) surfaces the vendored CLI's OWN top-level help through our door.
