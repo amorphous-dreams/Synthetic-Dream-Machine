@@ -28,7 +28,7 @@ import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI
 import type { PersonaPlaneRef } from "./persona-planes.js";
 import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
-import { isCondemned, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
+import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 
 /**
  * The doc URLs a vessel's bootstrap resolves.
@@ -108,8 +108,13 @@ export interface VesselKeel {
 export interface MountEntry {
   readonly bagId: string;
   readonly documentId: string;
-  readonly status: "mounted" | "promoted" | "degraded";
-  /** names the condemnation when status=degraded, or the clean-tail cut when status=promoted. */
+  /** `pending` (H2) — the probe (or its clean-tail recovery) answered with NO verdict (its own
+   *  patience spent, or a signal-less boundary death): the plane mounts read-only blank, no
+   *  bytes move, and a later re-probe (doctor, or an operator receipt) decides. Distinct from
+   *  `degraded`, which only ever follows real integrity evidence. */
+  readonly status: "mounted" | "promoted" | "degraded" | "pending";
+  /** names the condemnation when status=degraded, the clean-tail cut when status=promoted, or
+   *  the unresolved reason when status=pending. */
   readonly reason?: string;
 }
 
@@ -238,9 +243,12 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // L3 — before condemning the whole doc, try a clean-tail recovery: verify the doc's
         // clean record-prefix loads in isolation, then drop only the torn tail. A promoted
         // doc mounts WRITABLE from its verified prefix (a suffix of edits lost, never a tear
-        // kept), and the vessel stays whole. Only a torn base (null) falls through.
+        // kept), and the vessel stays whole. Only a VERIFIED `status:"ok"` promotion counts —
+        // the recovery attempt itself answering `unresolved` (H2: its own patience spent, or
+        // a signal-less death) is NOT a promotion, and falls straight through to the ORIGINAL
+        // condemn's quarantine (real integrity evidence already stands on the base verdict).
         const promoted = keel.recoverCleanTail ? await keel.recoverCleanTail(verdict) : null;
-        if (promoted && !isCondemned(promoted)) {
+        if (promoted && promoted.status === "ok") {
           composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true });
           const cut = promoted.cleanTail;
           entries.push({ bagId, documentId, status: "promoted", reason: cut ? `clean-tail: kept ${cut.kept}, moved ${cut.movedAside.length} aside` : "clean-tail recovery" });
@@ -251,6 +259,16 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         // Read-only blank stands in — the plane reads empty until L4 rematerializes it,
         // and no write forks a placeholder the real doc will later reconcile against.
+        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId), writable: false });
+        return;
+      }
+      if (isUnresolved(verdict)) {
+        // H2 — a probe TIMEOUT (or a signal-less boundary death) is LIVENESS, never a safety
+        // verdict: this door never learned whether the doc is sound. Neither quarantine (no
+        // bytes move) nor the writable floor (no write forks a stand-in the real doc will
+        // later reconcile against) — a read-only blank, named `pending`, until a later
+        // re-probe (doctor, or an operator receipt) actually decides.
+        entries.push({ bagId, documentId, status: "pending", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId), writable: false });
         return;
       }

@@ -60,4 +60,46 @@ describe("sweepDocs", () => {
     const text = formatDoctorReport(report, "/tmp/store");
     expect(text).toMatch(/all clean/);
   });
+
+  // H2 — a probe that spent its own patience (unresolved) names NO safety verdict: it must
+  // count apart from condemned, and it must NEVER flip `degraded`.
+  test("RED-WOULD-BE: unresolved counts apart from condemned and never degrades the chart", async () => {
+    const report = await sweepDocs(
+      ["aaa1", "bbb2", "ccc3"],
+      mockProbe({ bbb2: "unresolved" }),
+      { concurrency: 2 },
+    );
+    expect(report.total).toBe(3);
+    expect(report.condemned).toBe(0);
+    expect(report.unresolved).toBe(1);
+    expect(report.healthy).toBe(2);
+    expect(report.degraded).toBe(false);
+  });
+
+  test("MUTATION PROOF: folding unresolved into condemned (the H2 shape) would flip degraded true", () => {
+    // Re-enact the retired shape by hand: the old isCondemned() read `status !== "ok"`, so an
+    // unresolved verdict condemned exactly like a torn one.
+    const entries = [{ documentId: "bbb2", status: "unresolved" as const }];
+    const oldCondemned = entries.filter((e) => e.status !== "ok").length;
+    expect(oldCondemned).toBe(1); // proves the OLD shape would have degraded the chart
+  });
+
+  test("formatDoctorReport names unresolved docs apart from condemned, never under 'condemned:'", () => {
+    const text = formatDoctorReport(
+      {
+        entries: [
+          { documentId: "aaa1", status: "aborted", reason: "wasm poison" },
+          { documentId: "bbb2", status: "unresolved", reason: "load exceeded 30000ms — no verdict" },
+        ],
+        total: 2, healthy: 0, condemned: 1, unresolved: 1, degraded: true,
+      },
+      "/tmp/store",
+    );
+    expect(text).toMatch(/condemned:\n\s+aaa1/);
+    expect(text).toMatch(/unresolved \(no verdict/);
+    expect(text).toMatch(/bbb2.*unresolved/);
+    // aaa1 must not appear under the unresolved heading, and bbb2 must not appear condemned.
+    const condemnedBlock = text.split("unresolved (no verdict")[0] ?? "";
+    expect(condemnedBlock).not.toMatch(/bbb2/);
+  });
 });

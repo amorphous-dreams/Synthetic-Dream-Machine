@@ -64,16 +64,26 @@ export async function runDoctor(
 export function formatDoctorReport(report: DoctorReport, storageDir: string): string {
   const lines: string[] = [];
   lines.push(`vessel doctor — ${storageDir}`);
-  lines.push(`  ${report.total} docs · ${report.healthy} healthy · ${report.condemned} condemned`);
-  const bad = report.entries.filter((e) => e.status !== "ok").sort((a, b) => a.documentId.localeCompare(b.documentId));
-  if (bad.length === 0) {
+  lines.push(`  ${report.total} docs · ${report.healthy} healthy · ${report.condemned} condemned · ${report.unresolved} unresolved (liveness, no verdict)`);
+  const bad        = report.entries.filter((e) => e.status === "torn" || e.status === "load-error" || e.status === "aborted").sort((a, b) => a.documentId.localeCompare(b.documentId));
+  const unresolved = report.entries.filter((e) => e.status === "unresolved").sort((a, b) => a.documentId.localeCompare(b.documentId));
+  if (bad.length === 0 && unresolved.length === 0) {
     lines.push(`  all clean ✓`);
   } else {
-    lines.push(`  condemned:`);
-    for (const e of bad) {
-      lines.push(`    ${e.documentId}  [${e.status}]  ${e.reason ?? ""}`.trimEnd());
+    if (bad.length > 0) {
+      lines.push(`  condemned:`);
+      for (const e of bad) {
+        lines.push(`    ${e.documentId}  [${e.status}]  ${e.reason ?? ""}`.trimEnd());
+      }
+      lines.push(`  recover with: lares vessel rite rebirth`);
     }
-    lines.push(`  recover with: lares vessel rite rebirth`);
+    if (unresolved.length > 0) {
+      // H2 — never named "condemned": this door never learned whether these docs are sound.
+      lines.push(`  unresolved (no verdict — re-probe, never auto-quarantine):`);
+      for (const e of unresolved) {
+        lines.push(`    ${e.documentId}  [${e.status}]  ${e.reason ?? ""}`.trimEnd());
+      }
+    }
   }
   return lines.join("\n");
 }

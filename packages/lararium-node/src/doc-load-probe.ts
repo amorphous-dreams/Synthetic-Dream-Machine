@@ -20,6 +20,7 @@ import { join, basename, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   isCondemned,
+  isUnresolved,
   type DocLoadProbe,
   type ProbeOptions,
   type ProbeResult,
@@ -29,8 +30,24 @@ import {
 } from "@lararium/mesh";
 import { docStorePath, precheckDocStore } from "./store-integrity.js";
 
-export { isCondemned };
+export { isCondemned, isUnresolved };
 export type { DocLoadProbe, ProbeOptions, ProbeResult, ProbeStatus };
+
+/**
+ * H2 — a probe's boundary dying carries NO safety verdict unless it dies by its OWN abort
+ * signature. A Rust `panic=abort` raises `SIGABRT` (POSIX) / exits 134 (128+SIGABRT) and the
+ * child itself never gets to emit a line; THAT shape alone reads as the WASM poison. An
+ * external SIGKILL (an operator, an OOM reaper, this very probe's own timeout kill) carries
+ * no such signature — it says only "something outside this doc's own load ended the
+ * boundary," never "this doc is torn." Treating that as `aborted` is exactly what quarantined
+ * five healthy docs under a frozen child (H2, proven live) — so only the abort signature
+ * condemns; everything else reads `unresolved` (liveness, no verdict).
+ */
+function isAbortSignature(code: number | null, signal: NodeJS.Signals | null, stderr: string): boolean {
+  if (signal === "SIGABRT") return true;
+  if (code === 134) return true; // 128 + SIGABRT(6) — POSIX uncaught-signal exit convention
+  return /\babort\b/i.test(stderr);
+}
 
 const CHILD_URL = new URL("./doc-load-probe-child.js", import.meta.url);
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -126,7 +143,10 @@ export async function probeDocLoad(
 
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
-      finish(result(documentId, "timeout", { reason: `load exceeded ${timeoutMs}ms`, ...(integrity ? { integrity } : {}) }));
+      // This door's OWN patience ran out — liveness, never a verdict on the doc. Quarantine
+      // on a timeout is exactly the H2 fault: a slow disk, a loaded host, or a big doc read
+      // as a data verdict and relocated five healthy docs (one the daemon doc itself).
+      finish(result(documentId, "unresolved", { reason: `load exceeded ${timeoutMs}ms — no verdict`, ...(integrity ? { integrity } : {}) }));
     }, timeoutMs);
     timer.unref?.();
 
@@ -135,7 +155,8 @@ export async function probeDocLoad(
 
     child.on("error", (e) => {
       clearTimeout(timer);
-      finish(result(documentId, "aborted", { reason: `spawn failed: ${e.message}`, ...(integrity ? { integrity } : {}) }));
+      // The spawn itself never ran — a harness fault, not a verdict on this doc.
+      finish(result(documentId, "unresolved", { reason: `spawn failed: ${e.message} — no verdict`, ...(integrity ? { integrity } : {}) }));
     });
 
     child.on("close", (code, signal) => {
@@ -149,11 +170,19 @@ export async function probeDocLoad(
         finish(result(documentId, "ok", { heads: line.heads ?? [], ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(integrity ? { integrity } : {}) }));
       } else if (code === 2 && line && line.ok === false) {
         finish(result(documentId, "load-error", { ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(line.reason !== undefined ? { reason: line.reason } : {}), ...(integrity ? { integrity } : {}) }));
-      } else {
-        // A signal, a non-zero-non-2 code, or no parseable line → the uncatchable abort.
+      } else if (isAbortSignature(code, signal, err)) {
+        // The boundary died by its OWN abort signature — THE uncatchable WASM poison.
         const how = signal ? `signal ${signal}` : `exit ${code}`;
         finish(result(documentId, "aborted", {
           reason: `WASM abort on load (${how})${err.trim() ? ` — ${err.trim().split("\n").pop()}` : ""}`,
+          ...(integrity ? { integrity } : {}),
+        }));
+      } else {
+        // A signal or exit with NO abort signature — an external kill (operator, OOM,
+        // a supervisor) ended the boundary. That names nothing about this doc: unresolved.
+        const how = signal ? `signal ${signal}` : `exit ${code}`;
+        finish(result(documentId, "unresolved", {
+          reason: `boundary ended with no abort signature (${how}) — no verdict`,
           ...(integrity ? { integrity } : {}),
         }));
       }
@@ -166,31 +195,43 @@ export function makeChildProcessDocLoadProbe(storageDir: string): DocLoadProbe {
   return { probe: (documentId, o) => probeDocLoad(storageDir, documentId, o ?? {}) };
 }
 
+/** `runCleanTailChild`'s tagged outcome — so a patience-spent (or signal-less) death reads
+ *  distinctly from "the child ran and said the prefix rejects", which is the only shape a
+ *  caller may treat as an unrecoverable torn base. */
+type CleanTailOutcome =
+  | { readonly kind: "unresolved" }
+  | { readonly kind: "rejected" }
+  | { readonly kind: "line"; readonly line: ChildLine };
+
 /**
- * Spawn the disposable child in --clean-tail mode. Returns its parsed line, or null on any
- * abort / timeout / non-parseable exit — recovery fails SAFE to null, and the caller
- * quarantines the whole doc as before. The child loads only framing-clean records, so this
- * spawn is abort-resistant; the child_process bulkhead still contains any residual poison.
+ * Spawn the disposable child in --clean-tail mode. A clean `{ok:true,…}` line reads `line`; a
+ * clean `{ok:false,…}` or an unparseable-but-complete exit reads `rejected` (the base itself is
+ * torn — unrecoverable). This door's OWN patience spent, or the child dying with no verdict at
+ * all, reads `unresolved` — NEVER folded into `rejected`, so a timeout never masquerades as a
+ * torn base (H2). The child loads only framing-clean records, so this spawn is abort-resistant;
+ * the child_process bulkhead still contains any residual poison.
  */
-function runCleanTailChild(storageDir: string, documentId: string, timeoutMs: number): Promise<ChildLine | null> {
+function runCleanTailChild(storageDir: string, documentId: string, timeoutMs: number): Promise<CleanTailOutcome> {
   const childPath = resolveChildPath();
-  return new Promise<ChildLine | null>((resolve) => {
+  return new Promise<CleanTailOutcome>((resolve) => {
     const child = spawn(process.execPath, [childPath, storageDir, documentId, "--clean-tail"], {
       stdio: ["ignore", "pipe", "pipe"],
     });
     let out = "";
     let settled = false;
-    const finish = (r: ChildLine | null) => { if (!settled) { settled = true; resolve(r); } };
-    const timer = setTimeout(() => { child.kill("SIGKILL"); finish(null); }, timeoutMs);
+    const finish = (r: CleanTailOutcome) => { if (!settled) { settled = true; resolve(r); } };
+    const timer = setTimeout(() => { child.kill("SIGKILL"); finish({ kind: "unresolved" }); }, timeoutMs);
     timer.unref?.();
     child.stdout.on("data", (d) => { out += d.toString(); });
-    child.on("error", () => { clearTimeout(timer); finish(null); });
+    child.on("error", () => { clearTimeout(timer); finish({ kind: "unresolved" }); });
     child.on("close", (code) => {
       clearTimeout(timer);
-      if (settled || code !== 0) return finish(null);
+      if (settled) return;
+      if (code !== 0) return finish({ kind: "rejected" });
       const trimmed = out.trim();
-      if (!trimmed) return finish(null);
-      try { finish(JSON.parse(trimmed.split("\n").pop() ?? "{}") as ChildLine); } catch { finish(null); }
+      if (!trimmed) return finish({ kind: "rejected" });
+      try { finish({ kind: "line", line: JSON.parse(trimmed.split("\n").pop() ?? "{}") as ChildLine }); }
+      catch { finish({ kind: "rejected" }); }
     });
   });
 }
@@ -203,7 +244,12 @@ function runCleanTailChild(storageDir: string, documentId: string, timeoutMs: nu
  * forensics. With the tail gone, the on-disk store equals the verified prefix and the plane
  * mounts writable (PROMOTED). Returns a `status:"ok"` verdict carrying the cleanTail summary,
  * or null when the base record is torn / the prefix rejects (unrecoverable → whole-doc
- * quarantine). Isomorphic peer to `quarantineDoc` — the node atom behind the mesh recipe hook.
+ * quarantine). When the recovery attempt itself never reaches a verdict (this door's own
+ * patience spent, or the child dying with no abort signature), returns a `status:"unresolved"`
+ * `ProbeResult` instead of `null` — H2: a recovery-side timeout must not read as "the base is
+ * torn" and fall into the SAME quarantine a true tear earns; the caller still quarantines on
+ * the ORIGINAL condemn (real integrity evidence), but names the recovery attempt honestly.
+ * Isomorphic peer to `quarantineDoc` — the node atom behind the mesh recipe hook.
  */
 export async function recoverCleanTail(
   storageDir: string,
@@ -211,8 +257,13 @@ export async function recoverCleanTail(
   opts: ProbeOptions = {},
 ): Promise<ProbeResult | null> {
   const documentId = condemned.documentId;
-  const line = await runCleanTailChild(storageDir, documentId, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  if (!line || line.ok !== true || !Array.isArray(line.tornTail)) return null;
+  const outcome = await runCleanTailChild(storageDir, documentId, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  if (outcome.kind === "unresolved") {
+    return result(documentId, "unresolved", { reason: "clean-tail recovery ran past its patience — no verdict" });
+  }
+  if (outcome.kind === "rejected") return null;
+  const line = outcome.line;
+  if (line.ok !== true || !Array.isArray(line.tornTail)) return null;
 
   const moved = moveTornTailAside(storageDir, documentId, line.tornTail);
   const kept = line.chunks ?? 0;

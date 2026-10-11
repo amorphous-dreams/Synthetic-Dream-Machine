@@ -6,7 +6,7 @@
  * role); the `repair` actuator stays a separate, consent-gated verb.
  */
 
-import { isCondemned, type DocLoadProbe, type ProbeResult, type ProbeStatus } from "./doc-load-probe-contract.js";
+import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult, type ProbeStatus } from "./doc-load-probe-contract.js";
 
 /** One doc's line in the doctor chart. */
 export interface DoctorEntry {
@@ -22,7 +22,12 @@ export interface DoctorReport {
   readonly total: number;
   readonly healthy: number;
   readonly condemned: number;
-  /** true once any doc comes back condemned — the store carries a tear. */
+  /** H2 — counted APART from `condemned`: a probe that spent its own patience (or died with
+   *  no abort signature) named no verdict at all. Never folds into "the store carries a
+   *  tear" — only `condemned` does. */
+  readonly unresolved: number;
+  /** true once any doc comes back condemned — the store carries a tear. `unresolved` alone
+   *  never degrades the chart (liveness is not safety evidence). */
   readonly degraded: boolean;
 }
 
@@ -62,12 +67,14 @@ export async function sweepDocs(
   const lanes = Array.from({ length: Math.min(concurrency, documentIds.length) }, () => worker());
   await Promise.all(lanes);
 
-  const condemned = entries.filter((e) => isCondemned({ documentId: e.documentId, status: e.status })).length;
+  const condemned  = entries.filter((e) => isCondemned({ documentId: e.documentId, status: e.status })).length;
+  const unresolved = entries.filter((e) => isUnresolved({ documentId: e.documentId, status: e.status })).length;
   return {
     entries,
     total: entries.length,
-    healthy: entries.length - condemned,
+    healthy: entries.length - condemned - unresolved,
     condemned,
+    unresolved,
     degraded: condemned > 0,
   };
 }

@@ -16,13 +16,23 @@ import type { StoreIntegrityReport } from "./store-integrity.js";
 
 /**
  * How a probe resolved:
- *   ok         — the doc materializes clean.
- *   torn       — the L5b framing gate condemned the bytes ahead of any load (cheap catch).
- *   load-error — the boundary threw a CATCHABLE error; the runtime held, the doc still fails.
- *   aborted    — the boundary died uncatchably (signal / abnormal exit) — the WASM poison.
- *   timeout    — the load ran past its patience and got killed.
+ *   ok          — the doc materializes clean.
+ *   torn        — the L5b framing gate condemned the bytes ahead of any load (cheap catch).
+ *                 INTEGRITY EVIDENCE.
+ *   load-error  — the boundary threw a CATCHABLE error; the runtime held, the doc still fails.
+ *                 INTEGRITY EVIDENCE.
+ *   aborted     — the boundary died uncatchably by its OWN abort signature (SIGABRT, exit 134,
+ *                 the child's own abort line) — the WASM poison. INTEGRITY EVIDENCE. An EXTERNAL
+ *                 kill (operator SIGKILL, OOM) never counts as this — see `isAbortSignature`.
+ *   unresolved  — the load ran past this door's OWN patience, or the boundary died to a signal
+ *                 that carries no abort signature, and got killed/reaped. This is LIVENESS alone:
+ *                 a slow disk, a loaded host, or a big doc reads identically to a torn one at the
+ *                 timer, and a timer must never mint a safety verdict (H2). NEVER condemned.
+ *
+ * `timeout` is RETIRED under this name — a renamed status, not a new concept: every former
+ * `timeout` now reads `unresolved`.
  */
-export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "timeout";
+export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "unresolved";
 
 /** A probe's verdict on one doc. */
 export interface ProbeResult {
@@ -42,9 +52,17 @@ export interface ProbeResult {
   readonly cleanTail?: { readonly kept: number; readonly movedAside: readonly string[] };
 }
 
-/** A doc counts as condemned when anything but a clean load comes back. */
+/** A doc counts as condemned only when the evidence is INTEGRITY evidence — torn bytes, a
+ *  catchable load error, or a boundary abort by its OWN signature. `unresolved` (this door's
+ *  patience spent, or a signal-less death) carries no verdict and is never condemned. */
 export function isCondemned(r: ProbeResult): boolean {
-  return r.status !== "ok";
+  return r.status === "torn" || r.status === "load-error" || r.status === "aborted";
+}
+
+/** A probe answered with no verdict at all — liveness, never evidence. The caller mounts the
+ *  doc neither writable nor quarantined on this; a later re-probe decides. */
+export function isUnresolved(r: ProbeResult): boolean {
+  return r.status === "unresolved";
 }
 
 /** Options a caller passes into a probe run. */
