@@ -68,10 +68,11 @@ if [ "${1:-}" = "--" ]; then
 fi
 
 # THE E2E SETS: name · directory · config. Each runs with LAR_BAGS unset, from its own directory.
-SETS=(
-  "node packages/lararium-node vitest.e2e.config.ts"
-  "tests tests vitest.config.ts"
-)
+# Derived from `E2E_SETS` in tools/e2e-shards.mjs (`sets` verb) — the merge gate, the workflow and this
+# witness read ONE table, so a set added there is measured here without a second edit.
+SETS=()
+while IFS= read -r line; do SETS+=("$line"); done < <(node tools/e2e-shards.mjs sets)
+[ "${#SETS[@]}" -gt 0 ] || { echo "[tree-clean-witness] e2e-shards.mjs sets named no e2e set" >&2; exit 2; }
 
 # Run one set by name, forwarding any further arguments to `vitest run`. Exits with vitest's own code.
 run_set() {

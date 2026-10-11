@@ -1,11 +1,12 @@
 name: E2E shards
 
-# The e2e set (tests/e2e/*.test.ts, run under tests/vitest.config.ts) split four ways across a
-# vitest shard matrix, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
+# EVERY e2e set (the table `E2E_SETS` in tools/e2e-shards.mjs: the main set under tests/ split four
+# ways, the node package's own set in one shard) rides the vitest shard matrix below, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
 # frozen install, its own TW5 core render, its own build, then only its slice of the suite. A
-# merge job reassembles every shard's report and FAILS CLOSED unless all four answered, none
-# failed, none ran zero tests, and the union of files the shards actually ran is EXACTLY the
-# tracked tests/e2e set — a quiet red (a shard that silently ran nothing, or a file nobody ran)
+# merge job reassembles every shard's report and FAILS CLOSED unless every shard of every set
+# answered, none failed, none ran zero tests, and each set's union of files actually run is EXACTLY
+# that set's own tracked file list (a set the lane never ran refuses by name; a test holds this
+# matrix to the table) — a quiet red (a shard that silently ran nothing, or a file nobody ran)
 # must read exactly as loud as a failing assertion. `tools/e2e-shards.mjs#evaluateMergeGate`
 # carries that law; this job's "Merge gate" step is its only caller in anger.
 #
@@ -33,21 +34,25 @@ env:
   # ONE pnpm, exact: the same string ci.yml and the Dockerfile pin. A lock written by any other
   # pnpm rewrites its peer suffixes on its next write.
   PNPM_VERSION: "11.28.5"
-  # The one count every piece of this workflow reads: the matrix below, the shard's own
-  # `--shard=k/N` argument, and the merge gate's "did all N answer" check.
-  SHARD_COUNT: "4"
 
 jobs:
   # ─── shard (4-way) ──────────────────────────────────────────────────────────────────────────
   shard:
-    name: Shard ${{ matrix.shard }}/4
+    name: Shard ${{ matrix.set }} ${{ matrix.shard }}/${{ matrix.count }}
     runs-on: ubuntu-latest
     strategy:
       # A red shard must never cancel its siblings — the merge gate needs to see ALL FOUR
       # verdicts to tell "one shard failed" apart from "one shard never got to answer".
       fail-fast: false
+      # One row per (set, shard); `count` is the set's shard total. tools/e2e-shards.test.mjs holds
+      # these rows to `E2E_SETS`.
       matrix:
-        shard: [1, 2, 3, 4]
+        include:
+          - { set: tests, dir: tests, config: vitest.config.ts, shard: 1, count: 4 }
+          - { set: tests, dir: tests, config: vitest.config.ts, shard: 2, count: 4 }
+          - { set: tests, dir: tests, config: vitest.config.ts, shard: 3, count: 4 }
+          - { set: tests, dir: tests, config: vitest.config.ts, shard: 4, count: 4 }
+          - { set: node, dir: packages/lararium-node, config: vitest.e2e.config.ts, shard: 1, count: 1 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -66,27 +71,27 @@ jobs:
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (vessels run from dist)
         run: pnpm build
-      - name: Run this shard's slice of tests/e2e
-        working-directory: tests
+      - name: Run this shard's slice of its e2e set
+        working-directory: ${{ matrix.dir }}
         env:
           # Explicit siting for this runner, never the gitignored `lar-dev-root.json` dev-preset
           # marker a desk checkout might carry — a fresh clone (and every hosted runner) has
           # neither, and `larRoot()` throws a clean error rather than silently sitting the repo
           # checkout as the corpus. Each shard gets its own directory; the shards never share a VM.
-          LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.shard }}
+          LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.set }}-${{ matrix.shard }}
         run: |
           mkdir -p "$LAR_ROOT"
-          npx vitest run --config vitest.config.ts \
-            --shard="${{ matrix.shard }}/${{ env.SHARD_COUNT }}" \
+          npx vitest run --config "${{ matrix.config }}" \
+            --shard="${{ matrix.shard }}/${{ matrix.count }}" \
             --reporter=blob --reporter=json \
-            --outputFile.json=".vitest/blob/report-shard-${{ matrix.shard }}.json"
+            --outputFile.json=".vitest/blob/report-shard-${{ matrix.set }}-${{ matrix.shard }}.json"
         timeout-minutes: 45
       - name: Upload this shard's blob + JSON report (always, even on a red shard)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: e2e-shard-${{ matrix.shard }}
-          path: tests/.vitest/blob/
+          name: e2e-shard-${{ matrix.set }}-${{ matrix.shard }}
+          path: ${{ matrix.dir }}/.vitest/blob/
           retention-days: 3
           # A shard that crashed before vitest ever wrote a blob must still show up as an
           # artifact-less entry the merge gate can name as missing, never as a step that is
@@ -105,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # No build needed here — this job reads only `git ls-files tests/e2e` (tracked at the
+          # No build needed here — this job reads only `git ls-files` over each set's e2e glob (tracked at the
           # top level, no submodule content) and the shard artifacts downloaded below — but the
           # pnpm workspace's own lockfile names TiddlyWiki5 (the submodule) as an importer, so
           # `pnpm install --frozen-lockfile` refuses a non-recursive checkout outright (its
@@ -142,4 +147,4 @@ jobs:
           npx vitest run --config vitest.config.ts --merge-reports=../merged-blobs \
             --reporter=default --reporter=json --outputFile.json=../merged-report.json || true
       - name: Merge gate — fails closed on any missing, empty, red or mismatched shard
-        run: node tools/e2e-shards.mjs merge-verify --artifacts-dir artifacts --shard-count "${{ env.SHARD_COUNT }}"
+        run: node tools/e2e-shards.mjs merge-verify --artifacts-dir artifacts

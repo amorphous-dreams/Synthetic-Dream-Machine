@@ -375,3 +375,77 @@ esac
   assert.ok(existsSync(marker), "deleteBranch must run even though the log fetch threw");
   rmSync(bin, { recursive: true, force: true });
 });
+
+// ── EVERY SET RIDES THE SHARDS (B.c4) ─────────────────────────────────────────────────────────────
+import { evaluateAllSets, E2E_SETS } from "./e2e-shards.mjs";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const TWO_SETS = [
+  { name: "main", shards: 1 },
+  { name: "side", shards: 1 },
+];
+const trackedBySet = { main: ["main/e2e/a.test.ts"], side: ["side/e2e/b.test.ts"] };
+
+test("CONTROL (sets) — every set ran its own files, the all-sets gate passes", () => {
+  const verdict = evaluateAllSets({
+    sets: TWO_SETS,
+    trackedBySet,
+    setReports: {
+      main: shardReportsFor({ 1: { report: goodReport(["/r/main/e2e/a.test.ts"]) } }),
+      side: shardReportsFor({ 1: { report: goodReport(["/r/side/e2e/b.test.ts"]) } }),
+    },
+  });
+  assert.equal(verdict.ok, true, verdict.problems.join("; "));
+  assert.equal(verdict.executedFileCount, 2);
+});
+
+test("RED (sets) — a set the lane never ran refuses the merge, by set name", () => {
+  const verdict = evaluateAllSets({
+    sets: TWO_SETS,
+    trackedBySet,
+    setReports: { main: shardReportsFor({ 1: { report: goodReport(["/r/main/e2e/a.test.ts"]) } }) },
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.problems.some((p) => p.startsWith("set side: missing artifact")), verdict.problems.join("; "));
+  assert.ok(verdict.problems.some((p) => p.includes("set side: file-union mismatch")), verdict.problems.join("; "));
+});
+
+test("RED (sets) — a file of one set run under the other set's shard refuses the union", () => {
+  const verdict = evaluateAllSets({
+    sets: TWO_SETS,
+    trackedBySet,
+    setReports: {
+      main: shardReportsFor({ 1: { report: goodReport(["/r/main/e2e/a.test.ts", "/r/side/e2e/b.test.ts"]) } }),
+      side: shardReportsFor({ 1: { report: goodReport(["/r/side/e2e/b.test.ts"]) } }),
+    },
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.problems.some((p) => p.startsWith("set main: file-union mismatch")), verdict.problems.join("; "));
+});
+
+test("the real E2E_SETS table names both sets, and an empty report map refuses every one", () => {
+  assert.deepEqual(E2E_SETS.map((s) => s.name), ["tests", "node"]);
+  const verdict = evaluateAllSets({ setReports: {}, trackedBySet: {} });
+  assert.equal(verdict.ok, false);
+  for (const s of E2E_SETS) assert.ok(verdict.problems.some((p) => p.startsWith(`set ${s.name}: missing artifact`)));
+});
+
+test("readShardReports reads a named set's artifacts under e2e-shard-<set>-<k>", () => {
+  const dir = mkdtempSync(join(tmpdir(), "e2e-sets-"));
+  try {
+    mkdirSync(join(dir, "e2e-shard-node-1"), { recursive: true });
+    writeFileSync(join(dir, "e2e-shard-node-1", "report-shard-node-1.json"), JSON.stringify(goodReport(["x/e2e/a.test.ts"])));
+    assert.equal(readShardReports(dir, 1, "node").length, 1);
+    assert.equal(readShardReports(dir, 1, "tests").length, 0);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS", () => {
+  const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
+  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+) \}/g)]
+    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}`).sort();
+  const want = E2E_SETS.flatMap((s) =>
+    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}`)).sort();
+  assert.deepEqual(rows, want);
+});

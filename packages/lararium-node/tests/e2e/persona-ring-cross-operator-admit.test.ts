@@ -51,7 +51,7 @@ import type { AddressInfo } from "node:net";
 import { WebSocketServer } from "ws";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  personaScopedBagIds, ed25519SignerFromSeed, LarWSClientAdapter, DAEMON_BAG_ID, NEXUS_DOC_DOMAIN,
+  personaScopedBagIds, ed25519SignerFromSeed, genesisCharterEpoch, LarWSClientAdapter, DAEMON_BAG_ID, NEXUS_DOC_DOMAIN,
   type LarDoc, type LeafIdentity, type NexusDoc,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, signFaceGrantRecord, faceGrantTitle } from "@lararium/keyhive";
@@ -70,6 +70,9 @@ import {
 } from "../../dist/src/index.js";
 import { generateOrLoadVesselIdentity } from "../../dist/src/node-vessel-identity.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
+// The charter's genesis epoch, built the way a real founding builds it: a charter that names a seal epoch
+// carries the lineage that proves it (the lineage law reads a bare `sealEpochCid` as torn).
+const CHARTER_GENESIS = genesisCharterEpoch(["a".repeat(64)], 1, "");
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 
@@ -209,7 +212,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // `composeDoc` (nexus-doc.ts) also refuses `threshold < 1` outright (the whole doc reads torn) — 1
     // with an empty kahu roster is the minimal well-formed shape.
     const nexusSeed: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, kahu: [], federationPosture: "open",
+      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER_GENESIS.epochCid, sealLineage: [CHARTER_GENESIS], kahu: [], federationPosture: "open",
     };
     await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusSeed); });
 
@@ -284,7 +287,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
   test("★ STRANGER under PRIVATE: a fresh foreign key proven at the real gate meets silence — no verdict, no session, no mint ★", async () => {
     // The operator closes the Nexus; the gate's sorter reads the posture fresh for the very next socket.
     const nexusPrivate: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, kahu: [], federationPosture: "private",
+      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER_GENESIS.epochCid, sealLineage: [CHARTER_GENESIS], kahu: [], federationPosture: "private",
     };
     await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusPrivate); });
     try {
@@ -307,7 +310,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     } finally {
       // CONTROL rides the other tests: the OPEN posture admits the grant-holder at the same gate.
       const nexusOpen: NexusDoc = {
-        kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, kahu: [], federationPosture: "open",
+        kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER_GENESIS.epochCid, sealLineage: [CHARTER_GENESIS], kahu: [], federationPosture: "open",
       };
       await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusOpen); });
     }
