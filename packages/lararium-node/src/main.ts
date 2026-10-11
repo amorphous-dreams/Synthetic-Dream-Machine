@@ -557,7 +557,10 @@ async function main(): Promise<void> {
   const DAEMON_SHUTDOWN_MS  = Math.max(1_000, Math.floor(SHUTDOWN_BUDGET_MS / 2));
   let shuttingDown = false;
   const shutdown = async (sig: string): Promise<void> => {
-    if (shuttingDown) return;
+    if (shuttingDown) {
+      console.log(`[lararium] ${sig} — shutdown already in progress, pending; not re-entered`);
+      return;
+    }
     shuttingDown = true;
     console.log(`[lararium] ${sig} — graceful shutdown (durable flush, budget ${SHUTDOWN_BUDGET_MS}ms)`);
     // Each step's span rides the log (monotonic, a measurement only), so an overrun names the step that spent it.
@@ -568,7 +571,14 @@ async function main(): Promise<void> {
       running.add(name);
       try { await run(); } finally { running.delete(name); spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
     };
-    let force: ReturnType<typeof setTimeout> | undefined;
+    // A WALL BUDGET NAMES A SLOW STEP; IT NEVER CUTS ONE. `SHUTDOWN_BUDGET_MS` once raced the teardown and
+    // exited past the loser (`process.exit(0)` in the `finally`, win or lose) — a vessel could leave mid-flush
+    // with its own log calling that a "complete" shutdown. The budget now only REPORTS: past it, this step logs
+    // which receipts are still outstanding (a pending-shutdown notice an operator or supervisor can read) and
+    // keeps waiting on the SAME teardown promise. The vessel exits only once every teardown receipt lands, or
+    // not at all if one never does — an external SIGKILL is the only cut past that point, and it tears exactly
+    // as any crash does, never silently.
+    let pastBudget: ReturnType<typeof setTimeout> | undefined;
     try {
       readinessFace.dispose();
       pronaos?.dispose();
@@ -576,23 +586,24 @@ async function main(): Promise<void> {
       dispatcher.dispose();
       uds.close();
       httpServer.close();
-      await step("main-flush", () => result.repo.flush());                          // the floor, never cut by the force
-      const forced = new Promise<"forced">((resolve) => { force = setTimeout(() => resolve("forced"), SHUTDOWN_BUDGET_MS); });
+      await step("main-flush", () => result.repo.flush());                          // the floor, never cut by the budget
+      pastBudget = setTimeout(() => {
+        console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}`);
+      }, SHUTDOWN_BUDGET_MS);
       // The two teardowns run side by side: a wiki island busy past the budget never holds the daemon island's own
-      // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it.
-      const teardown = Promise.all([
+      // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it. Both are AWAITED to their
+      // own receipt — nothing here races them against a clock.
+      await Promise.all([
         step("islands", () => result.pool.disposeAll()),                            // wiki islands flush their partitions + ack
         step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS)),           // daemon island flushes docs + capture, then acks
-      ]).then(() => "done" as const);
-      if (await Promise.race([teardown, forced]) === "forced") {
-        console.error(`[lararium] shutdown budget exceeded — the teardown is cut (still running: ${[...running].join(", ")}); the main replica flushes before exit (done: ${spans.join(" · ")})`);
-      }
+      ]);
+      clearTimeout(pastBudget);
       await step("main-reflush", () => result.repo.flush());                        // land what synced during teardown
-      console.log(`[lararium] shutdown complete — the main replica flushed durably (${spans.join(" · ")})`);
+      console.log(`[lararium] shutdown complete — every teardown receipt landed, the main replica flushed durably (${spans.join(" · ")})`);
+      process.exit(0);
     } catch (e) {
+      clearTimeout(pastBudget);
       console.error("[lararium] shutdown flush error:", e instanceof Error ? e.message : String(e));
-    } finally {
-      clearTimeout(force);
       process.exit(0);
     }
   };
