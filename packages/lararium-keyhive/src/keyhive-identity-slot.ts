@@ -185,11 +185,10 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
    * clear rides real accessForDoc for the named audience.
    *
    * ORDER (§2c, load-bearing — do not reshuffle): (1) parse, (2) bag-scope, (3) `provider.verify` (the real
-   * revocation-aware barrier), (4) the clockless EPOCH FENCE, (5) THEN `expiresAtMs` — the wall-clock guard,
-   * kept as a SECOND, RETIRING guard now that the fence is load-bearing (a prepared, not-yet-applied patch
-   * drops this last line once the fence alone is trusted to stand). The fence sits AFTER revocation so a
-   * presenter already denied by `provider.verify` reads that refusal, never a fence refusal that would read
-   * as "the lease rolled" when the real cause is "never had the cap" / "since revoked".
+   * revocation-aware barrier), (4) the clockless EPOCH FENCE — now the WHOLE gate. The retired wall-clock
+   * `expiresAtMs` guard (`gate-retire-keyhive-expiry` patch) is GONE: the fence alone decides. The fence sits
+   * AFTER revocation so a presenter already denied by `provider.verify` reads that refusal, never a fence
+   * refusal that would read as "the lease rolled" when the real cause is "never had the cap" / "since revoked".
    */
   async verifyDelegation(token: CapabilityToken, docUrl: string): Promise<boolean> {
     if (token === null) return false;   // no open default: absent token = deny
@@ -217,10 +216,6 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
     const currentEpoch = await readLeaseEpoch(this.#leaseEpochOf, docUrl);
     if (currentEpoch === null) return false;           // unreadable epoch — incomplete view, refuse
     if (currentEpoch > boundEpoch) return false;        // the lease rolled past the epoch this was minted at
-
-    // RETIRING (second guard) — the wall-clock expiry. Kept until the prepared patch (not yet applied) drops
-    // it; the fence above is already the load-bearing gate.
-    if (payload.expiresAtMs !== null && Date.now() > payload.expiresAtMs) return false;
 
     return true;
   }

@@ -29,7 +29,14 @@
  *                             verifies the ACK → both hold a matching mutually-signed join record. The 3rd hop is
  *                             load-bearing: dropping it would silent-drop the join from A's log (anti-pono).
  *
- * NO-GLOBAL-NOW: every step reads a LOCAL now against a carried expiry; nothing awaits a reachable authority. The
+ * NO-GLOBAL-NOW (§2a gate-removal v3): no step compares a wall clock to a carried expiry any more — that
+ * read of a cross-party `now` against the OTHER party's stamped `expiry` was the gate itself, and it is
+ * gone. What actually bounds this ceremony's liveness: CONSUMPTION (an enrollment secret / sent-grant memo
+ * is used exactly once, then dropped), WITHDRAWAL (the holder's own causal act drops its own pending state
+ * before anything stale can answer it), and the HELD SESSION's own monotonic patience (the CLI process's
+ * own `setTimeout` duration, racing a next-hop paste against a SIGINT/SIGTERM — never a `Date.now()`
+ * compare, and never read by anything in this file). The `expiry`/`now` fields that still ride the wire are
+ * ADVISORY DISPLAY ONLY, carried for the operator's own tooling; nothing here verdicts on them. The
  * prefix-head check reads the caller's LOCAL persona-KEL replica as-of-last-sync. WAX-SEALS-ONLY: the grant is a
  * signature by the persona's own key, never a registrar row. TRACK-CONTRACTS-NEVER-IDENTITIES: a JoinRecord
  * carries key-material + prefixes + nonces only — no name, no email, no device inventory.
@@ -175,11 +182,16 @@ function grantSaltParts(nonceB: string, nonceA: string): readonly Uint8Array[] {
 }
 
 /**
- * A mints the grant: verify the offer is in-date, build a persona→vessel delegation transcript, SIGN it with the
- * persona's PREFIX current op-key, then ECDH-SEAL {transcript, grantSig} to B's ephemeral pubkey. INERT: sealed to
- * B's ephemeral key (only the live B opens it), nonce-pinned to the offer, expiry-bound, and target-bound to B's
- * device key. `personaSigner` MUST sign under `personaRef.verifyingKey` (the current op-key); the open step
- * re-binds that key to the prefix head. NO persona seed crosses — the grant is a delegation, not a key-at-rest.
+ * A mints the grant: build a persona→vessel delegation transcript, SIGN it with the persona's PREFIX current
+ * op-key, then ECDH-SEAL {transcript, grantSig} to B's ephemeral pubkey. INERT: sealed to B's ephemeral key
+ * (only the live B opens it), nonce-pinned to the offer, and target-bound to B's device key. `personaSigner`
+ * MUST sign under `personaRef.verifyingKey` (the current op-key); the open step re-binds that key to the
+ * prefix head. NO persona seed crosses — the grant is a delegation, not a key-at-rest.
+ *
+ * §2a gate-removal v3: this no longer refuses a past-expiry offer. A's own liveness lives elsewhere — the
+ * held-session CLI holds past rendering its QR, auto-withdrawing its own sent memo on its own patience or an
+ * operator SIGINT/SIGTERM. The offer's stamped `expiry` is ADVISORY DISPLAY ONLY from here on, never a gate
+ * where A's own clock judges B's clock.
  */
 export async function sealPersonaGrant(args: {
   readonly offer:         EnrollmentOffer;
@@ -191,19 +203,27 @@ export async function sealPersonaGrant(args: {
    * covers it; a receiver that opens the grant then binds the arriving sibling to this digest. Omitted → no commit.
    */
   readonly keyringSealDigest?: string;
-  readonly expiryMs?:     number;        // default: inherit the offer's remaining window (capped by it)
+  /** ADVISORY DISPLAY ONLY (§2a v3) — caps the STAMPED `expiry` field's cosmetic "good until"; no verdict reads it. */
+  readonly expiryMs?:     number;
+  /** ADVISORY DISPLAY ONLY (§2a v3) — feeds the stamped `expiry` alongside `expiryMs`; no verdict reads it. */
   readonly now?:          number;
 }): Promise<{ sealed: SealedGrant; sent: SentGrantMemo }> {
   const { offer, personaRef } = args;
+  // ADVISORY ONLY (§2a gate-removal v3): `now`/`expiryMs` feed the STAMPED `expiry` field below, which no
+  // verdict anywhere in this file reads any more — the ceremony's liveness is consumption, withdrawal, and
+  // the held session's own patience (see the module doc). Retained so the carried `expiry` still means
+  // something to the OPERATOR's own tooling (a QR's human-readable "good until"), never a gate.
   const now = args.now ?? Date.now();
   if (offer.kind !== PERSONA_ENROLL_DOMAIN) throw new Error("persona-admit: not an enrollment offer");
   if (!NYM_RE.test(offer.targetVesselId.toLowerCase())) throw new Error("persona-admit: offer targetVesselId malformed");
-  if (offer.expiry <= now) throw new Error("persona-admit: enrollment offer has expired");
   if (!NYM_RE.test(personaRef.verifyingKey.toLowerCase())) throw new Error("persona-admit: personaRef.verifyingKey must be 64-hex");
   if (!personaRef.prefix) throw new Error("persona-admit: personaRef.prefix required");
 
   const nonceA = hex(webGetRandomValues(new Uint8Array(CHALLENGE_LEN)));
-  // The grant NEVER outlives the offer — cap the grant expiry by the offer's (a stale offer can't be re-opened late).
+  // ADVISORY DISPLAY STAMP ONLY: capping by the offer's own expiry here is cosmetic bookkeeping (the grant's
+  // carried "good until" never outlives the offer's own), not a verdict — nothing compares this value to a
+  // clock any more. A stale offer's grant still seals; what ends its life is the held session's own
+  // patience (B's offer) and its mirror on A's side, never this stamp.
   const expiry = Math.min(offer.expiry, now + (args.expiryMs ?? 10 * 60_000));
   const transcript: GrantTranscript = {
     kind:           PERSONA_GRANT_DOMAIN,
@@ -281,12 +301,16 @@ export async function openPersonaGrant(args: {
    * `granterSeq` (the view falls back to its nonce-only tiebreak).
    */
   readonly resolveHeadSeq?: (prefix: string) => Promise<number | null> | number | null;
+  /**
+   * RETIRED GATE (§2a/§2c line): formerly a wall-clock override for the grant/enrollment/transcript expiry
+   * checks this function no longer makes. The offer's own lifetime is now a HELD SESSION's own patience
+   * (the CLI's own `setTimeout`, auto-withdrawing its pending state when it ends), never a verdict this open
+   * step reaches for — so this field is accepted for call-site compatibility and read by NOTHING below.
+   */
   readonly now?:             number;
 }): Promise<GrantVerdict> {
   const { sealed, secret } = args;
-  const now = args.now ?? Date.now();
   if (sealed.kind !== PERSONA_SEALED_DOMAIN) return { ok: false, reason: "not a sealed persona grant" };
-  if (sealed.expiry <= now || secret.expiry <= now) return { ok: false, reason: "grant or enrollment expired" };
 
   // Complete the ECDH with B's on-device ephemeral secret + decrypt. A wrong key / tamper / a photographed QR
   // opened without the ephemeral secret all fail the AEAD here — the one gate a captured tabletop cannot pass.
@@ -313,7 +337,6 @@ export async function openPersonaGrant(args: {
   if (t.nonceA !== sealed.nonceA || t.expiry !== sealed.expiry) return { ok: false, reason: "grant frame does not match the signed transcript" };
   if (t.nonceB !== secret.nonceB) return { ok: false, reason: "nonce_B does not echo this enrollment (replayed grant)" };
   if (t.targetVesselId.toLowerCase() !== secret.targetVesselId.toLowerCase()) return { ok: false, reason: "grant targets a different vessel" };
-  if (t.expiry <= now) return { ok: false, reason: "grant expired" };
 
   // Ruling: verify against the persona PREFIX HEAD (rotate-not-resurrect). The transcript's op-key MUST be the
   // live head, and the signature MUST verify against it — a grant off a superseded key is refused.

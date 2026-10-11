@@ -82,17 +82,6 @@ describe("the keyhive capability token", () => {
       expect(await slot.verifyDelegation(token, DOC)).toBe(false);   // mutation: unreadable → refuse
     });
 
-    test("RETIRING (second guard): a wall-clock-expired token still refuses TODAY, fence satisfied or not — the prepared patch (gate-retire-keyhive-expiry) drops exactly this enforcement + this test", async () => {
-      const slot = new KeyhiveIdentitySlot({ provider, did: "did:self", leaseEpochOf: () => 3 });
-      // Minted already-past (`expiresIn: -1` → `expiresAtMs` one second in the past) — the fence above
-      // is satisfied (same epoch, same provider.verify), so ONLY the retiring wall-clock guard refuses.
-      const expired = await slot.delegateCapability(DOC, "did:peer", "read", -1);
-      expect(await slot.verifyDelegation(expired, DOC)).toBe(false);
-      // CONTROL: the same mint with no expiry at all (the field reads null) still verifies.
-      const noExpiry = await slot.delegateCapability(DOC, "did:peer", "read");
-      expect(await slot.verifyDelegation(noExpiry, DOC)).toBe(true);
-    });
-
     test("the fence runs AFTER provider.verify — a revoked presenter reads the revocation refusal path, not a fence bypass", async () => {
       const deniedProvider = fakeProvider({ presenter: "did:someone-else", bagUrl: DOC });   // never grants did:peer
       const slot = new KeyhiveIdentitySlot({ provider: deniedProvider, did: "did:self", leaseEpochOf: () => 3 });
