@@ -94,17 +94,47 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
 }
 
 /**
- * PIDs with the rendezvous socket FILE open at `path` — the UDS twin of `port-control.ts`'s
- * `portHolderPids`. `lsof -t <path>` names every process holding that exact name open, which for a
- * rendezvous socket is its one listener (M4: this is what names a WEDGED holder, since nothing else
- * can). Excludes our own PID. Empty = no owner found (no `lsof`, or the OS reports none).
+ * PIDs holding the rendezvous socket at `path` — the UDS twin of `port-control.ts`'s
+ * `portHolderPids`. Excludes our own PID. Empty = no owner found (no `ss`/`lsof`, or the OS reports
+ * none).
+ *
+ * M-a (gp3-episkopos, measured live): `lsof -t <path>` named NOTHING for a real, live-held
+ * rendezvous name. A holder never binds the rendezvous path directly — `owned-store.ts` binds a
+ * private STAGING name (`<path>.<pid>.<random>`), then `linkSync`s it onto the rendezvous name, and
+ * unlinks the staging name once linked. The kernel's own record of a UNIX socket's bound name is the
+ * path it was `bind()`-ed to, not any hard link created or removed afterward — `ss -xlp`/`lsof -U`
+ * both confirmed live that the listener still answers to the (unlinked) STAGING path, never the
+ * rendezvous name a caller resolves through. So this matches by PREFIX (`<path>.`, deterministic;
+ * the pid/random suffix is not) over every UNIX listener, rather than an exact path a holder never
+ * actually binds.
  */
 export function socketHolderPids(path: string): number[] {
   const self = process.pid;
   const uniq = (ns: number[]): number[] => [...new Set(ns)].filter((n) => n > 0 && n !== self);
+  const prefix = `${path}.`;
   try {
-    const out = execFileSync("lsof", ["-t", path], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-    return uniq(out.split(/\s+/).filter((s) => s.length > 0).map(Number).filter(Number.isFinite));
+    // `ss -xlp`: Netid State Recv-Q Send-Q `Local Address:Port` Peer-Address:Port Process — the bound
+    // name carries no internal whitespace, so a plain split finds it at a fixed column.
+    const out = execFileSync("ss", ["-xlp"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    const pids: number[] = [];
+    for (const line of out.split("\n")) {
+      const cols = line.trim().split(/\s+/);
+      if ((cols[4] ?? "").startsWith(prefix)) {
+        const m = /pid=(\d+)/.exec(line);
+        if (m) pids.push(Number(m[1]));
+      }
+    }
+    if (pids.length > 0) return uniq(pids);
+  } catch { /* ss absent or refused — fall to lsof */ }
+  try {
+    const out = execFileSync("lsof", ["-U"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    const pids: number[] = [];
+    for (const line of out.split("\n")) {
+      if (!line.includes(prefix)) continue;
+      const pid = Number(line.trim().split(/\s+/)[1]);
+      if (Number.isFinite(pid)) pids.push(pid);
+    }
+    return uniq(pids);
   } catch { return []; }
 }
 
