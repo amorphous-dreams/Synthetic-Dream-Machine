@@ -42,9 +42,10 @@ import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "
 import { larRoot, vesselDid } from "../env.js";
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
-import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
+import { LocalWaitExpired } from "../local-connector.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -135,21 +136,33 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const submitName = inWiki ? "wiki-act" : "REPACK";
   const submitArgs = inWiki ? { verb: "REPACK", args: repackArgs } : repackArgs;
 
+  // A caller-generated nonce, before dispatch — the one thing a short read-back below can trust across
+  // a lost response (see the LOAD arm further down for the full reasoning).
+  const repackRequestId = newRequestId();
+  const REPACK_READBACK_MS = 2_000;
   let result;
   try {
-    result = await runVerb(submitName, submitArgs, did);
+    result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // THE SAME TWO FAULTS, TOLD APART. REPACK rides the default budget rather than a derived one, so its
-    // timeout hint names the gesture instead of an arithmetic — but the split holds: a caller told to
-    // stand a daemon that already stands loses the trail to the real fault either way.
-    if (/timed out after \d+ms/.test(msg)) {
-      const hint = "the daemon answered and the ACK budget ran out — the verb may still be running. Re-run on a quieter machine, or repack a smaller bundle.";
-      emit(args, { ok: false, error: { code: "verb-timeout", message: msg, hint }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error(`  ${hint}`); } });
-      return exitFor("verb-timeout");
+    // outcome-unknown hint names the gesture instead of an arithmetic — but the split holds: a caller
+    // told to stand a daemon that already stands loses the trail to the real fault either way.
+    if (err instanceof LocalWaitExpired) {
+      let readBack: Awaited<ReturnType<typeof runVerb>> | undefined;
+      try { readBack = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId, timeoutMs: REPACK_READBACK_MS }); }
+      catch { /* still unknown */ }
+      if (readBack) {
+        result = readBack;
+      } else {
+        const hint = "the daemon answered and this process stopped waiting; a short read-back found no receipt yet. The verb may still be running. Re-run on a quieter machine, or repack a smaller bundle — the same request id reads the receipt back once it lands.";
+        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+        return exitFor("outcome-unknown");
+      }
+    } else {
+      emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
+      return exitFor("daemon-unreachable");
     }
-    emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
-    return exitFor("daemon-unreachable");
   }
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";
@@ -363,34 +376,47 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // island frame per carrier, so a flat budget times out the ACK while the verb
   // itself succeeds.
   const timeoutMs = Math.max(10_000, 10_000 + carrierCount * 400);
+  // ONE SHORT READ-BACK, BY THE SAME REQUEST ID, NEVER A SECOND DISPATCH. The dispatcher's own outcome-keyed
+  // dedup (`verb-dispatcher.ts`) makes re-submitting this exact `requestId` safe: a prior commit returns its
+  // durable receipt at once, never a repeat of the act's effect. A short budget here only bounds how long
+  // THIS process waits to read that receipt back — it is not a second chance for the verb to finish.
+  const READBACK_MS = 2_000;
   let result;
   try {
     result = await runVerb(submitName, submitArgs, did, { requestId, timeoutMs });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    // A TIMED-OUT VERB IS NOT AN ABSENT DAEMON. The socket connected and the daemon took the verb; the
-    // caller stopped waiting. Naming that `daemon-unreachable` sends an operator to start something
-    // already running, and hands an agent a code for the wrong fault. The budget above DERIVES from the
-    // gesture, so the cure names the arithmetic that set it — a reader cannot reach that from the message.
-    const timedOut = /timed out after \d+ms/.test(msg);
-    if (timedOut) {
-      const perCarrier = "10s + 400ms per carrier";
-      const hint = `the daemon answered and the ACK budget ran out — a LOAD of ${carrierCount} carrier(s) budgets ${timeoutMs}ms (${perCarrier}). The verb may still be running. Re-run on a quieter machine, or feed fewer carriers per gesture.`;
+    // A LOCAL WAIT ENDING IS NOT A VERDICT ON THE ACT, AND NEVER AN ABSENT DAEMON. The socket connected and
+    // the daemon took the verb; this process merely stopped waiting to hear back. Naming that
+    // `daemon-unreachable` sends an operator to start something already running, and `verb-timeout` tells an
+    // agent the act failed when it may have committed. So this reports "outcome unknown" and tries ONE short
+    // read-back by the same request id before giving up on knowing at all.
+    if (err instanceof LocalWaitExpired) {
+      let readBack: Awaited<ReturnType<typeof runVerb>> | undefined;
+      try { readBack = await runVerb(submitName, submitArgs, did, { requestId, timeoutMs: READBACK_MS }); }
+      catch { /* still unknown — the read-back itself may time out too */ }
+      if (readBack) {
+        result = readBack; // a receipt landed meanwhile — fall through to the ordinary result handling below
+      } else {
+        const perCarrier = "10s + 400ms per carrier";
+        const hint = `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read-back found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        emit(args, {
+          ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
+          human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
+        });
+        return exitFor("outcome-unknown");
+      }
+    } else {
+      // NOTHING ANSWERED — the one fault the standing hint actually cures.
       emit(args, {
-        ok: false, error: { code: "verb-timeout", message: msg, hint },
-        human: () => { console.error(`lares act: ${msg}`); console.error(`  ${hint}`); },
+        ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
+        human: () => {
+          console.error(`lares act: ${msg}`);
+          console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
+        },
       });
-      return exitFor("verb-timeout");
+      return exitFor("daemon-unreachable");
     }
-    // NOTHING ANSWERED — the one fault the standing hint actually cures.
-    emit(args, {
-      ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
-      human: () => {
-        console.error(`lares act: ${msg}`);
-        console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-      },
-    });
-    return exitFor("daemon-unreachable");
   }
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";

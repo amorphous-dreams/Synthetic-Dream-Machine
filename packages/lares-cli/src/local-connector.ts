@@ -17,6 +17,7 @@ import { createConnection } from "node:net";
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
+import { newRequestId } from "@lararium/mesh";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
 
@@ -202,6 +203,21 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<Wh
 export class UdsUnreachable extends Error {}
 
 /**
+ * This caller's own local wait ended with NO receipt read back — never a verdict on the act itself.
+ *
+ * A wall clock never decides whether an act ran; it only bounds how long THIS process waits to hear.
+ * The vessel may have abandoned the request before dispatch, may be mid-run, or may have already
+ * committed and written a receipt this caller simply has not read yet (a frozen peer, a slow flush).
+ * `requestId` is the one thing this caller can trust across that wait: read it back later and the
+ * vessel's own durable outcome — never this timer — tells the truth.
+ */
+export class LocalWaitExpired extends Error {
+  constructor(verb: string, timeoutMs: number, readonly requestId: string) {
+    super(`local verb "${verb}" — stopped waiting after ${timeoutMs}ms; outcome unknown. Check request ${requestId}.`);
+  }
+}
+
+/**
  * This call's own caller gave up (`opts.signal` fired) — never a transport fault. `throughStoreDoor` (H1)
  * aborts at the instant ITS budgeted wait names a holder and refuses, so the still-open verb socket closes
  * right then rather than waiting out this call's own flat `timeoutMs`: a vessel parked on that socket then
@@ -218,12 +234,15 @@ export async function invokeLocal(
 ): Promise<SubmitResult> {
   const socketPath = udsSocketPath(opts.dataDir);
   const timeoutMs  = opts.timeoutMs ?? 30_000;
-  // THE CALLER'S OWN ABSOLUTE DEADLINE, NEVER A PARKED VESSEL'S READ TIME. A line that only named `timeoutMs`
-  // let a vessel that parked it unread stamp a FRESH deadline the moment it finally read the line — however
-  // long it sat waiting — which could outlive this caller's own patience by the whole of that wait again.
-  // `deadlineAt` (same-host epoch ms) rides beside it so `owned-store.ts`'s `park` compares against the
-  // instant THIS call actually gives up, not against whenever a vessel gets around to reading it.
-  const deadlineAt = Date.now() + timeoutMs;
+  // THE REQUEST ID RIDES BEFORE DISPATCH, NEVER AFTER. A caller-generated nonce (never one the vessel
+  // mints on read) is the one thing that survives a lost response: this call's own local wait may end
+  // with no receipt read back, but the SAME id reads the vessel's durable outcome back later — see
+  // `LocalWaitExpired`. No absolute wall-clock deadline rides the wire: a vessel that parks this line
+  // unread, however long it sits, never gets handed a caller's wall-clock stamp to compare its own
+  // clock against (a clock EITHER side could be adversarially set). This call's own `timer` below is
+  // LOCAL LIVENESS ONLY — it ends this process's own wait and closes this socket; it never tells the
+  // vessel to stop, and it is never read by the vessel as a reason to drop the line.
+  const requestId = opts.requestId ?? newRequestId();
   return await new Promise<SubmitResult>((resolve, reject) => {
     const sock = createConnection(socketPath);
     let buf = "";
@@ -239,7 +258,7 @@ export async function invokeLocal(
     const onAbort = (): void => settle(() => reject(new LocalInvocationAborted(`local verb "${verb}" aborted by its own caller`)));
     opts.signal?.addEventListener("abort", onAbort, { once: true });
     const timer = setTimeout(
-      () => settle(() => reject(new Error(`local verb "${verb}" timed out after ${timeoutMs}ms`))),
+      () => settle(() => reject(new LocalWaitExpired(verb, timeoutMs, requestId))),
       timeoutMs,
     );
     sock.setEncoding("utf8");
@@ -247,8 +266,7 @@ export async function invokeLocal(
       // THE ASK RIDES WITH THE INVOCATION. The daemon runs its own servo, and a caller that knows its
       // pass runs long — a bulk backfill over a whole corpus — can only say so if the number crosses.
       // Left off the wire, this side waited an hour while the daemon cut the same pass at two minutes.
-      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, deadlineAt,
-                                  ...(opts.requestId ? { requestId: opts.requestId } : {}) }) + "\n");
+      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId }) + "\n");
     });
     sock.on("data", (chunk: string) => {
       buf += chunk;
