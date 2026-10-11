@@ -449,7 +449,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | seal | rotate | export <path> | repair | passphrase> [--force] [--yes]",
+    usage: "usage: lares vault <status | unlock | bind | unbind <slot-id> | seal | rotate | export <path> | repair | passphrase> [--force] [--yes] [--passphrase | --paper] [--rotate]",
     synopsis:
       "At-rest seal LIFECYCLE for the sovereign secret carriers (keyhive archive + recovery share). " +
       "DAEMON-FIRST: a mutating verb routes through the daemon while it stands, so its in-memory policy " +
@@ -458,7 +458,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "(double-entry for a new pass), or LARES_ARCHIVE_PASSPHRASE (+ _NEW) with --yes. Every seal STAMPS " +
       "its Erisian day beside the vault as a record, never as part of the passphrase.",
     examples: [
-      "lares vault status                     # the seal state of both carriers",
+      "lares vault status                     # the seal state of both carriers + the custody (VK) tree and rows",
+      "lares vault unlock                     # open the vessel key on a TTY credential; reports the slot that opened",
+      "lares vault bind [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back)",
+      "lares vault unbind <slot-id> [--rotate]   # unlock, remove a slot; the rotation offer prints EVERY time",
       "lares vault status --check             # ... probing a passphrase → split-KEK detection",
       "lares vault seal                       # seal cleartext carriers under a NEW passphrase",
       "lares vault rotate                     # re-seal both carriers old → new",
@@ -469,7 +472,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--check            (status) probe a passphrase against both carriers → split detection",
       "--force            (export) overwrite an existing backup at that path",
-      "--yes              take the passphrase from the environment instead of a TTY prompt",
+      "--yes              take the passphrase from the environment instead of a TTY prompt (seal/rotate/export/repair only)",
+      "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
+      "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
+      "unlock | bind | unbind read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
       "LARES_ARCHIVE_PASSPHRASE       the current passphrase (non-interactive, with --yes)",
       "LARES_ARCHIVE_PASSPHRASE_NEW   the new passphrase for seal / rotate",
     ],

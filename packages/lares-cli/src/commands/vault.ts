@@ -21,11 +21,17 @@ import {
   exportSealedArchive, repairSplitKek, weakPassphraseWarning,
   ARCHIVE_PASSPHRASE_ENV,
 } from "@lararium/node";
-import { larIdentityDir } from "../env.js";
+import {
+  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, rotateCustody, custodyStatus,
+  type CustodyHomes, type CustodyStatus,
+} from "@lararium/node";
+import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
+import { gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { discordianReading } from "@lararium/node";
 import { throughStoreDoor } from "../store-door.js";
 import { udsAlive } from "../local-connector.js";
-import { emit, exitFor, refuseUsage } from "../render.js";
+import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { canPromptSecret, promptSecret, promptSecretConfirmed } from "../prompt-secret.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -73,6 +79,24 @@ async function newPass(args: ParsedArgs, label: string): Promise<string> {
 }
 
 class UsageError extends Error {}
+
+/** A rotation that would refuse mid-way, caught before the slot is removed. */
+class RotationPreflightRefusal extends Error { override readonly name = "RotationPreflightRefusal"; }
+
+/** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
+const NAMED_REFUSALS: ReadonlySet<string> = new Set([
+  "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal", "FloorWriteRefused",
+  "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationPreflightRefusal",
+]);
+
+function custodyHomes(): CustodyHomes {
+  return { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
+}
+
+/** The sentence `vault status` prints beside the relation rows, and `vault unbind` beside its rotation offer. */
+const RELATION_LINE =
+  "rotation never repairs the loss of a relation carrier: a relation secret derives from no house key, so only the " +
+  "other party can re-issue it. Back the carrier itself up.";
 
 /** Warn (never reject) on a weak passphrase — the SOFT floor. */
 function warnIfWeak(pass: string): void {
@@ -153,6 +177,9 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
   try {
     switch (sub) {
       case "status":     return await vaultStatus(args, daemonUp);
+      case "unlock":     return await vaultUnlock(args);
+      case "bind":       return await vaultBind(args);
+      case "unbind":     return await vaultUnbind(args);
       case "passphrase": return vaultPassphrase(args);
       case "seal":    return await vaultSeal(args, daemonUp);
       case "rotate":  return await vaultRotate(args, daemonUp);
@@ -164,6 +191,13 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // THE CUSTODY REFUSALS READ BY NAME. A caller tells a torn tree from a wrong credential from a held lock by the
+    // name, so the name leads the line and the exit code stays the refusal's (1), never a usage error's.
+    if (err instanceof Error && NAMED_REFUSALS.has(err.name)) {
+      const named = `${err.name}: ${msg}`;
+      emit(args, { ok: false, error: { code: err.name, message: named }, human: () => console.error(`lares vault ${sub}: ${named}`) });
+      return 1;
+    }
     const code = err instanceof UsageError ? "usage" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares vault ${sub}: ${msg}`) });
     return exitFor(code);
@@ -178,10 +212,13 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
   }
   const vargs: Record<string, unknown> = probe ? { probe } : {};
   const { output, via } = await throughStoreDoor({ verb: "vault-status", args: vargs, direct: () => ({ ...archiveSealStatus(probe ? { probe } : {}) }), daemonUp });
+  const homes = custodyHomes();
+  const custody = await custodyStatus({ io: new FsCustodyIo(homes), homes });
   emit(args, {
     ok: true,
-    data: { ...output, via },
+    data: { ...output, via, custody },
     human: () => {
+      printCustody(custody);
       const carriers = (output["carriers"] ?? {}) as Record<string, { state: string; mode?: string; opensUnderProbe?: boolean }>;
       console.log(`vault status (${via}):`);
       for (const [name, c] of Object.entries(carriers)) {
@@ -308,5 +345,126 @@ async function vaultRepair(args: ParsedArgs, daemonUp: boolean): Promise<number>
       console.log(`repaired ${repaired.length ? repaired.join(", ") : "(nothing — carriers already consistent)"} (${via})`);
     },
   });
+  return 0;
+}
+
+/** The "custody (VK)" section: the slot tree, then every standing table row with its key class and reading. */
+function printCustody(c: CustodyStatus): void {
+  console.log("custody (VK):");
+  if (c.tree.reading === "absent") console.log("  slot tree      absent — no vk-slots.bin stands (a founding seals custody from birth)");
+  else if (c.tree.reading === "unreadable") console.log(`  slot tree      UNREADABLE — ${c.tree.why}`);
+  else {
+    console.log(`  slot tree      ${c.tree.slots.length} slot(s)`);
+    for (const sl of c.tree.slots) console.log(`    ${sl.id}  t=${sl.t}  ${sl.pins.join(" + ")}`);
+  }
+  const standing = c.rows.filter((r) => r.reading !== "absent");
+  if (standing.length === 0) console.log("  carriers       none standing");
+  for (const r of standing) {
+    console.log(`    ${r.row.padEnd(22)} ${r.home.padEnd(9)} ${r.custody.padEnd(5)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading}`);
+  }
+  const bare = standing.filter((r) => r.reading === "bare").length;
+  if (bare > 0) console.log(`  ${bare} carrier(s) read bare: their writers have not yet moved under the VK, and the status says so.`);
+  const relation = standing.filter((r) => r.keyClass === "relation");
+  console.log(`  relation class ${relation.length} standing${relation.length ? ` (${relation.map((r) => r.row).join(", ")})` : ""}`);
+  console.log(`  note           ${RELATION_LINE}`);
+}
+
+/** Read the tree at the identity home and prove `credentials` open it, or explain why not. Writes nothing beyond the settle. */
+async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes, io: FsCustodyIo, creds: readonly Credential[]) {
+  const u = await unlockCustody({ io, homes, credentials: creds });
+  if (u.reading === "opens") return u;
+  const why =
+    u.reading === "no-slot-opens" ? `no slot opens under what was presented${u.notes.length ? ` (${u.notes.join("; ")})` : ""} — nothing was changed`
+    : u.reading === "tree-absent"  ? "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth)"
+    : `the slot tree reads unreadable: ${u.why} — a torn tree is not a credential error; nothing was changed`;
+  emit(args, { ok: false, error: { code: u.reading, message: why }, data: { reading: u.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
+  return null;
+}
+
+async function vaultUnlock(args: ParsedArgs): Promise<number> {
+  const homes = custodyHomes();
+  const io = new FsCustodyIo(homes);
+  const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
+  const u = await openOrRefuse(args, "unlock", homes, io, creds);
+  if (!u) return 1;
+  emit(args, { ok: true, data: { reading: "opens", slot: u.slot }, human: () => console.log(`unlocked: slot ${u.slot} opened the vessel key.`) });
+  return 0;
+}
+
+function routeFlag(args: ParsedArgs): { route?: "paper" | "passphrase" } {
+  if (args.flags["paper"]) return { route: "paper" };
+  if (args.flags["passphrase"]) return { route: "passphrase" };
+  return {};
+}
+
+async function vaultBind(args: ParsedArgs): Promise<number> {
+  if (args.flags["paper"] && args.flags["passphrase"]) throw new UsageError("bind takes --passphrase or --paper, not both");
+  const homes = custodyHomes();
+  const io = new FsCustodyIo(homes);
+  const creds = await gatherCredentials("lares vault bind");
+  const u = await openOrRefuse(args, "bind", homes, io, creds);
+  if (!u) return 1;
+  const spec = await gatherNewSlot("lares vault bind", args.flags["paper"] ? "paper" : "passphrase");
+  const out = await bindCustodySlot({ io, homes, vk: u.vk, spec });
+  emit(args, {
+    ok: true, data: { slotId: out.slotId, slots: out.tree.slots.length },
+    human: () => console.log(`bound: slot ${out.slotId} now opens the vessel key (${out.tree.slots.length} slot(s) stand).`),
+  });
+  return 0;
+}
+
+async function vaultUnbind(args: ParsedArgs): Promise<number> {
+  const slotId = args.positional[1] ?? args.options["rotate"];
+  if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [--rotate]` (ids print under `lares vault status`; put the id BEFORE --rotate)");
+  const rotate = Boolean(args.flags["rotate"]) || (args.options["rotate"] !== undefined && args.positional[1] !== undefined);
+  const homes = custodyHomes();
+  const io = new FsCustodyIo(homes);
+  const creds = await gatherCredentials("lares vault unbind");
+  const u = await openOrRefuse(args, "unbind", homes, io, creds);
+  if (!u) return 1;
+
+  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new VK and each slot that stays must
+  // be re-bound over it, so a typo found after the unbind would leave the tree on a VK nobody holds.
+  const staying: SlotSpec[] = [];
+  if (rotate) {
+    const status = await custodyStatus({ io, homes });
+    if (status.tree.reading !== "readable") throw new UsageError("the slot tree is not readable; nothing was changed");
+    if (!status.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in the tree`);
+    // REFUSE THE ROTATION BEFORE THE UNBIND, never between them: the sealed writer re-seals only bytes the VK sealed,
+    // so a hot or cold carrier still bare would refuse the rotation AFTER the slot was already removed.
+    const bare = status.rows.filter((r) => (r.custody === "hot" || r.custody === "cold") && r.reading === "bare").map((r) => r.row);
+    if (bare.length > 0) {
+      throw new RotationPreflightRefusal(
+        `--rotate re-seals every hot and cold carrier under a new vessel key, and ${bare.length} still read bare (${bare.join(", ")}): ` +
+        "their writers have not moved under the VK. Nothing was changed; unbind without --rotate, or rotate once those carriers are sealed",
+      );
+    }
+    const tree = decodeSlotTree(await io.read(`${homes.identity}/vk-slots.bin`));
+    for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
+      const got = await gatherStayingSlot(sl);
+      const proof = tree.reading === "readable" ? openVk(tree.tree, got.credentials) : null;
+      if (!proof || proof.reading !== "opens" || proof.slot !== sl.id) {
+        throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
+      }
+      staying.push(got.spec);
+    }
+  }
+
+  const out = await unbindCustodySlot({ io, homes, vk: u.vk, slotId });
+  const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
+  say(`unbound: slot ${slotId} no longer opens the vessel key (${out.tree.slots.length} slot(s) stand).`);
+  say("");
+  say("  ROTATION OFFER — " + out.rotationOffer);
+  say("  " + RELATION_LINE);
+  let rotated = false;
+  if (rotate) {
+    const r = await rotateCustody({ io, homes, oldVk: u.vk, slots: staying });
+    rotated = true;
+    say(`rotated: a new vessel key seals every carrier; ${r.tree.slots.length} slot(s) re-bound; the removed route opens nothing.`);
+  } else {
+    say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
+    say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
+  }
+  emit(args, { ok: true, data: { slotId, rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
 }

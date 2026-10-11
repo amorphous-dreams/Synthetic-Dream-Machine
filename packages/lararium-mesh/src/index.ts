@@ -401,8 +401,8 @@ export {
 export type {
   CustodyIo, SealedCarrier, StandingCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
 } from "./sealed-writer.js";
-export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree } from "./keyslot.js";
-export type { SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
+export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
+export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintVk } from "./vk.js";
 export type { VesselKey, VkOpening } from "./vk.js";
 // The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.

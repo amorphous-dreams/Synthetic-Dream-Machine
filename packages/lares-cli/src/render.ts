@@ -20,7 +20,7 @@
 
 import { stdout } from "node:process";
 import type { ParsedArgs } from "./parse-args.js";
-import { floorCure, faceStandsOnDisk } from "./floor-cure.js";
+import { floorCure, floorWriteCure, faceStandsOnDisk } from "./floor-cure.js";
 import { larBootstrapPath } from "./env.js";
 
 /**
@@ -153,6 +153,8 @@ export interface Emission {
 function withFloorCure(e: Emission): Emission {
   const err = typeof e.error === "string" ? { code: "error", message: e.error } : e.error;
   if (!err?.message) return e;
+  const writeCure = floorWriteCure(err.message);
+  if (writeCure !== null) return { ...e, error: { ...err, hint: writeCure } };
   // The disk read costs nothing on an ordinary error: `floorCure` returns null on any message that is
   // not the floor, so the probe below runs only for the refusal this correction is about.
   if (floorCure(err.message, { faceOnDisk: true }) === null) return e;

@@ -3,9 +3,11 @@
 #
 #   lares-container.sh up [--capture <dir>]...   stand the vessel (detached)
 #   lares-container.sh down                      stop it and remove its container (state stays in LARES_STATE)
-#   lares-container.sh found [vessel-found args] the offline founding act, under a TTY (it gathers the human route)
+#   lares-container.sh found [vessel-found args] the offline founding act, under a TTY (it gathers the human route: a
+#                                                passphrase and/or a paper pin; with no TTY the CLI refuses CredentialTtyRefusal)
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
-#   lares-container.sh <anything else>           run the lares CLI INSIDE the standing container
+#   lares-container.sh <anything else>           run the lares CLI INSIDE the standing container (vault status|unlock|bind|
+#                                                unbind read their credential on that TTY)
 #
 # The CLI runs by `compose exec`, never `run`: it shares the daemon's /tmp (the UDS rendezvous), uid and
 # environment. `found` is the one `run`, because founding is an offline act on a stopped store. The engine gets no
@@ -44,7 +46,11 @@ compose() {
   fi
 }
 
-tty_flag() { if [ -t 0 ] && [ -t 1 ]; then :; else printf -- '-T'; fi; }
+# Read the terminal NOW: inside `$(tty_flag)` stdout is the substitution's pipe, so a `[ -t 1 ]` there is always false
+# and every founding would lose its TTY.
+HAVE_TTY=""
+if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
+tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 
 [ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|found|logs|<lares verb…>"
 verb=$1; shift

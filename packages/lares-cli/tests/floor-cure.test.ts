@@ -17,7 +17,7 @@
  * corrected at the surface that can see, and only where the daemon's own words leave it wrong.
  */
 import { describe, it, expect } from "vitest";
-import { floorCure } from "../src/floor-cure.js";
+import { floorCure, floorWriteCure } from "../src/floor-cure.js";
 
 const FLOOR = "[daemon] this vessel stands at the waking floor and holds no face — "
             + "light one with `lares persona new 0 --name '<label>'` before any persona-scoped act.";
@@ -53,5 +53,16 @@ describe("floor-cure — the refusal keeps its reading, the cure follows the dis
     const c = floorCure(FLOOR, { faceOnDisk: true }) ?? "";
     expect(c).toMatch(/booted|stood|before/i);
     expect(c.length).toBeGreaterThan(40);
+  });
+});
+
+describe("floor-cure — a floor write over a VK-sealed carrier points at the unlock", () => {
+  const REFUSED = "archive-seal: refusing to write over the VK-sealed carrier at /x/y — the floor holds no VK and cannot open it (sealed)";
+  it("★ FloorWriteRefused advises `lares vault unlock` ★", () => {
+    expect(floorWriteCure(REFUSED)).toMatch(/lares vault unlock/);
+  });
+  it("a refusal that is not the floor write keeps the daemon's own words", () => {
+    expect(floorWriteCure("archive-seal: refusing to write a cleartext archive over the sealed one")).toBeNull();
+    expect(floorWriteCure("verb \"sweep\" timed out")).toBeNull();
   });
 });

@@ -34,6 +34,27 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
+// ATTACHED: under a real pseudo-terminal the shim must NOT add -T, or the founding loses its human-route prompt.
+// (Reading `-t 1` inside the `$(tty_flag)` substitution once always read false: stdout there is a pipe.)
+const haveScript = spawnSync("script", ["--version"]).status === 0;
+test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "lares-container-tty-"));
+  try {
+    const log = join(dir, "calls.log");
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n`);
+    await chmod(join(dir, "docker"), 0o755);
+    const compose = join(dir, "docker-compose.surface.yml");
+    await writeFile(compose, "services: {}\n");
+    spawnSync("script", ["-qec", `sh ${SH} found`, "/dev/null"], {
+      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose, LARES_STATE: "/s", LARES_WORKSPACE: "/w" },
+      encoding: "utf8",
+    });
+    const calls = await readFile(log, "utf8");
+    assert.match(calls, /--profile found run --rm found\s*$/m);
+    assert.doesNotMatch(calls, /-T/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
 const MOUNTS = { LARES_STATE: "/s", LARES_WORKSPACE: "/w" };
 const shims = [["sh", SH], ...(havePwsh ? [["ps1", PS1]] : [])];
 

@@ -23,6 +23,15 @@ export function canPromptSecret(): boolean {
 
 /** Read one line from the TTY with echo suppressed. Rejects when stdin is not a TTY. */
 export function promptSecret(label: string): Promise<string> {
+  return readTty(label, false);
+}
+
+/** Read one VISIBLE line from the TTY (a choice, never a secret). Rejects when stdin is not a TTY. */
+export function promptLine(label: string): Promise<string> {
+  return readTty(label, true);
+}
+
+function readTty(label: string, echo: boolean): Promise<string> {
   if (!stdin.isTTY) return Promise.reject(new Error("promptSecret: stdin is not a TTY"));
   return new Promise<string>((resolve, reject) => {
     stdout.write(label);
@@ -44,6 +53,7 @@ export function promptSecret(label: string): Promise<string> {
         if (c === "") { done(() => reject(new Error("aborted"))); return; }   // Ctrl-C
         if (c === "" || c === "\b") { buf = buf.slice(0, -1); continue; }     // backspace
         buf += c;
+        if (echo) stdout.write(c);
       }
     };
     stdin.on("data", onData);

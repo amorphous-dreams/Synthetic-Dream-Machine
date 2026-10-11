@@ -47,6 +47,10 @@ services:
   # ─── qa-founder — explicit founding ceremony for the fresh QA volume
   # This is test arrangement, not an implicit production side effect. `up`
   # waits for its receipt before the direct Node peer is allowed to boot.
+  # A founding gathers its human route (passphrase and/or paper pin) from a TTY, so found FIRST, attached:
+  #   docker compose --profile qa run --rm -it lararium-qa-founder
+  # then `docker compose --profile qa up`. Under `up` alone (no TTY) a fresh volume refuses BY NAME
+  # (CredentialTtyRefusal); a volume already founded needs no route and the founder only writes its receipt.
   lararium-qa-founder:
     profiles: [qa]
     build:

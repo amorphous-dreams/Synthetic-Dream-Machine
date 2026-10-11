@@ -1,6 +1,6 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
 # Same contract as tools/lares-container.sh:
-#   up [--capture <dir>]...  down  found [vessel-found args]  logs  <anything else> = the lares CLI INSIDE the container
+#   up [--capture <dir>]...  down  found [vessel-found args] (under a TTY; no TTY = CredentialTtyRefusal)  logs  <anything else> = the lares CLI INSIDE the container
 # The CLI runs by `compose exec`, never `run` (founding alone runs). The engine gets no docker socket.
 # LARES_STATE / LARES_WORKSPACE come from the environment or `lares-surface.env` beside the compose file; keep both
 # mounts inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.

@@ -17,7 +17,10 @@ const here = new URL(".", import.meta.url).pathname;
 const root = process.argv[2] ? resolve(process.argv[2]) : "";
 if (!root) { console.error("usage: seed-test-custody.mjs <LAR_ROOT>"); process.exit(2); }
 const scratch = [tmpdir(), process.env.LAR_STAGE_DIR ?? ""].filter(Boolean).map((d) => resolve(d) + sep);
-if (!scratch.some((d) => root.startsWith(d)) && !root.includes(`${sep}.mesh-test${sep}`)) {
+// A root IS scratch when it sits under the OS temp dir or under LAR_STAGE_DIR, or IS the stage dir itself (a mesh
+// container's volume root, declared scratch by its compose file), or carries the `.mesh-test` marker.
+const isScratch = scratch.some((d) => root.startsWith(d) || root + sep === d);
+if (!isScratch && !root.includes(`${sep}.mesh-test${sep}`)) {
   console.error(`seed-test-custody: refusing ${root} — not a scratch root`);
   process.exit(2);
 }

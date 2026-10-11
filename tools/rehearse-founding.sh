@@ -11,6 +11,11 @@
 # Each container mints its OWN identity in-container (tools/lararium-container-boot.sh → `lares vessel found`),
 # so every cycle founds genuinely fresh sovereign hearths — never a restored snapshot of a prior run.
 #
+# THE HUMAN ROUTE. A real founding gathers its route from a TTY (docker compose run --rm -it …). A rehearsal is the
+# disposable branch: docker-compose.mesh.yml declares each volume scratch (LAR_STAGE_DIR) and the boot script names
+# a test route through tools/seed-test-custody.mjs, which refuses any root outside scratch. No production bypass flag,
+# no env passphrase: a hearth with no LAR_STAGE_DIR refuses its founding by name.
+#
 # WHAT A CYCLE WITNESSES (each by exit code, no metaphysics):
 #   · FOUND      three vessels found from void and serve — a full Lararium + two Herm crossroads.
 #   · CARRY      the source Herm's announced dial crosses source → relay-1 → relay-2, DECODED and

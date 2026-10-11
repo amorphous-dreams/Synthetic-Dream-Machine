@@ -52,3 +52,12 @@ export function floorCure(message: string, disk: { readonly faceOnDisk: boolean 
   return "a face stands on disk that this daemon booted without — it decided its standing before the "
        + "mint, and holds to it. Stand the vessel again and the floor lifts: `lares vessel stand`.";
 }
+
+/**
+ * The cure for a floor write refused over a VK-sealed carrier (`FloorWriteRefused`), or `null` for any other message.
+ * The floor holds no VK; the door that opens one is `lares vault unlock`.
+ */
+export function floorWriteCure(message: string): string | null {
+  if (!message.includes("refusing to write over the VK-sealed carrier")) return null;
+  return "this carrier rests under the vessel key and the floor holds none — run `lares vault unlock` (a human route opens it).";
+}

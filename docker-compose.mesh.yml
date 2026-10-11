@@ -59,6 +59,9 @@ services:
       - "lararium-a-data:/lar-a"
     environment:
       LAR_ROOT: "/lar-a"
+      # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
+      # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
+      LAR_STAGE_DIR: "/lar-a"
       LAR_PORT: "8080"
       # A SCENARIO DECIDES WHETHER AN OPERATOR CARRIES. Blank stands a sovereign hearth alone —
       # `peers` filters empty away, so a lone vessel is a supported shape rather than a broken one.
@@ -97,6 +100,9 @@ services:
       - "lararium-b-data:/lar-b"
     environment:
       LAR_ROOT: "/lar-b"
+      # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
+      # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
+      LAR_STAGE_DIR: "/lar-b"
       LAR_PORT: "8080"
       LAR_PEERS: "${LAR_B_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-}}"
       LAR_PUBLIC_URL: "http://lararium-b:8080"
@@ -168,6 +174,9 @@ services:
       - "herm-source-data:/herm"
     environment:
       LAR_ROOT: "/herm"
+      # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
+      # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
+      LAR_STAGE_DIR: "/herm"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
       LAR_SEED: "alpha"          # announces lar:///ha.ka.ba/bags/oracle/node/alpha → endpoint http://herm-source:8080
@@ -183,6 +192,9 @@ services:
       - "herm-relay-data:/herm"
     environment:
       LAR_ROOT: "/herm"
+      # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
+      # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
+      LAR_STAGE_DIR: "/herm"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
       LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"
@@ -202,6 +214,9 @@ services:
       - "herm-relay-2-data:/herm"
     environment:
       LAR_ROOT: "/herm"
+      # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
+      # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
+      LAR_STAGE_DIR: "/herm"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
       LAR_PEERS: "http://herm-relay:8080#${HERM_RELAY_GATE-}"

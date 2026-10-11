@@ -23,6 +23,17 @@ if [ ! -f "$LAR_ROOT/data/lares/vessel/social-bootstrap.json" ]; then
   echo "[boot] founding this container's own Lararium (own vessel identity)…"
   # --skip-build: the container trusts the HOST's mounted dist (the dev builds before `up`); it cannot
   # run the full-workspace fresh-build itself (the TW5 submodule isn't populated in the bind mount).
+  #
+  # THE HUMAN ROUTE. A founding seals custody from birth and gathers its route (a passphrase or a paper pin) from a
+  # TTY ALONE: no flag and no env var carries one. Two shapes reach this line.
+  #   · ATTACHED (`docker compose run --rm -it <service>`): the CLI prompts on the terminal.
+  #   · A DISPOSABLE TEST HARNESS (the mesh scenarios, the rehearsal): the compose file declares the root scratch with
+  #     LAR_STAGE_DIR, and the existing test door founds the custody under a fixed test passphrase first. The door
+  #     refuses any root outside temp, stage or `.mesh-test` paths, so it cannot found a real hearth.
+  # Neither shape standing, the founding below refuses BY NAME (CredentialTtyRefusal) and says how to run it attached.
+  if [ -n "${LAR_STAGE_DIR:-}" ]; then
+    node tools/seed-test-custody.mjs "$LAR_ROOT"
+  fi
   node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build
 fi
 

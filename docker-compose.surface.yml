@@ -30,6 +30,10 @@
 #
 # FOUNDING is an offline act on the store: with the vessel stopped,
 #   docker compose -f docker-compose.surface.yml --profile found run --rm found
+# The founding gathers the human route (a passphrase and/or a paper pin) on a TTY: `run` attaches one when the
+# host terminal has one, and `run -T`, a pipe or a detached `up` has none, so the CLI refuses by name
+# (CredentialTtyRefusal). No flag and no env var carries a credential. After the founding, `lares vault status`,
+# `unlock`, `bind` and `unbind` read theirs the same way, through the shim: `tools/lares-container.sh vault status`.
 # The host shims (tools/lares-container.sh, tools/lares-container.ps1) wrap up, down, found, logs and the exec.
 # The engine has no Docker socket and gets none: engine control stays with the host.
 #
@@ -101,6 +105,7 @@ services:
     <<: *vessel
     profiles: [found]
     entrypoint: ["node", "packages/lares-cli/bin/lares.mjs"]
+    stdin_open: true   # the route prompt reads the attached terminal; `run` allocates the TTY itself
     command: ["vessel", "found", "--skip-build", "--root", "/state", "--genesis", "/app/genesis"]
     restart: "no"
 
