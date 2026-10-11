@@ -30,6 +30,9 @@ export type ScanStatus = "new" | "unchanged" | "changed" | "non-nfc" | "deleted"
 export interface PendingDeletion {
   readonly uri:        string;
   readonly syncedHash: string;
+  /** The absolute carrier path the deletion was scanned FROM — carried so a later drain can re-stat this
+   *  exact path for its causal rescan (M9) without needing to invert `uri` back to a filesystem path. */
+  readonly file:        string;
 }
 
 export interface ScanRow {
@@ -309,7 +312,7 @@ export function applyConfirmedRenames(
 export function deletionsOf(rows: readonly ScanRow[]): PendingDeletion[] {
   return rows
     .filter((r) => r.status === "deleted" && r.syncedHash !== null)
-    .map((r) => ({ uri: r.uri, syncedHash: r.syncedHash as string }));
+    .map((r) => ({ uri: r.uri, syncedHash: r.syncedHash as string, file: r.file }));
 }
 
 export interface SubmitIngestOpts {

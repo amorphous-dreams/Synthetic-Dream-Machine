@@ -123,7 +123,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   // is consulted. `armedAt` is a MONOTONIC reading (`performance.now()`); the
   // grace bounds this watcher's own patience, never an authority a wall
   // clock could move.
-  const pendingDeletes = new Map<string, { syncedHash: string; armedAt: number }>();
+  const pendingDeletes = new Map<string, { syncedHash: string; armedAt: number; file: string }>();
   let busy  = false;
   let rerun = false;
   let timer: NodeJS.Timeout | null = null;
@@ -131,20 +131,28 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
 
   const drain = async (): Promise<void> => {
     const now = performance.now();   // MONOTONIC — the grace is this watcher's own patience, never a wall reading
-    const files = [...buffer];
+    // M9: a drain KICKED BY THE GRACE TIMER carries an EMPTY buffer — nothing new touched this watch's fs
+    // paths. Scanning only `buffer` then means the "causal rescan" below never actually re-stats an already-
+    // pending delete's path, and a lost fs event (WSL's `fs.watch` drops them) tombstones a file that came
+    // back. So every drain re-stats BOTH the freshly-touched paths AND every outstanding pending-delete's own
+    // path — the union is this drain's fresh scan, which is the only thing the self-heal check below is
+    // honest about covering.
+    const files = new Set(buffer);
+    for (const p of pendingDeletes.values()) files.add(p.file);
     buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
-    const { rows, skipped } = scanFiles(root, files, toBag, tree);
+    const { rows, skipped } = scanFiles(root, [...files], toBag, tree);
     const candidates = candidatesOf(rows);
 
     // A pending delete whose path scanned present again has RETURNED — drop it
-    // (the transient-delete self-heal: a checkout that re-creates the file).
+    // (the transient-delete self-heal: a checkout that re-creates the file). Every pending-delete path was
+    // just re-stat above, so this now covers every outstanding entry, not only the ones a watch event named.
     for (const r of rows) if (r.status !== "deleted" && pendingDeletes.has(r.uri)) pendingDeletes.delete(r.uri);
     // Newly-vanished carriers enter the grace window; wake to flush once the patience runs out.
     for (const d of deletionsOf(rows)) {
       if (!pendingDeletes.has(d.uri)) {
-        pendingDeletes.set(d.uri, { syncedHash: d.syncedHash, armedAt: now });
+        pendingDeletes.set(d.uri, { syncedHash: d.syncedHash, armedAt: now, file: d.file });
         setTimeout(kick, deleteGraceMs + 50);
       }
     }
@@ -152,7 +160,8 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     // Which pending deletes ride THIS wave: DUE (patience elapsed, monotonic) OR PAIRED (a
     // candidate add shares its synced-hash — a rename; ride together so the
     // island re-links rather than tombstone+create). This drain's own fresh scan above is
-    // the causal rescan: a path still in `pendingDeletes` here already survived it unreturned.
+    // the causal rescan: a path still in `pendingDeletes` here already survived it unreturned,
+    // because it was re-stat in THIS wave's `files` union, not merely carried over from a stale map entry.
     const addHashes = new Set(candidates.map((c) => c.diskHash));
     const ride = dueDeletions(pendingDeletes, addHashes, now, deleteGraceMs);
     for (const d of ride) pendingDeletes.delete(d.uri);
