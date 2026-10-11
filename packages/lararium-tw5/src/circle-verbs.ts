@@ -82,7 +82,8 @@ export interface CircleVerbOptions {
   readonly replica: string;
 }
 
-/** The per-nym unfollow stamp: `mbr-:<nym>` (legacy) or `mbr-:<nym>#<dot>` holds the remove DOT. */
+/** The per-nym unfollow stamp: `mbr-:<nym>#<dot>` holds the remove DOT (the undotted `mbr-:<nym>` shape is
+ *  retired — see the EVERGREEN note above `parseDotKey`). */
 const MEMBER_RM_PREFIX = "mbr-:";
 
 /** Separates a dotted field key's nym from its dot: `mbr+:<nym>#<replica>.<n>`. */
@@ -109,17 +110,26 @@ function parseObservedSet(value: unknown): ReadonlySet<string> {
   return new Set(value.split(",").filter((s) => s.length > 0));
 }
 
+/** Keys already logged by `parseDotKey` this process — one log line per retired, undotted key, no matter
+ *  how many folds observe it. Module-level by design: the noise this guards against is a REPEATED fold over
+ *  the same stale field, not a one-shot read. */
+const loggedRetiredKeys = new Set<string>();
+
 /** Split a field key on its prefix, returning the nym and its dot — ONLY the DOTTED shape
  *  (`<prefix><nym>#<replica>.<n>`) parses. EVERGREEN (gp25-SW2): a legacy, undotted key (`<prefix><nym>`,
- *  no `#dot` — the shape every pre-M5 writer minted) is RETIRED; it is ignored and logged by name, never
- *  parsed as a dot at all (not even a reserved placeholder). It therefore neither grants nor blocks
- *  membership — a stray pre-M5 key simply does not count, until a fresh, dotted write supersedes it. */
+ *  no `#dot` — the shape every pre-M5 writer minted) is RETIRED; it is ignored and logged by name ONCE PER
+ *  PROCESS (via `loggedRetiredKeys`), never parsed as a dot at all (not even a reserved placeholder). It
+ *  therefore neither grants nor blocks membership — a stray pre-M5 key simply does not count, until a fresh,
+ *  dotted write supersedes it. */
 function parseDotKey(key: string, prefix: string): { nym: string; dot: string } | null {
   if (!key.startsWith(prefix)) return null;
   const rest = key.slice(prefix.length);
   const i = rest.indexOf(DOT_SEP);
   if (i === -1) {
-    console.log(`[circle-verbs] ignoring retired, undotted membership key "${key}" — evergreen sweep (gp25-SW2): legacy stamps no longer parse`);
+    if (!loggedRetiredKeys.has(key)) {
+      loggedRetiredKeys.add(key);
+      console.log(`[circle-verbs] ignoring retired, undotted membership key "${key}" — evergreen sweep (gp25-SW2): legacy stamps no longer parse`);
+    }
     return null;
   }
   return { nym: rest.slice(0, i), dot: rest.slice(i + DOT_SEP.length) };
@@ -250,7 +260,8 @@ export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
     const { fields: prevFields, members: prev } = await readCircle(store, circle);
     const added = !prev.includes(nym);
     const dot = nextDotForReplica(prevFields, replica);
-    // This add's observed-set: every remove-dot (dotted or legacy) presently on THIS nym. A later fold that
+    // This add's observed-set: every remove-dot presently on THIS nym (only the dotted shape ever parses — a
+    // retired, undotted key is ignored, never an entry). A later fold that
     // reads this add's dot will treat it as dominant only if that set still covers every remove the nym
     // carries then — a remove this write never saw (because it lands concurrently, or strictly after) is
     // NOT in this set, so it is never silently absorbed.
@@ -296,7 +307,8 @@ export function makeCircleRemoveReactor(opts: CircleVerbOptions): VerbReactor {
     // Stamp this nym's REMOVE-DOT key whenever the circle EXISTS — even if the local view reads the nym
     // absent — so the tombstone outranks a concurrent add a fleet-mate made off-device that this replica
     // has not yet merged. An absent circle stays uncreated (nothing to unfollow). Only this one key is
-    // touched; the dot's observed-set names every add-dot (dotted or legacy) presently on this nym.
+    // touched; the dot's observed-set names every add-dot presently on this nym (only the dotted shape ever
+    // parses — a retired, undotted key is ignored, never an entry).
     let members = prev.filter((m) => m !== nym);
     if (record) {
       const dot = nextDotForReplica(prevFields, replica);

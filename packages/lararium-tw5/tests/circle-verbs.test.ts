@@ -9,10 +9,12 @@
  * outranks every zero-padded decimal counter forever, so the operator's own follow could never be unfollowed.
  * Membership now rides DOTTED fields (`mbr+:<nym>#<replica>.<n>` / `mbr-:<nym>#<replica>.<n>`) whose VALUE is
  * the comma-joined set of opposite-kind dots that write OBSERVED — never a clock, never compared by magnitude.
- * A legacy undotted `mbr+:<nym>` / `mbr-:<nym>` (any value) still reads as a dot that observed nothing.
+ * EVERGREEN (gp25-SW2): a legacy, undotted `mbr+:<nym>` / `mbr-:<nym>` (any value) no longer parses as a
+ * dot at all — `parseDotKey` refuses it by name and logs it once per process (a module-level `Set`), never
+ * repeating the log on a later fold over the same stale key.
  */
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCircleReactors, foldMembers, foldMembersDetailed } from "../src/circle-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -151,6 +153,31 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     const out = await remove({ circle: "following", nym: NYM_A }, CTX);
     expect(out["removed"]).toBe(false);
     expect(membersOf(store, "following")).toEqual([]);
+  });
+
+  test("EVERGREEN (gp25-SW2) — parseDotKey logs a retired, undotted key ONCE PER PROCESS, not once per fold "
+    + "(a module-level Set, never a per-call guard)", () => {
+    // PROOF: two separate folds over the SAME undotted key yield exactly ONE log line — the second fold's
+    // parseDotKey call recognizes the key as already-logged (the module-level Set persists across calls)
+    // and stays silent.
+    const key = `${MEMBER_ADD_PREFIX}${NYM_B}`;
+    const fields = { [key]: new Date().toISOString() };
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    foldMembers(fields);
+    foldMembers(fields);
+    const hits = logSpy.mock.calls.filter((call) => String(call[0]).includes(key));
+    logSpy.mockRestore();
+    expect(hits.length).toBe(1);
+
+    // MUTATION (inline, never touching the real module): a guard with no module-level memory — a FRESH
+    // `Set` re-created on every call — would log on EVERY fold instead of just the first. This reproduces
+    // that retired shape to show what it would have done: two folds, two log lines.
+    let mutatedLogCount = 0;
+    for (let i = 0; i < 2; i++) {
+      const freshSeen = new Set<string>(); // re-created each iteration: no cross-call memory at all
+      if (!freshSeen.has(key)) { freshSeen.add(key); mutatedLogCount++; }
+    }
+    expect(mutatedLogCount).toBe(2); // the retired, memory-less guard WOULD have logged twice
   });
 
   test("EVERGREEN (gp25-SW2) — a pre-M5 undotted add+remove pair is IGNORED wholesale; a fresh dotted "
