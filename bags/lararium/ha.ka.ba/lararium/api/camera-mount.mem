@@ -106,6 +106,17 @@ TW5 event bus (`widget.dispatchEvent`).  Events travel up to the root widget.
 `reaction-router.ts` catches `tm-verse-event`; `IslandAdaptor.saveTiddler` handles
 outbound writes.  The input path stays identical across all cameras.
 
+''C-6 Frame grain declared at mount.''
+A camera whose document lives across a thread boundary declares its ''frame grain'' when it mounts:
+the unit of absolute state its frames key by (the whole surface, a tiddler frame, a shape).
+Every frame carries whole state for its key and a monotone revision; no frame carries a delta.
+The ruling and its reasons live at `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`.
+
+''C-7 No engine on the main thread.''
+Every TW5 engine runs inside a worker on every platform, so a browser camera's widget tree never
+binds `window.document` directly. The camera renders into its own VM-side document; the main thread
+paints that camera's frames and returns events and sensed state.
+
 !! Full Camera Wiring
 
 ```typescript
@@ -130,14 +141,14 @@ const unmount = () => { teardownLoop(); teardownMount(); };
 
 | Camera surface | `document` type | Role |
 |---|---|---|
-| Story River (browser) | `window.document` | HUD layer floating over the infinite canvas; shadow root isolates TW5 stylesheet |
+| Story River (browser) | the island's VM-side document, painted main-side into a shadow root | HUD layer floating over the infinite canvas; shadow root isolates TW5 stylesheet |
 | DreamDOM canvas (browser) | ''DreamDOM'' document — DOM-hosting, never rasterising | Canvas camera below the HUD (ruling: `wikispace-canvasspace-ontology#the-surface-law`) |
 | Node SSR | `$tw.fakeDocument` | Headless render |
 | Mobile native | platform fake doc (React Native bridge) | Native surface |
 | Headless / MCP | `$tw.fakeDocument` or null render | Tool-side projection |
 
-`window.document` for the Story River camera is intentional — the HUD renders real HTML into
-the shadow pane. Canvas cameras behind it each hold their own fake-DOM document.
+The Story River camera renders in the worker and the main thread paints its frames as real HTML
+into the shadow pane (C-7). Canvas cameras behind it each hold their own VM-side document.
 The `mountCamera` interface stays identical. The `document` type changes; the chain does not.
 
 <<~ ahu #/edges>>
@@ -148,6 +159,6 @@ The `mountCamera` interface stays identical. The `document` type changes; the ch
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YGHezYFi2hOhna81wvT5rLYE8PEBTeqJaw_2B2bKK40
+<<^ code="&#x0003;">>ni:///sha-256;Y-NBJgTdF3xtvHr2Fjx2Y_gLKNT12qxtQUtgqQmGFsk
 
 <<^ code="&#x0004;" -> to="?">>

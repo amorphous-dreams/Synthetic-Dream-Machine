@@ -68,13 +68,37 @@ A DOM ''mutates''. Nodes are appended, attributes set, text changed. The natural
 
 But drop-safety — the property that lets a burst of wiki changes collapse to one post, and a stale arrival be discarded on a monotone revision — ''rests entirely on the payload being ABSOLUTE STATE''. The moment a delta enters, dropping corrupts, and the corruption is ''silent'': the two documents simply diverge, and nothing says so.
 
-''So a replacement DOM does not inherit the advantage. It must be BUILT to keep it.'' Three shapes, and the choice is an operator ruling:
+''So a replacement DOM does not inherit the advantage. It must be BUILT to keep it.'' Three shapes stood open; #/the-ruling settles them:
 
 # ''ABSOLUTE-ONLY.'' DreamDOM mutates VM-side; the binding still ships whole rendered state. Keeps drop-safety and coalescing exactly as they stand; pays serialization of the whole surface every beat. ⚠ Prices badly on large documents — TW5's own baseline is ''100–300 ms per keypress'' and ''~500 ms to open a tiddler past forty open''.
 # ''DELTA WITH AN ANCHOR.'' Ship mutations, but each batch carries the revision it applies TO, and a mismatch forces a whole-state resync rather than an apply. Buys WorkerDOM's economy; ''re-introduces queueing''; the resync path becomes load-bearing and therefore must be exercised, not merely present.
 # ''SPLIT BY CAMERA.'' The story-river camera stays absolute (it is a projection and its payload IS state); a separate binding carries mutation-shaped traffic for what genuinely needs it. Keeps the covenant where it earns its keep and pays economy where it does not. ''Costs two protocols and the discipline to keep them apart.''
 
 ''What must NOT happen is drift into (2) by increment.'' A delta added "just for this one case" ends drop-safety for every case, silently, and the instrument that would notice does not exist yet.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ruling>>
+
+!! ✓ THE FORK, RULED ~ keyed absolute frames, the grain declared at mount
+
+''Operator ruling, 2026-10-11.'' The three shapes of #/the-fork asked the question at the wrong grain: whole surface against mutation stream. The ruled shape takes neither.
+
+# ''EVERY FRAME CARRIES ABSOLUTE STATE, KEYED FINE.'' A camera's surface divides into keys; each key carries its WHOLE rendered state and its own monotone revision. Any frame may drop and the next one heals it. ''No delta enters a frame'' — the covenant of #/the-vectors (3) stands untouched.
+# ''THE GRAIN RIDES THE CAMERA, DECLARED AT MOUNT.'' The Story River keys by tiddler frame, with the river's order as a key of its own (the story list already stands as a tiddler). A canvas camera keys by shape. One protocol; the grain varies. The same law as `preventDefault`: declared where the binding gets made (`camera-mount` C-6).
+# ''THE FRUSTUM CULLS.'' A key outside the camera's view frustum emits nothing (`camera-mount` C-3). Relevance belongs to the camera, never to the store.
+# ''SENSED STATE TRAVELS UP THE SAME WAY.'' Geometry, focus, selection and field values live where a person touches them. They cross as absolute snapshots, newest-wins, and the VM-side document answers a geometry read from the last snapshot it holds.
+# ''ONLY TRUE EVENTS QUEUE.'' A click, a commit, a `tm-verse-event`: small, idempotent where they can be, and the one traffic class that may not drop.
+
+Two absolute streams and one event leg. Neither side outranks the other (#/the-vectors (4)).
+
+''The neighbouring field already ships this shape.'' Game-engine replication carries the latest state per replicated object, droppable and relevance-culled, beside a separate reliable channel for events. Nobody there ships the whole world each tick, and nobody ships a diff of it.
+
+''What the ruling does NOT license.'' A key whose payload reads as an operation ("append", "move", "set attribute") counts as a delta wearing a key. A key carries state a reader could paint from nothing.
+
+''DreamDOM grows out of the standing projection, never beside it.'' The projection-nalu already stores the handlers TW5 builds and stamps opaque render-ids onto the fake element. The replacement document extends that: it holds listeners, stamps identity, keeps the last sensed snapshot, and emits keyed frames.
+
+⚠ ''MEASURE FIRST'' (#/the-vectors (7)). Whole-surface frames stand until numbers say a camera needs a finer grain. The ruling names where the grain goes; it does not order the build.
 
 <<~/ahu>>
 
@@ -149,6 +173,6 @@ Seven tasked spirits, each handed a framing and NOT a conclusion, each held VERB
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ou-DOmF1AftTsV32JE1hPt_iYCLkCAjqycWFsIq5ajQ
+<<^ code="&#x0003;">>ni:///sha-256;CGDa7ndyUEI-OUCPHRsKZznZ91XeiDhtP9Jssj_6WDw
 
 <<^ code="&#x0004;" -> to="?">>
