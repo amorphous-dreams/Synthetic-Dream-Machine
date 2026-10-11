@@ -7,7 +7,12 @@ import {
   bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper,
   VK_ROTATION_OFFER, type SlotTree, type PinSpec,
 } from "../src/keyslot.js";
-import { mintVk, vkEquals } from "../src/vk.js";
+import { mintVk, vkEquals, type VesselKey } from "../src/vk.js";
+import {
+  commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateVk, OldShapeRefusal, CustodyRefusal,
+  type CustodyIo, type SealedCarrier,
+} from "../src/sealed-writer.js";
+import { ARCHIVE_MAGIC } from "../src/archive-envelope.js";
 
 const right = { kind: "passphrase", passphrase: "correct horse battery staple" } as const;
 const wrong = { kind: "passphrase", passphrase: "correct horse battery stapler" } as const;
@@ -248,4 +253,134 @@ describe("the paper read-back refusal names a position, never a word", () => {
       for (const w of new Set([...words, typed[7]!])) expect(msg).not.toMatch(new RegExp(`\\b${w}\\b`));
     }
   });
+});
+
+// ── THE RELATION CLASS AND THE OLD-SHAPE REFUSAL (P3 mesh custody contract) ──────────────────────────────────
+
+/** A scratch store that records every mutating call; nothing here touches a real home. */
+class ScratchIo implements CustodyIo {
+  readonly files = new Map<string, Uint8Array>();
+  readonly mutations: string[] = [];
+  async read(path: string) { const b = this.files.get(path); return b === undefined ? null : Uint8Array.from(b); }
+  async write(path: string, bytes: Uint8Array) { this.mutations.push(`write ${path}`); this.files.set(path, Uint8Array.from(bytes)); }
+  async rename(from: string, to: string) {
+    this.mutations.push(`rename ${from}`);
+    this.files.set(to, this.files.get(from)!); this.files.delete(from);
+  }
+  async remove(path: string) { this.mutations.push(`remove ${path}`); this.files.delete(path); }
+  async list() { return [...this.files.keys()]; }
+  private chain: Promise<unknown> = Promise.resolve();
+  exclusive<T>(fn: () => Promise<T>): Promise<T> { const r = this.chain.then(fn, fn); this.chain = r.catch(() => undefined); return r; }
+}
+
+const TREE = "/scratch/vk-slots.bin";
+const KEYRING: SealedCarrier = { name: "keyring", path: "/scratch/keyring.bin", keyClass: "relation" };
+const ROOT: SealedCarrier = { name: "custody-root", path: "/scratch/custody-root.bin", keyClass: "device-minted" };
+const text = (s: string) => new TextEncoder().encode(s);
+
+describe("the old shape refuses BEFORE any write", () => {
+  test("RED: founding the tree over a CLEARTEXT root refuses by name, and the store sees no mutation", async () => {
+    const io = new ScratchIo();
+    io.files.set(ROOT.path, text("a cleartext custody root, as the old build kept it"));
+    const vk = mintVk();
+    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
+    const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OldShapeRefusal);
+    expect((err as OldShapeRefusal).standing).toEqual([{ carrier: ROOT, reading: "bare" }]);
+    expect(io.mutations).toEqual([]);
+    expect(io.files.has(TREE)).toBe(false);
+    expect(new TextDecoder().decode(io.files.get(ROOT.path)!)).toMatch(/cleartext custody root/);
+  });
+
+  test("RED: the retired LARK passphrase envelope refuses as old-shape, and a relation carrier is NAMED among them", async () => {
+    const io = new ScratchIo();
+    io.files.set(KEYRING.path, Uint8Array.from([...ARCHIVE_MAGIC, 0x01, 0x02, ...new Array(80).fill(7)]));
+    const vk = mintVk();
+    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
+    const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OldShapeRefusal);
+    expect((err as OldShapeRefusal).standing.map((s) => `${s.carrier.name}:${s.reading}`)).toEqual(["keyring:old-shape"]);
+    expect((err as OldShapeRefusal).message).toMatch(/fresh-start/);
+    expect(io.mutations).toEqual([]);
+  });
+
+  test("RED: a sealed file no listed carrier names refuses the founding too (the census law)", async () => {
+    const io = new ScratchIo();
+    const old = mintVk();
+    const oldTree = bindSlot(null, old, { t: 1, pins: [right] });
+    await commitSlotTree({ io, path: "/other/tree.bin", expected: null, vk: old, tree: oldTree, carriers: [] });
+    await writeSealedCarrier({ io, vk: old, treePath: "/other/tree.bin", carrier: { name: "stray", path: "/scratch/stray.bin" }, plaintext: text("x") });
+    io.files.delete("/other/tree.bin");
+    io.mutations.length = 0;
+    const vk = mintVk();
+    const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: [ROOT] })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OldShapeRefusal);
+    expect((err as OldShapeRefusal).unlisted).toEqual(["/scratch/stray.bin"]);
+    expect(io.mutations).toEqual([]);
+  });
+
+  test("CONTROL: a clean store founds, and a founded tree commits a bind with carriers standing (not a founding)", async () => {
+    const io = new ScratchIo();
+    const vk = mintVk();
+    const tree = bindSlot(null, vk, { t: 1, pins: [right] });
+    await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] });
+    expect(io.files.has(TREE)).toBe(true);
+    await writeSealedCarrier({ io, vk, treePath: TREE, carrier: KEYRING, plaintext: text("k1") });
+    const grown = bindSlot(tree, vk, { t: 1, pins: [wrong] });
+    await commitSlotTree({ io, path: TREE, expected: await io.read(TREE), vk, tree: grown, carriers: [ROOT, KEYRING] });
+    expect(decodeSlotTree(await io.read(TREE)).reading).toBe("readable");
+  }, 30_000);
+
+  test("RED: a write to a carrier with NO tree standing refuses before any byte, naming the old shape when cleartext stands", async () => {
+    const io = new ScratchIo();
+    io.files.set(KEYRING.path, text("{\"cleartext\":true}"));
+    const err = await writeSealedCarrier({ io, vk: mintVk(), treePath: TREE, carrier: KEYRING, plaintext: text("x") }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(OldShapeRefusal);
+    expect(io.mutations).toEqual([]);
+    expect(new TextDecoder().decode(io.files.get(KEYRING.path)!)).toBe('{"cleartext":true}');
+  });
+});
+
+describe("the relation class rides the sealed writer", () => {
+  async function foundedWithKeyring(): Promise<{ io: ScratchIo; vk: VesselKey }> {
+    const io = new ScratchIo();
+    const vk = mintVk();
+    await commitSlotTree({ io, path: TREE, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [right] }), carriers: [ROOT, KEYRING] });
+    await writeSealedCarrier({ io, vk, treePath: TREE, carrier: KEYRING, plaintext: text("convergence-secret-epoch-3") });
+    await writeSealedCarrier({ io, vk, treePath: TREE, carrier: ROOT, plaintext: text("root") });
+    io.mutations.length = 0;
+    return { io, vk };
+  }
+
+  test("a rotation re-seals a relation carrier byte-identical: re-sealed, never regenerated", async () => {
+    const { io, vk } = await foundedWithKeyring();
+    const before = await openSealedCarrier({ io, vk, carrier: KEYRING });
+    const newVk = mintVk();
+    await rotateVk({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldVk: vk, newVk, slots: [{ t: 1, pins: [right] }] });
+    const after = await openSealedCarrier({ io, vk: newVk, carrier: KEYRING });
+    expect(before.reading === "opens" && after.reading === "opens" && new TextDecoder().decode(after.plaintext)).toBe("convergence-secret-epoch-3");
+    expect((await openSealedCarrier({ io, vk, carrier: KEYRING })).reading).toBe("key-fails");
+  }, 30_000);
+
+  test("RED: a rotation that cannot open a RELATION carrier refuses with nothing written, and says only the party re-issues it", async () => {
+    const { io, vk } = await foundedWithKeyring();
+    // damage the keyring: flip a ciphertext byte so the VK in hand no longer opens it
+    const bytes = Uint8Array.from(io.files.get(KEYRING.path)!); bytes[bytes.length - 1] ^= 0xff; io.files.set(KEYRING.path, bytes);
+    io.mutations.length = 0;
+    const err = await rotateVk({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldVk: vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(CustodyRefusal);
+    expect((err as CustodyRefusal).message).toMatch(/re-issue/);
+    expect(io.mutations).toEqual([]);
+  }, 30_000);
+
+  test("CONTROL: the same damage on a NON-relation carrier refuses without the re-issue sentence", async () => {
+    const { io, vk } = await foundedWithKeyring();
+    const bytes = Uint8Array.from(io.files.get(ROOT.path)!); bytes[bytes.length - 1] ^= 0xff; io.files.set(ROOT.path, bytes);
+    const err = await rotateVk({ io, treePath: TREE, carriers: [ROOT, KEYRING], oldVk: vk, newVk: mintVk(), slots: [{ t: 1, pins: [right] }] })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(CustodyRefusal);
+    expect((err as CustodyRefusal).message).not.toMatch(/re-issue/);
+  }, 30_000);
 });

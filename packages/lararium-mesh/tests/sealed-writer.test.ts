@@ -85,7 +85,7 @@ async function found(): Promise<{ io: MemoryIo; vk: VesselKey; tree: SlotTree }>
   const io = new MemoryIo();
   const vk = mintVk();
   const tree = bindSlot(null, vk, { t: 1, pins: [right] });
-  await commitSlotTree({ io, path: TREE, expected: null, vk, tree });
+  await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: CARRIERS });
   for (const c of CARRIERS) await writeSealedCarrier({ io, vk, treePath: TREE, carrier: c, plaintext: text(`${c.name}-v1`) });
   io.log.length = 0;
   return { io, vk, tree };
@@ -169,8 +169,8 @@ describe("the slot tree", () => {
   test("a tree commit refuses when the standing tree moved since the caller read it", async () => {
     const { io, vk, tree } = await found();
     const grown = bindSlot(tree, vk, { t: 1, pins: [right] });
-    await expect(commitSlotTree({ io, path: TREE, expected: text("not what stands"), vk, tree: grown })).rejects.toThrow(/moved/);
-    await commitSlotTree({ io, path: TREE, expected: await io.read(TREE), vk, tree: grown });
+    await expect(commitSlotTree({ io, path: TREE, expected: text("not what stands"), vk, tree: grown, carriers: CARRIERS })).rejects.toThrow(/moved/);
+    await commitSlotTree({ io, path: TREE, expected: await io.read(TREE), vk, tree: grown, carriers: CARRIERS });
     expect((await openedTree(io)).slots.length).toBe(2);
   });
 });
@@ -278,7 +278,7 @@ describe("the VK in hand proves against the STANDING tree before any byte moves"
     const before = io.snapshot();
     const stranger = mintVk();
     const foreign = bindSlot(null, stranger, { t: 1, pins: [{ kind: "passphrase", passphrase: "attacker" }] });
-    await expect(commitSlotTree({ io, path: TREE, expected: await io.read(TREE), vk: stranger, tree: foreign }))
+    await expect(commitSlotTree({ io, path: TREE, expected: await io.read(TREE), vk: stranger, tree: foreign, carriers: CARRIERS }))
       .rejects.toMatchObject({ name: "TreeVkRefusal", reading: "vk-mismatch" });
     expect(io.snapshot()).toEqual(before);
     await everyCarrierOpens(io, (c) => `${c.name}-v1`);

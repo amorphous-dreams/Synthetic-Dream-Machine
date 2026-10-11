@@ -390,16 +390,16 @@ export { nexusScopeIndex, deriveNexusScopedKey } from "./persona-identity.js";
 export { bagCopyPlan, type BagCopyPlan, type TitleAtRest } from "./bag-copy-plan.js";
 export { crossingDirection, type CrossingDirection, type CrossingCost } from "./crossing-direction.js";
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";
-export { KEY_CLASSES, isKeyClass } from "./key-class.js";
+export { KEY_CLASSES, isKeyClass, isRelationClass } from "./key-class.js";
 export type { KeyClass } from "./key-class.js";
 // The VK custody spine: the keyslot tree that commits to its VK, and the ONE writer of VK-sealed carriers, which
 // proves every VK in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {
   writeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation,
-  CustodyRefusal, TreeVkRefusal, CensusRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  CustodyRefusal, TreeVkRefusal, CensusRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
 } from "./sealed-writer.js";
 export type {
-  CustodyIo, SealedCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
+  CustodyIo, SealedCarrier, StandingCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
 } from "./sealed-writer.js";
 export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree } from "./keyslot.js";
 export type { SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";

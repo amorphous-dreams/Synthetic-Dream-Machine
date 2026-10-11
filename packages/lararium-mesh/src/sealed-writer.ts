@@ -39,7 +39,8 @@
 import { defaultCryptoProvider, type RandomProvider } from "./crypto.js";
 import { bindSlot, encodeSlotTree, decodeSlotTree, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { sealUnderVk, openUnderVk, vkAnswersCheck, type VesselKey, type VkOpening } from "./vk.js";
-import { readVkCarrier } from "./vk-envelope.js";
+import { readVkCarrier, type VkCarrierReading } from "./vk-envelope.js";
+import { isRelationClass, type KeyClass } from "./key-class.js";
 
 /** The store the writer works through. Every path names one file. */
 export interface CustodyIo {
@@ -60,8 +61,11 @@ export interface CustodyIo {
   exclusive<T>(fn: () => Promise<T>): Promise<T>;
 }
 
-/** One sealed carrier: the name its AEAD binds, and the path it rests at. */
-export interface SealedCarrier { readonly name: string; readonly path: string }
+/**
+ * One sealed carrier: the name its AEAD binds, and the path it rests at. `keyClass` carries the table row's class
+ * when the row names one; a `relation` carrier's refusals say that only the other party re-issues its bytes.
+ */
+export interface SealedCarrier { readonly name: string; readonly path: string; readonly keyClass?: KeyClass | null }
 
 /** The sidecar of a single write. A stray one never committed; settling removes it. */
 export const SEALING_SUFFIX = ".vk-sealing";
@@ -73,10 +77,18 @@ type RefusedReading = Exclude<VkOpening["reading"], "opens" | "absent">;
 /** A write or rotation the standing bytes refuse. `reading` names the fact met; nothing was written. */
 export class CustodyRefusal extends Error {
   constructor(readonly reading: RefusedReading, readonly carrier: SealedCarrier) {
-    super(`sealed-writer: refusing to write over the carrier "${carrier.name}" at ${carrier.path} — ${SAYS[reading]}`);
+    super(
+      `sealed-writer: refusing to write over the carrier "${carrier.name}" at ${carrier.path} — ${SAYS[reading]}` +
+      (carrier.keyClass && isRelationClass(carrier.keyClass) ? RELATION_LOSS : ""),
+    );
     this.name = "CustodyRefusal";
   }
 }
+
+/** The sentence a relation carrier's refusal adds: no rotation, repair or re-founding regenerates it. */
+const RELATION_LOSS =
+  "; this carrier holds a relation secret that no house key derives, so only the other party can re-issue it " +
+  "(a rotation re-seals it and can never regenerate it)";
 
 const SAYS: Record<RefusedReading, string> = {
   "key-fails":
@@ -125,6 +137,43 @@ export class CensusRefusal extends Error {
   }
 }
 
+/** One standing carrier, and what its bytes read as. */
+export interface StandingCarrier { readonly carrier: SealedCarrier; readonly reading: Exclude<VkCarrierReading, "absent"> }
+
+/**
+ * A founding or a write over a store the new custody never sealed: a carrier stands (cleartext, the retired LARK
+ * envelope, or a seal no tree commits to) and no slot tree does. Nothing was written. `standing` names the listed
+ * carriers met; `unlisted` the paths that bear the VK seal's magic yet no listed carrier names.
+ */
+export class OldShapeRefusal extends Error {
+  constructor(readonly standing: readonly StandingCarrier[], readonly unlisted: readonly string[], readonly treePath: string) {
+    super(
+      `sealed-writer: refusing — no slot tree stands at ${treePath}, yet ${standing.length + unlisted.length} ` +
+      `carrier(s) already stand: ${[...standing.map((s) => `${s.carrier.name} (${s.reading})`), ...unlisted].join(", ")}. ` +
+      `This is the old shape: a fresh founding seals from birth and nothing wraps cleartext in place; ` +
+      `the fresh-start runbook (stable-founding-road #/fresh-start) answers it`,
+    );
+    this.name = "OldShapeRefusal";
+  }
+}
+
+/** Read the store for the old shape. Throws `OldShapeRefusal` when any carrier stands with no tree; writes nothing. */
+async function refuseOldShape(io: CustodyIo, treePath: string, carriers: readonly SealedCarrier[]): Promise<void> {
+  const standing: StandingCarrier[] = [];
+  for (const carrier of carriers) {
+    const reading = readVkCarrier(await io.read(carrier.path));
+    if (reading !== "absent") standing.push({ carrier, reading });
+  }
+  const named = new Set(carriers.map((c) => c.path));
+  const unlisted: string[] = [];
+  for (const path of await io.list()) {
+    if (path === treePath || isSidecar(path) || named.has(path)) continue;
+    const reading = readVkCarrier(await io.read(path));
+    if (reading === "sealed" || reading === "torn") unlisted.push(path);
+  }
+  if (standing.length > 0 || unlisted.length > 0) throw new OldShapeRefusal(standing, unlisted.sort(), treePath);
+}
+
 /** Prove `vk` against the tree standing at `treePath`. Returns the standing bytes, or throws `TreeVkRefusal`. */
 async function proveAgainstTree(io: CustodyIo, treePath: string, vk: VesselKey): Promise<Uint8Array> {
   const bytes = await io.read(treePath);
@@ -169,7 +218,12 @@ export interface WriteSealedCarrierArgs {
 
 async function writeHeld(args: WriteSealedCarrierArgs): Promise<void> {
   const { io, vk, carrier } = args;
-  await proveAgainstTree(io, args.treePath, vk);
+  try {
+    await proveAgainstTree(io, args.treePath, vk);
+  } catch (err) {
+    if (err instanceof TreeVkRefusal && err.reading === "tree-absent") await refuseOldShape(io, args.treePath, [carrier]);
+    throw err;
+  }
   const standing = openUnderVk(vk, carrier.name, await io.read(carrier.path));
   if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
 
@@ -206,6 +260,12 @@ export interface CommitSlotTreeArgs {
   /** The VK the tree wraps: the standing tree's, and the one `tree` commits to. */
   readonly vk:       VesselKey;
   readonly tree:     SlotTree;
+  /**
+   * Every VK-sealed carrier the vessel keeps (the carrier table's hot and cold rows). A founding (nothing standing
+   * at `path`) refuses with `OldShapeRefusal`, before any write, when any of them already stands or when an
+   * unlisted file bears the VK seal's magic.
+   */
+  readonly carriers: readonly SealedCarrier[];
 }
 
 async function commitHeld(args: CommitSlotTreeArgs): Promise<void> {
@@ -215,6 +275,7 @@ async function commitHeld(args: CommitSlotTreeArgs): Promise<void> {
     throw new Error(`sealed-writer: the slot tree at ${path} moved since it was read; read it again before binding`);
   }
   if (standing !== null) await proveAgainstTree(io, path, args.vk);
+  else await refuseOldShape(io, path, args.carriers);
   if (!vkAnswersCheck(args.vk, args.tree.vkCheck)) throw new TreeVkRefusal("vk-mismatch", path);
   const bytes = encodeSlotTree(args.tree);
   const reading = decodeSlotTree(bytes);
