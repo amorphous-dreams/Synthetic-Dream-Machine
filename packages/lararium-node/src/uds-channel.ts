@@ -38,9 +38,9 @@ import type { Socket } from "node:net";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, AutomergeDocStore, CompositeStore,
-  newRequestId, OUTCOME_URI_PREFIX, canonicalJsonBytes, sha256HexBytesSync, type LarDoc,
+  newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, buildReceiptFact, parseReceiptFact,
-  type ReceiptFact,
+  verbInputDigest, type ReceiptFact,
 } from "@lararium/mesh";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
@@ -131,6 +131,9 @@ export interface ReceiptAnswer {
   readonly state: "abandoned" | "committed" | "done" | "error" | "evicted" | "unknown";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
+  /** Additive, mirroring the socket's own direct-refusal shape — a terminal outcome's own
+   *  machine-readable reason, when it carried one (D1 commit 1, mesh). */
+  readonly refusal?: { readonly reason: string };
 }
 
 /**
@@ -233,10 +236,13 @@ class FactLedger {
 
   /**
    * Arbitrate ONE winner per request id, DURABLY. `inputDigest` names the invocation's own content
-   * (verb + args + requestedBy + effectKey) — a reused id whose digest DIFFERS from the fact already
-   * on record refuses by name (`request-id-reused-with-changed-input`), never silently re-runs under
-   * borrowed trust in the id alone. An empty recorded digest (an explicit `{op:"cancel"}` on an id
-   * never otherwise seen) matches ANY incoming digest — a wildcard abandonment, not a content claim.
+   * (verb + args + requestedBy + effectKey, the worker's own `verbInputDigest` formula) — a reused
+   * id whose digest DIFFERS from the fact already on record refuses by name
+   * (`request-id-reused-with-changed-input`), never silently re-runs under borrowed trust in the id
+   * alone. `abandoned` refuses on STATE ALONE, whatever the digest says — {@link cancel} is the ONE
+   * writer that records no digest (an explicit withdrawal carries no content claim to compare);
+   * every other fact this ledger ever writes carries one (early alpha, no legacy data, no shim —
+   * absence never reads as "unverifiable", only as "cancelled").
    */
   async arbitrate(requestId: string, inputDigest: string):
     | Promise<{ readonly verdict: "run" }
@@ -244,9 +250,9 @@ class FactLedger {
     const existing = await this.get(requestId);
     if (existing) {
       if (existing.state === "evicted") return { verdict: "refuse", reason: "retention-gap" };
-      const digestMatches = existing.inputDigest === WILDCARD_DIGEST || existing.inputDigest === inputDigest;
-      if (!digestMatches) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
-      return { verdict: "refuse", reason: existing.state === "abandoned" ? "abandoned" : "already-committed" };
+      if (existing.state === "abandoned") return { verdict: "refuse", reason: "abandoned" };
+      if (existing.inputDigest !== inputDigest) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
+      return { verdict: "refuse", reason: "already-committed" };
     }
     await this.record({ requestId, inputDigest, state: "committed" });
     return { verdict: "run" };
@@ -262,13 +268,15 @@ class FactLedger {
     await this.record({ requestId, inputDigest, state: "abandoned" });
   }
 
-  /** An explicit `{op:"cancel"}` (M8) — withdraws regardless of digest (the wildcard "" digest). A
-   *  no-op once a decision already stands: a cancel racing a dispatch that already won refuses to
-   *  un-dispatch it, and a cancel racing a prior cancel/abandon leaves that fact exactly as it was. */
+  /** An explicit `{op:"cancel"}` (M8) — withdraws WITHOUT recording a digest at all (no content
+   *  claim to compare, by design — `arbitrate` refuses an `abandoned` fact on its state alone,
+   *  never by digest). A no-op once a decision already stands: a cancel racing a dispatch that
+   *  already won refuses to un-dispatch it, and a cancel racing a prior cancel/abandon leaves that
+   *  fact exactly as it was. */
   async cancel(requestId: string): Promise<void> {
     const existing = await this.get(requestId);
     if (existing) return;
-    await this.record({ requestId, inputDigest: WILDCARD_DIGEST, state: "abandoned" });
+    await this.record({ requestId, state: "abandoned" });
   }
 
   /**
@@ -277,8 +285,8 @@ class FactLedger {
    * worker this channel dispatched, or a remote summons this channel never arbitrated at all). A
    * fact already on record is promoted to its terminal state (seq unchanged — observation never
    * mints a new attempt); an outcome with no prior fact at all (the non-UDS path) mints one fresh,
-   * seeded with whatever digest the outcome itself stamped (digest-on-outcome, D1 commit 2) or the
-   * empty wildcard when the outcome predates that stamp.
+   * seeded with the digest the outcome itself stamped (digest-on-outcome, D1 commit 2 — every
+   * outcome this early-alpha vessel ever writes carries one; no legacy data, no shim).
    */
   async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined): Promise<void> {
     const existing = await this.get(requestId);
@@ -290,7 +298,7 @@ class FactLedger {
       this.cache.set(requestId, updated);
       return;
     }
-    await this.record({ requestId, inputDigest: inputDigest ?? WILDCARD_DIGEST, state: status, terminal: status });
+    await this.record({ requestId, state: status, terminal: status, ...(inputDigest !== undefined && { inputDigest }) });
   }
 
   /** Past `ring` tracked requests, drop the OLDEST (lowest `seq`) to `evicted` — keep its digest,
@@ -304,7 +312,8 @@ class FactLedger {
       const victim = this.cache.get(victimId);
       if (!victim || victim.state === "evicted") continue;
       const evicted: ReceiptFact = {
-        requestId: victim.requestId, inputDigest: victim.inputDigest, state: "evicted", seq: victim.seq,
+        requestId: victim.requestId, state: "evicted", seq: victim.seq,
+        ...(victim.inputDigest !== undefined && { inputDigest: victim.inputDigest }),
         ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
         ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
       };
@@ -317,19 +326,15 @@ class FactLedger {
   }
 }
 
-/**
- * The wildcard digest an explicit `{op:"cancel"}` (and a non-UDS-path outcome observation with no
- * stamped `input-digest`) records — "matches any incoming digest", never a content claim. NOT the
- * empty string: `parseReceiptFact` (verb-tiddler.ts, mesh) reads a fact's `input-digest` with a
- * plain truthy check (`!inputDigest`), which an empty string fails — a fact minted with `""` would
- * silently fail to round-trip and read back as absent. A real `verbInputDigest` output always reads
- * `sha256:<hex>` (see `formatDigest`), so this sentinel can never collide with one.
- */
-const WILDCARD_DIGEST = "*";
-
-/** The invocation's own content — what an honest reused id must match to re-read instead of re-run. */
-function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy">): string {
-  return sha256HexBytesSync(canonicalJsonBytes({ verb: inv.verb, args: inv.args ?? {}, requestedBy: inv.requestedBy }));
+/** The invocation's own content — what an honest reused id must match to re-read instead of re-run.
+ *  The worker's own formula ({@link verbInputDigest}, mesh), so a request-id reuse compares against
+ *  EXACTLY the digest the dispatcher itself would stamp onto the outcome — never a second, locally
+ *  invented hash that could drift from it. */
+function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy" | "effectKey">): Promise<string> {
+  return verbInputDigest({
+    verb: inv.verb, args: inv.args ?? {}, requestedBy: inv.requestedBy,
+    ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
+  });
 }
 
 export interface UdsChannel { close: () => void; }
@@ -370,6 +375,11 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       status, requestId,
       ...(results !== undefined ? { results } : {}),
       ...(fields["error-message"] !== undefined ? { errorMessage: fields["error-message"] } : {}),
+      // D1 commit 1 (mesh)'s additive `concludeVerb({refusal})` — a terminal outcome's own
+      // machine-readable reason (e.g. "retention-gap", stamped by the tw5 dispatcher's
+      // evicted-effect guard), told back in the SAME additive shape the socket's own direct
+      // refusals already use (`fail()` below), never as a second, differently-shaped field.
+      ...(typeof fields["refusal"] === "string" ? { refusal: { reason: fields["refusal"] } } : {}),
     };
   };
 
@@ -444,6 +454,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         requestId, state: status,
         ...(outcome["results"] !== undefined ? { results: outcome["results"] as Record<string, unknown> } : {}),
         ...(outcome["errorMessage"] !== undefined ? { errorMessage: outcome["errorMessage"] as string } : {}),
+        ...(outcome["refusal"] !== undefined ? { refusal: outcome["refusal"] as { reason: string } } : {}),
       };
     }
     if (fact?.terminal) return { requestId, state: fact.terminal }; // the fact reached done/error but the outcome body itself is unreadable right now
@@ -503,8 +514,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
 
       const inv = parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
-      const requestId   = inv.requestId ?? newRequestId();
-      const inputDigest = inputDigestOf(inv);
+      const requestId = inv.requestId ?? newRequestId();
       // H1′: DEFER DISPATCH, NOT SYNCHRONOUSLY. A vessel frozen between the caller's write and this
       // read can thaw well after the caller gave up and destroyed its own end — its FIN/RST sits
       // queued right behind this very `data` event, undelivered only because this process could not
@@ -516,6 +526,9 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       // that extra poll pass run first. A live caller never half-closes before its own answer, so an
       // end seen here always means abandonment.
       setImmediate(() => setImmediate(() => { void (async () => {
+        // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
+        // this deferred tick rather than synchronously in the `data` handler above.
+        const inputDigest = await inputDigestOf(inv);
         if (sock.destroyed || sock.readableEnded) {
           // H1, now DURABLE: this id is recorded ABANDONED (flushed) before this vessel lets go of
           // the connection, so a LATER connection carrying the SAME request id (a read-back, a
@@ -547,7 +560,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         }
         if (verdict.verdict === "refuse") {
           const why = verdict.reason === "abandoned"
-            ? `this vessel already refused request ${requestId} before commit — re-run to try again`
+            ? `this vessel already refused request ${requestId} before commit — mint a fresh request id`
             : verdict.reason === "retention-gap"
             ? `this vessel's receipt ring evicted request ${requestId} before it could be re-read — mint a fresh request id`
             : `request ${requestId} was already used with different arguments — mint a fresh request id`;

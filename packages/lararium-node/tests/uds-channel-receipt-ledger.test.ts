@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, concludeVerb, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, concludeVerb, verbInputDigest, type LarDoc } from "@lararium/mesh";
 import { startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 
@@ -143,19 +143,18 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
-  test("an abandoned (EOF-dropped) id reused with CHANGED args → restart → refuses by name, never abandoned", async () => {
+  test("an abandoned (EOF-dropped) id reused with CHANGED args → restart → still refuses `abandoned`, on state alone", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
     try {
       const requestId = "req-changed-args-restart";
-      // An explicit cancel before dispatch — records an `abandoned` fact, but with the WILDCARD
-      // empty digest ({@link FactLedger.cancel}), matching the drop-then-reuse shape M3″/H4 cover.
+      // An explicit cancel before dispatch — records an `abandoned` fact with NO digest at all
+      // ({@link FactLedger.cancel}), matching the drop-then-reuse shape M3″/H4 cover.
       await sendLine(v.socketPath, { op: "cancel", requestId });
 
-      // Reach the digest-specific branch: hand-write a fact disagreement by first having a drop
-      // record a SPECIFIC digest, then restart and try a DIFFERENT digest. Model the drop path
-      // directly: a live EOF-drop records the invocation's own digest (not the cancel wildcard),
-      // so a fresh id proves that branch cleanly.
+      // Reach the EOF-drop path directly: a live drop records the invocation's own digest (unlike
+      // `cancel`, which records none), so a fresh id proves `abandoned` refuses on STATE ALONE
+      // even when a fact-bearing digest is in play and the retry's own args differ from it.
       const dropId = "req-eof-drop-digest";
       const sock = createConnection(v.socketPath);
       await new Promise<void>((resolve, reject) => { sock.once("connect", resolve); sock.once("error", reject); });
@@ -169,8 +168,43 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       const changed = await sendLine(v.socketPath, { verb: "nexus-kapae", args: { a: 2 }, requestedBy: "did:key:test", requestId: dropId });
       expect(counter.n).toBe(0);
       expect(changed["status"]).toBe("error");
-      expect(String(changed["errorMessage"])).toMatch(/already used with different arguments/);
-      expect((changed["refusal"] as { reason?: string } | undefined)?.reason).toBe("request-id-reused-with-changed-input");
+      expect(String(changed["errorMessage"])).toMatch(/already refused request req-eof-drop-digest before commit/);
+      expect((changed["refusal"] as { reason?: string } | undefined)?.reason).toBe("abandoned");
+
+      // CONTROL: the SAME-digest reuse of a genuinely content-mismatched, still-live (non-abandoned)
+      // id still refuses by digest name — proven by the ring/done-reuse tests elsewhere in this file
+      // exercising the `already-committed` and `done` paths, which never touch this `abandoned` branch.
+    } finally { await v.teardown(); }
+  });
+
+  test("a summons-shaped outcome (a remote peer's own digest, never arbitrated by this channel) + a same-args UDS dispatch answers the outcome, with NO false refusal", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const requestId = "req-summons-shaped";
+      const verb = "nexus-kapae";
+      const args = { a: 1 };
+      const requestedBy = "did:key:test";
+      // A remote peer's own summons landed straight in the durable doc — this channel never
+      // arbitrated it (no `committed` fact exists for this id), only OBSERVES it via the
+      // outcome-prefix subscription, which mints a fresh fact seeded with the WORKER's own
+      // stamped digest (the worker's `verbInputDigest` formula, computed independently here to
+      // model a remote peer doing the same).
+      const workerDigest = await verbInputDigest({ verb, args, requestedBy });
+      const outcome = concludeVerb({
+        requestId, verb, status: "done", requestedBy, cause: "remote-summons", batchMode: "best-effort",
+        results: { summary: { ok: true } }, inputDigest: workerDigest,
+      });
+      v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      await new Promise((r) => setTimeout(r, 100)); // let the subscription mint the fact
+
+      // A same-args UDS dispatch under the SAME id computes the IDENTICAL digest — `arbitrate`
+      // finds the minted fact's digest matches, refuses `already-committed` (never a changed-input
+      // refusal), and answers the ALREADY-LANDED outcome rather than running the handler.
+      const answer = await sendLine(v.socketPath, { verb, args, requestedBy, requestId });
+      expect(counter.n).toBe(0); // never dispatched — the outcome already existed
+      expect(answer["status"]).toBe("done");
+      expect(answer["refusal"]).toBeUndefined();
     } finally { await v.teardown(); }
   });
 
