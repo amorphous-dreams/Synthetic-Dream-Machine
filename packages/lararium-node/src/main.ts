@@ -54,6 +54,7 @@ import { faceStands } from "./commands/init.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
+import { ratedReceiptRing } from "@lararium/mesh";
 import { startUdsChannel }              from "./uds-channel.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
@@ -162,8 +163,17 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
   }
 }
 
+/** The `receipts.ring {ratePerMin, horizonDays, burst}` shape an operator may override in
+ *  `~/.lares/config.json` (D1, P2.5 iter 4) — read loosely here rather than widening
+ *  `LaresConfig`'s own interface, since this lane touches only `uds-channel.ts` and this one
+ *  pass-through site in `main.ts`. Absent entirely → `startUdsChannel`'s own default
+ *  (`RECEIPT_RING_DEFAULT`). */
+interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number } } }
+
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  const receiptsCfg = loadLaresConfig() as unknown as ReceiptsRingConfig;
+  const receiptRing = receiptsCfg.receipts?.ring !== undefined ? ratedReceiptRing(receiptsCfg.receipts.ring) : undefined;
   // ORIGIN CUSTODY STAYS WITH A PRESENT KEEPER. A herm is a waystone: it carries for peers, informs
   // readers, and serves no arrival page, so a Web origin or a Pronaos input handed to it refuses here,
   // before any face listens.
@@ -414,6 +424,8 @@ async function main(): Promise<void> {
       daemonHandle: herm.daemon.daemonHandle,
       placeVerb:    (o) => herm.daemon.placeVerb(o),
       claim:        herm.storeClaim,
+      repo:         herm.repo,
+      ...(receiptRing !== undefined && { ring: receiptRing }),
       onLog: (line) => console.log(`[herm] ${line}`),
     });
     readinessState.markReady();
@@ -535,6 +547,8 @@ async function main(): Promise<void> {
     daemonHandle: result.daemon.daemonHandle,
     placeVerb:    (o) => result.daemon.placeVerb(o),
     claim:        result.storeClaim,
+    repo:         result.repo,
+    ...(receiptRing !== undefined && { ring: receiptRing }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   });
   readinessState.markReady();

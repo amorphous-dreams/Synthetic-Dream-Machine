@@ -35,10 +35,12 @@
  */
 
 import type { Socket } from "node:net";
-import type { DocHandle } from "@automerge/automerge-repo";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, AutomergeDocStore, CompositeStore,
   newRequestId, OUTCOME_URI_PREFIX, canonicalJsonBytes, sha256HexBytesSync, type LarDoc,
+  RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, buildReceiptFact, parseReceiptFact,
+  type ReceiptFact,
 } from "@lararium/mesh";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
@@ -60,6 +62,21 @@ export interface UdsChannelOptions {
   readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim;
+  /**
+   * The vessel's Automerge Repo — the receipt-fact ledger's own durability floor (D1). `arbitrate`
+   * awaits `repo.flush()` AFTER writing a `committed`/`abandoned` fact and BEFORE this channel calls
+   * `placeVerb` (or answers a cancel) — a crash between the commit and the save would otherwise
+   * re-run an id this vessel already decided to run, or un-abandon one it already refused.
+   */
+  readonly repo: Pick<Repo, "flush">;
+  /**
+   * Override {@link RECEIPT_RING_DEFAULT} — the request-fact ledger's own retention ring. Past this
+   * many tracked requests (any state), the channel evicts the OLDEST (lowest `seq`) fact to
+   * `evicted` and drops its full durable outcome; a later read of an evicted id answers
+   * `retention-gap`, never a silent re-run. `main.ts` resolves this from vessel config
+   * (`receipts.ring {ratePerMin, horizonDays, burst}`) when present.
+   */
+  readonly ring?: number;
   /** Per-verb await budget (default 30s — recall cold-starts chromadb). */
   readonly timeoutMs?: number;
   readonly onLog?: (line: string) => void;
@@ -96,10 +113,12 @@ export interface ReceiptAnswer {
    * `committed`  — dispatched, no durable outcome has landed yet (still running, or lost to a
    *                restart before it could write one — indistinguishable from here; re-query).
    * `done`/`error` — the durable outcome, read back exactly as `runVerb` would have returned it.
+   * `evicted`    — the receipt ring (D1) dropped this id's full outcome past its retention bound;
+   *                its fact survives (digest, effect key, terminal) but the result body is gone.
    * `unknown`    — this vessel never arbitrated this id (a fresh process since dispatch, no
    *                durable outcome either) — the honest "no idea", never told as `error`.
    */
-  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown";
+  readonly state: "abandoned" | "committed" | "done" | "error" | "evicted" | "unknown";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
 }
@@ -118,63 +137,185 @@ export class VesselWaitExpired extends Error {
 }
 
 /**
- * The per-process, in-memory arbitration ledger (H1) — vessel-local scratch, never synced (same
- * durability class as the dispatcher's own `inFlight` set). It answers exactly the question the
- * proven bug needed answered and nothing more: "did THIS vessel process already decide not to run
- * this exact request id?" A restart loses it, which is safe — {@link ReceiptAnswer} falls back to the
- * durable outcome doc, and a request this process never arbitrated reads `unknown`, never a false
- * "abandoned" or a false re-run.
+ * The DURABLE, single-writer request ledger (D1, P2.5 iter 4 — closes H1R + H4 + M1 + M3″). This
+ * channel is the receipt fact's ONE writer: it writes `committed` at arbitrate, `abandoned` at
+ * EOF-drop/cancel, and `done`/`error` when it OBSERVES the durable outcome land (any path — the
+ * co-located worker or a remote summons). The worker never writes a fact, only the outcome tiddler
+ * this channel observes — so no two processes ever race one fact's `state` field.
  *
- * NO COUNT BOUND, NO AGE BOUND — left a named parameter with no default, same as M1's outcome dedup
- * (the operator has not ruled either). A long-lived vessel answering many distinct request ids grows
- * this map without eviction; it is a liability shared with M1, not a new one this ledger invents.
+ * A restart loses NOTHING: the fact backing this ledger lives in the Automerge-backed daemon bag
+ * (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that is seeded from the
+ * store on first use and kept warm by every write this process makes. H1R's proven bug — a
+ * same-id, same-args reuse re-running after a restart, and a cancelled id's abandonment not
+ * surviving one — closes because the fact this ledger reads back IS the fact a prior process wrote,
+ * never a process-local Map that a restart wiped.
+ *
+ * The ring (M1): past `ring` tracked requests (any state, oldest `seq` first), the ledger evicts —
+ * flips the fact to `evicted` (keeping digest, effect key, terminal) and tombstones the full durable
+ * outcome. An evicted id answers `retention-gap`, never a silent re-run and never a bare "unknown"
+ * that would invite one.
  */
-class RequestLedger {
-  private readonly abandoned = new Map<string, string | null>(); // requestId -> inputDigest, or null for an explicit cancel (matches any digest)
-  private readonly committed = new Map<string, string>();        // requestId -> inputDigest
+class FactLedger {
+  private readonly cache = new Map<string, ReceiptFact>();
+  /** requestIds in ascending `seq` order — the eviction queue. Seeded from the store at first use,
+   *  then kept current by every `record()` this process makes. */
+  private readonly order: string[] = [];
+  private nextSeq = 0;
+  private seeded: Promise<void> | null = null;
+
+  constructor(
+    private readonly composite: CompositeStore,
+    private readonly repo: Pick<Repo, "flush">,
+    private readonly ring: number,
+  ) {}
+
+  private static factTitle(requestId: string): string {
+    return `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
+  }
+
+  /** Seed the cache + eviction order + seq counter from the durable store, once. Every public
+   *  method awaits this first, so a connection arriving before the scan finishes still reads a
+   *  consistent (if momentarily blocked) ledger rather than a false "never seen". */
+  private ensureSeeded(): Promise<void> {
+    if (this.seeded) return this.seeded;
+    this.seeded = (async () => {
+      const titles = await this.composite.listVisible();
+      const facts: ReceiptFact[] = [];
+      for (const title of titles) {
+        if (!title.startsWith(RECEIPT_FACT_URI_PREFIX)) continue;
+        const rec = await this.composite.get(title);
+        if (!rec) continue;
+        const fact = parseReceiptFact(rec.tiddler as Record<string, unknown>);
+        if (fact) facts.push(fact);
+      }
+      facts.sort((a, b) => a.seq - b.seq);
+      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); }
+      this.nextSeq = facts.length > 0 ? facts[facts.length - 1]!.seq + 1 : 0;
+    })();
+    return this.seeded;
+  }
+
+  /** Read-through: cache first, then the durable fact store. Never arbitrates, never dispatches. */
+  async get(requestId: string): Promise<ReceiptFact | null> {
+    await this.ensureSeeded();
+    const cached = this.cache.get(requestId);
+    if (cached !== undefined) return cached;
+    const rec = await this.composite.get(FactLedger.factTitle(requestId));
+    if (!rec) return null;
+    const fact = parseReceiptFact(rec.tiddler as Record<string, unknown>);
+    if (fact) this.cache.set(requestId, fact);
+    return fact;
+  }
+
+  /** Mint a NEW fact (committed, abandoned, or a first non-UDS-path observation) — assigns the next
+   *  seq, writes it durably, flushes the repo (the durability floor BEFORE a caller may dispatch or
+   *  this channel may answer), warms the cache, and runs the ring's own eviction check. */
+  private async record(fact: Omit<ReceiptFact, "seq">): Promise<ReceiptFact> {
+    await this.ensureSeeded();
+    const full: ReceiptFact = { ...fact, seq: this.nextSeq++ };
+    await this.composite.put(buildReceiptFact(full), { kind: "lares-verb", requestId: fact.requestId });
+    await this.repo.flush();
+    this.cache.set(fact.requestId, full);
+    this.order.push(fact.requestId);
+    await this.evictIfNeeded();
+    return full;
+  }
 
   /**
-   * Arbitrate ONE winner per request id. `inputDigest` names the invocation's own content (verb +
-   * args + requestedBy) — a reused id whose digest DIFFERS from what this ledger already recorded
-   * refuses by name (`request-id-reused-with-changed-input`), never silently re-runs under borrowed
-   * trust in the id alone.
+   * Arbitrate ONE winner per request id, DURABLY. `inputDigest` names the invocation's own content
+   * (verb + args + requestedBy + effectKey) — a reused id whose digest DIFFERS from the fact already
+   * on record refuses by name (`request-id-reused-with-changed-input`), never silently re-runs under
+   * borrowed trust in the id alone. An empty recorded digest (an explicit `{op:"cancel"}` on an id
+   * never otherwise seen) matches ANY incoming digest — a wildcard abandonment, not a content claim.
    */
-  arbitrate(requestId: string, inputDigest: string):
-    | { readonly verdict: "run" }
-    | { readonly verdict: "refuse"; readonly reason: "abandoned" | "already-committed" | "request-id-reused-with-changed-input" } {
-    const abandonedDigest = this.abandoned.get(requestId);
-    if (abandonedDigest !== undefined) {
-      return { verdict: "refuse", reason: abandonedDigest !== null && abandonedDigest !== inputDigest ? "request-id-reused-with-changed-input" : "abandoned" };
+  async arbitrate(requestId: string, inputDigest: string):
+    | Promise<{ readonly verdict: "run" }
+      | { readonly verdict: "refuse"; readonly reason: "abandoned" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" }> {
+    const existing = await this.get(requestId);
+    if (existing) {
+      if (existing.state === "evicted") return { verdict: "refuse", reason: "retention-gap" };
+      const digestMatches = existing.inputDigest === WILDCARD_DIGEST || existing.inputDigest === inputDigest;
+      if (!digestMatches) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
+      return { verdict: "refuse", reason: existing.state === "abandoned" ? "abandoned" : "already-committed" };
     }
-    const committedDigest = this.committed.get(requestId);
-    if (committedDigest !== undefined) {
-      return { verdict: "refuse", reason: committedDigest !== inputDigest ? "request-id-reused-with-changed-input" : "already-committed" };
-    }
-    this.committed.set(requestId, inputDigest);
+    await this.record({ requestId, inputDigest, state: "committed" });
     return { verdict: "run" };
   }
 
   /** The causal EOF-drop: this vessel never read the invocation in time to arbitrate it. A no-op
-   *  when an entry already stands (committed or abandoned) — never overwrite a decision already made. */
-  abandonDrop(requestId: string, inputDigest: string): void {
-    if (this.abandoned.has(requestId) || this.committed.has(requestId)) return;
-    this.abandoned.set(requestId, inputDigest);
+   *  when a fact already stands (committed, abandoned, or otherwise) — never overwrite a decision
+   *  already made. Flushes durably before this returns (the drop itself never answers the caller —
+   *  its socket is already gone — but a LATER read-back under the same id must find this fact). */
+  async abandonDrop(requestId: string, inputDigest: string): Promise<void> {
+    const existing = await this.get(requestId);
+    if (existing) return;
+    await this.record({ requestId, inputDigest, state: "abandoned" });
   }
 
-  /** An explicit `{op:"cancel"}` (M8) — withdraws regardless of digest. A no-op once committed: a
-   *  cancel racing a dispatch that already won refuses to un-dispatch it. */
-  cancel(requestId: string): void {
-    if (this.committed.has(requestId)) return;
-    this.abandoned.set(requestId, null);
+  /** An explicit `{op:"cancel"}` (M8) — withdraws regardless of digest (the wildcard "" digest). A
+   *  no-op once a decision already stands: a cancel racing a dispatch that already won refuses to
+   *  un-dispatch it, and a cancel racing a prior cancel/abandon leaves that fact exactly as it was. */
+  async cancel(requestId: string): Promise<void> {
+    const existing = await this.get(requestId);
+    if (existing) return;
+    await this.record({ requestId, inputDigest: WILDCARD_DIGEST, state: "abandoned" });
   }
 
-  /** Read-only — never arbitrates, never dispatches. */
-  state(requestId: string): "abandoned" | "committed" | "unknown" {
-    if (this.abandoned.has(requestId)) return "abandoned";
-    if (this.committed.has(requestId)) return "committed";
-    return "unknown";
+  /**
+   * Observe a terminal outcome landing (H1R/M1) — this channel's own subscription to the durable
+   * outcome prefix calls this for EVERY `done`/`error` outcome it sees, on ANY path (the co-located
+   * worker this channel dispatched, or a remote summons this channel never arbitrated at all). A
+   * fact already on record is promoted to its terminal state (seq unchanged — observation never
+   * mints a new attempt); an outcome with no prior fact at all (the non-UDS path) mints one fresh,
+   * seeded with whatever digest the outcome itself stamped (digest-on-outcome, D1 commit 2) or the
+   * empty wildcard when the outcome predates that stamp.
+   */
+  async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined): Promise<void> {
+    const existing = await this.get(requestId);
+    if (existing) {
+      if (existing.terminal === status || existing.state === "evicted") return; // already recorded / already dropped
+      const updated: ReceiptFact = { ...existing, state: status, terminal: status };
+      await this.composite.put(buildReceiptFact(updated), { kind: "lares-verb", requestId });
+      await this.repo.flush();
+      this.cache.set(requestId, updated);
+      return;
+    }
+    await this.record({ requestId, inputDigest: inputDigest ?? WILDCARD_DIGEST, state: status, terminal: status });
+  }
+
+  /** Past `ring` tracked requests, drop the OLDEST (lowest `seq`) to `evicted` — keep its digest,
+   *  effect key and terminal (a dedup/replay reader still needs those), but tombstone the full
+   *  durable outcome body so the ring actually bounds storage, not just lookups. */
+  private async evictIfNeeded(): Promise<void> {
+    let evictedAny = false;
+    while (this.order.length > this.ring) {
+      const victimId = this.order.shift();
+      if (victimId === undefined) break;
+      const victim = this.cache.get(victimId);
+      if (!victim || victim.state === "evicted") continue;
+      const evicted: ReceiptFact = {
+        requestId: victim.requestId, inputDigest: victim.inputDigest, state: "evicted", seq: victim.seq,
+        ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
+        ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
+      };
+      await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
+      await this.composite.tombstone(`${OUTCOME_URI_PREFIX}${victimId}`, { kind: "lares-verb", requestId: victimId });
+      this.cache.set(victimId, evicted);
+      evictedAny = true;
+    }
+    if (evictedAny) await this.repo.flush();
   }
 }
+
+/**
+ * The wildcard digest an explicit `{op:"cancel"}` (and a non-UDS-path outcome observation with no
+ * stamped `input-digest`) records — "matches any incoming digest", never a content claim. NOT the
+ * empty string: `parseReceiptFact` (verb-tiddler.ts, mesh) reads a fact's `input-digest` with a
+ * plain truthy check (`!inputDigest`), which an empty string fails — a fact minted with `""` would
+ * silently fail to round-trip and read back as absent. A real `verbInputDigest` output always reads
+ * `sha256:<hex>` (see `formatDigest`), so this sentinel can never collide with one.
+ */
+const WILDCARD_DIGEST = "*";
 
 /** The invocation's own content — what an honest reused id must match to re-read instead of re-run. */
 function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy">): string {
@@ -188,9 +329,10 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
 
-  // One READ-ONLY composite over the warm daemon handle — the channel reads the
-  // durable outcome tiddler back through it (never writes the summons here; the
-  // carriers ride the direct worker channel, off the CRDT).
+  // The composite over the warm daemon handle. It reads the durable outcome tiddler back through
+  // it (never writes the summons here; the carriers ride the direct worker channel, off the CRDT) —
+  // and it is ALSO the receipt-fact ledger's own writable layer (D1): this channel is the fact's
+  // sole writer, so the one composite serves both the read and the write side of the ledger.
   const composite = new CompositeStore();
   composite.addLayer({
     bagId:    DAEMON_BAG_ID,
@@ -198,8 +340,11 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
     writable: true,
   });
 
-  // The arbitration ledger (H1) — ONE winner per request id, vessel-local, in-memory.
-  const ledger = new RequestLedger();
+  // The DURABLE arbitration ledger (D1, H1R+H4+M1+M3″) — one winner per request id, backed by the
+  // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
+  // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
+  // abandonment not surviving one).
+  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT);
 
   const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
@@ -271,12 +416,16 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
     return awaitOutcome(inv.verb, requestId, inv.timeoutMs);
   };
 
-  /** Answer a `{op:"receipt"}` query (H1) — a READ, built from the ledger plus the durable outcome
-   *  doc; NEVER calls `placeVerb`. A durable outcome always wins over a bare ledger "committed" —
-   *  the ledger is this process's own memory and a restart loses it; the outcome doc does not. */
+  /** Answer a `{op:"receipt"}` query (H1, now durable) — a READ, built from the fact ledger plus
+   *  the durable outcome doc; NEVER calls `placeVerb`. The outcome doc wins over a bare `committed`
+   *  fact (still running, or an outcome this fact hasn't yet observed) — never over `abandoned` or
+   *  `evicted`, which are this ledger's own terminal verdicts. */
   const answerReceipt = async (requestId: string): Promise<ReceiptAnswer> => {
-    const ledgerState = ledger.state(requestId);
-    if (ledgerState === "abandoned") return { requestId, state: "abandoned" };
+    const fact = await ledger.get(requestId);
+    if (fact) {
+      if (fact.state === "abandoned") return { requestId, state: "abandoned" };
+      if (fact.state === "evicted")   return { requestId, state: "evicted" };
+    }
     const outcome = await readOutcomeFor(requestId);
     if (outcome) {
       const status = outcome["status"] as "done" | "error";
@@ -286,13 +435,32 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         ...(outcome["errorMessage"] !== undefined ? { errorMessage: outcome["errorMessage"] as string } : {}),
       };
     }
-    return { requestId, state: ledgerState === "committed" ? "committed" : "unknown" };
+    if (fact?.terminal) return { requestId, state: fact.terminal }; // the fact reached done/error but the outcome body itself is unreadable right now
+    return { requestId, state: fact?.state === "committed" ? "committed" : "unknown" };
   };
+
+  // Observe every terminal outcome landing in the durable doc, on ANY path (D1, H1R+M1). The
+  // single-writer fact ledger promotes/mints the matching fact here — never inside the worker,
+  // never inside `arbitrate` itself — so a remote peer's summons-dispatched verb (one this channel
+  // never arbitrated) still leaves a fact this vessel can answer `{op:"receipt"}` against.
+  const unsubOutcomes = composite.subscribe((change) => {
+    if (!change.record || !change.title.startsWith(OUTCOME_URI_PREFIX)) return;
+    const requestId = change.title.slice(OUTCOME_URI_PREFIX.length);
+    const fields = change.record.tiddler as Record<string, unknown>;
+    const status = fields["status"];
+    if (status !== "done" && status !== "error") return;
+    const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : undefined;
+    void ledger.observeOutcome(requestId, status, inputDigest).catch(
+      (e) => log(`receipt-fact observation failed for ${requestId}: ${e instanceof Error ? e.message : String(e)}`),
+    );
+  });
 
   claim.serve((sock: Socket) => {
     let buf = "";
     sock.setEncoding("utf8");
-    const fail = (msg: string) => { try { sock.end(JSON.stringify({ status: "error", errorMessage: msg }) + "\n"); } catch { /* gone */ } };
+    const fail = (msg: string, reason?: string) => {
+      try { sock.end(JSON.stringify({ status: "error", errorMessage: msg, ...(reason !== undefined && { refusal: { reason } }) }) + "\n"); } catch { /* gone */ }
+    };
     const answerUnknown = (requestId: string) => { try { sock.end(JSON.stringify({ status: "unknown", requestId }) + "\n"); } catch { /* gone */ } };
     sock.on("data", (chunk: string) => {
       buf += chunk;
@@ -312,8 +480,13 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         return;
       }
       if (isCancelQuery(parsed)) {
-        ledger.cancel(parsed.requestId);
-        try { sock.end(JSON.stringify({ requestId: parsed.requestId, state: "abandoned" } satisfies ReceiptAnswer) + "\n"); } catch { /* gone */ }
+        // Durable (M8, D1): the abandonment fact flushes BEFORE this channel answers, so a later
+        // read-back under the same id — even after a restart — meets the withdrawal, never a fresh
+        // "never seen" that would invite a second dispatch to run it after all.
+        void ledger.cancel(parsed.requestId).then(
+          () => { try { sock.end(JSON.stringify({ requestId: parsed.requestId, state: "abandoned" } satisfies ReceiptAnswer) + "\n"); } catch { /* gone */ } },
+          (err) => fail(err instanceof Error ? err.message : String(err)),
+        );
         return;
       }
 
@@ -331,13 +504,14 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       // `readableEnded: false` for an already-half-closed peer. Nesting a second `setImmediate` lets
       // that extra poll pass run first. A live caller never half-closes before its own answer, so an
       // end seen here always means abandonment.
-      setImmediate(() => setImmediate(() => {
+      setImmediate(() => setImmediate(() => { void (async () => {
         if (sock.destroyed || sock.readableEnded) {
-          // H1: this id is recorded ABANDONED before this vessel lets go of the connection, so a LATER
-          // connection carrying the SAME request id (a read-back, a retry) meets the ledger's refusal
-          // instead of a bare "never seen" that a second dispatch would then run unannounced.
-          ledger.abandonDrop(requestId, inputDigest);
-          log(`dropped a hung-up "${inv.verb}" invocation (request ${requestId}) — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced, and recording the refusal so a later read-back under the same id cannot re-dispatch it`);
+          // H1, now DURABLE: this id is recorded ABANDONED (flushed) before this vessel lets go of
+          // the connection, so a LATER connection carrying the SAME request id (a read-back, a
+          // retry) — even across a restart — meets the ledger's refusal instead of a bare "never
+          // seen" that a second dispatch would then run unannounced.
+          await ledger.abandonDrop(requestId, inputDigest);
+          log(`dropped a hung-up "${inv.verb}" invocation (request ${requestId}) — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced, and recording the refusal durably so a later read-back under the same id cannot re-dispatch it`);
           return;
         }
         // THE WINNER AT THE INSTANT OF GIVING UP: this causal EOF check, plus the ledger's own
@@ -347,10 +521,13 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         // caller's own later-expiring local wait (`local-connector.ts`'s `LocalWaitExpired`) never
         // reaches back here to cancel; it only stops ITS OWN wait and reads the receipt back later,
         // by the same request id, through `{op:"receipt"}` — never through a second dispatch attempt.
-        const verdict = ledger.arbitrate(requestId, inputDigest);
+        // `arbitrate` itself writes the `committed` fact and FLUSHES before returning "run" — the
+        // durability floor sits BEFORE `runVerb`/`placeVerb` below, never after.
+        const verdict = await ledger.arbitrate(requestId, inputDigest);
         if (verdict.verdict === "refuse" && verdict.reason === "already-committed") {
-          // A genuine concurrent re-read of an id THIS process already dispatched (never an
-          // abandon-then-retry) — answer the SAME outcome, never a second `placeVerb`.
+          // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
+          // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
+          // across a restart) — answer the existing outcome, never a second `placeVerb`.
           awaitOutcome(inv.verb, requestId, inv.timeoutMs).then(
             (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
             (err)     => { if (err instanceof VesselWaitExpired) return answerUnknown(requestId); fail(err instanceof Error ? err.message : String(err)); },
@@ -360,8 +537,10 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         if (verdict.verdict === "refuse") {
           const why = verdict.reason === "abandoned"
             ? `this vessel already refused request ${requestId} before commit — re-run to try again`
+            : verdict.reason === "retention-gap"
+            ? `this vessel's receipt ring evicted request ${requestId} before it could be re-read — mint a fresh request id`
             : `request ${requestId} was already used with different arguments — mint a fresh request id`;
-          return fail(why);
+          return fail(why, verdict.reason);
         }
         runVerb(inv, requestId).then(
           (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
@@ -370,12 +549,15 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
             fail(err instanceof Error ? err.message : String(err));
           },
         );
-      }));
+      })(); }));
     });
   }, (why) => log(why));
   log(`uds verb-channel on ${claim.socketPath} (perms 0600)`);
 
   return {
-    close: () => { claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`); },
+    close: () => {
+      unsubOutcomes();
+      claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`);
+    },
   };
 }

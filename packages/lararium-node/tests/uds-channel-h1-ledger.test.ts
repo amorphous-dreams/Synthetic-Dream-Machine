@@ -77,6 +77,7 @@ async function withChannel(
     daemonHandle,
     placeVerb: (o) => { const p = o as Placed; placed.push(p); placeVerbImpl(p, daemonHandle); },
     claim,
+    repo,
     timeoutMs: 500, // short vessel-side budget so the M2 proof does not wait long
   });
   try {
