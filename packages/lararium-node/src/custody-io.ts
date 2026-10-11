@@ -13,31 +13,31 @@
  *               rotation census read it, and both refuse on a VK-sealed file no row names; a list that skipped a
  *               subtree would let a stray seal hide there. A symlink is not followed (it lists as nothing, and its
  *               target is never read through it); an absent home lists nothing.
- *   `exclusive` — the ONE custody holder, across processes. A queue serializes callers inside this process; a lock
- *               file beside the slot tree (`<identity>/vk-slots.bin.lock`, created `O_EXCL`) serializes processes.
+ *   `exclusive` — the ONE custody holder, across processes. A queue serializes callers inside this process; a socket
+ *               claim beside the slot tree (`<identity>/vk-slots.claim`) serializes processes, containers included.
  *               Not reentrant.
  *
- * ── THE LOCK READS NO CLOCK ─────────────────────────────────────────────────────────────────────
- * The lock file names its holder (pid + a random token). A contender that finds it held waits, polling; it breaks the
- * lock ONLY when the holder's pid answers `ESRCH` (no such process) — a fact about a process, never an age. A wait
- * that outlasts `maxWaits` polls refuses by name rather than seizing a lock a live holder may still use. The one
- * residual window: two contenders that both see the same dead holder race to break it; the break is an atomic rename
- * of the lock aside and a re-read, and a break that finds it moved a LIVE holder's fresh lock puts it back unless a
- * third file has already taken the path, in which case it refuses. A dead holder's lock is the only one ever removed.
+ * ── THE CLAIM READS NO CLOCK AND NO PID ─────────────────────────────────────────────────────────
+ * The holder is a socket claim (`claimName`) on `<identity>/vk-slots.claim`, spelled through an open descriptor on the
+ * identity home so a deep home fits `sun_path`. The kernel's own listener state decides live vs dead, so a reused pid,
+ * a pid namespace split (a container beside a host process on the same bind mount) and a SIGKILLed holder's corpse all
+ * read true: a corpse is reaped by exactly one claimant, a live holder in any namespace is waited on. A contender
+ * waits through `maxWaits` looks (a COUNT, never an age) and then refuses by name rather than seize a live holder's claim.
  *
- * The lock file is not a carrier and bears no seal magic, so the census never mistakes it for one.
+ * The claim is a socket, not a carrier: `list()` takes regular files only, so the census never meets it.
  */
 
-import { closeSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync, writeSync } from "node:fs";
+import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, writeSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
 import type { CustodyIo } from "@lararium/mesh";
-import { vesselCustodyHomes, vkSlotsPath, type CustodyHomes } from "./vault-carriers.js";
+import { anchoredName, answers, claimName, letGo, NameHeld } from "./socket-claim.js";
+import { vesselCustodyHomes, type CustodyHomes } from "./vault-carriers.js";
 
-/** The lock file's name, beside the slot tree. */
-export const CUSTODY_LOCK_SUFFIX = ".lock";
+/** The claim's name, in the identity home beside the slot tree. */
+export const CUSTODY_CLAIM_NAME = "vk-slots.claim";
 
-/** A custody holder that could not be taken: a live holder outlasted the wait, or the lock could not be broken safely. */
+/** A custody holder that could not be taken: a live holder outlasted the wait, or the claim could not be taken. */
 export class CustodyLockRefused extends Error {
   override readonly name = "CustodyLockRefused";
   constructor(readonly lockPath: string, detail: string) {
@@ -46,7 +46,7 @@ export class CustodyLockRefused extends Error {
 }
 
 export interface FsCustodyIoOptions {
-  /** How many polls a contender makes against a live holder before it refuses. Default 600. */
+  /** How many looks a contender gives a live holder before it refuses. Default 600. */
   readonly maxWaits?: number;
   /** Milliseconds between polls. Default 50. Pacing only: no poll decides anything by elapsed time. */
   readonly pollMs?: number;
@@ -57,16 +57,6 @@ function syncDir(dir: string): void {
     const fd = openSync(dir, "r");
     try { fsyncSync(fd); } finally { closeSync(fd); }
   } catch { /* a platform without directory fsync lands the rename durably on its own */ }
-}
-
-function pidAlive(pid: number): boolean {
-  if (!Number.isSafeInteger(pid) || pid <= 0) return false;
-  try { process.kill(pid, 0); return true; } catch (err) { return (err as NodeJS.ErrnoException).code === "EPERM"; }
-}
-
-function holderPid(text: string): number {
-  const m = /^(\d+) /.exec(text);
-  return m ? Number(m[1]) : 0;
 }
 
 /** The production port. Construct it over the vessel's homes; every method works on absolute paths. */
@@ -80,8 +70,8 @@ export class FsCustodyIo implements CustodyIo {
     this.pollMs = opts.pollMs ?? 50;
   }
 
-  /** The lock file this port's holder takes. */
-  lockPath(): string { return `${vkSlotsPath(this.homes.identity)}${CUSTODY_LOCK_SUFFIX}`; }
+  /** The claim this port's holder takes, spelled by absolute path (for reading; the claim itself rides an anchored spelling). */
+  claimPath(): string { return join(this.homes.identity, CUSTODY_CLAIM_NAME); }
 
   async read(path: string): Promise<Uint8Array | null> {
     try { return new Uint8Array(readFileSync(path)); }
@@ -139,48 +129,26 @@ export class FsCustodyIo implements CustodyIo {
   }
 
   private async underFileLock<T>(fn: () => Promise<T>): Promise<T> {
-    const lock = this.lockPath();
-    mkdirSync(dirname(lock), { recursive: true, mode: 0o700 });
-    const mine = `${process.pid} ${randomUUID()}`;
-    await this.acquire(lock, mine);
-    try { return await fn(); }
-    finally {
-      // Release only a lock that still names this holder: a broken-and-retaken lock belongs to someone else.
-      try { if (readFileSync(lock, "utf8") === mine) rmSync(lock, { force: true }); } catch { /* already gone */ }
-    }
+    const anchor = anchoredName(this.homes.identity, CUSTODY_CLAIM_NAME);
+    try {
+      const claim = await this.acquire(anchor.path);
+      try { return await fn(); } finally { await claim.release(); }
+    } finally { anchor.release(); }
   }
 
-  private async acquire(lock: string, mine: string): Promise<void> {
+  /** Claim the name, or look again while a live holder answers; `maxWaits` looks, then refuse by name. */
+  private async acquire(path: string) {
     for (let wait = 0; wait <= this.maxWaits; wait++) {
-      try {
-        const fd = openSync(lock, "wx", 0o600);
-        try { writeFileSync(fd, mine); fsyncSync(fd); } finally { closeSync(fd); }
-        return;
-      } catch (err) {
-        if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
-      }
-      let held: string;
-      try { held = readFileSync(lock, "utf8"); } catch { continue; }   // released between the open and the read
-      if (!pidAlive(holderPid(held))) this.breakDead(lock, held);
-      else await new Promise<void>((r) => setTimeout(r, this.pollMs));
-    }
-    throw new CustodyLockRefused(lock, `a live holder kept the custody lock through ${this.maxWaits} polls; nothing was seized`);
-  }
-
-  /** Break a lock whose named holder is a dead process. The lock moves aside atomically; a live holder's is put back. */
-  private breakDead(lock: string, seen: string): void {
-    const aside = `${lock}.broken-${process.pid}-${randomUUID()}`;
-    try { renameSync(lock, aside); } catch { return; }   // someone else broke it first
-    let moved = "";
-    try { moved = readFileSync(aside, "utf8"); } catch { /* unreadable: treat as the dead holder's */ }
-    if (moved !== seen && pidAlive(holderPid(moved))) {
-      // The race: the path held a LIVE holder's fresh lock by the time we moved it. Put it back, never overwrite.
-      try { linkSync(aside, lock); } catch (err) {
-        rmSync(aside, { force: true });
-        throw new CustodyLockRefused(lock, `a live holder's lock was displaced during a dead-holder break and another lock took its place: ${(err as Error).message}`);
+      try { return await claimName(path); }
+      catch (err) {
+        if (!(err instanceof NameHeld)) throw err;
+        if (await answers(path)) {
+          // Pacing only: wait for the holder's release or death, but never longer than one poll interval per look.
+          await Promise.race([letGo(path), new Promise<void>((r) => setTimeout(r, this.pollMs))]);
+        }
       }
     }
-    rmSync(aside, { force: true });
+    throw new CustodyLockRefused(this.claimPath(), `a live holder kept the custody claim through ${this.maxWaits} looks; nothing was seized`);
   }
 }
 

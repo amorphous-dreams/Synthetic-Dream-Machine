@@ -206,8 +206,8 @@ export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./command
 export type { WalkReading } from "./commands/walk.js";
 // ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
 export { storeDoorReactors, storeDoorDirect, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
-export { ownedStore, claimStore, StoreHeld, type StoreClaim, readBootEpoch, bootEpochPath } from "./owned-store.js";
-export { claimName, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
+export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim, readBootEpoch, bootEpochPath } from "./owned-store.js";
+export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
   readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir,
@@ -447,7 +447,7 @@ export type {
 
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
 export { KEY_CLASSES, isKeyClass, isRelationClass, vesselKeyCensus } from "./key-class.js";
-export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_LOCK_SUFFIX, type FsCustodyIoOptions } from "./custody-io.js";
+export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
 export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
 // The ONE carrier table: every carrier at rest by home, custody class and writer. The key census, the seal
 // lifecycle and the custody shape reader all derive from it — see `vault-carriers`.

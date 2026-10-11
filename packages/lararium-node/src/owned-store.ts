@@ -40,7 +40,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
-import { claimName, NameHeld, letGo } from "./socket-claim.js";
+import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName } from "./socket-claim.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
 /** The key under which a store keeps its own id — the one write a Repo makes on opening a fresh store. */
@@ -90,6 +90,16 @@ export class StoreHeld extends NameHeld {}
 
 /** A claim that met another claimant reaping a dead holder's name. Refusing is always safe; the reap ends at once. */
 export class StoreReaping extends StoreHeld {}
+
+/**
+ * The state-side presence claim answers: another holder stands on this same state — a vessel in another container or
+ * namespace, whose rendezvous socket this caller cannot see. Carries no rendezvous to ask, so an awaiting claimant
+ * gives it the reap patience and then refuses.
+ */
+export class StoreHeldElsewhere extends StoreHeld {}
+
+/** The state-side presence claim's name, inside the storage directory itself. */
+export const HOLDER_CLAIM_NAME = ".holder";
 
 /** Who holds a store: a standing vessel for its life, or a direct lares command for one act. */
 export type StoreHolder = "vessel" | "direct";
@@ -202,7 +212,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       const met = await heldAs(socketPath);
       if (met === null) {
         // Nothing answers: the holder let go this instant, or a claimant reaps a dead holder's name.
-        if (err instanceof StoreReaping && ++reaping > REAP_PATIENCE) throw err;
+        if ((err instanceof StoreReaping || err instanceof StoreHeldElsewhere) && ++reaping > REAP_PATIENCE) throw err;
         await new Promise((r) => setTimeout(r, 5));
         continue;
       }
@@ -319,20 +329,41 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   // holder supplies only its own connection protocol (park/answerHeld/handOver, above) and its own
   // refusal text. `refuse` is store-flavored (StoreHeld), so every `instanceof StoreHeld` check
   // downstream keeps reading true — StoreHeld extends NameHeld.
-  const claimed = await claimName(socketPath, {
-    onConnection: (sock) => {
-      sock.on("error", () => { /* a caller that left mid-answer owes nothing */ });
-      onConnection(sock);
-    },
-    refuse,
-  });
+  //
+  // THE STATE-SIDE PRESENCE CLAIM comes FIRST and goes LAST. The rendezvous name lives outside the storage directory
+  // (a container's runtime dir is not the host's), so it cannot see a holder in another namespace; `<storageDir>/.holder`
+  // rides the shared state itself, so any second holder on this same state refuses whatever its entrypoint.
+  const anchor = anchoredName(storageDir, HOLDER_CLAIM_NAME);
+  let presence: ClaimedName;
+  try {
+    presence = await claimName(anchor.path, {
+      refuse: () => new StoreHeldElsewhere(
+        `another holder answers at ${storageDir}/${HOLDER_CLAIM_NAME} — a vessel in another container or namespace on this same state; nothing opened`),
+    });
+  } catch (err) {
+    anchor.release();
+    // A holder in THIS namespace also answers at the rendezvous: it gets the store-flavored refusal and the awaiting
+    // claimant's usual ask. Only a holder the rendezvous cannot see reads as "elsewhere".
+    if (err instanceof StoreHeldElsewhere && (await answers(socketPath))) throw refuse();
+    throw err;
+  }
+  let claimed: ClaimedName;
+  try {
+    claimed = await claimName(socketPath, {
+      onConnection: (sock) => {
+        sock.on("error", () => { /* a caller that left mid-answer owes nothing */ });
+        onConnection(sock);
+      },
+      refuse,
+    });
+  } catch (err) { await presence.release(); anchor.release(); throw err; }
 
   return {
     socketPath,
     holder,
     serve: handOver,
     refuse: (why) => { handOver(answerHeld(why)); },
-    release: claimed.release,
+    release: async () => { await claimed.release(); await presence.release(); anchor.release(); },
   };
 }
 

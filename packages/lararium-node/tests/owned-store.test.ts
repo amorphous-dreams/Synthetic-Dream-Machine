@@ -18,6 +18,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { rendezvousDir, rendezvousPath } from "@lararium/mesh/rendezvous-path";
 
+import { spawn } from "node:child_process";
 import { ownedStore, claimStore, StoreHeld } from "../src/owned-store.js";
 
 let dir: string;
@@ -107,6 +108,45 @@ async function plantDeadSocket(d: string): Promise<void> {
   unlinkSync(keep);
 }
 
+describe("claimStore — the state-side presence claim", () => {
+  /** A process that answers at `<dir>/.holder` and binds NO rendezvous: the shape of a holder in another namespace. */
+  const holderOnly = () => spawn(process.execPath, [join(__dirname, "holder-child.mjs"), join(dir, ".holder")], { stdio: ["ignore", "pipe", "inherit"] });
+  const up = (c: ReturnType<typeof holderOnly>) => new Promise<void>((res, rej) => { c.stdout!.once("data", () => res()); c.once("error", rej); });
+  const down = (c: ReturnType<typeof holderOnly>) => new Promise((r) => { c.once("exit", r); c.kill("SIGTERM"); });
+
+  it("RED: a holder answering only at .holder (no rendezvous) refuses the claim with StoreHeld; CONTROL: once it leaves, the claim binds", async () => {
+    const child = holderOnly();
+    try {
+      await up(child);
+      expect(await answersAt(socketOf(dir))).toBe(false);
+      const err = await claimStore(dir).then(() => null, (e: unknown) => e);
+      expect(err).toBeInstanceOf(StoreHeld);
+      expect((err as Error).message).toContain(`${dir}/.holder`);
+      expect((err as Error).message).toContain("another container or namespace");
+      await down(child);
+      const mine = await claimStore(dir);
+      await mine.release();
+      expect(existsSync(join(dir, ".holder"))).toBe(false);
+    } finally { child.kill("SIGKILL"); }
+  });
+
+  it("a vessel holder and a direct holder both take .holder; release frees it", async () => {
+    const v = await claimStore(dir, { holder: "vessel" });
+    expect(existsSync(join(dir, ".holder"))).toBe(true);
+    await expect(claimStore(dir)).rejects.toBeInstanceOf(StoreHeld);
+    await v.release();
+    expect(existsSync(join(dir, ".holder"))).toBe(false);
+  });
+
+  it("a storage path past 130 characters claims", async () => {
+    const deep = join(dir, "g".repeat(50), "h".repeat(50));
+    mkdirSync(deep, { recursive: true });
+    expect(deep.length).toBeGreaterThan(130);
+    const c = await claimStore(deep);
+    await c.release();
+  });
+});
+
 describe("claimStore — one holder at every instant", () => {
   it("RED: a released holder never removes a name that another holder bound in the meantime", async () => {
     const path = socketOf(dir);
@@ -114,6 +154,7 @@ describe("claimStore — one holder at every instant", () => {
     // The name moves on behind the first holder's back (a holder before this law unlinked any socket standing
     // there), and a second holder binds it afresh.
     unlinkSync(path);
+    unlinkSync(join(dir, ".holder"));   // the state-side presence claim moves on too
     const second = await claimStore(dir);
     await first.release();
     expect(existsSync(path)).toBe(true);
@@ -317,7 +358,8 @@ function filesUnder(root: string): string[] {
   const out: string[] = [];
   for (const name of readdirSync(root)) {
     const p = join(root, name);
-    if (statSync(p).isDirectory()) out.push(...filesUnder(p)); else out.push(p);
+    const st = statSync(p);
+    if (st.isDirectory()) out.push(...filesUnder(p)); else if (st.isFile()) out.push(p);   // the .holder presence socket is no chunk
   }
   return out;
 }

@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
-import { claimName, NameHeld } from "../src/socket-claim.js";
+import { claimName, anchoredName, NameHeld } from "../src/socket-claim.js";
 
 const dirs: string[] = [];
 function scratchSocketPath(): string {
@@ -77,5 +77,21 @@ describe("socket-claim — claimName (M6)", () => {
     const claim = await claimName(path);
     await claim.release();
     await expect(claim.release()).resolves.toBeUndefined();
+  });
+});
+
+describe("socket-claim — anchoredName", () => {
+  test("a claim under a directory past sun_path binds, refuses a second, and releases", async () => {
+    const base = mkdtempSync(join(tmpdir(), "socket-claim-"));
+    dirs.push(base);
+    const deep = join(base, "a".repeat(50), "b".repeat(50));
+    expect(join(deep, "x.sock").length).toBeGreaterThan(108);
+    const anchor = anchoredName(deep, "x.sock");
+    const first = await claimName(anchor.path);
+    await expect(claimName(anchor.path)).rejects.toBeInstanceOf(NameHeld);
+    await first.release();
+    const again = await claimName(anchor.path);
+    await again.release();
+    anchor.release();
   });
 });

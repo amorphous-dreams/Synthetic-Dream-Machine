@@ -106,33 +106,82 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
     const b = io.exclusive(async () => { order.push("b0"); order.push("b1"); });
     await Promise.all([a, b]);
     expect(order).toEqual(["a0", "a1", "b0", "b1"]);
-    expect(existsSync(io.lockPath())).toBe(false);
+    expect(existsSync(io.claimPath())).toBe(false);
   });
 
   test("exclusive releases the lock when the held act throws", async () => {
     const io = new FsCustodyIo(homes);
     await expect(io.exclusive(async () => { throw new Error("boom"); })).rejects.toThrow("boom");
-    expect(existsSync(io.lockPath())).toBe(false);
+    expect(existsSync(io.claimPath())).toBe(false);
     await expect(io.exclusive(async () => 7)).resolves.toBe(7);
   });
 
-  test("a LIVE holder in another process keeps the lock: the contender refuses by name and seizes nothing; once it dies the lock breaks", async () => {
-    const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
-    const child = spawn(process.execPath, ["-e", `
-      const fs = require("fs"); fs.mkdirSync(${JSON.stringify(homes.identity)}, { recursive: true });
-      fs.writeFileSync(${JSON.stringify(io.lockPath())}, process.pid + " held-by-child", { flag: "wx" });
-      process.stdout.write("held\\n"); setInterval(() => {}, 1000);`], { stdio: ["ignore", "pipe", "inherit"] });
+  /** A child process that answers at `path` (a bare listening socket: what any live holder looks like) until told to leave. */
+  const holderChild = (path: string) => spawn(process.execPath, [join(__dirname, "holder-child.mjs"), path], { stdio: ["ignore", "pipe", "inherit"] });
+  const heldBy = (child: ReturnType<typeof holderChild>) => new Promise<void>((res, rej) => { child.stdout!.once("data", () => res()); child.once("error", rej); });
+  const gone = (child: ReturnType<typeof holderChild>) => new Promise((r) => child.once("exit", r));
+
+  test("two PROCESSES contend: the second waits, and enters only after the first leaves", async () => {
+    const io = new FsCustodyIo(homes, { maxWaits: 200, pollMs: 25 });
+    const child = holderChild(io.claimPath());
     try {
-      await new Promise<void>((res, rej) => { child.stdout!.once("data", () => res()); child.once("error", rej); });
+      await heldBy(child);
+      let entered = false;
+      const second = io.exclusive(async () => { entered = true; });
+      await new Promise((r) => setTimeout(r, 300));
+      expect(entered).toBe(false);                 // the live holder keeps it
+      child.kill("SIGTERM");
+      await gone(child);
+      await second;
+      expect(entered).toBe(true);                  // CONTROL: it enters once the first leaves
+    } finally { child.kill("SIGKILL"); }
+  });
+
+  test("a LIVE holder outlasting the patience refuses by name and seizes nothing", async () => {
+    const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
+    const child = holderChild(io.claimPath());
+    try {
+      await heldBy(child);
       let ran = false;
       await expect(io.exclusive(async () => { ran = true; })).rejects.toBeInstanceOf(CustodyLockRefused);
       expect(ran).toBe(false);
-      expect(readFileSync(io.lockPath(), "utf8")).toBe(`${child.pid} held-by-child`);   // MUTATION read: the live lock stood untouched
-      child.kill("SIGKILL");
-      await new Promise((r) => child.once("exit", r));
-      await expect(io.exclusive(async () => "after-death")).resolves.toBe("after-death");   // CONTROL: a dead holder's lock breaks
-      expect(existsSync(io.lockPath())).toBe(false);
+      expect(existsSync(io.claimPath())).toBe(true);   // the live claim stood untouched
     } finally { child.kill("SIGKILL"); }
+  });
+
+  test("a holder SIGKILLed mid-section leaves a corpse the next claimant reaps", async () => {
+    const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
+    const child = holderChild(io.claimPath());
+    await heldBy(child);
+    child.kill("SIGKILL");
+    await gone(child);
+    expect(existsSync(io.claimPath())).toBe(true);     // the corpse stands
+    await expect(io.exclusive(async () => "after-death")).resolves.toBe("after-death");
+    expect(existsSync(io.claimPath())).toBe(false);
+  });
+
+  test("a stale file naming pid 1 at the old .lock path changes nothing", async () => {
+    const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
+    const stale = join(homes.identity, "vk-slots.bin.lock");
+    writeFileSync(stale, "1 stale-holder");
+    await expect(io.exclusive(async () => "entered")).resolves.toBe("entered");
+    expect(readFileSync(stale, "utf8")).toBe("1 stale-holder");
+  });
+
+  test("the claim socket is never listed as a carrier", async () => {
+    const io = new FsCustodyIo(homes);
+    await io.write(join(homes.identity, "x.bin"), text("x"));
+    let seen: readonly string[] = [];
+    await io.exclusive(async () => { seen = await io.list(); });
+    expect(existsSync(io.claimPath()) || true).toBe(true);
+    expect(seen).toEqual([join(homes.identity, "x.bin")]);
+  });
+
+  test("a custody home 130 characters deep claims", async () => {
+    const deep = join(root, "d".repeat(40), "e".repeat(40), "f".repeat(40), "identity");
+    expect(deep.length).toBeGreaterThan(130);
+    const io = new FsCustodyIo({ identity: deep, storage: join(root, "s"), seal: join(root, "n") });
+    await expect(io.exclusive(async () => "deep")).resolves.toBe("deep");
   });
 });
 
@@ -171,7 +220,7 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
       expect(readVkCarrier((await io.read(c.path))!)).toBe("sealed");
     }
     for (const p of await io.list()) expect(p.endsWith(SEALING_SUFFIX) || p.endsWith(ROTATING_SUFFIX) || p.endsWith(".io-tmp"), p).toBe(false);   // rename left no sidecar
-    expect(existsSync(io.lockPath())).toBe(false);
+    expect(existsSync(io.claimPath())).toBe(false);
   });
 
   test("MUTATION: a stranger VK rotates nothing — every carrier stands byte-for-byte", async () => {

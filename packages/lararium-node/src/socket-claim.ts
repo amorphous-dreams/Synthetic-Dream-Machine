@@ -19,15 +19,46 @@
  */
 
 import { createConnection, createServer, type Server, type Socket } from "node:net";
-import { chmodSync, linkSync, lstatSync, mkdirSync, unlinkSync, type Stats } from "node:fs";
+import { chmodSync, closeSync, existsSync, linkSync, lstatSync, mkdirSync, openSync, unlinkSync, type Stats } from "node:fs";
 import { randomUUID } from "node:crypto";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 
 /** A claim on `path` that another holder answers for. The claim opened nothing and wrote nothing. */
 export class NameHeld extends Error {}
 
 /** A claim that met another claimant reaping a dead holder's name. Refusing is always safe. */
 export class NameReaping extends NameHeld {}
+
+/** A name that cannot fit `sun_path` and has no anchor to shorten it. Never truncated, never a pid file. */
+export class NameTooLong extends Error {}
+
+/** Bytes of `sun_path` a claim's own path may use: 107 usable, less the staging suffix `.<pid>.<8 hex>.<uid>` bindName appends. */
+const CLAIM_PATH_BUDGET = 107 - 24;
+
+/**
+ * Name `name` under `dir` through an open descriptor on `dir` — `/proc/self/fd/<fd>/<name>` — so a claim under
+ * a deep directory fits `sun_path` (108 bytes): `listen`, `link` and `connect` all work through that spelling.
+ * The descriptor stays open until `release()`; release the claim FIRST, then the anchor. Where `/proc/self/fd`
+ * does not stand, the absolute path serves while it fits; past the budget this throws {@link NameTooLong}.
+ */
+export function anchoredName(dir: string, name: string): { path: string; release(): void } {
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  let fd = -1;
+  try { fd = openSync(dir, "r"); } catch { /* no anchor; the absolute path decides below */ }
+  if (fd >= 0) {
+    const via = `/proc/self/fd/${fd}`;
+    if (existsSync(via)) {
+      let closed = false;
+      return { path: `${via}/${name}`, release() { if (!closed) { closed = true; try { closeSync(fd); } catch { /* gone */ } } } };
+    }
+    try { closeSync(fd); } catch { /* gone */ }
+  }
+  const abs = join(dir, name);
+  if (Buffer.byteLength(abs) > CLAIM_PATH_BUDGET) {
+    throw new NameTooLong(`${abs} is ${Buffer.byteLength(abs)} bytes; a socket name past ${CLAIM_PATH_BUDGET} cannot bind here and /proc/self/fd does not stand to shorten it`);
+  }
+  return { path: abs, release() { /* nothing opened */ } };
+}
 
 /** A held claim on a name. */
 export interface ClaimedName {
