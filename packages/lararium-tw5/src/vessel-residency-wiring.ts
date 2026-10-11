@@ -206,6 +206,10 @@ export function makeVesselResidency(
       const grainRecipe = rec ? recipeFromRecord(rec, slug) : undefined;
       const libraryBags = grainRecipe?.libraryBags;
       const pluginOfferings = grainRecipe?.pluginOfferings;
+      // M2 — threaded alongside, never thrown: a torn plugin-offerings field on THIS grain's
+      // record refuses only its own plugin resolution; the grain swap itself (library bags, the
+      // slots) proceeds exactly as it would with no fault.
+      const pluginOfferingsFault = grainRecipe?.pluginOfferingsFault;
       const { spec } = await buildWikiMountSpec(daemon, {
         activeWikiId: wikiId,
         wikiSlug:     slug,
@@ -215,6 +219,7 @@ export function makeVesselResidency(
         catalogUrl:   catalogHandle.url,
         ...(libraryBags ? { libraryBags } : {}),
         ...(pluginOfferings ? { pluginOfferings } : {}),
+        ...(pluginOfferingsFault !== undefined ? { pluginOfferingsFault } : {}),
       });
       return spec;
     };

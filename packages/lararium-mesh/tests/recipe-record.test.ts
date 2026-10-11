@@ -9,6 +9,7 @@ import { describe, test, expect } from "vitest";
 import {
   expandRecipe, recipeFromRecord, recipeRecordFields, wikiBagUri, wikiSlotUri,
   ORACLE_BAG, LARARIUM_BAG, LARES_BAG, bagUri, designatedBagOf, bagStackFromRec,
+  parsePluginOfferings,
 } from "../src/index.js";
 import { buildGenesisSeed } from "../src/genesis-doc.js";
 import { recipeUri } from "../src/lar-uris.js";
@@ -114,27 +115,56 @@ describe("★ the recipe's plugin-offerings list round-trips through the record 
 });
 
 /**
- * ★ M4 — a malformed `plugin-offerings` field REFUSES; it never silently normalizes into an
- * empty or trimmed recipe. (`parsePluginOfferings`, read through `recipeFromRecord`.) ★
+ * ★ M4/M2 — a malformed `plugin-offerings` field never reads as an empty or successful recipe.
+ * `parsePluginOfferings` still THROWS on its own contract (unit-tested directly below); M2 moves
+ * the catch boundary to `recipeFromRecord` itself, which NEVER throws — a torn field names its
+ * own `pluginOfferingsFault` instead, so the bag-stack walk on the SAME record stays unaffected
+ * and a caller that never asked about plugins (the grain swap, `meme get`) never bricks over it.
  */
-describe("★ a malformed plugin-offerings field refuses, never reads as an empty recipe ★", () => {
+describe("★ a malformed plugin-offerings field names its own fault, never throws or reads empty ★", () => {
   const recordWith = (raw: unknown): LarTiddlerRecord => ({
     tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working"), "plugin-offerings": raw as never },
   });
 
-  test("CONTROL — an absent field reads as no offerings, the lawful empty case", () => {
-    expect(recipeFromRecord({ tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working") } }, "solo").pluginOfferings).toBeUndefined();
+  test("CONTROL — an absent field reads as no offerings, the lawful empty case, with no fault", () => {
+    const rec = recipeFromRecord({ tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working") } }, "solo");
+    expect(rec.pluginOfferings).toBeUndefined();
+    expect(rec.pluginOfferingsFault).toBeUndefined();
   });
 
-  test("a bare number REFUSES — it must NOT silently read as an empty recipe", () => {
-    expect(() => recipeFromRecord(recordWith(42), "solo")).toThrow(/plugin-offerings field is a number/);
+  test("a bare number names its fault, by the same message `parsePluginOfferings` throws — never a throw out of recipeFromRecord", () => {
+    expect(() => recipeFromRecord(recordWith(42), "solo")).not.toThrow();
+    const rec = recipeFromRecord(recordWith(42), "solo");
+    expect(rec.pluginOfferingsFault).toMatch(/plugin-offerings field is a number/);
+    expect(rec.pluginOfferings).toBeUndefined();
   });
 
-  test("an array carrying a non-string entry REFUSES — it must NOT silently drop the junk and keep the rest", () => {
-    expect(() => recipeFromRecord(recordWith(["sha256:" + "aa".repeat(32), 42, null]), "solo")).toThrow(/plugin-offerings\[1\] is a number/);
+  test("an array carrying a non-string entry names its fault — it must NOT silently drop the junk and keep the rest", () => {
+    const rec = recipeFromRecord(recordWith(["sha256:" + "aa".repeat(32), 42, null]), "solo");
+    expect(rec.pluginOfferingsFault).toMatch(/plugin-offerings\[1\] is a number/);
+    expect(rec.pluginOfferings).toBeUndefined();
   });
 
-  test("a plain object REFUSES", () => {
-    expect(() => recipeFromRecord(recordWith({ not: "a list" }), "solo")).toThrow(/plugin-offerings field is a object/);
+  test("a plain object names its fault", () => {
+    const rec = recipeFromRecord(recordWith({ not: "a list" }), "solo");
+    expect(rec.pluginOfferingsFault).toMatch(/plugin-offerings field is a object/);
+  });
+
+  test("★ the fault NEVER bricks the rest of the record — library bags still read, on the SAME torn record ★", () => {
+    const rec: LarTiddlerRecord = {
+      tiddler: {
+        title: recipeUri("catalog", "sdm"),
+        ...recipeRecordFields({ wikiSlug: "sdm", libraryBags: [LARES_BAG] }),
+        "plugin-offerings": 42 as never,
+      },
+    };
+    const recipe = recipeFromRecord(rec, "sdm");
+    expect(recipe.pluginOfferingsFault).toMatch(/plugin-offerings field is a number/);
+    expect(recipe.libraryBags).toEqual([LARES_BAG]);
+  });
+
+  test("CONTROL — parsePluginOfferings itself still throws on the same malformed shapes (the contract recipeFromRecord catches)", () => {
+    expect(() => parsePluginOfferings(42)).toThrow(/plugin-offerings field is a number/);
+    expect(() => parsePluginOfferings(["sha256:" + "aa".repeat(32), 42, null])).toThrow(/plugin-offerings\[1\] is a number/);
   });
 });

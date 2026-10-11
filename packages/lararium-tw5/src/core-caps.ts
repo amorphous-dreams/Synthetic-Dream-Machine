@@ -205,6 +205,11 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
       // R3 — plugins load by THIS wiki's own recipe; threaded straight through to the mount spec
       // (`buildWikiMountSpec`), which the pool resolves through the selector + CAS per island.
       const pluginOfferings = primaryRecipe?.pluginOfferings;
+      // M2 — a torn plugin-offerings field (`recipeFromRecord`'s `pluginOfferingsFault`) threads
+      // through alongside the offerings themselves, never thrown here: the resolver refuses ONLY
+      // this wiki's plugin resolution by name; the primary mount above it (libraryBags, the slots)
+      // lands exactly as it would with no fault at all.
+      const pluginOfferingsFault = primaryRecipe?.pluginOfferingsFault;
       await mountPrimaryWiki(pool, daemon.resolveBinding, {
         activeWikiId: slot.activeWikiId,
         wikiSlug:     slot.wikiSlug,
@@ -214,6 +219,7 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
         catalogUrl:   assembly.catalogHandle.url,
         ...(libraryBags ? { libraryBags } : {}),
         ...(pluginOfferings ? { pluginOfferings } : {}),
+        ...(pluginOfferingsFault !== undefined ? { pluginOfferingsFault } : {}),
       });
       emit("tw5-booted");
       emit("live");

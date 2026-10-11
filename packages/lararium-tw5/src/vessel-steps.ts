@@ -113,6 +113,11 @@ export interface PrimaryMountInputs {
    *  R3 — "plugins load by recipe"). Threaded straight into the mount spec's `WikiRecipe`; the pool
    *  resolves it through the selector + CAS before any manifest ever carries a CID. */
   pluginOfferings?: readonly string[];
+  /** M2 — this wiki's recipe RECORD named a `plugin-offerings` field `recipeFromRecord` could not
+   *  honestly parse. Threaded straight into the mount spec's `WikiRecipe` alongside `pluginOfferings`
+   *  (never derived here): the resolver refuses ONLY this wiki's plugin resolution by name, while
+   *  everything else this mount carries — library bags, the grain swap, `meme get` — stays unaffected. */
+  pluginOfferingsFault?: string;
 }
 
 /** The recipe record a wiki stands on: a system wiki's from the oracle plane, a user wiki's from the
@@ -180,6 +185,7 @@ export async function buildWikiMountSpec(
     wikiSlug: inputs.wikiSlug,
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
+    ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
     mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
   };
 

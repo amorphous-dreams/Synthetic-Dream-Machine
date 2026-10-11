@@ -252,6 +252,21 @@ export interface WikiRecipe {
    * never SOURCES the floor, even though the wire field ends up carrying both.
    */
   readonly pluginOfferings?: readonly string[];
+  /**
+   * M2 — a `plugin-offerings` field this record cannot honestly parse (a bare number, an array
+   * carrying a non-string entry, or any other shape `parsePluginOfferings` refuses) names its OWN
+   * refusal here instead of THROWING `recipeFromRecord` itself. A throw there bricks every caller
+   * equally — the vessel's primary mount at boot, the grain swap, and `meme get`'s bag-cascade
+   * walk — even though a torn plugin field belongs to THIS wiki's plugin resolution alone, never
+   * to its bag reads or to the vessel as a whole.
+   *
+   * Present → the resolver (`node-plugin-resolution.ts`'s `resolveNodeIslandPluginCids`) refuses
+   * THIS wiki's mount by name (`malformed-offerings-field`), and nothing else in the cascade
+   * notices: `expandRecipe` and `meme get`'s walk read the library bags exactly as they would with
+   * no fault at all. Absent = this record's `plugin-offerings` field parsed cleanly (whether it
+   * named offerings or none).
+   */
+  readonly pluginOfferingsFault?: string;
 }
 
 /**
@@ -401,11 +416,23 @@ export function structuralSlots(slug: string): ReadonlySet<SlotUri> {
 export function recipeFromRecord(rec: LarTiddlerRecord, slug: string): WikiRecipe {
   const structural = structuralSlots(slug);
   const libraryBags = bagStackFromRec(rec).filter((uri) => !structural.has(uri)).reverse();
-  const pluginOfferings = parsePluginOfferings(rec.tiddler["plugin-offerings"]);
+  // M2 — a torn plugin-offerings field names ITS OWN fault rather than throwing out of this
+  // function: the bag-stack walk above (and every other field this record carries) stays
+  // unaffected by a plugin-offerings parse failure. `parsePluginOfferings` keeps throwing (its own
+  // contract, unit-tested directly); this is the ONE catch boundary between that throw and every
+  // caller who must never brick over a plugin fault alone.
+  let pluginOfferings: readonly string[] = [];
+  let pluginOfferingsFault: string | undefined;
+  try {
+    pluginOfferings = parsePluginOfferings(rec.tiddler["plugin-offerings"]);
+  } catch (err) {
+    pluginOfferingsFault = err instanceof Error ? err.message : String(err);
+  }
   return {
     wikiSlug: slug,
     ...(libraryBags.length > 0 ? { libraryBags } : {}),
     ...(pluginOfferings.length > 0 ? { pluginOfferings } : {}),
+    ...(pluginOfferingsFault !== undefined ? { pluginOfferingsFault } : {}),
   };
 }
 
