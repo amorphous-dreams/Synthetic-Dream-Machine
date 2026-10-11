@@ -44,7 +44,9 @@ const baseDeps = (onRolled?: StoreDoorDeps["onRolled"]): StoreDoorDeps => ({
 
 describe("nexus-admit-take — `represented` reads the hook's OWN claim (L2, F2-1)", () => {
   it("MUTATION PROOF of the retired bug: a hook that merely EXISTS (returns nothing) no longer reads as represented", async () => {
-    const onRolled = vi.fn(() => { /* a real vessel's refold is fire-and-forget — no return */ });
+    const onRolled = vi.fn(() => { /* the RETIRED shape: a hook that merely EXISTS and returns nothing —
+      the real vessel's `afterRoll` no longer looks like this (F1's `fcc2bd5e5` made it an awaited,
+      serialized `Promise<boolean>`); this re-enacts the old shape on purpose, to prove it stays dead */ });
     const rows = storeDoorReactors(baseDeps(onRolled));
     const out = await rows["nexus-admit-take"]({ raw: "{}" }, {} as never);
     expect(onRolled).toHaveBeenCalledTimes(1);

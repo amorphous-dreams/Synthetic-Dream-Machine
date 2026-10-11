@@ -13,10 +13,16 @@
  *   · RED: B stays live after it — `host-state` answers `via: daemon` three times over, promptly.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { join } from "node:path";
 import { openStagedJoinee, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 
 /** A door answer slower than this reads as a vessel that stopped serving. */
 const PROMPT_MS = 20_000;
+
+const REPO_ROOT = new URL("../..", import.meta.url).pathname;
+// The PoC signed offering (R2c) — a LOCAL source dir, never genesis (H3: genesis carries the boot
+// set alone since the Streams retirement, never an operator's own offerings).
+const HIGHLIGHT_SOURCE = join(REPO_ROOT, "packages/lararium-tw5/offerings/highlight");
 
 let fleet: StagedJoinee;
 let B: LarInstance;
@@ -37,11 +43,14 @@ beforeAll(async () => {
       const rite = await source(["nexus", "rite", "quorum"]);
       if (rite.code !== 0) throw new Error(`rite: ${rite.stderr.slice(-400)}`);
       await source(["persona", "wear", "0"]);
-      const pub = await source(["nexus", "publish", "plugins", "--apply", "--json"]);
-      const d = pub.json?.["data"] as { offeringCid?: string; boardUrl?: string } | undefined;
+      const pub = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--json"]);
+      const d = pub.json?.["data"] as { offeringCid?: string; boardUrl?: string; blobCount?: number } | undefined;
       offeringCid = d?.offeringCid ?? "";
       boardUrl = d?.boardUrl ?? "";
       if (!offeringCid || !boardUrl) throw new Error(`publish: ${pub.stdout} ${pub.stderr}`);
+      // The joinee test must fail on an empty gift — a blob count of zero witnesses nothing about an
+      // offering (H3's exact finding: an empty fold that still signed, verified, and announced).
+      if (!d?.blobCount || d.blobCount < 1) throw new Error(`publish announced an EMPTY gift (blobCount=${d?.blobCount}): ${pub.stdout}`);
     },
     joinDocUrl: () => boardUrl,
   });

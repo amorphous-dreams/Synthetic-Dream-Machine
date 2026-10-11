@@ -291,7 +291,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "persona-kel-head": (args) => answer("persona-kel-head", async () => ({
       head: await (await makeLocalPersonaKelHeadResolver(repo))(need("persona-kel-head", args, "prefix")),
     })),
-    "nexus-publish": () => answer("nexus-publish", async () => ({ ...(await runNexusPublishPlugins({ repo })) })),
+    "nexus-publish": (args) => answer("nexus-publish", async () => ({
+      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source") })),
+    })),
     "nexus-offering-inspect": (args) => answer("nexus-offering-inspect", async () => ({
       ...(await runNexusInspectOffering({ offeringCid: need("nexus-offering-inspect", args, "offeringCid"), storageDir, repo })),
     })),

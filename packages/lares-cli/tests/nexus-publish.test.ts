@@ -13,16 +13,35 @@
  * way `kahuli engine` names its own, because a deliberate not-yet must never read as an unknown verb.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { sha256HexBytesSync } from "@lararium/mesh";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
 
-const args = (positional: string[], flags: Record<string, boolean> = {}): ParsedArgs =>
-  ({ command: "nexus", positional, options: {}, flags } as unknown as ParsedArgs);
+const args = (positional: string[], flags: Record<string, boolean> = {}, options: Record<string, string> = {}): ParsedArgs =>
+  ({ command: "nexus", positional, options, flags } as unknown as ParsedArgs);
+
+/** An UNSIGNED offering source directory (H3, F2-3) — `offering.json` plus the one blob's bytes
+ *  beside it, never genesis. */
+function offeringSourceDir(root: string): string {
+  const dir = join(root, "offering-source");
+  mkdirSync(dir, { recursive: true });
+  const bytes = new TextEncoder().encode("good plugin bytes");
+  const descriptor = {
+    blobs: [{
+      id: "$:/plugins/example/one", version: "v1", sha256: sha256HexBytesSync(bytes),
+      provenance: { source: "https://example.test/example-one", commit: "a".repeat(40), path: "plugins/example/one", licence: "MIT" },
+      file: "plugin.bin",
+    }],
+  };
+  writeFileSync(join(dir, "offering.json"), JSON.stringify(descriptor));
+  writeFileSync(join(dir, "plugin.bin"), bytes);
+  return dir;
+}
 
 describe("lares nexus publish — the operator's own collection, apart from the ratchets", () => {
   let root: string;
@@ -44,17 +63,25 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("★ `publish plugins` READS the operator's own collection and builds nothing ★", async () => {
-    expect(await cmdNexus(args(["publish", "plugins"]))).toBe(0);
+  test("★ `publish plugins` with no --source refuses through usage, never genesis ★", async () => {
+    expect(await cmdNexus(args(["publish", "plugins"], { json: false }))).toBe(2);
+    const said = [...errs, ...logs].join("\n");
+    expect(said).toMatch(/--source/);
+  });
+
+  test("★ `publish plugins --source <dir>` READS the local offering source and builds nothing ★", async () => {
+    const source = offeringSourceDir(root);
+    expect(await cmdNexus(args(["publish", "plugins"], {}, { source }))).toBe(0);
     const said = [...errs, ...logs].join("\n");
     expect(said).toMatch(/plugins/i);
-    // The region names THIS operator's collection — the door says whose it is, so a reader never takes it
-    // for a mesh-wide fact the way an epoch reads.
-    expect(said).toMatch(/own collection/i);
+    expect(said).toMatch(/example\/one/);
+    // The read reports the SOURCE's own fold — never genesis's, which carries the boot set alone (H3).
+    expect(said).toMatch(/local offering source/i);
   });
 
   test("★ `--apply` reaches the production adapter and refuses an unseated local face cleanly ★", async () => {
-    const code = await cmdNexus(args(["publish", "plugins"], { apply: true, json: false }));
+    const source = offeringSourceDir(root);
+    const code = await cmdNexus(args(["publish", "plugins"], { apply: true, json: false }, { source }));
     expect(code).not.toBe(0);
     const said = [...errs, ...logs].join("\n");
     expect(said).toMatch(/active persona|genesis/i);
@@ -62,7 +89,11 @@ describe("lares nexus publish — the operator's own collection, apart from the 
   });
 
   test("★ `--apply --json` emits the structured success boundary, without human-only prose ★", async () => {
+    // Founding itself needs the genesis seed (the engine CID etc.) regardless of this door's own
+    // source — that dependency is `vessel found`'s, not `nexus publish`'s (H3: publish reads a local
+    // `--source`, never genesis, but SOMETHING must still found the vessel this test applies into).
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
+    const source = offeringSourceDir(root);
     const out: string[] = [];
     const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
       out.push(String(chunk));
@@ -76,7 +107,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     await wearPersona(0);
     out.length = 0;
 
-    expect(await cmdNexus(args(["publish", "plugins"], { apply: true, json: true }))).toBe(0);
+    expect(await cmdNexus(args(["publish", "plugins"], { apply: true, json: true }, { source }))).toBe(0);
     const payload = JSON.parse(out.join("")) as {
       ok: boolean;
       data: Record<string, unknown>;

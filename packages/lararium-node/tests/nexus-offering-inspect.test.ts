@@ -11,12 +11,7 @@ import { tmpdir } from "node:os";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import {
-  computePluginsCid, GENESIS_CID_ENGINE_TIDDLER, sha256HexBytesSync,
-  GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  materializeSharedLarDoc, offeringAnnounceKey,
-  type GenesisSeed, type RegionEntry,
-} from "@lararium/mesh";
+import { sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona } from "../src/node-vessel-identity.js";
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
@@ -38,22 +33,23 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function seedGenesis(): { dir: string; cid: string; bytes: Uint8Array } {
-  const dir = join(root, "genesis");
-  mkdirSync(join(dir, "cas"), { recursive: true });
+/** An UNSIGNED offering source directory — `offering.json` plus the one blob's bytes beside it
+ *  (H3, F2-3: `runNexusPublishPlugins` reads a local `--source` dir, never genesis). */
+function seedOfferingSource(): { dir: string; cid: string; bytes: Uint8Array } {
+  const dir = join(root, "offering-source");
+  mkdirSync(dir, { recursive: true });
   const bytes = new TextEncoder().encode("good plugin bytes");
-  const plugin: RegionEntry = { id: "$:/plugins/example/one", sha256: sha256HexBytesSync(bytes), kind: "plugin" };
-  const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
-    blobs: { [plugin.id]: { id: plugin.id, sha256: plugin.sha256, mimeType: "application/json", version: "alpha" } },
-    tiddlers: {
-      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
-      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
-      [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([plugin]) } },
-    },
+  const sha256 = sha256HexBytesSync(bytes);
+  const descriptor = {
+    blobs: [{
+      id: "$:/plugins/example/one", version: "alpha", sha256,
+      provenance: { source: "https://example.test/example-one", commit: "a".repeat(40), path: "plugins/example/one", licence: "MIT" },
+      file: "plugin.bin",
+    }],
   };
-  writeFileSync(join(dir, "seed.json"), JSON.stringify(seed));
-  return { dir, cid: plugin.sha256, bytes };
+  writeFileSync(join(dir, "offering.json"), JSON.stringify(descriptor));
+  writeFileSync(join(dir, "plugin.bin"), bytes);
+  return { dir, cid: sha256, bytes };
 }
 
 async function stand(): Promise<void> {
@@ -64,13 +60,13 @@ async function stand(): Promise<void> {
 
 describe("runNexusInspectOffering — bounded local receiver", () => {
   it("verifies one board gift and reports held/missing local bytes without consulting Antigen", async () => {
-    const { dir, cid, bytes } = seedGenesis();
+    const { dir, cid, bytes } = seedOfferingSource();
     await stand();
-    const offered = await direct(runNexusPublishPlugins)({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
     expect(offered.offering.blobs[0]?.sha256).toMatch(/^[0-9a-f]{64}$/);
     mkdirSync(join(larDataDir(), "cas"), { recursive: true });
     writeFileSync(join(larDataDir(), "cas", cid), bytes);
-    const seedBefore = readFileSync(join(dir, "seed.json"));
+    const seedBefore = readFileSync(join(dir, "offering.json"));
     const filesBefore = readdirSync(larDataDir(), { recursive: true }).sort();
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     const result = await direct(runNexusInspectOffering)({ offeringCid: offered.offeringCid, storageDir: larDataDir(), casDir: join(larDataDir(), "cas") });
@@ -83,7 +79,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     expect(result.bytes.missing).toEqual([]);
     expect(result.bytes.invalid).toEqual([]);
     expect(result.antigen).toEqual({ status: "unavailable", reason: "not-configured" });
-    expect(readFileSync(join(dir, "seed.json"))).toEqual(seedBefore);
+    expect(readFileSync(join(dir, "offering.json"))).toEqual(seedBefore);
     expect(readdirSync(larDataDir(), { recursive: true }).sort()).toEqual(filesBefore);
 
     writeFileSync(join(larDataDir(), "cas", cid), Buffer.from("wrong bytes"));
@@ -109,9 +105,9 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
   });
 
   it("refuses a malformed record at the exact board key", async () => {
-    const { dir } = seedGenesis();
+    const { dir } = seedOfferingSource();
     await stand();
-    const offered = await direct(runNexusPublishPlugins)({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     board.change((doc) => { doc.tiddlers[offeringAnnounceKey(offered.offeringCid)] = { tiddler: { title: offeringAnnounceKey(offered.offeringCid), text: "not-json" }, meta: { authority: "test" } }; });
@@ -122,9 +118,9 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
   });
 
   it("refuses a signed offering placed beneath the wrong Crossroads wrapper domain", async () => {
-    const { dir } = seedGenesis();
+    const { dir } = seedOfferingSource();
     await stand();
-    const offered = await direct(runNexusPublishPlugins)({ genesisDir: dir, storageDir: larDataDir() });
+    const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     const key = offeringAnnounceKey(offered.offeringCid);
@@ -146,13 +142,13 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
   });
 
   it("RED: as a door row over a standing vessel's own Repo, it inspects and leaves that Repo syncing its peers", async () => {
-    const { dir } = seedGenesis();
+    const { dir } = seedOfferingSource();
     await stand();
     const { port1, port2 } = new MessageChannel();
     const live = new Repo({ storage: new DurableNodeFSStorageAdapter(larDataDir()), network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
     const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
     try {
-      const offered = await runNexusPublishPlugins({ genesisDir: dir, repo: live });
+      const offered = await runNexusPublishPlugins({ source: dir, storageDir: larDataDir(), repo: live });
       const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: join(root, "state", "nexus"), repo: live, dialGate: () => null });
       const row = doors["nexus-offering-inspect"];
       const out = await row({ offeringCid: offered.offeringCid }, {} as never);

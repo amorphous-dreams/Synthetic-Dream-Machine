@@ -1,9 +1,11 @@
 /**
- * nexus-publish — production boundary tests for the local immutable gift door.
+ * nexus-publish — production boundary tests for the local immutable gift door (H3, F2-3).
  *
- * The tests use a real Node identity, real genesis seed derivation, and a real persisted Crossroads
- * board. They keep the gift boundary visible: publication signs and announces; it never installs or
- * mutates a grammar.
+ * `runNexusPublishPlugins` reads a LOCAL OFFERING SOURCE, never genesis — genesis carries the boot set
+ * alone since the Streams retirement (`3d38cb691`), and reading `$:/plugins/*` off it folded to an
+ * EMPTY gift the instant genesis stopped carrying any (H3's live finding: a `blobCount: 0` offering
+ * that still signed, verified, and announced). These tests build real `--source` directories: an
+ * UNSIGNED descriptor this persona signs fresh, and a pre-SIGNED gift kept exactly as signed.
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -15,18 +17,20 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   computePluginsCid,
   crossroadsDocUrl,
-  GENESIS_CID_ENGINE_TIDDLER,
-  GENESIS_CID_GRAMMAR_TIDDLER,
-  GENESIS_CID_PLUGINS_TIDDLER,
+  ed25519SignerFromSeed,
+  ed25519VerifyingKeyFromSeed,
   materializeSharedLarDoc,
   offeringAnnouncesFromDoc,
   pluginOfferingCid,
-  type GenesisSeed,
-  type RegionEntry,
+  signPluginOffering,
+  type OfferedBlob,
+  type PluginProvenance,
 } from "@lararium/mesh";
 import {
   runNexusPublishPlugins,
   NexusPublishError,
+  readCasBlobFromFs,
+  casDirForStorage,
 } from "../src/index.js";
 import {
   generateOrLoadPersonaGroupRoot,
@@ -52,36 +56,53 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function seedGenesis(): string {
-  const genesisDir = join(root, "genesis");
-  mkdirSync(genesisDir, { recursive: true });
-  const plugin: RegionEntry = {
-    id: "$:/plugins/example/one",
-    sha256: "a".repeat(64),
-    kind: "plugin",
+const PROVENANCE: PluginProvenance = {
+  source: "https://example.test/example-one", commit: "a".repeat(40), path: "plugins/example/one", licence: "MIT",
+};
+
+/** An UNSIGNED source descriptor directory: `offering.json` plus the blob's bytes at `file`. */
+function seedUnsignedSource(opts: { readonly file?: string; readonly corruptBytes?: boolean; readonly omitFile?: boolean } = {}): string {
+  const dir = mkdtempSync(join(tmpdir(), "lares-offering-source-"));
+  const bytes = Buffer.from("example plugin bytes", "utf8");
+  const sha256 = Buffer.from(
+    require("node:crypto").createHash("sha256").update(bytes).digest(),
+  ).toString("hex");
+  const file = opts.file ?? "plugin.bin";
+  const descriptor = {
+    blobs: [{ id: "$:/plugins/example/one", version: "v1", sha256, provenance: PROVENANCE, file }],
   };
-  const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1",
-    actorSeed: "actor-seed",
-    schemaVersion: "alpha",
-    blobs: {
-      [plugin.id]: {
-        id: plugin.id,
-        sha256: plugin.sha256,
-        mimeType: "application/json",
-        version: "local-alpha",
-      },
-    },
-    tiddlers: {
-      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
-      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
-      [GENESIS_CID_PLUGINS_TIDDLER]: {
-        tiddler: { cid: computePluginsCid([plugin]) },
-      },
-    },
-  };
-  writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed));
-  return genesisDir;
+  writeFileSync(join(dir, "offering.json"), JSON.stringify(descriptor), "utf8");
+  if (!opts.omitFile) writeFileSync(join(dir, file), opts.corruptBytes ? Buffer.from("tampered bytes") : bytes);
+  return dir;
+}
+
+/** An EMPTY source descriptor — no blobs at all. */
+function seedEmptySource(): string {
+  const dir = mkdtempSync(join(tmpdir(), "lares-offering-source-"));
+  writeFileSync(join(dir, "offering.json"), JSON.stringify({ blobs: [] }), "utf8");
+  return dir;
+}
+
+/** A pre-SIGNED gift directory: `offering.json` already carries `sig`/`offeror`/`pluginsCid`, and its
+ *  one blob's bytes sit at `<sha256>` (the signed-gift convention — the record itself carries no
+ *  `file` field to ride unsigned on the same CID). Signed with a throwaway TEST seed, never a real
+ *  persona's root — the whole point is that `--apply` must NOT re-sign it with ITS persona's key. */
+async function seedSignedGift(): Promise<{ readonly dir: string; readonly offeror: string }> {
+  const dir = mkdtempSync(join(tmpdir(), "lares-offering-source-"));
+  const bytes = Buffer.from("a friend's plugin bytes", "utf8");
+  const sha256 = Buffer.from(
+    require("node:crypto").createHash("sha256").update(bytes).digest(),
+  ).toString("hex");
+  writeFileSync(join(dir, sha256), bytes);
+  const seed = new TextEncoder().encode("nexus-publish.test.ts — a friend's test seed, never ours").slice(0, 32);
+  const offeror = await ed25519VerifyingKeyFromSeed(seed);
+  const blobs: readonly OfferedBlob[] = [{ id: "$:/plugins/friend/gift", version: "v1", sha256, provenance: PROVENANCE }];
+  const offering = await signPluginOffering(
+    { offeror, pluginsCid: computePluginsCid(blobs), blobs },
+    ed25519SignerFromSeed(seed),
+  );
+  writeFileSync(join(dir, "offering.json"), JSON.stringify(offering), "utf8");
+  return { dir, offeror };
 }
 
 async function standPersona(): Promise<void> {
@@ -90,18 +111,20 @@ async function standPersona(): Promise<void> {
   await wearPersona(0);
 }
 
-describe("runNexusPublishPlugins — immutable offering boundary", () => {
-  it("signs, announces, and retrieves the exact gift from a persisted Crossroads board", async () => {
-    const genesisDir = seedGenesis();
-    const seedBefore = readFileSync(join(genesisDir, "seed.json"), "utf8");
+describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", () => {
+  it("signs an UNSIGNED source as PUBLISHER, announces, and retrieves the exact gift from a persisted Crossroads board", async () => {
+    const source = seedUnsignedSource();
     await standPersona();
 
-    const first = await direct(runNexusPublishPlugins)({ genesisDir, storageDir: larDataDir() });
+    const first = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
     expect(first.offeringCid).toBe(pluginOfferingCid(first.offering));
     expect(first.boardUrl).toBe(crossroadsDocUrl(await loadVesselVerifyingKey()));
     expect(first.blobCount).toBe(1);
+    // The bytes landed in THIS publisher's own CAS, keyed by the SAME sha256 the offering declares.
+    const blobSha = first.offering.blobs[0]!.sha256;
+    expect(readCasBlobFromFs(blobSha, casDirForStorage(larDataDir()))).not.toBeNull();
 
-    const second = await direct(runNexusPublishPlugins)({ genesisDir, storageDir: larDataDir() });
+    const second = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
     expect(second.offeringCid).toBe(first.offeringCid);
     expect(second.offering).toEqual(first.offering);
 
@@ -111,24 +134,63 @@ describe("runNexusPublishPlugins — immutable offering boundary", () => {
     expect(records).toHaveLength(1);
     expect(records[0]?.offeringCid).toBe(first.offeringCid);
     expect(records[0]?.offering).toEqual(first.offering);
-    expect(readFileSync(join(genesisDir, "seed.json"), "utf8"), "publishing never mutates the grammar seed")
-      .toBe(seedBefore);
     await repo.shutdown();
   });
 
+  it("a SIGNED gift is announced EXACTLY as signed — never re-signed under this vessel's own persona", async () => {
+    const { dir: source, offeror } = await seedSignedGift();
+    await standPersona();
+    const vesselKey = await loadVesselVerifyingKey();
+
+    const result = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
+    expect(result.offeror).toBe(offeror);                          // the FRIEND's offeror, never the standing persona's
+    expect(result.offeror).not.toBe(vesselKey);
+    const announced = JSON.parse(readFileSync(join(source, "offering.json"), "utf8"));
+    expect(result.offering).toEqual(announced);                     // byte-identical to what the gift already carried
+  });
+
   it("refuses without an explicitly worn persona and leaves no board behind", async () => {
-    const genesisDir = seedGenesis();
+    const source = seedUnsignedSource();
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
 
-    await expect(direct(runNexusPublishPlugins)({ genesisDir, storageDir: larDataDir() }))
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
       .rejects.toBeInstanceOf(NexusPublishError);
-    expect(readFileSync(join(genesisDir, "seed.json"), "utf8")).toContain("example/one");
   });
 
-  it("refuses when the genesis seed is absent before opening a board", async () => {
+  it("refuses when the offering source is absent", async () => {
     await standPersona();
-    await expect(direct(runNexusPublishPlugins)({ genesisDir: join(root, "missing-genesis"), storageDir: larDataDir() }))
+    await expect(direct(runNexusPublishPlugins)({ source: join(root, "no-such-source"), storageDir: larDataDir() }))
       .rejects.toBeInstanceOf(NexusPublishError);
+  });
+
+  it("MUTATION PROOF — empty-offering: a source with no blobs refuses by name, never announcing a vacuous gift", async () => {
+    const source = seedEmptySource();
+    await standPersona();
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+      .rejects.toThrow(/empty-offering|no blobs names nothing to take/);
+  });
+
+  it("MUTATION PROOF — missing-bytes: a declared blob whose file never arrived refuses by name before anything is signed", async () => {
+    const source = seedUnsignedSource({ omitFile: true });
+    await standPersona();
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+      .rejects.toThrow(/missing-bytes/);
+  });
+
+  it("MUTATION PROOF — corrupt-bytes: a blob file that does not hash to its declared sha256 refuses by name", async () => {
+    const source = seedUnsignedSource({ corruptBytes: true });
+    await standPersona();
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+      .rejects.toThrow(/corrupt-bytes/);
+  });
+
+  it("CONTROL: a source naming no boot-set id publishes cleanly even with a genesisDir present", async () => {
+    const source = seedUnsignedSource();
+    const genesisDir = join(root, "genesis-empty");
+    mkdirSync(genesisDir, { recursive: true });
+    await standPersona();
+    const result = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), genesisDir });
+    expect(result.blobCount).toBe(1);
   });
 });

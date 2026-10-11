@@ -32,7 +32,9 @@ describe("seal-home-refold — the no-op poke row (H2)", () => {
   });
 
   it("a standing vessel whose hook exists but gives no claim is read as ATTEMPTED, never refolded", async () => {
-    const onRolled = vi.fn(() => { /* fire-and-forget, as the real vessel's afterRoll is */ });
+    const onRolled = vi.fn(() => { /* a hook that merely EXISTS and gives no claim — the real vessel's
+      `afterRoll` now returns a serialized `Promise<boolean>` (F1's `fcc2bd5e5`), so this models a
+      caller that stands but still claims nothing, never the shape `afterRoll` itself is anymore */ });
     const rows = storeDoorReactors(baseDeps(onRolled));
     const out = await rows["seal-home-refold"]({}, {} as never);
     expect(out["attempted"]).toBe(true);

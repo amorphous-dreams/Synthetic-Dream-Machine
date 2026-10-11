@@ -1,20 +1,31 @@
 /**
- * pack-highlight-offering.ts — packs TiddlyWiki5's own `tiddlywiki/highlight` plugin into a signed
- * `PluginOffering` under `offerings/highlight/`: the PoC signed offering (golden-path-p2-recipe.md
- * OPERATOR RULING 2026-10-10, "R2c"), chosen in place of the deferred Streams plugin because it ships
- * inside the TW5 submodule this tree already vendors, under the SAME licence as the TW5 core blob
- * genesis already carries.
+ * pack-highlight-offering.ts — packs TiddlyWiki5's own `tiddlywiki/highlight` plugin into an UNSIGNED
+ * source descriptor under `offerings/highlight/`: the PoC offering (golden-path-p2-recipe.md OPERATOR
+ * RULING 2026-10-10, "R2c"), chosen in place of the deferred Streams plugin because it ships inside the
+ * TW5 submodule this tree already vendors, under the SAME licence as the TW5 core blob genesis already
+ * carries.
  *
  * ── WHAT THIS IS, AND WHAT IT IS NOT ────────────────────────────────────────────────────────────
  * This offering never touches `genesis/`. Highlight does not boot by default in any island; a wiki
  * that wants it names its blob id in its recipe (R1's selector), and the CAS holds the bytes either
  * way. Packing it here is the one-time PUBLISHER act; nothing downstream re-packs it.
  *
+ * ── UNSIGNED ON PURPOSE (M5) ────────────────────────────────────────────────────────────────────
+ * This script used to mint its OWN signature, from a seed derived by hashing a public string
+ * (`sha256("lares-offerings/poc-nexus/highlight/v1")`) — a key anyone can derive, so its "signature"
+ * attested nothing: any party could mint a conflicting offering under the same offeror and a mesh
+ * peer would read a VALID signature from a key that proves no custody at all. So this script now
+ * ships a bare SOURCE DESCRIPTOR — `{ blobs: [{ id, version, sha256, provenance, file }] }`, no
+ * `sig`, no `offeror`, no `pluginsCid` — and signing moves to where custody actually lives: the
+ * operator's own `lares nexus publish plugins --source offerings/highlight` signs it as PUBLISHER,
+ * with their own persona's root key, at the moment they choose to offer it.
+ *
  * ── PUBLISHER PROVENANCE, NEVER AUTHORSHIP ──────────────────────────────────────────────────────
- * This Nexus signs that it offers exactly these bytes, fetched from the TW5 submodule at the pinned,
- * immutable commit this repo already carries as a submodule pointer — never "latest", never a tag.
- * `author` rides as a bare CLAIM inside the signed preimage ("Jeremy Ruston and contributors wrote
- * this"), never that author's own signature standing in for it (`plugin-offering.ts`'s own law).
+ * The eventual signer attests that THEY offer exactly these bytes, fetched from the TW5 submodule at
+ * the pinned, immutable commit this repo already carries as a submodule pointer — never "latest",
+ * never a tag. `author` rides as a bare CLAIM inside that signed preimage ("Jeremy Ruston and
+ * contributors wrote this"), never that author's own signature standing in for it
+ * (`plugin-offering.ts`'s own law).
  *
  * Run via: tsx packages/lararium-tw5/scripts/pack-highlight-offering.ts
  */
@@ -24,15 +35,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
-import {
-  sha256HexBytesSync,
-  ed25519SignerFromSeed,
-  ed25519VerifyingKeyFromSeed,
-  signPluginOffering,
-  verifyPluginOffering,
-  pluginOfferingCid,
-  computePluginsCid,
-} from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT        = path.resolve(__dirname, "..");
@@ -54,12 +57,6 @@ function pinnedSubmoduleCommit(): string {
   return execFileSync("git", ["-C", TW5_ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 }
 
-/** A DETERMINISTIC PoC Nexus signing seed: this script's whole point is a reproducible PoC offering
- *  anyone can re-mint byte-for-byte from the pinned commit, never a secret one operator alone holds.
- *  A real operator's publish (`nexus publish`) signs with the active persona's own root key instead. */
-function pocNexusSigningSeed(): Uint8Array {
-  return Buffer.from(sha256HexBytesSync(Buffer.from("lares-offerings/poc-nexus/highlight/v1", "utf8")), "hex");
-}
 
 async function main(): Promise<void> {
   mkdirSync(OUT_DIR, { recursive: true });
@@ -116,24 +113,21 @@ async function main(): Promise<void> {
       licence: "BSD-3-Clause",
       author:  "Jeremy Ruston and contributors",
     },
+    // Where THIS source dir keeps the blob's bytes, relative to itself — `nexus publish --source`
+    // reads this to hash-check and stage them; it rides unsigned here because it names a LOCAL file
+    // layout, never a cryptographic claim (M5: the eventual signature covers id/version/sha256/
+    // provenance only, exactly as `pluginOfferingBytes` canonicalizes them).
+    file: "highlight-plugin.json",
   };
-  const pluginsCid = computePluginsCid([blob]);
 
-  const seed = pocNexusSigningSeed();
-  const offeror = await ed25519VerifyingKeyFromSeed(seed);
-  const offering = await signPluginOffering(
-    { offeror, pluginsCid, blobs: [blob] },
-    ed25519SignerFromSeed(seed),
-  );
+  // UNSIGNED SOURCE DESCRIPTOR (M5) — no `sig`, no `offeror`, no `pluginsCid`. The operator's own
+  // `nexus publish plugins --source offerings/highlight` derives `pluginsCid` and signs this as
+  // PUBLISHER with their own persona's root key; nothing here claims custody of anything.
+  const descriptor = { blobs: [blob] };
+  writeFileSync(path.join(OUT_DIR, "offering.json"), JSON.stringify(descriptor, null, 2) + "\n", "utf8");
 
-  const verdict = await verifyPluginOffering(offering);
-  if (!verdict.ok) throw new Error(`[highlight-offering] minted offering does not self-verify: ${verdict.reason}`);
-
-  writeFileSync(path.join(OUT_DIR, "offering.json"), JSON.stringify(offering, null, 2) + "\n", "utf8");
-
-  console.log(`[highlight-offering] ✓ offeror=${offeror.slice(0, 16)}…  pluginsCid=${pluginsCid}`);
-  console.log(`[highlight-offering] ✓ offeringCid=${pluginOfferingCid(offering)}`);
-  console.log(`[highlight-offering] ✓ wrote ${path.relative(REPO_ROOT, OUT_DIR)}/{highlight-plugin.json,offering.json,NOTICES.txt}`);
+  console.log(`[highlight-offering] ✓ blob ${PLUGIN_TITLE}  sha256=${blobSha256.slice(0, 16)}…`);
+  console.log(`[highlight-offering] ✓ wrote ${path.relative(REPO_ROOT, OUT_DIR)}/{highlight-plugin.json,offering.json,NOTICES.txt} (UNSIGNED — \`nexus publish --source\` signs it)`);
 }
 
 main().catch((err: unknown) => {

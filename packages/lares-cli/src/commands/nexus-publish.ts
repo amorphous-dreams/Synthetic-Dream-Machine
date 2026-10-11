@@ -21,12 +21,10 @@
  * another door. `plugins` stands first because the region already exists and already gets folded.
  */
 
-import {
-  readGenesisPluginsCid,
-  readGenesisCasManifest,
-  NexusPublishError,
-  type NexusPublishPluginsResult,
-} from "@lararium/node";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { NexusPublishError, type NexusPublishPluginsResult } from "@lararium/node";
+import { computePluginsCid } from "@lararium/mesh";
 import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -35,37 +33,34 @@ import type { ParsedArgs } from "../parse-args.js";
 export const PUBLISHABLE = ["plugins"] as const;
 
 const PUBLISH_USAGE: readonly string[] = [
-  "usage: lares nexus publish <plugins>",
+  "usage: lares nexus publish plugins --source <dir> [--apply]",
   "",
   "  THE OFFERING DOOR — what THIS operator publishes for others to take. Held apart from",
   "  `nexus kahuli`, which overturns what the MESH must agree on (engine · grammar).",
   "",
-  "    plugins  THIS operator's own collection (pluginsCid). A region, never a ratchet tier:",
-  "             it layers on the required blobs and overturns nobody else's reading.",
+  "    plugins  a LOCAL offering source (never genesis): <dir>/offering.json plus each blob's",
+  "             bytes beside it, either a signed gift (kept exactly as signed) or an unsigned",
+  "             descriptor this persona signs fresh, as PUBLISHER.",
   "",
-  "  --apply    sign the offering + announce it on the crossroads plane (HELD — landing next).",
+  "  --source   the offering source directory (required).",
+  "  --apply    sign the offering (when unsigned) + announce it on the crossroads plane.",
 ];
 
 /**
- * `lares nexus publish plugins` — READ the operator's own collection.
+ * `lares nexus publish plugins --source <dir>` — READ a local offering source.
  *
- * The read names the region and the blobs it folds. A read never bakes: the collection moves when the
- * operator packs a plugin and re-derives the genesis, and this door reports the result rather than
- * causing it.
- *
- * THE REGION READER STAYS NODE-BOUND ON PURPOSE. The three vessel classes take genesis three deliberately
- * different ways — the web surface statically imports the seed at bundle time, a browser vessel receives one
- * already materialized, and a node vessel reads the baked artifact off disk. Lifting this read behind one
- * injected abstraction would launder that real difference into a false uniformity; the OFFERING itself
- * (the signed record and its announce, landing next) carries no such split and belongs in mesh.
+ * The read names the region a FRESH fold of `<dir>`'s blobs would carry, and the blobs themselves. A
+ * read never bakes, signs, or touches bytes on disk beyond `<dir>` itself — it reports what `--apply`
+ * WOULD announce, never genesis's own region (H3: genesis carries the boot set alone since the Streams
+ * retirement, and was never a registry of what an operator may offer).
  */
 async function publishPlugins(args: ParsedArgs): Promise<number> {
-  const pluginsCid = readGenesisPluginsCid();
-  const manifest = readGenesisCasManifest();
+  const source = args.options["source"];
+  if (!source) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "publishing plugins needs --source <dir>");
 
   if (args.flags["apply"]) {
     try {
-      const result = (await storeVerb("nexus-publish", {}, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
+      const result = (await storeVerb("nexus-publish", { source }, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
       emit(args, {
         ok: true,
         data: {
@@ -93,16 +88,26 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
     }
   }
 
-  const none = "(no island baked in this root yet)";
-  console.log("nexus publish plugins — THIS operator's own collection (a read; nothing built):");
-  console.log(`  plugins (pluginsCid): ${pluginsCid ?? none}   a region, never a ratchet tier`);
+  const descriptorPath = resolve(source, "offering.json");
+  if (!existsSync(descriptorPath)) {
+    emit(args, {
+      ok: false, error: { code: "usage", message: `no offering source at ${descriptorPath}` },
+      human: () => console.error(`lares nexus publish plugins: no offering source at ${descriptorPath}`),
+    });
+    return exitFor("usage");
+  }
+  const parsed = JSON.parse(readFileSync(descriptorPath, "utf8")) as { blobs?: readonly { id: string; version: string; sha256: string }[]; sig?: string; pluginsCid?: string };
+  const blobs = parsed.blobs ?? [];
+  // A SIGNED gift already carries its own declared region; an unsigned descriptor's fold is computed
+  // fresh — the SAME fold `--apply` would sign, so a read never drifts from what applying would do.
+  const pluginsCid = typeof parsed.sig === "string" && typeof parsed.pluginsCid === "string" ? parsed.pluginsCid : computePluginsCid(blobs);
 
-  // The manifest carries every blob's DECLARED class, so the count reads off what the mint declared
-  // rather than off a path — the same law the genesis build folds under.
-  const plugins = (manifest?.blobs ?? []).filter((b) => b.id.startsWith("$:/plugins/"));
-  if (manifest && plugins.length > 0) {
-    console.log(`  the collection holds ${plugins.length}:`);
-    for (const b of plugins) console.log(`    ${b.id}  v${b.version}  ${b.cid}`);
+  console.log(`nexus publish plugins — a LOCAL offering source (a read; nothing signed, nothing announced):`);
+  console.log(`  source:               ${resolve(source)}`);
+  console.log(`  plugins (pluginsCid): ${pluginsCid}   a region, never a ratchet tier`);
+  if (blobs.length > 0) {
+    console.log(`  the source holds ${blobs.length}:`);
+    for (const b of blobs) console.log(`    ${b.id}  v${b.version}  ${b.sha256}`);
   }
   console.log("");
   console.log("  a plugin added or dropped moves THIS region and no other — plugin drift never reads as");

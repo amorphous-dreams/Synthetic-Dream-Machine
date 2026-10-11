@@ -16,6 +16,12 @@ import { openStagedJoinee, vesselStorageDir, type CliResult, type LarInstance, t
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../../packages/lararium-node/src/commands/nexus-offering-inspect.js";
 import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
 
+const REPO_ROOT = new URL("../..", import.meta.url).pathname;
+// The PoC signed offering (R2c) — a LOCAL source dir this suite publishes from, never genesis (H3:
+// genesis carries the boot set alone since the Streams retirement; it was never a registry of what an
+// operator may offer).
+const HIGHLIGHT_SOURCE = join(REPO_ROOT, "packages/lararium-tw5/offerings/highlight");
+
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** An Automerge NodeFS document lives under `<first two base58 chars>/<rest>/`. */
@@ -103,14 +109,15 @@ beforeAll(async () => {
       // The publish door opens the source's store directly, so it runs here, while NO daemon holds that
       // store (the single-owner law): a write beside a live holder lands on disk the holder never reads,
       // and the source's daemon would carry a board without the gift.
-      const published = await source(["nexus", "publish", "plugins", "--apply", "--json"]);
+      const published = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--json"]);
       if (published.code !== 0 || published.json?.["ok"] !== true) {
         throw new Error(`source offering publish failed: ${published.stdout}\n${published.stderr}`);
       }
-      const data = published.json?.["data"] as { offeringCid?: string; boardUrl?: string } | undefined;
+      const data = published.json?.["data"] as { offeringCid?: string; boardUrl?: string; blobCount?: number } | undefined;
       offeringCid = data?.offeringCid ?? "";
       boardUrl = data?.boardUrl ?? "";
       if (!offeringCid || !boardUrl) throw new Error(`source publish returned no offering coordinates: ${published.stdout}`);
+      if (!data?.blobCount || data.blobCount < 1) throw new Error(`source publish announced an EMPTY gift: ${published.stdout}`);
       // The signed record names the one plugin byte; the source's CAS materializes it only once its daemon boots.
       const inspect = await source(["nexus", "offering", "inspect", offeringCid, "--json"]);
       const inspection = inspect.json?.["data"] as { bytes?: { held?: string[]; missing?: string[] } } | undefined;
@@ -132,15 +139,14 @@ describe("source offering → receiver Crossroads evidence", () => {
   test("replicates the exact board and reports missing, held, and corrupt local CAS bytes", async () => {
     const receiverCas = join(vesselStorageDir(receiver), "cas");
     const receiverByte = join(receiverCas, pluginCid);
-    expect(existsSync(receiverByte), "the staged receiver starts with the shipped Genesis byte").toBe(true);
+    // The highlight offering never rides the boot set (H3: genesis carries the boot set alone, never
+    // an operator's own offerings) — a freshly joined receiver starts with no local bytes for it at all.
+    expect(existsSync(receiverByte), "a fresh receiver starts with NO local bytes for an offered (never boot-set) plugin").toBe(false);
 
-    // Make the first result a true local miss without touching the source, board, or Genesis seed.
     const seedBefore = readFileSync(join(receiver.root, "genesis", "seed.json"));
     const boardDocId = boardUrl.replace(/^automerge:/, "");
     const surfaceBefore = snapshotInspectionSurface(vesselStorageDir(receiver), boardDocId);
     expect(surfaceBefore.some((row) => row.startsWith(`/${boardDocId.slice(0, 2)}/${boardDocId.slice(2)}/`)), "the board's chunks sit inside the witnessed surface").toBe(true);
-    // The receiver's shipped fixture carries the same byte, so remove it to expose the pending gradient.
-    rmSync(receiverByte);
     const missing = await inspectUntil(receiver, offeringCid, "partial");
     expect(missing.json?.["data"]).toMatchObject({
       transport: { status: "complete", source: "local-crossroads", remoteFetch: false },

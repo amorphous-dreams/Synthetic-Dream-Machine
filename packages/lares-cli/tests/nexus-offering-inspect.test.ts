@@ -1,14 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import {
-  computePluginsCid, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER,
-  GENESIS_CID_PLUGINS_TIDDLER, sha256HexBytesSync, type GenesisSeed, type RegionEntry,
-} from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
 import { runNexusPublishPlugins, ownedStore } from "@lararium/node";
 import { larDataDir } from "@lararium/node";
@@ -29,25 +26,28 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function seedGenesis(): { dir: string; bytes: Uint8Array } {
-  const dir = join(root, "genesis");
+/** An UNSIGNED offering source directory (H3, F2-3) — `offering.json` plus the one blob's bytes
+ *  beside it, never genesis. */
+function seedOfferingSource(): { dir: string; bytes: Uint8Array } {
+  const dir = join(root, "offering-source");
   mkdirSync(dir, { recursive: true });
   const bytes = new TextEncoder().encode("cli good plugin bytes");
-  const plugin: RegionEntry = { id: "$:/plugins/example/one", sha256: sha256HexBytesSync(bytes), kind: "plugin" };
-  const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
-    blobs: { [plugin.id]: { id: plugin.id, sha256: plugin.sha256, mimeType: "application/json", version: "alpha" } },
-    tiddlers: {
-      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
-      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
-      [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([plugin]) } },
-    },
+  const descriptor = {
+    blobs: [{
+      id: "$:/plugins/example/one", version: "alpha", sha256: sha256HexBytesSync(bytes),
+      provenance: { source: "https://example.test/example-one", commit: "a".repeat(40), path: "plugins/example/one", licence: "MIT" },
+      file: "plugin.bin",
+    }],
   };
-  writeFileSync(join(dir, "seed.json"), JSON.stringify(seed));
+  writeFileSync(join(dir, "offering.json"), JSON.stringify(descriptor));
+  writeFileSync(join(dir, "plugin.bin"), bytes);
   return { dir, bytes };
 }
 
 async function stand(): Promise<void> {
+  // Founding needs the genesis seed (the engine CID etc.) regardless of this door's own offering
+  // source (H3: publish reads a local `--source`, never genesis) — something must still found the vessel.
+  cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
   await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } });
   await generateOrLoadPersonaGroupRoot(0);
   await wearPersona(0);
@@ -66,9 +66,9 @@ describe("lares nexus offering inspect — CLI boundary", () => {
   });
 
   it("reports completed local transport separately from verified observation and adoption", async () => {
-    const { dir, bytes } = seedGenesis();
+    const { dir, bytes } = seedOfferingSource();
     await stand();
-    const offered = await ownedStore(larDataDir(), (repo) => runNexusPublishPlugins({ genesisDir: dir, repo }));
+    const offered = await ownedStore(larDataDir(), (repo) => runNexusPublishPlugins({ source: dir, storageDir: larDataDir(), repo }));
     expect(offered.offering.blobs[0]?.sha256).toMatch(/^[0-9a-f]{64}$/);
     mkdirSync(join(larDataDir(), "cas"), { recursive: true });
     writeFileSync(join(larDataDir(), "cas", offered.offering.blobs[0]!.sha256), bytes);

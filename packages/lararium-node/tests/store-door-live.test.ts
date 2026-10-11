@@ -20,10 +20,10 @@ import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   NEXUS_DOC_DOMAIN, genesisSealEpochCid, antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
-  verifiedVouchesFromBoard, hexToBytes, hex, computePluginsCid, materializeSharedLarDoc, kapaeAntigenDocUrl,
-  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER,
-  GENESIS_CID_PLUGINS_TIDDLER, realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
-  type NexusDoc, type LarDoc, type GenesisSeed, type RegionEntry,
+  verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
+  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl,
+  realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
+  type NexusDoc, type LarDoc,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey,
@@ -66,19 +66,25 @@ async function seatVessel(root: string): Promise<void> {
   };
   writeNexusDoc(sealHome(), doc);
   await wearPersona(0);
-  const genesisDir = join(root, "genesis");
-  mkdirSync(genesisDir, { recursive: true });
-  const plugin: RegionEntry = { id: "$:/plugins/example/one", sha256: "a".repeat(64), kind: "plugin" };
-  const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
-    blobs: { [plugin.id]: { id: plugin.id, sha256: plugin.sha256, mimeType: "application/json", version: "local-alpha" } },
-    tiddlers: {
-      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
-      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
-      [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([plugin]) } },
-    },
-  } as GenesisSeed;
-  writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed));
+}
+
+/** An UNSIGNED offering source directory (H3, F2-3) — `offering.json` plus the one blob's bytes
+ *  beside it. Lives OUTSIDE any vessel root (never `cpSync`'d between `original`/`twin`): both
+ *  share it by path, so both derive the SAME `pluginsCid`/offeringCid from the SAME persona root. */
+function offeringSourceDir(base: string): string {
+  const dir = join(base, "offering-source");
+  mkdirSync(dir, { recursive: true });
+  const bytes = new TextEncoder().encode("good plugin bytes");
+  const descriptor = {
+    blobs: [{
+      id: "$:/plugins/example/one", version: "local-alpha", sha256: sha256HexBytesSync(bytes),
+      provenance: { source: "https://example.test/example-one", commit: "a".repeat(40), path: "plugins/example/one", licence: "MIT" },
+      file: "plugin.bin",
+    }],
+  };
+  writeFileSync(join(dir, "offering.json"), JSON.stringify(descriptor));
+  writeFileSync(join(dir, "plugin.bin"), bytes);
+  return dir;
 }
 
 /** Wait until `read` finds what it looks for on the peer's replica of `url`. */
@@ -130,6 +136,8 @@ const WRITERS: readonly Writer[] = [
     carries: async (doc) => (await vouchSigOf(doc)) !== undefined,
   },
   {
+    // `args.source` is filled in per-test (below) once `base` exists — the WRITERS table is built at
+    // module scope, before any test's own scratch dir.
     verb: "nexus-publish", args: {},
     board: (i) => crossroadsDocUrl(i), label: "board:crossroads",
     id: (o) => String(o["offeringCid"]),
@@ -144,6 +152,8 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       const twin = join(base, "twin");
       await seatVessel(original);
       cpSync(original, twin, { recursive: true });
+      const source = offeringSourceDir(base);
+      const args: Record<string, unknown> = w.verb === "nexus-publish" ? { ...w.args, source } : w.args;
 
       // ── the twin stands a vessel: its Repo holds the store, a peer syncs it live ──
       at(twin);
@@ -158,7 +168,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
         await materializeSharedLarDoc(live, boardUrl as AutomergeUrl, w.label);
         await materializeSharedLarDoc(peer, boardUrl as AutomergeUrl, w.label);
         const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
-        liveOut = await doors[w.verb](w.args, {} as never);
+        liveOut = await doors[w.verb](args, {} as never);
         expect(liveOut["refused"], String(liveOut["refused"])).toBeUndefined();
         const url = String(liveOut["boardUrl"]);
         expect(url).toBe(boardUrl);
@@ -172,7 +182,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
 
       // ── the original stands none: the direct holder runs the same row ──
       at(original);
-      const directOut = await storeDoorDirect(w.verb, w.args, { sealHome: sealHome() });
+      const directOut = await storeDoorDirect(w.verb, args, { sealHome: sealHome() });
       expect(directOut["refused"], String(directOut["refused"])).toBeUndefined();
       expect(w.id(directOut)).toBe(w.id(liveOut));
       const reader = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
