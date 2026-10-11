@@ -212,7 +212,7 @@ logs_count() {
 NYM=""
 contract_ab() {
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
-  local CHARTER ACC SIG
+  local CHARTER ACC SIG CONTRACT TAKE
   NYM=""
   step "A's charter travels to B by its own doors"
   CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
@@ -228,8 +228,26 @@ contract_ab() {
   if [ -z "$NYM" ] || [ -z "$SIG" ]; then
     bad "B minted no contract-in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; return 1
   fi
-  if $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1; then ok
-  else bad "A's quorum refused the admit"; return 1; fi
+  CONTRACT=$($COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" --json 2>/dev/null)
+  if [ -z "$CONTRACT" ] || ! printf '%s' "$CONTRACT" | grep -q '"ok":true'; then
+    bad "A's quorum refused the admit"; printf '%s\n' "$CONTRACT" | tail -2 | sed 's/^/      /'; return 1
+  fi
+  ok
+
+  # M7: THE PRIVATE-POSTURE LAW MAKES FILE CARRIAGE THE ONLY WAY B'S DIAL EVER SEES AN ADMIT. A's
+  # Nexus stays PRIVATE — no board of hers crosses to B as a stranger — so the admit bundle `nexus
+  # contract --json` just minted on A must travel to B BY FILE, exactly as `meme-realm-bag.test.ts`'s
+  # e2e twin already does, and B must TAKE it before her own dial can ever present as a member.
+  # `admit-take` reads either the bare bundle OR the contract's whole `--json` envelope
+  # (`data.bundle`) handed over as-is, so the envelope travels unmodified — nothing here parses it.
+  step "A's admit bundle travels to B, who takes it"
+  if ! printf '%s' "$CONTRACT" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a-admit-bundle.json'; then
+    bad "the admit bundle never reached B"; return 1
+  fi
+  TAKE=$($COMPOSE exec -T lararium-b $LARES nexus admit-take /tmp/a-admit-bundle.json --json 2>/dev/null)
+  if printf '%s' "$TAKE" | grep -q '"ok":true'; then ok
+  else bad "B refused the admit bundle"; printf '%s\n' "$TAKE" | tail -2 | sed 's/^/      /'; return 1
+  fi
 }
 
 # COVERS: private/seed/unfed
