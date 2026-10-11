@@ -367,7 +367,15 @@ async function observeKelRead(context, page) {
   // The daemon starts in a Worker. Context routing reaches its module requests;
   // page routing observes the document graph but can leave that island opaque.
   await context.route(/\.(?:[cm]?[jt]sx?)(?:\?.*)?$/, async (route) => {
-    const response = await route.fetch();
+    // A torn connection (the dev server's dependency optimizer reloads and drops in-flight requests) is fetched
+    // again; only a reset that outlasts the retries aborts THIS route, and the vector's own waitFor decides.
+    let response;
+    for (let attempt = 1; !response; attempt++) {
+      try { response = await route.fetch(); } catch (error) {
+        if (attempt >= 6) return route.abort("connectionreset").catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+      }
+    }
     const type = response.headers()["content-type"] ?? "";
     if (!/javascript/.test(type)) return route.fulfill({ response });
     const source = await response.text();
