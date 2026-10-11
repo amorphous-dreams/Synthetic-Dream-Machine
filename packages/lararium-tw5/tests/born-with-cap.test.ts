@@ -98,3 +98,60 @@ describe("CREATE — born with its cap", () => {
     expect(typeof result.docUrl).toBe("string");
   });
 });
+
+describe("CREATE — declarative idempotency (bag state, never a request key)", () => {
+  test("re-CREATE the same bag answers success with the SAME doc — never a double-mint", async () => {
+    const { repo, mintedUrls } = makeFakeRepo();
+    const registered: string[] = [];
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+      registerBag: async (bagUrl) => { registered.push(bagUrl); },
+    });
+
+    const bag = "lar:///ha.ka.ba/bags/re-create-me";
+    const first = await reactor({ bag }, makeContext());
+    expect(first.alreadyStood).toBeUndefined();
+    expect(mintedUrls.length).toBe(1);
+
+    const second = await reactor({ bag }, makeContext());
+    // Same doc, flagged alreadyStood — never a second mint, never a second register.
+    expect(second.docUrl).toBe(first.docUrl);
+    expect(second.alreadyStood).toBe(true);
+    expect(second.bag).toBe(bag);
+    expect(second.plane).toBe(first.plane);
+    expect(mintedUrls.length).toBe(1);
+    expect(registered).toEqual([bag]);
+
+    // A third re-CREATE lands the identical answer — idempotency follows the
+    // bag's STATE (registered or not), never a per-request change-id.
+    const third = await reactor({ bag }, makeContext());
+    expect(third.docUrl).toBe(first.docUrl);
+    expect(third.alreadyStood).toBe(true);
+    expect(mintedUrls.length).toBe(1);
+  });
+
+  test("CREATE → DROP (absent again) → CREATE mints a FRESH doc", async () => {
+    const { repo, mintedUrls } = makeFakeRepo();
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+    });
+
+    const bag = "lar:///ha.ka.ba/bags/create-drop-create";
+    const first = await reactor({ bag }, makeContext());
+    expect(mintedUrls.length).toBe(1);
+
+    // Simulate the bag going absent again (a DROP un-registers it from the
+    // catalog) — CREATE consults the registry's STATE, not a request key.
+    const catalogHandle = await repo.find(CATALOG_URL);
+    catalogHandle.change((doc) => {
+      delete (doc.tiddlers as Record<string, unknown>)[bag];
+    });
+
+    const second = await reactor({ bag }, makeContext());
+    expect(second.alreadyStood).toBeUndefined();
+    expect(second.docUrl).not.toBe(first.docUrl);
+    expect(mintedUrls.length).toBe(2);
+  });
+});

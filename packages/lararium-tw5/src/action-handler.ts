@@ -573,10 +573,17 @@ async function resolveCarrierText(
 }
 
 /**
- * CREATE — mint a NEW empty bag at `action.bag` and register it in the plane's
- * registry (catalog for the household plane, oracle for the system plane).
- * Conflict-checks first (never double-mints a registered bag). Writes a `creation`
- * effect-record into the new bag. Requires the daemon `reach` (repo + plane registry).
+ * CREATE — declarative: "this bag stands". Mints a NEW empty bag at `action.bag`
+ * and registers it in the plane's registry (catalog for the household plane,
+ * oracle for the system plane) the FIRST time the bag stands. Writes a
+ * `creation` effect-record into the new bag on that first mint only. Requires
+ * the daemon `reach` (repo + plane registry).
+ *
+ * Idempotency follows the BAG'S STATE, never a request key: a bag already
+ * registered answers success with its existing doc (`alreadyStood: true`) —
+ * never a second mint, never a second `creation` record. A bag made absent
+ * again (CREATE → DROP → CREATE) mints fresh — the registry, not a change-id,
+ * is the only idempotency witness CREATE consults.
  */
 async function executeCREATE(action: CreateAction, access: BagAccess, opts: ActionHandlerOptions, dryRun = false): Promise<Record<string, unknown>> {
   const reach = opts.reach;
@@ -588,10 +595,11 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     throw new Error(`action-handler/CREATE: the reach carries no ${action.plane} registry url`);
   }
   const registry = makeCatalogAccessor(reach.repo, registryUrl);
-  // Conflict-check FIRST — an already-registered bag is a conflict, never a double-mint.
+  // Already-stood check FIRST — a registered bag answers success with its
+  // existing doc, never a double-mint and never a second `creation` record.
   const existing = await registry.urlOf(action.bag).catch(() => null);
   if (existing) {
-    throw new Error(`conflict: bag "${action.bag}" already registered in @${action.plane} (CREATE is idempotent — no double-mint)`);
+    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count: 1 };
   }
   // Mint + register inside withEffectRecord so the `creation` ledger record lands
   // after the new bag is reachable (the effect-record rides the new bag's own doc).
