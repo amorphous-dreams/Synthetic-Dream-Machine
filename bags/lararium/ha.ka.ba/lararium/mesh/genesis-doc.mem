@@ -153,11 +153,11 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 ''The grammar reads as the frame's realization for the semantic plane.'' Two parties holding identical bytes under a different `grammarCid` parse the same `lar:` URI, the same sigil, the same gradient position into ''different structures'' — so a comparison between them means nothing, exactly as a coordinate means nothing without its datum.
 
-''THE HAZARD BELONGS TO THE GRAMMAR ALONE, AND SAYING SO TOOK A THIRD REGION.'' While one `pluginsCid` folded the required grammar together with whatever plugins an operator happened to vendor, this warning had to be stated over the whole composition — and it was over-broad in exactly the way that matters: an operator offering `sq-streams` moved the digest and changed NOBODY's reading. Three regions now stand, and only two of them ratchet:
+''THE HAZARD BELONGS TO THE GRAMMAR ALONE, AND SAYING SO TOOK A THIRD REGION.'' While one `pluginsCid` once folded the required grammar together with whatever plugins an operator happened to vendor into genesis itself, this warning had to be stated over the whole composition — over-broad in exactly the way that matters, since an operator's own plugin collection moves the digest and changes NOBODY's reading. Three regions now stand, and only two of them ratchet:
 
 * ''`engineCid`'' — the TW5 core; the hearth true-name, the SLOW ratchet, and the one that binds membership because it rides inside every signed delegation preimage.
 * ''`grammarCid`'' — the REQUIRED memetic-wikitext grammar ALONE, the region whose roll can make two readers parse one carrier differently; at most it hints which formal-register snapshot a carrier was written against. Marked to RETIRE as a ratchet: the grammar holds no versions and lives by use (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>), so its retirement stands owed in code, pending a scout's measurement of its consumers.
-* ''`pluginsCid`'' — THIS operator's own collection, layered on the required base. A region, never a tier: it overturns nobody else's reading, so it moves with no ratchet act at all.
+* ''`pluginsCid`'' — STREAMS RETIREMENT (2026-10-10 operator ruling): genesis now bakes `pluginsCid` over the BOOT SET ALONE (the required grammar plus boot shadows; no optional plugin ever rides it again), so this region's fold is the SAME empty-over-optional value for every Lararium, forever — a region, never a tier, that moves with no ratchet act because it names nothing operator-specific anymore. An operator's own collection travels a DIFFERENT road entirely: a signed `PluginOffering` announced on the Crossroads board (`plugin-offering.ts`, `offering-announce.ts`) and selected per wiki RECIPE (`wiki-recipe.ts`'s `pluginOfferings`, R3 — "plugins load by recipe"), verified and byte-checked at mount, never baked into the immutable seed at all.
 
 The base seed (the lararium API/shadow tiddlers riding beside the lares + lararium bags) stands in NEITHER ratchet: it ships as a required blob attested by its manifest sha, and a change to it moves the ISLAND, never an epoch. Each region folds under its OWN domain, so two regions holding the same entries can never mint one digest, and the class a blob belongs to is DECLARED rather than read off the path it sits on.
 
@@ -208,6 +208,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2e7HqrJ0glYqznulMOdxuZOXIm2N0Mwa-hMExwVRqiw
+<<^ code="&#x0003;">>ni:///sha-256;Hi5o7dqM9TA1L5v6RserL6WcdtijSOzT4JwBaW-GTMI
 
 <<^ code="&#x0004;" -> to="?">>

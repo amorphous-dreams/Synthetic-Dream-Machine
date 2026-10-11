@@ -229,7 +229,10 @@ async function main(): Promise<void> {
   const artifact = buildGenesisDoc(inputs);
   console.log(`[genesis] engineCid (true-name) = ${artifact.engineCid}`);
   console.log(`[genesis] grammarCid            = ${artifact.grammarCid}   (required grammar — kāhuli's fast ratchet)`);
-  console.log(`[genesis] pluginsCid            = ${artifact.pluginsCid}   (this operator's own collection)`);
+  // L5 / Streams retirement — genesis bakes `pluginsCid` over the BOOT SET ALONE now (no optional
+  // plugin ever rides the immutable seed again); an operator's own collection travels as a signed
+  // offering announced on the Crossroads board and selected per wiki recipe (R3), never baked here.
+  console.log(`[genesis] pluginsCid            = ${artifact.pluginsCid}   (boot-set-only fold; operator offerings travel via nexus publish, never baked in)`);
 
   // Verify integrity before writing (recomputes + matches all three region CIDs).
   const counts = verifyGenesisArtifact(artifact);

@@ -547,9 +547,12 @@ async function main(): Promise<void> {
   // nothing for the pool's 10 s handshake window. So a stop right after a LOAD is bounded by the budget, not by
   // the islands (measured on the whole lares corpus: main flush ~4 s, islands silent to 10 s; the same stop after
   // the waves drained: 271 ms whole). A whole stop therefore runs the main flush plus at most the budget plus the
-  // re-flush. A supervisor whose grace runs out first (`port-control.stopIncumbent` escalates to SIGKILL after ~8 s)
-  // cuts whatever step stands: the writes tear nothing (every save lands by rename, and a stranded temp never reads
-  // as a chunk), and the records still in memory are lost as in any crash.
+  // re-flush. `port-control.stopIncumbent` NEVER escalates to SIGKILL past its own grace window (M3): past
+  // `graceMs` it keeps waiting on this same SIGTERM's own effect and only NAMES the still-live holder
+  // (`onPastGrace`), so a slow shutdown reads as a report, never a second signal. Only an EXTERNAL kill (an
+  // operator's own SIGKILL, a supervisor outside this door, an OOM) cuts whatever step stands: the writes tear
+  // nothing (every save lands by rename, and a stranded temp never reads as a chunk), and the records still in
+  // memory are lost as in any crash.
   const SHUTDOWN_BUDGET_MS  = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
   const DAEMON_SHUTDOWN_MS  = Math.max(1_000, Math.floor(SHUTDOWN_BUDGET_MS / 2));
   let shuttingDown = false;
