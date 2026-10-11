@@ -38,7 +38,7 @@ import type { Socket } from "node:net";
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, AutomergeDocStore, CompositeStore,
-  newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
+  newRequestId, OUTCOME_URI_PREFIX, canonicalJsonBytes, sha256HexBytesSync, type LarDoc,
 } from "@lararium/mesh";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
@@ -74,6 +74,113 @@ interface Invocation {
   timeoutMs?: number;
 }
 
+/** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
+interface ReceiptQuery { op: "receipt"; requestId: string; }
+/** An explicit withdrawal — `{op:"cancel", requestId}` (M8). Marks the id abandoned so a later
+ *  dispatch attempt under the SAME id (a read-back, a retry) refuses rather than running. */
+interface CancelQuery { op: "cancel"; requestId: string; }
+
+function isReceiptQuery(v: unknown): v is ReceiptQuery {
+  return !!v && typeof v === "object" && (v as { op?: unknown }).op === "receipt" && typeof (v as { requestId?: unknown }).requestId === "string";
+}
+function isCancelQuery(v: unknown): v is CancelQuery {
+  return !!v && typeof v === "object" && (v as { op?: unknown }).op === "cancel" && typeof (v as { requestId?: unknown }).requestId === "string";
+}
+
+/** What a `{op:"receipt"}` query answers — a READ, never a dispatch. See H1 fix item 3/6. */
+export interface ReceiptAnswer {
+  readonly requestId: string;
+  /**
+   * `abandoned`  — this vessel refused the request before commit (an EOF-drop or an explicit
+   *                `cancel`); re-run to try again, never read back as a verdict on the act.
+   * `committed`  — dispatched, no durable outcome has landed yet (still running, or lost to a
+   *                restart before it could write one — indistinguishable from here; re-query).
+   * `done`/`error` — the durable outcome, read back exactly as `runVerb` would have returned it.
+   * `unknown`    — this vessel never arbitrated this id (a fresh process since dispatch, no
+   *                durable outcome either) — the honest "no idea", never told as `error`.
+   */
+  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown";
+  readonly results?: Record<string, unknown>;
+  readonly errorMessage?: string;
+}
+
+/**
+ * The vessel's OWN wait for an outcome ended — never a verdict on whether the act ran (M2). The act
+ * already committed (past the causal EOF check) by the time this fires; it may still be running, or
+ * its outcome may already be sitting in the durable doc unread by this particular wait. Told back
+ * over the wire as `{status:"unknown", requestId}`, NEVER `{status:"error"}` — an "error" told a CLI
+ * caller the act failed when it may have succeeded.
+ */
+export class VesselWaitExpired extends Error {
+  constructor(verb: string, readonly requestId: string, budgetMs: number) {
+    super(`verb "${verb}" — this vessel's own wait ended after ${budgetMs}ms (adaptive); outcome unknown. Check request ${requestId}.`);
+  }
+}
+
+/**
+ * The per-process, in-memory arbitration ledger (H1) — vessel-local scratch, never synced (same
+ * durability class as the dispatcher's own `inFlight` set). It answers exactly the question the
+ * proven bug needed answered and nothing more: "did THIS vessel process already decide not to run
+ * this exact request id?" A restart loses it, which is safe — {@link ReceiptAnswer} falls back to the
+ * durable outcome doc, and a request this process never arbitrated reads `unknown`, never a false
+ * "abandoned" or a false re-run.
+ *
+ * NO COUNT BOUND, NO AGE BOUND — left a named parameter with no default, same as M1's outcome dedup
+ * (the operator has not ruled either). A long-lived vessel answering many distinct request ids grows
+ * this map without eviction; it is a liability shared with M1, not a new one this ledger invents.
+ */
+class RequestLedger {
+  private readonly abandoned = new Map<string, string | null>(); // requestId -> inputDigest, or null for an explicit cancel (matches any digest)
+  private readonly committed = new Map<string, string>();        // requestId -> inputDigest
+
+  /**
+   * Arbitrate ONE winner per request id. `inputDigest` names the invocation's own content (verb +
+   * args + requestedBy) — a reused id whose digest DIFFERS from what this ledger already recorded
+   * refuses by name (`request-id-reused-with-changed-input`), never silently re-runs under borrowed
+   * trust in the id alone.
+   */
+  arbitrate(requestId: string, inputDigest: string):
+    | { readonly verdict: "run" }
+    | { readonly verdict: "refuse"; readonly reason: "abandoned" | "already-committed" | "request-id-reused-with-changed-input" } {
+    const abandonedDigest = this.abandoned.get(requestId);
+    if (abandonedDigest !== undefined) {
+      return { verdict: "refuse", reason: abandonedDigest !== null && abandonedDigest !== inputDigest ? "request-id-reused-with-changed-input" : "abandoned" };
+    }
+    const committedDigest = this.committed.get(requestId);
+    if (committedDigest !== undefined) {
+      return { verdict: "refuse", reason: committedDigest !== inputDigest ? "request-id-reused-with-changed-input" : "already-committed" };
+    }
+    this.committed.set(requestId, inputDigest);
+    return { verdict: "run" };
+  }
+
+  /** The causal EOF-drop: this vessel never read the invocation in time to arbitrate it. A no-op
+   *  when an entry already stands (committed or abandoned) — never overwrite a decision already made. */
+  abandonDrop(requestId: string, inputDigest: string): void {
+    if (this.abandoned.has(requestId) || this.committed.has(requestId)) return;
+    this.abandoned.set(requestId, inputDigest);
+  }
+
+  /** An explicit `{op:"cancel"}` (M8) — withdraws regardless of digest. A no-op once committed: a
+   *  cancel racing a dispatch that already won refuses to un-dispatch it. */
+  cancel(requestId: string): void {
+    if (this.committed.has(requestId)) return;
+    this.abandoned.set(requestId, null);
+  }
+
+  /** Read-only — never arbitrates, never dispatches. */
+  state(requestId: string): "abandoned" | "committed" | "unknown" {
+    if (this.abandoned.has(requestId)) return "abandoned";
+    if (this.committed.has(requestId)) return "committed";
+    return "unknown";
+  }
+}
+
+/** The invocation's own content — what an honest reused id must match to re-read instead of re-run. */
+function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy">): string {
+  return sha256HexBytesSync(canonicalJsonBytes({ verb: inv.verb, args: inv.args ?? {}, requestedBy: inv.requestedBy }));
+}
+
 export interface UdsChannel { close: () => void; }
 
 export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
@@ -91,40 +198,29 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
     writable: true,
   });
 
-  // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
-  // MessageChannel (placeVerb → the worker's volatile invocation), then await the
-  // durable outcome via the daemon doc's own change event. The carriers NEVER enter
-  // The daemon's Automerge doc — only the worker-written outcome (bags/daemon/outcomes/<id>)
-  // lands there. A co-located CLI shares the worker's process, so the CRDT summons
-  // (the remote-peer transport) would be a pointless content-bloating round-trip.
-  const runVerb = async (inv: Invocation): Promise<Record<string, unknown>> => {
-    const requestId    = inv.requestId ?? newRequestId();
-    const outcomeTitle = `${OUTCOME_URI_PREFIX}${requestId}`;
+  // The arbitration ledger (H1) — ONE winner per request id, vessel-local, in-memory.
+  const ledger = new RequestLedger();
 
-    opts.placeVerb({
-      verb:        inv.verb,
-      args:        inv.args ?? {},
-      requestedBy: inv.requestedBy,
-      requestId,
-    });
-
-    const readOutcome = async (): Promise<Record<string, unknown> | null> => {
-      const event = await composite.get(outcomeTitle);
-      if (!event || event.meta?.deleted) return null;
-      const fields = event.tiddler as Record<string, string>;
-      const status = fields["status"];
-      if (status !== "done" && status !== "error") return null;
-      let results: unknown;
-      if (typeof fields["results"] === "string" && fields["results"].length > 0) {
-        try { results = JSON.parse(fields["results"]); } catch { /* malformed — leave */ }
-      }
-      return {
-        status, requestId,
-        ...(results !== undefined ? { results } : {}),
-        ...(fields["error-message"] !== undefined ? { errorMessage: fields["error-message"] } : {}),
-      };
+  const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
+    const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
+    if (!event || event.meta?.deleted) return null;
+    const fields = event.tiddler as Record<string, string>;
+    const status = fields["status"];
+    if (status !== "done" && status !== "error") return null;
+    let results: unknown;
+    if (typeof fields["results"] === "string" && fields["results"].length > 0) {
+      try { results = JSON.parse(fields["results"]); } catch { /* malformed — leave */ }
+    }
+    return {
+      status, requestId,
+      ...(results !== undefined ? { results } : {}),
+      ...(fields["error-message"] !== undefined ? { errorMessage: fields["error-message"] } : {}),
     };
+  };
 
+  /** Await the durable outcome for `requestId` — NEVER places a verb. Shared by a fresh dispatch's
+   *  own wait and by a legitimate concurrent re-read of an id this process already committed. */
+  const awaitOutcome = async (verb: string, requestId: string, askedTimeoutMs?: number): Promise<Record<string, unknown>> => {
     return await new Promise<Record<string, unknown>>((resolve, reject) => {
       let settled = false;
       // MONOTONIC, NEVER Date.now(): an elapsed-duration measurement that fed the adaptive servo from a
@@ -134,7 +230,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       const t0 = performance.now();
       const settle = (fn: () => void) => { if (!settled) { settled = true; cleanup(); fn(); } };
       // Only a COMPLETION teaches the servo (a timeout/hang never records → can't drag the EWMA to CEIL).
-      const check = () => { void readOutcome().then((r) => { if (r) settle(() => { recordMineDuration(inv.verb, performance.now() - t0); resolve(r); }); }); };
+      const check = () => { void readOutcomeFor(requestId).then((r) => { if (r) settle(() => { recordMineDuration(verb, performance.now() - t0); resolve(r); }); }); };
       const onChange = () => check();
       daemonHandle.on("change", onChange);
       // Fail on a GRADIENT: the wait grows with this verb's learned durations (EWMA·K, clamped
@@ -142,38 +238,89 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       // The INVOCATION's own ask raises it within that bound: the servo cannot learn that a first
       // bulk pass runs long until one completes, so a caller that knows must be able to say so.
       //
-      // THIS TIMER IS THIS SIDE'S OWN LOCAL LIVENESS, NEVER A VERDICT ON THE ACT. `runVerb` already
-      // committed the dispatch (its caller, `startUdsChannel`'s connection handler, calls it only past
-      // the causal EOF check); a verb that is genuinely still running when this wait ends keeps running
-      // regardless, and its outcome still lands at `outcomeTitle` for a later read. So this rejection
-      // reads "outcome unknown", never "timed out" — the CLI across the socket must not retell this
-      // side's own local wait as a verdict about whether the act ran.
+      // THIS TIMER IS THIS SIDE'S OWN LOCAL LIVENESS, NEVER A VERDICT ON THE ACT (M2). The caller
+      // already committed the dispatch (past the causal EOF check AND the ledger's own arbitrate);
+      // a verb still running when this wait ends keeps running regardless, and its outcome still
+      // lands for a later read — by a fresh connection's own wait, or a `{op:"receipt"}` query. So
+      // this rejects with {@link VesselWaitExpired}, NEVER a bare `Error` the connection handler
+      // would otherwise retell as `{status:"error"}` — this side's own impatience is not the act's verdict.
       const budget = verbBudgetMs({
-        ...(typeof inv.timeoutMs === "number" ? { asked: inv.timeoutMs } : {}),
-        adaptive: adaptiveTimeoutMs(inv.verb),
+        ...(typeof askedTimeoutMs === "number" ? { asked: askedTimeoutMs } : {}),
+        adaptive: adaptiveTimeoutMs(verb),
         floor: timeoutMs,
       });
-      const timer = setTimeout(() => settle(() => reject(new Error(
-        `verb "${inv.verb}" — this vessel's own wait ended after ${budget}ms (adaptive); outcome unknown. Check request ${requestId}.`,
-      ))), budget);
+      const timer = setTimeout(() => settle(() => reject(new VesselWaitExpired(verb, requestId, budget))), budget);
       const cleanup = () => { daemonHandle.off("change", onChange); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)
     });
+  };
+
+  // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
+  // MessageChannel (placeVerb → the worker's volatile invocation), then await the
+  // durable outcome via the daemon doc's own change event. The carriers NEVER enter
+  // The daemon's Automerge doc — only the worker-written outcome (bags/daemon/outcomes/<id>)
+  // lands there. A co-located CLI shares the worker's process, so the CRDT summons
+  // (the remote-peer transport) would be a pointless content-bloating round-trip.
+  const runVerb = async (inv: Invocation, requestId: string): Promise<Record<string, unknown>> => {
+    opts.placeVerb({
+      verb:        inv.verb,
+      args:        inv.args ?? {},
+      requestedBy: inv.requestedBy,
+      requestId,
+    });
+    return awaitOutcome(inv.verb, requestId, inv.timeoutMs);
+  };
+
+  /** Answer a `{op:"receipt"}` query (H1) — a READ, built from the ledger plus the durable outcome
+   *  doc; NEVER calls `placeVerb`. A durable outcome always wins over a bare ledger "committed" —
+   *  the ledger is this process's own memory and a restart loses it; the outcome doc does not. */
+  const answerReceipt = async (requestId: string): Promise<ReceiptAnswer> => {
+    const ledgerState = ledger.state(requestId);
+    if (ledgerState === "abandoned") return { requestId, state: "abandoned" };
+    const outcome = await readOutcomeFor(requestId);
+    if (outcome) {
+      const status = outcome["status"] as "done" | "error";
+      return {
+        requestId, state: status,
+        ...(outcome["results"] !== undefined ? { results: outcome["results"] as Record<string, unknown> } : {}),
+        ...(outcome["errorMessage"] !== undefined ? { errorMessage: outcome["errorMessage"] as string } : {}),
+      };
+    }
+    return { requestId, state: ledgerState === "committed" ? "committed" : "unknown" };
   };
 
   claim.serve((sock: Socket) => {
     let buf = "";
     sock.setEncoding("utf8");
     const fail = (msg: string) => { try { sock.end(JSON.stringify({ status: "error", errorMessage: msg }) + "\n"); } catch { /* gone */ } };
+    const answerUnknown = (requestId: string) => { try { sock.end(JSON.stringify({ status: "unknown", requestId }) + "\n"); } catch { /* gone */ } };
     sock.on("data", (chunk: string) => {
       buf += chunk;
       const nl = buf.indexOf("\n");
       if (nl === -1) return;          // one invocation per connection, line-delimited
       const line = buf.slice(0, nl);
       buf = "";
-      let inv: Invocation;
-      try { inv = JSON.parse(line) as Invocation; } catch { return fail("bad invocation json"); }
+      let parsed: unknown;
+      try { parsed = JSON.parse(line); } catch { return fail("bad invocation json"); }
+
+      // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
+      if (isReceiptQuery(parsed)) {
+        void answerReceipt(parsed.requestId).then(
+          (answer) => { try { sock.end(JSON.stringify(answer) + "\n"); } catch { /* gone */ } },
+          (err)    => fail(err instanceof Error ? err.message : String(err)),
+        );
+        return;
+      }
+      if (isCancelQuery(parsed)) {
+        ledger.cancel(parsed.requestId);
+        try { sock.end(JSON.stringify({ requestId: parsed.requestId, state: "abandoned" } satisfies ReceiptAnswer) + "\n"); } catch { /* gone */ }
+        return;
+      }
+
+      const inv = parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
+      const requestId   = inv.requestId ?? newRequestId();
+      const inputDigest = inputDigestOf(inv);
       // H1′: DEFER DISPATCH, NOT SYNCHRONOUSLY. A vessel frozen between the caller's write and this
       // read can thaw well after the caller gave up and destroyed its own end — its FIN/RST sits
       // queued right behind this very `data` event, undelivered only because this process could not
@@ -186,18 +333,42 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       // end seen here always means abandonment.
       setImmediate(() => setImmediate(() => {
         if (sock.destroyed || sock.readableEnded) {
-          log(`dropped a hung-up "${inv.verb}" invocation — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced`);
+          // H1: this id is recorded ABANDONED before this vessel lets go of the connection, so a LATER
+          // connection carrying the SAME request id (a read-back, a retry) meets the ledger's refusal
+          // instead of a bare "never seen" that a second dispatch would then run unannounced.
+          ledger.abandonDrop(requestId, inputDigest);
+          log(`dropped a hung-up "${inv.verb}" invocation (request ${requestId}) — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced, and recording the refusal so a later read-back under the same id cannot re-dispatch it`);
           return;
         }
-        // THE WINNER AT THE INSTANT OF GIVING UP: this causal EOF check is the ONLY abandonment this
-        // vessel arbitrates before dispatch — no wall-clock deadline competes with it. Past this point
-        // the act COMMITS: `runVerb` below calls `placeVerb` unconditionally, and nothing after this
-        // line may un-dispatch it. A caller's own later-expiring local wait (`local-connector.ts`'s
-        // `LocalWaitExpired`) never reaches back here to cancel; it only stops ITS OWN wait and reads
-        // the durable outcome back later, by the same request id.
-        runVerb(inv).then(
+        // THE WINNER AT THE INSTANT OF GIVING UP: this causal EOF check, plus the ledger's own
+        // arbitrate just below, are the ONLY abandonment this vessel arbitrates before dispatch — no
+        // wall-clock deadline competes with either. Past a "run" verdict the act COMMITS: `runVerb`
+        // calls `placeVerb` unconditionally, and nothing after this line may un-dispatch it. A
+        // caller's own later-expiring local wait (`local-connector.ts`'s `LocalWaitExpired`) never
+        // reaches back here to cancel; it only stops ITS OWN wait and reads the receipt back later,
+        // by the same request id, through `{op:"receipt"}` — never through a second dispatch attempt.
+        const verdict = ledger.arbitrate(requestId, inputDigest);
+        if (verdict.verdict === "refuse" && verdict.reason === "already-committed") {
+          // A genuine concurrent re-read of an id THIS process already dispatched (never an
+          // abandon-then-retry) — answer the SAME outcome, never a second `placeVerb`.
+          awaitOutcome(inv.verb, requestId, inv.timeoutMs).then(
+            (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
+            (err)     => { if (err instanceof VesselWaitExpired) return answerUnknown(requestId); fail(err instanceof Error ? err.message : String(err)); },
+          );
+          return;
+        }
+        if (verdict.verdict === "refuse") {
+          const why = verdict.reason === "abandoned"
+            ? `this vessel already refused request ${requestId} before commit — re-run to try again`
+            : `request ${requestId} was already used with different arguments — mint a fresh request id`;
+          return fail(why);
+        }
+        runVerb(inv, requestId).then(
           (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
-          (err)     => fail(err instanceof Error ? err.message : String(err)),
+          (err) => {
+            if (err instanceof VesselWaitExpired) return answerUnknown(requestId); // M2: never told as {status:"error"}
+            fail(err instanceof Error ? err.message : String(err));
+          },
         );
       }));
     });
