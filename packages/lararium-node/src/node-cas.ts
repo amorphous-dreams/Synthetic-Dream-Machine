@@ -14,7 +14,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import {
-  pinnedCids, casReferences, graceForTier, tiersByGraceDescending, realmPace,
+  casReferences, graceForTier, tiersByGraceDescending, realmPace,
   sha256HexBytesSync,
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
@@ -161,6 +161,15 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
 // never stored) or the genesis CAS names it (the engine + plugins the bulb ships); an unreferenced,
 // unprotected blob MAY sweep once older than the grace. `DROP <bag>` releases by taking the bag's
 // records out of the derived count — the sweep reads the count, it never reads the verb.
+//
+// A PIN CARRIES NO CLOCK. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
+// it, `releaseCas` removes it, and PRESENCE in the set the sweep reads IS "standing" — no comparison
+// against now, set-back or set-forward, changes that verdict. `PinCap.expiry` (@lararium/mesh) stays
+// on the wire shape for callers that still populate it, but this file never reads it to decide
+// anything: it is ADVISORY DISPLAY ONLY (standing law: a wall clock never decides a verdict). The
+// mesh-level `pinnedCids` helper applies exactly the wall-clock filter this house retired, so this
+// file no longer calls it — ending a pin is an EXPLICIT act (`releaseCas`), or the next pin for the
+// same cid superseding the one it replaces (`pinCas`'s replace-by-cid).
 
 /** A cleartext CAS file name — hex sha256. Anything else in the dir (a sidecar) is never a blob. */
 const CAS_CID_RE = /^[0-9a-f]{64}$/;
@@ -182,23 +191,23 @@ export interface CasSweepOptions {
   /** The cids the genesis CAS holds (the manifest's blobs) — never swept, referenced or not. */
   readonly protect:    ReadonlySet<string>;
   /** An unreferenced blob younger than this stays (a staged body its verb has not landed yet). The floor
-   *  every blob gets; `graceFor` reads a longer one per tier. IN THE UNIT `ageOf` SPEAKS — rolls of the realm's
-   *  clock under the tick, ms of mtime for a caller that passes no `ageOf`. */
+   *  every blob gets; `graceFor` reads a longer one per tier. IN THE UNIT `ageOf` SPEAKS — rolls of the
+   *  realm's own clock, never wall-ms. */
   readonly grace:      number;
   /** GRACE PER TIER (basket-one #/grace-and-pin): the grace for THIS cid, read off the tier of the bag whose
    *  pointer named it — `graceForTier(tier, unit)` (@lararium/mesh). Absent → `grace` for every blob. A reading
    *  below `grace` never shortens the floor. */
   readonly graceFor?:  (cid: string) => number;
-  /** A blob's AGE in the grace's unit. Absent → the file's mtime age in ms (a local read with no realm). The
-   *  tick passes rolls-since-first-seen-unreferenced off the realm's own clock. */
-  readonly ageOf?:     (cid: string) => number;
-  /** PIN at cid grain: the pins beside the bag's caps. A standing pin (now < expiry) holds its blob past any
-   *  grace; an expired pin holds nothing and the blob rides the ordinary grace. */
+  /** A blob's AGE in the grace's unit — CAUSAL, supplied by the caller (rolls-since-first-seen-unreferenced
+   *  off the realm's own clock; see `installCasSweep`). Mandatory: a wall clock never decides a sweep
+   *  verdict, so this file carries no mtime-vs-`Date.now()` fallback for it. */
+  readonly ageOf:      (cid: string) => number;
+  /** PIN at cid grain: the pins beside the bag's caps. A pin's PRESENCE here holds its blob past any grace —
+   *  no clock comparison. `releaseCas` drops a pin from the sidecar before this array is ever read, so
+   *  "released" and "absent from `pins`" are the same fact. */
   readonly pins?:      readonly PinCap[];
   /** Name what would sweep; delete nothing. */
   readonly dryRun?:    boolean;
-  /** The wall-clock reading a PIN's expiry compares against. */
-  readonly now?:       number;
 }
 
 export interface CasSweepResult {
@@ -214,18 +223,16 @@ export interface CasSweepResult {
 
 /** Mark-and-sweep the cleartext CAS from the derived references + the genesis protect set. */
 export function casSweep(opts: CasSweepOptions): CasSweepResult {
-  const now = opts.now ?? Date.now();
-  const standing = pinnedCids(opts.pins ?? [], now);   // expired pins fall out here — they hold nothing
+  const standing = new Set((opts.pins ?? []).map((p) => p.cid));   // presence IS standing — no clock read
   const swept: string[] = [], kept: string[] = [], protectedCids: string[] = [], pinned: string[] = [];
   for (const { cid } of listCasBlobs(opts.casDir)) {
     if (opts.protect.has(cid)) { protectedCids.push(cid); continue; }
     if (standing.has(cid)) { pinned.push(cid); continue; }
     if ((opts.references.get(cid)?.size ?? 0) > 0) { kept.push(cid); continue; }
-    const path = join(opts.casDir, cid);
     const grace = Math.max(opts.grace, opts.graceFor?.(cid) ?? opts.grace);
-    const age = opts.ageOf ? opts.ageOf(cid) : now - statSync(path).mtimeMs;
+    const age = opts.ageOf(cid);
     if (age < grace) { kept.push(cid); continue; }
-    if (!opts.dryRun) unlinkSync(path);
+    if (!opts.dryRun) unlinkSync(join(opts.casDir, cid));
     swept.push(cid);
   }
   return { swept, kept, protected: protectedCids, pinned };
@@ -324,8 +331,6 @@ export interface InstallCasSweepOptions {
   /** A cell the tick fills with the realm's pace, so a SYNC reader (the stowage's idle clock) rides the same
    *  reading the sweep does — one clock for every cooling on the vessel. */
   readonly paceCell?:  RealmPaceCell;
-  /** The wall-clock a PIN's expiry compares against. */
-  readonly now?:       () => number;
 }
 
 export interface CasSweepInstalled {
@@ -358,7 +363,6 @@ export function makeRealmPaceCell(): RealmPaceCell {
 }
 
 export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled {
-  const now = opts.now ?? (() => Date.now());
   const probeMs = 60_000;
   const tiers = tiersByGraceDescending();
   const longest = tiers[0]!;
@@ -383,7 +387,6 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
       grace: graceForTier(longest, 1),
       ageOf: (cid) => (pace === null ? 0 : pace - (firstSeen.get(cid) ?? pace)),
       dryRun,
-      now: now(),
     });
     if (!dryRun) for (const cid of r.swept) firstSeen.delete(cid);
     const out: CasSweepVerbResult = {

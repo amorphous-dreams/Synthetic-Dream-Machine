@@ -14,7 +14,7 @@
  * before any change, and the result is JSON-validated before it replaces the file.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, renameSync, openSync, closeSync, rmSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, renameSync, openSync, closeSync, writeSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
@@ -25,21 +25,51 @@ import { tendBootPointer, asInclude, BOOT_CARRIER } from "./boot-pointer.js";
 /**
  * Acquire an exclusive write-lock (git-lockfile pattern: O_CREAT|O_EXCL) to serialize
  * concurrent writers — Claude's home JSON has a logged corruption-under-concurrency
- * bug (anthropics/claude-code#28842), and parallel sessions share this tree. Steals a
- * stale lock (>30s, a crashed holder); throws after a bounded wait rather than corrupt.
+ * bug (anthropics/claude-code#28842), and parallel sessions share this tree.
+ *
+ * NO GLOBAL NOW: a dead holder's lock reads as dead by its ABSENT PID, never by the lock
+ * file's age. The lock file carries its holder's own pid (written the instant `wx` wins
+ * the create); a contender that finds the lock standing reads that pid and asks the OS
+ * directly (`process.kill(pid, 0)` — ESRCH means no such process) rather than comparing a
+ * wall-clock reading against the file's mtime, which an adversarial or merely wrong system
+ * clock could move either direction. A torn or still-being-written lock file (no parseable
+ * pid yet) reads as "indeterminate, not dead" — it backs off and re-reads, never steals on
+ * a guess.
  */
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-async function acquireLock(lockPath: string): Promise<void> {
-  for (let i = 0; i < 20; i++) {
+/** Is `pid` a live process on this host? `kill(pid, 0)` sends no signal — it only asks.
+ *  ESRCH (no such process) reads dead; anything else (EPERM — exists, not ours to signal) reads alive.
+ *  Exported for direct testability. */
+export function pidAlive(pid: number): boolean {
+  try { process.kill(pid, 0); return true; }
+  catch (e) { return (e as NodeJS.ErrnoException).code !== "ESRCH"; }
+}
+
+/** The pid a lock file names, or null if it is absent, torn, or mid-write (never steal on a guess). */
+function lockHolderPid(lockPath: string): number | null {
+  try {
+    const raw = readFileSync(lockPath, "utf8").trim();
+    const pid = Number(raw);
+    return Number.isInteger(pid) && pid > 0 ? pid : null;
+  } catch { return null; }
+}
+
+/** Exported for direct testability (the dead-holder steal is the clock-sensitive seam). */
+export async function acquireLock(lockPath: string): Promise<void> {
+  for (let i = 0; i < 50; i++) {
     try {
-      closeSync(openSync(lockPath, "wx"));
+      const fd = openSync(lockPath, "wx");
+      writeSync(fd, String(process.pid));
+      closeSync(fd);
       return;
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
-      try {
-        if (Date.now() - statSync(lockPath).mtimeMs > 30_000) { rmSync(lockPath, { force: true }); continue; }
-      } catch { /* lock vanished — retry */ }
+      const holder = lockHolderPid(lockPath);
+      if (holder !== null && !pidAlive(holder)) {
+        rmSync(lockPath, { force: true }); // the holder is gone by the OS's own account — steal it, retry now
+        continue;
+      }
       await sleep(100); // async backoff — never blocks the main thread (no Atomics.wait / SharedArrayBuffer)
     }
   }

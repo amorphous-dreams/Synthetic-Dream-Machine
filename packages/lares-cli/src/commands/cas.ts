@@ -132,12 +132,13 @@ export function readCas(opts: CasReadOptions): CasRead {
     refs: [...(refs.get(b.cid) ?? [])].sort(),
     protected: known ? genesis.has(b.cid) : ("unknown" as const),
   }));
+  // A pin's PRESENCE in the sidecar IS "standing" — see cmdCasPin. No clock comparison here.
   const pins = readCasPins(opts.casDir);
   return {
     casDir: opts.casDir, ...summary,
     protectionKnown: known,
     protected: entries.filter((e) => e.protected === true).map((e) => e.cid),
-    pinned: pins.filter((p) => Date.now() < p.expiry).map((p) => p.cid),
+    pinned: pins.map((p) => p.cid),
     entries,
   };
 }
@@ -194,40 +195,38 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** A pin's expiry as the operator spells it: ms since the epoch, an ISO instant, or `<n>d` days from now. */
-function parseExpiry(raw: string, now: number): number {
-  const days = /^(\d+)d$/.exec(raw);
-  if (days) return now + Number(days[1]) * 86_400_000;
-  if (/^\d+$/.test(raw)) return Number(raw);
-  const iso = Date.parse(raw);
-  if (Number.isFinite(iso)) return iso;
-  throw new Error(`--expiry: "${raw}" reads as neither ms, an ISO instant, nor <n>d`);
-}
+/**
+ * `PinCap.expiry` (@lararium/mesh) stays on the wire shape, but no verdict here ever reads it — a wall
+ * clock never decides whether a pin holds (standing law). A pinned blob's actual lifetime is `pinCas` /
+ * `releaseCas`: presence in the `.pins.json` sidecar IS "standing". This fixed, far-future value is
+ * written purely so the field round-trips through JSON as a number (never `Infinity`, which serializes
+ * to `null`); treat it as ADVISORY DISPLAY ONLY, never meaningful.
+ */
+const ADVISORY_PIN_EXPIRY = Number.MAX_SAFE_INTEGER;
 
 /**
- * `lares bag cas --pin <cid> [--tier <t>] [--expiry <ms|iso|Nd>] [--holder <name>]` / `--release <cid>` — PIN at
- * cid grain (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until its
- * expiry; an expired pin releases it to the tier's grace. Pins live in the CAS dir's `.pins.json` sidecar (a
- * non-hex name the sweep never reads as a blob). Local, no daemon.
+ * `lares bag cas --pin <cid> [--tier <t>] [--holder <name>]` / `--release <cid>` — PIN at cid grain
+ * (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until this
+ * same vessel explicitly `--release`s it, or re-pins the cid (replace-by-cid). No clock, no expiry
+ * flag — a pin's lifetime is an EVENT (pin / release), never a span. Pins live in the CAS dir's
+ * `.pins.json` sidecar (a non-hex name the sweep never reads as a blob). Local, no daemon.
  */
 function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   const casDir = larCasDir();
-  const now = Date.now();
   let pins: PinCap[];
   if (release) {
     pins = releaseCas(casDir, release);
   } else {
     const tier = parseCapTier(args.options["tier"] ?? "veil");
-    const expiry = parseExpiry(args.options["expiry"] ?? "30d", now);
     const holder = args.options["holder"] ?? "operator";
-    pins = pinCas(casDir, { cid: pin, tier, holder, expiry });
+    pins = pinCas(casDir, { cid: pin, tier, holder, expiry: ADVISORY_PIN_EXPIRY });
   }
   emit(args, {
     ok: true,
-    data: { casDir, pins, standing: pins.filter((p) => now < p.expiry).length },
+    data: { casDir, pins, standing: pins.length },
     human: () => {
-      console.log(`lares bag cas — pins in ${casDir}: ${pins.length} (${pins.filter((p) => now < p.expiry).length} standing)`);
-      for (const p of pins) console.log(`  ${now < p.expiry ? "pinned " : "expired"} ${p.cid.slice(0, 16)}… tier ${p.tier} · holder ${p.holder} · until ${new Date(p.expiry).toISOString()}`);
+      console.log(`lares bag cas — pins in ${casDir}: ${pins.length} standing`);
+      for (const p of pins) console.log(`  pinned  ${p.cid.slice(0, 16)}… tier ${p.tier} · holder ${p.holder} · release with \`lares bag cas --release ${p.cid}\``);
     },
   });
   return 0;

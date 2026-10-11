@@ -3,17 +3,23 @@
  *
  * The law: a blob is RETAINED while any tiddler in a locally-held bag references its CID; an
  * unreferenced blob MAY sweep after a grace; `DROP <bag>` releases that bag's references; a blob the
- * genesis CAS holds (the engine + plugins) NEVER sweeps. The proofs, over a real temp CAS dir:
+ * genesis CAS holds (the engine + plugins) NEVER sweeps. NO GLOBAL NOW (P2.5, lean 3): `casSweep` takes
+ * its age from an explicit, caller-supplied `ageOf` (a CAUSAL reading — rolls of the realm's own clock
+ * in production, `installCasSweep`) — there is no mtime-vs-`Date.now()` fallback to fall into, and a pin
+ * stands by PRESENCE in the set passed in, never by comparing `expiry` against now. The proofs, over a
+ * real temp CAS dir:
  *   · land a pointer → referenced 1 → the sweep keeps the blob,
  *   · DROP the bag → referenced 0 → sweep with grace 0 → the file is gone,
  *   · CONTROL: a seed-derived genesis blob never sweeps, unreferenced or not,
  *   · CONTROL: a blob referenced by TWO bags survives DROP of one,
  *   · the grace holds: an unreferenced blob younger than the grace stays,
  *   · a name that is not a sha256 hex cid is never touched (the dir may hold sidecars),
- *   · a dry run names what WOULD sweep and deletes nothing.
+ *   · a dry run names what WOULD sweep and deletes nothing,
+ *   · a pin holds by presence, releases by explicit `releaseCas`, and a SET-BACK / SET-FORWARD wall
+ *     clock moves neither verdict.
  */
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, existsSync, writeFileSync, utimesSync } from "node:fs";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
+import { mkdtempSync, rmSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh";
@@ -30,8 +36,12 @@ const blob = (s: string): { cid: string; bytes: Uint8Array } => {
 };
 const pointer = (bagId: string, title: string, cid: string): CasReferenceEntry =>
   ({ title, bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } });
-/** Age a blob file past any grace (mtime a day back). */
-const age = (cid: string): void => { const t = (Date.now() - 86_400_000) / 1000; utimesSync(join(casDir, cid), t, t); };
+/** A CAUSAL age reading, supplied by the caller — never a file's mtime, never `Date.now()`. */
+const OLD = 999_999;
+const YOUNG = 0;
+/** Still used by the `installCasSweep` tests below, whose own `ageOf` reads rolls off a fake realm
+ *  clock and ignores mtime entirely — the file's mtime carries no meaning there either way. */
+const age = (_cid: string): void => { /* vestigial — age is supplied, not read from the fs */ };
 
 const genesis: GenesisCasManifest = {
   format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
@@ -42,12 +52,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("a landed pointer holds its blob; DROP the bag → grace 0 sweeps it", () => {
     const photo = blob("png bytes");
     writeCasEntriesFs([photo], casDir);
-    age(photo.cid);
-    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0 });
+    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0, ageOf: () => OLD });
     expect(held.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
     // DROP <bag> — the bag's records leave the composite, so the derived count reads zero.
-    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0 });
+    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0, ageOf: () => OLD });
     expect(dropped.swept).toEqual([photo.cid]);
     expect(existsSync(join(casDir, photo.cid))).toBe(false);
   });
@@ -55,8 +64,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("CONTROL: a genesis blob never sweeps, referenced by nothing", () => {
     const core = blob("the engine core");
     writeCasEntriesFs([core], casDir);
-    age(core.cid);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0, ageOf: () => OLD });
     expect(r.swept).toEqual([]);
     expect(r.protected).toEqual([core.cid]);
     expect(existsSync(join(casDir, core.cid))).toBe(true);
@@ -65,11 +73,10 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("CONTROL: a blob referenced by TWO bags survives DROP of one", () => {
     const photo = blob("shared png");
     writeCasEntriesFs([photo], casDir);
-    age(photo.cid);
     const two = [pointer("lares", "lar:///t.w.b/photo", photo.cid), pointer("crossroads", "lar:///t.w.b/photo", photo.cid)];
     expect(casReferences(two).get(photo.cid)?.size).toBe(2);
     const afterDrop = two.filter((e) => e.bagId !== "lares");
-    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0 });
+    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0, ageOf: () => OLD });
     expect(r.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
   });
@@ -77,11 +84,10 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("the grace holds a young unreferenced blob; a dry run deletes nothing", () => {
     const fresh = blob("just staged, not yet landed");
     writeCasEntriesFs([fresh], casDir);
-    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000 });
+    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000, ageOf: () => YOUNG });
     expect(young.swept).toEqual([]);
     expect(young.kept).toContain(fresh.cid);
-    age(fresh.cid);
-    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true });
+    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true, ageOf: () => OLD });
     expect(dry.swept).toEqual([fresh.cid]);
     expect(existsSync(join(casDir, fresh.cid))).toBe(true);
   });
@@ -90,8 +96,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     writeFileSync(join(casDir, "operator-sidecar.txt"), "{}");
     const b = blob("x");
     writeCasEntriesFs([b], casDir);
-    age(b.cid);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD });
     expect(r.swept).toEqual([b.cid]);
     expect(existsSync(join(casDir, "operator-sidecar.txt"))).toBe(true);
     writeCasEntriesFs([b], casDir);
@@ -99,46 +104,64 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   });
 });
 
-// ── GRACE AND PIN (basket-one #/grace-and-pin, ruled 2026-09-11) ────────────────────────────────────────────
-// A PIN `{cid, tier, holder, expiry}` beside the bag's caps holds its blob past any grace; an EXPIRED pin
-// releases the blob to the ordinary grace; the grace itself reads PER TIER off the realm's baseline
-// (`graceForTier`), so two unreferenced blobs of different tiers sweep at different ages.
+// ── GRACE AND PIN, NO GLOBAL NOW (basket-one #/grace-and-pin, ruled 2026-09-11; retired 2026-10-10) ──────────
+// A PIN `{cid, tier, holder, expiry}` beside the bag's caps holds its blob past any grace; the grace itself
+// reads PER TIER off the realm's baseline (`graceForTier`), so two unreferenced blobs of different tiers
+// sweep at different ages. A pin stands by PRESENCE in the array `casSweep` is handed — never by comparing
+// `expiry` to now. `expiry` stays on the wire shape (mesh's `PinCap`) as ADVISORY DISPLAY ONLY; this suite
+// proves `casSweep` never reads it, with a pin that would read "expired" by any wall clock still holding,
+// and one that would read "standing forever" sweeping the instant its sidecar entry is withdrawn.
 import { graceForTier, type PinCap } from "@lararium/mesh";
 
-describe("casSweep — PIN at cid grain, grace per tier", () => {
-  test("a pinned unreferenced blob never sweeps while the pin stands", () => {
+describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
+  test("a pinned unreferenced blob never sweeps while the pin stands (present)", () => {
     const b = blob("a working the Librarian will re-stand");
     writeCasEntriesFs([b], casDir);
-    age(b.cid);
     const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() + 86_400_000 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, pins });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins });
     expect(r.swept).toEqual([]);
     expect(r.pinned).toEqual([b.cid]);
     expect(existsSync(join(casDir, b.cid))).toBe(true);
   });
 
-  test("an EXPIRED pin releases the blob to the grace — aged past it, it sweeps", () => {
-    const b = blob("a pin whose lifetime ended");
+  test("a RELEASED pin (absent from the array) no longer holds — the blob sweeps past the grace", () => {
+    const b = blob("a pin that was withdrawn");
     writeCasEntriesFs([b], casDir);
-    age(b.cid);
-    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() - 1 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, pins });
+    // `releaseCas` would have dropped it from the sidecar before this array was read — the production
+    // caller never passes a withdrawn pin, so an absent pin is exactly what a release looks like here.
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins: [] });
     expect(r.pinned).toEqual([]);
     expect(r.swept).toEqual([b.cid]);
+  });
+
+  test("CONTROL — SET-BACK and SET-FORWARD: an `expiry` field that reads expired by a far-forward clock, or\n" +
+       "        standing by a far-back one, changes NEITHER verdict — only presence in `pins` decides", () => {
+    const standing = blob("a pin whose expiry a forward jump would have ended");
+    const released = blob("an unpinned blob a backward jump would 'revive'");
+    writeCasEntriesFs([standing, released], casDir);
+    const realNow = Date.now();
+    const pins: PinCap[] = [{ cid: standing.cid, tier: "veil", holder: "vessel-1", expiry: realNow - 1 }]; // "expired" by any real clock
+    for (const skew of [-10 * 365 * 86_400_000, 10 * 365 * 86_400_000]) {   // 10y back, 10y forward
+      vi.spyOn(Date, "now").mockReturnValue(realNow + skew);
+      try {
+        // dryRun: the same two files must still be standing for the NEXT skew's reading too.
+        const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, dryRun: true });
+        expect(r.pinned, `skew ${skew}`).toEqual([standing.cid]);     // present → still stands
+        expect(r.swept, `skew ${skew}`).toEqual([released.cid]);      // absent → still sweeps, every time
+      } finally { vi.restoreAllMocks(); }
+    }
   });
 
   test("the grace reads PER TIER: a PUBLIC blob sweeps at an age a VEIL blob survives", () => {
     const pub = blob("a public blob, other holders stand");
     const veil = blob("a veil blob, this vessel alone holds it");
     writeCasEntriesFs([pub, veil], casDir);
-    // Both aged ONE hour; the baseline unit reads 30 minutes: public (×1) = 30m → sweeps, veil (×8) = 4h → kept.
-    const hourAgo = (Date.now() - 3_600_000) / 1000;
-    utimesSync(join(casDir, pub.cid), hourAgo, hourAgo);
-    utimesSync(join(casDir, veil.cid), hourAgo, hourAgo);
-    const baselineMs = 30 * 60_000;
+    // Both read as "two rolls old"; baseline 1 roll: public (×1) = 1 roll → sweeps, veil (×8) = 8 rolls → kept.
+    const rollsOld = 2;
     const tierOf = (cid: string) => (cid === veil.cid ? "veil" : "public") as const;
     const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0,
-                         graceFor: (cid) => graceForTier(tierOf(cid), baselineMs) });
+                         ageOf: () => rollsOld,
+                         graceFor: (cid) => graceForTier(tierOf(cid), 1) });
     expect(r.swept).toEqual([pub.cid]);
     expect(r.kept).toContain(veil.cid);
   });
@@ -151,7 +174,6 @@ describe("casSweep — PIN at cid grain, grace per tier", () => {
 // and the grace collapses — so the realm's clock outranks it. No pace (the realm has not said two rolls) →
 // no tick fires, ever. The verb reports {swept, pinned, retained, pace}; `dryRun` moves nothing; the genesis
 // protect set and standing pins hold as before (CONTROL).
-import { vi } from "vitest";
 import { sweepCadenceRolls, installCasSweep, type CasSweepVerbResult } from "../src/node-cas.js";
 
 type Handler = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;

@@ -59,6 +59,26 @@ function isNoise(rel: string): boolean {
   return false;
 }
 
+/**
+ * Which of a watcher's pending deletes ride THIS wave — DUE (its patience, a MONOTONIC span, has
+ * elapsed) OR PAIRED (a candidate add in this same wave shares its synced-hash: a rename, settled by
+ * content, never by time). `nowMs` and `graceMs` are both durations on a monotonic clock
+ * (`performance.now()`) — never wall-clock — so a set-back or set-forward system clock changes neither
+ * answer. Pulled out of `cmdWatch`'s closure so it stands as one weldable, directly-testable fact.
+ */
+export function dueDeletions(
+  pending:   ReadonlyMap<string, { readonly syncedHash: string; readonly armedAt: number }>,
+  addHashes: ReadonlySet<string>,
+  nowMs:     number,
+  graceMs:   number,
+): PendingDeletion[] {
+  const ride: PendingDeletion[] = [];
+  for (const [uri, p] of pending) {
+    if (nowMs - p.armedAt >= graceMs || addHashes.has(p.syncedHash)) ride.push({ uri, syncedHash: p.syncedHash });
+  }
+  return ride;
+}
+
 function printUsage(): void {
   console.log("usage: lares watch --source <dir> --to <bagUri> [--apply] [--debounce ms] [--delete-grace ms] [--delete-fraction f]");
   console.log("  default = preview (logs what each settle WOULD ingest, submits nothing);");
@@ -98,15 +118,19 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   const buffer = new Set<string>();        // absolute carrier paths pending a wave
   // Vanished carriers held in the grace window: a real delete waits for a
   // possibly-lagging paired add (rename) before it tombstones; a transient
-  // delete (git checkout flood) self-heals when its path scans present again.
-  const pendingDeletes = new Map<string, { syncedHash: string; deadline: number }>();
+  // delete (git checkout flood) self-heals when its path scans present again
+  // — each drain's fresh scan IS that causal check, run every time this map
+  // is consulted. `armedAt` is a MONOTONIC reading (`performance.now()`); the
+  // grace bounds this watcher's own patience, never an authority a wall
+  // clock could move.
+  const pendingDeletes = new Map<string, { syncedHash: string; armedAt: number }>();
   let busy  = false;
   let rerun = false;
   let timer: NodeJS.Timeout | null = null;
   let waveNo = 0;
 
   const drain = async (): Promise<void> => {
-    const now = Date.now();
+    const now = performance.now();   // MONOTONIC — the grace is this watcher's own patience, never a wall reading
     const files = [...buffer];
     buffer.clear();
 
@@ -117,22 +141,20 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     // A pending delete whose path scanned present again has RETURNED — drop it
     // (the transient-delete self-heal: a checkout that re-creates the file).
     for (const r of rows) if (r.status !== "deleted" && pendingDeletes.has(r.uri)) pendingDeletes.delete(r.uri);
-    // Newly-vanished carriers enter the grace window; wake to flush at expiry.
+    // Newly-vanished carriers enter the grace window; wake to flush once the patience runs out.
     for (const d of deletionsOf(rows)) {
       if (!pendingDeletes.has(d.uri)) {
-        pendingDeletes.set(d.uri, { syncedHash: d.syncedHash, deadline: now + deleteGraceMs });
+        pendingDeletes.set(d.uri, { syncedHash: d.syncedHash, armedAt: now });
         setTimeout(kick, deleteGraceMs + 50);
       }
     }
 
-    // Which pending deletes ride THIS wave: DUE (grace expired) OR PAIRED (a
+    // Which pending deletes ride THIS wave: DUE (patience elapsed, monotonic) OR PAIRED (a
     // candidate add shares its synced-hash — a rename; ride together so the
-    // island re-links rather than tombstone+create).
+    // island re-links rather than tombstone+create). This drain's own fresh scan above is
+    // the causal rescan: a path still in `pendingDeletes` here already survived it unreturned.
     const addHashes = new Set(candidates.map((c) => c.diskHash));
-    const ride: PendingDeletion[] = [];
-    for (const [uri, p] of pendingDeletes) {
-      if (p.deadline <= now || addHashes.has(p.syncedHash)) ride.push({ uri, syncedHash: p.syncedHash });
-    }
+    const ride = dueDeletions(pendingDeletes, addHashes, now, deleteGraceMs);
     for (const d of ride) pendingDeletes.delete(d.uri);
 
     if (candidates.length === 0 && ride.length === 0) {
