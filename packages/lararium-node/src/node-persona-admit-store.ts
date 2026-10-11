@@ -24,7 +24,10 @@
  * Meme: lar:///ha.ka.ba/lararium/node/persona-admit-store
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, rmSync, renameSync } from "node:fs";
+import {
+  readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, rmSync, renameSync,
+  openSync, fsyncSync, closeSync,
+} from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { hex, hexToBytes, type JoinRecord, type EnrollmentSecret, type SentGrantMemo } from "@lararium/mesh";
@@ -55,10 +58,16 @@ function readJson<T>(dir: string, file: string, fallback: T): T {
 }
 
 /**
- * Write as temp-then-rename (M12): a reader can never observe a half-written admissions/pending file, because
- * `rename` on the same filesystem is atomic — the path either still holds the PRIOR complete bytes or the NEW
- * complete bytes, never a torn mix. The temp name carries this process's pid + a random suffix so two writers
- * racing the SAME store dir never collide on the temp path itself.
+ * Write as temp-then-rename (M12), DURABLY (M12′'s remainder): a reader can never observe a half-written
+ * admissions/pending file, because `rename` on the same filesystem is atomic — the path either still holds the
+ * PRIOR complete bytes or the NEW complete bytes, never a torn mix. The temp name carries this process's pid + a
+ * random suffix so two writers racing the SAME store dir never collide on the temp path itself.
+ *
+ * Before the rename, this `fsync`s the temp FILE's own fd, then the DIRECTORY's fd — both are needed on a
+ * journaling filesystem for the rename itself to survive a crash (a renamed name with no durable directory
+ * entry can vanish on recovery, even when the file's bytes landed). Best-effort: a filesystem/platform that
+ * refuses `fsync` on a directory fd (documented on some, e.g. certain network mounts) must not block the write
+ * it is meant to protect — the rename still lands, just without the extra durability guarantee on that mount.
  */
 function writeJson(dir: string, file: string, value: unknown): void {
   mkdirSync(dir, { recursive: true });
@@ -66,7 +75,15 @@ function writeJson(dir: string, file: string, value: unknown): void {
   const tmp = join(dir, `.${file}.${process.pid}.${hex(randomBytes(4))}.tmp`);
   writeFileSync(tmp, JSON.stringify(value, null, 2), { mode: 0o600, encoding: "utf8" });
   try { chmodSync(tmp, 0o600); } catch { /* best-effort on a non-POSIX fs */ }
+  try {
+    const fd = openSync(tmp, "r+");
+    try { fsyncSync(fd); } finally { closeSync(fd); }
+  } catch { /* best-effort — a platform that refuses file fsync must not block the write */ }
   renameSync(tmp, path);
+  try {
+    const dirFd = openSync(dir, "r");
+    try { fsyncSync(dirFd); } finally { closeSync(dirFd); }
+  } catch { /* best-effort — a platform that refuses directory fsync must not block the write */ }
 }
 
 // ── The multitude-view (never fleet-syncs) ──────────────────────────────────────────────────────────────────
@@ -217,23 +234,49 @@ export function peekEnrollmentSecrets(dir?: string): Array<{ ephemeralPubkey: st
     });
 }
 
-type GrantFile = { readonly pending?: Record<string, SentGrantMemo> };
+/** The sent-grant memos' named count bound (M8′/§2a's sibling on A's side) — same shape as `PENDING_OFFER_LIMIT`:
+ *  a stash past this count withdraws the OLDEST standing sent memo by insertion order, never by age/clock. */
+export const SENT_MEMO_LIMIT = 50;
 
-/** Stash A's sent-grant memo between `grant` and `accept` (0o600), keyed by nonce_A (the grant's fresh id). */
-export function stashSentMemo(memo: SentGrantMemo, dir?: string): void {
-  const d = idDirOf(dir);
-  const cur = readJson<GrantFile>(d, PENDING_GRANT_FILE, {}).pending ?? {};
-  writeJson(d, PENDING_GRANT_FILE, { pending: { ...cur, [memo.transcript.nonceA]: memo } });
+/** `order` names INSERTION order explicitly — the count-bound eviction's "oldest" reads off `order[0]`. */
+type GrantFile = { readonly order?: readonly string[]; readonly pending?: Record<string, SentGrantMemo> };
+
+function readGrantFile(dir: string): { order: string[]; pending: Record<string, SentGrantMemo> } {
+  const file = readJson<GrantFile>(dir, PENDING_GRANT_FILE, {});
+  const pending = { ...(file.pending ?? {}) };
+  const order = [...(file.order ?? Object.keys(pending))];   // a pre-existing/hand-edited file falls back to key order
+  return { order, pending };
 }
 
-/** Take (consume-ONCE) A's sent memo for a nonce_A — returns it and DROPS it. Null when absent. */
+/**
+ * Stash A's sent-grant memo between `grant` and `accept` (0o600), keyed by nonce_A (the grant's fresh id), and
+ * appended to the insertion-`order`. COUNT-bounded at `maxPending` (default `SENT_MEMO_LIMIT`, a NAMED
+ * parameter — never a clock): a stash past that count withdraws the OLDEST standing sent memo before writing
+ * the new one — "a stack of forgotten offers must never outlive the session that minted them" on A's side too.
+ */
+export function stashSentMemo(memo: SentGrantMemo, dir?: string, maxPending: number = SENT_MEMO_LIMIT): void {
+  const d = idDirOf(dir);
+  const { order, pending } = readGrantFile(d);
+  const nonceA = memo.transcript.nonceA;
+  const nextOrder = order.filter((k) => k !== nonceA);
+  nextOrder.push(nonceA);
+  pending[nonceA] = memo;
+  while (nextOrder.length > Math.max(1, maxPending)) {
+    const oldest = nextOrder.shift()!;
+    delete pending[oldest];
+  }
+  writeJson(d, PENDING_GRANT_FILE, { order: nextOrder, pending });
+}
+
+/** Take (consume-ONCE) A's sent memo for a nonce_A — returns it and DROPS it (from both the map and the
+ *  insertion order). Null when absent (consumed, withdrawn, evicted by count, or never stashed). */
 export function takeSentMemo(nonceA: string, dir?: string): SentGrantMemo | null {
   const d = idDirOf(dir);
-  const cur = readJson<GrantFile>(d, PENDING_GRANT_FILE, {}).pending ?? {};
-  const memo = cur[nonceA];
+  const { order, pending } = readGrantFile(d);
+  const memo = pending[nonceA];
   if (!memo) return null;
-  const { [nonceA]: _dropped, ...rest } = cur;
-  writeJson(d, PENDING_GRANT_FILE, { pending: rest });
+  delete pending[nonceA];
+  writeJson(d, PENDING_GRANT_FILE, { order: order.filter((k) => k !== nonceA), pending });
   return memo;
 }
 

@@ -198,6 +198,26 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
     expect(takeSentMemo("0a".repeat(16), dir)).toBeNull();
   });
 
+  test("M8′/§2a: the sent-grant memo set is COUNT-bounded too — a stash past K evicts the OLDEST by insertion order", () => {
+    const memoFor = (nonceA: string): SentGrantMemo => ({
+      transcript: {
+        kind: PERSONA_GRANT_DOMAIN,
+        personaRef: { prefix: "Epersona_memobound", verifyingKey: "aa".repeat(32) },
+        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA, expiry: 9999,
+      },
+      grantSig: "ee".repeat(64),
+    });
+    const K = 2;
+    const nA1 = "a1".repeat(16), nA2 = "a2".repeat(16), nA3 = "a3".repeat(16);
+    stashSentMemo(memoFor(nA1), dir, K);
+    stashSentMemo(memoFor(nA2), dir, K);
+    // A THIRD stash past K evicts the OLDEST (nA1) — purely insertion order, never a clock/expiry field.
+    stashSentMemo(memoFor(nA3), dir, K);
+    expect(takeSentMemo(nA1, dir)).toBeNull();          // evicted — same refusal shape as consumed/withdrawn
+    expect(takeSentMemo(nA2, dir)).not.toBeNull();       // the middle one still stands
+    expect(takeSentMemo(nA3, dir)).not.toBeNull();       // the newest still stands
+  });
+
   test("§2a WITHDRAWAL: withdrawAdmitGrant refuses a LATE take at the same nonce (the ACK's own lookup)", () => {
     const memo: SentGrantMemo = {
       transcript: {
