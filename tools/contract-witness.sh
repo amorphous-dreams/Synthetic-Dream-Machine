@@ -123,10 +123,27 @@ seed_genesis() {
   ( cd "$REPO_ROOT" && find genesis -type f -print0 | xargs -0 -I{} cp --parents "{}" "$1/" ) 2>/dev/null
 }
 
+# THE FOUNDING'S ROUTE. A founding seals custody from birth and gathers its human route from a TTY alone; this
+# scripted witness has no TTY, so it STAGES each root (the scratch marker the test door demands) and names the test
+# route through the door before the founding runs. And a founding command's exit code never proves a founding:
+# `assert_founded` stops the run, by name, when the root holds no vessel identity.
+stage_custody() {
+  step "stage $2's root and name its test route"
+  if node "$REPO_ROOT/tools/test-scratch-marker.mjs" "$1" && node "$REPO_ROOT/tools/seed-test-custody.mjs" "$1"; then ok
+  else bad "test door"; exit 2; fi
+}
+assert_founded() {
+  step "$2's founding left an identity on disk"
+  if [ -n "$(find "$1" -name '.vessel-key-*.json' -type f -print -quit 2>/dev/null)" ]; then ok
+  else bad "NoIdentityAfterFounding"; say "ABANDONED — $2's founding wrote no identity; every check below would measure an unfounded vessel."; exit 2; fi
+}
+
 say "① vessel A — the Nexus founds and seats its quorum"
 step "seed A's genesis (the hearth true-name lives there)"
 if seed_genesis "$A_ROOT"; then ok; else bad "cp genesis"; fi
+stage_custody "$A_ROOT" A
 run_a "A founds"                        vessel stand --install --skip-build
+assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
 # with green that means nothing — the cascade a founding check must refuse.
 if [ "$FAILED" -ne 0 ]; then
@@ -165,12 +182,14 @@ if as_a nexus seal show --json 2>/dev/null | grep -q '"quorumSeated":true'; then
 say "② vessel B — an INDEPENDENT operator founds their own hearth"
 step "seed B's genesis"
 if seed_genesis "$B_ROOT"; then ok; else bad "cp genesis"; fi
+stage_custody "$B_ROOT" B
 BEFORE=$FAILED
 run_b "B founds (own device key, own vault)"  vessel stand --install --skip-build
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
   exit "$FAILED"
 fi
+assert_founded "$B_ROOT" B
 # The name doubles as the ABSENCE PROBE below, so it must not collide with ordinary prose. A bare
 # "joiner" matched "zero-width joiner" inside vendored engine text and read A's root as leaking B's
 # key. A probe that can appear by accident measures the corpus, never the boundary.
