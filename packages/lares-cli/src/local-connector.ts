@@ -226,6 +226,74 @@ export class LocalWaitExpired extends Error {
  */
 export class LocalInvocationAborted extends Error {}
 
+/**
+ * What a `{op:"receipt"}` read answers — mirrors `uds-channel.ts`'s `ReceiptAnswer` (kept as an
+ * independent shape here rather than sharing one import, since the two sides of a socket boundary
+ * stay decoupled in this codebase — see the module doc).
+ */
+export interface ReceiptAnswer {
+  readonly requestId: string;
+  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown";
+  readonly results?: Record<string, unknown>;
+  readonly errorMessage?: string;
+}
+
+/**
+ * Read a request id's receipt WITHOUT dispatching anything (H1). Replaces the old pattern of
+ * calling `invokeLocal` a second time with the same request id as a "read-back" — that second call
+ * went through the EXACT SAME dispatch path as the original, so an id this vessel had already
+ * dropped as abandoned got run a second time, never a read. `queryReceipt` rides a dedicated
+ * `{op:"receipt"}` line the vessel's own connection handler answers from its ledger + the durable
+ * outcome doc alone.
+ */
+export async function queryReceipt(requestId: string, opts: { dataDir?: string | null } = {}): Promise<ReceiptAnswer> {
+  const socketPath = udsSocketPath(opts.dataDir);
+  return await new Promise<ReceiptAnswer>((resolve, reject) => {
+    const sock = createConnection(socketPath);
+    let buf = "";
+    sock.setEncoding("utf8");
+    sock.on("connect", () => { sock.write(JSON.stringify({ op: "receipt", requestId }) + "\n"); });
+    sock.on("data", (chunk: string) => {
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl === -1) return;
+      const line = buf.slice(0, nl);
+      try { const r = JSON.parse(line) as ReceiptAnswer; sock.end(); resolve(r); }
+      catch { sock.end(); reject(new Error("bad receipt json from local channel")); }
+    });
+    sock.on("error", (e: NodeJS.ErrnoException) => {
+      if (e.code === "ENOENT" || e.code === "ECONNREFUSED") reject(new UdsUnreachable(e.message));
+      else reject(e);
+    });
+  });
+}
+
+/**
+ * Withdraw a request id BEFORE it is read (M8) — `{op:"cancel"}`. Marks the id abandoned on the
+ * vessel's own ledger so a later line under the same id (a stray retry) refuses rather than running.
+ */
+export async function cancelRequest(requestId: string, opts: { dataDir?: string | null } = {}): Promise<ReceiptAnswer> {
+  const socketPath = udsSocketPath(opts.dataDir);
+  return await new Promise<ReceiptAnswer>((resolve, reject) => {
+    const sock = createConnection(socketPath);
+    let buf = "";
+    sock.setEncoding("utf8");
+    sock.on("connect", () => { sock.write(JSON.stringify({ op: "cancel", requestId }) + "\n"); });
+    sock.on("data", (chunk: string) => {
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl === -1) return;
+      const line = buf.slice(0, nl);
+      try { const r = JSON.parse(line) as ReceiptAnswer; sock.end(); resolve(r); }
+      catch { sock.end(); reject(new Error("bad cancel-receipt json from local channel")); }
+    });
+    sock.on("error", (e: NodeJS.ErrnoException) => {
+      if (e.code === "ENOENT" || e.code === "ECONNREFUSED") reject(new UdsUnreachable(e.message));
+      else reject(e);
+    });
+  });
+}
+
 export async function invokeLocal(
   verb:        string,
   args:        Record<string, unknown>,
@@ -273,7 +341,14 @@ export async function invokeLocal(
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
       const line = buf.slice(0, nl);
-      try { const r = JSON.parse(line) as SubmitResult; settle(() => resolve(r)); }
+      try {
+        const r = JSON.parse(line) as SubmitResult | { status: "unknown"; requestId: string };
+        // M2: the VESSEL's own wait for an outcome ended — never a verdict on the act. Told back as
+        // `{status:"unknown"}`, this reads exactly like this call's own `LocalWaitExpired` to every
+        // caller downstream (they already special-case it): "outcome unknown", never `{status:"error"}`.
+        if (r.status === "unknown") { settle(() => reject(new LocalWaitExpired(verb, timeoutMs, r.requestId))); return; }
+        settle(() => resolve(r as SubmitResult));
+      }
       catch { settle(() => reject(new Error("bad outcome json from local channel"))); }
     });
     sock.on("error", (e: NodeJS.ErrnoException) => {

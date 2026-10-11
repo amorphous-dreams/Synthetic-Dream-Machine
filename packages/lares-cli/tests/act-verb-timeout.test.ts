@@ -15,9 +15,14 @@
  * P2.5 "no global now" (operator 2026-10-10): the law goes further than telling the two faults apart.
  * A wall clock never decides a verdict on the act, so this process's own local wait ending must not be
  * told as "the verb timed out" either — that still claims to know the act failed. It reads as "outcome
- * unknown" instead, names the request id, and tries ONE short read-back (by that same id, via the
- * dispatcher's own outcome dedup) before giving up on knowing at all. `verb-timeout` is retired; its
+ * unknown" instead, names the request id, and tries ONE short read. `verb-timeout` is retired; its
  * successor is `outcome-unknown`, raised only from `local-connector.ts`'s `LocalWaitExpired`.
+ *
+ * P2.5 iteration 2, H1 (gp25-episkopos1): that one short read USED to re-submit through `runVerb` —
+ * trusting the dispatcher's outcome dedup to make a same-id re-issue safe. Proven live: a caller that
+ * gave up got its invocation dropped (never dispatched, never recorded), so the "read-back" calling
+ * `runVerb` a second time under that SAME id ran the act a second time. The read-back now calls
+ * `queryReceipt`, a dedicated read that cannot dispatch anything.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync } from "node:fs";
@@ -30,10 +35,12 @@ afterEach(() => { vi.restoreAllMocks(); });
 describe("what `lares act` says when its own local wait ends", () => {
   test("★ an outcome-unknown wait carries its own code — never `daemon-unreachable` ★", () => {
     const src = SRC("commands/act.ts");
-    // BOTH runVerb catches must branch — `act` holds two (the derived-budget LOAD and REPACK), and a
-    // window sliced from the first would measure whichever one came earlier in the file. Count instead.
+    // BOTH runVerb catches must branch — `act` holds two (the derived-budget LOAD and REPACK). The
+    // LOAD arm tells an ABANDONED read-back apart from a genuinely still-unknown one (H1 fix item 6),
+    // so it carries TWO `outcome-unknown` emits of its own; REPACK carries one. Count instead of
+    // windowing, so neither arm's growth silently escapes this proof.
     const arms = src.match(/code: "outcome-unknown"/g) ?? [];
-    expect(arms.length, "an act catch still names every fault `daemon-unreachable`").toBe(2);
+    expect(arms.length, "an act catch still names every fault `daemon-unreachable`").toBe(3);
   });
 
   test("RED (retired): `verb-timeout` and bare `/timed out after/` wording never return", () => {
@@ -59,11 +66,20 @@ describe("what `lares act` says when its own local wait ends", () => {
       .not.toMatch(/vessel stand --foreground/);
   });
 
-  test("★ each read-back re-submits the SAME request id, never a fresh one ★", () => {
+  test("★ each read-back READS the same request id, through queryReceipt, never a second runVerb dispatch ★ (H1)", () => {
+    // P2.5 iter 2, H1 (gp25-episkopos1): the OLD shape re-submitted through `runVerb` a second time,
+    // trusting the dispatcher's outcome dedup to make the re-issue safe — but an id this vessel had
+    // already dropped as ABANDONED (the caller gave up before commit) carried no outcome to dedup
+    // against, so the "read-back" ran the act a SECOND time under the same id. `queryReceipt` rides a
+    // dedicated `{op:"receipt"}` line the vessel can only answer, never dispatch from.
     const src = SRC("commands/act.ts");
-    // A fresh id on retry would dodge the dispatcher's outcome dedup and could re-run the act's effect.
-    expect(src, "the LOAD read-back dropped its own request id").toMatch(/runVerb\(submitName, submitArgs, did, \{ requestId, timeoutMs: READBACK_MS \}\)/);
-    expect(src, "the REPACK read-back dropped its own request id").toMatch(/runVerb\(submitName, submitArgs, did, \{ requestId: repackRequestId, timeoutMs: REPACK_READBACK_MS \}\)/);
+    const arms = src.match(/await queryReceipt\(/g) ?? [];
+    expect(arms.length, "both the LOAD and REPACK read-backs must call queryReceipt, not runVerb").toBe(2);
+    // Exactly TWO `runVerb(submitName, submitArgs, did, …)` calls may stand in the whole file — the
+    // ORIGINAL LOAD dispatch and the ORIGINAL REPACK dispatch. A THIRD or FOURTH would be a read-back
+    // that regressed back to a second dispatch under the retired shape.
+    const dispatches = src.match(/runVerb\(submitName, submitArgs, did,/g) ?? [];
+    expect(dispatches.length, "a read-back regressed to a second runVerb dispatch under the retired shape").toBe(2);
   });
 
   test("CONTROL — a genuinely unreachable daemon KEEPS its code and its standing hint", () => {

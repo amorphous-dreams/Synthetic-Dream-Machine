@@ -43,12 +43,27 @@ import { larRoot, vesselDid } from "../env.js";
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
 import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
-import { summaryOutput } from "../verb-result.js";
+import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
-import { LocalWaitExpired } from "../local-connector.js";
+import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
+/**
+ * A receipt's `done`/`error` reads exactly like `runVerb`'s own resolved result — build that shape
+ * so the read-back's caller falls through the SAME ordinary-result handling below. `committed` (no
+ * outcome yet), `abandoned` (refused before commit), and `unknown` (this vessel never arbitrated it
+ * — a restart, most likely) carry no such shape; the caller still owes its own "outcome unknown" telling.
+ */
+function receiptToResult(r: ReceiptAnswer): SubmitResult | undefined {
+  if (r.state !== "done" && r.state !== "error") return undefined;
+  const out: { status: "done" | "error"; requestId: string; results?: SubmitResult["results"]; errorMessage?: string } = {
+    status: r.state, requestId: r.requestId,
+  };
+  if (r.results !== undefined) out.results = r.results as SubmitResult["results"];
+  if (r.errorMessage !== undefined) out.errorMessage = r.errorMessage;
+  return out as SubmitResult;
+}
 
 /**
  * The loci title a LOADed file carries — used when the file is NOT a memetic
@@ -139,7 +154,6 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   // A caller-generated nonce, before dispatch — the one thing a short read-back below can trust across
   // a lost response (see the LOAD arm further down for the full reasoning).
   const repackRequestId = newRequestId();
-  const REPACK_READBACK_MS = 2_000;
   let result;
   try {
     result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId });
@@ -149,13 +163,18 @@ async function actRepack(args: ParsedArgs): Promise<number> {
     // outcome-unknown hint names the gesture instead of an arithmetic — but the split holds: a caller
     // told to stand a daemon that already stands loses the trail to the real fault either way.
     if (err instanceof LocalWaitExpired) {
-      let readBack: Awaited<ReturnType<typeof runVerb>> | undefined;
-      try { readBack = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId, timeoutMs: REPACK_READBACK_MS }); }
+      // THE SAME READ, NEVER A SECOND DISPATCH (H1) — `queryReceipt` rides a dedicated `{op:"receipt"}`
+      // line the vessel answers from its own ledger + durable outcome doc; it cannot re-run the act.
+      let receipt: ReceiptAnswer | undefined;
+      try { receipt = await queryReceipt(repackRequestId); }
       catch { /* still unknown */ }
+      const readBack = receipt ? receiptToResult(receipt) : undefined;
       if (readBack) {
         result = readBack;
       } else {
-        const hint = "the daemon answered and this process stopped waiting; a short read-back found no receipt yet. The verb may still be running. Re-run on a quieter machine, or repack a smaller bundle — the same request id reads the receipt back once it lands.";
+        const hint = receipt?.state === "abandoned"
+          ? "this vessel already refused this request before commit — it never ran. Re-run to try again."
+          : "the daemon answered and this process stopped waiting; a short read found no receipt yet. The verb may still be running. Re-run on a quieter machine, or repack a smaller bundle — the same request id reads the receipt back once it lands.";
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
@@ -376,10 +395,13 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // island frame per carrier, so a flat budget times out the ACK while the verb
   // itself succeeds.
   const timeoutMs = Math.max(10_000, 10_000 + carrierCount * 400);
-  // ONE SHORT READ-BACK, BY THE SAME REQUEST ID, NEVER A SECOND DISPATCH. The dispatcher's own outcome-keyed
-  // dedup (`verb-dispatcher.ts`) makes re-submitting this exact `requestId` safe: a prior commit returns its
-  // durable receipt at once, never a repeat of the act's effect. A short budget here only bounds how long
-  // THIS process waits to read that receipt back — it is not a second chance for the verb to finish.
+  // ONE SHORT READ-BACK, BY THE SAME REQUEST ID, THROUGH `queryReceipt` — A READ, NEVER A SECOND
+  // DISPATCH (H1). This used to re-submit through `runVerb` a second time, trusting the dispatcher's
+  // outcome dedup to make that safe — but an id this vessel had already dropped as ABANDONED (the
+  // caller gave up before the vessel ever committed) carried no outcome to dedup against, so the
+  // "read-back" ran the act a second time under the SAME id. `queryReceipt` rides a dedicated
+  // `{op:"receipt"}` line the vessel answers from its own ledger + durable outcome doc alone — it
+  // cannot dispatch anything, by construction.
   const READBACK_MS = 2_000;
   let result;
   try {
@@ -392,14 +414,22 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     // agent the act failed when it may have committed. So this reports "outcome unknown" and tries ONE short
     // read-back by the same request id before giving up on knowing at all.
     if (err instanceof LocalWaitExpired) {
-      let readBack: Awaited<ReturnType<typeof runVerb>> | undefined;
-      try { readBack = await runVerb(submitName, submitArgs, did, { requestId, timeoutMs: READBACK_MS }); }
-      catch { /* still unknown — the read-back itself may time out too */ }
+      let receipt: ReceiptAnswer | undefined;
+      try { receipt = await queryReceipt(requestId); }
+      catch { /* still unknown — the read itself may fail too (daemon gone between writes) */ }
+      const readBack = receipt ? receiptToResult(receipt) : undefined;
       if (readBack) {
         result = readBack; // a receipt landed meanwhile — fall through to the ordinary result handling below
+      } else if (receipt?.state === "abandoned") {
+        const hint = "this vessel already refused this request before commit — it never ran. Re-run to try again.";
+        emit(args, {
+          ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
+          human: () => { console.error(`lares act: outcome unknown — abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
+        });
+        return exitFor("outcome-unknown");
       } else {
         const perCarrier = "10s + 400ms per carrier";
-        const hint = `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read-back found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        const hint = `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
           human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
