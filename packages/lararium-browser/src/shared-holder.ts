@@ -47,13 +47,18 @@ export async function attachSharedHolder(args: {
     return { kind: "floor", why: `SharedWorker refused to start (${e instanceof Error ? e.message : String(e)}); the daemon island rides a dedicated worker` };
   }
   const hello = await new Promise<HolderHello | null>((resolve) => {
-    const timer = setTimeout(() => resolve(null), args.helloTimeoutMs ?? 5_000);
+    let timer: ReturnType<typeof setTimeout>;
     const onMsg = (e: MessageEvent): void => {
       const d = e.data as { kind?: unknown };
       if (d && d.kind === "holder:hello") { clearTimeout(timer); port.removeEventListener("message", onMsg); resolve(e.data as HolderHello); }
     };
     port.addEventListener("message", onMsg);
     port.start();
+    timer = setTimeout(() => {
+      port.removeEventListener("message", onMsg);
+      port.close();
+      resolve(null);
+    }, args.helloTimeoutMs ?? 5_000);
   });
   if (!hello) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
   return { kind: "attached", port, hello };

@@ -112,6 +112,38 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     await expect(holdVesselLock(IDB, fakeLocks("tab-2", lockTable))).rejects.toThrow(/tab-1/);
   });
 
+  test("a shared holder without Web Locks never boots or greets a second store owner", async () => {
+    const island = fakeIslandFactory();
+    const core = makeSharedHolderCore({ lockName: vesselLockName(IDB), locks: null, spawnIsland: island.spawn });
+    const { port1, port2 } = new MessageChannel();
+    const messages: unknown[] = [];
+    port1.addEventListener("message", (event) => messages.push(event.data));
+    port1.start();
+
+    await core.connect(port2);
+
+    expect(island.boots()).toBe(0);
+    expect(core.tabs).toBe(0);
+    expect(messages).toEqual([]);
+    port1.close();
+    port2.close();
+  });
+
+  test("a delayed holder greeting cannot open an unguarded fallback", async () => {
+    const noGreeting: SharedWorkerHost = {
+      SharedWorker: class {
+        readonly port = new MessageChannel().port1;
+      } as unknown as SharedWorkerHost["SharedWorker"],
+    };
+    const attached = await attachSharedHolder({
+      holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
+      host: noGreeting,
+      helloTimeoutMs: 1,
+    });
+    expect(attached.kind).toBe("floor");
+    await expect(holdVesselLock(IDB, null)).rejects.toThrow(/Web Locks/);
+  });
+
   test.fails("MEASURED-NOT-ASSUMED — the holder survives the last tab closing for N seconds (Safari / Firefox lifetime)", async () => {
     // What a real-browser measure must prove: with two tabs attached, close both, wait N seconds, open a third —
     // its hello reads `islandBoots === 1` (the holder lived) rather than 2 (the platform reaped it and the island

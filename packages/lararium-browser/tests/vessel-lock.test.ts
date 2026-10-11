@@ -59,11 +59,15 @@ describe("the vessel lock refuses a second holder, loud, naming the first", () =
   });
 });
 
-describe("CONTROL — a host without Web Locks opens as today", () => {
-  test("an absent API reads as a floor: the open proceeds, unheld, and release is a no-op", async () => {
-    const hold = await holdVesselLock("lares:vessel", null);
-    expect(hold.held).toBe(false);
-    expect(hold.floor).toMatch(/no Web Locks/);
-    await expect(hold.release()).resolves.toBeUndefined();
+describe("a host without Web Locks refuses the store by name", () => {
+  test("an absent API never authorizes an unguarded holder", async () => {
+    await expect(holdVesselLock("lares:vessel", null)).rejects.toThrow(/lares:vessel.*Web Locks/);
+  });
+
+  test("a rejected lock request refuses with the store name", async () => {
+    const host: LockHost = {
+      request: async () => { throw new Error("platform refused request"); },
+    };
+    await expect(holdVesselLock("lares:vessel", host)).rejects.toThrow(/lares:vessel.*platform refused request/);
   });
 });

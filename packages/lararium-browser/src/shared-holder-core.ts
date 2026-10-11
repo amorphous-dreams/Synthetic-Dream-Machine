@@ -65,14 +65,23 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   const takeLock = (): Promise<void> => {
     if (lockTaken) return lockTaken;
     lockTaken = (async () => {
-      if (!opts.locks || typeof opts.locks.request !== "function") return;
+      if (!opts.locks || typeof opts.locks.request !== "function") {
+        throw new Error(`[vessel] shared holder cannot open store "${opts.lockName}": this engine offers no Web Locks.`);
+      }
       let granted: (v: boolean) => void = () => {};
       const grant = new Promise<boolean>((r) => { granted = r; });
+      let requestFailure: string | null = null;
       void opts.locks.request(opts.lockName, { ifAvailable: true }, (lock) => {
         granted(lock !== null);
         return lock === null ? undefined : new Promise<never>(() => {});
-      }).catch(() => granted(false));
-      if (!(await grant)) return;
+      }).catch((error) => {
+        requestFailure = error instanceof Error ? error.message : String(error);
+        granted(false);
+      });
+      if (!(await grant)) {
+        const cause = requestFailure ? `: ${requestFailure}` : " — another holder owns the lock";
+        throw new Error(`[vessel] shared holder refused store "${opts.lockName}"${cause}.`);
+      }
       if (typeof opts.locks.query === "function") {
         try {
           const held = (await opts.locks.query()).held ?? [];
@@ -96,7 +105,9 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     get islandBoots() { return islandBoots; },
     get tabs()        { return ports.size; },
     async connect(port) {
-      await takeLock();
+      // A failed or unavailable lock leaves this port without a greeting. The page's own lock door then
+      // refuses by store name; this worker never becomes an unguarded second holder.
+      try { await takeLock(); } catch { return; }
       const isl = bootIsland();
       ports.add(port);
       // A tab's message rides to the island whole; a transferred port (the manifest's sync port) rides with it.

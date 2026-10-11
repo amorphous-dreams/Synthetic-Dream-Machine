@@ -18,8 +18,8 @@
  * says which client holds the store and stops there; the person closes that tab.
  *
  * ── THE FLOOR ────────────────────────────────────────────────────────────────────────────────────
- * An engine without `navigator.locks` opens exactly as before. A missing platform cap removes a cap from
- * the vessel's declaration and nothing else; it never becomes a throw.
+ * An engine without `navigator.locks` refuses to open the store. A missing platform cap cannot prove the
+ * one-holder law, so it cannot authorize a holder.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/pattern-integrity-rhymes
  */
@@ -53,10 +53,8 @@ export function vesselLockName(idbName: string): string {
 
 export interface VesselLockHold {
   readonly name: string;
-  /** True when the platform granted the lock; false on the floor (no Web Locks here) or when ATTACHED. */
+  /** True when the platform granted the lock; false only when ATTACHED to the shared holder. */
   readonly held: boolean;
-  /** Names the floor when `held` reads false. */
-  readonly floor?: string;
   /** True when the lock is held by the shared holder this tab attaches to — the one refusal that opens. */
   readonly attached?: boolean;
   /** The holder the platform named, when attached. */
@@ -84,7 +82,9 @@ export async function holdVesselLock(
 ): Promise<VesselLockHold> {
   const name = vesselLockName(idbName);
   if (!host || typeof host.request !== "function") {
-    return { name, held: false, floor: "this engine offers no Web Locks; the store opens unguarded", release: async () => {} };
+    throw new Error(
+      `[vessel] cannot open store "${idbName}": this engine offers no Web Locks; one holder per store cannot be enforced.`,
+    );
   }
 
   let endLife: () => void = () => {};
@@ -98,7 +98,14 @@ export async function holdVesselLock(
     }).catch(reject);
   });
 
-  if (await granted) {
+  let lockGranted: boolean;
+  try {
+    lockGranted = await granted;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`[vessel] cannot acquire Web Lock for store "${idbName}" ("${name}"): ${detail}`);
+  }
+  if (lockGranted) {
     // Release settles the callback, and the platform lets go once the request promise resolves.
     return { name, held: true, release: async () => { endLife(); await settled; } };
   }
