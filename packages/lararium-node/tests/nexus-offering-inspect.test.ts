@@ -11,7 +11,11 @@ import { tmpdir } from "node:os";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey } from "@lararium/mesh";
+import {
+  sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey, computePluginsCid,
+  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
+  type GenesisSeed,
+} from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona } from "../src/node-vessel-identity.js";
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
@@ -52,7 +56,26 @@ function seedOfferingSource(): { dir: string; cid: string; bytes: Uint8Array } {
   return { dir, cid: sha256, bytes };
 }
 
+/** A minimal, READABLE genesis seed (M-d: an absent genesis now refuses `boot-set-unknown` rather
+ *  than failing open, so every publish here needs one). No blobs — never collides with a test's
+ *  own synthetic offering ids. */
+function seedMinimalGenesis(): void {
+  const genesisDir = join(root, "genesis");
+  mkdirSync(genesisDir, { recursive: true });
+  const seed: GenesisSeed = {
+    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+    blobs: {},
+    tiddlers: {
+      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
+      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
+      [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([]) } },
+    },
+  };
+  writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed));
+}
+
 async function stand(): Promise<void> {
+  seedMinimalGenesis();
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(0);
   await wearPersona(0);

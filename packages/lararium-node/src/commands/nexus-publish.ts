@@ -129,14 +129,28 @@ export async function runNexusPublishPlugins(
   const blobsIn: readonly SourceDescriptorBlob[] = Array.isArray((parsed as { blobs?: unknown })?.blobs)
     ? (parsed as SourceDescriptor).blobs : [];
   if (blobsIn.length === 0) {
-    throw new NexusPublishError("refusing to announce an offering that does not self-verify: an offering with no blobs names nothing to take");
+    // L-e: this refusal now NAMES its code, exactly as the other three (`boot-set-collision`,
+    // `boot-set-unknown`, `missing-bytes`/`corrupt-bytes`) already do.
+    throw new NexusPublishError("refusing to announce an offering that does not self-verify (empty-offering): an offering with no blobs names nothing to take");
   }
 
   // BOOT-SET COLLISION, BEFORE ANYTHING ELSE TOUCHES BYTES. A source naming a boot-set id (the
   // grammar, boot shadows, the engine core) can never verify — a third party's "plugin" shadowing the
   // fixed floor is precisely what `boot-set-collision` exists to refuse (M3, reused here at publish time
   // rather than only at a recipe's selection).
-  const genesisIds = new Set((readGenesisCasManifest(opts.genesisDir)?.blobs ?? []).map((b) => b.id));
+  //
+  // M-d (gp3-episkopos, measured live): an ABSENT or unreadable genesis seed read as "no boot ids" —
+  // `readGenesisCasManifest(...)?.blobs ?? []` folds null into an EMPTY set, so moving genesis aside
+  // let a source claiming the grammar's own id sign and announce as a PUBLISHER record. An empty
+  // protect set must never mean "nothing to guard" (`genesis-artifact.ts`'s own protect-set law) — a
+  // null manifest here refuses by name instead, `boot-set-unknown`, rather than failing open.
+  const manifest = readGenesisCasManifest(opts.genesisDir);
+  if (manifest === null) {
+    throw new NexusPublishError(
+      "refusing to announce an offering whose boot-set collision cannot be checked (boot-set-unknown): no readable genesis seed at this root",
+    );
+  }
+  const genesisIds = new Set(manifest.blobs.map((b) => b.id));
   for (const blob of blobsIn) {
     if (genesisIds.has(blob.id)) {
       throw new NexusPublishError(`refusing to announce an offering that claims a boot-set id (boot-set-collision): ${blob.id}`);

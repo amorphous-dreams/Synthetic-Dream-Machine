@@ -19,10 +19,14 @@ import {
   crossroadsDocUrl,
   ed25519SignerFromSeed,
   ed25519VerifyingKeyFromSeed,
+  GENESIS_CID_ENGINE_TIDDLER,
+  GENESIS_CID_GRAMMAR_TIDDLER,
+  GENESIS_CID_PLUGINS_TIDDLER,
   materializeSharedLarDoc,
   offeringAnnouncesFromDoc,
   pluginOfferingCid,
   signPluginOffering,
+  type GenesisSeed,
   type OfferedBlob,
   type PluginProvenance,
 } from "@lararium/mesh";
@@ -55,6 +59,24 @@ afterEach(() => {
   else process.env["LAR_ROOT"] = priorRoot;
   rmSync(root, { recursive: true, force: true });
 });
+
+/** A minimal, READABLE genesis seed carrying the boot set's region witnesses alone — no blobs, so it
+ *  never collides with any test's own synthetic offering ids. M-d: `boot-set-collision` now refuses
+ *  (`boot-set-unknown`) when genesis is absent entirely, so every publish here needs ONE of these. */
+function seedMinimalGenesis(): void {
+  const genesisDir = join(root, "genesis");
+  mkdirSync(genesisDir, { recursive: true });
+  const seed: GenesisSeed = {
+    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+    blobs: {},
+    tiddlers: {
+      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
+      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
+      [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([]) } },
+    },
+  };
+  writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed));
+}
 
 const PROVENANCE: PluginProvenance = {
   source: "https://example.test/example-one", commit: "a".repeat(40), path: "plugins/example/one", licence: "MIT",
@@ -114,6 +136,7 @@ async function standPersona(): Promise<void> {
 describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", () => {
   it("signs an UNSIGNED source as PUBLISHER, announces, and retrieves the exact gift from a persisted Crossroads board", async () => {
     const source = seedUnsignedSource();
+    seedMinimalGenesis();
     await standPersona();
 
     const first = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
@@ -139,6 +162,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
 
   it("a SIGNED gift is announced EXACTLY as signed — never re-signed under this vessel's own persona", async () => {
     const { dir: source, offeror } = await seedSignedGift();
+    seedMinimalGenesis();
     await standPersona();
     const vesselKey = await loadVesselVerifyingKey();
 
@@ -173,6 +197,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
 
   it("MUTATION PROOF — missing-bytes: a declared blob whose file never arrived refuses by name before anything is signed", async () => {
     const source = seedUnsignedSource({ omitFile: true });
+    seedMinimalGenesis();
     await standPersona();
     await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
       .rejects.toThrow(/missing-bytes/);
@@ -180,17 +205,63 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
 
   it("MUTATION PROOF — corrupt-bytes: a blob file that does not hash to its declared sha256 refuses by name", async () => {
     const source = seedUnsignedSource({ corruptBytes: true });
+    seedMinimalGenesis();
     await standPersona();
     await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
       .rejects.toThrow(/corrupt-bytes/);
   });
 
-  it("CONTROL: a source naming no boot-set id publishes cleanly even with a genesisDir present", async () => {
+  it("CONTROL: a source naming no boot-set id publishes cleanly with a readable genesis present", async () => {
     const source = seedUnsignedSource();
-    const genesisDir = join(root, "genesis-empty");
+    const genesisDir = join(root, "genesis-separate");
     mkdirSync(genesisDir, { recursive: true });
+    const seed: GenesisSeed = {
+      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+      blobs: {},
+      tiddlers: {
+        [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
+        [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
+        [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([]) } },
+      },
+    };
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed));
     await standPersona();
     const result = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), genesisDir });
     expect(result.blobCount).toBe(1);
+  });
+
+  it("MUTATION PROOF (M-d) — boot-set-unknown: an ABSENT genesis refuses the collision check rather than failing open", async () => {
+    // No seedMinimalGenesis() here — the whole point. Before M-d's fix, an absent/torn genesis read
+    // as "no boot ids at all" and let a source claiming the grammar's own id sign and announce.
+    const source = seedUnsignedSource();
+    await standPersona();
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+      .rejects.toThrow(/boot-set-unknown/);
+  });
+
+  it("boot-set-collision: a source naming a real boot-set id refuses, WITH genesis readable", async () => {
+    const genesisDir = join(root, "genesis");
+    mkdirSync(genesisDir, { recursive: true });
+    const bootBlobId = "$:/boot/the-grammar";
+    const seed: GenesisSeed = {
+      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+      blobs: { [bootBlobId]: { id: bootBlobId, sha256: "f".repeat(64), mimeType: "application/json", version: "v1" } },
+      tiddlers: {
+        [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
+        [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
+        [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([]) } },
+      },
+    };
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed));
+    const source = mkdtempSync(join(tmpdir(), "lares-offering-source-"));
+    const bytes = Buffer.from("boot-colliding bytes", "utf8");
+    const sha256 = require("node:crypto").createHash("sha256").update(bytes).digest("hex");
+    writeFileSync(join(source, "plugin.bin"), bytes);
+    writeFileSync(join(source, "offering.json"), JSON.stringify({
+      blobs: [{ id: bootBlobId, version: "v1", sha256, provenance: PROVENANCE, file: "plugin.bin" }],
+    }));
+    await standPersona();
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+      .rejects.toThrow(/boot-set-collision/);
   });
 });

@@ -21,9 +21,10 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   NEXUS_DOC_DOMAIN, genesisSealEpochCid, antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl,
+  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl, computePluginsCid,
+  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
-  type NexusDoc, type LarDoc,
+  type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey,
@@ -55,9 +56,22 @@ afterEach(async () => {
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
-/** Seat a 2-of-3 charter whose kahu are this vessel's own held roots, wear h0, and seed a genesis plugin region. */
+/** Seat a 2-of-3 charter whose kahu are this vessel's own held roots, wear h0, and seed a minimal,
+ *  READABLE genesis (M-d: an absent genesis now refuses `boot-set-unknown` rather than failing
+ *  open, so `nexus-publish`'s own writer test needs one; harmless for the other three writers). */
 async function seatVessel(root: string): Promise<void> {
   at(root);
+  mkdirSync(join(root, "genesis"), { recursive: true });
+  const seed: GenesisSeed = {
+    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+    blobs: {},
+    tiddlers: {
+      [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
+      [GENESIS_CID_GRAMMAR_TIDDLER]: { tiddler: { cid: "b".repeat(64) } },
+      [GENESIS_CID_PLUGINS_TIDDLER]: { tiddler: { cid: computePluginsCid([]) } },
+    },
+  };
+  writeFileSync(join(root, "genesis", "seed.json"), JSON.stringify(seed));
   await generateOrLoadVesselIdentity();
   const keys = (await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)))).map((r) => r.verifyingKey);
   const doc: NexusDoc = {
