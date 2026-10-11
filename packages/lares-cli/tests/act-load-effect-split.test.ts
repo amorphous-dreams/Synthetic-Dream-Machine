@@ -1,18 +1,22 @@
 /**
- * act-load-effect-split.test.ts — D1, P2.5 iter 4 commit 4/4: `lares act LOAD`'s split request-id
- * / effect-key, closing H4's livelock live over the REAL rendezvous socket (never a mock of
- * `runVerb`/`invokeLocal` — the same stub-listener discipline `receipt-cmd.test.ts` already uses
- * for this package's wire shape, so the whole path — `taskContentId`, `newRequestId`, the JSON
- * line `local-connector.ts` writes, `verb-call.ts`'s `refusalCode` mapping — runs for real).
+ * act-load-effect-split.test.ts — D1, P2.5 iter 4 commit 4/4 (LOAD-only), WIDENED by E1 commit 4′
+ * (P2.5 iter 5) to EVERY action verb: `lares act`'s split request-id / effect-key, closing H4's
+ * livelock live over the REAL rendezvous socket (never a mock of `runVerb`/`invokeLocal` — the
+ * same stub-listener discipline `receipt-cmd.test.ts` already uses for this package's wire shape,
+ * so the whole path — `taskContentId`, `newRequestId`, the JSON line `local-connector.ts` writes,
+ * `verb-call.ts`'s `refusalCode` mapping — runs for real).
  *
- * H4 (episkopos-3, re-proven live): a frozen vessel's first LOAD timed out as `outcome-unknown`;
- * the identical re-run then read `verb-error` TWICE, never actually re-attempting the load — the
- * content-addressed requestId this surface minted for EVERY action verb collapsed a genuine retry
- * onto the SAME id the vessel had already recorded abandoned, so no re-run could ever again win a
- * "run" verdict under that id. The fix: LOAD alone splits `requestId` (a fresh nonce per attempt)
- * from `effectKey` (content-addressed, stable across retries) — a retry always gets to try again,
- * while the daemon's own effect index (proven at the tw5/node layers, D1 commits 1-3) still
- * prevents a SECOND land if the first attempt actually completed meanwhile.
+ * H4 (episkopos-3, re-proven live, then generalized): a frozen vessel's first LOAD timed out as
+ * `outcome-unknown`; the identical re-run then read `verb-error` TWICE, never actually
+ * re-attempting the load — the content-addressed requestId this surface minted for EVERY action
+ * verb collapsed a genuine retry onto the SAME id the vessel had already recorded abandoned, so no
+ * re-run could ever again win a "run" verdict under that id. The SAME livelock shape applies to a
+ * deliberately-reused `--change-id`/`--bag` on any OTHER action verb, not just LOAD — operator
+ * ruling (early alpha, no legacy/back-compat): EVERY action verb (REPACK included) now splits
+ * `requestId` (a fresh nonce per attempt) from `effectKey` (content-addressed, stable across
+ * retries) — a retry always gets to try again, while the daemon's own effect index (proven at the
+ * tw5/node layers, D1 commits 1-3) still prevents a SECOND land if the first attempt actually
+ * completed meanwhile.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
 import { createServer, type Server, type Socket } from "node:net";
@@ -100,7 +104,7 @@ function abandonedReply(): (inv: Invocation) => unknown {
   return (inv) => ({ status: "error", errorMessage: `request ${inv.requestId} abandoned`, refusal: { reason: "abandoned" } });
 }
 
-describe("lares act LOAD — the split requestId/effectKey (H4)", () => {
+describe("lares act — the split requestId/effectKey, every action verb (H4, widened E1 commit 4′)", () => {
   test("★ every LOAD mints a FRESH requestId per attempt, but the SAME effectKey across identical args ★", async () => {
     const { received } = await standScripted([doneReply(1), doneReply(1)]);
     const codeA = await cmdAct(loadArgs());
@@ -159,14 +163,28 @@ describe("lares act LOAD — the split requestId/effectKey (H4)", () => {
     expect(Object.prototype.hasOwnProperty.call(received[0]!, "effectKey")).toBe(false);
   });
 
-  test("CONTROL: a non-LOAD verb keeps requestId === effectKey (content-addressed, unsplit) — the split is LOAD-only", async () => {
-    const { received } = await standScripted([doneReply(1)]);
-    const code = await cmdAct(parseArgs([
-      "act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json",
-    ]));
-    expect(code).toBe(0);
-    expect(received).toHaveLength(1);
-    expect(received[0]!.effectKey).toBe(received[0]!.requestId);
+  test("★ a non-LOAD verb (CLEAR) ALSO splits requestId from effectKey — the split is EVERY verb's, not LOAD-only ★", async () => {
+    const { received } = await standScripted([doneReply(1), doneReply(1)]);
+    const codeA = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json"]));
+    const codeB = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json"]));
+    expect(codeA).toBe(0);
+    expect(codeB).toBe(0);
+    expect(received).toHaveLength(2);
+    expect(received[0]!.requestId).not.toBe(received[1]!.requestId); // a fresh id every attempt
+    expect(received[0]!.effectKey).toBeDefined();
+    expect(received[0]!.effectKey).toBe(received[1]!.effectKey);     // the SAME content-addressed effect
+    expect(received[0]!.requestId).not.toBe(received[0]!.effectKey); // never collapsed to one id
+  });
+
+  test("★ a non-LOAD verb's abandoned-then-retry ALSO closes (fresh id per attempt, never wedged under one id) ★", async () => {
+    const { received } = await standScripted([abandonedReply(), doneReply(1)]);
+    const codeFirst = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json"]));
+    expect(codeFirst).toBe(6); // request-abandoned
+    const codeRetry = await cmdAct(parseArgs(["act", "CLEAR", "--bag", "lar:///test/catalog", "--yes", "--json"]));
+    expect(codeRetry).toBe(0); // the retry actually ran — never refused again under the same id
+    expect(received).toHaveLength(2);
+    expect(received[0]!.requestId).not.toBe(received[1]!.requestId);
+    expect(received[0]!.effectKey).toBe(received[1]!.effectKey);
   });
 
   test("a live `retention-gap` refusal (the receipt ring evicted this id) reads its own code (exit 6), never `verb-error`", async () => {

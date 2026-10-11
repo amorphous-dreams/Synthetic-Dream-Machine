@@ -152,12 +152,17 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const submitName = inWiki ? "wiki-act" : "REPACK";
   const submitArgs = inWiki ? { verb: "REPACK", args: repackArgs } : repackArgs;
 
-  // A caller-generated nonce, before dispatch — the one thing a short read-back below can trust across
-  // a lost response (see the LOAD arm further down for the full reasoning).
-  const repackRequestId = newRequestId();
+  // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb
+  // (REPACK included, E1 commit 4′). A caller-generated requestId nonce, before dispatch — a FRESH
+  // id every attempt, so a retry after an abandoned/unknown outcome actually dispatches again
+  // rather than reusing an id this vessel may have already settled forever; the effectKey still
+  // rides every attempt, so the daemon's own effect index answers a repeat attempt that DID land
+  // without re-running it.
+  const repackEffectKey  = await taskContentId({ subject: fromBag, command: submitName, args: submitArgs, nonce: "" });
+  const repackRequestId  = newRequestId();
   let result;
   try {
-    result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId });
+    result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId, effectKey: repackEffectKey });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // THE SAME TWO FAULTS, TOLD APART. REPACK rides the default budget rather than a derived one, so its
@@ -178,7 +183,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
           emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
         }
-        const hint = "the daemon answered and this process stopped waiting; a short read found no receipt yet. The verb may still be running. Re-run on a quieter machine, or repack a smaller bundle — the same request id reads the receipt back once it lands.";
+        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares receipt ${repackRequestId}\`. A fresh attempt mints its own id; the effect index answers a repeat of a landed effect — if this attempt DID land, the daemon's effect index (key ${repackEffectKey}) answers the re-run with the same outcome rather than repacking twice.`;
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
@@ -400,19 +405,17 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   const submitName = inWiki ? "wiki-act" : verb;
   const submitArgs = inWiki ? { verb, args: actionArgs } : actionArgs;
   // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb.
-  // LOAD alone SPLITS its ids from it (H4, D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH
-  // nonce per attempt, so a retry after an abandoned/unknown outcome actually dispatches again
-  // rather than reusing an id this vessel has already settled forever (the livelock H4 named —
-  // the SAME content-addressed id, reused across the identical retry a frozen vessel invites,
-  // could never again win "run" once this vessel had recorded it abandoned). `effectKey` still
-  // rides every attempt, so the daemon's own effect index answers a repeat attempt that DID land
-  // with the prior `done` outcome, never running the LOAD twice. Every OTHER action verb keeps
-  // `requestId === effectKey`: its own `--change-id` already mints fresh per invocation when the
-  // operator omits it, so collapsing a deliberately-REUSED change-id to one id was always the
-  // intended idempotency there — LOAD alone hit the livelock because reusing `--change-id` is
-  // this surface's documented retry gesture for a stalled LOAD specifically.
+  // EVERY action verb now SPLITS its id from it (E1 commit 4′, generalizing H4's LOAD-only fix,
+  // D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH nonce per attempt, so a retry after an
+  // abandoned/unknown/evicted outcome actually dispatches again rather than reusing an id this
+  // vessel may have already settled forever (the livelock H4 first named for LOAD applies equally
+  // to a reused `--change-id` on ADD/COPY/MOVE, or a reused `--bag` on CLEAR/DROP/CREATE — any
+  // content-addressed id, reused across an identical retry a frozen vessel invites, could never
+  // again win "run" once this vessel had recorded it abandoned). `effectKey` still rides every
+  // attempt, so the daemon's own effect index answers a repeat attempt that DID land with the
+  // prior `done` outcome, never running the verb twice.
   const effectKey = await taskContentId({ subject, command: submitName, args: submitArgs, nonce: "" });
-  const requestId = verb === "LOAD" ? newRequestId() : effectKey;
+  const requestId = newRequestId();
   // The ACK budget scales with the gesture: a directory-batch LOAD chews one
   // island frame per carrier, so a flat budget times out the ACK while the verb
   // itself succeeds.
@@ -461,14 +464,12 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         });
         return exitFor("retention-gap");
       } else {
-        const perCarrier = "10s + 400ms per carrier";
-        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4). requestId === effectKey
-        // for every verb except LOAD, where requestId is a FRESH nonce this attempt alone owns —
-        // re-running never reads IT back (a fresh attempt mints its own), so the old "re-running this
-        // exact command later reads the same receipt back" promise would be a LIE for LOAD specifically.
-        const hint = requestId === effectKey
-          ? `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`
-          : `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-running is always safe here: a fresh attempt mints its OWN request id, never this one, so it can never collide with whatever this attempt settles to; if this attempt DID land, the daemon's effect index (key ${effectKey}) answers the re-run with the same outcome rather than loading twice. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4, generalized E1 commit
+        // 4′). requestId is now a FRESH nonce every verb's own attempt alone owns — re-running
+        // never reads IT back (a fresh attempt mints its own) — so the hint reads the SAME for
+        // every verb; it always names the carrierCount that set the budget (0 for a non-LOAD verb)
+        // and names LOAD's own per-carrier arithmetic only when this attempt actually is one.
+        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-running is always safe here: a fresh attempt mints its own id; the effect index answers a repeat of a landed effect, so it can never collide with whatever this attempt settles to — if this attempt DID land, the daemon's effect index (key ${effectKey}) answers the re-run with the same outcome rather than running it twice. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
           human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
