@@ -6,7 +6,7 @@
  * deliver-once per recipient, addressed routing, and "never to self" are proven.
  */
 import { describe, expect, it, afterEach } from "vitest";
-import { mkdtempSync, rmSync, readdirSync } from "node:fs";
+import { mkdtempSync, rmSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { MEMBERSHIP_BROADCAST, type MembershipEnvelope } from "@lararium/mesh";
@@ -99,5 +99,37 @@ describe("FileMembershipChannel — CLOCKLESS: message identity rides a per-writ
     expect(files).toHaveLength(2);                      // no overwrite — distinct writer ids, not a shared clock tick
     const delivered = await writerA.poll("bob");
     expect(delivered.map((e) => e.kind).sort()).toEqual(["a0", "b0"]);
+  });
+});
+
+describe("FileMembershipChannel — M11: a half-written envelope retries, never reads as seen-and-lost", () => {
+  it("a torn (unparseable) envelope file is skipped WITHOUT being marked seen, so a later clean write of the " +
+     "SAME name would still retry (proves poll() no longer burns the name on a parse failure)", async () => {
+    dir = mkdtempSync(join(tmpdir(), "lares-membership-"));
+    const ch = new FileMembershipChannel(dir);
+    await ch.offer(env("alice", "bob", "good-one"));
+
+    // Simulate a writer caught mid-write: a file that parses as invalid JSON (a torn write).
+    const tornName = "ffffffffffffffff-000000000000000.json";
+    writeFileSync(join(dir, tornName), '{"kind":"torn", "from":"alice", "to":"bob", "payload":{');
+
+    const first = await ch.poll("bob");
+    expect(first.map((e) => e.kind)).toEqual(["good-one"]);   // the torn one never delivers garbage
+
+    // MUTATION PROOF: before the fix, `seen.add(f)` ran BEFORE the parse, so the torn name was burned into
+    // `seen` forever — even after the writer finished and the bytes became valid, poll() would never look at
+    // it again. Overwrite the torn file with a clean, valid envelope under the SAME name and poll again.
+    writeFileSync(join(dir, tornName), JSON.stringify(env("alice", "bob", "repaired")));
+    const second = await ch.poll("bob");
+    expect(second.map((e) => e.kind)).toEqual(["repaired"]);   // retried and delivered — the name was NOT burned
+  });
+
+  it("offer() never leaves a .json file visible mid-write — it lands via temp+rename", async () => {
+    dir = mkdtempSync(join(tmpdir(), "lares-membership-"));
+    const ch = new FileMembershipChannel(dir);
+    await ch.offer(env("alice", "bob", "atomic"));
+    const files = readdirSync(dir);
+    expect(files.every((f) => f.endsWith(".json"))).toBe(true);   // no stray .tmp left behind
+    expect(files).toHaveLength(1);
   });
 });

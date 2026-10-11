@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import { mkdirSync, writeFileSync, readdirSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readdirSync, readFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import {
@@ -40,9 +40,19 @@ export class FileMembershipChannel implements MembershipChannel {
 
   offer(env: MembershipEnvelope): Promise<void> {
     // Name = this writer's id + its own local seq → collision-free across processes, with no wall clock and no
-    // reliance on a reusable pid. Carries no cross-writer ordering claim.
-    const name = `${this.writerId}-${String(this.seq++).padStart(5, "0")}.json`;
-    writeFileSync(join(this.dir, name), JSON.stringify(env));
+    // reliance on a reusable pid. Carries no cross-writer ordering claim. Padded to 15 digits — the same width
+    // `epoch-lease`'s decimal fences use — so a long-lived writer's sequence cannot overtake the padding and
+    // invert lexical order (L3); order carries no causal claim regardless, so this only protects within-writer
+    // delivery order, never a correctness property.
+    const name = `${this.writerId}-${String(this.seq++).padStart(15, "0")}.json`;
+    // ATOMIC WRITE: a poll reading mid-write must never see a half-written file. Write under a `.tmp` name
+    // (same directory, so the rename is a same-filesystem metadata op, not a copy) and rename it into place —
+    // the rename is the only operation that makes the envelope visible at its real name, so every reader that
+    // lists the directory sees either nothing or the WHOLE envelope, never a partial one.
+    const finalPath = join(this.dir, name);
+    const tmpPath   = `${finalPath}.tmp`;
+    writeFileSync(tmpPath, JSON.stringify(env));
+    renameSync(tmpPath, finalPath);
     return Promise.resolve();
   }
 
@@ -51,10 +61,10 @@ export class FileMembershipChannel implements MembershipChannel {
     const out: MembershipEnvelope[] = [];
     for (const f of readdirSync(this.dir).filter((x) => x.endsWith(".json")).sort()) {
       if (seen.has(f)) continue;
-      seen.add(f);
       let env: MembershipEnvelope;
       try { env = JSON.parse(readFileSync(join(this.dir, f), "utf8")) as MembershipEnvelope; }
-      catch { continue; }                                  // a half-written file — skip, retry next poll
+      catch { continue; }    // a torn/unreadable file — DO NOT mark seen; retry next poll, as the comment always claimed
+      seen.add(f);            // mark seen ONLY after a clean parse, so a parse failure costs no envelope forever
       if (forRecipient(env, recipient)) out.push(env);
     }
     this.seen.set(recipient, seen);
