@@ -13,8 +13,10 @@
 #           The repo rides read-only at /repo, /tmp is a writable tmpfs profile dir, and the runner reaches the
 #           node by service name. No Docker socket reaches any container: the host script issues admit carriages.
 #
-# Host port: BROWSER_CI_PORT (default 5401; the browser swarm's range is 5400-5499).
-# Drive it with tools/browser-ci.sh (up | admit | ingest | qa | down).
+# Host port: BROWSER_CI_PORT (default 5401; the browser swarm's range is 5400-5499). Compose project:
+# BROWSER_CI_PROJECT (default lares-browser-ci). Containers, network and volumes derive from the project name, so
+# two surfaces with distinct (project, port) pairs share nothing.
+# Drive it with tools/browser-ci.sh (up | restart | admit | bag | ingest | recipe | get | info | qa | down).
 
 name: lares-browser-ci
 
