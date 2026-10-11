@@ -68,16 +68,6 @@ export interface CabalInvite {
   /** The VOUCHER: an already-licensed member, staking their standing. Attributable by construction. */
   readonly voucherDid:  string;
   /**
-   * A HINT for the voucher's own tools, and NEVER a gate.
-   *
-   * A causal island holds no global now: two members reading one board at the same causal moment
-   * differ by exactly their clock skew, and the divergence runs the dangerous way — a fast clock
-   * refuses a live vouch, a SLOW one admits a dead one. So the lease that the machine being gated
-   * could extend cannot be the lease that gates it. Admission reads `boundEpoch`; this reads to a
-   * human.
-   */
-  readonly expiresAt:   string;
-  /**
    * THE FENCE. The realm's lease epoch this invite is bound to — a 1-15 digit decimal, mirroring
    * `device-delegation`. `epoch-lease` holds that epoch as a coordinator-free MAX-REGISTER in
    * per-writer slots, so it converges without a coordinator and never decreases. Roll the realm's
@@ -96,7 +86,6 @@ export function cabalInviteBytes(parts: Omit<CabalInvite, "sig">): Uint8Array {
     realmDocIdHex:     parts.realmDocIdHex,
     joinerIdentityHex: parts.joinerIdentityHex,
     voucherDid:        parts.voucherDid,
-    expiresAt:         parts.expiresAt,
     boundEpoch:        parts.boundEpoch,
   });
 }

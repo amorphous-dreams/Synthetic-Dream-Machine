@@ -26,15 +26,13 @@ const VOUCHER_SEED = new Uint8Array(32).fill(7);
 const REALM  = "a".repeat(64);
 const JOINER = "b".repeat(64);
 const NOW    = new Date("2026-07-14T00:00:00Z");
-const LATER  = "2026-08-01T00:00:00Z";
 const DIALS: AdmissionDials = { epsilon: 0.15, beta: 0.9, rho: 1, supply: 1, alpha: 0.5 };
 
 /** An invite from the one voucher to whoever — the raw material the lineage folds from. */
 async function inviteTo(joiner: string): Promise<CabalInvite> {
   return signCabalInvite({
     realmDocIdHex: REALM, joinerIdentityHex: joiner,
-    voucherDid: await pubOf(VOUCHER_SEED), expiresAt: LATER, boundEpoch: "0",
-    boundEpoch:        "0",
+    voucherDid: await pubOf(VOUCHER_SEED), boundEpoch: "0",
   }, signer(VOUCHER_SEED));
 }
 

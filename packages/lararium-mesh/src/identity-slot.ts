@@ -85,7 +85,6 @@ export interface IdentitySlot {
     docUrl:     string,
     toDid:      string,
     ability:    "read" | "edit",
-    expiresIn?: number,  // seconds; undefined = no expiry
   ): Promise<CapabilityToken>;
 
   /**

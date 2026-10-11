@@ -32,7 +32,6 @@ let priorLarRoot: string | undefined;
 const REALM = "a".repeat(64);
 const OTHER_REALM = "d".repeat(64);
 const NOW = Date.parse("2026-07-14T00:00:00Z");
-const LATER = "2026-08-01T00:00:00Z";
 
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
@@ -80,7 +79,7 @@ async function foreignNym(seedByte: number): Promise<string> {
 describe("cabal join — the crossing, and what it refuses", () => {
   it("admits a joiner the realm vouched for, and names the voucher the co-pay charges", async () => {
     const joiner = await foreignNym(7);
-    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
 
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
 
@@ -111,7 +110,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
   it("refuses an invite that names a different realm", async () => {
     const joiner = await foreignNym(10);
-    await direct(runCabalVouch)({ joiner, realm: OTHER_REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: OTHER_REALM }, NOW);
 
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(v.admitted).toBe(false);
@@ -121,7 +120,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("★ an invite is never BEARER — it names its joiner ★", async () => {
     const named = await foreignNym(11);
     const thief = await foreignNym(12);
-    await direct(runCabalVouch)({ joiner: named, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner: named, realm: REALM }, NOW);
 
     // The thief presents against a board that carries a valid invite — for somebody else.
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: thief });
@@ -132,7 +131,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("refuses an invite whose vouch has lapsed — the realm rolled its fence past it", async () => {
     const joiner = await foreignNym(13);
     // Minted bound at the realm's genesis epoch, which is where a fresh realm stands.
-    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 }, NOW);
 
     // THE ROLL IS THE LAPSE, and it takes no clock. A reading that lapsed by timestamp could be
     // un-lapsed by the applicant's own machine, which is the one hand that must not hold the dial.
@@ -145,7 +144,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
     const joiner = await foreignNym(14);
     const impostorSeed = new Uint8Array(32).fill(99);
     const forged = await signCabalInvite(
-      { realmDocIdHex: REALM, joinerIdentityHex: joiner, voucherDid: await foreignNym(15), expiresAt: LATER, boundEpoch: "0" },
+      { realmDocIdHex: REALM, joinerIdentityHex: joiner, voucherDid: await foreignNym(15), boundEpoch: "0" },
       async (b: Uint8Array) => hex(await ed.signAsync(b, impostorSeed)),
     );
     expect(await verify(new Uint8Array(), forged.sig, forged.voucherDid)).toBe(false);
@@ -158,7 +157,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("★ M16 — an unreadable daemon doc refuses CROSSING as an INCOMPLETE VIEW, never as a guessed genesis fence ★", async () => {
     const joiner = await foreignNym(20);
     // CONTROL: with the bootstrap seeded (beforeEach), a vouch bound at genesis (0) admits against epoch 0.
-    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 }, NOW);
     const control = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(control.admitted).toBe(true);
 
@@ -186,7 +185,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("★ the crossing folds the DAG ITSELF, so the per-voucher cap cannot be skipped ★", async () => {
     // `capped` exists only on the lineage shore — `admitToRealm` returns no such field.
     const joiner = await foreignNym(17);
-    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
 
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW, maxVouchesPerVoucher: 1 });
 
@@ -211,7 +210,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
     expect(nodeNexusIsland({ ownVesselKey: vesselKey })).not.toBe(vesselKey);
 
     const joiner = await foreignNym(18);
-    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER }, NOW);
+    await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW });
 
     expect(v.refusal).toBeUndefined();

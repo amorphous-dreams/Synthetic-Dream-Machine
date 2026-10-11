@@ -34,7 +34,6 @@ async function mint(over: Partial<CabalInvite> = {}): Promise<CabalInvite> {
     realmDocIdHex:     REALM,
     joinerIdentityHex: JOINER,
     voucherDid,
-    expiresAt:         "2026-08-13T00:00:00.000Z",
     boundEpoch:        "0",
   }, sign);
   return { ...inv, ...over };

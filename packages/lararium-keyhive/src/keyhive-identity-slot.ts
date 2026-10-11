@@ -102,18 +102,11 @@ interface KeyhiveTokenPayload {
   readonly audience:     string;
   readonly bagUrl:       string;
   readonly access:       CapabilityAccess;
-  /** Absolute expiry in POSIX milliseconds if the caller passed expiresIn; else null. WALL-CLOCK, and
-   *  deliberately not the word `epoch` — that names the mesh's clockless fencing frontier (`epoch-lease`),
-   *  and a reader who meets both spellings in one file has to guess which authority a number carries.
-   *  NOTE (shore): the provider's DelegateArgs carries no expiry, so expiry is
-   *  token-advisory only — verifyDelegation enforces it, the crypto layer does
-   *  not. Real time-boxing waits on a provider expiry surface. */
-  readonly expiresAtMs:  number | null;
   readonly bytesHex:     string;
   /**
    * §2c — the lease epoch (`epoch-lease.ts`, clockless) read off `leaseEpochOf(bagUrl)` AT MINT TIME, or `null`
    * when the slot was constructed with no `leaseEpochOf` (or the resolver itself returned/threw null). This is
-   * the FENCE `verifyDelegation` checks before `expiresAtMs`: a token minted at epoch E refuses the moment the
+   * the FENCE `verifyDelegation` checks: a token minted at epoch E refuses the moment the
    * bag's effective epoch has rolled past E, independent of any wall clock. Council ruling 6: a verifier that
    * cannot read the current epoch reports an INCOMPLETE VIEW (refuse), never "expired" and never "standing".
    */
@@ -198,7 +191,6 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
     docUrl:     string,
     toDid:      string,
     ability:    "read" | "edit",
-    expiresIn?: number,
   ): Promise<CapabilityToken> {
     const result = await this.#provider.delegate({
       audience: toDid,
@@ -224,7 +216,6 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
       audience:     toDid,
       bagUrl:       docUrl,
       access,
-      expiresAtMs:  expiresIn === undefined ? null : Date.now() + expiresIn * 1000,
       bytesHex:     bytesToHex(result.bytes),
       boundEpoch,
       sealSigHex,
@@ -250,8 +241,9 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
    * ORDER (§2c/H6, load-bearing — do not reshuffle): (1) parse, (2) bag-scope, (3) `provider.verify` (the
    * real revocation-aware barrier), (4) the SEAL GATE (H6) — a non-null `boundEpoch` must carry a signature
    * THIS slot can check, over the exact canonical fields a forger could otherwise edit freely, (5) the
-   * clockless EPOCH FENCE. The retired wall-clock `expiresAtMs` guard (`gate-retire-keyhive-expiry` patch)
-   * is GONE: the seal gate + fence alone decide. Both sit AFTER revocation so a presenter already denied by
+   * clockless EPOCH FENCE. The wall-clock expiry guard (`gate-retire-keyhive-expiry` patch) is GONE, and the
+   * field it read (`expiresAtMs`) with it (evergreen sweep, 2026-10-11): the seal gate + fence alone decide.
+   * Both sit AFTER revocation so a presenter already denied by
    * `provider.verify` reads that refusal, never a seal/fence refusal that would read as "forged" or "the
    * lease rolled" when the real cause is "never had the cap" / "since revoked".
    */

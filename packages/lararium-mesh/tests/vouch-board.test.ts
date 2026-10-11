@@ -27,13 +27,11 @@ const ALICE = new Uint8Array(32).fill(3);
 const BOB   = new Uint8Array(32).fill(4);
 const REALM = "a".repeat(64);
 const OTHER = "e".repeat(64);
-const LATER = "2026-08-01T00:00:00Z";
 
 async function vouch(seed: Uint8Array, joiner: string, realm = REALM): Promise<CabalInvite> {
   return signCabalInvite({
     realmDocIdHex: realm, joinerIdentityHex: joiner,
-    voucherDid: await pubOf(seed), expiresAt: LATER, boundEpoch: "0",
-    boundEpoch:        "0",
+    voucherDid: await pubOf(seed), boundEpoch: "0",
   }, signer(seed));
 }
 

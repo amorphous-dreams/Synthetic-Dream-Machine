@@ -17,11 +17,10 @@ import { hex } from "../src/crypto.js";
 const seedOf   = (n: number) => new Uint8Array(32).fill(n);
 const signer   = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).then(hex);
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-const LATER    = "2030-01-01T00:00:00Z";
 
 async function invite(voucherDid: string, joinerIdentityHex: string, signSeed: Uint8Array): Promise<CabalInvite> {
   return signCabalInvite(
-    { realmDocIdHex: "p".repeat(64), joinerIdentityHex, voucherDid, expiresAt: LATER, boundEpoch: "0" },
+    { realmDocIdHex: "p".repeat(64), joinerIdentityHex, voucherDid, boundEpoch: "0" },
     signer(signSeed),
   );
 }

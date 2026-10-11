@@ -38,12 +38,13 @@ describe("the keyhive capability token", () => {
   const provider = fakeProvider({ presenter: "did:peer", bagUrl: DOC });
   const seal = fakeSeal("vessel-device-key-secret");
 
-  test("carries its delegation fields and no version", async () => {
+  test("carries its delegation fields, no version, and no wall-clock expiry — the fence alone gates", async () => {
     const slot = new KeyhiveIdentitySlot({ provider, did: "did:self", leaseEpochOf: () => 3, tokenSeal: seal });
     const token = await slot.delegateCapability(DOC, "did:peer", "read");
     const payload = JSON.parse(token!) as Record<string, unknown>;
     expect("v" in payload).toBe(false);
-    expect(Object.keys(payload).sort()).toEqual(["access", "audience", "bagUrl", "boundEpoch", "bytesHex", "delegationId", "expiresAtMs", "sealSigHex"]);
+    expect("expiresAtMs" in payload).toBe(false);
+    expect(Object.keys(payload).sort()).toEqual(["access", "audience", "bagUrl", "boundEpoch", "bytesHex", "delegationId", "sealSigHex"]);
   });
 
   test("CONTROL: a minted, sealed token verifies for its own bag when the epoch has not rolled", async () => {

@@ -261,7 +261,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "cabal-vouch": (args) => answer("cabal-vouch", async () => ({
       ...(await runCabalVouch({
         joiner: str(args["joiner"]) ?? "", realm: str(args["realm"]) ?? "", repo,
-        ...opt("expiresAt", str(args["expiresAt"])), ...opt("handleIndex", int(args["handleIndex"])),
+        ...opt("handleIndex", int(args["handleIndex"])),
       })),
     })),
     "cabal-join": (args) => answer("cabal-join", async () => ({

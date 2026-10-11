@@ -2,7 +2,7 @@
  * `lares cabal <vouch | feed | clock>` — the three doors onto a cabal-realm: stake standing on a joiner, make
  * the offering that keeps a realm alive, and read who feeds it.
  *
- * `vouch <joiner-nym> --realm <realm-doc-id> [--expires <iso>] [--as <n>]` — the JOIN axis's
+ * `vouch <joiner-nym> --realm <realm-doc-id> [--as <n>]` — the JOIN axis's
  * write side: one held face stakes its OWN standing on one joiner, onto the Nexus vouch board.
  *
  * THE CONTRAST WITH `nexus contract`. Contracting a vessel into carriage needs the kahu quorum AND the
@@ -185,15 +185,13 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
   try {
     const r = (await storeVerb("cabal-vouch", {
       joiner, realm,
-      ...(args.options["expires"] !== undefined ? { expiresAt: args.options["expires"] } : {}),
       ...(handleIndex !== undefined ? { handleIndex } : {}),
     }, CabalVouchError)).output as unknown as CabalVouchResult;
     console.log(r.reMinted ? "RE-VOUCHED (one edge, not two)" : "VOUCHED");
     console.log(`  voucher:   ${r.voucherDid}`);
     console.log(`  joiner:    ${r.joiner}`);
     console.log(`  realm:     ${r.realm}`);
-    console.log(`  expires:   ${r.expiresAt}  (advisory display only — the bound epoch below is the fence)`);
-    console.log(`  bound at:  epoch ${r.boundEpoch}`);
+    console.log(`  bound at:  epoch ${r.boundEpoch}  (the fence — the only thing that lapses a vouch)`);
     console.log(`  board:     ${r.boardUrl}`);
     // The number that matters to the voucher — stated as a FLOOR, because it counts what this replica has
     // synced. A peer may hold edges we have not seen, so real dilution reads at or above this.

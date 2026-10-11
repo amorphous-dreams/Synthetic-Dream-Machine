@@ -28,7 +28,6 @@ const verify = (bytes: Uint8Array, sigHex: string, voucherDid: string) =>
 const REALM = "a".repeat(64);
 const JOINER = "b".repeat(64);
 const NOW = new Date("2026-07-14T00:00:00Z");
-const LATER = "2026-08-01T00:00:00Z";
 
 /** Dials loose enough that a well-rooted applicant prices cheap — β sits far above any cluster here. */
 const DIALS: AdmissionDials = { epsilon: 0.15, beta: 0.9, rho: 1, supply: 1, alpha: 0.5 };
@@ -37,12 +36,11 @@ const DIALS: AdmissionDials = { epsilon: 0.15, beta: 0.9, rho: 1, supply: 1, alp
  *  Only β moves: the refusal must come from the operator's ceiling, never from a different lineage. */
 const TIGHT: AdmissionDials = { ...DIALS, beta: 0.2 };
 
-async function invite(over: Partial<{ realm: string; joiner: string; expiresAt: string }> = {}) {
+async function invite(over: Partial<{ realm: string; joiner: string }> = {}) {
   return signCabalInvite({
     realmDocIdHex:     over.realm ?? REALM,
     joinerIdentityHex: over.joiner ?? JOINER,
     voucherDid:        await pubOf(VOUCHER_SEED),
-    expiresAt:         over.expiresAt ?? LATER,
     boundEpoch:        "0",
   }, signer(VOUCHER_SEED));
 }

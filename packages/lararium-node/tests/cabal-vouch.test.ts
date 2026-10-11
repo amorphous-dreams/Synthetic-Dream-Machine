@@ -34,7 +34,6 @@ const REALM  = "a".repeat(64);
 const JOINER = "b".repeat(64);
 const OTHER  = "c".repeat(64);
 const NOW    = Date.parse("2026-07-14T00:00:00Z");
-const LATER  = "2026-08-01T00:00:00Z";
 
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
@@ -64,7 +63,7 @@ async function boardVouches(realm = REALM) {
 
 describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that made it", () => {
   it("mints a vouch that reads back through the VERIFYING read, signed by the held face", async () => {
-    const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 }, NOW);
 
     expect(r.voucherDid).toBe(await loadPersonaGroupRootVerifyingKey(0));
     expect(r.outDegreeFloor).toBe(1);
@@ -77,13 +76,13 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
   });
 
   it("out-degree GROWS with a distinct joiner and does NOT with a re-mint — re-minting buys no branching", async () => {
-    const first = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    const first = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 }, NOW);
     expect(first.outDegreeFloor).toBe(1);
 
-    const second = await direct(runCabalVouch)({ joiner: OTHER, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    const second = await direct(runCabalVouch)({ joiner: OTHER, realm: REALM, boundEpoch: 0 }, NOW);
     expect(second.outDegreeFloor).toBe(2);            // a real second edge — the voucher's mass now splits two ways
 
-    const again = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    const again = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 }, NOW);
     expect(again.reMinted).toBe(true);
     expect(again.outDegreeFloor).toBe(2);             // STILL two — a re-mint is one edge, never a free dilution
 
@@ -93,20 +92,20 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
 
   it("REFUSES to vouch for itself — self-boosting is unrepresentable on a lineage", async () => {
     const self = (await loadPersonaGroupRootVerifyingKey(0))!;
-    await expect(direct(runCabalVouch)({ joiner: self, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW))
+    await expect(direct(runCabalVouch)({ joiner: self, realm: REALM, boundEpoch: 0 }, NOW))
       .rejects.toThrow(CabalVouchError);
     expect(await boardVouches()).toHaveLength(0);   // and nothing landed
   });
 
-  it("MINTS against an already-past expiry — expiresAt is ADVISORY DISPLAY ONLY, never a gate", async () => {
-    // The wall-clock mint gate is RETIRED (operator ruling 2026-10-10): a vouch binds to the realm's
-    // lease epoch, never to a clock. A past-dated expiry carries exactly as well as a future one.
-    const r = await direct(runCabalVouch)(
-      { joiner: JOINER, realm: REALM, expiresAt: "2020-01-01T00:00:00Z", boundEpoch: 0 }, NOW,
-    );
-    expect(r.expiresAt).toBe("2020-01-01T00:00:00Z");
+  it("CARRIES NO EXPIRY AT ALL — the wall-clock mint gate is RETIRED (operator ruling 2026-10-10) and " +
+     "the field itself is gone, not merely unread: a vouch binds to the realm's lease epoch, never a clock",
+  async () => {
+    const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 }, NOW);
+    expect(r).not.toHaveProperty("expiresAt");
+    expect((r as unknown as { expiresAt?: unknown }).expiresAt).toBeUndefined();
     const onBoard = await boardVouches();
     expect(onBoard).toHaveLength(1);
+    expect(onBoard[0]!).not.toHaveProperty("expiresAt");
   });
 
   it("SET-BACK and SET-FORWARD clocks change nothing — only the bound epoch decides", async () => {
@@ -167,16 +166,21 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
   });
 
   it("scopes to the realm it names — a vouch elsewhere is not this realm's lineage", async () => {
-    await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
-    await direct(runCabalVouch)({ joiner: OTHER,  realm: "d".repeat(64), expiresAt: LATER, boundEpoch: 0 }, NOW);
+    await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 }, NOW);
+    await direct(runCabalVouch)({ joiner: OTHER,  realm: "d".repeat(64), boundEpoch: 0 }, NOW);
 
     expect(await boardVouches(REALM)).toHaveLength(1);
     expect(await boardVouches("d".repeat(64))).toHaveLength(1);
   });
 
-  it("defaults the expiry rather than minting an immortal vouch — display only, never a gate", async () => {
+  it("the CabalVouchOptions/Result surface carries no expiry field to default in the first place", async () => {
+    // Inverted control: the old proof was "the default expiry lands between now and +31d". Now there is no
+    // default to default — the type carries no `expiresAt` member at all, src included, not merely unread.
+    const src = runCabalVouch.toString();
+    expect(src).not.toMatch(/expiresAt/);
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 }, NOW);
-    expect(Date.parse(r.expiresAt)).toBeGreaterThan(NOW);
-    expect(Date.parse(r.expiresAt)).toBeLessThanOrEqual(NOW + 31 * 24 * 60 * 60 * 1000);
+    expect(Object.keys(r).sort()).toEqual(
+      ["boardUrl", "boundEpoch", "joiner", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
+    );
   });
 });

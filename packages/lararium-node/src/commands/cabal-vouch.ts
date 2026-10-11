@@ -41,8 +41,6 @@ export interface CabalVouchOptions {
   readonly joiner:      string;
   /** The cabal-realm this vouch crosses INTO. A vouch never grants a general pass. */
   readonly realm:       string;
-  /** ISO-8601. Absent → 30 days out. A HINT the voucher's tools render; it gates no admission. */
-  readonly expiresAt?:  string;
   /** The realm lease epoch to bind to — the fence that actually gates. Absent → 0 (genesis). */
   readonly boundEpoch?: number;
   /** WHICH held persona root vouches — the human's own face. Absent → the first held root. */
@@ -55,7 +53,6 @@ export interface CabalVouchResult {
   readonly voucherDid:  string;
   readonly joiner:      string;
   readonly realm:       string;
-  readonly expiresAt:   string;
   readonly boundEpoch:  string;
   readonly boardUrl:    string;
   /**
@@ -67,11 +64,6 @@ export interface CabalVouchResult {
   readonly outDegreeFloor: number;
   /** True when this vouch replaced the voucher's own prior vouch for the SAME joiner (one edge, not two). */
   readonly reMinted:    boolean;
-}
-
-/** Thirty days out — long enough to carry out-of-band, short enough that a stale vouch dies on its own. */
-function defaultExpiry(now: number): string {
-  return new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
 }
 
 /**
@@ -108,10 +100,11 @@ async function resolveBoundEpoch(realm: string, repo: Repo): Promise<number> {
  * Mint one vouch and land it on the Nexus's vouch board.
  *
  * `now` rides as a parameter rather than a read of the wall clock, because a causal island holds no global
- * now and a test must stand at a chosen instant. It decides NOTHING about whether the mint runs — only the
- * default `expiresAt` HINT below reads it, and that hint gates no admission.
+ * now and a test must stand at a chosen instant. It decides NOTHING about whether the mint runs — kept for
+ * call-site compatibility; nothing in this function reads it any more.
  */
 export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): Promise<CabalVouchResult> {
+  void now;
   const joiner     = opts.joiner.trim().toLowerCase();
   const realm      = opts.realm.trim().toLowerCase();
 
@@ -122,12 +115,9 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
     throw new CabalVouchError(`"${opts.realm}" is not a valid realm — expected a 64-hex cabal-realm doc id.`);
   }
 
-  const expiresAt = opts.expiresAt ?? defaultExpiry(now);
   // THE FENCE THE VOUCH IS BOUND TO. A vouch minted now binds to the realm's epoch as this vessel reads
   // it: roll the realm past that number and every vouch bound behind it lapses at once, on every
-  // replica, with no clock consulted. `expiresAt` above rides along as ADVISORY DISPLAY ONLY for the
-  // voucher's own tools — no verdict anywhere reads it, and a past-dated expiry mints exactly as well as
-  // a future one; only the fence below decides whether a vouch stands.
+  // replica, with no clock consulted; only this fence decides whether a vouch stands.
   const boundEpoch = String(opts.boundEpoch ?? await resolveBoundEpoch(realm, opts.repo));
 
   // WHICH FACE VOUCHES. A human holds a multitude; the vouch stakes ONE of them, named here rather than
@@ -153,7 +143,7 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
 
   const seed   = await loadPersonaGroupRootSeed(handleIndex);
   const invite = await signCabalInvite(
-    { realmDocIdHex: realm, joinerIdentityHex: joiner, voucherDid, expiresAt, boundEpoch },
+    { realmDocIdHex: realm, joinerIdentityHex: joiner, voucherDid, boundEpoch },
     ed25519SignerFromSeed(seed),
   );
 
@@ -183,7 +173,7 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
     }
 
     const outDegreeFloor = vouchDagFromInvites(after).edges.filter((e) => e.voucher === voucherDid).length;
-    return { voucherDid, joiner, realm, expiresAt, boundEpoch, boardUrl, outDegreeFloor, reMinted };
+    return { voucherDid, joiner, realm, boundEpoch, boardUrl, outDegreeFloor, reMinted };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

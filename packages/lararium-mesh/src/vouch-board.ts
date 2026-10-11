@@ -91,7 +91,7 @@ function coerceInvite(parsed: unknown): CabalInvite | null {
   if (typeof parsed !== "object" || parsed === null) return null;
   const p = parsed as Record<string, unknown>;
   if (p["kind"] !== CABAL_INVITE_DOMAIN) return null;                  // not a vouch tiddler → skip
-  for (const field of ["realmDocIdHex", "joinerIdentityHex", "voucherDid", "expiresAt", "boundEpoch", "sig"]) {
+  for (const field of ["realmDocIdHex", "joinerIdentityHex", "voucherDid", "boundEpoch", "sig"]) {
     const v = p[field];
     if (typeof v !== "string" || v.length === 0) return null;          // any missing/torn field → skip whole
   }
@@ -100,7 +100,6 @@ function coerceInvite(parsed: unknown): CabalInvite | null {
     realmDocIdHex:     p["realmDocIdHex"] as string,
     joinerIdentityHex: p["joinerIdentityHex"] as string,
     voucherDid:        p["voucherDid"] as string,
-    expiresAt:         p["expiresAt"] as string,
     boundEpoch:        p["boundEpoch"] as string,
     sig:               p["sig"] as string,
   };

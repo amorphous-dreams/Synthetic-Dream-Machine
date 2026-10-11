@@ -159,7 +159,7 @@ describe("P1 authority relations — characterization witness", () => {
     expect(card.actCid).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  test("records Cabal admission's epoch fence separately from invite expiry text", async () => {
+  test("records Cabal admission's epoch fence — the invite carries no expiry text to be separate from", async () => {
     const voucherSeed = new Uint8Array(32).fill(36);
     const voucherDid = await pubOf(voucherSeed);
     const verify = (bytes: Uint8Array, sig: string, did: string): Promise<boolean> =>
@@ -168,9 +168,9 @@ describe("P1 authority relations — characterization witness", () => {
       realmDocIdHex: realm,
       joinerIdentityHex: joiner,
       voucherDid,
-      expiresAt: "wall-clock-text-kept-out-of-gate",
       boundEpoch: "4",
     }, signWith(voucherSeed));
+    expect(invite).not.toHaveProperty("expiresAt");   // the field is GONE, not merely unread
     const atBound = await admitToRealm({
       policy: DEFAULT_JOIN_POLICY, realmDocIdHex: realm, joinerIdentityHex: joiner, invite,
       effectiveEpoch: 4, verify, edges: [], seed: "seed", applicant: joiner, dials,
@@ -181,8 +181,8 @@ describe("P1 authority relations — characterization witness", () => {
     });
     auditRows.push({
       relation: "cabal-vouch-admission",
-      inputs: { boundEpoch: invite.boundEpoch, effectiveEpochAtBound: 4, effectiveEpochRolled: 5, expiresAt: invite.expiresAt },
-      outcome: { atBound: atBound.admitted, rolled: rolled.refusal, authority: "effectiveEpoch max-register; expiresAt is not consulted" },
+      inputs: { boundEpoch: invite.boundEpoch, effectiveEpochAtBound: 4, effectiveEpochRolled: 5 },
+      outcome: { atBound: atBound.admitted, rolled: rolled.refusal, authority: "effectiveEpoch max-register; no expiresAt field exists to consult" },
     });
     expect(atBound.admitted).toBe(true);
     expect(rolled).toMatchObject({ admitted: false, refusal: "expired" });

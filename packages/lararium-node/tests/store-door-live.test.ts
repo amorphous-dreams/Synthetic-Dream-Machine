@@ -155,7 +155,7 @@ const WRITERS: readonly Writer[] = [
     carries: (doc, id) => edgeKapaeActsFromBoard(doc).some((a) => a.actCid === id),
   },
   {
-    verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM, expiresAt: "2999-01-01T00:00:00Z" },
+    verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM },
     board: (i) => vouchBoardDocUrl(i), label: "board:vouch-registry",
     // A vouch reports no content id of its own; its signature over the invite bytes names it.
     id: () => "",
