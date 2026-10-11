@@ -1,5 +1,5 @@
 /**
- * `lares sense ki` (alias `couple`) — the Ki (氣) coupling verdict: do the ADDRESSED sensorium's coupled
+ * `lares sense ki` — the Ki (氣) coupling verdict: do the ADDRESSED sensorium's coupled
  * peers RECONCILE, and does the reconciliation hold power? Coupling is a GENERAL cap a sensorium `#has` —
  * any sensorium whose manifest declares `coupling.children` answers; one without reports the honest
  * "no coupling children". `lares sense <sensorium> ki` reads that sensorium (the memetic-wikitext testbed

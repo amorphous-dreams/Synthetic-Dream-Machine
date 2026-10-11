@@ -1,5 +1,5 @@
 /**
- * `lares sense li` (alias `cohere`) — the Li (理) gluing verdict: do the ADDRESSED sensorium's sheaf
+ * `lares sense li` — the Li (理) gluing verdict: do the ADDRESSED sensorium's sheaf
  * planes GLUE, and does a global section stand? Cohering is a GENERAL cap a sensorium `#has` — any
  * sensorium that declares ≥2 sheaf planes answers; one without reports the honest "no cover". `lares
  * sense <sensorium> li` reads that sensorium; bare `lares sense li` reads the memory default. No

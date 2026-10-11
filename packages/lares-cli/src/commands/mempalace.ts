@@ -1,5 +1,5 @@
 /**
- * `lares mempalace <verb>` (alias `lares palace <verb>`) — make the mempalace
+ * `lares mempalace <verb>` — make the mempalace
  * daemon/hook/capture topology OBSERVABLE and GRACEFULLY-DRAINABLE.
  *
  * The daemon-spawn whack-a-mole: warm write-daemons spawn ON-DEMAND (a client mine
@@ -413,7 +413,7 @@ function cmdSetup(args: ParsedArgs): number {
 // ── dispatch ──────────────────────────────────────────────────────────────────
 
 function printHelp(): void {
-  console.log("lares mempalace <verb>   (alias: lares palace <verb>)\n");
+  console.log("lares mempalace <verb>\n");
   console.log("The SIDECAR lane. mempalace is a separate tool the vessel never assumes: founding stands the");
   console.log("VESSEL and nothing else, and both the library and the guest store arrive by a deliberate act.\n");
   console.log("Verbs:");

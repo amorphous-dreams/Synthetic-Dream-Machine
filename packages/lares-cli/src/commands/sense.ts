@@ -101,16 +101,14 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   flow:      cmdFlow,
   meta:      cmdMeta,
   // The human-query INSTRUMENTS over the poured sensorium — rhythm (rejim), change-points (analyze), and
-  // the Ki coupling verdict (ki/couple) and the Li gluing verdict (li/cohere) — the cosheaf ⊥ sheaf
-  // dual. rejim + analyze read/compute; ki + li read TS-native (no daemon; the H¹ hull lives in @mesh).
+  // the Ki coupling verdict (ki) and the Li gluing verdict (li) — the cosheaf ⊥ sheaf dual. rejim +
+  // analyze read/compute; ki + li read TS-native (no daemon; the H¹ hull lives in @mesh). THE VESSEL
+  // DOOR: no aliases — the retired `couple`/`cohere`/`square` spellings answer `unknown command`.
   rejim:     cmdRejim,
   analyze:   cmdAnalyze,
   ki:        cmdKi,
-  couple:    cmdKi,       // alias — the coupling verdict reads the same H¹ gate
   li:        cmdLi,
-  cohere:    cmdLi,       // alias — the gluing verdict reads the li-radius + the same H¹ gate
   jing:      cmdJing,     // 勁 — the li∘ki square: does a child-host's grain round-trip with its flow?
-  square:    cmdJing,     // alias — the joint read, neither li nor ki
   // The cross-plane witness — the last MCP tool that had no CLI door (surface-parity).
   "plane-record": cmdPlaneRecord,
   "couple-r": cmdCoupleR, // the R effective-TE coupling reference (coupling.R) — the py/R twin of ki, the

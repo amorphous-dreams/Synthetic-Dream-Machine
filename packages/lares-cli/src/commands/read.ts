@@ -21,7 +21,7 @@ import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport } from "@lararium/node";
 import { readClaudeCleanupPeriod, CLEANUP_PERIOD_DAYS_FLOOR } from "../claude-wire.js";
-import { emit, exitFor } from "../render.js";
+import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const CLAUDE_DEFAULT_CLEANUP_DAYS = 30; // Claude's own default when the key is unset.
@@ -81,23 +81,6 @@ function dirSizeHint(dir: string): string {
   };
   try { walk(dir); } catch { return "(unreadable)"; }
   return `${count} files, ${(bytes / 1024).toFixed(1)} KiB`;
-}
-
-// `lares vessel read sensorium` — an alias. The sensorium taxonomy reads through the sense door
-// (`lares sense status`, which routes to the daemon's composed content cap); this alias points there
-// rather than opening a second path. Local organ health rides `lares vessel read --palaces`.
-const SENSORIUM_STATUS_REDIRECT =
-  "the sensorium taxonomy reads at `lares sense status` (the sovereign door). For local organ health, " +
-  "run `lares vessel read --palaces`; for node health, `lares vessel read`.";
-
-/** `lares vessel read sensorium` (alias) — points at `lares sense status`, the sensorium taxonomy door. */
-function cmdReadSensorium(args: ParsedArgs): number {
-  emit(args, {
-    ok: false,
-    error: { code: "verb-error", message: SENSORIUM_STATUS_REDIRECT, hint: "run `lares sense status` for the taxonomy; `lares vessel read --palaces` for local organ health." },
-    human: () => { console.error(`lares vessel read sensorium → ${SENSORIUM_STATUS_REDIRECT}`); },
-  });
-  return exitFor("verb-error");
 }
 
 /**
@@ -172,8 +155,8 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
 export async function cmdRead(args: ParsedArgs): Promise<number> {
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).
   if (args.flags["palaces"] === true) return cmdReadPalaces(args);
-  // The named lenses: sensorium taxonomy (redirected to its own door) · the deep vessel probe.
-  if (args.positional[0] === "sensorium") return cmdReadSensorium(args);
+  // The named lens: the deep vessel probe. `sensorium` retired (THE VESSEL DOOR: no aliases) — the
+  // sensorium taxonomy has exactly one door, `lares sense status`.
   if (args.positional[0] === "vessel") return cmdReadVessel(args);
   // Bare `lares vessel read` — node health, the reading an operator wants most often.
   return cmdReadNode(args);
