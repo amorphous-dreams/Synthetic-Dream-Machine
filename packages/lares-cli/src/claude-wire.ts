@@ -14,66 +14,47 @@
  * before any change, and the result is JSON-validated before it replaces the file.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, renameSync, openSync, closeSync, writeSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, renameSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import { repoRoot } from "@lararium/mesh/node";
+import { claimName, NameHeld, type ClaimedName } from "@lararium/node";
 import { resolveLaresMcp } from "./mcp-resolve.js";
 import { tendBootPointer, asInclude, BOOT_CARRIER } from "./boot-pointer.js";
 
 /**
- * Acquire an exclusive write-lock (git-lockfile pattern: O_CREAT|O_EXCL) to serialize
- * concurrent writers — Claude's home JSON has a logged corruption-under-concurrency
- * bug (anthropics/claude-code#28842), and parallel sessions share this tree.
+ * Acquire an exclusive write-lock to serialize concurrent writers — Claude's home JSON has a
+ * logged corruption-under-concurrency bug (anthropics/claude-code#28842), and parallel sessions
+ * share this tree.
  *
- * NO GLOBAL NOW: a dead holder's lock reads as dead by its ABSENT PID, never by the lock
- * file's age. The lock file carries its holder's own pid (written the instant `wx` wins
- * the create); a contender that finds the lock standing reads that pid and asks the OS
- * directly (`process.kill(pid, 0)` — ESRCH means no such process) rather than comparing a
- * wall-clock reading against the file's mtime, which an adversarial or merely wrong system
- * clock could move either direction. A torn or still-being-written lock file (no parseable
- * pid yet) reads as "indeterminate, not dead" — it backs off and re-reads, never steals on
- * a guess.
+ * OS-NATIVE, NEVER A PID FILE (M6). This used to write its holder's own pid into a lockfile and
+ * ask the OS whether that pid still lived (`process.kill(pid, 0)`) — three distinct holes: (a) two
+ * contenders racing a dead holder's steal (`rmSync` then `wx`) could BOTH win, each deleting the
+ * other's fresh lock; (b) a crash between the file's create and its pid write left an unparseable
+ * lock that `lockHolderPid` read as "indeterminate, never steal" FOREVER — a permanent wedge only a
+ * hand `rm` cleared; (c) pid reuse made a dead holder read alive; (d) a holder in another pid
+ * namespace (a container, the WSL/Windows split sharing `~/.claude`) read dead while alive. The
+ * house's own socket-claim primitive (`claimName`, extracted from `owned-store.ts`'s rendezvous
+ * claim) has none of these: no pid is ever read, so neither reuse nor a namespace split can lie,
+ * and the kernel's own listener state — not a file's parseable content — decides dead vs. live.
  */
-const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-
-/** Is `pid` a live process on this host? `kill(pid, 0)` sends no signal — it only asks.
- *  ESRCH (no such process) reads dead; anything else (EPERM — exists, not ours to signal) reads alive.
- *  Exported for direct testability. */
-export function pidAlive(pid: number): boolean {
-  try { process.kill(pid, 0); return true; }
-  catch (e) { return (e as NodeJS.ErrnoException).code !== "ESRCH"; }
-}
-
-/** The pid a lock file names, or null if it is absent, torn, or mid-write (never steal on a guess). */
-function lockHolderPid(lockPath: string): number | null {
-  try {
-    const raw = readFileSync(lockPath, "utf8").trim();
-    const pid = Number(raw);
-    return Number.isInteger(pid) && pid > 0 ? pid : null;
-  } catch { return null; }
-}
-
-/** Exported for direct testability (the dead-holder steal is the clock-sensitive seam). */
-export async function acquireLock(lockPath: string): Promise<void> {
+export async function acquireLock(lockPath: string): Promise<ClaimedName> {
+  const refuse = (): NameHeld => new NameHeld(
+    `${lockPath} held by another writer — another \`lares vessel stand --claude\` is running; retry shortly`,
+  );
+  // A bounded retry, never an unbounded wait: each attempt either wins a REAL claim (nothing to
+  // leak) or fails cleanly (nothing held) — so bounding the loop here, rather than asking
+  // `claimName`'s own `await` option to wait out the holder, never strands an acquired-but-abandoned
+  // claim behind a timeout race.
   for (let i = 0; i < 50; i++) {
-    try {
-      const fd = openSync(lockPath, "wx");
-      writeSync(fd, String(process.pid));
-      closeSync(fd);
-      return;
-    } catch (e) {
-      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
-      const holder = lockHolderPid(lockPath);
-      if (holder !== null && !pidAlive(holder)) {
-        rmSync(lockPath, { force: true }); // the holder is gone by the OS's own account — steal it, retry now
-        continue;
-      }
-      await sleep(100); // async backoff — never blocks the main thread (no Atomics.wait / SharedArrayBuffer)
+    try { return await claimName(lockPath, { refuse }); }
+    catch (err) {
+      if (!(err instanceof NameHeld)) throw err;
+      await new Promise((r) => setTimeout(r, 100)); // async backoff — never blocks the main thread
     }
   }
-  throw new Error(`${lockPath} held by another writer — another \`lares vessel stand --claude\` is running; retry shortly`);
+  throw refuse();
 }
 
 /**
@@ -213,11 +194,11 @@ export async function wireClaudeHome(opts: { home?: string } = {}): Promise<Clau
   mkdirSync(claudeDir, { recursive: true });
   const settingsPath = join(claudeDir, "settings.json");
   const lockPath = settingsPath + ".lock";
-  await acquireLock(lockPath);
+  const lock = await acquireLock(lockPath);
   try {
     return wireUnderLock(settingsPath);
   } finally {
-    rmSync(lockPath, { force: true });
+    await lock.release();
   }
 }
 
@@ -368,7 +349,7 @@ export async function setClaudeCleanupPeriod(days: number, opts: { home?: string
   const settingsPath = claudeSettingsPath(opts.home);
   mkdirSync(join(opts.home ?? homedir(), ".claude"), { recursive: true });
   const lockPath = settingsPath + ".lock";
-  await acquireLock(lockPath);
+  const lock = await acquireLock(lockPath);
   try {
     let settings: ClaudeSettings = {};
     if (existsSync(settingsPath)) {
@@ -387,6 +368,6 @@ export async function setClaudeCleanupPeriod(days: number, opts: { home?: string
     renameSync(tmp, settingsPath);
     return { settingsPath, previous: prev, value: days, changed: prev !== days };
   } finally {
-    rmSync(lockPath, { force: true });
+    await lock.release();
   }
 }
