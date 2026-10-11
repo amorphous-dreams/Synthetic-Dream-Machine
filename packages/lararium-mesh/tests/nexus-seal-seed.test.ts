@@ -80,6 +80,14 @@ describe("foundingRoster — fail-closed reads", () => {
     expect(doc.sealEpochCid).toBeNull();
     expect(foundingQuorumSeated(doc)).toBe(false);
   });
+
+  test("keys present, a NON-NULL bare sealEpochCid, but NO sealLineage → fail closed (the retired legacy inception path never roots)", async () => {
+    const doc = await seatedDoc([SEEDS.guru, SEEDS.telarus, SEEDS.lindwyrm]);
+    const legacy: NexusDoc = { ...doc, sealLineage: undefined, sealEpochCid: "legacy-bare-epoch" };
+    expect(foundingRoster(legacy).keys).toEqual([]);
+    expect(foundingRoster(legacy).sealEpochCid).toBe("");
+    expect(foundingQuorumSeated(legacy)).toBe(false);
+  });
 });
 
 describe("foundingRoster — a seated doc raises a LIVE antigen roster", () => {

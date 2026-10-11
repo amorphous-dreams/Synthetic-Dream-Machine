@@ -59,6 +59,12 @@ describe("realm-bag — the realm's name", () => {
     expect(realmIdOfCharter(null)).toBeNull();
     expect(realmIdOfCharter({ kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null, kahu: [] })).toBeNull();
   });
+  test("a NON-NULL bare sealEpochCid with NO sealLineage never roots a realm (the retired legacy inception path)", () => {
+    const legacy: NexusDoc = {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: "legacy-bare-epoch", kahu: [],
+    };
+    expect(realmIdOfCharter(legacy)).toBeNull();
+  });
 });
 
 describe("realm-bag — the registration record", () => {

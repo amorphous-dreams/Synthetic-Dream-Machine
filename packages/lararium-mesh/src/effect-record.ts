@@ -185,11 +185,6 @@ export function parseEffectRecord(fields: Record<string, unknown>): EffectRecord
   const timestamp = str("timestamp");
   if (!eventId || !requestId || !bag || !actor || !timestamp) return null;
 
-  const opt = (k: string): { [P in string]?: string } => {
-    const v = str(k);
-    return v ? { [k]: v } : {};
-  };
-
   return {
     eventId,
     archivalVerb,
@@ -206,8 +201,6 @@ export function parseEffectRecord(fields: Record<string, unknown>): EffectRecord
     ...(str("disposition")   && { disposition:  str("disposition")! }),
     ...(str("reason")        && { reason:       str("reason")! }),
     ...(str("source-uri")    && { sourceUri:    str("source-uri")! }),
-    // Suppress unused-var hints from opt() helper — pattern kept for clarity.
-    ...opt(""),
   };
 }
 
