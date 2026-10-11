@@ -254,6 +254,67 @@ describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", ()
   });
 });
 
+// ── evergreen sweep (gp25-SW2): a retired `expiry` field (or any unknown field) REFUSES the whole sidecar ──
+// Spec: `.pins.json` is not a legacy-acceptance surface. A record carrying the retired `expiry` field, or
+// any field `PinCap` never named, is malformed — the WHOLE read refuses by name (never "ignore the stray
+// field and keep going"), so the sweep that depends on it fails toward KEEPING every blob.
+describe("readCasPins — evergreen sweep retires old-shape acceptance (gp25-SW2)", () => {
+  test("RED: a record carrying the retired `expiry` field REFUSES the whole sidecar", () => {
+    const cid = "d".repeat(64);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", expiry: 123 }]));
+    expect(() => readCasPins(casDir)).toThrow(/unknown field "expiry"/);
+  });
+
+  test("RED: a record carrying ANY field `PinCap` never named (not just `expiry`) also refuses", () => {
+    const cid = "e".repeat(64);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", notes: "hi" }]));
+    expect(() => readCasPins(casDir)).toThrow(/unknown field "notes"/);
+  });
+
+  test("CONTROL: a record with ONLY PinCap's own fields (cid/tier/holder/fence) reads clean, no refusal", () => {
+    const cid = "f".repeat(64);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", fence: 2 }]));
+    expect(readCasPins(casDir)).toEqual([{ cid, tier: "veil", holder: "x", fence: 2 }]);
+  });
+
+  test("MUTATION PROOF: the retired shape (silently drop the stray field, keep the record) would have let `expiry` back in", () => {
+    // Reproduces exactly what the OLD reader did — pick only the known fields off the record, dropping
+    // anything else without complaint. That shape is what this fix removes: it never saw the stray
+    // `expiry`, so it never refused.
+    const cid = "a1".repeat(32);
+    const record = { cid, tier: "veil", holder: "x", expiry: 999_999_999_999 } as Record<string, unknown>;
+    const legacyRead = (p: Record<string, unknown>) => ({
+      cid: p["cid"] as string,
+      holder: typeof p["holder"] === "string" ? p["holder"] : "unknown",
+      tier: typeof p["tier"] === "string" ? p["tier"] : "veil",
+    });
+    expect(legacyRead(record)).toEqual({ cid, holder: "x", tier: "veil" });   // the old reader never balked
+    // The REAL reader, fed the exact same on-disk shape, refuses instead.
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([record]));
+    expect(() => readCasPins(casDir)).toThrow(/unknown field "expiry"/);
+  });
+
+  test("installCasSweep: an `expiry`-bearing sidecar faults the production tick's own `pins()` reader — the sweep run refuses, nothing deletes", async () => {
+    const orphan = blob("an orphan beside an expiry-bearing pin sidecar (evergreen)");
+    writeCasEntriesFs([orphan], casDir);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid: "b2".repeat(32), tier: "veil", holder: "x", expiry: 1 }]));
+    const logs: string[] = [];
+    const installed = installCasSweep({
+      registry: { register: () => {} },
+      casDir,
+      references: () => [],
+      protect: new Set(),
+      pins: () => readCasPins(casDir),   // THROWS on the expiry-bearing sidecar — the production wiring shape
+      realmClock: () => clockAt(5),
+      currentFence: () => 0,
+      log: (line) => logs.push(line),
+    });
+    await expect(installed.sweep(false)).rejects.toThrow(/unknown field "expiry"/);
+    expect(existsSync(join(casDir, orphan.cid))).toBe(true);   // nothing swept — the run never got there
+    installed.stop();
+  });
+});
+
 describe("installCasSweep — M7′ a corrupt sidecar REFUSES the tick's sweep run, logged by name — never deletes", () => {
   test("RED: a torn `.pins.json` faults the tick, which logs it by name and sweeps NOTHING", async () => {
     const orphan = blob("an orphan beside a torn pin sidecar");

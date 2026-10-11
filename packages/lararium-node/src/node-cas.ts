@@ -266,15 +266,21 @@ export function casSweep(opts: CasSweepOptions): CasSweepResult {
 
 const PINS_FILE = ".pins.json";
 
+/** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key (the retired
+ *  `expiry` chief among them) reads the WHOLE sidecar as malformed (evergreen sweep, gp25): a record shape
+ *  this reader does not recognize might carry a clock-driven verdict this house no longer honors, so it
+ *  refuses rather than silently accepting an old shape back in. */
+const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "fence"]);
+
 /** The pins a CAS dir holds — an ABSENT sidecar reads as no pins (a vessel that never pinned anything is
  *  not corrupt); a sidecar that EXISTS but fails to parse (torn JSON, not an array) THROWS rather than
  *  reading as no pins (M7′: the sweep's own caller must REFUSE its run on this, never silently un-pin
  *  everything). A per-record `cid` string is the only load-bearing field: a record missing/mistyping its
  *  `holder`/`tier`/`fence` still holds that cid (presence-only, if its `fence` reads as absent) rather than
  *  being dropped whole — dropping a torn record is exactly the "fails open toward deletion" fault M7′
- *  closes. The retired `expiry` field, if an older sidecar still carries it, is simply ignored: this reader
- *  never looks for it, so it round-trips as dead weight on rewrite until the next `pinCas`/`releaseCas`
- *  rewrites the record without it. */
+ *  closes. A record carrying the retired `expiry` field, or ANY field outside `PIN_RECORD_FIELDS`, is NOT
+ *  silently ignored (the old shape): it REFUSES the whole read (evergreen sweep, gp25-SW2) — fail toward
+ *  KEEPING every blob, never toward deleting over a shape this reader no longer recognizes. */
 export function readCasPins(casDir: string): PinCap[] {
   const path = join(casDir, PINS_FILE);
   let raw: string;
@@ -291,6 +297,18 @@ export function readCasPins(casDir: string): PinCap[] {
   }
   if (!Array.isArray(parsed)) {
     throw new Error(`[node-cas] pin sidecar ${path} is not a JSON array — refusing to read it as "no pins" (M7′: fail toward KEEPING, never toward deleting)`);
+  }
+  // ANY record carrying a field outside PIN_RECORD_FIELDS (the retired `expiry` chief among them) REFUSES
+  // the WHOLE read — an old or unknown shape might carry a clock-driven verdict this house no longer
+  // honors; the run stops here, logged by name, rather than silently accepting it back in (evergreen
+  // sweep, gp25-SW2).
+  for (const p of parsed) {
+    if (!p || typeof p !== "object") continue;
+    for (const key of Object.keys(p as Record<string, unknown>)) {
+      if (!PIN_RECORD_FIELDS.has(key)) {
+        throw new Error(`[node-cas] pin sidecar ${path} carries a record with unknown field "${key}" (e.g. the retired \`expiry\`) — refusing to read it as "no pins" (evergreen sweep: fail toward KEEPING, never toward deleting)`);
+      }
+    }
   }
   // A TORN RECORD THAT STILL NAMES A CID STRING STILL HOLDS THAT CID (M7′): only `cid` is load-bearing here.
   // A missing/mistyped `holder`/`tier` or `fence` (the probed `fence: "7"` case) never drops the WHOLE
