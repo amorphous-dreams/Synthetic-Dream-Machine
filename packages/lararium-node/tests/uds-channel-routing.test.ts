@@ -150,32 +150,14 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     }
   });
 
-  test("H1′ RED: a line that already carries a past deadlineAt refuses by name, even on a socket still open", async () => {
+  test("CLOCKLESS CONTROL: deadlineAt is dead wire vocabulary — a line carrying a past one still dispatches", async () => {
+    // P2.5 S1: `deadlineAt` is retired from the dispatch-time gate entirely (`uds-channel.ts`). This
+    // test used to assert the OPPOSITE — that a past `deadlineAt` refused the line by name. Retiring the
+    // field means the only thing that may still decide run-or-drop here is the CAUSAL EOF check above
+    // (H1′), never a stamped instant. A stray `deadlineAt` on the wire (an older caller, a replay) must
+    // now read as unknown JSON noise and change nothing.
     const repo = new Repo({ sharePolicy: async () => true });
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
-    const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
-    const claim = await claimStore(dir, { holder: "vessel" });
-    const placed: Placed[] = [];
-    const channel = startUdsChannel({ daemonHandle, placeVerb: (o) => { placed.push(o as Placed); }, claim });
-    try {
-      await waitForSocket(claim.socketPath);
-      const answer = await sendInvocation(claim.socketPath, {
-        verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", deadlineAt: Date.now() - 1_000,
-      });
-      expect(answer["status"]).toBe("error");
-      expect(String(answer["errorMessage"])).toMatch(/caller's own deadline passed/);
-      expect(placed).toHaveLength(0);
-    } finally {
-      channel.close();
-      await claim.release();
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  test("CONTROL (H1′): a deadlineAt safely in the future still dispatches normally", async () => {
-    const repo = new Repo({ sharePolicy: async () => true });
-    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
-    const targetHandle = repo.create<LarDoc>(emptyLarDoc());
     const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     const placed: Placed[] = [];
@@ -195,8 +177,8 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     try {
       await waitForSocket(claim.socketPath);
       const answer = await sendInvocation(claim.socketPath, {
-        verb: "act", args: { toBag: targetHandle.url }, requestedBy: "did:key:test", requestId: "req-h1prime-control",
-        deadlineAt: Date.now() + 60_000,
+        verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-deadline-ignored",
+        deadlineAt: Date.now() - 1_000, // a stale wall-clock stamp an old/foreign caller might still send
       });
       expect(answer["status"]).toBe("done");
       expect(placed).toHaveLength(1);
@@ -204,6 +186,36 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
       channel.close();
       await claim.release();
       rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("CLOCKLESS MUTATION: a set-back and a set-forward Date.now() leave the EOF verdict unchanged", async () => {
+    // The only run-or-drop decision left at this boundary is the causal EOF check (H1′, above). A
+    // device clock set back or forward around that decision must not move it either way — proof against
+    // the law's own adversarial-clock premise, not merely a once-ignored field.
+    for (const skewMs of [-10 * 365 * 24 * 3600 * 1000, 10 * 365 * 24 * 3600 * 1000]) {
+      const realNow = Date.now;
+      const repo = new Repo({ sharePolicy: async () => true });
+      const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+      const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
+      const claim = await claimStore(dir, { holder: "vessel" });
+      const placed: Placed[] = [];
+      const channel = startUdsChannel({ daemonHandle, placeVerb: (o) => { placed.push(o as Placed); }, claim });
+      try {
+        await waitForSocket(claim.socketPath);
+        Date.now = () => realNow() + skewMs; // a set-back or a set-forward device clock
+        const sock = createConnection(claim.socketPath);
+        await new Promise<void>((resolve, reject) => { sock.once("connect", resolve); sock.once("error", reject); });
+        sock.end(JSON.stringify({ verb: "nexus-kapae", args: {}, requestedBy: "did:key:test" }) + "\n");
+        await new Promise<void>((resolve) => sock.once("close", resolve));
+        await new Promise((r) => setTimeout(r, 100));
+        expect(placed).toHaveLength(0); // the hang-up-before-dispatch verdict, unmoved by either clock skew
+      } finally {
+        Date.now = realNow;
+        channel.close();
+        await claim.release();
+        rmSync(dir, { recursive: true, force: true });
+      }
     }
   });
 

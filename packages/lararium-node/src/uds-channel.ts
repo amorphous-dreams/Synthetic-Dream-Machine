@@ -72,12 +72,6 @@ interface Invocation {
   requestId?: string;
   /** The caller's own budget, raising the servo's wait within this side's ceiling. Read, never trusted. */
   timeoutMs?: number;
-  /**
-   * The caller's own absolute give-up instant (same-host epoch ms, H1′ — `local-connector.ts`'s
-   * `invokeLocal`). A line read past this already outlived the caller's own patience, whatever froze
-   * this vessel between the write and the read.
-   */
-  deadlineAt?: number;
 }
 
 export interface UdsChannel { close: () => void; }
@@ -133,22 +127,35 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
 
     return await new Promise<Record<string, unknown>>((resolve, reject) => {
       let settled = false;
-      const t0 = Date.now();
+      // MONOTONIC, NEVER Date.now(): an elapsed-duration measurement that fed the adaptive servo from a
+      // wall-clock epoch read could be dragged by an NTP step or a manual clock set mid-run — the law
+      // binds even a local, liveness-only measurement to a monotonic source (`performance.now()`), not
+      // only a cross-process safety gate.
+      const t0 = performance.now();
       const settle = (fn: () => void) => { if (!settled) { settled = true; cleanup(); fn(); } };
       // Only a COMPLETION teaches the servo (a timeout/hang never records → can't drag the EWMA to CEIL).
-      const check = () => { void readOutcome().then((r) => { if (r) settle(() => { recordMineDuration(inv.verb, Date.now() - t0); resolve(r); }); }); };
+      const check = () => { void readOutcome().then((r) => { if (r) settle(() => { recordMineDuration(inv.verb, performance.now() - t0); resolve(r); }); }); };
       const onChange = () => check();
       daemonHandle.on("change", onChange);
       // Fail on a GRADIENT: the wait grows with this verb's learned durations (EWMA·K, clamped
       // FLOOR..CEIL) — headroom for an honest long verb, while a real hang still dies within CEIL.
       // The INVOCATION's own ask raises it within that bound: the servo cannot learn that a first
       // bulk pass runs long until one completes, so a caller that knows must be able to say so.
+      //
+      // THIS TIMER IS THIS SIDE'S OWN LOCAL LIVENESS, NEVER A VERDICT ON THE ACT. `runVerb` already
+      // committed the dispatch (its caller, `startUdsChannel`'s connection handler, calls it only past
+      // the causal EOF check); a verb that is genuinely still running when this wait ends keeps running
+      // regardless, and its outcome still lands at `outcomeTitle` for a later read. So this rejection
+      // reads "outcome unknown", never "timed out" — the CLI across the socket must not retell this
+      // side's own local wait as a verdict about whether the act ran.
       const budget = verbBudgetMs({
         ...(typeof inv.timeoutMs === "number" ? { asked: inv.timeoutMs } : {}),
         adaptive: adaptiveTimeoutMs(inv.verb),
         floor: timeoutMs,
       });
-      const timer = setTimeout(() => settle(() => reject(new Error(`verb "${inv.verb}" timed out after ${budget}ms (adaptive)`))), budget);
+      const timer = setTimeout(() => settle(() => reject(new Error(
+        `verb "${inv.verb}" — this vessel's own wait ended after ${budget}ms (adaptive); outcome unknown. Check request ${requestId}.`,
+      ))), budget);
       const cleanup = () => { daemonHandle.off("change", onChange); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)
     });
@@ -182,11 +189,12 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
           log(`dropped a hung-up "${inv.verb}" invocation — the caller's own socket had already ended before this vessel could read it; refusing rather than running it unannounced`);
           return;
         }
-        if (typeof inv.deadlineAt === "number" && Date.now() > inv.deadlineAt) {
-          return fail(
-            `the caller's own deadline passed before this vessel could read "${inv.verb}" — refusing rather than running it unannounced`,
-          );
-        }
+        // THE WINNER AT THE INSTANT OF GIVING UP: this causal EOF check is the ONLY abandonment this
+        // vessel arbitrates before dispatch — no wall-clock deadline competes with it. Past this point
+        // the act COMMITS: `runVerb` below calls `placeVerb` unconditionally, and nothing after this
+        // line may un-dispatch it. A caller's own later-expiring local wait (`local-connector.ts`'s
+        // `LocalWaitExpired`) never reaches back here to cancel; it only stops ITS OWN wait and reads
+        // the durable outcome back later, by the same request id.
         runVerb(inv).then(
           (outcome) => { try { sock.end(JSON.stringify(outcome) + "\n"); } catch { /* gone */ } },
           (err)     => fail(err instanceof Error ? err.message : String(err)),

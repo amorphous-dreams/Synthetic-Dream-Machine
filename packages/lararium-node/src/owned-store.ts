@@ -71,9 +71,10 @@ export interface StoreClaim {
   readonly holder: StoreHolder;
   /**
    * Answer every caller that reaches the name from here on (the vessel's verb channel takes its claim over). A
-   * vessel's claim holds each caller that arrived before, and hands it over here with its invocation unread —
-   * EXCEPT a parked caller whose own deadline has already passed, which is refused by name instead of replayed;
-   * `onDrop`, when given, hears that refusal's message once per dropped caller.
+   * vessel's claim holds each caller that arrived before, and hands it over here with its invocation unread — a
+   * parked caller's own socket `close` is the only abandonment this vessel trusts, never a wall-clock deadline;
+   * a caller still connected at hand-over time is replayed unconditionally, however long the wait ran.
+   * `onDrop` is kept for callers that still pass one; nothing causal drops a line here to report through it.
    */
   readonly serve: (onConnection: (sock: Socket) => void, onDrop?: (why: string) => void) => void;
   /** Answer every caller from here on with a refusal naming `why` (a vessel that stops serving verbs). */
@@ -267,20 +268,16 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   // — and only hands that buffer back (via `unshift`, once) at the moment a real verb channel takes the socket
   // over.
   //
-  // A PARKED CALLER CARRIES ITS OWN DEADLINE, and a dropped deadline is NEVER a quiet thing. The caller's first
-  // line names its own absolute `deadlineAt` (same-host epoch ms, `local-connector.ts`'s `invokeLocal`) — never
-  // this read's own clock, which would stamp a fresh deadline no matter how long the line sat unread before this
-  // vessel even opened a channel to read it. A line with no `deadlineAt` (an older caller, or this door's own
-  // `{holder:"?"}` probe) falls back to this read's own clock plus `timeoutMs`/the default, exactly as before. A
-  // park that replayed a line past its deadline would run a verb the caller's own process already gave up on —
-  // a ghost write the operator has no way to know ran. So `handOver` checks EVERY parked line's deadline before
-  // ever replaying one: past it, the line is refused by name instead. The socket's own `close` is read too — now
-  // that it actually fires on a hang-up — and drops the line the instant it does, with no need to wait out the
-  // deadline at all.
-  const DEFAULT_PARK_DEADLINE_MS = 30_000;
+  // A PARKED CALLER'S ABANDONMENT IS CAUSAL, NEVER A CLOCK READING. A park once carried the caller's own
+  // absolute `deadlineAt` (same-host epoch ms) and dropped a line whose stamp had passed by the TIME this
+  // vessel finally opened a channel to read it — a wall-clock comparison across however long the line sat
+  // unread, and one either side's own device clock could move. No deadline rides the wire now, and none is
+  // read here. The ONLY abandonment signal a park trusts is the socket's own `close`: a caller that hung up
+  // while parked drops its line the instant that event fires, no matter how long it sat — causal evidence,
+  // not a stamped instant. A caller still connected when `handOver` runs gets its line replayed, however
+  // long the wait: a live socket is still a live caller who has not told this vessel otherwise.
   interface ParkedLine {
     readonly verb: string;
-    readonly deadline: number;
     /** Detach this park's own listener and hand back every byte it read, for the real handler to `unshift`. */
     readonly take: () => Buffer;
   }
@@ -294,18 +291,15 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
       const nl = buf.indexOf(0x0a);
       if (nl === -1) return;
       lineRead = true;
-      let parsed: { holder?: unknown; verb?: unknown; timeoutMs?: unknown; deadlineAt?: unknown } = {};
-      try { parsed = JSON.parse(buf.subarray(0, nl).toString("utf8")) as typeof parsed; } catch { /* a non-JSON line reads as a verb line with no budget named */ }
+      let parsed: { holder?: unknown; verb?: unknown } = {};
+      try { parsed = JSON.parse(buf.subarray(0, nl).toString("utf8")) as typeof parsed; } catch { /* a non-JSON line reads as a verb line with no verb named */ }
       if (parsed.holder === "?") {
         sock.off("data", onData);
         try { sock.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir}`)); } catch { /* gone */ }
         return;
       }
-      const askedMs = typeof parsed.timeoutMs === "number" && parsed.timeoutMs > 0 ? parsed.timeoutMs : DEFAULT_PARK_DEADLINE_MS;
-      const deadline = typeof parsed.deadlineAt === "number" && parsed.deadlineAt > 0 ? parsed.deadlineAt : Date.now() + askedMs;
       parked.set(sock, {
         verb: typeof parsed.verb === "string" ? parsed.verb : "?",
-        deadline,
         take: () => { sock.off("data", onData); return buf; },
       });
     };
@@ -315,16 +309,12 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   let onConnection: (sock: Socket) => void = holder === "direct"
     ? answerHeld(`the store at ${storageDir} stays held by a direct lares command (pid ${process.pid}) for one act — run again when it ends`)
     : park;
-  const handOver = (next: (sock: Socket) => void, onDrop?: (why: string) => void): void => {
+  const handOver = (next: (sock: Socket) => void, _onDrop?: (why: string) => void): void => {
     onConnection = next;
     for (const [sock, line] of parked) {
       parked.delete(sock);
-      if (Date.now() >= line.deadline) {
-        const why = `the store at ${storageDir} dropped a parked "${line.verb}" invocation — its own deadline passed while this vessel still had no verb channel open, so the caller gave up before it could ever run; refusing it now rather than running it unannounced`;
-        try { sock.end(heldBy(why)); } catch { /* the caller is already gone — exactly the case this guards */ }
-        onDrop?.(why);
-        continue;
-      }
+      // A `close` already fired would have removed this entry via the listener above — reaching this line
+      // AT ALL is itself the causal evidence the caller is still there. Replay unconditionally.
       const read = line.take();
       if (read.length > 0) sock.unshift(read);
       next(sock);

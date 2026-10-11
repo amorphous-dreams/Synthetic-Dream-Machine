@@ -225,24 +225,43 @@ describe("claimStore — one holder at every instant", () => {
     } finally { await claim.release(); }
   });
 
-  it("H1 RED→GREEN: a parked caller whose own deadline passed before the vessel served is dropped, named, and NEVER run", async () => {
+  it("CLOCKLESS CONTROL: a parked caller that outlasts any nominal timeoutMs, but stays CONNECTED, is served — never clock-dropped", async () => {
+    // P2.5 S1: the old `H1 RED→GREEN` test here asserted the OPPOSITE of today's law — that a parked
+    // caller's own stamped deadline got it dropped once the vessel's `handOver` ran late. `timeoutMs`
+    // on a parked line is now read for NOTHING: no deadline is derived from it, no `Date.now()`
+    // comparison decides anything. The ONLY abandonment signal `park` trusts is the socket's own
+    // `close` (proved by the H1 hang-up test below). A caller that is STILL CONNECTED when `handOver`
+    // finally runs gets its line replayed, no matter how long the wait — even one that named a
+    // laughably short `timeoutMs` and is still sitting there regardless.
     const claim = await claimStore(dir, { holder: "vessel" });
     try {
       let ran = false;
       const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20 });
-      // Outlast the caller's own 20ms deadline before the vessel ever opens its verb channel — exactly the
-      // SIGSTOP'd-boot shape the episkopos drove live: the caller has already given up by the time `handOver`
-      // finally runs.
+      // Outlast the nominal 20ms "budget" many times over, WITHOUT closing — the live SIGSTOP'd-boot
+      // shape, minus the clock that used to punish it.
       await new Promise((r) => setTimeout(r, 80));
-      const drops: string[] = [];
-      claim.serve((sock) => { ran = true; sock.end(JSON.stringify({ status: "done" }) + "\n"); }, (why) => drops.push(why));
-      const line = JSON.parse(await asked) as { status: string; errorMessage: string };
-      expect(ran).toBe(false);                                     // the verb handler NEVER ran — no ghost write
-      expect(line.status).toBe("error");
-      expect(line.errorMessage).toMatch(/dropped a parked "nexus-kapae" invocation/);
-      expect(drops).toHaveLength(1);
-      expect(drops[0]).toMatch(/nexus-kapae/);
+      claim.serve((sock) => { ran = true; sock.end(JSON.stringify({ status: "done" }) + "\n"); });
+      const line = JSON.parse(await asked) as { status: string };
+      expect(ran).toBe(true);                                      // served — a still-open socket is still a caller
+      expect(line.status).toBe("done");
     } finally { await claim.release(); }
+  });
+
+  it("CLOCKLESS MUTATION: a set-back and a set-forward Date.now() leave the parked-and-connected verdict unchanged", async () => {
+    for (const skewMs of [-10 * 365 * 24 * 3600 * 1000, 10 * 365 * 24 * 3600 * 1000]) {
+      const realNow = Date.now;
+      const claim = await claimStore(dir, { holder: "vessel" });
+      try {
+        let ran = false;
+        const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20 });
+        await new Promise((r) => setTimeout(r, 80));          // long outlasted any nominal budget
+        Date.now = () => realNow() + skewMs;                  // the device clock lies, set back or forward
+        claim.serve((sock) => { ran = true; sock.end(JSON.stringify({ status: "done" }) + "\n"); });
+        const line = JSON.parse(await asked) as { status: string };
+        expect(ran).toBe(true);                               // unmoved by either skew — no clock reading decides this
+        expect(line.status).toBe("done");
+      } finally { Date.now = realNow; await claim.release(); }
+    }
   });
 
   it("CONTROL: a parked caller still inside its own deadline is served once handOver runs", async () => {
