@@ -836,20 +836,50 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
    * CRDT sync): re-fold the antigen and the membership leaf map, re-stand a realm freshly imported, re-verdict
    * the Repo's cached share answers for every peer, and re-derive this vessel's own dial presentation.
    * `nexusAid` names the hosting doc a host-roll just opened; every other caller passes nothing.
+   *
+   * H2 — AWAITED, SERIALIZED, AND TRUTHFUL (never fire-and-forget). Every caller (`store-door-verbs`'s
+   * `onRolled` hook, both `onReconnect` sites below) now awaits this call's own `Promise<boolean>`
+   * rather than firing it into the void: `admit-take`'s `represented` and `seal-home-refold`'s
+   * `refolded` read this SAME answer, so a fire-and-forget refold could never answer either
+   * truthfully (it always finished AFTER the CLI's own answer left). A SECOND roll that lands while
+   * the first still runs waits on it and then runs its OWN full pass afterward — `afterRollChain`
+   * serializes every call through one in-flight promise, so two closely-spaced rolls never
+   * interleave their refolds, and neither one is silently dropped or coalesced into the other's answer.
+   *
+   * THE SINGLE `try` SPLITS IN THREE so a fault in one stage never skips the stages after it: antigen
+   * + membership refold, then `realmPlane.refresh`, then (unconditionally) `reverdict`, then
+   * `representIfMoved`. The return value answers ONE question — did this roll's own re-presentation
+   * run without throwing — because that is exactly what `represented`/`refolded` claim; an earlier
+   * stage's fault is logged and never silently swallows a later stage's own true answer.
    */
-  const afterRoll = (nexusAid?: string): void => {
+  let afterRollChain: Promise<boolean> = Promise.resolve(true);
+  const afterRoll = (nexusAid?: string): Promise<boolean> => {
     if (nexusAid) ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(nexusAid, vesselIdentity.verifyingKey)) as DocumentId);
-    void (async () => {
+    const runOneRoll = async (): Promise<boolean> => {
       try {
         await antigenHolder.refold();
         await membershipHolder.refold();
-        await realmPlane?.refresh(readNexusDoc(sealHome));
-        reverdict();
-        await representIfMoved?.();
       } catch (e) {
-        console.log(`[nexus] after-roll refold failed: ${e instanceof Error ? e.message : String(e)}`);
+        console.log(`[nexus] after-roll refold failed (antigen/membership): ${e instanceof Error ? e.message : String(e)}`);
       }
-    })();
+      try {
+        await realmPlane?.refresh(readNexusDoc(sealHome));
+      } catch (e) {
+        console.log(`[nexus] after-roll refold failed (realm plane): ${e instanceof Error ? e.message : String(e)}`);
+      }
+      reverdict();
+      try {
+        await representIfMoved?.();
+        return true;
+      } catch (e) {
+        console.log(`[nexus] after-roll refold failed (re-present): ${e instanceof Error ? e.message : String(e)}`);
+        return false;
+      }
+    };
+    // Serialized through the ONE in-flight chain: a roll that lands mid-refold waits for the
+    // standing one to finish, then runs once more in full — never interleaved, never dropped.
+    afterRollChain = afterRollChain.then(runOneRoll, runOneRoll);
+    return afterRollChain;
   };
 
   // Replay every socket that presented before the holder stood.
@@ -958,7 +988,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
         // HEAL — on a RE-connect after a drop, re-fold the antigen + carried deny boards + posture the vessel read
         // as-of-its-last-sync (a peer's bans/revokes that landed during the partition). The SAME after-roll hook
         // every store-door write fires; here it fires automatically when the carriage transport re-dials.
-        onReconnect:  async () => afterRoll(),
+        onReconnect:  async () => { await afterRoll(); },
         onLog:        (line) => console.log(`[carriage] ${line}`),
       })
     : null;
@@ -1534,7 +1564,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
           // A partition stales the boards this verdict reads (membership · posture · realm registrations)
           // and the Repo caches its share verdict per (doc, peer) until something asks it to read anew, so
           // a peer that comes back re-attaches at the transport and draws a verdict computed before the cut.
-          onReconnect: async () => afterRoll(),
+          onReconnect: async () => { await afterRoll(); },
         });
         // The walk client rides the dial: it keeps the grant the hearth pushes, settles the invite once a grant-
         // bearing dial stands, and fills the wallet against the hearth's signed act on its hosting doc — the doc the
