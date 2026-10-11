@@ -381,7 +381,7 @@ run_leaf() {
   #
   # And the edge must NAME THIS BROWSER: an admit that verified but bound some other device would
   # satisfy any check that only asked whether one was produced.
-  OUT=$($COMPOSE exec -T lararium-a $LARES device-admit --as 0 --joinee-key "$KEY" --json 2>/dev/null)
+  OUT=$($COMPOSE exec -T lararium-a $LARES device-admit --joinee-key "$KEY" --json 2>/dev/null)
   if printf '%s' "$OUT" | grep -q 'device-admit/v1' \
      && printf '%s' "$OUT" | grep -q "$KEY"; then ok; else
     bad "the admit refused, or bound a different device"; printf '%s\n' "$OUT" | head -3 | sed 's/^/      /'; fi
@@ -397,7 +397,7 @@ run_leaf() {
   # stays unwalked, and calling this "admitted into its fleet" would have papered over exactly that.
   step "the carriage PARSES back through the browser's own reader"
   local CARRIAGE
-  CARRIAGE=$($COMPOSE exec -T lararium-a $LARES device-admit --as 0 --joinee-key "$KEY" 2>&1 \
+  CARRIAGE=$($COMPOSE exec -T lararium-a $LARES device-admit --joinee-key "$KEY" 2>&1 \
              | grep -oE '#admit=[A-Za-z0-9_-]+' | tail -1)
   if [ -z "$CARRIAGE" ]; then bad "the admit printed no carriage to hand over"; else
     # THE VALUES MUST BE HANDED IN. `exec` carries no host environment, so a probe reading

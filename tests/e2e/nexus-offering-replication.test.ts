@@ -43,13 +43,15 @@ function snapshotInspectionSurface(root: string, boardDocId: string): string[] {
     for (const name of readdirSync(dir)) {
       const path = join(dir, name);
       if (name === "cas" || name === "sync-state") continue;
+      // Regular files only: the store's `.holder` claim is a socket, which is no carrier and no write, and a read
+      // of it fails ENXIO.
       // An observation error is itself a failed witness: silently dropping a file could hide a write.
       const stat = statSync(path);
       if (stat.isDirectory()) {
         if (inBoard) walk(path, true);
         else if (DOC_SHARD.test(name)) walkShard(path);
         else walk(path, false);
-      } else out.push(`${path.slice(root.length)}:${readFileSync(path).toString("hex")}`);
+      } else if (stat.isFile()) out.push(`${path.slice(root.length)}:${readFileSync(path).toString("hex")}`);
     }
   };
   // A shard directory holds documents; only the board's own document descends.

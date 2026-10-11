@@ -76,7 +76,6 @@ function spawnWatch(opts: { grace: number; fraction: number }): WatchProc {
     [
       CLI_BIN, "watch",
       "--source", SRC, "--to", LARES_URI, "--apply",
-      "--port", String(lar.port),
       "--debounce", "150",
       "--delete-grace", String(opts.grace),
       "--delete-fraction", String(opts.fraction),
