@@ -377,9 +377,26 @@ describe("DROP handler", () => {
     const second = await handler(args, makeContext(composite, "DROP", args));
     expect(second["retiredCount"]).toBe(0);
 
+    // The retirement marker is ONE record under a fixed id: a re-DROP keeps the FIRST record.
     const afterSecond = await effectRecordsIn(composite);
-    expect(afterSecond.length).toBe(2);
-    expect(afterSecond).toEqual(expect.arrayContaining(afterFirst));
+    expect(afterSecond.length).toBe(1);
+    expect(afterSecond).toEqual(afterFirst);
+  });
+
+  test("M13: ADD / COPY / MOVE into a DROPped bag refuse by name and point at CREATE", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    await seedTiddler(composite, BAG_LOW, "A", "a", "c-1");
+    const drop = { bag: BAG_MID };
+    await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
+    for (const verb of ["ADD", "COPY", "MOVE"] as const) {
+      const args = { title: "A", "from-bag": BAG_LOW, "to-bag": BAG_MID, "change-id": "c-1" };
+      await expect(table.get(verb)!(args, makeContext(composite, verb, args))).rejects.toThrow(/bag-retired:.*CREATE/);
+    }
+    // CONTROL: a bag never dropped takes the same write.
+    const ok = { title: "A", "from-bag": BAG_LOW, "to-bag": BAG_HIGH, "change-id": "c-1" };
+    await table.get("COPY")!(ok, makeContext(composite, "COPY", ok));
   });
 });
 

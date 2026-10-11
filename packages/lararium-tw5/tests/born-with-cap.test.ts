@@ -12,7 +12,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { CompositeStore, emptyLarDoc } from "@lararium/mesh";
+import { CompositeStore, emptyLarDoc, AutomergeDocStore, effectRecordUri } from "@lararium/mesh";
 import type { Repo, DocHandle, LarDoc, Verb } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -166,5 +166,76 @@ describe("CREATE — declarative idempotency (bag state, never a request key)", 
     expect(third.alreadyStood).toBe(true);
     expect(third.docUrl).toBe(second.docUrl);
     expect(mintedUrls.length).toBe(2);
+  });
+});
+
+describe("M13 — a retired bag refuses writes by name and CREATE strands nothing", () => {
+  const ctxFor = (action: string, id: string): VerbContext => ({
+    daemon: new CompositeStore(),
+    invocation: { action, args: {}, requestId: id, requestedBy: "did:key:test" } as unknown as Verb,
+    cap: async () => ({ ok: true }),
+  });
+
+  async function stage() {
+    const { repo, mintedUrls } = makeFakeRepo();
+    const opts = { composite: new CompositeStore(), reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null } };
+    const r = (v: "CREATE" | "DROP" | "COPY" | "CLEAR") => makeActionReactorFor(v, opts);
+    const src = "lar:///ha.ka.ba/bags/m13-src";
+    const dst = "lar:///ha.ka.ba/bags/m13-dst";
+    await r("CREATE")({ bag: src }, ctxFor("CREATE", "c1"));
+    const first = await r("CREATE")({ bag: dst }, ctxFor("CREATE", "c2"));
+    const srcHandle = await repo.find(String((await (await repo.find(CATALOG_URL)).doc()!.tiddlers[src]!.tiddler as any).text) as any);
+    await new AutomergeDocStore(srcHandle as any, src).put(
+      { tiddler: { title: "carrier", text: "body" }, meta: {} } as any, { kind: "lares-verb", requestId: "seed" } as any);
+    return { repo, opts, r, src, dst, first, mintedUrls };
+  }
+
+  test("CREATE -> DROP -> COPY --to the dropped bag REFUSES by name; CREATE then mints fresh; nothing stranded", async () => {
+    const { repo, r, src, dst, first, mintedUrls } = await stage();
+    const args = { "from-bag": src, "to-bag": dst, title: "carrier", "change-id": "c-1" };
+    // CONTROL: a standing bag takes the COPY.
+    await r("COPY")(args, ctxFor("COPY", "k1"));
+
+    await r("DROP")({ bag: dst }, ctxFor("DROP", "d1"));
+    // RED before the fix: this answered ok:true and landed in the retired doc.
+    await expect(r("COPY")(args, ctxFor("COPY", "k2"))).rejects.toThrow(/bag-retired: COPY into .*m13-dst.*CREATE/);
+
+    // The refusal landed nothing in the retired doc: its only live content is the tombstoned one.
+    const retiredDoc = (await repo.find(first.docUrl as string)).doc()!;
+    const accessions = Object.values(retiredDoc.tiddlers).filter((t: any) => t.tiddler?.["archival-verb"] === "accession");
+    expect(accessions.length).toBe(1); // the CONTROL copy only
+
+    const fresh = await r("CREATE")({ bag: dst }, ctxFor("CREATE", "c3"));
+    expect(fresh.alreadyStood).toBeUndefined();
+    expect(fresh.docUrl).not.toBe(first.docUrl);
+    expect(mintedUrls.length).toBe(3);
+
+    // The fresh bag takes the write, and it lands in the FRESH doc, visible to the bag's surface.
+    await r("COPY")(args, ctxFor("COPY", "k3"));
+    const cleared = await r("CLEAR")({ bag: dst }, ctxFor("CLEAR", "x1"));
+    expect(cleared.clearedCount).toBe(1);
+  });
+
+  test("the marker is ONE keyed read at a fixed title; a standing bag carries none", async () => {
+    const { repo, r, dst, first } = await stage();
+    const marker = effectRecordUri(dst, "retired");
+    expect((await repo.find(first.docUrl as string)).doc()!.tiddlers[marker]).toBeUndefined();
+    await r("DROP")({ bag: dst }, ctxFor("DROP", "d1"));
+    const rec: any = (await repo.find(first.docUrl as string)).doc()!.tiddlers[marker];
+    expect(rec.tiddler.disposition).toBe("bag-retired");
+    // A second DROP keeps the FIRST retirement record.
+    await r("DROP")({ bag: dst }, ctxFor("DROP", "d2"));
+    const again: any = (await repo.find(first.docUrl as string)).doc()!.tiddlers[marker];
+    expect(again.tiddler["request-id"]).toBe(rec.tiddler["request-id"]);
+  });
+
+  test("alreadyStood stamps a TRUTHFUL count (content titles, ledger excluded)", async () => {
+    const { r, src, dst } = await stage();
+    const empty = await r("CREATE")({ bag: dst }, ctxFor("CREATE", "a1"));
+    expect(empty.alreadyStood).toBe(true);
+    expect(empty.count).toBe(0);
+    const full = await r("CREATE")({ bag: src }, ctxFor("CREATE", "a2"));
+    expect(full.alreadyStood).toBe(true);
+    expect(full.count).toBe(1);
   });
 });

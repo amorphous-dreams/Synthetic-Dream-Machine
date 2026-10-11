@@ -48,7 +48,7 @@ import {
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
-  isEffectRecordUri, parseEffectRecord,
+  isEffectRecordUri, parseEffectRecord, effectRecordUri,
 } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
@@ -479,15 +479,38 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       );
     }
 
+    // A RETIRED bag takes no landing. DROP wrote the retirement marker into the bag's own doc;
+    // a write verb that reads it refuses BY NAME and points at CREATE, which mints a fresh doc and
+    // re-points the registry row. Without the refusal a write answers success into a doc CREATE
+    // then abandons (M13). Preview refuses the same.
+    if (verb === "ADD" || verb === "COPY" || verb === "MOVE" || verb === "LOAD" || verb === "INGEST") {
+      const destStore = await access.write(destBag);
+      if (destStore && await storeIsRetired(destStore, destBag)) {
+        throw new Error(
+          `bag-retired: ${verb} into ${destBag} refused — the bag was DROPped and takes no writes. ` +
+          `CREATE ${destBag} to stand a fresh bag, then write again.`,
+        );
+      }
+    }
+
     // `--dry-run`: run the executor through the capturing access — content writes
     // AND the effect-record ledger are captured, nothing commits.
     if (dryRun) {
       const cap = makeCapturingBagAccess(access);
-      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts.tw5, opts.resolveByCid));
+      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts.tw5, opts.resolveByCid),
+        action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
       return { verb, dryRun: true, ...summary, ...projectedEffect(cap.captured) };
     }
 
-    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts.tw5, opts.resolveByCid));
+    // DROP's `bag-retired` record rides the fixed marker id, so a re-DROP keeps the FIRST
+    // retirement record (its actor and request) instead of overwriting it.
+    if (action.verb === "DROP") {
+      const dropStore = await access.write(action.bag);
+      const marked = !!dropStore && await storeIsRetired(dropStore, action.bag);
+      if (marked) return { verb, ...(await executeAction(action, access, opts.tw5, opts.resolveByCid)) };
+    }
+    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts.tw5, opts.resolveByCid),
+      action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
     return { verb, ...summary };
   };
 }
@@ -574,24 +597,37 @@ async function resolveCarrierText(
 }
 
 /**
- * True when the doc a registry row currently names carries a `bag-retired`
- * disposition in its OWN ledger (DROP's effect record) — H8's absent-read for
- * CREATE. Opens the named doc read-only (no mount, no composite) and scans its
- * tiddlers for a `disposition` effect record naming this bag as `bag-retired`.
- * An unreachable doc (never arrives) reads not-retired — the already-stood
- * answer still carries SOME doc rather than CREATE faulting on a sync hiccup.
+ * THE RETIREMENT MARKER. DROP writes its `bag-retired` disposition under ONE fixed event id, so the
+ * marker sits at a title every reader can name: `<bag>/ledger/residency/retired`. A reader asks "is
+ * this bag retired?" with ONE keyed read, never a scan of the doc's tiddlers. It lives in the bag's
+ * own doc beside the rest of the ledger (an effect-record URI, so CLEAR/DROP never tombstone it and
+ * the projector never writes it to disk), and it belongs to THAT doc: a re-stood bag is a NEW doc, so
+ * a retirement always names the doc the registry row pointed at when DROP ran.
+ */
+const RETIRED_EVENT_ID = "retired";
+
+function isRetirementMarker(fields: Record<string, unknown> | undefined, bag: string): boolean {
+  if (!fields) return false;
+  const parsed = parseEffectRecord(fields);
+  return !!parsed && parsed.bag === bag && parsed.disposition === "bag-retired";
+}
+
+/** True when a store holds the bag's retirement marker (one `get`). */
+async function storeIsRetired(store: LarTiddlerStore, bag: string): Promise<boolean> {
+  const rec = await store.get(effectRecordUri(bag, RETIRED_EVENT_ID));
+  return isRetirementMarker(rec?.tiddler as Record<string, unknown> | undefined, bag);
+}
+
+/**
+ * True when the doc a registry row currently names carries the retirement marker — H8's absent-read
+ * for CREATE. ONE keyed read of the named doc (no mount, no composite, no scan). An unreachable doc
+ * (never arrives) reads not-retired — the already-stood answer still carries SOME doc rather than
+ * CREATE faulting on a sync hiccup.
  */
 async function bagRetiredDisposition(repo: Repo, bagUri: string, docUrl: string): Promise<boolean> {
   const handle = await findOrThrow(repo, docUrl, `bag ${bagUri} (retirement check)`).catch(() => null);
-  const tiddlers = handle?.doc()?.tiddlers;
-  if (!tiddlers) return false;
-  for (const raw of Object.values(tiddlers)) {
-    const fields = (raw as LarTiddlerRecord | undefined)?.tiddler as Record<string, unknown> | undefined;
-    if (!fields) continue;
-    const parsed = parseEffectRecord(fields);
-    if (parsed && parsed.bag === bagUri && parsed.disposition === "bag-retired") return true;
-  }
-  return false;
+  const raw = handle?.doc()?.tiddlers?.[effectRecordUri(bagUri, RETIRED_EVENT_ID)] as LarTiddlerRecord | undefined;
+  return isRetirementMarker(raw?.tiddler as Record<string, unknown> | undefined, bagUri);
 }
 
 /**
@@ -628,7 +664,10 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
   // below, which re-points this same registry row.
   const existing = await registry.urlOf(action.bag).catch(() => null);
   if (existing && !(await bagRetiredDisposition(reach.repo, action.bag, existing))) {
-    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count: 1 };
+    // `count` reads the standing bag's CONTENT titles (the ledger is audit, not content).
+    const standing = await registry.storeOf(action.bag).catch(() => null);
+    const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
+    return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
   }
   // Mint + register inside withEffectRecord so the `creation` ledger record lands
   // after the new bag is reachable (the effect-record rides the new bag's own doc).
@@ -1405,9 +1444,13 @@ async function executeClear(action: ClearAction, access: BagAccess): Promise<Rec
 }
 
 async function executeDrop(action: DropAction, access: BagAccess): Promise<Record<string, unknown>> {
-  // DROP currently tombstones contents (same as CLEAR) and lets the
-  // effect-record disposition mark the bag removed. True recipe-removal
-  // is a separate operator gesture (recipe edit / `lares wiki remove-bag`).
+  // DROP tombstones contents (same as CLEAR) and the `bag-retired` marker (written by the
+  // reactor under the fixed RETIRED_EVENT_ID) retires the bag: write verbs refuse it by name, and
+  // CREATE reads it as absent and re-points the registry row to a fresh doc. The registry row
+  // STAYS: it is the name's only pointer to the retired doc, whose ledger "never leaves" (the
+  // deaccession record persists with the bag), and it is what lets a write be refused BY NAME
+  // rather than as a generic unreachable bag. Recipes are wiki-owned, and one bag can sit in many
+  // recipes, so a recipe slot is the wiki's own edit (`lares wiki remove-bag`), never a bag verb's.
   //
   // M11: the audit log survives DROP too — the same content-only filter CLEAR
   // uses, so the bag's ledger (including the `bag-retired` disposition this
@@ -1417,7 +1460,7 @@ async function executeDrop(action: DropAction, access: BagAccess): Promise<Recor
   for (const title of titles) {
     await tombstoneIn(access, action.bag, title, o);
   }
-  return { bag: action.bag, retiredCount: titles.length, note: "bag tombstoned; recipe-edit removes the slot" };
+  return { bag: action.bag, retiredCount: titles.length, note: "bag retired; writes refuse until CREATE stands a fresh bag; recipe-edit removes a wiki's slot" };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
