@@ -55,6 +55,7 @@ import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-r
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
 import type { WikiActivationCap } from "@lararium/mesh";
+import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard, shareConfigOf, carriageEntryActCid, type LeafIdentity } from "@lararium/mesh";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
@@ -338,6 +339,11 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   siblingChannel: () => SiblingChannelStatus | null;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim: StoreClaim;
+  /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
+   *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
+   *  above); `pending` entries carried NO log line at all until this field threaded them out here for
+   *  the boot log to name (main.ts). */
+  mountManifest: MountManifest;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -359,6 +365,8 @@ export interface NodeHermResult {
   socketSorter:     SocketSorter;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim:       StoreClaim;
+  /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
+  mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
   dispose:          () => Promise<void>;
 }
@@ -2665,6 +2673,7 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
     socketSorter: p.socketSorter,
     siblingChannel: p.siblingChannel,
     storeClaim: p.storeClaim,
+    mountManifest: result.assembly.mountManifest,
   };
 }
 
@@ -2751,6 +2760,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     carriageRelayGatePubKey: p.carriageRelay?.gatePubKey ?? null,
     socketSorter:     p.socketSorter,
     storeClaim:       p.storeClaim,
+    mountManifest:    herm.assembly.mountManifest,
     dispose: async () => {
       setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
       await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak

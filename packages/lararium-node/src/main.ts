@@ -38,6 +38,7 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
+import type { MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
@@ -141,6 +142,24 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
     process.once("SIGTERM", drop);
     process.once("SIGINT", drop);
   } catch { /* a vessel that cannot publish still stands */ }
+}
+
+/**
+ * M15: name every PENDING social plane — one the probe (or its clean-tail recovery) answered with NO
+ * verdict at all, mounted read-only blank with no bytes moved. Before this, the fix that gave `pending`
+ * its own status (H2) carried the data all the way into `MountManifest`, but nothing ever printed it: a
+ * `degraded` plane logs its own line live (`quarantineDoc`, open-node-vessel.ts), while a `pending` one
+ * sat silent — a boot log reader had no way to tell "this plane is fine, just unresolved" from "nothing
+ * noticed it at all". Remounting stays out of path: a restart or `lares vessel doctor` re-probes.
+ */
+function logPendingPlanes(prefix: string, manifest: MountManifest): void {
+  for (const e of manifest.entries) {
+    if (e.status !== "pending") continue;
+    console.log(
+      `${prefix} PENDING plane — ${e.documentId} (unresolved: ${e.reason ?? "?"}); ` +
+      `mounted read-only, no bytes moved; re-probe with \`lares vessel doctor\` or restart`,
+    );
+  }
 }
 
 async function main(): Promise<void> {
@@ -309,6 +328,7 @@ async function main(): Promise<void> {
     console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
     console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
     console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
+    logPendingPlanes("[herm]", herm.mountManifest);
 
     // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
     // `standAs` above answers what this vessel stands as ALONE. A recognised operator may raise it for the
@@ -450,6 +470,7 @@ async function main(): Promise<void> {
   console.log(`[lararium] oracle:   ${result.oracleDocUrl ?? "(none)"}`);
   console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
   console.log(`[lararium] daemon:   ${result.daemon.daemonHandle.url}`);
+  logPendingPlanes("[lararium]", result.mountManifest);
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
@@ -600,11 +621,16 @@ async function main(): Promise<void> {
     }
     shuttingDown = true;
     console.log(`[lararium] ${sig} — graceful shutdown (durable flush, budget ${SHUTDOWN_BUDGET_MS}ms; a second ${sig} cuts it — exit 75)`);
-    const step = async <T>(name: string, run: () => Promise<T>): Promise<T> => {
+    const step = async <T>(name: string, run: () => Promise<T>, onDone?: (ms: number) => void): Promise<T> => {
       const t0 = performance.now();
       currentStep = name;
       running.add(name);
-      try { return await run(); } finally { running.delete(name); spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
+      try { return await run(); } finally {
+        running.delete(name);
+        const ms = Math.round(performance.now() - t0);
+        spans.push(`${name} ${ms}ms`);
+        onDone?.(ms);
+      }
     };
     // THE REPORT ARMS BEFORE THE FIRST STEP (M4c) — a hung main-flush now gets named too, never
     // left silent until islands/daemon even get a turn. It only ever REPORTS; the operator's own
@@ -619,7 +645,14 @@ async function main(): Promise<void> {
       dispatcher.dispose();
       uds.close();
       httpServer.close();
-      await step("main-flush", () => result.repo.flush());                          // the floor
+      // M17: print the INSTANT this step resolves, never waiting for the final line below. The
+      // final "shutdown complete" line only prints once islands AND daemon have also acked (or
+      // been named cut), which the harness's own SIGKILL grace can outrun on a busy island — a
+      // local witness-all run measured exactly that (main-flush landed in 4.6s; the islands'
+      // handshake went ack-silent past it, and the test's own 15s grace SIGKILLed before the final
+      // line ever printed). This line carries the durable-floor claim ALONE, the instant it is true.
+      await step("main-flush", () => result.repo.flush(), (ms) =>
+        console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
       // The two teardowns run side by side: a wiki island busy past the budget never holds the daemon island's own
       // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it. Both are AWAITED to their
       // own receipt — nothing here races them against a clock.
@@ -636,7 +669,13 @@ async function main(): Promise<void> {
         ? "islands ok"
         : `islands cut (${islandsResult.cut.join(", ")}${islandsResult.acked.length > 0 ? `; ok: ${islandsResult.acked.join(", ")}` : ""})`;
       console.log(`[lararium] shutdown complete — main replica flushed durably; teardown receipts: ${daemonLine} · ${islandsLine} (${spans.join(" · ")})`);
-      process.exit(0);
+      // L6: a handshake that timed out and got terminated by THIS DOOR'S OWN PATIENCE (never the
+      // operator's cut, which already exits 75 above) is a true line that still cannot read as
+      // clean to a supervisor watching the exit code alone. Exit 0 only when every receipt
+      // genuinely acked; otherwise 76 ("teardown cut by this door's own patience"), distinct from
+      // both a clean stop (0) and a flush error (1).
+      const everyReceiptAcked = daemonResult.acked && islandsResult.cut.length === 0;
+      process.exit(everyReceiptAcked ? 0 : 76);
     } catch (e) {
       clearTimeout(pastBudget);
       console.error("[lararium] shutdown flush error:", e instanceof Error ? e.message : String(e));

@@ -86,13 +86,17 @@ describe("vessel reboot — a hearth survives restarting on its own fed store", 
     // that teardown, and the main replica flushes again before the exit, cut or not. `stopDaemonOnly` returns on
     // the daemon's exit, so the second daemon meets the store the first one finished writing.
     await lar.stopDaemonOnly();
-    const stopLines = lar.bootLog().split("\n").filter((l) => /shutdown|teardown/.test(l));
+    const stopLines = lar.bootLog().split("\n").filter((l) => /shutdown|teardown|flushed durably/.test(l));
     process.stderr.write(`vessel-reboot stop: ${JSON.stringify(stopLines)}\n`);
-    // H3 — the clause this test actually needs: the MAIN REPLICA flushed durably. The rest of the
-    // line (which teardown receipts acked vs got cut) is an honest report this fix added; a
-    // handshake timeout naming "islands cut (…)" must not read as a failed stop here — only the
-    // main-replica clause is this vector's own claim.
-    expect(stopLines.some((l) => /main replica flushed durably/.test(l))).toBe(true);
+    // H3/M17 — the clause this test actually needs: the MAIN REPLICA flushed durably, read off its
+    // OWN dedicated line (`main-flush Nms`), printed the INSTANT that step resolves — never the
+    // final "shutdown complete" line, which only prints once islands AND daemon have also acked (or
+    // been named cut). A busy island can go ack-silent past this harness's own stop grace, which
+    // SIGKILLs before that final line ever prints (measured in witness-all's local e2e run); reading
+    // the early per-step line instead means a cut teardown still proves the floor landed. A handshake
+    // timeout naming "islands cut (…)" on the final line (when it does print) must not read as a
+    // failed stop here — only the main-replica clause is this vector's own claim.
+    expect(stopLines.some((l) => /main replica flushed durably \(main-flush \d+ms\)/.test(l))).toBe(true);
 
     // A temp a cut island write left reads as stranded at the next open, never as a chunk; it is named, not fatal.
     const store = vesselStorageDir(lar);
