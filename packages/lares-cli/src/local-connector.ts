@@ -234,13 +234,18 @@ export class LocalInvocationAborted extends Error {}
 export interface ReceiptAnswer {
   readonly requestId: string;
   /**
+   * `evicted` — the vessel's own receipt ring (D1, M1) dropped this id's full durable outcome
+   * past its retention bound; its fact survives (digest, effect key, terminal) but the result
+   * body is gone — `act.ts`/`receipt-cmd.ts` read this as `retention-gap`, never a bare "unknown"
+   * that would invite a silent re-run.
+   *
    * `unanswered` — THIS caller's own patience for the READ itself ended (M13): the socket connected
    * but no line came back within `patienceMs`, so this side destroyed the socket and gave up on
    * HEARING, never on the question. Unlike `unknown` (the vessel answered honestly that it never
    * arbitrated this id), `unanswered` means no answer arrived at all — a frozen or wedged peer. Never
    * read as a verdict on the act.
    */
-  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown" | "unanswered";
+  readonly state: "abandoned" | "committed" | "done" | "error" | "evicted" | "unknown" | "unanswered";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
 }
@@ -365,7 +370,7 @@ export async function invokeLocal(
       // THE ASK RIDES WITH THE INVOCATION. The daemon runs its own servo, and a caller that knows its
       // pass runs long — a bulk backfill over a whole corpus — can only say so if the number crosses.
       // Left off the wire, this side waited an hour while the daemon cut the same pass at two minutes.
-      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId }) + "\n");
+      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId, ...(opts.effectKey !== undefined && { effectKey: opts.effectKey }) }) + "\n");
     });
     sock.on("data", (chunk: string) => {
       buf += chunk;

@@ -96,6 +96,18 @@ describe("lares receipt <requestId> (M14)", () => {
     expect(code).not.toBe(0);
   });
 
+  test("★ an `evicted` receipt (M1 — the receipt ring dropped this id past retention) reads its own code, retention-gap ★", async () => {
+    await standStub({ requestId: "req-evicted", state: "evicted" });
+    const cap = captured();
+    const code = await cmdReceipt(jsonArgs(["req-evicted"]));
+    cap.restore();
+    const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
+    expect(payload.ok).toBe(false);
+    expect(payload.error.code).toBe("retention-gap");
+    expect(code).not.toBe(0);
+    expect(code).toBe(6); // the same exit family as outcome-unknown/request-abandoned
+  });
+
   test("an `unknown` receipt (this vessel never arbitrated it) reads not-found, never a crash", async () => {
     await standStub({ requestId: "req-3", state: "unknown" });
     const cap = captured();

@@ -21,6 +21,16 @@ export interface SubmitOptions {
    * outcome-keyed dedup then gives exactly-once EFFECT. Omit → fresh `newRequestId()`.
    */
   readonly requestId?: string;
+  /**
+   * The effect this attempt would produce (D1, P2.5 iter 4 commit 4) — a CONTENT-ADDRESSED
+   * key, distinct from `requestId`. A caller that mints a FRESH `requestId` per attempt (so a
+   * retry after an abandoned/unknown outcome can actually run, never reusing an id the vessel
+   * already settled) still passes the SAME `effectKey` across those attempts, so the daemon's
+   * own effect index answers a repeat with the prior `done` outcome instead of running it
+   * twice. Rides the wire as an additive field (`local-connector.ts`); absent means no dedup
+   * beyond the ordinary requestId-keyed arbitration.
+   */
+  readonly effectKey?: string;
 }
 
 export interface SubmitTargetResult {
@@ -34,6 +44,14 @@ export interface SubmitResult {
   readonly results?:     Record<string, SubmitTargetResult>;
   readonly errorMessage?: string;
   readonly requestId:    string;
+  /**
+   * The channel's own ADDITIVE refusal reason (D1, M3″) — present only when `status` reads
+   * "error" AND the refusal came from the ledger's own arbitration (abandoned, a changed-input
+   * reuse, a retention-gap eviction), never from the verb's own handler faulting. An older CLI
+   * build that never reads this field still reads the unchanged `errorMessage` prose; this is
+   * the machine-readable twin `verb-call.ts`'s `refusalCode` keys exit codes from.
+   */
+  readonly refusal?: { readonly reason: string };
 }
 
 export function summaryOutput(result: SubmitResult): Record<string, unknown> | undefined {

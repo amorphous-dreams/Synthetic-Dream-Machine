@@ -28,6 +28,7 @@ function printReceiptUsage(verb: "receipt" | "cancel"): void {
 function codeFor(state: ReceiptAnswer["state"]): string {
   switch (state) {
     case "abandoned":  return "request-abandoned";
+    case "evicted":    return "retention-gap";
     case "error":      return "verb-error";
     case "unanswered": return "outcome-unknown";
     case "unknown":    return "not-found";

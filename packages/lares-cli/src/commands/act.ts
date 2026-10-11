@@ -46,7 +46,7 @@ import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, new
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
-import { verbFailure } from "../verb-call.js";
+import { verbFailure, refusalCode } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -192,7 +192,9 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   }
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";
-    const code = /^cap-denied/.test(msg) ? "cap-denied" : "verb-error";
+    const code = result.refusal?.reason !== undefined
+      ? refusalCode(result.refusal.reason)
+      : /^cap-denied/.test(msg) ? "cap-denied" : "verb-error";
     emit(args, { ok: false, requestId: result.requestId, error: { code, message: msg }, human: () => console.error(`REPACK failed: ${msg}`) });
     return exitFor(code);
   }
@@ -397,7 +399,20 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   const inWiki     = Boolean(args.flags["in-wiki"]);
   const submitName = inWiki ? "wiki-act" : verb;
   const submitArgs = inWiki ? { verb, args: actionArgs } : actionArgs;
-  const requestId = await taskContentId({ subject, command: submitName, args: submitArgs, nonce: "" });
+  // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb.
+  // LOAD alone SPLITS its ids from it (H4, D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH
+  // nonce per attempt, so a retry after an abandoned/unknown outcome actually dispatches again
+  // rather than reusing an id this vessel has already settled forever (the livelock H4 named —
+  // the SAME content-addressed id, reused across the identical retry a frozen vessel invites,
+  // could never again win "run" once this vessel had recorded it abandoned). `effectKey` still
+  // rides every attempt, so the daemon's own effect index answers a repeat attempt that DID land
+  // with the prior `done` outcome, never running the LOAD twice. Every OTHER action verb keeps
+  // `requestId === effectKey`: its own `--change-id` already mints fresh per invocation when the
+  // operator omits it, so collapsing a deliberately-REUSED change-id to one id was always the
+  // intended idempotency there — LOAD alone hit the livelock because reusing `--change-id` is
+  // this surface's documented retry gesture for a stalled LOAD specifically.
+  const effectKey = await taskContentId({ subject, command: submitName, args: submitArgs, nonce: "" });
+  const requestId = verb === "LOAD" ? newRequestId() : effectKey;
   // The ACK budget scales with the gesture: a directory-batch LOAD chews one
   // island frame per carrier, so a flat budget times out the ACK while the verb
   // itself succeeds.
@@ -412,7 +427,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   const READBACK_MS = 2_000;
   let result;
   try {
-    result = await runVerb(submitName, submitArgs, did, { requestId, timeoutMs });
+    result = await runVerb(submitName, submitArgs, did, { requestId, effectKey, timeoutMs });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // A LOCAL WAIT ENDING IS NOT A VERDICT ON THE ACT, AND NEVER AN ABSENT DAEMON. The socket connected and
@@ -436,9 +451,24 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
           human: () => { console.error(`lares act: request abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
         });
         return exitFor("request-abandoned");
+      } else if (receipt?.state === "evicted") {
+        // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
+        // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer exists.
+        const hint = "this vessel's receipt ring evicted this request before it could be re-read — mint a fresh request id and retry.";
+        emit(args, {
+          ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
+          human: () => { console.error(`lares act: retention gap. Check request ${requestId}.`); console.error(`  ${hint}`); },
+        });
+        return exitFor("retention-gap");
       } else {
         const perCarrier = "10s + 400ms per carrier";
-        const hint = `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4). requestId === effectKey
+        // for every verb except LOAD, where requestId is a FRESH nonce this attempt alone owns —
+        // re-running never reads IT back (a fresh attempt mints its own), so the old "re-running this
+        // exact command later reads the same receipt back" promise would be a LIE for LOAD specifically.
+        const hint = requestId === effectKey
+          ? `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`
+          : `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-running is always safe here: a fresh attempt mints its OWN request id, never this one, so it can never collide with whatever this attempt settles to; if this attempt DID land, the daemon's effect index (key ${effectKey}) answers the re-run with the same outcome rather than loading twice. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
           human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
@@ -458,10 +488,16 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   }
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";
-    // The island names a cap/ward denial as `cap-denied: …`; give it its own
-    // class (exit 5) so an agent can tell "I lack authority" from a plain
-    // verb failure. Everything else stays a verb-error (exit 4).
-    const code = /^cap-denied/.test(msg) ? "cap-denied" : /conflict/i.test(msg) ? "conflict" : "verb-error";
+    // A LIVE DISPATCH's own channel refusal (D1, M3″) names its own reason — told apart by that
+    // NAME, never by sniffing `msg` the way a cap/conflict denial still is below. This answers the
+    // SAME-line refusal the catch above's read-back branches answer for a LOST connection's
+    // after-the-fact receipt; here the socket never dropped, so the refusal rides back synchronously.
+    const code = result.refusal?.reason !== undefined
+      ? refusalCode(result.refusal.reason)
+      // The island names a cap/ward denial as `cap-denied: …`; give it its own
+      // class (exit 5) so an agent can tell "I lack authority" from a plain
+      // verb failure. Everything else stays a verb-error (exit 4).
+      : /^cap-denied/.test(msg) ? "cap-denied" : /conflict/i.test(msg) ? "conflict" : "verb-error";
     emit(args, {
       ok: false, requestId: result.requestId, error: { code, message: msg },
       human: () => console.error(`${verb} failed: ${msg}`),

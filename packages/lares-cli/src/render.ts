@@ -73,6 +73,16 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // itself — there is none, the act never started) or the bare `outcome-unknown` (which would tell a
   // caller to keep wondering about an id this vessel has already settled).
   "request-abandoned": 6,
+  // A caller reused a requestId the vessel already arbitrated, but with CHANGED content (D1,
+  // M3″ — `uds-channel.ts`'s `request-id-reused-with-changed-input`). A fresh code (2, the
+  // USAGE family) rather than `verb-error`'s 4: the fix is "mint a new id", a USAGE correction,
+  // never a fault in the act's own handler.
+  "request-id-reused": 2,
+  // THE SAME EXIT FAMILY AS outcome-unknown/request-abandoned (6): the receipt ring (D1, M1)
+  // evicted this id's outcome past its retention bound — neither "nothing answered" (3) nor
+  // "the work faulted" (4); the vessel settled this id and then let its result go, which reads
+  // closer to "ask a different way" than to either of those.
+  "retention-gap":     6,
   error:               1,
 };
 

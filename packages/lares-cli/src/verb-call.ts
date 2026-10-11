@@ -58,6 +58,31 @@ export interface VerbFailure {
   readonly hint?: string;
 }
 
+/**
+ * Map a channel's own ADDITIVE refusal `reason` (D1, M3″ — `uds-channel.ts`'s `fail(msg, reason)`)
+ * to this CLI's error-code vocabulary, told apart by the reason's own NAME, never by sniffing
+ * `errorMessage` prose (the pattern M3/M3′ already closed for every other refusal class here).
+ *
+ *   abandoned                              → request-abandoned (6) — this vessel already refused
+ *                                             the request before commit; it never ran.
+ *   request-id-reused-with-changed-input   → request-id-reused (2) — a caller reused a requestId
+ *                                             with DIFFERENT content; minting a fresh id is the cure.
+ *   retention-gap                          → retention-gap (the 6-family) — the receipt ring
+ *                                             evicted this id's outcome past its retention bound.
+ *
+ * An unrecognized reason (a future server-side addition this build predates) falls to `verb-error`
+ * rather than crashing or silently inventing a code — the additive contract means an older CLI
+ * still reads `errorMessage` either way.
+ */
+export function refusalCode(reason: string): string {
+  switch (reason) {
+    case "abandoned":                            return "request-abandoned";
+    case "request-id-reused-with-changed-input":  return "request-id-reused";
+    case "retention-gap":                        return "retention-gap";
+    default:                                     return "verb-error";
+  }
+}
+
 export function verbFailure(err: unknown): VerbFailure {
   if (err instanceof LocalWaitExpired) {
     return {

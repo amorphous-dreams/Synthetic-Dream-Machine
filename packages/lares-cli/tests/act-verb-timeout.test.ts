@@ -62,9 +62,16 @@ describe("what `lares act` says when its own local wait ends", () => {
   test("★ the outcome-unknown hint names the BUDGET and the carrier count, never `stand the daemon` ★", () => {
     const src = SRC("commands/act.ts");
     // The DERIVED-budget arm must name the arithmetic that set it; a reader cannot reach 162400ms from
-    // the message alone.
+    // the message alone. Anchor on the `outcome-unknown` EMIT itself and walk BACKWARD to its own
+    // `const hint` — D1's split added an `evicted`/`retention-gap` branch between the abandoned and
+    // outcome-unknown arms, so a fixed forward window from the FIRST `const hint` no longer reaches
+    // this one; anchoring on the code this hint actually feeds stays correct regardless of how many
+    // sibling branches precede it.
     const derived = src.slice(src.indexOf("const timeoutMs = Math.max"));
-    const hintLine = derived.slice(derived.indexOf("const hint"), derived.indexOf("const hint") + 600);
+    const outcomeIdx = derived.indexOf('code: "outcome-unknown"');
+    expect(outcomeIdx, "no outcome-unknown emit found past the derived budget").toBeGreaterThan(-1);
+    const hintIdx = derived.lastIndexOf("const hint", outcomeIdx);
+    const hintLine = derived.slice(hintIdx, outcomeIdx + 50);
     expect(hintLine, "the outcome-unknown hint hides the carrier count that SET the budget").toMatch(/carrierCount/);
     expect(hintLine, "the outcome-unknown hint still tells the operator to start a running daemon")
       .not.toMatch(/vessel stand --foreground/);
