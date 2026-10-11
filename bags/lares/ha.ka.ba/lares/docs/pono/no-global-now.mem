@@ -12,7 +12,7 @@ mana       = 14
 manao      = 15
 manaoio    = 12
 namespace  = "&#x23F3;"
-revised-on = "2026-09-13"
+revised-on = "2026-10-11"
 role       = "no-global-now — the clockless lease's INTENT, mined from the house's own conversations and carriers rather than re-derived. What the operator has said about No Global Now, every instance dated; the Fork-4 ruling in its own words (SAFETY = corm-fencing + ITC · LIVENESS = φ-accrual · WITNESS = Roughtime); what SUPERSESSION names in the house's words and which mechanism the ruling seats as the validity gate; whether an `expiry` field survives, and in which of three shapes the house already spells it (backstop · rolls · named wall floor); whether the FENCE reads mandatory in the ruling's own text; where the operator's intent stands SILENT and this carrier declines to fill it; five pattern-integrity rhymes the house already carries; and the plan for the two gap-tests `e2da729e4` pinned, red-by-red. Mining pass — no code, no test and no existing carrier moved."
 status-why = "MINED, not ruled. Every operator sentence carries its date and its transcript; every house claim carries a file:line or a carrier line; every gap names the test that pins it. The two cures stay UNBUILT and #/questions names what only the operator answers."
 tags       = ["docs/pono/talk-story", "lifecycle/designed"]
@@ -224,11 +224,11 @@ The operator asked (2026-08-16, quote license): //"Does this read 'no global now
 
 `bag-residency.ts:126-132`, `:182`, `:195` — `BagStowage` takes an optional realm `clock` (rolls, `DEFAULT_IDLE_ROLLS = 8`, matching ahi kā's `ambientFloor`); absent one it //"falls to the wall floor and names it"// as `clockKind: "realm" | "wall-floor"`. <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> `:533` records the close (2026-09-12): the fallback gets named //"rather than claiming a clocklessness it does not hold. The browser vessel wires no realm clock and stays on the named floor — ''a declared partial, not a silent one''."//
 
-!!! What the ORACLE POINTER carries today, against those three
+!!! What the ORACLE POINTER carried, against those three — RETIRED
 
-`oracle-substrate.ts:50` — `expiry: number` — //"ms epoch; freshness lease read against the LOCAL clock"//; minted at `oracle-read-face.ts:91` and `bulb-read-face.ts:146` as `Date.now() + TTL_MS`; gated at `oracle-substrate.ts:~196` by `if (opts.nowMs >= p.expiry) return { ok: false, reason: "expired" }`. It signs the expiry into the pointer (//"a peer must not be able to extend a stale pointer's life"//) while holding it OUT of the pointer's identity string, so a renewal keeps the lineage — a genuinely careful design that nonetheless seats the unreliable narrator as the ''only'' narrator on that branch.
+''RETIRED (re-trued 2026-10-11, M7′ sweep).'' `oracle-substrate.ts` carries no `expiry` field, no `nowMs` gate and no `highWaterVersion` any more — that whole oracle-pointer-expiry code this section once described does not exist in the tree. The module today (223 lines) is the pure, isomorphic core the header describes: a content-addressed snapshot (the immutable read-face blob, named by its own hash) plus a signed causal pointer verified by semantic act identity and causal ancestry alone — //"a reader verifies semantic act identity and causal ancestry locally (no global now)"// (the module's own header comment). `verifyOraclePointer` reads no clock at all; there is no gate left to re-true against spellings ① or ② below, because the gate itself is gone, not merely unread.
 
-''The reconciliation the mines support'' (and no further): the pointer's `expiry` joins spelling ① — a REPORTED replay backstop that MAY refuse, never the validity authority — or spelling ② if a pace reader reaches it. ''The mines hold no sentence letting it stay the gate.''
+''What this closes.'' The unreliable-narrator critique this section raised against the `expiry`-gated design no longer has a target: there is no local clock seated as even a partial narrator on the oracle-pointer branch. #/the-fence below asks a SEPARATE question (`highWaterVersion`, not `expiry`) and stands outside this re-truing's own scope.
 
 <<~/ahu>>
 
@@ -354,6 +354,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;amOPrn16KrMZV_NK3PMT2Li7YNPCT7A94iZImU0bnI8
+<<^ code="&#x0003;">>ni:///sha-256;jy0bhJvFGxY8urKdKPoI6JMLZpJQI3OmgKqLkw3t8Po
 
 <<^ code="&#x0004;" -> to="?">>
