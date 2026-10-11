@@ -13,11 +13,29 @@
 
 import { storeDoorDirect, type StoreDoorVerb } from "@lararium/node";
 import { vesselDid, larSealHome } from "./env.js";
-import { runVerb } from "./verb-call.js";
-import { udsAlive, whoHolds } from "./local-connector.js";
+import { DaemonUnreachable } from "./verb-call.js";
+import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable } from "./local-connector.js";
 import { waitForResourceBudgeted, SlowBootTimeout, type BootPhase } from "./port-control.js";
 import { summaryOutput } from "./verb-result.js";
 import type { SubmitResult } from "./verb-result.js";
+
+/**
+ * Run `verb` over the local socket exactly as `verb-call.ts`'s `runVerb` does (same presence check, same
+ * `UdsUnreachable` → `DaemonUnreachable` mapping), but passing `signal` straight through to `invokeLocal` so
+ * THIS door's own budgeted wait can abort the socket at its own decision (H1), rather than let the verb's
+ * flat `timeoutMs` hold it open for the rest of a budget nobody is still waiting on.
+ */
+async function invokeAbortable(
+  verb: string, args: Record<string, unknown>, requestedBy: string,
+  opts: { readonly timeoutMs: number; readonly signal: AbortSignal },
+): Promise<SubmitResult> {
+  if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
+  try { return await invokeLocal(verb, args, requestedBy, opts); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    throw e;
+  }
+}
 
 /** Where a routed door ran: inside the standing vessel, or in this process. */
 export type StoreDoorVia = "daemon" | "direct";
@@ -57,7 +75,8 @@ export async function throughStoreDoor(opts: {
     const totalBudgetMs = phases.reduce((sum, p) => sum + p.budgetMs, 0);
     let settled = false;
     let lastMessage = "";
-    const verbPromise = runVerb(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs })
+    const controller = new AbortController();
+    const verbPromise = invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal })
       .finally(() => { settled = true; });
     // RACE the actual verb against a budgeted wait that NAMES the holder — never a flat clock that hangs mute.
     // The waiter never resolves on its own (its `probe` never reads true); it only ever throws `SlowBootTimeout`
@@ -72,7 +91,19 @@ export async function throughStoreDoor(opts: {
       },
       holderPids: () => pidsNamedIn(lastMessage),
     }).then((): { readonly quiet: true } => ({ quiet: true }));
-    const raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: SubmitResult } => ({ quiet: false, v })), named]);
+    let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: SubmitResult };
+    try {
+      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: SubmitResult } => ({ quiet: false, v })), named]);
+    } catch (err) {
+      // THIS DOOR'S OWN DECISION CLOSES THE SOCKET AT ONCE (H1). A budgeted wait that names a holder and
+      // gives up must not leave the verb's own flat timer holding a channel open for the rest of ITS budget
+      // while nobody is still listening on this end — the vessel sees the hang-up as an `end` right then
+      // (`owned-store.ts`'s `park`, once it stops masking EOF behind a paused, unshifted socket), rather than
+      // running the verb on a late thaw against a caller that already told its operator this failed.
+      controller.abort();
+      await verbPromise.catch(() => { /* the abort's own rejection is not a second fault; `err` already is one */ });
+      throw err;
+    }
     const r = raced.quiet ? await verbPromise : raced.v;
     if (r.status === "error") throw new Error(r.errorMessage ?? "verb failed");
     return { output: summaryOutput(r) ?? {}, via: "daemon" };

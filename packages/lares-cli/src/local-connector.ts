@@ -130,14 +130,29 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<{ 
 /** The local socket refused (absent/stale) — `runVerb` turns this into DaemonUnreachable. */
 export class UdsUnreachable extends Error {}
 
+/**
+ * This call's own caller gave up (`opts.signal` fired) — never a transport fault. `throughStoreDoor` (H1)
+ * aborts at the instant ITS budgeted wait names a holder and refuses, so the still-open verb socket closes
+ * right then rather than waiting out this call's own flat `timeoutMs`: a vessel parked on that socket then
+ * sees the hang-up as an `end`, immediately, instead of replaying the verb on a late thaw against a caller
+ * that already told its own operator "failed".
+ */
+export class LocalInvocationAborted extends Error {}
+
 export async function invokeLocal(
   verb:        string,
   args:        Record<string, unknown>,
   requestedBy: string,
-  opts:        SubmitOptions & { readonly dataDir?: string | null } = {},
+  opts:        SubmitOptions & { readonly dataDir?: string | null; readonly signal?: AbortSignal } = {},
 ): Promise<SubmitResult> {
   const socketPath = udsSocketPath(opts.dataDir);
   const timeoutMs  = opts.timeoutMs ?? 30_000;
+  // THE CALLER'S OWN ABSOLUTE DEADLINE, NEVER A PARKED VESSEL'S READ TIME. A line that only named `timeoutMs`
+  // let a vessel that parked it unread stamp a FRESH deadline the moment it finally read the line — however
+  // long it sat waiting — which could outlive this caller's own patience by the whole of that wait again.
+  // `deadlineAt` (same-host epoch ms) rides beside it so `owned-store.ts`'s `park` compares against the
+  // instant THIS call actually gives up, not against whenever a vessel gets around to reading it.
+  const deadlineAt = Date.now() + timeoutMs;
   return await new Promise<SubmitResult>((resolve, reject) => {
     const sock = createConnection(socketPath);
     let buf = "";
@@ -146,9 +161,12 @@ export async function invokeLocal(
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      opts.signal?.removeEventListener("abort", onAbort);
       try { sock.destroy(); } catch { /* already gone */ }
       fn();
     };
+    const onAbort = (): void => settle(() => reject(new LocalInvocationAborted(`local verb "${verb}" aborted by its own caller`)));
+    opts.signal?.addEventListener("abort", onAbort, { once: true });
     const timer = setTimeout(
       () => settle(() => reject(new Error(`local verb "${verb}" timed out after ${timeoutMs}ms`))),
       timeoutMs,
@@ -158,7 +176,7 @@ export async function invokeLocal(
       // THE ASK RIDES WITH THE INVOCATION. The daemon runs its own servo, and a caller that knows its
       // pass runs long — a bulk backfill over a whole corpus — can only say so if the number crosses.
       // Left off the wire, this side waited an hour while the daemon cut the same pass at two minutes.
-      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs,
+      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, deadlineAt,
                                   ...(opts.requestId ? { requestId: opts.requestId } : {}) }) + "\n");
     });
     sock.on("data", (chunk: string) => {

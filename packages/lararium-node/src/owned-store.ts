@@ -258,36 +258,59 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   // A VESSEL THAT SERVES NO VERB YET HOLDS ITS CALLERS. A caller's invocation waits, unread past its first line, for
   // the verb channel that takes this claim over (`serve`); a claimant asking who holds hears at once.
   //
+  // A PARKED CALLER NEVER PAUSES. `pause()` right after the first line, with the whole line `unshift`ed straight
+  // back, read as only `["line"]` on a peer that hangs up while parked: the unshifted bytes sit in the readable
+  // buffer unconsumed, and a readable stream holding unconsumed bytes never emits `end` — so `close` never fired,
+  // `parked.delete` never ran, and the vessel replayed the line on thaw long after the caller gave up and told its
+  // own operator "failed" (`pause-eof.mjs` isolates exactly this). So `park` instead keeps consuming every byte
+  // that arrives into its OWN buffer — the socket stays exactly as able to notice its own EOF as an unparked one
+  // — and only hands that buffer back (via `unshift`, once) at the moment a real verb channel takes the socket
+  // over.
+  //
   // A PARKED CALLER CARRIES ITS OWN DEADLINE, and a dropped deadline is NEVER a quiet thing. The caller's first
-  // line already names how long IT waits (`timeoutMs`, the same number the local-connector's own flat timer
-  // races); a park that replays a line past that deadline would run a verb the caller's own process already gave
-  // up on and told its operator "failed" — a ghost write the operator has no way to know ran. So the park reads
-  // that budget off the same line (falling back to the connector's own default when it carries none) and
-  // `handOver` checks EVERY parked line against it before ever replaying one: past its deadline, the line is
-  // refused by name instead, whether or not the caller's socket itself ever signals it let go. (The socket's
-  // own `close` is read too, best-effort — `parked` drops a line the instant its close fires — but a close read
-  // while this socket stays `pause()`d can lag well behind the caller's own exit, so the deadline is the one
-  // check that never depends on that signal arriving in time.)
+  // line names its own absolute `deadlineAt` (same-host epoch ms, `local-connector.ts`'s `invokeLocal`) — never
+  // this read's own clock, which would stamp a fresh deadline no matter how long the line sat unread before this
+  // vessel even opened a channel to read it. A line with no `deadlineAt` (an older caller, or this door's own
+  // `{holder:"?"}` probe) falls back to this read's own clock plus `timeoutMs`/the default, exactly as before. A
+  // park that replayed a line past its deadline would run a verb the caller's own process already gave up on —
+  // a ghost write the operator has no way to know ran. So `handOver` checks EVERY parked line's deadline before
+  // ever replaying one: past it, the line is refused by name instead. The socket's own `close` is read too — now
+  // that it actually fires on a hang-up — and drops the line the instant it does, with no need to wait out the
+  // deadline at all.
   const DEFAULT_PARK_DEADLINE_MS = 30_000;
-  interface ParkedLine { readonly verb: string; readonly deadline: number }
+  interface ParkedLine {
+    readonly verb: string;
+    readonly deadline: number;
+    /** Detach this park's own listener and hand back every byte it read, for the real handler to `unshift`. */
+    readonly take: () => Buffer;
+  }
   const parked = new Map<Socket, ParkedLine>();
   const park = (sock: Socket): void => {
     let buf = Buffer.alloc(0);
+    let lineRead = false;
     const onData = (chunk: Buffer): void => {
       buf = Buffer.concat([buf, chunk]);
+      if (lineRead) return;                   // the verb line parsed already; later bytes ride along for the real handler
       const nl = buf.indexOf(0x0a);
       if (nl === -1) return;
-      sock.off("data", onData);
-      sock.pause();
-      let parsed: { holder?: unknown; verb?: unknown; timeoutMs?: unknown } = {};
+      lineRead = true;
+      let parsed: { holder?: unknown; verb?: unknown; timeoutMs?: unknown; deadlineAt?: unknown } = {};
       try { parsed = JSON.parse(buf.subarray(0, nl).toString("utf8")) as typeof parsed; } catch { /* a non-JSON line reads as a verb line with no budget named */ }
-      if (parsed.holder === "?") { try { sock.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir}`)); } catch { /* gone */ } return; }
+      if (parsed.holder === "?") {
+        sock.off("data", onData);
+        try { sock.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir}`)); } catch { /* gone */ }
+        return;
+      }
       const askedMs = typeof parsed.timeoutMs === "number" && parsed.timeoutMs > 0 ? parsed.timeoutMs : DEFAULT_PARK_DEADLINE_MS;
-      sock.unshift(buf);
-      parked.set(sock, { verb: typeof parsed.verb === "string" ? parsed.verb : "?", deadline: Date.now() + askedMs });
-      sock.on("close", () => parked.delete(sock));
+      const deadline = typeof parsed.deadlineAt === "number" && parsed.deadlineAt > 0 ? parsed.deadlineAt : Date.now() + askedMs;
+      parked.set(sock, {
+        verb: typeof parsed.verb === "string" ? parsed.verb : "?",
+        deadline,
+        take: () => { sock.off("data", onData); return buf; },
+      });
     };
     sock.on("data", onData);
+    sock.on("close", () => { sock.off("data", onData); parked.delete(sock); });
   };
   let onConnection: (sock: Socket) => void = holder === "direct"
     ? answerHeld(`the store at ${storageDir} stays held by a direct lares command (pid ${process.pid}) for one act — run again when it ends`)
@@ -302,6 +325,8 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
         onDrop?.(why);
         continue;
       }
+      const read = line.take();
+      if (read.length > 0) sock.unshift(read);
       next(sock);
       sock.resume();
     }

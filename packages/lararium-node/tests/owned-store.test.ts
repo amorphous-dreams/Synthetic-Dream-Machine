@@ -262,6 +262,30 @@ describe("claimStore — one holder at every instant", () => {
     } finally { await claim.release(); }
   });
 
+  it("H1 — a caller that hangs up WHILE PARKED (never read) is dropped, with a budget that would otherwise outlive it", async () => {
+    // The prior unit red parked a live caller with a 20ms deadline — it never modeled the line sitting UNREAD
+    // while its own caller is already gone, which was the whole live bug (a vessel event-loop that cannot
+    // read while frozen is this test's `handOver` never running at all until well after the hang-up). `park`
+    // used to `pause()` the socket and `unshift` the line straight back, and a readable stream holding
+    // unconsumed bytes never emits `end` — so a hang-up here read as nothing at all, and a later `handOver`
+    // still replayed the line as if the caller were still waiting. This asks for a 20s deadline (it would
+    // happily outlive the test) and proves the verb never runs anyway, because the close itself drops it.
+    const claim = await claimStore(dir, { holder: "vessel" });
+    try {
+      let ran = false;
+      const sock = createConnection(socketOf(dir));
+      await new Promise<void>((resolve, reject) => { sock.once("connect", resolve); sock.once("error", reject); });
+      const hungUp = new Promise<void>((resolve) => sock.once("close", resolve));
+      sock.end(JSON.stringify({ verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20_000 }) + "\n");
+      await hungUp;                                   // the caller is fully gone before any verb channel ever opens
+      const drops: string[] = [];
+      claim.serve((s) => { ran = true; try { s.end(JSON.stringify({ status: "done" }) + "\n"); } catch { /* gone */ } }, (why) => drops.push(why));
+      // Nothing to await from the caller's side (it already closed) — give `handOver`'s synchronous pass a tick.
+      await new Promise((r) => setTimeout(r, 20));
+      expect(ran).toBe(false);                         // the verb handler NEVER ran — the exact ghost-write this guards against
+    } finally { await claim.release(); }
+  });
+
   it("a vessel's claim refuses beside another vessel rather than waiting on it", async () => {
     const standing = await claimStore(dir, { holder: "vessel" });
     try {
