@@ -100,16 +100,24 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
     });
     second.stdout?.on("data", (d) => { secondLog += String(d); });
     second.stderr?.on("data", (d) => { secondLog += String(d); });
+    // The root cause (episkopos finding #12): this test used to wait on `phase → live`, but
+    // `main.ts` prints the ACTIVE-WIKI-MARKER line (naming which wiki actually activated) only
+    // AFTER `openNodeVessel` returns — which follows the `live` phase callback. A CI run could
+    // read `phase → live` with the marker line not yet written, then assert on a log tail that
+    // hadn't caught up: a flake, not a real miss. `[lararium] live — wiki: …` prints
+    // SYNCHRONOUSLY right after the marker line (main.ts:448) — waiting on IT is a causal
+    // marker that the activation decision has already landed in the log, never a timing guess.
     await new Promise<void>((resolve, reject) => {
-      const t0 = Date.now();
+      const t0 = performance.now();
       const poll = setInterval(() => {
-        if (secondLog.includes("phase → live")) { clearInterval(poll); resolve(); }
+        if (secondLog.includes("[lararium] live — wiki:")) { clearInterval(poll); resolve(); }
         else if (second!.exitCode !== null) { clearInterval(poll); reject(new Error(`reboot exited ${second!.exitCode}:\n${secondLog.slice(-800)}`)); }
-        else if (Date.now() - t0 > 120_000) { clearInterval(poll); reject(new Error(`reboot never reached live:\n${secondLog.slice(-800)}`)); }
+        else if (performance.now() - t0 > 120_000) { clearInterval(poll); reject(new Error(`reboot never reached live:\n${secondLog.slice(-800)}`)); }
       }, 500);
     });
 
-    // sanity: the reboot actually activated the minted wiki (not the lares-wiki fallback)
+    // sanity: the reboot actually activated the minted wiki (not the lares-wiki fallback) —
+    // asserted only once the causal marker above proves the activation line has been written.
     expect(secondLog, "reboot did not activate the minted wiki").toContain(`→ ${SLUG}`);
 
     // 4) LOAD a carrier into the minted wiki's OWN canon (@{slug}), in-wiki

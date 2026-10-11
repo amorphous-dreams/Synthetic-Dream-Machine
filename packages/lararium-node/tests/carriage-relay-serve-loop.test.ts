@@ -158,10 +158,20 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
 
   test("INERT: the vessel gate opens ZERO carriage sockets when unconfigured, ONE when configured (the dial count)", async () => {
     // A raw counting server counts DIALS — a stood carriage socket, the inert-measure the boot's gate governs.
+    // §0.2 (episkopos) — the original wait here was a WALL-BUDGETED poll (`for (i<40 &&
+    // connections===0) sleep(25)`, a 1s budget) for the first dial, then asserted `=== 1`
+    // immediately: a loaded test box could starve that budget before the dial lands (flake),
+    // or a re-dial racing the raw counter (which accepts the WS handshake but answers nothing
+    // at the application level) could land a second connection before the snapshot is read. The
+    // fix awaits the counter's OWN `connection` EVENT as the causal marker (never elapsed time),
+    // then re-reads the count only AFTER `stop()` resolves — so "exactly one" is proven past the
+    // point where the loop's own timer is provably cleared, not at the instant it first ticked.
     let connections = 0;
     const sockets: WebSocket[] = [];
     const counter = new WebSocketServer({ port: 0 });
-    counter.on("connection", (s: WebSocket) => { connections += 1; sockets.push(s); });
+    let resolveFirstConnection: (() => void) | null = null;
+    const firstConnection = new Promise<void>((res) => { resolveFirstConnection = res; });
+    counter.on("connection", (s: WebSocket) => { connections += 1; sockets.push(s); resolveFirstConnection?.(); });
     await new Promise<void>((r) => counter.on("listening", () => r()));
     const addr = counter.address();
     const port = typeof addr === "object" && addr ? addr.port : 0;
@@ -187,11 +197,20 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
         ? startCarriageServeLoop({ relayUrl: url, vesselSeed: seed, serverAddr: "x", deps, pollIntervalMs: 25 })
         : null;
       expect(liveLoop).not.toBeNull();
-      for (let i = 0; i < 40 && connections === 0; i++) await sleep(25);
-      expect(connections).toBe(1);
+      // The causal marker: the counter's own `connection` event, never an elapsed-time poll. A
+      // generous outer bound only guards against an actual hang (a real bug), never doubles as
+      // the success condition.
+      await Promise.race([
+        firstConnection,
+        sleep(10_000).then(() => { throw new Error("no carriage dial landed within 10s"); }),
+      ]);
 
       // stop() resolves cleanly even against a half-open relay that never completes the handshake (no hang, no throw).
+      // "Exactly one" is read AFTER stop() resolves: the loop's own timer is provably cleared by
+      // then, so a redial that the first-connection race alone could have missed would still
+      // show up here.
       await liveLoop!.stop();
+      expect(connections).toBe(1);
       const early = startCarriageServeLoop({ relayUrl: url, vesselSeed: seed, serverAddr: "x", deps });
       await early.stop();
     } finally {
@@ -216,14 +235,25 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     channels.push(memberCh);
 
-    // The loop is UP: a member's want-block draws the carried body.
+    // The loop is UP: a member's want-block draws the carried body. Its own measured round
+    // trip becomes the LIVE MARKER the absence check below calibrates against.
+    const liveT0 = performance.now();
     const up = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid });
+    const liveRoundTripMs = performance.now() - liveT0;
     expect(up?.kind).toBe(CAS_BLOCK);
 
     // stop() clears the timer + closes the channel — the holder no longer serves, so a fresh want-block draws NOTHING.
     await loop.stop();
-    // A negative-absence check: a short budget suffices to confirm the down loop stays silent (no answer ever comes).
-    const afterStop = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid, budgetMs: 2_000 });
+
+    // §0.2 (episkopos) — the original absence check waited a FLAT 2s wall-clock budget and
+    // declared the loop dead on silence alone; under a saturated box that same flat budget could
+    // just as easily starve a REAL answer, so a silence-by-elapsed-time check with a GUESSED
+    // constant proves nothing load-bearing. The fix derives the wait from a MEASURED live
+    // round trip taken in this same run (above) rather than a guessed number: the down-check
+    // waits a comfortable multiple of how long an actual answer just took, floored so a very
+    // fast live round trip still leaves a real window to detect a leak.
+    const silenceBudgetMs = Math.max(1_000, liveRoundTripMs * 20);
+    const afterStop = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid, budgetMs: silenceBudgetMs });
     expect(afterStop).toBeNull();   // no timer polls, no socket carries — the serve-loop is truly down (no leak)
   }, 20_000);
 });
