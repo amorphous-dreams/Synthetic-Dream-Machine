@@ -92,10 +92,22 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(parsed).toEqual(fact);
   });
 
-  test("a torn fact (bad state, missing digest, non-numeric seq) parses to null, never throws", () => {
+  test("a fact with NO inputDigest round-trips with it absent (no content claim)", () => {
+    const fact = { requestId: "r2b", state: "abandoned" as const, seq: 2 };
+    const record = buildReceiptFact(fact);
+    expect(record.tiddler["input-digest"]).toBeUndefined();
+    const parsed = parseReceiptFact(record.tiddler as Record<string, unknown>);
+    expect(parsed).toEqual(fact);
+  });
+
+  test("a torn fact (bad state, non-numeric seq) parses to null, never throws", () => {
     expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r3`, "request-id": "r3", state: "bogus", seq: "1" })).toBeNull();
     expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r3`, "request-id": "r3", "input-digest": "x", state: "done", seq: "nope" })).toBeNull();
     expect(parseReceiptFact({ title: "lar:///not-a-receipt" })).toBeNull();
+  });
+
+  test("a torn fact missing requestId still parses to null even with an absent digest", () => {
+    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r4`, state: "committed", seq: 1 })).toBeNull();
   });
 
   test("verbInputDigest is deterministic over {verb,args,requestedBy,effectKey} and sensitive to each", async () => {
@@ -130,6 +142,17 @@ describe("concludeVerb — digest-on-outcome + effect index fields (D1)", () => 
     expect(stamped.tiddler["input-digest"]).toBe("sha256:aa");
     expect(stamped.tiddler["effect-key"]).toBe("sha256:bb");
     expect(stamped.tiddler["effect-of"]).toBe("r1");
+  });
+
+  test("refusal is additive and absent by default", () => {
+    const plain = concludeVerb({ requestId: "r1", verb: "load", status: "error", requestedBy: "did:key:zOp", cause: "c", batchMode: "best-effort" });
+    expect(plain.tiddler["refusal"]).toBeUndefined();
+
+    const refused = concludeVerb({
+      requestId: "r3", verb: "load", status: "error", requestedBy: "did:key:zOp", cause: "c", batchMode: "best-effort",
+      refusal: "retention-gap",
+    });
+    expect(refused.tiddler["refusal"]).toBe("retention-gap");
   });
 });
 

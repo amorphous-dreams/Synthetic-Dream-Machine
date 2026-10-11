@@ -122,7 +122,8 @@ export type ReceiptFactState = "committed" | "abandoned" | "done" | "error" | "e
 /** One request's durable fact — the channel's read-through arbitration ledger. */
 export interface ReceiptFact {
   readonly requestId:   string;
-  readonly inputDigest: string;
+  /** Absent = no content claim (e.g. a cancel/abandon fact that never arbitrated a digest). */
+  readonly inputDigest?: string;
   readonly effectKey?:  string;
   readonly state:       ReceiptFactState;
   /** Set once the fact reaches a terminal outcome; survives the `evicted` transition
@@ -144,11 +145,11 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
     tiddler: {
       title,
       "request-id":   fact.requestId,
-      "input-digest": fact.inputDigest,
       state:          fact.state,
       seq:            String(fact.seq),
-      ...(fact.effectKey !== undefined && { "effect-key": fact.effectKey }),
-      ...(fact.terminal  !== undefined && { terminal:     fact.terminal }),
+      ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
+      ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
+      ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
     },
     meta: { authority: "lares-daemon-channel" },
   };
@@ -161,23 +162,24 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   if (!title || !title.startsWith(RECEIPT_FACT_URI_PREFIX)) return null;
 
   const requestId   = typeof fields["request-id"]   === "string" ? fields["request-id"]   : null;
-  const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : null;
+  const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : undefined;
   const state       = fields["state"];
   const seqRaw      = fields["seq"];
   const seq = typeof seqRaw === "string" ? Number.parseInt(seqRaw, 10)
             : typeof seqRaw === "number" ? seqRaw
             : NaN;
 
-  if (!requestId || !inputDigest || Number.isNaN(seq) || !isReceiptFactState(state)) return null;
+  if (!requestId || Number.isNaN(seq) || !isReceiptFactState(state)) return null;
 
   const effectKey = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
   const terminalRaw = fields["terminal"];
   const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
 
   return {
-    requestId, inputDigest, state, seq,
-    ...(effectKey !== undefined && { effectKey }),
-    ...(terminal  !== undefined && { terminal }),
+    requestId, state, seq,
+    ...(inputDigest !== undefined && { inputDigest }),
+    ...(effectKey   !== undefined && { effectKey }),
+    ...(terminal    !== undefined && { terminal }),
   };
 }
 
@@ -295,6 +297,7 @@ export interface OutcomeRecord extends LarTiddlerRecord {
     readonly "input-digest"?: string;
     readonly "effect-key"?:   string;
     readonly "effect-of"?:    string;
+    readonly "refusal"?:      string;
     [k: string]: unknown;
   };
 }
@@ -318,6 +321,9 @@ export function concludeVerb(opts: {
   /** Present when this outcome is a COPY of a prior attempt's result (effect dedup):
    *  names the prior requestId whose effect this one reused, rather than running. */
   effectOf?:     string;
+  /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside the
+   *  human-readable `errorMessage`. Stamped as the `refusal` field. */
+  refusal?:      string;
 }): LarTiddlerRecord {
   const title = `${OUTCOME_URI_PREFIX}${opts.requestId}`;
   const base = {
@@ -338,6 +344,7 @@ export function concludeVerb(opts: {
       ...(opts.inputDigest  !== undefined && { "input-digest":  opts.inputDigest }),
       ...(opts.effectKey    !== undefined && { "effect-key":    opts.effectKey }),
       ...(opts.effectOf     !== undefined && { "effect-of":     opts.effectOf }),
+      ...(opts.refusal      !== undefined && { refusal:         opts.refusal }),
     },
     meta: { authority: opts.authority ?? "lares-dispatcher" },
   };
