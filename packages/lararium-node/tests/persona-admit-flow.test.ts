@@ -18,8 +18,11 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { ed25519SignerFromSeed, type PersonaRef } from "@lararium/mesh";
 import { hex } from "@lararium/mesh";
-import { offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow } from "../src/persona-admit-flow.js";
-import { listAdmittedPersonas } from "../src/node-persona-admit-store.js";
+import {
+  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
+  withdrawOfferFlow, withdrawGrantFlow,
+} from "../src/persona-admit-flow.js";
+import { listAdmittedPersonas, peekEnrollmentSecrets } from "../src/node-persona-admit-store.js";
 
 const A_PERSONA_SEED = new Uint8Array(32).fill(1);
 const B_DEVICE_SEED  = new Uint8Array(32).fill(2);
@@ -108,6 +111,62 @@ describe("persona-admit-flow — the airgapped 3-hop between two vessels", () =>
     } finally {
       rmSync(thiefDir, { recursive: true, force: true });
     }
+  });
+
+  test("§2a: a WITHDRAWN offer refuses a fresh grant (same refusal shape as consumed) — nothing that opened before stops opening", async () => {
+    const f = await fixtures();
+
+    // CONTROL: without withdrawal, the SAME shape of grant opens fine (proves the refusal below is the
+    // withdrawal, not some unrelated breakage).
+    const controlOffer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const controlGrant = await grantAdmitFlow({ offerCarriage: controlOffer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in controlGrant) throw new Error("control grant failed");
+    const controlOpened = await openAdmitFlow({ grantCarriage: controlGrant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    expect("error" in controlOpened).toBe(false);
+
+    // The withdrawn case: B offers, then withdraws its OWN offer by its OWN patience (no clock involved) BEFORE
+    // A's grant ever arrives to open against it.
+    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in grant) throw new Error("grant failed");
+    expect(withdrawOfferFlow(offer.offer.ephemeralPubkey, bDir)).toBe(1);
+    expect(peekEnrollmentSecrets(bDir).find((p) => p.ephemeralPubkey === offer.offer.ephemeralPubkey)).toBeUndefined();
+
+    const opened = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    expect("error" in opened).toBe(true);
+    expect(listAdmittedPersonas(bDir)).toHaveLength(1);   // only the CONTROL's join — the withdrawn one records nothing
+  });
+
+  test("§2a: a WITHDRAWN grant refuses its own late ACK — nothing that accepted before stops accepting", async () => {
+    const f = await fixtures();
+
+    // CONTROL: without withdrawal, the SAME shape accepts fine.
+    const controlOffer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const controlGrant = await grantAdmitFlow({ offerCarriage: controlOffer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in controlGrant) throw new Error("control grant failed");
+    const controlOpened = await openAdmitFlow({ grantCarriage: controlGrant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    if ("error" in controlOpened) throw new Error("control open failed");
+    const controlAccepted = await acceptAdmitFlow({ ackCarriage: controlOpened.carriage, dir: aDir });
+    expect("error" in controlAccepted).toBe(false);
+
+    // The withdrawn case: A grants, B opens + ACKs — but A withdraws its OWN sent memo (its own patience ending)
+    // BEFORE B's ACK ever arrives to close the join on A's side.
+    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in grant) throw new Error("grant failed");
+    const opened = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    if ("error" in opened) throw new Error("open failed");
+
+    const sealed = grant.sealed;
+    expect(withdrawGrantFlow(sealed.nonceA, aDir)).toBe(true);
+
+    // B's ACK is now LATE from A's point of view — A's accept finds no sent memo and refuses.
+    const accepted = await acceptAdmitFlow({ ackCarriage: opened.carriage, dir: aDir });
+    expect("error" in accepted).toBe(true);
+    expect(listAdmittedPersonas(aDir)).toHaveLength(1);   // only the CONTROL's join — the withdrawn one records nothing on A
+    // B still holds its own local record (B's own open+ACK never depended on A's memo) — dual-admission is
+    // per-vessel; A's withdrawal only closes A's OWN half of the join.
+    expect(listAdmittedPersonas(bDir)).toHaveLength(1);
   });
 
   test("ROTATE-NOT-RESURRECT: a grant the head resolver rejects records nothing on B", async () => {

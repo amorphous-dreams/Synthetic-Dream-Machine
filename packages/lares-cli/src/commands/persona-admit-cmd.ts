@@ -11,6 +11,13 @@
  *   accept --ack <c>              (A, granter) verify B's ACK + RECORD into this vessel's local view.
  *   list                          the PER-VESSEL multitude-view (personas admitted to THIS vessel; never syncs).
  *   reset                         drop any in-flight pending enrollment / grant secrets.
+ *   withdraw-offer [--ephemeral <k>|--all]
+ *                                 (B, target)  CAUSAL withdrawal (§2a): the offerer's OWN patience ends, so it
+ *                                              consumes its own pending offer before any grant can open it —
+ *                                              never a clock comparison.
+ *   withdraw-grant --nonce <nonceA>
+ *                                 (A, granter) the same causal withdrawal on A's side: a sent grant's memo is
+ *                                              dropped, so a late ACK answering it refuses by name.
  *
  * This command THIN-WRAPS the proven node flow (`offerAdmitFlow` / `grantAdmitFlow` / `openAdmitFlow` /
  * `acceptAdmitFlow`) — it only builds the signers + the KEL head-resolver from the local vault + board, renders,
@@ -33,6 +40,7 @@ import {
   listAdmittedPersonas, clearPersonaAdmitPending,
   loadVesselSigningSeed, loadVesselVerifyingKey,
   loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
+  withdrawOfferFlow, withdrawGrantFlow,
 } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { storeVerb } from "../store-door.js";
@@ -41,7 +49,7 @@ import type { ParsedArgs } from "../parse-args.js";
 class UsageError extends Error {}
 
 function admitUsage(): void {
-  console.error("usage: lares persona admit <offer | grant | open | accept | list | reset>");
+  console.error("usage: lares persona admit <offer | grant | open | accept | list | reset | withdraw-offer | withdraw-grant>");
   console.error("");
   console.error("  offer                                    (target) mint an enrollment offer + QR#1");
   console.error("  grant --offer <carriage> --index <N> --prefix <aid>   (granter) seal persona h<N> onto the offer + QR#2");
@@ -49,6 +57,8 @@ function admitUsage(): void {
   console.error("  accept --ack <carriage>                  (granter) verify the ACK + record the join");
   console.error("  list                                     the per-vessel multitude-view (never syncs)");
   console.error("  reset                                    drop any in-flight pending secrets");
+  console.error("  withdraw-offer [--ephemeral <pubkey> | --all]   (target) withdraw a pending offer by your own patience");
+  console.error("  withdraw-grant --nonce <nonceA>           (granter) withdraw a sent grant by your own patience");
 }
 
 /** Print a hop's scannable QR + its carriage (the carriage always travels; the QR is the tabletop convenience). */
@@ -143,6 +153,31 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
       case "reset": {
         clearPersonaAdmitPending();
         emit(args, { ok: true, data: { reset: true }, human: () => console.log("dropped any in-flight pending enrollment / grant secrets.") });
+        return 0;
+      }
+      case "withdraw-offer": {
+        const all = args.flags["all"] === true;
+        const ephemeral = String(args.options["ephemeral"] ?? "");
+        if (!all && !ephemeral) throw new UsageError("withdraw-offer needs --ephemeral <pubkey> or --all");
+        const dropped = withdrawOfferFlow(all ? "all" : ephemeral);
+        emit(args, {
+          ok: true,
+          data: { withdrawn: dropped },
+          human: () => console.log(`withdrew ${dropped} pending offer${dropped === 1 ? "" : "s"} — a grant answering ${all ? "any of them" : "it"} now finds no pending enrollment.`),
+        });
+        return 0;
+      }
+      case "withdraw-grant": {
+        const nonceA = String(args.options["nonce"] ?? "");
+        if (!nonceA) throw new UsageError("withdraw-grant needs --nonce <nonceA> (the sent grant's own nonce)");
+        const withdrawn = withdrawGrantFlow(nonceA);
+        emit(args, {
+          ok: true,
+          data: { withdrawn },
+          human: () => console.log(withdrawn
+            ? "withdrew the sent grant — a late ACK against it now finds no sent memo to verify against."
+            : "no sent grant stood at that nonce (already accepted, already withdrawn, or never sent)."),
+        });
         return 0;
       }
       default:

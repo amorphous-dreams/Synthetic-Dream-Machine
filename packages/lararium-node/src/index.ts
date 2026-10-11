@@ -295,6 +295,7 @@ export { makeNodeCircleStore, loadNodeHandleBook, saveNodeHandleBook } from "./n
 export {
   recordAdmittedPersona, listAdmittedPersonas, isPersonaAdmitted,
   stashEnrollmentSecret, takeEnrollmentSecret, peekEnrollmentSecrets, stashSentMemo, takeSentMemo, clearPersonaAdmitPending,
+  withdrawAdmitOffer, withdrawAdmitGrant, PENDING_OFFER_LIMIT,
 } from "./node-persona-admit-store.js";
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
@@ -304,8 +305,13 @@ export {
 } from "./qr-transport.js";
 export type { QrImageDecoder } from "./qr-transport.js";
 // The airgapped persona-admission ORCHESTRATION — the 5 flow functions the `lares persona admit` CLI thin-wraps
-// (mint/seal/open/ack composing the ceremony + the per-vessel store + the QR render).
-export { offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow, makeLocalPersonaKelHeadResolver } from "./persona-admit-flow.js";
+// (mint/seal/open/ack composing the ceremony + the per-vessel store + the QR render), plus the §2a withdrawal
+// pair + M12's KEL-seq resolver.
+export {
+  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
+  makeLocalPersonaKelHeadResolver, makeLocalPersonaKelHeadSeqResolver,
+  withdrawOfferFlow, withdrawGrantFlow,
+} from "./persona-admit-flow.js";
 export type { HopRender } from "./persona-admit-flow.js";
 // The `bags/nexus` charter DOC adapter — the antigen roster's authority home read/written on disk (#66).
 export {

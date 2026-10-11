@@ -167,6 +167,43 @@ describe("persona-admit — the 3-hop ceremony", () => {
     expect((await verifyJoinAck({ ack, sent })).ok).toBe(true);
   });
 
+  test("M12: a supplied resolveHeadSeq rides ADVISORY into headOpKeySeq / JoinRecord.granterSeq, never the verdict", async () => {
+    const f = await fixtures();
+    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey });
+    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef: f.personaRef, personaSigner: f.personaSigner });
+
+    // CONTROL — no resolveHeadSeq supplied: the verdict still admits, and carries no seq (the per-vessel view
+    // falls back to its nonce-only tiebreak; nothing here regresses the un-resolved case).
+    const noSeq = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
+    expect(noSeq.ok).toBe(true);
+    if (noSeq.ok) expect(noSeq.accepted.headOpKeySeq).toBeUndefined();
+
+    // A resolveHeadSeq that THROWS or returns null never touches the verdict (advisory-only, fail-soft).
+    const throwing = await openPersonaGrant({
+      sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey,
+      resolveHeadSeq: () => { throw new Error("advisory resolver fault"); },
+    });
+    expect(throwing.ok).toBe(true);
+    if (throwing.ok) expect(throwing.accepted.headOpKeySeq).toBeUndefined();
+
+    // A resolveHeadSeq that resolves a number rides into headOpKeySeq, then into the JoinRecord's granterSeq
+    // through mintJoinAck — the SAME seq, carried verbatim, never recomputed from a clock.
+    const opened = await openPersonaGrant({
+      sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey, resolveHeadSeq: () => 7,
+    });
+    expect(opened.ok).toBe(true);
+    if (!opened.ok) return;
+    expect(opened.accepted.headOpKeySeq).toBe(7);
+    const { ack, joinRecord } = await mintJoinAck({ accepted: opened.accepted, secret, deviceSigner: f.deviceSigner });
+    expect(joinRecord.granterSeq).toBe(7);
+
+    // The seq rides as an UNCHECKED field in the ACK's echo-verify — A still accepts (it carries no security
+    // weight; `verifyJoinAck` never compares it against the sent memo, which predates M12 and has no opinion).
+    const verified = await verifyJoinAck({ ack, sent });
+    expect(verified.ok).toBe(true);
+    if (verified.ok) expect(verified.joinRecord.granterSeq).toBe(7);
+  });
+
   test("TYPE-BLIND: the same code path admits a 'user' persona with no branch on type", async () => {
     // A different persona seed / prefix — nothing in the ceremony reads a 'type'; the path is identical.
     const userSeed = new Uint8Array(32).fill(7);

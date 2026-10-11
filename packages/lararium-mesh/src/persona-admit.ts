@@ -245,6 +245,13 @@ export interface AcceptedGrant {
   readonly grantSig:   string;
   /** The persona-prefix head op-key the grant verified against (rotate-not-resurrect proof). */
   readonly headOpKey:  string;
+  /**
+   * OPTIONAL — the head op-key's KEL sequence number (M12), when the caller's `resolveHeadSeq` resolved one.
+   * ADVISORY, surfaced into the JoinRecord as `granterSeq` for the per-vessel view's local supersede ordering
+   * (`recordAdmittedPersona`); no verdict HERE reads it — the signature + nonce + prefix-head checks above are
+   * the whole gate. Undefined when the caller supplied no resolver, or the resolver found none.
+   */
+  readonly headOpKeySeq?: number;
 }
 
 export type GrantVerdict =
@@ -267,6 +274,13 @@ export async function openPersonaGrant(args: {
   readonly secret:           EnrollmentSecret;
   /** Resolve the CURRENT op-key at a persona prefix off the LOCAL KEL replica (null when unknown/unsynced → deny). */
   readonly resolveHeadOpKey: (prefix: string) => Promise<string | null> | string | null;
+  /**
+   * OPTIONAL (M12) — resolve the SAME prefix's head KEL sequence number, off the SAME local replica
+   * `resolveHeadOpKey` reads. Purely ADVISORY: never gates this verdict, only rides into `AcceptedGrant.headOpKeySeq`
+   * for the per-vessel view's causal supersede order downstream. Omit it and the join record simply carries no
+   * `granterSeq` (the view falls back to its nonce-only tiebreak).
+   */
+  readonly resolveHeadSeq?: (prefix: string) => Promise<number | null> | number | null;
   readonly now?:             number;
 }): Promise<GrantVerdict> {
   const { sealed, secret } = args;
@@ -313,7 +327,24 @@ export async function openPersonaGrant(args: {
   catch { sigOk = false; }
   if (!sigOk) return { ok: false, reason: "grant signature does not verify against the persona prefix head" };
 
-  return { ok: true, accepted: { transcript: t, grantSig: body.grantSig, headOpKey: head.toLowerCase() } };
+  // M12 — ADVISORY ONLY: best-effort resolve the head's KEL seq for the view's causal ordering. A throw or a
+  // null here changes NOTHING about the verdict already reached above; it only widens or narrows what the
+  // downstream per-vessel view can order by.
+  let headOpKeySeq: number | undefined;
+  if (args.resolveHeadSeq) {
+    try {
+      const seq = await args.resolveHeadSeq(t.personaRef.prefix);
+      if (typeof seq === "number" && Number.isFinite(seq)) headOpKeySeq = seq;
+    } catch { /* advisory — a resolver fault never touches the verdict */ }
+  }
+
+  return {
+    ok: true,
+    accepted: {
+      transcript: t, grantSig: body.grantSig, headOpKey: head.toLowerCase(),
+      ...(headOpKeySeq !== undefined ? { headOpKeySeq } : {}),
+    },
+  };
 }
 
 // ── QR#3 — the ACK (B → A), inert ──────────────────────────────────────────────────────────────────────────
@@ -328,6 +359,13 @@ export interface JoinRecord {
   readonly nonceB:         string;
   readonly expiry:         number;
   readonly grantSig:       string;   // A's signature over the grant transcript — proves A granted
+  /**
+   * OPTIONAL (M12) — the granting op-key's KEL sequence number, as B's `resolveHeadSeq` read it at open time.
+   * ADVISORY: this field is NOT part of the ACK's echo-check (`verifyJoinAck` never compares it), so it carries
+   * no security weight — only `recordAdmittedPersona`'s LOCAL per-vessel supersede ordering reads it, in place
+   * of the retired wall-clock `expiry` compare. Absent when no resolver was supplied.
+   */
+  readonly granterSeq?: number;
 }
 
 /** QR#3 carries the join record + B's device signature over it (B accepted). */
@@ -361,6 +399,8 @@ export async function mintJoinAck(args: {
     nonceB:         t.nonceB,
     expiry:         t.expiry,
     grantSig:       args.accepted.grantSig,
+    // M12 — ADVISORY ordering hint only (see JoinRecord.granterSeq); absent when B resolved no seq.
+    ...(args.accepted.headOpKeySeq !== undefined ? { granterSeq: args.accepted.headOpKeySeq } : {}),
   };
   const ackSig = await args.deviceSigner(joinRecordBytes(joinRecord));
   return { ack: { joinRecord, ackSig }, joinRecord };

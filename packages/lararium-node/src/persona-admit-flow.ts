@@ -33,7 +33,7 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import {
   recordAdmittedPersona, stashEnrollmentSecret, peekEnrollmentSecrets, takeEnrollmentSecret,
-  stashSentMemo, takeSentMemo,
+  stashSentMemo, takeSentMemo, withdrawAdmitOffer, withdrawAdmitGrant,
 } from "./node-persona-admit-store.js";
 import { loadNexusKeyring, installDeliveredKeyring } from "./nexus-convergence-secret-store.js";
 import { qrCarriageToTerminalResilient } from "./qr-transport.js";
@@ -137,21 +137,53 @@ async function render(carriage: string): Promise<HopRender> {
 }
 
 /**
- * Build the ruling-#3 head resolver off THIS vessel's LOCAL persona-KEL board replica: a prefix → its CURRENT
- * head op-key (verifying the KEL's structure + rotation quorums), or null when the prefix is unknown / unsynced
- * (fail-closed). `repo` names the store's one holder — the standing vessel's own Repo, or the direct holder's
- * (`ownedStore`) — so the read meets the replica the vessel itself folds. The open step
- * checks the grant's op-key IS this head (rotate-not-resurrect); a same-Nexus target already carries the
- * granter's persona-KEL (it federates once), a cross-Nexus one that lacks it draws the fail-closed refusal.
+ * ONE materialize of THIS vessel's LOCAL persona-KEL board replica — the shared root both head resolvers below
+ * read, so the board door (`personaKelBoardDocUrl`) is addressed from exactly ONE call site in this file
+ * regardless of how many resolver SHAPES are built off it (op-key, KEL seq, …). `repo` names the store's one
+ * holder — the standing vessel's own Repo, or the direct holder's (`ownedStore`).
  */
-export async function makeLocalPersonaKelHeadResolver(repo: Repo): Promise<(prefix: string) => Promise<string | null>> {
+async function localPersonaKelBoard(repo: Repo) {
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-  const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
+  return materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
+}
+
+/**
+ * Build the ruling-#3 head resolver off THIS vessel's LOCAL persona-KEL board replica: a prefix → its CURRENT
+ * head op-key (verifying the KEL's structure + rotation quorums), or null when the prefix is unknown / unsynced
+ * (fail-closed). The open step checks the grant's op-key IS this head (rotate-not-resurrect); a same-Nexus
+ * target already carries the granter's persona-KEL (it federates once), a cross-Nexus one that lacks it draws
+ * the fail-closed refusal.
+ */
+export async function makeLocalPersonaKelHeadResolver(repo: Repo): Promise<(prefix: string) => Promise<string | null>> {
+  const board = await localPersonaKelBoard(repo);
   return async (prefix: string): Promise<string | null> => {
     const chain = personaKelChainForPrefix(board.doc(), prefix);
     if (!chain || chain.length === 0) return null;
     return headOpKey(chain, { verifyQuorums: true });
+  };
+}
+
+/**
+ * M12's sibling resolver — the SAME local persona-KEL board replica, read for the head event's KEL SEQUENCE
+ * NUMBER rather than its op-key. ADVISORY ONLY end to end (see `openPersonaGrant`'s `resolveHeadSeq` /
+ * `JoinRecord.granterSeq`): feeds `recordAdmittedPersona`'s causal supersede order, never a verdict. Finds the
+ * head by the SAME walk `headOpKey` does (skip provisional, newest-first) and reads that event's own `seq` —
+ * so the seq named here is always the seq of the SAME key `makeLocalPersonaKelHeadResolver` would have named.
+ */
+export async function makeLocalPersonaKelHeadSeqResolver(repo: Repo): Promise<(prefix: string) => Promise<number | null>> {
+  const board = await localPersonaKelBoard(repo);
+  return async (prefix: string): Promise<number | null> => {
+    const chain = personaKelChainForPrefix(board.doc(), prefix);
+    if (!chain || chain.length === 0) return null;
+    const head = await headOpKey(chain, { verifyQuorums: true });
+    if (!head) return null;
+    for (let i = chain.length - 1; i >= 0; i--) {
+      const e = chain[i]!;
+      if (e.provisional) continue;
+      if (e.opKeyDid === head) return e.seq;
+    }
+    return null;
   };
 }
 
@@ -164,14 +196,34 @@ export async function offerAdmitFlow(args: {
   readonly dir?:               string;
   readonly expiryMs?:          number;
   readonly now?:               number;
+  /** The pending-offer set's count bound (§2a) — omit to take the store's own named default. */
+  readonly maxPendingOffers?:  number;
 }): Promise<{ offer: EnrollmentOffer } & HopRender> {
   const { offer, secret } = mintEnrollmentOffer({
     targetVesselId: args.deviceVerifyingKey,
     ...(args.expiryMs !== undefined ? { expiryMs: args.expiryMs } : {}),
     ...(args.now !== undefined ? { now: args.now } : {}),
   });
-  stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.dir);
+  if (args.maxPendingOffers !== undefined) {
+    stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.dir, args.maxPendingOffers);
+  } else {
+    stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.dir);
+  }
   return { offer, ...(await render(toEnrollmentCarriage(offer))) };
+}
+
+/**
+ * WITHDRAW a pending offer this vessel minted (§2a) — the operator's own causal act when their own patience
+ * for a hand-off ends (never a clock comparison inside the store). Pass `"all"` to drop every pending offer.
+ */
+export function withdrawOfferFlow(target: string | "all", dir?: string): number {
+  return withdrawAdmitOffer(target, dir);
+}
+
+/** WITHDRAW a sent grant memo this vessel minted (§2a) — the granter's own causal act; a late ACK against the
+ *  withdrawn nonce_A then refuses by name, exactly as a consumed one already does. */
+export function withdrawGrantFlow(nonceA: string, dir?: string): boolean {
+  return withdrawAdmitGrant(nonceA, dir);
 }
 
 /**
@@ -225,6 +277,10 @@ export async function openAdmitFlow(args: {
   readonly dir?:             string;
   /** Where THIS joinee's convergence secrets live — defaults to the identity home. The delivered keyring lands here. */
   readonly keyringInstallDir?: string;
+  /** OPTIONAL (M12) — resolve the SAME prefix's head KEL seq; rides into `JoinRecord.granterSeq` as an ADVISORY
+   *  ordering hint for `recordAdmittedPersona`'s causal supersede. `makeLocalPersonaKelHeadSeqResolver` builds one
+   *  off the same board `resolveHeadOpKey` reads. Omit it and the view falls back to its nonce-only tiebreak. */
+  readonly resolveHeadSeq?: (prefix: string) => Promise<number | null> | number | null;
   readonly now?:             number;
 }): Promise<({ joinRecord: JoinRecord; keyringEpochs: number } & HopRender) | { error: string }> {
   const sealed = parseGrantCarriage(args.grantCarriage);
@@ -237,6 +293,7 @@ export async function openAdmitFlow(args: {
   for (const { ephemeralPubkey, secret } of pending) {
     const verdict = await openPersonaGrant({
       sealed, secret, resolveHeadOpKey: args.resolveHeadOpKey,
+      ...(args.resolveHeadSeq ? { resolveHeadSeq: args.resolveHeadSeq } : {}),
       ...(args.now !== undefined ? { now: args.now } : {}),
     });
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
