@@ -8,10 +8,10 @@
  *   · PHOTOGRAPH-INERT — a captured QR#2 opened WITHOUT B's ephemeral secret fails (decrypt), a captured QR#2
  *     replayed onto a FRESH enrollment fails (sealed to the old ephemeral), a tampered ciphertext fails,
  *   · ROTATE-NOT-RESURRECT — a grant whose op-key is NOT the persona prefix head is refused,
- *   · BINDINGS (§2a gate-removal v2+v3) — a wrong-vessel grant and a tampered/forged ACK refuse (fail-closed);
- *     an EXPIRED grant now OPENS at B's `open` step (v2) AND A still SEALS onto an already-expired offer (v3
- *     — the cross-party compare, B's stamped expiry judged by A's clock, is gone too), proven under a
- *     set-back AND a set-forward clock alongside the causal gates that still refuse.
+ *   · BINDINGS (§2a gate-removal v2+v3; `expiry` itself now RETIRED) — a wrong-vessel grant and a
+ *     tampered/forged ACK refuse (fail-closed); none of the five wire shapes carries an `expiry` key at all,
+ *     so no cross-party clock compare can ride back in through it; a tampered nonce_A still refuses (the
+ *     decrypt-independent frame-match check), and an ACK carrying a different grantSig still refuses.
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -20,7 +20,9 @@ import {
   ed25519SignerFromSeed,
   type PersonaRef, type EnrollmentOffer,
 } from "../src/index.js";
-import { hex } from "../src/crypto.js";
+import { hex, hexToBytes, utf8Bytes, canonicalJsonBytes, base64UrlEncode } from "../src/crypto.js";
+import { sealToRecipient } from "../src/sealed-box.js";
+import { PERSONA_ADMIT_SEAL_INFO, PERSONA_GRANT_DOMAIN, PERSONA_SEALED_DOMAIN } from "../src/domains.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 
@@ -84,7 +86,7 @@ describe("persona-admit — the 3-hop ceremony", () => {
 
     // A photographer holds QR#1 (the offer) + QR#2 (the sealed grant) but NOT B's ephemeral secret. Reconstruct
     // an EnrollmentSecret with the offer's public fields but a FRESH (attacker) ephemeral — the seal never opens.
-    const forgedSecret = { ...mintEnrollmentOffer({ targetVesselId: f.deviceKey }).secret, nonceB: offer.nonceB, targetVesselId: offer.targetVesselId, expiry: offer.expiry };
+    const forgedSecret = { ...mintEnrollmentOffer({ targetVesselId: f.deviceKey }).secret, nonceB: offer.nonceB, targetVesselId: offer.targetVesselId };
     const verdict = await openPersonaGrant({ sealed, secret: forgedSecret, resolveHeadOpKey: f.resolveHeadOpKey });
     expect(verdict.ok).toBe(false);
     if (!verdict.ok) expect(verdict.reason).toContain("decrypt-failed");
@@ -139,101 +141,80 @@ describe("persona-admit — the 3-hop ceremony", () => {
     expect(verdict.ok).toBe(false);
   });
 
-  test("BINDING (§2a gate-removal v2): an expired grant now OPENS — the wall clock decides nothing here any\n" +
-       "    more; decrypt, nonce-echo, prefix-head and ACK-signature still refuse, under a set-back AND a\n" +
-       "    set-forward clock alike", async () => {
+  test("BINDING (§2a gate-removal, `expiry` RETIRED): none of the five wire shapes carries an `expiry` key", async () => {
     const f = await fixtures();
-    const mintedAt = 1_000_000;
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey, now: mintedAt });
-    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef: f.personaRef, personaSigner: f.personaSigner, now: mintedAt });
+    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey });
+    expect(Object.keys(offer)).not.toContain("expiry");
+    expect(Object.keys(secret)).not.toContain("expiry");
 
-    // CONTROL (set-FORWARD): opened an hour past the OLD expiry window — the retired gate used to refuse
-    // this; the held-session shape (the CLI's own patience, auto-withdrawing on its own liveness) is what
-    // now decides whether a grant is still live, and `openPersonaGrant` itself admits it.
-    const forward = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt + 3600_000 });
-    expect(forward.ok).toBe(true);
+    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef: f.personaRef, personaSigner: f.personaSigner });
+    expect(Object.keys(sealed)).not.toContain("expiry");
+    expect(Object.keys(sent.transcript)).not.toContain("expiry");
 
-    // CONTROL (set-BACK): a clock set BEFORE the grant was even minted admits identically — proving no
-    // residual comparison against `now` survives anywhere in this path (a set-back that still refused
-    // would mean a comparison the removal missed).
-    const back = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt - 3600_000 });
-    expect(back.ok).toBe(true);
-
-    // MUTATION 1 — decrypt still refuses under EITHER clock: a tampered ciphertext byte fails the AEAD
-    // regardless of how `now` is set, because nothing in that gate ever read a clock.
-    const raw = Buffer.from(sealed.ciphertext, "base64url");
-    raw[0] = (raw[0] as number) ^ 0x01;
-    const tamperedCiphertext = { ...sealed, ciphertext: raw.toString("base64url") };
-    expect((await openPersonaGrant({ sealed: tamperedCiphertext, secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt + 3600_000 })).ok).toBe(false);
-    expect((await openPersonaGrant({ sealed: tamperedCiphertext, secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt - 3600_000 })).ok).toBe(false);
-
-    // MUTATION 2 — nonce-echo still refuses under either clock: a DIFFERENT enrollment's secret (a fresh
-    // nonce_B) cannot open this grant, set-forward or set-back.
-    const other = mintEnrollmentOffer({ targetVesselId: f.deviceKey, now: mintedAt });
-    expect((await openPersonaGrant({ sealed, secret: other.secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt + 3600_000 })).ok).toBe(false);
-    expect((await openPersonaGrant({ sealed, secret: other.secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt - 3600_000 })).ok).toBe(false);
-
-    // MUTATION 3 — prefix-head (rotate-not-resurrect) still refuses under either clock: a rotated head
-    // refuses the old grant's op-key regardless of when the clock reads.
-    const rotatedHead = await pubOf(new Uint8Array(32).fill(9));
-    const rotated = headResolver({ [PERSONA_PREFIX]: rotatedHead });
-    expect((await openPersonaGrant({ sealed, secret, resolveHeadOpKey: rotated, now: mintedAt + 3600_000 })).ok).toBe(false);
-    expect((await openPersonaGrant({ sealed, secret, resolveHeadOpKey: rotated, now: mintedAt - 3600_000 })).ok).toBe(false);
-
-    // MUTATION 4 — ACK-signature still refuses under either clock: the open itself still succeeds (proven
-    // above), but a TAMPERED join record (the ACK stage, downstream of open) fails A's verify no matter
-    // when either clock reads — the ACK path never read a clock either, before or after this removal.
-    const opened = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey, now: mintedAt + 3600_000 });
+    const opened = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
     expect(opened.ok).toBe(true);
     if (!opened.ok) return;
     const { ack } = await mintJoinAck({ accepted: opened.accepted, secret, deviceSigner: f.deviceSigner });
-    const tamperedAck = { ...ack, joinRecord: { ...ack.joinRecord, targetVesselId: "ff".repeat(32) } };
-    expect((await verifyJoinAck({ ack: tamperedAck, sent, now: mintedAt + 3600_000 })).ok).toBe(false);
-    expect((await verifyJoinAck({ ack: tamperedAck, sent, now: mintedAt - 3600_000 })).ok).toBe(false);
+    expect(Object.keys(ack.joinRecord)).not.toContain("expiry");
   });
 
-  test("BINDING (§2a gate-removal v3): A still SEALS a grant onto an offer whose own expiry has already\n" +
-       "    passed — under a set-back AND a set-forward clock alike — while causal refusals (malformed target,\n" +
-       "    malformed persona ref) still refuse", async () => {
+  test("BINDING: a third party's tampered cleartext nonce_A refuses — it rides the HKDF salt, so the AEAD refuses first", async () => {
     const f = await fixtures();
-    const mintedAt = 1_000_000;
-    const { offer } = mintEnrollmentOffer({ targetVesselId: f.deviceKey, now: mintedAt, expiryMs: 1_000 });
-    // The offer's own window has already closed by the time A seals — this is EXACTLY the cross-party
-    // compare the retired gate made: B's stamped `offer.expiry` judged against A's `now`.
-    expect(offer.expiry).toBeLessThan(mintedAt + 3600_000);
+    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey });
+    const { sealed } = await sealPersonaGrant({ offer, personaRef: f.personaRef, personaSigner: f.personaSigner });
 
-    // CONTROL (set-FORWARD): A seals an hour after B's offer expired. The retired gate (`persona-admit.ts`
-    // `sealPersonaGrant`) used to throw "enrollment offer has expired" here; it no longer does.
-    const forward = await sealPersonaGrant({
-      offer, personaRef: f.personaRef, personaSigner: f.personaSigner, now: mintedAt + 3600_000,
+    // CONTROL: the genuine sealed grant still opens.
+    const control = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
+    expect(control.ok).toBe(true);
+
+    // TAMPER: rewrite the CLEARTEXT nonce_A to a different (still well-formed) value. Because nonce_A rides the
+    // HKDF salt, the AEAD decrypt refuses it before any later check runs. The frame-match check itself is proven
+    // in isolation by the granter-crafted seal in the next test.
+    const tampered = { ...sealed, nonceA: "ff".repeat(16) };
+    const verdict = await openPersonaGrant({ sealed: tampered, secret, resolveHeadOpKey: f.resolveHeadOpKey });
+    expect(verdict.ok).toBe(false);
+  });
+
+  test("BINDING: the frame-match check refuses a grant whose cleartext nonce_A keyed the seal but differs from the SIGNED one — isolated past the AEAD", async () => {
+    // A granter-crafted seal: the frame's cleartext nonce_A (X) keys the HKDF salt, so the AEAD OPENS; the signed
+    // transcript inside names a DIFFERENT nonce_A (Y), with a valid persona signature. Every other binding passes
+    // (nonce_B echoes, target matches, the head signs), so ONLY `t.nonceA !== sealed.nonceA` stands between this
+    // grant and an admit — drop that line and this test goes red (an ADMIT).
+    const f = await fixtures();
+    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey });
+    const frameNonceA = "11".repeat(16), signedNonceA = "22".repeat(16);
+    const transcript = { kind: PERSONA_GRANT_DOMAIN, personaRef: f.personaRef, targetVesselId: offer.targetVesselId, nonceB: offer.nonceB, nonceA: signedNonceA };
+    const grantSig = await f.personaSigner(canonicalJsonBytes(transcript));
+    const box = sealToRecipient({
+      recipientPub: hexToBytes(offer.ephemeralPubkey), plaintext: canonicalJsonBytes({ transcript, grantSig }),
+      info: utf8Bytes(PERSONA_ADMIT_SEAL_INFO), extraSalt: [hexToBytes(offer.nonceB), hexToBytes(frameNonceA)],
     });
-    expect(forward.sealed.kind).toBeDefined();
+    const sealed = {
+      kind: PERSONA_SEALED_DOMAIN, senderEphemeralPubkey: hex(box.senderEphemeralPub), aeadNonce: hex(box.aeadNonce),
+      nonceA: frameNonceA, ciphertext: base64UrlEncode(box.ciphertext),
+    } as const;
+    const verdict = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.reason).toContain("grant frame does not match the signed transcript");
+  });
 
-    // CONTROL (set-BACK): A's clock set BEFORE the offer was even minted seals identically — proving no
-    // residual `now`-vs-`expiry` comparison survives anywhere in `sealPersonaGrant` (a set-back that still
-    // threw would mean a comparison the removal missed).
-    const back = await sealPersonaGrant({
-      offer, personaRef: f.personaRef, personaSigner: f.personaSigner, now: mintedAt - 3600_000,
-    });
-    expect(back.sealed.kind).toBeDefined();
+  test("BINDING: an ACK carrying a different grantSig than the sent memo still refuses", async () => {
+    const f = await fixtures();
+    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey });
+    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef: f.personaRef, personaSigner: f.personaSigner });
+    const opened = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
+    expect(opened.ok).toBe(true);
+    if (!opened.ok) return;
 
-    // MUTATION — a causal (non-clock) refusal in `sealPersonaGrant` still refuses, under either clock
-    // direction: a malformed `targetVesselId` on the offer, and a malformed `personaRef.verifyingKey`.
-    const malformedOffer = { ...offer, targetVesselId: "not-hex" };
-    await expect(sealPersonaGrant({
-      offer: malformedOffer, personaRef: f.personaRef, personaSigner: f.personaSigner, now: mintedAt + 3600_000,
-    })).rejects.toThrow(/targetVesselId malformed/);
-    await expect(sealPersonaGrant({
-      offer: malformedOffer, personaRef: f.personaRef, personaSigner: f.personaSigner, now: mintedAt - 3600_000,
-    })).rejects.toThrow(/targetVesselId malformed/);
+    // CONTROL: the genuine ACK verifies.
+    const { ack } = await mintJoinAck({ accepted: opened.accepted, secret, deviceSigner: f.deviceSigner });
+    expect((await verifyJoinAck({ ack, sent })).ok).toBe(true);
 
-    const malformedRef = { ...f.personaRef, verifyingKey: "not-hex" };
-    await expect(sealPersonaGrant({
-      offer, personaRef: malformedRef, personaSigner: f.personaSigner, now: mintedAt + 3600_000,
-    })).rejects.toThrow(/verifyingKey must be 64-hex/);
-    await expect(sealPersonaGrant({
-      offer, personaRef: malformedRef, personaSigner: f.personaSigner, now: mintedAt - 3600_000,
-    })).rejects.toThrow(/verifyingKey must be 64-hex/);
+    // MUTATION: substitute a different (well-formed-looking) grantSig onto the join record — the ACK device
+    // signature no longer covers THIS record (so it fails there too), and even setting that aside the
+    // echo-check against the sent memo's OWN grantSig refuses it independently.
+    const forgedAck = { ...ack, joinRecord: { ...ack.joinRecord, grantSig: "ff".repeat(64) } };
+    expect((await verifyJoinAck({ ack: forgedAck, sent })).ok).toBe(false);
   });
 
   test("BINDING: a forged ACK (tampered target) fails A's verify; a mismatched sent memo fails too", async () => {

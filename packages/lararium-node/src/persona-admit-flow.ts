@@ -9,9 +9,9 @@
  * two simulated vessels and no real vault / camera.
  *
  * INVARIANTS held here: per-vessel-multitude-view-NEVER-syncs (every write lands in the local store, never a
- * bag); no-global-now (§2a gate-removal v3 — no step compares a wall clock to a carried expiry; the carried
- * `expiry` is advisory display only, and liveness lives in consumption, withdrawal, and the held session's
- * own monotonic patience); type-blind (a PersonaRef is
+ * bag); no-global-now (§2a gate-removal v3 — no step compares a wall clock to anything; the carried `expiry`
+ * field itself retired, and liveness lives in consumption, withdrawal, and the held session's own monotonic
+ * patience); type-blind (a PersonaRef is
  * prefix + key-material, no branch); wax-seals-only (the grant is the persona's own signature). The B side keeps
  * its ephemeral SECRET on-device (the store, 0o600) and drops it the instant an open consumes it.
  *
@@ -222,16 +222,10 @@ export async function makeLocalPersonaKelHeadAndSeqResolver(
 export async function offerAdmitFlow(args: {
   readonly deviceVerifyingKey: string;
   readonly dir?:               string;
-  readonly expiryMs?:          number;
-  readonly now?:               number;
   /** The pending-offer set's count bound (§2a) — omit to take the store's own named default. */
   readonly maxPendingOffers?:  number;
 }): Promise<{ offer: EnrollmentOffer } & HopRender> {
-  const { offer, secret } = mintEnrollmentOffer({
-    targetVesselId: args.deviceVerifyingKey,
-    ...(args.expiryMs !== undefined ? { expiryMs: args.expiryMs } : {}),
-    ...(args.now !== undefined ? { now: args.now } : {}),
-  });
+  const { offer, secret } = mintEnrollmentOffer({ targetVesselId: args.deviceVerifyingKey });
   if (args.maxPendingOffers !== undefined) {
     stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.dir, args.maxPendingOffers);
   } else {
@@ -257,7 +251,7 @@ export function withdrawGrantFlow(nonceA: string, dir?: string): boolean {
 /**
  * HOP 2 (A): read B's offer carriage, seal a persona→vessel grant signed by the persona-prefix op-key, STASH
  * the sent memo (to verify B's ACK later), and render QR#2. Refuses a torn offer carriage (fail-closed) —
- * never a wall-clock-expired one (§2a gate-removal v3: `expiry` is advisory display only here).
+ * never on a wall clock (§2a gate-removal v3; the carried `expiry` field itself retired).
  */
 export async function grantAdmitFlow(args: {
   readonly offerCarriage: string;
@@ -266,8 +260,6 @@ export async function grantAdmitFlow(args: {
   readonly dir?:          string;
   /** Where the FOUNDER's convergence secrets live — defaults to the identity home. Omit → no keyring, carry-only. */
   readonly founderKeyringDir?: string;
-  readonly expiryMs?:     number;
-  readonly now?:          number;
 }): Promise<({ sealed: SealedGrant; keyringDelivered: boolean } & HopRender) | { error: string }> {
   const offer = parseEnrollmentCarriage(args.offerCarriage);
   if (!offer) return { error: "not a valid enrollment offer carriage — the QR did not arrive" };
@@ -281,8 +273,6 @@ export async function grantAdmitFlow(args: {
     ({ sealed, sent } = await sealPersonaGrant({
       offer, personaRef: args.personaRef, personaSigner: args.personaSigner,
       ...(keyring ? { keyringSealDigest: keyring.digest } : {}),   // fold the commitment IN before signing
-      ...(args.expiryMs !== undefined ? { expiryMs: args.expiryMs } : {}),
-      ...(args.now !== undefined ? { now: args.now } : {}),
     }));
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
@@ -310,7 +300,6 @@ export async function openAdmitFlow(args: {
    *  ordering hint for `recordAdmittedPersona`'s causal supersede. `makeLocalPersonaKelHeadSeqResolver` builds one
    *  off the same board `resolveHeadOpKey` reads. Omit it and the view falls back to its nonce-only tiebreak. */
   readonly resolveHeadSeq?: (prefix: string) => Promise<number | null> | number | null;
-  readonly now?:             number;
   /**
    * M8 — restrict the match search to THIS held session's own offer (its ephemeral pubkey). Omitted → try
    * every pending offer (the original behavior; `lares persona admit open` keeps using it, since it holds
@@ -345,7 +334,6 @@ export async function openAdmitFlow(args: {
     const verdict = await openPersonaGrant({
       sealed, secret, resolveHeadOpKey: args.resolveHeadOpKey,
       ...(args.resolveHeadSeq ? { resolveHeadSeq: args.resolveHeadSeq } : {}),
-      ...(args.now !== undefined ? { now: args.now } : {}),
     });
     if (!verdict.ok) {
       lastReason = verdict.reason;
@@ -375,13 +363,12 @@ export async function openAdmitFlow(args: {
 export async function acceptAdmitFlow(args: {
   readonly ackCarriage: string;
   readonly dir?:        string;
-  readonly now?:        number;
 }): Promise<{ joinRecord: JoinRecord } | { error: string }> {
   const ack: JoinAck | null = parseAckCarriage(args.ackCarriage);
   if (!ack) return { error: "not a valid ACK carriage — the QR did not arrive" };
   const memo = takeSentMemo(ack.joinRecord.nonceA, args.dir);
   if (!memo) return { error: "no sent grant matches this ACK's nonce — the grant was never issued from this vessel (or already accepted)" };
-  const verdict = await verifyJoinAck({ ack, sent: memo, ...(args.now !== undefined ? { now: args.now } : {}) });
+  const verdict = await verifyJoinAck({ ack, sent: memo });
   if (!verdict.ok) {
     // Re-stash the memo: a transient bad ACK must not silently discard a legitimately-pending grant.
     stashSentMemo(memo, args.dir);

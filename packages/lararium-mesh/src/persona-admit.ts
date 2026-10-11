@@ -16,29 +16,28 @@
  *
  * THE 3-HOP ECDH-SEALED CHOREOGRAPHY (a photographed tabletop stays inert):
  *   1. ENROLL  (B→A, inert)   B mints a FRESH ephemeral X25519 keypair and shows {B_device_id, B_eph_pubkey,
- *                             nonce_B, expiry}. No authority — just a pubkey + a challenge. B keeps the ephemeral
+ *                             nonce_B}. No authority — just a pubkey + a challenge. B keeps the ephemeral
  *                             SECRET on-device; no QR ever carries it.
  *   2. GRANT   (A→B, inert)   A mints a persona→vessel delegation transcript, SIGNS it with A's persona PREFIX
  *                             current op-key (rotate-not-resurrect), then ECDH-SEALS it to B's ephemeral pubkey,
- *                             binding nonce_B + a fresh nonce_A + expiry. Inert: only the LIVE B holding the
+ *                             binding nonce_B + a fresh nonce_A. Inert: only the LIVE B holding the
  *                             ephemeral secret opens it; nonce-pinned (no replay onto another offer);
- *                             consume-once + withdrawal-bound (see NO-GLOBAL-NOW below — no step compares a
- *                             wall clock to `expiry` any more); and even opened it delegates ONLY to B's
- *                             specific device key. NO key-at-rest, no bearer grant — a delegation edge,
- *                             exactly as device-admit ("no secret crosses").
+ *                             consume-once + withdrawal-bound (see NO-GLOBAL-NOW below); and even opened it
+ *                             delegates ONLY to B's specific device key. NO key-at-rest, no bearer grant — a
+ *                             delegation edge, exactly as device-admit ("no secret crosses").
  *   3. ACK     (B→A, inert)   B decrypts, verifies A's signature against the persona's PREFIX head + that nonce_B
- *                             echoes + expiry + target, accepts, and SIGNS the JoinRecord with B's device key. A
+ *                             echoes + target, accepts, and SIGNS the JoinRecord with B's device key. A
  *                             verifies the ACK → both hold a matching mutually-signed join record. The 3rd hop is
  *                             load-bearing: dropping it would silent-drop the join from A's log (anti-pono).
  *
- * NO-GLOBAL-NOW (§2a gate-removal v3): no step compares a wall clock to a carried expiry any more — that
- * read of a cross-party `now` against the OTHER party's stamped `expiry` was the gate itself, and it is
- * gone. What actually bounds this ceremony's liveness: CONSUMPTION (an enrollment secret / sent-grant memo
- * is used exactly once, then dropped), WITHDRAWAL (the holder's own causal act drops its own pending state
- * before anything stale can answer it), and the HELD SESSION's own monotonic patience (the CLI process's
- * own `setTimeout` duration, racing a next-hop paste against a SIGINT/SIGTERM — never a `Date.now()`
- * compare, and never read by anything in this file). The `expiry`/`now` fields that still ride the wire are
- * ADVISORY DISPLAY ONLY, carried for the operator's own tooling; nothing here verdicts on them. The
+ * NO-GLOBAL-NOW (§2a gate-removal v3; the carried `expiry` field itself retired): no step compares a wall
+ * clock to anything any more — that read of a cross-party `now` against the OTHER party's stamped field
+ * was the gate itself, and it is gone. What actually bounds this ceremony's liveness:
+ * CONSUMPTION (an enrollment secret / sent-grant memo is used exactly once, then dropped), WITHDRAWAL (the
+ * holder's own causal act drops its own pending state before anything stale can answer it), and the HELD
+ * SESSION's own monotonic patience (the CLI process's own `setTimeout` duration, racing a next-hop paste
+ * against a SIGINT/SIGTERM — never a `Date.now()` compare, and never read by anything in this file). A "good
+ * until" display, if wanted, derives from the held session's own patience, never from a signed field. The
  * prefix-head check reads the caller's LOCAL persona-KEL replica as-of-last-sync. WAX-SEALS-ONLY: the grant is a
  * signature by the persona's own key, never a registrar row. TRACK-CONTRACTS-NEVER-IDENTITIES: a JoinRecord
  * carries key-material + prefixes + nonces only — no name, no email, no device inventory.
@@ -97,9 +96,6 @@ export interface EnrollmentOffer {
   readonly ephemeralPubkey: string;
   /** A fresh challenge B pins the session to (hex) — the grant must echo it, so a grant cannot replay onto another offer. */
   readonly nonceB:          string;
-  /** POSIX-ms "good until" — ADVISORY DISPLAY ONLY (§2a gate-removal v3): no step compares it to a wall
-   *  clock. The offer's real end comes from consumption, withdrawal, or the held session's own patience. */
-  readonly expiry:          number;
 }
 
 /** B's on-device SECRET for the session — the ephemeral X25519 secret + the challenge it pinned. NEVER leaves B. */
@@ -107,7 +103,6 @@ export interface EnrollmentSecret {
   readonly ephemeralSecret: Uint8Array;
   readonly targetVesselId:  string;
   readonly nonceB:          string;
-  readonly expiry:          number;
 }
 
 /**
@@ -117,8 +112,6 @@ export interface EnrollmentSecret {
  */
 export function mintEnrollmentOffer(args: {
   readonly targetVesselId: string;
-  readonly expiryMs?:      number;   // default 10 minutes — a tabletop hand-off window
-  readonly now?:           number;
 }): { offer: EnrollmentOffer; secret: EnrollmentSecret } {
   const targetVesselId = args.targetVesselId.toLowerCase();
   if (!NYM_RE.test(targetVesselId)) {
@@ -127,9 +120,8 @@ export function mintEnrollmentOffer(args: {
   const ephemeralSecret = x25519.utils.randomSecretKey();
   const ephemeralPubkey = hex(x25519.getPublicKey(ephemeralSecret));
   const nonceB = hex(webGetRandomValues(new Uint8Array(CHALLENGE_LEN)));
-  const expiry = (args.now ?? Date.now()) + (args.expiryMs ?? 10 * 60_000);
-  const offer: EnrollmentOffer = { kind: PERSONA_ENROLL_DOMAIN, targetVesselId, ephemeralPubkey, nonceB, expiry };
-  return { offer, secret: { ephemeralSecret, targetVesselId, nonceB, expiry } };
+  const offer: EnrollmentOffer = { kind: PERSONA_ENROLL_DOMAIN, targetVesselId, ephemeralPubkey, nonceB };
+  return { offer, secret: { ephemeralSecret, targetVesselId, nonceB } };
 }
 
 // ── QR#2 — the sealed grant (A → B), ECDH-sealed, inert ────────────────────────────────────────────────────
@@ -142,7 +134,6 @@ export interface GrantTranscript {
   readonly targetVesselId: string;
   readonly nonceB:         string;   // echoes the offer — binds this grant to THIS enrollment
   readonly nonceA:         string;   // fresh — A's own anti-replay
-  readonly expiry:         number;   // grant validity, POSIX ms — a wall-clock, never the fencing epoch
   /**
    * OPTIONAL — a lowercase-hex sha256 that COMMITS the persona signature to a sibling payload the grant CARRIES
    * out-of-band (the STAGE-2 convergence-keyring envelope: a read-key gating who reads every sealed body). The
@@ -162,10 +153,6 @@ export interface SealedGrant {
   readonly aeadNonce:             string;
   /** nonce_A in the CLEAR — B needs it for the HKDF salt BEFORE decrypt; re-verified against the signed transcript. */
   readonly nonceA:                string;
-  /** The grant expiry in the CLEAR — ADVISORY DISPLAY ONLY (§2a gate-removal v3): no step refuses on it
-   *  before (or after) decrypt; still re-verified against the signed transcript so it cannot be forged
-   *  independently of it. */
-  readonly expiry:                number;
   /** The sealed ciphertext of canonical({ transcript, grantSig }) — base64url (the dominant field, kept dense so
    *  the grant carriage fits a single static QR at ECC H; a payload past that ceiling rides the reserved bc-ur leg). */
   readonly ciphertext:            string;
@@ -193,10 +180,9 @@ function grantSaltParts(nonceB: string, nonceA: string): readonly Uint8Array[] {
  * MUST sign under `personaRef.verifyingKey` (the current op-key); the open step re-binds that key to the
  * prefix head. NO persona seed crosses — the grant is a delegation, not a key-at-rest.
  *
- * §2a gate-removal v3: this no longer refuses a past-expiry offer. A's own liveness lives elsewhere — the
- * held-session CLI holds past rendering its QR, auto-withdrawing its own sent memo on its own patience or an
- * operator SIGINT/SIGTERM. The offer's stamped `expiry` is ADVISORY DISPLAY ONLY from here on, never a gate
- * where A's own clock judges B's clock.
+ * §2a gate-removal v3: this never refuses a stale offer. A's own liveness lives elsewhere — the held-session
+ * CLI holds past rendering its QR, auto-withdrawing its own sent memo on its own patience or an operator
+ * SIGINT/SIGTERM — never a gate where A's own clock judges B's clock.
  */
 export async function sealPersonaGrant(args: {
   readonly offer:         EnrollmentOffer;
@@ -208,35 +194,20 @@ export async function sealPersonaGrant(args: {
    * covers it; a receiver that opens the grant then binds the arriving sibling to this digest. Omitted → no commit.
    */
   readonly keyringSealDigest?: string;
-  /** ADVISORY DISPLAY ONLY (§2a v3) — caps the STAMPED `expiry` field's cosmetic "good until"; no verdict reads it. */
-  readonly expiryMs?:     number;
-  /** ADVISORY DISPLAY ONLY (§2a v3) — feeds the stamped `expiry` alongside `expiryMs`; no verdict reads it. */
-  readonly now?:          number;
 }): Promise<{ sealed: SealedGrant; sent: SentGrantMemo }> {
   const { offer, personaRef } = args;
-  // ADVISORY ONLY (§2a gate-removal v3): `now`/`expiryMs` feed the STAMPED `expiry` field below, which no
-  // verdict anywhere in this file reads any more — the ceremony's liveness is consumption, withdrawal, and
-  // the held session's own patience (see the module doc). Retained so the carried `expiry` still means
-  // something to the OPERATOR's own tooling (a QR's human-readable "good until"), never a gate.
-  const now = args.now ?? Date.now();
   if (offer.kind !== PERSONA_ENROLL_DOMAIN) throw new Error("persona-admit: not an enrollment offer");
   if (!NYM_RE.test(offer.targetVesselId.toLowerCase())) throw new Error("persona-admit: offer targetVesselId malformed");
   if (!NYM_RE.test(personaRef.verifyingKey.toLowerCase())) throw new Error("persona-admit: personaRef.verifyingKey must be 64-hex");
   if (!personaRef.prefix) throw new Error("persona-admit: personaRef.prefix required");
 
   const nonceA = hex(webGetRandomValues(new Uint8Array(CHALLENGE_LEN)));
-  // ADVISORY DISPLAY STAMP ONLY: capping by the offer's own expiry here is cosmetic bookkeeping (the grant's
-  // carried "good until" never outlives the offer's own), not a verdict — nothing compares this value to a
-  // clock any more. A stale offer's grant still seals; what ends its life is the held session's own
-  // patience (B's offer) and its mirror on A's side, never this stamp.
-  const expiry = Math.min(offer.expiry, now + (args.expiryMs ?? 10 * 60_000));
   const transcript: GrantTranscript = {
     kind:           PERSONA_GRANT_DOMAIN,
     personaRef:     { prefix: personaRef.prefix, verifyingKey: personaRef.verifyingKey.toLowerCase() },
     targetVesselId: offer.targetVesselId.toLowerCase(),
     nonceB:         offer.nonceB,
     nonceA,
-    expiry,
     // Fold the sibling commitment in BEFORE signing when present; omit it otherwise, so a keyring-free grant keeps
     // the exact canonical byte-image it always signed (canonicalJson sorts keys, so placement here is immaterial).
     ...(args.keyringSealDigest ? { keyringSealDigest: args.keyringSealDigest.toLowerCase() } : {}),
@@ -256,7 +227,6 @@ export async function sealPersonaGrant(args: {
     senderEphemeralPubkey: hex(box.senderEphemeralPub),
     aeadNonce: hex(box.aeadNonce),
     nonceA,
-    expiry,
     ciphertext: base64UrlEncode(box.ciphertext),   // base64url — the dense encoding that keeps the grant a single QR
   };
   return { sealed, sent: { transcript, grantSig } };
@@ -289,8 +259,8 @@ export type GrantVerdict =
  *     `resolveHeadOpKey` reads the LOCAL persona-KEL replica). A grant signed by a SUPERSEDED key rejects.
  *   · the transcript's `verifyingKey` IS that live head (a grant naming a stale key rejects),
  *   · nonce_B echoes B's own offer (binds to THIS enrollment — no cross-offer replay),
- *   · nonce_A + expiry match the cleartext frame (the cleartext that keyed the seal cannot lie about the signed body),
- *   · the grant is in-date and targets B's own vessel.
+ *   · nonce_A matches the cleartext frame (the cleartext that keyed the seal cannot lie about the signed body),
+ *   · the grant targets B's own vessel.
  * FAIL-CLOSED at every shore: a decrypt failure (wrong key / tamper / a photograph opened without the ephemeral
  * secret) returns `{ ok:false }`, never a throw — the grant DID NOT ARRIVE.
  */
@@ -306,13 +276,6 @@ export async function openPersonaGrant(args: {
    * `granterSeq` (the view falls back to its nonce-only tiebreak).
    */
   readonly resolveHeadSeq?: (prefix: string) => Promise<number | null> | number | null;
-  /**
-   * RETIRED GATE (§2a/§2c line): formerly a wall-clock override for the grant/enrollment/transcript expiry
-   * checks this function no longer makes. The offer's own lifetime is now a HELD SESSION's own patience
-   * (the CLI's own `setTimeout`, auto-withdrawing its pending state when it ends), never a verdict this open
-   * step reaches for — so this field is accepted for call-site compatibility and read by NOTHING below.
-   */
-  readonly now?:             number;
 }): Promise<GrantVerdict> {
   const { sealed, secret } = args;
   if (sealed.kind !== PERSONA_SEALED_DOMAIN) return { ok: false, reason: "not a sealed persona grant" };
@@ -339,7 +302,7 @@ export async function openPersonaGrant(args: {
   const t = body?.transcript;
   if (!t || t.kind !== PERSONA_GRANT_DOMAIN) return { ok: false, reason: "malformed grant transcript" };
   // The cleartext that keyed the seal MUST match the signed body — else a mangled frame could mis-key silently.
-  if (t.nonceA !== sealed.nonceA || t.expiry !== sealed.expiry) return { ok: false, reason: "grant frame does not match the signed transcript" };
+  if (t.nonceA !== sealed.nonceA) return { ok: false, reason: "grant frame does not match the signed transcript" };
   if (t.nonceB !== secret.nonceB) return { ok: false, reason: "nonce_B does not echo this enrollment (replayed grant)" };
   if (t.targetVesselId.toLowerCase() !== secret.targetVesselId.toLowerCase()) return { ok: false, reason: "grant targets a different vessel" };
 
@@ -385,7 +348,6 @@ export interface JoinRecord {
   readonly granterKey:     string;   // A's persona op-key that signed the grant (= personaRef.verifyingKey)
   readonly nonceA:         string;
   readonly nonceB:         string;
-  readonly expiry:         number;
   readonly grantSig:       string;   // A's signature over the grant transcript — proves A granted
   /**
    * OPTIONAL (M12) — the granting op-key's KEL sequence number, as B's `resolveHeadSeq` read it at open time.
@@ -425,7 +387,6 @@ export async function mintJoinAck(args: {
     granterKey:     t.personaRef.verifyingKey,
     nonceA:         t.nonceA,
     nonceB:         t.nonceB,
-    expiry:         t.expiry,
     grantSig:       args.accepted.grantSig,
     // M12 — ADVISORY ordering hint only (see JoinRecord.granterSeq); absent when B resolved no seq.
     ...(args.accepted.headOpKeySeq !== undefined ? { granterSeq: args.accepted.headOpKeySeq } : {}),
@@ -440,7 +401,7 @@ export type AckVerdict =
 
 /**
  * A verifies B's ACK: the join record MUST echo the grant A actually sent (`sent` memo — personaRef, target,
- * both nonces, expiry, grantSig), and B's device signature MUST verify over it against B's device key
+ * both nonces, grantSig), and B's device signature MUST verify over it against B's device key
  * (`targetVesselId`). On success A holds the SAME mutually-signed JoinRecord B holds — the dual-admission is
  * composed. A's caller then writes it to A's OWN per-vessel multitude-view (never fleet-synced).
  *
@@ -450,7 +411,6 @@ export type AckVerdict =
 export async function verifyJoinAck(args: {
   readonly ack:  JoinAck;
   readonly sent: SentGrantMemo;
-  readonly now?: number;
 }): Promise<AckVerdict> {
   const { ack, sent } = args;
   const rec = ack?.joinRecord;
@@ -461,7 +421,6 @@ export async function verifyJoinAck(args: {
     return { ok: false, reason: "join record names a different persona than the sent grant" };
   if (rec.targetVesselId.toLowerCase() !== t.targetVesselId.toLowerCase()) return { ok: false, reason: "join record targets a different vessel" };
   if (rec.nonceA !== t.nonceA || rec.nonceB !== t.nonceB) return { ok: false, reason: "join record nonces do not echo the sent grant" };
-  if (rec.expiry !== t.expiry) return { ok: false, reason: "join record expiry does not match the sent grant" };
   if (rec.grantSig !== sent.grantSig) return { ok: false, reason: "join record carries a different grant signature" };
   if (rec.granterKey.toLowerCase() !== t.personaRef.verifyingKey.toLowerCase()) return { ok: false, reason: "join record granterKey mismatch" };
 

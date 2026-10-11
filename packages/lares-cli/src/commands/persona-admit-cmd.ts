@@ -49,6 +49,36 @@ import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
 
+/** One `persona-kel-head` door read — the head op-key and its KEL seq, off ONE board materialize. */
+const readPersonaKelHead = async (prefix: string): Promise<Readonly<Record<string, unknown>>> =>
+  (await storeVerb("persona-kel-head", { prefix })).output;
+
+/**
+ * L11 — ONE door read per verification, never two. `openPersonaGrant` asks for the head first, then (advisory)
+ * its seq; the head read stashes the seq the SAME read carried, and the seq resolver takes it. Two separate
+ * reads could straddle a rotation and pair one key's head with the next key's seq. With no head read before it,
+ * the seq resolver answers null (the view falls back to its nonce tiebreak) rather than reading again.
+ */
+export function kelHeadResolvers(read: (prefix: string) => Promise<Readonly<Record<string, unknown>>>): {
+  readonly resolveHeadOpKey: (prefix: string) => Promise<string | null>;
+  readonly resolveHeadSeq:   (prefix: string) => Promise<number | null>;
+} {
+  const seqOf = new Map<string, unknown>();
+  return {
+    resolveHeadOpKey: async (prefix) => {
+      const out = await read(prefix);
+      seqOf.set(prefix, out["seq"]);
+      return typeof out["head"] === "string" ? out["head"] : null;
+    },
+    resolveHeadSeq: async (prefix) => {
+      if (!seqOf.has(prefix)) return null;
+      const seq = seqOf.get(prefix);
+      seqOf.delete(prefix);
+      return typeof seq === "number" ? seq : null;
+    },
+  };
+}
+
 /** The default hold — a tabletop hand-off window, Gaia walking across the room and back. */
 const DEFAULT_PATIENCE_MS = 10 * 60_000;
 
@@ -167,12 +197,12 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const deviceVerifyingKey = await loadVesselVerifyingKey();
         const detach = args.flags["detach"] === true;
         const patienceMs = parsePatienceMs(args.options["patience"], DEFAULT_PATIENCE_MS);
-        const hop = await offerAdmitFlow({ deviceVerifyingKey, ...(detach ? {} : { expiryMs: patienceMs }) });
+        const hop = await offerAdmitFlow({ deviceVerifyingKey });
         printHop(args, "enrollment offer (hand QR#1 to the granting vessel)", hop);
         if (detach) {
           emit(args, {
             ok: true,
-            data: { carriage: hop.carriage, ephemeralPubkey: hop.offer.ephemeralPubkey, expiry: hop.offer.expiry, detached: true },
+            data: { carriage: hop.carriage, ephemeralPubkey: hop.offer.ephemeralPubkey, detached: true },
             human: () => console.log(`detached — this offer stands pending until opened, withdrawn (\`withdraw-offer --ephemeral ${hop.offer.ephemeralPubkey}\`), evicted by count, or \`reset\`.`),
           });
           return 0;
@@ -201,14 +231,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           let consumed = false;
           try {
             const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
-            const resolveHeadOpKey = async (p: string): Promise<string | null> => {
-              const head = (await storeVerb("persona-kel-head", { prefix: p })).output["head"];
-              return typeof head === "string" ? head : null;
-            };
-            const resolveHeadSeq = async (p: string): Promise<number | null> => {
-              const seq = (await storeVerb("persona-kel-head", { prefix: p })).output["seq"];
-              return typeof seq === "number" ? seq : null;
-            };
+            const { resolveHeadOpKey, resolveHeadSeq } = kelHeadResolvers(readPersonaKelHead);
             // M8 — scope the match search to THIS session's own offer: without `onlyEphemeral`, a paste
             // could match (and consume) a DIFFERENT pending offer entirely (a detached sibling, say),
             // leaving THIS session believing it failed while quietly having spent someone else's secret.
@@ -249,7 +272,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const personaSigner = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(index));
         const detach = args.flags["detach"] === true;
         const patienceMs = parsePatienceMs(args.options["patience"], DEFAULT_PATIENCE_MS);
-        const r = await grantAdmitFlow({ offerCarriage, personaRef, personaSigner, ...(detach ? {} : { expiryMs: patienceMs }) });
+        const r = await grantAdmitFlow({ offerCarriage, personaRef, personaSigner });
         if ("error" in r) throw new UsageError(r.error);
         printHop(args, "sealed grant (hand QR#2 back to the target vessel)", r);
         if (detach) {
@@ -306,18 +329,9 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const grantCarriage = String(args.options["grant"] ?? "");
         if (!grantCarriage) throw new UsageError("open needs --grant <carriage> (the granter's QR#2)");
         const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
-        // The head reads off the store's one holder — the standing vessel's replica when one stands.
-        const resolveHeadOpKey = async (p: string): Promise<string | null> => {
-          const head = (await storeVerb("persona-kel-head", { prefix: p })).output["head"];
-          return typeof head === "string" ? head : null;
-        };
-        // M12′ — the SAME board read also carries the head's KEL seq (store-door-verbs.ts); feeding it through
-        // lets `recordAdmittedPersona` order a real re-admission causally instead of falling to the nonce
-        // tiebreak on every open. ADVISORY ONLY — `openPersonaGrant` never gates on it.
-        const resolveHeadSeq = async (p: string): Promise<number | null> => {
-          const seq = (await storeVerb("persona-kel-head", { prefix: p })).output["seq"];
-          return typeof seq === "number" ? seq : null;
-        };
+        // The head reads off the store's one holder — the standing vessel's replica when one stands. M12′/L11 —
+        // the SAME board read carries the head's KEL seq; ADVISORY ONLY, `openPersonaGrant` never gates on it.
+        const { resolveHeadOpKey, resolveHeadSeq } = kelHeadResolvers(readPersonaKelHead);
         const r = await openAdmitFlow({ grantCarriage, resolveHeadOpKey, deviceSigner, resolveHeadSeq });
         if ("error" in r) throw new UsageError(r.error);
         emit(args, {
@@ -349,7 +363,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const admitted = listAdmittedPersonas();
         emit(args, {
           ok: true,
-          data: { admitted: admitted.map((j) => ({ prefix: j.personaRef.prefix, targetVesselId: j.targetVesselId, expiry: j.expiry })) },
+          data: { admitted: admitted.map((j) => ({ prefix: j.personaRef.prefix, targetVesselId: j.targetVesselId })) },
           human: () => {
             console.log(`personas admitted to THIS vessel (${admitted.length}) — the per-vessel multitude-view (never federates):`);
             for (const j of admitted) console.log(`  ${j.personaRef.prefix}  → vessel ${j.targetVesselId.slice(0, 16)}…  (granter ${j.granterKey.slice(0, 16)}…)`);

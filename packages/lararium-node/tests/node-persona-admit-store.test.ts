@@ -6,14 +6,15 @@
  *   · NEVER-SYNCS (structural) — the view rides a LOCAL 0o600 file under the identity home; the module imports
  *     no Repo / bag / board shore, so nothing it writes can reach the wire,
  *   · record → list round-trips; a re-admission supersedes CAUSALLY (M12 — the granting op-key's KEL seq, then
- *     nonceA as a tiebreak), and a CHANGED `expiry` alone — higher OR lower — never decides it any more,
+ *     nonceA as a tiebreak) — NO wall-clock field rides any of these shapes any more (the retired `expiry` is
+ *     gone from JoinRecord, EnrollmentSecret and SentGrantMemo's transcript alike),
  *   · CONSUME-ONCE — a stashed enrollment secret / sent memo is returned exactly once, then dropped (a secret
  *     never lingers past the one hop it enables); a second take reads null — proven again AFTER a simulated
  *     process restart (a fresh read of the SAME on-disk store, no in-memory state carried over),
  *   · WITHDRAWAL (§2a) — `withdrawAdmitOffer` / `withdrawAdmitGrant` drop a pending secret/memo by the holder's
  *     own act, never a clock; a grant/ACK answering a withdrawn one draws the SAME refusal a consumed one does,
  *   · the pending-offer set is COUNT-bounded at a NAMED `K` — a stash past it evicts the OLDEST by insertion
- *     order, never by any clock/expiry field,
+ *     order, never by any clock field,
  *   · ATOMIC WRITE — `writeJson` lands via temp+rename; no `.tmp` sibling survives a successful write.
  */
 import { PERSONA_GRANT_DOMAIN, PERSONA_JOIN_DOMAIN } from "@lararium/mesh";
@@ -30,7 +31,7 @@ import type { JoinRecord, EnrollmentSecret, SentGrantMemo } from "@lararium/mesh
 
 function joinRec(
   prefix: string,
-  opts: { expiry?: number; granterSeq?: number; nonceA?: string } = {},
+  opts: { granterSeq?: number; nonceA?: string } = {},
 ): JoinRecord {
   return {
     kind: PERSONA_JOIN_DOMAIN,
@@ -38,7 +39,7 @@ function joinRec(
     targetVesselId: "bb".repeat(32),
     granterKey: "aa".repeat(32),
     nonceA: opts.nonceA ?? "01".repeat(16), nonceB: "02".repeat(16),
-    expiry: opts.expiry ?? 1000, grantSig: "cc".repeat(64),
+    grantSig: "cc".repeat(64),
     ...(opts.granterSeq !== undefined ? { granterSeq: opts.granterSeq } : {}),
   };
 }
@@ -55,24 +56,26 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
     expect(listAdmittedPersonas(dir).map((j) => j.personaRef.prefix)).toEqual(["Epersona_A", "Epersona_B"]);
     expect(isPersonaAdmitted("Epersona_A", dir)).toBe(true);
     expect(isPersonaAdmitted("Epersona_Z", dir)).toBe(false);
+    // The retired wall-clock field carries no key on the recorded shape at all.
+    for (const rec of listAdmittedPersonas(dir)) expect(Object.keys(rec)).not.toContain("expiry");
   });
 
-  test("M12: supersede is CAUSAL (KEL seq, then nonceA) — a changed `expiry` alone decides NOTHING", () => {
-    // A HIGHER granterSeq supersedes even though its expiry is LOWER — the old expiry-wins rule would have
-    // refused this; the causal rule admits it, because the persona's op-key genuinely rotated forward.
-    recordAdmittedPersona(joinRec("Epersona_A", { granterSeq: 3, expiry: 9000 }), dir);
-    recordAdmittedPersona(joinRec("Epersona_A", { granterSeq: 5, expiry: 1000 }), dir);
+  test("M12: supersede is CAUSAL (KEL seq, then nonceA) — no wall-clock field rides this shape at all", () => {
+    // A HIGHER granterSeq supersedes — the causal rule admits it because the persona's op-key genuinely
+    // rotated forward; nothing here reads (or could read) a clock field, since none rides JoinRecord any more.
+    recordAdmittedPersona(joinRec("Epersona_A", { granterSeq: 3 }), dir);
+    recordAdmittedPersona(joinRec("Epersona_A", { granterSeq: 5 }), dir);
     expect(listAdmittedPersonas(dir).find((j) => j.personaRef.prefix === "Epersona_A")!.granterSeq).toBe(5);
 
-    // A LOWER granterSeq never rolls the view back, even with a HIGHER expiry.
-    recordAdmittedPersona(joinRec("Epersona_A", { granterSeq: 2, expiry: 99_999 }), dir);
+    // A LOWER granterSeq never rolls the view back.
+    recordAdmittedPersona(joinRec("Epersona_A", { granterSeq: 2 }), dir);
     expect(listAdmittedPersonas(dir).find((j) => j.personaRef.prefix === "Epersona_A")!.granterSeq).toBe(5);
 
-    // Seqs tie (or both absent) → the GREATER nonceA tiebreaks, expiry still unread.
-    recordAdmittedPersona(joinRec("Epersona_B", { nonceA: "01".repeat(16), expiry: 500 }), dir);
-    recordAdmittedPersona(joinRec("Epersona_B", { nonceA: "02".repeat(16), expiry: 1 }), dir);   // lower expiry, greater nonce
+    // Seqs tie (or both absent) → the GREATER nonceA tiebreaks.
+    recordAdmittedPersona(joinRec("Epersona_B", { nonceA: "01".repeat(16) }), dir);
+    recordAdmittedPersona(joinRec("Epersona_B", { nonceA: "02".repeat(16) }), dir);
     expect(listAdmittedPersonas(dir).find((j) => j.personaRef.prefix === "Epersona_B")!.nonceA).toBe("02".repeat(16));
-    recordAdmittedPersona(joinRec("Epersona_B", { nonceA: "00".repeat(16), expiry: 99_999 }), dir);   // higher expiry, lesser nonce
+    recordAdmittedPersona(joinRec("Epersona_B", { nonceA: "00".repeat(16) }), dir);
     expect(listAdmittedPersonas(dir).find((j) => j.personaRef.prefix === "Epersona_B")!.nonceA).toBe("02".repeat(16));
 
     // A RESOLVED seq always outranks an UNRESOLVED one, in either direction.
@@ -99,7 +102,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
   test("CONSUME-ONCE: a stashed enrollment secret is returned once, then dropped", () => {
     const secret: EnrollmentSecret = {
       ephemeralSecret: new Uint8Array(32).fill(4),
-      targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), expiry: 9999,
+      targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16),
     };
     stashEnrollmentSecret("ephpub01", secret, dir);
     const taken = takeEnrollmentSecret("ephpub01", dir);
@@ -113,7 +116,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
   test("CONSUME-ONCE survives a simulated restart: a FRESH read of the SAME disk store still sees it gone", () => {
     const secret: EnrollmentSecret = {
       ephemeralSecret: new Uint8Array(32).fill(5),
-      targetVesselId: "bb".repeat(32), nonceB: "03".repeat(16), expiry: 9999,
+      targetVesselId: "bb".repeat(32), nonceB: "03".repeat(16),
     };
     // Process A: stash + consume.
     stashEnrollmentSecret("ephpub-restart", secret, dir);
@@ -131,7 +134,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
   test("§2a WITHDRAWAL: withdrawAdmitOffer drops a pending offer by the holder's own act, never a clock", () => {
     const secret: EnrollmentSecret = {
       ephemeralSecret: new Uint8Array(32).fill(6),
-      targetVesselId: "bb".repeat(32), nonceB: "04".repeat(16), expiry: 9999,
+      targetVesselId: "bb".repeat(32), nonceB: "04".repeat(16),
     };
     // CONTROL: an un-withdrawn offer still opens (consumes fine).
     stashEnrollmentSecret("eph-control", secret, dir);
@@ -156,7 +159,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
   test("the pending-offer set is COUNT-bounded at a NAMED K — a stash past it evicts the OLDEST by insertion order", () => {
     const secretFor = (n: number): EnrollmentSecret => ({
       ephemeralSecret: new Uint8Array(32).fill(n),
-      targetVesselId: "bb".repeat(32), nonceB: `0${n}`.repeat(16).slice(0, 32), expiry: 9999,
+      targetVesselId: "bb".repeat(32), nonceB: `0${n}`.repeat(16).slice(0, 32),
     });
     const K = 2;
     stashEnrollmentSecret("eph-1", secretFor(1), dir, K);
@@ -173,7 +176,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
   test("ATOMIC WRITE: no `.tmp` sibling survives a successful write (temp + rename)", () => {
     recordAdmittedPersona(joinRec("Epersona_atomic"), dir);
     stashEnrollmentSecret("eph-atomic", {
-      ephemeralSecret: new Uint8Array(32).fill(9), targetVesselId: "bb".repeat(32), nonceB: "05".repeat(16), expiry: 9999,
+      ephemeralSecret: new Uint8Array(32).fill(9), targetVesselId: "bb".repeat(32), nonceB: "05".repeat(16),
     }, dir);
     const leftoverTmp = readdirSync(dir).filter((f) => f.endsWith(".tmp"));
     expect(leftoverTmp).toEqual([]);
@@ -184,7 +187,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
       transcript: {
         kind: PERSONA_GRANT_DOMAIN,
         personaRef: { prefix: "Epersona_A", verifyingKey: "aa".repeat(32) },
-        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA: "0a".repeat(16), expiry: 9999,
+        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA: "0a".repeat(16),
       },
       grantSig: "cc".repeat(64),
     };
@@ -203,7 +206,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
       transcript: {
         kind: PERSONA_GRANT_DOMAIN,
         personaRef: { prefix: "Epersona_memobound", verifyingKey: "aa".repeat(32) },
-        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA, expiry: 9999,
+        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA,
       },
       grantSig: "ee".repeat(64),
     });
@@ -223,7 +226,7 @@ describe("node-persona-admit-store — the per-vessel multitude-view", () => {
       transcript: {
         kind: PERSONA_GRANT_DOMAIN,
         personaRef: { prefix: "Epersona_withdraw", verifyingKey: "aa".repeat(32) },
-        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA: "0b".repeat(16), expiry: 9999,
+        targetVesselId: "bb".repeat(32), nonceB: "02".repeat(16), nonceA: "0b".repeat(16),
       },
       grantSig: "dd".repeat(64),
     };

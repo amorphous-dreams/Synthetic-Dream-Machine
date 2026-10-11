@@ -107,30 +107,27 @@ describe("P1 authority relations — characterization witness", () => {
     expect(replay).toMatchObject({ ok: false });
   });
 
-  test("records persona admission as a local KEL-head relation with carried expiry", async () => {
+  test("records persona admission as a local KEL-head relation bound by nonce, never a clock", async () => {
     const persona = new Uint8Array(32).fill(34);
     const device = await pubOf(deviceSeed);
     const personaKey = await pubOf(persona);
     const prefix = "persona-audit-prefix";
-    const fixedNow = 1_000_000;
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: device, now: fixedNow, expiryMs: 60_000 });
+    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: device });
     const { sealed } = await sealPersonaGrant({
       offer,
       personaRef: { prefix, verifyingKey: personaKey },
       personaSigner: ed25519SignerFromSeed(persona),
-      now: fixedNow,
     });
     const admitted = await openPersonaGrant({
       sealed,
       secret,
       resolveHeadOpKey: (candidate) => candidate === prefix ? personaKey : null,
-      now: fixedNow + 1,
     });
-    const unknownHead = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: () => null, now: fixedNow + 1 });
+    const unknownHead = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: () => null });
     auditRows.push({
       relation: "persona-admission",
-      inputs: { prefix, targetVessel: device, headResolver: "local KEL", now: fixedNow + 1 },
-      outcome: { admitted: admitted.ok, unknownHead: unknownHead.reason, authority: "prefix head + nonce + carried expiry" },
+      inputs: { prefix, targetVessel: device, headResolver: "local KEL" },
+      outcome: { admitted: admitted.ok, unknownHead: unknownHead.reason, authority: "prefix head + nonce (consume-once); no clock on the wire" },
     });
     expect(admitted.ok).toBe(true);
     expect(unknownHead).toMatchObject({ ok: false });

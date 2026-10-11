@@ -54,7 +54,7 @@ export function parseEnrollmentCarriage(carriage: string): EnrollmentOffer | nul
   const p = decodeCarriage(ENROLL_CARRIAGE_KEY, carriage);
   if (!p || p["kind"] !== PERSONA_ENROLL_DOMAIN) return null;
   if (typeof p["targetVesselId"] !== "string" || typeof p["ephemeralPubkey"] !== "string") return null;
-  if (typeof p["nonceB"] !== "string" || typeof p["expiry"] !== "number") return null;
+  if (typeof p["nonceB"] !== "string") return null;
   return p as unknown as EnrollmentOffer;
 }
 
@@ -66,7 +66,7 @@ export function parseGrantCarriage(carriage: string): SealedGrant | null {
   const p = decodeCarriage(GRANT_CARRIAGE_KEY, carriage);
   if (!p || p["kind"] !== PERSONA_SEALED_DOMAIN) return null;
   if (typeof p["senderEphemeralPubkey"] !== "string" || typeof p["aeadNonce"] !== "string") return null;
-  if (typeof p["nonceA"] !== "string" || typeof p["expiry"] !== "number" || typeof p["ciphertext"] !== "string") return null;
+  if (typeof p["nonceA"] !== "string" || typeof p["ciphertext"] !== "string") return null;
   return p as unknown as SealedGrant;
 }
 

@@ -141,7 +141,7 @@ export function isPersonaAdmitted(prefix: string, dir?: string): boolean {
 // ── The airgapped pending state (consume-once secrets) ──────────────────────────────────────────────────────
 
 /** An EnrollmentSecret with its ephemeral X25519 secret hex-encoded for at-rest JSON (decoded on take). */
-type StashedEnroll = { ephemeralSecretHex: string; targetVesselId: string; nonceB: string; expiry: number };
+type StashedEnroll = { ephemeralSecretHex: string; targetVesselId: string; nonceB: string };
 /** `order` names INSERTION order explicitly (never relies on JS object key order) — the count-bound eviction's
  *  "oldest" reads off `order[0]`, never off any clock/expiry field. */
 type EnrollFile = { readonly order?: readonly string[]; readonly pending?: Record<string, StashedEnroll> };
@@ -169,7 +169,7 @@ export function stashEnrollmentSecret(
   const { order, pending } = readEnrollFile(d);
   const stashed: StashedEnroll = {
     ephemeralSecretHex: hex(secret.ephemeralSecret),
-    targetVesselId: secret.targetVesselId, nonceB: secret.nonceB, expiry: secret.expiry,
+    targetVesselId: secret.targetVesselId, nonceB: secret.nonceB,
   };
   const nextOrder = order.filter((k) => k !== ephemeralPubkey);
   nextOrder.push(ephemeralPubkey);
@@ -193,7 +193,7 @@ export function takeEnrollmentSecret(ephemeralPubkey: string, dir?: string): Enr
   if (!s) return null;
   delete pending[ephemeralPubkey];
   writeJson(d, PENDING_ENROLL_FILE, { order: order.filter((k) => k !== ephemeralPubkey), pending });   // consume
-  return { ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB, expiry: s.expiry };
+  return { ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB };
 }
 
 /**
@@ -229,7 +229,7 @@ export function peekEnrollmentSecrets(dir?: string): Array<{ ephemeralPubkey: st
       const s = pending[ephemeralPubkey]!;
       return {
         ephemeralPubkey,
-        secret: { ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB, expiry: s.expiry },
+        secret: { ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB },
       };
     });
 }
