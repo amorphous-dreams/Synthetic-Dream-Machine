@@ -21,9 +21,11 @@
  *   2. GRANT   (A→B, inert)   A mints a persona→vessel delegation transcript, SIGNS it with A's persona PREFIX
  *                             current op-key (rotate-not-resurrect), then ECDH-SEALS it to B's ephemeral pubkey,
  *                             binding nonce_B + a fresh nonce_A + expiry. Inert: only the LIVE B holding the
- *                             ephemeral secret opens it; nonce-pinned (no replay onto another offer); expiry-bound;
- *                             and even opened it delegates ONLY to B's specific device key. NO key-at-rest, no
- *                             bearer grant — a delegation edge, exactly as device-admit ("no secret crosses").
+ *                             ephemeral secret opens it; nonce-pinned (no replay onto another offer);
+ *                             consume-once + withdrawal-bound (see NO-GLOBAL-NOW below — no step compares a
+ *                             wall clock to `expiry` any more); and even opened it delegates ONLY to B's
+ *                             specific device key. NO key-at-rest, no bearer grant — a delegation edge,
+ *                             exactly as device-admit ("no secret crosses").
  *   3. ACK     (B→A, inert)   B decrypts, verifies A's signature against the persona's PREFIX head + that nonce_B
  *                             echoes + expiry + target, accepts, and SIGNS the JoinRecord with B's device key. A
  *                             verifies the ACK → both hold a matching mutually-signed join record. The 3rd hop is
@@ -95,7 +97,8 @@ export interface EnrollmentOffer {
   readonly ephemeralPubkey: string;
   /** A fresh challenge B pins the session to (hex) — the grant must echo it, so a grant cannot replay onto another offer. */
   readonly nonceB:          string;
-  /** POSIX-ms validity bound — an offer past this is stale (no global now; read against a local clock). */
+  /** POSIX-ms "good until" — ADVISORY DISPLAY ONLY (§2a gate-removal v3): no step compares it to a wall
+   *  clock. The offer's real end comes from consumption, withdrawal, or the held session's own patience. */
   readonly expiry:          number;
 }
 
@@ -159,7 +162,9 @@ export interface SealedGrant {
   readonly aeadNonce:             string;
   /** nonce_A in the CLEAR — B needs it for the HKDF salt BEFORE decrypt; re-verified against the signed transcript. */
   readonly nonceA:                string;
-  /** The grant expiry in the CLEAR — a stale grant is refused before any decrypt; re-verified against the transcript. */
+  /** The grant expiry in the CLEAR — ADVISORY DISPLAY ONLY (§2a gate-removal v3): no step refuses on it
+   *  before (or after) decrypt; still re-verified against the signed transcript so it cannot be forged
+   *  independently of it. */
   readonly expiry:                number;
   /** The sealed ciphertext of canonical({ transcript, grantSig }) — base64url (the dominant field, kept dense so
    *  the grant carriage fits a single static QR at ECC H; a payload past that ceiling rides the reserved bc-ur leg). */

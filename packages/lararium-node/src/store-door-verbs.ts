@@ -68,7 +68,7 @@ import { runFoundTheFace } from "./commands/init.js";
 import { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
-import { makeLocalPersonaKelHeadResolver, makeLocalPersonaKelHeadSeqResolver } from "./persona-admit-flow.js";
+import { makeLocalPersonaKelHeadAndSeqResolver } from "./persona-admit-flow.js";
 import { ownedStore } from "./owned-store.js";
 import { larDataDir } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
@@ -288,14 +288,16 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "persona-new": (args) => answer("persona-new", async () => ({
       ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
     })),
-    // M12′: the SAME board resolves BOTH the head op-key and that head's KEL seq, so a caller that needs the
-    // seq (`persona-admit-cmd.ts` `open`, feeding `JoinRecord.granterSeq` for the per-vessel view's causal
-    // supersede order) never stands up a second board read. `seq` is ADVISORY-ONLY end to end — omitted when
-    // the resolver found none; the caller folds it in only as a hint, never a verdict.
+    // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
+    // (`makeLocalPersonaKelHeadAndSeqResolver`) — a caller that needs the seq (`persona-admit-cmd.ts` `open`,
+    // feeding `JoinRecord.granterSeq` for the per-vessel view's causal supersede order) never stands up a
+    // second board read, and head/seq can never straddle a sync landing between two separate materializes
+    // (the gap the prior two-builder shape left open despite its comment claiming one read). `seq` is
+    // ADVISORY-ONLY end to end — omitted when the resolver found none; the caller folds it in only as a hint,
+    // never a verdict.
     "persona-kel-head": (args) => answer("persona-kel-head", async () => {
       const prefix = need("persona-kel-head", args, "prefix");
-      const head = await (await makeLocalPersonaKelHeadResolver(repo))(prefix);
-      const seq = await (await makeLocalPersonaKelHeadSeqResolver(repo))(prefix);
+      const { head, seq } = await (await makeLocalPersonaKelHeadAndSeqResolver(repo))(prefix);
       return { head, ...(seq !== null ? { seq } : {}) };
     }),
     "nexus-publish": (args) => answer("nexus-publish", async () => ({

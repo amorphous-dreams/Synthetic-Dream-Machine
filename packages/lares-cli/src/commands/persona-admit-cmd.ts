@@ -43,7 +43,7 @@ import {
   loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
   withdrawOfferFlow, withdrawGrantFlow,
 } from "@lararium/node";
-import { emit, exitFor } from "../render.js";
+import { emit, exitFor, wantsJson } from "../render.js";
 import { storeVerb } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -68,14 +68,41 @@ function parsePatienceMs(raw: unknown, fallbackMs: number): number {
 }
 
 /**
+ * M8 — arm SIGINT/SIGTERM for a WHOLE held session, not just its wait phase: the returned `aborted` promise
+ * settles the first time either fires, and stays usable (the handlers stay REGISTERED) through the
+ * post-paste open/accept call that follows a successful paste. Node's default SIGINT/SIGTERM behavior is an
+ * immediate process kill; a bare signal arriving mid-open (after `awaitNextHopOrPatience` already resolved,
+ * before this session's own finally-based withdraw decision has run) under the OLD code — which tore its
+ * handlers down the instant a line was read — would kill the process with NEITHER a withdrawal NOR a clean
+ * completion. Keeping a handler registered (even a now-mostly-inert one, since the wait it originally guarded
+ * has already settled) prevents that silent kill; `disarm()` tears it down only once this session's own
+ * try/finally has decided whether to withdraw.
+ */
+function armHeldSignals(): { aborted: Promise<void>; disarm: () => void } {
+  let resolveAborted: () => void = () => {};
+  const aborted = new Promise<void>((res) => { resolveAborted = res; });
+  const onSignal = () => resolveAborted();
+  process.on("SIGINT", onSignal);
+  process.on("SIGTERM", onSignal);
+  return { aborted, disarm: () => { process.off("SIGINT", onSignal); process.off("SIGTERM", onSignal); } };
+}
+
+/**
  * §2a — HOLD the process open awaiting one pasted line on stdin (the next hop's carriage), racing it against
  * THIS holder's own patience (a `setTimeout` DURATION — never a `Date.now()` comparison; the delay itself is
  * the only clock-shaped thing here, and it is this process's own waiting budget, not a safety or admission
- * verdict) and the operator's own SIGINT/SIGTERM. Resolves to the pasted line, or `null` when patience or a
- * signal fired first — the caller then withdraws its OWN pending state before exiting, exactly as Gaia's offer
- * must die without her and a clinic steward's forgotten stack must never outlive the enrolling session.
+ * verdict) and `aborted` (the caller's `armHeldSignals()`, firing on the operator's own SIGINT/SIGTERM).
+ * Resolves to the pasted line, or `null` when patience or a signal fired first — the caller then withdraws
+ * its OWN pending state before exiting, exactly as Gaia's offer must die without her and a clinic steward's
+ * forgotten stack must never outlive the enrolling session.
+ *
+ * M8 — `finish` now DESTROYS stdin rather than merely closing the `readline` interface: a `readline.Interface`
+ * closed over a still-open stdin stream leaves the stream itself ref'd, and the process measurably hung on a
+ * held-open pipe (32s observed, versus ~2s once stdin actually closed) rather than exiting once this
+ * function's caller finishes its own work. On a real terminal this read as "hangs until Ctrl-C" even though
+ * the intended wait had already ended.
  */
-function awaitNextHopOrPatience(patienceMs: number): Promise<string | null> {
+function awaitNextHopOrPatience(patienceMs: number, aborted: Promise<void>): Promise<string | null> {
   return new Promise<string | null>((resolve) => {
     let settled = false;
     const rl = createInterface({ input: process.stdin });
@@ -84,15 +111,12 @@ function awaitNextHopOrPatience(patienceMs: number): Promise<string | null> {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      process.off("SIGINT", onSignal);
-      process.off("SIGTERM", onSignal);
       rl.close();
+      process.stdin.destroy();
       resolve(line);
     };
-    const onSignal = () => finish(null);
     timer = setTimeout(() => finish(null), patienceMs);
-    process.on("SIGINT", onSignal);
-    process.on("SIGTERM", onSignal);
+    aborted.then(() => finish(null));
     rl.once("line", (line) => finish(line));
     rl.once("close", () => finish(null));   // stdin closed with nothing pasted — patience/signal already covers the rest
   });
@@ -116,16 +140,23 @@ function admitUsage(): void {
   console.error("  withdraw-grant --nonce <nonceA>           (granter) withdraw a sent grant by your own patience");
 }
 
-/** Print a hop's scannable QR + its carriage (the carriage always travels; the QR is the tabletop convenience). */
-function printHop(label: string, hop: { carriage: string; terminalQr: string; qrEcc: string | null; qrOversized: boolean }): void {
-  console.log(`${label}:`);
+/**
+ * Print a hop's scannable QR + its carriage (the carriage always travels; the QR is the tabletop
+ * convenience). L12 — under `--json` (or any off-TTY machine read) this block is NOISE ahead of the JSON
+ * payload line `emit` writes to stdout: a `--json` reader that does `JSON.parse(stdout)` on the whole
+ * stream, or reads the first line expecting the payload, meets the QR block instead. Routed to STDERR under
+ * JSON mode — the human tabletop view stays on stdout exactly as before when no `--json` is in play.
+ */
+function printHop(args: ParsedArgs, label: string, hop: { carriage: string; terminalQr: string; qrEcc: string | null; qrOversized: boolean }): void {
+  const out = wantsJson(args) ? console.error : console.log;
+  out(`${label}:`);
   if (hop.qrOversized) {
-    console.log(`  (payload exceeds a single static QR even at ECC-L — paste the carriage, or use the bc-ur multi-part leg)`);
+    out(`  (payload exceeds a single static QR even at ECC-L — paste the carriage, or use the bc-ur multi-part leg)`);
   } else {
-    console.log(hop.terminalQr);
-    console.log(`  (QR at ECC ${hop.qrEcc})`);
+    out(hop.terminalQr);
+    out(`  (QR at ECC ${hop.qrEcc})`);
   }
-  console.log(`  carriage: ${hop.carriage}`);
+  out(`  carriage: ${hop.carriage}`);
 }
 
 export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
@@ -137,7 +168,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const detach = args.flags["detach"] === true;
         const patienceMs = parsePatienceMs(args.options["patience"], DEFAULT_PATIENCE_MS);
         const hop = await offerAdmitFlow({ deviceVerifyingKey, ...(detach ? {} : { expiryMs: patienceMs }) });
-        printHop("enrollment offer (hand QR#1 to the granting vessel)", hop);
+        printHop(args, "enrollment offer (hand QR#1 to the granting vessel)", hop);
         if (detach) {
           emit(args, {
             ok: true,
@@ -148,39 +179,60 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         }
         // §2a — HELD SESSION: the offer is a live act, not a fire-and-forget. This process holds open awaiting
         // QR#2 (pasted, same as `open --grant` would take it) under its OWN monotonic patience; on patience
-        // end or an operator SIGINT/SIGTERM it withdraws its own offer before exiting — no un-withdrawn stale
-        // offer survives this process.
-        console.error(`awaiting the granter's QR#2 — paste the grant carriage and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
-        const pasted = await awaitNextHopOrPatience(patienceMs);
-        if (!pasted) {
-          const withdrawn = withdrawOfferFlow(hop.offer.ephemeralPubkey);
-          emit(args, {
-            ok: true,
-            data: { withdrawn: withdrawn > 0, ephemeralPubkey: hop.offer.ephemeralPubkey },
-            human: () => console.log("patience ended (or interrupted) with no grant arriving — withdrew this offer."),
-          });
-          return 0;
+        // end, an operator SIGINT/SIGTERM, OR a paste that fails to open (M8) it withdraws its own offer
+        // before exiting — no un-withdrawn stale offer survives this process on ANY exit path.
+        const { aborted, disarm } = armHeldSignals();
+        try {
+          console.error(`awaiting the granter's QR#2 — paste the grant carriage and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
+          const pasted = await awaitNextHopOrPatience(patienceMs, aborted);
+          if (!pasted) {
+            const withdrawn = withdrawOfferFlow(hop.offer.ephemeralPubkey);
+            emit(args, {
+              ok: true,
+              data: { withdrawn: withdrawn > 0, ephemeralPubkey: hop.offer.ephemeralPubkey },
+              human: () => console.log("patience ended (or interrupted) with no grant arriving — withdrew this offer."),
+            });
+            return 0;
+          }
+          // M8 — this session's own offer is consumed ONLY on a successful open; any other outcome (a
+          // garbled paste, a grant answering a different offer, an unresolvable KEL head, a thrown error)
+          // leaves the offer un-consumed, and the `finally` below withdraws it — a failed paste used to
+          // leave the offer pending indefinitely (bounded only by the pending-set's own count eviction).
+          let consumed = false;
+          try {
+            const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
+            const resolveHeadOpKey = async (p: string): Promise<string | null> => {
+              const head = (await storeVerb("persona-kel-head", { prefix: p })).output["head"];
+              return typeof head === "string" ? head : null;
+            };
+            const resolveHeadSeq = async (p: string): Promise<number | null> => {
+              const seq = (await storeVerb("persona-kel-head", { prefix: p })).output["seq"];
+              return typeof seq === "number" ? seq : null;
+            };
+            // M8 — scope the match search to THIS session's own offer: without `onlyEphemeral`, a paste
+            // could match (and consume) a DIFFERENT pending offer entirely (a detached sibling, say),
+            // leaving THIS session believing it failed while quietly having spent someone else's secret.
+            const r = await openAdmitFlow({
+              grantCarriage: pasted.trim(), resolveHeadOpKey, deviceSigner, resolveHeadSeq,
+              onlyEphemeral: hop.offer.ephemeralPubkey,
+            });
+            if ("error" in r) throw new UsageError(r.error);
+            consumed = true;
+            emit(args, {
+              ok: true,
+              data: { carriage: r.carriage, personaPrefix: r.joinRecord.personaRef.prefix },
+              human: () => {
+                console.log(`admitted persona ${r.joinRecord.personaRef.prefix} onto this vessel (recorded locally, never synced).`);
+                printHop(args, "acknowledgement (hand QR#3 back to the granting vessel to close the join)", r);
+              },
+            });
+            return 0;
+          } finally {
+            if (!consumed) withdrawOfferFlow(hop.offer.ephemeralPubkey);
+          }
+        } finally {
+          disarm();
         }
-        const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
-        const resolveHeadOpKey = async (p: string): Promise<string | null> => {
-          const head = (await storeVerb("persona-kel-head", { prefix: p })).output["head"];
-          return typeof head === "string" ? head : null;
-        };
-        const resolveHeadSeq = async (p: string): Promise<number | null> => {
-          const seq = (await storeVerb("persona-kel-head", { prefix: p })).output["seq"];
-          return typeof seq === "number" ? seq : null;
-        };
-        const r = await openAdmitFlow({ grantCarriage: pasted.trim(), resolveHeadOpKey, deviceSigner, resolveHeadSeq });
-        if ("error" in r) throw new UsageError(r.error);
-        emit(args, {
-          ok: true,
-          data: { carriage: r.carriage, personaPrefix: r.joinRecord.personaRef.prefix },
-          human: () => {
-            console.log(`admitted persona ${r.joinRecord.personaRef.prefix} onto this vessel (recorded locally, never synced).`);
-            printHop("acknowledgement (hand QR#3 back to the granting vessel to close the join)", r);
-          },
-        });
-        return 0;
       }
       case "grant": {
         const offerCarriage = String(args.options["offer"] ?? "");
@@ -199,7 +251,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const patienceMs = parsePatienceMs(args.options["patience"], DEFAULT_PATIENCE_MS);
         const r = await grantAdmitFlow({ offerCarriage, personaRef, personaSigner, ...(detach ? {} : { expiryMs: patienceMs }) });
         if ("error" in r) throw new UsageError(r.error);
-        printHop("sealed grant (hand QR#2 back to the target vessel)", r);
+        printHop(args, "sealed grant (hand QR#2 back to the target vessel)", r);
         if (detach) {
           emit(args, {
             ok: true,
@@ -209,30 +261,46 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           return 0;
         }
         // §2a — HELD SESSION, A's mirror of the offer side: hold open awaiting QR#3 (the ACK) under A's own
-        // patience; on patience end or SIGINT/SIGTERM, withdraw the sent-grant memo so a late ACK answering it
-        // refuses by name rather than this grant remaining operable past the window A actually stood for it.
-        console.error(`awaiting the target's QR#3 (the ACK) — paste it and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
-        const pasted = await awaitNextHopOrPatience(patienceMs);
-        if (!pasted) {
-          const withdrawn = withdrawGrantFlow(r.sealed.nonceA);
-          emit(args, {
-            ok: true,
-            data: { withdrawn, nonceA: r.sealed.nonceA },
-            human: () => console.log("patience ended (or interrupted) with no ACK arriving — withdrew this sent grant."),
-          });
-          return 0;
+        // patience; on patience end, SIGINT/SIGTERM, OR a paste that fails to accept (M8), withdraw the
+        // sent-grant memo so a late ACK answering it refuses by name rather than this grant remaining
+        // operable past the window A actually stood for it, on ANY exit path.
+        const { aborted, disarm } = armHeldSignals();
+        try {
+          console.error(`awaiting the target's QR#3 (the ACK) — paste it and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
+          const pasted = await awaitNextHopOrPatience(patienceMs, aborted);
+          if (!pasted) {
+            const withdrawn = withdrawGrantFlow(r.sealed.nonceA);
+            emit(args, {
+              ok: true,
+              data: { withdrawn, nonceA: r.sealed.nonceA },
+              human: () => console.log("patience ended (or interrupted) with no ACK arriving — withdrew this sent grant."),
+            });
+            return 0;
+          }
+          // M8 — mirrors the offer side: this sent grant is consumed ONLY on a successful accept.
+          // `acceptAdmitFlow` itself RE-STASHES its memo on a failed verify (so a transient bad ACK does
+          // not silently discard a legitimately-pending grant at the FLOW layer) — this session's own
+          // `finally` is what then decides the memo should not outlive THIS held session, and withdraws it.
+          let consumed = false;
+          try {
+            const closeR = await acceptAdmitFlow({ ackCarriage: pasted.trim() });
+            if ("error" in closeR) throw new UsageError(closeR.error);
+            consumed = true;
+            emit(args, {
+              ok: true,
+              data: { personaPrefix: closeR.joinRecord.personaRef.prefix, targetVesselId: closeR.joinRecord.targetVesselId },
+              human: () => {
+                console.log(`join CLOSED — persona ${closeR.joinRecord.personaRef.prefix} now stands admitted on vessel ${closeR.joinRecord.targetVesselId.slice(0, 16)}….`);
+                console.log(`  both vessels hold the matching mutually-signed record (recorded locally on each, never synced).`);
+              },
+            });
+            return 0;
+          } finally {
+            if (!consumed) withdrawGrantFlow(r.sealed.nonceA);
+          }
+        } finally {
+          disarm();
         }
-        const closeR = await acceptAdmitFlow({ ackCarriage: pasted.trim() });
-        if ("error" in closeR) throw new UsageError(closeR.error);
-        emit(args, {
-          ok: true,
-          data: { personaPrefix: closeR.joinRecord.personaRef.prefix, targetVesselId: closeR.joinRecord.targetVesselId },
-          human: () => {
-            console.log(`join CLOSED — persona ${closeR.joinRecord.personaRef.prefix} now stands admitted on vessel ${closeR.joinRecord.targetVesselId.slice(0, 16)}….`);
-            console.log(`  both vessels hold the matching mutually-signed record (recorded locally on each, never synced).`);
-          },
-        });
-        return 0;
       }
       case "open": {
         const grantCarriage = String(args.options["grant"] ?? "");
@@ -257,7 +325,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           data: { carriage: r.carriage, personaPrefix: r.joinRecord.personaRef.prefix },
           human: () => {
             console.log(`admitted persona ${r.joinRecord.personaRef.prefix} onto this vessel (recorded locally, never synced).`);
-            printHop("acknowledgement (hand QR#3 back to the granting vessel to close the join)", r);
+            printHop(args, "acknowledgement (hand QR#3 back to the granting vessel to close the join)", r);
           },
         });
         return 0;

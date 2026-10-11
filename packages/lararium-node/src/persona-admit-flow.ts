@@ -9,7 +9,9 @@
  * two simulated vessels and no real vault / camera.
  *
  * INVARIANTS held here: per-vessel-multitude-view-NEVER-syncs (every write lands in the local store, never a
- * bag); no-global-now (every step reads a local clock against a carried expiry); type-blind (a PersonaRef is
+ * bag); no-global-now (§2a gate-removal v3 — no step compares a wall clock to a carried expiry; the carried
+ * `expiry` is advisory display only, and liveness lives in consumption, withdrawal, and the held session's
+ * own monotonic patience); type-blind (a PersonaRef is
  * prefix + key-material, no branch); wax-seals-only (the grant is the persona's own signature). The B side keeps
  * its ephemeral SECRET on-device (the store, 0o600) and drops it the instant an open consumes it.
  *
@@ -188,6 +190,32 @@ export async function makeLocalPersonaKelHeadSeqResolver(repo: Repo): Promise<(p
 }
 
 /**
+ * L11 — the SAME head + seq read as `makeLocalPersonaKelHeadResolver` / `makeLocalPersonaKelHeadSeqResolver`
+ * above, but off ONE board materialize instead of two. A caller that wants both (as `store-door-verbs.ts`'s
+ * `persona-kel-head` door does) previously called both builders, each materializing the board independently
+ * — a comment there claimed "the SAME board read" while the code made two, so a sync landing between them
+ * could let head and seq straddle it. This builds the board once and derives both from that single chain
+ * walk, so they can never disagree about which board state they read.
+ */
+export async function makeLocalPersonaKelHeadAndSeqResolver(
+  repo: Repo,
+): Promise<(prefix: string) => Promise<{ head: string | null; seq: number | null }>> {
+  const board = await localPersonaKelBoard(repo);
+  return async (prefix: string): Promise<{ head: string | null; seq: number | null }> => {
+    const chain = personaKelChainForPrefix(board.doc(), prefix);
+    if (!chain || chain.length === 0) return { head: null, seq: null };
+    const head = await headOpKey(chain, { verifyQuorums: true });
+    if (!head) return { head: null, seq: null };
+    for (let i = chain.length - 1; i >= 0; i--) {
+      const e = chain[i]!;
+      if (e.provisional) continue;
+      if (e.opKeyDid === head) return { head, seq: e.seq };
+    }
+    return { head, seq: null };
+  };
+}
+
+/**
  * HOP 1 (B): mint an enrollment offer for this vessel's device key, STASH the on-device ephemeral secret
  * (consume-once), and render QR#1. The secret never leaves the store; only the offer travels.
  */
@@ -228,7 +256,8 @@ export function withdrawGrantFlow(nonceA: string, dir?: string): boolean {
 
 /**
  * HOP 2 (A): read B's offer carriage, seal a persona→vessel grant signed by the persona-prefix op-key, STASH
- * the sent memo (to verify B's ACK later), and render QR#2. Refuses a torn / expired offer (fail-closed).
+ * the sent memo (to verify B's ACK later), and render QR#2. Refuses a torn offer carriage (fail-closed) —
+ * never a wall-clock-expired one (§2a gate-removal v3: `expiry` is advisory display only here).
  */
 export async function grantAdmitFlow(args: {
   readonly offerCarriage: string;
@@ -282,21 +311,47 @@ export async function openAdmitFlow(args: {
    *  off the same board `resolveHeadOpKey` reads. Omit it and the view falls back to its nonce-only tiebreak. */
   readonly resolveHeadSeq?: (prefix: string) => Promise<number | null> | number | null;
   readonly now?:             number;
+  /**
+   * M8 — restrict the match search to THIS held session's own offer (its ephemeral pubkey). Omitted → try
+   * every pending offer (the original behavior; `lares persona admit open` keeps using it, since it holds
+   * no single "own" offer context). A HELD offer's post-paste open must scope to itself: without this, a
+   * grant answering a DIFFERENT pending offer Y could be consumed inside offer X's held session, leaving Y
+   * believing it still stands pending while its secret has already been taken.
+   */
+  readonly onlyEphemeral?: string;
 }): Promise<({ joinRecord: JoinRecord; keyringEpochs: number } & HopRender) | { error: string }> {
   const sealed = parseGrantCarriage(args.grantCarriage);
   if (!sealed) return { error: "not a valid sealed-grant carriage — the QR did not arrive" };
 
-  const pending = peekEnrollmentSecrets(args.dir);
-  if (pending.length === 0) return { error: "no pending enrollment on this vessel — run `persona admit offer` first" };
+  const allPending = peekEnrollmentSecrets(args.dir);
+  const pending = args.onlyEphemeral
+    ? allPending.filter((p) => p.ephemeralPubkey === args.onlyEphemeral)
+    : allPending;
+  if (pending.length === 0) {
+    return {
+      error: args.onlyEphemeral
+        ? "this session's own offer is no longer pending (withdrawn, expired, or already opened)"
+        : "no pending enrollment on this vessel — run `persona admit offer` first",
+    };
+  }
 
+  // L10 — `lastReason` used to report whichever offer was tried LAST, which is usually the least
+  // informative "decrypt-failed" (every offer that simply isn't the matching one fails to decrypt). Prefer
+  // the first NON-decrypt reason any candidate drew (a real cause: a torn head, a replayed nonce) — that is
+  // the informative refusal a human can act on; a decrypt-only set of misses falls back to naming that.
   let lastReason = "no pending enrollment matched this grant";
+  let informativeReason: string | null = null;
   for (const { ephemeralPubkey, secret } of pending) {
     const verdict = await openPersonaGrant({
       sealed, secret, resolveHeadOpKey: args.resolveHeadOpKey,
       ...(args.resolveHeadSeq ? { resolveHeadSeq: args.resolveHeadSeq } : {}),
       ...(args.now !== undefined ? { now: args.now } : {}),
     });
-    if (!verdict.ok) { lastReason = verdict.reason; continue; }
+    if (!verdict.ok) {
+      lastReason = verdict.reason;
+      if (informativeReason === null && !verdict.reason.startsWith("decrypt-failed")) informativeReason = verdict.reason;
+      continue;
+    }
     // A matching enrollment: consume its secret (never re-usable) + record the join into the local view.
     takeEnrollmentSecret(ephemeralPubkey, args.dir);
     // ADOPT the founder's cad keyring riding this SAME grant carriage — but ONLY when the now-VERIFIED transcript
@@ -310,7 +365,7 @@ export async function openAdmitFlow(args: {
     recordAdmittedPersona(joinRecord, args.dir);
     return { joinRecord, keyringEpochs, ...(await render(toAckCarriage(ack))) };
   }
-  return { error: lastReason };
+  return { error: informativeReason ?? lastReason };
 }
 
 /**

@@ -169,6 +169,55 @@ describe("persona-admit-flow — the airgapped 3-hop between two vessels", () =>
     expect(listAdmittedPersonas(bDir)).toHaveLength(1);
   });
 
+  test("M8: onlyEphemeral scopes the match to THIS offer alone — a grant answering a DIFFERENT pending offer is NOT consumed", async () => {
+    const f = await fixtures();
+    // Two pending offers stand on B at once (as a held X + a detached Y would).
+    const offerX = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const offerY = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    // A grants against Y.
+    const grantY = await grantAdmitFlow({ offerCarriage: offerY.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in grantY) throw new Error("grant failed");
+
+    // CONTROL (no onlyEphemeral): B's open tries every pending offer and matches Y.
+    const controlOpen = await openAdmitFlow({ grantCarriage: grantY.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    expect("error" in controlOpen).toBe(false);
+    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerX.offer.ephemeralPubkey)).toBe(true);   // X untouched
+    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerY.offer.ephemeralPubkey)).toBe(false);  // Y consumed
+
+    // MUTATION proof, fresh pair: held session X scopes its open to ITS OWN ephemeral via onlyEphemeral — a
+    // grant that answers Y is REFUSED from X's held session, and Y's secret stands UNTOUCHED (X never spent
+    // someone else's secret on X's own behalf).
+    const offerX2 = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const offerY2 = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const grantY2 = await grantAdmitFlow({ offerCarriage: offerY2.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in grantY2) throw new Error("grant failed");
+    const scopedOpen = await openAdmitFlow({
+      grantCarriage: grantY2.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir,
+      onlyEphemeral: offerX2.offer.ephemeralPubkey,
+    });
+    expect("error" in scopedOpen).toBe(true);
+    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerX2.offer.ephemeralPubkey)).toBe(true);   // X2 untouched
+    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerY2.offer.ephemeralPubkey)).toBe(true);   // Y2 ALSO untouched — never consumed
+  });
+
+  test("L10: a non-decrypt refusal (a real cause) is reported over a merely-unmatched offer's decrypt-failed", async () => {
+    const f = await fixtures();
+    // Offer X stands pending alongside the offer the grant actually answers (Y) — X's attempt always reads
+    // decrypt-failed (wrong ephemeral), which must not mask Y's REAL refusal reason (a rotated head).
+    const offerX = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const offerY = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
+    const grantY = await grantAdmitFlow({ offerCarriage: offerY.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    if ("error" in grantY) throw new Error("grant failed");
+
+    const rotatedHead = await pubOf(new Uint8Array(32).fill(9));
+    const opened = await openAdmitFlow({ grantCarriage: grantY.carriage, resolveHeadOpKey: () => rotatedHead, deviceSigner: f.deviceSigner, dir: bDir });
+    expect("error" in opened).toBe(true);
+    if (!("error" in opened)) throw new Error("expected a refusal");
+    expect(opened.error.startsWith("decrypt-failed")).toBe(false);
+    expect(opened.error).toContain("rotated/superseded");
+    void offerX;   // X stands pending throughout — its decrypt-failed miss is the one being masked
+  });
+
   test("ROTATE-NOT-RESURRECT: a grant the head resolver rejects records nothing on B", async () => {
     const f = await fixtures();
     const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
