@@ -19,6 +19,7 @@ import {
   VesselIslandPoolCore,
   type Repo,
   type IslandMsg_Event,
+  type WikiRecipe,
 } from "@lararium/mesh";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 
@@ -33,9 +34,15 @@ export interface BrowserVesselIslandPoolOptions {
   mainRepo?: Repo;
   /** Called when an island emits a verse-event reaction. */
   onWorkerEvent?: (id: string, msg: IslandMsg_Event) => void;
-  /** The engine's plugin-tiddler CIDs — every wiki island pulls them by CID from the local
-   *  CAS (the breath path), the same set the daemon island gets. Constant per genesis. */
-  pluginCids?: readonly string[];
+  /** R4 — resolve ONE mount's own `recipe` into the CIDs its manifest should carry (the fixed
+   *  boot-set floor UNION its verified, byte-checked offering selection). REQUIRED: the flat
+   *  vessel-wide `pluginCids` floor has retired — `VesselIslandPoolCore` itself refuses to
+   *  construct without this, so the browser can supply no blanket list even by omission. See
+   *  `resolveBrowserIslandPluginCids` in `open-browser-vessel.ts`. */
+  resolvePluginCids: (recipe: WikiRecipe) => Promise<
+    | { readonly ok: true; readonly pluginCids: readonly string[] }
+    | { readonly ok: false; readonly error: string }
+  >;
 }
 
 /** Browser island pool: VesselIslandPoolCore configured with a Web Worker host. */
@@ -43,7 +50,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
   constructor(opts: BrowserVesselIslandPoolOptions) {
     const workerUrl = opts.workerScriptUrl ?? null;
     super({
-      ...(opts.pluginCids?.length ? { pluginCids: opts.pluginCids } : {}),
+      resolvePluginCids: opts.resolvePluginCids,
       host: {
         spawnWorker: () => {
           if (!workerUrl) {

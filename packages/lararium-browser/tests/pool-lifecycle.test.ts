@@ -13,6 +13,10 @@ import { BrowserVesselIslandPool } from "../src/browser-vessel-island-pool.js";
 
 const FIXTURE_URL = new URL("./fixtures/browser-repo-in-island-echo.mjs", import.meta.url);
 
+/** This lifecycle contract cares about mount/unmount/dispose bookkeeping, never plugin
+ *  selection — R4 requires every pool to carry a resolver, so a no-offerings floor stands in. */
+const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
+
 const WIKI_A = "lar:///ha.ka.ba/bags/test/pool-lifecycle/a";
 const WIKI_B = "lar:///ha.ka.ba/bags/test/pool-lifecycle/b";
 
@@ -29,7 +33,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("mountWiki registers island; has() and size reflect it", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     expect(pool.has(WIKI_A)).toBe(false);
     expect(pool.size).toBe(0);
@@ -45,7 +49,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("mountWiki is idempotent — second call for same id is a no-op", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_A, {
       coreHash:    null,
@@ -61,7 +65,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("multiple islands mount independently", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await Promise.all([
       pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } }),
@@ -78,7 +82,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("unmountWiki takes island cold (anu); has() reflects it", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } });
     expect(pool.has(WIKI_A)).toBe(true);
@@ -93,14 +97,14 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("unmountWiki on unknown id is a no-op", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     await expect(pool.unmountWiki("lar:///ha.ka.ba/bags/test/nonexistent")).resolves.toBeUndefined();
   });
 
   test("disposeAll removes all islands", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await Promise.all([
       pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } }),
@@ -116,7 +120,7 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
 
   test("inspect reports wikiId and temperature for each island", async () => {
     repo = new Repo({ sharePolicy: async () => true });
-    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo });
+    pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, mainRepo: repo, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_A, { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url" } });
 

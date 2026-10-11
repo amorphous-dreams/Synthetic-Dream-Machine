@@ -80,6 +80,7 @@ describe("browser verb breathing — verb tiddler surfaces as IslandMsg_Event vi
     const pool = new BrowserVesselIslandPool({
       workerScriptUrl: FIXTURE_WORKER_URL,
       mainRepo:        vesselRepo,
+      resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
       onWorkerEvent:   (_id, msg) => events.push(msg),
     });
 

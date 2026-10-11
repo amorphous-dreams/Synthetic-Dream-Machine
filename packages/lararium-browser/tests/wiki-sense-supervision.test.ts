@@ -51,6 +51,9 @@ describe("wiki-sense supervision reads — browser tier (real worker wire)", () 
   async function standSupervised(proofStore?: MemoryTiddlerStore): Promise<WikiSenseSupervisor> {
     const p = new BrowserVesselIslandPool({
       workerScriptUrl: FIXTURE_URL,
+      // This supervision witness cares about the sensorium frame crossing, never plugin
+      // selection — R4 requires every pool to carry a resolver, so a no-offerings floor stands in.
+      resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
       onWorkerEvent: (id, msg) => {
         if (msg.listenable === SENSORIUM_FRAME) supervisor?.acceptFrame(id, msg.payload);
       },

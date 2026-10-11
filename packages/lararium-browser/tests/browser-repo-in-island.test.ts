@@ -61,6 +61,7 @@ describe("BrowserVesselIslandPool Repo-in-island gate", () => {
     pool = new BrowserVesselIslandPool({
       workerScriptUrl: FIXTURE_URL,
       mainRepo: repo,
+      resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
       onWorkerEvent: (id, msg) => all.callback(id, msg),
     });
 
@@ -86,6 +87,7 @@ describe("BrowserVesselIslandPool Repo-in-island gate", () => {
     pool = new BrowserVesselIslandPool({
       workerScriptUrl: FIXTURE_URL,
       mainRepo: repo,
+      resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
       onWorkerEvent: (id, msg) => {
         all.callback(id, msg);
         changes.callback(id, msg);

@@ -20,7 +20,9 @@ import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo"
 import {
   emptyLarDoc, mutableLarRecord,
   CATALOG_DOC_URI, DAEMON_BAG_ID,
-  ENGINE_CORE_ID, pluginCidsFromIslandBlobs,
+  ENGINE_CORE_ID,
+  bootSetPluginCids, bootSetIds, verifyCasBytesAsync,
+  selectPluginBlobs, selectedPluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
@@ -353,6 +355,52 @@ export function warnDroppedBrowserAlert(
     `[lararium-browser] wiki-alert DROPPED (${reason}) for "${wikiSlug}" — no durable browser mailbox: ` +
     `${message}${cause ? ` (cause: ${cause})` : ""}`,
   );
+}
+
+/**
+ * R4 — "plugins load by recipe" (browser). Resolves ONE island's final manifest `pluginCids`:
+ * the fixed boot-set floor (grammar + boot shadows, read off the island/oracle doc's own blobs)
+ * UNION this wiki's own recipe's verified, byte-checked offering selection. The browser's exact
+ * mirror of node's `resolveNodeIslandPluginCids` — same selector, same CAS-bytes codes — over the
+ * ONE substrate divergence: the byte check reads OPFS (`readCasBlobFromOpfs`, inherently async),
+ * so this resolver verifies through `verifyCasBytesAsync` rather than node's sync form.
+ *
+ * Fail-closed throughout, in order: an offering this lookup cannot find, a lying lookup, a
+ * boot-set-collision or cross-offering duplicate claim, or any `verifyPluginOffering` code
+ * (`selectPluginBlobs`) refuses first; only THEN does a selected CID's bytes get checked against
+ * the local OPFS CAS — missing or corrupt bytes refuse by name, never silently as an empty or
+ * trimmed set. Retires the worker's pre-R3 blanket floor on the browser too (M6): the daemon VM
+ * and the island pool both resolve THROUGH this function now, never `pluginCidsFromIslandBlobs`.
+ */
+export async function resolveBrowserIslandPluginCids(opts: {
+  readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
+  readonly recipe: WikiRecipe;
+  readonly lookup: OfferingLookup;
+}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+  const floorCids = bootSetPluginCids(opts.islandBlobs);
+  const bootIds   = bootSetIds(opts.islandBlobs);
+  const offerings = opts.recipe.pluginOfferings ?? [];
+  const selection = await selectPluginBlobs(offerings, opts.lookup, bootIds);
+  if (!selection.ok) {
+    return { ok: false, error: `${opts.recipe.wikiSlug}: offering selection ${JSON.stringify(selection.failure)}` };
+  }
+  const selectedCids = selectedPluginCids(selection.blobs);
+  const bytesVerdict = await verifyCasBytesAsync(selectedCids, readCasBlobFromOpfs, (b) => sha256HexBytesSync(b));
+  if (!bytesVerdict.ok) {
+    return { ok: false, error: `${opts.recipe.wikiSlug}: ${JSON.stringify(bytesVerdict.failure)}` };
+  }
+  // Dedup: a selected offering's CID coinciding with a floor CID would need a raw sha256 collision
+  // (practically disjoint namespaces), but a Set keeps the manifest from ever naming one CID twice.
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+}
+
+/** Build the browser Crossroads board's offering lookup (R4): a verified selection re-verifies
+ *  every offering it resolves (`selectPluginBlobs` → `verifyPluginOffering`), so this lookup
+ *  stays a shape-only projection (`offeringAnnouncesFromDoc`) — never a second, redundant certify
+ *  pass. The exact mirror of node's `nodeOfferingLookup`. */
+export function browserOfferingLookup(crossroadsDoc: LarDoc | undefined | null): OfferingLookup {
+  const byOfferingCid = new Map(offeringAnnouncesFromDoc(crossroadsDoc).map((a) => [a.offeringCid, a.offering]));
+  return (cid) => byOfferingCid.get(cid);
 }
 
 export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<BrowserVesselResult> {
@@ -705,6 +753,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   let daemon!:     DaemonVmCore;      // set in openDaemon
   let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
   let slotActiveWikiId = "";
+  // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
+  // plugin-offering resolution (the daemon VM's own recipe, and the pool's resolver). Mirrors
+  // node's `crossroadsOfferingsHandle`.
+  let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
 
   // Push the live switcher state INTO the daemon widget (main → local, reactive — never
   // a poll): the switcher-state worker verb writes $:/temp/lares/switcher (volatile, local)
@@ -981,9 +1033,21 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
         deviceEdge: wornMount?.deviceEdge ?? social.deviceEdge,
       };
-      // The engine's plugin-tiddler CIDs — the worker pulls them by CID from OPFS (the breath
-      // path), never CRDT-syncing the oracle blob doc over the port. Same derivation as the pool.
-      const pluginCids = pluginCidsFromIslandBlobs(assembly.islandHandle.doc()?.blobs);
+      // R4 — the daemon VM resolves its plugins through the SAME selector + OPFS CAS path every
+      // wiki island does (`resolveBrowserIslandPluginCids`), never the retired vessel-wide hand-
+      // off. The daemon's own one-recipe-model record names no offerings today, so this call is
+      // the floor alone in practice — but it is the floor PROVEN through the selector, not
+      // assumed past it.
+      crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+      const daemonPluginResolution = await resolveBrowserIslandPluginCids({
+        islandBlobs: assembly.islandHandle.doc()?.blobs,
+        recipe:      { wikiSlug: "daemon" },
+        lookup:      browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+      });
+      if (!daemonPluginResolution.ok) {
+        throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
+      }
+      const pluginCids = daemonPluginResolution.pluginCids;
       daemon = await openBrowserDaemonVm({
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
@@ -1294,13 +1358,20 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     },
 
     makePool: (_a, assembly) => {
-      // Every wiki island resolves the SAME engine plugin-CIDs from the local CAS as the daemon
-      // island does — one derivation, fed to both (role = capability ≠ platform; the wiki and
-      // daemon are the one island runtime, differing only by their capability stack).
-      const pluginCids = pluginCidsFromIslandBlobs(assembly.islandHandle.doc()?.blobs);
+      // R4 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
+      // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never the vessel-wide
+      // floor every island used to get identically. The Crossroads board materializes once (lazily,
+      // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
-        ...(pluginCids.length ? { pluginCids } : {}),
+        resolvePluginCids: async (recipe) => {
+          crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+          return resolveBrowserIslandPluginCids({
+            islandBlobs: assembly.islandHandle.doc()?.blobs,
+            recipe,
+            lookup: browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+          });
+        },
         onWorkerEvent: (_id, msg) => {
           // Projection-nalu frames route to the display, not the verb plane — but ONLY from the ACTIVE surface.
           // The frame gate keys on the transport id (never a payload claim), so a summon that flips
