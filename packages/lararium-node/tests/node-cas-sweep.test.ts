@@ -19,11 +19,11 @@
  *     clock moves neither verdict.
  */
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, existsSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh";
-import { casSweep, listCasBlobs, writeCasEntriesFs } from "../src/node-cas.js";
+import { casSweep, listCasBlobs, writeCasEntriesFs, readCasPins, pinCas, releaseCas } from "../src/node-cas.js";
 import { genesisProtectSet } from "../src/genesis-artifact.js";
 
 let casDir = "";
@@ -165,6 +165,133 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
                          graceFor: (cid) => graceForTier(tierOf(cid), 1) });
     expect(r.swept).toEqual([pub.cid]);
     expect(r.kept).toContain(veil.cid);
+  });
+});
+
+// ── M7′: the boot-epoch FENCE a `--held` pin reads against, and fail-toward-KEEPING on a torn sidecar ──────
+// Spec: a `--held` pin stamps a `fence` (this vessel's own boot epoch at pin time); `casSweep`'s new
+// `currentFence` option — when a caller supplies this vessel's CURRENT epoch — holds the pin only while
+// the epoch has not yet rolled past the stamp (the SAME law `cas-caps.ts`'s `pinnedCids` states). No
+// `currentFence` → every pin reads presence-only, exactly as before. A torn PER-RECORD field (a mistyped
+// `fence`) must still hold its cid (fail toward KEEPING); a torn WHOLE sidecar must REFUSE the read outright
+// (never silently "no pins"), so the sweep that depends on it refuses its run rather than un-pinning
+// everything the sidecar could not prove was ever un-pinned.
+describe("casSweep — M7′ the boot-epoch FENCE a `--held` pin reads against", () => {
+  test("a `--held` pin (fence stamped) KEEPS while the current epoch has not yet rolled past it", () => {
+    const b = blob("a held pin, boot epoch 3");
+    writeCasEntriesFs([b], casDir);
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", fence: 3 }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 3 });
+    expect(r.pinned).toEqual([b.cid]);
+    expect(r.swept).toEqual([]);
+  });
+
+  test("a `--held` pin SWEEPS once a later boot moves the current epoch past the stamped fence", () => {
+    const b = blob("a held pin, superseded by the next boot");
+    writeCasEntriesFs([b], casDir);
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", fence: 3 }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 4 });
+    expect(r.pinned).toEqual([]);
+    expect(r.swept).toEqual([b.cid]);
+  });
+
+  test("CONTROL: a bare pin (no `fence` at all) keeps regardless of `currentFence` — the operator's own explicit pin", () => {
+    const b = blob("an operator pin, no fence, standing across any boot");
+    writeCasEntriesFs([b], casDir);
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "operator" }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 1_000_000 });
+    expect(r.pinned).toEqual([b.cid]);
+    expect(r.swept).toEqual([]);
+  });
+
+  test("MUTATION PROOF: omitting `currentFence` reverts to presence-only — a would-be-superseded `--held` pin still keeps", () => {
+    const b = blob("a held pin read with no currentFence supplied");
+    writeCasEntriesFs([b], casDir);
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", fence: 3 }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins });   // no currentFence
+    expect(r.pinned).toEqual([b.cid]);   // the gap M7′ names as still open until a caller threads the epoch in
+  });
+});
+
+describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", () => {
+  test("a torn PER-RECORD fence (wrong type) still holds that cid — presence-only, not dropped whole", () => {
+    const held = blob("torn fence, should still pin");
+    writeFileSync(join(casDir, held.cid), "bytes");
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid: held.cid, tier: "veil", holder: "x", fence: "7" }]));
+    const pins = readCasPins(casDir);
+    expect(pins).toHaveLength(1);
+    expect(pins[0]!.cid).toBe(held.cid);
+    expect(pins[0]!.fence).toBeUndefined();   // the torn fence read as ABSENT, never as 0, never dropped
+  });
+
+  test("a record missing holder/tier still holds by cid alone", () => {
+    const cid = "b".repeat(64);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid }]));
+    expect(readCasPins(casDir).map((p) => p.cid)).toEqual([cid]);
+  });
+
+  test("RED: a WHOLE sidecar that fails to parse REFUSES the read — never silently \"no pins\"", () => {
+    writeFileSync(join(casDir, ".pins.json"), "{ not json at all, torn mid-write");
+    expect(() => readCasPins(casDir)).toThrow(/pin sidecar/);
+  });
+
+  test("MUTATION PROOF: the retired shape (`catch { return [] }`) would have read the torn sidecar as \"no pins\"", () => {
+    writeFileSync(join(casDir, ".pins.json"), "{ not json at all, torn mid-write");
+    let legacy: unknown[];
+    try { legacy = JSON.parse(readFileSync(join(casDir, ".pins.json"), "utf8")) as unknown[]; }
+    catch { legacy = []; }   // the retired fallback this fix removed
+    expect(legacy).toEqual([]);   // every pinned blob would have read unprotected under the retired shape
+  });
+
+  test("CONTROL: an ABSENT sidecar reads as no pins — never a refusal (a vessel that never pinned is not corrupt)", () => {
+    expect(readCasPins(casDir)).toEqual([]);
+  });
+
+  test("`pinCas`/`releaseCas` refuse rather than silently clobber a corrupt sidecar", () => {
+    writeFileSync(join(casDir, ".pins.json"), "{ torn");
+    expect(() => pinCas(casDir, { cid: "c".repeat(64), tier: "veil", holder: "operator" })).toThrow(/pin sidecar/);
+    expect(() => releaseCas(casDir, "c".repeat(64))).toThrow(/pin sidecar/);
+  });
+});
+
+describe("installCasSweep — M7′ a corrupt sidecar REFUSES the tick's sweep run, logged by name — never deletes", () => {
+  test("RED: a torn `.pins.json` faults the tick, which logs it by name and sweeps NOTHING", async () => {
+    const orphan = blob("an orphan beside a torn pin sidecar");
+    writeCasEntriesFs([orphan], casDir);
+    writeFileSync(join(casDir, ".pins.json"), "{ torn beyond parsing");
+    const registry = fakeRegistry();
+    const logs: string[] = [];
+    const sweep = installCasSweep({
+      registry, casDir, references: async () => [], protect: new Set(),
+      pins: () => readCasPins(casDir),   // THROWS on the torn sidecar — exactly the production wiring shape
+      realmClock: () => clockAt(20), log: (line) => { logs.push(line); },
+    });
+    try {
+      await expect(registry.verbs.get("cas-sweep")!({})).rejects.toThrow(/pin sidecar/);
+      // Nothing swept: the orphan is still there, because the refusal happened BEFORE casSweep ever ran.
+      expect(existsSync(join(casDir, orphan.cid))).toBe(true);
+    } finally { sweep.stop(); }
+  });
+
+  test("CONTROL: the periodic tick (not the verb by hand) catches the same fault and logs it by name, never throwing out", async () => {
+    vi.useFakeTimers();
+    try {
+      const orphan = blob("an orphan the ticking sweep must not eat over a torn sidecar");
+      writeCasEntriesFs([orphan], casDir);
+      writeFileSync(join(casDir, ".pins.json"), "{ torn beyond parsing");
+      const registry = fakeRegistry();
+      const logs: string[] = [];
+      const sweep = installCasSweep({
+        registry, casDir, references: async () => [], protect: new Set(),
+        pins: () => readCasPins(casDir),
+        realmClock: () => clockAt(20), log: (line) => { logs.push(line); },
+      });
+      try {
+        await vi.advanceTimersByTimeAsync(sweep.probeMs + 1);
+        expect(logs.some((l) => l.includes("tick faulted") && l.includes("pin sidecar"))).toBe(true);
+        expect(existsSync(join(casDir, orphan.cid))).toBe(true);   // never swept — the refusal came first
+      } finally { sweep.stop(); }
+    } finally { vi.useRealTimers(); }
   });
 });
 
@@ -369,5 +496,54 @@ describe("the genesis protect set, when the seed will not read", () => {
     const set = genesisProtectSet(genesisDir);
     expect(set).not.toBe("unreadable");
     expect([...(set as ReadonlySet<string>)]).toEqual([cid]);
+  });
+});
+
+// ── M7′: THE BOOT EPOCH — bumped ONLY on a VESSEL's own claim, never a one-shot direct act ─────────────────
+// `owned-store.ts`'s `claimStore` bumps `<storageDir>/.boot-epoch` inline with the claim it already
+// serializes through one bound socket name. The single writer is whoever takes the claim; here that is
+// this one test process, in series, each claim released before the next opens — no second claimant ever
+// stands beside it, so a bump here races nothing. Proofs: a vessel claim bumps the epoch by exactly one
+// each time; a DIRECT (one-shot CLI) claim bumps nothing — the churn of unrelated `lares` commands must
+// never retire a `--held` pin; `readBootEpoch` answers 0 for a vessel that has never booted, never missing.
+import { claimStore, readBootEpoch, bootEpochPath } from "../src/owned-store.js";
+
+describe("owned-store — M7′ the boot epoch bumps on a VESSEL claim only", () => {
+  let storeDir = "";
+  beforeEach(() => { storeDir = mkdtempSync(join(tmpdir(), "lr-boot-epoch-")); });
+  afterEach(() => { rmSync(storeDir, { recursive: true, force: true }); });
+
+  test("a vessel that has never claimed reads epoch 0 — never missing, never a made-up high one", () => {
+    expect(readBootEpoch(storeDir)).toBe(0);
+  });
+
+  test("a VESSEL claim bumps the epoch by exactly one; a second vessel claim (the next boot) bumps it again", async () => {
+    const first = await claimStore(storeDir, { holder: "vessel" });
+    expect(readBootEpoch(storeDir)).toBe(1);
+    await first.release();
+    const second = await claimStore(storeDir, { holder: "vessel" });
+    expect(readBootEpoch(storeDir)).toBe(2);
+    await second.release();
+  });
+
+  test("CONTROL: a DIRECT (one-shot) claim bumps NOTHING — unrelated `lares` commands never retire a `--held` pin", async () => {
+    const claim = await claimStore(storeDir, { holder: "direct" });
+    expect(readBootEpoch(storeDir)).toBe(0);
+    await claim.release();
+    expect(readBootEpoch(storeDir)).toBe(0);
+  });
+
+  test("the bump is ATOMIC (temp + rename) — a reader never observes a torn counter", async () => {
+    const claim = await claimStore(storeDir, { holder: "vessel" });
+    try {
+      const raw = readFileSync(bootEpochPath(storeDir), "utf8");
+      expect(raw.trim()).toBe("1");
+      expect(existsSync(`${bootEpochPath(storeDir)}.${process.pid}.tmp`)).toBe(false);   // no stranded temp
+    } finally { await claim.release(); }
+  });
+
+  test("a torn `.boot-epoch` file reads as 0 — fail toward the OLDEST epoch, never a made-up high one", () => {
+    writeFileSync(bootEpochPath(storeDir), "not-a-number\n");
+    expect(readBootEpoch(storeDir)).toBe(0);
   });
 });

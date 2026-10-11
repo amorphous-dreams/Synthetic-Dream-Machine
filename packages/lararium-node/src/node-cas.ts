@@ -14,7 +14,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import {
-  casReferences, graceForTier, tiersByGraceDescending, realmPace,
+  casReferences, graceForTier, tiersByGraceDescending, realmPace, pinnedCids,
   sha256HexBytesSync,
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
@@ -163,15 +163,18 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
 // unprotected blob MAY sweep once older than the grace. `DROP <bag>` releases by taking the bag's
 // records out of the derived count — the sweep reads the count, it never reads the verb.
 //
-// A PIN CARRIES NO CLOCK. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
-// it, `releaseCas` removes it, and PRESENCE in the set the sweep reads IS "standing" — no comparison
-// against now, set-back or set-forward, changes that verdict. `PinCap` (@lararium/mesh) carries NO
-// `expiry` field at all (M7 — the field left the record entirely, never merely unread); its OPTIONAL
-// `fence` names a holder's own boot epoch for a caller that wants causal supersession, but this file's
-// own sweep still never reads it — presence in the sidecar alone decides here. The mesh-level
-// `pinnedCids` helper applies exactly the fence filter a caller WITH a fence to compare wants, so this
-// file still never calls it — ending a pin is an EXPLICIT act (`releaseCas`), or the next pin for the
-// same cid superseding the one it replaces (`pinCas`'s replace-by-cid).
+// A PIN CARRIES NO CLOCK — EVER. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
+// it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO `expiry` field at all (M7 — the field
+// left the record entirely, never merely unread). Its OPTIONAL `fence` names a holder's OWN boot epoch
+// at pin time (M7′): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `fence` —
+// the operator's own explicit, standing-forever pin), but a pin that DOES carry a `fence` (a `--held`
+// pin) is a CAUSAL supersession, never a span — `casSweep`'s `currentFence` option, when a caller supplies
+// this vessel's OWN current boot epoch, reads it through the mesh-level `pinnedCids` (the SAME law
+// `cas-caps.ts` states): held while `currentFence <= fence`, superseded the moment a later boot moves past
+// it. No `currentFence` supplied (the production default until a caller threads one through) → every pin
+// reads presence-only, exactly as before the fence ever existed. Ending a pin is always one of: an
+// EXPLICIT `releaseCas`, the next pin for the same cid superseding the one it replaces (`pinCas`'s
+// replace-by-cid), or — for a `--held` pin alone — this vessel's own next boot.
 
 /** A cleartext CAS file name — hex sha256. Anything else in the dir (a sidecar) is never a blob. */
 const CAS_CID_RE = /^[0-9a-f]{64}$/;
@@ -208,6 +211,14 @@ export interface CasSweepOptions {
    *  no clock comparison. `releaseCas` drops a pin from the sidecar before this array is ever read, so
    *  "released" and "absent from `pins`" are the same fact. */
   readonly pins?:      readonly PinCap[];
+  /**
+   * This vessel's CURRENT boot epoch (M7′, `owned-store.ts`'s `readBootEpoch`) — the fence a `--held` pin's
+   * own stamped `fence` is read against (`pinnedCids` — the SAME law `cas-caps.ts` states: absent `fence` on
+   * a pin holds regardless, i.e. presence-only; a pin WITH a `fence` holds only while `currentFence` has not
+   * yet moved past it). Omitted → every pin holds presence-only, exactly as before the fence ever read
+   * (the no-epoch-available fallback; M7′'s gap, not a regression — no caller YET threads a live epoch here).
+   */
+  readonly currentFence?: number;
   /** Name what would sweep; delete nothing. */
   readonly dryRun?:    boolean;
 }
@@ -225,7 +236,13 @@ export interface CasSweepResult {
 
 /** Mark-and-sweep the cleartext CAS from the derived references + the genesis protect set. */
 export function casSweep(opts: CasSweepOptions): CasSweepResult {
-  const standing = new Set((opts.pins ?? []).map((p) => p.cid));   // presence IS standing — no clock read
+  // M7′: `currentFence` supplied → a `--held` pin (one stamped with a `fence`) holds only while this
+  // vessel's current epoch has not yet moved past it (`pinnedCids`); a presence-only pin (no `fence`) still
+  // holds regardless, same as always. No `currentFence` → every pin reads presence-only (the old shape),
+  // never a clock, never a made-up epoch.
+  const standing = opts.currentFence !== undefined
+    ? pinnedCids(opts.pins ?? [], opts.currentFence)
+    : new Set((opts.pins ?? []).map((p) => p.cid));   // presence IS standing — no clock read
   const swept: string[] = [], kept: string[] = [], protectedCids: string[] = [], pinned: string[] = [];
   for (const { cid } of listCasBlobs(opts.casDir)) {
     if (opts.protect.has(cid)) { protectedCids.push(cid); continue; }
@@ -247,23 +264,46 @@ export function casSweep(opts: CasSweepOptions): CasSweepResult {
 
 const PINS_FILE = ".pins.json";
 
-/** The pins a CAS dir holds — an absent or torn sidecar reads as no pins. `fence` (M7) is OPTIONAL: a
- *  record carrying none is a VALID pin (presence-only), not a torn one — only `cid`/`holder`/`tier`
- *  are required, and a stray `fence` of the wrong type fails the record as torn rather than dropping
- *  just that field silently. The retired `expiry` field, if an older sidecar still carries it, is
- *  simply ignored: this reader never looks for it, so it round-trips as dead weight on rewrite until
- *  the next `pinCas`/`releaseCas` rewrites the record without it. */
+/** The pins a CAS dir holds — an ABSENT sidecar reads as no pins (a vessel that never pinned anything is
+ *  not corrupt); a sidecar that EXISTS but fails to parse (torn JSON, not an array) THROWS rather than
+ *  reading as no pins (M7′: the sweep's own caller must REFUSE its run on this, never silently un-pin
+ *  everything). A per-record `cid` string is the only load-bearing field: a record missing/mistyping its
+ *  `holder`/`tier`/`fence` still holds that cid (presence-only, if its `fence` reads as absent) rather than
+ *  being dropped whole — dropping a torn record is exactly the "fails open toward deletion" fault M7′
+ *  closes. The retired `expiry` field, if an older sidecar still carries it, is simply ignored: this reader
+ *  never looks for it, so it round-trips as dead weight on rewrite until the next `pinCas`/`releaseCas`
+ *  rewrites the record without it. */
 export function readCasPins(casDir: string): PinCap[] {
-  try {
-    const raw = JSON.parse(readFileSync(join(casDir, PINS_FILE), "utf8")) as unknown;
-    if (!Array.isArray(raw)) return [];
-    return raw
-      .filter((p): p is PinCap =>
-        !!p && typeof p === "object" && typeof (p as PinCap).cid === "string"
-        && typeof (p as PinCap).holder === "string" && typeof (p as PinCap).tier === "string"
-        && ((p as PinCap).fence === undefined || typeof (p as PinCap).fence === "number"))
-      .map((p) => ({ cid: p.cid, tier: p.tier, holder: p.holder, ...(p.fence !== undefined ? { fence: p.fence } : {}) }));
-  } catch { return []; }
+  const path = join(casDir, PINS_FILE);
+  let raw: string;
+  try { raw = readFileSync(path, "utf8"); }
+  catch (err) {
+    // No sidecar at all reads as no pins — a vessel that has never pinned anything is not "corrupt".
+    if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return [];
+    throw new Error(`[node-cas] pin sidecar ${path} could not be read (${(err as Error)?.message ?? err}) — refusing to read it as "no pins" (M7′: fail toward KEEPING, never toward deleting)`);
+  }
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); }
+  catch (err) {
+    throw new Error(`[node-cas] pin sidecar ${path} failed to parse (${(err as Error)?.message ?? err}) — refusing to read it as "no pins" (M7′: fail toward KEEPING, never toward deleting)`);
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error(`[node-cas] pin sidecar ${path} is not a JSON array — refusing to read it as "no pins" (M7′: fail toward KEEPING, never toward deleting)`);
+  }
+  // A TORN RECORD THAT STILL NAMES A CID STRING STILL HOLDS THAT CID (M7′): only `cid` is load-bearing here.
+  // A missing/mistyped `holder`/`tier` or `fence` (the probed `fence: "7"` case) never drops the WHOLE
+  // record — that would un-pin a blob over a cosmetic field, exactly the "fails open toward deletion" fault
+  // this closes. A mistyped `fence` reads as ABSENT (presence-only — holds forever), never as zero and never
+  // as dropped.
+  return parsed
+    .filter((p): p is Record<string, unknown> => !!p && typeof p === "object" && typeof (p as Record<string, unknown>)["cid"] === "string")
+    .map((p) => {
+      const cid    = p["cid"] as string;
+      const holder = typeof p["holder"] === "string" ? (p["holder"] as string) : "unknown";
+      const tier   = typeof p["tier"]   === "string" ? (p["tier"]   as string) : "veil";
+      const fence  = typeof p["fence"]  === "number" ? (p["fence"]  as number) : undefined;
+      return { cid, holder, tier, ...(fence !== undefined ? { fence } : {}) } as PinCap;
+    });
 }
 
 /** Write the pins whole — temp + rename (M7), never a bare `writeFileSync`: a reader mid-write (another

@@ -18,9 +18,9 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh";
-import { listCasBlobs, genesisProtectSet, readCasPins, pinCas, releaseCas } from "@lararium/node";
+import { listCasBlobs, genesisProtectSet, readCasPins, pinCas, releaseCas, readBootEpoch } from "@lararium/node";
 import { parseCapTier, type PinCap } from "@lararium/mesh";
-import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, vesselDid } from "../env.js";
+import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, larDataDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit } from "../render.js";
@@ -196,11 +196,16 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares bag cas --pin <cid> [--tier <t>] [--holder <name>]` / `--release <cid>` — PIN at cid grain
- * (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until this
- * same vessel explicitly `--release`s it, or re-pins the cid (replace-by-cid). No clock, no expiry
+ * `lares bag cas --pin <cid> [--tier <t>] [--holder <name>] [--held]` / `--release <cid>` — PIN at cid
+ * grain (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until
+ * this same vessel explicitly `--release`s it, or re-pins the cid (replace-by-cid). No clock, no expiry
  * flag — a pin's lifetime is an EVENT (pin / release), never a span. Pins live in the CAS dir's
  * `.pins.json` sidecar (a non-hex name the sweep never reads as a blob). Local, no daemon.
+ *
+ * `--held` (M7′) stamps the pin with THIS vessel's CURRENT boot epoch (`readBootEpoch`, @lararium/node) —
+ * a pin that dies with THIS boot: once a later boot bumps the epoch past the stamp, the sweep (run where
+ * the composite stands, reading its own current epoch) lets it go. A bare `--pin` carries no `fence` at
+ * all — the operator's own explicit, PRESENCE-ONLY pin, standing until an explicit `--release`.
  */
 function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   const casDir = larCasDir();
@@ -210,7 +215,9 @@ function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   } else {
     const tier = parseCapTier(args.options["tier"] ?? "veil");
     const holder = args.options["holder"] ?? "operator";
-    pins = pinCas(casDir, { cid: pin, tier, holder });
+    const held = args.flags["held"] === true;
+    const fence = held ? readBootEpoch(larDataDir()) : undefined;
+    pins = pinCas(casDir, { cid: pin, tier, holder, ...(fence !== undefined ? { fence } : {}) });
   }
   emit(args, {
     ok: true,
