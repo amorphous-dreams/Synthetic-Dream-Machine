@@ -87,11 +87,46 @@ export function refusalCode(reason: string): string {
   }
 }
 
+/**
+ * The operator-facing CURE for a refusal CODE (post {@link refusalCode}), named ONCE so a caller
+ * reads the identical hint whichever door answers the refusal — the LIVE refusal riding straight
+ * back on the socket (`result.refusal`, the connection never dropped) and the SAME refusal found
+ * only AFTER a lost connection (`LocalWaitExpired` → a read-back's `ReceiptAnswer.state`) used to
+ * grow their hint text by two separate hands; a change-id'd caller hitting the live door read no
+ * hint at all (K2, P2.5 iteration 7) — `act.ts`'s two refusal sites both call this instead of
+ * carrying their own copy.
+ *
+ *   request-abandoned  — this vessel already refused the request before commit; it never ran.
+ *                         Reusing `--change-id` keeps a re-run a RETRY of the same change rather
+ *                         than minting a new one.
+ *   retention-gap       — the receipt ring evicted this id's outcome past its retention bound; a
+ *                          fresh `--change-id` runs it as a new change (the old one is unrecoverable).
+ *   receipt-fact-torn   — the ledger's own fact for this id is unreadable; a fresh REQUEST (a
+ *                          flagless re-run already mints one) is the only cure — reusing
+ *                          `--change-id` names no cure here, since the torn fact is per-request,
+ *                          not per-change.
+ *
+ * Any other code (cap-denied, conflict, verb-error, …) carries no standing cure, so this answers
+ * `undefined` — a caller folds that into "no hint" exactly as `VerbFailure.hint` already does.
+ */
+export function refusalHint(code: string, changeId: string): string | undefined {
+  switch (code) {
+    case "request-abandoned":
+      return `this vessel already refused this request before commit — it never ran. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change.`;
+    case "retention-gap":
+      return "this change's record was evicted; mint a fresh `--change-id` to run it as a new change.";
+    case "receipt-fact-torn":
+      return "this request's own ledger record is unreadable (a torn tiddler) — mint a fresh request (a flagless re-run does it).";
+    default:
+      return undefined;
+  }
+}
+
 export function verbFailure(err: unknown): VerbFailure {
   if (err instanceof LocalWaitExpired) {
     return {
       code: "outcome-unknown", message: err.message, requestId: err.requestId,
-      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId}, or re-run.`,
+      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId} with \`lares receipt ${err.requestId}\`.`,
     };
   }
   if (err instanceof DaemonUnreachable) {

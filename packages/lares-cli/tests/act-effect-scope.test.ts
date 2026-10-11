@@ -25,6 +25,12 @@
  * `receipt-fact-torn` (G2's own refusal name) maps to exit 6 through `refusalCode` — proven here at
  * the live-dispatch (`result.refusal`) boundary, mirroring how the OTHER refusal names are proven in
  * `act-load-effect-split.test.ts`.
+ *
+ * K2, P2.5 iteration 7: the LIVE (synchronous) refusal branch now carries the SAME hint text as the
+ * read-back branches, for the SAME code — both call the one shared `refusalHint` helper in
+ * `verb-call.ts`. Before this, a caller whose refusal rode straight back on the socket (the
+ * connection never dropped) read no hint at all, while the identical refusal discovered only after
+ * a lost connection (`LocalWaitExpired` → a read-back) read a full cure.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
@@ -146,8 +152,7 @@ describe("H7 — REPACK carries NO effectKey at all", () => {
 
 describe("M10 — the outcome-unknown/abandoned/retention-gap hints name the exact --change-id gesture", () => {
   test("an abandoned refusal's hint names THIS attempt's own --change-id, never a bare 'safe to re-run'", async () => {
-    // The hint-with-change-id lives on the READ-BACK path (`LocalWaitExpired` → `queryReceipt`),
-    // never the synchronous-refusal path (which carries no hint at all, unchanged by this lane).
+    // The READ-BACK path (`LocalWaitExpired` → `queryReceipt`).
     h.throwLWE = true;
     h.receipt = { requestId: "r", state: "abandoned" };
     const cap: string[] = [];
@@ -159,6 +164,59 @@ describe("M10 — the outcome-unknown/abandoned/retention-gap hints name the exa
     expect(payload.error.code).toBe("request-abandoned");
     expect(payload.error.hint).toContain("cid-abandon");
     expect(payload.error.hint).not.toContain("Re-running is always safe");
+  });
+});
+
+describe("K2, P2.5 iteration 7 — the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back", () => {
+  test("★ a live retention-gap refusal carries the hint on both error.hint and the human line ★", async () => {
+    // The connection never drops here — the refusal rides straight back as `result.refusal`,
+    // never through `LocalWaitExpired`/`queryReceipt`. Mirrors probe-h7b.sh's live E2.
+    h.reply = { status: "error", requestId: "r", errorMessage: "evicted", refusal: { reason: "retention-gap" } };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-evicted"));
+    spy.mockRestore();
+    expect(code).toBe(6);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
+    expect(payload.error.code).toBe("retention-gap");
+    expect(payload.error.hint).toContain("evicted");
+    expect(payload.error.hint).toContain("--change-id");
+  });
+
+  test("a live request-abandoned refusal's hint names THIS attempt's own --change-id", async () => {
+    h.reply = { status: "error", requestId: "r", errorMessage: "refused", refusal: { reason: "abandoned" } };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-live-abandon"));
+    spy.mockRestore();
+    expect(code).toBe(6);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
+    expect(payload.error.code).toBe("request-abandoned");
+    expect(payload.error.hint).toContain("cid-live-abandon");
+  });
+
+  test("a live receipt-fact-torn refusal carries its own hint (never a bare code with no cure)", async () => {
+    h.reply = { status: "error", requestId: "r", errorMessage: "torn", refusal: { reason: "receipt-fact-torn" } };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    spy.mockRestore();
+    expect(code).toBe(6);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
+    expect(payload.error.code).toBe("receipt-fact-torn");
+    expect(payload.error.hint).toContain("fresh request");
+  });
+
+  test("MUTATION: a verb-error refusal carries no hint field — the shared helper never invents one", async () => {
+    h.reply = { status: "error", requestId: "r", errorMessage: "boom" };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    spy.mockRestore();
+    expect(code).toBe(4);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint?: string } };
+    expect(payload.error.code).toBe("verb-error");
+    expect(Object.prototype.hasOwnProperty.call(payload.error, "hint")).toBe(false);
   });
 });
 

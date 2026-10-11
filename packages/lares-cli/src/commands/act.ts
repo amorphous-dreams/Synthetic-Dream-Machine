@@ -46,7 +46,7 @@ import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, new
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
-import { verbFailure, refusalCode } from "../verb-call.js";
+import { verbFailure, refusalCode, refusalHint } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -461,8 +461,11 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         result = readBack; // a receipt landed meanwhile — fall through to the ordinary result handling below
       } else if (receipt?.state === "abandoned") {
         // M3′: its own code, never `outcome-unknown` — this vessel has already settled the
-        // question "did it run"; the answer is no, and it never will under this id.
-        const hint = `this vessel already refused this request before commit — it never ran. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change.`;
+        // question "did it run"; the answer is no, and it never will under this id. The hint text
+        // lives in `refusalHint` (K2, P2.5 iteration 7) — the SAME helper the synchronous refusal
+        // branch below calls for the identical code, so a caller reads one cure regardless of
+        // which door (read-back here, or a live refusal) answered it.
+        const hint = refusalHint("request-abandoned", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-abandoned", message: msg, hint },
           human: () => { console.error(`lares act: request abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
@@ -471,8 +474,9 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         return exitFor("request-abandoned");
       } else if (receipt?.state === "evicted") {
         // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
-        // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer exists.
-        const hint = "this change's record was evicted; mint a fresh `--change-id` to run it as a new change.";
+        // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer
+        // exists. Same shared helper as above.
+        const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
           human: () => { console.error(`lares act: retention gap. Check request ${requestId}.`); console.error(`  ${hint}`); },
@@ -518,9 +522,13 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       // class (exit 5) so an agent can tell "I lack authority" from a plain
       // verb failure. Everything else stays a verb-error (exit 4).
       : /^cap-denied/.test(msg) ? "cap-denied" : /conflict/i.test(msg) ? "conflict" : "verb-error";
+    // K2, P2.5 iteration 7: this LIVE refusal carries the SAME cure the read-back branches above
+    // carry for the identical code (`refusalHint`, shared) — a caller must never read a hint on the
+    // lost-connection door and silence on this one for the identical refusal reason.
+    const hint = refusalHint(code, changeId);
     emit(args, {
-      ok: false, requestId: result.requestId, error: { code, message: msg },
-      human: () => console.error(`${verb} failed: ${msg}`),
+      ok: false, requestId: result.requestId, error: { code, message: msg, ...(hint !== undefined ? { hint } : {}) },
+      human: () => { console.error(`${verb} failed: ${msg}`); if (hint !== undefined) console.error(`  ${hint}`); },
       data: { changeId },
     });
     return exitFor(code);
