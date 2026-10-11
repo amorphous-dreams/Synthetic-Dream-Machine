@@ -7,7 +7,7 @@
  * loads from, so the key the founder admits is the key the joiner's daemon boots on.
  */
 
-import { execFileSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { join } from "node:path";
 import { seedTestCustody } from "./test-door.js";
 
