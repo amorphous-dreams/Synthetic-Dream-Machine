@@ -115,7 +115,7 @@ describe("the custody root — a branded 32-byte carrier", { timeout: 30_000 }, 
   });
 
   test("the carrier names itself by its home and file: the AAD binds where the bytes rest", () => {
-    expect(custodyRootCarrier("/scratch/identity")).toEqual({ name: "identity/custody-root.bin", path: join("/scratch/identity", "custody-root.bin") });
+    expect(custodyRootCarrier("/scratch/identity")).toEqual({ name: "identity/custody-root.bin", path: join("/scratch/identity", "custody-root.bin"), keyClass: "device-minted" });
   });
 
   test("the table's custody-root row spells the carrier through the writer's own path function, hot", () => {

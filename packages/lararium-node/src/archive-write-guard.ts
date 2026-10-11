@@ -42,8 +42,24 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { readSealCarrier } from "@lararium/mesh";
+import { readSealCarrier, readVkCarrier } from "@lararium/mesh";
 import { probeArchiveBytes, ARCHIVE_PASSPHRASE_ENV, type SealPolicy } from "./archive-seal.js";
+
+/**
+ * A write from the FLOOR over a VK-sealed carrier. The floor holds no VK (it signs and unlocks before any VK
+ * opens), so nothing it can present opens these bytes, and the passphrase policy it carries is not their key.
+ * `reading` names the fact met (`sealed` · `torn` · `unopenable`); nothing was written.
+ */
+export class FloorWriteRefused extends Error {
+  override readonly name = "FloorWriteRefused";
+  constructor(readonly reading: "sealed" | "torn" | "unopenable", readonly path: string) {
+    super(
+      `archive-seal: refusing to write over the VK-sealed carrier at ${path} — the floor holds no VK and cannot ` +
+      `open it (${reading}), so this write would replace sealed state with bytes the vessel's custody never sealed; ` +
+      `only the sealed writer, under a VK the slot tree commits to, replaces it`,
+    );
+  }
+}
 
 /**
  * Refuse a write over `path` unless the resolved policy OPENS the bytes standing there. A path with nothing
@@ -58,6 +74,11 @@ export function refuseWriteOverUnopenableSeal(path: string, policy: SealPolicy):
   if (!existsSync(path)) return;
   let stored: Uint8Array;
   try { stored = readFileSync(path); } catch { return; }
+
+  // THE FLOOR CANNOT OPEN A VK SEAL. A VK-sealed carrier reads `bare` to the passphrase reader (no archive-envelope
+  // frames in it), so without this test the floor's cleartext write would land over it unchallenged.
+  const vkReading = readVkCarrier(stored);
+  if (vkReading === "sealed" || vkReading === "torn" || vkReading === "unopenable") throw new FloorWriteRefused(vkReading, path);
 
   const reading = readSealCarrier(stored);
   if (reading === "bare") return;          // no seal frames in these bytes — a cleartext carrier answers to any policy

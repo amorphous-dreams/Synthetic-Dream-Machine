@@ -157,7 +157,7 @@ export interface CarrierStatus {
 
 export interface ArchiveSealStatus {
   readonly carriers: Record<CarrierName, CarrierStatus>;
-  /** EVERY KEY NAMES ITS CLASS — the identity dir's census (`key-class`): `device-minted` · `seed` · `cloud-synced`. */
+  /** EVERY KEY NAMES ITS CLASS — the identity dir's census (`key-class`): `device-minted` · `seed` · `cloud-synced` · `relation`. */
   readonly keys: readonly KeyCensusEntry[];
   /** True when a probe was supplied and the sealed carriers DISAGREE on it — a split-KEK signal. */
   readonly split: boolean;

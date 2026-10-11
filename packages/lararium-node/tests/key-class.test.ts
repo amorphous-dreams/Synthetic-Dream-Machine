@@ -10,7 +10,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { KEY_CLASSES, isKeyClass, vesselKeyCensus, type KeyClass } from "../src/key-class.js";
-import { vaultCarrierFiles } from "../src/vault-carriers.js";
+import { carrierTable, vaultCarrierFiles } from "../src/vault-carriers.js";
 
 describe("the key-class vocabulary is closed", () => {
   test("four classes, and an unknown spelling refuses at the guard", () => {
@@ -173,5 +173,42 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
 
   test("CONTROL: an absent dir names no governed carrier and faults nothing", () => {
     expect([...vaultCarrierFiles(join(tmpdir(), "no-such-dir-" + Date.now()))]).toEqual([]);
+  });
+});
+
+describe("the relation class — a secret only the other party re-issues", () => {
+  const RELATION_ROWS: Record<string, string> = {
+    ".nexus-convergence-secrets.json": "keyring",
+    ".persona-enroll-pending.json":    "enroll-pending",
+    ".persona-grant-pending.json":     "grant-pending",
+    ".persona-admissions.json":        "admissions",
+  };
+
+  test("the four relation rows read `relation`, hot, and ride no passphrase lifecycle; the census prints the class", () => {
+    const dir = mkdtempSync(join(tmpdir(), "lar-relation-"));
+    try {
+      for (const f of Object.keys(RELATION_ROWS)) writeFileSync(join(dir, f), "{}");
+      const keys = vesselKeyCensus(dir);
+      expect(keys.map((k) => k.name).sort()).toEqual(Object.values(RELATION_ROWS).sort());
+      for (const k of keys) {
+        expect(k.class, k.name).toBe("relation");
+        expect(k.custody, k.name).toBe("hot");
+        expect(k.atRest, k.name).toBe("cleartext");   // the VK custody seals it; the passphrase lifecycle never governs it
+        expect(k.carrier, k.name).toBeNull();
+      }
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("CONTROL: a non-relation hot row (the circles file) names no key at all", () => {
+    const dir = mkdtempSync(join(tmpdir(), "lar-relation-"));
+    try {
+      writeFileSync(join(dir, ".circles-follow.json"), "{}");
+      expect(vesselKeyCensus(dir)).toEqual([]);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("every relation row in the table is exactly the four, and each VK-sealed carrier carries its row's class", () => {
+    const rows = carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort();
+    expect(rows).toEqual(["admissions", "enroll-pending", "grant-pending", "keyring"]);
   });
 });

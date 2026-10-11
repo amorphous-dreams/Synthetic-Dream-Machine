@@ -169,13 +169,13 @@ function buildTable(): readonly CarrierRow[] {
          writer: "identity-anchors", lifecycle: () => "archive" }),
     id({ row: "veil-archive", match: exact(veilArchivePath()), custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors", name: () => "veil", lifecycle: () => "veil" }),
-    id({ row: "keyring", match: file(".nexus-convergence-secrets.json"), custody: "hot", keyClass: null,
+    id({ row: "keyring", match: file(".nexus-convergence-secrets.json"), custody: "hot", keyClass: "relation",
          writer: "nexus-convergence-secret-store" }),
-    id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: null,
+    id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "node-persona-admit-store" }),
-    id({ row: "grant-pending", match: file(".persona-grant-pending.json"), custody: "hot", keyClass: null,
+    id({ row: "grant-pending", match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",
          writer: "node-persona-admit-store" }),
-    id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: null,
+    id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
          writer: "node-persona-admit-store" }),
     id({ row: "anchors", match: /^anchors-h\d+\.json$/, custody: "hot", keyClass: null,
          writer: "identity-anchors" }),
@@ -289,11 +289,14 @@ export function identityCarrierCensus(identityDir: string): CarrierEntry[] {
 
 // ── the VK-sealed carriers, derived from the rows ────────────────────────────────────────────────
 
-/** Every hot and cold carrier standing in `homes`, as the sealed writer names it: `<home>/<file>`. */
+/**
+ * Every hot and cold carrier standing in `homes`, as the sealed writer names it: `<home>/<file>`. Each carries its
+ * row's key class, so a refusal over a `relation` carrier says no rotation regenerates it.
+ */
 export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
   return carrierCensus(homes)
     .filter((e) => e.custody === "hot" || e.custody === "cold")
-    .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path }));
+    .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }));
 }
 
 /**

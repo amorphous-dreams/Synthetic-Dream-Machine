@@ -8,7 +8,7 @@
  * by a sweep that reports success, and a key the census invents gets written over by an act nobody owns.
  *
  * THREE AXES, AND NONE ANSWERS FOR ANOTHER.
- *   `class`   — WHAT KIND OF SECRET the file holds (`device-minted` · `seed` · `cloud-synced`).
+ *   `class`   — WHAT KIND OF SECRET the file holds (`device-minted` · `seed` · `cloud-synced` · `relation`).
  *   `custody` — WHERE THE VK HOLDS IT (`floor` · `floor-plain` · `hot` · `cold`), the table's class.
  *   `atRest`  — whether the passphrase seal lifecycle governs it, with `carrier` naming which carrier.
  * One class spans several custodies: three files read `class: "seed"` and all three rest `cold`, yet only
@@ -17,9 +17,9 @@
  */
 
 // The vocabulary lives once, in mesh; the node re-exports it beside the census that reads the identity dir.
-import { KEY_CLASSES, isKeyClass, type KeyClass } from "@lararium/mesh";
+import { KEY_CLASSES, isKeyClass, isRelationClass, type KeyClass } from "@lararium/mesh";
 import { identityCarrierCensus, type CarrierName, type CustodyClass } from "./vault-carriers.js";
-export { KEY_CLASSES, isKeyClass, type KeyClass };
+export { KEY_CLASSES, isKeyClass, isRelationClass, type KeyClass };
 
 /**
  * Whether the passphrase seal lifecycle governs a key — orthogonal to `class` and to `custody`.

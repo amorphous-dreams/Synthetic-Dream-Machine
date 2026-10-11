@@ -446,7 +446,8 @@ export type {
 // makeNodeCaptureEngine.
 
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
-export { KEY_CLASSES, isKeyClass, vesselKeyCensus } from "./key-class.js";
+export { KEY_CLASSES, isKeyClass, isRelationClass, vesselKeyCensus } from "./key-class.js";
+export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_LOCK_SUFFIX, type FsCustodyIoOptions } from "./custody-io.js";
 export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
 // The ONE carrier table: every carrier at rest by home, custody class and writer. The key census, the seal
 // lifecycle and the custody shape reader all derive from it — see `vault-carriers`.

@@ -75,7 +75,7 @@ export function custodyRootPath(identityDir: string = larIdentityDir()): string 
 
 /** The custody root's sealed carrier: named by home and file, resting in `identityDir`. */
 export function custodyRootCarrier(identityDir: string = larIdentityDir()): SealedCarrier {
-  return { name: `identity/${CARRIER_FILE}`, path: custodyRootPath(identityDir) };
+  return { name: `identity/${CARRIER_FILE}`, path: custodyRootPath(identityDir), keyClass: "device-minted" };
 }
 
 function issue(bytes: Uint8Array): CustodyRoot {
