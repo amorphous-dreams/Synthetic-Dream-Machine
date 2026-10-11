@@ -27,7 +27,8 @@
 # PARALLEL SAFETY. Every verb honors the pair
 #   BROWSER_CI_PROJECT  compose project name (default lares-browser-ci); containers, network and volumes derive from it
 #   BROWSER_CI_PORT     loopback port the node publishes (default 5401; the browser swarm's range is 5400-5499)
-# Two surfaces with distinct pairs share no container, network or volume. Give each builder its own pair.
+#   BROWSER_CI_IMAGE    the node image tag (default lares-browser-ci:local); builders in separate worktrees each name their own
+# Two surfaces with distinct values share no container, network, volume or image tag. Give each builder its own.
 # BROWSER_CI_WIKI overrides the wiki slug that `recipe` and `get` address (default: the node's one live wiki).
 #
 # The host script alone touches Docker. No container receives the Docker socket; the qa runner cannot issue an

@@ -33,7 +33,7 @@ x-roots: &roots
   LAR_PORT: "4321"
 
 x-node: &node
-  image: lares-browser-ci:local
+  image: ${BROWSER_CI_IMAGE:-lares-browser-ci:local}
   build:
     context: .
     dockerfile: Dockerfile
