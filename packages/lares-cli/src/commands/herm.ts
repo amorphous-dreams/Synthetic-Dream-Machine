@@ -72,16 +72,19 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
     };
     // Self-attested readiness (no web2 /health probe): the node writes `vessel-ready` on a live stand, `fatal:` on a
     // boot fault. Adaptive window — extend while the log grows, fail only on a genuine stall or the ceiling.
+    // This door's own liveness patience (adaptive idle window + outer ceiling) — never a
+    // safety verdict — reads a monotonic clock, so an adversarial or operator wall-clock
+    // set-back/set-forward changes neither how long this wait actually ran nor when it gives up.
     const IDLE_MS = 30_000;
-    const hardCap = Date.now() + 180_000;
-    let idleDeadline = Date.now() + IDLE_MS;
+    const hardCap = performance.now() + 180_000;
+    let idleDeadline = performance.now() + IDLE_MS;
     let seenLen = 0;
     let phase: "starting" | "ready" | "fault" = "starting";
-    while (Date.now() < idleDeadline && Date.now() < hardCap) {
+    while (performance.now() < idleDeadline && performance.now() < hardCap) {
       const tail = readAttestation();
       if (/fatal:/.test(tail)) { phase = "fault"; break; }
       if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-      if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = Date.now() + IDLE_MS; }
+      if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; }
       await sleep(200);
     }
     live = phase === "ready";

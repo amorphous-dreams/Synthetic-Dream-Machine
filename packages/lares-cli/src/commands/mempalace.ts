@@ -233,8 +233,10 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
 
   for (const p of initial) { drained.add(p.pid); try { process.kill(p.pid, "SIGTERM"); } catch { /* gone */ } }
 
-  const graceDeadline = Date.now() + graceMs;
-  while (Date.now() < graceDeadline) {
+  // This door's own liveness patience before escalating — never a safety verdict — reads a
+  // monotonic clock, so an adversarial or operator wall-clock jump changes neither grace window.
+  const graceDeadline = performance.now() + graceMs;
+  while (performance.now() < graceDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced: [], remaining: [] };
     await sleep(pollMs);
   }
@@ -242,8 +244,8 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   const stubborn = holdersNow();
   const forced: number[] = [];
   for (const p of stubborn) { forced.push(p.pid); try { process.kill(p.pid, "SIGKILL"); } catch { /* gone */ } }
-  const killDeadline = Date.now() + killMs;
-  while (Date.now() < killDeadline) {
+  const killDeadline = performance.now() + killMs;
+  while (performance.now() < killDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced, remaining: [] };
     await sleep(pollMs);
   }

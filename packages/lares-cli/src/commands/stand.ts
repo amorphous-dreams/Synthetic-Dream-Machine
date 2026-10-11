@@ -259,16 +259,19 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // the log grows, and fail only on a genuine STALL (no output for the idle span) or the
       // absolute ceiling. The adaptive window holds a slow-but-live boot instead of false-timing
       // it at a fixed 15s deadline. (The real CPU cost is paced/deferred separately; this stops the watcher lying.)
+      // This door's own liveness patience — never a safety verdict — reads a monotonic clock,
+      // so an adversarial or operator wall-clock set-back/set-forward changes neither how long
+      // this wait actually ran nor when it gives up.
       const IDLE_MS = 30_000; // headroom for a silent heavy stretch (Automerge corpus materialize)
-      const hardCap = Date.now() + 180_000;
-      let idleDeadline = Date.now() + IDLE_MS;
+      const hardCap = performance.now() + 180_000;
+      let idleDeadline = performance.now() + IDLE_MS;
       let seenLen = 0;
       let phase: "starting" | "ready" | "fault" = "starting";
-      while (Date.now() < idleDeadline && Date.now() < hardCap) {
+      while (performance.now() < idleDeadline && performance.now() < hardCap) {
         const tail = readAttestation();
         if (/fatal:/.test(tail)) { phase = "fault"; break; }
         if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-        if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = Date.now() + IDLE_MS; } // progress → extend
+        if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; } // progress → extend
         await sleep(200);
       }
       // `vessel-ready` is attested BEFORE the daemon-keyhive gates settle, so a gate
@@ -294,8 +297,8 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // about the vessel stands correctly.
       let udsRefusal: string | null = null;
       if (phase === "ready") {
-        const sockDeadline = Date.now() + 120_000;
-        while (Date.now() < sockDeadline && !(await udsAlive())) {
+        const sockDeadline = performance.now() + 120_000;
+        while (performance.now() < sockDeadline && !(await udsAlive())) {
           const tail = readAttestation();
           if (/fatal:/.test(tail)) { phase = "fault"; break; }
           const refused = /uds error: (.+)/.exec(tail);
