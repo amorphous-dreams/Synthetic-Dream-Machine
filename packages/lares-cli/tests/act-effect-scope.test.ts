@@ -64,6 +64,8 @@ vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
   vesselDid: async () => "did:key:ztest-effect-scope",
   larRoot: () => h.root,
+  larBagsDir: () => join(h.root, "bags"),
+  larWikisDir: () => join(h.root, "wikis"),
 }));
 
 import { cmdAct } from "../src/commands/act.js";

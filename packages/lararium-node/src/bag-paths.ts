@@ -151,13 +151,16 @@ export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
  * when the interior carries no w.w.w root — the gesture reports those as
  * skipped, never guesses.
  *
+ * The mirror directory is given itself (`LAR_BAGS` / `LAR_WIKIS` may sit outside the vessel
+ * root), so `<root>/bags` is only the default a caller derives, never a law this function holds.
+ *
  * Any registered TW5 filetype extension strips the same way `.mem` does: the
  * name is the interior MINUS its trailing filetype extension, so a `.tid`,
  * `.json`, `.md`, or content-type carrier derives its lar: URI exactly as a
  * `.mem` carrier does (filetype-agnostic mirror, one loci law).
  */
-function mirrorRootFileToUri(instanceRoot: string, filePath: string, rootDirName: string): string | null {
-  const mirrorRoot = resolvePath(instanceRoot, rootDirName);
+export function mirrorDirFileToUri(mirrorDir: string, filePath: string): string | null {
+  const mirrorRoot = resolvePath(mirrorDir);
   const abs = resolvePath(filePath);
   if (!abs.startsWith(mirrorRoot + sep)) return null;
   const rel = abs.slice(mirrorRoot.length + 1).split(sep);
@@ -178,7 +181,7 @@ function mirrorRootFileToUri(instanceRoot: string, filePath: string, rootDirName
  * The first segment under bags/ names the HOLDING BAG (residency plane).
  */
 export function bagsFileToUri(instanceRoot: string, filePath: string): string | null {
-  return mirrorRootFileToUri(instanceRoot, filePath, "bags");
+  return mirrorDirFileToUri(joinPath(instanceRoot, "bags"), filePath);
 }
 
 /**
@@ -193,5 +196,5 @@ export function bagsFileToUri(instanceRoot: string, filePath: string): string | 
  * the interior whole.
  */
 export function wikisFileToUri(instanceRoot: string, filePath: string): string | null {
-  return mirrorRootFileToUri(instanceRoot, filePath, "wikis");
+  return mirrorDirFileToUri(joinPath(instanceRoot, "wikis"), filePath);
 }

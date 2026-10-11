@@ -34,8 +34,8 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
-import { larRoot, vesselDid } from "../env.js";
-import { openSyncedTree, scanFiles, candidatesOf, deletionsOf, submitIngest, recordLandedPacks, applyConfirmedRenames, type ArmedDeletion } from "../ingest-core.js";
+import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, submitIngest, recordLandedPacks, applyConfirmedRenames, type ArmedDeletion } from "../ingest-core.js";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
@@ -147,7 +147,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
-    const { rows, skipped } = scanFiles(root, [...files], toBag, tree);
+    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() }));
     const candidates = candidatesOf(rows);
 
     // A pending delete whose path scanned present again has RETURNED — drop it

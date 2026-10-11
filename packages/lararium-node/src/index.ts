@@ -186,7 +186,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey } from "./synced-tree.js";
-export { bagsFileToUri, wikisFileToUri } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri } from "./bag-paths.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.

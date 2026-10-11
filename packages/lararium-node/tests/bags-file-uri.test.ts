@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { bagsFileToUri } from "../src/bag-paths.js";
+import { bagsFileToUri, mirrorDirFileToUri } from "../src/bag-paths.js";
 
 const ROOT = "/srv/vessel";
 
@@ -36,5 +36,15 @@ describe("bagsFileToUri — loci reverse-derivation (full-path-inside-bag)", () 
     expect(bagsFileToUri(ROOT, "/srv/vessel/bags/sdm/ha.ka.ba/sdm/api/bare")).toBeNull();
     expect(bagsFileToUri(ROOT, "/elsewhere/bags/x/ha.ka.ba/bags/x/v1/y.mem")).toBeNull();
     expect(bagsFileToUri(ROOT, "/srv/vessel/genesis/seed.json")).toBeNull();
+  });
+});
+
+describe("mirrorDirFileToUri — the mirror directory given itself", () => {
+  test("a bags dir outside the vessel root derives the same URI", () => {
+    expect(mirrorDirFileToUri("/workspace/bags", "/workspace/bags/x/ha.ka.ba/x/y.mem")).toBe("lar:///ha.ka.ba/x/y");
+  });
+  test("a file outside the given dir is null; bagsFileToUri still reads <root>/bags", () => {
+    expect(mirrorDirFileToUri("/workspace/bags", "/state/bags/x/ha.ka.ba/x/y.mem")).toBeNull();
+    expect(bagsFileToUri("/srv/v", "/srv/v/bags/x/ha.ka.ba/x/y.mem")).toBe("lar:///ha.ka.ba/x/y");
   });
 });

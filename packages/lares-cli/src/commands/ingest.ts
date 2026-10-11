@@ -21,8 +21,8 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
-import { larRoot, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, candidatesOf, submitIngest, recordLandedPacks, applyConfirmedRenames } from "../ingest-core.js";
+import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, submitIngest, recordLandedPacks, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 
@@ -45,12 +45,23 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   const tree = openSyncedTree();
 
   // scan — observations only, never a work queue
-  const scan = scanSource(root, source, toBag, tree);
+  const dirs = { bags: larBagsDir(), wikis: larWikisDir() };
+  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });
     return exitFor("usage");
   }
   const { rows, skipped } = scan;
+  // A scan that skipped every carrier is no success: say which mirror directories it derived against.
+  if (rows.length === 0 && skipped.length > 0) {
+    const message = `scanned 0 carriers; ${skipped.length} skipped (no loci derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
+    emit(args, {
+      ok: false,
+      error: { code: "usage", message, hint: "the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as <holding>/<w.w.w>/…/<name>.<ext>" },
+      human: () => { console.error(`lares ingest: ${message}`); },
+    });
+    return exitFor("usage");
+  }
   const candidates = candidatesOf(rows);
   // R2 — a full scan discovers a moved carrier's gone source; it rides the wave as a
   // rename-deletion so the island re-links records (change-id preserved) and the

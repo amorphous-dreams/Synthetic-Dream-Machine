@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, bagsFileToUri, wikisFileToUri, larProjectionDir } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
 import type { SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js";
@@ -134,16 +134,26 @@ export function listCarriers(source: string): string[] | null {
  *  names which loci reverse-derivation a row carries. */
 export type FileToUriFn = (root: string, file: string) => string | null;
 
+/** The two mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
+ *  which may sit outside `LAR_ROOT`. */
+export interface MirrorDirs { readonly bags: string; readonly wikis: string }
+
 /**
  * Pick the loci reverse-derivation by which mirror plane the source sits in.
- * Under `<root>/wikis/` → the working write-layer ingest-back derivation
- * (the editing plane); else the bags/ canon derivation. Designation of the
+ * Under the wikis dir → the working write-layer ingest-back derivation
+ * (the editing plane); else the bags dir canon derivation. Designation of the
  * target bag stays the caller's (`--to`); the plane only drives the URI.
+ * `dirs` defaults to `<root>/bags` and `<root>/wikis`; the returned function derives against `dirs`
+ * and ignores the root its caller hands it.
  */
-export function fileToUriForSource(root: string, source: string): FileToUriFn {
-  const wikisRoot = join(root, "wikis");
+export function fileToUriForSource(
+  root: string, source: string,
+  dirs: MirrorDirs = { bags: join(root, "bags"), wikis: join(root, "wikis") },
+): FileToUriFn {
+  const wikisRoot = resolve(dirs.wikis);
   const abs = resolve(source);
-  return abs === wikisRoot || abs.startsWith(wikisRoot + sep) ? wikisFileToUri : bagsFileToUri;
+  const dir = abs === wikisRoot || abs.startsWith(wikisRoot + sep) ? dirs.wikis : dirs.bags;
+  return (_root, file) => mirrorDirFileToUri(dir, file);
 }
 
 /**
