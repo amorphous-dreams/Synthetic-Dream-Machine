@@ -38,12 +38,13 @@ export interface VesselIslandPoolOptions {
   mainRepo?: Repo;
   /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
   storageRoot?: string;
-  /** The engine's plugin-tiddler CIDs — every wiki island pulls them by CID from the local CAS.
-   *  PRE-R3 shape; superseded per-mount when `resolvePluginCids` is also supplied. */
-  pluginCids?: readonly string[];
-  /** R3 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
-   *  verified offering selection). See `VesselIslandPoolCoreOptions.resolvePluginCids`. */
-  resolvePluginCids?: (recipe: WikiRecipe) => Promise<
+  /** R3/M6 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
+   *  verified offering selection). REQUIRED — the pre-R3 flat `pluginCids` floor (every island
+   *  getting the SAME vessel-wide list) has retired; `open-node-vessel.ts` always supplies
+   *  `resolveNodeIslandPluginCids` (`node-plugin-resolution.ts`) at both its call sites, and
+   *  `VesselIslandPoolCore`'s own constructor refuses to build a pool with no resolver at all
+   *  (`VesselIslandPoolCoreOptions.resolvePluginCids`, M6). See that module's docblock. */
+  resolvePluginCids: (recipe: WikiRecipe) => Promise<
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
@@ -73,8 +74,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       },
       mainRepo: options.mainRepo ?? null,
       diskMirrorGrant: options.diskMirrorGrant ?? [],
-      ...(options.pluginCids?.length ? { pluginCids: options.pluginCids } : {}),
-      ...(options.resolvePluginCids ? { resolvePluginCids: options.resolvePluginCids } : {}),
+      resolvePluginCids: options.resolvePluginCids,
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),
       ...(options.onEa ? { onEa: options.onEa } : {}),
       ...(options.mountSilenceMs       !== undefined ? { mountSilenceMs:       options.mountSilenceMs }       : {}),

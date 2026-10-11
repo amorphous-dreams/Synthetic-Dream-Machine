@@ -160,27 +160,32 @@ export interface IslandMsg_Manifest {
   /**
    * CIDs (sha256) of the engine's plugin-tiddler blobs (application/json). The worker
    * resolves these — and the core (coreHash) — via the host's content-addressed
-   * `resolveByCid` (local CAS), NOT by reading a CRDT-synced blob doc. Absent → the
-   * worker falls back to reading blobs off the oracle doc (node / pre-CAS path).
+   * `resolveByCid` (local CAS), NOT by reading a CRDT-synced blob doc. NO FALLBACK STANDS
+   * on either platform (M6/R4 retired it): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
+   * and resolves exactly that list by CID — nothing else — so an absent or empty list boots the
+   * engine with no plugin tiddlers at all, never a silent "read every blob off the oracle doc"
+   * scan. `resolvePluginCids` is REQUIRED on both `VesselIslandPoolCore` (node and browser alike,
+   * M6) and the daemon-VM boot path, so this field is always resolver-derived before a worker ever
+   * sees it — there is no caller-side path left that could hand it absent for the pool to catch.
    *
    * THE RECIPE → SELECTOR → MANIFEST LINE (RECIPE: plugins load by recipe). The vessel never reads
    * `recipe.pluginOfferings` straight into this field: a per-island resolver (node:
-   * `resolveNodeIslandPluginCids`) resolves that ordered CID list through `selectPluginBlobs`
-   * (`plugin-offering-selector.ts`) — which verifies each named offering whole (signature,
-   * `pluginsCid` fold, provenance), refuses a duplicate plugin id across offerings, and refuses
-   * outright any blob id inside the fixed boot set (`boot-set-collision`, M3) — then checks every
-   * selected CID's bytes against the local CAS (`cas.ts#verifyCasBytes`; missing or corrupt bytes
-   * refuse by name, never a silent empty selection). ONLY THEN does the resolver fold the result
-   * together with the FIXED boot-set floor's own plugin-tiddler CIDs (`cas.ts#bootSetPluginCids`
-   * — grammar + boot shadows, read off the island doc's own blobs, independent of any recipe) into
-   * the one list this field carries. `pluginCids` on the wire is therefore the UNION of that fixed
-   * floor and a VERIFIED, byte-checked selection, in the recipe's order for its own portion — never
-   * a half-trusted CID list read straight off a record, and never the recipe's selection ALONE: the
-   * worker (`sovereign-kernel.ts`) treats an absent `pluginCids` as "read every blob off the oracle
-   * doc instead" (the pre-CAS fallback), not as "the boot set only" — so once a vessel resolves this
-   * field at all, it MUST carry the floor, or the engine boots with no grammar. An empty or absent
-   * `recipe.pluginOfferings` selects no OPTIONAL plugins; the field still stays present whenever the
-   * floor itself is non-empty (which, past genesis, it always is).
+   * `resolveNodeIslandPluginCids`; browser: `resolveBrowserIslandPluginCids`) resolves that ordered
+   * CID list through `selectPluginBlobs` (`plugin-offering-selector.ts`) — which verifies each
+   * named offering whole (signature, `pluginsCid` fold, provenance), refuses a duplicate plugin id
+   * across offerings, and refuses outright any blob id inside the fixed boot set
+   * (`boot-set-collision`, M3) — then checks every selected CID's bytes against the local CAS
+   * (`cas.ts#verifyCasBytes`; missing or corrupt bytes refuse by name, never a silent empty
+   * selection). ONLY THEN does the resolver fold the result together with the FIXED boot-set
+   * floor's own plugin-tiddler CIDs (`cas.ts#bootSetPluginCids` — grammar + boot shadows, read off
+   * the island doc's own blobs, independent of any recipe) into the one list this field carries.
+   * `pluginCids` on the wire is therefore the UNION of that fixed floor and a VERIFIED,
+   * byte-checked selection, in the recipe's order for its own portion — never a half-trusted CID
+   * list read straight off a record, and never the recipe's selection ALONE: the resolver always
+   * folds the floor in, so once it resolves at all the field carries the floor, or the engine boots
+   * with no grammar. An empty or absent `recipe.pluginOfferings` selects no OPTIONAL plugins; the
+   * field still stays present whenever the floor itself is non-empty (which, past genesis, it
+   * always is).
    */
   pluginCids?: readonly string[];
   /** Slot structure for this wiki — wikiSlug + optional libraryBags. */
