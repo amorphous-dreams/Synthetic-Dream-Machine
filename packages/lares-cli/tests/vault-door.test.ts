@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -148,6 +148,39 @@ describe("vault door — status, unlock, bind, unbind", () => {
     answers.push("p", PW, "n");
     expect(await run("unlock")).toBe(0);               // the staying route still opens
   }, 60_000);
+
+  it("★ `unbind --rotate <id>` rotates, exactly as `unbind <id> --rotate` does; `--rotate=x` refuses ★", async () => {
+    answers.push("p", PW, "n", PW2);
+    await run("bind", "--passphrase");
+    const two = await slots();
+    out.length = 0;
+    answers.push("p", PW, "n", PW);
+    expect(await run("unbind", "--rotate", two[1]!.id)).toBe(0);
+    expect(out.join("")).toMatch(/"rotated":true/);
+    expect(await slots()).toHaveLength(1);
+    answers.push("p", PW2, "n");
+    expect(await run("unlock")).toBe(1);               // the removed route opens nothing
+    // `--rotate=<anything>` is no spelling of the flag: the parser refuses it by name.
+    expect(() => parseArgs(["vault", "unbind", "abc", "--rotate=abc"])).toThrow(/--rotate is a flag and takes no value/);
+  }, 60_000);
+
+  it("★ status counts only hot and cold rows as owed, and says the floor rows never count ★", async () => {
+    // a bare floor row and a bare hot row stand beside the sealed custody root
+    const homes = vesselCustodyHomes();
+    writeFileSync(join(homes.identity, ".vessel-key-x.json"), "{}");
+    writeFileSync(join(homes.identity, "anchor-roster.json"), "{}");
+    const st = await custodyStatus({ io: new FsCustodyIo(homes), homes });
+    const bare = st.rows.filter((r) => r.reading === "bare");
+    expect(bare.some((r) => r.custody === "floor")).toBe(true);
+    const owed = bare.filter((r) => r.custody === "hot" || r.custody === "cold").length;
+    expect(owed).toBe(1);
+    const plain = cmdVault(parseArgs(["vault", "status", "--no-json"]));
+    expect(await plain).toBe(0);
+    const text = out.join("\n");
+    expect(text).toMatch(new RegExp(`\\b${owed} hot/cold carrier\\(s\\) read bare`));
+    expect(text).toMatch(/custody-root\s+device-minted\s+sealed/);   // one reading of the file, in both tables
+    expect(text).toMatch(/Floor rows \(floor, floor-plain\) never move under it and are not counted/);
+  });
 
   it("★ a mistyped staying route refuses BEFORE any byte moves ★", async () => {
     answers.push("p", PW, "n", PW2);

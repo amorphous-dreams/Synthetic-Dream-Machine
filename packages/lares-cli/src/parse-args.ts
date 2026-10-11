@@ -18,10 +18,33 @@
  *   --no-key=…    → refused: a negation takes no value (`ArgsError`)
  *   --            → end-of-options marker; remaining tokens land in positional[]
  *
- * A flag nobody reads is refused BY NAME before the handler runs (bin/lares.ts, each command's `accepts`
- * row). `opt()` / `flag()` / `unread()` track which names a reader touched, for a handler that wants the
- * same check from the inside.
+ * A name in `BOOLEAN_FLAGS` takes NO value, in every position: `--rotate <id>` leaves `<id>` positional,
+ * `--rotate=x` refuses by name. A flag nobody reads is refused BY NAME before the handler runs (bin/lares.ts,
+ * each command's `accepts` row).
  */
+
+/**
+ * THE BOOLEAN FLAGS: every name some handler reads through `args.flags[...]` and none reads through
+ * `args.options[...]`. A name outside this set parses greedily (`--k v` binds `v`), so a boolean flag left out
+ * would swallow the positional after it. `tests/parse-args.test.ts` walks the handlers' source: a name in this
+ * set that any handler reads as an option reds, and so does a flag-read name missing from the set unless it is
+ * one of `VALUE_OR_FLAG`.
+ */
+export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
+  "all", "all-strata", "apply", "approve", "cosign", "confirm", "cut", "clear", "debug", "detach", "drain",
+  "dry-run", "executable", "force", "foreground", "fresh", "from-persona", "held", "help", "help-mempalace",
+  "hold", "in-wiki", "init", "install", "json", "keep", "keep-hooks", "list", "meme", "observe", "orphans",
+  "pair", "palaces", "paper", "passphrase", "repour", "restart", "rotate", "seat", "skip-build", "spectral",
+  "sweep", "tag-blobs", "tree", "with-web", "writeback", "yes",
+]);
+
+/**
+ * Names that one command reads as a flag and another reads as a valued option (`vault status --check` vs
+ * `meme ... --check <x>`; `--grammar`; `--ephemeral`). The parser cannot tell which command is meant, so these
+ * stay greedy.
+ */
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "ephemeral", "grammar"]);
+
 
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */
 export class ArgsError extends Error {
@@ -37,12 +60,6 @@ export interface ParsedArgs {
   readonly options:    Readonly<Record<string, string>>;
   /** --flag (true) and --no-flag (false). */
   readonly flags:      Readonly<Record<string, boolean>>;
-  /** Read an option, marking its name read. Present on a line `parseArgs` produced. */
-  readonly opt?:       (name: string) => string | undefined;
-  /** Read a flag, marking its name read. Present on a line `parseArgs` produced. */
-  readonly flag?:      (name: string) => boolean | undefined;
-  /** Every option/flag name on the line that no `opt()` / `flag()` read has touched. */
-  readonly unread?:    () => string[];
 }
 
 export function parseArgs(argv: readonly string[]): ParsedArgs {
@@ -68,9 +85,11 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
       if (eq !== -1) {
         const key = body.slice(0, eq);
         if (key === "") throw new ArgsError(`${tok}: a flag needs a name before "="`);
+        if (BOOLEAN_FLAGS.has(key)) throw new ArgsError(`${tok}: --${key} is a flag and takes no value`);
         options[key] = body.slice(eq + 1);
         continue;
       }
+      if (BOOLEAN_FLAGS.has(body)) { flags[body] = true; continue; }
       const next = tokens[0];
       // --key value form: peek; consume next token if it does not look like an option.
       if (next !== undefined && !next.startsWith("--")) {
@@ -84,11 +103,5 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     positional.push(tok);
   }
 
-  const read = new Set<string>();
-  return {
-    command, positional, options, flags,
-    opt:    (name) => { read.add(name); return options[name]; },
-    flag:   (name) => { read.add(name); return flags[name]; },
-    unread: () => [...new Set([...Object.keys(options), ...Object.keys(flags)])].filter((n) => !read.has(n)),
-  };
+  return { command, positional, options, flags };
 }

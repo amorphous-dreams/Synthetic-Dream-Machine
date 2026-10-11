@@ -134,6 +134,22 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     (args.flags["init"] === true || args.flags["install"] === true || args.options["admit"] !== undefined);
   if (doStandup) founding = await foundIfAbsent(args, { root, bootstrap });
 
+  // A REFUSED FOUNDING ENDS THE STAND. `cmdFound` printed the refusal by name; carrying on would wake a daemon over a
+  // root that holds no vessel, and exiting 0 would let a caller (a witness, a script) read a founding that never
+  // happened as one that did.
+  const refusedStep = founding?.find((s) => s.step === "init" && s.action === "failed");
+  if (founding !== undefined && refusedStep !== undefined) {
+    emit(args, {
+      ok: false,
+      error: { code: "FoundingRefused", message: `the founding refused (${refusedStep.detail}); nothing stands. The refusal leads the lines above.` },
+      data: { founding, root, bootstrap: existsSync(bootstrap) ? "present" : "absent" },
+      human: () => {
+        console.error(`lares vessel stand: FoundingRefused: ${refusedStep.detail}; no vessel was founded and no daemon was started.`);
+      },
+    });
+    return 1;
+  }
+
   // THE MEMPALACE RIDES AS A SIDECAR, AND FOUNDING ASSUMES NOTHING OF IT (operator ruling).
   //
   // Standing the library or the sensorium organs from here reaches OUTSIDE the vessel root, so a founding

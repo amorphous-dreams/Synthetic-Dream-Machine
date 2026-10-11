@@ -362,8 +362,10 @@ function printCustody(c: CustodyStatus): void {
   for (const r of standing) {
     console.log(`    ${r.row.padEnd(22)} ${r.home.padEnd(9)} ${r.custody.padEnd(5)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading}`);
   }
-  const bare = standing.filter((r) => r.reading === "bare").length;
-  if (bare > 0) console.log(`  ${bare} carrier(s) read bare: their writers have not yet moved under the VK, and the status says so.`);
+  // OWED = a hot or cold row still bare. The floor rows (`floor`, `floor-plain`) never move under the VK by rule, so
+  // they never count.
+  const bare = standing.filter((r) => (r.custody === "hot" || r.custody === "cold") && r.reading === "bare").length;
+  if (bare > 0) console.log(`  ${bare} hot/cold carrier(s) read bare: their writers have not yet moved under the VK. Floor rows (floor, floor-plain) never move under it and are not counted.`);
   const relation = standing.filter((r) => r.keyClass === "relation");
   console.log(`  relation class ${relation.length} standing${relation.length ? ` (${relation.map((r) => r.row).join(", ")})` : ""}`);
   console.log(`  note           ${RELATION_LINE}`);
@@ -414,9 +416,9 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
 }
 
 async function vaultUnbind(args: ParsedArgs): Promise<number> {
-  const slotId = args.positional[1] ?? args.options["rotate"];
-  if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [--rotate]` (ids print under `lares vault status`; put the id BEFORE --rotate)");
-  const rotate = Boolean(args.flags["rotate"]) || (args.options["rotate"] !== undefined && args.positional[1] !== undefined);
+  const slotId = args.positional[1];
+  if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [--rotate]` (ids print under `lares vault status`; --rotate takes no value and stands before or after the id)");
+  const rotate = args.flags["rotate"] === true;
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
   const creds = await gatherCredentials("lares vault unbind");

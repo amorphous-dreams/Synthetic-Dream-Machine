@@ -17,7 +17,8 @@
  */
 
 // The vocabulary lives once, in mesh; the node re-exports it beside the census that reads the identity dir.
-import { KEY_CLASSES, isKeyClass, isRelationClass, type KeyClass } from "@lararium/mesh";
+import { readFileSync } from "node:fs";
+import { KEY_CLASSES, isKeyClass, isRelationClass, readVkCarrier, type KeyClass } from "@lararium/mesh";
 import { identityCarrierCensus, type CarrierName, type CustodyClass } from "./vault-carriers.js";
 export { KEY_CLASSES, isKeyClass, isRelationClass, type KeyClass };
 
@@ -30,7 +31,11 @@ export { KEY_CLASSES, isKeyClass, isRelationClass, type KeyClass };
  *               the cleartext policy holds bare bytes in a governed carrier, and that CURRENT byte state is
  *               a third fact, reported per-carrier by `archiveSealStatus().carriers[name].state`. The
  *               `carrier` field below is the join key between the two.
- * `cleartext` — NO seal lifecycle reaches this file. It rides the identity dir's file mode and nothing else.
+ * `cleartext` — NO seal lifecycle reaches this file and its bytes carry no VK frame. It rides the identity dir's
+ *               file mode and nothing else.
+ *
+ * A file whose bytes read as a VK-sealed frame (`readVkCarrier`) is `sealed` whatever its lifecycle: the custody
+ * section of `vault status` and this census read one fact from one place, so `custody-root` reads `sealed` in both.
  */
 export type KeyAtRest = "sealed" | "cleartext";
 
@@ -52,6 +57,12 @@ export interface KeyCensusEntry {
   readonly carrier: CarrierName | null;
 }
 
+/** Whether the bytes at `path` read as a VK-sealed frame. An unreadable or absent file reads as no frame. */
+function vkFrameStands(path: string): boolean {
+  try { return readVkCarrier(readFileSync(path)) === "sealed"; }
+  catch { return false; }
+}
+
 /**
  * Census the identity home: every key-bearing file, named and classed, with its custody. A card is PUBLIC
  * and carries no key, so it never lists. An absent or unreadable home names no keys and faults nothing — the
@@ -61,7 +72,7 @@ export function vesselKeyCensus(identityDir: string): KeyCensusEntry[] {
   const out: KeyCensusEntry[] = [];
   for (const e of identityCarrierCensus(identityDir)) {
     if (e.keyClass === null) continue;
-    const atRest: KeyAtRest = e.lifecycle ? "sealed" : "cleartext";
+    const atRest: KeyAtRest = e.lifecycle || vkFrameStands(e.path) ? "sealed" : "cleartext";
     out.push({ name: e.name, class: e.keyClass, file: e.file, custody: e.custody, atRest, carrier: e.lifecycle });
   }
   return out;

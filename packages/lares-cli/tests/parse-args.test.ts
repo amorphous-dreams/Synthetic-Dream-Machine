@@ -7,7 +7,9 @@
  * the CONTROL rows pin that the space form still reads exactly as it did.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { parseArgs, ArgsError } from "../src/parse-args.js";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { parseArgs, ArgsError, BOOLEAN_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
 import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -41,10 +43,51 @@ describe("parseArgs: --key=value", () => {
     expect(a.options).toEqual({ root: "/state" });
     expect(a.flags).toEqual({ force: true, json: false });
   });
-  test("opt()/flag()/unread() track what a reader touched", () => {
-    const a = parseArgs(["x", "--a=1", "--b", "--c"]);
-    a.opt!("a"); a.flag!("b");
-    expect(a.unread!()).toEqual(["c"]);
+});
+
+describe("parseArgs: a boolean flag takes no value, in every position", () => {
+  test("★ `--rotate <id>` keeps `<id>` positional; `<id> --rotate` reads the same ★", () => {
+    for (const argv of [["vault", "unbind", "--rotate", "abc"], ["vault", "unbind", "abc", "--rotate"]]) {
+      const a = parseArgs(argv);
+      expect(a.positional).toEqual(["unbind", "abc"]);
+      expect(a.flags).toEqual({ rotate: true });
+      expect(a.options).toEqual({});
+    }
+  });
+  test("★ every declared boolean flag placed before a positional leaves the positional alone ★", () => {
+    for (const name of BOOLEAN_FLAGS) {
+      const a = parseArgs(["x", `--${name}`, "pos"]);
+      expect(a.positional, `--${name} swallowed the positional`).toEqual(["pos"]);
+      expect(a.flags[name], `--${name}`).toBe(true);
+      expect(a.options[name], `--${name}`).toBeUndefined();
+    }
+  });
+  test("★ every declared boolean flag refuses `=value` by name ★", () => {
+    for (const name of BOOLEAN_FLAGS) expect(() => parseArgs(["x", `--${name}=anything`]), name).toThrow(/takes no value/);
+  });
+  test("CONTROL: a valued option still binds the next token", () => {
+    const a = parseArgs(["x", "--root", "/r", "pos"]);
+    expect(a.options).toEqual({ root: "/r" });
+    expect(a.positional).toEqual(["pos"]);
+  });
+  test("the declaration cannot drift from the handlers: flag reads are declared, option reads are not", () => {
+    const files: string[] = [];
+    const walk = (d: string): void => {
+      for (const n of readdirSync(d)) {
+        const p = join(d, n);
+        if (statSync(p).isDirectory()) walk(p); else if (p.endsWith(".ts")) files.push(p);
+      }
+    };
+    walk(join(import.meta.dirname, "..", "src"));
+    const flagReads = new Set<string>(); const optionReads = new Set<string>();
+    for (const f of files) {
+      const text = readFileSync(f, "utf8");
+      for (const m of text.matchAll(/\bflags\["([a-z0-9-]+)"\]/g)) flagReads.add(m[1]!);
+      for (const m of text.matchAll(/\boptions\["([a-z0-9-]+)"\]/g)) optionReads.add(m[1]!);
+    }
+    expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n)), "read as a flag, never declared").toEqual([]);
+    expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
+    expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
   });
 });
 

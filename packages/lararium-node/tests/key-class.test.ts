@@ -11,6 +11,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { KEY_CLASSES, isKeyClass, vesselKeyCensus, type KeyClass } from "../src/key-class.js";
 import { carrierTable, vaultCarrierFiles } from "../src/vault-carriers.js";
+import { FsCustodyIo } from "../src/custody-io.js";
+import { foundCustody } from "../src/custody-session.js";
 
 describe("the key-class vocabulary is closed", () => {
   test("four classes, and an unknown spelling refuses at the guard", () => {
@@ -210,5 +212,24 @@ describe("the relation class — a secret only the other party re-issues", () =>
   test("every relation row in the table is exactly the four, and each VK-sealed carrier carries its row's class", () => {
     const rows = carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort();
     expect(rows).toEqual(["admissions", "enroll-pending", "grant-pending", "keyring"]);
+  });
+});
+
+describe("vesselKeyCensus — one reading of a VK-sealed file", () => {
+  test("★ a custody root whose bytes carry the VK frame reads `sealed`; bare bytes at the same name read `cleartext` ★", async () => {
+    const base = mkdtempSync(join(tmpdir(), "lar-vkframe-"));
+    try {
+      const homes = { identity: join(base, "identity"), storage: join(base, "storage"), seal: join(base, "seal") };
+      await foundCustody({
+        io: new FsCustodyIo(homes), homes,
+        slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }],
+      });
+      const root = vesselKeyCensus(homes.identity).find((k) => k.name === "custody-root");
+      expect(root?.atRest).toBe("sealed");
+      expect(root?.carrier).toBeNull();                       // no passphrase-lifecycle carrier: the VK frame alone says sealed
+      // CONTROL: the same name holding bare bytes reads cleartext.
+      writeFileSync(join(homes.identity, "custody-root.bin"), "x");
+      expect(vesselKeyCensus(homes.identity).find((k) => k.name === "custody-root")?.atRest).toBe("cleartext");
+    } finally { rmSync(base, { recursive: true, force: true }); }
   });
 });
