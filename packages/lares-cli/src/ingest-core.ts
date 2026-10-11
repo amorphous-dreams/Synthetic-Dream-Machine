@@ -25,14 +25,25 @@ import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js"
 
 export type ScanStatus = "new" | "unchanged" | "changed" | "non-nfc" | "deleted" | "renamed";
 
-/** A vanished carrier the Synced tree still projects — rides an INGEST wave's
- *  `deletions[]`; the island gate splits rename re-links from tombstones. */
+/** A vanished carrier the Synced tree still projects — the WIRE shape: rides an INGEST wave's
+ *  `deletions[]` exactly as `resolveRenames`/`submitIngest` send it. No `file` here (§2.2) — a
+ *  rename-deletion's `file` would be the NEW home a renamed row's OWN uri already names, never a
+ *  usable path for the VANISHED source uri this record carries, so a reader that re-stat'd it (the
+ *  watcher's causal rescan) would stat the wrong file entirely. The island gate splits rename
+ *  re-links from tombstones off `uri` alone. */
 export interface PendingDeletion {
   readonly uri:        string;
   readonly syncedHash: string;
-  /** The absolute carrier path the deletion was scanned FROM — carried so a later drain can re-stat this
-   *  exact path for its causal rescan (M9) without needing to invert `uri` back to a filesystem path. */
-  readonly file:        string;
+}
+
+/** The WATCHER-LOCAL shape (§2.2): a `PendingDeletion` this process can re-find on disk because IT
+ *  (never the island, never a whole-source rename) scanned it FROM a real path — `deletionsOf`,
+ *  `pendingDeletes`, and `dueDeletions` all deal in this shape, with `file` REQUIRED and no `?? uri`
+ *  fallback (L7): a `lar://` uri stat'd as a path always reads absent, so a silent fallback there
+ *  would have let a `file`-less pending delete ride on the grace timer's patience alone, never the
+ *  causal rescan M9 built. */
+export interface ArmedDeletion extends PendingDeletion {
+  readonly file: string;
 }
 
 export interface ScanRow {
@@ -246,11 +257,12 @@ export function resolveRenames(rows: ScanRow[], toBag: string, tree: SyncedTree)
     const srcHash = tree.get(syncedTreeKey(toBag, src));
     if (srcHash === null) return r;             // the index and the map disagree — decline, never guess
     claimedSources.add(src);
-    // No separate on-disk path exists for the vanished `src` uri in a whole-source scan (only the row's OWN
-    // `file`, the rename's new home, is ever touched) — `file` here is unused downstream (`submitIngest`
-    // narrows to `{uri, syncedHash}` on the wire) and exists only to satisfy the shared `PendingDeletion`
-    // shape M9 needs for the watcher's causal rescan, which this whole-scan path never runs.
-    renameDeletions.push({ uri: src, syncedHash: srcHash, file: r.file });
+    // §2.2: `PendingDeletion` is the WIRE shape alone (`{uri, syncedHash}`) — no `file`. This whole-
+    // source scan has no on-disk path for the vanished `src` uri (only the row's OWN `file`, the
+    // rename's NEW home, is ever touched), so it never had one to carry honestly; the watcher's
+    // `ArmedDeletion` (which DOES require `file`, real, for its own causal rescan) is a type this
+    // path never runs and never claims to satisfy.
+    renameDeletions.push({ uri: src, syncedHash: srcHash });
     return { ...r, status: "renamed" as ScanStatus, renameFrom: src };
   });
   return { rows: out, renameDeletions };
@@ -312,8 +324,9 @@ export function applyConfirmedRenames(
   return moved;
 }
 
-/** The vanished carriers in a scan — DELETED rows, as INGEST `deletions[]`. */
-export function deletionsOf(rows: readonly ScanRow[]): PendingDeletion[] {
+/** The vanished carriers in a scan — DELETED rows, as the watcher's ARMED set (§2.2): each one DID
+ *  scan from a real on-disk `file`, so it carries the shape that can honestly re-stat itself later. */
+export function deletionsOf(rows: readonly ScanRow[]): ArmedDeletion[] {
   return rows
     .filter((r) => r.status === "deleted" && r.syncedHash !== null)
     .map((r) => ({ uri: r.uri, syncedHash: r.syncedHash as string, file: r.file }));

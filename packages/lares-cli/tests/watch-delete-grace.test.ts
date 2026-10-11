@@ -6,7 +6,9 @@
  * reads a wall clock. `dueDeletions` is the pulled-out pure decision `cmdWatch`'s drain loop calls; the
  * proofs:
  *   · under the grace, with no pairing → stays pending;
- *   · past the grace → rides (DUE);
+ *   · past the grace → rides (DUE), carrying its REAL on-disk `file` — never the `?? uri` fallback §2.2
+ *     retired (L7): a `lar://` uri stat'd as a path always reads absent, so `file` here must be the
+ *     path `pendingDeletes` actually armed, distinct from the uri;
  *   · under the grace but PAIRED by a rename's shared hash → rides EARLY, by content, not time;
  *   · a transient delete that returns before it is ever asked about never needs `dueDeletions` at all —
  *     the drain's own rescan drops it from the pending map first (documented, proven at the `watch.ts`
@@ -20,27 +22,27 @@ import { dueDeletions } from "../src/commands/watch.js";
 
 describe("dueDeletions — monotonic patience, content-settled pairing, no wall clock", () => {
   test("under the grace, unpaired → stays pending", () => {
-    const pending = new Map([["lar:///t.w.b/gone", { syncedHash: "h1", armedAt: 1_000 }]]);
+    const pending = new Map([["lar:///t.w.b/gone", { syncedHash: "h1", armedAt: 1_000, file: "/src/gone.mem" }]]);
     const ride = dueDeletions(pending, new Set(), /* now */ 1_200, /* grace */ 1_000);
     expect(ride).toEqual([]);
   });
 
-  test("past the grace (monotonic span elapsed) → DUE, rides", () => {
-    const pending = new Map([["lar:///t.w.b/gone", { syncedHash: "h1", armedAt: 1_000 }]]);
+  test("past the grace (monotonic span elapsed) → DUE, rides its REAL on-disk `file`, never the uri", () => {
+    const pending = new Map([["lar:///t.w.b/gone", { syncedHash: "h1", armedAt: 1_000, file: "/src/gone.mem" }]]);
     const ride = dueDeletions(pending, new Set(), /* now */ 2_001, /* grace */ 1_000);
-    expect(ride).toEqual([{ uri: "lar:///t.w.b/gone", syncedHash: "h1", file: "lar:///t.w.b/gone" }]);
+    expect(ride).toEqual([{ uri: "lar:///t.w.b/gone", syncedHash: "h1", file: "/src/gone.mem" }]);
   });
 
-  test("under the grace but PAIRED by a rename's shared hash → rides EARLY, by content", () => {
-    const pending = new Map([["lar:///t.w.b/old-name", { syncedHash: "h-shared", armedAt: 1_000 }]]);
+  test("under the grace but PAIRED by a rename's shared hash → rides EARLY, by content, carrying its own file", () => {
+    const pending = new Map([["lar:///t.w.b/old-name", { syncedHash: "h-shared", armedAt: 1_000, file: "/src/old-name.mem" }]]);
     const ride = dueDeletions(pending, new Set(["h-shared"]), /* now */ 1_050, /* grace */ 60_000);
-    expect(ride).toEqual([{ uri: "lar:///t.w.b/old-name", syncedHash: "h-shared", file: "lar:///t.w.b/old-name" }]);
+    expect(ride).toEqual([{ uri: "lar:///t.w.b/old-name", syncedHash: "h-shared", file: "/src/old-name.mem" }]);
   });
 
   test("CONTROL — SET-BACK and SET-FORWARD: a mocked `Date.now` ten years either way changes neither verdict", () => {
     const pending = new Map([
-      ["lar:///t.w.b/under-grace", { syncedHash: "h-under", armedAt: 1_500 }],   // 1999-1500=499 < 1000
-      ["lar:///t.w.b/past-grace",  { syncedHash: "h-past",  armedAt: 500 }],     // 1999-500=1499 >= 1000
+      ["lar:///t.w.b/under-grace", { syncedHash: "h-under", armedAt: 1_500, file: "/src/under-grace.mem" }],   // 1999-1500=499 < 1000
+      ["lar:///t.w.b/past-grace",  { syncedHash: "h-past",  armedAt: 500,   file: "/src/past-grace.mem" }],    // 1999-500=1499 >= 1000
     ]);
     const realNow = Date.now();
     for (const skew of [-10 * 365 * 86_400_000, 10 * 365 * 86_400_000]) {

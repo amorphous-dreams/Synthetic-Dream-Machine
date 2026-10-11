@@ -61,6 +61,14 @@ export function makeDraftReactor(opts: DraftHandlerOptions): VerbReactor {
   };
 }
 
+/**
+ * `prune-stale` — SURFACES candidate drafts for an OPERATOR'S own residency-action-or-prune call; it
+ * never deletes, demotes, or otherwise ACTS on a tiddler itself. `daysIdle`/`lastUpdate` below are
+ * LOCAL ADVISORY DISPLAY ONLY (the house's no-global-now law): the wall-clock reading that produces
+ * them decides nothing here — no verdict in this reactor, or any caller of it, reads `stale` to drive
+ * an automatic action. A set-back/set-forward clock can only change what a HUMAN sees on the report,
+ * never which tiddler gets pruned, because nothing here prunes anything.
+ */
 export function makePruneStaleReactor(opts: PruneStaleOptions): VerbReactor {
   return async (args) => {
     const slug = stringArg(args, "slug");

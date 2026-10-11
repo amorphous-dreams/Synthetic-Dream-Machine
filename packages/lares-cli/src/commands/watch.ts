@@ -35,7 +35,7 @@ import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
 import { larRoot, vesselDid } from "../env.js";
-import { openSyncedTree, scanFiles, candidatesOf, deletionsOf, submitIngest, recordLandedPacks, applyConfirmedRenames, type PendingDeletion } from "../ingest-core.js";
+import { openSyncedTree, scanFiles, candidatesOf, deletionsOf, submitIngest, recordLandedPacks, applyConfirmedRenames, type ArmedDeletion } from "../ingest-core.js";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
@@ -67,15 +67,18 @@ function isNoise(rel: string): boolean {
  * answer. Pulled out of `cmdWatch`'s closure so it stands as one weldable, directly-testable fact.
  */
 export function dueDeletions(
-  pending:   ReadonlyMap<string, { readonly syncedHash: string; readonly armedAt: number; readonly file?: string }>,
+  pending:   ReadonlyMap<string, { readonly syncedHash: string; readonly armedAt: number; readonly file: string }>,
   addHashes: ReadonlySet<string>,
   nowMs:     number,
   graceMs:   number,
-): PendingDeletion[] {
-  const ride: PendingDeletion[] = [];
+): ArmedDeletion[] {
+  const ride: ArmedDeletion[] = [];
   for (const [uri, p] of pending) {
     if (nowMs - p.armedAt >= graceMs || addHashes.has(p.syncedHash)) {
-      ride.push({ uri, syncedHash: p.syncedHash, file: p.file ?? uri });
+      // L7: `file` is REQUIRED on `ArmedDeletion` — no `?? uri` fallback. A `lar://` uri stat'd as a
+      // path always reads absent, so a fallback here would have let a `file`-less entry ride on the
+      // grace timer's patience alone, never the causal rescan (M9) this watcher actually runs.
+      ride.push({ uri, syncedHash: p.syncedHash, file: p.file });
     }
   }
   return ride;
