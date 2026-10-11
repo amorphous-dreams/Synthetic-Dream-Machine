@@ -13,7 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
@@ -21,7 +21,7 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   NEXUS_DOC_DOMAIN, genesisSealEpochCid, antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl, computePluginsCid,
+  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
@@ -31,12 +31,12 @@ import {
   loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
-import { larDataDir } from "../src/vessel-paths.js";
+import { larDataDir, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { admitBundlePathFor } from "../src/admit-bundle.js";
 import { storeDoorReactors, storeDoorDirect, type StoreDoorVerb } from "../src/store-door-verbs.js";
-import { claimStore, StoreHeld } from "../src/owned-store.js";
+import { claimStore, StoreHeld, ownedStore } from "../src/owned-store.js";
 
 let base: string;
 let priorLarRoot: string | undefined;
@@ -80,6 +80,18 @@ async function seatVessel(root: string): Promise<void> {
   };
   writeNexusDoc(sealHome(), doc);
   await wearPersona(0);
+  // §2.1 — `cabal-vouch`'s `resolveBoundEpoch` reads the social bootstrap for a daemon doc URL
+  // (`daemonDocUrlFromBootstrap`) and refuses fail-closed when it finds none. Seed a REAL daemon doc +
+  // the bootstrap pointer in the EXACT shape `runInit` writes (flat `tiddlers[DAEMON_BAG_ID].text`), so
+  // `cabal-vouch`'s writer-test row reads a genesis (empty) fence rather than refusing "unreadable" —
+  // this fixture exercises the LIVE-PEER proof, not the daemon-doc-unreadable path.
+  await ownedStore(larDataDir(), async (repo) => {
+    const handle = seedDaemonDoc(repo);
+    await repo.flush();
+    mkdirSync(dirname(larBootstrapPath()), { recursive: true });
+    const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
+    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packedTiddlers }) }), "utf8");
+  });
 }
 
 /** An UNSIGNED offering source directory (H3, F2-3) — `offering.json` plus the one blob's bytes

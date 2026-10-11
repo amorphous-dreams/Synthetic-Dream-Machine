@@ -9,18 +9,19 @@
  * A refused applicant ANERGIZES: it stays at the floor, and nothing is written on either outcome.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY } from "@lararium/mesh";
+import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
-import { larDataDir, larSealHome } from "../src/vessel-paths.js";
+import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 import { direct } from "./direct-store.js";
@@ -36,12 +37,32 @@ const LATER = "2026-08-01T00:00:00Z";
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
+/**
+ * §2.1 — seed a REAL daemon doc (`seedDaemonDoc`, the same factory the founding path uses) and point this
+ * vessel's bootstrap file at it, in the EXACT shape `runInit`'s `bootstrapPlugin`/`placeTiddlers` write
+ * (`daemonDocUrlFromBootstrap` reads a flat `tiddlers[DAEMON_BAG_ID].text`, not a `mutableLarRecord`-nested
+ * one — that nesting belongs to the DOC's own tiddlers, not the bootstrap file's). Prior to this, every
+ * fixture here stood a vessel identity with NO social bootstrap at all, so `resolveBoundEpoch` /
+ * `runCabalJoin`'s own board read found `daemonDocUrlFromBootstrap()` returning null and refused — the
+ * CODE was already fail-closed per §2b; these fixtures were simply stale (episkopos-2 §2.1).
+ */
+async function seedDaemonBootstrap(): Promise<void> {
+  await ownedStore(larDataDir(), async (repo) => {
+    const handle = seedDaemonDoc(repo);
+    await repo.flush();
+    mkdirSync(dirname(larBootstrapPath()), { recursive: true });
+    const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
+    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packedTiddlers }) }), "utf8");
+  });
+}
+
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-join-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot();
+  await seedDaemonBootstrap();
 });
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
@@ -132,6 +153,29 @@ describe("cabal join — the crossing, and what it refuses", () => {
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, invite: forged });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("bad-signature");
+  });
+
+  it("★ M16 — an unreadable daemon doc refuses CROSSING as an INCOMPLETE VIEW, never as a guessed genesis fence ★", async () => {
+    const joiner = await foreignNym(20);
+    // CONTROL: with the bootstrap seeded (beforeEach), a vouch bound at genesis (0) admits against epoch 0.
+    await direct(runCabalVouch)({ joiner, realm: REALM, expiresAt: LATER, boundEpoch: 0 }, NOW);
+    const control = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
+    expect(control.admitted).toBe(true);
+
+    // MUTATION: tear out the bootstrap pointer — this vessel can no longer read ANY daemon doc. The OLD
+    // (fail-open) shape fell to `boardEpoch = 0` here and priced the SAME crossing as "standing at
+    // genesis"; the fix refuses outright, since a 0 it cannot verify is indistinguishable from a roll it
+    // never saw.
+    if (existsSync(larBootstrapPath())) unlinkSync(larBootstrapPath());
+    const joiner2 = await foreignNym(21);
+    await expect(
+      direct(runCabalJoin)({ realm: REALM, applicant: joiner2 }),
+    ).rejects.toMatchObject({ message: expect.stringContaining("incomplete-view") });
+
+    // An explicit --epoch still overrides — the caller stated its OWN fence by hand, which this refusal
+    // must never block.
+    const explicit = await direct(runCabalJoin)({ realm: REALM, applicant: joiner2, epoch: 0 });
+    expect(explicit.refusal).toBe("no-invite");   // reaches the REAL gate (no vouch for joiner2), not the view refusal
   });
 
   it("refuses before reading a board when the realm is not 64 hex", async () => {

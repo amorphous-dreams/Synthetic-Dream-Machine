@@ -158,10 +158,21 @@ export async function runCabalJoin(
     // scanning the VOUCH board for that prefix matches nothing and folds epoch 0 forever. Measured: the
     // fence read this board, every invite compared against 0, and no vouch could ever lapse — a clock
     // that at least expired, replaced by a fence that never fired.
+    // M16 — FAIL CLOSED, mirroring the vouch side (`cabal-vouch.ts`'s `resolveBoundEpoch`). An unreadable
+    // daemon doc used to fall through to `boardEpoch = 0` (genesis) and price the crossing against a fence
+    // the joiner never actually read — a vouch bound at N>0 then stood against a board this vessel could not
+    // see. Council ruling 6: a replica missing the history reports an INCOMPLETE VIEW, never "expired" and
+    // never "standing". An explicit `opts.epoch` still overrides (the caller stated its own fence by hand),
+    // so this refusal fires only when NEITHER the board nor the caller supplied one.
     const daemonUrl = daemonDocUrlFromBootstrap();
     if (daemonUrl) {
       const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
       boardEpoch = cabalAdmissionEpoch(dh.doc(), realm);
+    } else if (opts.epoch === undefined) {
+      throw new CabalJoinError(
+        "incomplete-view: this vessel cannot read the realm's lease fence (its daemon doc is unreadable), " +
+        "so the crossing refuses rather than price against a guessed genesis epoch. Pass --epoch explicitly to override.",
+      );
     }
   } finally {
     await repo.flush();
