@@ -20,7 +20,7 @@
 #                                           AS the mounted wiki (`--recipe <slug>`)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
 #                                           gate public key, the worn face, the wiki slug and the registered bag URIs
-#   browser-ci.sh qa <cmd…>                 run <cmd> in the disposable Chromium runner (repo at /repo, node at http://lares:4321);
+#   browser-ci.sh qa <cmd…>                 run <cmd> in the disposable Chromium runner (repo at /repo; the runner shares the node's network, node at http://localhost:4321);
 #                                           LARES_URL, BROWSER_CI_* and LIVE_WIKI_* from the caller's env ride through
 #   browser-ci.sh down                      remove containers, network AND the scratch volumes
 #
@@ -156,7 +156,8 @@ case "$verb" in
     json_verb meme get "$uri" "$@" ;;
   info)
     slug=$(wiki_slug)
-    origin=$(compose exec -T lares printenv LAR_PUBLIC_URL)
+    # The runner shares the node's network namespace, so its origin names the node by localhost.
+    origin="http://localhost:$(compose exec -T lares printenv LAR_PORT)"
     faces=$(lares persona list --json)
     ok_or_die "$faces"
     # `persona new 0` is idempotent on a lit face and answers its verifying key.

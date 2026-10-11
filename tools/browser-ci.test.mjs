@@ -153,6 +153,17 @@ test("qa passes LARES_URL, BROWSER_CI_* and LIVE_WIKI_* through by name, never b
   assert.doesNotMatch(r.calls, /s3cret|UNRELATED/);
 });
 
+test("the qa runner shares the node's network namespace and dials it by localhost (a secure context)", async () => {
+  const yml = await readFile(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
+  const qa = yml.slice(yml.search(/^  qa:/m), yml.search(/^volumes:/m));
+  assert.match(qa, /^    network_mode: "service:lares"$/m);
+  assert.match(qa, /^      LARES_URL: http:\/\/localhost:4321$/m);
+  assert.doesNotMatch(qa, /^    networks:/m);
+  assert.doesNotMatch(qa, /lares:4321/);
+  assert.match(qa, /cap_drop: \[ALL\]/);
+  assert.doesNotMatch(yml, /docker\.sock/);
+});
+
 test("an unknown verb and a bare call refuse by name", async () => {
   assert.equal((await run([])).status, 2);
   assert.equal((await run(["bogus"])).status, 2);

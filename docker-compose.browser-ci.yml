@@ -10,8 +10,13 @@
 #           test door.
 #   lares   the standing node from the product image, with the surface file's split roots. Loopback only.
 #   qa      disposable Chromium runner (the official Playwright image, pinned to the version package.json pins).
-#           The repo rides read-only at /repo, /tmp is a writable tmpfs profile dir, and the runner reaches the
-#           node by service name. No Docker socket reaches any container: the host script issues admit carriages.
+#           The repo rides read-only at /repo and /tmp is a writable tmpfs profile dir. The runner SHARES THE
+#           NODE'S NETWORK NAMESPACE (`network_mode: service:lares`), so `localhost` inside it names the node:
+#           Chromium reads http://localhost:4321 as a secure context by the localhost exemption, and Web Locks and
+#           crypto.subtle exist. A service-name origin (http://lares:4321) reads isSecureContext=false and no
+#           browser vessel boots. The exemption is not TLS; see docker-compose.mesh.yml:128-138 for the same law.
+#           `network_mode` replaces `networks`, so the runner carries no `networks:` key. No Docker socket reaches
+#           any container: the host script issues admit carriages.
 #
 # Host port: BROWSER_CI_PORT (default 5401; the browser swarm's range is 5400-5499). Compose project:
 # BROWSER_CI_PROJECT (default lares-browser-ci). Containers, network and volumes derive from the project name, so
@@ -85,10 +90,12 @@ services:
   qa:
     image: mcr.microsoft.com/playwright:v1.64.0-noble
     profiles: [qa]
+    network_mode: "service:lares"
+    depends_on: [lares]
     user: pwuser
     working_dir: /repo
     environment:
-      LARES_URL: http://lares:4321
+      LARES_URL: http://localhost:4321
       HOME: /tmp/home
     volumes:
       - type: bind
