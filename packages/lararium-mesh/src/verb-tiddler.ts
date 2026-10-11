@@ -107,6 +107,116 @@ export async function taskContentId(
   return formatDigest("sha256", await sha256Hex(canonicalJsonBytes(canonical), provider));
 }
 
+// ── Receipt facts — single-writer durable request ledger (D1, P2.5 iter 4) ───
+// The channel (uds-channel.ts) is the SOLE writer of a receipt fact: it writes
+// `committed` at arbitrate, `abandoned` at EOF-drop/cancel, and `done`/`error`
+// when it OBSERVES the outcome land. The worker never writes a fact — only the
+// outcome tiddler, which the channel observes. One writer per field, so no two
+// processes race a `state` transition.
+
+/** Durable per-request fact tiddlers — `<daemon bag>/receipts/<requestId>`. */
+export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
+
+export type ReceiptFactState = "committed" | "abandoned" | "done" | "error" | "evicted";
+
+/** One request's durable fact — the channel's read-through arbitration ledger. */
+export interface ReceiptFact {
+  readonly requestId:   string;
+  readonly inputDigest: string;
+  readonly effectKey?:  string;
+  readonly state:       ReceiptFactState;
+  /** Set once the fact reaches a terminal outcome; survives the `evicted` transition
+   *  (eviction keeps digest, effect key and terminal — only the full outcome drops). */
+  readonly terminal?:   "done" | "error";
+  /** Per-vessel monotonic counter, assigned by the channel at commit/abandon or at
+   *  first observation of a non-UDS-path outcome. Never a time (no-global-now). */
+  readonly seq:         number;
+}
+
+function isReceiptFactState(v: unknown): v is ReceiptFactState {
+  return v === "committed" || v === "abandoned" || v === "done" || v === "error" || v === "evicted";
+}
+
+/** Build a receipt-fact tiddler record for the channel's single-writer ledger. */
+export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
+  const title = `${RECEIPT_FACT_URI_PREFIX}${fact.requestId}`;
+  return {
+    tiddler: {
+      title,
+      "request-id":   fact.requestId,
+      "input-digest": fact.inputDigest,
+      state:          fact.state,
+      seq:            String(fact.seq),
+      ...(fact.effectKey !== undefined && { "effect-key": fact.effectKey }),
+      ...(fact.terminal  !== undefined && { terminal:     fact.terminal }),
+    },
+    meta: { authority: "lares-daemon-channel" },
+  };
+}
+
+/** Parse a receipt-fact tiddler field bag. Returns null when the shape doesn't match
+ *  (never throws — a torn fact reads as absent, never as a crash). */
+export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact | null {
+  const title = typeof fields["title"] === "string" ? fields["title"] : null;
+  if (!title || !title.startsWith(RECEIPT_FACT_URI_PREFIX)) return null;
+
+  const requestId   = typeof fields["request-id"]   === "string" ? fields["request-id"]   : null;
+  const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : null;
+  const state       = fields["state"];
+  const seqRaw      = fields["seq"];
+  const seq = typeof seqRaw === "string" ? Number.parseInt(seqRaw, 10)
+            : typeof seqRaw === "number" ? seqRaw
+            : NaN;
+
+  if (!requestId || !inputDigest || Number.isNaN(seq) || !isReceiptFactState(state)) return null;
+
+  const effectKey = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
+  const terminalRaw = fields["terminal"];
+  const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
+
+  return {
+    requestId, inputDigest, state, seq,
+    ...(effectKey !== undefined && { effectKey }),
+    ...(terminal  !== undefined && { terminal }),
+  };
+}
+
+/**
+ * The content digest over a verb's identity tuple — shared by the channel (arbitration:
+ * same id + changed digest refuses `request-id-reused-with-changed-input`) and the worker
+ * (digest-on-outcome: stamped onto the outcome tiddler so a later reader can re-check it
+ * without re-walking the fact). Distinct from `taskContentId` (the content-addressed task
+ * surface, keyed by {subject,command,args,nonce}) — this digest keys the CURRENT running
+ * verb/summons/outcome path's request identity, {verb,args,requestedBy,effectKey}.
+ */
+export async function verbInputDigest(
+  parts: { verb: string; args: Readonly<Record<string, unknown>>; requestedBy: string; effectKey?: string },
+  provider: DigestProvider = defaultCryptoProvider,
+): Promise<string> {
+  const canonical = {
+    verb: parts.verb, args: parts.args, requestedBy: parts.requestedBy,
+    effectKey: parts.effectKey ?? "",
+  };
+  return formatDigest("sha256", await sha256Hex(canonicalJsonBytes(canonical), provider));
+}
+
+/**
+ * The default receipt ring size — DERIVED, never a bare literal: a sustained rate of
+ * one verb per minute, kept for a 30-day retention horizon, plus a 256-request burst
+ * cushion for traffic above the sustained rate. `ratePerMin(1) × 60 × 24 × horizonDays(30)
+ * + burst(256)` = 43,200 + 256 = 43,456 (luna-hearth decision 7's settled default).
+ * `main.ts` reads an override from vessel config (`receipts.ring {ratePerMin, horizonDays,
+ * burst}`); this constant is the floor when no config is present.
+ */
+export function ratedReceiptRing(opts?: { ratePerMin?: number; horizonDays?: number; burst?: number }): number {
+  const ratePerMin  = opts?.ratePerMin  ?? 1;
+  const horizonDays = opts?.horizonDays ?? 30;
+  const burst       = opts?.burst       ?? 256;
+  return ratePerMin * 60 * 24 * horizonDays + burst;
+}
+
+export const RECEIPT_RING_DEFAULT = ratedReceiptRing();
+
 // ── Verb invocation shape ──────────────────────────────────────────────────
 
 export type VerbStatus = "pending" | "running" | "done" | "error";
@@ -150,6 +260,15 @@ export interface Verb {
    * in the ring may claim). Bag = the default geometry; `aud` = the narrowing.
    */
   readonly aud?:        string;
+  /**
+   * The content id of the EFFECT this verb would produce — the split's "attempt vs effect"
+   * key (D1, P2.5 iter 4). `requestId` names THIS attempt (fresh per retry); `effectKey`
+   * names what running it WOULD DO. The dispatcher indexes `<daemon bag>/effects/<effectKey>`:
+   * a prior `done` under a DIFFERENT requestId with the same effectKey answers this attempt
+   * with that prior result (`effect-of: <prior requestId>`) instead of re-running. Absent =
+   * no dedup (every attempt is its own effect, today's behavior unchanged).
+   */
+  readonly effectKey?:  string;
 }
 
 // ── Outcome shape ──────────────────────────────────────────────────────────
@@ -173,6 +292,9 @@ export interface OutcomeRecord extends LarTiddlerRecord {
     // JSON map of { targetOrSummaryKey → VerbTargetResult }
     readonly results?:       string;
     readonly "error-message"?: string;
+    readonly "input-digest"?: string;
+    readonly "effect-key"?:   string;
+    readonly "effect-of"?:    string;
     [k: string]: unknown;
   };
 }
@@ -187,6 +309,15 @@ export function concludeVerb(opts: {
   results?:      Record<string, VerbTargetResult>;
   errorMessage?: string;
   authority?:    string;
+  /** Digest-on-outcome (D1): the worker stamps the request's input digest onto the
+   *  outcome it writes, so a later reader can re-check reuse without re-walking the fact. */
+  inputDigest?:  string;
+  /** The effect this outcome indexes under `<daemon bag>/effects/<effectKey>` (worker's
+   *  single-writer effect index). Absent = this outcome is not effect-indexed. */
+  effectKey?:    string;
+  /** Present when this outcome is a COPY of a prior attempt's result (effect dedup):
+   *  names the prior requestId whose effect this one reused, rather than running. */
+  effectOf?:     string;
 }): LarTiddlerRecord {
   const title = `${OUTCOME_URI_PREFIX}${opts.requestId}`;
   const base = {
@@ -204,6 +335,9 @@ export function concludeVerb(opts: {
       ...base,
       results: JSON.stringify(opts.results ?? {}),
       ...(opts.errorMessage !== undefined && { "error-message": opts.errorMessage }),
+      ...(opts.inputDigest  !== undefined && { "input-digest":  opts.inputDigest }),
+      ...(opts.effectKey    !== undefined && { "effect-key":    opts.effectKey }),
+      ...(opts.effectOf     !== undefined && { "effect-of":     opts.effectOf }),
     },
     meta: { authority: opts.authority ?? "lares-dispatcher" },
   };
@@ -244,6 +378,7 @@ export function buildVerb(opts: {
   fromUri?:    string;
   listenable?: string;
   aud?:        string;
+  effectKey?:  string;
 }): Record<string, unknown> {
   const requestId = opts.requestId ?? newRequestId();
   const title     = `${VERB_URI_PREFIX}${requestId}`;
@@ -261,6 +396,7 @@ export function buildVerb(opts: {
     ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),
     ...(opts.listenable !== undefined && { listenable:   opts.listenable }),
     ...(opts.aud        !== undefined && { aud:          opts.aud }),
+    ...(opts.effectKey  !== undefined && { "effect-key": opts.effectKey }),
   };
 }
 
@@ -276,6 +412,7 @@ export function summon(opts: {
   fromUri?:    string;
   listenable?: string;
   aud?:        string;
+  effectKey?:  string;
 }): LarTiddlerRecord {
   const requestId = opts.requestId ?? newRequestId();
   const title     = `${SUMMONS_URI_PREFIX}${requestId}`;
@@ -294,6 +431,7 @@ export function summon(opts: {
       ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),
       ...(opts.listenable !== undefined && { listenable:   opts.listenable }),
       ...(opts.aud        !== undefined && { aud:          opts.aud }),
+      ...(opts.effectKey  !== undefined && { "effect-key": opts.effectKey }),
     },
     meta: { authority: opts.authority ?? "lares-cli" },
   };
@@ -334,12 +472,14 @@ export function parseVerb(fields: Record<string, unknown>): Verb | null {
   const fromUri    = typeof fields["from-uri"]   === "string" ? fields["from-uri"]   : undefined;
   const listenable = typeof fields["listenable"] === "string" ? fields["listenable"] : undefined;
   const aud        = typeof fields["aud"]        === "string" ? fields["aud"]        : undefined;
+  const effectKey  = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
 
   return {
     requestId, title, action: verb, args, targets, batchMode, status, requestedBy, requestedAt,
     ...(fromUri    !== undefined && { fromUri }),
     ...(listenable !== undefined && { listenable }),
     ...(aud        !== undefined && { aud }),
+    ...(effectKey  !== undefined && { effectKey }),
   };
 }
 

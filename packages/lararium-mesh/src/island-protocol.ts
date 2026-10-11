@@ -332,6 +332,9 @@ export interface DaemonMsg_PlaceVerb {
   requestId?: string;
   fromUri?: string;
   listenable?: string;
+  /** The content id of the EFFECT this verb would produce (D1, P2.5 iter 4) — see
+   *  `Verb.effectKey` in verb-tiddler.ts for the dedup contract. Absent = no dedup. */
+  effectKey?: string;
 }
 
 /**
@@ -1076,6 +1079,7 @@ export function mkDaemonPlaceVerb(opts: {
   requestId?: string;
   fromUri?: string;
   listenable?: string;
+  effectKey?: string;
 }): DaemonMsg_PlaceVerb {
   const msg: DaemonMsg_PlaceVerb = {
     schema_version: ISLAND_PROTOCOL_VERSION,
@@ -1089,6 +1093,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.requestId)        msg.requestId  = opts.requestId;
   if (opts.fromUri)          msg.fromUri    = opts.fromUri;
   if (opts.listenable)       msg.listenable = opts.listenable;
+  if (opts.effectKey)        msg.effectKey  = opts.effectKey;
   return msg;
 }
 
