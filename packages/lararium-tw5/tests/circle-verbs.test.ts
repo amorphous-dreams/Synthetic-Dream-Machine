@@ -1,21 +1,20 @@
 /**
- * circle-verbs — the FOLLOW-GRAPH lands in the circles doc as a PER-NYM CRDT-set, reads back, and NEVER touches a board.
+ * circle-verbs — the FOLLOW-GRAPH lands in the circles doc as a PER-NYM OBSERVED-REMOVE CRDT-set, reads back,
+ * and NEVER touches a board.
  *
- * These hold the source-of-truth move (Build 2a's local file → the sovereign circles doc) + the C2 CRDT move
- * (the space-joined `memberDids` register → per-nym `mbr+:`/`mbr-:` stamps):
- *   · a follow STAMPS the nym's own `mbr+:<nym>` key over the daemon store (never a whole-field register write).
- *   · a circle-list FOLDS that membership back (add-stamp present, no superseding remove-stamp).
- *   · an unfollow stamps `mbr-:<nym>` (remove-wins, idempotent) — the `memberDids` register is GONE; every
- *     writer (cold-boot-ceremony, social-seed) stamps `mbr+:` directly now.
- *   · CONCURRENT-MERGE: an add on one fork + a remove on another merge to remove-wins with NO lost add.
- *   · NEVER-FEDERATES: the reactor reaches ONLY the circles store — no crossroads-plane / board title is ever
- *     written, and every outcome reads `federated: false`.
- *   · the daemon follow surface renders FROM the circles doc (the worker owns the render).
+ * M5 (gp25 iteration 4, D2): the prior Lamport-counter fold compared ADD/REMOVE stamp VALUES as plain strings.
+ * A single shared counter cannot tell concurrent from later (a remove at height 1 on one replica, a re-follow
+ * at height 3 on an unrelated replica, compared as strings, and the higher height "won" regardless of causal
+ * relation) — and `cold-boot-ceremony`'s own genesis follow stamped an ISO wall-clock string, which lexically
+ * outranks every zero-padded decimal counter forever, so the operator's own follow could never be unfollowed.
+ * Membership now rides DOTTED fields (`mbr+:<nym>#<replica>.<n>` / `mbr-:<nym>#<replica>.<n>`) whose VALUE is
+ * the comma-joined set of opposite-kind dots that write OBSERVED — never a clock, never compared by magnitude.
+ * A legacy undotted `mbr+:<nym>` / `mbr-:<nym>` (any value) still reads as a dot that observed nothing.
  */
 
 import { describe, expect, test } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeCircleReactors, foldMembers } from "../src/circle-verbs.js";
+import { makeCircleReactors, foldMembers, foldMembersDetailed } from "../src/circle-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { circleTiddlerUri, CIRCLES_INNER, MEMBER_ADD_PREFIX, mutableLarRecord, buildCeremonyTiddlers } from "@lararium/mesh";
@@ -33,8 +32,12 @@ function seededCircles(): MemoryTiddlerStore {
   return store;
 }
 
-function reactorsOver(store: MemoryTiddlerStore, tw5?: TW5Engine) {
-  return makeCircleReactors({ resolveStore: async () => store, ...(tw5 ? { tw5 } : {}) });
+function reactorsOver(store: MemoryTiddlerStore, opts?: { tw5?: TW5Engine; replica?: string }) {
+  return makeCircleReactors({
+    resolveStore: async () => store,
+    ...(opts?.tw5 ? { tw5: opts.tw5 } : {}),
+    ...(opts?.replica ? { replica: opts.replica } : {}),
+  });
 }
 
 /** The folded present membership of a circle, read straight off the stored tiddler fields (the CRDT read). */
@@ -43,25 +46,27 @@ function membersOf(store: MemoryTiddlerStore, circle: string): string[] {
   return foldMembers((rec?.tiddler ?? {}) as Record<string, unknown>);
 }
 
-/** The raw stamp fields on a circle tiddler — proves the reactor writes per-nym keys, never a joined register. */
+/** The raw stamp fields on a circle tiddler — proves the reactor writes per-nym DOT keys, never a joined register. */
 function stampFieldsOf(store: MemoryTiddlerStore, circle: string): Record<string, unknown> {
   const rec = store._snapshot().get(circleTiddlerUri(circle));
   return (rec?.tiddler ?? {}) as Record<string, unknown>;
 }
 
-describe("circle-verbs — the per-nym follow-graph over the circles doc", () => {
-  test("circle-add STAMPS the nym's own mbr+ key (never a whole-field register)", async () => {
+describe("circle-verbs — the per-nym observed-remove follow-graph over the circles doc", () => {
+  test("circle-add STAMPS the nym's own mbr+ DOT key (never a whole-field register)", async () => {
     const store = seededCircles();
-    const { add } = reactorsOver(store);
+    const { add } = reactorsOver(store, { replica: "dev-A" });
 
     const out = await add({ circle: "following", nym: NYM_A }, CTX);
 
     expect(out["added"]).toBe(true);
     expect(out["federated"]).toBe(false);
     expect(out["members"]).toEqual([NYM_A]);
-    // The add landed as this nym's OWN per-nym key — the reactor never writes a joined register at all.
+    // The add landed as this nym's OWN per-nym dotted key, carrying this replica's id — never a joined register.
     const fields = stampFieldsOf(store, "following");
-    expect(typeof fields[`mbr+:${NYM_A}`]).toBe("string");
+    const key = Object.keys(fields).find((k) => k.startsWith(`${MEMBER_ADD_PREFIX}${NYM_A}#`));
+    expect(key).toBe(`${MEMBER_ADD_PREFIX}${NYM_A}#dev-A.0`);
+    expect(typeof fields[key!]).toBe("string");
     expect(fields["memberDids"]).toBeUndefined();   // the register is GONE, not merely untouched
     expect(membersOf(store, "following")).toEqual([NYM_A]);
   });
@@ -74,12 +79,13 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
 
     const one = await list({ circle: "following" }, CTX);
     expect(one["members"]).toEqual([NYM_A, NYM_B]);   // folded + sorted
+    expect(one["concurrent"]).toEqual([]);
 
     const all = await list({}, CTX);
-    expect(all["circles"]).toEqual([{ circle: "following", members: [NYM_A, NYM_B] }]);
+    expect(all["circles"]).toEqual([{ circle: "following", members: [NYM_A, NYM_B], concurrent: [] }]);
   });
 
-  test("circle-add is idempotent (a re-add re-stamps, still one member)", async () => {
+  test("circle-add is idempotent (a re-add re-stamps a fresh dot, still one member)", async () => {
     const store = seededCircles();
     const { add } = reactorsOver(store);
     await add({ circle: "following", nym: NYM_A }, CTX);
@@ -99,114 +105,139 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     expect(out["federated"]).toBe(false);
     expect(membersOf(store, "following")).toEqual([NYM_B]);
 
-    // a second remove reads no-op (the nym already folds absent), and the remove stamp still stands
+    // a second remove reads no-op (the nym already folds absent), and a fresh remove-dot still lands
     const again = await remove({ circle: "following", nym: NYM_A }, CTX);
     expect(again["removed"]).toBe(false);
     expect(membersOf(store, "following")).toEqual([NYM_B]);
 
-    // a causally-later re-follow supersedes the remove stamp → present again (resurrection). The stamp is a
-    // Lamport counter minted from what THIS write observes (no wall clock, no sleep needed to order it).
+    // a re-follow mints a NEW add-dot whose observed-set covers every remove-dot presently on the nym
+    // (both prior removes) — it dominates them, so the fold reads present again (resurrection).
     await add({ circle: "following", nym: NYM_A }, CTX);
     expect(membersOf(store, "following")).toEqual([NYM_A, NYM_B]);
   });
 
-  test("a cold-boot-ceremony-seeded circle reads its member through the stamp path alone", () => {
-    // buildCeremonyTiddlers writes the "operators" circle with the operator's own did stamped
-    // `mbr+:<did>` directly — no `memberDids` register ever lands, and nothing in circle-verbs reads
-    // one anymore (parseLegacyMembers is gone). Proves the writer and the reader actually agree.
+  test("M5 PROOF 1 — the LIVE cold-boot genesis follow (dotted form) DOES unfollow", async () => {
+    // Before M5: cold-boot-ceremony stamped `mbr+:<did>` = an ISO string. `circle-remove` minted a
+    // zero-padded decimal counter, and the string compare `'0' < '2'` meant the remove NEVER outranked the
+    // ISO stamp — the operator's own follow was permanently un-unfollowable. buildCeremonyTiddlers now
+    // mints the DOTTED form; prove the live reactor can remove it.
     const [, circle] = buildCeremonyTiddlers("ab".repeat(32), "Operator One");
-    const fields = circle!.fields as Record<string, unknown>;
-    expect(fields["memberDids"]).toBeUndefined();
-    const did = Object.keys(fields).find((k) => k.startsWith(MEMBER_ADD_PREFIX))?.slice(MEMBER_ADD_PREFIX.length);
-    expect(typeof did).toBe("string");
-    expect(foldMembers(fields)).toEqual([did]);
+    const did = Object.keys(circle!.fields).find((k) => k.startsWith(MEMBER_ADD_PREFIX))!
+      .slice(MEMBER_ADD_PREFIX.length).split("#")[0]!;
+    const store = new MemoryTiddlerStore(CIRCLES_INNER);
+    store._seed(mutableLarRecord(circleTiddlerUri("operators"), circle!.fields, "cold-boot-ceremony"));
+    expect(membersOf(store, "operators")).toEqual([did]);
+
+    const { remove } = reactorsOver(store);
+    const out = await remove({ circle: "operators", nym: did }, CTX);
+    expect(out["removed"]).toBe(true);
+    expect(membersOf(store, "operators")).toEqual([]);
   });
 
-  test("CONCURRENT-MERGE: add-on-fork-A + remove-on-fork-B merge to remove-wins with NO lost add", async () => {
-    // Both replicas descend from a base where NYM_A is already followed (a standing `mbr+:NYM_A` stamp) — a
-    // causal counter, never a wall-clock reading.
-    const t0 = "00000000000000000000";
-    const baseFields = { text: "", id: "following", displayName: "Following", kind: "System", createdAt: "", [`mbr+:${NYM_A}`]: t0 };
+  test("M5 PROOF 1b — a LEGACY undotted mbr+ (any value, ISO included) unfollows the same way", async () => {
+    const store = seededCircles();
+    const fields = stampFieldsOf(store, "following");
+    const seeded = { ...fields, [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
+    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
+    expect(membersOf(store, "following")).toEqual([NYM_A]);
+
+    const { remove } = reactorsOver(store);
+    await remove({ circle: "following", nym: NYM_A }, CTX);
+    expect(membersOf(store, "following")).toEqual([]);
+  });
+
+  test("M5 PROOF 2 — genuine CONCURRENCY: an unfollow that never saw a re-follow (and vice versa) reads absent and is NAMED", () => {
+    // Base: NYM_A already followed by a third replica ("base"), dot base.0, nothing observed.
+    const base = { [`${MEMBER_ADD_PREFIX}${NYM_A}#base.0`]: "" };
+    // Replica A removes NYM_A having seen only the base add (observes base.0).
+    const forkA = { ...base, [`mbr-:${NYM_A}#A.0`]: "base.0" };
+    // Replica B, with NO knowledge of A's remove, concurrently re-follows NYM_A (observes nothing new).
+    const forkB = { ...base, [`${MEMBER_ADD_PREFIX}${NYM_A}#B.0`]: "" };
+    // Automerge merges disjoint keys — the field union models the CRDT merge.
+    const merged = { ...forkA, ...forkB };
+
+    const { present, concurrent } = foldMembersDetailed(merged);
+    expect(present).not.toContain(NYM_A);      // remove wins
+    expect(concurrent).toEqual([NYM_A]);        // B's add and A's remove never observed each other
+  });
+
+  test("M5 PROOF 3 — a SEQUENTIAL re-follow (one that OBSERVES the remove) resurrects, no concurrency named", async () => {
+    const store = seededCircles();
+    const { add, remove } = reactorsOver(store, { replica: "dev-X" });
+    await add({ circle: "following", nym: NYM_A }, CTX);
+    await remove({ circle: "following", nym: NYM_A }, CTX);
+    expect(membersOf(store, "following")).toEqual([]);
+    await add({ circle: "following", nym: NYM_A }, CTX);   // this add observes the standing remove-dot
+    const { present, concurrent } = foldMembersDetailed(stampFieldsOf(store, "following"));
+    expect(present).toContain(NYM_A);
+    expect(concurrent).toEqual([]);
+  });
+
+  test("M5 PROOF 4 — proofs 1-3 hold identically under a set-back and a set-forward system clock (the dot carries no clock reading at all)", async () => {
+    const realDateNow = Date.now;
+    try {
+      Date.now = () => 1_000;
+      const storeA = seededCircles();
+      const { add: addA, remove: remA } = reactorsOver(storeA, { replica: "clockA" });
+      await addA({ circle: "following", nym: NYM_A }, CTX);
+      Date.now = () => 9_999_999_999_999;
+      await remA({ circle: "following", nym: NYM_A }, CTX);
+      Date.now = () => 500;
+      expect(membersOf(storeA, "following")).toEqual([]);   // PROOF 1 shape, under clock swings
+      await addA({ circle: "following", nym: NYM_A }, CTX);
+      Date.now = () => 9_999_999_999_999;
+      expect(membersOf(storeA, "following")).toEqual([NYM_A]);   // PROOF 3 shape, under clock swings
+    } finally {
+      Date.now = realDateNow;
+    }
+  });
+
+  test("MUTATION PROOF — comparing stamp VALUES (the old Lamport-counter bug) reads the legacy ISO follow as present forever", () => {
+    // Reproduces the EXACT bug M5 fixes, as a self-contained inline fold (never touching the real module) to
+    // prove the real fold does NOT do this. The old reader compared `addedAt > removedAt` as plain strings.
+    function buggyFoldPresent(fields: Record<string, unknown>): string[] {
+      const added = new Map<string, string>(), removed = new Map<string, string>();
+      for (const [key, value] of Object.entries(fields)) {
+        if (typeof value !== "string") continue;
+        if (key.startsWith(MEMBER_ADD_PREFIX)) added.set(key.slice(MEMBER_ADD_PREFIX.length), value);
+        else if (key.startsWith("mbr-:")) removed.set(key.slice("mbr-:".length), value);
+      }
+      const present: string[] = [];
+      for (const [nym, addedAt] of added) {
+        const removedAt = removed.get(nym);
+        if (removedAt === undefined || addedAt > removedAt) present.push(nym);
+      }
+      return present.sort();
+    }
+    const isoFollow = new Date().toISOString();                                  // e.g. "2026-10-11T..."
+    const decimalRemove = "00000000000000000001";                                // any zero-padded counter
+    const fields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: isoFollow, [`mbr-:${NYM_A}`]: decimalRemove };
+    // The bug: '0' < '2' lexically, so the buggy fold NEVER reads the ISO follow as removed.
+    expect(buggyFoldPresent(fields)).toEqual([NYM_A]);
+    // The real fold is immune — it never compares values, only dot-id SET MEMBERSHIP, and a legacy add
+    // (dot "", observed nothing) never dominates any remove-dot that exists.
+    expect(foldMembers(fields)).toEqual([]);
+  });
+
+  test("CONCURRENT-MERGE: add-on-fork-A + remove-on-fork-B (DIFFERENT nyms) merge with NO lost add", async () => {
+    const base = { text: "", id: "following", displayName: "Following", kind: "System", createdAt: "", [`${MEMBER_ADD_PREFIX}${NYM_A}#base.0`]: "" };
     const seed = () => {
       const s = new MemoryTiddlerStore(CIRCLES_INNER);
-      s._seed(mutableLarRecord(circleTiddlerUri("following"), { ...baseFields }, "lararium-seed"));
+      s._seed(mutableLarRecord(circleTiddlerUri("following"), { ...base }, "lararium-seed"));
       return s;
     };
     // Fork A (this device): follow a FRESH nym NYM_B — a DIFFERENT per-nym key than the base.
     const forkA = seed();
-    await reactorsOver(forkA).add({ circle: "following", nym: NYM_B }, CTX);
-    // Fork B (a fleet-mate, offline & concurrent): unfollow NYM_A — the `mbr-:NYM_A` key, disjoint from A's add.
+    await reactorsOver(forkA, { replica: "A" }).add({ circle: "following", nym: NYM_B }, CTX);
+    // Fork B (a fleet-mate, offline & concurrent): unfollow NYM_A — disjoint keys from A's add.
     const forkB = seed();
-    await reactorsOver(forkB).remove({ circle: "following", nym: NYM_A }, CTX);
+    await reactorsOver(forkB, { replica: "B" }).remove({ circle: "following", nym: NYM_A }, CTX);
 
-    // Automerge merges the two replicas key-by-key: the per-nym stamps are DISJOINT (mbr+:NYM_A / mbr+:NYM_B /
-    // mbr-:NYM_A), so it keeps EVERY edit — the whole-field register the reactors no longer write would have
-    // last-writer-clobbered one of them. Model that disjoint-key merge as the field union.
     const merged: Record<string, unknown> = { ...stampFieldsOf(forkA, "following"), ...stampFieldsOf(forkB, "following") };
 
     const present = foldMembers(merged);
-    expect(present).toContain(NYM_B);       // NO LOST ADD — A's fresh follow survives the concurrent unfollow
-    expect(present).not.toContain(NYM_A);   // REMOVE-WINS — B's later unfollow supersedes the standing follow
-  });
-
-  test("REMOVE-WINS on a strict tie: an equal add/remove STAMP (a causal counter, never a timestamp) folds to absent", () => {
-    const t = "00000000000000000003";
-    // The fold reads present iff `addedAt > removedAt` (strict) — so an EQUAL-stamp add + remove folds to
-    // absent: on a genuine tie (including two genuinely concurrent writers), remove wins (never a coin-flip
-    // that could resurrect a banned/dropped nym).
-    expect(foldMembers({ [`mbr+:${NYM_A}`]: t, [`mbr-:${NYM_A}`]: t })).toEqual([]);
-    // A causally-later (strictly greater counter) add DOES win (a deliberate re-follow after an unfollow).
-    const later = "00000000000000000004";
-    expect(foldMembers({ [`mbr+:${NYM_A}`]: later, [`mbr-:${NYM_A}`]: t })).toEqual([NYM_A]);
-  });
-
-  test("CLOCKLESS: a set-back and a set-forward system clock leave every stamp and verdict unchanged", async () => {
-    const realDateNow = Date.now;
-    const store = seededCircles();
-    const { add, remove } = reactorsOver(store);
-    try {
-      Date.now = () => 1_000; // set WAY back
-      await add({ circle: "following", nym: NYM_A }, CTX);
-      Date.now = () => 9_999_999_999_999; // set WAY forward
-      await add({ circle: "following", nym: NYM_B }, CTX);
-      Date.now = () => 500; // back again, mid-sequence
-      const out = await remove({ circle: "following", nym: NYM_A }, CTX);
-      expect(out["removed"]).toBe(true);
-      expect(membersOf(store, "following")).toEqual([NYM_B]);
-      // The stamps minted across the clock swings are a STRICTLY increasing causal counter, never a reading
-      // of the (tampered) wall clock.
-      const fields = stampFieldsOf(store, "following");
-      const a = Number.parseInt(fields[`mbr+:${NYM_A}`] as string, 10);
-      const b = Number.parseInt(fields[`mbr+:${NYM_B}`] as string, 10);
-      const rmA = Number.parseInt(fields[`mbr-:${NYM_A}`] as string, 10);
-      expect(a).toBeLessThan(b);
-      expect(b).toBeLessThan(rmA);
-    } finally {
-      Date.now = realDateNow;
-    }
-  });
-
-  test("MUTATION PROOF: reverting the causal stamp to a wall-clock ISO read breaks the clockless proof above", () => {
-    // Simulates the bug `nextStamp` fixes: minting a stamp from `Date.now()`/`toISOString()` instead of the
-    // tiddler's own observed counters. Re-running the SAME clock-tamper sequence through that reverted shape
-    // would read the LATER add (NYM_B, minted under the far-future clock) as "before" a remove minted moments
-    // later under a set-BACK clock — the exact inversion this file guards against.
-    const wallClockStamp = () => new Date(Date.now()).toISOString();
-    const realDateNow = Date.now;
-    try {
-      Date.now = () => 9_999_999_999_999;
-      const laterByWallClock = wallClockStamp();
-      Date.now = () => 500;
-      const earlierByWallClock = wallClockStamp();
-      // The reverted (buggy) shape would store `laterByWallClock` as NYM_B's add and `earlierByWallClock` as a
-      // SUBSEQUENT remove — and a wall-clock compare reads the remove as EARLIER than the add it followed.
-      expect(earlierByWallClock < laterByWallClock).toBe(true);
-      expect(foldMembers({ [`mbr+:${NYM_B}`]: laterByWallClock, [`mbr-:${NYM_B}`]: earlierByWallClock })).toEqual([NYM_B]);
-      // ^ WRONG under a set-back clock: the remove that actually happened SECOND folds as though it happened
-      // FIRST. `nextStamp`'s causal counter cannot produce this inversion — proven by the test above.
-    } finally {
-      Date.now = realDateNow;
-    }
+    expect(present).toContain(NYM_B);       // NO LOST ADD
+    expect(present).not.toContain(NYM_A);   // REMOVE-WINS
   });
 
   test("a follow of a NEW circle the operator names is born (kind Circle)", async () => {
@@ -224,9 +255,6 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     await add({ circle: "following", nym: NYM_A }, CTX);
     await remove({ circle: "following", nym: NYM_B }, CTX);
 
-    // Every title the reactors ever wrote sits under the CIRCLES INNER namespace — no board shore is
-    // reachable. It folds by the inner stem, never the bag address: a title names its own record and never
-    // the entity holding it, so a check against `circles-<tag>` would match nothing and pass by vacuity.
     for (const title of store._snapshot().keys()) {
       expect(title.startsWith(CIRCLES_INNER)).toBe(true);
       expect(title).not.toContain("crossroads");
@@ -238,7 +266,7 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     const store = seededCircles();
     const rendered: Array<Record<string, string>> = [];
     const fakeTw5 = { setTiddler: (f: Record<string, string>) => { rendered.push(f); } } as unknown as TW5Engine;
-    const { add } = reactorsOver(store, fakeTw5);
+    const { add } = reactorsOver(store, { tw5: fakeTw5 });
 
     await add({ circle: "following", nym: NYM_A }, CTX);
 
@@ -248,5 +276,20 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     expect(last["count"]).toBe("1");
     expect(last["nym-0"]).toBe(NYM_A);
     expect(last["petname-0"]).toBe("");   // blank — the handle-book stays local (the co-move fork)
+  });
+
+  test("two devices mint DISJOINT dots for the same nym — no replica ever collides with another's counter", async () => {
+    const store = seededCircles();
+    const devA = reactorsOver(store, { replica: "deviceA" });
+    const devB = reactorsOver(store, { replica: "deviceB" });
+    await devA.add({ circle: "following", nym: NYM_A }, CTX);
+    await devB.add({ circle: "following", nym: NYM_A }, CTX);   // a different device, same nym
+    const fields = stampFieldsOf(store, "following");
+    const dotKeys = Object.keys(fields).filter((k) => k.startsWith(`${MEMBER_ADD_PREFIX}${NYM_A}#`));
+    expect(dotKeys.sort()).toEqual([
+      `${MEMBER_ADD_PREFIX}${NYM_A}#deviceA.0`,
+      `${MEMBER_ADD_PREFIX}${NYM_A}#deviceB.0`,
+    ]);
+    expect(membersOf(store, "following")).toEqual([NYM_A]);
   });
 });
