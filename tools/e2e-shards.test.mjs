@@ -299,13 +299,13 @@ test("relativeToE2eDir strips whatever prefix sits in front of e2e/, on either p
 test("readShardReports: a present, valid, and missing shard each read as the gate expects", () => {
   const dir = mkdtempSync(join(tmpdir(), "e2e-shards-test-"));
   try {
-    mkdirSync(join(dir, "e2e-shard-1"), { recursive: true });
-    writeFileSync(join(dir, "e2e-shard-1", "report-shard-1.json"), JSON.stringify(goodReport(["tests/e2e/alpha.test.ts"])));
-    mkdirSync(join(dir, "e2e-shard-2"), { recursive: true });
-    writeFileSync(join(dir, "e2e-shard-2", "report-shard-2.json"), "{ not json");
+    mkdirSync(join(dir, "e2e-shard-tests-1"), { recursive: true });
+    writeFileSync(join(dir, "e2e-shard-tests-1", "report-shard-tests-1.json"), JSON.stringify(goodReport(["tests/e2e/alpha.test.ts"])));
+    mkdirSync(join(dir, "e2e-shard-tests-2"), { recursive: true });
+    writeFileSync(join(dir, "e2e-shard-tests-2", "report-shard-tests-2.json"), "{ not json");
     // shard 3 directory absent entirely.
 
-    const reports = readShardReports(dir, 3);
+    const reports = readShardReports(dir, 3, "tests");
     const byShard = new Map(reports.map((r) => [r.shard, r]));
 
     assert.equal(byShard.get(1).report.numTotalTests, 1);

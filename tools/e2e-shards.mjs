@@ -205,7 +205,7 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
 // ── reading the merge job's disk state into the pure law ──────────────────────────────────────────
 
 /**
- * Reads `<artifactsDir>/e2e-shard-<k>/report-shard-<k>.json` for every `k` in `1..shardCount` —
+ * Reads `<artifactsDir>/e2e-shard-<set>-<k>/report-shard-<set>-<k>.json` for every `k` in `1..shardCount` —
  * the exact layout `e2e-shards.yml` uploads under (one artifact per shard, downloaded by
  * `download-artifact` into one subdirectory per artifact name). A shard whose directory or file
  * is absent reads as missing; a shard whose file fails to parse reads as unparseable — neither
@@ -213,7 +213,7 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
  */
 export function readShardReports(artifactsDir, shardCount, setName) {
   const out = [];
-  const tag = (shard) => (setName ? `${setName}-${shard}` : `${shard}`);
+  const tag = (shard) => `${setName}-${shard}`;
   for (let shard = 1; shard <= shardCount; shard++) {
     const dir = join(artifactsDir, `e2e-shard-${tag(shard)}`);
     const file = join(dir, `report-shard-${tag(shard)}.json`);
@@ -237,33 +237,19 @@ export function trackedE2eFiles(repoRoot, glob = "tests/e2e/*.test.ts") {
 function cliMergeVerify(args) {
   const artifactsDir = resolve(readFlag(args, "--artifacts-dir") ?? "artifacts");
   const repoRoot = resolve(readFlag(args, "--repo-root") ?? ".");
-  const shardCountFlag = readFlag(args, "--shard-count");
 
-  let verdict;
-  let shards;
-  let trackedCount;
-  if (shardCountFlag !== undefined) {
-    // One legacy, unnamed set (artifacts `e2e-shard-<k>`, the `tests/e2e` glob): kept for a desk that
-    // reads a single set's reports by hand. The workflow never passes this flag.
-    const shardCount = Number(shardCountFlag);
-    const trackedFiles = trackedE2eFiles(repoRoot);
-    verdict = evaluateMergeGate({ shardCount, shardReports: readShardReports(artifactsDir, shardCount), trackedFiles });
-    shards = shardCount;
-    trackedCount = trackedFiles.length;
-  } else {
-    // EVERY set in `E2E_SETS`, each against its own tracked-file union.
-    const setReports = {};
-    const trackedBySet = {};
-    trackedCount = 0;
-    shards = 0;
-    for (const set of E2E_SETS) {
-      setReports[set.name] = readShardReports(artifactsDir, set.shards, set.name);
-      trackedBySet[set.name] = trackedE2eFiles(repoRoot, set.trackedGlob);
-      trackedCount += trackedBySet[set.name].length;
-      shards += set.shards;
-    }
-    verdict = evaluateAllSets({ setReports, trackedBySet });
+  // EVERY set in `E2E_SETS`, each against its own tracked-file union.
+  const setReports = {};
+  const trackedBySet = {};
+  let trackedCount = 0;
+  let shards = 0;
+  for (const set of E2E_SETS) {
+    setReports[set.name] = readShardReports(artifactsDir, set.shards, set.name);
+    trackedBySet[set.name] = trackedE2eFiles(repoRoot, set.trackedGlob);
+    trackedCount += trackedBySet[set.name].length;
+    shards += set.shards;
   }
+  const verdict = evaluateAllSets({ setReports, trackedBySet });
 
   // One grep-able line, read both by a human in the log and by `e2e-shards.mjs push` watching the
   // same run from outside — the helper never re-derives the verdict from raw JSON over the wire.
@@ -393,7 +379,7 @@ async function main() {
   if (sub === "merge-verify") { cliMergeVerify(rest); return; }
   if (sub === "sets") { for (const set of E2E_SETS) console.log(`${set.name} ${set.dir} ${set.config}`); return; }
   if (sub === "push") { await cliPush(rest, repoRoot); return; }
-  console.error("usage: e2e-shards.mjs merge-verify --artifacts-dir <dir> --shard-count <n>");
+  console.error("usage: e2e-shards.mjs merge-verify --artifacts-dir <dir> [--repo-root <dir>]");
   console.error("       e2e-shards.mjs push <lane>");
   console.error("       e2e-shards.mjs sets");
   process.exitCode = 1;
