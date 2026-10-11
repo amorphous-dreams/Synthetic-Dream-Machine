@@ -92,12 +92,20 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(parsed).toEqual(fact);
   });
 
-  test("a fact with NO inputDigest round-trips with it absent (no content claim)", () => {
+  test("`abandoned` is the ONE state a fact may round-trip with NO inputDigest (no content claim)", () => {
     const fact = { requestId: "r2b", state: "abandoned" as const, seq: 2 };
     const record = buildReceiptFact(fact);
     expect(record.tiddler["input-digest"]).toBeUndefined();
     const parsed = parseReceiptFact(record.tiddler as Record<string, unknown>);
     expect(parsed).toEqual(fact);
+  });
+
+  test("EVERGREEN: a non-abandoned fact with no digest refuses by name — parseReceiptFact returns null, never a legacy-shaped optional absence", () => {
+    // CONTROL: the identical field bag with `state: "abandoned"` instead parses fine (proven above),
+    // so this refusal is keyed on the state/digest pairing, not on a malformed bag in general.
+    for (const state of ["committed", "done", "error", "evicted"] as const) {
+      expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r2c`, "request-id": "r2c", state, seq: 3 })).toBeNull();
+    }
   });
 
   test("a torn fact (bad state, non-numeric seq) parses to null, never throws", () => {

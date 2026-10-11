@@ -119,20 +119,39 @@ export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 
 export type ReceiptFactState = "committed" | "abandoned" | "done" | "error" | "evicted";
 
-/** One request's durable fact — the channel's read-through arbitration ledger. */
-export interface ReceiptFact {
-  readonly requestId:   string;
-  /** Absent = no content claim (e.g. a cancel/abandon fact that never arbitrated a digest). */
-  readonly inputDigest?: string;
-  readonly effectKey?:  string;
-  readonly state:       ReceiptFactState;
+interface ReceiptFactCommon {
+  readonly requestId:  string;
+  readonly effectKey?: string;
   /** Set once the fact reaches a terminal outcome; survives the `evicted` transition
    *  (eviction keeps digest, effect key and terminal — only the full outcome drops). */
-  readonly terminal?:   "done" | "error";
+  readonly terminal?:  "done" | "error";
   /** Per-vessel monotonic counter, assigned by the channel at commit/abandon or at
    *  first observation of a non-UDS-path outcome. Never a time (no-global-now). */
-  readonly seq:         number;
+  readonly seq:        number;
 }
+
+/** `abandoned` is the ONE state that may carry no digest — and only via an explicit
+ *  `{op:"cancel"}` withdrawal, which compares no content claim at all (an EOF-drop
+ *  still records the invocation's own digest before refusing by state). Every other
+ *  state names a claim this ledger arbitrated or observed, so its digest is required,
+ *  never a legacy-shaped optional absence (early alpha, no shim). */
+export interface ReceiptFactAbandoned extends ReceiptFactCommon {
+  readonly state:       "abandoned";
+  readonly inputDigest?: string;
+}
+
+export interface ReceiptFactClaimed extends ReceiptFactCommon {
+  readonly state:       "committed" | "done" | "error" | "evicted";
+  readonly inputDigest: string;
+}
+
+/** One request's durable fact — the channel's read-through arbitration ledger. */
+export type ReceiptFact = ReceiptFactAbandoned | ReceiptFactClaimed;
+
+/** A fact not yet assigned its `seq` — distributed per-branch (never a bare `Omit` over the
+ *  union, which would collapse the discriminant and let a `committed`/`done`/`error`/`evicted`
+ *  draft through with no digest). */
+export type ReceiptFactDraft = Omit<ReceiptFactAbandoned, "seq"> | Omit<ReceiptFactClaimed, "seq">;
 
 function isReceiptFactState(v: unknown): v is ReceiptFactState {
   return v === "committed" || v === "abandoned" || v === "done" || v === "error" || v === "evicted";
@@ -175,11 +194,21 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   const terminalRaw = fields["terminal"];
   const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
 
+  if (state === "abandoned") {
+    return {
+      requestId, state, seq,
+      ...(inputDigest !== undefined && { inputDigest }),
+      ...(effectKey   !== undefined && { effectKey }),
+      ...(terminal    !== undefined && { terminal }),
+    };
+  }
+  // Every state but `abandoned` claims a digest — a committed/done/error/evicted fact with
+  // none on the wire reads as torn, never as a legacy-shaped "unverifiable" absence.
+  if (inputDigest === undefined) return null;
   return {
-    requestId, state, seq,
-    ...(inputDigest !== undefined && { inputDigest }),
-    ...(effectKey   !== undefined && { effectKey }),
-    ...(terminal    !== undefined && { terminal }),
+    requestId, state, seq, inputDigest,
+    ...(effectKey !== undefined && { effectKey }),
+    ...(terminal  !== undefined && { terminal }),
   };
 }
 

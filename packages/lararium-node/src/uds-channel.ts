@@ -40,7 +40,7 @@ import {
   DAEMON_BAG_ID, AutomergeDocStore, CompositeStore,
   newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, buildReceiptFact, parseReceiptFact,
-  verbInputDigest, type ReceiptFact,
+  verbInputDigest, type ReceiptFact, type ReceiptFactDraft,
 } from "@lararium/mesh";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
@@ -223,7 +223,7 @@ class FactLedger {
   /** Mint a NEW fact (committed, abandoned, or a first non-UDS-path observation) — assigns the next
    *  seq, writes it durably, flushes the repo (the durability floor BEFORE a caller may dispatch or
    *  this channel may answer), warms the cache, and runs the ring's own eviction check. */
-  private async record(fact: Omit<ReceiptFact, "seq">): Promise<ReceiptFact> {
+  private async record(fact: ReceiptFactDraft): Promise<ReceiptFact> {
     await this.ensureSeeded();
     const full: ReceiptFact = { ...fact, seq: this.nextSeq++ };
     await this.composite.put(buildReceiptFact(full), { kind: "lares-verb", requestId: fact.requestId });
@@ -286,34 +286,53 @@ class FactLedger {
    * fact already on record is promoted to its terminal state (seq unchanged — observation never
    * mints a new attempt); an outcome with no prior fact at all (the non-UDS path) mints one fresh,
    * seeded with the digest the outcome itself stamped (digest-on-outcome, D1 commit 2 — every
-   * outcome this early-alpha vessel ever writes carries one; no legacy data, no shim).
+   * outcome this early-alpha vessel ever writes carries one; no legacy data, no shim). A prior fact
+   * that reached here with NO digest (the one `cancel`-abandoned shape) borrows the outcome's own
+   * digest to promote, if the outcome carries one — a worker that still ran despite the withdrawal
+   * is a real content claim, never fabricated. With neither side holding one, this observation is
+   * refused by name rather than minting an ill-typed claim.
    */
   async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined): Promise<void> {
     const existing = await this.get(requestId);
     if (existing) {
       if (existing.terminal === status || existing.state === "evicted") return; // already recorded / already dropped
-      const updated: ReceiptFact = { ...existing, state: status, terminal: status };
+      const digest = existing.inputDigest ?? inputDigest;
+      if (digest === undefined) {
+        // No digest on the standing fact (the `cancel`-abandoned shape) and none on the outcome
+        // either — nothing to promote. Leave the abandoned verdict standing rather than mint an
+        // ill-typed claim.
+        return;
+      }
+      const updated: ReceiptFact = { ...existing, inputDigest: digest, state: status, terminal: status };
       await this.composite.put(buildReceiptFact(updated), { kind: "lares-verb", requestId });
       await this.repo.flush();
       this.cache.set(requestId, updated);
       return;
     }
-    await this.record({ requestId, state: status, terminal: status, ...(inputDigest !== undefined && { inputDigest }) });
+    if (inputDigest === undefined) {
+      // No prior fact and the outcome itself carries no digest to mint one from — this early-alpha
+      // vessel never writes a done/error outcome without one, so a gap here reads as torn, not as
+      // "unverifiable"; refuse the mint by name rather than fabricate a claim.
+      return;
+    }
+    await this.record({ requestId, state: status, terminal: status, inputDigest });
   }
 
   /** Past `ring` tracked requests, drop the OLDEST (lowest `seq`) to `evicted` — keep its digest,
    *  effect key and terminal (a dedup/replay reader still needs those), but tombstone the full
-   *  durable outcome body so the ring actually bounds storage, not just lookups. */
+   *  durable outcome body so the ring actually bounds storage, not just lookups. `evicted` is a
+   *  digest-REQUIRED state (it names a claim this ledger arbitrated or observed) — a victim that
+   *  never arbitrated one (the one `cancel`-abandoned, no-digest shape) carries nothing to tombstone
+   *  either, so it drops out of the ring untouched, its `abandoned` verdict left standing. */
   private async evictIfNeeded(): Promise<void> {
     let evictedAny = false;
     while (this.order.length > this.ring) {
       const victimId = this.order.shift();
       if (victimId === undefined) break;
       const victim = this.cache.get(victimId);
-      if (!victim || victim.state === "evicted") continue;
+      if (!victim || victim.state === "evicted" || victim.inputDigest === undefined) continue;
       const evicted: ReceiptFact = {
-        requestId: victim.requestId, state: "evicted", seq: victim.seq,
-        ...(victim.inputDigest !== undefined && { inputDigest: victim.inputDigest }),
+        requestId: victim.requestId, state: "evicted", seq: victim.seq, inputDigest: victim.inputDigest,
         ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
         ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
       };
