@@ -1,0 +1,105 @@
+# The BROWSER CI surface: a standing node plus a disposable Playwright runner on one compose network, for
+# automated browser walks against a live vessel. Every run starts from void: state and workspace ride NAMED
+# volumes (never a host path), and `tools/browser-ci.sh down` removes them with the containers.
+#
+#   seed    one-shot. Stages /state through the TEST door: tools/test-scratch-marker.mjs writes the scratch marker,
+#           then tools/seed-test-custody.mjs founds the custody under the published test passphrase, and the CLI's offline
+#           `vessel found` completes the founding on that standing custody tree. No bypass
+#           flag and no env var carries a credential. The `serve` image carries neither tool, so THIS surface
+#           alone mounts the repo's tools/ directory read-only at /app/tools; the product image stays free of the
+#           test door.
+#   lares   the standing node from the product image, with the surface file's split roots. Loopback only.
+#   qa      disposable Chromium runner (the official Playwright image, pinned to the version package.json pins).
+#           The repo rides read-only at /repo, /tmp is a writable tmpfs profile dir, and the runner reaches the
+#           node by service name. No Docker socket reaches any container: the host script issues admit carriages.
+#
+# Host port: BROWSER_CI_PORT (default 5401; the browser swarm's range is 5400-5499).
+# Drive it with tools/browser-ci.sh (up | admit | ingest | qa | down).
+
+name: lares-browser-ci
+
+x-roots: &roots
+  LAR_ROOT: /state
+  LAR_BAGS: /workspace/bags
+  LAR_WIKIS: /workspace/wikis
+  LAR_GENESIS: /app/genesis
+  LAR_PORT: "4321"
+
+x-node: &node
+  image: lares-browser-ci:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: serve
+  volumes:
+    - state:/state
+    - workspace:/workspace
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  seed:
+    <<: *node
+    profiles: [seed]
+    environment: *roots
+    volumes:
+      - state:/state
+      - workspace:/workspace
+      - type: bind
+        source: ./tools
+        target: /app/tools
+        read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+    entrypoint: ["sh", "-ec"]
+    command:
+      - >-
+        node tools/test-scratch-marker.mjs /state &&
+        node tools/seed-test-custody.mjs /state &&
+        node packages/lares-cli/bin/lares.mjs vessel found --skip-build --root /state --genesis /app/genesis
+    restart: "no"
+
+  lares:
+    <<: *node
+    environment:
+      <<: *roots
+      LAR_SAME_ORIGIN: "true"
+      LAR_PUBLIC_URL: http://lares:4321
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
+    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    init: true
+    tmpfs:
+      - /tmp:mode=1777
+    ports:
+      - "127.0.0.1:${BROWSER_CI_PORT:-5401}:4321"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 10s
+
+  qa:
+    image: mcr.microsoft.com/playwright:v1.64.0-noble
+    profiles: [qa]
+    user: pwuser
+    working_dir: /repo
+    environment:
+      LARES_URL: http://lares:4321
+      HOME: /tmp/home
+    volumes:
+      - type: bind
+        source: .
+        target: /repo
+        read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+    shm_size: 1gb
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: []
+
+volumes:
+  state: {}
+  workspace: {}
