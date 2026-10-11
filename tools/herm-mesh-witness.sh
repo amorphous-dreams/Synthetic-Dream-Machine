@@ -13,7 +13,7 @@
 # Usage: node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2   (each wave boots against the pins
 #        the earlier wave founded; a bare `compose up` stands peers that knock with no pin and never dial)
 #        export LAR_ROOT=$(mktemp -d) && node tools/test-scratch-marker.mjs "$LAR_ROOT" && node tools/seed-test-custody.mjs "$LAR_ROOT" \
-#          && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$LAR_ROOT"/ \\
+#          && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$LAR_ROOT"/ \
 #          && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
 #        ./tools/herm-mesh-witness.sh
 set -euo pipefail
