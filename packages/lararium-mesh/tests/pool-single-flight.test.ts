@@ -12,6 +12,10 @@
 
 import { describe, test, expect } from "vitest";
 import { VesselIslandPoolCore } from "../src/vessel-island-pool-core.js";
+
+// This single-flight witness cares about spawn counts, never plugin selection — R4/M6
+// requires every pool to carry a resolver, so a no-offerings floor stands in.
+const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
 import { mkEa, mkTeardownAck } from "../src/island-protocol.js";
 import type { VesselIslandHost, VesselWorkerHandle } from "../src/vessel-host.js";
 import type { WikiMountSpec } from "../src/wiki-recipe.js";
@@ -51,7 +55,7 @@ function countingHost(): { host: VesselIslandHost; spawns: () => number } {
 describe("VesselIslandPoolCore — single-flight activation latch", () => {
   test("N concurrent mounts of one grain spawn exactly ONE worker", async () => {
     const { host, spawns } = countingHost();
-    const pool = new VesselIslandPoolCore({ host });
+    const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
 
     // Fire eight references at the same cold grain, all in one tick.
     await Promise.all(Array.from({ length: 8 }, () => pool.mountWiki(WIKI_ID, spec())));
@@ -65,7 +69,7 @@ describe("VesselIslandPoolCore — single-flight activation latch", () => {
 
   test("a fresh reference after settle re-uses the live slot, still one worker", async () => {
     const { host, spawns } = countingHost();
-    const pool = new VesselIslandPoolCore({ host });
+    const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec());
     await pool.mountWiki(WIKI_ID, spec());   // already wela → no-op, no second spawn
@@ -78,7 +82,7 @@ describe("VesselIslandPoolCore — single-flight activation latch", () => {
 describe("VesselIslandPoolCore — activation-on-reference (ensureWiki)", () => {
   test("ensureWiki re-mounts a cold grain from its retained spec", async () => {
     const { host, spawns } = countingHost();
-    const pool = new VesselIslandPoolCore({ host });
+    const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec());
     expect(pool.tier(WIKI_ID)).toBe("wela");
@@ -97,7 +101,7 @@ describe("VesselIslandPoolCore — activation-on-reference (ensureWiki)", () => 
 
   test("ensureWiki on a never-mounted grain returns false (caller resolves the spec)", async () => {
     const { host } = countingHost();
-    const pool = new VesselIslandPoolCore({ host });
+    const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
 
     expect(await pool.ensureWiki("lar:///wiki/unknown")).toBe(false);
     await pool.disposeAll();
@@ -105,7 +109,7 @@ describe("VesselIslandPoolCore — activation-on-reference (ensureWiki)", () => 
 
   test("concurrent ensureWiki on a cold grain still spawns exactly one worker", async () => {
     const { host, spawns } = countingHost();
-    const pool = new VesselIslandPoolCore({ host });
+    const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec());
     await pool.unmountWiki(WIKI_ID);

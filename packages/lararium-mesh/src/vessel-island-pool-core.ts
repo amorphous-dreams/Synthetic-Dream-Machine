@@ -112,23 +112,18 @@ export interface VesselIslandPoolCoreOptions {
   diskMirrorGrant?: DiskMirrorGrant;
   /** Called when an island emits a verse-event reaction. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event) => void;
-  /** The engine's plugin-tiddler CIDs — every wiki island resolves them by CID from the local
-   *  CAS (the breath path), the same set the daemon island gets. Constant per genesis.
-   *  PRE-R3 shape: a vessel-WIDE floor every island gets identically. When `resolvePluginCids`
-   *  is ALSO supplied, a mount's final pluginCids come from that resolution instead (R3 — plugins
-   *  load by the WIKI'S OWN recipe); this field then has no effect on node, where R3 lands. The
-   *  browser pool (iteration 3) keeps reading this field alone — nothing here changes for it. */
-  pluginCids?: readonly string[];
   /**
-   * R3 — resolve ONE mount's own `spec.recipe` into the CIDs its manifest should carry (the
-   * fixed boot-set floor UNION this wiki's verified, byte-checked offering selection). Absent =
-   * every island gets the flat `pluginCids` floor above (the pre-R3 / browser reading). Present =
-   * called once per activation, BEFORE the worker spawns; a refusal here throws, so a wiki whose
-   * recipe names an unresolvable, colliding, or byte-missing offering never reads as an empty or
-   * successful mount — it fails the activation outright, exactly like any other mount failure
-   * (counted in the same OTP intensity ledger).
+   * R3/R4 — resolve ONE mount's own `spec.recipe` into the CIDs its manifest should carry (the
+   * fixed boot-set floor UNION this wiki's verified, byte-checked offering selection). REQUIRED:
+   * the pre-R3 flat `pluginCids` floor (every island getting the SAME vessel-wide list) has
+   * retired on BOTH platforms — node supplies `resolveNodeIslandPluginCids`, the browser supplies
+   * `resolveBrowserIslandPluginCids`, and the constructor refuses to build a pool with neither, so
+   * no blanket-list path can survive by omission. Called once per activation, BEFORE the worker
+   * spawns; a refusal here throws, so a wiki whose recipe names an unresolvable, colliding, or
+   * byte-missing offering never reads as an empty or successful mount — it fails the activation
+   * outright, exactly like any other mount failure (counted in the same OTP intensity ledger).
    */
-  resolvePluginCids?: (recipe: WikiRecipe) => Promise<
+  resolvePluginCids: (recipe: WikiRecipe) => Promise<
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
@@ -173,8 +168,7 @@ export class VesselIslandPoolCore {
   private readonly _mainRepo:       Repo | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event) => void) | null;
-  private readonly _pluginCids:     readonly string[];
-  private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"] | null;
+  private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _pendingWikiVerbs = new Map<string, {
     resolve: (r: Record<string, unknown>) => void;
@@ -188,12 +182,20 @@ export class VesselIslandPoolCore {
   private readonly _mountFailureWindowMs: number;
 
   constructor(opts: VesselIslandPoolCoreOptions) {
+    // M6 — no silent ignore. `resolvePluginCids` is REQUIRED in the type above; this runtime
+    // guard catches a caller that reaches the constructor from plain JS (no compiler to stop it)
+    // and refuses BY NAME rather than mounting every island against an absent resolver.
+    if (!opts.resolvePluginCids) {
+      throw new Error(
+        "[vessel-pool] resolvePluginCids is required — every mount resolves its OWN recipe's " +
+        "plugin selection; the flat vessel-wide pluginCids floor has retired on every platform",
+      );
+    }
     this._host            = opts.host;
     this._mainRepo        = opts.mainRepo ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
-    this._pluginCids      = opts.pluginCids ?? [];
-    this._resolvePluginCids = opts.resolvePluginCids ?? null;
+    this._resolvePluginCids = opts.resolvePluginCids;
     this._onEa            = opts.onEa ?? null;
     this._mountSilenceMs       = opts.mountSilenceMs ?? HANDSHAKE_TIMEOUT_MS;
     this._mountStallMs         = opts.mountStallMs ?? 3 * this._mountSilenceMs;
@@ -281,21 +283,19 @@ export class VesselIslandPoolCore {
     // mount mechanism — one authority, no second collector. `pinned` still rides the
     // slot below (the collector reads pin-exemption on its own side).
 
-    // R3 — PLUGINS LOAD BY THIS WIKI'S OWN RECIPE. Resolved BEFORE any port/worker exists, so a
-    // refused selection (unknown offering, cid-mismatch, a duplicate or boot-set-collision claim,
-    // missing or corrupt bytes) never spends a worker spawn — it fails the activation outright,
-    // counted in the SAME intensity ledger as any other mount failure, never a silent empty
-    // success. Absent `resolvePluginCids` (the browser pool, pre-R3): unchanged, flat floor.
-    let pluginCids = this._pluginCids;
-    if (this._resolvePluginCids) {
-      const resolved = await this._resolvePluginCids(spec.recipe);
-      if (!resolved.ok) {
-        failures.push(Date.now());
-        this._mountFailures.set(wikiId, failures);
-        throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
-      }
-      pluginCids = resolved.pluginCids;
+    // R3/R4 — PLUGINS LOAD BY THIS WIKI'S OWN RECIPE, on every platform. Resolved BEFORE any
+    // port/worker exists, so a refused selection (unknown offering, cid-mismatch, a duplicate or
+    // boot-set-collision claim, missing or corrupt bytes) never spends a worker spawn — it fails
+    // the activation outright, counted in the SAME intensity ledger as any other mount failure,
+    // never a silent empty success. `resolvePluginCids` is required (constructor-enforced), so
+    // no mount ever falls through to a flat, unresolved floor.
+    const resolved = await this._resolvePluginCids(spec.recipe);
+    if (!resolved.ok) {
+      failures.push(Date.now());
+      this._mountFailures.set(wikiId, failures);
+      throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
     }
+    const pluginCids = resolved.pluginCids;
 
     const { mainPort, syncPort } = this._host.newSyncChannel();
     if (this._mainRepo) attachMessageChannelSync(this._mainRepo, mainPort);

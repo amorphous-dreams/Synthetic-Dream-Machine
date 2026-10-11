@@ -187,12 +187,23 @@ describe("★ R3 — TWO WIKIS IN ONE VESSEL load plugins BY RECIPE, never a ves
     ).rejects.toThrow(/corrupt-bytes/);
   });
 
-  test("CONTROL — with no resolvePluginCids wired, every mount keeps reading the flat pre-R3 floor (the browser pool's unaffected shape)", async () => {
+  test("★ M6 MUTATION PROOF — a pool built with no resolvePluginCids wired REFUSES to construct; no blanket floor survives ★", () => {
+    const { host } = recordingHost();
+    // No `resolvePluginCids` in the options — the TS type above already forbids this at compile
+    // time (hence the `as` cast: this proves the RUNTIME guard a plain-JS caller could still hit,
+    // not a type hole), so the constructor itself must refuse by name rather than silently
+    // falling back to a flat, unresolved vessel-wide list.
+    expect(() => new VesselIslandPoolCore({ host } as unknown as ConstructorParameters<typeof VesselIslandPoolCore>[0]))
+      .toThrow(/resolvePluginCids is required/);
+  });
+
+  test("CONTROL — a pool built WITH resolvePluginCids wired constructs and mounts normally", async () => {
     const { host, manifests } = recordingHost();
-    const pool = new VesselIslandPoolCore({ host, pluginCids: [GRAMMAR_CID, SHADOWS_CID] });
-    const WIKI = "lar:///ha.ka.ba/bags/wiki-precr3";
-    await pool.mountWiki(WIKI, spec({ wikiSlug: "wiki-precr3", pluginOfferings: ["sha256:" + "99".repeat(32)] }));
-    // No resolver wired → the recipe's own pluginOfferings is NEVER consulted; the flat floor rides unchanged.
+    const resolvePluginCids = makeResolver(() => undefined, () => null);
+    const pool = new VesselIslandPoolCore({ host, resolvePluginCids });
+    const WIKI = "lar:///ha.ka.ba/bags/wiki-control";
+    await pool.mountWiki(WIKI, spec({ wikiSlug: "wiki-control" }));
+    expect(pool.tier(WIKI)).toBe("wela");
     expect(new Set(manifests.get(WIKI)!.pluginCids ?? [])).toEqual(new Set([GRAMMAR_CID, SHADOWS_CID]));
     await pool.disposeAll();
   });

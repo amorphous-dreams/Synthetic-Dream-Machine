@@ -63,12 +63,14 @@ export interface GenesisCasManifest {
  * the local CAS (the breath path), never CRDT-syncing the bytes. One derivation,
  * fed to every island of the runtime.
  *
- * PRE-R3 SHAPE, STILL THE BROWSER'S READING (iteration 3 retires it there too): every island got
- * the SAME vessel-wide list, with no per-recipe distinction. The node vessel no longer calls this
- * directly — `bootSetPluginCids` below names the identical floor computation under the RIGHT
- * scope (one fixed ingredient of a per-island resolution, never the whole answer by itself); see
- * `resolveIslandPluginCids` for how a node island folds it together with its own recipe's
- * verified offering selection.
+ * PRE-R3 SHAPE, NO LONGER CALLED BY ANY VESSEL BUILDER (R4 retires the browser's reading of it
+ * too, both the daemon VM and the pool now resolving each recipe's own selection through
+ * `bootSetPluginCids`/`selectPluginBlobs`/`verifyCasBytes(Async)` — see
+ * `resolveNodeIslandPluginCids` (node) and `resolveBrowserIslandPluginCids` (browser)). The
+ * export stays only because a node test fixture still names it; it is identical to, and
+ * superseded by, `bootSetPluginCids` below, which names the SAME floor computation under its
+ * right, narrower scope (one fixed ingredient of a per-island resolution, never the whole answer
+ * by itself).
  */
 export function pluginCidsFromIslandBlobs(
   blobs: Record<string, CasBlobLike> | undefined,
@@ -138,6 +140,27 @@ export function verifyCasBytes(
 ): CasBytesVerdict {
   for (const cid of cids) {
     const bytes = readBytes(cid);
+    if (!bytes) return { ok: false, failure: { code: "missing-bytes", cid } };
+    const computed = hashHex(bytes);
+    if (computed !== cid) return { ok: false, failure: { code: "corrupt-bytes", cid, computed } };
+  }
+  return { ok: true };
+}
+
+/**
+ * verifyCasBytesAsync — the SAME fail-closed-by-name verdict as `verifyCasBytes`, over a CAS
+ * read that cannot answer synchronously (the browser's OPFS resolver — `readCasBlobFromOpfs` —
+ * is itself a Promise). R4 (browser islands load by recipe) resolves its byte check through this
+ * form; node's nodefs read stays sync and keeps calling `verifyCasBytes` directly. Identical
+ * codes, identical order, so neither platform's refusal can drift from the other's.
+ */
+export async function verifyCasBytesAsync(
+  cids:     readonly string[],
+  readBytes: (cid: string) => Promise<Uint8Array | null>,
+  hashHex:   (bytes: Uint8Array) => string,
+): Promise<CasBytesVerdict> {
+  for (const cid of cids) {
+    const bytes = await readBytes(cid);
     if (!bytes) return { ok: false, failure: { code: "missing-bytes", cid } };
     const computed = hashHex(bytes);
     if (computed !== cid) return { ok: false, failure: { code: "corrupt-bytes", cid, computed } };

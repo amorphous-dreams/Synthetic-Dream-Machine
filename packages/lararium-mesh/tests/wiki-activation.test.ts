@@ -44,9 +44,13 @@ function countingHost(): { host: VesselIslandHost; spawns: () => number } {
 }
 
 /** Wire the pool + collector + cap exactly as a vessel does. */
+// This activation-cap witness cares about hydrate/evict wiring, never plugin selection — R4/M6
+// requires every pool to carry a resolver, so a no-offerings floor stands in.
+const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
+
 function makeVesselTrio(wikiCap: number, resolveSpec?: (id: string) => Promise<WikiMountSpec | null>) {
   const { host, spawns } = countingHost();
-  const pool = new VesselIslandPoolCore({ host });
+  const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
   const residency = new BagStowage({
     typeCaps: { wiki: wikiCap },
     onHydrate: async (id, t) => { if (t === "wiki") await pool.ensureWiki(id); },
