@@ -149,11 +149,11 @@ export interface PrecisionSettle {
  * Pass `withLogPrecision: false` to DROP the penalty: the objective `½π·ε̄²` is then monotone in π
  * with gradient `½·ε̄² > 0` and NO interior optimum — the flow slides to the `π→0` floor and never
  * settles (the runaway the penalty cures). Reported directly (`settled: false`), no iteration needed
- * to know it never stops. The `init`/`lr`/`iters`/`tol` opts are accepted for back-compat and ignored.
+ * to know it never stops.
  */
 export function settlePrecision(
   meanSqErr: number,
-  opts: { init?: number; lr?: number; iters?: number; tol?: number; withLogPrecision?: boolean } = {},
+  opts: { withLogPrecision?: boolean } = {},
 ): PrecisionSettle {
   const m = Math.max(0, meanSqErr);
   const withLog = opts.withLogPrecision ?? true;

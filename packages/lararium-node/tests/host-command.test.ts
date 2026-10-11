@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
+  hex, genesisCharterEpoch, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
   tokenVerifiesAt, redeemClaim, signLeafProof, type NexusDoc, type Presented,
 } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
@@ -56,8 +56,9 @@ async function seatOwnCharter(): Promise<{ aid: string; doc: NexusDoc }> {
   await generateOrLoadVesselIdentity();
   const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   const keys = roots.map((r) => r.verifyingKey);
+  const genesis = genesisCharterEpoch(keys, 2, "");
   const doc: NexusDoc = {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2),
+    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
     kahu: keys.map((verifyingKey, i) => ({ displayName: `Kahu ${i}`, verifyingKey })),
   };
   writeNexusDoc(sealHome(), doc);

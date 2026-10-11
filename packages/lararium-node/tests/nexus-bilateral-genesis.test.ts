@@ -39,7 +39,7 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  hex, genesisSealEpochCid, foundingRoster, foldCarriageSet, holdsCarriage,
+  hex, genesisCharterEpoch, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc, type KahuQuorumSeats, type CarriageEntry,
@@ -107,9 +107,10 @@ async function standHearth(root: string, threshold = 2): Promise<Hearth> {
     const nexusPubkey = await loadVesselVerifyingKey();
     const keys = roots.map((r) => r.verifyingKey);
     const bags = join(root, "state", "nexus");
+    const genesis = genesisCharterEpoch(keys, threshold, "");
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold,
-      sealEpochCid: genesisSealEpochCid(keys, threshold),
+      sealEpochCid: genesis.epochCid, sealLineage: [genesis],
       kahu: [
         { displayName: "Founder-0", verifyingKey: keys[0]! },
         { displayName: "Founder-1", verifyingKey: keys[1]! },

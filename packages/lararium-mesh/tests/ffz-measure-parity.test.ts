@@ -1,19 +1,22 @@
 /**
- * ffz-measure-parity — THE PARITY GUARD for the C-0 collapse (measureStep ⊂ quorumStep).
+ * ffz-measure-parity — THE PARITY GUARD for the C-0 collapse (the one-plane Measure path ⊂
+ * quorumStep at N=1).
  *
- * The collapse routes the one-plane Measure path through {@link quorumStep} at N=1 (content as
- * plane-0). This guard PINS that the collapse did NOT move 1-plane output: it embeds the EXACT
- * pre-collapse measureStep (`legacyMeasureStep` below, verbatim) and asserts the NEW measureStep
- * yields BYTE-IDENTICAL segment labels + gong flags on the fixtures the orchestrator + servo
- * tests exercise (the one-hot sessionA/sessionB topic-shift, the jitter-coherent run, the
- * orthogonal turn, the FLOOR churn-guard, the CEIL staleness force). If this fails, the collapse
- * is wrong — fix until identical.
+ * The collapse routes the one-plane Measure path through {@link quorumStep} + {@link
+ * centroidDriftStep} at N=1 (content as plane-0), called DIRECTLY — the thin back-compat
+ * `measureStep` wrapper that once stood between them is retired residue and is gone. This guard
+ * PINS that the collapse did NOT move 1-plane output: it embeds the EXACT pre-collapse
+ * `legacyMeasureStep` (below, verbatim) and asserts the collapsed quorum-servo call yields
+ * BYTE-IDENTICAL segment labels + gong flags on the fixtures the orchestrator + servo tests
+ * exercise (the one-hot sessionA/sessionB topic-shift, the jitter-coherent run, the orthogonal
+ * turn, the FLOOR churn-guard, the CEIL staleness force). If this fails, the collapse is wrong —
+ * fix until identical.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/ffz-clock
  */
 
 import { describe, test, expect } from "vitest";
-import { measureServoInit, measureStep, ffzCosine } from "../src/index.js";
+import { quorumServoInit, quorumStep, centroidDriftStep, ffzCosine } from "../src/index.js";
 
 // ── The PRE-COLLAPSE measureStep, embedded verbatim (the golden reference) ──────────────────
 const LEGACY_DEFAULTS = {
@@ -101,12 +104,16 @@ function runLegacy(vectors: number[][], config = {}): Trace {
 }
 
 function runNew(vectors: number[][], config = {}): Trace {
-  let st = measureServoInit();
+  let qstate = quorumServoInit(1);
+  let centroid: readonly number[] | null = null;
   const out: Trace = [];
   for (const v of vectors) {
-    const r = measureStep(st, v, config);
-    st = r.state;
-    out.push({ label: r.label, gonged: r.gonged });
+    const openCount = qstate.count;
+    const { drift, centroid: folded } = centroidDriftStep(centroid, v, openCount);
+    const step = quorumStep(qstate, [drift], config);
+    qstate = step.state;
+    centroid = step.gonged || openCount === 0 ? [...v] : folded;
+    out.push({ label: step.label, gonged: step.gonged });
   }
   return out;
 }
@@ -130,7 +137,7 @@ const FIXTURES: { name: string; vectors: number[][]; config?: Record<string, num
   { name: "CEIL — a tighter maxSegment forces the gong sooner", vectors: Array.from({ length: 10 }, () => [1, 0]), config: { maxSegment: 5 } },
 ];
 
-describe("PARITY GUARD — collapsed N=1 measureStep is byte-identical to the pre-collapse servo", () => {
+describe("PARITY GUARD — the collapsed N=1 quorum-servo call is byte-identical to the pre-collapse servo", () => {
   for (const fx of FIXTURES) {
     test(fx.name, () => {
       const legacy = runLegacy(fx.vectors, fx.config ?? {});

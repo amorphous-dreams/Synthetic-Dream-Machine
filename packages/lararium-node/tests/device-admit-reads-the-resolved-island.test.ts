@@ -34,7 +34,7 @@ import { join, dirname } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, realmIdOfCharter } from "@lararium/mesh";
+import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, realmIdOfCharter, genesisCharterEpoch } from "@lararium/mesh";
 
 import { writeNexusDoc, readNexusDoc, nexusCharterStands, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
 import { nodeNexusIsland, nodeNexusStandsAt, nodeNexusStanding, admittedJoineeIsland } from "../src/nexus-standing.js";
@@ -44,7 +44,10 @@ import { hearthDialTiddlers, readHearthDialPin, HEARTH_ISLAND_KIND_TIDDLER } fro
 
 /** A stand-in vessel verifying key — the spelling `loadVesselVerifyingKey` would hand back. */
 const OWN_KEY = "a1".repeat(32);
-const CHARTER = `epoch0-${"7a".repeat(32)}`;
+/** A real genesis seal lineage over the "steward" key below — there is no legacy bare-`sealEpochCid`
+ *  path any more, so a "the charter STANDS" fixture must carry a verifiable one-epoch lineage. */
+const CHARTER_GENESIS = genesisCharterEpoch(["b2".repeat(32)], 1, "");
+const CHARTER = CHARTER_GENESIS.epochCid;
 
 const saved: Record<string, string | undefined> = {};
 function setEnv(k: string, v: string | undefined): void {
@@ -75,6 +78,7 @@ describe("device-admit resolves the island the boot resolved", () => {
       kind: NEXUS_DOC_DOMAIN,
       threshold: 1,
       sealEpochCid: CHARTER,
+      sealLineage: [CHARTER_GENESIS],
       kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
     });
   }
@@ -197,7 +201,7 @@ describe("device-admit resolves the island the boot resolved", () => {
 describe("device-admit carries the founder's RESOLVED island, not just its gate key", () => {
   const OWN_KEY  = "a1".repeat(32);
   const JOINEE   = "e5".repeat(32);
-  const CHARTER  = `epoch0-${"7a".repeat(32)}`;
+  const CHARTER  = CHARTER_GENESIS.epochCid;
 
   const saved: Record<string, string | undefined> = {};
   function setEnv(k: string, v: string | undefined): void {
@@ -224,6 +228,7 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
       kind: NEXUS_DOC_DOMAIN,
       threshold: 1,
       sealEpochCid: CHARTER,
+      sealLineage: [CHARTER_GENESIS],
       kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
     });
   }

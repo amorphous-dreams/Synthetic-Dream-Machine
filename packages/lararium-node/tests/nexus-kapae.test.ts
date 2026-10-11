@@ -20,7 +20,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, genesisSealEpochCid, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry, type NexusDoc } from "@lararium/mesh";
+import { hex, genesisCharterEpoch, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry, type NexusDoc } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
@@ -51,12 +51,16 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-/** Seat a legacy-inception charter DOC binding the given verifying keys at 2-of-3 into `bags/nexus`. */
-function seatCharter(keys: string[], threshold = 2): void {
+/** Seat a charter DOC binding the given verifying keys at 2-of-3 into `bags/nexus`, with a real,
+ *  verifiable genesis lineage (the retired bare-`sealEpochCid` legacy path carries no lineage).
+ *  Returns the seated genesis epoch's cid. */
+function seatCharter(keys: string[], threshold = 2): string {
+  const genesis = genesisCharterEpoch(keys, threshold, "");
   const doc: NexusDoc = {
     kind: NEXUS_DOC_DOMAIN,
     threshold,
-    sealEpochCid: genesisSealEpochCid(keys, threshold),
+    sealEpochCid: genesis.epochCid,
+    sealLineage: [genesis],
     kahu: [
       { displayName: "Kahu Alpha", verifyingKey: keys[0] ?? null },
       { displayName: "Kahu Beta",        verifyingKey: keys[1] ?? null },
@@ -64,6 +68,7 @@ function seatCharter(keys: string[], threshold = 2): void {
     ],
   };
   writeNexusDoc(sealHome(), doc);
+  return genesis.epochCid;
 }
 
 describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
@@ -124,8 +129,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   it("excludes a verified parent whose own grandparent is absent", async () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    seatCharter(roots.map((r) => r.verifyingKey));
-    const epoch = genesisSealEpochCid(roots.map((r) => r.verifyingKey), 2);
+    const epoch = seatCharter(roots.map((r) => r.verifyingKey));
     const signers = await Promise.all([0, 1].map(async (i) => ({
       signer: roots[i]!.verifyingKey,
       sign: async (bytes: Uint8Array) => ed.signAsync(bytes, await loadPersonaGroupRootSeed(i)).then(hex),

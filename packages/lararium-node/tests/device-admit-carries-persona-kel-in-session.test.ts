@@ -39,7 +39,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import {
   hex, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  nexusIdentity, nexusScopeOrThrow,
+  nexusIdentity, nexusScopeOrThrow, genesisCharterEpoch,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 
@@ -72,14 +72,20 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
   return { repo, ownKey, cer };
 }
 
-/** `nexus rite quorum`'s own effect on disk — a charter seated at the seal home. */
-function climb(charter: string): void {
+/** `nexus rite quorum`'s own effect on disk — a charter seated at the seal home, with a real
+ *  verified genesis lineage (the retired bare-`sealEpochCid` legacy path carries none). Returns
+ *  the minted epoch's cid — distinct `salt` values distinguish tests, not any crypto meaning. */
+function climb(salt: number): string {
+  const key = salt.toString(16).padStart(2, "0").repeat(32);
+  const genesis = genesisCharterEpoch([key], 1, "");
   writeNexusDoc(larSealHome(), {
     kind: NEXUS_DOC_DOMAIN,
     threshold: 1,
-    sealEpochCid: charter,
-    kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+    sealEpochCid: genesis.epochCid,
+    sealLineage: [genesis],
+    kahu: [{ displayName: "steward", verifyingKey: key }],
   });
+  return genesis.epochCid;
 }
 
 describe("device-admit carries persona-KEL in-session, with no daemon boot between the climb and the admit", () => {
@@ -103,8 +109,7 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
   // ── RED ─────────────────────────────────────────────────────────────────────────────────────────
   test("RED — the charter board reads NO chain when nothing ever carried it (the fault, isolated)", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(21));
-    const charter = `epoch0-${"9a".repeat(32)}`;
-    climb(charter);
+    const charter = climb(0x9a);
 
     const boardIsland = admitBoardIsland(ownKey);
     expect(boardIsland, "the climb did not move the door's resolution — the rig is vacuous").toBe(charter);
@@ -124,8 +129,7 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
   // ── THE CURE, exercised directly at the seam device-admit composes ───────────────────────────────
   test("GREEN — carrying on read (nodeNexusIslandsBelow + carryPersonaKelUpTheGradient) reaches the chain, no boot required", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(22));
-    const charter = `epoch0-${"9b".repeat(32)}`;
-    climb(charter);
+    const charter = climb(0x9b);
 
     const boardIsland = admitBoardIsland(ownKey);
     expect(boardIsland).toBe(charter);
@@ -164,8 +168,7 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
   // ── CONTROL — a genuinely-absent chain still refuses, carry or no carry ──────────────────────────
   test("CONTROL — a chain nobody ever seated stays absent after the carry runs — the refusal survives", async () => {
     const { repo, ownKey } = await foundAtOwnIsland(seed(24));
-    const charter = `epoch0-${"9c".repeat(32)}`;
-    climb(charter);
+    const charter = climb(0x9c);
     const boardIsland = admitBoardIsland(ownKey);
     const absentPrefix = "persona-nobodyeverseatedthisidentifier";
 

@@ -39,8 +39,9 @@ export interface CaptureContext {
    */
   readonly beat?: string | number;
   /**
-   * Measure (L2) — the topic-shift segment LABEL the one servo commits on a gong
-   * ({@link measureStep} in ffz-project). Absent between gongs (the φ-band free-runs).
+   * Measure (L2) — the topic-shift segment LABEL the one-plane (N=1) quorum servo commits on a
+   * gong (`centroidDriftStep` + `quorumStep` in ffz-project). Absent between gongs (the φ-band
+   * free-runs).
    */
   readonly measure?: string | number;
   /**

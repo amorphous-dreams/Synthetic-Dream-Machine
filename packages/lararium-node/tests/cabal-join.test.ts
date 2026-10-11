@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, unlinkSync }
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
+import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc, genesisCharterEpoch } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
@@ -198,11 +198,14 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("★ a CLIMBED vessel's join reads the board its vouch wrote — both key on the NEXUS island ★", async () => {
     // A charter seated at the seal home moves the island off the vessel key to the genesis AID. The vouch
     // writes the island's board; a join keyed on the vessel key reads a board nobody wrote.
-    const charter = `epoch0-${"7c".repeat(32)}`;
+    // The retired bare-`sealEpochCid` legacy path carries no lineage; a "the charter STANDS" fixture
+    // needs a real, verifiable genesis to raise a live roster.
+    const genesis = genesisCharterEpoch(["b2".repeat(32)], 1, "");
     writeNexusDoc(larSealHome(), {
       kind: NEXUS_DOC_DOMAIN,
       threshold: 1,
-      sealEpochCid: charter,
+      sealEpochCid: genesis.epochCid,
+      sealLineage: [genesis],
       kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
     });
     const vesselKey = await loadVesselVerifyingKey();

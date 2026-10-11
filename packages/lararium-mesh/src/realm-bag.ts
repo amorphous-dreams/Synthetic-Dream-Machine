@@ -74,15 +74,13 @@ const NYM_RE = /^[0-9a-f]{64}$/;
 // ── THE REALM'S NAME ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The realm id a charter names: the GENESIS epoch cid of the seal lineage (inception — fixed across every
- * rotation), else the head epoch on the legacy single-epoch path. Null when no epoch stands: an unseated
- * charter names no realm, so nothing materializes.
+ * The realm id a charter names: the GENESIS epoch cid of the seal lineage alone (inception — fixed
+ * across every rotation). Null when no lineage stands: an unseated charter, or one read through the
+ * retired bare-`sealEpochCid` legacy path, names no realm, so nothing materializes.
  */
 export function realmIdOfCharter(doc: NexusDoc | null | undefined): string | null {
-  if (!doc) return null;
-  const genesis = doc.sealLineage?.[0]?.epochCid;
-  if (typeof genesis === "string" && genesis.length > 0) return genesis;
-  return typeof doc.sealEpochCid === "string" && doc.sealEpochCid.length > 0 ? doc.sealEpochCid : null;
+  const genesis = doc?.sealLineage?.[0]?.epochCid;
+  return typeof genesis === "string" && genesis.length > 0 ? genesis : null;
 }
 
 /** The realm's shared-CRDT doc URL — deterministic from the realm id, so every member resolves ONE doc. */

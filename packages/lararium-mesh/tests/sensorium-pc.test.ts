@@ -185,16 +185,13 @@ describe("the −ln π precision penalty (FIX 1, #crucible-tested)", () => {
 
   test("WITHOUT −ln π precision runs away; WITH it the flow SETTLES at the interior optimum", () => {
     const m = 0.25;
-    // with the penalty: gradient flow converges and STOPS at π* = 1/m = 4, from either side
-    const fromLow = settlePrecision(m, { init: 0.1 });
-    const fromHigh = settlePrecision(m, { init: 100 });
-    expect(fromLow.settled).toBe(true);
-    expect(fromHigh.settled).toBe(true);
-    expect(fromLow.precision).toBeCloseTo(4, 4);
-    expect(fromHigh.precision).toBeCloseTo(4, 4);
+    // with the penalty: the closed form settles at π* = 1/m = 4
+    const withPenalty = settlePrecision(m);
+    expect(withPenalty.settled).toBe(true);
+    expect(withPenalty.precision).toBeCloseTo(4, 4);
     // drop the penalty: the gradient is the constant ½·ε̄² > 0 — never zero, the flow slides to the
     // π→0 floor and NEVER settles at an interior point (the runaway the −ln π cures).
-    const naive = settlePrecision(m, { init: 4, withLogPrecision: false });
+    const naive = settlePrecision(m, { withLogPrecision: false });
     expect(naive.settled).toBe(false);
     expect(naive.precision).toBeLessThan(1e-6); // ran to the boundary, no interior optimum
     expect(Math.abs(naive.grad)).toBeGreaterThan(1e-3); // gradient never vanished

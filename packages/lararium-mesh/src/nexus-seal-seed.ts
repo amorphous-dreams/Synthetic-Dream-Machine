@@ -82,12 +82,13 @@ export interface NexusDoc {
   readonly kind:            typeof NEXUS_DOC_DOMAIN;
   /** k — the quorum threshold a valid antigen act carries (2-of-3 at founding). */
   readonly threshold:       number;
-  /** The charter epoch the antigen roots on — the pre-rotated chain's HEAD epochCid, or null while unestablished. */
+  /** A raw display/round-trip copy of the lineage HEAD's epochCid — never consulted by `foundingRoster`,
+   *  which roots ONLY on a verified `sealLineage`. Null while unestablished. */
   readonly sealEpochCid: string | null;
   /**
-   * The pre-rotated, hash-linked charter-epoch CHAIN (KERI): genesis at index 0, head at the end. Present
-   * once `lares nexus seal seat` establishes it; a `rotate` ceremony appends. Absent on the legacy
-   * genesis-inception path (the antigen then roots on `sealEpochCid` directly). A PRESENT chain MUST
+   * The pre-rotated, hash-linked charter-epoch CHAIN (KERI): genesis at index 0, head at the end. The
+   * ONLY path to a live roster — `lares nexus seal seat` establishes it, a `rotate` ceremony appends.
+   * Absent or empty ⇒ nothing roots (there is no genesis-inception fallback). A PRESENT chain MUST
    * verify AND its head MUST bind the seated key-set, or the roster reads empty (fail-closed).
    */
   readonly sealLineage?:   readonly SealEpoch[];
@@ -118,9 +119,6 @@ export interface NexusDoc {
    */
   readonly admissionDials?:    AdmissionDials;
 }
-
-/** Legacy alias — one founding kahu named by display + its (unbound-until-seated) key. */
-export type FoundingKahu = NexusCharterKahu;
 
 /**
  * The MAJORITY threshold over a roster of `n` — the seat's default when the operator names none.
@@ -170,28 +168,24 @@ export function genesisSealEpochCid(seatedKeys: readonly string[], threshold: nu
  * The founding `KahuQuorumSeats`, folded from a loaded charter doc — the roster the antigen verifies against.
  * The doc IS the authority home. FAILS CLOSED: an absent doc, a wrong-kind doc, or a doc with no
  * established charter epoch yields an EMPTY key-set + empty epoch, so the multi-sig verifier's
- * `keys.length < threshold` and epoch-match guards both deny. Only a doc carrying a real charter epoch
- * AND seated keys raises a live roster.
+ * `keys.length < threshold` and epoch-match guards both deny. Only a doc carrying a VERIFIED seal
+ * lineage AND seated keys raises a live roster — there is no genesis-inception fallback: a charter
+ * with no verified `sealLineage` roots NOTHING.
  */
 export function foundingRoster(doc: NexusDoc | null): KahuQuorumSeats {
   const threshold = doc && Number.isInteger(doc.threshold) && doc.threshold >= 1 ? doc.threshold : UNREADABLE_THRESHOLD_FLOOR;
   const keys = seatedKahuKeys(doc);
   const empty: KahuQuorumSeats = { keys: [], threshold, sealEpochCid: "" };
 
-  // Pre-rotation chain path: a present chain MUST verify its whole lineage AND its HEAD must bind the
-  // seated key-set — either failure folds to the empty (inert) roster. The antigen then roots on the
-  // cryptographically-verified chain HEAD, never a bare stored string.
-  if (doc?.sealLineage && doc.sealLineage.length > 0) {
-    if (!verifySealLineage(doc.sealLineage)) return empty;                        // broken lineage → deny
-    const head = doc.sealLineage[doc.sealLineage.length - 1]!;
-    if (head.keySetHash !== sealKeySetHash(keys, threshold)) return empty;       // head unbound to seated keys → deny
-    return { keys, threshold, sealEpochCid: head.epochCid };
-  }
-
-  // Legacy genesis-inception path: root directly on the stored epoch cid.
-  const epoch = doc && typeof doc.sealEpochCid === "string" ? doc.sealEpochCid : "";
-  if (epoch.length === 0) return empty;                                             // no epoch → nothing roots → deny
-  return { keys, threshold, sealEpochCid: epoch };
+  // The pre-rotation chain is the ONLY path to a live roster: a present chain MUST verify its whole
+  // lineage AND its HEAD must bind the seated key-set — either failure folds to the empty (inert)
+  // roster. The antigen then roots on the cryptographically-verified chain HEAD, never a bare stored
+  // string. No lineage at all → nothing roots (the legacy genesis-inception fallback is gone).
+  if (!doc?.sealLineage || doc.sealLineage.length === 0) return empty;
+  if (!verifySealLineage(doc.sealLineage)) return empty;                        // broken lineage → deny
+  const head = doc.sealLineage[doc.sealLineage.length - 1]!;
+  if (head.keySetHash !== sealKeySetHash(keys, threshold)) return empty;       // head unbound to seated keys → deny
+  return { keys, threshold, sealEpochCid: head.epochCid };
 }
 
 /**

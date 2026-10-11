@@ -27,7 +27,7 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
+import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, signerClass, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
@@ -94,10 +94,13 @@ async function leafOf(handleIndex: number): Promise<string> {
   return (await deriveNexusScopedKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase();
 }
 
-function seatCharter(keys: string[], threshold = 2): void {
+/** Seat a charter with a real, verifiable genesis lineage (the retired bare-`sealEpochCid` legacy
+ *  path carries none) and return the seated epoch's cid. */
+function seatCharter(keys: string[], threshold = 2): string {
+  const genesis = genesisCharterEpoch(keys, threshold, "");
   const doc: NexusDoc = {
     kind: NEXUS_DOC_DOMAIN, threshold,
-    sealEpochCid: genesisSealEpochCid(keys, threshold),
+    sealEpochCid: genesis.epochCid, sealLineage: [genesis],
     kahu: [
       { displayName: "Kahu Alpha", verifyingKey: keys[0] ?? null },
       { displayName: "Kahu Beta",        verifyingKey: keys[1] ?? null },
@@ -105,6 +108,7 @@ function seatCharter(keys: string[], threshold = 2): void {
     ],
   };
   writeNexusDoc(sealHome(), doc);
+  return genesis.epochCid;
 }
 
 describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
@@ -527,16 +531,14 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     // Disk is not a trust boundary: `LAR_ROOT` names the whole seal home. A reading that trusted the
     // record's presence would report a Nexus this vessel never joined.
     const keys = await threeKeys();
-    seatCharter(keys);
-    const epoch = genesisSealEpochCid(keys, 2);
+    const epoch = seatCharter(keys);
     writeConsent(sealHome(), primaryAid(), { nym: keys[0]!, sealEpochCid: epoch, contractSig: "00".repeat(64) });
     expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);
   });
 
   it("★ a genuine consent signed by this vessel's own ROOT is refused — the nym must be a held leaf ★", async () => {
     const keys = await threeKeys();
-    seatCharter(keys);
-    const epoch = genesisSealEpochCid(keys, 2);
+    const epoch = seatCharter(keys);
     const q = await signCarriageContract(keys[0]!.toLowerCase(), epoch, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(0)));
     const consent = { nym: keys[0]!.toLowerCase(), sealEpochCid: epoch, contractSig: q.sig };
     expect(await verifyCarriageConsent(consent)).toBe(true);   // the seal is real …
@@ -548,13 +550,13 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     // The half that verification alone misses. The seal is real; it just names somebody else's hand,
     // and copying it here would claim a relation another party entered.
     const keys = await threeKeys();
-    seatCharter(keys);
+    const epoch = seatCharter(keys);
     const foreignSeed = new Uint8Array(32).fill(9);
     const foreignNym  = Buffer.from(await ed.getPublicKeyAsync(foreignSeed)).toString("hex");
-    const q = await signCarriageContract(foreignNym, genesisSealEpochCid(keys, 2),
+    const q = await signCarriageContract(foreignNym, epoch,
       async (b) => Buffer.from(await ed.signAsync(b, foreignSeed)).toString("hex"));
-    writeConsent(sealHome(), primaryAid(), { nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig });
-    expect(await verifyCarriageConsent({ nym: foreignNym, sealEpochCid: genesisSealEpochCid(keys, 2), contractSig: q.sig })).toBe(true);
+    writeConsent(sealHome(), primaryAid(), { nym: foreignNym, sealEpochCid: epoch, contractSig: q.sig });
+    expect(await verifyCarriageConsent({ nym: foreignNym, sealEpochCid: epoch, contractSig: q.sig })).toBe(true);
     expect(await hasContractedInto(sealHome(), primaryAid())).toBe(false);
   });
 });

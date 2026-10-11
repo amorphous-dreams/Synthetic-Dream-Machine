@@ -32,7 +32,9 @@ const SEEDS = {
   lindwyrm: new Uint8Array(32).fill(3),
 };
 
-/** A doc seated with `n` of the three founding kahu, with a genesis epoch bound to the seated key-set. */
+/** A doc seated with `n` of the three founding kahu, with a genesis epoch LINEAGE bound to the seated
+ *  key-set (the legacy bare-`sealEpochCid` inception path is gone — every established doc now carries
+ *  a verifiable one-epoch lineage, same as `chainedDoc` below mints for the rotation tests). */
 async function seatedDoc(seeds: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(seeds.map(pubOf));
   const kahu = [
@@ -41,9 +43,13 @@ async function seatedDoc(seeds: Uint8Array[]): Promise<NexusDoc> {
     { displayName: "Kahu Gamma",        verifyingKey: keys[2] ?? null },
   ];
   const seated = keys;
+  if (seated.length < 2) {
+    return { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null, kahu };
+  }
+  const genesis = genesisCharterEpoch(seated, 2, "");
   return {
     kind: NEXUS_DOC_DOMAIN, threshold: 2,
-    sealEpochCid: seated.length >= 2 ? genesisSealEpochCid(seated, 2) : null,
+    sealEpochCid: genesis.epochCid, sealLineage: [genesis],
     kahu,
   };
 }
@@ -64,7 +70,7 @@ describe("foundingRoster — fail-closed reads", () => {
 
   test("keys present but NO epoch → fail closed (nothing roots)", async () => {
     const doc = await seatedDoc([SEEDS.guru, SEEDS.telarus]);
-    const noEpoch: NexusDoc = { ...doc, sealEpochCid: null };
+    const noEpoch: NexusDoc = { ...doc, sealEpochCid: null, sealLineage: undefined };
     expect(foundingRoster(noEpoch).keys).toEqual([]);
     expect(foundingQuorumSeated(noEpoch)).toBe(false);
   });

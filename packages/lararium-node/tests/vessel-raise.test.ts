@@ -13,7 +13,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 
 import {
-  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid,
+  hex, genesisCharterEpoch, signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid,
   signRaiseGrant, emptyLarDoc, writeCarriageEntry, carriageDocUrl, NEXUS_DOC_DOMAIN,
   type RaiseChallenge, type RaiseNexusReading, type CarriageEntry, type KahuQuorumSeats, type LarDoc, type NexusDoc,
 } from "@lararium/mesh";
@@ -37,7 +37,9 @@ const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes
 
 async function roster(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(KAHU_SEEDS.map(pubOf));
-  return { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
+  // Same formula `held()`'s real on-disk charter lineage resolves to (`genesisCharterEpoch`), so an
+  // in-memory roster here and a disk-read roster agree on the epoch they root signed acts to.
+  return { keys, threshold: 2, sealEpochCid: genesisCharterEpoch(keys, 2, "").epochCid };
 }
 async function quorum() {
   return Promise.all([KAHU_SEEDS[0]!, KAHU_SEEDS[1]!].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
@@ -222,8 +224,9 @@ describe("★ a PLACE carries a Nexus by its own counted carrier seal ★", () =
   /** A held charter at the primary path, and a board opener serving `entries` at that charter's island. */
   async function held(entries: readonly CarriageEntry[]) {
     const keys = await Promise.all(KAHU_SEEDS.map(pubOf));
+    const genesis = genesisCharterEpoch(keys, 2, "");
     const doc: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2),
+      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
       kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
     };
     const sealHome = join(root, "nexus");

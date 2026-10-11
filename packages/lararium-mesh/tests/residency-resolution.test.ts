@@ -1,6 +1,6 @@
 /**
  * Residency Model Sprint 3 — resolveAll / resolveTopmost on CompositeStore +
- * WikiRecipe bagPins + lensFor hook tests.
+ * WikiRecipe bagPins tests.
  *
  * Surfaces the multi-bag residency that already runs inside CompositeStore
  * (listBagsHolding existed pre-sprint; resolveAll/resolveTopmost return
@@ -13,7 +13,7 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore } from "../src/composite-store.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import {
-  lensFor, identityLens, headsEqual,
+  headsEqual,
   LARES_BAG, wikiBagUri,
 } from "../src/wiki-recipe.js";
 import type { WikiRecipe, BagPinState } from "../src/wiki-recipe.js";
@@ -175,68 +175,6 @@ describe("WikiRecipe.bagPins (Anti-pattern #5 hook)", () => {
     const recipe: WikiRecipe = { wikiSlug: "demo", bagPins: epochs as never };
     expect(recipe.bagPins?.get(LARES_BAG)).toEqual(["head-1", "head-2"]);
     expect(recipe.bagPins?.size).toBe(2);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// lensFor (Anti-pattern #2 hook — version-keyed registry)
-// ---------------------------------------------------------------------------
-
-describe("lensFor (Anti-pattern #2 hook)", () => {
-  test("identityLens returns its input unchanged", () => {
-    const r = rec("x", "hello");
-    expect(identityLens(r)).toBe(r);
-  });
-
-  test("lensFor returns identityLens when record carries no schemaVersion", () => {
-    const recipe: WikiRecipe = { wikiSlug: "demo" };
-    const r = rec("x", "hello");
-    const lens = lensFor(recipe, r);
-    expect(lens).toBe(identityLens);
-    expect(lens(r)).toBe(r);
-  });
-
-  test("lensFor returns identityLens when recipe has no lenses map", () => {
-    const recipe: WikiRecipe = { wikiSlug: "demo" };
-    const r: LarTiddlerRecord = { tiddler: { title: "x", text: "hello" }, meta: { schemaVersion: "v1" } };
-    expect(lensFor(recipe, r)).toBe(identityLens);
-  });
-
-  test("lensFor returns identityLens when record's schemaVersion is unregistered", () => {
-    const recipe: WikiRecipe = {
-      wikiSlug: "demo",
-      lenses: new Map([["v1", (rr) => rr]]),
-    };
-    const r: LarTiddlerRecord = { tiddler: { title: "x", text: "hello" }, meta: { schemaVersion: "v99" } };
-    expect(lensFor(recipe, r)).toBe(identityLens);
-  });
-
-  test("lensFor returns the registered lens when schemaVersion matches", () => {
-    const v1Lens: (r: LarTiddlerRecord) => LarTiddlerRecord = (r) => ({
-      ...r,
-      tiddler: { ...r.tiddler, lensed: "yes" },
-    });
-    const recipe: WikiRecipe = {
-      wikiSlug: "demo",
-      lenses: new Map([["v1", v1Lens]]),
-    };
-    const r: LarTiddlerRecord = { tiddler: { title: "x", text: "hello" }, meta: { schemaVersion: "v1" } };
-    const lens = lensFor(recipe, r);
-    expect(lens).toBe(v1Lens);
-    expect((lens(r).tiddler as Record<string, unknown>)["lensed"]).toBe("yes");
-  });
-
-  test("multiple version-keyed lenses route by record version", () => {
-    const v1Lens: (r: LarTiddlerRecord) => LarTiddlerRecord = (r) => ({ ...r, tiddler: { ...r.tiddler, via: "v1" } });
-    const v2Lens: (r: LarTiddlerRecord) => LarTiddlerRecord = (r) => ({ ...r, tiddler: { ...r.tiddler, via: "v2" } });
-    const recipe: WikiRecipe = {
-      wikiSlug: "demo",
-      lenses: new Map([["v1", v1Lens], ["v2", v2Lens]]),
-    };
-    const r1: LarTiddlerRecord = { tiddler: { title: "x", text: "hello" }, meta: { schemaVersion: "v1" } };
-    const r2: LarTiddlerRecord = { tiddler: { title: "y", text: "world" }, meta: { schemaVersion: "v2" } };
-    expect(lensFor(recipe, r1)).toBe(v1Lens);
-    expect(lensFor(recipe, r2)).toBe(v2Lens);
   });
 });
 

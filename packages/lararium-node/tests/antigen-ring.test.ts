@@ -20,7 +20,7 @@ import { Repo } from "@automerge/automerge-repo";
 import {
   hex, signAntigenEntry, foldAntigenSet, makeMultiSigQuorumVerifier,
   foundingRoster, carryContractShareDecision,
-  genesisSealEpochCid, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord,
+  genesisCharterEpoch, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord,
   type KapaeAntigenEntry, type NexusDoc,
 } from "@lararium/mesh";
 import { makeAntigenRingHolder } from "../src/antigen-ring.js";
@@ -36,9 +36,10 @@ const NEXUS_PUBKEY = "a1b2c3d4e5f6a7b8";   // the node's own gate key = its Nexu
 const VICTIM_SEED = new Uint8Array(32).fill(9);
 
 async function seatedCharter(keys: string[]): Promise<NexusDoc> {
+  const genesis = genesisCharterEpoch(keys, 2, "");
   return {
     kind: NEXUS_DOC_DOMAIN, threshold: 2,
-    sealEpochCid: genesisSealEpochCid(keys, 2),
+    sealEpochCid: genesis.epochCid, sealLineage: [genesis],
     kahu: [
       { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
       { displayName: "Kahu Beta",        verifyingKey: keys[1]! },

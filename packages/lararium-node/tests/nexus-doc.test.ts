@@ -52,9 +52,10 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("a seated doc writes in house form and reads back faithfully", () => {
     const keys = ["a".repeat(64), "b".repeat(64)];
+    const genesis = genesisCharterEpoch(keys, 2, "");
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
-      sealEpochCid: genesisSealEpochCid(keys, 2),
+      sealEpochCid: genesis.epochCid, sealLineage: [genesis],
       kahu: [
         { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
         { displayName: "Kahu Beta",        verifyingKey: keys[1]! },
@@ -241,9 +242,11 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     }
     const seated    = kahu.map((k) => k.verifyingKey).filter((v): v is string => Boolean(v));
     const threshold = majorityThreshold(kahu.length);          // 3 chairs → 2, derived, never a constant
+    const genesis   = seated.length >= threshold ? genesisCharterEpoch(seated, threshold, "") : null;
     const doc: NexusDoc = {
       kind: emptyFoundingCharterDoc().kind, threshold,
-      sealEpochCid: seated.length >= threshold ? genesisSealEpochCid(seated, threshold) : null,
+      sealEpochCid: genesis?.epochCid ?? null,
+      ...(genesis ? { sealLineage: [genesis] } : {}),
       kahu,
     };
     writeNexusDoc(bags, doc);

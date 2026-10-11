@@ -93,7 +93,12 @@ describe("the realm fold moves the wire verdict, and the caller must hear it", (
       base: denyAll,
       onRefold: () => refolds.push(Date.now()),
     });
-    await plane.refresh({ sealEpochCid: REALM } as NexusDoc);
+    // `realmIdOfCharter` reads `sealLineage[0].epochCid` alone now (the legacy bare-`sealEpochCid`
+    // path is gone) — this cast feeds it a lineage head naming REALM, nothing else.
+    await plane.refresh({
+      sealEpochCid: REALM,
+      sealLineage: [{ epochCid: REALM, keySetHash: "", nextKeyCommit: "", prevEpochCid: null }],
+    } as NexusDoc);
     await new Promise((r) => setTimeout(r, 50));
     const standUp = refolds.length;
 

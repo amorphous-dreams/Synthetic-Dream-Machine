@@ -207,12 +207,13 @@ export function ffzLca(a: string, b: string): string {
 // φ-bands free-run. The Measure cell it emits is a segment LABEL ("which-
 // segment"), never a count.
 //
-// COLLAPSE (C-0): the one-plane Measure path is now PLANE-0 of the N-plane
-// quorum servo below. {@link measureStep} is a thin back-compat wrapper —
-// {@link centroidDriftStep} derives the content drift (`1 − cosine` against the
-// running centroid) and {@link quorumStep} at N=1 makes the decision, where
-// `effGong = min(quorumGong, 1) = 1` reproduces the single-plane gong byte-for-
-// byte. The whole FAST/SLOW/MDL/FLOOR/CEIL/Schmitt decision lives ONCE, in
+// COLLAPSE (C-0): the one-plane Measure path is PLANE-0 of the N-plane quorum
+// servo below. A caller drives it DIRECTLY — {@link centroidDriftStep} derives
+// the content drift (`1 − cosine` against the running centroid) and {@link
+// quorumStep} at N=1 makes the decision, where `effGong = min(quorumGong, 1) = 1`
+// reproduces the single-plane gong byte-for-byte (the retired `measureStep`
+// back-compat wrapper that once fused these two calls was unused residue and
+// is gone). The whole FAST/SLOW/MDL/FLOOR/CEIL/Schmitt decision lives ONCE, in
 // {@link schmittGongCore} (shared by both paths).
 //
 // SIGNAL — the cosine of incoming content against the running centroid of the
@@ -223,7 +224,7 @@ export function ffzLca(a: string, b: string): string {
 /**
  * The SHARED servo tunables — the seven keys the one-plane Measure path and the N-plane
  * quorum path overlap on. {@link QUORUM_SERVO_DEFAULTS} spreads this base + adds the
- * quorum-only keys; {@link MEASURE_SERVO_DEFAULTS} aliases it (back-compat).
+ * quorum-only keys.
  */
 export interface ServoBaseConfig {
   /** EWMA smoothing for the per-plane baselines AND the cross-plane correlation. */
@@ -242,7 +243,7 @@ export interface ServoBaseConfig {
   readonly reArmZ: number;
 }
 
-/** The shared base defaults — folded into both the Measure alias and the quorum spread. */
+/** The shared base defaults — the quorum spread's foundation. */
 export const SERVO_DEFAULTS: ServoBaseConfig = {
   ewmaAlpha: 0.3,
   mdlBits: 4.0,
@@ -254,31 +255,12 @@ export const SERVO_DEFAULTS: ServoBaseConfig = {
 };
 
 /**
- * Tunables for {@link measureStep} — now the {@link ServoBaseConfig} base. The retired
- * one-plane FAST loop (zThreshold/zFloor) gives way to the quorum `gate` + age-relaxed MDL;
- * the name stays exported for back-compat callers.
+ * Tunables for the one-plane (N=1) quorum-servo call — the {@link ServoBaseConfig} base. The
+ * retired one-plane FAST loop (zThreshold/zFloor) gives way to the quorum `gate` + age-relaxed
+ * MDL; the name stays exported since `ffz-orchestrator.ts` spreads it alongside
+ * {@link QuorumServoConfig}.
  */
 export type MeasureServoConfig = ServoBaseConfig;
-
-/** Back-compat alias: the Measure servo's defaults ARE the shared base. */
-export const MEASURE_SERVO_DEFAULTS: MeasureServoConfig = SERVO_DEFAULTS;
-
-/**
- * The one-plane Measure servo's running state — now a THIN wrapper (the C-0 collapse): a
- * content centroid tracker beside the underlying {@link QuorumServoState} at N=1 (content =
- * plane-0). Only the quorum state's `segmentOrdinal` surfaces (as the Measure LABEL).
- */
-export interface MeasureServoState {
-  /** The running centroid of the current segment (the content vector tracker). */
-  readonly centroid: readonly number[] | null;
-  /** The underlying single-plane quorum-servo state (content = plane-0). */
-  readonly qstate: QuorumServoState;
-}
-
-/** A fresh servo state — segment 0 opens on the first {@link measureStep} (no gong). */
-export function measureServoInit(): MeasureServoState {
-  return { centroid: null, qstate: quorumServoInit(1) };
-}
 
 const EPS = 1e-9;
 /** The seed variance a fresh segment opens with (a fresh segment is maximally self-coherent). */
@@ -308,8 +290,8 @@ export interface CentroidDrift {
  * The per-plane VECTOR tracker — derive a member's raw drift against the running centroid and
  * fold it in. `drift = 1 − ffzCosine(vector, centroid)` (monotone: more drift = less cohesion);
  * the centroid folds as the running mean `(c·k + v)/(k+1)` over `count` prior members. A null
- * centroid (the segment opening) SEEDS to the member with drift 0. PURE — it feeds the one-plane
- * {@link measureStep} (content as plane-0 of {@link quorumStep}).
+ * centroid (the segment opening) SEEDS to the member with drift 0. PURE — a caller feeds this
+ * into the one-plane (N=1) {@link quorumStep} call directly (content as plane-0).
  */
 export function centroidDriftStep(
   centroid: readonly number[] | null,
@@ -320,37 +302,6 @@ export function centroidDriftStep(
   const drift = 1 - ffzCosine(vector, centroid);
   const folded = centroid.map((c, i) => (c * count + (vector[i] ?? 0)) / (count + 1));
   return { drift, centroid: folded };
-}
-
-/** The result of one servo step: the next state, the Measure LABEL, and whether a gong tripped. */
-export interface MeasureStep {
-  readonly state: MeasureServoState;
-  /** The Measure cell label for THIS member (the segment it belongs to). */
-  readonly label: string;
-  /** True when this member opened a NEW segment via a topic-shift gong (the wavefront). */
-  readonly gonged: boolean;
-}
-
-/**
- * Advance the one-plane Measure servo by one member vector — PURE. The C-0 collapse: derive the
- * content drift against the running centroid ({@link centroidDriftStep}) and route it as plane-0
- * through {@link quorumStep} at N=1, where `effGong = min(quorumGong, 1) = 1` reproduces the
- * single-plane gong byte-for-byte (the parity guard). A thin back-compat wrapper (external/test
- * callers keep the same shape); the decision math lives once, in the quorum servo + {@link
- * schmittGongCore}. drift = `1 − cosine` is a monotone, variance-preserving transform of the old
- * cohesion signal, so the standardized z (hence every label) is identical on the one-plane path.
- */
-export function measureStep(
-  state: MeasureServoState,
-  vector: readonly number[],
-  config: Partial<MeasureServoConfig> = {},
-): MeasureStep {
-  const openCount = state.qstate.count;
-  const { drift, centroid: folded } = centroidDriftStep(state.centroid, vector, openCount);
-  const step = quorumStep(state.qstate, [drift], config);
-  // On a gong (or the opening) the new segment's centroid SEEDS to this member; else fold.
-  const centroid = step.gonged || openCount === 0 ? [...vector] : folded;
-  return { state: { centroid, qstate: step.state }, label: step.label, gonged: step.gonged };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -640,7 +591,7 @@ export interface SchmittGongResult {
 
 /**
  * The SHARED gong decision — the one continuous→discrete commit BOTH the one-plane Measure path
- * (via {@link measureStep}) and the N-plane {@link quorumStep} ride. Given the fused surprise
+ * (a one-plane, N=1 {@link quorumStep} call) and the N-plane {@link quorumStep} ride. Given the fused surprise
  * (bits), whether the FAST trigger `fired`, and whether the segment `settled` (for re-arming),
  * it returns the gong verdict + the next segment ordinal, re-anchored λ, and arming. PURE.
  *
@@ -764,7 +715,7 @@ export function quorumStep(
 
   // DECISION — the FAST fire is full (clamped) quorum + no veto; the SHARED gong core then
   // applies FLOOR / CEIL / age-relaxed MDL / λ-reanchor / Schmitt arm-rearm (the one decision
-  // both this and the one-plane measureStep ride).
+  // both this and the one-plane, N=1 {@link quorumStep} call ride).
   const fired = quorum >= effGong && !anyVeto;
   const settled = w.every((wi) => Math.abs(wi) <= cfg.reArmZ);
   const core = schmittGongCore(state, fusedBits, fired, settled, cfg);
@@ -837,7 +788,7 @@ export function ffzAcceptRecluster(args: {
   evidenceBits: number;
   mdlBits?: number;
 }): boolean {
-  const mdl = args.mdlBits ?? MEASURE_SERVO_DEFAULTS.mdlBits;
+  const mdl = args.mdlBits ?? SERVO_DEFAULTS.mdlBits;
   const gain = args.newModularity - args.prevModularity;
   if (gain <= 0) return false;
   return gain * args.evidenceBits > mdl;

@@ -14,12 +14,13 @@
 
 import { describe, test, expect } from "vitest";
 import {
-  measureServoInit,
-  measureStep,
+  quorumServoInit,
+  quorumStep,
+  centroidDriftStep,
   ffzCosine,
   ffzArcClosed,
   ffzAcceptRecluster,
-  MEASURE_SERVO_DEFAULTS,
+  SERVO_DEFAULTS,
   ffzMembershipAddress,
   ffzCoDepth,
   FFZ_ABSENT,
@@ -29,16 +30,22 @@ import {
 
 const h = () => harvestTurnGradient("Lares (Council): the verb leads");
 
-/** Run a sequence of vectors through one servo, collecting (label, gonged) per step. */
+/** Run a sequence of vectors through the one-plane (N=1) quorum servo directly — the C-0
+ *  collapse's content plane, with no `measureStep` wrapper: derive each member's drift against
+ *  the running centroid ({@link centroidDriftStep}) and route it through {@link quorumStep}. */
 function run(vectors: number[][], config = {}) {
-  let state = measureServoInit();
+  let qstate = quorumServoInit(1);
+  let centroid: readonly number[] | null = null;
   const steps: { label: string; gonged: boolean }[] = [];
   for (const v of vectors) {
-    const r = measureStep(state, v, config);
-    state = r.state;
-    steps.push({ label: r.label, gonged: r.gonged });
+    const openCount = qstate.count;
+    const { drift, centroid: folded } = centroidDriftStep(centroid, v, openCount);
+    const step = quorumStep(qstate, [drift], config);
+    qstate = step.state;
+    centroid = step.gonged || openCount === 0 ? [...v] : folded;
+    steps.push({ label: step.label, gonged: step.gonged });
   }
-  return { state, steps, gongs: steps.filter((s) => s.gonged).length };
+  return { steps, gongs: steps.filter((s) => s.gonged).length };
 }
 
 const jitter = (base: number[], n: number, eps = 0.01): number[][] =>
@@ -52,7 +59,7 @@ describe("ffzCosine — zero-graceful cosine", () => {
   });
 });
 
-describe("measureStep — the one servo trips its gong on a cohesion-drop", () => {
+describe("the one-plane quorum servo trips its gong on a cohesion-drop", () => {
   test("a coherent run then a sharp orthogonal turn → exactly one gong, ordinal increments", () => {
     // 8 members near [1,0] (a settled topic), then an orthogonal [0,1] (the topic shift).
     const { steps, gongs } = run([...jitter([1, 0], 8), [0, 1]]);
@@ -70,11 +77,11 @@ describe("measureStep — the one servo trips its gong on a cohesion-drop", () =
   });
 });
 
-describe("measureStep — FLOOR stops churn, CEIL stops staleness", () => {
+describe("the one-plane quorum servo — FLOOR stops churn, CEIL stops staleness", () => {
   test("FLOOR: no gong before minSegment even on wild divergence", () => {
     // Alternating orthogonal members from the very first step — but the floor blocks a gong
     // until the current segment holds minSegment members.
-    const min = MEASURE_SERVO_DEFAULTS.minSegment;
+    const min = SERVO_DEFAULTS.minSegment;
     const wild: number[][] = [];
     for (let i = 0; i < min; i++) wild.push(i % 2 ? [0, 1] : [1, 0]);
     const { steps } = run(wild);
@@ -83,7 +90,7 @@ describe("measureStep — FLOOR stops churn, CEIL stops staleness", () => {
   });
 
   test("CEIL: a long perfectly-coherent run forces a staleness gong at maxSegment", () => {
-    const max = MEASURE_SERVO_DEFAULTS.maxSegment;
+    const max = SERVO_DEFAULTS.maxSegment;
     const ident: number[][] = Array.from({ length: max + 2 }, () => [1, 0]); // identical → never a FAST drop
     const { steps, gongs } = run(ident);
     expect(gongs).toBeGreaterThanOrEqual(1); // the ceiling broke the stale segment

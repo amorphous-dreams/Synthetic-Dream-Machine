@@ -94,10 +94,13 @@ async function lineageCharter(keys: string[], depth: number, fork = 0): Promise<
   return { doc: { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: head.epochCid, sealLineage: lineage, kahu }, lineage };
 }
 
-/** A partner Nexus with a genesis-only charter (no lineage), its AID the stored epoch. */
+/** A SECOND, DIFFERENT genesis over the same kahu (distinct pre-rotation commitment ⇒ a distinct
+ *  AID) — the retired bare-`sealEpochCid` legacy path is gone, so this still carries a verified
+ *  one-epoch lineage, just a different one than {@link genesisCharter} mints. */
 function genesisOnlyCharter(keys: string[], threshold: number): NexusDoc {
-  const doc = genesisCharter(keys).doc;
-  return { ...doc, threshold, sealLineage: undefined, sealEpochCid: `epoch0-${"0".repeat(63)}${threshold}` };
+  const kahu = keys.map((k, i) => ({ displayName: `Partner ${i}`, verifyingKey: k }));
+  const genesis = genesisCharterEpoch(keys, threshold, sealKeySetHash(keys, threshold + 2));
+  return { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu };
 }
 
 /** This vessel's own founding: three held persona-roots seated in the primary charter. */

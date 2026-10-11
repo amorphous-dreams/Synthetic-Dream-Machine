@@ -213,24 +213,6 @@ export interface WikiRecipe {
   readonly bagPins?: ReadonlyMap<SlotUri, Heads>;
 
   /**
-   * Optional read-time lenses keyed by `meta.schemaVersion` — Anti-pattern #2
-   * defense (schema drift across multi-bag residency). Cambria-style projection
-   * from a record's stored schema-version into the consumer's expected shape.
-   *
-   * **Why version-keyed, not bag-keyed:**
-   * Per-bag keys duplicate the same lens across bags that share a schema
-   * generation. Cambria's settled model keys lenses by `(sourceVersion,
-   * targetVersion)`. A flat `Map<sourceVersion, RecordLens>`
-   * suffices — each entry projects from `sourceVersion` to the recipe's
-   * single current consumer shape. Promote to `Map<[fromV, toV], RecordLens>`
-   * shortest-path resolution only when ≥3 concurrent versions live.
-   *
-   * `lensFor(recipe, record)` reads `record.meta?.schemaVersion`; absent or
-   * unrecognized version falls back to identityLens.
-   */
-  readonly lenses?: ReadonlyMap<string, RecordLens>;
-
-  /**
    * THE RECIPE'S PLUGIN LIST — an ORDERED list of whole signed plugin-offering CIDs
    * (`pluginOfferingCid`, from `./plugin-offering.js`). "A recipe selects ordered whole signed
    * offerings, never subsets" (the ki-handoff ruling): mount resolves each CID through the
@@ -267,37 +249,6 @@ export interface WikiRecipe {
    * named offerings or none).
    */
   readonly pluginOfferingsFault?: string;
-}
-
-/**
- * Read-time lens function — Anti-pattern #2 defense (schema drift across
- * multi-bag residency). Cambria-style read-projection from a record's stored
- * shape into the consumer's expected shape. One-way only (read-projection,
- * not bidirectional writeback) — bidirectionality stays a research project
- * per the Cambria literature; this surface stays honest to one-way.
- *
- * Signature: (record) => record. Pure function; no IO.
- */
-export type RecordLens = (record: LarTiddlerRecord) => LarTiddlerRecord;
-
-/** Identity lens — default when no version-keyed lens registers. */
-export const identityLens: RecordLens = (record) => record;
-
-/**
- * Return the lens function that SHOULD apply to a record read.
- *
- * Reads `record.meta?.schemaVersion` and looks up `recipe.lenses?.get(version)`.
- * Falls back to identityLens when:
- *   - the record carries no schemaVersion (legacy / unmigrated content)
- *   - the recipe registers no lens for the record's version
- *   - the recipe has no lenses map at all
- *
- * Anti-pattern #2 defense: read-time lensing, not write-time migration.
- */
-export function lensFor(recipe: WikiRecipe, record: LarTiddlerRecord): RecordLens {
-  const version = record.meta?.schemaVersion;
-  if (!version || !recipe.lenses) return identityLens;
-  return recipe.lenses.get(version) ?? identityLens;
 }
 
 // ── Heads comparison helpers ────────────────────────────────────────────────

@@ -87,10 +87,11 @@ export interface LarTiddlerMeta {
   readonly recipe?:        string;
   /**
    * Residency Model schema-version tag — Anti-pattern #2 defense (schema drift
-   * across multi-bag residency). Records carry their schema-version so the
-   * recipe's lens registry can project them into the consumer's expected shape
-   * via `lensFor(recipe, record)`. Absent = no migration needed; identityLens
-   * applies. Convention: short stable string (e.g. "v1", "lore-2", "2026-05").
+   * across multi-bag residency). Records carry their schema-version so a
+   * consumer can tell which shape generation it is reading. Absent = no
+   * migration needed. Convention: short stable string (e.g. "v1", "lore-2",
+   * "2026-05"). The version-keyed read-time lens registry that once projected
+   * these (`lensFor`/`identityLens`) was unused residue and is retired.
    */
   readonly schemaVersion?: string;
   /**

@@ -49,7 +49,7 @@ import {
   writeEdgeKapae, signEdgeKapae, shadowSetFromBoard,
   signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc,
   HANDLE_ANNOUNCE_PREFIX, CARRIAGE_ENTRY_PREFIX, VOUCH_ENTRY_PREFIX,
-  NEXUS_DOC_DOMAIN,
+  NEXUS_DOC_DOMAIN, genesisCharterEpoch,
   hex,
 } from "@lararium/mesh";
 import { readNexusDoc, nexusCharterStands, writeNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
@@ -72,7 +72,13 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
   return Object.keys((await board(r, url)).doc()?.tiddlers ?? {}).sort();
 }
 
-const CHARTER   = `epoch0-${"7a".repeat(32)}`;
+/** The steward key `seatCharter` seats — a fixed stand-in (no signature ever checks against it;
+ *  only its presence in `kahu` + the genesis lineage below matters to `foundingRoster`). */
+const CHARTER_KEY = "7a".repeat(32);
+/** A real genesis seal lineage over that steward — there is no legacy bare-`sealEpochCid` path any
+ *  more, so a "the charter STANDS" fixture must carry a verifiable one-epoch lineage. */
+const CHARTER_GENESIS = genesisCharterEpoch([CHARTER_KEY], 1, "");
+const CHARTER   = CHARTER_GENESIS.epochCid;
 /** The epoch a vessel's acts rooted on while it stood alone — the reader ranks it BELOW the charter's. */
 const PRE_EPOCH = `epoch0-${"11".repeat(32)}`;
 
@@ -86,8 +92,8 @@ function sealHomeAt(): string {
 /** Seat a readable charter whose genesis epoch names the island — what `nexus rite quorum` leaves on disk. */
 async function seatCharter(sealHome: string): Promise<void> {
   writeNexusDoc(sealHome, {
-    kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER,
-    kahu: [{ displayName: "steward", verifyingKey: await pubOf(seedOf(1)) }],
+    kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER, sealLineage: [CHARTER_GENESIS],
+    kahu: [{ displayName: "steward", verifyingKey: CHARTER_KEY }],
   });
 }
 

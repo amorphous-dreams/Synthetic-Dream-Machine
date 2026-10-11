@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, hexToBytes, genesisSealEpochCid, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
+  NEXUS_DOC_DOMAIN, hex, hexToBytes, genesisCharterEpoch, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, buildAuthResponse,
   type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
 } from "@lararium/mesh";
@@ -32,8 +32,9 @@ const seed = (n: number) => new Uint8Array(32).fill(n);
 
 async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahuSeeds.map(pubOf));
+  const genesis = genesisCharterEpoch(keys, 2, "");
   return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2),
+    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
     kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
   };
 }

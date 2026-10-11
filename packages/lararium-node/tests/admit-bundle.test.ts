@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, genesisSealEpochCid, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
+  NEXUS_DOC_DOMAIN, hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, signLeafProof, foundingRoster,
   genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   type NexusDoc, type CarriageEntry, type LarDoc,
@@ -48,8 +48,9 @@ const GATE_Q = "b2".repeat(32);
 
 async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahuSeeds.map(pubOf));
+  const genesis = genesisCharterEpoch(keys, 2, "");
   return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2),
+    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
     kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
   };
 }
