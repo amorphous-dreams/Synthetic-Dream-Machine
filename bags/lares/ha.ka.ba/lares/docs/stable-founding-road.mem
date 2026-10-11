@@ -144,7 +144,16 @@ with the lanes beside it. The R-ENGINE fold builds in parallel from the start an
 * ''Fold'' (parallel from the start): TW5 core and the memetic-wikitext bootstrap fold into `engineCid`; the vocabulary leaves the engine as content; the coal-only seed carries no `schemaVersion`; the island `schema_version` drops its counter.
 * ''Offers'' (after R-CHARTER): the engine-offer lineage signs under the cadence threshold, adopted within a k-hop window along `prev`.
 * ''Landed early'': the TW5 engine moved to `develop` at `f04b82899` (upstream master plus donation-bound fixes); genesis caught up at `099f2bd42`; `actorSeed` folds only inputs every Lararium shares and boots alike.
-* ''Streams ruling owed'': streams leaves genesis in the slice that adopts it as a crossroads Offering; plugins load by recipe listing. Only the Lararium boot set rides genesis.
+* ''Genesis re-bake'': at `3d38cb691`, Streams left genesis and the bake retained only the engine, current grammar, and boot shadows. R5 dissolved into this re-bake.
+
+!!! R-RECIPE ~ recipes select signed offerings (landed P2)
+* ''R1–R4 landed'' (golden path P2; the CHANGELOG names each commit): a recipe names an ordered list of whole signed offering CIDs; the selector resolves exactly their blobs, and plugins load by recipe on node and browser pool and daemon paths. The vessel owns one Repo through the store door; its door-verb table carries posture and admit-take, and `nexus refresh` retires.
+* ''Provenance'' rides inside the signed preimage, so a provenance change breaks the signature.
+* ''Highlight PoC'': the highlight offering stands as the proof of concept, published unsigned from its local source and signed by the publishing persona.
+* ''Streams'' stands deferred as a crossroads offering (`saqimtiaz/streams`, BSD-3-Clause); it does not ride the genesis boot set.
+* ''R5'' dissolved into the genesis re-bake; genesis holds only the boot set.
+* ''Next: P3 — custody wiring.'' `vault rotate`, the production `CustodyIo`, the floor guard, and the `relation` key class.
+* ''Next: P3′ — the engine fold.'' automerge alpha.5 with #742, keyhive 0.3, and subduction fold into the engine.
 
 !!! R-EMBER ~ the ember pin (after R-CHARTER's two-mount join)
 * A household's first ember stands on its second device, which needs the two-mount join; the slot tree ships whole in R-CUSTODY and this slice adds a pin kind.
@@ -196,6 +205,6 @@ old AID and reads dead by construction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T9NKYJF7HOpWKq0fp0qyh8llC4OAlN-ODVlsjE5jXmQ
+<<^ code="&#x0003;">>ni:///sha-256;zXFpKTy1GIoqPyLSFLF0LZonjZdY-O-r08fMpg2B7tU
 
 <<^ code="&#x0004;" -> to="?">>
