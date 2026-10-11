@@ -50,12 +50,8 @@ import {
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync,
   genesisCasCidsFromOracle,
-  // R3 — plugins load by recipe (node): the fixed boot-set floor, the recipe's verified offering
-  // selection off the Crossroads board, and the CAS layer where a selected descriptor meets bytes.
-  bootSetIds, bootSetPluginCids, verifyCasBytes,
-  selectPluginBlobs, selectedPluginCids, type OfferingLookup,
-  offeringAnnouncesFromDoc, type WikiRecipe,
 }                                       from "@lararium/mesh";
+import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
 import type { WikiActivationCap } from "@lararium/mesh";
@@ -188,52 +184,10 @@ function axisIdToIndex(id: string): number {
   return h >>> 0;   // unsigned 32-bit
 }
 
-/**
- * R3 — "plugins load by recipe" (node). Resolves ONE island's final manifest `pluginCids`:
- * the fixed boot-set floor (grammar + boot shadows, read off the island/oracle doc's own blobs)
- * UNION this wiki's own recipe's verified, byte-checked offering selection.
- *
- * Retires the old vessel-WIDE `pluginCidsFromIslandBlobs` hand-off (every island got the exact
- * SAME list, with no per-recipe distinction): `bootSetPluginCids`/`bootSetIds` now name that
- * floor computation under its right, narrower scope — one fixed INGREDIENT of a per-island
- * resolution, never the whole answer by itself.
- *
- * Fail-closed throughout, in order: an offering this lookup cannot find, a lying lookup, a
- * boot-set-collision or cross-offering duplicate claim, or any `verifyPluginOffering` code
- * (`selectPluginBlobs`) refuses first; only THEN does a selected CID's bytes get checked against
- * the local CAS (`verifyCasBytes`) — missing or corrupt bytes refuse by name, never silently as
- * an empty or trimmed set.
- */
-async function resolveNodeIslandPluginCids(opts: {
-  readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
-  readonly recipe: WikiRecipe;
-  readonly lookup: OfferingLookup;
-  readonly readBytes: (cid: string) => Uint8Array | null;
-}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
-  const floorCids  = bootSetPluginCids(opts.islandBlobs);
-  const bootIds    = bootSetIds(opts.islandBlobs);
-  const offerings  = opts.recipe.pluginOfferings ?? [];
-  const selection  = await selectPluginBlobs(offerings, opts.lookup, bootIds);
-  if (!selection.ok) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: offering selection ${JSON.stringify(selection.failure)}` };
-  }
-  const selectedCids = selectedPluginCids(selection.blobs);
-  const bytesVerdict = verifyCasBytes(selectedCids, opts.readBytes, (b) => sha256HexBytesSync(b));
-  if (!bytesVerdict.ok) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: ${JSON.stringify(bytesVerdict.failure)}` };
-  }
-  // Dedup: a selected offering's CID coinciding with a floor CID would need a raw sha256 collision
-  // (practically disjoint namespaces), but a Set keeps the manifest from ever naming one CID twice.
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
-}
-
-/** Build the node Crossroads board's offering lookup (R3): a verified selection re-verifies every
- *  offering it resolves (`selectPluginBlobs` → `verifyPluginOffering`), so this lookup stays a
- *  shape-only projection (`offeringAnnouncesFromDoc`) — never a second, redundant certify pass. */
-function nodeOfferingLookup(crossroadsDoc: LarDoc | undefined | null): OfferingLookup {
-  const byOfferingCid = new Map(offeringAnnouncesFromDoc(crossroadsDoc).map((a) => [a.offeringCid, a.offering]));
-  return (cid) => byOfferingCid.get(cid);
-}
+// R3/M1 — "plugins load by recipe" (node). `resolveNodeIslandPluginCids` and `nodeOfferingLookup`
+// now live in `node-plugin-resolution.ts` — the ONE node resolver module BOTH node paths (the
+// daemon VM and the wiki island pool, below) import, instead of each call site reproducing or
+// re-deriving the combinator. See that module's docblock.
 
 /**
  * Pull a sparse form-vector out of a form-store entry's stored `document` (the move-space position
