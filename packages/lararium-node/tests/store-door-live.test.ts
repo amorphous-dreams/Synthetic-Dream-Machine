@@ -253,7 +253,10 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     try {
       const doors = storeDoorReactors({
         storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null,
-        onRolled: (aid) => { rolled.push(aid); },
+        // `represented` reads this hook's OWN claim (F2-1/H2): a fire-and-forget hook that merely EXISTS
+        // reads false. Here the hook stands for the real `afterRoll`, which the fix made truthfully
+        // report its own success — so this fixture claims it too, honestly, by returning `true`.
+        onRolled: (aid) => { rolled.push(aid); return true; },
       });
       const out = await doors["nexus-admit-take"]({ raw }, {} as never);
       expect(out["refused"], String(out["refused"])).toBeUndefined();

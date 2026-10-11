@@ -7,6 +7,8 @@
  *   · RED→GREEN: with a vessel standing (`onRolled` wired), the row fires it and reports `refolded: true`
  *     only when the hook itself claims success — never merely because the hook exists (the exact L2 shape
  *     this door's rows must never repeat for a NEW row either);
+ *   · F2-1 (H2): an ASYNC hook is awaited under `ON_ROLLED_BUDGET_MS`; still unsettled past the budget reads
+ *     `refolded: "pending"`, never a guessed `true` or `false`;
  *   · CONTROL: with no vessel standing (`onRolled` absent, `storeDoorDirect`'s shape), the row answers
  *     `refolded: false, attempted: false` — nothing to poke, and it says so rather than pretending.
  */
@@ -42,5 +44,29 @@ describe("seal-home-refold — the no-op poke row (H2)", () => {
     const out = await rows["seal-home-refold"]({}, {} as never);
     expect(out["attempted"]).toBe(false);
     expect(out["refolded"]).toBe(false);
+  });
+
+  it("an ASYNC hook resolving `true` within the budget reads as refolded", async () => {
+    const onRolled = vi.fn(async () => true);
+    const rows = storeDoorReactors(baseDeps(onRolled));
+    const out = await rows["seal-home-refold"]({}, {} as never);
+    expect(out["attempted"]).toBe(true);
+    expect(out["refolded"]).toBe(true);
+  });
+
+  it("a PENDING hook — still unsettled past the budget — reads `refolded: \"pending\"`, never guessed", async () => {
+    vi.useFakeTimers();
+    try {
+      let settle: (v: boolean) => void = () => {};
+      const onRolled = vi.fn(() => new Promise<boolean>((resolve) => { settle = resolve; }));
+      const rows = storeDoorReactors(baseDeps(onRolled));
+      const outP = rows["seal-home-refold"]({}, {} as never);
+      await vi.advanceTimersByTimeAsync(3_000);
+      const out = await outP;
+      expect(out["attempted"]).toBe(true);
+      expect(out["refolded"]).toBe("pending");
+      settle(true);
+      await vi.advanceTimersByTimeAsync(0);
+    } finally { vi.useRealTimers(); }
   });
 });

@@ -41,6 +41,13 @@
  * Repo and re-presents its dial (`open-node-vessel.ts`); `storeDoorDirect` supplies none, because no live reading
  * stands to refold — the next boot's own cold read picks up what a direct act wrote.
  *
+ * THE HOOK MAY RUN LONG, SO EVERY ROW AWAITS IT UNDER A BUDGET. `onRolled` now answers synchronously OR through
+ * a promise — the refold itself still runs exactly once (`open-node-vessel.ts` serializes it), but a row that
+ * fires it waits only up to `ON_ROLLED_BUDGET_MS` for a truthful answer. Past the budget the refold keeps
+ * running in the background (never cancelled, never thrown into the row), and the row reports it `"pending"`
+ * instead of guessing. A row that reads a boolean off this return, never off whether the hook merely EXISTS,
+ * can never claim a live re-presentation it has no evidence for.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
@@ -79,12 +86,37 @@ export interface StoreDoorDeps {
    * A write just counted. `nexusAid` names the hosting doc a roll opened (host-roll only); every other caller
    * passes nothing. Absent on `storeDoorDirect` — a direct act has no live reading to refold.
    *
-   * A caller MAY return `true` to claim it re-presented this write live (never a promise — the refold itself
-   * stays fire-and-forget, so there is nothing for this row to await); any other return (including plain
-   * `void`) claims NOTHING about the outcome. A row that reads `represented` off this return, rather than off
-   * whether the hook merely EXISTS, never claims a live re-presentation it has no evidence for.
+   * A caller MAY resolve `true` to claim it re-presented this write live, synchronously or through a promise.
+   * Any other settlement (`false`, plain `void`, or a promise that resolves either) claims NOTHING about the
+   * outcome. Every row that fires this awaits it through `awaitOnRolled` (below), which bounds the wait by
+   * `ON_ROLLED_BUDGET_MS` and never lets a slow or rejected refold throw through the row that triggered it.
    */
-  readonly onRolled?:  (nexusAid?: string) => boolean | void;
+  readonly onRolled?:  (nexusAid?: string) => boolean | void | Promise<boolean | void>;
+}
+
+/** How long a row waits for `onRolled`'s own truthful answer before reporting the refold `"pending"`. The
+ *  refold itself is NEVER cancelled past this — only the row's own answer stops waiting on it. */
+export const ON_ROLLED_BUDGET_MS = Number(process.env["LAR_ON_ROLLED_BUDGET_MS"] ?? 3_000);
+
+/**
+ * Await `onRolled`'s return under `ON_ROLLED_BUDGET_MS`. A sync return (or no hook at all) settles at once;
+ * a promise that resolves `true` within the budget reads `true`; anything else that resolves within the
+ * budget (including a throw) reads `false`; a promise still unsettled past the budget reads `"pending"` — the
+ * hook keeps running, this call simply stops waiting on it and never lets its eventual rejection surface here.
+ */
+async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Promise<boolean | "pending"> {
+  if (!(call instanceof Promise)) return call === true;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const pending = new Promise<"pending">((resolve) => { timer = setTimeout(() => resolve("pending"), ON_ROLLED_BUDGET_MS); });
+  try {
+    const settled = await Promise.race([call.then((v) => v === true).catch(() => false), pending]);
+    return settled;
+  } finally {
+    clearTimeout(timer);
+    // The refold keeps running even once we stop waiting on it; a late rejection must never become an
+    // unhandled rejection just because this call lost interest in its answer.
+    call.catch(() => { /* already reported, or never asked for — either way, swallowed here */ });
+  }
 }
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
@@ -136,7 +168,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "host-state": () => answer("host-state", async () => ({ nexuses: await runHostState({ sealHome, storageDir }) })),
     "host-roll": (args) => answer("host-roll", async () => {
       const r = await runHostRoll({ sealHome, storageDir, repo, ...opt("nexusAid", str(args["nexusAid"])), ...opt("cap", int(args["cap"])) });
-      deps.onRolled?.(r.nexusAid);
+      await awaitOnRolled(deps.onRolled?.(r.nexusAid));
       return { ...r };
     }),
     "host-invite": (args) => answer("host-invite", async () => ({
@@ -153,7 +185,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-kapae": (args) => answer("nexus-kapae", async () => {
       const action = args["action"] === "un_kapae" ? "un_kapae" : "kapae";
       const r = await runNexusKapae({ action, nym: need("nexus-kapae", args, "nym"), sealHome, repo, ...opt("reason", str(args["reason"])) });
-      deps.onRolled?.();
+      await awaitOnRolled(deps.onRolled?.());
       return { ...r };
     }),
     "nexus-kapae-list": () => answer("nexus-kapae-list", async () => ({ ...(await runNexusKapaeList({ sealHome, repo })) })),
@@ -164,7 +196,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         action, nym: need("nexus-contract", args, "nym"), sealHome, repo,
         ...opt("contractSig", str(args["contractSig"])), ...opt("carrierSig", str(args["carrierSig"])),
       });
-      deps.onRolled?.();
+      await awaitOnRolled(deps.onRolled?.());
       return { ...r };
     }),
     "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
@@ -172,7 +204,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         sealHome, repo,
         closing: args["closing"] as KahuQuorumSeats, opened: args["opened"] as KahuQuorumSeats,
       });
-      deps.onRolled?.();
+      await awaitOnRolled(deps.onRolled?.());
       return { ...r };
     }),
     "nexus-members-list": (args) => answer("nexus-members-list", async () => ({
@@ -192,7 +224,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const path = writeNexusPractice(sealHome, { federationPosture: posture }, doc);
       // The posture joint feeds every carried reading's primary-posture closure — a flip counts at the very
       // next socket once the live gate re-reads it, so it rides the same hook a board write rides.
-      deps.onRolled?.();
+      await awaitOnRolled(deps.onRolled?.());
       return { posture, path, wrote: true };
     }),
 
@@ -201,11 +233,10 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const r = await takeAdmitBundle({ sealHome, raw });
       // RE-PRESENT through the live hook when a vessel stands over this row; `storeDoorDirect` supplies none,
       // so a bundle taken with no vessel standing simply waits for the next boot's dial to present it.
-      // `represented` reads the hook's OWN claim, never merely whether a vessel stands to call it: a vessel
-      // standing proves this row COULD try to re-present, not that it DID — the hook is the only one in a
-      // position to say which, and absent a truthful `true` from it, this never claims a live re-presentation
-      // it has no evidence for.
-      const represented = deps.onRolled?.(r.aid) === true;
+      // `represented` reads `awaitOnRolled`'s OWN bounded claim, never merely whether a vessel stands to call
+      // it: a vessel standing proves this row COULD try to re-present, not that it DID. Past the budget the
+      // refold keeps running unseen, and this reads `"pending"` rather than guessing either way.
+      const represented = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled(r.aid));
       return { aid: r.aid, nym: r.nym, admitCid: r.admitCid, gatePubKey: r.gatePubKey, lineage: r.lineage, path: r.path, represented };
     }),
 
@@ -216,9 +247,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // presents against) refold only on this same hook, so a caller that just changed one of those files pokes
     // it here: no Repo read, no write of its own, just the SAME refold every other row already triggers.
     "seal-home-refold": () => answer("seal-home-refold", async () => {
-      const claimed  = deps.onRolled?.();
       const attempted = deps.onRolled !== undefined;
-      return { attempted, refolded: claimed === true };
+      const refolded = deps.onRolled === undefined ? false : await awaitOnRolled(deps.onRolled());
+      return { attempted, refolded };
     }),
 
     "edge-kapae": (args) => answer("edge-kapae", async () => ({
