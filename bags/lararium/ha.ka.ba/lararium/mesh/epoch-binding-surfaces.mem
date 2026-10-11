@@ -123,7 +123,7 @@ a check that never ran.
 device-delegation edge'':
 
 ```
-lar-device-delegation/v2|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{issuedAt}|{expiresAt}|{boundEpoch}
+{domain}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
 ```
 
 ''So every vessel that ever joined SIGNED the engine CID.'' Move it and every edge names a hearth true-name
@@ -247,6 +247,6 @@ are acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h7aB12F1O5sBQjLw2TXACEQX7s7ap5Z0XDS4L9-p5yM
+<<^ code="&#x0003;">>ni:///sha-256;Jk7-hdcatM0TjSbpusEF_G3vTERTkzZcCq30XWSSofk
 
 <<^ code="&#x0004;" -> to="?">>

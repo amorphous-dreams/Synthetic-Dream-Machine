@@ -2,6 +2,20 @@
 
 ---
 
+## [Unreleased] — NO GLOBAL NOW
+
+P2.5, `07fd0df09..116d1848d` (70 non-merge commits). Range SHAs: `116d1848d`, `479e2306f`, `ed3248a78`, `95536fc05`, `14c853205`, `edcba73ce`, `ca8d4f13b`, `705dde639`, `81ae3d34c`, `3da1fcfc2`, `a4e985ef4`, `e33bf8612`, `fce6f769d`, `79f8e1df5`, `68bc3a6f1`, `10323450b`, `9f5c6d9b9`, `fe17bae73`, `3ae2cbb7d`, `dd130b8a2`, `842a8636b`, `2a8d5b9c0`, `9b63841eb`, `b403c87c8`, `f15c555f1`, `97158eb0d`, `b5f268210`, `2c25c6121`, `71c4d42b7`, `42e8f29f9`, `a0ec24f8a`, `d5a1d20c1`, `0bf346c75`, `d2e2fb1f4`, `61df4a74b`, `40d7ca9b6`, `7d923ce73`, `d8a9802ab`, `94e747493`, `14ecd2f58`, `03c229cbf`, `73c6648bd`, `11d823d9b`, `9583b44cd`, `ccce9e7d7`, `77fbda8a3`, `8496f2a95`, `a0ebd4c0a`, `a355aa83c`, `747b78070`, `2d489af78`, `5e7a9a90a`, `f7f0dd618`, `2d4702a05`, `6a6e878d8`, `eb1c09b4f`, `00618ee14`, `f7cdb1933`, `df799b45a`, `b7f41264c`, `2e14b8aa1`, `a1291c64c`, `1b3446437`, `5013ed08a`, `3aba34f2e`, `20a78b017`, `f72099808`, `5d9c00d33`, `fcffe1aa3`, `858f628ad`.
+
+**Fixed**
+- **The wall clock leaves every verdict.** `deadlineAt` leaves the connector, park queue and dispatch; shutdown no longer exits on a wall budget; the doc-load probe no longer turns its timeout into a verdict; circle stamps carry causal dots and observed-remove; membership orders by writer sequence; `newRequestId` drops its clock prefix; cabal vouch and keyhive read fenced epochs; device delegation carries no issue instant or expiry.
+- **Receipt doors.** A durable fact ledger arbitrates one winner per request ID. The effect index and `--change-id` carry `effectOf`; `lares receipt` and `lares cancel` expose outcomes and abandonment; exit-6 refusals name `outcome-unknown`, `request-abandoned`, `retention-gap`, `receipt-fact-torn`, and reused IDs with changed input. A count-bounded ring and one `refusalHint` serve live and read-back doors.
+- **Persona admission without a clock.** A consumed one-use secret records causal withdrawal durably across restart. Held sessions withdraw on patience, SIGINT, and SIGTERM; `--detach` remains one-shot. Operator-reviewed gate removals (`7d923ce73`, `479e2306f`) retire expiry end to end, and each verification reads the KEL head once.
+- **CAS retention by fence.** Pins carry `holder`/`tier`/`fence`, never `expiry`; the vessel boot epoch backs held pins. The production sweep receives required `currentFence`; the vessel `StoreClaim` variant requires `bootEpoch`; unreadable state fails toward keeping.
+- **Monotonic liveness.** Port control and `vessel stop --cut`, herm/stand/mempalace waits, boot resolver, bag residency, island pool, capture pacing, and keyhive provider use each holder's own monotonic patience.
+- **Residency verbs report state.** REPACK/CLEAR/DROP carry per-change keys; CREATE answers declaratively with `alreadyStood`; after DROP, CREATE reads the retired bag as absent and re-points its sole registry row; CLEAR and DROP preserve audit records and count content only.
+- **Evergreen sweep, no back-compat.** Undotted circle stamps, old-shape pin sidecars, digest-less receipt reads, dead keyhive/cabal-invite clock fields, and lineage-less genesis inception refuse. Retired CLI aliases `palace`, `couple`, `cohere`, and `square` refuse; `vessel read sensorium` and `recall --limit` still fall through. `FoundingKahu`, `lensFor`, measure-servo defaults, `cabal vouch --expires`, `onDrop`, `larMeshPalaceDir`, and the four named aliases leave the active surface.
+- **Instruments.** Socket-claim extraction carries the settings lock; watch rescans cover pending deletions; membership-channel torn writes retry; the e2e merge gate checks its shards.
+
 ## [Unreleased] — the identity watch (2026-09-05 → 09)
 
 The four founding-watch rulings closed (the veil · layered recovery · seat-adoption · the nym's chain), and the wiring census emptied. History between v4.1.1 and here lives in the git log and `bags/lares/ha.ka.ba/lares/docs/handoff.mem`.

@@ -477,7 +477,7 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 |3 |`src/commands/handle.ts:232` (`face.storageDir`) |`personaKelBoardDocUrl(nexusPubkey)` (`:233`) |
 |4 |`src/commands/handle.ts:273` (`face.storageDir`) |`personaKelBoardDocUrl(nexusPubkey)` (`:274`) |
 |5 |`src/persona-admit-flow.ts:147` (`dataDir`) |`personaKelBoardDocUrl(nexusPubkey)` (`:149`) |
-|6 |`src/boot-invite-burn.ts:74` |''no board'' — rides into the minted invite body `{ nexusPubkey, nonce, expiresAt }` (`:80`) |
+|6 |`src/boot-invite-burn.ts:74` |''no board'' — `boot-invite-burn.ts` mints an invite without `expiresAt`; lineage-less charters refuse. |
 |7 |`src/boot-invite-burn.ts:95` |''no board'' — `decideBootInvite({ … nexusPubkey … })` (`:98`) |
 |8 |`src/commands/nexus-kapae.ts:142` |`kapaeAntigenDocUrl(nexusPubkey)` (`:143`) |
 |9 |`src/commands/nexus-kapae.ts:194` |`kapaeAntigenDocUrl(nexusPubkey)` (`:197`) |
@@ -1207,18 +1207,9 @@ or merge/admission capability ownership. A public arrival declaration may expose
 deployment receipt holds route bindings and carries no broad read or private authority. Whether a persona-less
 Herm may light this face or only a raised Lararium may do so remains an explicit implementation fork. ''Reconciled:'' closed by the 2026-10-08 ruling — only a lararium lights this face, and a herm mirrors the house's published bytes by CID as carriage (#/reconciled).
 
-''Parallel integrity lane — clock authority removal, staged before admission widening.'' The E8 aftermath
-removes an unused `Date.now()` from browser presence broadcast: presence remains an ephemeral DID observation
-with no timestamp-shaped ordering claim. A focused audit finds the larger risk elsewhere: wall-clock defaults
-currently shape invite/handle/persona expiry, signed oracle and bulb pointer freshness, daemon-auth temporal
-input, and timestamp-prefixed CRDT-facing request/effect identifiers. Work in three red-first cuts: (1) make
-each lease/admission verifier receive a named operator or realm epoch witness and prove an omitted witness
-refuses; (2) replace wall-clock-derived CRDT-facing IDs with random or causal identifiers while keeping an
-optional observed-at display field outside causal keys; (3) re-name local cache/retry/cooling measurements as
-injected monotonic servo clocks. Historical and UI provenance timestamps remain observations only; no code may
-promote them to shared order or authority. Gaia needs devices whose disagreeing clocks cannot decide who may
-join or keep a document. Elyncia needs waystones that can report a keeper's local observation without making
-the sun's position a law of the realm.
+''Historical audit, dated 2026-10-08 — clock authority removal.'' The E8 aftermath removed an unused `Date.now()` from browser presence broadcast: presence remains an ephemeral DID observation with no timestamp-shaped ordering claim. The audit identified invite/handle/persona expiry, signed oracle and bulb pointer freshness, daemon-auth temporal input, and timestamp-prefixed CRDT-facing request/effect identifiers for red-first work. Its proposed cuts called for epoch witnesses, random or causal identifiers, and injected monotonic servo clocks. Historical and UI provenance timestamps remain observations only; they do not establish shared order or authority.
+
+''Standing invariant:'' invite and persona expiry gates, signed oracle and bulb freshness checks, daemon-auth temporal input, and timestamp-prefixed request IDs no longer decide verdict or order. Persona admission, cabal vouch, and keyhive tokens use causal fences; incomplete history yields an incomplete view, never expiry.
 
 ''Following slice — real household composition, 16 points.'' With the mount receipt in hand, exercise one
 persona-less Herm floor and one persona-bearing Lararium lift against the same Pronaos bootstrap projection.
@@ -1580,6 +1571,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;knhr_mo34IXerd-A9zXOsMBVztAsF29F2d2M32W1vVU
+<<^ code="&#x0003;">>ni:///sha-256;upo-qmhdShBrkmbG-DP6moJuUXRmxf7gQVdC_rJ2FlM
 
 <<^ code="&#x0004;" -> to="?">>

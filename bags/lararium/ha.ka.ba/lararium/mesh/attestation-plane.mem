@@ -214,9 +214,11 @@ What rent measurably DOES buy reads as ''garbage collection'' — 1.17M ENS name
 against 241K contested. That recirculation suits a rival good — the host-scoped address rides as exactly that,
 and every other capture-answer in this stack (fork-as-exit, the capture clock) assumes it away.
 
-''ONE HARD RULE ALREADY EARNED:'' expiry MUST kill RESOLUTION in the same act it kills the grant. ENS keeps
-resolution live past expiry and 2,633 payments landed with strangers who dropcaught a lapsed name. ''A rental
-namespace whose expiry does not invalidate resolution converts forgetfulness into theft.''
+''ONE HARD RULE:'' expiry reads as CAUSAL SUPERSESSION at a verified relation fence, and it MUST end
+RESOLUTION with the grant at that fence. A replica missing that history reports an incomplete view, never
+"expired". Historical ENS reports describe resolution remaining live past expiry and payments reaching later
+holders. The standing rule here requires causal supersession at a verified relation fence; quiet never means lapse. ''A rental namespace whose supersession does not invalidate resolution converts forgetfulness
+into theft.''
 
 ''AND THE CAUTION THE LEASE CARRIES:'' the sweeps' cross-cut finding reads — in both failed models the name
 bound to a ''rented substrate'' (an on-chain rental contract, a hostname) and never to a key the holder keeps.
@@ -296,6 +298,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9Z-YUHOwW-Tvuj2dyaKF2fvfksSTtGKEemleurzNa5w
+<<^ code="&#x0003;">>ni:///sha-256;zHY-7NWYu1MIKQk2bgSnLapPHccgjcbD-cLA9bdDUlU
 
 <<^ code="&#x0004;" -> to="?">>

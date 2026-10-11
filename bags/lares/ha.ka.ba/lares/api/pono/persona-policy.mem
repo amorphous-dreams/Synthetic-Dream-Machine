@@ -13,7 +13,7 @@ manao             = 16
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "persona-policy — the operator's three rulings on the multi-persona identity core: ONE face to the mesh (reboot to switch; PRIVATE-all, PUBLIC-one) · each PersonaGroup a CRYPTOGRAPHIC INDIVIDUAL (Sybil-of-one the accepted IoC cost, answered socially never in crypto) · DISTINCT recovery custodians per persona. Plus the two-layer pet-names (private map ⊥ public glamour) under Zooko — the pet-name FLEET-SYNCS among the human's own vessels and never PUBLICLY federates — under THE BINDING LAW: only a publicly announced Handle binds a PersonaGroup to a public glamour, so no other path may carry a persona's name onto a federating surface. All standing on NO GLOBAL-NOW FOR IDENTITY — the mesh refuses to build the SIN even to defend itself"
+role              = "persona-policy — the operator's three rulings on the multi-persona identity core: ONE face per vessel at a time (PRIVATE-all, PUBLIC-one); a switch closes Nexus sessions, records the transition locally, and re-dials as the incoming face · each PersonaGroup a CRYPTOGRAPHIC INDIVIDUAL (Sybil-of-one the accepted IoC cost, answered socially never in crypto) · DISTINCT recovery custodians per persona. Plus the two-layer pet-names (private map ⊥ public glamour) under Zooko — the pet-name FLEET-SYNCS among the human's own vessels and never PUBLICLY federates — under THE BINDING LAW: only a publicly announced Handle binds a PersonaGroup to a public glamour, so no other path may carry a persona's name onto a federating surface. Identity carries no universal index; the mesh refuses to build the SIN even to defend itself"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/persona-policy"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -35,11 +35,13 @@ The multi-persona identity core (persona-circle: a human as a private Circle of 
 
 <<~ ahu #/one-face>>
 
-!! Ruling 1 ~ one face to the mesh, reboot to switch (PRIVATE-all, PUBLIC-one)
+!! Ruling 1 ~ one face per vessel at a time (PRIVATE-all, PUBLIC-one)
 
-''A vessel shows the mesh ONE face at a time.'' The public/carry shore serves ''only the WORN persona''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward.
+''A vessel wears ONE face at a time.'' The public/carry shore serves ''only the WORN persona''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward.
 
-''Switching a persona REBOOTS into the new identity'' — never a live hot-swap. The active-persona pointer ''reads at BOOT'': `wearPersona` sets it, the boot reads it, and the vessel re-stands AS that persona. This matches the built selector exactly (the mask you put on holds until you take it off and re-stand the house beneath). //"No two equals the same"// (Principia Discordia): each boot re-enacts a ''distinct identity-instance'', never a fused continuity across the switch.
+''A face names WHO ANSWERS for an act'' — one blame-bearer per act; correlation stays secondary. The ruling calls for recording outgoing and incoming faces locally with causal position and rebind/re-dial results, closing every Nexus session, then re-dialing as the incoming face. The recorded switch act stands ruled, unbuilt: the code as it stands resolves the worn face at boot, so a switch takes a restart until that act lands. A vessel wears ONE face at a time, either a private face alone or paired with its public Handle; a personal Handle never rides without its owning face.
+
+''The human keeps many faces and many Handles across many cabals.'' Faces and Handles relate many-to-many with cabals; one current personal Handle belongs to each PersonaGroup, and a renamed face rotates its Handle. A collective quorum Handle stays separate and speaks only for its chartered acts. No root or switch notice joins face names.
 
 The wall stays custody-by-TYPE: wearing a persona ''REQUIRES that this vessel HOLD its sovereign root'' — you sign only as a self whose secret you carry (persona-vault#wearPersona).
 
@@ -179,6 +181,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o0_YDwZGNCcqewdCKdS8LvCUiEHicrXBcuTQby1vYfE
+<<^ code="&#x0003;">>ni:///sha-256;I98XsVoakjuofj3hk4Xb2jKOEwyzL9lYPMRAuv4jo48
 
 <<^ code="&#x0004;" -> to="?">>

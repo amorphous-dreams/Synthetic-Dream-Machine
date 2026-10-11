@@ -38,7 +38,7 @@ the capability, architecture and federation memes, which carry their own faces o
 > ''What makes a scale REAL rides one meme over'' (PROVISIONAL):
 > <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> — the constructor,
 > the declared partition (there exists //no partition-free fact// about whether a level is real),
-> declaration ⊥ measurement ⊥ decision as three artifacts with three owners, and fluid-never-frozen rank whose lift expires.
+> declaration ⊥ measurement ⊥ decision as three artifacts with three owners, and fluid-never-frozen rank whose lift may be causally superseded at a verified fence.
 > It expands the five scales below; it replaces nothing here.
 
 > ''The key is the node; the delegation is the relationship.'' A vessel mints its own
@@ -152,8 +152,7 @@ confused-deputy guard).
 
 Revocation rides ''Keyhive concap'' — delegation + revocation as ''convergent CRDT membership-graph''
 ''state'' (an observed-remove op that converges offline, no bolted-on blocklist) — the model Ink&Switch
-moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: it decays by its lease
-(`boundEpoch` against the PersonaGroup's lease epoch), and an epoch bump stays the heavy hammer for re-founding only. Revocation is first-class and
+moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: `boundEpoch` against the PersonaGroup lease epoch records causal supersession. Quiet never lapses standing; departure, relation-scoped kapae, or renewal supersession records lapse. An epoch bump stays the heavy hammer for re-founding only. Revocation is first-class and
 convergent, never the deferred afterthought.
 
 <<~/ahu>>
@@ -249,20 +248,21 @@ veil-policy choice, never a silent default.
 
 !! The Lease ~ decay as native law (feed the Lar or it fades)
 
-Standing ''decays unless fed''. The vessel key stands durable; the //grant over it// — the tier, the
-edge — rides a ''perishable lease''. This restates the Elyncia bond as protocol: feed the Lar and it
-hums, neglect it and it flickers back to the floor. Set foundational, never bolted on (operator,
+Standing changes only through a recorded causal act. Renewal uses wā, a position with no clock installed; quiet never lapses standing. The vessel key stands durable; the //grant over it// — the tier, the
+edge — rides a ''causally superseded lease''. This restates the Elyncia bond as protocol: feed the Lar and it
+hums; signed departure, relation-scoped kapae, or renewal supersession records a lapse. Set foundational, never bolted on (operator,
 2026-06-25). Four blind domains converged on the shape (DHCP soft-state · UCAN attenuation ·
 quorum-sensing hysteresis · the institutional lease-not-ceremony):
 
-<<~ has Lease Floor "rests/anon, NEVER zero ~ decay returns a vessel to the floor; its key stays valid to re-climb">>
-<<~ has Lease Feed "runs/re-issue the grant before expiry ~ the grantor re-signs the edge; feeding the Lar made literal — unfed, the grant decays (soft-state, no teardown)">>
-<<~ has Lease Hysteresis "runs/two-phase ~ T1 (½ lease) the vessel asks its grantor · T2 (⅞) it rebinds to any sufficient PersonaGroup member · expiry lapses to floor">>
+<<~ has Lease Floor "rests/anon, NEVER zero ~ a recorded departure, relation-scoped kapae, or renewal supersession returns a vessel to the floor; its key stays valid to re-climb">>
+<<~ has Lease Feed "runs/re-issue the grant at wā ~ wā names a position with no clock installed; the grantor records a renewal act at a verified fence; quiet never means lapse">>
+<<~ has Lease Hysteresis "runs/on local liveness ~ grant lapse rides causal epoch supersession; a φ-accrual hysteresis and any T1/T2 lease-fraction schedule stand designed, unbuilt">>
 <<~ has Lease Discount "grants/an established member renews at LOWER cost than entry ~ quorum-sensing hysteresis; cheap to stay, costly to enter — the long-fed hearth holds its glow on less">>
 <<~ has Lease Lease>>
 
-''The epoch DEMANDS renewal; it never revokes.'' A lapsed lease drops to the floor on its own —
-lease-lapse SHALL NOT read as revocation. ''Explicit'' revocation rides a separate channel — Keyhive
+''A causal fence records supersession; it never infers lapse from quiet.'' A lapsed lease drops to the floor
+only through signed departure, relation-scoped kapae, or renewal supersession. Lease-lapse SHALL NOT read as
+revocation. ''Explicit'' revocation rides a separate channel — Keyhive
 convergent membership-removal (#/delegation-edge), immediate and irreversible at the CID.
 ''Anti-amplification holds'': only the kahu/root issues ceiling grants; no vessel self-escalates or
 grants above its own tier (the ocap attenuation law, `orichalcum-capabilities`).
@@ -578,6 +578,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3RQ2JE8u6nYjYxAkekJnujwwcTjojOfOG2nGtXYUK7U
+<<^ code="&#x0003;">>ni:///sha-256;eX6Clr1QV0ou7uUfwfNi1a6eKBG62Dxrg19RsP-O_J4
 
 <<^ code="&#x0004;" -> to="?">>
