@@ -12,6 +12,7 @@
 
 import { mkdirSync, writeFileSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { randomBytes } from "node:crypto";
 import {
   MEMBERSHIP_BROADCAST,
   type MembershipChannel, type MembershipEnvelope,
@@ -22,20 +23,25 @@ function forRecipient(e: MembershipEnvelope, recipient: string): boolean {
 }
 
 /**
- * A file-backed membership channel over a shared directory. `offer` writes an envelope
- * as a monotonically-named JSON file; `poll` reads the dir, delivers unseen envelopes
- * addressed to the recipient (or broadcast, never self), and remembers them (deliver-once
- * per recipient, per process).
+ * A file-backed membership channel over a shared directory. `offer` writes an envelope as a file named by
+ * PER-WRITER IDENTITY, never wall time — a fresh random writer id minted once per channel instance (collision-
+ * free across processes without needing `process.pid`, which a container/namespace can recycle) plus a local
+ * monotonic sequence (collision-free within this writer). `poll` reads the dir, delivers unseen envelopes
+ * addressed to the recipient (or broadcast, never self), and remembers them (deliver-once per recipient, per
+ * process). Filename order carries NO causal meaning — two concurrent writers' envelopes may land in either
+ * order, and delivery never claims otherwise; only (writerId, seq) identifies and dedupes a message.
  */
 export class FileMembershipChannel implements MembershipChannel {
+  private readonly writerId = randomBytes(8).toString("hex");
   private seq = 0;
   private readonly seen = new Map<string, Set<string>>();
 
   constructor(private readonly dir: string) { mkdirSync(dir, { recursive: true }); }
 
   offer(env: MembershipEnvelope): Promise<void> {
-    // Name = time + pid + local seq → monotone + collision-free across processes.
-    const name = `${String(Date.now())}-${String(process.pid)}-${String(this.seq++).padStart(5, "0")}.json`;
+    // Name = this writer's id + its own local seq → collision-free across processes, with no wall clock and no
+    // reliance on a reusable pid. Carries no cross-writer ordering claim.
+    const name = `${this.writerId}-${String(this.seq++).padStart(5, "0")}.json`;
     writeFileSync(join(this.dir, name), JSON.stringify(env));
     return Promise.resolve();
   }
