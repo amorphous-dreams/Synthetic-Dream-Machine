@@ -134,23 +134,30 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     expect(membersOf(store, "operators")).toEqual([]);
   });
 
-  test("M5 PROOF 1b — a LEGACY undotted mbr+ (any value, ISO included) unfollows the same way", async () => {
+  test("EVERGREEN (gp25-SW2) — a LEGACY undotted mbr+ (any value, ISO included) REFUSES by name: ignored, "
+    + "never counted present, never removable", async () => {
+    // Before this sweep: an undotted mbr+ parsed as a dot (reserved id "~") that a remove could dominate.
+    // After: `parseDotKey` does not recognize the undotted shape AT ALL — it is not a dot, so `foldMembers`
+    // never sees an add for this nym, and the nym never becomes present off a legacy stamp alone.
     const store = seededCircles();
     const fields = stampFieldsOf(store, "following");
     const seeded = { ...fields, [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
     store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
-    expect(membersOf(store, "following")).toEqual([NYM_A]);
+    expect(membersOf(store, "following")).toEqual([]);   // INVERTED: no longer present off the legacy stamp
 
+    // A `circle-remove` against it is therefore a no-op by the reactor's own count (the nym already reads
+    // absent) — it refuses to treat the stale key as anything to unfollow FROM.
     const { remove } = reactorsOver(store);
-    await remove({ circle: "following", nym: NYM_A }, CTX);
+    const out = await remove({ circle: "following", nym: NYM_A }, CTX);
+    expect(out["removed"]).toBe(false);
     expect(membersOf(store, "following")).toEqual([]);
   });
 
-  test("M5 PROOF 1e — a pre-M5 (C2-era) undotted follow+unfollow pair, then a SEQUENTIAL re-follow (want present)", async () => {
-    // L1 shape (probe-m5-legacy.mjs): a legacy writer stamped BOTH an undotted add and an undotted remove
-    // (the old Lamport-counter shape) before this replica ever wrote a dot. A fresh, sequential re-follow
-    // reads the circle via this reactor (which observes every remove-dot it can presently see, dotted or
-    // legacy) and must dominate both legacy stamps.
+  test("EVERGREEN (gp25-SW2) — a pre-M5 undotted add+remove pair is IGNORED wholesale; a fresh dotted "
+    + "follow lands clean (observing nothing stale, not even its own legacy history)", async () => {
+    // L1 shape (probe-m5-legacy.mjs), inverted: before, the legacy remove dominated the legacy add. Now
+    // NEITHER legacy key parses as a dot at all, so there is no add and no remove to fold — a fresh,
+    // dotted follow does not need to "observe" anything stale; it simply lands as the nym's first dot.
     const store = seededCircles();
     const fields = stampFieldsOf(store, "following");
     const seeded = {
@@ -159,45 +166,33 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
       [`mbr-:${NYM_A}`]:                "00000000000000000002",
     };
     store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
-    expect(membersOf(store, "following")).toEqual([]);   // the legacy remove already dominates
+    expect(membersOf(store, "following")).toEqual([]);   // no dotted add exists — absent either way
 
     const { add } = reactorsOver(store, { replica: "dev-fresh" });
     await add({ circle: "following", nym: NYM_A }, CTX);
     expect(membersOf(store, "following")).toEqual([NYM_A]);
+    // The fresh add's own observed-set is EMPTY — it never had a legacy dot to observe, because the legacy
+    // keys were never dots in the first place.
+    const key = Object.keys(stampFieldsOf(store, "following")).find((k) => k.startsWith(`${MEMBER_ADD_PREFIX}${NYM_A}#dev-fresh.`))!;
+    expect(stampFieldsOf(store, "following")[key]).toBe("");
   });
 
-  test("M5 PROOF 1f — a legacy ISO follow, then a SEQUENTIAL dotted unfollow reads absent, NEVER concurrent", async () => {
-    // L2 shape: a legacy ISO-stamped follow (cold-boot-ceremony's former genesis shape), unfollowed by this
-    // same reactor — which observes the legacy add-dot (the reserved `"~"` token, not `""`) — must read
-    // present:[] AND concurrent:[] (the remove causally observed the add; this is not true concurrency).
-    const store = seededCircles();
-    const fields = stampFieldsOf(store, "following");
-    const seeded = { ...fields, [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
-    store._seed(mutableLarRecord(circleTiddlerUri("following"), seeded, "legacy-writer"));
-
-    const { remove } = reactorsOver(store, { replica: "dev-fresh" });
-    await remove({ circle: "following", nym: NYM_A }, CTX);
-    const { present, concurrent } = foldMembersDetailed(stampFieldsOf(store, "following"));
-    expect(present).toEqual([]);
-    expect(concurrent).toEqual([]);   // sequential, not concurrent — the legacy dot WAS observed
-  });
-
-  test("MUTATION PROOF — a legacy dot id of \"\" (not the reserved \"~\" token) LOSES the observation on the "
-    + "comma-join round-trip and misreports a sequential remove as CONCURRENT", () => {
-    // Fixed shape (what the real reactor actually writes for the M5 PROOF 1f scenario): the remove's own dot
-    // observed the legacy add's RESERVED dot id "~", which survives `[...].join(",")` intact.
-    const fixedFields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: "legacy-value", [`mbr-:${NYM_A}#dev.0`]: "~" };
-    const fixed = foldMembersDetailed(fixedFields);
-    expect(fixed.present).toEqual([]);
-    expect(fixed.concurrent).toEqual([]);   // correctly read as sequential (observed)
-
-    // Buggy shape: if the legacy dot id were "" instead of "~", the SAME sequential remove's own
-    // observed-set would have been minted as `[""].join(",")` === "" — indistinguishable from "observed
-    // nothing". Feeding that exact (lossy) representation to the SAME real fold:
-    const buggyFields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: "legacy-value", [`mbr-:${NYM_A}#dev.0`]: "" };
-    const buggy = foldMembersDetailed(buggyFields);
-    expect(buggy.present).toEqual([]);          // remove still wins either way
-    expect(buggy.concurrent).toEqual([NYM_A]);  // but now FALSELY flagged concurrent — the bug "~" fixes
+  test("MUTATION PROOF — the RETIRED reserved-dot-id reader (treating undotted as dot \"~\") would have "
+    + "resurrected/removed off a stale legacy stamp; the real fold refuses to see it at all", () => {
+    // Reproduces the retired behavior inline (never touching the real module) to show what it would have
+    // done, then proves the real `foldMembers` does NOT: a bare undotted `mbr+:<nym>` is not present.
+    function legacyFoldPresent(fields: Record<string, unknown>): string[] {
+      const present: string[] = [];
+      for (const key of Object.keys(fields)) {
+        if (!key.startsWith(MEMBER_ADD_PREFIX)) continue;
+        const nym = key.slice(MEMBER_ADD_PREFIX.length).split("#")[0]!;
+        if (!fields[`mbr-:${nym}`] && !Object.keys(fields).some((k) => k.startsWith(`mbr-:${nym}#`))) present.push(nym);
+      }
+      return present.sort();
+    }
+    const fields = { [`${MEMBER_ADD_PREFIX}${NYM_A}`]: new Date().toISOString() };
+    expect(legacyFoldPresent(fields)).toEqual([NYM_A]);   // the retired reader WOULD have counted it present
+    expect(foldMembers(fields)).toEqual([]);              // the real, evergreen fold refuses to — it is GONE
   });
 
   test("M5 PROOF 5 — two devices with DISTINCT replica ids keep a concurrent unfollow visible across the merge (A∥B)", async () => {

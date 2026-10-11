@@ -29,13 +29,14 @@
  * observed each other at all, the fold names the nym in a separate `concurrent` list rather than silently
  * picking a winner.
  *
- * LEGACY READ, not a shim: an un-dotted `mbr+:<nym>` (any value at all — the old Lamport counter, the old ISO
- * string, cold-boot-ceremony's former genesis stamp) parses as an add-dot with the RESERVED dot id `"~"`
- * (`LEGACY_DOT`, never `""` — an empty dot id cannot survive the comma-join/split round-trip, which would
- * silently drop the fact that a later write observed it) that observed NOTHING. Any remove — dotted or
- * legacy — then dominates it (the value is never compared), and only a causally-later dotted re-follow (one
- * that observes that remove) brings the nym back. `cold-boot-ceremony.ts` mints the DOTTED form now, so a
- * fresh genesis follow is unfollowable from the moment it is born.
+ * EVERGREEN (gp25-SW2): a legacy, UN-DOTTED `mbr+:<nym>` / `mbr-:<nym>` (any value — the old Lamport counter,
+ * the old ISO string, cold-boot-ceremony's former genesis stamp) is RETIRED, never read as a shim. It no
+ * longer parses as a dot at all (not even a reserved placeholder) — `parseDotKey` ignores it outright and
+ * logs it by name, so a stray pre-M5 key neither grants nor blocks membership; it simply never counts.
+ * `cold-boot-ceremony.ts` mints the DOTTED form at genesis (confirmed below, M5), so no fresh write this
+ * house makes ever lands undotted again — only truly ancient, pre-M5 data can still carry one, and the
+ * operator's evergreen ruling gives that data a fresh start by hand (a fresh, dotted re-follow), never a
+ * compatibility read.
  *
  * Because every dot is its own key, a concurrent follow and unfollow of DIFFERENT nyms — or an add and a
  * remove of the SAME nym from different replicas — touch disjoint field keys, so Automerge's field-merge
@@ -87,16 +88,6 @@ const MEMBER_RM_PREFIX = "mbr-:";
 /** Separates a dotted field key's nym from its dot: `mbr+:<nym>#<replica>.<n>`. */
 const DOT_SEP = "#";
 
-/**
- * The reserved dot id a LEGACY, undotted stamp (`mbr+:<nym>` / `mbr-:<nym>`, any value) parses as. Never `""`:
- * an empty dot id cannot round-trip through the comma-joined observed-set value (`[""].join(",")` yields `""`,
- * which `parseObservedSet` then reads back as the EMPTY set on the next write that observed it — silently
- * losing the fact that a legacy dot was ever seen, and misreporting a sequential remove-after-legacy-add as
- * concurrent). `"~"` is not a legal `<replica>.<n>` substring (replicas never mint it), so it never collides
- * with a real dot and survives every split/join/filter round-trip intact.
- */
-const LEGACY_DOT = "~";
-
 function strArg(args: Record<string, unknown>, key: string): string {
   return typeof args[key] === "string" ? (args[key] as string).trim() : "";
 }
@@ -104,9 +95,8 @@ function strArg(args: Record<string, unknown>, key: string): string {
 /** The circle tiddler's mutable field bag (title + arbitrary fields, incl. the per-nym stamps). */
 type CircleFields = Record<string, unknown>;
 
-/** One parsed add- or remove-dot for a nym: its own dot id (`LEGACY_DOT` for a legacy, undotted stamp) and
- *  the set of opposite-kind dots it OBSERVED at write time (always empty for a legacy stamp — it observed
- *  nothing). */
+/** One parsed add- or remove-dot for a nym (DOTTED stamps only — `parseDotKey` never mints an entry for a
+ *  legacy, undotted key) and the set of opposite-kind dots it OBSERVED at write time. */
 interface DotEntry {
   readonly dot:      string;
   readonly observed: ReadonlySet<string>;
@@ -119,13 +109,20 @@ function parseObservedSet(value: unknown): ReadonlySet<string> {
   return new Set(value.split(",").filter((s) => s.length > 0));
 }
 
-/** Split a field key on its prefix, returning the nym and its dot (`LEGACY_DOT` when the key carries no
- *  `#dot` — the legacy, undotted shape every pre-M5 writer still mints). */
+/** Split a field key on its prefix, returning the nym and its dot — ONLY the DOTTED shape
+ *  (`<prefix><nym>#<replica>.<n>`) parses. EVERGREEN (gp25-SW2): a legacy, undotted key (`<prefix><nym>`,
+ *  no `#dot` — the shape every pre-M5 writer minted) is RETIRED; it is ignored and logged by name, never
+ *  parsed as a dot at all (not even a reserved placeholder). It therefore neither grants nor blocks
+ *  membership — a stray pre-M5 key simply does not count, until a fresh, dotted write supersedes it. */
 function parseDotKey(key: string, prefix: string): { nym: string; dot: string } | null {
   if (!key.startsWith(prefix)) return null;
   const rest = key.slice(prefix.length);
   const i = rest.indexOf(DOT_SEP);
-  return i === -1 ? { nym: rest, dot: LEGACY_DOT } : { nym: rest.slice(0, i), dot: rest.slice(i + DOT_SEP.length) };
+  if (i === -1) {
+    console.log(`[circle-verbs] ignoring retired, undotted membership key "${key}" — evergreen sweep (gp25-SW2): legacy stamps no longer parse`);
+    return null;
+  }
+  return { nym: rest.slice(0, i), dot: rest.slice(i + DOT_SEP.length) };
 }
 
 /** Collect every add- or remove-dot on this tiddler, grouped by nym. */
