@@ -50,7 +50,7 @@ import { spawnSync } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import {
-  larMempalaceDir, larStructurePalaceDir, larFormPalaceDir, larPersistencePalaceDir, larContentDir, larMeshPalaceDir, memorySensoriumDir,
+  larMempalaceDir, larStructurePalaceDir, larFormPalaceDir, larPersistencePalaceDir, larContentDir, memorySensoriumDir,
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir, resolveMempalaceExe,
   memeticWikitextSensoriumDir, memeticWikitextFormalDir, memeticWikitextInformalDir,
 } from "./vessel-paths.js";
@@ -217,7 +217,7 @@ export function palaceOrgans(): PalaceOrgan[] {
     { name: "mempalace", dir: join(memorySensoriumDir(), "mempalace"), init: ensureDirOrgan("mempalace", join(memorySensoriumDir(), "mempalace")) },
     // The `mesh` sensorium TREE — the parent dir plus its three nested children (who/authority/flow),
     // each enumerated so setup stands + teardown reaps them. Structure only; the parallel fills the caps.
-    { name: "meshpalace",     dir: larMeshPalaceDir(),  init: ensureDirOrgan("meshpalace",     larMeshPalaceDir())  },
+    { name: "meshpalace",     dir: meshSensoriumDir(),  init: ensureDirOrgan("meshpalace",     meshSensoriumDir())  },
     { name: "mesh:who",       dir: meshWhoDir(),        init: ensureDirOrgan("mesh:who",       meshWhoDir())        },
     persistenceOrgan("mesh:who:persistence",       meshWhoDir()),
     { name: "mesh:authority", dir: meshAuthorityDir(),  init: ensureDirOrgan("mesh:authority", meshAuthorityDir())  },

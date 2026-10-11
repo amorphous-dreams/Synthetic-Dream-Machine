@@ -3,7 +3,7 @@ export { REPO_ROOT, bagsRoot } from "./node-host.js";
 export {
   larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
   larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
-  larMempalaceDir, larContentDir, larMeshPalaceDir, scratchSensoriumDir, scratchSensoriumInstanceDir,
+  larMempalaceDir, larContentDir, scratchSensoriumDir, scratchSensoriumInstanceDir,
   // XDG base homes + the memory sensorium dir + config path (the consolidated layout).
   laresDataHome, larariumDataHome, larStateHome, larCacheHome, larConfigHome, larRuntimeHome,
   assertOneSegment,

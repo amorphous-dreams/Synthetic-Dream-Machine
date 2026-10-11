@@ -636,7 +636,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         );
       })(); }));
     });
-  }, (why) => log(why));
+  });
   log(`uds verb-channel on ${claim.socketPath} (perms 0600)`);
 
   return {

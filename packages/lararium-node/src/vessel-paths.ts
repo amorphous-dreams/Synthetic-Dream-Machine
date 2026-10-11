@@ -329,12 +329,6 @@ export function meshFlowDir(): string {
   return join(meshSensoriumDir(), "flow");
 }
 
-/** The mesh-palace STORE dir — now the `mesh` SENSORIUM dir (== {@link meshSensoriumDir}). Kept as a
- *  named alias for surface stability (the palace-organ registry + the index re-export read it). */
-export function larMeshPalaceDir(): string {
-  return meshSensoriumDir();
-}
-
 // ── The `memetic-wikitext` sensorium (FORMAL ⋈ INFORMAL peers, neither top) ───────────────────────
 
 /** The `memetic-wikitext` sensorium dir — `<lararium>/sensoriums/memetic-wikitext`. A nameless nested

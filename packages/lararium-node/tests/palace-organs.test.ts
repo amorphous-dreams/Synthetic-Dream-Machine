@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { palaceOrgans, setupPalaceOrgans, organHealthy, guestMempalaceOrgan, materializeMemorySensorium } from "../src/palace-organs.js";
 import { readManifest, resolveCapDir } from "../src/sensorium.js";
 import {
-  larMempalaceDir, larContentDir, larStructurePalaceDir, larFormPalaceDir, larMeshPalaceDir,
+  larMempalaceDir, larContentDir, larStructurePalaceDir, larFormPalaceDir,
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir,
   memeticWikitextSensoriumDir, memeticWikitextFormalDir, memeticWikitextInformalDir,
   memorySensoriumDir,
@@ -74,7 +74,6 @@ describe("palaceOrgans — the ONE registry both consumers read", () => {
     expect(byName["contentpalace"]).toBe(larContentDir());
     expect(byName["structurepalace"]).toBe(larStructurePalaceDir());
     expect(byName["formpalace"]).toBe(larFormPalaceDir());
-    expect(byName["meshpalace"]).toBe(larMeshPalaceDir());
     // the mesh children hang below the mesh sensorium dir — the TREE is the composition.
     expect(byName["meshpalace"]).toBe(meshSensoriumDir());
     expect(byName["mesh:who"]).toBe(meshWhoDir());

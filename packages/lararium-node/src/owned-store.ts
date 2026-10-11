@@ -108,32 +108,32 @@ export interface ClaimOptions {
   readonly parkLimit?: number;
 }
 
-/** A held claim on a store's rendezvous name. */
-export interface StoreClaim {
+/** The claim's shape apart from `holder`/`bootEpoch`, which {@link StoreClaim} discriminates on `holder`. */
+interface StoreClaimShape {
   readonly socketPath: string;
-  /** Who holds. */
-  readonly holder: StoreHolder;
-  /**
-   * The boot epoch THIS claim bumped (M7″) — defined for a `"vessel"` holder only (a vessel's claim IS a
-   * boot); a `"direct"` one-shot act never bumps the counter, so it reads `undefined` here, never 0 and
-   * never a stale number read back off disk. `installCasSweep`'s production caller threads this straight
-   * through as `currentFence`, so a `--held` pin is judged against the epoch THIS boot owns, never a
-   * re-read of the sidecar file (which could race a concurrent bump).
-   */
-  readonly bootEpoch?: number;
   /**
    * Answer every caller that reaches the name from here on (the vessel's verb channel takes its claim over). A
    * vessel's claim holds each caller that arrived before, and hands it over here with its invocation unread — a
    * parked caller's own socket `close` is the only abandonment this vessel trusts, never a wall-clock deadline;
    * a caller still connected at hand-over time is replayed unconditionally, however long the wait ran.
-   * `onDrop` is kept for callers that still pass one; nothing causal drops a line here to report through it.
    */
-  readonly serve: (onConnection: (sock: Socket) => void, onDrop?: (why: string) => void) => void;
+  readonly serve: (onConnection: (sock: Socket) => void) => void;
   /** Answer every caller from here on with a refusal naming `why` (a vessel that stops serving verbs). */
   readonly refuse: (why: string) => void;
   /** Free the name for the next holder: unlink it while it still names this holder, then close. */
   readonly release: () => Promise<void>;
 }
+
+/**
+ * A held claim on a store's rendezvous name. A `"vessel"` holder's claim IS a boot — `bootEpoch` is REQUIRED
+ * on it (M7″): the epoch THIS claim bumped, which `installCasSweep`'s production caller threads straight
+ * through as `currentFence`, so a `--held` pin is judged against the epoch THIS boot owns, never a re-read
+ * of the sidecar file (which could race a concurrent bump). A `"direct"` one-shot act never bumps the
+ * counter, so it carries no `bootEpoch` at all — never 0, never a stale number read back off disk.
+ */
+export type StoreClaim =
+  | (StoreClaimShape & { readonly holder: "vessel"; readonly bootEpoch: number })
+  | (StoreClaimShape & { readonly holder: "direct"; readonly bootEpoch?: undefined });
 
 const uid = (): number => process.getuid?.() ?? 0;
 
@@ -174,6 +174,8 @@ function heldAs(path: string): Promise<{ holder: StoreHolder | null; message: st
  * Claim the store at `storageDir`: bind its rendezvous name, or refuse by name when a holder answers there. A
  * socket file nobody answers at reads as a corpse, and exactly one racing claimant replaces it.
  */
+export function claimStore(storageDir: string, opts: ClaimOptions & { readonly holder: "vessel" }): Promise<StoreClaim & { readonly holder: "vessel"; readonly bootEpoch: number }>;
+export function claimStore(storageDir: string, opts?: ClaimOptions): Promise<StoreClaim>;
 export async function claimStore(storageDir: string, opts: ClaimOptions = {}): Promise<StoreClaim> {
   const holder = opts.holder ?? "direct";
   const refuse = (): StoreHeld => new StoreHeld(
@@ -191,8 +193,8 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       // every unrelated `lares` invocation, which is not what "this boot" names.
       // M7″: the bumped epoch rides the claim itself (`bootEpoch`), so the production sweep reads THIS
       // boot's own number, never a second, racy re-read of the sidecar file.
-      if (holder === "vessel") return { ...claim, bootEpoch: bumpBootEpoch(storageDir) };
-      return claim;
+      if (holder === "vessel") return { ...claim, holder: "vessel", bootEpoch: bumpBootEpoch(storageDir) };
+      return { ...claim, holder: "direct" };
     }
     catch (err) {
       if (!(err instanceof StoreHeld) || !opts.awaitDirect) throw err;
@@ -212,7 +214,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   }
 }
 
-async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number): Promise<StoreClaim> {
+async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number): Promise<StoreClaimShape & { readonly holder: StoreHolder }> {
   const socketPath = rendezvousPath({ root: storageDir, uid: uid() });
   const heldBy = (why: string): string => JSON.stringify({ status: "error", errorMessage: why, holder }) + "\n";
   const answerHeld = (why: string) => (sock: Socket): void => {
@@ -299,7 +301,7 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   let onConnection: (sock: Socket) => void = holder === "direct"
     ? answerHeld(`the store at ${storageDir} stays held by a direct lares command (pid ${process.pid}) for one act — run again when it ends`)
     : park;
-  const handOver = (next: (sock: Socket) => void, _onDrop?: (why: string) => void): void => {
+  const handOver = (next: (sock: Socket) => void): void => {
     onConnection = next;
     for (const [sock, line] of parked) {
       parked.delete(sock);

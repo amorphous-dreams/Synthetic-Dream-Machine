@@ -2295,17 +2295,13 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     const genesisProtect = genesisProtectSet(genesisDir);
     if (genesisProtect === "unreadable") {
       console.warn("[cas-sweep] the genesis seed stands but will not derive — withholding the sweep. Nothing sweeps until it reads, so no genesis blob can age out unprotected. Repair or remove the malformed seed.");
-    } else if (storeClaim.bootEpoch === undefined) {
-      // M7″ (G3): a claim with no `bootEpoch` (a non-"vessel" holder) carries no boot epoch to fence a
-      // `--held` pin against at all — the SAME shape as the `genesisProtect === "unreadable"` branch above:
-      // withhold the sweep entirely by name rather than guess an epoch (`?? 0` would have read as "boot
-      // epoch zero", silently superseding every `--held` pin on a claim that never booted one).
-      console.warn("[cas-sweep] this claim carries no bootEpoch (not a vessel-held claim) — withholding the sweep. Nothing sweeps until a vessel claim threads a live boot epoch through.");
     } else {
+      // M7″: `storeClaim.bootEpoch` is REQUIRED on a vessel-held claim (never undefined, never a guessed
+      // 0) — the epoch THIS vessel's own boot bumped once, at claim time (step 0, above). Epoch 0 HOLDS
+      // every pin (`currentFence <= fence` for any non-negative fence), so a first boot withholds nothing
+      // it should keep; read fresh here on every sweep (never cached), so a `--held` pin is judged against
+      // the boot that actually stands, never a stale re-read of the `.boot-epoch` sidecar file.
       const bootEpoch = storeClaim.bootEpoch;
-      // M7″: the live wire — `storeClaim.bootEpoch` is the epoch THIS vessel's own boot bumped (step 0,
-      // above); read fresh here on every sweep (never cached), so a `--held` pin is judged against the
-      // boot that actually stands, never a stale re-read of the `.boot-epoch` sidecar file.
       installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
     }
 

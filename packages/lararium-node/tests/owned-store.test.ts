@@ -297,8 +297,7 @@ describe("claimStore — one holder at every instant", () => {
       const hungUp = new Promise<void>((resolve) => sock.once("close", resolve));
       sock.end(JSON.stringify({ verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20_000 }) + "\n");
       await hungUp;                                   // the caller is fully gone before any verb channel ever opens
-      const drops: string[] = [];
-      claim.serve((s) => { ran = true; try { s.end(JSON.stringify({ status: "done" }) + "\n"); } catch { /* gone */ } }, (why) => drops.push(why));
+      claim.serve((s) => { ran = true; try { s.end(JSON.stringify({ status: "done" }) + "\n"); } catch { /* gone */ } });
       // Nothing to await from the caller's side (it already closed) — give `handOver`'s synchronous pass a tick.
       await new Promise((r) => setTimeout(r, 20));
       expect(ran).toBe(false);                         // the verb handler NEVER ran — the exact ghost-write this guards against
