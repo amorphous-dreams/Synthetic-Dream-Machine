@@ -2296,7 +2296,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     if (genesisProtect === "unreadable") {
       console.warn("[cas-sweep] the genesis seed stands but will not derive — withholding the sweep. Nothing sweeps until it reads, so no genesis blob can age out unprotected. Repair or remove the malformed seed.");
     } else {
-      installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+      // M7″: the live wire — `storeClaim.bootEpoch` is the epoch THIS vessel's own boot bumped (step 0,
+      // above); read fresh here on every sweep (never cached), so a `--held` pin is judged against the
+      // boot that actually stands, never a stale re-read of the `.boot-epoch` sidecar file.
+      installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => storeClaim.bootEpoch ?? 0, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
     }
 
     // cas-fetch — the fetch door's explicit READ: resolve a cid through the vessel's door (local `cid/` first,

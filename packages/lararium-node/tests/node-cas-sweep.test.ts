@@ -264,6 +264,7 @@ describe("installCasSweep — M7′ a corrupt sidecar REFUSES the tick's sweep r
     const sweep = installCasSweep({
       registry, casDir, references: async () => [], protect: new Set(),
       pins: () => readCasPins(casDir),   // THROWS on the torn sidecar — exactly the production wiring shape
+      currentFence: () => 0,
       realmClock: () => clockAt(20), log: (line) => { logs.push(line); },
     });
     try {
@@ -284,6 +285,7 @@ describe("installCasSweep — M7′ a corrupt sidecar REFUSES the tick's sweep r
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(),
         pins: () => readCasPins(casDir),
+        currentFence: () => 0,
         realmClock: () => clockAt(20), log: (line) => { logs.push(line); },
       });
       try {
@@ -330,6 +332,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       references: async () => [],
       protect: new Set(genesis.blobs.map((b) => b.cid)),
       pins: () => [{ cid: kept.cid, tier: "veil", holder: "operator" }],
+      currentFence: () => 0,
       realmClock: () => clockAt(epoch),
       log: () => {},
     });
@@ -366,6 +369,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       const swept: string[][] = [];
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
+        currentFence: () => 0,
         realmClock: () => clockAt(epoch), log: () => {}, onSweep: (r) => { swept.push(r.swept); },
       });
       try {
@@ -395,6 +399,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       const swept: string[][] = [];
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
+        currentFence: () => 0,
         realmClock: () => clock, log: () => {}, onSweep: (r) => { swept.push(r.swept); },
       });
       try {
@@ -419,6 +424,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
     let refs: CasReferenceEntry[] = [];
     const sweep = installCasSweep({
       registry, casDir, references: async () => refs, protect: new Set(), pins: () => [],
+      currentFence: () => 0,
       realmClock: () => clockAt(epoch), log: () => {},
     });
     try {
@@ -545,5 +551,91 @@ describe("owned-store — M7′ the boot epoch bumps on a VESSEL claim only", ()
   test("a torn `.boot-epoch` file reads as 0 — fail toward the OLDEST epoch, never a made-up high one", () => {
     writeFileSync(bootEpochPath(storeDir), "not-a-number\n");
     expect(readBootEpoch(storeDir)).toBe(0);
+  });
+
+  test("`claimStore`'s own StoreClaim carries the bumped epoch on `bootEpoch` — vessel holder only", async () => {
+    const vessel = await claimStore(storeDir, { holder: "vessel" });
+    try { expect(vessel.bootEpoch).toBe(1); } finally { await vessel.release(); }
+    const direct = await claimStore(storeDir, { holder: "direct" });
+    try { expect(direct.bootEpoch).toBeUndefined(); } finally { await direct.release(); }
+  });
+});
+
+// ── M7″: `InstallCasSweepOptions.currentFence` WIRED into the production sweep — the last wire ────────────
+// M7′ left `casSweep`'s own `currentFence` option built but UNREACHED by any caller. M7″ closes that gap at
+// exactly the production boundary: `InstallCasSweepOptions.currentFence` is now REQUIRED, and the install
+// threads it straight into every `casSweep` call the tick and the verb make — never a cached boot-time
+// reading, read fresh every sweep. The live wiring (`open-node-vessel.ts:2299`) supplies `() => storeClaim.bootEpoch`,
+// the epoch THIS boot's own `claimStore({holder:"vessel"})` call bumped — never a second re-read of the
+// `.boot-epoch` sidecar file, which could race a concurrent bump. Proven here at the `installCasSweep` grain
+// (a real epoch cell standing in for the live `StoreClaim`); proven end to end over a real UDS vessel across
+// a real reboot in `probe-m7.sh` (ep4 shape).
+describe("installCasSweep — M7″ the production sweep threads a live `currentFence` through to `casSweep`", () => {
+  test("a `--held` pin (fence stamped at boot 1) sweeps once `currentFence` reports boot 2 — the live-reboot shape", async () => {
+    const held = blob("a held pin, fenced at boot 1");
+    writeCasEntriesFs([held], casDir);
+    const registry = fakeRegistry();
+    let epoch = 1;                                            // this boot's own epoch, as `claimStore` would hand it
+    let pace = 2;                                              // the realm's own roll — independent of the boot epoch (realmPace reads < 2 as "no pace yet")
+    const sweep = installCasSweep({
+      registry, casDir, references: async () => [], protect: new Set(),
+      pins: () => [{ cid: held.cid, tier: "veil", holder: "import-job", fence: 1 }],
+      currentFence: () => epoch,                               // the LIVE wire under test
+      realmClock: () => clockAt(pace), log: () => {},
+    });
+    try {
+      // Boot 1: currentFence (1) has not moved past the stamped fence (1) — the held pin still stands.
+      // (This call also seeds the ledger: `held` is first seen unreferenced at roll 1.)
+      const bootOne = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+      expect(bootOne.pinned).toEqual([held.cid]);
+      expect(bootOne.swept).toEqual([]);
+      // Boot 2 (a real reboot bumps the epoch) — and the realm has rolled past the floor grace too, so the
+      // pin law alone decides: the SAME sidecar entry now reads superseded and the blob is old enough to go.
+      epoch = 2;
+      pace = 11;                                               // 9 rolls past the first-seen roll (2) — past the 8-roll floor
+      const bootTwo = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+      expect(bootTwo.pinned).toEqual([]);
+      expect(bootTwo.swept).toEqual([held.cid]);
+    } finally { sweep.stop(); }
+  });
+
+  test("CONTROL: a bare pin (no `fence`) keeps standing across every reboot, however `currentFence` moves", async () => {
+    const operatorPin = blob("the operator's own standing pin, no fence");
+    writeCasEntriesFs([operatorPin], casDir);
+    const registry = fakeRegistry();
+    let epoch = 1;
+    const sweep = installCasSweep({
+      registry, casDir, references: async () => [], protect: new Set(),
+      pins: () => [{ cid: operatorPin.cid, tier: "veil", holder: "operator" }],
+      currentFence: () => epoch,
+      realmClock: () => clockAt(20), log: () => {},
+    });
+    try {
+      for (const nextEpoch of [1, 2, 7]) {
+        epoch = nextEpoch;
+        const r = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+        expect(r.pinned, `epoch ${nextEpoch}`).toEqual([operatorPin.cid]);
+        expect(r.swept, `epoch ${nextEpoch}`).toEqual([]);
+      }
+    } finally { sweep.stop(); }
+  });
+
+  test("MUTATION: a caller that never advances `currentFence` past the stamped boot (the 'drop the live wire' shape) leaves a superseded held pin standing", async () => {
+    const held = blob("a held pin a frozen fence wrongly keeps");
+    writeCasEntriesFs([held], casDir);
+    const registry = fakeRegistry();
+    const sweep = installCasSweep({
+      registry, casDir, references: async () => [], protect: new Set(),
+      pins: () => [{ cid: held.cid, tier: "veil", holder: "import-job", fence: 1 }],
+      currentFence: () => 1,                                   // MUTATION: frozen at boot 1 forever — never re-reads the live claim
+      realmClock: () => clockAt(20), log: () => {},
+    });
+    try {
+      // A real reboot happened (boot 2 is the live fact), but this caller's frozen `currentFence` never
+      // learns it — exactly the fault `open-node-vessel.ts`'s live `() => storeClaim.bootEpoch` wiring closes.
+      const r = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+      expect(r.pinned, "the held pin WRONGLY still stands — the mutation this proof names").toEqual([held.cid]);
+      expect(r.swept).toEqual([]);
+    } finally { sweep.stop(); }
   });
 });

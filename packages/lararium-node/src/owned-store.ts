@@ -114,6 +114,14 @@ export interface StoreClaim {
   /** Who holds. */
   readonly holder: StoreHolder;
   /**
+   * The boot epoch THIS claim bumped (M7″) — defined for a `"vessel"` holder only (a vessel's claim IS a
+   * boot); a `"direct"` one-shot act never bumps the counter, so it reads `undefined` here, never 0 and
+   * never a stale number read back off disk. `installCasSweep`'s production caller threads this straight
+   * through as `currentFence`, so a `--held` pin is judged against the epoch THIS boot owns, never a
+   * re-read of the sidecar file (which could race a concurrent bump).
+   */
+  readonly bootEpoch?: number;
+  /**
    * Answer every caller that reaches the name from here on (the vessel's verb channel takes its claim over). A
    * vessel's claim holds each caller that arrived before, and hands it over here with its invocation unread — a
    * parked caller's own socket `close` is the only abandonment this vessel trusts, never a wall-clock deadline;
@@ -181,7 +189,9 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       // a `--held` pin means to die on next. A "direct" one-shot CLI act claims this same name for a single
       // command and releases it moments later; bumping on THAT claim would retire every `--held` pin on
       // every unrelated `lares` invocation, which is not what "this boot" names.
-      if (holder === "vessel") bumpBootEpoch(storageDir);
+      // M7″: the bumped epoch rides the claim itself (`bootEpoch`), so the production sweep reads THIS
+      // boot's own number, never a second, racy re-read of the sidecar file.
+      if (holder === "vessel") return { ...claim, bootEpoch: bumpBootEpoch(storageDir) };
       return claim;
     }
     catch (err) {
