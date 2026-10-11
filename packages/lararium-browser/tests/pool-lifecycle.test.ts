@@ -95,11 +95,16 @@ describe("BrowserVesselIslandPool lifecycle contract", () => {
     expect(pool.coldSince(WIKI_A)).not.toBeNull();
   });
 
-  test("unmountWiki on unknown id is a no-op", async () => {
+  test("unmountWiki on unknown id is a no-op, reported as acked (nothing to cut)", async () => {
     repo = new Repo({ sharePolicy: async () => true });
     pool = new BrowserVesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
-    await expect(pool.unmountWiki("lar:///ha.ka.ba/bags/test/nonexistent")).resolves.toBeUndefined();
+    // H3/M4 — unmountWiki now reports {wikiId, acked} rather than resolving void, so a
+    // caller's own shutdown line can name a handshake cut honestly. A no-op (nothing was ever
+    // mounted) reads `acked: true` — there was no teardown to cut.
+    await expect(pool.unmountWiki("lar:///ha.ka.ba/bags/test/nonexistent")).resolves.toEqual({
+      wikiId: "lar:///ha.ka.ba/bags/test/nonexistent", acked: true,
+    });
   });
 
   test("disposeAll removes all islands", async () => {

@@ -214,9 +214,13 @@ export async function resolveBootDoc<T>(
         // rather than an absence — but `unavailable` on a doc this vessel may have only just written
         // needs the moment a flush takes, and the two are indistinguishable when asked.
         if (s.state === "failed") { terminal = true; unsub(); finish(null); return; }
-        firstUnavailableAt ??= Date.now();
+        // This door's own patience since its FIRST sighting of "unavailable" — a local liveness
+        // grace, never a safety verdict — so it reads a monotonic clock. An adversarial or
+        // operator wall-clock set-back/set-forward must change neither how long the grace
+        // actually ran nor when it reads spent.
+        firstUnavailableAt ??= performance.now();
         if (unavailableVerdict({ tideline: opts.tideline, expectPresent: opts.expectPresent === true,
-                                 sinceFirstMs: Date.now() - firstUnavailableAt }) === "terminal") {
+                                 sinceFirstMs: performance.now() - firstUnavailableAt }) === "terminal") {
           terminal = true;   // the library ANSWERED, and kept answering — distinct from patience expiring
           unsub(); finish(null);
           return;

@@ -194,8 +194,13 @@ export class BagStowage {
   constructor(opts: BagStowageOptions = {}) {
     this.hotCap          = opts.hotCap          ?? DEFAULT_HOT_CAP;
     this.typeCaps        = opts.typeCaps        ?? {};
+    // The wall-floor fallback is a LOCAL idle-eviction clock only — it never leaves process
+    // memory (never persisted, never compared across a restart), so it reads monotonic
+    // (`performance.now()`) rather than `Date.now()`: an adversarial or operator wall-clock
+    // set-back/set-forward can neither evict early (forward jump) nor stall eviction forever
+    // (set-back) while this vessel keeps running.
     this.clockKind       = opts.clock ? "realm" : "wall-floor";
-    this.clock           = opts.clock ?? (() => Date.now());
+    this.clock           = opts.clock ?? (() => performance.now());
     this.idle            = opts.clock ? (opts.idle ?? DEFAULT_IDLE_ROLLS) : (opts.idle ?? opts.idleMs ?? DEFAULT_IDLE_MS);
     this.sweepIntervalMs = opts.sweepIntervalMs ?? DEFAULT_SWEEP_INTERVAL_MS;
     if (opts.onHydrate) this.onHydrate = opts.onHydrate;

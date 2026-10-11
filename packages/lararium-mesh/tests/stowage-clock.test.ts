@@ -44,4 +44,33 @@ describe("the stowage idle clock", () => {
     await new Promise((r) => setTimeout(r, 5));
     expect((await mgr.sweepOnce()).cooled).toBe(1);
   });
+
+  // SET-BACK/SET-FORWARD PROOF — the wall-floor fallback never leaves process memory (never
+  // persisted, never compared across a restart), so it now reads `performance.now()` rather
+  // than `Date.now()`: an adversarial or operator wall-clock jump must change neither real
+  // eviction timing nor whether a still-fresh bag gets evicted early.
+  test("SET-BACK/SET-FORWARD: the wall floor reads monotonic — a Date.now() jump moves nothing real", async () => {
+    const realNow = Date.now;
+    let wallOffsetMs = 0;
+    Date.now = () => realNow() + wallOffsetMs;
+    try {
+      const mgr = new BagStowage({ idleMs: 50 });
+      await mgr.touch(URL_A);
+      // A forward jump of a year: a reverted Date.now()-based idle clock would read the bag as
+      // ancient and evict it at once, well before its real 50ms idle window elapsed.
+      wallOffsetMs = 365 * 24 * 60 * 60 * 1000;
+      const tooSoon = await mgr.sweepOnce();
+      expect(tooSoon.cooled).toBe(0);
+      expect(mgr.tier(URL_A)).toBe("wela");
+      // A set-back of a year: a reverted Date.now()-based idle clock would never read the bag as
+      // idle again (lastTouched would sit "in the future"). The REAL idle window still elapses.
+      wallOffsetMs = -365 * 24 * 60 * 60 * 1000;
+      await new Promise((r) => setTimeout(r, 80));
+      const nowIdle = await mgr.sweepOnce();
+      expect(nowIdle.cooled).toBe(1);
+      expect(mgr.tier(URL_A)).toBe("anu");
+    } finally {
+      Date.now = realNow;
+    }
+  });
 });

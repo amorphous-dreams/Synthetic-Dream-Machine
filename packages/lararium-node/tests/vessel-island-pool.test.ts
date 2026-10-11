@@ -143,17 +143,39 @@ describe("VesselIslandPool — island lifecycle", () => {
     expect(changes.events[0]!.payload.tiddlerCount).toBeGreaterThanOrEqual(1);
   });
 
-  test("unmountWiki moves slot to cold; coldSince returns a timestamp", async () => {
+  test("unmountWiki moves slot to cold; coldSince returns a MONOTONIC timestamp", async () => {
     pool = new VesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
 
     await pool.mountWiki(WIKI_ID, spec(null));
-    const before = Date.now();
+    // `cooledAt` is this process's own local bookkeeping (never persisted, never compared
+    // across a restart) — it reads `performance.now()`, never `Date.now()` (class-c sweep).
+    const before = performance.now();
     await pool.unmountWiki(WIKI_ID);
-    const after = Date.now();
+    const after = performance.now();
 
     expect(pool.tier(WIKI_ID)).toBe("anu");
     const ts = pool.coldSince(WIKI_ID);
     expect(ts).not.toBeNull();
+    expect(ts!).toBeGreaterThanOrEqual(before);
+    expect(ts!).toBeLessThanOrEqual(after + 100);
+  });
+
+  // SET-BACK/SET-FORWARD PROOF — `coldSince` must not move with the wall clock.
+  test("SET-BACK/SET-FORWARD: coldSince is unmoved by a Date.now() jump around the unmount", async () => {
+    pool = new VesselIslandPool({ workerScriptUrl: FIXTURE_URL, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_ID, spec(null));
+    const before = performance.now();
+    const realNow = Date.now;
+    Date.now = () => realNow() + 365 * 24 * 60 * 60 * 1000; // a year forward, mid-unmount
+    try {
+      await pool.unmountWiki(WIKI_ID);
+    } finally {
+      Date.now = realNow;
+    }
+    const after = performance.now();
+    const ts = pool.coldSince(WIKI_ID);
+    expect(ts).not.toBeNull();
+    // A reverted Date.now()-based `cooledAt` would read roughly a year in the future here.
     expect(ts!).toBeGreaterThanOrEqual(before);
     expect(ts!).toBeLessThanOrEqual(after + 100);
   });

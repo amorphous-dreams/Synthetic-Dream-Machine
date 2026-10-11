@@ -145,6 +145,12 @@ export interface VesselIslandPoolCoreOptions {
   mountFailureWindowMs?: number;
 }
 
+// The mount-failure window, the cold-slot `cooledAt`, and every failure timestamp below are
+// THIS PROCESS'S OWN local resource-pressure bookkeeping — never persisted, never compared
+// across a restart — so they read `performance.now()` rather than `Date.now()`: an adversarial
+// or operator wall-clock set-back/set-forward can neither reopen a mount intensity cap early
+// nor hold it closed past its real window.
+//
 // A SILENCE budget, not a mount deadline: the ea-wait re-arms on each island
 // breath (resetOnTypes), so a slow mount that keeps breathing never times out.
 // The stall budget (3x) bounds breathing-without-advancing; the intensity cap
@@ -267,7 +273,7 @@ export class VesselIslandPoolCore {
     // the window fails FAST and NAMED — never another full silence budget per
     // attempt, never a restart storm. The window prunes itself; success clears.
     const failures = (this._mountFailures.get(wikiId) ?? [])
-      .filter((t) => Date.now() - t < this._mountFailureWindowMs);
+      .filter((t) => performance.now() - t < this._mountFailureWindowMs);
     if (failures.length >= this._maxMountFailures) {
       this._mountFailures.set(wikiId, failures);
       throw new Error(
@@ -291,7 +297,7 @@ export class VesselIslandPoolCore {
     // no mount ever falls through to a flat, unresolved floor.
     const resolved = await this._resolvePluginCids(spec.recipe);
     if (!resolved.ok) {
-      failures.push(Date.now());
+      failures.push(performance.now());
       this._mountFailures.set(wikiId, failures);
       throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
     }
@@ -350,7 +356,7 @@ export class VesselIslandPoolCore {
       // the terminate, every ea timeout stranded a live worker thread.
       worker.terminate();
       mainPort.close();
-      failures.push(Date.now());
+      failures.push(performance.now());
       this._mountFailures.set(wikiId, failures);
       throw err;
     }
@@ -387,7 +393,7 @@ export class VesselIslandPoolCore {
 
     workerSlot.mainPort.close();
     workerSlot.worker.terminate();
-    this._slots.set(wikiId, { temperature: "anu", wikiId, cooledAt: Date.now() });
+    this._slots.set(wikiId, { temperature: "anu", wikiId, cooledAt: performance.now() });
     return { wikiId, acked };
   }
 
