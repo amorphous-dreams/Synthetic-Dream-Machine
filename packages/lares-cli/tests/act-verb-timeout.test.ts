@@ -35,12 +35,16 @@ afterEach(() => { vi.restoreAllMocks(); });
 describe("what `lares act` says when its own local wait ends", () => {
   test("★ an outcome-unknown wait carries its own code — never `daemon-unreachable` ★", () => {
     const src = SRC("commands/act.ts");
-    // BOTH runVerb catches must branch — `act` holds two (the derived-budget LOAD and REPACK). The
-    // LOAD arm tells an ABANDONED read-back apart from a genuinely still-unknown one (H1 fix item 6),
-    // so it carries TWO `outcome-unknown` emits of its own; REPACK carries one. Count instead of
+    // BOTH runVerb catches must branch — `act` holds two (the derived-budget LOAD and REPACK). Each
+    // arm's genuinely-still-unknown branch carries ITS OWN `outcome-unknown` emit; count instead of
     // windowing, so neither arm's growth silently escapes this proof.
     const arms = src.match(/code: "outcome-unknown"/g) ?? [];
-    expect(arms.length, "an act catch still names every fault `daemon-unreachable`").toBe(3);
+    expect(arms.length, "an act catch still names every fault `daemon-unreachable`").toBe(2);
+    // M3′: an ABANDONED read-back (H1 fix item 6) now carries its OWN code — `request-abandoned` —
+    // never `outcome-unknown` (this vessel has already settled "did it run"; the answer is no, and it
+    // never will under this id, which is a sharper answer than "outcome unknown").
+    const abandoned = src.match(/code: "request-abandoned"/g) ?? [];
+    expect(abandoned.length, "the abandoned read-back lost its own code").toBe(2);
   });
 
   test("RED (retired): `verb-timeout` and bare `/timed out after/` wording never return", () => {
@@ -83,9 +87,16 @@ describe("what `lares act` says when its own local wait ends", () => {
   });
 
   test("CONTROL — a genuinely unreachable daemon KEEPS its code and its standing hint", () => {
+    // M3′: both else-arms now route through the SHARED `verbFailure` mapper (verb-call.ts) rather than
+    // hand-rolling `daemon-unreachable` + its hint inline — the same fault-by-TYPE discipline this
+    // file's other arms already use for LocalWaitExpired. `verbFailure` itself still answers
+    // `daemon-unreachable` + "vessel stand --foreground" for a genuine `DaemonUnreachable` (proved live
+    // in verb-call.test.ts); this proof only needs act.ts to still DELEGATE to it, twice (REPACK + LOAD).
     const src = SRC("commands/act.ts");
-    expect(src, "the unreachable arm lost its code").toMatch(/daemon-unreachable/);
-    expect(src, "the unreachable arm lost the one hint that fits it").toMatch(/vessel stand --foreground/);
+    const delegations = src.match(/const f = verbFailure\(err\)/g) ?? [];
+    expect(delegations.length, "both else-arms must delegate to the shared verbFailure mapper").toBe(2);
+    const render = SRC("render.ts");
+    expect(render, "the mapper's own daemon-unreachable code must stay ranked").toMatch(/"daemon-unreachable"/);
   });
 
   test("CONTROL — `outcome-unknown` reads as a routable exit class (falls to the generic failure code, never `ok`)", () => {

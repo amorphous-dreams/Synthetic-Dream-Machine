@@ -23,7 +23,8 @@
 
 import { vesselDid } from "../env.js";
 import { summaryOutput } from "../verb-result.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 export async function cmdPin(args: ParsedArgs): Promise<number> {
@@ -67,9 +68,11 @@ export async function cmdResidency(_args: ParsedArgs): Promise<number> {
   try {
     r = await runVerb("residency", {}, await vesselDid());
   } catch (err) {
-    console.error(`lares: ${err instanceof Error ? err.message : String(err)}`);
-    console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-    return 3;
+    // M3′: a LOCAL WAIT ENDING is not an absent daemon — told apart by the error's own TYPE.
+    const f = verbFailure(err);
+    console.error(`lares: ${f.message}`);
+    if (f.hint !== undefined) console.error(`  ${f.hint}`);
+    return exitFor(f.code);
   }
   if (r.status === "error") {
     console.error(`residency query failed: ${r.errorMessage ?? "unknown"}`);
@@ -104,9 +107,11 @@ async function runResidencyCommand(name: string, args: Record<string, unknown>):
   try {
     r = await runVerb(name, args, await vesselDid());
   } catch (err) {
-    console.error(`lares: ${err instanceof Error ? err.message : String(err)}`);
-    console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-    return 3;
+    // M3′: a LOCAL WAIT ENDING is not an absent daemon — told apart by the error's own TYPE.
+    const f = verbFailure(err);
+    console.error(`lares: ${f.message}`);
+    if (f.hint !== undefined) console.error(`  ${f.hint}`);
+    return exitFor(f.code);
   }
   if (r.status === "error") {
     console.error(`${name} failed: ${r.errorMessage ?? "unknown"}`);

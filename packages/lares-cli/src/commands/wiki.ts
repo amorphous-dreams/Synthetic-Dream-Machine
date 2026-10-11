@@ -18,7 +18,7 @@
 import { vesselDid } from "../env.js";
 import { emit } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
@@ -35,7 +35,12 @@ async function call(
   try {
     return await runVerb(name, args, did, opts);
   } catch (err) {
-    return { status: "error", requestId: "", errorMessage: err instanceof Error ? err.message : String(err) };
+    // M3′: this folded EVERY thrown fault — including a LOCAL WAIT ENDING with a real request id —
+    // into a bare `{status:"error", requestId:""}`, so a caller could never tell "the daemon took it
+    // and I stopped waiting" from "nothing ran" and lost the request id to read back. `verbFailure`
+    // tells the fault apart by its own TYPE; the request id (when one exists) rides through.
+    const f = verbFailure(err);
+    return { status: "error", requestId: f.requestId ?? "", errorMessage: f.message };
   }
 }
 

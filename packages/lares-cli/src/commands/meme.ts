@@ -227,10 +227,17 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       });
       return exitFor(f.code);
     }
-    const msg  = err instanceof Error ? err.message : String(err);
-    const code = /no lares daemon/.test(msg) ? "daemon-unreachable" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
-    return exitFor(code);
+    // M3′: the remaining fallback told a daemon-unreachable fault apart from everything else by
+    // SNIFFING the error's message text (`/no lares daemon/`) — a message a real `DaemonUnreachable`
+    // happens to carry today, but never a type check. `verbFailure` tells it apart by the error's own
+    // TYPE instead, same as the LocalWaitExpired branch just above.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => console.error(`lares meme ${sub}: ${f.message}`),
+    });
+    return exitFor(f.code);
   }
 }
 

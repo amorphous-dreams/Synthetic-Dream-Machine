@@ -65,6 +65,8 @@ export interface ClaimOptions {
   readonly awaitDirect?: boolean;
   /** Hears each wait on a direct holder, by its answer. */
   readonly onAwait?: (heldBy: string) => void;
+  /** Override {@link PARK_LIMIT} — a test proving eviction without parking hundreds of real sockets. */
+  readonly parkLimit?: number;
 }
 
 /** A held claim on a store's rendezvous name. */
@@ -90,6 +92,13 @@ const uid = (): number => process.getuid?.() ?? 0;
 
 /** How many looks a waiting claim gives a reap in flight before it names the grave a dead reaper left. */
 const REAP_PATIENCE = 200;
+
+/**
+ * How many callers a booting vessel's park may hold at once (M8′) — a COUNT bound, never an age
+ * bound (no deadline rides the wire this park could read). Named rather than inferred, overridable
+ * for a test that wants to prove eviction without parking hundreds of real sockets.
+ */
+export const PARK_LIMIT = 64;
 
 /** Ask the holder at `path` who it holds as; null when nothing answers or the answer names no holder. */
 function heldAs(path: string): Promise<{ holder: StoreHolder | null; message: string } | null> {
@@ -127,7 +136,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   // between them, and the claim refuses naming its grave rather than waiting on a hand that is gone.
   let reaping = 0;
   for (;;) {
-    try { return await bindClaim(storageDir, holder, refuse); }
+    try { return await bindClaim(storageDir, holder, refuse, opts.parkLimit ?? PARK_LIMIT); }
     catch (err) {
       if (!(err instanceof StoreHeld) || !opts.awaitDirect) throw err;
       const socketPath = rendezvousPath({ root: storageDir, uid: uid() });
@@ -146,7 +155,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   }
 }
 
-async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld): Promise<StoreClaim> {
+async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number): Promise<StoreClaim> {
   const socketPath = rendezvousPath({ root: storageDir, uid: uid() });
   const heldBy = (why: string): string => JSON.stringify({ status: "error", errorMessage: why, holder }) + "\n";
   const answerHeld = (why: string) => (sock: Socket): void => {
@@ -180,7 +189,28 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
     readonly take: () => Buffer;
   }
   const parked = new Map<Socket, ParkedLine>();
+  // ORDER, NEVER JS KEY ORDER, NEVER A CLOCK (M8′, matching the §2a pending-offer bound). A `Map`'s
+  // iteration order IS insertion order in practice, but this house's standing law (project_law_of_5s
+  // / project_noop_is_not_neutral) names that an implementation detail no eviction may lean on
+  // silently — an explicit queue is the one thing a reader can audit without trusting the engine.
+  const parkOrder: Socket[] = [];
   const park = (sock: Socket): void => {
+    // A COUNT BOUND, NEVER AN AGE BOUND (the same causal-abandonment law the park's own comment
+    // states above — no deadline rides the wire, so eviction cannot read a clock either). Past
+    // PARK_LIMIT, the OLDEST parked caller is evicted by a NAMED refusal — never silently dropped —
+    // so a boot storm that outpaces the vessel's own open of its verb channel cannot grow this map
+    // without bound while still telling every evicted caller something rather than nothing.
+    if (parkOrder.length >= parkLimit) {
+      const oldest = parkOrder.shift();
+      if (oldest) {
+        const line = parked.get(oldest);
+        parked.delete(oldest);
+        try {
+          oldest.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir} — this caller's line (verb "${line?.verb ?? "?"}") was evicted from the park past PARK_LIMIT=${parkLimit} parked callers; re-run once the vessel is serving verbs`));
+        } catch { /* already gone */ }
+      }
+    }
+    parkOrder.push(sock);
     let buf = Buffer.alloc(0);
     let lineRead = false;
     const onData = (chunk: Buffer): void => {
@@ -202,7 +232,12 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
       });
     };
     sock.on("data", onData);
-    sock.on("close", () => { sock.off("data", onData); parked.delete(sock); });
+    sock.on("close", () => {
+      sock.off("data", onData);
+      parked.delete(sock);
+      const i = parkOrder.indexOf(sock);
+      if (i >= 0) parkOrder.splice(i, 1);
+    });
   };
   let onConnection: (sock: Socket) => void = holder === "direct"
     ? answerHeld(`the store at ${storageDir} stays held by a direct lares command (pid ${process.pid}) for one act — run again when it ends`)
@@ -211,6 +246,8 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
     onConnection = next;
     for (const [sock, line] of parked) {
       parked.delete(sock);
+      const i = parkOrder.indexOf(sock);
+      if (i >= 0) parkOrder.splice(i, 1);
       // A `close` already fired would have removed this entry via the listener above — reaching this line
       // AT ALL is itself the causal evidence the caller is still there. Replay unconditionally.
       const read = line.take();

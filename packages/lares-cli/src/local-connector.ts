@@ -233,9 +233,72 @@ export class LocalInvocationAborted extends Error {}
  */
 export interface ReceiptAnswer {
   readonly requestId: string;
-  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown";
+  /**
+   * `unanswered` — THIS caller's own patience for the READ itself ended (M13): the socket connected
+   * but no line came back within `patienceMs`, so this side destroyed the socket and gave up on
+   * HEARING, never on the question. Unlike `unknown` (the vessel answered honestly that it never
+   * arbitrated this id), `unanswered` means no answer arrived at all — a frozen or wedged peer. Never
+   * read as a verdict on the act.
+   */
+  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown" | "unanswered";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
+}
+
+/** This READ's own patience ended with no line back — mirrors `LocalWaitExpired` for the dispatch
+ *  path, but for a query that cannot dispatch anything by construction. */
+const DEFAULT_RECEIPT_PATIENCE_MS = 2_000;
+
+/** The wire op a read-only receipt/cancel query sends — `{op:"receipt",…}` or `{op:"cancel",…}`. */
+type ReadOnlyOp = "receipt" | "cancel";
+
+/**
+ * Shared transport for the two read-only ops (H1/M8): open the socket, write ONE `{op, requestId}`
+ * line, read ONE line back. Both calls answer the SAME {@link ReceiptAnswer} shape; the op name is
+ * the only wire difference.
+ *
+ * `patienceMs` (M13) is THIS caller's own MONOTONIC (`performance.now()`-timed) liveness for the
+ * READ — never a verdict on anything. A frozen/wedged vessel that accepted the connection but never
+ * answers used to hang this call forever; past `patienceMs` this destroys the socket and resolves
+ * `{state:"unanswered"}` instead, exactly as `LocalWaitExpired` ends the dispatch path's OWN wait.
+ */
+function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: string | null; patienceMs?: number }): Promise<ReceiptAnswer> {
+  const socketPath = udsSocketPath(opts.dataDir);
+  const patienceMs = opts.patienceMs ?? DEFAULT_RECEIPT_PATIENCE_MS;
+  return new Promise<ReceiptAnswer>((resolve, reject) => {
+    let settled = false;
+    const sock = createConnection(socketPath);
+    let buf = "";
+    const settle = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      fn();
+    };
+    const timer = setTimeout(() => {
+      settle(() => { try { sock.destroy(); } catch { /* already gone */ } resolve({ requestId, state: "unanswered" }); });
+    }, patienceMs);
+    sock.setEncoding("utf8");
+    sock.on("connect", () => { sock.write(JSON.stringify({ op, requestId }) + "\n"); });
+    sock.on("data", (chunk: string) => {
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl === -1) return;
+      const line = buf.slice(0, nl);
+      try {
+        const r = JSON.parse(line) as ReceiptAnswer;
+        settle(() => { sock.end(); resolve(r); });
+      } catch {
+        settle(() => { sock.destroy(); reject(new Error(`bad ${op}-receipt json from local channel`)); });
+      }
+    });
+    sock.on("error", (e: NodeJS.ErrnoException) => {
+      settle(() => {
+        if (e.code === "ENOENT" || e.code === "ECONNREFUSED") reject(new UdsUnreachable(e.message));
+        else reject(e);
+      });
+    });
+  });
 }
 
 /**
@@ -245,53 +308,21 @@ export interface ReceiptAnswer {
  * dropped as abandoned got run a second time, never a read. `queryReceipt` rides a dedicated
  * `{op:"receipt"}` line the vessel's own connection handler answers from its ledger + the durable
  * outcome doc alone.
+ *
+ * `patienceMs` (M13, default {@link DEFAULT_RECEIPT_PATIENCE_MS}) — see {@link readOnlyQuery}.
  */
-export async function queryReceipt(requestId: string, opts: { dataDir?: string | null } = {}): Promise<ReceiptAnswer> {
-  const socketPath = udsSocketPath(opts.dataDir);
-  return await new Promise<ReceiptAnswer>((resolve, reject) => {
-    const sock = createConnection(socketPath);
-    let buf = "";
-    sock.setEncoding("utf8");
-    sock.on("connect", () => { sock.write(JSON.stringify({ op: "receipt", requestId }) + "\n"); });
-    sock.on("data", (chunk: string) => {
-      buf += chunk;
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;
-      const line = buf.slice(0, nl);
-      try { const r = JSON.parse(line) as ReceiptAnswer; sock.end(); resolve(r); }
-      catch { sock.end(); reject(new Error("bad receipt json from local channel")); }
-    });
-    sock.on("error", (e: NodeJS.ErrnoException) => {
-      if (e.code === "ENOENT" || e.code === "ECONNREFUSED") reject(new UdsUnreachable(e.message));
-      else reject(e);
-    });
-  });
+export function queryReceipt(requestId: string, opts: { dataDir?: string | null; patienceMs?: number } = {}): Promise<ReceiptAnswer> {
+  return readOnlyQuery("receipt", requestId, opts);
 }
 
 /**
  * Withdraw a request id BEFORE it is read (M8) — `{op:"cancel"}`. Marks the id abandoned on the
  * vessel's own ledger so a later line under the same id (a stray retry) refuses rather than running.
+ *
+ * `patienceMs` (M13) — see {@link readOnlyQuery}.
  */
-export async function cancelRequest(requestId: string, opts: { dataDir?: string | null } = {}): Promise<ReceiptAnswer> {
-  const socketPath = udsSocketPath(opts.dataDir);
-  return await new Promise<ReceiptAnswer>((resolve, reject) => {
-    const sock = createConnection(socketPath);
-    let buf = "";
-    sock.setEncoding("utf8");
-    sock.on("connect", () => { sock.write(JSON.stringify({ op: "cancel", requestId }) + "\n"); });
-    sock.on("data", (chunk: string) => {
-      buf += chunk;
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;
-      const line = buf.slice(0, nl);
-      try { const r = JSON.parse(line) as ReceiptAnswer; sock.end(); resolve(r); }
-      catch { sock.end(); reject(new Error("bad cancel-receipt json from local channel")); }
-    });
-    sock.on("error", (e: NodeJS.ErrnoException) => {
-      if (e.code === "ENOENT" || e.code === "ECONNREFUSED") reject(new UdsUnreachable(e.message));
-      else reject(e);
-    });
-  });
+export function cancelRequest(requestId: string, opts: { dataDir?: string | null; patienceMs?: number } = {}): Promise<ReceiptAnswer> {
+  return readOnlyQuery("cancel", requestId, opts);
 }
 
 export async function invokeLocal(

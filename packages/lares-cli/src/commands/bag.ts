@@ -34,7 +34,8 @@ import {
 } from "./bag-declare-cmd.js";
 import { cmdCas } from "./cas.js";
 import { summaryOutput } from "../verb-result.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** `lares bag compact <bag-url>` — DXOS-style snapshot-restart on one bag.
@@ -55,9 +56,12 @@ export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
     // UDS fast path, WS fallback (the lares↔lararium binding).
     r = await runVerb("bag-compact", { bagUrl }, did, { timeoutMs: 30_000 });
   } catch (err) {
-    console.error(`lares bag: ${err instanceof Error ? err.message : String(err)}`);
-    console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-    return 3;
+    // M3′: told apart by the error's own TYPE — a LOCAL WAIT ENDING (the write door `watch --apply`
+    // uses this verb through) is not an absent daemon.
+    const f = verbFailure(err);
+    console.error(`lares bag: ${f.message}`);
+    if (f.hint !== undefined) console.error(`  ${f.hint}`);
+    return exitFor(f.code);
   }
   if (r.status === "error") {
     console.error(`bag compact failed: ${r.errorMessage ?? "unknown"}`);

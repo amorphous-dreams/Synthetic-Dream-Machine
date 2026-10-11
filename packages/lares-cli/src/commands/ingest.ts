@@ -24,6 +24,7 @@ import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, vesselDid } from "../env.js";
 import { openSyncedTree, scanSource, candidatesOf, submitIngest, recordLandedPacks, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
+import { verbFailure } from "../verb-call.js";
 
 function printUsage(): void {
   console.log("usage: lares ingest --source <dir|file> --to <bagUri> [--apply] [--tag-blobs] [--in-wiki] [--yes]");
@@ -135,9 +136,17 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       ...(args.options["change-id"] ? { changeId: args.options["change-id"] } : {}),
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." }, human: () => { console.error(`lares ingest: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
-    return exitFor("daemon-unreachable");
+    // M3′: a LOCAL WAIT ENDING (`submitIngest`'s `runVerb` throws `LocalWaitExpired` exactly like
+    // `act.ts`'s own submit) was folded wholesale into `daemon-unreachable` — telling an operator
+    // whose write-door daemon stood the whole time to start a daemon already running. `verbFailure`
+    // tells the fault apart by its own TYPE.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares ingest: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+    });
+    return exitFor(f.code);
   }
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";

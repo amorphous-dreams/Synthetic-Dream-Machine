@@ -17,8 +17,8 @@ import { stdin, stdout } from "node:process";
 import { vesselDid } from "../env.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
-import { runVerb } from "../verb-call.js";
-import { emit, wantsJson } from "../render.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 
@@ -45,15 +45,14 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
   try {
     where = await runVerb("where", { tiddler }, did);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    // M3′: a LOCAL WAIT ENDING is not an absent daemon — told apart by the error's own TYPE.
+    const f = verbFailure(err);
     emit(args, {
-      ok: false, error: msg,
-      human: () => {
-        console.error(`lares draft: ${msg}`);
-        console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-      },
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares draft: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
     });
-    return 3;
+    return exitFor(f.code);
   }
   if (where.status === "error") {
     const msg = where.errorMessage ?? "unknown";
@@ -99,7 +98,21 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
   const draftArgs: Record<string, string> = { tiddler };
   if (toBag) draftArgs["toBag"] = toBag;
 
-  const result = await runVerb("draft", draftArgs, did);
+  let result;
+  try {
+    result = await runVerb("draft", draftArgs, did);
+  } catch (err) {
+    // M3′: this door's SECOND submit went uncaught entirely — an outcome-unknown read-back from
+    // `where` just above surfaced it, but a wait expiring on the actual draft-land left the CLI to
+    // crash on an unhandled rejection instead of telling the operator anything.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares draft: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+    });
+    return exitFor(f.code);
+  }
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";
     emit(args, {

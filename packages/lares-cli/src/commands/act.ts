@@ -46,6 +46,7 @@ import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, new
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
+import { verbFailure } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -172,15 +173,21 @@ async function actRepack(args: ParsedArgs): Promise<number> {
       if (readBack) {
         result = readBack;
       } else {
-        const hint = receipt?.state === "abandoned"
-          ? "this vessel already refused this request before commit — it never ran. Re-run to try again."
-          : "the daemon answered and this process stopped waiting; a short read found no receipt yet. The verb may still be running. Re-run on a quieter machine, or repack a smaller bundle — the same request id reads the receipt back once it lands.";
+        if (receipt?.state === "abandoned") {
+          const hint = "this vessel already refused this request before commit — it never ran. Re-run to try again.";
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+          return exitFor("request-abandoned");
+        }
+        const hint = "the daemon answered and this process stopped waiting; a short read found no receipt yet. The verb may still be running. Re-run on a quieter machine, or repack a smaller bundle — the same request id reads the receipt back once it lands.";
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
     } else {
-      emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
-      return exitFor("daemon-unreachable");
+      // M3′: told apart by the error's own TYPE — a genuinely absent daemon is the ONE fault this
+      // standing hint cures; anything else (a transport-level verb-error) keeps its own words.
+      const f = verbFailure(err);
+      emit(args, { ok: false, error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) }, human: () => { console.error(`lares act REPACK: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); } });
+      return exitFor(f.code);
     }
   }
   if (result.status === "error") {
@@ -415,18 +422,20 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     // read-back by the same request id before giving up on knowing at all.
     if (err instanceof LocalWaitExpired) {
       let receipt: ReceiptAnswer | undefined;
-      try { receipt = await queryReceipt(requestId); }
+      try { receipt = await queryReceipt(requestId, { patienceMs: READBACK_MS }); }
       catch { /* still unknown — the read itself may fail too (daemon gone between writes) */ }
       const readBack = receipt ? receiptToResult(receipt) : undefined;
       if (readBack) {
         result = readBack; // a receipt landed meanwhile — fall through to the ordinary result handling below
       } else if (receipt?.state === "abandoned") {
+        // M3′: its own code, never `outcome-unknown` — this vessel has already settled the
+        // question "did it run"; the answer is no, and it never will under this id.
         const hint = "this vessel already refused this request before commit — it never ran. Re-run to try again.";
         emit(args, {
-          ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
-          human: () => { console.error(`lares act: outcome unknown — abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          ok: false, requestId, error: { code: "request-abandoned", message: msg, hint },
+          human: () => { console.error(`lares act: request abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
         });
-        return exitFor("outcome-unknown");
+        return exitFor("request-abandoned");
       } else {
         const perCarrier = "10s + 400ms per carrier";
         const hint = `this process stopped waiting after ${timeoutMs}ms (a LOAD of ${carrierCount} carrier(s) budgets ${perCarrier}) and a ${READBACK_MS}ms read found no receipt yet. The verb may still be running. Its content-addressed request id (${requestId}) is deterministic from these same args, so re-running this exact command later reads the same receipt back once it lands rather than running the act twice — the dispatcher's outcome dedup makes the re-issue safe. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
@@ -437,15 +446,14 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         return exitFor("outcome-unknown");
       }
     } else {
-      // NOTHING ANSWERED — the one fault the standing hint actually cures.
+      // M3′: told apart by the error's own TYPE — "nothing answered" is the one fault the standing
+      // hint actually cures; anything else keeps its own words rather than borrowing that advice.
+      const f = verbFailure(err);
       emit(args, {
-        ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
-        human: () => {
-          console.error(`lares act: ${msg}`);
-          console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-        },
+        ok: false, error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+        human: () => { console.error(`lares act: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
       });
-      return exitFor("daemon-unreachable");
+      return exitFor(f.code);
     }
   }
   if (result.status === "error") {
