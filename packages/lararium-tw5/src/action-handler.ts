@@ -48,6 +48,7 @@ import {
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
+  isEffectRecordUri, parseEffectRecord,
 } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
@@ -573,6 +574,27 @@ async function resolveCarrierText(
 }
 
 /**
+ * True when the doc a registry row currently names carries a `bag-retired`
+ * disposition in its OWN ledger (DROP's effect record) — H8's absent-read for
+ * CREATE. Opens the named doc read-only (no mount, no composite) and scans its
+ * tiddlers for a `disposition` effect record naming this bag as `bag-retired`.
+ * An unreachable doc (never arrives) reads not-retired — the already-stood
+ * answer still carries SOME doc rather than CREATE faulting on a sync hiccup.
+ */
+async function bagRetiredDisposition(repo: Repo, bagUri: string, docUrl: string): Promise<boolean> {
+  const handle = await findOrThrow(repo, docUrl, `bag ${bagUri} (retirement check)`).catch(() => null);
+  const tiddlers = handle?.doc()?.tiddlers;
+  if (!tiddlers) return false;
+  for (const raw of Object.values(tiddlers)) {
+    const fields = (raw as LarTiddlerRecord | undefined)?.tiddler as Record<string, unknown> | undefined;
+    if (!fields) continue;
+    const parsed = parseEffectRecord(fields);
+    if (parsed && parsed.bag === bagUri && parsed.disposition === "bag-retired") return true;
+  }
+  return false;
+}
+
+/**
  * CREATE — declarative: "this bag stands". Mints a NEW empty bag at `action.bag`
  * and registers it in the plane's registry (catalog for the household plane,
  * oracle for the system plane) the FIRST time the bag stands. Writes a
@@ -580,10 +602,15 @@ async function resolveCarrierText(
  * the daemon `reach` (repo + plane registry).
  *
  * Idempotency follows the BAG'S STATE, never a request key: a bag already
- * registered answers success with its existing doc (`alreadyStood: true`) —
- * never a second mint, never a second `creation` record. A bag made absent
- * again (CREATE → DROP → CREATE) mints fresh — the registry, not a change-id,
- * is the only idempotency witness CREATE consults.
+ * registered — and NOT RETIRED — answers success with its existing doc
+ * (`alreadyStood: true`) — never a second mint, never a second `creation`
+ * record. A bag made absent again (CREATE → DROP → CREATE) mints fresh: a
+ * registered doc whose own ledger carries a `bag-retired` disposition (DROP's
+ * effect record) reads as ABSENT to CREATE — the row RE-POINTS to the fresh
+ * mint (an update to the same registry entry; never a second row), and the
+ * old doc keeps its own history under its own URL. No clock and no ordering is
+ * needed: a re-stood bag is always a NEW doc, so a retirement always belongs
+ * to the doc the row currently names.
  */
 async function executeCREATE(action: CreateAction, access: BagAccess, opts: ActionHandlerOptions, dryRun = false): Promise<Record<string, unknown>> {
   const reach = opts.reach;
@@ -595,10 +622,12 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     throw new Error(`action-handler/CREATE: the reach carries no ${action.plane} registry url`);
   }
   const registry = makeCatalogAccessor(reach.repo, registryUrl);
-  // Already-stood check FIRST — a registered bag answers success with its
-  // existing doc, never a double-mint and never a second `creation` record.
+  // Already-stood check FIRST — a registered bag whose own doc carries no
+  // retirement answers success with its existing doc, never a double-mint and
+  // never a second `creation` record. A RETIRED doc falls through to the mint
+  // below, which re-points this same registry row.
   const existing = await registry.urlOf(action.bag).catch(() => null);
-  if (existing) {
+  if (existing && !(await bagRetiredDisposition(reach.repo, action.bag, existing))) {
     return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count: 1 };
   }
   // Mint + register inside withEffectRecord so the `creation` ledger record lands
@@ -1363,7 +1392,11 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
 }
 
 async function executeClear(action: ClearAction, access: BagAccess): Promise<Record<string, unknown>> {
-  const titles = await listLiveTitlesInBag(access, action.bag);
+  // M11: the audit log survives CLEAR. Enumerate CONTENT titles only — the
+  // bag's own effect-record ledger (`isEffectRecordUri`) never tombstones, so
+  // a second CLEAR on an already-cleared bag answers clearedCount:0 while the
+  // first CLEAR's `bag-cleared` record still reads visible.
+  const titles = (await listLiveTitlesInBag(access, action.bag)).filter((t) => !isEffectRecordUri(t));
   const o = origin(action);
   for (const title of titles) {
     await tombstoneIn(access, action.bag, title, o);
@@ -1375,7 +1408,11 @@ async function executeDrop(action: DropAction, access: BagAccess): Promise<Recor
   // DROP currently tombstones contents (same as CLEAR) and lets the
   // effect-record disposition mark the bag removed. True recipe-removal
   // is a separate operator gesture (recipe edit / `lares wiki remove-bag`).
-  const titles = await listLiveTitlesInBag(access, action.bag);
+  //
+  // M11: the audit log survives DROP too — the same content-only filter CLEAR
+  // uses, so the bag's ledger (including the `bag-retired` disposition this
+  // very DROP writes via withEffectRecord) never gets tombstoned.
+  const titles = (await listLiveTitlesInBag(access, action.bag)).filter((t) => !isEffectRecordUri(t));
   const o = origin(action);
   for (const title of titles) {
     await tombstoneIn(access, action.bag, title, o);

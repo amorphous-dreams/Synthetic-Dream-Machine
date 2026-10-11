@@ -133,25 +133,38 @@ describe("CREATE — declarative idempotency (bag state, never a request key)", 
 
   test("CREATE → DROP (absent again) → CREATE mints a FRESH doc", async () => {
     const { repo, mintedUrls } = makeFakeRepo();
-    const reactor = makeActionReactorFor("CREATE", {
+    const opts = {
       composite: new CompositeStore(),
       reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
-    });
+    };
+    const createReactor = makeActionReactorFor("CREATE", opts);
+    const dropReactor = makeActionReactorFor("DROP", opts);
 
     const bag = "lar:///ha.ka.ba/bags/create-drop-create";
-    const first = await reactor({ bag }, makeContext());
+    const first = await createReactor({ bag }, makeContext());
+    expect(first.alreadyStood).toBeUndefined();
     expect(mintedUrls.length).toBe(1);
 
-    // Simulate the bag going absent again (a DROP un-registers it from the
-    // catalog) — CREATE consults the registry's STATE, not a request key.
-    const catalogHandle = await repo.find(CATALOG_URL);
-    catalogHandle.change((doc) => {
-      delete (doc.tiddlers as Record<string, unknown>)[bag];
-    });
+    // Run the REAL DROP — never a hand-deleted registry row. DROP tombstones
+    // the (empty) bag's contents and writes the `bag-retired` disposition
+    // effect-record into the bag's OWN doc; the catalog registry row is left
+    // standing, still pointing at the now-retired doc.
+    const dropInvocation = { action: "DROP", args: {}, requestId: "req-drop-1", requestedBy: "did:key:test" } as unknown as Verb;
+    await dropReactor({ bag }, { daemon: new CompositeStore(), invocation: dropInvocation, cap: async () => ({ ok: true }) });
 
-    const second = await reactor({ bag }, makeContext());
+    // CREATE reads the RETIRED doc as absent: a FRESH mint, re-pointing the
+    // SAME registry row — never a double-mint, never a second row, never
+    // `alreadyStood`.
+    const second = await createReactor({ bag }, makeContext());
     expect(second.alreadyStood).toBeUndefined();
     expect(second.docUrl).not.toBe(first.docUrl);
+    expect(mintedUrls.length).toBe(2);
+
+    // The registry row now names the FRESH doc — a third CREATE answers
+    // alreadyStood against the NEW doc, never the retired one.
+    const third = await createReactor({ bag }, makeContext());
+    expect(third.alreadyStood).toBe(true);
+    expect(third.docUrl).toBe(second.docUrl);
     expect(mintedUrls.length).toBe(2);
   });
 });

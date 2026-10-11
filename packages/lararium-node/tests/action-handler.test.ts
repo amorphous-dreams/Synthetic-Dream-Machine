@@ -308,6 +308,35 @@ describe("CLEAR handler", () => {
     const effects = await effectRecordsIn(composite);
     expect(effects.length).toBe(1);
   });
+
+  // M11: the audit log survives CLEAR. CLEAR enumerates CONTENT titles only —
+  // its own bag's effect-record ledger is filtered out of the enumeration — so
+  // a second CLEAR on an already-cleared bag answers clearedCount:0, and the
+  // first CLEAR's `bag-cleared` record still reads visible (never tombstoned).
+  test("★ a second CLEAR answers clearedCount:0 — the first CLEAR's disposition record survives ★", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    await seedTiddler(composite, BAG_MID, "A", "a");
+    await seedTiddler(composite, BAG_MID, "B", "b");
+
+    const handler = table.get("CLEAR")!;
+    const args = { bag: BAG_MID };
+
+    const first = await handler(args, makeContext(composite, "CLEAR", args));
+    expect(first["clearedCount"]).toBe(2);
+    const afterFirst = await effectRecordsIn(composite);
+    expect(afterFirst.length).toBe(1);
+
+    const second = await handler(args, makeContext(composite, "CLEAR", args));
+    expect(second["clearedCount"]).toBe(0);
+
+    // The first CLEAR's own `bag-cleared` record still stands LIVE — never
+    // enumerated, never tombstoned, by either CLEAR call.
+    const afterSecond = await effectRecordsIn(composite);
+    expect(afterSecond.length).toBe(2);
+    expect(afterSecond).toEqual(expect.arrayContaining(afterFirst));
+  });
 });
 
 describe("DROP handler", () => {
@@ -324,6 +353,33 @@ describe("DROP handler", () => {
 
     expect(result["retiredCount"]).toBe(2);
     expect(result["note"]).toContain("recipe-edit");
+  });
+
+  // M11: the audit log survives DROP too — the same content-only enumeration
+  // filter CLEAR uses. A second DROP on an already-dropped bag answers
+  // retiredCount:0, and the first DROP's own `bag-retired` record (which this
+  // very DROP call writes via withEffectRecord, into the SAME bag it tombstones)
+  // still reads visible — it never enumerates, never tombstones, itself.
+  test("★ a second DROP answers retiredCount:0 — the bag-retired record survives ★", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    await seedTiddler(composite, BAG_MID, "A", "a");
+
+    const handler = table.get("DROP")!;
+    const args = { bag: BAG_MID };
+
+    const first = await handler(args, makeContext(composite, "DROP", args));
+    expect(first["retiredCount"]).toBe(1);
+    const afterFirst = await effectRecordsIn(composite);
+    expect(afterFirst.length).toBe(1);
+
+    const second = await handler(args, makeContext(composite, "DROP", args));
+    expect(second["retiredCount"]).toBe(0);
+
+    const afterSecond = await effectRecordsIn(composite);
+    expect(afterSecond.length).toBe(2);
+    expect(afterSecond).toEqual(expect.arrayContaining(afterFirst));
   });
 });
 
