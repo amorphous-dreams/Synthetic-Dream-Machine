@@ -477,8 +477,8 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
         const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--json"]);
         crossing.push(`A nexus carry ${nym.slice(0, 12)}… → ${carry.code}: ${carry.stdout.trim().slice(0, 160)}`);
         if (carry.code !== 0) throw new Error(`fleet: A refused the carrier seal (${carry.code})\n${carry.stderr.slice(-600)}`);
-        const refreshA = await A.cli(["nexus", "refresh", "--json"]);
-        crossing.push(`A nexus refresh → ${refreshA.code}`);
+        // L1: `nexus refresh` is a RETIRED verb — `nexus carry` already ran as a `nexus-contract` door row
+        // against A's standing vessel, which fires the SAME `afterRoll` hook every board write fires.
 
         // The DIAL is a boot reading — `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` mount the client adapter as the vessel
         // opens, and no running verb seats one. So the place stands again on its own root, carrying the dial.

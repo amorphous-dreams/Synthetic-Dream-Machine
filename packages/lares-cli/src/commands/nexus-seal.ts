@@ -779,10 +779,10 @@ async function sealImport(args: ParsedArgs): Promise<number> {
   }
   // H2: a charter landing AFTER boot is exactly realm-plane's own "arrives after boot" case — poke a
   // standing vessel to materialize/re-stand its realm doc at once rather than leave it inert until some
-  // later board write happens to refold.
-  await pokeSealHomeRefold();
-  emit(args, { ok: true, data: { from, dest, epoch: incoming },
-               human: () => { console.log(`imported → ${dest}`); console.log(`  ${v.why}`); } });
+  // later board write happens to refold. L3: the answer rides the JSON rather than vanishing.
+  const refold = await pokeSealHomeRefold();
+  emit(args, { ok: true, data: { from, dest, epoch: incoming, refold },
+               human: () => { console.log(`imported → ${dest}`); console.log(`  ${v.why}`); console.log(`  refold: ${refold}`); } });
   return 0;
 }
 
@@ -799,14 +799,16 @@ async function sealImportCarry(args: ParsedArgs, from: string): Promise<number> 
     const r = importCarriedCharter(larSealHome(), raw);
     // H2: the carried set just grew beside the seal home, never on this vessel's Repo — poke a standing
     // vessel to refold its live readings (`readCarried`, the board/antigen folds a dial presents against) at
-    // once, rather than leave them stale until some later board write happens to refold.
-    await pokeSealHomeRefold();
+    // once, rather than leave them stale until some later board write happens to refold. L3: the answer
+    // rides the JSON rather than vanishing.
+    const refold = await pokeSealHomeRefold();
     emit(args, {
-      ok: true, data: { from, dest: r.path, aid: r.aid, epoch: r.sealEpochCid, outcome: r.outcome },
+      ok: true, data: { from, dest: r.path, aid: r.aid, epoch: r.sealEpochCid, outcome: r.outcome, refold },
       human: () => {
         console.log(`carried → ${r.path}`);
         console.log(`  nexus:  ${r.aid}`);
         console.log(`  head:   ${r.sealEpochCid} (${r.outcome})`);
+        console.log(`  refold: ${refold}`);
         console.log(`  your primary charter is untouched. Consent with: lares nexus accept-carriage --nexus ${r.aid}`);
       },
     });

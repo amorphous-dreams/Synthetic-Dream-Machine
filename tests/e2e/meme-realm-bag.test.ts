@@ -90,6 +90,8 @@ let rootC = "";
 const rootNymOf = new Map<string, string>();
 /** The relation's doors, as they answered — the gate on the vector. */
 let contracted = false;
+/** L3: `accept-carriage`'s own poke truthfully claimed B's standing vessel refolded live. */
+let refoldLive = false;
 let doors = "";
 /** B's answer BEFORE any registration — the byte-identical "today" a non-member keeps drawing. */
 let beforeB = "";
@@ -163,6 +165,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const accept = await B.cli(["nexus", "accept-carriage", "--json"]);
       lines.push(`B nexus accept-carriage → ${accept.code}: ${said(accept).trim().slice(0, 240)}`);
       const data = (accept.json?.["data"] ?? accept.json ?? {}) as Record<string, unknown>;
+      // L3 (the gp1 drift-ward this iteration closes): `accept-carriage` writes beside the seal home,
+      // never on B's Repo, so her standing vessel refolds only through `pokeSealHomeRefold` — and the
+      // answer now RIDES the JSON rather than vanishing into a discarded poke. B is a live standing
+      // joinee here (not a direct, no-vessel act), so the refold must read truthfully DONE, never a
+      // guess merely because a vessel stood to attempt it.
+      lines.push(`B accept-carriage refold → ${String(data["refold"])}`);
+      refoldLive = accept.code === 0 && data["refold"] === "done";
       acc = { ...(typeof data["nym"] === "string" ? { nym: data["nym"] } : {}), ...(typeof data["contractSig"] === "string" ? { contractSig: data["contractSig"] } : {}) };
       if (acc.nym && acc.contractSig) {
         contractNym = acc.nym;
@@ -174,11 +183,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
         if (contract.code === 0 && bundle) {
           const bundleFile = join(rootB, "a-admit-bundle.json");
           writeFileSync(bundleFile, JSON.stringify(bundle));
-          // A's running node folds the admit the CLI wrote beside it.
-          const refreshA = await A.cli(["nexus", "refresh", "--json"]);
-          lines.push(`A nexus refresh → ${refreshA.code}: ${said(refreshA).trim().slice(0, 200)}`);
+          // L1: `nexus refresh` is a RETIRED verb — A's running node already refolded the instant
+          // `nexus contract` landed above, through the SAME door-row `afterRoll` hook every write fires
+          // (that call ran as a door row against A's standing vessel, not a direct, unwitnessed act).
           // B TAKES the bundle: verified against the charter she holds, kept beside her consent, and her running
-          // vessel's refresh re-presents the dial (it also stands the realm the imported charter names).
+          // vessel's `admit-take` row re-presents the dial live (it also stands the realm the imported charter names).
           const take = await B.cli(["nexus", "admit-take", bundleFile, "--json"]);
           lines.push(`B nexus admit-take → ${take.code}: ${said(take).trim().slice(0, 240)}`);
           contracted = take.code === 0 && ((take.json?.["data"] ?? {}) as Record<string, unknown>)["represented"] === true;
@@ -214,9 +223,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   });
 
   test("③ MEASURE: the relation's doors, as they answered (the gate on the vector)", () => {
-    console.error(`meme-realm-bag: contracted=${contracted}`);
+    console.error(`meme-realm-bag: contracted=${contracted} refoldLive=${refoldLive}`);
     expect(doors.length).toBeGreaterThan(0);
     expect(contracted, doors).toBe(true);
+    // L3, live (closes the gp1 drift-ward "accept-carriage beside a standing joinee refolds live" left
+    // with no red test): a vessel genuinely stood for this call, so the poke's answer must read truthfully
+    // DONE — never a guess merely because a vessel stood to attempt it.
+    expect(refoldLive, doors).toBe(true);
   });
 
   test("④ CONTROL (before): B holds the relation and not the bag — `not-found`, the measured today", async () => {

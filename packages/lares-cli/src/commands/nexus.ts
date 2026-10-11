@@ -338,16 +338,18 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
     const r = await runNexusAcceptCarriage({ handleIndex, sealHome: larSealHome(), ...(aid !== undefined ? { aid } : {}) });
     // H2: the consent just written sits beside the seal home, never on this vessel's Repo — poke a standing
     // vessel to refold at once rather than leave its live readings stale until some later board write does.
-    await pokeSealHomeRefold();
+    // L3: the answer rides the JSON rather than vanishing into a log line nobody downstream can read.
+    const refold = await pokeSealHomeRefold();
     emit(args, {
       ok: true,
-      data: { aid: r.aid, nym: r.nym, sealEpochCid: r.sealEpochCid, contractSig: r.contractSig },
+      data: { aid: r.aid, nym: r.nym, sealEpochCid: r.sealEpochCid, contractSig: r.contractSig, refold },
       human: () => {
         console.log(`nexus accept-carriage — signed the 'accepts carriage' contract-in (persona index ${handleIndex}):`);
         console.log(`  nexus:        ${r.aid}`);
         console.log(`  your nym:     ${r.nym}`);
         console.log(`  epoch:        ${r.sealEpochCid}`);
         console.log(`  contract-sig: ${r.contractSig}`);
+        console.log(`  refold:       ${refold}`);
         console.log(`  hand this to a founding kahu:  lares nexus contract ${r.nym} --sig ${r.contractSig}`);
       },
     });

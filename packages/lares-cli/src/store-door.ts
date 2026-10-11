@@ -139,6 +139,16 @@ export async function storeVerb(
 }
 
 /**
+ * What a `pokeSealHomeRefold` call reports (L3): `"done"` — the hook truthfully claimed this write's
+ * refold landed; `"pending"` — a vessel stood and the row ran, but the refold is still running past its
+ * own budget (`store-door-verbs.ts`'s `awaitOnRolled`); `"none"` — nothing to poke (no vessel standing),
+ * or the row ran and the hook made no truthful claim either way. A caller that only logged this before
+ * now carries it: discarding the answer is exactly how H2's live readings could stay stale with nobody
+ * able to tell from the CLI's own JSON.
+ */
+export type SealHomeRefold = "done" | "pending" | "none";
+
+/**
  * Poke a STANDING vessel to refold right after a write that landed beside the seal home rather than through
  * this door (`accept-carriage`'s consent, `carry-for`'s carrier seal, a carried `seal import`'s grown set) —
  * H2. Those writes touch no Repo, so they earn no door row of their own; but a standing vessel's live
@@ -147,7 +157,13 @@ export async function storeVerb(
  * there is nothing to refold — the next boot reads the fresh bytes on its own, so this is skipped entirely
  * rather than opening a direct `ownedStore` act for nothing.
  */
-export async function pokeSealHomeRefold(): Promise<void> {
-  if (!(await udsAlive())) return;
-  try { await storeVerb("seal-home-refold", {}); } catch { /* best-effort — a refusal here names nothing broken */ }
+export async function pokeSealHomeRefold(): Promise<SealHomeRefold> {
+  if (!(await udsAlive())) return "none";
+  try {
+    const r = await storeVerb("seal-home-refold", {});
+    const refolded = r.output["refolded"];
+    if (refolded === true) return "done";
+    if (refolded === "pending") return "pending";
+    return "none";
+  } catch { return "none"; }               // a refusal here names nothing broken — the write itself already landed
 }
