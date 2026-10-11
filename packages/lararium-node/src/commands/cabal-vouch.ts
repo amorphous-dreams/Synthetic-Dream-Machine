@@ -29,6 +29,7 @@ import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
+import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -74,10 +75,41 @@ function defaultExpiry(now: number): string {
 }
 
 /**
+ * Resolve the realm's effective lease epoch to bind a fresh vouch to, off this vessel's own daemon doc —
+ * the SAME read `cabal-join` folds against when it prices a lineage. Mirrors `cabal-join`'s board exactly so
+ * a vouch and the crossing it feeds price against one fence.
+ *
+ * FAIL-CLOSED ON UNREADABLE, NEVER A SILENT GENESIS: `cabalAdmissionEpoch` answers `0` for a realm that
+ * genuinely has never rolled (a real, read answer) — but a vessel that cannot even OPEN its daemon doc gets
+ * no fence to read at all, and minting at a guessed `0` there would let a vouch bind BEHIND a roll this
+ * vessel never saw, lapsing the moment its view catches up. So an unreadable daemon doc refuses the mint by
+ * name instead of guessing.
+ */
+async function resolveBoundEpoch(realm: string, repo: Repo): Promise<number> {
+  const daemonUrl = daemonDocUrlFromBootstrap();
+  if (!daemonUrl) {
+    throw new CabalVouchError(
+      "this vessel's daemon doc is unreadable — the realm's lease epoch cannot be resolved, so the mint " +
+      "refuses rather than bind behind a roll it never saw. Pass boundEpoch explicitly to override.",
+    );
+  }
+  try {
+    const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
+    return cabalAdmissionEpoch(dh.doc(), realm);
+  } catch (err) {
+    throw new CabalVouchError(
+      `the realm's lease epoch could not be read off the daemon doc — refusing to mint at a guessed epoch ` +
+      `(${err instanceof Error ? err.message : String(err)}).`,
+    );
+  }
+}
+
+/**
  * Mint one vouch and land it on the Nexus's vouch board.
  *
  * `now` rides as a parameter rather than a read of the wall clock, because a causal island holds no global
- * now and a test must stand at a chosen instant.
+ * now and a test must stand at a chosen instant. It decides NOTHING about whether the mint runs — only the
+ * default `expiresAt` HINT below reads it, and that hint gates no admission.
  */
 export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): Promise<CabalVouchResult> {
   const joiner     = opts.joiner.trim().toLowerCase();
@@ -91,14 +123,12 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
   }
 
   const expiresAt = opts.expiresAt ?? defaultExpiry(now);
-  // THE FENCE THE VOUCH IS BOUND TO. A vouch minted now binds to the realm's epoch as this vessel
-  // reads it: roll the realm past that number and every vouch bound behind it lapses at once, on
-  // every replica, with no clock consulted. `expiresAt` above rides along as a HINT for the
-  // voucher's own tools — it gates nothing, because the reader supplies the instant.
-  const boundEpoch = String(opts.boundEpoch ?? 0);
-  if (!(Date.parse(expiresAt) > now)) {
-    throw new CabalVouchError(`the expiry ${expiresAt} sits at or before now — a vouch that arrives expired vouches for nobody.`);
-  }
+  // THE FENCE THE VOUCH IS BOUND TO. A vouch minted now binds to the realm's epoch as this vessel reads
+  // it: roll the realm past that number and every vouch bound behind it lapses at once, on every
+  // replica, with no clock consulted. `expiresAt` above rides along as ADVISORY DISPLAY ONLY for the
+  // voucher's own tools — no verdict anywhere reads it, and a past-dated expiry mints exactly as well as
+  // a future one; only the fence below decides whether a vouch stands.
+  const boundEpoch = String(opts.boundEpoch ?? await resolveBoundEpoch(realm, opts.repo));
 
   // WHICH FACE VOUCHES. A human holds a multitude; the vouch stakes ONE of them, named here rather than
   // guessed, because the standing it dilutes belongs to that face alone.

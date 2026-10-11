@@ -192,7 +192,8 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
     console.log(`  voucher:   ${r.voucherDid}`);
     console.log(`  joiner:    ${r.joiner}`);
     console.log(`  realm:     ${r.realm}`);
-    console.log(`  expires:   ${r.expiresAt}`);
+    console.log(`  expires:   ${r.expiresAt}  (advisory display only — the bound epoch below is the fence)`);
+    console.log(`  bound at:  epoch ${r.boundEpoch}`);
     console.log(`  board:     ${r.boardUrl}`);
     // The number that matters to the voucher — stated as a FLOOR, because it counts what this replica has
     // synced. A peer may hold edges we have not seen, so real dilution reads at or above this.
