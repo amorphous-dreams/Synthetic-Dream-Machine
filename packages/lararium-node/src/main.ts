@@ -537,10 +537,18 @@ async function main(): Promise<void> {
   //   4. the daemon island gracefully (it flushes its docs + capture WAL),
   //   5. flush MAIN again to land anything that synced during teardown.
   //
-  // THE FORCE NEVER CUTS A MAIN FLUSH. The budget arms only once step 2 has landed, and it bounds steps 3–4
-  // alone: when it fires, the teardown is abandoned, step 5 still runs, and only then does the process exit.
-  // So every record the main replica held lands whole however long either flush takes; what a force cuts is an
-  // island's own in-flight work, which re-derives from the main replica at the next stand.
+  // THE FORCE NEVER CUTS A MAIN FLUSH ON ITS OWN. The budget's REPORT arms before step 2, so a
+  // hung main-flush itself gets named too (H3/M4 — a prior shape armed the notice only AFTER
+  // main-flush, so a main flush that never returns pinned the process silently forever with no
+  // notice ever printed). What a force never does on its own timer is cut a step — only the
+  // OPERATOR'S OWN SECOND SIGNAL does that (below), as an event, never a clock.
+  //
+  // THE "EVERY RECEIPT LANDED" CLAIM MUST BE TRUE. The island pool and the daemon VM BOTH still
+  // terminate their own worker past their own handshake timeout ("teardown handshake failed —
+  // … terminating anyway") — that claim is THEIRS to make honestly, not main.ts's to overwrite:
+  // `disposeAll()`/`daemon.shutdown()` now report which acked and which got cut, and the final
+  // line names both rather than asserting every receipt landed when CI's own log showed a
+  // handshake timeout landing moments before that exact claim (H3).
   //
   // THE BUDGET'S BOUND, MEASURED. A stand that just LOADed a corpus keeps its wiki island busy with the load's
   // after-waves for tens of seconds; that island cannot read its teardown before the waves drain, and answers
@@ -549,36 +557,61 @@ async function main(): Promise<void> {
   // the waves drained: 271 ms whole). A whole stop therefore runs the main flush plus at most the budget plus the
   // re-flush. `port-control.stopIncumbent` NEVER escalates to SIGKILL past its own grace window (M3): past
   // `graceMs` it keeps waiting on this same SIGTERM's own effect and only NAMES the still-live holder
-  // (`onPastGrace`), so a slow shutdown reads as a report, never a second signal. Only an EXTERNAL kill (an
-  // operator's own SIGKILL, a supervisor outside this door, an OOM) cuts whatever step stands: the writes tear
-  // nothing (every save lands by rename, and a stranded temp never reads as a chunk), and the records still in
-  // memory are lost as in any crash.
+  // (`onPastGrace`) — UNLESS the caller asked `--cut`, which delivers exactly one further signal, read below.
+  //
+  // THE WAY OUT OF A HUNG TEARDOWN (M4): the operator's OWN SECOND SIGINT/SIGTERM while a
+  // shutdown already runs. An EVENT, never a timer — nothing here measures how long to wait
+  // before treating it as a cut; the operator's second signal simply IS the cut. It logs the
+  // step still outstanding, reflushes main ONE more time if main itself is not the hung step
+  // (a hung main-flush gets no further flush attempt — it is already the thing that is stuck),
+  // and exits a DISTINCT nonzero code (75, "cut by operator") so a supervisor can tell a cut
+  // shutdown apart from a clean one or a flush error. `lares vessel stop --cut` reaches this by
+  // delivering that second signal itself, past the grace it already reported (port-control.ts).
+  // Only an EXTERNAL SIGKILL (outside this process entirely) cuts anything harder than this: the
+  // writes tear nothing (every save lands by rename, and a stranded temp never reads as a
+  // chunk), and records still in memory are lost as in any crash.
   const SHUTDOWN_BUDGET_MS  = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
   const DAEMON_SHUTDOWN_MS  = Math.max(1_000, Math.floor(SHUTDOWN_BUDGET_MS / 2));
-  let shuttingDown = false;
+  let shuttingDown  = false;
+  let cutRequested  = false;
+  let currentStep   = "start";
+  const spans: string[] = [];
+  const running = new Set<string>();
   const shutdown = async (sig: string): Promise<void> => {
     if (shuttingDown) {
-      console.log(`[lararium] ${sig} — shutdown already in progress, pending; not re-entered`);
-      return;
+      if (cutRequested) {
+        console.log(`[lararium] ${sig} — a cut is already underway; not re-entered`);
+        return;
+      }
+      cutRequested = true;
+      console.error(`[lararium] ${sig} — operator's SECOND signal: cutting the hung step "${currentStep}" now (done so far: ${spans.join(" · ") || "(none)"})`);
+      if (currentStep !== "main-flush") {
+        try {
+          await result.repo.flush();
+          console.error("[lararium] cut: main replica reflushed before exit");
+        } catch (e) {
+          console.error(`[lararium] cut: main reflush failed — ${e instanceof Error ? e.message : String(e)}`);
+        }
+      } else {
+        console.error("[lararium] cut: main-flush itself is the hung step — exiting with no further flush attempt");
+      }
+      console.error(`[lararium] cut by operator — exiting 75 (never a clean shutdown's 0, never a flush error's 1)`);
+      process.exit(75);
     }
     shuttingDown = true;
-    console.log(`[lararium] ${sig} — graceful shutdown (durable flush, budget ${SHUTDOWN_BUDGET_MS}ms)`);
-    // Each step's span rides the log (monotonic, a measurement only), so an overrun names the step that spent it.
-    const spans: string[] = [];
-    const running = new Set<string>();
-    const step = async (name: string, run: () => Promise<unknown>): Promise<void> => {
+    console.log(`[lararium] ${sig} — graceful shutdown (durable flush, budget ${SHUTDOWN_BUDGET_MS}ms; a second ${sig} cuts it — exit 75)`);
+    const step = async <T>(name: string, run: () => Promise<T>): Promise<T> => {
       const t0 = performance.now();
+      currentStep = name;
       running.add(name);
-      try { await run(); } finally { running.delete(name); spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
+      try { return await run(); } finally { running.delete(name); spans.push(`${name} ${Math.round(performance.now() - t0)}ms`); }
     };
-    // A WALL BUDGET NAMES A SLOW STEP; IT NEVER CUTS ONE. `SHUTDOWN_BUDGET_MS` once raced the teardown and
-    // exited past the loser (`process.exit(0)` in the `finally`, win or lose) — a vessel could leave mid-flush
-    // with its own log calling that a "complete" shutdown. The budget now only REPORTS: past it, this step logs
-    // which receipts are still outstanding (a pending-shutdown notice an operator or supervisor can read) and
-    // keeps waiting on the SAME teardown promise. The vessel exits only once every teardown receipt lands, or
-    // not at all if one never does — an external SIGKILL is the only cut past that point, and it tears exactly
-    // as any crash does, never silently.
-    let pastBudget: ReturnType<typeof setTimeout> | undefined;
+    // THE REPORT ARMS BEFORE THE FIRST STEP (M4c) — a hung main-flush now gets named too, never
+    // left silent until islands/daemon even get a turn. It only ever REPORTS; the operator's own
+    // second signal above is the sole cut.
+    const pastBudget = setTimeout(() => {
+      console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop --cut\`) cuts it now`);
+    }, SHUTDOWN_BUDGET_MS);
     try {
       readinessFace.dispose();
       pronaos?.dispose();
@@ -586,25 +619,28 @@ async function main(): Promise<void> {
       dispatcher.dispose();
       uds.close();
       httpServer.close();
-      await step("main-flush", () => result.repo.flush());                          // the floor, never cut by the budget
-      pastBudget = setTimeout(() => {
-        console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}`);
-      }, SHUTDOWN_BUDGET_MS);
+      await step("main-flush", () => result.repo.flush());                          // the floor
       // The two teardowns run side by side: a wiki island busy past the budget never holds the daemon island's own
       // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it. Both are AWAITED to their
       // own receipt — nothing here races them against a clock.
-      await Promise.all([
+      const [islandsResult, daemonResult] = await Promise.all([
         step("islands", () => result.pool.disposeAll()),                            // wiki islands flush their partitions + ack
         step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS)),           // daemon island flushes docs + capture, then acks
       ]);
       clearTimeout(pastBudget);
       await step("main-reflush", () => result.repo.flush());                        // land what synced during teardown
-      console.log(`[lararium] shutdown complete — every teardown receipt landed, the main replica flushed durably (${spans.join(" · ")})`);
+      // THE HONEST LINE (H3): never "every teardown receipt landed" when a handshake timed out
+      // and this door terminated the worker anyway. Names exactly what acked and what got cut.
+      const daemonLine  = daemonResult.acked ? "daemon ok" : "daemon cut (ack silent)";
+      const islandsLine = islandsResult.cut.length === 0
+        ? "islands ok"
+        : `islands cut (${islandsResult.cut.join(", ")}${islandsResult.acked.length > 0 ? `; ok: ${islandsResult.acked.join(", ")}` : ""})`;
+      console.log(`[lararium] shutdown complete — main replica flushed durably; teardown receipts: ${daemonLine} · ${islandsLine} (${spans.join(" · ")})`);
       process.exit(0);
     } catch (e) {
       clearTimeout(pastBudget);
       console.error("[lararium] shutdown flush error:", e instanceof Error ? e.message : String(e));
-      process.exit(0);
+      process.exit(1);
     }
   };
   process.on("SIGINT",  () => void shutdown("SIGINT"));

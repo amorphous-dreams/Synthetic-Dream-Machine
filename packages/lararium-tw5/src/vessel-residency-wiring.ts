@@ -45,7 +45,10 @@ import type { DaemonVmCore } from "./daemon-vm-core.js";
  *  cools by unmounting. Both vessel pools (extending VesselIslandPoolCore) satisfy it. */
 export interface VesselResidencyPool {
   ensureWiki(wikiId: string): Promise<boolean>;
-  unmountWiki(wikiId: string): Promise<void>;
+  /** Returns whatever the pool wants to report about the teardown (H3/M4: whether the island
+   *  acked its own teardown or got cut past the handshake timeout) — the residency hydrate/evict
+   *  wiring only ever awaits it, never reads the value, so any shape satisfies this. */
+  unmountWiki(wikiId: string): Promise<unknown>;
 }
 
 /** A system-alert job placed into a wiki island (the daemon's operator-facing alert). */

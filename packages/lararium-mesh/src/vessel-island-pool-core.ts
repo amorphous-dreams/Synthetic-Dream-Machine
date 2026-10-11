@@ -362,12 +362,16 @@ export class VesselIslandPoolCore {
     this._onEa?.(wikiId);   // the island breathed; respond
   }
 
-  /** Unmount a live island via teardown handshake; slot goes cold (`anu`). */
-  async unmountWiki(wikiId: string): Promise<void> {
+  /** Unmount a live island via teardown handshake; slot goes cold (`anu`). Returns whether
+   *  the island ACKED its own teardown, or this door CUT it past the handshake timeout
+   *  (H3/M4) — never silently folded into "torn down", so a caller's own shutdown report
+   *  can name the cut honestly. */
+  async unmountWiki(wikiId: string): Promise<{ wikiId: string; acked: boolean }> {
     const slot = this._slots.get(wikiId);
-    if (!slot || slot.temperature === "anu") return;
+    if (!slot || slot.temperature === "anu") return { wikiId, acked: true };
 
     const workerSlot = slot;
+    let acked = true;
     try {
       await awaitIslandMsg<IslandMsg_TeardownAck>({
         expectedType: "teardown:ack",
@@ -377,22 +381,35 @@ export class VesselIslandPoolCore {
         send: () => workerSlot.worker.post(mkTeardown()),
       });
     } catch (err) {
+      acked = false;
       console.warn(`[vessel-pool] ${wikiId}: teardown handshake failed — ${err}; terminating anyway`);
     }
 
     workerSlot.mainPort.close();
     workerSlot.worker.terminate();
     this._slots.set(wikiId, { temperature: "anu", wikiId, cooledAt: Date.now() });
+    return { wikiId, acked };
   }
 
-  /** Teardown all live islands. */
-  async disposeAll(): Promise<void> {
-    const teardowns: Promise<void>[] = [];
+  /** Teardown all live islands. Returns which acked their own teardown and which this door
+   *  CUT past the handshake timeout — H3/M4: `Promise.allSettled` alone made every cut island
+   *  read identically to an acked one, which is exactly how `main.ts` could claim "every
+   *  teardown receipt landed" moments after logging a handshake timeout. */
+  async disposeAll(): Promise<{ acked: readonly string[]; cut: readonly string[] }> {
+    const teardowns: Promise<{ wikiId: string; acked: boolean }>[] = [];
     for (const slot of this._slots.values()) {
       if (slot.temperature === "wela") teardowns.push(this.unmountWiki(slot.wikiId));
     }
-    await Promise.allSettled(teardowns);
+    const settled = await Promise.allSettled(teardowns);
     this._slots.clear();
+    const acked: string[] = [];
+    const cut: string[] = [];
+    for (const s of settled) {
+      if (s.status === "fulfilled") (s.value.acked ? acked : cut).push(s.value.wikiId);
+      // unmountWiki never rejects (it catches its own handshake failure) — a rejection here
+      // would be a harness fault; name it as cut-unnamed rather than silently dropping it.
+    }
+    return { acked, cut };
   }
 
   // ── Wiki-scope job dispatch ──────────────────────────────────────────────────

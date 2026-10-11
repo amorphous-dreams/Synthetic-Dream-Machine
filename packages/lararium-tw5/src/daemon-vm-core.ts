@@ -245,8 +245,12 @@ export interface DaemonVmCore {
    * await times out, and we terminate anyway — but the vessel has already flushed
    * its own main-replica floor by then (flush-then-force, never force-before-flush).
    * Use on a signal-driven shutdown; `dispose()` stays the hard, no-flush kill.
+   *
+   * Returns `{acked}` — H3/M4: `false` names a CUT teardown (the ack never arrived and this
+   * door terminated the worker anyway) so the caller's own shutdown line can say so honestly,
+   * never claim "every teardown receipt landed" over one it cut itself.
    */
-  shutdown:       (budgetMs?: number) => Promise<void>;
+  shutdown:       (budgetMs?: number) => Promise<{ acked: boolean }>;
   dispose:        () => void;
   /** Exposed so platform wrappers compose any further capability on top. */
   worker:         VesselWorkerHandle;
@@ -675,9 +679,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       worker.post(mkWikiDomEvent({ renderId, eventType, fields })),
     sendDomInput: (renderId: string, eventType: string, value: string) =>
       worker.post(mkWikiDomInput({ renderId, eventType, value })),
-    shutdown: async (budgetMs = 10_000): Promise<void> => {
+    shutdown: async (budgetMs = 10_000): Promise<{ acked: boolean }> => {
       // Post teardown, await the island's teardown:ack (it flushes its docs +
       // capture state before acking). On timeout (jammed worker) terminate anyway.
+      let acked = true;
       try {
         await awaitIslandMsg<IslandMsg_TeardownAck>({
           expectedType:   "teardown:ack",
@@ -687,11 +692,13 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
           send:           () => worker.post(mkTeardown()),
         });
       } catch (err) {
+        acked = false;
         console.warn(`[daemon-vm] graceful shutdown ack failed — ${String(err)}; terminating anyway`);
       }
       detachOwned?.();
       detachPrimary();
       worker.terminate();
+      return { acked };
     },
     dispose: () => {
       detachOwned?.();

@@ -88,7 +88,11 @@ describe("vessel reboot — a hearth survives restarting on its own fed store", 
     await lar.stopDaemonOnly();
     const stopLines = lar.bootLog().split("\n").filter((l) => /shutdown|teardown/.test(l));
     process.stderr.write(`vessel-reboot stop: ${JSON.stringify(stopLines)}\n`);
-    expect(stopLines.some((l) => /shutdown complete — the main replica flushed durably/.test(l))).toBe(true);
+    // H3 — the clause this test actually needs: the MAIN REPLICA flushed durably. The rest of the
+    // line (which teardown receipts acked vs got cut) is an honest report this fix added; a
+    // handshake timeout naming "islands cut (…)" must not read as a failed stop here — only the
+    // main-replica clause is this vector's own claim.
+    expect(stopLines.some((l) => /main replica flushed durably/.test(l))).toBe(true);
 
     // A temp a cut island write left reads as stranded at the next open, never as a chunk; it is named, not fatal.
     const store = vesselStorageDir(lar);
