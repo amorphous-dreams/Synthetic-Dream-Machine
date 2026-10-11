@@ -24,6 +24,11 @@ import { VesselIslandPool } from "../src/vessel-island-pool.js";
 const FIXTURE_URL = new URL("./fixtures/event-verb-echo.mjs", import.meta.url);
 const WIKI_ID     = "lar:///ha.ka.ba/bags/test/event-routing";
 
+/** This gate cares about verb-payload routing, never plugin selection — M6 requires every pool
+ *  to carry a resolver, so a no-offerings floor stands in (the same shape G used in the mesh and
+ *  browser fixtures). */
+const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -71,6 +76,7 @@ describe("M.2 event-routing — island→vessel verb payload transport", () => {
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (_id, msg) => events.push(msg),
+      resolvePluginCids: NO_OFFERINGS,
     });
 
     await manager.mountWiki(WIKI_ID, {

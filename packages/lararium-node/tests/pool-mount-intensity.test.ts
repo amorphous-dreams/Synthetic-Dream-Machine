@@ -19,6 +19,11 @@ const ECHO_FIXTURE_URL   = new URL("./fixtures/vm-pool-echo.mjs",  import.meta.u
 
 const WIKI_ID = "lar:///ha.ka.ba/bags/test/wiki";
 
+/** This gate cares about the mount-intensity cap, never plugin selection — M6 requires every
+ *  pool to carry a resolver, so a no-offerings floor stands in (the same shape G used in the
+ *  mesh and browser fixtures). */
+const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
+
 function spec(): WikiMountSpec {
   return { coreHash: null, recipe: { wikiSlug: "test" }, grants: { islandUrl: "automerge:fixture-lararium-url", wikiUrl: null } };
 }
@@ -37,6 +42,7 @@ describe("VesselIslandPool — mount intensity cap", () => {
       mountSilenceMs:       200,
       maxMountFailures:     2,
       mountFailureWindowMs: 60_000,
+      resolvePluginCids:    NO_OFFERINGS,
     });
 
     // Attempts 1 + 2 — each burns the silence budget and records a failure.
@@ -57,6 +63,7 @@ describe("VesselIslandPool — mount intensity cap", () => {
       workerScriptUrl:      ECHO_FIXTURE_URL,
       maxMountFailures:     1,
       mountFailureWindowMs: 60_000,
+      resolvePluginCids:    NO_OFFERINGS,
     });
 
     await pool.mountWiki(WIKI_ID, spec());

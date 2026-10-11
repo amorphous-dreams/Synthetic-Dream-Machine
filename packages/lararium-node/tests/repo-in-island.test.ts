@@ -29,6 +29,11 @@ import { VesselIslandPool } from "../src/vessel-island-pool.js";
 const FIXTURE_URL = new URL("./fixtures/repo-in-island-echo.mjs", import.meta.url);
 const WIKI_ID     = "lar:///ha.ka.ba/bags/test/repo-in-island";
 
+/** This gate cares about the Repo-in-island sync path, never plugin selection — M6 requires
+ *  every pool to carry a resolver, so a no-offerings floor stands in (the same shape G used in
+ *  the mesh and browser fixtures). */
+const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
+
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -124,6 +129,7 @@ describe("Repo-in-island — CRDT sync gate (GP-3 deprecation proof)", () => {
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (id, msg) => { all.callback(id, msg); changes.callback(id, msg); },
+      resolvePluginCids: NO_OFFERINGS,
     });
 
     await manager.mountWiki(WIKI_ID, {
@@ -166,6 +172,7 @@ describe("Repo-in-island — CRDT sync gate (GP-3 deprecation proof)", () => {
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (id, msg) => { all.callback(id, msg); changes.callback(id, msg); },
+      resolvePluginCids: NO_OFFERINGS,
     });
 
     await manager.mountWiki(WIKI_ID, {
@@ -212,6 +219,7 @@ describe("Repo-in-island — CRDT sync gate (GP-3 deprecation proof)", () => {
       workerScriptUrl: FIXTURE_URL,
       mainRepo:        repo,
       onWorkerEvent:   (id, msg) => { all.callback(id, msg); changes.callback(id, msg); },
+      resolvePluginCids: NO_OFFERINGS,
     });
 
     await manager.mountWiki(WIKI_ID, {
