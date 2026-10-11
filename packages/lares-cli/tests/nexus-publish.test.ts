@@ -71,12 +71,25 @@ describe("lares nexus publish — the operator's own collection, apart from the 
 
   test("★ `publish plugins --source <dir>` READS the local offering source and builds nothing ★", async () => {
     const source = offeringSourceDir(root);
-    expect(await cmdNexus(args(["publish", "plugins"], {}, { source }))).toBe(0);
+    expect(await cmdNexus(args(["publish", "plugins"], { json: false }, { source }))).toBe(0);
     const said = [...errs, ...logs].join("\n");
     expect(said).toMatch(/plugins/i);
     expect(said).toMatch(/example\/one/);
     // The read reports the SOURCE's own fold — never genesis's, which carries the boot set alone (H3).
     expect(said).toMatch(/local offering source/i);
+  });
+
+  test("L-d: `publish plugins --source <dir> --json` in READ mode emits STRUCTURED JSON, never human prose", async () => {
+    const source = offeringSourceDir(root);
+    const out: string[] = [];
+    const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
+    expect(await cmdNexus(args(["publish", "plugins"], { json: true }, { source }))).toBe(0);
+    write.mockRestore();
+    const payload = JSON.parse(out.join("")) as { ok: boolean; data: { source: string; pluginsCid: string; blobCount: number } };
+    expect(payload.ok).toBe(true);
+    expect(payload.data.blobCount).toBe(1);
+    expect(typeof payload.data.pluginsCid).toBe("string");
+    expect(logs.join("\n")).toBe("");                  // no human-readable prose leaked onto console.log
   });
 
   test("★ `--apply` reaches the production adapter and refuses an unseated local face cleanly ★", async () => {

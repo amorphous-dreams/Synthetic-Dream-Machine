@@ -102,17 +102,31 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   // fresh — the SAME fold `--apply` would sign, so a read never drifts from what applying would do.
   const pluginsCid = typeof parsed.sig === "string" && typeof parsed.pluginsCid === "string" ? parsed.pluginsCid : computePluginsCid(blobs);
 
-  console.log(`nexus publish plugins — a LOCAL offering source (a read; nothing signed, nothing announced):`);
-  console.log(`  source:               ${resolve(source)}`);
-  console.log(`  plugins (pluginsCid): ${pluginsCid}   a region, never a ratchet tier`);
-  if (blobs.length > 0) {
-    console.log(`  the source holds ${blobs.length}:`);
-    for (const b of blobs) console.log(`    ${b.id}  v${b.version}  ${b.sha256}`);
-  }
-  console.log("");
-  console.log("  a plugin added or dropped moves THIS region and no other — plugin drift never reads as");
-  console.log("  grammar drift, and no peer's epoch moves when yours does.");
-  console.log("  the ratchets the MESH shares live at `lares nexus kahuli <engine|grammar>`.");
+  // L-d: this read used to print raw human prose unconditionally — `--json` (or any non-TTY caller)
+  // got the SAME text instead of structured data. It now routes through the ONE choke point every
+  // other door answers through.
+  emit(args, {
+    ok: true,
+    data: {
+      source: resolve(source),
+      pluginsCid,
+      blobCount: blobs.length,
+      blobs: blobs.map((b) => ({ id: b.id, version: b.version, sha256: b.sha256 })),
+    },
+    human: () => {
+      console.log(`nexus publish plugins — a LOCAL offering source (a read; nothing signed, nothing announced):`);
+      console.log(`  source:               ${resolve(source)}`);
+      console.log(`  plugins (pluginsCid): ${pluginsCid}   a region, never a ratchet tier`);
+      if (blobs.length > 0) {
+        console.log(`  the source holds ${blobs.length}:`);
+        for (const b of blobs) console.log(`    ${b.id}  v${b.version}  ${b.sha256}`);
+      }
+      console.log("");
+      console.log("  a plugin added or dropped moves THIS region and no other — plugin drift never reads as");
+      console.log("  grammar drift, and no peer's epoch moves when yours does.");
+      console.log("  the ratchets the MESH shares live at `lares nexus kahuli <engine|grammar>`.");
+    },
+  });
   return 0;
 }
 
