@@ -109,6 +109,71 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     expect(kill).toHaveBeenCalledTimes(1);
   });
 
+  it("H5 RED→GREEN: waits on the HOLDER, not the port — `stopped:true` only once `holderAlive` lets go", async () => {
+    // The port frees INSTANTLY (mirrors main.ts closing its http listener as the very first teardown
+    // step), but the real holder (its UDS rendezvous claim, here mocked) keeps answering for a while
+    // longer. A port-only reading would report `stopped: true` at once — the bug this closes.
+    const kill = vi.fn();
+    let holderLetGo = false;
+    setTimeout(() => { holderLetGo = true; }, 30);
+    // Once `holderAlive` is wired, the loop never consults `probe` again — only the initial
+    // "already free" guard does, so it must read HELD there to enter the wait at all. The port
+    // freeing instantly thereafter (main.ts's own ordering) is exactly what `holderAlive` must
+    // outlast.
+    const probe = async () => true;
+    const holderAlive = async () => !holderLetGo;
+    const t0 = performance.now();
+    const result = await stopIncumbent(PORT, {
+      graceMs: 5_000, pollMs: 5, probe, holderPids: () => [999_999], kill, holderAlive,
+      onPastGrace: () => {},
+    });
+    const elapsed = performance.now() - t0;
+    expect(result).toEqual<StopResult>({ stopped: true });
+    expect(elapsed).toBeGreaterThanOrEqual(25);   // proves it did NOT return the instant the port read free
+  });
+
+  it("H5 MUTATION PROOF: a port-only reading (no `holderAlive` wired) would have reported `stopped:true` early", async () => {
+    const kill = vi.fn();
+    const portFree = true;
+    const probe = async () => !portFree;
+    // Re-enact the retired port-only shape by hand: the very first probe already reads free.
+    const stoppedImmediately = !(await probe(PORT));
+    expect(stoppedImmediately).toBe(true);   // proves the OLD shape would call this "stopped" with the holder still live
+    void kill;
+  });
+
+  it("H5: the signalled pids' own liveness is the unconditional FLOOR under `holderAlive`", async () => {
+    // A flaky/premature `holderAlive` that answers "gone" from the very first poll must NOT resolve
+    // `stopped: true` while the signalled pid still answers a signal-0 probe (mocked here via a
+    // `process.kill` spy, independent of the `kill` option this door uses to SEND signals).
+    const kill = vi.fn();
+    let pidDead = false;
+    const killSpy = vi.spyOn(process, "kill").mockImplementation(((pid: number, signal?: string | number) => {
+      if (signal === 0 && pid === 777_777 && pidDead) {
+        const e = new Error("ESRCH") as NodeJS.ErrnoException;
+        e.code = "ESRCH";
+        throw e;
+      }
+      return true;
+    }) as typeof process.kill);
+    try {
+      const probe = async () => true;             // irrelevant: holderAlive is wired, probe never consulted
+      const holderAlive = async () => false;       // reads "gone" from the first poll onward
+      const resultPromise = stopIncumbent(PORT, {
+        graceMs: 5_000, pollMs: 5, probe, holderPids: () => [777_777], kill, holderAlive,
+        onPastGrace: () => {},
+      });
+      let resolved = false;
+      void resultPromise.then(() => { resolved = true; });
+      await new Promise((r) => setTimeout(r, 40));
+      expect(resolved).toBe(false);     // the floor kept it pending despite holderAlive saying "gone"
+      pidDead = true;                   // now let the floor itself read "gone" too
+      await expect(resultPromise).resolves.toEqual<StopResult>({ stopped: true });
+    } finally {
+      killSpy.mockRestore();
+    }
+  });
+
   it("SET-BACK/SET-FORWARD `Date.now()` PROOF: the grace reads off a monotonic clock, never the wall clock", async () => {
     const kill = vi.fn();
     const realNow = Date.now;

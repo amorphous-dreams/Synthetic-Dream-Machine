@@ -112,12 +112,20 @@ function cmdReadSensorium(args: ParsedArgs): number {
  * SIGKILL): the operator's own SECOND signal, which the vessel's own shutdown (main.ts) reads as the
  * event that cuts a hung teardown and exits 75. Without `--cut` this stays exactly as above — a report,
  * never a decision this door makes for the vessel.
+ *
+ * `stopped: true` waits on the HOLDER, never the port alone (H5). `main.ts`'s shutdown closes the http
+ * listener — which frees this port — as its very FIRST step, well before main-flush, the wiki islands,
+ * or the daemon island ever ack their own teardown; a port-only reading reported `stopped: true` over a
+ * vessel that kept running for seconds afterward. `holderAlive` here reads the vessel's own UDS
+ * rendezvous claim (`udsAlive`, released only with the holding process) instead.
  */
 export async function cmdStop(args: ParsedArgs): Promise<number> {
   const port = larPort();
+  const dataDir = larDataDir();
   const cut = args.flags["cut"] === true;
   const r = await stopIncumbent(port, {
     cut,
+    holderAlive: () => udsAlive(dataDir, 300),
     onPastGrace: (pids) => console.log(
       pids.length > 0
         ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`

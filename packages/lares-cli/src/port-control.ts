@@ -101,10 +101,30 @@ export interface StopIncumbentOpts {
    * means; it only delivers the operator's own choice once, past the grace it already reported.
    */
   readonly cut?: boolean;
+  /**
+   * Reads true while the REAL HOLDER still stands — never the port alone (H5). `main.ts`'s own
+   * shutdown closes the http listener (which frees this port) as its very FIRST step, well before
+   * main-flush, the wiki islands, or the daemon island ever ack their own teardown — so a caller that
+   * declared "stopped" the instant the port freed was reporting `stopped: true` over a vessel that kept
+   * running for seconds afterward. A caller that knows the store (`commands/read.ts`'s `cmdStop`) wires
+   * this to the UDS rendezvous liveness check (`udsAlive`/`whoHolds`, the vessel's own claim on its
+   * store, released only with the process) so `stopped: true` prints only once that claim lets go.
+   * Omitted, this door falls back to its old port-probe reading alone — but see `holderAlive`'s FLOOR
+   * below, which always applies regardless.
+   */
+  readonly holderAlive?: (pids: readonly number[]) => Promise<boolean>;
   /** Test seams — default to the real probe/table/signal. */
   readonly probe?:      (port: number) => Promise<boolean>;
   readonly holderPids?: (port: number) => number[];
   readonly kill?:       (pid: number, signal: NodeJS.Signals) => void;
+}
+
+/** True while `pid` still answers a signal-0 probe — a process that has truly exited never does, no
+ *  matter what a store's own socket or port currently reads. This is the unconditional FLOOR under
+ *  `holderAlive`: the signalled pids' own liveness, so a holder-check that flakes "gone" mid-teardown
+ *  (a socket briefly quiet while the process itself still runs) can never read `stopped: true` early. */
+function pidAlive(pid: number): boolean {
+  try { process.kill(pid, 0); return true; } catch { return false; }
 }
 
 /**
@@ -149,7 +169,12 @@ export async function stopIncumbent(
   const graceDeadline = performance.now() + graceMs;
   let warned = false;
   for (;;) {
-    if (!(await probe(port))) return { stopped: true };
+    // THE HOLDER, NEVER THE PORT ALONE (H5). `pids.some(pidAlive)` is the unconditional floor: while
+    // any signalled pid still answers a signal-0 probe, this never reads "gone", whatever a store
+    // check or the port itself says. Past that floor, `holderAlive` (when the caller wired one — the
+    // vessel's own UDS claim) decides; with none wired, this falls back to the old port-free reading.
+    const stillHeld = pids.some(pidAlive) || (opts.holderAlive ? await opts.holderAlive(pids) : await probe(port));
+    if (!stillHeld) return { stopped: true };
     if (!warned && performance.now() >= graceDeadline) {
       warned = true;
       const held = holderPidsOf(port);
