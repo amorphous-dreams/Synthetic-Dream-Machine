@@ -211,11 +211,22 @@ export function concludeVerb(opts: {
 
 // ── Builders ───────────────────────────────────────────────────────────────
 
+/**
+ * A fresh request id — 16 cryptographically-random bytes, base32-encoded. No time prefix: a request
+ * id names an ATTEMPT, never a moment, and carrying `Date.now()` in it invited readers to treat
+ * ordering or freshness as derivable from the id itself (it never was — see L1,
+ * project_no_global_now_timers).
+ */
 export function newRequestId(): string {
-  const ms = Date.now().toString(32).padStart(9, "0");
-  let rand = "";
-  for (let i = 0; i < 8; i++) rand += Math.floor(Math.random() * 32).toString(32);
-  return `${ms}-${rand}`;
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  let out = "";
+  for (const b of bytes) out += b.toString(32).padStart(2, "0");
+  return out;
 }
 
 export function isVerbTitle(title: string): boolean {

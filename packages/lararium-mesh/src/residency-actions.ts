@@ -288,7 +288,8 @@ export type ResidencyAction =
  * Callers MUST pass through an existing changeId when lifting a tiddler that
  * already carries one in another bag; only mint fresh on first-write or LOAD.
  *
- * Format mirrors verb-tiddler.newRequestId() — base-32 timestamp + 8-char random.
+ * Format: base-32 timestamp + 8-char random (unlike verb-tiddler.newRequestId(), which carries no
+ * time prefix — a changeId names a lineage, not an attempt, and MAY legitimately sort by mint time).
  */
 export function newChangeId(): string {
   const ms = Date.now().toString(32).padStart(9, "0");
