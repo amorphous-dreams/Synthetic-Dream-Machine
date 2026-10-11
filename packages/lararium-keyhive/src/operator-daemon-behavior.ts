@@ -408,7 +408,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (!store) throw new Error(`circle-verb: ${face.circles} unresolved — the catalog registry names no such plane for the face this vessel wears`);
           return store;
         };
-        const circleReactors = makeCircleReactors({ resolveStore: resolveCirclesStore, tw5: ctx.tw5 });
+        // THIS device's own did (M5′): `cold-boot-ceremony` mints a fresh genesis follow's dot as
+        // `<did>.0` off this SAME `vesselVerifyingKey` — injecting it here as the replica id keeps every
+        // circle-verb dot this device mints disjoint from every OTHER device of the same operator by
+        // construction, matching the dot a device's own genesis follow already carries.
+        const circleReactors = makeCircleReactors({
+          resolveStore: resolveCirclesStore,
+          tw5: ctx.tw5,
+          replica: didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
+        });
 
         // A FACELESS FLOOR NAMES THE LIFT — the one refusal every face-scoped verb hands back.
         //
