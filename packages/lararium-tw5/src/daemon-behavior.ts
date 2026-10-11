@@ -216,6 +216,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.requestId ? { requestId:  msg.requestId             } : {}),
             ...(msg.fromUri   ? { fromUri:    msg.fromUri               } : {}),
             ...(msg.listenable? { listenable: msg.listenable            } : {}),
+            ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
           });
         }
         return true;

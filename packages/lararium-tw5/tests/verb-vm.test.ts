@@ -1,9 +1,13 @@
 import { describe, test, expect } from "vitest";
 import type { CompositeStore, Verb, LarTiddlerRecord } from "@lararium/mesh";
-import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb } from "@lararium/mesh";
+import {
+  OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest,
+} from "@lararium/mesh";
 import {
   boundOutcomeOutput,
+  copyEffectOutcome,
   dispatchVerb,
+  EFFECT_URI_PREFIX,
   patchVerb,
   placeVerb,
   removeVerb,
@@ -218,5 +222,86 @@ describe("verb-vm", () => {
     expect(daemon.writes).toHaveLength(1);
     expect(daemon.writes[0]?.tiddler.status).toBe("error");
     expect(daemon.writes[0]?.tiddler["error-message"]).toBe("boom");
+  });
+
+  // ── digest-on-outcome + the effect index (D1, P2.5 iter 4) ─────────────────────────────────
+  describe("writeOutcome stamps digest-on-outcome and writes the effect index", () => {
+    test("a DONE outcome with no effectKey stamps input-digest, but writes no effect index (one write only)", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation();
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done", result: { ok: true },
+      });
+
+      expect(daemon.writes).toHaveLength(1);
+      const stamped = daemon.writes[0]?.tiddler["input-digest"];
+      expect(typeof stamped).toBe("string");
+      expect((stamped as string).length).toBeGreaterThan(0);
+      expect(daemon.writes[0]?.tiddler["effect-key"]).toBeUndefined();
+
+      // The digest matches the SAME computation the dispatcher re-derives for arbitration —
+      // a stale/duplicated formula here would silently desync the two readers.
+      const expected = await verbInputDigest({
+        verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+      });
+      expect(stamped).toBe(expected);
+    });
+
+    test("a DONE outcome WITH an effectKey writes the outcome AND the effect index (single writer, two records)", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ effectKey: "eff-vm-1" });
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done", result: { ok: true },
+      });
+
+      expect(daemon.writes).toHaveLength(2);
+      const outcome = daemon.writes.find((w) => w.tiddler.title === `${OUTCOME_URI_PREFIX}${invocation.requestId}`);
+      expect(outcome?.tiddler["effect-key"]).toBe("eff-vm-1");
+      const fact = daemon.writes.find((w) => w.tiddler.title === `${EFFECT_URI_PREFIX}eff-vm-1`);
+      expect(fact?.tiddler["effect-key"]).toBe("eff-vm-1");
+      expect(fact?.tiddler["request-id"]).toBe(invocation.requestId);
+    });
+
+    test("MUTATION — an ERROR outcome with an effectKey stamps the outcome but indexes NOTHING (a failed effect stays retryable)", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ effectKey: "eff-vm-2" });
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "error", errorMessage: "boom",
+      });
+
+      expect(daemon.writes).toHaveLength(1); // outcome only — no effect index for an error
+      expect(daemon.writes[0]?.tiddler.status).toBe("error");
+      expect(daemon.writes[0]?.tiddler["effect-key"]).toBe("eff-vm-2");
+    });
+  });
+
+  describe("copyEffectOutcome — the effect-dedup shortcut write (D1, P2.5 iter 4)", () => {
+    test("writes a DONE outcome carrying effect-of + the prior results, and removes the volatile invocation", async () => {
+      const tw5 = new FakeTW5Engine();
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({
+        requestId: "req-copy-1", title: `${VERB_URI_PREFIX}req-copy-1`, effectKey: "eff-copy",
+      });
+      tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+
+      const priorResults = { [VERB_RESULT_KEY]: { ok: true, output: { recordsIngested: 3 } } };
+      await copyEffectOutcome(tw5 as never, daemon as unknown as CompositeStore, invocation, {
+        priorRequestId: "req-copy-0", priorResults, inputDigest: "sha256:deadbeef",
+      });
+
+      expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined(); // tombstoned, same as dispatchVerb
+      expect(daemon.writes).toHaveLength(1);
+      const written = daemon.writes[0];
+      expect(written?.tiddler.title).toBe(`${OUTCOME_URI_PREFIX}req-copy-1`);
+      expect(written?.tiddler.status).toBe("done");
+      expect(written?.tiddler["effect-of"]).toBe("req-copy-0");
+      expect(written?.tiddler["effect-key"]).toBe("eff-copy");
+      expect(written?.tiddler["input-digest"]).toBe("sha256:deadbeef");
+      const results = JSON.parse(String(written?.tiddler.results ?? "{}"));
+      expect(results[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
+    });
   });
 });

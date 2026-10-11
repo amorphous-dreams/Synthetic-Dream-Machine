@@ -7,12 +7,18 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
 
-import type { BatchMode, CompositeStore, Verb } from "@lararium/mesh";
+import type { BatchMode, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
 import {
   DAEMON_BAG_ID, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
-  canonicalJsonBytes, sha256HexBytesSync,
+  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest,
 } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
+
+// ── Effect index — single writer: the daemon worker (D1, P2.5 iter 4) ──────
+// `<daemon bag>/effects/<effectKey>` names the ONE prior `done` attempt that produced
+// this effect, so a later attempt under a NEW requestId with the SAME effectKey can
+// find it (verb-dispatcher.ts owns the reuse decision; this module owns the write).
+export const EFFECT_URI_PREFIX = `${DAEMON_BAG_ID}/effects/`;
 
 // ── audit-doc write-amplification cure (the dd4da8481 class, a new site) ────────────────────────────
 //
@@ -88,6 +94,8 @@ export interface VerbPlacement {
   readonly requestId?:  string;
   readonly fromUri?:    string;
   readonly listenable?: string;
+  /** The effect this attempt would produce (D1, P2.5 iter 4) — see `Verb.effectKey`. */
+  readonly effectKey?:  string;
 }
 
 export function placeVerb(tw5: TW5Engine, opts: VerbPlacement): string {
@@ -119,6 +127,15 @@ export async function writeOutcome(
   },
 ): Promise<void> {
   const origin = { kind: "lares-verb" as const, requestId: opts.invocation.requestId };
+  // Digest-on-outcome (D1): stamp the request's input digest onto the outcome so a later
+  // reader (the effect-dedup check, the channel's own arbitration) can re-check reuse
+  // without re-walking the originating fact.
+  const inputDigest = await verbInputDigest({
+    verb:        opts.invocation.action,
+    args:        opts.invocation.args,
+    requestedBy: opts.invocation.requestedBy,
+    ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
+  });
   const outcome = concludeVerb({
     requestId:   opts.invocation.requestId,
     verb:        opts.invocation.action,
@@ -134,8 +151,54 @@ export async function writeOutcome(
       },
     },
     ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
+    inputDigest,
+    ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
   await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+
+  // Effect index — single writer (the daemon worker). Only a `done` outcome with an
+  // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
+  // retried under a fresh requestId without the dedup path ever shadowing it.
+  if (opts.status === "done" && opts.invocation.effectKey !== undefined) {
+    await daemon.put({
+      tiddler: {
+        title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
+        "effect-key":   opts.invocation.effectKey,
+        "request-id":   opts.invocation.requestId,
+      },
+      meta: { authority: "lares-dispatcher" },
+    }, origin, { bag: DAEMON_BAG_ID });
+  }
+}
+
+/**
+ * Effect-dedup shortcut (D1, P2.5 iter 4): write a COPY of a prior `done` attempt's outcome
+ * for THIS invocation — `effect-of: priorRequestId` — instead of invoking the handler, then
+ * tombstone the volatile invocation exactly as `dispatchVerb` does on a real run. The caller
+ * (verb-dispatcher.ts) is the one that decided the digests match; this function only performs
+ * the write + cleanup, mirroring `dispatchVerb`'s own lifecycle so the two paths read alike.
+ */
+export async function copyEffectOutcome(
+  tw5: TW5Engine,
+  daemon: CompositeStore,
+  invocation: Verb,
+  opts: { priorRequestId: string; priorResults: Record<string, VerbTargetResult>; inputDigest: string },
+): Promise<void> {
+  const origin = { kind: "lares-verb" as const, requestId: invocation.requestId };
+  const outcome = concludeVerb({
+    requestId:   invocation.requestId,
+    verb:        invocation.action,
+    status:      "done",
+    requestedBy: invocation.requestedBy,
+    cause:       invocation.title,
+    batchMode:   invocation.batchMode,
+    results:     opts.priorResults,
+    inputDigest: opts.inputDigest,
+    ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
+    effectOf:    opts.priorRequestId,
+  });
+  await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+  removeVerb(tw5, invocation.title);
 }
 
 /**

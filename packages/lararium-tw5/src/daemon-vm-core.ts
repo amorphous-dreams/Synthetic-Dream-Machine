@@ -187,6 +187,8 @@ export interface VesselPlaceVerbRequest {
   batchMode?:   string;
   fromUri?:     string;
   listenable?:  string;
+  /** The effect this attempt would produce (D1, P2.5 iter 4) — see `Verb.effectKey`. */
+  effectKey?:   string;
 }
 
 export interface DaemonVmCore {
@@ -636,6 +638,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.requestId       ? { requestId: o.requestId } : {}),
         ...(o.fromUri         ? { fromUri: o.fromUri } : {}),
         ...(o.listenable      ? { listenable: o.listenable } : {}),
+        ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {
