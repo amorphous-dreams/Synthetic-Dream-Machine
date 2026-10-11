@@ -30,7 +30,7 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
       onPastGrace: (pids) => { pastGraceHeldPids = pids; },
     });
 
-    expect(result).toEqual<StopResult>({ stopped: true, forced: false });
+    expect(result).toEqual<StopResult>({ stopped: true });
     expect(kill).toHaveBeenCalledWith(4242, "SIGTERM");
     expect(kill).not.toHaveBeenCalledWith(expect.anything(), "SIGKILL");
     expect(kill).toHaveBeenCalledTimes(1);          // one SIGTERM, never a second signal of any kind
@@ -59,22 +59,22 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     let freed = false;
     const probe = async () => !freed;
     setTimeout(() => { freed = true; }, 20);
-    const result = await stopIncumbent(PORT, { graceMs: 5_000, pollMs: 5, probe, holderPids: () => [111], kill });
-    expect(result).toEqual<StopResult>({ stopped: true, forced: false });
+    const result = await stopIncumbent(PORT, { graceMs: 5_000, pollMs: 5, probe, holderPids: () => [111], kill, onPastGrace: () => {} });
+    expect(result).toEqual<StopResult>({ stopped: true });
     expect(kill).toHaveBeenCalledTimes(1);
     expect(kill).toHaveBeenCalledWith(111, "SIGTERM");
   });
 
   it("already free is a no-op — no signal sent", async () => {
     const kill = vi.fn();
-    const result = await stopIncumbent(PORT, { probe: async () => false, holderPids: () => [111], kill });
-    expect(result).toEqual<StopResult>({ stopped: false, forced: false });
+    const result = await stopIncumbent(PORT, { probe: async () => false, holderPids: () => [111], kill, onPastGrace: () => {} });
+    expect(result).toEqual<StopResult>({ stopped: false });
     expect(kill).not.toHaveBeenCalled();
   });
 
   it("a held port with no discoverable owner FAILS LOUD before any signal sends", async () => {
     const kill = vi.fn();
-    await expect(stopIncumbent(PORT, { probe: async () => true, holderPids: () => [], kill }))
+    await expect(stopIncumbent(PORT, { probe: async () => true, holderPids: () => [], kill, onPastGrace: () => {} }))
       .rejects.toThrow(/no owning PID found/);
     expect(kill).not.toHaveBeenCalled();
   });

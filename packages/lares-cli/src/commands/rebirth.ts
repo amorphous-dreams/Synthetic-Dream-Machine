@@ -167,8 +167,14 @@ export async function cmdRebirth(args: ParsedArgs): Promise<number> {
 
   console.log(step(0));
   const { stopIncumbent } = await import("../port-control.js");
-  const r = await stopIncumbent(port);
-  console.log(r.stopped ? `  stopped incumbent on :${port} (${r.forced ? "forced" : "graceful"})` : `  :${port} already free`);
+  const r = await stopIncumbent(port, {
+    onPastGrace: (pids) => console.log(
+      pids.length > 0
+        ? `  :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit, never a forced kill`
+        : `  :${port} is past its grace, held by no discoverable pid — waiting on its own exit, never a forced kill`,
+    ),
+  });
+  console.log(r.stopped ? `  stopped incumbent on :${port} (graceful)` : `  :${port} already free`);
 
   console.log(step(1));
   const clearCode2 = await cmdClear({ ...args, flags: { ...args.flags, force: true } });

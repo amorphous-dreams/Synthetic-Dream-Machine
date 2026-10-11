@@ -79,17 +79,21 @@ export function portHolderPids(port: number): number[] {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** `forced` stays in the shape for callers that already branch on it (`lares vessel stand`'s lift note) —
- *  it never reads true now that this door never forces a stop. A later caller removes it; this one keeps
- *  reading false rather than confusing "never happens" with "field removed". */
-export interface StopResult { stopped: boolean; forced: boolean }
+/** `forced` is GONE (M3): this door never forced a stop, so the field never read true, and a reader
+ *  that still branched on it was dead code pretending to be a decision. */
+export interface StopResult { stopped: boolean }
 
 export interface StopIncumbentOpts {
   readonly graceMs?: number;
   readonly pollMs?:  number;
-  /** Hears ONCE the declared grace is spent and the port is STILL held, naming who still holds it. The wait
-   *  continues past this — it is a report, never a decision point this door acts on. */
-  readonly onPastGrace?: (heldPids: readonly number[]) => void;
+  /**
+   * REQUIRED (M3). Hears ONCE the declared grace is spent and the port is STILL held, naming who still
+   * holds it. The wait continues past this — it is a report, never a decision point this door acts on.
+   * Making it required turns the typecheck into the witness that every stop caller wires it: before this,
+   * `rebirth.ts` called `stopIncumbent` with none at all, so a wedged daemon there hung mute while every
+   * OTHER caller already named it.
+   */
+  readonly onPastGrace: (heldPids: readonly number[]) => void;
   /** Test seams — default to the real probe/table/signal. */
   readonly probe?:      (port: number) => Promise<boolean>;
   readonly holderPids?: (port: number) => number[];
@@ -108,7 +112,7 @@ export interface StopIncumbentOpts {
  */
 export async function stopIncumbent(
   port: number,
-  opts: StopIncumbentOpts = {},
+  opts: StopIncumbentOpts,
 ): Promise<StopResult> {
   const graceMs = opts.graceMs ?? 8_000;
   const pollMs  = opts.pollMs  ?? 200;
@@ -116,7 +120,7 @@ export async function stopIncumbent(
   const holderPidsOf = opts.holderPids ?? portHolderPids;
   const kill        = opts.kill       ?? ((pid: number, signal: NodeJS.Signals) => process.kill(pid, signal));
 
-  if (!(await probe(port))) return { stopped: false, forced: false };   // already free
+  if (!(await probe(port))) return { stopped: false };   // already free
 
   const pids = holderPidsOf(port);
   if (pids.length === 0) {
@@ -134,8 +138,8 @@ export async function stopIncumbent(
   const graceDeadline = Date.now() + graceMs;
   let warned = false;
   for (;;) {
-    if (!(await probe(port))) return { stopped: true, forced: false };
-    if (!warned && Date.now() >= graceDeadline) { warned = true; opts.onPastGrace?.(holderPidsOf(port)); }
+    if (!(await probe(port))) return { stopped: true };
+    if (!warned && Date.now() >= graceDeadline) { warned = true; opts.onPastGrace(holderPidsOf(port)); }
     await sleep(pollMs);
   }
 }

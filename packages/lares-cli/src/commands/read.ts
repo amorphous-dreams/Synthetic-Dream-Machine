@@ -119,7 +119,7 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
   });
   emit(args, {
     ok: true,
-    data: { port, stopped: r.stopped, forced: r.forced },
+    data: { port, stopped: r.stopped },
     human: () => console.log(
       r.stopped
         ? `[lares] stopped the daemon on :${port} (graceful — SIGTERM)`
