@@ -94,6 +94,13 @@ export interface StopIncumbentOpts {
    * OTHER caller already named it.
    */
   readonly onPastGrace: (heldPids: readonly number[]) => void;
+  /**
+   * `--cut`: past grace, send the holder ONE further signal (never a ladder, never a SIGKILL) — the
+   * operator's own SECOND signal, which the vessel's own shutdown reads as the event that cuts a hung
+   * teardown (`main.ts` exits 75 on it). This door still never decides FOR the vessel what that signal
+   * means; it only delivers the operator's own choice once, past the grace it already reported.
+   */
+  readonly cut?: boolean;
   /** Test seams — default to the real probe/table/signal. */
   readonly probe?:      (port: number) => Promise<boolean>;
   readonly holderPids?: (port: number) => number[];
@@ -135,11 +142,23 @@ export async function stopIncumbent(
   // THE DAEMON'S REAL EXIT, NEVER FORCED. A delayed flush past `graceMs` keeps this pending — it does NOT
   // escalate to SIGKILL, which could tear a save the crash-atomic adapter's own guarantee never promised to
   // survive a deliberate kill. `onPastGrace` fires exactly once, as a report, and the loop keeps polling.
-  const graceDeadline = Date.now() + graceMs;
+  // This grace is THIS DOOR'S OWN liveness patience — "how long do I keep waiting before I say something" —
+  // never a safety or admission verdict, so it reads a MONOTONIC clock (`performance.now()`), never
+  // `Date.now()`: an adversarial or operator set-back/set-forward of the wall clock moves neither how long
+  // this door actually waited nor when it speaks.
+  const graceDeadline = performance.now() + graceMs;
   let warned = false;
   for (;;) {
     if (!(await probe(port))) return { stopped: true };
-    if (!warned && Date.now() >= graceDeadline) { warned = true; opts.onPastGrace(holderPidsOf(port)); }
+    if (!warned && performance.now() >= graceDeadline) {
+      warned = true;
+      const held = holderPidsOf(port);
+      opts.onPastGrace(held);
+      // `--cut`: deliver the operator's own second signal once, past the grace already reported. Never a
+      // ladder past this one further SIGTERM, never a SIGKILL — the vessel's own shutdown decides what a
+      // second signal means (main.ts: a hung-teardown cut, exit 75).
+      if (opts.cut) { for (const pid of held) { try { kill(pid, "SIGTERM"); } catch { /* already gone */ } } }
+    }
     await sleep(pollMs);
   }
 }
@@ -196,14 +215,17 @@ export async function waitForResourceBudgeted(
   const pollMs = opts.pollMs ?? 200;
   const budgetOf = new Map(phases.map((p) => [p.name, p.budgetMs]));
 
+  // Per-phase patience is this caller's OWN liveness wait — never a safety verdict — so it rides a
+  // monotonic clock. `performance.now()` alone: a wall-clock set-back/set-forward moves neither which
+  // phase is spending its budget nor when the budget reads spent.
   let curName     = await opts.phase();
-  let curDeadline = Date.now() + (budgetOf.get(curName) ?? 0);
+  let curDeadline = performance.now() + (budgetOf.get(curName) ?? 0);
   for (;;) {
     if (opts.until?.()) return;
     if (await opts.probe()) return;
     const name = await opts.phase();
-    if (name !== curName) { curName = name; curDeadline = Date.now() + (budgetOf.get(curName) ?? 0); }
-    if (Date.now() >= curDeadline) throw new SlowBootTimeout(curName, resource, await opts.holderPids());
+    if (name !== curName) { curName = name; curDeadline = performance.now() + (budgetOf.get(curName) ?? 0); }
+    if (performance.now() >= curDeadline) throw new SlowBootTimeout(curName, resource, await opts.holderPids());
     await sleep(pollMs);
   }
 }

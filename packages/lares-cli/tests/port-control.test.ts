@@ -78,6 +78,69 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
       .rejects.toThrow(/no owning PID found/);
     expect(kill).not.toHaveBeenCalled();
   });
+
+  it("`cut: true` delivers exactly ONE further signal past grace — never a ladder, never SIGKILL", async () => {
+    const kill = vi.fn();
+    let heldUntil = Date.now() + 300;
+    const probe = async () => Date.now() < heldUntil;
+    const holderPids = () => [4242];
+    const result = await stopIncumbent(PORT, {
+      graceMs: 20, pollMs: 5, probe, holderPids, kill, cut: true,
+      onPastGrace: () => {},
+    });
+    expect(result).toEqual<StopResult>({ stopped: true });
+    // The initial SIGTERM plus exactly one cut SIGTERM — never a SIGKILL, never a third signal.
+    expect(kill).toHaveBeenCalledTimes(2);
+    expect(kill).toHaveBeenNthCalledWith(1, 4242, "SIGTERM");
+    expect(kill).toHaveBeenNthCalledWith(2, 4242, "SIGTERM");
+    expect(kill).not.toHaveBeenCalledWith(expect.anything(), "SIGKILL");
+    void heldUntil;
+  });
+
+  it("without `cut`, past grace delivers no second signal at all (the default stays report-only)", async () => {
+    const kill = vi.fn();
+    const heldUntil = Date.now() + 300;
+    const probe = async () => Date.now() < heldUntil;
+    const result = await stopIncumbent(PORT, {
+      graceMs: 20, pollMs: 5, probe, holderPids: () => [4242], kill,
+      onPastGrace: () => {},
+    });
+    expect(result).toEqual<StopResult>({ stopped: true });
+    expect(kill).toHaveBeenCalledTimes(1);
+  });
+
+  it("SET-BACK/SET-FORWARD `Date.now()` PROOF: the grace reads off a monotonic clock, never the wall clock", async () => {
+    const kill = vi.fn();
+    const realNow = Date.now;
+    let wallOffsetMs = 0;
+    // Any caller still reading Date.now() (a probe's own timing, or a reverted grace check) would be thrown
+    // wildly off by this; `stopIncumbent`'s OWN grace/cut timing must not move at all.
+    Date.now = () => realNow() + wallOffsetMs;
+    try {
+      let heldUntil = realNow() + 300;
+      const probe = async () => realNow() < heldUntil;
+      let pastGraceHeldPids: readonly number[] | null = null;
+      const t0 = performance.now();
+      // Jump the wall clock backward by a year mid-wait, then forward by a year — a reverted
+      // `Date.now()`-based deadline would either never fire (set-back) or fire instantly (set-forward).
+      setTimeout(() => { wallOffsetMs = -365 * 24 * 60 * 60 * 1000; }, 10);
+      setTimeout(() => { wallOffsetMs = 365 * 24 * 60 * 60 * 1000; }, 20);
+      const result = await stopIncumbent(PORT, {
+        graceMs: 40, pollMs: 5, probe, holderPids: () => [4242], kill,
+        onPastGrace: (pids) => { pastGraceHeldPids = pids; },
+      });
+      const elapsedMonotonic = performance.now() - t0;
+      expect(result).toEqual<StopResult>({ stopped: true });
+      expect(pastGraceHeldPids).toEqual([4242]);
+      // The real elapsed time stayed near the declared 300ms hold, not instant (forward jump) and not
+      // never-ending (back jump, which would have timed this test out instead).
+      expect(elapsedMonotonic).toBeGreaterThan(100);
+      expect(elapsedMonotonic).toBeLessThan(2_000);
+      void heldUntil;
+    } finally {
+      Date.now = realNow;
+    }
+  });
 });
 
 describe("waitForPortBudgeted — a declared budget per named boot phase", () => {
@@ -160,6 +223,29 @@ describe("waitForResourceBudgeted — the non-port generalization (M1)", () => {
       expect((e as SlowBootTimeout).holderPids).toEqual([9]);
       return true;
     });
+  });
+
+  it("SET-BACK/SET-FORWARD `Date.now()` PROOF: phase budgets read off a monotonic clock", async () => {
+    const realNow = Date.now;
+    let wallOffsetMs = 0;
+    Date.now = () => realNow() + wallOffsetMs;
+    try {
+      setTimeout(() => { wallOffsetMs = -365 * 24 * 60 * 60 * 1000; }, 10);
+      setTimeout(() => { wallOffsetMs = 365 * 24 * 60 * 60 * 1000; }, 20);
+      const t0 = performance.now();
+      await expect(
+        waitForResourceBudgeted("the vessel's store door", PHASES, {
+          phase: () => "starting", pollMs: 5, probe: async () => false, holderPids: () => [4242],
+        }),
+      ).rejects.toBeInstanceOf(SlowBootTimeout);
+      const elapsedMonotonic = performance.now() - t0;
+      // A reverted Date.now()-based deadline would either never throw (set-back, timing this test out)
+      // or throw near-instantly (set-forward, well under the declared 40ms phase budget).
+      expect(elapsedMonotonic).toBeGreaterThan(30);
+      expect(elapsedMonotonic).toBeLessThan(2_000);
+    } finally {
+      Date.now = realNow;
+    }
   });
 
   it("MUTATION PROOF: `waitForPortBudgeted`'s own RED test above still exercises the SAME shared loop", async () => {
