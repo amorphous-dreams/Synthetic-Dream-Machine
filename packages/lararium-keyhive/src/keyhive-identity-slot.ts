@@ -37,12 +37,33 @@
  *     does not cryptographically bind the *presenter* to the token. Presenter↔
  *     token binding is the WASM sync-time membership proof, not this shore.
  *
+ * H6 (gp25 iteration 4) — the §2c epoch fence rode a BARE JSON field. `KeyhiveTokenPayload` carried no
+ * signature over `boundEpoch` (or anything), so a presenter could edit its own `boundEpoch` upward after
+ * the lease rolled and `verifyDelegation` would clear it — proven live over a real WASM provider under real,
+ * set-forward and set-back clocks (every causal refusal held; the forged-epoch row alone passed). The fence
+ * is now SIGNED: `tokenSeal` (the vessel device key) signs the canonical fenced fields at mint time, and
+ * verify checks that signature BEFORE trusting `boundEpoch` at all. A slot with no `tokenSeal` mints
+ * `boundEpoch: null` — fail-closed, the same shape as today's no-`leaseEpochOf` path — because an unsealed
+ * epoch is exactly as forgeable as no epoch at all; `leaseEpochOf` alone (no seal) no longer fences anything.
+ *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/identity-slot
  */
 import type { ActorId, CapabilityToken, IdentitySlot } from "@lararium/mesh";
 import type { CapabilityAccess } from "@lararium/mesh";
-import { hex, sha256BytesSync } from "@lararium/mesh";
+import { canonicalJsonBytes, hex, sha256BytesSync } from "@lararium/mesh";
 import type { CapabilityProvider } from "./capability-provider.js";
+
+/**
+ * H6 — signs/verifies the canonical fenced fields of a minted token with the vessel's own device key (or
+ * whatever long-lived keypair the caller wants to bind the fence to). Injected rather than constructed here:
+ * this package stays decoupled from wherever the device key actually lives (Keyhive's own Ed25519 identity,
+ * a hardware key, a test double). `sign`/`verify` operate on raw bytes — the caller owns the signature
+ * scheme entirely; this shore only ever calls it with the SAME canonical byte image at mint and at verify.
+ */
+export interface TokenSeal {
+  readonly sign:   (bytes: Uint8Array) => string;
+  readonly verify: (bytes: Uint8Array, sigHex: string) => boolean;
+}
 
 export interface KeyhiveIdentitySlotOpts {
   /** The real capability provider (KeyhiveProvider in production). */
@@ -60,6 +81,14 @@ export interface KeyhiveIdentitySlotOpts {
    * mints (an unfenced mint is a refused verify, never a silent open gate).
    */
   readonly leaseEpochOf?: (bagUrl: string) => Promise<number | null> | number | null;
+  /**
+   * H6 — signs the canonical fenced fields `{delegationId, audience, bagUrl, access, boundEpoch}` at mint
+   * time (the vessel device key in production); verify checks the SAME canonical bytes against the carried
+   * signature before trusting `boundEpoch` for anything. Omitted entirely → mint stamps `boundEpoch: null`
+   * regardless of `leaseEpochOf` (an unsealed fence is a forgeable fence, so it mints as no fence at all),
+   * and verify refuses any presented token whose `boundEpoch` is non-null (this slot cannot check it).
+   */
+  readonly tokenSeal?: TokenSeal;
 }
 
 /**
@@ -89,6 +118,27 @@ interface KeyhiveTokenPayload {
    * cannot read the current epoch reports an INCOMPLETE VIEW (refuse), never "expired" and never "standing".
    */
   readonly boundEpoch:   number | null;
+  /**
+   * H6 — the hex signature over `sealedFenceBytes({delegationId, audience, bagUrl, access, boundEpoch})`,
+   * or `null` when the minting slot carried no `tokenSeal` (in which case `boundEpoch` is also `null` — see
+   * `KeyhiveIdentitySlotOpts.tokenSeal`). Covers exactly the fields a forger would need to edit to move the
+   * fence, and nothing else, so re-serializing the SAME delegation never invalidates its own seal.
+   */
+  readonly sealSigHex:  string | null;
+}
+
+/** The canonical bytes `tokenSeal` signs/verifies — the fenced fields only, sorted-key stable. A forger who
+ *  edits `boundEpoch` (or any of the other four) after minting invalidates this signature. */
+function sealedFenceBytes(fields: {
+  delegationId: string; audience: string; bagUrl: string; access: CapabilityAccess; boundEpoch: number | null;
+}): Uint8Array {
+  return canonicalJsonBytes({
+    delegationId: fields.delegationId,
+    audience:     fields.audience,
+    bagUrl:       fields.bagUrl,
+    access:       fields.access,
+    boundEpoch:   fields.boundEpoch,
+  });
 }
 
 /** "edit" is the interface's write verb; the provider's write rung is "admin". */
@@ -115,11 +165,13 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
   readonly did: string;
   readonly #provider: CapabilityProvider;
   readonly #leaseEpochOf?: (bagUrl: string) => Promise<number | null> | number | null;
+  readonly #tokenSeal?: TokenSeal;
 
   constructor(opts: KeyhiveIdentitySlotOpts) {
     this.#provider = opts.provider;
     this.did       = opts.did;
     if (opts.leaseEpochOf) this.#leaseEpochOf = opts.leaseEpochOf;
+    if (opts.tokenSeal)    this.#tokenSeal    = opts.tokenSeal;
   }
 
   /**
@@ -153,18 +205,29 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
       bagUrl:   docUrl,
       access:   accessFor(ability),
     });
-    // §2c — stamp the FENCE at mint time: the bag's effective lease epoch right now, via the SAME injected
-    // resolver `verifyDelegation` reads later. No `leaseEpochOf` (or a resolver that read nothing) stamps
-    // `null`, which the verify-side fence then refuses — an unfenced mint is a refused verify, not an open one.
-    const boundEpoch = await readLeaseEpoch(this.#leaseEpochOf, docUrl);
+    // §2c/H6 — stamp the FENCE at mint time: the bag's effective lease epoch right now, via the SAME
+    // injected resolver `verifyDelegation` reads later. No `tokenSeal` on this slot stamps `boundEpoch:
+    // null` REGARDLESS of `leaseEpochOf` — an unsealed epoch is exactly as forgeable as no epoch, so it
+    // mints as no fence at all, never a fence nothing can authenticate. No `leaseEpochOf` (or a resolver
+    // that read nothing) stamps `null` too, which the verify-side fence then refuses either way — an
+    // unfenced mint is a refused verify, not an open one.
+    const boundEpoch = this.#tokenSeal ? await readLeaseEpoch(this.#leaseEpochOf, docUrl) : null;
+    const access = accessFor(ability);
+    // H6 — sign the canonical fenced fields so a presenter who edits `boundEpoch` (or any of the other
+    // fields the signature covers) after minting invalidates its own seal. No `tokenSeal` → no signature,
+    // matching the forced-null `boundEpoch` above (there is nothing to sign that would mean anything).
+    const sealSigHex = this.#tokenSeal
+      ? this.#tokenSeal.sign(sealedFenceBytes({ delegationId: result.delegationId, audience: toDid, bagUrl: docUrl, access, boundEpoch }))
+      : null;
     const payload: KeyhiveTokenPayload = {
       delegationId: result.delegationId,
       audience:     toDid,
       bagUrl:       docUrl,
-      access:       accessFor(ability),
+      access,
       expiresAtMs:  expiresIn === undefined ? null : Date.now() + expiresIn * 1000,
       bytesHex:     bytesToHex(result.bytes),
       boundEpoch,
+      sealSigHex,
     };
     return JSON.stringify(payload);
   }
@@ -184,11 +247,13 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
    * the WASM sync-time membership proof. It never returns a bare `true`: every
    * clear rides real accessForDoc for the named audience.
    *
-   * ORDER (§2c, load-bearing — do not reshuffle): (1) parse, (2) bag-scope, (3) `provider.verify` (the real
-   * revocation-aware barrier), (4) the clockless EPOCH FENCE — now the WHOLE gate. The retired wall-clock
-   * `expiresAtMs` guard (`gate-retire-keyhive-expiry` patch) is GONE: the fence alone decides. The fence sits
-   * AFTER revocation so a presenter already denied by `provider.verify` reads that refusal, never a fence
-   * refusal that would read as "the lease rolled" when the real cause is "never had the cap" / "since revoked".
+   * ORDER (§2c/H6, load-bearing — do not reshuffle): (1) parse, (2) bag-scope, (3) `provider.verify` (the
+   * real revocation-aware barrier), (4) the SEAL GATE (H6) — a non-null `boundEpoch` must carry a signature
+   * THIS slot can check, over the exact canonical fields a forger could otherwise edit freely, (5) the
+   * clockless EPOCH FENCE. The retired wall-clock `expiresAtMs` guard (`gate-retire-keyhive-expiry` patch)
+   * is GONE: the seal gate + fence alone decide. Both sit AFTER revocation so a presenter already denied by
+   * `provider.verify` reads that refusal, never a seal/fence refusal that would read as "forged" or "the
+   * lease rolled" when the real cause is "never had the cap" / "since revoked".
    */
   async verifyDelegation(token: CapabilityToken, docUrl: string): Promise<boolean> {
     if (token === null) return false;   // no open default: absent token = deny
@@ -208,10 +273,25 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
     });
     if (!res.ok) return false;
 
+    // H6 — the SEAL GATE, BEFORE the fence: a non-null `boundEpoch` is trusted only when THIS slot can
+    // verify a signature over the canonical fenced fields. No `tokenSeal` on this verifying slot, no
+    // `sealSigHex` on the token, or a signature that fails to verify — all three refuse outright, so a
+    // forged `boundEpoch` (edited after minting, or minted by a slot with no seal at all) never reaches the
+    // fence below. Note this does NOT run when `boundEpoch` is already `null` — the fence refuses that on
+    // its own, the same unfenced-mint shape as before H6.
+    const boundEpoch = payload.boundEpoch ?? null;
+    if (boundEpoch !== null) {
+      if (!this.#tokenSeal) return false;                 // this slot holds no key to check the seal with
+      const sigHex = payload.sealSigHex;
+      if (typeof sigHex !== "string" || sigHex.length === 0) return false;   // no seal carried = deny
+      const bytes = sealedFenceBytes({ delegationId: payload.delegationId, audience: payload.audience, bagUrl: payload.bagUrl, access: payload.access, boundEpoch });
+      if (!this.#tokenSeal.verify(bytes, sigHex)) return false;              // signature doesn't check out
+    }
+
     // §2c — the epoch fence: council ruling 6 — a verifier that cannot read the CURRENT epoch reports an
     // INCOMPLETE VIEW (refuse), never "expired" and never "standing". A token minted with no `boundEpoch`
-    // (no `leaseEpochOf` at mint) refuses here too — an unfenced mint never reads as fenced-and-current.
-    const boundEpoch = payload.boundEpoch ?? null;
+    // (no `leaseEpochOf`, or no `tokenSeal`, at mint) refuses here too — an unfenced mint never reads as
+    // fenced-and-current.
     if (boundEpoch === null) return false;
     const currentEpoch = await readLeaseEpoch(this.#leaseEpochOf, docUrl);
     if (currentEpoch === null) return false;           // unreadable epoch — incomplete view, refuse
