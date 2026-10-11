@@ -10,14 +10,24 @@
 // what the map actually carries AND exercises the full pointer-signature/hash/freshness verify path.
 //
 // Run:  node tools/mesh-pins.mjs --up
-//       export LAR_ROOT=$(mktemp -d) && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
+//        export LAR_ROOT=$(mktemp -d) && node tools/test-scratch-marker.mjs "$LAR_ROOT" && node tools/seed-test-custody.mjs "$LAR_ROOT" \
+//          && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$LAR_ROOT"/ \\
+//          && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
 //       node tools/herm-mesh-witness.mjs
 // Env:  LAR_ROOT names the founded READER vessel (peers prove first); HOP_SOURCE / HOP_RELAY1 / HOP_RELAY2
 //       override the hop URLs (`<url>#<gate key>`); NEEDLE overrides the carried bearing. By default each hop
 //       pins the gate key `tools/mesh-pins.mjs` read off that herm's own store (`.mesh-pins.env`).
 
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { pullHop, dialsOf } from "./herm-mesh-reader.mjs";
 import { readPins } from "./mesh-pins.mjs";
+
+// The reader must stand founded: its social bootstrap is the founding's invariant artifact.
+if (!process.env.LAR_ROOT || !existsSync(join(process.env.LAR_ROOT, "data", "lares", "vessel", "social-bootstrap.json"))) {
+  console.error("ReaderNotFounded: LAR_ROOT holds no vessel identity — stage it (test-scratch-marker, seed-test-custody) and run `vessel found --skip-build` first");
+  process.exit(2);
+}
 
 const PINS = readPins();
 const pinned = (url, name) => (PINS[name] ? `${url}#${PINS[name]}` : url);
