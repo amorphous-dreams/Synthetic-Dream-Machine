@@ -167,6 +167,7 @@ export async function signPluginOffering(
  */
 export type OfferingFailureCode =
   | "malformed"
+  | "empty-offering"
   | "duplicate-plugin"
   | "malformed-provenance"
   | "unmet-dependents"
@@ -240,6 +241,12 @@ export async function verifyPluginOffering(offering: PluginOffering): Promise<Of
       typeof b.sha256 !== "string" || !OFFERED_BLOB_SHA256.test(b.sha256)) ||
     typeof offering.sig !== "string" || !/^[0-9a-f]{128}$/i.test(offering.sig)
   ) return { ok: false, code: "malformed", reason: "malformed plugin offering" };
+
+  // EMPTY OFFERING — a gift with no blobs names nothing a joinee can take, and an empty fold is
+  // reachable by any offeror (the empty region's CID holds no proof of possession). Refuse it by
+  // name rather than letting a vacuous collection verify and get announced (H3, the publish path's
+  // `--source` dir refuses here too, before anything gets written to CAS).
+  if (offering.blobs.length === 0) return { ok: false, code: "empty-offering", reason: "an offering with no blobs names nothing to take" };
 
   const ids = new Set<string>();
   for (const blob of offering.blobs) {

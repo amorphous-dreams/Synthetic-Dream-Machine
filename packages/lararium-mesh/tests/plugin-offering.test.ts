@@ -105,8 +105,15 @@ describe("a plugin offering", () => {
     expect(Object.keys(offering).sort()).toEqual(["blobs", "kind", "offeror", "pluginsCid", "sig"]);
   });
 
-  test("CONTROL — an EMPTY collection still offers honestly (an operator may publish nothing)", async () => {
+  test("★ L8 — an EMPTY collection refuses by code empty-offering, never a vacuous success ★", async () => {
     const offering = await offer([]);
+    const verdict = await verifyPluginOffering(offering);
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.code).toBe("empty-offering");
+  });
+
+  test("CONTROL — a NON-empty collection still offers honestly", async () => {
+    const offering = await offer(BLOBS);
     await expect(verifyPluginOffering(offering)).resolves.toEqual({ ok: true });
   });
 });
