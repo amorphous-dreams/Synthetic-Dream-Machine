@@ -21,7 +21,7 @@
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { vesselDid } from "../env.js";
 import { summaryOutput } from "../verb-result.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -49,17 +49,23 @@ export async function cmdAnalyze(args: ParsedArgs): Promise<number> {
   try {
     result = await runVerb("analyze", verbArgs, did, { timeoutMs: TIMEOUT_CEIL_MS });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
+    const f = verbFailure(err);
+    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground`, or run `lares_mcp --standalone --sensorium <root>`." : f.hint;
     emit(args, {
-      ok: false,
-      error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground`, or run `lares_mcp --standalone --sensorium <root>`." },
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },
       human: () => {
-        console.error(`lares sense analyze: ${msg}`);
-        console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-        console.error("  (Standalone today: lares_mcp --standalone --sensorium <root>, tool `analyze`.)");
+        console.error(`lares sense analyze: ${f.message}`);
+        if (f.code === "daemon-unreachable") {
+          console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
+          console.error("  (Standalone today: lares_mcp --standalone --sensorium <root>, tool `analyze`.)");
+        } else if (f.hint !== undefined) {
+          console.error(`  ${f.hint}`);
+        }
       },
     });
-    return exitFor("daemon-unreachable");
+    return exitFor(f.code);
   }
 
   if (result.status === "error") {

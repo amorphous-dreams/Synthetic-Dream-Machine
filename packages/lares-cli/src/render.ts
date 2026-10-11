@@ -56,13 +56,16 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   usage:               2,
   "not-found":         3,
   "daemon-unreachable": 3,
-  // A BUDGET OVERRUN ANSWERS NOTHING LIKE AN ABSENT DAEMON: the socket connected, the daemon took the
-  // verb, and the caller stopped waiting. It ranks with the other "the work faulted" codes rather than
-  // with "nothing answered", so a caller retrying on 3 does not retry a gesture that simply needs longer.
-  "verb-timeout":      4,
   conflict:            4,
   "verb-error":        4,
   "cap-denied":        5,
+  // NEITHER "nothing answered" (3) NOR "the work faulted" (4) — the socket connected, the daemon took
+  // the verb, and THIS process merely stopped waiting to hear back; the act may have committed. Its own
+  // rank keeps a caller from retrying a gesture that simply needs longer (3's implication) or from
+  // reading a committed act as a failure (4's). `verb-timeout` (the retired predecessor, M3) is GONE —
+  // nothing produces it any longer; `outcome-unknown` is its one successor, raised from
+  // `local-connector.ts`'s `LocalWaitExpired`.
+  "outcome-unknown":   6,
   error:               1,
 };
 

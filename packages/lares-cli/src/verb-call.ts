@@ -17,7 +17,7 @@
  * relay — never through this surface.
  */
 
-import { invokeLocal, udsSocketPresent, udsSocketPath, UdsUnreachable } from "./local-connector.js";
+import { invokeLocal, udsSocketPresent, udsSocketPath, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
 
 export interface RunVerbOptions extends SubmitOptions {
@@ -30,6 +30,45 @@ export class DaemonUnreachable extends Error {
     super(`no lares daemon at ${socketPath} — start one with \`lares vessel stand --foreground\``);
     this.name = "DaemonUnreachable";
   }
+}
+
+/**
+ * A `runVerb` catch, told apart by FAULT TYPE, never by sniffing the error's message (M3).
+ *
+ *   outcome-unknown   — this process's own local wait ended with no receipt read back
+ *                        (`LocalWaitExpired`, including the vessel's own `{status:"unknown"}`
+ *                        wait-expiry folded into it by `invokeLocal`). The socket connected and
+ *                        the daemon took the verb; it may have already committed. NEVER told as
+ *                        "start the daemon" (nothing is absent) or as a plain verb failure
+ *                        (nothing is known to have faulted).
+ *   daemon-unreachable — no daemon answered at all (`DaemonUnreachable` / a stale-socket refusal).
+ *   verb-error         — anything else — a genuine thrown fault from the transport itself (a verb's
+ *                        OWN failure rides back as a resolved `SubmitResult`, not a throw, so this
+ *                        branch is reserved for transport-level faults a caller did not already
+ *                        handle via `result.status === "error"`).
+ *
+ * Before this, EVERY `runVerb` catch other than `act.ts`'s folded all three into
+ * `daemon-unreachable` — a caller told to "start the daemon" when the daemon stood the whole time
+ * and simply took longer to answer than this process waited.
+ */
+export interface VerbFailure {
+  readonly code:    "outcome-unknown" | "daemon-unreachable" | "verb-error";
+  readonly message: string;
+  readonly requestId?: string;
+  readonly hint?: string;
+}
+
+export function verbFailure(err: unknown): VerbFailure {
+  if (err instanceof LocalWaitExpired) {
+    return {
+      code: "outcome-unknown", message: err.message, requestId: err.requestId,
+      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId}, or re-run.`,
+    };
+  }
+  if (err instanceof DaemonUnreachable) {
+    return { code: "daemon-unreachable", message: err.message, hint: "Start the daemon with `lares vessel stand --foreground` and try again." };
+  }
+  return { code: "verb-error", message: err instanceof Error ? err.message : String(err) };
 }
 
 export async function runVerb(

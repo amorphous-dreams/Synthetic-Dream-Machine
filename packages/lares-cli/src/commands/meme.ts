@@ -86,7 +86,8 @@ import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/mem
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
 import { vesselDid } from "../env.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -210,8 +211,24 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       case "promote":   return await memePromote(args);
     }
   } catch (err) {
+    if (err instanceof UsageError) {
+      const msg = err.message;
+      emit(args, { ok: false, error: { code: "usage", message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      return exitFor("usage");
+    }
+    // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
+    // {status:"unknown"}) is told apart from a genuinely absent daemon, never sniffed by message.
+    if (err instanceof LocalWaitExpired) {
+      const f = verbFailure(err);
+      emit(args, {
+        ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+        error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+        human: () => console.error(`lares meme ${sub}: ${f.message}`),
+      });
+      return exitFor(f.code);
+    }
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof UsageError ? "usage" : /no lares daemon/.test(msg) ? "daemon-unreachable" : "error";
+    const code = /no lares daemon/.test(msg) ? "daemon-unreachable" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
     return exitFor(code);
   }
@@ -1049,12 +1066,14 @@ async function memePromote(args: ParsedArgs): Promise<number> {
   try {
     outcome = await promoteCarrier({ root, file, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
+    const f = verbFailure(err);
     emit(args, {
-      ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
-      human: () => { console.error(`lares meme promote: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); },
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares meme promote: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
     });
-    return exitFor("daemon-unreachable");
+    return exitFor(f.code);
   }
   if (!outcome.ok) {
     const code = /admin/.test(outcome.reason) ? "cap-denied" : "verb-error";

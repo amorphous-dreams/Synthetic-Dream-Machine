@@ -15,7 +15,7 @@
  * tool cannot drift apart — there is only one reader.
  */
 
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
@@ -50,16 +50,17 @@ export async function cmdPlaneRecord(args: ParsedArgs): Promise<number> {
   try {
     result = await runVerb("plane-record", verbArgs, did, { timeoutMs: TIMEOUT_MS });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
+    const f = verbFailure(err);
     emit(args, {
-      ok: false,
-      error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
       human: () => {
-        console.error(`lares sense plane-record: ${msg}`);
-        console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
+        console.error(`lares sense plane-record: ${f.message}`);
+        if (f.hint !== undefined) console.error(`  ${f.hint}`);
       },
     });
-    return exitFor("daemon-unreachable");
+    return exitFor(f.code);
   }
 
   if (result.status === "error") {

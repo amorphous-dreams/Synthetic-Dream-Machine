@@ -31,7 +31,7 @@
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { vesselDid } from "../env.js";
 import { summaryOutput } from "../verb-result.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -96,15 +96,19 @@ export async function cmdRecall(args: ParsedArgs): Promise<number> {
     // (embedder + #has surfaces); the daemon's gradient servo is the real bound.
     result = await runVerb("recall", verbArgs, did, { timeoutMs: TIMEOUT_CEIL_MS });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    // A LOCAL WAIT ENDING IS NOT A VERDICT ON THE ACT, AND NEVER AN ABSENT DAEMON (M3) — told apart
+    // by the error's own TYPE through `verbFailure`, never by folding every fault into
+    // `daemon-unreachable`.
+    const f = verbFailure(err);
     emit(args, {
-      ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
       human: () => {
-        console.error(`lares sense recall: ${msg}`);
-        console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
+        console.error(`lares sense recall: ${f.message}`);
+        if (f.hint !== undefined) console.error(`  ${f.hint}`);
       },
     });
-    return exitFor("daemon-unreachable");
+    return exitFor(f.code);
   }
 
   if (result.status === "error") {

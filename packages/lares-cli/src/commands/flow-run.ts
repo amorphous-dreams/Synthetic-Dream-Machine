@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { FLOW_SEEDS } from "@lararium/mesh";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { vesselDid } from "../env.js";
-import { runVerb } from "../verb-call.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -87,14 +87,20 @@ export async function cmdFlowRun(args: ParsedArgs): Promise<number> {
     ...(names ? { names } : {}),
     ...(targets ? { targets } : {}),
   };
+  let failCode: ReturnType<typeof verbFailure>["code"] | null = null;
   const submit = await runVerb("flow", verbArgs, did, { timeoutMs: TIMEOUT_CEIL_MS }).catch((err: unknown) => {
-    const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg,
-                   hint: "Start the daemon with `lares vessel stand --foreground` (the runner reaches both hulls through it)." },
-                 human: () => console.error(`lares flow ${petname}: ${msg}`) });
+    // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
+    const f = verbFailure(err);
+    failCode = f.code;
+    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground` (the runner reaches both hulls through it)." : f.hint;
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },
+      human: () => console.error(`lares flow ${petname}: ${f.message}`),
+    });
     return null;
   });
-  if (submit === null) return exitFor("daemon-unreachable");
+  if (submit === null) return exitFor(failCode ?? "daemon-unreachable");
   if (submit.status === "error") {
     const msg = submit.errorMessage ?? "unknown";
     emit(args, { ok: false, requestId: submit.requestId, error: { code: "verb-error", message: msg },
