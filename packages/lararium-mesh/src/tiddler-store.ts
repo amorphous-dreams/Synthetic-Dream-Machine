@@ -172,6 +172,12 @@ export interface LarTiddlerChange {
   readonly bag?:      string;
   /** Heads of the bag document read in the same synchronous stretch as record. */
   readonly heads?:    readonly string[];
+  /**
+   * On the envelope a WRITE fires: the heads of the change that write made. A plain write sits on
+   * top of the doc, so this equals `heads`; a based write (`changeAt`) names its own change alone.
+   * The writer's next write of this title takes it as its base.
+   */
+  readonly writtenAt?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------

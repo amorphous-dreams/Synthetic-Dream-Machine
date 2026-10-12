@@ -26,7 +26,7 @@
  */
 
 import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
-import { decodeChange, getAllChanges } from "@automerge/automerge";
+import { hasHeads } from "@automerge/automerge";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
@@ -309,10 +309,8 @@ export class AutomergeDocStore implements LarTiddlerStore {
       if (!docNow || currentHeads === null) {
         throw new Error("AutomergeDocStore.writeFamily: requested base cannot be honored before document hydration");
       }
-      const history = new Set(getAllChanges(docNow).map((change) => decodeChange(change).hash));
-      const unknown = requestedBase.filter((head) => !history.has(head));
-      if (unknown.length > 0) {
-        throw new Error(`AutomergeDocStore.writeFamily: requested base contains heads outside this document history (${unknown.join(", ")})`);
+      if (!hasHeads(docNow, requestedBase as string[])) {
+        throw new Error(`AutomergeDocStore.writeFamily: requested base contains heads outside this document history (${requestedBase.join(", ")})`);
       }
     }
     let atBase: LarDoc | undefined = docNow;
@@ -350,9 +348,12 @@ export class AutomergeDocStore implements LarTiddlerStore {
       }
       for (const title of movedTombstones) _markDeleted(tiddlers, title);
     };
+    let madeAt: readonly string[] | undefined;
     try {
-      if (based) this.handle.changeAt(encodeHeads(requestedBase as string[]), change);
-      else this.handle.change(change);
+      if (based) {
+        const made = this.handle.changeAt(encodeHeads(requestedBase as string[]), change);
+        if (made) madeAt = Object.freeze([...decodeHeads(made)]);
+      } else this.handle.change(change);
     } catch (error) {
       if (requestedBase !== undefined) {
         throw new Error("AutomergeDocStore.writeFamily: requested base could not be applied", { cause: error });
@@ -361,9 +362,16 @@ export class AutomergeDocStore implements LarTiddlerStore {
     }
     const bag = this.bagId !== undefined ? { bag: this.bagId } : {};
     const heads = this._headsForEnvelope();
+    // WHERE THIS WRITE STANDS. A plain write sits on top of everything the doc held, so its change IS
+    // the doc's heads. A based write sits beside whatever landed after its base: `changeAt` names its
+    // change alone. The writer's next write of these titles builds on `writtenAt`, never on the merged
+    // heads, so a run of writes from one hand never stands concurrent with itself and a remote edit it
+    // has not seen stays concurrent with every one of them.
+    const writtenAt = madeAt ?? heads;
+    const envelope = { origin, ...bag, ...(heads !== undefined ? { heads } : {}), ...(writtenAt !== undefined ? { writtenAt } : {}) };
     const tiddlersNow = this.handle.doc()?.tiddlers;
-    for (const record of moved) this.provider.fireImmediate({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, origin, ...bag, ...(heads !== undefined ? { heads } : {}) });
-    for (const title of movedTombstones) this.provider.fireImmediate({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), origin, ...bag, ...(heads !== undefined ? { heads } : {}) });
+    for (const record of moved) this.provider.fireImmediate({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, ...envelope });
+    for (const title of movedTombstones) this.provider.fireImmediate({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), ...envelope });
   }
 
   /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */

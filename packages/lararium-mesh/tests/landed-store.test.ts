@@ -163,6 +163,56 @@ describe("landed store laws", () => {
     expect(remoteHeads).not.toEqual(base);
   });
 
+  test("writtenAt: a run of based writes from one hand never conflicts with itself, and an unseen remote edit stays concurrent with all of it", async () => {
+    const repo = new Repo({ network: [] });
+    const ha = repo.create<LarDoc>(emptyLarDoc());
+    const hb = repo.clone(ha);
+    const a = new AutomergeDocStore(ha, "bag-run");
+    const b = new AutomergeDocStore(hb, "bag-run");
+    await a.put(record({ title: TITLE, text: "base", tags: "base" }), origin);
+    hb.merge(ha);
+    const h0 = (await a.getHeads())!;
+
+    // The remote edit lands in the doc; the hand has not seen it (its base stays h0).
+    await b.put(record({ title: TITLE, text: "base", tags: "remote-tags" }), origin);
+    ha.merge(hb);
+
+    const own: Array<readonly string[] | undefined> = [];
+    a.subscribe((change) => { if (change.origin === origin && change.title === TITLE) own.push(change.writtenAt); });
+
+    await a.put(record({ title: TITLE, text: "h", tags: "base" }), origin, { base: h0 } as any);
+    expect(own).toHaveLength(1);
+    expect(own[0]).toBeDefined();
+    expect(own[0]).not.toEqual(await a.getHeads());          // the based change alone, never the merged heads
+    await a.put(record({ title: TITLE, text: "he", tags: "base" }), origin, { base: own[0]! } as any);
+    await a.put(record({ title: TITLE, text: "hey", tags: "base" }), origin, { base: own[1]! } as any);
+
+    expect(a.parallelDrafts(TITLE)).toEqual([]);              // the run supersedes itself: no self-conflict
+    expect((await a.get(TITLE))?.tiddler.text).toBe("hey");
+    expect((await a.get(TITLE))?.tiddler.tags).toBe("remote-tags");   // the other-field remote edit merged clean
+
+    // CONTROL: the same run built on the MERGED heads would have seen the remote value as its base and
+    // written `tags: "base"` back over it.
+    const repo2 = new Repo({ network: [] });
+    const ca = repo2.create<LarDoc>(emptyLarDoc());
+    const cb = repo2.clone(ca);
+    const c = new AutomergeDocStore(ca, "bag-run-control");
+    const d = new AutomergeDocStore(cb, "bag-run-control");
+    await c.put(record({ title: TITLE, text: "base", tags: "base" }), origin);
+    cb.merge(ca);
+    const c0 = (await c.getHeads())!;
+    await d.put(record({ title: TITLE, text: "base", tags: "remote-tags" }), origin);
+    ca.merge(cb);
+    await c.put(record({ title: TITLE, text: "h", tags: "base" }), origin, { base: c0 } as any);
+    await c.put(record({ title: TITLE, text: "he", tags: "base" }), origin, { base: (await c.getHeads())! } as any);
+    expect((await c.get(TITLE))?.tiddler.tags).toBe("base");
+
+    // A plain write names the doc's own heads.
+    own.length = 0;
+    await a.put(record({ title: TITLE, text: "plain", tags: "remote-tags" }), origin);
+    expect(own[0]).toEqual(await a.getHeads());
+  });
+
   test("F1: based live and gone states remain competing drafts in either arrival order", async () => {
     async function drive(tombstoneFirst: boolean, metadataAtBase: boolean) {
       const liveRepo = new Repo({ network: [] });
