@@ -8,52 +8,69 @@
 #   vessel-b (joiner) ─┐  offer contact-card over /swarm/channel → await admit → present it → await the verdict
 #   vessel-c (joiner) ─┘
 #
-# Run:     rm -rf .swarm-run && docker compose -f docker-compose.swarm.yml up -d
+# Run:     docker compose -f docker-compose.swarm.yml up -d
 # Witness: founder logs "held=2/2" and exits 0 (no roster stands; each party verifies on ask)
 # Down:    docker compose -f docker-compose.swarm.yml down -v
 #
-# Dev-style (node:24-slim + mounted repo + built dist/node_modules; tsx runs the entrypoint) —
-# no image build; the host builds before `up`.
+# The vessels run compiled probes from the product image; ceremony and vessel homes use named volumes.
 
 name: dreamnet-swarm
 
+# Node services require the product image digest in LARES_HARNESS_IMAGE.
+
 x-vessel: &vessel
-  image: node:24-slim
-  working_dir: /app
+  image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
   volumes:
-    - ".:/app"
-    - "./.swarm-run:/swarm"      # the shared file channel (bind mount → witnessable on the host)
+    - "swarm-run:/workspace"      # the shared file channel
   networks: [swarm]
   restart: "no"
-  command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/swarm-node.ts"]
+  entrypoint: ["node", "packages/lararium-node/dist/probes/swarm-node.js"]
 
 services:
   founder:
     <<: *vessel
+    volumes:
+      - "swarm-run:/workspace"
+      - "swarm-founder-state:/state"
     environment:
+      LAR_ROOT: "/state"
       LAR_SWARM_ROLE:   "founder"
-      LAR_SWARM_DIR:    "/swarm"
+      LAR_SWARM_DIR:    "/workspace"
       LAR_SWARM_ID:     "founder"
       LAR_SWARM_SEED:   "f0"
       LAR_SWARM_EXPECT: "2"
 
   vessel-b:
     <<: *vessel
+    volumes:
+      - "swarm-run:/workspace"
+      - "swarm-vessel-b-state:/state"
     environment:
+      LAR_ROOT: "/state"
       LAR_SWARM_ROLE: "joiner"
-      LAR_SWARM_DIR:  "/swarm"
+      LAR_SWARM_DIR:  "/workspace"
       LAR_SWARM_ID:   "vessel-B"
       LAR_SWARM_SEED: "b0"
     depends_on: [founder]
 
   vessel-c:
     <<: *vessel
+    volumes:
+      - "swarm-run:/workspace"
+      - "swarm-vessel-c-state:/state"
     environment:
+      LAR_ROOT: "/state"
       LAR_SWARM_ROLE: "joiner"
-      LAR_SWARM_DIR:  "/swarm"
+      LAR_SWARM_DIR:  "/workspace"
       LAR_SWARM_ID:   "vessel-C"
       LAR_SWARM_SEED: "c0"
     depends_on: [founder]
+
+volumes:
+  swarm-run:
+  swarm-founder-state:
+  swarm-vessel-b-state:
+  swarm-vessel-c-state:
 
 networks:
   swarm:

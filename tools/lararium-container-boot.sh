@@ -2,8 +2,8 @@
 # lararium-container-boot — found THIS container's OWN Lararium, then serve. Per the per-vessel
 # identity model, each vessel mints its own identity (separate from the operator identity), so a
 # containerized Lararium founds its own (own vessel key + operator + binding edge) into its own
-# volume — an independent sovereign hearth. The engine island is built host-side and carried in via
-# the repo mount (the CAS substrate); this root gets its own copy so `lares vessel found` can read the CID.
+# volume — an independent sovereign hearth. The product image carries the engine island and the
+# compiled CLI; this root gets its own genesis copy so `lares vessel found` can read the CID.
 set -e
 : "${LAR_ROOT:?LAR_ROOT must be set}"
 
@@ -21,8 +21,7 @@ cp -r /app/genesis/cas  "$LAR_ROOT/genesis/" 2>/dev/null || true   # the CAS sub
 
 if [ ! -f "$LAR_ROOT/data/lares/vessel/social-bootstrap.json" ]; then
   echo "[boot] founding this container's own Lararium (own vessel identity)…"
-  # --skip-build: the container trusts the HOST's mounted dist (the dev builds before `up`); it cannot
-  # run the full-workspace fresh-build itself (the TW5 submodule isn't populated in the bind mount).
+  # --skip-build uses the CLI and daemon already compiled into the product image.
   #
   # THE HUMAN ROUTE. A founding seals custody from birth and gathers its route (a passphrase or a paper pin) from a
   # TTY ALONE: no flag and no env var carries one. Two shapes reach this line.
@@ -68,10 +67,8 @@ fi
 # `seal reserve` and `seal seat` read and write this vessel's own nexus home. A container seats its
 # own founding quorum for the same reason it founds its own identity: nothing in the mesh grants it.
 # SEATING IS ONCE, NEVER EVERY BOOT. `seal seat` at genesis RE-DERIVES the genesis epoch, and every
-# carriage entry roots on the epoch that stood when it was signed — so a re-seat on restart mints a new
-# epoch and the fold denies every existing member. Measured: a contracted operator vanished from
-# `members --list` across a plain container restart, with the admit entry still on the board, because
-# the entry's epoch no longer matched the roster's.
+# carriage entries root on the epoch that stood when they were signed. A re-seat on restart mints a new
+# epoch, so the fold denies existing members whose entries name another epoch.
 #
 # A vessel that already carries a seated quorum has nothing to seat.
 _already_seated() {

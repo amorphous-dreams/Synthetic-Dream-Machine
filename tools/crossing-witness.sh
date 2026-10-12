@@ -13,11 +13,16 @@
 # Meme:   lar:///ha.ka.ba/lares/api/pono/the-veil-ladder + browser-crossing
 
 set -u
+cd "$(dirname "$0")/.."
 DOCKER_BIN="${DOCKER_BIN:-docker}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-}"
 if [ -n "$ARTIFACT_DIR" ]; then mkdir -p "$ARTIFACT_DIR"; fi
 PASS=0; FAIL=0; FAILED=""
 ACTIVE_ROLE=""
+
+# One product image, named by digest, serves every container of this run.
+LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
+export LARES_HARNESS_IMAGE
 
 compose() { "$DOCKER_BIN" compose -f docker-compose.crossing.yml "$@"; }
 

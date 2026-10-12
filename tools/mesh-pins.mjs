@@ -24,6 +24,17 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const COMPOSE = ["compose", "-f", join(ROOT, "docker-compose.mesh.yml")];
 export const PINS_FILE = join(ROOT, ".mesh-pins.env");
 
+/**
+ * One product image, named by digest, serves every container of the mesh. `tools/harness-image.sh --resolve` holds
+ * the one check: it prints a set LARES_HARNESS_IMAGE that names a digest, refuses one that names none, and builds
+ * when the variable stands unset.
+ */
+function resolveHarnessImage() {
+  const result = spawnSync("sh", [join(ROOT, "tools/harness-image.sh"), "--resolve"], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
+  if (result.status !== 0) throw new Error("the harness image did not resolve to a digest (tools/harness-image.sh --resolve)");
+  process.env.LARES_HARNESS_IMAGE = result.stdout.trim();
+}
+
 /** The services a peer pins, and the variable each one's gate key rides in. */
 export const PINNED = [
   { service: "herm-source",  name: "HERM_SOURCE_GATE" },
@@ -175,6 +186,7 @@ export async function standInPinOrder(waves, { whole = false, stand = up, keyOf 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const arg = process.argv[2];
   if (arg === "--up") {
+    resolveHarnessImage();
     const wanted = process.argv.slice(3);
     const waves = standPlan(pinsNeeded(readFileSync(join(ROOT, "docker-compose.mesh.yml"), "utf8")), wanted);
     const pins = await standInPinOrder(waves, { whole: wanted.length === 0 });

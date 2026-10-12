@@ -64,7 +64,9 @@ jobs:
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       # The Docker files bind-mount this checkout and explicitly trust its host-built dist/. The
       # browser weld also imports the workspace's Playwright package from this install.
-      - name: Build the mounted tree
+      # The containers run the product image each witness builds and names by digest (tools/harness-image.sh).
+      # This build serves the host side alone: the witness readers and the tools import the built packages.
+      - name: Build the tree the host-side readers import
         run: pnpm -r build
       # A STAMP NAMES THE BYTES A BUILD THAT RAN CAME FROM. A step runs only after every earlier step passed, so
       # this stamp never lands over a failed build; an unstamped dist reads stale to every freshness gate, and

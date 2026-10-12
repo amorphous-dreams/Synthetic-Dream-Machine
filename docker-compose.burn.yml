@@ -12,32 +12,34 @@
 
 name: dreamnet-burn
 
+# Node services require the product image digest in LARES_HARNESS_IMAGE.
+
 services:
   burn-founder:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "burn-run:/burn"
+      - "burn-founder-state:/state"
+      - "burn-run:/workspace"
     networks: [burn]
     restart: "no"
     environment:
+      LAR_ROOT: "/state"
       LAR_BURN_ROLE:   "founder"
-      LAR_BURN_SHARED: "/burn"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/burn-node.ts"]
+      LAR_BURN_SHARED: "/workspace"
+    entrypoint: ["node", "packages/lararium-node/dist/probes/burn-node.js"]
 
   burn-device:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "burn-run:/burn"
+      - "burn-device-state:/state"
+      - "burn-run:/workspace"
     networks: [burn]
     restart: "no"
     environment:
+      LAR_ROOT: "/state"
       LAR_BURN_ROLE:   "device"
-      LAR_BURN_SHARED: "/burn"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/burn-node.ts"]
+      LAR_BURN_SHARED: "/workspace"
+    entrypoint: ["node", "packages/lararium-node/dist/probes/burn-node.js"]
     depends_on: [burn-founder]
 
 networks:
@@ -45,4 +47,6 @@ networks:
     driver: bridge
 
 volumes:
+  burn-founder-state:
+  burn-device-state:
   burn-run:          # the card/event/ciphertext ceremony; wiped by `down -v`

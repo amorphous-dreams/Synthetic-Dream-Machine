@@ -21,7 +21,7 @@ declare -A HELD_OUT=(
   [harbor-walk-witness]="stands a docker vessel"
   [crossing-witness]="stands a docker-compose crossing matrix"
   [herm-mesh-witness]="stands the docker-compose relay mesh"
-  [mesh-scenarios]="stands the docker-compose mesh, scenario by scenario — needs docker + a host-built dist"
+  [mesh-scenarios]="stands the docker-compose mesh on the product image, scenario by scenario — needs docker"
   [browser-weld-witness]="drives a real browser against a standing web surface"
   [witness-all]="this script"
 )

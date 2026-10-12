@@ -1,34 +1,22 @@
 #!/usr/bin/env bash
-# mesh-found-lararium — found a self-contained, isolated Lararium into <dir> for the Docker mesh
-# harness. Builds the genesis island (idempotent), gives <dir> its OWN genesis copy (init reads the
-# engine CID from LAR_ROOT/genesis), then founds identity + social-bootstrap. The result is fully
-# self-contained under <dir> — `genesis/` beside the XDG kinds an isolated root stands (`data/`, `state/`,
-# `cache/`, `config/`, `run/`), with the two houses nested inside the data kind: `data/lares` for the
-# spirits' identity, seal and vessel substrate, `data/lararium` for the house's shelf and sensoriums.
-# Mountable into a container as LAR_ROOT. Secrets stay local (gitignore .mesh-test/).
-#
-# Usage: tools/mesh-found-lararium.sh .mesh-test/lararium-a
+# mesh-found-lararium — found an isolated Lararium through the product image.
+# Usage: tools/mesh-found-lararium.sh <state-directory>
 set -euo pipefail
 DIR="${1:?usage: mesh-found-lararium.sh <dir>}"
-cd "$(dirname "$0")/.."
-REPO="$(pwd)"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+case "$DIR" in /*) ;; *) DIR="$ROOT/$DIR" ;; esac
+mkdir -p "$DIR"
 
-# 1. Build the genesis island (the TW5 engine CID) if absent.
-if [ ! -f "$REPO/genesis/seed.json" ]; then
-  echo "[found] building genesis island…"
-  pnpm --filter @lararium/node build:genesis
-fi
+# One product image, named by digest, serves every container of this run.
+LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
+export LARES_HARNESS_IMAGE
 
-# 2. Give the isolated root its own genesis bundle — init reads it from LAR_ROOT/genesis.
-mkdir -p "$DIR/genesis"
-cp "$REPO"/genesis/seed.json "$DIR/genesis/"
-cp -r "$REPO"/genesis/cas "$DIR/genesis/" 2>/dev/null || true   # the CAS substrate (engine/plugin blobs by CID)
+docker run --rm --user "$(id -u):$(id -g)" --tmpfs /tmp:mode=1777 \
+  --mount "type=bind,source=$DIR,target=/state" \
+  --mount "type=bind,source=$ROOT/tools,target=/app/tools,readonly" \
+  --env LAR_ROOT=/state --env LAR_STAGE_DIR=/state \
+  --entrypoint sh "$LARES_HARNESS_IMAGE" -ec \
+  'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state && node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build'
 
-# 3. Found identity + social-bootstrap into the isolated root (non-interactive, idempotent).
-echo "[found] founding Lararium into $DIR…"
-# A founding seals custody from birth and gathers its route from a TTY; this scripted harness names a test route.
-node "$REPO/tools/test-scratch-marker.mjs" "$DIR"
-node "$REPO/tools/seed-test-custody.mjs" "$DIR"
-LAR_ROOT="$DIR" lares vessel found
-
-echo "[found] ✓ self-contained Lararium at $DIR — mount as LAR_ROOT in the mesh compose."
+echo "[found] ✓ product image founded a Lararium at $DIR"

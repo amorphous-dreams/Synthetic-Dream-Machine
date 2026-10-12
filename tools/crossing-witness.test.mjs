@@ -37,7 +37,7 @@ exit 0
     const run = spawnSync(file, args, {
       cwd: ROOT,
       encoding: "utf8",
-      env: { ...process.env, DOCKER_BIN: docker, CALL_LOG: callLog, UP_EXIT: String(upExit), UP_SLEEP: String(upSleep), ARTIFACT_DIR: artifacts },
+      env: { ...process.env, LARES_HARNESS_IMAGE: `sha256:${"a".repeat(64)}`, DOCKER_BIN: docker, CALL_LOG: callLog, UP_EXIT: String(upExit), UP_SLEEP: String(upSleep), ARTIFACT_DIR: artifacts },
     });
     await check({ run, artifacts, calls: await readFile(callLog, "utf8") });
   } finally {

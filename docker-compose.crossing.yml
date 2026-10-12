@@ -19,36 +19,38 @@
 
 name: dreamnet-crossing
 
+# Node services require the product image digest in LARES_HARNESS_IMAGE.
+
 services:
   crossing-daemon:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "crossing-run:/crossing"
+      - "crossing-daemon-state:/state"
+      - "crossing-run:/workspace"
     networks: [crossing]
     restart: "no"
     environment:
+      LAR_ROOT: "/state"
       LAR_CROSSING_PORT:   "8080"
-      LAR_CROSSING_SHARED: "/crossing"
+      LAR_CROSSING_SHARED: "/workspace"
       LAR_CROSSING_GREET:  "the DreamNet breathes"
       LAR_CROSSING_ADMIT:  "${LAR_CROSSING_ADMIT:-from-file}"   # from-file | none | <hex,…> — set per scenario
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/crossing-daemon.ts"]
+    entrypoint: ["node", "packages/lararium-node/dist/probes/crossing-daemon.js"]
 
   crossing-client:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "crossing-run:/crossing"
+      - "crossing-client-state:/state"
+      - "crossing-run:/workspace"
     networks: [crossing]
     restart: "no"
     environment:
-      LAR_CROSSING_SHARED:      "/crossing"
+      LAR_ROOT: "/state"
+      LAR_CROSSING_SHARED:      "/workspace"
       LAR_CROSSING_DAEMON_HOST: "crossing-daemon"
       LAR_CROSSING_GREET:       "the DreamNet breathes"
       LAR_CROSS_ROLE:           "${LAR_CROSS_ROLE:-admitted}"   # admitted | anon | impostor | wrong-bind
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/crossing-client.ts"]
+    entrypoint: ["node", "packages/lararium-node/dist/probes/crossing-client.js"]
     depends_on: [crossing-daemon]
 
 networks:
@@ -56,4 +58,6 @@ networks:
     driver: bridge
 
 volumes:
+  crossing-daemon-state:
+  crossing-client-state:
   crossing-run:      # the leaf-pub/coordinates handshake; wiped by `down -v` each scenario

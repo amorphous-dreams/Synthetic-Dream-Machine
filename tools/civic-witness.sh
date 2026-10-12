@@ -22,6 +22,10 @@
 # Meme:  lar:///ha.ka.ba/lares/api/pono/the-veil-ladder + cabal-realm + browser-crossing
 
 set -u
+cd "$(dirname "$0")/.."
+# One product image, named by digest, serves every container of this run.
+LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
+export LARES_HARNESS_IMAGE
 PASS=0; FAIL=0; FAILED=""
 ACTIVE_FILE=""
 ARTIFACT_DIR="${ARTIFACT_DIR:-}"

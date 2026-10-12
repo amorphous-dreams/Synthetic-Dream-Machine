@@ -98,7 +98,7 @@ async function main(): Promise<void> {
 
   const http: Server = createServer();
   const wss  = new WebSocketServer({ server: http });
-  const gate = new DaemonAuthGate(wss);
+  const gate = new DaemonAuthGate(wss as unknown as ConstructorParameters<typeof DaemonAuthGate>[0]);
   const network = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
   const peerIdentifierMap = new Map<string, string>();
   network.on("peer-candidate", ({ peerId }: { peerId: string }) => {

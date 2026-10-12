@@ -32,9 +32,9 @@ if (!process.env.LAR_ROOT || !existsSync(join(process.env.LAR_ROOT, "data", "lar
 const PINS = readPins();
 const pinned = (url, name) => (PINS[name] ? `${url}#${PINS[name]}` : url);
 const HOPS = [
-  { name: "source ", url: process.env.HOP_SOURCE ?? pinned("http://localhost:18092", "HERM_SOURCE_GATE") },
-  { name: "relay-1", url: process.env.HOP_RELAY1 ?? pinned("http://localhost:18091", "HERM_RELAY_GATE") },
-  { name: "relay-2", url: process.env.HOP_RELAY2 ?? pinned("http://localhost:18093", "HERM_RELAY_2_GATE") },
+  { name: "source ", url: process.env.HOP_SOURCE ?? pinned(`http://localhost:${process.env.MESH_PORT_SOURCE ?? "18092"}`, "HERM_SOURCE_GATE") },
+  { name: "relay-1", url: process.env.HOP_RELAY1 ?? pinned(`http://localhost:${process.env.MESH_PORT_RELAY ?? "18091"}`, "HERM_RELAY_GATE") },
+  { name: "relay-2", url: process.env.HOP_RELAY2 ?? pinned(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, "HERM_RELAY_2_GATE") },
 ];
 const NEEDLE = process.env.NEEDLE ?? "node/alpha";
 const ATTEMPTS = Number.parseInt(process.env.WITNESS_ATTEMPTS ?? "30", 10);

@@ -38,6 +38,9 @@
 # Green:  every named scenario's browser vessel exits 0 and its hearth answers.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# One product image, named by digest, serves every container of this run.
+LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
+export LARES_HARNESS_IMAGE
 
 COMPOSE="docker compose -f docker-compose.mesh.yml"
 WANT="${1:-all}"
@@ -1107,7 +1110,7 @@ run_meme() {
   $COMPOSE exec -T lararium-a sh -c 'mkdir -p /tmp/blob/bags/lares/t.witness.blob && printf "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > /tmp/blob/bags/lares/t.witness.blob/photo.png && printf "type: image/png\n" > /tmp/blob/bags/lares/t.witness.blob/photo.png.meta' 2>/dev/null
   LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/blob/bags/lares/t.witness.blob --to "$LARES_BAG" --yes --json 2>&1)
   PNG_CID=$($COMPOSE exec -T lararium-a sh -c 'sha256sum /tmp/blob/bags/lares/t.witness.blob/photo.png' 2>/dev/null | cut -c1-64)
-  BULB_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:18092/bulb/${PNG_CID}.bin" 2>/dev/null || printf 000)
+  BULB_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${MESH_PORT_SOURCE:-18092}/bulb/${PNG_CID}.bin" 2>/dev/null || printf 000)
   if printf '%s' "$LD" | grep -q '"ok":true' && [ "$BULB_CODE" = "200" ]; then ok
   elif printf '%s' "$LD" | grep -q '"ok":true'; then
     gap "the bulb serves the boot CAS alone — A's blob draws ${BULB_CODE}; no public-floor cid door stands"

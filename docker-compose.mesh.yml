@@ -17,6 +17,7 @@
 # `isSecureContext`. So the browser class runs a real engine and shares its operator's network
 # namespace, which makes `localhost` name that operator's vessel and the localhost exemption apply.
 #
+# Image:   tools/harness-image.sh prints the digest selected by LARES_HARNESS_IMAGE.
 # Run:     node tools/mesh-pins.mjs --up       (stands the mesh in pin order, writing .mesh-pins.env)
 # Witness: ./tools/herm-mesh-witness.sh        (relay carries the alpha dial; daemon-full, wiki-less)
 # Down:    docker compose -f docker-compose.mesh.yml down -v
@@ -27,14 +28,15 @@
 # own founded store, and writes `.mesh-pins.env` (`HERM_SOURCE_GATE`, `HERM_RELAY_GATE`, …), which the pinned
 # entries below read. Before the pins exist an entry reads `<url>#` and is refused, never dialed bare.
 #
-# Dev-style (node:24-slim + mounted repo + built dist) — no image build; the host builds before `up`.
+# The product image supplies every node service; the read-only tools mount stages founding markers.
 
 name: dreamnet-mesh
 
 x-herm: &herm
-  image: node:24-slim
-  working_dir: /app
-  entrypoint: ["sh", "tools/lararium-container-boot.sh"]   # founds its OWN identity, then composeHerm
+  image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
+  volumes:
+    - "./tools:/app/tools:ro"
+  entrypoint: ["sh", "tools/lararium-container-boot.sh"]
   networks: [mesh]
   # A COLD MESH LOSES A RACE THAT IS NOT A FAULT. A vessel booting before a peer carries `@daemon` exits
   # "hearth-private doc unavailable — no peer carries it", and that names a MOMENT rather than this
@@ -52,16 +54,15 @@ x-herm: &herm
 services:
   # A FULL Lararium — composeLararium (substrate + daemon + wiki + pool).
   lararium-a:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "lararium-a-data:/lar-a"
+      - "lararium-a-data:/state"
+      - "./tools:/app/tools:ro"
     environment:
-      LAR_ROOT: "/lar-a"
+      LAR_ROOT: "/state"
       # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
       # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
-      LAR_STAGE_DIR: "/lar-a"
+      LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       # A SCENARIO DECIDES WHETHER AN OPERATOR CARRIES. Blank stands a sovereign hearth alone —
       # `peers` filters empty away, so a lone vessel is a supported shape rather than a broken one.
@@ -77,7 +78,7 @@ services:
     entrypoint: ["sh", "tools/lararium-container-boot.sh"]
     networks: [mesh]
     ports:
-      - "18090:8080"
+      - "127.0.0.1:${MESH_PORT_A:-18090}:8080"
     depends_on: [herm-source]
     # A COLD MESH LOSES A RACE THAT IS NOT A FAULT. A vessel booting before a peer carries `@daemon` exits
     # "hearth-private doc unavailable — no peer carries it", and that names a MOMENT rather than this
@@ -93,16 +94,15 @@ services:
   # seed of B's, so every handshake between them crosses a real custody boundary rather than reading
   # one seal home twice. B is the first to contract into A's Nexus and then into the kahu cabal.
   lararium-b:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "lararium-b-data:/lar-b"
+      - "lararium-b-data:/state"
+      - "./tools:/app/tools:ro"
     environment:
-      LAR_ROOT: "/lar-b"
+      LAR_ROOT: "/state"
       # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
       # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
-      LAR_STAGE_DIR: "/lar-b"
+      LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       LAR_PEERS: "${LAR_B_PEERS-http://herm-source:8080#${HERM_SOURCE_GATE-}}"
       LAR_PUBLIC_URL: "http://lararium-b:8080"
@@ -120,7 +120,7 @@ services:
     entrypoint: ["sh", "tools/lararium-container-boot.sh"]
     networks: [mesh]
     ports:
-      - "18094:8080"
+      - "127.0.0.1:${MESH_PORT_B:-18094}:8080"
     depends_on: [herm-source]
     restart: "on-failure:8"
 
@@ -143,26 +143,30 @@ services:
   browser-a:
     image: mcr.microsoft.com/playwright:v1.64.0-noble
     working_dir: /app
-    volumes: [".:/app"]
+    volumes: [".:/app:ro"]
+    tmpfs: ["/tmp"]
     environment:
+      HOME: "/tmp/home"
       LAR_BROWSER_LABEL: "browser-a"
       LAR_VESSEL_WS:     "ws://localhost:8080/ws"   # lararium-a, over the shared namespace
       LAR_WEB_PORT:      "5173"
     network_mode: "service:lararium-a"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/browser-vessel.ts"]
+    command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]
     depends_on: [lararium-a]
     restart: "no"
 
   browser-b:
     image: mcr.microsoft.com/playwright:v1.64.0-noble
     working_dir: /app
-    volumes: [".:/app"]
+    volumes: [".:/app:ro"]
+    tmpfs: ["/tmp"]
     environment:
+      HOME: "/tmp/home"
       LAR_BROWSER_LABEL: "browser-b"
       LAR_VESSEL_WS:     "ws://localhost:8080/ws"   # lararium-b
       LAR_WEB_PORT:      "5173"
     network_mode: "service:lararium-b"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/browser-vessel.ts"]
+    command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]
     depends_on: [lararium-b]
     restart: "no"
 
@@ -170,38 +174,38 @@ services:
   herm-source:
     <<: *herm
     volumes:
-      - ".:/app"
-      - "herm-source-data:/herm"
+      - "herm-source-data:/state"
+      - "./tools:/app/tools:ro"
     environment:
-      LAR_ROOT: "/herm"
+      LAR_ROOT: "/state"
       # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
       # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
-      LAR_STAGE_DIR: "/herm"
+      LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
       LAR_SEED: "alpha"          # announces lar:///ha.ka.ba/bags/oracle/node/alpha → endpoint http://herm-source:8080
       LAR_PUBLIC_URL: "http://herm-source:8080"
     ports:
-      - "18092:8080"
+      - "127.0.0.1:${MESH_PORT_SOURCE:-18092}:8080"
 
   # A RELAY Herm — bootstraps from herm-source, carries + re-serves its FLOW-map (incl. the alpha dial).
   herm-relay:
     <<: *herm
     volumes:
-      - ".:/app"
-      - "herm-relay-data:/herm"
+      - "herm-relay-data:/state"
+      - "./tools:/app/tools:ro"
     environment:
-      LAR_ROOT: "/herm"
+      LAR_ROOT: "/state"
       # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
       # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
-      LAR_STAGE_DIR: "/herm"
+      LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
       LAR_PEERS: "http://herm-source:8080#${HERM_SOURCE_GATE-}"
       LAR_PUBLIC_URL: "http://herm-relay:8080"
       LAR_PULL_MS: "2000"
     ports:
-      - "18091:8080"
+      - "127.0.0.1:${MESH_PORT_RELAY:-18091}:8080"
     depends_on: [herm-source]
 
   # A SECOND-HOP Relay — bootstraps ONLY from herm-relay, yet SELF-PEERS herm-source TRANSITIVELY:
@@ -210,20 +214,20 @@ services:
   herm-relay-2:
     <<: *herm
     volumes:
-      - ".:/app"
-      - "herm-relay-2-data:/herm"
+      - "herm-relay-2-data:/state"
+      - "./tools:/app/tools:ro"
     environment:
-      LAR_ROOT: "/herm"
+      LAR_ROOT: "/state"
       # SCRATCH BY DECLARATION: this volume is a disposable test root, so the scripted founding may name its test route
       # through tools/seed-test-custody.mjs (a production founding gathers its route from a TTY alone).
-      LAR_STAGE_DIR: "/herm"
+      LAR_STAGE_DIR: "/state"
       LAR_PORT: "8080"
       LAR_RECIPE: "herm"
       LAR_PEERS: "http://herm-relay:8080#${HERM_RELAY_GATE-}"
       LAR_PUBLIC_URL: "http://herm-relay-2:8080"
       LAR_PULL_MS: "2000"
     ports:
-      - "18093:8080"
+      - "127.0.0.1:${MESH_PORT_RELAY_2:-18093}:8080"
     depends_on: [herm-relay]
 
 networks:

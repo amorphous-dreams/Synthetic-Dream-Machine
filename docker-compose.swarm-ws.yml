@@ -13,31 +13,33 @@
 
 name: dreamnet-swarm-ws
 
+# Node services require the product image digest in LARES_HARNESS_IMAGE.
+
 x-vessel: &vessel
-  image: node:24-slim
-  working_dir: /app
-  volumes:
-    - ".:/app"
+  image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
   networks: [swarm]
   restart: "no"
-  command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/swarm-node.ts"]
+  entrypoint: ["node", "packages/lararium-node/dist/probes/swarm-node.js"]
 
 services:
   relay:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
+      - "swarm-relay-state:/state"
     networks: [swarm]
     restart: "no"
     environment:
+      LAR_ROOT: "/state"
       LAR_RELAY_PORT: "8090"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/relay-node.ts"]
+    entrypoint: ["node", "packages/lararium-node/dist/probes/relay-node.js"]
 
   founder:
     <<: *vessel
+    volumes:
+      - "swarm-ws-founder-state:/state"
     environment:
       LAR_SWARM_ROLE:   "founder"
+      LAR_ROOT:         "/state"
       LAR_SWARM_RELAY:  "ws://relay:8090"
       LAR_SWARM_ID:     "founder"
       LAR_SWARM_SEED:   "f0"
@@ -46,8 +48,11 @@ services:
 
   vessel-b:
     <<: *vessel
+    volumes:
+      - "swarm-ws-vessel-b-state:/state"
     environment:
       LAR_SWARM_ROLE:  "joiner"
+      LAR_ROOT:        "/state"
       LAR_SWARM_RELAY: "ws://relay:8090"
       LAR_SWARM_ID:    "vessel-B"
       LAR_SWARM_SEED:  "b0"
@@ -55,12 +60,21 @@ services:
 
   vessel-c:
     <<: *vessel
+    volumes:
+      - "swarm-ws-vessel-c-state:/state"
     environment:
       LAR_SWARM_ROLE:  "joiner"
+      LAR_ROOT:        "/state"
       LAR_SWARM_RELAY: "ws://relay:8090"
       LAR_SWARM_ID:    "vessel-C"
       LAR_SWARM_SEED:  "c0"
     depends_on: [relay]
+
+volumes:
+  swarm-relay-state:
+  swarm-ws-founder-state:
+  swarm-ws-vessel-b-state:
+  swarm-ws-vessel-c-state:
 
 networks:
   swarm:

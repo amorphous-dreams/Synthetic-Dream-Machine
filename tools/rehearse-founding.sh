@@ -42,7 +42,7 @@
 #   CYCLES=5 tools/rehearse-founding.sh     # run until it bores
 #   KEEP=1 tools/rehearse-founding.sh       # leave the final mesh standing for inspection
 #
-# Prereq: the host builds first (`pnpm -r build`) — the containers trust the mounted dist.
+# Prereq: Docker can build the product image through `tools/harness-image.sh`.
 # Meme: lar:///ha.ka.ba/lararium/mesh/founding-runbook#/rehearse
 
 set -u
@@ -53,6 +53,10 @@ COMPOSE_FILE="docker-compose.mesh.yml"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOGDIR="$(mktemp -d)"
 cd "$ROOT" || exit 1
+
+# One product image, named by digest, serves every container of this run.
+LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
+export LARES_HARNESS_IMAGE
 
 green=0; red=0; FAILED_CYCLES=""
 
@@ -110,12 +114,7 @@ if ! docker compose version >/dev/null 2>&1; then
   say "✗ PREFLIGHT: 'docker compose' unavailable (v2 plugin missing?)."
   exit 2
 fi
-if [ ! -f "packages/lares-cli/dist/src/bin/lares.js" ] || [ ! -f "packages/lararium-node/dist/src/main.js" ]; then
-  say "✗ PREFLIGHT: host dist absent — the containers trust the mounted build."
-  say "             run: pnpm -r build"
-  exit 2
-fi
-say "   preflight                  ✓ docker + host dist stand"
+say "   preflight                  ✓ docker and digest image stand"
 self_test || exit 2
 say ""
 

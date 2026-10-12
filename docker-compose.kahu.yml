@@ -13,32 +13,34 @@
 
 name: dreamnet-kahu
 
+# Node services require the product image digest in LARES_HARNESS_IMAGE.
+
 services:
   kahu-citizen:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "kahu-run:/kahu"
+      - "kahu-citizen-state:/state"
+      - "kahu-run:/workspace"
     networks: [kahu]
     restart: "no"
     environment:
+      LAR_ROOT: "/state"
       LAR_KAHU_ROLE:   "citizen"
-      LAR_KAHU_SHARED: "/kahu"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/kahu-blind-node.ts"]
+      LAR_KAHU_SHARED: "/workspace"
+    entrypoint: ["node", "packages/lararium-node/dist/probes/kahu-blind-node.js"]
 
   kahu-node:
-    image: node:24-slim
-    working_dir: /app
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
     volumes:
-      - ".:/app"
-      - "kahu-run:/kahu"
+      - "kahu-node-state:/state"
+      - "kahu-run:/workspace"
     networks: [kahu]
     restart: "no"
     environment:
+      LAR_ROOT: "/state"
       LAR_KAHU_ROLE:   "kahu"
-      LAR_KAHU_SHARED: "/kahu"
-    command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/kahu-blind-node.ts"]
+      LAR_KAHU_SHARED: "/workspace"
+    entrypoint: ["node", "packages/lararium-node/dist/probes/kahu-blind-node.js"]
     depends_on: [kahu-citizen]
 
 networks:
@@ -46,4 +48,6 @@ networks:
     driver: bridge
 
 volumes:
+  kahu-citizen-state:
+  kahu-node-state:
   kahu-run:          # the seal/relay ceremony; wiped by `down -v`
