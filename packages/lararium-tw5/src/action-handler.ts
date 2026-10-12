@@ -53,7 +53,9 @@ import {
   crossingDirection, type CapTier,
   isEffectRecordUri, parseEffectRecord, effectRecordUri,
   writesBag, VerbRefusal,
+  yieldToHost,
 } from "@lararium/mesh";
+import type { HostTaskYield } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
@@ -188,8 +190,17 @@ export function makeTw5Deserializer(engine: { readonly $tw: TW5Instance }): Tw5D
   };
 }
 
+/**
+ * How many records a LOAD lands before it hands the thread back to the host. A count, never a
+ * duration: it bounds how long a vessel message or an operator's invocation waits behind a bulk
+ * LOAD to one slice of landings, whatever one landing costs.
+ */
+export const LOAD_YIELD_QUANTUM = 25;
+
 export interface ActionHandlerOptions {
   readonly composite: CompositeStore;
+  /** The host-task yield a LOAD takes between landing slices; `yieldToHost` when absent. */
+  readonly yieldHostTask?: HostTaskYield;
   /** Native TW5 filetype deserialization (LOAD), closing over the island's $tw. */
   readonly tw5?: Tw5Deserializer;
   /**
@@ -501,7 +512,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // AND the effect-record ledger are captured, nothing commits.
     if (dryRun) {
       const cap = makeCapturingBagAccess(access);
-      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts.tw5, opts.resolveByCid),
+      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask),
         action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
       return { verb, dryRun: true, ...summary, ...projectedEffect(cap.captured) };
     }
@@ -511,9 +522,9 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (action.verb === "DROP") {
       const dropStore = await access.write(action.bag);
       const marked = !!dropStore && await storeIsRetired(dropStore, action.bag);
-      if (marked) return { verb, ...(await executeAction(action, access, opts.tw5, opts.resolveByCid)) };
+      if (marked) return { verb, ...(await executeAction(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask)) };
     }
-    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts.tw5, opts.resolveByCid),
+    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask),
       action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
     return { verb, ...summary };
   };
@@ -558,14 +569,14 @@ function destinationBag(action: ResidencyAction): string {
 
 // ── Per-verb executors ─────────────────────────────────────────────────────
 
-async function executeAction(action: ResidencyAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
+async function executeAction(action: ResidencyAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver, yieldHostTask: HostTaskYield = yieldToHost): Promise<Record<string, unknown>> {
   switch (action.verb) {
     case "ADD":   return executeAdd(action, access);
     case "COPY":  return executeCopy(action, access);
     case "MOVE":  return executeMove(action, access);
     case "CLEAR": return executeClear(action, access);
     case "DROP":  return executeDrop(action, access);
-    case "LOAD":  return executeLoad(action, access, tw5, resolveByCid);
+    case "LOAD":  return executeLoad(action, access, tw5, resolveByCid, yieldHostTask);
     case "INGEST": return executeIngest(action, access, tw5, resolveByCid);
     case "CREATE": throw new Error("action-handler: CREATE is handled in the reactor (plane-aware gate + mint), not executeAction");
   }
@@ -800,7 +811,7 @@ function withWarnings(receipt: Record<string, unknown>, warnings: readonly strin
   return warnings.length === 0 ? receipt : { ...receipt, warnings: [...warnings] };
 }
 
-async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
+async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver, yieldHostTask: HostTaskYield = yieldToHost): Promise<Record<string, unknown>> {
   const carriers = action.carriers ?? [];
   if (carriers.length === 0) {
     throw new Error(
@@ -888,7 +899,15 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       });
     }
   }
-  for (const land of landings) await land();
+  // A LOAD YIELDS TO THE HOST BETWEEN SLICES. A chain of promises never lets a host task in, so a bulk
+  // LOAD would hold the island's thread until its last record landed. LOAD decides nothing between its
+  // landings (it reads no standing record and removes none), so a hand edit or another verb that takes
+  // the slice in between cannot be overwritten by a decision made before the yield. The executors that
+  // DO decide before they write (INGEST's Confluence gate, MOVE's read-then-retract) take no yield.
+  for (let i = 0; i < landings.length; i++) {
+    if (i > 0 && i % LOAD_YIELD_QUANTUM === 0) await yieldHostTask();
+    await landings[i]!();
+  }
   return withWarnings({ sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId, count: titles.length, titles }, warnings);
 }
 
