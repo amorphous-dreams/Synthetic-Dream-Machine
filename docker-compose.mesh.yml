@@ -28,7 +28,12 @@
 # own founded store, and writes `.mesh-pins.env` (`HERM_SOURCE_GATE`, `HERM_RELAY_GATE`, …), which the pinned
 # entries below read. Before the pins exist an entry reads `<url>#` and is refused, never dialed bare.
 #
-# The product image supplies every node service; the read-only tools mount stages founding markers.
+# The product image supplies every node service; the read-only tools mount stages founding markers. The browser
+# vessels run Chromium from a browser image and read the probe, its dependencies and the built web surface from
+# the product image too, through the `probe-code` volume: no service binds the repository.
+#
+# COMPOSE_PROJECT_NAME names the project when set (it outranks the `name:` below), so two runs on one host stand
+# apart; published ports follow MESH_PORT_*.
 
 name: dreamnet-mesh
 
@@ -137,7 +142,7 @@ services:
   browser-a:
     image: mcr.microsoft.com/playwright:v1.64.0-noble
     working_dir: /app
-    volumes: [".:/app:ro"]
+    volumes: ["probe-code:/app:ro"]
     tmpfs: ["/tmp"]
     environment:
       HOME: "/tmp/home"
@@ -146,13 +151,17 @@ services:
       LAR_WEB_PORT:      "5173"
     network_mode: "service:lararium-a"
     command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]
-    depends_on: [lararium-a]
+    depends_on:
+      lararium-a:
+        condition: service_started
+      probe-code:
+        condition: service_completed_successfully
     restart: "no"
 
   browser-b:
     image: mcr.microsoft.com/playwright:v1.64.0-noble
     working_dir: /app
-    volumes: [".:/app:ro"]
+    volumes: ["probe-code:/app:ro"]
     tmpfs: ["/tmp"]
     environment:
       HOME: "/tmp/home"
@@ -161,10 +170,26 @@ services:
       LAR_WEB_PORT:      "5173"
     network_mode: "service:lararium-b"
     command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]
-    depends_on: [lararium-b]
+    depends_on:
+      lararium-b:
+        condition: service_started
+      probe-code:
+        condition: service_completed_successfully
     restart: "no"
 
   # A SOURCE Herm — composeHerm, announces a dial (carrying its REACHABLE read-face) on its FLOW-map.
+  # THE PROBE'S CODE COMES FROM THE IMAGE. A named volume mounted empty over a path the image fills receives that
+  # path's content at first mount, so this one-shot hands `/app` of the product image (the built probe, its
+  # dependencies, the web surface) to the browser vessels, which mount it read-only. A harness run therefore reads
+  # one digest's bytes on both sides of the socket, from any checkout and with nothing built in the tree.
+  probe-code:
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
+    volumes:
+      - "probe-code:/app"
+    entrypoint: ["true"]
+    network_mode: none
+    restart: "no"
+
   herm-source:
     <<: *herm
     volumes:
@@ -229,6 +254,7 @@ networks:
     driver: bridge
 
 volumes:
+  probe-code:
   lararium-a-data:
   lararium-b-data:
   herm-source-data:

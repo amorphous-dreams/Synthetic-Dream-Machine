@@ -1,5 +1,6 @@
 // The harness image law keeps each compose service on the product image and its own scratch mounts.
-// Playwright alone reads the repository, because Chromium must run from its browser image.
+// A browser vessel runs Chromium from a browser image and reads its code from the product image, through a
+// volume the image fills; no service binds the repository, and a harness run names its own compose project.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
@@ -13,8 +14,8 @@ const FILES = [
   "docker-compose.burn.yml",
 ];
 const EXCEPTIONS = new Map([
-  ["browser-a", "Playwright supplies Chromium and needs the repository read-only"],
-  ["browser-b", "Playwright supplies Chromium and needs the repository read-only"],
+  ["browser-a", "Playwright supplies Chromium; the image-filled code volume mounts read-only"],
+  ["browser-b", "Playwright supplies Chromium; the image-filled code volume mounts read-only"],
 ]);
 
 function fileList() {
@@ -63,7 +64,8 @@ function inspect(file, text) {
     if (exception) {
       assert.match(EXCEPTIONS.get(service.name), /Playwright.*Chromium.*read-only/);
       if (!/mcr\.microsoft\.com\/playwright/.test(images.join(" "))) errors.push(`${service.name}: exception does not use Playwright image`);
-      if (!/(?:\.|\.\/):\/app:ro["']?|read_only:\s*true/.test(body)) errors.push(`${service.name}: exception repository mount is not read-only`);
+      if (!/["'\s[]probe-code:\/app:ro["']/.test(body)) errors.push(`${service.name}: the code volume does not mount read-only at /app`);
+      if (!/probe-code:\s*\n\s*condition: service_completed_successfully/.test(body)) errors.push(`${service.name}: starts before the image fills its code volume`);
     } else if (!images.some((image) => /\$\{LARES_HARNESS_IMAGE:\?/.test(image))) {
       errors.push(`${service.name}: image does not require LARES_HARNESS_IMAGE`);
     }
@@ -89,7 +91,7 @@ function inspect(file, text) {
       const [source = "", rawTarget = ""] = mount.split(":");
       const target = rawTarget.replace(/:.*$/, "");
       if (source === "." || source === "./" || resolve(ROOT, source) === ROOT) {
-        if (!exception || !/:ro["']?/.test(mount)) errors.push(`${service.name}: repository bind is forbidden`);
+        errors.push(`${service.name}: repository bind is forbidden`);
       } else if ((source.startsWith("./") || source.startsWith("../") || source.startsWith("/")) && !(source === "./tools" && target === "/app/tools" && /(?:\.\/tools:\/app\/tools:ro["']?|read_only:\s*true)/.test(mount + body))) {
         errors.push(`${service.name}: host bind ${source} is forbidden`);
       }
@@ -102,13 +104,23 @@ function inspect(file, text) {
     // therefore replaces the entrypoint; a `command` naming one would boot the daemon instead.
     if (!exception && /^\s*command:.*dist\/probes\//m.test(body)) errors.push(`${service.name}: a probe rides entrypoint, never command`);
   }
+  // A browser's code volume holds the image's bytes only when a product-image service mounts it, writable and
+  // empty, over the image's own /app: that first mount copies the image's content in.
+  if (services.some((service) => EXCEPTIONS.has(service.name))) {
+    const filler = services.find((service) => service.name === "probe-code");
+    if (!filler) errors.push("probe-code: no service fills the browser code volume");
+    else {
+      if (!/^\s*-\s*["']?probe-code:\/app["']?\s*$/m.test(filler.text)) errors.push("probe-code: the filler does not mount the code volume writable at /app");
+      if (!/\$\{LARES_HARNESS_IMAGE:\?/.test(filler.text)) errors.push("probe-code: the filler does not run the digest image");
+    }
+  }
   return errors;
 }
 
 test("CONTROL: every scanner sees its planted compose fault", () => {
-  const planted = `services:\n  vessel:\n    image: node:24-slim\n    build: .\n    volumes:\n      - .:/app\n      - s:/state\n      - ./tools:/app/tools\n    command: node_modules/.bin/tsx probe.ts\n  longform:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: ./packages\n        target: /app/packages\n  swallowed:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    command: ["node", "packages/lararium-node/dist/probes/x.js"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: [".:/app"]\n    command: ["node", "probe.ts"]\n`;
+  const planted = `services:\n  vessel:\n    image: node:24-slim\n    build: .\n    volumes:\n      - .:/app\n      - s:/state\n      - ./tools:/app/tools\n    command: node_modules/.bin/tsx probe.ts\n  longform:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: ./packages\n        target: /app/packages\n  swallowed:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    command: ["node", "packages/lararium-node/dist/probes/x.js"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: [".:/app:ro"]\n    command: ["node", "probe.ts"]\n`;
   const hits = inspect("planted.yml", planted);
-  for (const expected of ["image does not require", "build key", "repository bind", "one character", "TypeScript entrypoint", "exception repository mount", "host bind ./tools", "rides entrypoint", "longform: host bind ./packages"])
+  for (const expected of ["image does not require", "build key", "repository bind", "one character", "TypeScript entrypoint", "browser-a: repository bind", "browser-a: the code volume", "browser-a: starts before", "probe-code: no service fills", "host bind ./tools", "rides entrypoint", "longform: host bind ./packages"])
     assert.ok(hits.some((hit) => hit.includes(expected)), `scanner missed ${expected}: ${hits.join("; ")}`);
 });
 
@@ -129,4 +141,27 @@ test("CONTROL: a long-form repository bind reads red, and a long-form read-only 
 test("each harness service runs the digest image with image-owned code and declared mounts", () => {
   const violations = fileList().flatMap((file) => inspect(file, readFileSync(file, "utf8")).map((hit) => `${file.startsWith(`${ROOT}/`) ? relative(ROOT, file) : basename(file)}: ${hit}`));
   assert.deepEqual(violations, [], violations.join("\n"));
+});
+
+test("CONTROL: a browser vessel on the image-filled code volume, waiting on its fill, passes", () => {
+  const good = `services:\n  probe-code:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - "probe-code:/app"\n    entrypoint: ["true"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: ["probe-code:/app:ro"]\n    depends_on:\n      probe-code:\n        condition: service_completed_successfully\n    command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]\n`;
+  assert.deepEqual(inspect("browser.yml", good), []);
+  assert.ok(inspect("browser.yml", good.replace("probe-code:/app:ro", "probe-code:/app")).some((hit) => hit.includes("the code volume")));
+  assert.ok(inspect("browser.yml", good.replace('- "probe-code:/app"', '- "probe-code:/elsewhere"')).some((hit) => hit.includes("the filler does not mount")));
+  assert.ok(inspect("browser.yml", good.replace('image: "${LARES_HARNESS_IMAGE:?digest}"', "image: node:24-slim")).some((hit) => hit.includes("the filler does not run the digest image")));
+});
+
+// A run under another project name reads its own containers, network and volumes: the runner derives every
+// such name from MESH_PROJECT and spells the default once.
+function fixedProjectNames(text) {
+  return text.split("\n").filter((line) => /dreamnet-mesh/.test(line) && !/^\s*#/.test(line) && !/MESH_PROJECT="\$\{MESH_PROJECT:-dreamnet-mesh\}"/.test(line));
+}
+
+test("the mesh runner names its compose project from the environment", () => {
+  const text = readFileSync(join(ROOT, "tools/mesh-scenarios.sh"), "utf8");
+  assert.match(text, /^MESH_PROJECT="\$\{MESH_PROJECT:-dreamnet-mesh\}"$/m);
+  assert.match(text, /^export COMPOSE_PROJECT_NAME="\$MESH_PROJECT"$/m);
+  assert.deepEqual(fixedProjectNames(text), []);
+  // CONTROL: the scanner reads a planted fixed name and passes a commented one.
+  assert.equal(fixedProjectNames('local name="dreamnet-mesh-${svc}-1"\n# the dreamnet-mesh default\n').length, 1);
 });

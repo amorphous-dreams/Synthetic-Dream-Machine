@@ -42,6 +42,13 @@ cd "$(dirname "$0")/.."
 LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
 export LARES_HARNESS_IMAGE
 
+# THE PROJECT NAME COMES FROM THE ENVIRONMENT, so two runs on one host never share a network, a volume or a
+# container name. Every name below derives from it; none repeats the default.
+MESH_PROJECT="${MESH_PROJECT:-dreamnet-mesh}"
+case "$MESH_PROJECT" in
+  ""|*[!a-z0-9_-]*|[!a-z0-9]*) echo "mesh-scenarios: MESH_PROJECT \"$MESH_PROJECT\" reads as no compose project name (lowercase letters, digits, - and _; a letter or digit first)" >&2; exit 2 ;;
+esac
+export COMPOSE_PROJECT_NAME="$MESH_PROJECT"
 COMPOSE="docker compose -f docker-compose.mesh.yml"
 WANT="${1:-all}"
 FAILED=0
@@ -77,7 +84,7 @@ clear_all() {
   unset HERM_SOURCE_GATE HERM_RELAY_GATE HERM_RELAY_2_GATE LARARIUM_A_GATE LARARIUM_B_GATE
   rm -f .mesh-pins.env
   local deadline=$((SECONDS + 60))
-  while docker network ls --format '{{.Name}}' | grep -q '^dreamnet-mesh_mesh$' && [ "$SECONDS" -lt "$deadline" ]; do
+  while docker network ls --format '{{.Name}}' | grep -q "^${MESH_PROJECT}_mesh\$" && [ "$SECONDS" -lt "$deadline" ]; do
     sleep 1
   done
 }
@@ -90,9 +97,13 @@ case "$WANT" in
 esac
 
 # `all` already clears after each scenario. This covers early returns and CI cancellation, when the
-# fixed compose project would otherwise be left holding volumes or a network for the next scheduled run.
+# compose project would otherwise be left holding volumes or a network for the next scheduled run.
 trap clear_all EXIT
 trap 'exit 130' INT TERM
+
+# A `--no-deps` start skips the one-shot that fills the browser vessel's code volume from the image, so a lone
+# browser start stages it first. The whole-mesh start reaches it through `depends_on`.
+stage_probe_code() { $COMPOSE run --rm --no-deps probe-code >/dev/null 2>&1; }
 
 # The browser vessel is the verdict: it refuses at the floor unless the origin can actually mint, so a
 # zero here means a real engine held a real secure context against that operator's own namespace.
@@ -106,7 +117,7 @@ browser_verdict() {
   # built from `$svc` on the same line reads an unbound variable under `set -u` — and the function's
   # empty answer read exactly like a probe that never exited.
   local svc="$1" status
-  local name="dreamnet-mesh-${svc}-1"
+  local name="${MESH_PROJECT}-${svc}-1"
   status=$(docker inspect -f '{{.State.Status}}' "$name" 2>/dev/null) || { echo "absent"; return; }
   [ "$status" = "exited" ] || { echo ""; return; }
   docker inspect -f '{{.State.ExitCode}}' "$name" 2>/dev/null || echo "absent"
@@ -260,7 +271,7 @@ run_operator() {          # $1 = a|b
   clear_all
   step "$hearth + $browser (peerless, --no-deps)"
   # The peers var for the OTHER operator stays untouched; only this one blanks.
-  if env "LAR_$(echo "$who" | tr a-z A-Z)_PEERS=" \
+  if stage_probe_code && env "LAR_$(echo "$who" | tr a-z A-Z)_PEERS=" \
        $COMPOSE up -d --no-deps "$hearth" "$browser" >/dev/null 2>&1; then ok; else bad "up"; return; fi
 
   step "the browser vessel mints at the floor"
@@ -359,7 +370,7 @@ run_leaf() {
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
 
   step "lararium-a + browser-a up"
-  if LAR_A_PEERS= $COMPOSE up -d --no-deps lararium-a browser-a >/dev/null 2>&1; then ok; else bad "up"; return; fi
+  if stage_probe_code && LAR_A_PEERS= $COMPOSE up -d --no-deps lararium-a browser-a >/dev/null 2>&1; then ok; else bad "up"; return; fi
 
   step "the hearth stands AND answers"
   if up_and_answering lararium-a; then ok; else
@@ -1158,7 +1169,7 @@ run_meme() {
   # UNDER PARTITION. B leaves the mesh network — the idiom `herm-mesh-partition.mjs` uses on the relay,
   # applied to the operator — edits while cut, returns, and A reads the edit once the seam heals.
   step "PARTITION: B is cut, edits while cut, returns — A gets the edit"
-  local NET="dreamnet-mesh_mesh" CB="dreamnet-mesh-lararium-b-1"
+  local NET="${MESH_PROJECT}_mesh" CB="${MESH_PROJECT}-lararium-b-1"
   if ! docker network disconnect "$NET" "$CB" >/dev/null 2>&1; then bad "could not cut B off the mesh"; clear_all; return; fi
   meme_text a b c | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-c.mem'
   LD=$($COMPOSE exec -T lararium-b $LARES act LOAD --source-uri /tmp/npc-c.mem --to "$LARES_BAG" --yes --json 2>&1)
@@ -1197,7 +1208,7 @@ run_meme() {
 # See lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity.
 run_meme_browser() {
   step "browser-a: the island speaks the laws in Chromium's worker"
-  if ! $COMPOSE up -d --no-deps browser-a >/dev/null 2>&1; then bad "browser-a would not start"; return; fi
+  if ! { stage_probe_code && $COMPOSE up -d --no-deps browser-a >/dev/null 2>&1; }; then bad "browser-a would not start"; return; fi
   # The island boots cold in the container — genesis over the probe's own server, TW5, keyhive WASM — and
   # only then does the face answer; the budget carries the boot AND the probe's budgeted close.
   local code deadline=$((SECONDS + 420))
@@ -1833,7 +1844,7 @@ run_board() {
   # own, and a re-seat would re-derive the epoch. Her volume goes, and she founds afresh with no cabal.
   step "B burns her own charter and founds afresh, charterless"
   $COMPOSE rm -sfv lararium-b >/dev/null 2>&1
-  docker volume rm dreamnet-mesh_lararium-b-data >/dev/null 2>&1
+  docker volume rm "${MESH_PROJECT}_lararium-b-data" >/dev/null 2>&1
   local SB=""
   if $COMPOSE up -d --no-deps lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then
     SB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)

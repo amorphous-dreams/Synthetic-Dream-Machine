@@ -88,8 +88,9 @@ Run either alone: `cd tests && LAR_STAGE_DIR=<scratch> npx vitest run e2e/meme-l
 
 `tools/mesh-scenarios.sh <scenario>` stands containers from `docker-compose.mesh.yml` and drives the built
 CLI inside them. The harness resolves one product image by digest; compiled CLI, daemon and probes come
-from that image. The mesh mounts named `/state` and read-only staging tools, while the two Playwright
-runners retain a read-only repository bind to run Chromium. Held out of `witness-all` because it needs
+from that image. The mesh mounts named `/state` and read-only staging tools; the two Playwright runners
+run Chromium from a browser image and read the probe from the product image, through a volume a one-shot
+fills, so no service binds the repository. `MESH_PROJECT` names the compose project. Held out of `witness-all` because it needs
 Docker and a multi-service network. A `GAP` is a measured absence the walk reached
 and the system answered no to, printed with its wake condition; only `FAILED` is a red.
 
