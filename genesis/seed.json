@@ -1,6 +1,6 @@
 {
   "format": "lararium-genesis-seed/v1",
-  "actorSeed": "42b2c00f082eaf3ca5057ecb44c131d3b6bf487a87b47c387e4b5189301bfca1",
+  "actorSeed": "3ee45c53d77485d7cb02e94fbd9b2e815bc7014c4ab1e2e1055eb2603de00d97",
   "schemaVersion": "0.1",
   "blobs": {
     "tiddlywikicore": {
@@ -23,7 +23,7 @@
     "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext": {
       "id": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
       "version": "0.1.0",
-      "sha256": "6e923866c45eece63ef321ea144ea7061e7cbf74ee9e5ca92032bd4e5c2ac7a7",
+      "sha256": "24d14c0d777c9b36c11d95e7981f4ca7d3ce54ae6c25121a72416670cd65a189",
       "mimeType": "application/json",
       "kind": "grammar",
       "license": "MIT",
@@ -105,7 +105,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/lar_///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
         "text": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
-        "sha256": "6e923866c45eece63ef321ea144ea7061e7cbf74ee9e5ca92032bd4e5c2ac7a7",
+        "sha256": "24d14c0d777c9b36c11d95e7981f4ca7d3ce54ae6c25121a72416670cd65a189",
         "version": "0.1.0",
         "mimeType": "application/json",
         "author": "lares",
@@ -114,14 +114,14 @@
         "canonicalTitle": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
         "compatibilityTitle": "$:/plugins/lares/memetic-wikitext",
         "moduleManifestPath": "dist-plugin/module-manifest.json",
-        "moduleManifestSha256": "1eaddd982c392b5b5bffe1fb5c4e5c78413d4198bd4174280ffbf2c6556f4f30",
+        "moduleManifestSha256": "c0aee846125a67ebeccfdfc1d0e442631f99356384c53f00ad3e5332334577c3",
         "sourceManifestPath": "dist-plugin/plugin-source-manifest.json",
-        "sourceManifestSha256": "dc390886832352f1d37e6b5666109b206610a907e305dd4e2862f3ca0fec2ef1",
+        "sourceManifestSha256": "21a0f2306868de3c27f5c541cf9a2460284e9146ba12700d7892b17f0d07b28b",
         "packTranscriptPath": "dist-plugin/pack-transcript.json",
-        "packTranscriptSha256": "4b767bec5a95bb522344e6ecd5e1f590a1be580ed915512f52fc7d686998dd34",
-        "moduleCount": "43",
-        "packedTiddlerCount": "170",
-        "pluginJsonSha256": "6e923866c45eece63ef321ea144ea7061e7cbf74ee9e5ca92032bd4e5c2ac7a7",
+        "packTranscriptSha256": "845af23f9499d15c6167e6ac291c49040a909e780becb9daad82f9e8a63f1727",
+        "moduleCount": "44",
+        "packedTiddlerCount": "171",
+        "pluginJsonSha256": "24d14c0d777c9b36c11d95e7981f4ca7d3ce54ae6c25121a72416670cd65a189",
         "tags": "blob-descriptor",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
@@ -177,7 +177,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar",
         "text": "",
-        "cid": "bafkreihbthtngxcbi3ajduuch4znddgwsivoynt6ovelxvjrzezydswmnq",
+        "cid": "bafkreid7h7puaxq5gjxtbl6azu7qscqi4ste6uroc5x2pw6rwir7nfyc4a",
         "note": "grammar content-CID (the required memetic-wikitext grammar alone) — kāhuli's fast ratchet",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
