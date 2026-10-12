@@ -72,9 +72,10 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
   return Object.keys((await board(r, url)).doc()?.tiddlers ?? {}).sort();
 }
 
-/** The steward key `seatCharter` seats — a fixed stand-in (no signature ever checks against it;
- *  only its presence in `kahu` + the genesis lineage below matters to `foundingRoster`). */
-const CHARTER_KEY = "7a".repeat(32);
+/** The steward key `seatCharter` seats: a REAL key from a fixed seed, since a charter seats only a key the
+ *  Ed25519 door reads lawful (no signature ever checks against it; its presence in `kahu` + the genesis
+ *  lineage below matters to `foundingRoster`). */
+const CHARTER_KEY = Buffer.from(await ed.getPublicKeyAsync(new Uint8Array(32).fill(0x7a))).toString("hex");
 /** A real genesis seal lineage over that steward — there is no legacy bare-`sealEpochCid` path any
  *  more, so a "the charter STANDS" fixture must carry a verifiable one-epoch lineage. */
 const CHARTER_GENESIS = genesisCharterEpoch([CHARTER_KEY], 1, "");

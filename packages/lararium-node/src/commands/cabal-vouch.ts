@@ -19,10 +19,9 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
-import * as ed from "@noble/ed25519";
 import {
   signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites,
-  vouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, hexToBytes,
+  vouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type CabalInvite,
 } from "@lararium/mesh";
 import {
@@ -30,6 +29,7 @@ import {
 } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
+import { verifyEd25519 } from "@lararium/mesh";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -150,7 +150,7 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
   const boardUrl    = vouchBoardDocUrl(boardIsland);
   const repo        = opts.repo;
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
-    ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
+    Promise.resolve(verifyEd25519(sigHex, bytes, did));
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:vouch-registry");
 

@@ -47,11 +47,10 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor · lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces
  */
 
-import * as ed25519 from "@noble/ed25519";
 
 import {
   mintRaiseChallenge, verifyRaiseGrant, raiseStands, standingClass,
-  leaseEpochPrefix, effectiveLeaseEpoch, hexToBytes,
+  leaseEpochPrefix, effectiveLeaseEpoch,
   foundingRoster, foldCarrierSet, carriageEntriesFromBoard, antigenEntriesFromBoard,
   carriageDocUrl, kapaeAntigenDocUrl, federationPostureFromDoc,
   type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
@@ -62,7 +61,7 @@ import type { BoardOpener, CarriedNexusReading } from "./nexus-carriage.js";
 import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
-
+import { verifyEd25519 } from "@lararium/mesh";
 
 export interface RaiseDoorOptions {
   /** This vessel's own verifying key — a grant for any other vessel answers nothing here. */
@@ -221,6 +220,6 @@ export function unionReadings(...sets: ReadonlyArray<readonly CarriedNexusReadin
 
 /** Verify an ed25519 signature by a nym over bytes. Never throws — untrusted input crosses this shore. */
 export async function verifyNymSignature(nym: string, bytes: Uint8Array, sig: string): Promise<boolean> {
-  try { return await ed25519.verifyAsync(hexToBytes(sig), bytes, hexToBytes(nym.replace(/^0x/, ""))); }
+  try { return verifyEd25519(sig, bytes, nym.replace(/^0x/, "")); }
   catch { return false; }
 }

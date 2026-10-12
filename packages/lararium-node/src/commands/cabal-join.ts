@@ -12,17 +12,17 @@
 
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
-import * as ed from "@noble/ed25519";
 import {
   verifiedVouchesFromBoard, vouchBoardDocUrl, materializeSharedLarDoc,
   leaseEpochPrefix, effectiveLeaseEpoch, DAEMON_BAG_ID,
-  DEFAULT_JOIN_POLICY, alphaFromHalfLife, hexToBytes,
+  DEFAULT_JOIN_POLICY, alphaFromHalfLife,
   type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
+import { verifyEd25519 } from "@lararium/mesh";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
 
@@ -119,7 +119,7 @@ export interface CabalJoinOptions {
 export type CabalJoinResult = LineageAdmission;
 
 const verifyOffline = (bytes: Uint8Array, sigHex: string, voucherDid: string): Promise<boolean> =>
-  ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(voucherDid)).catch(() => false);
+  Promise.resolve(verifyEd25519(sigHex, bytes, voucherDid));
 
 export async function runCabalJoin(
   opts: CabalJoinOptions,
