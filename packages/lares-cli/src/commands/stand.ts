@@ -129,7 +129,8 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   let founding: FoundStep[] | undefined;
   // The full standup runs under --init / --install (found a first vessel) OR
   // --admit FILE (join an existing PersonaGroup — own fresh keypair, same group).
-  // All idempotent. `--init` and `--install` are synonyms for the full standup.
+  // All idempotent. `--install` founds a vessel that holds none; `--init` does that AND wires
+  // every AI surface (below). Two flags, two reaches.
   const doStandup = !observeOnly &&
     (args.flags["init"] === true || args.flags["install"] === true || args.options["admit"] !== undefined);
   if (doStandup) founding = await foundIfAbsent(args, { root, bootstrap });

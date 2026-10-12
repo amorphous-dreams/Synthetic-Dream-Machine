@@ -1,9 +1,14 @@
 /**
  * found — the idempotent founding orchestration behind `lares vessel stand --install`.
  *
- * Stands up the whole shebang from a (mostly) fresh pull — node build, mempalace
- * integration, social-plane init, genesis — by COMPOSING the existing commands,
- * each FOUND-IF-ABSENT and a NO-OP-IF-PRESENT. Running it twice is a pure no-op.
+ * Stands up the vessel from a (mostly) fresh pull — node build, social-plane init,
+ * genesis, then the global `lares` link — by COMPOSING the existing commands, each
+ * FOUND-IF-ABSENT and a NO-OP-IF-PRESENT. Running it twice is a pure no-op.
+ *
+ * Reach law: the founding runs before anything reaches outside LAR_ROOT. A refused
+ * or failed init returns before genesis and before the link, so a refusal leaves
+ * HOME untouched. The mempalace sidecar is no part of a founding; its door is
+ * `lares mempalace install`.
  *
  * Safety law (the keypair-wipe lesson generalized):
  *  - the plan is computed by file PRESENCE alone (read-only); only absent steps run;
@@ -20,8 +25,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { runCommand } from "./spawn.js";
 import { cmdFound } from "./commands/found.js";
 import { cmdBake } from "./commands/scripted.js";
-import { checkMempalaceIntegration, installMempalaceIntegration } from "./integration-check.js";
-import { linkLaresGlobal, linkMempalaceBins } from "./link-bin.js";
+import { linkLaresGlobal } from "./link-bin.js";
 import type { ParsedArgs } from "./parse-args.js";
 
 const NODE_DIST_MAIN = join(repoRoot, "packages", "lararium-node", "dist", "src", "main.js");
@@ -56,7 +60,6 @@ export function planFounding(ctx: FoundContext): PlanStep[] {
   const genesisSeed = join(ctx.root, "genesis", "seed.json");
   return [
     { step: "build", present: existsSync(NODE_DIST_MAIN), wouldRun: "pnpm install && pnpm -r build" },
-    { step: "mempalace", present: checkMempalaceIntegration().ok, wouldRun: "git submodule update --init + pip install -e ./mempalace" },
     { step: "init", present: existsSync(ctx.bootstrap), wouldRun: "lares vessel found (keypair load-or-create; founding ceremony only if absent)" },
     { step: "genesis", present: existsSync(genesisSeed), wouldRun: "build-genesis (BUILD-IF-ABSENT; never rebuilds a founded shrine)" },
   ];
@@ -88,36 +91,7 @@ export async function foundIfAbsent(args: ParsedArgs, ctx: FoundContext): Promis
     if (built !== 0) return steps; // nothing downstream can serve without dist
   }
 
-  // 1b. Global link — make `lares` runnable from anywhere (symlink into a user bin
-  //     on Unix, a .cmd shim on Windows). Self-contained, no pnpm/PNPM_HOME dependency.
-  //     Idempotent; non-fatal — a link failure never blocks the standup.
-  {
-    const r = linkLaresGlobal();
-    steps.push({ step: "link", action: r.ok ? "ran" : "failed", detail: r.detail });
-  }
-
-  // 2. Mempalace integration (idempotent internally).
-  if (present("mempalace")) {
-    steps.push({ step: "mempalace", action: "skip", detail: "integration present" });
-  } else {
-    const r = installMempalaceIntegration();
-    const ok = r.every((s) => s.ok);
-    steps.push({ step: "mempalace", action: ok ? "ran" : "failed", detail: r.map((s) => `${s.step}:${s.ok ? "ok" : "fail"}`).join(" ") });
-  }
-
-  // 2b. Link the mempalace console scripts into ~/.local/bin so Claude's hook + MCP
-  //     environment finds them WITHOUT the venv active (the venv-on-PATH gap that broke
-  //     the Stop keep-hook and recall). Idempotent; non-fatal.
-  {
-    const bins = linkMempalaceBins();
-    steps.push({
-      step: "link-mempalace",
-      action: bins.every((b) => b.ok) ? "ran" : "failed",
-      detail: bins.map((b) => b.detail).join(" · "),
-    });
-  }
-
-  // 3. Init — FOUND a new PersonaGroup, or JOIN an existing one when an admit payload
+  // 2. Init — FOUND a new PersonaGroup, or JOIN an existing one when an admit payload
   //    is provided (--admit FILE → cmdFound routes admitPayloadPath). Self-guards on the
   //    bootstrap (idempotent: already founded/joined → skip); the keypair is never wiped.
   if (present("init")) {
@@ -135,12 +109,20 @@ export async function foundIfAbsent(args: ParsedArgs, ctx: FoundContext): Promis
     if (code !== 0) return steps;
   }
 
-  // 4. Genesis — BUILD-IF-ABSENT ONLY. The identity-safety line: never rebuild.
+  // 3. Genesis — BUILD-IF-ABSENT ONLY. The identity-safety line: never rebuild.
   if (present("genesis")) {
     steps.push({ step: "genesis", action: "skip", detail: "genesis present — NOT rebuilt (CID/identity preserved)" });
   } else {
     const code = await cmdBake(args);
     steps.push({ step: "genesis", action: code === 0 ? "ran" : "failed", detail: code === 0 ? "build-genesis (founded)" : `build-genesis exited ${code}` });
+  }
+
+  // 4. Global link — make `lares` runnable from anywhere (symlink into a user bin on Unix, a .cmd shim
+  //    on Windows). It reaches HOME, so it runs last: only a vessel that stands earns it. Idempotent;
+  //    non-fatal.
+  {
+    const r = linkLaresGlobal();
+    steps.push({ step: "link", action: r.ok ? "ran" : "failed", detail: r.detail });
   }
 
   return steps;

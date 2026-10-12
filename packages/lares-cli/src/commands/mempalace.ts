@@ -36,7 +36,8 @@ import { livePalaceProcs, fmtUptime, procInPalaceScope, type PalaceProc, type Pr
 import { hookPauseState, pauseHooks, resumeHooks } from "../hook-pause.js";
 import { portHolderPids } from "../port-control.js";
 import { larPort } from "../env.js";
-import { installMempalaceIntegration } from "../integration-check.js";
+import { installMempalaceIntegration, type InstallStep } from "../integration-check.js";
+import { linkMempalaceBins } from "../link-bin.js";
 import { cmdMempalaceHarvest } from "./mempalace-harvest.js";
 import { cmdMempalaceRepave } from "./mempalace-repave.js";
 import { emit } from "../render.js";
@@ -481,9 +482,15 @@ export async function cmdMempalace(args: ParsedArgs): Promise<number> {
  * The mempalace is a READ-ONLY sidecar submodule. A vessel founds and serves without it; what it unlocks is
  * the memory tooling — the py organs the sovereign sensorium imports as code (`lares sense setup` stands
  * those). Idempotent: already-installed reads as a skip, never as work.
+ *
+ * Once the library deps stand, the console scripts link into ~/.local/bin so a hook or MCP
+ * environment finds them WITHOUT the venv active. A failed install skips the link.
  */
 export function cmdMempalaceInstall(args: ParsedArgs): number {
-  const steps = installMempalaceIntegration();
+  const steps: InstallStep[] = installMempalaceIntegration();
+  if (steps.every((s) => !s.ran || s.ok)) {
+    for (const b of linkMempalaceBins()) steps.push({ step: "link-mempalace", ran: true, ok: b.ok, detail: b.detail });
+  }
   const failed = steps.filter((s) => s.ran && !s.ok);
   emit(args, {
     ok: failed.length === 0,
