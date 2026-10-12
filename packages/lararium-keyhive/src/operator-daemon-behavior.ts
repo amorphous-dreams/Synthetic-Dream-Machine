@@ -29,7 +29,7 @@ import {
   makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
 
@@ -85,6 +85,18 @@ import { KeyhiveProvider } from "./keyhive-provider.js";
 export function kelWalkNote(walk: { readonly unreadable?: string; readonly fork?: string }): string {
   return walk.unreadable ? ` — the persona-KEL walk set aside: ${walk.unreadable}` : "";
 }
+
+// A FACELESS FLOOR NAMES THE LIFT — the one refusal every face-scoped verb hands back.
+//
+// The floor is a state a vessel LIFTS out of, so a refusal there carries the act that lifts it
+// (the law `holdings-witness` keeps for its own corrections: a refusal says what would change the
+// answer). The closure reaches for no face, so standing it costs the boot nothing.
+const lightAFace = (verb: string): VerbReactor => async () => {
+  throw new Error(
+    `[daemon] ${verb}: this vessel stands at the WAKING FLOOR and holds no face — ` +
+    "light one with `lares persona new 0 --name '<label>'`, then stand the vessel again.",
+  );
+};
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
@@ -321,22 +333,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         await kh.registerBag(bagUrl);
         await delegateToFaceViaVeil(bagUrl, FACE_SEATS_AND_UNSEATS);
       };
-      registerActionReactors(registry, {
-        composite: ctx.composite,
-        reach: {
-          repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
-          slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
-        },
-        registerBag: registerBagCap,
-        // LOAD lands every legal TW5 filetype via TW5's own deserializer registry,
-        // resolved lazily through the daemon island's live $tw at action time.
-        tw5: makeTw5Deserializer(ctx.tw5),
-        // Resolve a carrier body a LOAD/INGEST verb rode BY REFERENCE (never inline) —
-        // the fs-less worker pulls it from the corpus CAS by content-address.
-        ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
-        // The crossing gate's tier reader — node's disk, injected here so the gate can price direction.
-        ...(bagTier ? { bagTier } : {}),
-      });
+      // THE CONTENT VERBS NEED A FACE. Every ACTION verb mints or writes under the face's reach, and REPACK
+      // registers beside them; a floor holds no face and no bag it minted, so each refuses by naming the lift
+      // BEFORE the cap check, the mint or any registry write. The set derives from the mesh table, never a list.
+      if (daemonAuth.personaGroupAgentIdHex) {
+        registerActionReactors(registry, {
+          composite: ctx.composite,
+          reach: {
+            repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+            slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+          },
+          registerBag: registerBagCap,
+          // LOAD lands every legal TW5 filetype via TW5's own deserializer registry,
+          // resolved lazily through the daemon island's live $tw at action time.
+          tw5: makeTw5Deserializer(ctx.tw5),
+          // Resolve a carrier body a LOAD/INGEST verb rode BY REFERENCE (never inline) —
+          // the fs-less worker pulls it from the corpus CAS by content-address.
+          ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
+          // The crossing gate's tier reader — node's disk, injected here so the gate can price direction.
+          ...(bagTier ? { bagTier } : {}),
+        });
+      } else {
+        for (const v of [...ACTION_VERBS, "REPACK"]) registry.register(v, lightAFace(v));
+      }
       // Residency mutators (pin/unpin/register-cold) — gated in-worker; they command the
       // main-resident BagStowage via daemon:residency-op (ctx.post). `residency`
       // stats (a read) stays main pending the askMain research.
@@ -417,18 +436,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           tw5: ctx.tw5,
           replica: didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
         });
-
-        // A FACELESS FLOOR NAMES THE LIFT — the one refusal every face-scoped verb hands back.
-        //
-        // The floor is a state a vessel LIFTS out of, so a refusal there carries the act that lifts it
-        // (the law `holdings-witness` keeps for its own corrections: a refusal says what would change the
-        // answer). The closure reaches for no face, so standing it costs the boot nothing.
-        const lightAFace = (verb: string): VerbReactor => async () => {
-          throw new Error(
-            `[daemon] ${verb}: this vessel stands at the WAKING FLOOR and holds no face — ` +
-            "light one with `lares persona new 0 --name '<label>'`, then stand the vessel again.",
-          );
-        };
 
         // The OWN-PERSONA name verbs over the sovereign persona doc — the human's labels for their OWN faces
         // (the private pet-name + the declared Handle), riding the same PRIVATE tier one plane over: the
@@ -669,9 +676,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           registerBag: registerBagCap,
           resolveDraftDoc: (slug: string) => slotDocsOf(ctx).draft(slug),
         };
-        registry.register("init-wiki",   makeInitWikiReactor(wikiMintOpts));
+        // The wiki-minting and composing verbs write under the face's reach, so a floor refuses them by
+        // naming the lift, as it does the ACTION verbs.
+        const faceStands = !!daemonAuth.personaGroupAgentIdHex;
+        const underFace = (verb: string, reactor: VerbReactor): VerbReactor => faceStands ? reactor : lightAFace(verb);
+        registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts)));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
-        registry.register("prune-stale", makePruneStaleReactor(wikiMintOpts));
+        registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane));
         // Whole-wiki residency policy — read the catalog recipe, command main's manager
         // per bag via daemon:residency-op. Pure policy, no live-layer mechanism.
@@ -679,8 +690,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("unpin-wiki",    makeWikiUnpinReactor(catalog, ctx.post, sysPlane));
         // Recipe composition — write the catalog recipe, command residency via op. NO
         // live-layer mount/unmount: the recipe syncs, islands reconcile their own stacks.
-        registry.register("add-bag",       makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post }));
-        registry.register("remove-bag",    makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post }));
+        registry.register("add-bag",       underFace("add-bag", makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
+        registry.register("remove-bag",    underFace("remove-bag", makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         // Catalog-writing residency verbs — mint/oracle via accessor + repo, command
         // residency via post. No live-layer swap (oracle/recipe sync; islands reconcile).
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));
