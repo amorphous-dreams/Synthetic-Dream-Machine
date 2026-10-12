@@ -50,6 +50,22 @@ instrument that reads the tree; run it fresh before trusting any reading.
 
 <<~/ahu>>
 
+<<~ ahu #/resume>>
+
+!! Work in flight ~ where a cold hand picks up
+
+A pause for a machine restart cut three crews mid-round. `git log` names what landed; this section names what waits. The crews' briefs, handbacks, reviews and saved patches ride in one archive outside the repository: `~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/handoff-2026-10-12/scratchpad-text.tgz` (start at `RESUME-CONTROLLER.md`, then `nalu/build3/RESUME.md` and `keel/RESUME.md` inside it). Burn this section once each line below closes.
+
+# ''E2E owed before anything else.'' The shore's stage two, the always-mounted working layer, the wire vectors and the Repo line at `2.6.0-alpha.5` landed on package suites alone. Run one shard lane (`node tools/e2e-shards.mjs push <lane>`) and read the merge line. The working-layer change carries the most risk: a boot refuses where an attach once logged "attach skipped", and the host awaits the worker's binding before its socket opens.
+# ''Hand deletes shadow canon (kapae).'' A hand's delete of a canon-landed title lands in the face's working layer as an ordinary tombstone that names the title alone; moving that tombstone down into a bag that holds the title performs the delete there, and the hand chooses the bag when several hold it. Round one stands reviewed and saved as two patches (`nalu/build3/M21-r1-mesh.patch`, then `M21-r1-lane.patch`); round two stopped unfinished. Open from review: an orphan slot child still tombstones in the canon bag; the draft tombstone skips the same router; one vector must run through the real recipe builder. A residency move cannot yet carry a tombstone, since the move lists visible records alone.
+# ''The engine as applier.'' The nalu engine's inert scheduler, `transact` and checkpoint leave, the plugin rebuilds, and `genesis/` re-bakes in one labelled commit. Brief ready: `nalu/build2/ENGINEf-r1.brief.md`. It follows the kapae lane, since both edit one function. Staged e2e vessels found from the committed `genesis/`.
+# ''Recovery custody.'' No verb reads a recovery card, and a charter head armed by the quorum rite cannot roll. The research shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>) carries the field's findings; the design draft with its rulings list waits in `keel/briefs/refined-design-draft.md`. Owed canon: `kahu.mem` and `recovery-custody-scout.mem` overstate what guardians can do. The founding runbook marks the rotation OWED (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>).
+# ''Then'': a closing review, the re-founding of the dockerized Lararium by the runbook's walk, the aftermath sweep (canon the landed lanes made stale, crosslinks, the changelog), and the custody seal relay with the Keyhive port prepared in `.worktrees/fold-prep`.
+# ''Rulings waiting on the operator'' ride in the two crew sheets: seven from the build lanes (a boot that refuses after a hard kill between the binding record and the working document; a refused boot that keeps its store claim; a rename onto a standing title; others) and the recovery set.
+# ''Crew shape'': one Opus Episkopos driving two Luna builders and one Sol reviewer, five rounds per set at most.
+
+<<~/ahu>>
+
 <<~ ahu #/wounds>>
 
 !! Open wounds, ranked
@@ -172,6 +188,6 @@ The rulings owed read in ''Pending operator rulings''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uoK-P2qVTwyIkbKpQTCfncA1tD85327hrNxqmFF9gP0
+<<^ code="&#x0003;">>ni:///sha-256;fZGt2GW5HhEx1O_JNe9rl-oWIrFeh96KCh7m8-FwaKU
 
 <<^ code="&#x0004;" -> to="?">>
