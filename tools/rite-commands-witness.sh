@@ -47,8 +47,20 @@ if help_out.returncode != 0 or not help_out.stdout.strip():
 live = set(re.findall(r'^\s{2,4}(?:\S+ )?([a-z][a-z0-9-]+)\s', help_out.stdout, re.M))
 rite = "\n".join(r.read_text() for r in RITES)
 
-cmds = sorted({m.group(1) for m in re.finditer(
-    r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite)})
+cmds = {m.group(1) for m in re.finditer(
+    r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite)}
+
+# A rite that walks the container instructs through the HOST SHIM. The shim keeps three verbs of its
+# own (the engine's: up, down, logs), spells the founding act `found`, and hands every other word to
+# the CLI. So a shim line claims a CLI door exactly as a bare `lares` line does.
+SHIM_OWN = {"up", "down", "logs"}
+for m in re.finditer(
+        r'(?m)^\s*tools/lares-container\.(?:sh|ps1) ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite):
+    words = m.group(1).split()
+    if words[0] in SHIM_OWN:
+        continue
+    cmds.add("vessel found" if words[0] == "found" else m.group(1))
+cmds = sorted(cmds)
 
 CMDS_DIR = pathlib.Path("packages/lares-cli/src/commands")
 fail, subs_checked = [], 0
