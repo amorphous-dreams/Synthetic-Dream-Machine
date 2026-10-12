@@ -13,7 +13,7 @@ manao             = 16
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-10-08"
+revised-on        = "2026-10-11"
 role              = "cabal-realm — a CabalGroup read as an IMAGINED REALM on the DreamNet: the superset of the members' shared infrastructure, imagined as one shared expanse (a hearth beside, not a category above). It carries no DID of its own — a Place bears identity, a vessel names the metal running the code, a realm names what the members jointly imagine and maintain. Named-not-ruled, alive by its epoch, dissolving to anu when unfed. The tie-break rides the realm's epoch (BeeKEM); malice rides Plane-B convergent-removal. GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling 2026-08-09): the Ostrom principles govern the realm — the virtual relationship-place — while infrastructure authority (who runs the metal, who holds the archive passphrase, who lights a Herm, who signs a kāpae) sits on the vessel and the charter. Neither substitutes for the other"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/cabal-realm"
@@ -113,6 +113,25 @@ Without these the realm becomes the //un//-governed commons that collapses (Hard
 The fusion comes easily because the same person often does both, and it fails in one direction: ''a realm's members agreeing something does NOT move a key, and an operator holding the metal does NOT hold a vote in the realm.'' Where a design needs both it must name both, separately — the realm's agreement and the infrastructure's authority never substitute for each other.
 
 The Ostrom principles above still hold ''unchanged'' under the cut; they govern the realm. Read them as claims about the metal and P1's cost-dial turns into an admission fee for hardware, which no one ever ruled.
+
+<<~/ahu>>
+
+<<~ ahu #/the-house-table>>
+
+!! The house table ~ a shared realm, a referee-private bag, and self-blinding by recipe
+
+''A tabletop table reads as a table cabal with a shared realm, plus a referee-private bag'' (operator-approved model, 2026-10-11). The model takes the house's own RPG table as its worked case, and it teaches the planes at kitchen-table scale.
+
+* ''The table realm'' holds what every seat at the table shares.
+* ''The referee-private bag'' holds what the referee alone reads.
+* ''The referee composes a wiki recipe holding ALL the bags.''
+* ''A player SELF-BLINDS.'' She composes a players-only recipe for her player face, and a referee recipe for her referee face. One human may hold both faces at one table: at the house table Lady Aki Cobbsdottir plays and Grandmother Spider referees.
+* ''Blinding rides RECIPE COMPOSITION by the wearer'', never a filter some host applies. The recipe layers stand taught at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>.
+* ''Bag-level write grants suit the house ceremony.'' Per-meme grants stand OWED for stranger tables.
+
+''The session carries the recipe.'' A session wears one face and holds that face's EFFECTIVE recipe (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>), so a player session and a referee session may stand at once over one vessel, each reading through its own composition. Two devices of one human may likewise wear different faces at once.
+
+''OWED'': no leaf yet honours a session's effective recipe; an admitted leaf reads its hearth's default recipe. Cabal realms, many per Nexus, stand unbuilt beside the one Nexus realm a vessel stands today.
 
 <<~/ahu>>
 
@@ -216,6 +235,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;R3sH2n_y02ZDd1_A72KITzb-xbmIDQ1dRsEjNGR2OvM
+<<^ code="&#x0003;">>ni:///sha-256;QUHYiPPDO45sf0MnsT5NtFo8-eD59KRLUu65sVzCkM8
 
 <<^ code="&#x0004;" -> to="?">>
