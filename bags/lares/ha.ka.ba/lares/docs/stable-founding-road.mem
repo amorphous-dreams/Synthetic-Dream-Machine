@@ -278,9 +278,10 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">> page controls carry edits across browser frames
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> outbound bridge defines the inbound echo boundary
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure context names the household browser transport
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> harbor states the container boundary as law
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NBgHCDyetsscpj1Q3z2XgqxQmvPrUpKoWPe29umXjZs
+<<^ code="&#x0003;">>ni:///sha-256;j-k4NlLRx0h89AsjMs0Od_db_veFIXN60sE8Hn56D-U
 
 <<^ code="&#x0004;" -> to="?">>

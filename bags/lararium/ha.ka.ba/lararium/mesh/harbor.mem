@@ -1,0 +1,169 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/harbor">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/mesh/harbor.mem"
+hydrate   = true
+l-space   = "stable"
+role      = "the container boundary as law — one image that carries code and nothing of a household; two mounts, /workspace for bags and wikis and /state for vessel homes and custody; the local socket kept inside the container with the host CLI entering through `docker compose exec`; engine control kept on the host and no docker socket for the app; LAN discovery that offers unauthoritative candidates while a pinned admission alone grants authority; a TLS terminator in front of a vessel that names its reach face from one setting; harnesses that run the image by digest; a release manifest that binds the image digest to the genesis, engine and grammar CIDs; no pave or wipe command"
+title     = "lar:///ha.ka.ba/lararium/mesh/harbor"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/harbor"
+```
+
+<<~ ahu #/head>>
+
+! Harbor ~ the container boundary
+
+A Lararium runs inside a container. This carrier states where the container ends and the household begins: what the image carries, what arrives as a mount, which side holds the socket, which side controls the engine, how a vessel gets found on a LAN, how a browser reaches it over HTTPS, and what a release names.
+
+> ''Register.'' The operator ruled that all code runs dockerized, that one Lararium serves one human, that local-first comes first, and that no pave or wipe command exists (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The house settled the boundary below under those rulings. The road lists what the build still owes (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>, HARBOR).
+
+<<~/ahu>>
+
+<<~ ahu #/code-and-hooks>>
+
+!! Code in the container, hooks on the host
+
+''All code runs dockerized.'' The daemon, the CLI, the web surface and every harness run from the image. The host keeps only the hooks into the operator's environment:
+
+* ''files'': the two mounts of #/the-two-mounts;
+* ''session capture'': read-only binds of the session roots the operator names, one directory each, never a home directory whole;
+* ''the editor and the CLI entry'': a host shim that calls `docker compose`, and the editor that opens files under `/workspace`;
+* ''custody'': the state directory and its backup.
+
+A host shim holds no logic of the vessel. It routes a verb to the container and refuses by name when a mount stands undeclared.
+
+<<~/ahu>>
+
+<<~ ahu #/the-image>>
+
+!! The image ~ code and genesis, nothing of a household
+
+''One multi-arch image serves every surface'': a parent's desktop, a Linux box, a Pi, a VPS herm. Differences between surfaces ride the environment and the mounts, never a second image and never a second compose file per surface.
+
+* The image carries the daemon, the CLI, the built web surface and the genesis seed with its content-addressed blobs.
+* The image carries no corpus, no vessel home, no key and no credential. No layer, build argument or environment variable holds any of them.
+* The image carries no test door. A harness that founds without a terminal mounts the staging tools read-only from the repository, and those tools act only on a root the harness marked.
+* The vessel runs as a non-root user whose uid and gid the environment supplies, so files in both mounts stay editable by the host operator.
+* The image declares both mount points as volumes, so a run that forgets a mount lands in an anonymous volume and never in a layer.
+
+<<~/ahu>>
+
+<<~ ahu #/the-two-mounts>>
+
+!! The two mounts ~ `/workspace` and `/state`
+
+| Mount | Holds | Law |
+|---|---|---|
+| `/workspace` | `bags/` and `wikis/`, the corpus the disk projection reads and writes | editable from the host; the projection's mirror roots resolve under it (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>) |
+| `/state` | the vessel's homes and its custody | one directory per vessel; backed up apart from the corpus; never an image layer |
+
+* ''One Lararium per human, never per face.'' A human's faces keep their data together in one vessel. No design assumes a container or a state mount per face; a session wears a face and the vessel wears none.
+* ''One holder per store.'' The store takes its own claim on the state mount before it opens. A second holder on the same `/state` refuses `StoreHeld`, whichever container, namespace or entrypoint it came through.
+* ''Explicit roots.'' `LAR_ROOT` names `/state`, and the daemon takes `--root /workspace`. `LAR_BAGS` alone moves the bags root only and leaves the mirror roots where they stood.
+* ''Both mounts rest on a local filesystem the host trusts to honor `fsync`.'' A network share or a 9P bind changes ownership semantics and may refuse the hard link the socket claim makes.
+
+<<~/ahu>>
+
+<<~ ahu #/the-socket>>
+
+!! The socket stays inside
+
+The daemon and the CLI meet at a Unix socket in the container's own `/tmp`, a tmpfs. That socket never binds to the host, never crosses between two containers and never rests on a shared filesystem.
+
+* ''The host CLI enters through `docker compose exec`.'' The exec'd CLI shares the daemon's `/tmp`, uid and environment, so it reaches the one socket the daemon holds.
+* ''One store door.'' A command that touches the store runs inside the standing vessel over that socket; when no vessel stands, the command owns the store itself for that one act, in a one-shot container on the same two mounts. A second process never opens the store beside a live holder.
+* ''A credential rides a terminal alone.'' A founding and every custody verb gather their human route on an attached TTY. No flag and no environment variable carries one; without a TTY the CLI refuses `CredentialTtyRefusal`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-engine>>
+
+!! Engine control stays with the host
+
+''The app never receives the docker socket.'' No container of this house mounts it, and no shim passes it. A process holding that socket holds the host.
+
+So every act on the engine belongs to the host shim: standing the vessel, stopping it, restarting it, reading its log. When a vessel's standing no longer matches its state on disk (a face lit after boot), the CLI inside the container reports that verdict and the host shim performs the restart. The CLI inside never signals, replaces or respawns the container's main process.
+
+The container drops every Linux capability and forbids new privileges. It publishes its port on loopback unless the operator names a wider interface.
+
+<<~/ahu>>
+
+<<~ ahu #/lan-discovery>>
+
+!! LAN discovery ~ candidates, never authority
+
+Two vessels on one household LAN may find each other without typing an address. Discovery answers one question alone: //which addresses might host a vessel//.
+
+* ''An announcement carries a bare service and a port.'' It carries no catalog address, no Nexus name, no key and no label that names a person or a house. Anyone on the LAN reads an announcement, so it holds nothing worth reading.
+* ''A candidate grants nothing.'' The listener gains a URL to try. The gate at that URL answers only a dialer who already holds its pinned key (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/decisions">>, the knock), so a candidate dialed with a wrong key meets silence.
+* ''A pinned admission alone grants authority.'' The key reaches the joining device through an admission a human carried: a QR code or a `lar:` URI holding the URL and the gate key. A right key still wants the host's explicit admit before any plane opens.
+* ''The fallback needs no multicast.'' The same QR code or URI carries the URL itself, so a LAN that drops multicast (guest isolation, a mesh of access points, a routed segment) loses convenience and nothing else.
+* ''No clock decides.'' A candidate that stops answering simply fails the next dial; no timer marks a peer lapsed.
+
+A container on the engine's default bridge network sends and hears no LAN multicast. Announcing from inside a container requires host networking or a macvlan attachment; each widens what the container reaches. The compose file therefore keeps the bridge by default, and the host-network choice stays an explicit, documented setting the operator turns.
+
+<<~/ahu>>
+
+<<~ ahu #/household-https>>
+
+!! Household HTTPS ~ a terminator in front, one declared name
+
+A browser mints keys only in a secure context, so a phone on the LAN needs an `https` origin its trust store already accepts (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>). The boundary places that concern outside the vessel:
+
+* ''A TLS terminator stands in front of the vessel'' and holds the wildcard certificate. The vessel serves plaintext to the terminator alone and keeps its loopback publication.
+* ''One split-horizon resolver'' on the always-on node answers the household name with the LAN address. No device installs anything.
+* ''The vessel names its reach face from one setting'', `LAR_PUBLIC_URL`. An `https` name carries `wss` for the relay, and the crossing URL the vessel prints (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>) uses that same name throughout.
+* ''The operator supplies the domain, the DNS credential and the issuance.'' The house builds nothing that holds them. The credential never enters the image, the compose file or the state mount of the vessel.
+* ''Issuance and renewal sit at the edge of the causal island.'' A certificate's validity window belongs to the browser's trust decision. It decides no admission, no revocation and no act inside the vessel.
+
+The terminator and the resolver attach through one slot in the compose file that stays off until the operator turns it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-harnesses>>
+
+!! The harnesses stand on the image
+
+A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code.
+
+<<~/ahu>>
+
+<<~ ahu #/the-release-manifest>>
+
+!! The release manifest
+
+A release names one multi-arch image index and one record beside it. The record binds four content addresses together: the image digest, the genesis seed's CID, the engine CID and the grammar CID. A vessel, a harness or a second operator who holds the record can check that an image carries exactly the genesis, engine and grammar the release names, and refuse a mismatch before any vessel stands.
+
+<<~/ahu>>
+
+<<~ ahu #/no-pave>>
+
+!! No pave, no wipe
+
+No command of the shim, the CLI or the compose file removes a state directory, a workspace or a volume that holds a vessel. A fresh start happens by hand and stays reversible: the operator moves the old homes aside and founds again (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>). Stopping the vessel leaves both mounts as they stood.
+
+''Local-first comes first.'' Nothing in the boundary forecloses a keyless ciphertext carrier on a cloud surface later: custody stays in `/state`, and a carrier that holds sealed bytes alone needs neither mount's contents in the clear.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the road carries the container rulings and the HARBOR build list
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure context explains the browser wall the terminator clears
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">> disk projection defines what lands under the workspace mount
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">> pronaos defines the web surface and the crossing a browser walks
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> the founding runbook walks an operator through a first vessel
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">> no wall clock decides an act
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;I6-pJSiuPuu9y181jdTEksGvQNnaGscW7BeXeZeTAZI
+
+<<^ code="&#x0004;" -> to="?">>
