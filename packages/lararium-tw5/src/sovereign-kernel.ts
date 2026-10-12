@@ -68,7 +68,7 @@ import {
   type SlotUri,
 } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
-import { buildIslandRecipe } from "./island-recipe.js";
+import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { makeCatalogAccessor } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
@@ -436,8 +436,7 @@ export function runSovereignKernel(
     // Await the hydration checkpoint before arming behavior — onEa still observes a
     // fully-resident seed (the invariant), but the drain paced the loop instead of
     // blocking it. Resolves at once on a wiki-less path (no hydration begun).
-    await (tw5 as unknown as { lares?: { whenSeedDrained?: () => Promise<void> } })
-      .lares?.whenSeedDrained?.();
+    await seedDrained(tw5);
 
     // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
     // load slot — the catalog registry is absent from expandRecipe). Worker behaviors build

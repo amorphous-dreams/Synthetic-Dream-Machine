@@ -134,3 +134,14 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
 
   return { adaptor, stores };
 }
+
+/**
+ * THE HYDRATION CHECKPOINT. Resolves once the seed wave `buildIslandRecipe` armed stands in the wiki —
+ * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
+ * behavior arms over a resident seed and its first write finds every slot named. Resolves at once on an
+ * engine that began no hydration.
+ */
+export function seedDrained(tw5: TW5Engine): Promise<void> {
+  const lares = (tw5.$tw as { lares?: { whenSeedDrained?: () => Promise<void> } }).lares;
+  return lares?.whenSeedDrained?.() ?? Promise.resolve();
+}

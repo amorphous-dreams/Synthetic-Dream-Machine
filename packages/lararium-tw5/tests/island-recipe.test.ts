@@ -12,7 +12,8 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { buildIslandRecipe } from "../src/island-recipe.js";
+import { readFileSync } from "node:fs";
+import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
@@ -157,4 +158,43 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
     expect(held(working)).toEqual(["lar:///t/recipe/hand-edit"]);
     stop();
   }, 120_000);
+});
+
+/**
+ * THE HYDRATION CHECKPOINT — behavior arms over a RESIDENT seed. The seed wave drains on the paced rail,
+ * so the kernel awaits `seedDrained(tw5)` between the recipe and `behavior.onEa`. A behavior that ran
+ * ahead of the drain would write into a wiki whose slot pointers had not arrived, and each such write
+ * would refuse for want of a bag.
+ */
+describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits before behavior${skipNote}`, () => {
+  test("resolves once the paced seed wave stands in the wiki: corpus and pointers, with no flush called", async () => {
+    const engine = await bootTestWiki();
+    const slug = "checkpoint";
+    const SEEDED = "lar:///t/recipe/resident-before-behavior";
+    const canon = fakeHandle();
+    (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers[SEEDED] = { tiddler: { title: SEEDED, text: "resident" } };
+    buildIslandRecipe({
+      tw5: engine,
+      composite: new CompositeStore(),
+      recipe: { wikiSlug: slug },
+      ready: [{ slot: wikiBagUri(slug), handle: canon }],
+    });
+    const wiki = engine.$tw.wiki as never as CascadeWiki;
+    // CONTROL — the rail is paced: straight after the recipe returns, the wiki holds neither.
+    expect(wiki.getTiddlerText!(SEEDED, "")).toBe("");
+    await seedDrained(engine);
+    expect(wiki.getTiddlerText!(SEEDED, ""), "the checkpoint resolved over a wiki the seed had not reached").toBe("resident");
+    expect(wiki.getTiddlerText!(CURRENT_WIKI_BAG, "")).toBe(wikiBagUri(slug));
+  }, 120_000);
+
+  test("★ the kernel awaits `seedDrained(tw5)` after the recipe and before `behavior.onEa` ★", () => {
+    const src = readFileSync(new URL("../src/sovereign-kernel.ts", import.meta.url), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    const recipe = src.indexOf("buildIslandRecipe({");
+    const drained = src.indexOf("await seedDrained(tw5)");
+    const behavior = src.indexOf("await behavior.onEa(");
+    expect(recipe, "the kernel builds no recipe").toBeGreaterThan(-1);
+    expect(drained, "the kernel never awaits the hydration checkpoint").toBeGreaterThan(recipe);
+    expect(behavior, "behavior arms ahead of the hydration checkpoint").toBeGreaterThan(drained);
+  });
 });
