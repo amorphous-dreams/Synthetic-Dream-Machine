@@ -22,16 +22,25 @@ export function canPromptSecret(): boolean {
 }
 
 /** Read one line from the TTY with echo suppressed. Rejects when stdin is not a TTY. */
-export function promptSecret(label: string): Promise<string> {
-  return readTty(label, false);
+export function promptSecret(label: string, stream: TtyStream = stdin): Promise<string> {
+  return readTty(label, false, stream);
 }
 
 /** Read one VISIBLE line from the TTY (a choice, never a secret). Rejects when stdin is not a TTY. */
-export function promptLine(label: string): Promise<string> {
-  return readTty(label, true);
+export function promptLine(label: string, stream: TtyStream = stdin): Promise<string> {
+  return readTty(label, true, stream);
 }
 
-function readTty(label: string, echo: boolean): Promise<string> {
+/** The slice of a TTY stream a prompt drives; defaults to the process's stdin. */
+export type TtyStream = Pick<
+  NodeJS.ReadStream,
+  "isTTY" | "isRaw" | "setRawMode" | "resume" | "pause" | "setEncoding" | "on" | "removeListener" | "unshift"
+>;
+
+/** Streams whose last read ended on a bare carriage return, so a line feed leading the next chunk is that CRLF's second byte. */
+const crEnded = new WeakSet<object>();
+
+function readTty(label: string, echo: boolean, stdin: TtyStream): Promise<string> {
   if (!stdin.isTTY) return Promise.reject(new Error("promptSecret: stdin is not a TTY"));
   return new Promise<string>((resolve, reject) => {
     stdout.write(label);
@@ -40,18 +49,32 @@ function readTty(label: string, echo: boolean): Promise<string> {
     stdin.resume();
     stdin.setEncoding("utf8");
     let buf = "";
-    const done = (fn: () => void) => {
+    const done = (rest: string, fn: () => void) => {
       stdin.setRawMode(wasRaw);
-      stdin.pause();
       stdin.removeListener("data", onData);
+      // what followed the line end belongs to the next read: it goes back to the stream, not to the floor.
+      if (rest.length > 0) stdin.unshift(rest);
+      stdin.pause();
       stdout.write("\n");
       fn();
     };
-    const onData = (ch: string) => {
-      for (const c of ch) {
-        if (c === "\r" || c === "\n") { done(() => resolve(buf)); return; }
-        if (c === "") { done(() => reject(new Error("aborted"))); return; }   // Ctrl-C
-        if (c === "" || c === "\b") { buf = buf.slice(0, -1); continue; }     // backspace
+    const onData = (chunk: string) => {
+      // the line feed of a CRLF whose carriage return ended the previous read is the same line end.
+      let text = chunk;
+      if (crEnded.delete(stdin) && text.startsWith("\n")) text = text.slice(1);
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i]!;
+        if (c === "\r" || c === "\n") {
+          let rest = text.slice(i + 1);
+          if (c === "\r") {
+            if (rest.startsWith("\n")) rest = rest.slice(1);
+            else if (rest.length === 0) crEnded.add(stdin);
+          }
+          done(rest, () => resolve(buf));
+          return;
+        }
+        if (c === "\u0003") { done("", () => reject(new Error("aborted"))); return; }   // Ctrl-C
+        if (c === "\u007f" || c === "\b") { buf = buf.slice(0, -1); continue; }          // backspace
         buf += c;
         if (echo) stdout.write(c);
       }
