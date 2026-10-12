@@ -18,6 +18,12 @@
  *   5 THE ANCHOR — a placement through the in-VM face (`$tw.lares.meme.place`) is a wiki write like any other,
  *     so its records leave by the same listener (no second door for the anchor).
  *
+ * NOTHING LEAVES BEFORE THE SEED IS RESIDENT. The kernel stands the bridge while the seed wave still drains,
+ * so the echo law's set covers that wave. Until the hydration checkpoint settles, the wiki holds the engine's
+ * own startup state (TiddlyWiki's default `$:/StoryList`, its `$:/HistoryList`): no hand wrote it, and carried
+ * out it would land over what the store holds before the seed brings that in. The bridge consumes inbound
+ * names through that window and carries nothing; an engine that began no hydration reads resident at once.
+ *
  * Held by the kernel's live handles and cancelled at teardown; a test stands it over a bare adaptor the same way.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/outbound-bridge
@@ -51,10 +57,14 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
   if (lares && typeof enqueue === "function") {
     lares.enqueueNalu = (change: LarTiddlerChange): void => { adaptor.noteInbound(change.title); enqueue(change); };
   }
+  let resident = false;
+  void (lares?.whenSeedDrained?.() ?? Promise.resolve()).then(() => { resident = true; });
   const onChange = (changes: WikiChanges): void => {
     for (const [title, change] of Object.entries(changes ?? {})) {
       // CLAUSE 3 — the echo law: a title the inbound drain applied leaves nothing; consumed once.
       if (adaptor.consumeInbound(title)) continue;
+      // The engine's own startup state, raised before the seed stands: no hand wrote it.
+      if (!resident) continue;
       if (change?.deleted) {
         void adaptor.deleteTiddler(title).catch((err: unknown) => console.warn(`[outbound-bridge] delete "${title}" faulted: ${String(err)}`));
         continue;

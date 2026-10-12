@@ -161,6 +161,42 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
 });
 
 /**
+ * NOTHING LEAVES BEFORE THE SEED IS RESIDENT. Between the engine's boot and the hydration checkpoint the
+ * wiki holds the engine's own startup state: TiddlyWiki writes a default `$:/StoryList` and `$:/HistoryList`
+ * there. Those are no hand's edits. Carried out, the default story would land over the person's stored one
+ * before the seed brings it in; routed before the pointers arrive, it would refuse for want of a bag.
+ */
+describe.skipIf(wikiSkip)(`the outbound bridge holds until the seed stands${skipNote}`, () => {
+  test("a change raised before the checkpoint leaves nothing and raises no refusal; the same title edited after it lands", async () => {
+    const engine = await bootTestWiki();
+    const slug = "resident";
+    const personalSlot = wikiSlotUri(slug, "personal");
+    const personal = fakeHandle();
+    const { adaptor } = buildIslandRecipe({
+      tw5: engine,
+      composite: new CompositeStore(),
+      recipe: { wikiSlug: slug },
+      ready: [{ slot: wikiBagUri(slug), handle: fakeHandle() }, { slot: personalSlot, handle: personal }],
+    });
+    const stop = bridgeWikiToAdaptor(engine, adaptor);
+    const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void; filterTiddlers(f: string): string[] };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
+    const held = (h: DocHandle<LarDoc>): Record<string, { tiddler?: { list?: unknown } }> => (h.doc() as unknown as { tiddlers: Record<string, { tiddler?: { list?: unknown } }> }).tiddlers;
+    // The engine's own startup write, standing in the wiki ahead of the paced seed.
+    wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted" }));
+    await seedDrained(engine);
+    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 150));
+    expect(Object.keys(held(personal)), "the engine's startup story left for the personal layer").toEqual([]);
+    expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]"), "a startup write raised a refusal").toEqual([]);
+    // CONTROL — the wiki stands resident; a person opening a tiddler moves the story, and that leaves.
+    wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted [[Lady Aki]]" }));
+    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 150));
+    expect(Object.keys(held(personal))).toEqual(["$:/StoryList"]);
+    stop();
+  }, 120_000);
+});
+
+/**
  * THE HYDRATION CHECKPOINT — behavior arms over a RESIDENT seed. The seed wave drains on the paced rail,
  * so the kernel awaits `seedDrained(tw5)` between the recipe and `behavior.onEa`. A behavior that ran
  * ahead of the drain would write into a wiki whose slot pointers had not arrived, and each such write
