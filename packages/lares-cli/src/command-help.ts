@@ -422,19 +422,18 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat] | wear <index> | list | sync | admit>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
       "`lares handle publish` performs the announce); the SEAT stands it for a Kahu chair on this node and " +
-      "needs a Handle. Neither flag implies the other, so a compartment called 'the-burner' can still stand " +
-      "under any declared Handle. `wear` switches the active persona (reboot-to-switch — one face to the " +
+      "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. `wear` switches the active persona (reboot-to-switch — one face to the " +
       "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joinee " +
       "receives a root by admit and never mints here.",
     examples: [
-      "lares persona new 0 --name '<label>' --handle '<declared Handle>' --seat",
-      "lares persona new 1 --name '<label>' --handle '<declared Handle>' --seat",
-      "lares persona new 2 --name '<label>' --handle '<declared Handle>' --seat",
+      "lares persona new 0 --name '<label>' --seat [--chair '<chair label>']",
+      "lares persona new 1 --name '<label>' --seat [--chair '<chair label>']",
+      "lares persona new 2 --name '<label>' --seat [--chair '<chair label>'] [--split-root]",
       "lares nexus seal seat                  # ... the founding sequence closes here",
       "lares persona wear 1                   # switch the active persona",
       "lares persona list                     # held indices · active marker · labels · declared Handles",
@@ -443,7 +442,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
       "--handle <Handle>  (new) declare the public Handle it answers to (intent, not an announce)",
-      "--seat             (new) stand it for a Kahu chair on THIS node (needs a Handle)",
+      "--seat             (new) stand it for a Kahu chair on THIS node (no Handle needed)",
+      "--chair <label>    (new) private label for a seat claim; pass with --seat",
+      "--split-root       (new) opt into arming the 2-of-3 recovery split",
       "admit <sub>        offer | grant | open | accept | list — airgapped device-to-device hand-off (QR 3-hop)",
     ],
     next: ["lares persona list", "lares handle publish '<glamour>'   # the outward announce"],

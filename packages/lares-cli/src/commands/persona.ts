@@ -1,5 +1,5 @@
 /**
- * `lares persona {new <index> --name <petname> [--handle <Handle>] [--seat] | wear <index> | list}` — the
+ * `lares persona {new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list}` — the
  * operator's door to the
  * PLURALITY-PONO identity multitude. A vessel HOLDS a set of PersonaGroup-roots — one per persona
  * the operator wears (persona-vault) — and WEARS one at a time. This command DRIVES the existing node core;
@@ -9,7 +9,8 @@
  *                                      assertHandleIndex) + set its PRIVATE pet-name
  *              [--handle <Handle>]     declare the public Handle this persona answers to (an intent, not a
  *                                      publish — only an announce binds a persona to a glamour)
- *              [--seat]                stand this persona for a Kahu chair on THIS node (needs a Handle)
+ *              [--seat [--chair <label>]] stand this persona for a Kahu chair on THIS node
+ *              [--split-root]          arm its 2-of-3 recovery split
  *   wear <index>                       switch the active persona (one-face-to-mesh; reboot-to-switch)
  *   list                               the private multitude-view — held indices, active marker, labels, Handles
  *
@@ -31,8 +32,8 @@ import {
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
-  declarePersonaHandle, standForKahuSeat, declaredHandle,
-  refuseSlot, personaSlotCeiling, type VesselClass,
+  declarePersonaHandle, standForKahuSeat,
+  refuseSlot, personaSlotCeiling, defaultChairLabel, type VesselClass,
 } from "@lararium/mesh";
 import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
 import { larDataDir } from "../env.js";
@@ -139,17 +140,13 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   if (name.length === 0) throw new UsageError("`persona new` needs a private label: --name '<petname>'");
   const handle = typeof args.options["handle"] === "string" ? args.options["handle"].trim() : "";
   const stands = args.flags["seat"] === true;
-  // A seat claim answers to a CHAIR NAME, so it needs a Handle — either declared in this breath or already
-  // standing from an earlier one. Refusing here beats seating a nameless claim the seal cannot join.
+  const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
+  const splitRoot = args.flags["split-root"] === true;
   const { petnames, declarations, did } = await fleetStores();
-  if (stands && handle.length === 0) {
-    const held = await declaredHandle(declarations, index);
-    if (!held) {
-      throw new UsageError(
-        `--seat needs the Handle this persona answers to: --handle '<Handle>' (h${index} declares none yet)`,
-      );
-    }
+  if (!stands && chair.length > 0 && (await declarations.get(index))?.seat !== true) {
+    throw new UsageError("--chair labels a seat claim: pass it with --seat");
   }
+  if (!stands && chair.length > 0) await standForKahuSeat(declarations, index, true, chair);
 
   // ── EACH FACE FOUNDS ITS OWN CRYPTOGRAPHIC INDIVIDUAL ────────────────────────────────────────
   // `lares vessel found` stands a PLACE — carrying, serving, faceless. A face lands here: h0 founds the
@@ -169,16 +166,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   }
   const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
 
-  // The recovery leg arms with the face, in THIS process: the device share seals beside the veil, and the two
-  // off-device carriers print to the operator alone — never into a standing vessel's outcome record.
-  const armed = await armRecoveryAtFounding(larDataDir(), index);
-  if (armed.minted) {
-    console.log(`[lares persona new] recovery armed for h${index} — the device share sealed into the identity home.`);
-    console.log("  SHARES ARE KEYS: the two carriers below, together, reconstruct this persona's root. Write the");
-    console.log("  recorded code down and keep it off this device; hand the escrow carrier to ONE peer you trust.");
-    console.log(`  recorded-code   ${armed.recordedCode}`);
-    console.log(`  escrow-carrier  ${armed.escrowCarrier}`);
-  }
+  const recovery = splitRoot ? await armRecoveryAtFounding(larDataDir(), index) : null;
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
   // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.
@@ -190,8 +178,17 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching
   // a string. Each flag lands its own field; neither implies the other.
   if (handle.length > 0) await declarePersonaHandle(declarations, index, handle);
-  if (stands) await standForKahuSeat(declarations, index, true);
+  if (stands) await standForKahuSeat(declarations, index, true, chair);
   const declaration = await declarations.get(index);
+  if (splitRoot && recovery?.minted) {
+    console.log(`[lares persona new] 2-of-3 memory split armed for h${index} — the device share sealed into the identity home.`);
+    console.log("  SHARES ARE KEYS: any two of the three rebuild this persona's root.");
+    console.log("  Keep both carriers yourself, apart from this device and apart from each other. Handing one to another person makes that person plus this device able to rebuild the root.");
+    console.log(`  recorded-code   ${recovery.recordedCode}`);
+    console.log(`  escrow-carrier  ${recovery.escrowCarrier}`);
+  } else if (splitRoot) {
+    console.log(`  root split already stands for h${index}.`);
+  }
   const fleetRead = did === null
     ? { reached: false as const, why: "this vessel stands no key yet" }
     : await readFleetSelves(did);
@@ -200,11 +197,16 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     ok: true,
     data: {
       handleIndex: index, petname: name, verifyingKey: root.verifyingKey, created: root.created,
-      handle: declaration?.handle ?? null, seat: declaration?.seat === true, fleet: fleetRead.reached,
+      handle: declaration?.handle ?? null, seat: declaration?.seat === true,
+      chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(index) : null,
+      rootSplit: !splitRoot ? "none" : recovery?.minted ? "armed" : "standing", fleet: fleetRead.reached,
     },
     human: () => {
       console.log(`persona h${index} ${root.created ? "minted" : "loaded"} — "${name}"`);
       console.log(`  verifying key: ${root.verifyingKey}`);
+      if (!splitRoot) {
+        console.log("  root split: none (opt in with --split-root)");
+      }
       console.log(`  pet-name is PRIVATE — it fleet-syncs among your own vessels and never PUBLICLY federates.`);
       if (declaration?.handle) {
         console.log(`  declares the Handle "${declaration.handle}" — a local intent until you announce it;`);
@@ -213,7 +215,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
         console.log(`  declares no Handle — name one with --handle '<Handle>' when it should answer outward.`);
       }
       if (declaration?.seat === true) {
-        console.log(`  STANDS for a Kahu seat on THIS node; take the chair with: lares nexus seal seat`);
+        console.log(`  stands for a Kahu seat as "${declaration.chair?.trim() || defaultChairLabel(index)}"; that chair label stays private to this node.`);
       }
       if (!fleetRead.reached) {
         console.log(`  NODE-LOCAL — no hearth answered (${fleetRead.why})`);
@@ -251,6 +253,8 @@ async function personaList(args: ParsedArgs): Promise<number> {
       petname: (await ownPersonaPetname(petnames, handleIndex)) ?? null,
       handle: (await declarations.get(handleIndex))?.handle ?? null,
       seat: (await declarations.get(handleIndex))?.seat === true,
+      chair: (await declarations.get(handleIndex))?.seat === true
+        ? (await declarations.get(handleIndex))?.chair?.trim() || defaultChairLabel(handleIndex) : null,
     })),
   );
 
@@ -259,12 +263,12 @@ async function personaList(args: ParsedArgs): Promise<number> {
     data: { active: active ?? null, personas: rows },
     human: () => {
       if (rows.length === 0) {
-        console.log("no personas held — stand the founder with `lares vessel stand --install`, then name + declare every kahu (three symmetric commands): `lares persona new 0/1/2 --name '<label>' --handle '<Handle>' --seat` (new 0 loads+names the founder).");
+        console.log("no personas held — stand the founder with `lares vessel stand --install`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
         return;
       }
       console.log("personas (the private multitude — private label -> declared Handle):");
       for (const r of rows) {
-        const declares = r.handle ? `  ->  "${r.handle}"${r.seat ? " [stands for a Kahu seat]" : ""}` : "";
+        const declares = `${r.handle ? `  ->  "${r.handle}"` : ""}${r.seat ? ` [stands for a Kahu seat as "${r.chair}"]` : ""}`;
         console.log(`  ${r.active ? "*" : " "} h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
       }
       console.log(`  (* = active${active === undefined ? "; none worn yet" : ""})`);

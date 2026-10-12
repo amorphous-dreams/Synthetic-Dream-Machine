@@ -21,20 +21,21 @@
  */
 import { describe, it, expect } from "vitest";
 import { foreignSeats } from "../src/seal-import.js";
+import { seatFingerprint } from "@lararium/mesh";
 
-const held = ["aa", "bb", "cc"];
+const held = ["aa".repeat(32), "bb".repeat(32), "cc".repeat(32)];
 
 describe("foreign-seat — what this vessel did not found, it does not seat onto", () => {
   it("★ a charter seating keys this vault cannot produce is FOREIGN ★", () => {
     const r = foreignSeats(
-      [{ displayName: "Kahu 0", verifyingKey: "zz" }, { displayName: "mine", verifyingKey: "aa" }], held);
-    expect(r.foreign).toEqual(["Kahu 0"]);
+      [{ displayName: "private", verifyingKey: "dd".repeat(32) }, { displayName: "mine", verifyingKey: held[0]! }], held);
+    expect(r.foreign).toEqual([seatFingerprint("dd".repeat(32))]);
     expect(r.ok).toBe(false);
     expect(r.why).toMatch(/quorum|did not found|foreign/i);
   });
 
   it("★ a charter of only this vessel's own keys seats cleanly ★", () => {
-    const r = foreignSeats([{ displayName: "mine", verifyingKey: "bb" }], held);
+    const r = foreignSeats([{ displayName: "mine", verifyingKey: held[1]! }], held);
     expect(r.ok).toBe(true);
     expect(r.foreign).toEqual([]);
   });
@@ -51,13 +52,13 @@ describe("foreign-seat — what this vessel did not found, it does not seat onto
 
   it("★ the refusal names EVERY foreign chair, not just the first ★", () => {
     const r = foreignSeats(
-      [{ displayName: "A0", verifyingKey: "x" }, { displayName: "A1", verifyingKey: "y" },
-       { displayName: "mine", verifyingKey: "cc" }], held);
-    expect(r.foreign).toEqual(["A0", "A1"]);
-    expect(r.why).toContain("A1");
+      [{ displayName: "A0", verifyingKey: "dd".repeat(32) }, { displayName: "A1", verifyingKey: "ee".repeat(32) },
+       { displayName: "mine", verifyingKey: held[2]! }], held);
+    expect(r.foreign).toEqual([seatFingerprint("dd".repeat(32)), seatFingerprint("ee".repeat(32))]);
+    expect(r.why).toContain(r.foreign[1]!);
   });
 
   it("★ key comparison ignores case — hex from two sources need not agree on it ★", () => {
-    expect(foreignSeats([{ displayName: "mine", verifyingKey: "AA" }], held).ok).toBe(true);
+    expect(foreignSeats([{ displayName: "mine", verifyingKey: held[0]!.toUpperCase() }], held).ok).toBe(true);
   });
 });

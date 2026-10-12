@@ -65,42 +65,41 @@ describe("a declaration says what a persona answers to — never what it publish
   });
 });
 
-describe("personasStandingForSeat — both acts, or no chair", () => {
+describe("personasStandingForSeat — a seat claim stands alone", () => {
   test("★ a declared Handle WITHOUT a seat claim never stands — declaring is not offering ★", async () => {
     const store = makeStore();
     await declarePersonaHandle(store, 0, "Kahu Alpha");
     expect(await personasStandingForSeat(store)).toEqual([]);
   });
 
-  test("★ a seat claim WITHOUT a Handle never stands — a nameless claim answers to no chair ★", async () => {
-    // Reading such a claim off some other label is exactly the weld this store exists to prevent, so it
-    // vanishes here and the seal's own door reports the gap rather than guessing at a name.
+  test("a seat claim without a Handle stands under its default chair label", async () => {
     const store = makeStore();
     await standForKahuSeat(store, 0, true);
-    expect(await personasStandingForSeat(store)).toEqual([]);
+    expect(await personasStandingForSeat(store)).toEqual([[0, "chair-h0"]]);
   });
 
-  test("both acts together stand, ascending by handle-index", async () => {
+  test("a declared chair label wins, ascending by handle-index", async () => {
     const store = makeStore();
     for (const [i, handle] of [[2, "Kahu Gamma"], [0, "Kahu Alpha"]] as const) {
       await declarePersonaHandle(store, i, handle);
-      await standForKahuSeat(store, i, true);
+      await standForKahuSeat(store, i, true, `chair-${handle}`);
     }
     await declarePersonaHandle(store, 1, "Kahu Beta");   // declares, never offers
     expect(await personasStandingForSeat(store)).toEqual([
-      [0, "Kahu Alpha"],
-      [2, "Kahu Gamma"],
+      [0, "chair-Kahu Alpha"],
+      [2, "chair-Kahu Gamma"],
     ]);
   });
 
   test("★ the store cannot read a Handle off a private label — the two registers never touch ★", async () => {
-    // Nothing here takes a pet-name store, so no code path exists that could fall back to one. A persona whose
-    // compartment reads "veil-three" stands as "Kahu Gamma" purely because the human said both.
+    // Nothing here takes a pet-name store, so no code path exists that could fall back to one. A chair label
+    // reads the seat claim alone: a declared Handle never names a chair.
     const store = makeStore();
     await declarePersonaHandle(store, 5, "Kahu Gamma");
     await standForKahuSeat(store, 5, true);
     const standing = await personasStandingForSeat(store);
-    expect(standing).toEqual([[5, "Kahu Gamma"]]);
+    expect(standing).toEqual([[5, "chair-h5"]]);
+    expect(JSON.stringify(standing)).not.toContain("Kahu Gamma");
     expect(JSON.stringify(standing)).not.toContain("burner");
   });
 });

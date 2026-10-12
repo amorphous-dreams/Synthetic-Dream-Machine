@@ -33,7 +33,7 @@ import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
-  NexusContractError, type NexusRollAnchorResult, type NexusMembersListResult,
+  NexusContractError, type NexusRollAnchorResult,
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
@@ -41,7 +41,7 @@ import {
   defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
   GUARDIAN_SLOT_CUSTODIAN, assembleQuorum, reconstructFromQuorum,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats,
-  type QuorumSignature, type CharterSealState,
+  type QuorumSignature, type CharterSealState, seatFingerprint,
 } from "@lararium/mesh";
 import {
   generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed,
@@ -58,10 +58,11 @@ import {
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { larSealHome } from "../env.js";
-import { storeVerb, StoreDoorRefusal, pokeSealHomeRefold } from "../store-door.js";
+import { storeVerb, pokeSealHomeRefold } from "../store-door.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { stampCarrier } from "@lararium/memetic-frame";
 
 /** A refusal the operator can fix by retyping — rendered as `usage`, never as an internal error. */
 class UsageError extends Error {}
@@ -101,7 +102,7 @@ function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; 
 const SEAL_USAGE: readonly string[] = [
   "usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>",
   "",
-  "  seat    form the roster from the personas that DECLARED a Handle + STOOD for a chair, then",
+  "  seat    form the roster from the personas that STOOD for a chair, then",
   "          establish the GENESIS epoch over their verifying keys:",
   "          --next-key-commit <digest>   the pre-rotation commitment",
   "          [--threshold <k>]            the quorum rule (default: majority of those that stood)",
@@ -131,8 +132,7 @@ const SEAL_USAGE: readonly string[] = [
  * The quorum rite — forge the pre-rotation, seat the kahu quorum it arms, and read the verdict.
  *
  * ── WHY IT DOES NOT MINT THE PERSONAS ───────────────────────────────────────────────────────────
- * A chair joins on a DECLARED HANDLE, and a handle is a name a human chooses and announces. A rite that
- * invented three of them would make the SOURCE decide who the founding kahu are, leaving the operator to
+ * A chair joins on a private chair label. A rite that invented three labels would make the SOURCE decide who the founding kahu are, leaving the operator to
  * confirm a legitimacy call somebody else made. So the three `persona new` acts stay outside this rite,
  * deliberately, and the seat refuses when nobody stands — which is the correct refusal, not a gap.
  *
@@ -180,7 +180,7 @@ async function quorumRiteSteps(rest: ParsedArgs): Promise<number> {
   const seated = await sealSeat({ ...rest, options: { ...rest.options, "next-key-commit": commit } });
   if (seated !== 0) {
     console.error("lares nexus rite quorum: halted at `seal seat`. The reserve stands; re-run after seating");
-    console.error("  personas that declared a Handle AND stood for a chair (`persona new <i> --handle … --seat`).");
+    console.error("  personas that stood for a chair (`persona new <i> --name '<label>' --seat [--chair '<chair label>']`).");
     return seated;
   }
   return await sealShow(rest);
@@ -209,7 +209,7 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
   }
 }
 
-/** normalize a chair name / declared Handle for matching — trimmed, case-folded (a human types either). */
+/** Normalize a chair label for matching — trimmed and case-folded. */
 const norm = (s: string): string => s.trim().toLowerCase();
 
 /** normalize a commitment/key hex — trimmed, lower-cased (the digest surface stays canonical lowercase hex). */
@@ -238,7 +238,7 @@ function reserveArmedRotateMessage(chainDepth: number): string {
 }
 
 /**
- * Seat each kahu's verifying key from the vault by DECLARED HANDLE match. FAIL CLOSED: no match keeps the
+ * Seat each kahu's verifying key from the vault by its private chair label. FAIL CLOSED: no match keeps the
  * doc's existing key (never invents, never unseats). A verifying key that is not in the vault can never be
  * seated — only vault reads flow in. Returns the updated kahu + the seated verifying keys (the CURRENT
  * key-set: at genesis the founding keys, at rotate the revealed next key-set the operator provisioned).
@@ -267,16 +267,13 @@ async function seatKahuFromVault(
   doc: NexusDoc, unstood: UnstoodChairs = "keep",
 ): Promise<{ kahu: NexusCharterKahu[]; seatedKeys: string[]; hands: SeatedHand[] }> {
   // THE ROSTER FORMS FROM WHAT STOOD, never from a list this build shipped. A persona reaches a chair by
-  // DECLARING the Handle it answers to and STANDING for a seat — two explicit acts on the operator's own
+  // carrying its private chair label with a seat claim — an independent act from any Handle —
   // vessel — and the roster reads back exactly those. A scaffold carrying names would make the SOURCE decide
   // who the founding kahu are, leaving the operator to confirm a legitimacy call somebody else made.
   //
-  // The chair name reads the DECLARED HANDLE, never the private pet-name. Matching the label would weld the
-  // two registers: an operator could then seat only under the same string they call the compartment at home,
-  // and every private label would become a public commitment by construction.
+  // The chair name reads the local private chair label; exports replace it with a fingerprint.
   const held = new Set(await listPersonaRoots());
-  // The declared Handle rides the FLEET (the persona plane), the seat claim stays LOCAL — so the seal reads a persona's
-  // outward name as every device of the human knows it, and reads the chair claim as THIS node holds it.
+  // The seat claim and private chair label stay local to this node.
   const localDeclarations = await makeNodePersonaDeclarationStore();
   const fleetDid = await fleetPeerDid();
   const declarations = fleetDid === null
@@ -291,15 +288,15 @@ async function seatKahuFromVault(
   const chairAt = new Map<string, number>(kahu.map((k, i) => [norm(k.displayName), i]));
   const hands: SeatedHand[] = [];
 
-  for (const [index, handle] of standing) {
+  for (const [index, chair] of standing) {
     if (!held.has(index)) continue;             // a declaration without a held root seats nothing here
     const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);   // a read; never a mint
     if (!verifyingKey) continue;
     hands.push({ handleIndex: index, verifyingKey });
-    const at = chairAt.get(norm(handle));
+    const at = chairAt.get(norm(chair));
     if (at === undefined) {
-      chairAt.set(norm(handle), kahu.length);
-      kahu.push({ displayName: handle, verifyingKey });
+      chairAt.set(norm(chair), kahu.length);
+      kahu.push({ displayName: chair, verifyingKey });
     } else {
       kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey };
     }
@@ -358,21 +355,12 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   const nextKeyCommit = normHex(args.options["next-key-commit"]);
   if (kahu.length === 0) {
     throw new UsageError(
-      "no persona stands for a chair — declare a Handle and stand for one first:\n" +
-      "  lares persona new <index> --name '<label>' --handle '<Handle>' --seat",
+      "no persona stands for a chair — stand one first:\n" +
+      "  lares persona new <index> --name '<label>' --seat [--chair '<chair label>']",
     );
   }
 
-  // NO FLOOR ON THE SEED. The keeper ladder starts at ONE — "founder (n=1, genesis) -> founder-multisig
-  // (a 2nd keeper contracts in -> the group, not the original key, becomes root) -> k-of-n quorum"
-  // (genesis-doc#governance). A floor of three refused phase 1 outright, so phase 2 could never be
-  // reached and the ladder could not start.
-  //
-  // AND THE COUNT WAS NEVER THE THING. Every key a seat draws comes from THIS vessel's own vault, so
-  // three chairs at genesis are three faces of one operator — one relationship, the operator with
-  // themselves. A second OPERATOR is the first relation, and the Nexus is the relation. `nexusPhase`
-  // reads that and the seal reports it; `rosterStanding` still names a fragile quorum without
-  // refusing one.
+  // A seed turns to a Nexus when a second operator seats their own key in a fresh charter. A contract moves no phase.
 
   // THE THRESHOLD, and where it comes from. A doc that already carries one keeps it; otherwise the seat
   // derives MAJORITY over the roster that stood. Neither a constant in the source nor a silent guess: majority
@@ -407,7 +395,8 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     data: {
       path, threshold: next.threshold, sealEpochCid, quorumSeated: quorum,
       rotationArmed: armed, reserveArmed, nextKeyCommit: nextKeyCommit || null,
-      kahu: kahu.map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey })),
+      kahu: kahu.map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey,
+        fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
     },
     human: () => {
       // The headline names what STOOD. It once read "(genesis epoch)" unconditionally, three lines
@@ -417,7 +406,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
         ? `nexus seal seated — GENESIS EPOCH established → ${path}`
         : `nexus seal seated — roster written, NO epoch (quorum short) → ${path}`);
       for (const k of kahu) {
-        console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}${k.verifyingKey ? `  ${k.verifyingKey.slice(0, 16)}…` : ""}`);
+        console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}${k.verifyingKey ? `  ${seatFingerprint(k.verifyingKey)}` : ""}`);
       }
       console.log(`  threshold:  ${next.threshold} of ${kahu.length}`);
       // WHAT IT SURVIVES, AT THE MOMENT IT IS WRITTEN. A seat NAMES a fragile quorum and refuses none —
@@ -433,8 +422,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
       } else {
         const missing = kahu.filter((k) => !k.verifyingKey).map((k) => `"${k.displayName}"`);
         console.log(`  quorum SHORT (fail-closed; the antigen stays inert). Unseated: ${missing.join(", ") || "(none)"}`);
-        console.log(`  seat them: lares persona new <index> --name '<label>' --handle '<Handle>' --seat  →  lares nexus seal seat`);
-        console.log(`  (a chair joins on the DECLARED Handle, never on the private label)`);
+        console.log(`  seat them: lares persona new <index> --name '<label>' --seat [--chair '<chair label>']  →  lares nexus seal seat`);
       }
     },
   });
@@ -605,14 +593,14 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // REVEAL: the operator has provisioned the pre-committed next key-set into the vault; seating from the
   // vault reads it back. The revealed key-set becomes the new head's authorized quorum.
   // THE ROSTER BECOMES EXACTLY WHAT STANDS — the succession door. A kahu steps down by no longer standing;
-  // a new one takes a chair by declaring a Handle and standing. Neither needs an admin verb, because the
+  // a new one takes a chair by standing under its private label. Neither needs an admin verb, because the
   // reveal below must still match the head's PRE-COMMITMENT: a roster change only lands if the operator
   // pre-committed the successor key-set an epoch earlier, under the quorum that stood then.
   const { kahu, seatedKeys, hands } = await seatKahuFromVault(doc, "drop");
   if (kahu.length === 0) {
     throw new UsageError(
       "no persona stands for a chair — a rotation seats the roster that STANDS, and none does. " +
-      "Stand them first: lares persona new <index> --name '<label>' --handle '<Handle>' --seat",
+      "Stand them first: lares persona new <index> --name '<label>' --seat [--chair '<chair label>']",
     );
   }
   const threshold = resolveSeatThreshold(args, doc, kahu.length);
@@ -647,7 +635,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
     const rosterMoved = kahu.length !== doc.kahu.length || threshold !== doc.threshold;
     emit(args, {
       ok: false,
-      error: { code: "error", message: `rotation REFUSED (fail-closed): ${result.reason}` },
+      error: { code: result.code, message: `rotation REFUSED (fail-closed): ${result.reason}` },
       human: () => {
         console.error(`nexus seal rotate REFUSED (fail-closed): ${result.reason}`);
         console.error(`  the chain stays at depth ${depth}; nothing written.`);
@@ -658,7 +646,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
         }
       },
     });
-    return exitFor("error");
+    return exitFor(result.code);
   }
 
   const sealLineage: SealEpoch[] = [...(doc.sealLineage ?? []), result.epoch];
@@ -681,13 +669,13 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       if (!(err instanceof NexusContractError)) throw err;
       emit(args, {
         ok: false,
-        error: { code: "error", message: `rotation REFUSED (fail-closed): ${err.message}` },
+        error: { code: "roll-anchor-refused", message: `rotation REFUSED (fail-closed): ${err.message}` },
         human: () => {
           console.error(`nexus seal rotate REFUSED (fail-closed): ${err.message}`);
           console.error(`  the chain stays at depth ${depth}; nothing written.`);
         },
       });
-      return exitFor("error");
+      return exitFor("roll-anchor-refused");
     }
   }
   // A rotation reaches the SEAL joint always, and the KAHU joint only when the roster actually moved — so an
@@ -761,13 +749,23 @@ function sealExport(args: ParsedArgs): number {
                  human: () => console.error(`lares nexus seal export: no charter at ${path} — seat one first: \`lares nexus rite quorum\``) });
     return 4;
   }
+  const parsed = parseNexusDoc(raw);
+  if (!parsed) {
+    const message = "the standing charter reads torn";
+    emit(args, { ok: false, error: { code: "refused", message }, human: () => console.error(`lares nexus seal export: ${message}`) });
+    return 3;
+  }
+  const chairs = parsed.kahu.map((k) => ({ fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null, seated: Boolean(k.verifyingKey) }));
+  const payload = { ...parsed, kahu: parsed.kahu.map((k) => ({ ...k, displayName: k.verifyingKey ? seatFingerprint(k.verifyingKey) : "unseated" })) };
+  const fence = /```json nexus-kahu\r?\n([\s\S]*?)\r?\n```/;
+  const redacted = stampCarrier(raw.replace(fence, `\`\`\`json nexus-kahu\n${JSON.stringify(payload, null, 2)}\n\`\`\``));
   emit(args, {
-    ok: true, data: { path, charter: raw },
+    ok: true, data: { path, charter: redacted, chairs },
     human: () => {
-      console.log(raw);
+      console.log(redacted);
       console.error(`\n  ${path}`);
       console.error("  public material — hand it over any channel that preserves INTEGRITY. It grants its");
-      console.error("  reader no quorum; it lets them verify yours and consent to carriage.");
+      console.error("  reader no quorum; it carries keys and fingerprints, no chair label.");
     },
   });
   return 0;
@@ -882,20 +880,14 @@ async function sealShow(args: ParsedArgs): Promise<number> {
   const chainDepth = doc?.sealLineage?.length ?? 0;
   const reserve = readCharterReserveState();
   const reserveArmed = isReserveArmed(head?.nextKeyCommit, reserve?.nextKeyCommit);
-  // THE ONLY INPUT THAT MOVES THE PHASE. A contracted operator is a key this vessel has never held,
-  // so it names a hand outside this vault — which is what a seated chair can never do. Unreachable
-  // members read as none, which keeps the phase honest rather than optimistic.
-  let contracted = 0;
-  try {
-    const { output } = await storeVerb("nexus-members-list", {}, StoreDoorRefusal);
-    contracted = (output as unknown as NexusMembersListResult).members.length;
-  } catch { contracted = 0; }
+  const heldKeys = (await Promise.all((await listPersonaRoots()).map((i) => loadPersonaGroupRootVerifyingKey(i))))
+    .filter((k): k is string => k !== undefined);
+  const foreign = doc ? foreignSeats(doc.kahu, heldKeys).foreign.length : 0;
+  const seatedInDoc = doc?.kahu.filter((k) => typeof k.verifyingKey === "string" && k.verifyingKey.length > 0).length ?? 0;
+  const ownSeats = Math.max(0, seatedInDoc - foreign);
   // THE CARRIED SET. One reading per charter this vessel holds, primary first. A Nexus stands in the set by a
   // consent verified at its held head or by a seated chair; a consent behind the head counts for nothing.
   const carried = await carriedReadings(sealHome);
-  // This vessel's own consent to SOME Nexus — the joining half of a relation. A seated chair is a founding,
-  // not a joining, so only a consent moves the phase here.
-  const joined = carried.some((c) => c.consented);
 
   emit(args, {
     ok: true,
@@ -917,13 +909,8 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       // would repair it. The reading rides the payload so a harness can assert it, and the human
       // path prints it where the numbers already are.
       standing: rosterStanding({ seated: roster.keys.length, threshold: roster.threshold }),
-      // WHERE THIS VESSEL STANDS ON THE KEEPER LADDER, read from RELATIONS rather than from the seat
-      // count — every seated key came from this vault, so no number of them names a second hand.
-      // BOTH HALVES OF THE RELATION. `contracted` counts operators THIS vessel admitted; the consent
-      // counts the one it gave. A vessel that joined a Nexus admits nobody and would otherwise read a
-      // seed forever, unable to see the relation it is standing in.
-      phase: nexusPhase({ seatedKeys: roster.keys.length, contractedOperators: contracted, contractedInto: joined }),
-      kahu: (doc?.kahu ?? []).map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey) })),
+      phase: nexusPhase({ ownSeats, foreignSeats: foreign }),
+      kahu: (doc?.kahu ?? []).map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
       carried: carried.map((c) => ({ aid: c.aid, primary: c.primary, sealEpochCid: c.sealEpochCid || null,
                                      consented: c.consented, seated: c.seated, carried: c.carried })),
     },
@@ -945,7 +932,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
         return;
       }
       console.log(`nexus seal (${nexusCharterDocPath(sealHome)}):`);
-      for (const k of doc.kahu) console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}`);
+      for (const k of doc.kahu) console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}${k.verifyingKey ? `  ${seatFingerprint(k.verifyingKey)}` : ""}`);
       console.log(`  threshold:  ${roster.threshold} · seated keys: ${roster.keys.length}`);
       console.log(`  seal:       ${seal === "sealed" ? "SEALED" : "UNSEALED — the roster stands and no seal epoch is seated; seat one once a quorum stands"}`);
       console.log(`  chain:      ${chainDepth > 0 ? `${chainDepth} epoch(s), head at seq ${chainDepth - 1}` : "(none — no epoch established)"}`);
@@ -954,7 +941,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       console.log(`  quorum:     ${quorum ? "STANDS (roster live)" : "SHORT (fail-closed — antigen inert)"}`);
       // THE PHASE COMES BEFORE THE FRAGILITY. A seed has no quorum to be fragile about, and a reader
       // who meets "quorum: STANDS" without it mistakes three faces of one operator for three hands.
-      const phase = nexusPhase({ seatedKeys: roster.keys.length, contractedOperators: contracted, contractedInto: joined });
+      const phase = nexusPhase({ ownSeats, foreignSeats: foreign });
       console.log(`  ${phase.isNexus ? "phase:     " : "⚠ phase:   "} ${phase.reading}`);
       const standing = rosterStanding({ seated: roster.keys.length, threshold: roster.threshold });
       // A FRAGILE ROSTER EARNS THE LINE; a sound one earns silence. The cure is only available before

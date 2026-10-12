@@ -206,7 +206,7 @@ export function genesisCharterEpoch(keys: readonly string[], threshold: number, 
 /** A rotation attempt's outcome — the advanced epoch, or a fail-closed REFUSAL naming the mismatch. */
 export type RotateResult =
   | { readonly ok: true;  readonly epoch: SealEpoch }
-  | { readonly ok: false; readonly reason: string };
+  | { readonly ok: false; readonly code: string; readonly reason: string };
 
 /** One hand that signs a roll — its verifying key and a signer over bytes. The module holds no key. */
 export interface SealRollSigner {
@@ -302,11 +302,11 @@ export async function rotateSealEpoch(
   signers:       readonly SealRollSigner[],
 ): Promise<RotateResult> {
   if (head.nextKeyCommit.length === 0) {
-    return { ok: false, reason: "rotation unarmed — the head epoch pre-committed no next key-set" };
+    return { ok: false, code: "rotation-unarmed", reason: "rotation unarmed — the head epoch pre-committed no next key-set" };
   }
   const revealed = seat.revealed ?? seat;
   if (sealKeySetHash(revealed.keys, revealed.threshold) !== head.nextKeyCommit) {
-    return { ok: false, reason: "reveal mismatch — the revealed key-set does not match the head's pre-committed digest" };
+    return { ok: false, code: "reveal-mismatch", reason: "reveal mismatch — the revealed key-set does not match the head's pre-committed digest" };
   }
   const keys = normKeys(seat.keys);
   const bytes = sealRollBytes({ prevEpochCid: head.epochCid, keys, threshold: seat.threshold, nextKeyCommit });
@@ -321,7 +321,7 @@ export async function rotateSealEpoch(
     prevEpochCid: head.epochCid,
   }, roll);
   const refusal = verifySealRoll(head, epoch);
-  if (refusal !== null) return { ok: false, reason: `roll refused — ${refusal}` };
+  if (refusal !== null) return { ok: false, code: refusal, reason: `roll refused — ${refusal}` };
   return { ok: true, epoch };
 }
 

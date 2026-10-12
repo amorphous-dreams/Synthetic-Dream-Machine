@@ -59,9 +59,11 @@ export interface CharterChair {
   readonly verifyingKey: string | null;
 }
 
+import { seatFingerprint } from "@lararium/mesh";
+
 export interface ForeignSeatVerdict {
   readonly ok:      boolean;
-  /** The display names of seated chairs this vessel's vault cannot produce. */
+  /** Fingerprints of seated chairs this vessel's vault cannot produce. */
   readonly foreign: readonly string[];
   readonly why:     string;
 }
@@ -69,43 +71,24 @@ export interface ForeignSeatVerdict {
 /**
  * Which seated chairs in a standing charter this vessel did not found.
  *
- * ── WHY A SEAT MUST ASK ─────────────────────────────────────────────────────────────────────────
- * A joining operator holds the founding operator's charter in her own seal home, because she cannot
- * consent to a charter she has never seen. She also seats her own charter there. A seat that reads
- * the standing doc as its base then APPENDS her chairs to his, and the merged charter seats both.
- *
- * Measured on two vessels: six seated kahu at a threshold of two, so the partner holds quorum over
- * her Nexus using his own keys, with no further act by her. The escalation arrives disguised as the
- * ordinary handoff the runbook instructs.
- *
- * A SEATED chair carries a key and therefore authority; one this vault cannot produce is FOREIGN. An
- * UNSEATED chair carries neither, so it is not foreign and keeping it is what `unstood: "keep"` is
- * for — a declared chair nobody has stood for yet.
- *
- * ── THIS GUARD STANDS ON THE MEASURED HARM, NOT ON A RULING ─────────────────────────────────────
- * No carrier says a seal roster may never hold a key the vessel does not hold. `attestation-plane#3`
- * separates the ATTESTING hand from the HOSTING one, which reads adjacent and governs a different
- * plane; extending it to this would be an inference rather than a ruling, and it sits in a lower
- * register than `kahu.mem`, which describes a Cabal that is multi-human PRECISELY so it "structurally
- * cannot sign as one hand" — over the CORPUS, not over any Nexus's carriage.
- *
- * So the question stays OPEN: whether a seal quorum should ever span two operators. Until it is
- * ruled, this refuses the one shape that was measured to cause harm, and refuses it LOUDLY — naming
- * every foreign chair — so whoever comes to change the rule meets the reason rather than a silence.
+ * A household seed never takes a foreign seat. A Nexus founds fresh, each founder seating their own key
+ * beside each household's seed. Measured harm: six seated kahu at threshold two let a partner hold quorum
+ * over their Nexus using the partner's own keys, with no further act. The escalation arrives disguised as
+ * an ordinary handoff. Fingerprints keep the refusal useful without exposing chair labels.
  */
 export function foreignSeats(chairs: readonly CharterChair[], heldKeys: readonly string[]): ForeignSeatVerdict {
   const mine = new Set(heldKeys.map((k) => k.toLowerCase()));
   const foreign = chairs
     .filter((c) => typeof c.verifyingKey === "string" && c.verifyingKey.length > 0
                 && !mine.has(c.verifyingKey.toLowerCase()))
-    .map((c) => c.displayName);
+    .map((c) => seatFingerprint(c.verifyingKey!));
   if (foreign.length === 0) {
-    return { ok: true, foreign: [], why: "every seated chair holds a key this vessel can produce" };
+    return { ok: true, foreign: [], why: "every seated chair fingerprint names a key this vessel can produce" };
   }
   return {
     ok: false, foreign,
     why: `the charter standing here seats ${foreign.length} chair(s) this vessel did not found — `
-       + `${foreign.join(", ")} — whose keys this vault cannot produce. Seating onto it would MERGE `
+       + `fingerprints ${foreign.join(", ")} — keys this vault cannot produce. Seating onto it would MERGE `
        + "their quorum with yours: they would hold quorum over your Nexus using their own keys, with "
        + "no further act by you. A partner's charter belongs beside yours, never beneath your seat.",
   };

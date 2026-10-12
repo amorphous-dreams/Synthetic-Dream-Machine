@@ -29,9 +29,9 @@
  *
  * THE FOUNDING QUORUM — three founding kahu cryptographic-individuals (persona-policy: each PersonaGroup
  * a cryptographic individual), 2-of-3:
- *   · the founder's declared Handle
- *   · a second declared Handle
- *   · a third declared Handle
+ *   · the founder's private chair label
+ *   · a second private chair label
+ *   · a third private chair label
  *
  * THE DOC IS THE AUTHORITY. `foundingRoster` reads a loaded `NexusDoc`, never
  * a hardcoded key-set. Each kahu's ed25519 verifying key is that PersonaGroup's own root-derived key — the
@@ -46,7 +46,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-honest-edges
  */
 
-import { NEXUS_DOC_DOMAIN } from "./domains.js";
+import { NEXUS_DOC_DOMAIN, SEAT_FINGERPRINT_DOMAIN } from "./domains.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { sha256HexSync, canonicalJson } from "./crypto.js";
 import { type SealEpoch, verifySealLineage, sealKeySetHash } from "./wax-stamp.js";
@@ -66,11 +66,18 @@ export const NEXUS_CHARTER_URI = "lar:///nexus.charter.seats" as const;
 /** The charter doc's uri-path — its siting inside the `bags/nexus` residency (carrierBaseRelPath form). */
 export const NEXUS_CHARTER_URI_PATH = "ha.ka.ba/nexus/charter/founding-roster" as const;
 
-/** One founding kahu — a display name + its ed25519 verifying key (null while unseated: the fail-closed floor). */
+/** One founding kahu — a local private chair label or exported fingerprint + its ed25519 key. */
 export interface NexusCharterKahu {
+  /** The seating vessel holds a private chair label; exports carry only a fingerprint, no Handle, pet-name, or label. */
   readonly displayName:  string;
   /** The PersonaGroup's ed25519 verifying-key hex (64 chars), or null while the operator has not seated it. */
   readonly verifyingKey: string | null;
+}
+
+/** A seat's FINGERPRINT — the short digest a human reads aloud to check a seat key: five groups of four hex. */
+export function seatFingerprint(verifyingKey: string): string {
+  const digest = sha256HexSync(canonicalJson({ kind: SEAT_FINGERPRINT_DOMAIN, key: verifyingKey.toLowerCase() })).slice(0, 20);
+  return digest.match(/.{4}/g)!.join("-");
 }
 
 /**
@@ -266,8 +273,8 @@ export function foundingQuorumSeated(doc: NexusDoc | null): boolean {
  *
  * IT NAMES NOBODY, and that reads as the point. A scaffold carrying names would make the SOURCE decide who
  * the founding kahu are, and a founding whose roster ships in a build is a founding the operator merely
- * confirms. The roster forms at the seat, from the personas that DECLARED a Handle and STOOD for a chair —
- * the operator's own acts, on their own vessel, which is where a legitimacy question belongs.
+ * confirms. The roster forms at the seat, from the personas that STOOD under a private chair label —
+ * the operator's own act, on their own vessel.
  *
  * `threshold: 0` reads as UNSET rather than as a satisfiable rule: no key-set reaches a live quorum through
  * this doc, so an unseated scaffold stays inert exactly as an absent one does.

@@ -71,6 +71,8 @@ export const HANDLE_CARD_DOMAIN = frozen("handle-card");
 /** A Handle's key-event log entry — the SIBLING chain (burn · rotate · attest) whose prefix binds its
  *  owning persona at inception (identity-classes#the-handle-chain). */
 export const HANDLE_KEL_DOMAIN = frozen("handle-kel");
+/** A seat's display fingerprint: a short digest founders read aloud to check a seat key; never a signature. */
+export const SEAT_FINGERPRINT_DOMAIN = mint("seat-fingerprint");
 /** A fleet proof: one nym carried across a human's own vessels. */
 export const FLEET_PROOF_DOMAIN = frozen("fleet-proof");
 /** The vessel×veil dyad, and the binding that names it. */

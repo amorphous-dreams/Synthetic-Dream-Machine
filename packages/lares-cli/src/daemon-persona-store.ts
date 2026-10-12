@@ -127,8 +127,7 @@ export function makeFleetPetnameStore(
 
 /**
  * Build the FLEET-mirroring declaration store — a SPLIT store, and the split is the point. The declared
- * `handle` rides the persona plane (a persona answers to the same name on every device of the human); the `seat` claim
- * stays LOCAL (a Kahu chair belongs to the node that holds it). Reads compose the two.
+ * `handle` rides the persona plane; the `seat` claim and private `chair` label stay LOCAL to the node. Reads compose them.
  */
 export function makeFleetDeclarationStore(
   local: PersonaDeclarationStore, requestedBy: string, opts: RunVerbOptions = {},
@@ -136,8 +135,9 @@ export function makeFleetDeclarationStore(
   const compose = (localDecl: PersonaDeclaration | undefined, fleetHandle: string | undefined): PersonaDeclaration | undefined => {
     const handle = fleetHandle ?? localDecl?.handle;
     const seat   = localDecl?.seat;
-    if (handle === undefined && seat === undefined) return undefined;
-    return { ...(handle !== undefined ? { handle } : {}), ...(seat !== undefined ? { seat } : {}) };
+    const chair  = localDecl?.chair;
+    if (handle === undefined && seat === undefined && chair === undefined) return undefined;
+    return { ...(handle !== undefined ? { handle } : {}), ...(seat !== undefined ? { seat } : {}), ...(chair !== undefined ? { chair } : {}) };
   };
   return {
     async get(handleIndex) {

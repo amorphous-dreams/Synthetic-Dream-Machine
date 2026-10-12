@@ -15,12 +15,11 @@
  * separate, deliberate act it always was. The declared string and the pet-name MAY read word-for-word
  * identical; two acts, two owners, and the DECLARING act — never the characters — makes a name public.
  *
- * THE SEAT STANDS APART FROM THE HANDLE. `handle` names what a persona answers to outward; `seat` says this
- * persona stands for a Kahu chair on THIS node. A persona may declare a Handle and stand for no seat (the
- * ordinary case), and the two travel together only because one human usually decides both in one breath.
+ * A SEAT CLAIM ANSWERS TO ITS CHAIR LABEL. `handle` names what a persona answers to outward; `seat` says this
+ * persona stands for a Kahu chair on THIS node. A Handle stays an independent, optional outward act.
  *
  * NEVER PUBLICLY FEDERATES — like the pet-name, it fleet-syncs among the human's own vessels. A seat is a
- * claim about a chair on a node, and the node's own document records who actually sits (nexus-seal-seed);
+ * local claim about a chair label on a node, and the node's own document records who actually sits (nexus-seal-seed);
  * this store only carries what the human declared, so a peer reading it would learn an intent, never a fact.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-policy
@@ -34,6 +33,8 @@ export interface PersonaDeclaration {
   readonly handle?: string;
   /** True when this persona stands for a Kahu chair on this node. Absent/false = it stands for none. */
   readonly seat?: boolean;
+  /** Private local chair label carried with a seat claim. */
+  readonly chair?: string;
 }
 
 /**
@@ -82,11 +83,16 @@ export async function standForKahuSeat(
   store: PersonaDeclarationStore,
   handleIndex: number,
   stands: boolean,
+  chair?: string,
 ): Promise<void> {
   assertHandleIndex(handleIndex);
   const held = (await store.get(handleIndex)) ?? {};
-  await store.set(handleIndex, { ...held, seat: stands });
+  const trimmed = chair?.trim();
+  await store.set(handleIndex, { ...held, seat: stands, ...(trimmed ? { chair: trimmed } : {}) });
 }
+
+/** Default private label for a seat claim. */
+export function defaultChairLabel(handleIndex: number): string { return `chair-h${handleIndex}`; }
 
 /** Drop a persona's whole declaration — it keeps its key and its pet-name, and declares nothing outward. */
 export async function clearPersonaDeclaration(
@@ -107,16 +113,14 @@ export async function declaredHandle(
 }
 
 /**
- * personasStandingForSeat — the personas that BOTH declared a Handle and stand for a Kahu seat, as
- * `[handleIndex, handle]` pairs ascending. A persona standing for a seat WITHOUT a declared Handle answers to
- * no chair name, so it cannot join a seal roster and never appears here — the seal's own door reports that
- * gap rather than seating a nameless claim.
+ * personasStandingForSeat — every persona that stands for a Kahu seat, as `[handleIndex, chairLabel]` pairs
+ * ascending. This local read consults no Handle.
  */
 export async function personasStandingForSeat(
   store: PersonaDeclarationStore,
 ): Promise<ReadonlyArray<readonly [number, string]>> {
   const all = await store.entries();
-  return all
-    .filter(([, d]) => d.seat === true && typeof d.handle === "string" && d.handle.trim().length > 0)
-    .map(([index, d]) => [index, d.handle!.trim()] as const);
+  return all.filter(([, d]) => d.seat === true)
+    .map(([index, d]) => [index, d.chair?.trim() || defaultChairLabel(index)] as const)
+    .sort((a, b) => a[0] - b[0]);
 }

@@ -63,7 +63,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
       const rt = await generateOrLoadPersonaGroupRoot(i);
       await renameOwnPersona(petnames, i, `compartment-${i}`);
       await declarePersonaHandle(declarations, i, KAHU[i]!);
-      await standForKahuSeat(declarations, i, true);
+      await standForKahuSeat(declarations, i, true, KAHU[i]!);
       keys.push(rt.verifyingKey);
     }
     return keys;
@@ -187,7 +187,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     expect(await cmdNexus(args(["seal", "seat"], { "next-key-commit": commit, threshold: "2" }))).toBe(0);
 
     // The fourth now stands — the roster that ROTATE will seat reads four chairs.
-    await standForKahuSeat(declarations, 3, true);
+    await standForKahuSeat(declarations, 3, true, "Kahu Delta");
     expect(await cmdNexus(args(["seal", "rotate"], { threshold: "3" }))).toBe(0);
 
     const doc = readNexusDoc(larSealHome());

@@ -441,8 +441,8 @@ run_open_relation() {
     bad "a hearth never answered"; clear_all; return; fi
 
   if ! contract_ab; then clear_all; return; fi
-  step "a relation stands"
-  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
+  step "a contract admits a carrier and moves no phase"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "the relation never stood"; clear_all; return; fi
 
   step "A opens the posture, and it survives a bounce"
@@ -454,9 +454,9 @@ run_open_relation() {
 
   # THE ASSERTION THIS SCENARIO EXISTS FOR. A flip is not an admission and not a revocation: B stands
   # exactly where she stood, and the phase reads the relation rather than the posture.
-  step "B is STILL a member, and the phase still reads the relation"
+  step "B remains on the members board, and the phase stays SEED"
   if $COMPOSE exec -T lararium-a $LARES nexus members --list 2>&1 | grep -qi "$NYM" \
-     && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
+     && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "opening the posture moved the membership or the phase"; fi
 
   step "and B's own posture is UNTOUCHED — a flip is one operator's act"
@@ -516,8 +516,8 @@ run_crossing() {
   else bad "feeding a realm moved the phase, or did not register"; fi
 
   if ! contract_ab; then clear_all; return; fi
-  step "the phase moves, the realm does NOT"
-  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true' \
+  step "the contract moves no phase, and the realm does NOT"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"' \
      && $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"'; then ok
   else bad "the contract moved the realm, or the phase never moved"; fi
 
@@ -644,7 +644,7 @@ run_realm() {
 
 # COVERS: private/multisig/unfed
 run_relation() {
-  say "RELATION — two operators contract, and the phase moves off SEED"
+  say "RELATION — a contract admits a carrier and moves no phase"
   clear_all
   step "both hearths up, peerless"
   if LAR_A_PEERS= LAR_B_PEERS= $COMPOSE up -d --no-deps lararium-a lararium-b >/dev/null 2>&1; then ok
@@ -664,9 +664,7 @@ run_relation() {
     clear_all; return
   fi
 
-  # A HEARTH THAT SEATED ITS OWN QUORUM IS STILL A SEED. This is the reading the whole scenario
-  # exists to move, so it gets asserted BEFORE the contract as well as after — a phase that read
-  # "multisig" here would mean the reading, not the relation, had done the work.
+  # A hearth with its own seats reads SEED; a contract admits a carrier and moves no phase.
   step "A stands a SEED before any relation"
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
@@ -674,11 +672,10 @@ run_relation() {
 
   if ! contract_ab; then clear_all; return; fi
 
-  # THE READING THE SCENARIO EXISTS FOR. A relation stands, so the phase leaves SEED — and the
-  # members board folds a key A has never held.
-  step "the phase leaves SEED — a Nexus stands"
-  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
-  else bad "the phase never moved off seed"; fi
+  # A contract admits a carrier and moves no phase; the members board folds the partner in.
+  step "a contract admits a carrier and leaves A at SEED"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
+  else bad "the contract moved the phase"; fi
 
   step "A's members board folds B IN"
   if $COMPOSE exec -T lararium-a $LARES nexus members --list 2>&1 | grep -qi "$NYM"; then ok
@@ -783,16 +780,15 @@ run_realm_crossing() {
 
   if ! contract_ab; then clear_all; return; fi
 
-  step "the phase leaves SEED — a Nexus stands over BOTH operators"
-  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
+  step "a contract admits a carrier and leaves the founder at SEED"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "the phase never moved off seed"; fi
 
-  # A NEXUS *IS* THE RELATION — "a second OPERATOR is the first relation, and a Nexus IS the relation"
-  # — and a relation has two sides. The phase counts the members board (`contracted = members.length`).
+  # A contract admits a carrier and moves no phase; the members board remains local admission evidence.
   #
   # A RELATION HAS TWO SIDES, AND EACH HOLDS ITS OWN EVIDENCE. The phase counts operators a vessel
   # ADMITTED onto its members board — an immune surface, rightly local, and empty forever on a vessel
-  # that joined someone else's Nexus. B's evidence is the contract-in SHE signed: a fact about her own
+  # that holds another's charter. B's evidence is the contract-in SHE signed: a fact about her own
   # vessel that needs no partner's document. `accept-carriage` now KEEPS it, bound to the charter epoch
   # it consented under, so a rotation cannot carry a consent across terms it never read.
   #
@@ -801,9 +797,9 @@ run_realm_crossing() {
   step "★ does B read the Nexus too? a relation has two sides ★"
   local BPHASE
   BPHASE=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)
-  if printf '%s' "$BPHASE" | grep -q '"isNexus":true'; then ok
+  if printf '%s' "$BPHASE" | grep -q '"phase":{"phase":"seed"'; then ok
   else
-    bad "B still reads a SEED — her own kept consent did not reach the phase"
+    bad "B did not read the charter held in this vessel"
     printf '      B reads: %s\n' "$(printf '%s' "$BPHASE" | grep -oE '"phase":\{"phase":"[a-z]+"' | head -1)"
     printf '      B board: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus members --list --json 2>&1 \
         | grep -oE '"island":"[^"]*"|"members":\[[^]]*\]' | tr '\n' ' ')"
@@ -862,13 +858,7 @@ run_realm_crossing() {
   clear_all
 }
 
-# THE QUORUM SEED — two operators and FOUR personas, which is where a threshold starts describing a
-# check. Operator A seats three chairs from her own vault and operator B carries one in. Three chairs
-# from one identity home stay three faces of one operator, supplying no hand that can refuse; the
-# fourth arrives with one, and only then does k-of-n mean anything.
-#
-# So a quorum wants no third hearth. It wants the partner a multisig already has, plus enough chairs
-# for the threshold to bind ACROSS the two.
+# Three chairs plus a contracted partner still read SEED. A contract admits a carrier and moves no phase.
 #
 # The realm ladder rides along under BOTH postures, because posture and dwelling run on orthogonal
 # axes and a quorum changes neither. Six cells close here.
@@ -880,7 +870,7 @@ run_realm_crossing() {
 # COVERS: open/quorum/visit
 # COVERS: open/quorum/many-faces
 run_quorum_realm() {
-  say "QUORUM — two partners contract in, and a realm reads the same under either posture"
+  say "THREE CHAIRS PLUS A CONTRACTED PARTNER — the founder still reads SEED"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
 
@@ -919,10 +909,10 @@ run_quorum_realm() {
     else bad "$partner never contracted in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; clear_all; return; fi
   done
 
-  step "★ FOUR personas across TWO operators — A reads QUORUM ★"
-  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"quorum"'; then ok
+  step "★ three seated chairs plus a contracted partner still read SEED ★"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else
-    bad "three seated chairs plus one contracted partner did not read as a quorum"
+    bad "the carriage contract moved the phase"
     $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
       | grep -oE '"phase":\{"phase":"[a-z]+"' | head -1 | sed 's/^/      /'
   fi
@@ -957,7 +947,7 @@ run_quorum_realm() {
 
   step "the posture flips OPEN, and the quorum stands unmoved"
   if $COMPOSE exec -T lararium-a $LARES nexus posture open --json 2>&1 | grep -q '"posture":"open"' \
-     && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"quorum"'; then ok
+     && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "opening the posture moved the phase"; fi
 
   _realm_ladder 9 "an OPEN posture"
@@ -1035,8 +1025,8 @@ run_meme() {
   else bad "lararium-b never stood"; dump_boot_failure lararium-b; clear_all; return; fi
 
   if ! contract_ab; then clear_all; return; fi
-  step "the phase leaves SEED — a Nexus stands over both"
-  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
+  step "a contract admits a carrier and leaves the founder at SEED"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "the relation never stood"; clear_all; return; fi
 
   step "A puts the witness meme — the author's bag rides its meta"

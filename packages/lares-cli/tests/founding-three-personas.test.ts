@@ -50,7 +50,8 @@ const setEnv = (k: string, v: string | undefined): void => {
 };
 const personaArgs = (
   positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {},
-): ParsedArgs => ({ command: "persona", positional, options, flags: { json: true, ...flags } });
+): ParsedArgs => ({ command: "persona", positional,
+  options: { ...options, ...(flags.seat && options.handle ? { chair: options.handle } : {}) }, flags: { json: true, ...flags } });
 const nexusArgs = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options, flags: { json: true } });
 
