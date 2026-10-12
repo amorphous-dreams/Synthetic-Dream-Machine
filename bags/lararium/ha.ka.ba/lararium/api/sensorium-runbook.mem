@@ -45,7 +45,7 @@ taken cannot be taken later''. A rite built around irreversibility teaches the w
 whose recovery move reads //do it again, watching//.
 
 ''The lore already names this rite.'' A lararium stabilizes THROUGH USE — fed daily at the shrine, food and
-drink and incense and coin; a fed node hums and a neglected one flickers (#/noosphere-boot). The founding rite runs
+drink and incense and coin; a fed node hums and a neglected one flickers (`noosphere-boot.mem`). The founding rite runs
 the consecration. ''This one runs the daily offering.''
 
 <<~/ahu>>
@@ -331,7 +331,7 @@ one common space. ''Reading it as a single scalar over one substrate mistypes th
 * ''Causation.'' A change point names where content changed hands, never why.
 * ''Completeness.'' Absence of a finding and absence of looking generate identically.
 * ''A verdict on a person.'' The corpus holds acts and faces; a standing gets EVALUATED from a vantage and
-  never PUBLISHED as a property (#/identity-enacts-relation).
+  never PUBLISHED as a property (`identity-enacts-relation.mem`).
 * ''Reproducibility across a re-pour with different sources.'' Comparability requires a fixed source set;
   a corpus poured from a moved target measures the move.
 * ''Its own ground, by name.'' The stores carry no identity for the pour
@@ -433,6 +433,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EYstLImqg0eCBg1cGRNdMsjE2kkI9PpWsCL52hEkRy0
+<<^ code="&#x0003;">>ni:///sha-256;jeydR8GMUQXTuDIsHpNA6eIEpv5C15jB5fJ3Jaj_Pic
 
 <<^ code="&#x0004;" -> to="?">>

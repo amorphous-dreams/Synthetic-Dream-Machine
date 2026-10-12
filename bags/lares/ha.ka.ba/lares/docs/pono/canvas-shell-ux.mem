@@ -25,7 +25,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/canvas-shell-ux"
 
 ! Canvas Shell UX ~ the canvas comes first, the chrome wraps it
 
-''Nothing here names a vendor, because nothing here depends on one.'' Every law below holds for any DOM-hosting camera (#/wikispace-canvasspace-ontology).
+''Nothing here names a vendor, because nothing here depends on one.'' Every law below holds for any DOM-hosting camera (`wikispace-canvasspace-ontology.mem`).
 
 ''THE CORE LAW: the canvas comes first; UI wraps around it and never blocks it.''
 
@@ -67,7 +67,7 @@ The studied answer is to ''reposition the chrome against `visualViewport` on a f
 
 ''What it buys, measured against the alternative:'' the category's most-reported mobile blocker is that a user must switch tools to navigate and switch back to draw. A canvas that pans by native scroll never asks. Selection moves to long-press; two-finger tap and three-finger tap take undo and redo, matching the platform convention rather than inventing one.
 
-⚠ ''This composes with the pointer-events discipline and NOT with a rasterised surface.'' A real DOM element under a real scroller is available only to a DOM-hosting camera — one more consequence of #/wikispace-canvasspace-ontology's surface correction, arriving from the mobile side.
+⚠ ''This composes with the pointer-events discipline and NOT with a rasterised surface.'' A real DOM element under a real scroller is available only to a DOM-hosting camera — one more consequence of `wikispace-canvasspace-ontology.mem`'s surface correction, arriving from the mobile side.
 
 <<~/ahu>>
 
@@ -127,6 +127,6 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;iaHk7WIrrsiY0Ea8xjY9jQ3N0f7YPL0yyYVxrliJLzI
+<<^ code="&#x0003;">>ni:///sha-256;R6hKnC1hEntm9DLhxeHPfAN79j_1sz-7aOob6MYcJ34
 
 <<^ code="&#x0004;" -> to="?">>

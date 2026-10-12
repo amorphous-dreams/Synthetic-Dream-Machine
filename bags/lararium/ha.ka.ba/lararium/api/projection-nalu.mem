@@ -157,7 +157,7 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~ scale ring "intra-island/SINK=local -> inter-island/SINK=peer -> mesh/SINK=many">>
 
-* ''accumulate → reliable-ordered transport'' (TCP/ARQ rhyme): the reserve becomes the retransmit buffer · dead-letter the give-up · the CRDT-as-dedup the at-least-once + idempotent guarantee. Cross-peer ordering rides vector clocks — never a global now (#/causal-islands).
+* ''accumulate → reliable-ordered transport'' (TCP/ARQ rhyme): the reserve becomes the retransmit buffer · dead-letter the give-up · the CRDT-as-dedup the at-least-once + idempotent guarantee. Cross-peer ordering rides vector clocks — never a global now (`causal-islands.mem`).
 * ''coalesce → gossip / epidemic dissemination'' (Plumtree eager+lazy push): newest-wins becomes last-write-wins state-sync, one→many, eventual consistency. The lossy drop stays the correct dual at mesh scale.
 * ''the servo → congestion control'', already in the idiom (AIMD = TCP · Nagle self-clock · Net-DIM). Intra-island it paces the local gate; the ring adds the piece the servo once lacked — ''end-to-end backpressure: the RECEIVER's gate signals the SENDER''. LANDED 2026-07-02 (`mesh/credit-gate.ts`, commit e42cfa97): the drain advertises `credits = maxInFlight − uncommitted`; the producer consumes them and SHEDS at zero (the Frank-Starling ceiling). A deep-domain rhyme-dive convergence (credit-based flow control · ant entrance-encounter · Frank-Starling preload · HPA feedback · quorum-sensing) grounds the law — //upstream rate tracks a downstream signal of PROVEN drain, never the producer's guess// — and names the cure for the one-sided servo's BULLWHIP. The AIMD dial (`mesh/concurrency-dial.ts`) demotes to the slow ceiling-discovery loop; credits govern the fast per-cycle. The servo now breathes on BOTH sides.
 * ''ea-breath → connection lifecycle'' (handshake · established · teardown); ''dispatch → request-reply RPC''.
@@ -185,6 +185,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qpe5RUA8fYNWaQNJcoShpZRsFv-2h90CwC-rkPkjjac
+<<^ code="&#x0003;">>ni:///sha-256;oSBqimlJsdSLPR9TJmwW28IvcEBmFDgUNEZT4E244mA
 
 <<^ code="&#x0004;" -> to="?">>

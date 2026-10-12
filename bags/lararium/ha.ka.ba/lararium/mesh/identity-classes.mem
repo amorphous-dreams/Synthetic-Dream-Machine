@@ -251,7 +251,7 @@ The safety rests on the ''carry ⊥ read'' law, and it licenses carry to run GEN
 * ''CARRY'' (`sharePolicy`, advisory) — the transit lane. Blind-transit of private ciphertext runs wide:
   the mesh breathes because relays forward sealed bytes freely.
 * ''READ'' (BeeKEM/CGKA crypto) — the cap lane. A carried-but-uncapped doc reads `Key not found`; the
-  read-floor holds as a causal-island-local FACT, not a policy (#/carry-contract).
+  read-floor holds as a causal-island-local FACT, not a policy (`carry-contract.mem`).
 * ''the gift'' — carry may be liberal ''because the read-floor catches every carry-mistake''
   (carry-contract#carry-read-contract): a generous transit tier never leaks a readable byte, the crypto
   the safety net beneath the routing. So a relay carrying a plane it must never read breaks no law — it
@@ -272,7 +272,7 @@ one hole. Second, ''content ⊥ metadata'': blind-transit seals what a relay REA
 shape of the flow (who ↔ whom, when, how much) crosses every relay. The mesh breathes ''content''-blind,
 never ''metadata''-blind; traffic-pattern sovereignty rides a separate hardening (mixnets, cover traffic),
 and the residual sits where canon already names it — the GPA-linkability bound, shape-provable only
-(#/carry-contract). The choice architecture answers the rest: an operator who wants no relay to even SEE its
+(`carry-contract.mem`). The choice architecture answers the rest: an operator who wants no relay to even SEE its
 traffic simply does not contract those vessels into a Nexus — privacy rides the choice to contract, never a
 wall built inside one.
 
@@ -644,7 +644,7 @@ Three walls hold this design, and each stays named:
 * ''"a valid rotation on lineage L" reads as crypto fact; "L is the legitimate person" does NOT'' — the
   same wall the wax-stamp and persona-policy keep lit. A rotation verifies against the pre-commit; that
   the recovering party //is// the original human stays higher-order social acceptance, answered by kahu-
-  as-custodians and talk-story, never by a signature (#/persona-policy).
+  as-custodians and talk-story, never by a signature (`persona-policy.mem`).
 * ''the recovery-root pre-commit inherits the reserve's independence rule'' — the three recovery shares
   (Fork A) or the three guardian keys (Fork B) MUST sit in three domains that do not fall together
   (#founding-runbook: the online-identity trap + the co-location trap). A monoculture of custody defeats
@@ -671,6 +671,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mhG2EDXT-fRWPhThU3Yz-SCxCPCv_SEAtwbd9H-IHDM
+<<^ code="&#x0003;">>ni:///sha-256;OCfB0mCYKQmpRLwMQmlOFtpOcsVrukXRwldhuWJxb3k
 
 <<^ code="&#x0004;" -> to="?">>

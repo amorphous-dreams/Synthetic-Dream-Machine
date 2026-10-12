@@ -65,7 +65,7 @@ stance (#carry-contract, #the-frame) in the one place it would otherwise erode f
 !! The two cap-stacks ~ operator contracts, user soft-attaches
 
 A human's posture rides the vessels in their PersonaGroup pool — a ''posture, not a caste'', chosen
-vessel by vessel (#/identity-classes):
+vessel by vessel (`identity-classes.mem`):
 
 <<~ has Stack OPERATOR "runs/a node vessel does/CONTRACTS with the Nexus (owes MANDATORY carriage) trace/a wax-sealed carriage contract — consensual, minimal, revocable (Kapae)">>
 <<~ has Stack USER "runs/browser-style vessels, no infra does/WALKS on an invite from any member face (boot-seeded from a node on the rhizome, own cap-stack, reads/writes through blind relays) trace/NONE — no roster, no account, no user table, no quorum admit">>
@@ -346,7 +346,7 @@ passive watcher).
 
 ''The reputation-cost braid'' — the idea that an invite rides on the inviter's reputation as a cost
 (Sybil-resistance, accountability) — reserves to the ''Cabal tier'', never the general invite: a
-cabal is a bilateral verb two operators actively DO (#/cabal-realm), and a reputation-priced JOIN to a
+cabal is a bilateral verb two operators actively DO (`cabal-realm.mem`), and a reputation-priced JOIN to a
 realm lives THERE, where the graph already stands mutual + consented, not on the traceless general invite.
 ''The reservation runs as TWO DOMAINS, never one dial.'' `hosting-token` carries the hearth's POPRF
 evaluation for one Nexus and epoch, names no voucher, writes no edge, and burns at its host — the general
@@ -497,6 +497,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;95Uf7i50jLA60ZoLZWGbpJMvil6OytQWoTIY9ygv344
+<<^ code="&#x0003;">>ni:///sha-256;mnZrtAiftmZm62wmXxUzA6VC4_Xb8tokvJpETrgPYjs
 
 <<^ code="&#x0004;" -> to="?">>

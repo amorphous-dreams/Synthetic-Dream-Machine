@@ -31,7 +31,7 @@ written    = "2026-08-08"
 
 > Status: PROPOSED — the names stand registered; the serving layers stand unbuilt.
 
-The two-axis meme (#/dreamnet-architecture) names how a mesh ''relates''; this one names how it ''reaches a browser''. Two questions live here and want to stay apart: ''which public name serves a Nexus'', and ''what a name may therefore claim''. The second answer governs the first: a Nexus name grants ''rendezvous'', never ''identity'' (`secure-context#/name-and-key`), so every layer below stays severable by construction.
+The two-axis meme (`dreamnet-architecture.mem`) names how a mesh ''relates''; this one names how it ''reaches a browser''. Two questions live here and want to stay apart: ''which public name serves a Nexus'', and ''what a name may therefore claim''. The second answer governs the first: a Nexus name grants ''rendezvous'', never ''identity'' (`secure-context#/name-and-key`), so every layer below stays severable by construction.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 <<~ scale serving "household@0..6 ~ a split-horizon resolver answers Nexus names with LAN addresses; the home node serves; no internet at all -> operator-lan@7..13 ~ a contracted operator routes their own LAN under a delegated challenge label, forwarding outward through the Nexus name -> cloud-shelf@14..20 ~ the general internet resolves to the Nexus's own hosts">>
 
-''The same name answers differently by vantage'' — which reads as the honest shape rather than a trick, because a causal island only ever knows what its own resolver told it (#/causal-islands). A household that loses its uplink keeps every local answer; a visitor from the wider internet reaches the cloud shelf; neither one holds a global view, and neither needs one.
+''The same name answers differently by vantage'' — which reads as the honest shape rather than a trick, because a causal island only ever knows what its own resolver told it (`causal-islands.mem`). A household that loses its uplink keeps every local answer; a visitor from the wider internet reaches the cloud shelf; neither one holds a global view, and neither needs one.
 
 ''THE OPERATOR'S LIFT, bounded.'' A contracted operator stands ''one resolver'' and routes their own LAN. They MUST NOT hold apex write on a Nexus zone. What they hold instead: a delegated `_acme-challenge` label for their own subtree, which splits ''proof of control'' from ''zone custody'' — the operator proves control of what they serve, and the Nexus never handles their key material (#attestation-plane, the cadence law).
 
@@ -219,7 +219,7 @@ The two-name design carries its own answer to the concentration it creates: ''ea
 
 Several memes carry these names inside ''worked examples'' — a doc-stack diagram reading `lar://elyncia.app/lararium`, an invitation-link sketch reading `https://elyncia.app/#catalog=…`. Those illustrate a ''shape'' (which layer holds which URL, how a fragment carries a catalog) and decide nothing about where a Nexus serves. ''This meme holds the deployment answer; a diagram holds a form.'' A reader who mistakes the second for the first will build against a placeholder.
 
-''One older meme reads as prior art rather than drift.'' The render-targets layering already separates a canonical DID from a handle-as-resolution-alias and states outright that the handle stays ''not authoritative''. That IS the severability law (#/the-severability-law), written before the sweep that confirmed it and before the DID-method-compatible lock (#/reach-plane) chose the same shape. Where canon already holds the right split, the lock ratifies rather than introduces.
+''One older meme reads as prior art rather than drift.'' The render-targets layering already separates a canonical DID from a handle-as-resolution-alias and states outright that the handle stays ''not authoritative''. That IS the severability law (#/the-severability-law), written before the sweep that confirmed it and before the DID-method-compatible lock (`reach-plane.mem`) chose the same shape. Where canon already holds the right split, the lock ratifies rather than introduces.
 
 <<~/ahu>>
 
@@ -239,6 +239,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SDVP2nWOSwsYQc8JisapGF1Gm_BxdpYCWp_Cx_6fQB8
+<<^ code="&#x0003;">>ni:///sha-256;52Su1akKceZCTIK-uJSdCQeub6l0qcjIb9BD2Dsv54w
 
 <<^ code="&#x0004;" -> to="?">>

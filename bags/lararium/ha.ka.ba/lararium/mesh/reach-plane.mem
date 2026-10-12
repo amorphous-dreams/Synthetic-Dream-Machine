@@ -35,7 +35,7 @@ written    = "2026-08-08"
 
 A human writes in their wiki and wants the words to land on Bluesky, on Kowloon, on whatever surface their people already stand in. ''The vessel carries the credential so the human never has to.'' That reads as the force-multiplier: one place to write, many places to reach.
 
-The whole design turns on ''one split, held absolutely'': a foreign credential buys ''REACH'', never ''IDENTITY''. Holding one therefore never touches the sovereign plane, and the non-custodial-by-type law survives intact — the same medicine the attestation plane takes at the naming layer (#/attestation-plane), applied one layer inward.
+The whole design turns on ''one split, held absolutely'': a foreign credential buys ''REACH'', never ''IDENTITY''. Holding one therefore never touches the sovereign plane, and the non-custodial-by-type law survives intact — the same medicine the attestation plane takes at the naming layer (`attestation-plane.mem`), applied one layer inward.
 
 <<~/ahu>>
 
@@ -53,7 +53,7 @@ The flow reuses instruments already standing — no new gate, no new distributio
 
 <<~flows author-in-the-wiki -> the-content-already-declares-its-cap-tier -> the-Confluence-gate-checks-declared∧floor -> render-to-the-target-native-form -> sign-and-post-with-THAT-target-reach-cap>>
 
-''Posting outward reads as another projection sink.'' The disk-projection law already names bags as canon and `wikis/` as a render of them (#/disk-projection-law); a foreign surface joins that list as a target, never as a second source. ''One genuinely new subsystem falls out of the whole design: the credential vault.''
+''Posting outward reads as another projection sink.'' The disk-projection law already names bags as canon and `wikis/` as a render of them (`disk-projection-law.mem`); a foreign surface joins that list as a target, never as a second source. ''One genuinely new subsystem falls out of the whole design: the credential vault.''
 
 <<~/ahu>>
 
@@ -63,7 +63,7 @@ The flow reuses instruments already standing — no new gate, no new distributio
 
 ''RULED (operator, 2026-08-08).'' A browser vessel holds NO reach credential. It ''composes'' and it ''requests''; a node vessel in the fleet holds the credentials and performs the post.
 
-The reason reads structural rather than cautious. The browser stands as the weakest island the stack admits — its sovereign key material rests where a same-origin read reaches it, and the origin-attestation question stays open beneath that (#/secure-context). Handing it a drawer of foreign credentials would seat the honeypot on the one island with the thinnest walls.
+The reason reads structural rather than cautious. The browser stands as the weakest island the stack admits — its sovereign key material rests where a same-origin read reaches it, and the origin-attestation question stays open beneath that (`secure-context.mem`). Handing it a drawer of foreign credentials would seat the honeypot on the one island with the thinnest walls.
 
 ''The cost stays honest:'' a fleet with no node cannot post. That reads as the same shape the family mesh already assumes — a hearth stands somewhere — rather than as a new dependency.
 
@@ -95,7 +95,7 @@ Three readings of "compatible via capabilities" carry three different costs. ''T
 | ''present-as-actor'' | a vessel holds an actorId the far side accepts, signing with keys never surrendered | medium | the far side's verify path must take a key we control |
 | ''cap-translation'' — REFUSED | `#has` stacks map bidirectionally onto foreign visibility primitives, caps honored both ways | high | ''the declared∧floor gate goes advisory'' |
 
-''The refusal has a reason, not a preference: a capability honored on the far side is not a capability — it is a request.'' A foreign server decides its own visibility server-side, so translating our caps outward would leave the cap-tier keystone (#/cap-tier) enforcing nothing. The keystone's whole value rides on the gate never trusting a declaration to loosen; handing enforcement to a remote party loosens it by construction.
+''The refusal has a reason, not a preference: a capability honored on the far side is not a capability — it is a request.'' A foreign server decides its own visibility server-side, so translating our caps outward would leave the cap-tier keystone (`cap-tier.mem`) enforcing nothing. The keystone's whole value rides on the gate never trusting a declaration to loosen; handing enforcement to a remote party loosens it by construction.
 
 !!! 2 · OUTWARD-ONLY
 
@@ -117,7 +117,7 @@ Of the surfaces a foreign identity protocol offers, take the ''resolvable-identi
 
 !! The truncated chain ~ where a credential may travel
 
-A reach credential rides the ''same'' chain a bag rides (#/cap-tier) and the ''same'' delivery mechanism (keyring-delivery to a recipient set). It differs in one structural way: ''the chain truncates.''
+A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the ''same'' delivery mechanism (keyring-delivery to a recipient set). It differs in one structural way: ''the chain truncates.''
 
 <<~ scale reach "veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · keyring-delivered so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match">>
 
@@ -138,12 +138,12 @@ A reach credential rides the ''same'' chain a bag rides (#/cap-tier) and the ''s
 ''The hazard: one vessel compromise reaches every connected account.'' Five mitigations answer it, four of them already standing:
 
 * ''sealed at rest'' under the vessel key hierarchy — the `@cad` seal / sealed-box / passphrase-lifecycle instruments
-* ''per-app HKDF `info` separation'' — the `info`s ARE the separation (#/crypto); one app's compromise never derives another's
+* ''per-app HKDF `info` separation'' — the `info`s ARE the separation (`crypto.mem`); one app's compromise never derives another's
 * ''fleet-sync yes, federate never'' — the credential's reach stops at the fleet or the contracted set
 * ''outward-only'' (lock 2) — a foreign credential grants no inbound authority over our content
-* ''attenuated tokens preferred'' — an app-password or scoped grant over an account password wherever the far side offers one; the ocap discipline (#/orichalcum-capabilities) applied to instruments we did not mint
+* ''attenuated tokens preferred'' — an app-password or scoped grant over an account password wherever the far side offers one; the ocap discipline (`orichalcum-capabilities.mem`) applied to instruments we did not mint
 
-''THE GAP IS THE VAULT ITSELF'', and it raises the weight of the origin-attestation question (#/secure-context) — a vessel holding ten credentials makes its origin a far richer target than a vessel holding one identity.
+''THE GAP IS THE VAULT ITSELF'', and it raises the weight of the origin-attestation question (`secure-context.mem`) — a vessel holding ten credentials makes its origin a far richer target than a vessel holding one identity.
 
 ''THE CARRIER DECIDES WHAT A KEYCHAIN IS WORTH'' — and the reach plane inverts the caution the sovereign floor earns. Losing the archive KEK loses the identity floor, which nothing re-mints, so that carrier takes the most conservative gate the stack holds. Losing a reach-vault KEK costs ''a re-authorization'' — the downstream law again (#downstream-law: a re-mint, never a self). So an OS-keychain KEK reads MORE appropriate here than on the archive, precisely because this plane holds the disposable thing. The KEK source composes across carriers; the ''policy'' per carrier reads from what its loss costs.
 
@@ -283,6 +283,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7NY0JrrgPRcNKhZRMr9w0v2ZYRWE-ooJ5E3k7kKKor0
+<<^ code="&#x0003;">>ni:///sha-256;4wbbO8euGNn2ESDR1jUv6zLc5u2yDjAJVI9dWVp9HvQ
 
 <<^ code="&#x0004;" -> to="?">>

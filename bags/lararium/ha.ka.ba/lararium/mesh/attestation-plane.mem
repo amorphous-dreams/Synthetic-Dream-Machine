@@ -256,7 +256,7 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
   willing to bear cost.
 * ''The rival good — RULED (operator, 2026-07-26).'' A fork that walks away with vessels ''pays in socially
   managed resources.'' Everything the mesh reaches OUTWARD to — the first two Nexus namespaces
-  `*.amorphousdreams.net` and `*.elyncia.net` among them (#/nexus-topology) — rides socially-held custody
+  `*.amorphousdreams.net` and `*.elyncia.net` among them (`nexus-topology.mem`) — rides socially-held custody
   rather than cryptographic custody. A fork leaving those behind ''accepts that cost'' and re-founds
   equivalent capability ''as a new place.''
 
@@ -298,6 +298,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zHY-7NWYu1MIKQk2bgSnLapPHccgjcbD-cLA9bdDUlU
+<<^ code="&#x0003;">>ni:///sha-256;gTFkHuAXQzbaFM2FoOwm9GoXoELEQggxOlLpY6g-NY4
 
 <<^ code="&#x0004;" -> to="?">>
