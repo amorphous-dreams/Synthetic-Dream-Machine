@@ -3,7 +3,7 @@
  *
  * The identity sibling of meshPalaceCap: where the carriage cap wires the meshpalace FLOW-map (WHERE to
  * dial), this wires the per-Nexus WHO board (WHO a veiled-user is) — the two-key atom's two planes, two caps.
- * A vessel composing this cap resolves its Nexus's WHO board through crossroads (the public plane),
+ * A vessel composing this cap materializes its Nexus's WHO board at the address `whoBoardDocUrl` derives,
  * layers the board WRITABLE so the relay syncs it, and NEVER announces a face of its own. Pulling
  * peers' cards into a HandleBook rides the returned component's `ingest`.
  *
@@ -13,10 +13,10 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/docs/crossroads · lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault
  */
-import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
+import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { CapModule } from "./cap-compose.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
-import { resolveWhoFace, announceToWhoFace } from "./who-face.js";
+import { announceToWhoFace } from "./who-face.js";
 import { ingestAnnounceDoc } from "./handle-announce.js";
 import { materializeSharedLarDoc, whoBoardDocUrl } from "./deterministic-doc.js";
 import type { HandleBook } from "./handle-book.js";
@@ -44,9 +44,10 @@ export interface WhoFaceComponent {
 }
 
 /**
- * whoFaceCap — resolve the Nexus's WHO board through the crossroads plane, layer it writable (so the relay syncs it),
+ * whoFaceCap — materialize the Nexus's WHO board at its derived address, layer it writable (so the relay syncs it),
  * and expose `ingest` (recognition) + `announce` (disclosure). It takes NO card and publishes NOTHING:
- * composing a cap is binding, and binding never announces. `crossroadsHandle` is the resolved public plane;
+ * composing a cap is binding, and binding never announces. `crossroadsHandle` stands unread (the board's
+ * address derives from the key);
  * `nexusPubkey` scopes the board to one causal island.
  */
 export function whoFaceCap(deps: {
@@ -59,15 +60,9 @@ export function whoFaceCap(deps: {
     id: WHO_FACE_CAP, requires: [SUBSTRATE_CAP_ID],
     build: async (resolve) => {
       const assembly = resolve<VesselCoreAssembly>(SUBSTRATE_CAP_ID);
-      // The board rides a DETERMINISTIC per-Nexus id — so a null pointer materializes THE island board (never
-      // a random one), the pointer write-back is idempotent across vessels, and no two vessels mint two boards.
-      const board = await resolveWhoFace(
-        deps.crossroadsHandle, deps.nexusPubkey,
-        (url) => (url
-          ? deps.repo.find<LarDoc>(url as AutomergeUrl)
-          : materializeSharedLarDoc(deps.repo, whoBoardDocUrl(deps.nexusPubkey), "board:who-face")),
-        "who-face-resolve",
-      );
+      // The board's address DERIVES from the Nexus key: no pointer is read and none is written, so the
+      // crossroads doc (writable by every admitted peer) never steers where the board lives.
+      const board = await materializeSharedLarDoc(deps.repo, whoBoardDocUrl(deps.nexusPubkey), "board:who-face");
       const bagId = nexusHandlesUri(deps.nexusPubkey);
       assembly.composite.addLayer({
         bagId, store: new AutomergeDocStore(board, bagId), writable: true, defaultWritable: true,

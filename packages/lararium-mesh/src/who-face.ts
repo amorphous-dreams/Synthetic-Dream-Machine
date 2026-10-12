@@ -1,11 +1,9 @@
 /**
- * who-face — resolve the per-Nexus WHO board through the crossroads public plane, then announce onto it.
+ * who-face — announce onto the per-Nexus WHO board, and register the crossroads plane in the oracle.
  *
- * This is the wiring glue between three pieces already built: the crossroads public oracle plane (the
- * pointer home, lar-uris), the satellite-pointer protocol (resolveOracleDoc, base-doc), and the card↔doc
- * bridge (handle-announce). A crossroads-plane tiddler at the nexusHandlesUri key holds the WHO board's automerge:
- * URL; a vessel resolves that pointer (open-or-mint, write-back on first mint) and gets the shared board a
- * stranger can reach without standing in any operator's grant graph.
+ * The WHO board's address DERIVES from the Nexus key (`whoBoardDocUrl`): every reader and the cap compute
+ * it, and no crossroads tiddler points at it, so a peer-writable doc never steers where the board lives.
+ * This file holds the card↔doc announce (handle-announce) and the oracle's crossroads registration.
  *
  * The board carries NO write-ACL, by design: a handle-card is self-certifying (valid only if signed by its
  * own nym), so an openly-appendable board stays trustworthy — forgery is structurally impossible, and a
@@ -20,25 +18,11 @@
  * Canon: lar:///ha.ka.ba/lararium/docs/crossroads (the public plane); persona-circle#the-vault (the WHO model).
  */
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
-import { resolveOracleDoc, mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
-import { nexusHandlesUri, CROSSROADS_DOC_URI } from "./lar-uris.js";
+import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
+import { CROSSROADS_DOC_URI } from "./lar-uris.js";
 import { writeHandleAnnounce } from "./handle-announce.js";
 import { crossroadsDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import type { HandleCard } from "./handle-card.js";
-
-/**
- * Resolve the per-Nexus WHO board through the crossroads plane — open the board the pointer names, or mint a blank one
- * and write the pointer back on first mint. `nexusPubkey` scopes the board to one causal island; `resolve`
- * carries the platform's repo strategy; `provenance` stamps the pointer's authority.
- */
-export function resolveWhoFace(
-  crossroadsHandle: DocHandle<LarDoc>,
-  nexusPubkey: string,
-  resolve: (oracleUrl: string | null) => Promise<DocHandle<LarDoc>> | DocHandle<LarDoc>,
-  provenance: string,
-): Promise<DocHandle<LarDoc>> {
-  return resolveOracleDoc(crossroadsHandle, nexusHandlesUri(nexusPubkey), resolve, provenance);
-}
 
 /**
  * Announce a card onto a resolved WHO board. Each semantic act receives its own key, so concurrent

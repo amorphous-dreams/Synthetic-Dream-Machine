@@ -14,8 +14,9 @@ import { CompositeStore } from "../src/composite-store.js";
 import { HandleBook } from "../src/handle-book.js";
 import { mintHandleInception, type HandleKelEvent } from "../src/handle-kel.js";
 import { signHandleCard, type HandleCard } from "../src/handle-card.js";
-import { emptyLarDoc, tiddlerText, type LarDoc } from "../src/base-doc.js";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "../src/base-doc.js";
 import { nexusHandlesUri } from "../src/lar-uris.js";
+import { whoBoardDocUrl } from "../src/deterministic-doc.js";
 import { hex } from "../src/crypto.js";
 
 const FASTJACK_SEED = new Uint8Array(32).fill(9);
@@ -54,7 +55,8 @@ describe("whoFaceCap — the isomorphic WHO-plane vessel cap", () => {
     const who = v.get<WhoFaceComponent>(WHO_FACE_CAP)!;
 
     // the board resolved and layered (recognition intact) …
-    expect(tiddlerText(crossroads.doc()?.tiddlers?.[nexusHandlesUri(NEXUS)])).toBe(who.handle.url);
+    expect(who.handle.url).toBe(whoBoardDocUrl(NEXUS));
+    expect(crossroads.doc()?.tiddlers?.[nexusHandlesUri(NEXUS)]).toBeUndefined();   // the cap writes no pointer
     expect(composite.layerIds).toContain(nexusHandlesUri(NEXUS));
 
     // … and NOTHING of ours published: an ingest finds no face at all
@@ -88,8 +90,9 @@ describe("whoFaceCap — the isomorphic WHO-plane vessel cap", () => {
     await who.ingest(book);
     expect(book.get(await pubOf(FASTJACK_SEED))?.card.glamour).toBe("FastJack");
 
-    // crossroads advertises the board; the composite carries the board layer (so a relay syncs it)
-    expect(tiddlerText(crossroads.doc()?.tiddlers?.[nexusHandlesUri(NEXUS)])).toBe(who.handle.url);
+    // the crossroads doc holds no tiddler there; the composite carries the board layer (so a relay syncs it)
+    expect(crossroads.doc()?.tiddlers?.[nexusHandlesUri(NEXUS)]).toBeUndefined();
+    expect(who.handle.url).toBe(whoBoardDocUrl(NEXUS));
     expect(composite.layerIds).toContain(nexusHandlesUri(NEXUS));
 
     await v.dispose();
@@ -111,5 +114,29 @@ describe("whoFaceCap — the isomorphic WHO-plane vessel cap", () => {
     expect(whoB.handle.url).toBe(whoA.handle.url);   // both resolved the one shared island board
 
     await vA.dispose(); await vB.dispose();
+  });
+
+  // The board's address DERIVES from the Nexus key; a peer-writable crossroads doc cannot redirect it.
+  test("a foreign pointer planted on crossroads never redirects the board", { timeout: 15_000 }, async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const crossroads = repo.create<LarDoc>(emptyLarDoc());
+    const foreign = repo.create<LarDoc>(emptyLarDoc());
+    crossroads.change((d) => { d.tiddlers[nexusHandlesUri(NEXUS)] = mutableLarRecord(nexusHandlesUri(NEXUS), { text: foreign.url }, "peer"); });
+    const v = await composeVessel([substrateStub(new CompositeStore()),
+      whoFaceCap({ repo, crossroadsHandle: crossroads, nexusPubkey: NEXUS })]);
+    const who = v.get<WhoFaceComponent>(WHO_FACE_CAP)!;
+    expect(who.handle.url).toBe(whoBoardDocUrl(NEXUS));
+    expect(who.handle.url).not.toBe(foreign.url);
+    await v.dispose();
+  });
+
+  // CONTROL: two Nexus scopes yield two boards.
+  test("two Nexus scopes yield two boards", { timeout: 15_000 }, async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const crossroads = repo.create<LarDoc>(emptyLarDoc());
+    const a = await composeVessel([substrateStub(new CompositeStore()), whoFaceCap({ repo, crossroadsHandle: crossroads, nexusPubkey: "aa11" })]);
+    const b = await composeVessel([substrateStub(new CompositeStore()), whoFaceCap({ repo, crossroadsHandle: crossroads, nexusPubkey: "bb22" })]);
+    expect(a.get<WhoFaceComponent>(WHO_FACE_CAP)!.handle.url).not.toBe(b.get<WhoFaceComponent>(WHO_FACE_CAP)!.handle.url);
+    await a.dispose(); await b.dispose();
   });
 });

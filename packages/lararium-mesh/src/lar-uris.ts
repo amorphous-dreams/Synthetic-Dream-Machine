@@ -217,7 +217,7 @@ export const LARES_DOC_URI     = bagUri("lares");
 // the crossroads plane carries oracles to PUBLIC + infrastructure bags — the layers a
 // stranger may mount without standing in any operator's grant graph. "Public"
 // names a generous grant to an anonymous principal, never an absence of the gate
-// (pull ≠ read). The per-Nexus WHO face rides here (its oracle-key = nexusHandlesUri).
+// (pull ≠ read). The per-Nexus WHO board sits at a derived address (`whoBoardDocUrl`); its bag id = nexusHandlesUri.
 export const CROSSROADS_DOC_URI = bagUri("crossroads");
 // The memetic-wikitext engine plugin — a named blob CARRIED IN the oracle island's blobs. Its
 // title lives in the lararium MEME NAMESPACE (not the bag doc): a meme/module address

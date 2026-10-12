@@ -18,7 +18,7 @@ import {
   composeVessel, type CapModule,
   CompositeStore, HandleBook,
   materializeSharedLarDoc, crossroadsDocUrl,
-  nexusHandlesUri, tiddlerText,
+  nexusHandlesUri, whoBoardDocUrl,
 } from "@lararium/mesh";
 
 /** The node's own gate key — the value it hands its leaves as relayGatePubKey. */
@@ -59,7 +59,9 @@ describe("node WHO-plane parity — anchor and leaf reach one board", () => {
     const bagId = nexusHandlesUri(ANCHOR_GATE_KEY);
     expect(anchorComposite.layerIds).toContain(bagId);
     expect(leafComposite.layerIds).toContain(bagId);
-    expect(tiddlerText(anchor.crossroadsHandle.doc()?.tiddlers?.[bagId])).toBe(anchor.who.handle.url);
+    // the board sits at its derived address; the crossroads doc holds no pointer to it
+    expect(anchor.who.handle.url).toBe(whoBoardDocUrl(ANCHOR_GATE_KEY));
+    expect(anchor.crossroadsHandle.doc()?.tiddlers?.[bagId]).toBeUndefined();
 
     await anchor.vessel.dispose(); await leaf.vessel.dispose();
   });
