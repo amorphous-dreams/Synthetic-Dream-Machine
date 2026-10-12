@@ -140,6 +140,11 @@ export const HOSTING_SPEND_DOMAIN = mint("hosting-spend");
 /** The hearth's opaque key for one lineage's CARRIED record: a keyed digest of the lineage under the hearth's
  *  own leaf seed, so the record is reachable by the grant that opened it and names no one to anyone else. */
 export const HOSTING_CARRY_DOMAIN = mint("hosting-carry");
+/** A guest's INTRODUCTION of a friend to the hearth's operator: the guest's proven key signs the Nexus, the
+ *  hosting epoch and the newcomer's nonce, and the same name commits that nonce to the friend's secret. Its own
+ *  name: an introduction must never verify as a hosting act, a token or a grant. The operator's answer consumes
+ *  it, so nothing signed under this name rests anywhere after the answer. */
+export const HOSTING_INTRODUCTION_DOMAIN = mint("hosting-introduction");
 /** A walker's own SEAL secret for the documents a hearth carries for it — derived from the walker's leaf in the
  *  Nexus, so the read stays with the walker and the hearth carries ciphertext it can never open. */
 export const WALK_CARRY_SEAL_INFO = mint("walk-carry-seal");
