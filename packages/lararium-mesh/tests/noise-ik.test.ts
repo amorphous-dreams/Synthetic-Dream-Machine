@@ -17,14 +17,17 @@
  *   · every failure throws the ONE error with no detail that tells which step failed;
  *   · a wrong pin, a second use, a short message and a low-order key all fail by that name;
  *   · fresh ephemerals yield fresh hashes and keys; transport nonces advance and never rewind;
+ *   · the lawful doors take NO ephemeral: a fixed one enters through the vector harness alone, which no source
+ *     file imports, since one ephemeral used twice under one static pair reuses a key and a nonce;
+ *   · no message passes Noise's 65535-byte bound, written or read;
  *   · the module stays out of the package barrel and reads no clock.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
 import { hex, hexToBytes } from "../src/crypto.js";
 import {
   MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES, NOISE_IK_PROTOCOL, NoiseHandshakeError,
-  noiseInitiate, noiseKeyPair, noiseRespond, type NoiseTransport,
+  NOISE_MAX_MESSAGE_BYTES, noiseInitiate, noiseKeyPair, noiseRespond, noiseVectorHarness, type NoiseTransport,
 } from "../src/noise-ik.js";
 
 interface Vector {
@@ -82,7 +85,6 @@ const VECTORS: readonly Vector[] = [
 ];
 
 const b = hexToBytes;
-const fixed = (h: string) => (): Uint8Array => b(h);
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
 const PROLOGUE = text("a synthetic prologue");
 const INIT = noiseKeyPair(new Uint8Array(32).fill(0x11));
@@ -117,10 +119,10 @@ describe("the published vectors", () => {
     expect(hex(respStatic.publicKey)).toBe(v.init_remote_static);      // the vector's pin IS the responder's static
     const [m1, m2, ...transport] = v.messages;
 
-    const initiator = noiseInitiate({ prologue, s: initStatic, rs: b(v.init_remote_static), payload: b(m1!.payload), ephemeral: fixed(v.init_ephemeral) });
+    const initiator = noiseVectorHarness.initiate({ prologue, s: initStatic, rs: b(v.init_remote_static), payload: b(m1!.payload) }, b(v.init_ephemeral));
     expect(hex(initiator.message1)).toBe(m1!.ciphertext);
 
-    const responder = noiseRespond({ prologue, s: respStatic, message1: b(m1!.ciphertext), ephemeral: fixed(v.resp_ephemeral) });
+    const responder = noiseVectorHarness.respond({ prologue, s: respStatic, message1: b(m1!.ciphertext) }, b(v.resp_ephemeral));
     expect(hex(responder.payload)).toBe(m1!.payload);
     expect(hex(responder.initiatorStatic)).toBe(hex(initStatic.publicKey));
 
@@ -199,7 +201,7 @@ describe("one error, and silence about the step", () => {
     const { message2 } = responder.writeMessage2(text("answer"));
     expect(message2.length).toBe(MIN_MESSAGE2_BYTES + text("answer").length);
     for (const at of [0, 31, 32, message2.length - 17, message2.length - 16, message2.length - 1]) {
-      const fresh = noiseInitiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload, ephemeral: undefined });
+      const fresh = noiseInitiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload });
       const answer = noiseRespond({ prologue: PROLOGUE, s: RESP, message1: fresh.message1 }).writeMessage2(text("answer"));
       expectTheOneError(() => fresh.readMessage2(flipBit(answer.message2, at)));
     }
@@ -274,6 +276,60 @@ describe("fresh ephemerals, and a transport that only moves forward", () => {
     expect(initiator.message1.length).toBe(MIN_MESSAGE1_BYTES);
     const { message2 } = noiseRespond({ prologue: new Uint8Array(0), s: RESP, message1: initiator.message1 }).writeMessage2();
     expect(message2.length).toBe(MIN_MESSAGE2_BYTES);
+  });
+});
+
+describe("a fixed ephemeral enters through the vector harness alone", () => {
+  test("★ the lawful doors take no ephemeral, and ignore one a caller smuggles in ★", () => {
+    const smuggled = { prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: text("knock"), ephemeral: () => new Uint8Array(32).fill(0x44) };
+    const one = noiseInitiate(smuggled), two = noiseInitiate(smuggled);
+    expect(hex(one.message1.slice(0, 32))).not.toBe(hex(two.message1.slice(0, 32)));      // two fresh ephemerals
+    expect(hex(one.message1)).not.toBe(hex(two.message1));
+    const answered = { prologue: PROLOGUE, s: RESP, message1: one.message1, ephemeral: () => new Uint8Array(32).fill(0x55) };
+    expect(hex(noiseRespond(answered).writeMessage2().message2)).not.toBe(hex(noiseRespond(answered).writeMessage2().message2));
+    // KNOWN POSITIVE, and the reason the doors refuse it: one ephemeral used twice under one static pair writes two
+    // first messages under ONE key and ONE nonce. Their sealed statics come out byte-identical.
+    const fixedE = new Uint8Array(32).fill(0x44);
+    const a = noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: text("knock-a") }, fixedE);
+    const c = noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: text("knock-c") }, fixedE);
+    expect(hex(a.message1.slice(0, 80))).toBe(hex(c.message1.slice(0, 80)));
+    expect(hex(fixedE)).toBe("44".repeat(32));                                             // the harness copies; the caller's bytes stand
+    expectTheOneError(() => noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey }, new Uint8Array(31)));
+  });
+
+  test("no source file of the package names the harness", () => {
+    const src = new URL("../src/", import.meta.url);
+    const files = (readdirSync(src, { recursive: true }) as string[]).filter((f) => f.endsWith(".ts"));
+    expect(files.length).toBeGreaterThan(100);
+    const naming = files.filter((f) => readFileSync(new URL(f, src), "utf8").includes("noiseVectorHarness"));
+    expect(naming).toEqual(["noise-ik.ts"]);                                               // KNOWN POSITIVE: its own definition
+  });
+});
+
+describe("no message passes the 65535-byte bound", () => {
+  test("a handshake payload or a transport message past the bound refuses; one at the bound passes", () => {
+    expect(NOISE_MAX_MESSAGE_BYTES).toBe(65535);
+    const most1 = new Uint8Array(NOISE_MAX_MESSAGE_BYTES - MIN_MESSAGE1_BYTES);
+    const widest = noiseInitiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: most1 });
+    expect(widest.message1.length).toBe(NOISE_MAX_MESSAGE_BYTES);                          // CONTROL
+    const responder = noiseRespond({ prologue: PROLOGUE, s: RESP, message1: widest.message1 });
+    expect(responder.payload.length).toBe(most1.length);
+    expectTheOneError(() => noiseInitiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: new Uint8Array(most1.length + 1) }));
+    expectTheOneError(() => noiseRespond({ prologue: PROLOGUE, s: RESP, message1: new Uint8Array(NOISE_MAX_MESSAGE_BYTES + 1) }));
+    const most2 = new Uint8Array(NOISE_MAX_MESSAGE_BYTES - MIN_MESSAGE2_BYTES);
+    const second = noiseRespond({ prologue: PROLOGUE, s: RESP, message1: noiseInitiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey }).message1 });
+    expectTheOneError(() => second.writeMessage2(new Uint8Array(most2.length + 1)));
+    const pending = noiseInitiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey });
+    expectTheOneError(() => pending.readMessage2(new Uint8Array(NOISE_MAX_MESSAGE_BYTES + 1)));
+
+    const { i, r } = exchange();
+    const atBound = i.send.seal(new Uint8Array(NOISE_MAX_MESSAGE_BYTES - 16));
+    expect(atBound.length).toBe(NOISE_MAX_MESSAGE_BYTES);
+    expect(r.receive.open(atBound).length).toBe(NOISE_MAX_MESSAGE_BYTES - 16);            // CONTROL
+    expectTheOneError(() => i.send.seal(new Uint8Array(NOISE_MAX_MESSAGE_BYTES - 15)));
+    expectTheOneError(() => r.receive.open(new Uint8Array(NOISE_MAX_MESSAGE_BYTES + 1)));
+    // A refused seal moved no nonce: the next lawful message still opens in its place.
+    expect(new TextDecoder().decode(r.receive.open(i.send.seal(text("after"))))).toBe("after");
   });
 });
 

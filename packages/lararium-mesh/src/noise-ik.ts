@@ -12,7 +12,9 @@
  * What each message proves, and to whom:
  *   · MESSAGE ONE proves to the responder that its writer knew the responder's static key and held the secret of
  *     the static key it carries. It proves NOTHING about now: the same bytes replay. So the initiator's static
- *     and the first payload stand PROVISIONAL, and no transport exists on either side.
+ *     and the first payload stand PROVISIONAL, and no transport exists on either side. The first payload also
+ *     holds NO forward secrecy: whoever later learns the responder's static secret reads it. A caller puts no
+ *     application act in message one.
  *   · MESSAGE TWO proves to the initiator that the responder holds its static secret and read message one. The
  *     initiator's first transport message then proves to the responder that a live initiator finished: only a
  *     holder of this exchange's ephemeral secret derives the transport keys.
@@ -23,8 +25,14 @@
  *   · A TRANSPORT EXISTS ONLY AFTER MESSAGE TWO. It rides in the return of `readMessage2` and `writeMessage2`
  *     and nowhere else; a pending side exposes no key, no chaining key and no cipher.
  *   · A PENDING SIDE SERVES ONE EXCHANGE. Its second use refuses, and a failure spends it.
- *   · SECRETS DROP AT THE SPLIT. The ephemeral secret, the chaining key, the handshake key and every DH output
- *     get zeroed once the transport keys stand, or once the exchange fails.
+ *   · EVERY EXCHANGE DRAWS A FRESH EPHEMERAL. One ephemeral used twice under one static pair writes two first
+ *     messages under one key and one nonce. So the two lawful doors take no ephemeral and draw their own from
+ *     the platform's random source; a fixed one enters through `noiseVectorHarness` alone, the door that
+ *     reproduces published vectors, which no source file imports.
+ *   · NO MESSAGE PASSES 65535 BYTES, written or read, handshake or transport.
+ *   · SECRETS DROP AT THE SPLIT. The ephemeral secret, the working copy of the static secret, the chaining key,
+ *     the handshake key and every DH output get zeroed once the transport keys stand, or once the exchange
+ *     fails. The caller's own key buffers never get touched. The transport keys live as long as their ciphers.
  *   · THE CALLER OWNS THE KEYS AND THE PROLOGUE. This module knows no Nexus, no face, no gate, no key's
  *     derivation and no socket. Both sides must hold one prologue, or the first tag fails.
  *
@@ -59,8 +67,8 @@ export class NoiseHandshakeError extends Error {
 /** An X25519 key pair, 32 bytes each. */
 export interface NoiseKeyPair { readonly secretKey: Uint8Array; readonly publicKey: Uint8Array }
 
-/** The source of one ephemeral secret: 32 bytes, used as the X25519 secret as they come. Asked once per side. */
-export type NoiseEphemeralSource = () => Uint8Array;
+/** Noise's bound on any message, handshake or transport. */
+export const NOISE_MAX_MESSAGE_BYTES = 65535;
 
 /** One direction of the transport. Its nonce counts from zero and only moves forward; a failed open moves nothing. */
 export interface NoiseCipher {
@@ -189,6 +197,7 @@ function cipherOf(key: Uint8Array): NoiseCipher {
   const run = (seal: boolean, input: Uint8Array, ad: Uint8Array): Uint8Array => {
     try {
       need(bytesOf(input) && bytesOf(ad) && n < NONCE_LIMIT);
+      need((seal ? input.length + TAGLEN : input.length) <= NOISE_MAX_MESSAGE_BYTES);
       const aead = chacha20poly1305(key, nonceOf(n), ad);
       const out = seal ? aead.encrypt(input) : aead.decrypt(input);
       n++;                                   // only a seal or an open that held moves the counter
@@ -204,7 +213,15 @@ function cipherOf(key: Uint8Array): NoiseCipher {
 const transportOf = (sendKey: Uint8Array, receiveKey: Uint8Array, hash: Uint8Array): NoiseTransport =>
   Object.freeze({ send: cipherOf(sendKey), receive: cipherOf(receiveKey), handshakeHash: hash });
 
-const platformEphemeral: NoiseEphemeralSource = () => webGetRandomValues(new Uint8Array(DHLEN));
+/** A fresh ephemeral secret from the platform's random source. */
+const freshEphemeral = (): Uint8Array => webGetRandomValues(new Uint8Array(DHLEN));
+
+interface InitiateParts {
+  readonly prologue: Uint8Array; readonly s: NoiseKeyPair; readonly rs: Uint8Array; readonly payload?: Uint8Array;
+}
+interface RespondParts {
+  readonly prologue: Uint8Array; readonly s: NoiseKeyPair; readonly message1: Uint8Array;
+}
 
 /** The key pair an X25519 secret holds. The secret returned is a copy the caller owns. */
 export function noiseKeyPair(secretKey: Uint8Array): NoiseKeyPair {
@@ -218,20 +235,40 @@ export function noiseKeyPair(secretKey: Uint8Array): NoiseKeyPair {
  * Write message one as the initiator: `s` its own static pair, `rs` the responder's static key it pinned.
  * The pending side it returns reads message two once and only then yields a transport.
  */
-export function noiseInitiate(parts: {
-  readonly prologue: Uint8Array; readonly s: NoiseKeyPair; readonly rs: Uint8Array; readonly payload?: Uint8Array;
-  readonly ephemeral?: NoiseEphemeralSource;
-}): NoiseInitiatorPending {
+export function noiseInitiate(parts: InitiateParts): NoiseInitiatorPending {
+  return initiate(parts, freshEphemeral);
+}
+
+/**
+ * Read message one as the responder holding static pair `s`. What it returns stands provisional: the bytes may
+ * be a replay. It writes message two once, and only that yields a transport.
+ */
+export function noiseRespond(parts: RespondParts): NoiseResponderPending {
+  return respond(parts, freshEphemeral);
+}
+
+/**
+ * The door that reproduces PUBLISHED VECTORS: each side under an ephemeral secret the vector fixes. A fixed
+ * ephemeral used for two exchanges under one static pair reuses a key and a nonce, so no source file imports
+ * this door and no caller outside a test may.
+ */
+export const noiseVectorHarness = Object.freeze({
+  initiate: (parts: InitiateParts, ephemeralSecret: Uint8Array): NoiseInitiatorPending => initiate(parts, () => ephemeralSecret),
+  respond:  (parts: RespondParts, ephemeralSecret: Uint8Array): NoiseResponderPending => respond(parts, () => ephemeralSecret),
+});
+
+function initiate(parts: InitiateParts, ephemeral: () => Uint8Array): NoiseInitiatorPending {
   const sym = new SymmetricState();
-  let e: Uint8Array = EMPTY;
-  const spend = (): void => { e.fill(0); sym.drop(); };
+  let e: Uint8Array = EMPTY, sSecret: Uint8Array = EMPTY;
+  const spend = (): void => { e.fill(0); sSecret.fill(0); sym.drop(); };
   try {
     const { prologue, s, rs } = parts, payload = parts.payload ?? EMPTY;
     need(bytesOf(prologue) && bytesOf(payload) && bytesOf(rs, DHLEN) && bytesOf(s.secretKey, DHLEN) && bytesOf(s.publicKey, DHLEN));
-    const sSecret = new Uint8Array(s.secretKey);
+    need(MIN_MESSAGE1_BYTES + payload.length <= NOISE_MAX_MESSAGE_BYTES);
+    sSecret = new Uint8Array(s.secretKey);
     sym.mixHash(prologue);
     sym.mixHash(rs);                                             // <- s
-    const drawn = (parts.ephemeral ?? platformEphemeral)();
+    const drawn = ephemeral();
     need(bytesOf(drawn, DHLEN));
     e = new Uint8Array(drawn);
     const ePublic = x25519.getPublicKey(e);
@@ -246,7 +283,7 @@ export function noiseInitiate(parts: {
       try {
         need(!spent);
         spent = true;
-        need(bytesOf(message2) && message2.length >= MIN_MESSAGE2_BYTES);
+        need(bytesOf(message2) && message2.length >= MIN_MESSAGE2_BYTES && message2.length <= NOISE_MAX_MESSAGE_BYTES);
         const re = message2.slice(0, DHLEN);
         sym.mixHash(re);                                         // <- e
         sym.mixDh(e, re);                                        //    ee
@@ -255,28 +292,21 @@ export function noiseInitiate(parts: {
         const { first, second, hash } = sym.split();
         e.fill(0); sSecret.fill(0);
         return { payload: read, transport: transportOf(first, second, hash) };
-      } catch { spent = true; spend(); sSecret.fill(0); return fail(); }
+      } catch { spent = true; spend(); return fail(); }
     };
     return Object.freeze({ message1, readMessage2 });
   } catch { spend(); return fail(); }
 }
 
-/**
- * Read message one as the responder holding static pair `s`. What it returns stands provisional: the bytes may
- * be a replay. It writes message two once, and only that yields a transport.
- */
-export function noiseRespond(parts: {
-  readonly prologue: Uint8Array; readonly s: NoiseKeyPair; readonly message1: Uint8Array;
-  readonly ephemeral?: NoiseEphemeralSource;
-}): NoiseResponderPending {
+function respond(parts: RespondParts, ephemeral: () => Uint8Array): NoiseResponderPending {
   const sym = new SymmetricState();
-  let e: Uint8Array = EMPTY;
-  const spend = (): void => { e.fill(0); sym.drop(); };
+  let e: Uint8Array = EMPTY, sSecret: Uint8Array = EMPTY;
+  const spend = (): void => { e.fill(0); sSecret.fill(0); sym.drop(); };
   try {
     const { prologue, s, message1 } = parts;
     need(bytesOf(prologue) && bytesOf(message1) && message1.length >= MIN_MESSAGE1_BYTES &&
-      bytesOf(s.secretKey, DHLEN) && bytesOf(s.publicKey, DHLEN));
-    const sSecret = new Uint8Array(s.secretKey);
+      message1.length <= NOISE_MAX_MESSAGE_BYTES && bytesOf(s.secretKey, DHLEN) && bytesOf(s.publicKey, DHLEN));
+    sSecret = new Uint8Array(s.secretKey);
     sym.mixHash(prologue);
     sym.mixHash(s.publicKey);                                    // <- s
     const re = message1.slice(0, DHLEN);
@@ -287,7 +317,7 @@ export function noiseRespond(parts: {
     sym.mixDh(sSecret, rs);                                      //    ss
     sSecret.fill(0);
     const payload = sym.decryptAndHash(message1.slice(DHLEN + DHLEN + TAGLEN));
-    const drawn = (parts.ephemeral ?? platformEphemeral)();
+    const drawn = ephemeral();
     need(bytesOf(drawn, DHLEN));
     e = new Uint8Array(drawn);
 
@@ -296,7 +326,7 @@ export function noiseRespond(parts: {
       try {
         need(!spent);
         spent = true;
-        need(bytesOf(answer));
+        need(bytesOf(answer) && MIN_MESSAGE2_BYTES + answer.length <= NOISE_MAX_MESSAGE_BYTES);
         const ePublic = x25519.getPublicKey(e);
         sym.mixHash(ePublic);                                    // <- e
         sym.mixDh(e, re);                                        //    ee
