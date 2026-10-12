@@ -64,15 +64,51 @@ declines every judgment about them.
 
 <<~/ahu>>
 
+<<~ ahu #/the-one-door>>
+
+!! The one door ~ every Ed25519 signature and every key reads one strict rule
+
+Every verifier in the house calls `verifyEd25519`, and every place a public key enters standing state calls
+`acceptEd25519Key`. Both live in `ed25519-door.ts`, and no other source file calls a curve library's
+`verify`: a census test reads the whole source tree and turns red on the first one that does.
+
+The rule takes no option:
+
+* a key reads as 32 bytes, in its ONE canonical encoding, on the curve, and outside the eight small-order
+  points. A small-order key holds no secret, so under a lenient rule ''everyone signs for it''; the door
+  refuses it by name, `key-small-order`.
+* a signature reads as 64 bytes `R ‖ S`, with `S` below the group order and `R` canonical, on the curve and
+  outside the small-order points.
+* the equation reads COFACTORLESS, the sufficient form RFC 8032 §5.1.7 states: `[S]B = R + [k]A`. No factor
+  of eight forgives a torsion component.
+* hex reads bare and lower-case alone, so one key holds one spelling wherever a seat set or a signer dedup
+  compares strings.
+
+A mixed-order key stands as RFC 8032 leaves it: it reads as a key, and a signature under it verifies exactly
+when the cofactorless equation holds.
+
+''A key refuses where it ENTERS, by name'': a charter seat, a roll's seated and revealed sets, a guardian
+registration, a persona inception's op-key and each rotation's fresh one, a Handle key, both keys a device
+edge names, the device key an admit names. A charter, a roll or a log that names a refused key refuses WHOLE.
+Dropping the one seat would move a threshold nobody signed for; a commitment hides a key until its reveal, and
+the reveal refuses there.
+
+The door changes which signatures and keys get ACCEPTED. It moves no signing domain and no signed byte: every
+producer the house uses (noble, Node `crypto`, WebCrypto with a non-extractable key) signs by RFC 8032 and
+passes.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 <<~ pranala #source from="?" -> to="packages/lararium-mesh/src/quorum-entry.ts" family="code" role="has">>
+<<~ pranala #the-door from="?" -> to="packages/lararium-mesh/src/ed25519-door.ts" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;oWxd8vmaz82AA9fZdtX3Bwt_SWv2P1HQggaAhS61F44
+<<^ code="&#x0003;">>ni:///sha-256;yZMQqKWrDNG3xKkEVjRramyUMUUBYWeP57jjj7Id2AQ
 
 <<^ code="&#x0004;" -> to="?">>
