@@ -159,7 +159,7 @@ per-Nexus wire key replaces the one gate key every carried Nexus shares.
 * ''Key confirmation.'' WireGuard §5 holds the responder from sending transport data until the initiator's first encrypted message lands — //"This ordering restriction is to require confirmation as described for KEA+C"//. A handshake skipping it lets a responder commit to a session the peer never confirmed.
 * ''A replay window'', which wants a per-peer monotonic counter rather than a clock — the transport form of the no-global-now law, at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands#/two-clocks">>.
 * ''Channel binding onto the handshake hash.'' Noise §14 seats it on `h`, never the chaining key `ck`, //"to prevent multiple sessions deriving identical keys through invalid public keys"//. Any vessel-or-persona binding this stack hangs on a session hangs on `h`.
-* ''Revocation after an invite leaks'' — the hearth's roll answers it for hosted invites (a hard roll kills every outstanding token and grant with no list to walk, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>); the founding-rite invite stays OPEN, carried at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet">>.
+* ''Revocation after an invite leaks'' — the hearth's roll answers it for hosted invites (a hard roll kills every outstanding token and grant with no list to walk, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>); browser and device admission remains OWED at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet">>.
 
 <<~/ahu>>
 
@@ -268,6 +268,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GDE43Ewds8bMYNDGJw2esxNVdlmjy0vmA6ZxCX0iZq4
+<<^ code="&#x0003;">>ni:///sha-256;dQ7fQeQ5pVUsrOMTUS3EXSqmhzEJ76yahvdwU5Vqaa8
 
 <<^ code="&#x0004;" -> to="?">>
