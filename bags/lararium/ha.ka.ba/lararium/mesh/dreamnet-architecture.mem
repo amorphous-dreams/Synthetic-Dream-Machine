@@ -10,7 +10,7 @@ l-space    = "lararium"
 mana       = 17
 manao      = 16
 manaoio    = 15
-revised-on = "2026-09-20"
+revised-on = "2026-10-11"
 role       = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Re-trued 2026-09-20 against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
 title      = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -28,6 +28,16 @@ the gardens recognize each other even when they cannot read each other.
 ''A protocol, not a platform. A grammar, not a database.''
 
 The mesh runs on ''two orthogonal axes''. One axis moves bytes — ''FLOW'', the leylines, who carries whose sealed mana. The other axis grants sight — ''WHO'', the keys, who may read what. The old single ladder fused them; this meme keeps them apart, because the entity that makes the mesh //magical// — the ''relay'', a node that carries a stream it cannot read — lives exactly in the gap between them.
+
+<<~ ahu #/the-shadowland-frame>>
+
+!! The Shadowland frame ~ a board of live wikis, grown by invitation
+
+The operator's own frame for the whole system (2026-10-11; quote license): //"that herm cap sits underneath every operator-class lararium, contracted into a mesh (Nexus) and a super-mesh-environment (DreamNet). … The humans with operator caps invite their friends. Local-first, no global now, causal-islands in an astral sea, with the flavor of Shadowrun 1e pre-SIN era Shadowland/ShadowTalk bbs (wikis as live surfaces)."//
+
+A newcomer may read the rest of this carrier through it. A herm that carries and cannot read sits under every operator's Lararium; Lararia contract into a Nexus, and Nexuses into the DreamNet. The mesh grows by invitation from people who each run their own node: no sign-up desk, no roster, no global identity number. On its surface wikis stand as live documents that Handles annotate together, the way a sysop's board once carried its regulars' talk. Where the herm stands and how an operator seeds stands ruled at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>.
+
+<<~/ahu>>
 
 <<~ ahu #/two-axis-topology>>
 
@@ -615,6 +625,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1NcLm3QFDS8vuLOY2vDjOHQb_FK-tfxXZ6AEuU5TuCU
+<<^ code="&#x0003;">>ni:///sha-256;Xusb80EA10J_Q71OPjfKa0wIvVU1IcaCp5l8TJag9Tg
 
 <<^ code="&#x0004;" -> to="?">>
