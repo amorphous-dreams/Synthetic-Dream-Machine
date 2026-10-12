@@ -260,9 +260,9 @@ FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tu
 
 <<~ ahu #/provenance>>
 
-!! Provenance ~ RESEARCHED, not built
+!! Provenance ~ a built slot and an operator-supplied household
 
-This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert ∪ human-onboarding) converged 2026-07-23; NO code stands behind it yet. ''Build implication, named'': the relay's `wss://` origin must bind to the configured DNS name — the device-reach banner already derives reachable URLs, so extending it to honor a configured `LAR_PUBLIC_URL = https://name.kahu.tld` + the wss origin is the shore. ''Uncertain, flagged'': installed-PWA / Android-WebView TLS behavior; a phone forcing encrypted DNS (DoH) past the split-horizon answer (the likeliest papercut); whether OPFS / `crypto.subtle` degrade gracefully across a cert-renewal ''lapse'' or hard-fail the vessel mid-session (worth a deliberate expiry test).
+The `https` compose profile supplies a TLS terminator and split-horizon resolver; `LAR_PUBLIC_URL` names the vessel's reach face, and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, DNS credential, certificate issuance and renewal. The proposed path includes per-device-free DNS-01 wildcard TLS and household DNS; installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
 
 <<~/ahu>>
 
@@ -271,6 +271,7 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> harbor defines the household HTTPS slot and operator-supplied reach
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
@@ -286,6 +287,6 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4xQZXwNoZyigPxm6mjQ0DAIobMZb50-0bHPFIYHCgJ4
+<<^ code="&#x0003;">>ni:///sha-256;-ltrEFPZf6rDaOhU3ByIY3FxfIG-X11Ga-xtihBZZXE
 
 <<^ code="&#x0004;" -> to="?">>
