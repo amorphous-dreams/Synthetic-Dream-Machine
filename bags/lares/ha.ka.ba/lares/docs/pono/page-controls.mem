@@ -1,0 +1,251 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/page-controls.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 17
+manao             = 16
+manaoio           = 15
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "page-controls — the page-native controls that carry TiddlyWiki's third layer under the DreamDOM ruling: the island renders through the page template and the layout layers and emits keyed absolute frames; the PAGE holds live values, selection, focus, geometry and top-layer state behind a small allowlisted set of vessel-shipped light-DOM custom elements, and writes whole values and identified events back. A template NAMES a control and never supplies script. Carries the first three controls as ruled (a field editor, a popover, a disclosure), the designed set, the naming convention with three worked examples, the wire (a keyed frame and one answered control event), the words a person reads at a refusal, the shadow-widget verdict per stock widget, the debts standing in the page sink, and the measure-first clause"
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/page-controls"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/page-controls"
+written           = "2026-10-11"
+```
+
+<<~ ahu #/head>>
+
+! Page Controls ~ what the page holds, so the island never has to ask
+
+''The island renders through TiddlyWiki's page-template and layout layers; the third layer belongs to the page'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers">>). That ruling left three things owed: which page-native controls stand first, how a template names one, and which stock surfaces refuse meanwhile. This carrier answers them.
+
+> ''Register.'' Two sentences stand ruled (operator ruling, 2026-10-11, approving the house's leans): ''the first page-native controls read a field editor, a popover and a disclosure'', and ''a template names a control as a vessel-shipped custom element and never supplies script''. The rest reads as ''the designed shape'': a design study's contract, with every part unbuilt. One mechanism carries a measurement: a prototype ran the editor's engine seam (#/shadow-widgets). No control here has yet met a real browser.
+
+<<~/ahu>>
+
+<<~ ahu #/who-owns-what>>
+
+!! What the island owns, and what the page owns
+
+|! Owner |! Holds |! Never does |
+| ''The island'' | TiddlyWiki parses, transcludes, selects the camera's root, runs wiki actions, and emits absolute rendered state per declared camera key. Each key carries a monotone revision; each frame names the page revisions the island had sensed. | It never asks its document for a live value, a caret, a focus or a layout answer. |
+| ''The page'' | The vessel paints real nodes, binds a small reviewed registry of controls, and holds live values, composition, selection, focus, geometry, scrolling, top-layer state and animation. It sends whole values and identified events. | It runs no TiddlyWiki engine. |
+
+''The binding rule.'' A template names an allowlisted behaviour and its native descendants. The page fixes any cancellation policy when it BINDS that behaviour; an island's later reply never decides what a browser's default should have done (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-vectors">>, vector 2).
+
+''Rendering never licenses a stock handler.'' Stock `$button` and `$link` can measure bounds and cancel a click, so their markup crossing the boundary grants their handlers nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/the-control-set>>
+
+!! The control set ~ three ruled first, the rest designed
+
+''Ruled first'':
+
+# ''A field editor, emitting `lar-field`.'' It runs through the editor's engine seam (#/shadow-widgets), so the stock edit template renders through it.
+# ''A popover'' (`lar-popover`).
+# ''A disclosure'' (`lar-disclosure`).
+
+''The designed set, unbuilt.'' Every tag names vessel-shipped, allowlisted code, and its native children stay in the element's light DOM.
+
+|! Tag |! Binding attributes and native child |! Event, and the morph rule |
+| `lar-field` | `data-control-id`, `data-tiddler`, `data-field`, `data-schema`; a labelled `<input>` or `<textarea>` | `lar:field-write` carries the event id, the control id, the local revision and the WHOLE value. The page holds the live value and node while its local revision exceeds the frame's sensed revision for that control, and relays once after a composition ends. Undo, focus and selection stay on the page. |
+| `lar-popover` · `lar-picker` | `data-control-id`, bounded option keys; a labelled button and panel, or input and list | `lar:choice` carries the event id and the whole selected key or key set. A popover supplies the top layer and dismissal; it supplies no anchored placement and no menu keyboard model on its own. An in-flow panel serves where anchoring lacks support. |
+| `lar-disclosure` | `data-control-id`; `<details>` with `<summary>` | `lar:disclosure-toggle` carries the event id, the open state and the local revision, and only where the wiki keeps that state. The native open state stays the page's until a frame senses it. |
+| `lar-action` | `data-control-id`, an allowlisted `data-action`; `<button type="button">` | `lar:action` carries an event id and a named action. Its default and cancellation policy bind before activation. |
+| `lar-link` | `data-control-id`, `data-route-key`; a real `<a href>` | `lar:navigate` carries an event id and a route. Ordinary, modified and external activation follow the browser; no blanket click cancellation. |
+| `lar-layout-switcher` | `data-control-id`; `data-layout-key` buttons inside a labelled `<nav>` | `lar:layout-select` carries an event id and the chosen root key. A pending choice shows as pending until a sensed frame paints that root. |
+| `lar-order-list` | `data-control-id`; an `<ol>` with stable `data-item-id` and named move buttons | `lar:order-write` carries an event id and the WHOLE ordered id list. Membership travels under another complete key; an id absent from the order never deletes a member. |
+| `lar-file-picker` | `data-control-id`, `data-accept`, `data-max-bytes`; a labelled `<input type="file">` | `lar:import-offer` carries an event id and bounded whole bytes after the page validates them. The page keeps the chosen file and its status until the answer. |
+| `lar-dialog` · `lar-refusal` | a labelled `<dialog>`; adjacent status text | The page handles focus, close and top-layer state. `lar:control-refused` carries the event id, the control id and the reason; the visible refusal stands even where no component upgraded. |
+
+''A whole-number field uses `type="text" inputmode="numeric"` under an explicit integer schema.'' A number input can collapse invalid text to an empty value, which loses the text a person typed before validation reads it.
+
+''The engine floor.'' Native input, textarea, button, anchor, details, list and file input give the base path. Feature detection gates the popover, anchored placement, transitions and content-sized fields, and the in-flow fallback belongs to the contract rather than to a degraded mode.
+
+<<~/ahu>>
+
+<<~ ahu #/naming-a-control>>
+
+!! How a template names a control
+
+''A template names a vessel-shipped, allowlisted custom element in light DOM, and never supplies script'' (operator ruling, 2026-10-11).
+
+* ''No tiddler supplies JavaScript or an expression to run.'' The vessel ships every control's code; a tag outside the allowlist binds nothing.
+* ''The name reads literal'': `lar-` and the control's kind.
+* ''`data-control-id` names the control stably.'' Further `data-*` attributes carry the binding, each checked against a schema. Ordinary HTML attributes carry native semantics.
+* ''Native children stay in light DOM'', so a label and the field it names stay within one root.
+* ''The projection transport stamps frame and sensed revisions; a tiddler never does.''
+* ''Both sides validate.'' The page and the island each check the target, the control's type, the schema, the length and the capability. A tiddler that names a reviewed tag over another field's target meets a refusal.
+* ''Raw HTML keeps its own trust boundary.'' TiddlyWiki's element widget can emit these names and leaves out `on*` attributes; raw markup takes a separate check.
+
+!!! Three worked examples
+
+The serialized form sorts attributes and resolves the transclusion. A builder pins the exact bytes against the real parser before shipping.
+
+''A field'', written in a template:
+
+```html
+<lar-field data-control-id="character.level" data-tiddler="Character/Orin" data-field="level" data-schema="level-1-20"><label for="character-level">Level</label><input id="character-level" type="text" inputmode="numeric" value={{Character/Orin!!level}}></lar-field>
+```
+
+and serialized into a frame, the field holding `2`:
+
+```html
+<lar-field data-control-id="character.level" data-field="level" data-schema="level-1-20" data-tiddler="Character/Orin"><label for="character-level">Level</label><input id="character-level" inputmode="numeric" type="text" value="2"></lar-field>
+```
+
+''A camera choice'', the same bytes written and serialized:
+
+```html
+<lar-layout-switcher data-control-id="camera.root"><nav aria-label="Views"><button data-layout-key="character-sheet" type="button">Character sheet</button><button data-layout-key="session-log" type="button">Session log</button></nav></lar-layout-switcher>
+```
+
+''An actions panel'', the same bytes written and serialized:
+
+```html
+<lar-popover data-control-id="character.actions"><button popovertarget="character-actions" type="button">Actions</button><div id="character-actions" popover="auto"><button data-choice="roll" type="button">Roll</button></div></lar-popover>
+```
+
+The panel uses ordinary grouped buttons. A `role="menu"` would promise a keyboard model the markup alone does not supply. The example names `Character/Orin` as a fixture; no campaign schema or sharing grant stands named for it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-wire>>
+
+!! The wire ~ a keyed frame down, one answered event up
+
+''The frame.'' `projection:frame` carries one validated envelope:
+
+```json
+{
+  "cameraId": "story",
+  "mountEpoch": "opaque-mount-id",
+  "grain": "surface",
+  "keys": [
+    {"key": "surface", "rev": 41, "html": "<...whole surface...>"},
+    {"key": "style", "rev": 6, "css": "...whole stylesheet..."},
+    {"key": "membership", "rev": 3, "members": ["surface", "style"]}
+  ],
+  "sensedRevision": {"character.level": 8}
+}
+```
+
+* ''Each key paints from nothing'' and carries its own revision. A deletion carries an explicit tombstone.
+* ''A membership key names the complete set.'' Omission never means deletion.
+* ''`sensedRevision` names, per control, the page revision the island had taken in when it rendered.''
+* ''The page compares revisions within one key and one mount epoch'', never by arrival and never across keys (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>, conditions 1 to 4).
+
+''The event.'' One message kind, `wiki:control-event`, carries `eventId`, `cameraId`, `mountEpoch`, `controlId`, `controlType`, `action`, `seenFrameRev`, an optional `localRev`, and `wholeValue`. Its schema bounds strings, id arrays and file bytes each on their own, and the island checks the rendered binding against its capability before any write.
+
+''The answer.'' `projection:control-result` carries `eventId`, `controlId`, a `status`, and a reason where one applies. The status reads ''`applied`'', ''`stale-target`'', or a ''named refusal''. `applied` means the island accepted and applied the act; a later durable or cross-household confirmation takes its own measured state.
+
+''A text operation rides the same event.'' A toolbar act carries the whole value and the selection as of the act; the island applies the operation to that pair and returns the whole value and the selection it wants. The page applies the answer only while its own revision still matches. No coordinate, focus, node value or geometry returns as an island's observation.
+
+''A popover's wiki state shrinks to open or closed'', kept only where the wiki needs it. A small panel renders hidden in the frame and opens at once; a lazy body waits for measurement to ask for it.
+
+The session, surface and generation fields that wrap these messages stand at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol">>.
+
+<<~/ahu>>
+
+<<~ ahu #/refusals>>
+
+!! The refusal words a person sees
+
+''A refusal shows beside the control a person acted on'', as status text within the same accessibility root, and leaves focus where the act happened. A console line alone never satisfies this.
+
+|! Reason |! Words |
+| `invalid-integer` | "Enter a whole level from 1 to 20. Your text remains here." |
+| `input-too-long` | "This field exceeds 65,536 characters. Shorten it before saving." |
+| `stale-target` | "This control changed before your action arrived. Review it and try again." |
+| `selection-unavailable` | "This formatting command needs the current selection and cannot run here." |
+| `geometry-unavailable` | "This placement needs a live page measurement; the menu opens in the page instead." |
+| `route-unresolved` | "This destination no longer resolves." |
+| `unsupported-control` · `binding-unavailable` | "This control has no page binding in this vessel. Your change has not saved." |
+| `page-action-unavailable` | "This browser action has no page control here." |
+
+''A stock surface with no control yet refuses by one of these names.'' Its content still paints.
+
+<<~/ahu>>
+
+<<~ ahu #/shadow-widgets>>
+
+!! Shadow widgets ~ a twin under a stock name, sorted by mechanism
+
+A twin under one of TiddlyWiki's stock widget names lets stock templates keep working. Three mechanisms reach that, and they earn three different verdicts.
+
+* ''The editor's engine seam wins for `$edit-text`.'' Core builds its text editor by handing engines to its own editor factory; a third engine handed to that factory keeps stock field addressing, store writes and toolbar dispatch. A prototype rendered the stock edit template through it, wrote a returning whole value, and ran the stock `wrap-selection` operation over a value and a selection carried on the event, with every read of the fake node's value, selection and geometry trapped to throw. The entry stays narrow and the drift runs deep: each TiddlyWiki release owes a re-validation of the factory's calls and of every toolbar operation. An operation that reaches past the event's snapshot refuses by name. This engine belongs in the engine fold.
+* ''A wikitext `\widget` override suits narrow markup, and needs `$remappable="no"`.'' The override reaches the original widget through `$genesis` with that flag; without it the definition maps onto itself and fails opaquely. It reshapes markup and children. It binds no listener, safe mode disables it, and every global caller sees it.
+* ''A same-name JavaScript module promises nothing.'' The later-registered export wins, and reversing registration order flips the winner. No plugin-priority contract stands, and the widget class map caches at first construction. It suits a reviewed internal module with a load-order test and nothing wider.
+
+|! Stock widget |! Mechanism |
+| `$edit-text` | the editor's engine seam |
+| `$reveal` · `$select` · `$checkbox` · `$radio` · `$range` · an ordinary `$list` | a wikitext override for markup, with a page binding for the input and the write |
+| popups · `$button` actions · `$link` · `$scrollable` · `$browse` · storyviews · modals · notifications | page-only controls |
+| `$edit-shortcut` · `$edit` · `$password` · `$edit-bitmap` | a page-only native control for a supported schema, else a refusal |
+| `$droppable` · `$draggable` · `$dropzone` | a page-only bounded file offer; generic drag refuses |
+| `$keyboard` · `$eventcatcher` · `$linkcatcher` | REFUSE: broad capture, containment checks and late cancellation exceed a named binding |
+
+''Where each piece lives.'' Camera and template intent, and the narrow override grammar, stay in the house plugin as content. The projected editor engine stays in the engine fold. Listener binding and native behaviour stay in the vessel's own bundle.
+
+<<~/ahu>>
+
+<<~ ahu #/the-sink-today>>
+
+!! OWED ~ four faults standing in the page sink
+
+The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projection (`packages/lararium-tw5/src/tw5-projection.ts`) relay acts by render id. Four faults stand against this contract:
+
+# ''The delegated click handler cancels every projected click as it handles it.'' That decides at handling what the binding rule fixes at binding, and it takes modified and middle clicks on a real anchor with it.
+# ''An oversize input warns on the console alone.'' The person sees nothing beside the field.
+# ''A revision orders a whole surface.'' The sink orders frames within one continuous showing of one surface, so a switch paints the arriving surface's first frame. It carries no per-key revision, no mount epoch and no sensed revision: a focused or composing field keeps its value by focus, never by a revision the frame names.
+# ''A stale render id answers `stale-target` with no event id.'' The answer paints into the next frame of the surface that raised it, so an answer raised on a surface no longer shown reaches no frame, and nothing correlates an answer to the act that drew it.
+
+''Also standing'': no message carries a control id, an event id or a correlated result; the two return kinds carry a render id and number-or-boolean fields, or a bounded whole string.
+
+<<~/ahu>>
+
+<<~ ahu #/measure-first>>
+
+!! Measure first
+
+''One whole-surface key stands until measurements ask for a finer grain.'' The ruling names where a grain goes and orders no split (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>). A builder records serialized frame bytes, the island's render time, the page's morph time and long animation frames across a two-household session, and splits a key only where those numbers name the cost.
+
+''The first probes, cheapest first'':
+
+# Type a new value, hold back its answer, deliver an older absolute frame, then read the value, caret, focus, undo and the wiki's field. Repeat under composition.
+# Activate ordinary, modified, middle-button and external links; expect native behaviour and a named in-vessel route result.
+# Switch between two surfaces with deliberately lower revisions; expect each mount's first snapshot to paint.
+# Render a tiddler that claims another field's target, and one carrying raw event markup; expect a target refusal and no script.
+# Open a panel, receive a frame, dismiss it, and read keyboard and screen-reader names in each engine.
+
+''Rich editing and story motion stay refused'' until a page-native command or transition passes its browser and accessibility probes. A wider VM-side document never answers that debt.
+
+''Dependencies.'' The morph library the vessel already carries stays, wrapped by per-key value vetoes and sensed-revision ownership. The field's other receivers lend patterns alone; no new runtime dependency follows from this contract.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-holder-protocol">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_L5fv3qJL-uFnKdP3ZKrglfny6YQAHGyXO2mp8lRER8
+
+<<^ code="&#x0004;" -> to="?">>
