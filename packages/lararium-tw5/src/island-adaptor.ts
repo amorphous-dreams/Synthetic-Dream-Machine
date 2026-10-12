@@ -52,6 +52,14 @@ export function parallelDraftAlertTitle(draftTitle: string): string {
   return `$:/temp/lares/alert/parallel-draft/${draftTitle}`;
 }
 
+/**
+ * A rule whose last step names its slot through a text reference: `…then{<title>}]`. The cascade walk
+ * hands back the same empty answer for `then[]` and for a `then{pointer}` over a pointer that holds
+ * nothing, and they mean opposite things: the first withholds by decision, the second chose a slot this
+ * wiki cannot name. The rule's own spelling tells them apart.
+ */
+const ROUTES_BY_REFERENCE = /then\{([^}]+)\}\]\s*$/;
+
 /** The alert a save with no bag to land in raises — one per slot pointer that holds nothing. */
 export function unroutedSaveAlertTitle(reference: string): string {
   return `$:/temp/lares/alert/unrouted-save/${reference}`;
@@ -142,10 +150,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * ── THE CASCADE ROUTES; IT DOES NOT DECIDE WHETHER TO WRITE ───────────────────────────────────
    * Everything a hand edits and saves — memes, `.tid`s, and every other TW5 filetype — travels
    * through the CRDT and round-trips. The cascade answers WHICH slot; the only thing that may
-   * withhold a write is a rule that NAMES what it withholds. A gap or an unresolved route read as a
-   * withholding drops the write in silence — the promise resolves, the wiki shows the edit, nothing
-   * persists, and the tiddler is gone on the next boot — so `_destination` acts on the four verdicts
-   * apart.
+   * withhold a write is a rule that NAMES what it withholds. A gap, or a rule routing through a pointer
+   * that holds nothing, read as a withholding drops the write in silence — the promise resolves, the
+   * wiki shows the edit, nothing persists, and the tiddler is gone on the next boot — so `_destination`
+   * tells each apart.
    */
   private _routeBag(title: string): RouteVerdict {
     return routeBag(this.tw5.$tw.wiki, title);
@@ -166,12 +174,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /**
    * Act on a cascade verdict: a slot lands there, a named withholding skips (null), a gap falls to the
    * write layer, and a route with no bag behind it THROWS the named refusal after raising it on the
-   * alert rail — an unresolved rule, or a gap while the write layer itself has no name.
+   * alert rail — a rule that routes through an empty pointer, or a gap while the write layer itself
+   * has no name.
    */
   private _settle(title: string, verdict: RouteVerdict): SlotUri | null {
-    if (verdict.kind === "slot")       return verdict.uri;
-    if (verdict.kind === "withheld")   return null;
-    if (verdict.kind === "unresolved") throw this._refuseUnrouted(title, verdict.rule, verdict.reference);
+    if (verdict.kind === "slot") return verdict.uri;
+    if (verdict.kind === "withheld") {
+      const reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1];
+      if (reference === undefined) return null;
+      throw this._refuseUnrouted(title, verdict.rule, reference);
+    }
     const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
     console.warn(
       `[island-adaptor] no cascade rule routes "${title}" (${verdict.why}) — ` +

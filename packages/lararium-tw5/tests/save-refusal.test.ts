@@ -119,6 +119,19 @@ describe.skipIf(wikiSkip)(`a save with no bag to land in refuses by name${skipNo
     expect(wiki.getTiddlerText(unroutedSaveAlertTitle(POINTER_TEMP))).toContain("$:/temp/refusal/scratch");
   });
 
+  test("CONTROL: a literal empty operand still withholds in quiet — a decision, never a refusal", async () => {
+    const CASCADE = "lar:///ha.ka.ba/lararium/config/bag-paths";
+    const shipped = wiki.getTiddlerText(CASCADE) ?? "";
+    wiki.addTiddler(new Tiddler({ title: CASCADE, text: `[match[lar:///t/refusal/withheld]then[]]\n${shipped}` }));
+    await settle();
+    store.puts.length = 0;
+    const tiddler = new Tiddler({ title: "lar:///t/refusal/withheld", text: "kept out by name" });
+    await expect(adaptor.saveTiddler(tiddler)).resolves.toBeUndefined();
+    await settle();
+    expect(store.puts.filter((p) => p.title === "lar:///t/refusal/withheld")).toEqual([]);
+    expect(wiki.getTiddlerText(unroutedSaveAlertTitle(POINTER_BAG))).not.toContain("lar:///t/refusal/withheld");
+  });
+
   test("CONTROL: the pointer seeded, the same edit lands in the named bag and raises nothing", async () => {
     wiki.addTiddler(new Tiddler({ title: POINTER_BAG, text: WORKING }));
     await settle();
