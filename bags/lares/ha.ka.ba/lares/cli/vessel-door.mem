@@ -12,7 +12,7 @@ manao      = 15
 manaoio    = 14
 namespace  = "&#x2299;"
 role       = "The vessel door carries four primitives and one read, the card, wire, and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
-status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding + contract witnesses and the keeper rehearsal"
+status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding and contract witnesses and the founding rehearsal harness"
 tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/cli/vessel-door"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -247,6 +247,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dd-N55gfSm2JIBEzSA0NhK0_G8JmIcDWBSuGCBoEy_8
+<<^ code="&#x0003;">>ni:///sha-256;eQan96hUYXzTO5Q0Vc-MTmJMy_cL13JTBQNB4g4wwDw
 
 <<^ code="&#x0004;" -> to="?">>

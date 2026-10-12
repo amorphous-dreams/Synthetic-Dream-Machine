@@ -14,7 +14,7 @@ namespace  = "&#x2695;"
 revised-on = "2026-10-11"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
-tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/charter-chain", "kind/rite"]
+tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
 title      = "lar:///ha.ka.ba/lararium/mesh/founding-runbook"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/founding-runbook"
@@ -338,6 +338,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ckdgKa5InlvoaSGmV7dt6Zba5JhZJzaN_CTx5EfkmEo
+<<^ code="&#x0003;">>ni:///sha-256;xfsSAkLTao1ekUW-r9TxyGr_-6GSuw2i3ZAUULClkCk
 
 <<^ code="&#x0004;" -> to="?">>
