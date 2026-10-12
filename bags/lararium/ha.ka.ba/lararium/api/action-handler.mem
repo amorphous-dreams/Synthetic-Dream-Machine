@@ -76,6 +76,14 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 # ''Change-id preservation'' (Anti-pattern #1 defense). ADD / COPY / live-source MOVE carry
    the source record's `change-id` into the destination Manifestation — the Work
    keeps its causal identity across bags.
+   ''What the code does, and the OPEN question.'' `landInBag`
+   (`packages/lararium-tw5/src/action-handler.ts`) writes the ACTION's `change-id` over the
+   `meta.changeId` the source record carried: ADD and COPY stamp it on the landed record, a
+   live-source MOVE stamps it on the group's root, and each moved child keeps its own.
+   `lares act` mints a fresh `change-id` where the caller passes none. Two readings stand and no
+   ruling picks one: (a) the arg names the Work, so preservation rests on a caller who carries the
+   source's value; (b) the arg names the operation, so the handler owes a read of the source
+   record's own `change-id`. <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
 # ''Kāpae or retract, never silent delete'' (Anti-pattern #3 defense). CLEAR /
    DROP raise a ''kāpae'' tombstone (shadows lower bags — resurrection-prevention);
    A live-source MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
@@ -126,6 +134,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rAJThwxDyXEmDXHLmXz2RBp57UVpkYHTDQkr67uxunw
+<<^ code="&#x0003;">>ni:///sha-256;7xYs9SeOF80DYZ_UQndq-uykemeZn3gGxaIrxZ4C_2o
 
 <<^ code="&#x0004;" -> to="?">>

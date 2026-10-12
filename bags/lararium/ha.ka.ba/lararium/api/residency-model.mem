@@ -230,7 +230,7 @@ Six failure modes recur across OverlayFS, Docker, Nix, TW5, Ink & Switch CRDT re
 
 | # | Anti-pattern | Source | Defense |
 |---|---|---|---|
-| 1 | ''Causal-history severance on copy'' | Upwelling / Patchwork / Cambria | Preserve `change-id` (Gerrit/Mercurial/jj/Sapling pattern) across ACTION verbs so lifting between bags retains identity |
+| 1 | ''Causal-history severance on copy'' | Upwelling / Patchwork / Cambria | Preserve `change-id` (Gerrit/Mercurial/jj/Sapling pattern) across ACTION verbs so lifting between bags retains identity. OPEN: the handler stamps the ACTION's `change-id` on an ADD, a COPY and a moved root, and whether that arg names the Work or the operation stands unruled (<<~ loulou "lar:///ha.ka.ba/lararium/api/action-handler#/law">>) |
 | 2 | ''Schema drift across multi-bag residency'' | Kleppmann EuroSys 2021 | Cambria-style read-time lenses, not write-time migration |
 | 3 | ''Kāpae resurrection'' | OverlayFS / moby#783 | First-class `tombstone` op distinct from "absent" (the toggleable shadow-vs-fall-through cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]]) |
 | 4 | ''Shadow-override confusion'' | TW5 #570, #9139 | Surface `$origin-bag` as a tiddler field on every read |
@@ -306,6 +306,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aOPfUl346b3UlsTkzmku2Fj9O_Lgbf7SB6lxjRVK2lA
+<<^ code="&#x0003;">>ni:///sha-256;cEGbXxPAQfMKc4OaI4-3_CTUhjTtgEPacEayU3mEX7Y
 
 <<^ code="&#x0004;" -> to="?">>
