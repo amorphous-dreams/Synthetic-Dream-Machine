@@ -49,7 +49,7 @@ Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, CRE
 |---|---|---|---|
 | ''ADD'' | read `from-bag`'s record for title; write into `to-bag` preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
 | ''COPY'' | read `from-bag`'s record; overwrite `to-bag`'s version preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
-| ''MOVE'' | ADD into `to-bag` + RETRACT (hard-remove → //absent//) the title in `from-bag` (falls through to a canon copy beneath; never a kāpae) | transfer pair: accession (`to-bag`) + deaccession (`from-bag`) | title, from-bag, to-bag, change-id |
+| ''MOVE'' | For a live source, land its whole carrier group in `to-bag` + RETRACT (hard-remove → //absent//) the group in `from-bag` (falls through to a canon copy beneath; never a kāpae); for a tombstone source, carry the title's delete into `to-bag`, with the delete of each tombstoned member of its group that `to-bag` holds live, then retract the carried tombstones from `from-bag` (a member `to-bag` lacks stays a tombstone in the source and the answer names it); `to-bag` must hold the title live unless `shadow` asks, and `shadow` carries every member | live source: transfer pair, accession (`to-bag`) + deaccession (`from-bag`); tombstone source: two deaccessions, one per bag, no accession | title, from-bag, to-bag, change-id, optional shadow |
 | ''CLEAR'' | enumerate live titles in bag, tombstone each | disposition (bag-level) | bag |
 | ''DROP'' | tombstone every live title in bag + write the retirement marker into the bag's own doc; the registry row stays (see Handler Law 6) | disposition (`bag-retired`, under the fixed marker id) | bag |
 | ''LOAD'' | land operator-supplied carriers into `to-bag` (carrier-borne; islands never fetch — `source-uri` = provenance) | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
@@ -73,12 +73,12 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    write. ''MOVE additionally'' verifies `cap("admin", fromBag)` — deaccession
    authority over the source. A denied cap throws before `withEffectRecord` runs,
    so a gated verb leaves zero effect records.
-# ''Change-id preservation'' (Anti-pattern #1 defense). ADD / COPY / MOVE carry
+# ''Change-id preservation'' (Anti-pattern #1 defense). ADD / COPY / live-source MOVE carry
    the source record's `change-id` into the destination Manifestation — the Work
    keeps its causal identity across bags.
 # ''Kāpae or retract, never silent delete'' (Anti-pattern #3 defense). CLEAR /
    DROP raise a ''kāpae'' tombstone (shadows lower bags — resurrection-prevention);
-   MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
+   A live-source MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
    canonical copy beneath surfaces — never a kāpae, else promotion `@working → canon`
    would shadow its own target). `resolveAll` reports live presence; `listKapaeBags`
    surfaces which bags explicitly hide a title. (the toggleable shadow-vs-fall-through
@@ -122,9 +122,10 @@ is shared, not duplicated (Sprint 6 parity).
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8JL7GkzsDzLJjEIm_2fYReuLgRtxG3kTZDD7U1w5Ooc
+<<^ code="&#x0003;">>ni:///sha-256;rAJThwxDyXEmDXHLmXz2RBp57UVpkYHTDQkr67uxunw
 
 <<^ code="&#x0004;" -> to="?">>
