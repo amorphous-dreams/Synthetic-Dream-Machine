@@ -550,7 +550,9 @@ undo.'' A vessel that carries nothing worth keeping (the bootstrap case) crosses
 ```
 rm -rf ~/.local/share/lares/identity                # ⚠ IRREVERSIBLE: the fresh-from-void cut
 rm -rf ~/.local/share/lares/nexus                   # ⚠ IRREVERSIBLE: the prior SEAL (see below)
-lares vessel clear --force                                 # pave the vessel store (the identity home stands empty after)
+lares vessel stop                                   # no daemon holds the store while it leaves
+rm -rf ~/.local/share/lares/vessel                  # ⚠ IRREVERSIBLE: the vessel store, cut by hand — no CLI door paves
+rm -rf ~/.local/state/lares/projection              # the projection watermark leaves WITH the store
 ```
 
 ''TWO SOVEREIGN THINGS SURVIVE A CLEAR, and BOTH want cutting here.'' `lares vessel clear --force` pares the vessel store
@@ -1504,6 +1506,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JKiaVaDXfW4iiTD3svIiB59vx_DOTSiv-bQt1ABAfc0
+<<^ code="&#x0003;">>ni:///sha-256;IcHzAC9mOEg3EB54tFItVAr7_NSmVMdUvhBjgBEMSLs
 
 <<^ code="&#x0004;" -> to="?">>
