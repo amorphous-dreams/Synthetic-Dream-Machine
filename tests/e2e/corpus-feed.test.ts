@@ -173,6 +173,10 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
     if (lar.mode !== "staged") return;
     const roots = expectedRoots();
     const { files, measure } = await awaitStableMirror(lar.root, roots);
+    // The projector's own diagnostic: each window of a second or longer between the last change event and
+    // the first file write after it, with the `bagsHolding` lookups made inside it. A reading, no assertion.
+    const projectorWindows = lar.bootLog().split("\n").filter((line) => line.includes("[disk-projector] MEASURE")).map((line) => line.slice(line.indexOf("MEASURE") + 8).trim());
+    console.error(`corpus-feed MEASURE projector windows (${projectorWindows.length}): ${projectorWindows.slice(-6).join(" | ") || "none of a second or longer"}`);
     expect(files.filter((f) => f.includes("#") || /%23/.test(f))).toEqual([]);
     // Full-path-inside-bag ruling: the mirror carries EVERY name the bag
     // holds (lawful residents outside the corpus namespace included), so the

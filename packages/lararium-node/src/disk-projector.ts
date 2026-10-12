@@ -344,6 +344,10 @@ export class LarDiskProjector {
     // Each title change is one queue mark and a `getTiddler` + one field read — the reconcile is
     // level-triggered and idempotent, so a nudge that resolves to no mirror costs exactly that.
     const handler = (changes: Record<string, unknown>) => {
+      this.measure.changeEvents++;
+      this.measure.lastChangeAt = performance.now();
+      this.measure.holdsSinceChange = 0;
+      this.measure.wroteSinceChange = false;
       for (const title of Object.keys(changes)) gate.mark(routeToRoot(title));
     };
     wiki.addEventListener?.("change", handler);
@@ -500,6 +504,7 @@ export class LarDiskProjector {
    *  from the resolved view by a shadowing tombstone still lives in its lower
    *  bag; each mirror reflects its OWN bag's content, never the resolved view). */
   private async _scheduleUnlinkByTitle(title: string): Promise<void> {
+    if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(title)) : null;
     for (const mirror of this.mirrors) {
       if (holdingBags?.has(mirror.bagId)) continue;
@@ -518,10 +523,29 @@ export class LarDiskProjector {
     }
   }
 
+  /**
+   * A MEASURE, NEVER A DECISION. Counts what stands between the last wiki change event and the first file
+   * write after it: the elapsed time and the `bagsHolding` lookups made in that window. A window of a
+   * second or longer prints one diagnostic line; nothing reads these numbers to pace, order or drop work.
+   */
+  private readonly measure = { changeEvents: 0, lastChangeAt: -1, holdsSinceChange: 0, wroteSinceChange: true, writes: 0 };
+
+  private noteFirstWrite(): void {
+    const m = this.measure;
+    m.writes++;
+    if (m.wroteSinceChange || m.lastChangeAt < 0) return;
+    m.wroteSinceChange = true;
+    const gapMs = Math.round(performance.now() - m.lastChangeAt);
+    if (gapMs >= 1_000) {
+      console.error(`[disk-projector] MEASURE last change event to first file write ${gapMs}ms · bagsHolding calls in that window ${m.holdsSinceChange} · change events so far ${m.changeEvents} · file writes so far ${m.writes}`);
+    }
+  }
+
   /** Write bytes atomically: a temp file in the SAME dir, then rename over the
    *  target — a watcher or editor never observes a torn file, and a crash leaves
    *  only a stray temp. */
   private atomicWrite(candidate: string, body: string | Buffer): void {
+    this.noteFirstWrite();
     const tmp = `${candidate}.lar-tmp-${process.pid}`;
     if (typeof body === "string") writeFileSync(tmp, body, "utf-8");
     else writeFileSync(tmp, body);
@@ -768,6 +792,7 @@ export class LarDiskProjector {
     // that list never gets its file unlinked. Without the callback, the unlink
     // clears every other mirror by path. One gate, one choke-point: the unlink
     // path routes through the ward like every other mirror touch.
+    if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(tiddlerUri)) : null;
     for (const otherMirror of this.mirrors) {
       // The carrier still lives in this bag (shadowed, not moved) → keep its file.
