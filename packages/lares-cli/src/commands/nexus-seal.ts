@@ -118,6 +118,7 @@ const SEAL_USAGE: readonly string[] = [
   "  reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:",
   "          reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the",
   "                          --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]",
+  "                          no verb reads a recovery card back or rolls the charter from that seed",
   "          reserve refresh re-seed + re-derive + re-issue the cards + print a NEW commit",
   "          reserve show    the reserve state (commit present, guardians, share sealed)",
 ];
@@ -209,6 +210,28 @@ const norm = (s: string): string => s.trim().toLowerCase();
 
 /** normalize a commitment/key hex — trimmed, lower-cased (the digest surface stays canonical lowercase hex). */
 const normHex = (s: string | undefined): string => (s ?? "").trim().toLowerCase();
+
+/** A HEAD READS RESERVE-ARMED when its commitment names this vessel's reserve key-set. */
+export function isReserveArmed(
+  headNextKeyCommit: string | null | undefined,
+  reserveNextKeyCommit: string | null | undefined,
+): boolean {
+  const headCommit = normHex(headNextKeyCommit ?? undefined);
+  const reserveCommit = normHex(reserveNextKeyCommit ?? undefined);
+  return headCommit.length > 0 && reserveCommit.length > 0 && headCommit === reserveCommit;
+}
+
+/** RESERVE-ARMED READINGS NAME the recovery boundary: the depth determines whether genesis can be re-seated. */
+function reserveArmedReading(chainDepth: number): string {
+  return `ARMED to the RESERVE key-set — no lares verb reveals it; ${chainDepth === 1 ? "re-seat remains open at genesis" : "the chain stands frozen at this head"}`;
+}
+
+function reserveArmedRotateMessage(chainDepth: number): string {
+  const invariant = "the head pre-commits the reserve key-set; no lares verb reads a recovery card or carries a reserve key into the vault, so this reveal cannot match.";
+  return chainDepth === 1
+    ? `${invariant} Re-seat with lares nexus seal commit --keys <a key-set this vault can reveal> --threshold <k>, then lares nexus seal seat --next-key-commit <digest>. A re-seat re-mints the genesis epoch, so the epoch CID moves.`
+    : `${invariant} The chain stands frozen at this head.`;
+}
 
 /**
  * Seat each kahu's verifying key from the vault by DECLARED HANDLE match. FAIL CLOSED: no match keeps the
@@ -372,12 +395,14 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     sealLineage ? { kind: next.kind, sealEpochCid, sealLineage } : { kind: next.kind, sealEpochCid }, next);
   const quorum = foundingQuorumSeated(next);
   const armed = Boolean(sealLineage) && nextKeyCommit.length > 0;
+  const reserveState = readCharterReserveState();
+  const reserveArmed = Boolean(sealLineage) && isReserveArmed(nextKeyCommit, reserveState?.nextKeyCommit);
 
   emit(args, {
     ok: true,
     data: {
       path, threshold: next.threshold, sealEpochCid, quorumSeated: quorum,
-      rotationArmed: armed, nextKeyCommit: nextKeyCommit || null,
+      rotationArmed: armed, reserveArmed, nextKeyCommit: nextKeyCommit || null,
       kahu: kahu.map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey })),
     },
     human: () => {
@@ -400,7 +425,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
       console.log(`  epoch0:     ${sealEpochCid ?? "(unestablished — seat a quorum first)"}`);
       if (quorum) {
         console.log(`  quorum STANDS — the antigen now reads a live roster rooted on the genesis epoch.`);
-        console.log(`  rotation:   ${armed ? "ARMED (next key-set pre-committed)" : "UNARMED — supply --next-key-commit <digest> to arm pre-rotation"}`);
+        console.log(`  rotation:   ${reserveArmed ? reserveArmedReading(1) : armed ? "ARMED (next key-set pre-committed)" : "UNARMED — supply --next-key-commit <digest> to arm pre-rotation"}`);
       } else {
         const missing = kahu.filter((k) => !k.verifyingKey).map((k) => `"${k.displayName}"`);
         console.log(`  quorum SHORT (fail-closed; the antigen stays inert). Unseated: ${missing.join(", ") || "(none)"}`);
@@ -559,6 +584,19 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
   const { doc, head } = sealedCharterOrRefuse(sealHome, "rotate");
   const depth = doc.sealLineage?.length ?? 0;
+  const nextKeyCommit = normHex(args.options["next-key-commit"]);
+  const reserveState = readCharterReserveState();
+
+  // A RESERVE COMMIT CANNOT ARM A ROLL: no verb reveals a reserve key-set, so a rotated head would freeze.
+  if (isReserveArmed(nextKeyCommit, reserveState?.nextKeyCommit)) {
+    const message = "arming a rotated head with the reserve's commit would freeze the chain, because no verb reveals a reserve key-set and a chain past genesis never re-seats.";
+    emit(args, {
+      ok: false,
+      error: { code: "reserve-commit-unrevealable", message },
+      human: () => console.error(`nexus seal rotate REFUSED: ${message}`),
+    });
+    return exitFor("reserve-commit-unrevealable");
+  }
 
   // REVEAL: the operator has provisioned the pre-committed next key-set into the vault; seating from the
   // vault reads it back. The revealed key-set becomes the new head's authorized quorum.
@@ -577,7 +615,17 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   if (seatedKeys.length < threshold) {
     throw new UsageError(`the revealed key-set is short of the ${threshold}-of-${kahu.length} quorum (seated ${seatedKeys.length}) — provision the next personas before rotating`);
   }
-  const nextKeyCommit = normHex(args.options["next-key-commit"]);
+  const standingKeySetHash = sealKeySetHash(seatedKeys, threshold);
+  if (isReserveArmed(head.nextKeyCommit, reserveState?.nextKeyCommit) && standingKeySetHash !== normHex(head.nextKeyCommit)) {
+    const message = reserveArmedRotateMessage(depth);
+    emit(args, {
+      ok: false,
+      error: { code: "reserve-armed", message },
+      data: { chainDepth: depth, reserveEpoch: reserveState?.reserveEpoch ?? null, reseatOpen: depth === 1 },
+      human: () => console.error(`nexus seal rotate REFUSED: ${message}`),
+    });
+    return exitFor("reserve-armed");
+  }
 
   // FAIL CLOSED: a revealed key-set whose digest does not match the head's pre-commitment REFUSES, and
   // writes nothing. A stolen current key-set cannot forge a successor it never pre-committed.
@@ -828,6 +876,8 @@ async function sealShow(args: ParsedArgs): Promise<number> {
   const quorum = foundingQuorumSeated(doc);
   const head = sealLineageHead(doc);
   const chainDepth = doc?.sealLineage?.length ?? 0;
+  const reserve = readCharterReserveState();
+  const reserveArmed = isReserveArmed(head?.nextKeyCommit, reserve?.nextKeyCommit);
   // THE ONLY INPUT THAT MOVES THE PHASE. A contracted operator is a key this vessel has never held,
   // so it names a hand outside this vault — which is what a seated chair can never do. Unreachable
   // members read as none, which keeps the phase honest rather than optimistic.
@@ -855,6 +905,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       sealEpochCid: roster.sealEpochCid || null,
       chainDepth,
       rotationArmed: head ? head.nextKeyCommit.length > 0 : false,
+      reserveArmed,
       seatedKeys: roster.keys.length,
       quorumSeated: quorum,
       // WHAT THE QUORUM SURVIVES, beside what it is. A threshold met by every seated chair passes
@@ -895,7 +946,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       console.log(`  seal:       ${seal === "sealed" ? "SEALED" : "UNSEALED — the roster stands and no seal epoch is seated; seat one once a quorum stands"}`);
       console.log(`  chain:      ${chainDepth > 0 ? `${chainDepth} epoch(s), head at seq ${chainDepth - 1}` : "(none — no epoch established)"}`);
       console.log(`  head epoch: ${roster.sealEpochCid || "(unestablished)"}`);
-      console.log(`  rotation:   ${head && head.nextKeyCommit.length > 0 ? "ARMED" : "UNARMED"}`);
+      console.log(`  rotation:   ${reserveArmed ? reserveArmedReading(chainDepth) : head && head.nextKeyCommit.length > 0 ? "ARMED" : "UNARMED"}`);
       console.log(`  quorum:     ${quorum ? "STANDS (roster live)" : "SHORT (fail-closed — antigen inert)"}`);
       // THE PHASE COMES BEFORE THE FRAGILITY. A seed has no quorum to be fragile about, and a reader
       // who meets "quorum: STANDS" without it mistakes three faces of one operator for three hands.
@@ -910,7 +961,6 @@ async function sealShow(args: ParsedArgs): Promise<number> {
         console.log(`  survives:   ${standing.tolerance} seat(s) going dark`);
       }
       console.log(`  posture:    ${federationPostureFromDoc(doc)} (cross-Nexus federation — default private)`);
-      const reserve = readCharterReserveState();
       printCarried();
       console.log(`  reserve:    ${reserve ? `commit ${reserve.nextKeyCommit.slice(0, 16)}… (epoch ${reserve.reserveEpoch}, guardians ${reserve.guardianA ?? "unassigned"}/${reserve.guardianB ?? "unassigned"})` : "(none — run `lares nexus seal reserve` to custody the pre-rotation)"}`);
     },
@@ -959,8 +1009,8 @@ function reserveCardsEmission(
       }
       console.log(``);
       console.log(`  "mine" seals on THIS vessel; a printed/emailed copy of "mine" carries the SAME share —`);
-      console.log(`  an operator-full-compromise reveals ONE share → nothing. The two guardian cards recover`);
-      console.log(`  WITHOUT you; any TWO of the three rebuild the reserve.`);
+      console.log(`  an operator-full-compromise reveals ONE share → nothing. Any TWO cards rebuild the reserve SEED.`);
+      console.log(`  No lares verb reads a card back, and none rolls the charter from that seed.`);
       console.log(``);
       console.log(`  Arm the pre-rotation:  lares nexus seal seat --next-key-commit ${nextKeyCommit}`);
     },
@@ -995,17 +1045,18 @@ async function sealReserveProvision(args: ParsedArgs, mode: "provision" | "refre
     });
 
     // The refresh reconciliation FORK — named, never auto-resolved (the seated pre-commitment is frozen
-    // into its epochCid; a reserve refresh cannot retro-fit a sealed head).
+    // into its epochCid; no verb reveals a reserve key-set to satisfy that commitment).
     const reconcile = mode === "provision"
       ? null
       : chainDepth <= 1
         ? "re-commit-before-seal"   // genesis-only (unrotated): re-run `seat --next-key-commit` to re-mint genesis
-        : "full-rotation";          // rotated: the CURRENT reserve keys reveal at the pending rotate; this commit arms the FOLLOWING epoch
+        : "full-rotation";          // rotated: no reserve key-set can reveal; this commit cannot arm a roll
 
     reserveCardsEmission(
       args,
       {
         mode, reserveEpoch, nextKeyCommit, threshold: RESERVE_THRESHOLD, kahuCount: RESERVE_KAHU_COUNT,
+        cardReader: null,
         guardianA, guardianB, chainDepth, reconcile,
         cards: cards.map((c) => ({ slot: c.slot, label: c.label, custodian: c.custodian, shareCode: c.shareCode, confirmPhrase: c.confirmPhrase })),
       },
@@ -1023,10 +1074,8 @@ async function sealReserveProvision(args: ParsedArgs, mode: "provision" | "refre
             console.log(`    lares nexus seal seat --next-key-commit ${nextKeyCommit}`);
             console.log(`  — a genesis re-mint is permitted BEFORE the first rotate (the pre-committed keys never signed yet).`);
           } else {
-            console.log(`  RECONCILE (chain depth ${chainDepth}, ALREADY rotated): the CURRENT reserve keys must reveal`);
-            console.log(`  at the pending \`rotate\` FIRST (a sealed head's pre-commitment is frozen into its epochCid).`);
-            console.log(`  This new commit arms the FOLLOWING epoch — supply it at the NEXT:`);
-            console.log(`    lares nexus seal rotate --next-key-commit ${nextKeyCommit}`);
+            console.log(`  RECONCILE (chain depth ${chainDepth}, ALREADY rotated): no verb reveals a reserve key-set,`);
+            console.log(`  so this commit arms no roll; a rotated head armed with it would freeze.`);
           }
         }
       },
