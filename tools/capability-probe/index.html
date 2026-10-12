@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>capability probe</title>
+<style>
+  :root { color-scheme: light dark; --ok: #1a7f37; --bad: #b42318; --warn: #9a6700; --mute: #6b7280; }
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0; padding: 12px; max-width: 60rem; margin-inline: auto; }
+  button { font: inherit; padding: 14px 18px; margin: 4px 4px 4px 0; border-radius: 10px; border: 1px solid; }
+  #run { display: block; width: 100%; font-size: 1.6rem; padding: 26px; font-weight: 700; }
+  h2 { margin: 1.2em 0 .3em; font-size: 1.1rem; }
+  .row { display: grid; grid-template-columns: 9rem 1fr; gap: 2px 8px; padding: 4px 0; border-bottom: 1px solid #8884; }
+  .id { font: 12px monospace; word-break: break-all; }
+  .detail { font-size: .85rem; color: var(--mute); grid-column: 1 / -1; word-break: break-word; }
+  .v-granted, .v-held { color: var(--ok); font-weight: 700; }
+  .v-refused, .v-broken { color: var(--bad); font-weight: 700; }
+  .v-error { color: var(--warn); font-weight: 700; }
+  .v-skipped { color: var(--mute); font-weight: 700; }
+  textarea { width: 100%; height: 12rem; font: 12px monospace; }
+  .note { background: #8881; padding: 8px 10px; border-radius: 8px; font-size: .9rem; }
+  dialog::backdrop { background: #0006; }
+</style>
+</head>
+<body>
+<h1>capability probe</h1>
+<p class="note">Measures by doing; never by reading the user-agent. Tap <b>Run probe</b>. Then open this page in a <b>second tab</b> and tap <b>Run probe</b> there too: the second report must show <code>connectedPorts: 2</code> and the same worker instance id.</p>
+<p class="note">Lifecycle: tap Run, lock the screen for a minute, unlock, tap <b>Lifecycle check</b>. Then switch to another app for a few minutes, return, tap <b>Lifecycle check</b> again.</p>
+<button id="run">Run probe</button>
+<button id="passkey">Passkey PRF probe: creates one throwaway passkey for localhost</button>
+<button id="lifecycle">Lifecycle check</button>
+<button id="kill">Kill owner (SharedWorker closes itself; every tab reconnects)</button>
+<fieldset><legend>One-tab owner fallback (open with <code>?owner=tab</code> to leave SharedWorker unused)</legend>
+<button id="lock-take">A: take lock</button> <button id="lock-try">B: try lock</button> <button id="lock-wait">B: wait for lock</button> <button id="lock-release">release</button>
+</fieldset>
+<div id="status" role="status"></div>
+<div id="rows"></div>
+<h2>Report JSON</h2>
+<button id="copy">Copy JSON</button>
+<textarea id="json" readonly></textarea>
+<div id="stage" hidden></div>
+<script src="worker-common.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
