@@ -20,7 +20,8 @@
  * in a store, never a wiki, so it projects the TEXT targets (mem · md) and refuses the wiki renders
  * loud. An unknown target refuses naming the targets; an absent meme refuses naming the URI.
  *
- * At most one of `recipe` / `bag`; neither names `recipe: "default"`. Three targets follow:
+ * Exactly one of `recipe` / `bag` names the container; neither, or both, refuses as `no-container`.
+ * Three targets follow:
  *
  *   · `recipes/default` — the host's ANCHOR, the daemon's own wiki (never "the active wiki"). The
  *     placement goes through the live `$tw.wiki`, so the in-wiki cascade
@@ -50,7 +51,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, foldRealmBags, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -162,17 +163,26 @@ interface MemeArgs {
 }
 
 function readTarget(args: Readonly<Record<string, unknown>>, verb: string): MemeArgs {
+  const container = readContainer(args, verb);
   const uri = stringArg(args, "uri");
   if (!uri) throw new Error(`${verb}: args.uri is required (the meme's root lar: URI)`);
-  return { uri, ...readContainer(args, verb) };
+  return { uri, ...container };
 }
 
-/** The container law alone — for a verb that addresses the seat, never one meme (`meme-list`). */
+/**
+ * THE CONTAINER LAW, for every meme verb at this door: a content verb names its container. Exactly one of
+ * `args.recipe` (a wiki, read or written AS that wiki) or `args.bag` (that one bag) stands; neither, or
+ * both, refuses as `no-container` before any cap ask, read or write. No default wiki exists: the daemon's
+ * own wiki answers to its explicit name, `recipe: "default"`.
+ */
 function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
   const recipe = optionalStringArg(args, "recipe");
   const bag = optionalStringArg(args, "bag");
-  if (recipe && bag) throw new Error(`${verb}: at most one of args.recipe / args.bag`);
-  return { recipe: recipe ?? (bag ? null : "default"), bag };
+  if (recipe && bag) throw new VerbRefusal("no-container", `no-container: ${verb} names both args.recipe and args.bag; name one of them, never both.`);
+  if (!recipe && !bag) {
+    throw new VerbRefusal("no-container", `no-container: ${verb} names no container; pass args.recipe (a wiki, e.g. "lares"; the daemon's own wiki answers to "default") or args.bag (that one bag). No default wiki exists.`);
+  }
+  return { recipe: recipe ?? null, bag: bag ?? null };
 }
 
 /** A bag's own store, by the three reaches in order: a mounted layer (writable for a put), an
@@ -231,7 +241,7 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 function anchorBagOf(opts: MemeVerbOptions): string {
   const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
   const configured = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
-  if (!configured) throw new NoWorkingLayerRefusal("The bare meme anchor write", "Pass --recipe <slug> or --bag <slug>, or wait until the daemon working layer attaches.");
+  if (!configured) throw new NoWorkingLayerRefusal("The meme write into the daemon's own wiki", "Wait until the daemon working layer attaches, or name another container (--recipe <slug> or --bag <slug>).");
   return configured;
 }
 

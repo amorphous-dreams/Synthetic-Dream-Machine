@@ -54,9 +54,9 @@ WIKI_VERBS = ("wiki",)
 # Each mirrors `lares meme put|get|list|delete|project` (the host `meme` is a real top-level command, so `mirrored`/
 # `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
 # over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
-# the fixture names that allowance as `local_seat`. THE CONTAINER LAW: at most one of `recipe`/`bag` names
-# where the meme lands — neither → the daemon reads `recipe: "default"`, the host's ANCHOR (@daemon's own
-# wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a
+# the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
+# where the meme lands; neither, or both, refuses as `no-container` before the wire. `recipe: "default"`
+# names the host's ANCHOR (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a
 # residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the
 # `@` spelling stands retired. All three ride `lares_uds.call` to the @daemon — never a store (the
 # single-writer law).
@@ -871,21 +871,23 @@ def build_mcp(coordinator: LaresCoordinator):
     # ── the MEME namespace — `meme_put` / `meme_get`, the MCP skin of the one placement function ──
 
     def _meme_container(verb: str, recipe: "str | None", bag: "str | None") -> dict:
-        """The container args, validated CLIENT-SIDE: at most one of `recipe`/`bag`; a bare slug only
-        (the `@` spelling stands retired — refused, never stripped). Neither → an EMPTY dict, so the
-        daemon reads `recipe: "default"` itself (one truth, held daemon-side; the client never spells it)."""
+        """THE CONTAINER LAW, validated CLIENT-SIDE before anything rides the wire: a content verb names
+        its container. Exactly one of `recipe`/`bag` stands; neither, or both, refuses as `no-container`
+        (the code the CLI and the daemon door answer). No default wiki exists: the daemon's own wiki
+        answers to its explicit name, `recipe="default"`. A slug rides bare (the `@` spelling stands
+        retired: refused, never stripped)."""
         if recipe is not None and bag is not None:
-            raise ValueError(f"{verb}: name at most one of `recipe`/`bag` (got recipe={recipe!r}, bag={bag!r}); "
-                             "neither → the host's anchor wiki (recipe \"default\")")
+            raise ValueError(f"{verb}: no-container — name one of `recipe`/`bag`, never both "
+                             f"(got recipe={recipe!r}, bag={bag!r})")
+        if recipe is None and bag is None:
+            raise ValueError(f"{verb}: no-container — name where this verb reads or writes: `recipe` (as that "
+                             "wiki, e.g. \"lares\"; the daemon's own wiki answers to \"default\") or `bag` "
+                             "(that one bag). No default wiki exists.")
         for key, slug in (("recipe", recipe), ("bag", bag)):
             if slug is not None and (not slug or slug.startswith("@")):
                 raise ValueError(f"{verb}: `{key}` takes a bare slug (`sdm`, `lares`), got {slug!r} — "
                                  "the `@` spelling stands retired")
-        if recipe is not None:
-            return {"recipe": recipe}
-        if bag is not None:
-            return {"bag": bag}
-        return {}
+        return {"recipe": recipe} if recipe is not None else {"bag": bag}
 
     def _meme_wire(verb: str, args: dict):
         """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
@@ -900,9 +902,9 @@ def build_mcp(coordinator: LaresCoordinator):
     def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,
                  base: "str | None" = None) -> dict:
         """PLACE a meme's `text` at its `lar:` `uri` through the island's Confluence gate — mirrors
-        `lares meme put`. CONTAINER LAW: at most one of `recipe` (an edit AS that wiki; lands in its top
-        bag) / `bag` (a residency placement; fails loud if the island cannot write it); neither → the
-        host's ANCHOR, the @daemon's own wiki. Slugs ride bare (`sdm`, `lares`). `base` carries the
+        `lares meme put`. CONTAINER LAW: name exactly one of `recipe` (an edit AS that wiki; lands in its top
+        bag; `"default"` names the @daemon's own wiki) / `bag` (a residency placement; fails loud if the
+        island cannot write it); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). `base` carries the
         canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
         tombstoned, canonicalHash, warnings, diagnostics}. Rides the @daemon wire, never a store."""
@@ -914,8 +916,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool()
     def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None) -> "dict | None":
         """READ a meme's text + canonical hash at its `lar:` `uri` — mirrors `lares meme get`. CONTAINER
-        LAW: at most one of `recipe` / `bag` names where to read; neither → the host's ANCHOR, the
-        @daemon's own wiki. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash} — carry the
+        LAW: exactly one of `recipe` / `bag` names where to read (`recipe="default"` names the @daemon's
+        own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash} — carry the
         `canonicalHash` into `meme_put`'s `base` to write against what you read — or null when the meme
         stands absent. Rides the @daemon wire, never a store."""
         args: dict = {**_meme_container("meme_get", recipe, bag), "uri": uri}
@@ -927,8 +929,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool()
     def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False) -> dict:
         """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
-        mirrors `lares meme list`. CONTAINER LAW: at most one of `recipe` / `bag` names the seat; neither →
-        the host's ANCHOR, the @daemon's own wiki. Slugs ride bare. `tree` nests each root's slot tree
+        mirrors `lares meme list`. CONTAINER LAW: exactly one of `recipe` / `bag` names the seat
+        (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. `tree` nests each root's slot tree
         (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. Returns {bag, roots}. A plain
         tiddler never lists. Rides the @daemon wire, never a store."""
         args: dict = _meme_container("meme_list", recipe, bag)
@@ -940,8 +942,9 @@ def build_mcp(coordinator: LaresCoordinator):
     def meme_delete(uri: str, recipe: "str | None" = None, bag: "str | None" = None,
                     base: "str | None" = None) -> dict:
         """REMOVE the whole meme at its `lar:` `uri` — the root, its `#slot` fragments, its `/path`
-        children — through the one removal law; mirrors `lares meme delete`. CONTAINER LAW: at most one
-        of `recipe` / `bag`; neither → the host's ANCHOR. Slugs ride bare. `base` carries the canonical
+        children — through the one removal law; mirrors `lares meme delete`. CONTAINER LAW: exactly one
+        of `recipe` / `bag` (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as
+        `no-container`. Slugs ride bare. `base` carries the canonical
         hash the writer read (the CLI's `--if-match`, the route's `If-Match`): stale → the receipt's
         `decision` reads "conflict" and NOTHING moves; absent → the removal proceeds. Returns {uri,
         decision: removed|absent|conflict, tombstoned, canonicalHash}. A tombstone hides (kāpae) — a
@@ -956,8 +959,8 @@ def build_mcp(coordinator: LaresCoordinator):
         """RENDER the meme the island holds at its `lar:` `uri` to a target — mirrors `lares meme project
         <uri> --to <target>`. `to` names the target: `mem` (the canonical carrier text) · `md` (the
         submission markdown) · `html` · `tid` · `json`; the target rides as a parameter, never a suffix on
-        the verb. CONTAINER LAW: at most one of `recipe` / `bag` names where to read; neither → the host's
-        ANCHOR, the @daemon's own wiki. Slugs ride bare. Returns {uri, to, text, contentType, meta?} — `meta` rides beside `text` for `md` (the `.md.meta` sidecar; the pair is one carrier in two files). Deterministic
+        the verb. CONTAINER LAW: exactly one of `recipe` / `bag` names where to read
+        (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. Returns {uri, to, text, contentType, meta?} — `meta` rides beside `text` for `md` (the `.md.meta` sidecar; the pair is one carrier in two files). Deterministic
         and clock-free — currency proves by re-projecting, never by a stamp. Rides the @daemon wire."""
         if to not in PROJECT_TARGETS:
             raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")

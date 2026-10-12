@@ -27,7 +27,7 @@ class Wiki {
   readonly $tw = { Tiddler: class { fields: Record<string, unknown>; constructor(fields: Record<string, unknown>) { this.fields = fields; } }, wiki: this.wiki };
 }
 
-describe("bare meme anchor without a working layer", () => {
+describe("a meme write into the daemon's own wiki without a working layer", () => {
   test("the dispatcher reports the named refusal and writes no content", async () => {
     const daemon = new CompositeStore();
     const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
@@ -42,7 +42,7 @@ describe("bare meme anchor without a working layer", () => {
     const outcomeLanded = new Promise<void>((resolve) => {
       const stop = daemon.subscribe((change) => { if (change.title === outcomeTitle && change.record) { stop(); resolve(); } });
     });
-    dispatcher.placeVerb({ verb: "meme-put", args: { uri: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" });
+    dispatcher.placeVerb({ verb: "meme-put", args: { recipe: "default", uri: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" });
     await outcomeLanded;
 
     const outcome = await daemonBag.get(`${OUTCOME_URI_PREFIX}meme-no-working`);

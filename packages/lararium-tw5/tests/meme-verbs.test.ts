@@ -1,7 +1,7 @@
 /**
  * MEME VERBS — `meme-put` / `meme-get`, the daemon's skins of `placeMeme` / `readMeme`.
  *
- * The contract: at most one of `recipe` / `bag`; neither names `recipe: "default"` — the host's ANCHOR,
+ * The contract: exactly one of `recipe` / `bag` (neither, or both, refuses as `no-container`); `recipe: "default"` names the host's ANCHOR,
  * the daemon's own wiki, placed through its live `$tw.wiki` so the in-wiki cascade routes it. A named
  * recipe means an edit AS THAT WIKI: its recipe record names the designated writable bag and the
  * placement lands in that bag's own store by access — write-then-sync, never the wiki's island. A named
@@ -80,7 +80,7 @@ describe("meme-put — the anchor (recipes/default)", () => {
   test("no target names the daemon's own wiki: the records land in $tw.wiki, not the composite", async () => {
     const r = rig();
     const put = makeMemePutReactor(r.opts);
-    const receipt = await put({ uri: URI, text: meme(["a"]) }, ctx());
+    const receipt = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
     expect(receipt["decision"]).toBe("ingest");
     expect(r.wiki.store.has(URI)).toBe(true);
     expect(r.wiki.store.has(`${URI}#/a`)).toBe(true);
@@ -93,7 +93,7 @@ describe("meme-put — the anchor (recipes/default)", () => {
     r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
     r.wiki.store.set("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: bagUri("daemon") });
     capCalls.length = 0;
-    await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx());
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
     expect(capCalls[0]).toEqual({ access: "admin", bag: bagUri("daemon") });
   });
 
@@ -101,14 +101,14 @@ describe("meme-put — the anchor (recipes/default)", () => {
     const r = rig();
     r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
     capCalls.length = 0;
-    await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx());
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
     expect(capCalls[0]?.bag).toBe(bagUri("daemon"));
   });
 
   test("a bare anchor refuses by name when its working pointer is absent", async () => {
     const r = rig();
     r.wiki.setWorkingPointer("");
-    await expect(makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx()))
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx()))
       .rejects.toBeInstanceOf(NoWorkingLayerRefusal);
     expect(r.wiki.store.has(URI)).toBe(false);
   });
@@ -122,9 +122,9 @@ describe("meme-put — the anchor (recipes/default)", () => {
   test("★ a stale base CONFLICTS and lands nothing; the receipt carries the live base ★", async () => {
     const r = rig();
     const put = makeMemePutReactor(r.opts);
-    const first = await put({ uri: URI, text: meme(["a"]) }, ctx());
-    await put({ uri: URI, text: meme(["a", "b"]) }, ctx());
-    const stale = await put({ uri: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
+    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
+    await put({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
+    const stale = await put({ recipe: "default", uri: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
     expect(stale["decision"]).toBe("conflict");
     expect(r.wiki.store.has(`${URI}#/z`)).toBe(false);
     expect(stale["canonicalHash"]).not.toBe(first["canonicalHash"]);
@@ -133,8 +133,8 @@ describe("meme-put — the anchor (recipes/default)", () => {
   test("CONTROL: a live base lets the write through", async () => {
     const r = rig();
     const put = makeMemePutReactor(r.opts);
-    const first = await put({ uri: URI, text: meme(["a"]) }, ctx());
-    const next = await put({ uri: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
+    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
+    const next = await put({ recipe: "default", uri: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
     expect(next["decision"]).toBe("ingest");
   });
 });
@@ -265,20 +265,20 @@ describe("meme-put — the argument law", () => {
   test("recipe AND bag together refuse", async () => {
     const r = rig();
     await expect(makeMemePutReactor(r.opts)({ recipe: "sdm", bag: "sdm", uri: URI, text: meme(["a"]) }, ctx()))
-      .rejects.toThrow(/at most one/);
+      .rejects.toMatchObject({ name: "VerbRefusal", reason: "no-container" });
   });
   test("uri and text stay required", async () => {
     const r = rig();
-    await expect(makeMemePutReactor(r.opts)({ text: meme(["a"]) }, ctx())).rejects.toThrow(/uri/);
-    await expect(makeMemePutReactor(r.opts)({ uri: URI }, ctx())).rejects.toThrow(/text/);
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", text: meme(["a"]) }, ctx())).rejects.toThrow(/uri/);
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI }, ctx())).rejects.toThrow(/text/);
   });
 });
 
 describe("meme-get — the read half", () => {
   test("reads the anchor back: text + the canonical hash the put reported", async () => {
     const r = rig();
-    const put = await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx());
-    const got = (await makeMemeGetReactor(r.opts)({ uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
+    const put = await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
+    const got = (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
     expect(got.canonicalHash).toBe(put["canonicalHash"]);
     expect(got.text).toContain("<<~ ahu #/a>>");
   });
@@ -314,7 +314,7 @@ describe("meme-project — the daemon skin of the projection", () => {
     const r = rigWithFace();
     projectCalls.length = 0;
     capCalls.length = 0;
-    const out = await makeMemeProjectReactor(r.opts)({ uri: URI, to: "html" }, ctx());
+    const out = await makeMemeProjectReactor(r.opts)({ recipe: "default", uri: URI, to: "html" }, ctx());
     expect(out).toEqual({ uri: URI, to: "html", text: "<face:html>", contentType: "x/face" });
     expect(projectCalls).toEqual([[URI, "html"]]);
     expect(capCalls).toEqual([{ access: "read", bag: bagUri("daemon") }]);
@@ -341,10 +341,10 @@ describe("meme-project — the daemon skin of the projection", () => {
   test("★ refusals are loud: an unknown target names the targets; a wiki render on a bag names the anchor; an absent meme names the URI ★", async () => {
     const r = rigWithFace();
     const project = makeMemeProjectReactor(r.opts);
-    await expect(project({ uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*mem · md · html · tid · json/);
+    await expect(project({ recipe: "default", uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*mem · md · html · tid · json/);
     await expect(project({ bag: "sdm", uri: URI, to: "html" }, ctx())).rejects.toThrow(/anchor/);
     await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(URI);
-    await expect(project({ uri: URI }, ctx())).rejects.toThrow(/args\.to/);
+    await expect(project({ recipe: "default", uri: URI }, ctx())).rejects.toThrow(/args\.to/);
   });
 });
 
@@ -356,10 +356,10 @@ describe("meme-list — roots by default, the slot tree on request", () => {
   test("★ the anchor lists every root with the hash the put reported; CONTROL: a plain tiddler never lists ★", async () => {
     const r = rig();
     const put = makeMemePutReactor(r.opts);
-    const a = await put({ uri: URI, text: meme(["a", "b"]) }, ctx());
+    const a = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
     r.wiki.store.set("plain", { title: "plain", text: "prose" });
     capCalls.length = 0;
-    const out = await makeMemeListReactor(r.opts)({}, ctx());
+    const out = await makeMemeListReactor(r.opts)({ recipe: "default" }, ctx());
     expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: a["canonicalHash"] }]);
     expect(capCalls[0]?.access).toBe("read");
   });
@@ -367,7 +367,7 @@ describe("meme-list — roots by default, the slot tree on request", () => {
   test("★ `tree` nests `uri#/slot` under its own root; a named bag lists that bag's records alone ★", async () => {
     const r = rig();
     await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    await makeMemePutReactor(r.opts)({ uri: "lar:///t/anchor", text: meme(["z"]).replaceAll("t/x", "t/anchor") }, ctx());
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: "lar:///t/anchor", text: meme(["z"]).replaceAll("t/x", "t/anchor") }, ctx());
     const out = await makeMemeListReactor(r.opts)({ bag: "sdm", tree: true }, ctx());
     expect(out["bag"]).toBe(bagUri("sdm"));
     expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: expect.stringMatching(/^sha256:/), slots: [{ slot: "#/a", uri: `${URI}#/a`, slots: [] }] }]);
@@ -375,7 +375,7 @@ describe("meme-list — roots by default, the slot tree on request", () => {
 
   test("recipe AND bag together refuse", async () => {
     const r = rig();
-    await expect(makeMemeListReactor(r.opts)({ recipe: "sdm", bag: "sdm" }, ctx())).rejects.toThrow(/at most one/);
+    await expect(makeMemeListReactor(r.opts)({ recipe: "sdm", bag: "sdm" }, ctx())).rejects.toMatchObject({ name: "VerbRefusal", reason: "no-container" });
   });
 });
 
@@ -386,10 +386,10 @@ describe("meme-list — roots by default, the slot tree on request", () => {
 describe("meme-delete — the daemon skin of removeMeme", () => {
   test("★ removes the whole group from the anchor; gates admin on the bag the cascade lands in ★", async () => {
     const r = rig();
-    await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a", "b"]) }, ctx());
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
     r.wiki.store.set("lar:///t/x-not", { title: "lar:///t/x-not", text: "a neighbour under the prefix, never a child" });
     capCalls.length = 0;
-    const out = await makeMemeDeleteReactor(r.opts)({ uri: URI }, ctx());
+    const out = await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI }, ctx());
     expect(out["decision"]).toBe("removed");
     expect((out["tombstoned"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
     expect([...r.wiki.store.keys()]).toEqual(["lar:///t/x-not"]);
@@ -399,19 +399,19 @@ describe("meme-delete — the daemon skin of removeMeme", () => {
   test("★ CONTROL: a stale base answers conflict and moves nothing; the receipt carries the live base ★", async () => {
     const r = rig();
     const put = makeMemePutReactor(r.opts);
-    const first = await put({ uri: URI, text: meme(["a"]) }, ctx());
-    const moved = await put({ uri: URI, text: meme(["a", "b"]) }, ctx());
-    const out = await makeMemeDeleteReactor(r.opts)({ uri: URI, base: first["canonicalHash"] }, ctx());
+    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
+    const moved = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
+    const out = await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: first["canonicalHash"] }, ctx());
     expect(out["decision"]).toBe("conflict");
     expect(out["canonicalHash"]).toBe(moved["canonicalHash"]);
     expect(r.wiki.store.has(`${URI}#/b`)).toBe(true);
     // The live base lets the removal through.
-    expect((await makeMemeDeleteReactor(r.opts)({ uri: URI, base: moved["canonicalHash"] }, ctx()))["decision"]).toBe("removed");
+    expect((await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: moved["canonicalHash"] }, ctx()))["decision"]).toBe("removed");
   });
 
   test("an absent root answers absent; a named bag removes from that bag's writable layer", async () => {
     const r = rig();
-    expect((await makeMemeDeleteReactor(r.opts)({ uri: URI }, ctx()))["decision"]).toBe("absent");
+    expect((await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["decision"]).toBe("absent");
     await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
     const out = await makeMemeDeleteReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
     expect(out["decision"]).toBe("removed");

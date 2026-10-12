@@ -124,12 +124,22 @@ def test_meme_tools_register_and_seat_hotl(daemon):
     assert names.isdisjoint({"meme_normalize", "meme_check", "project_md"})
 
 
-def test_meme_put_default_recipe_sends_no_container(daemon):
-    # neither recipe nor bag → the args carry NEITHER key; the daemon reads `recipe: "default"` (the
-    # host's ANCHOR). The client never spells the default — one truth, held daemon-side.
+def test_every_meme_tool_refuses_a_missing_container_before_the_wire(daemon):
+    # A content verb names its container: neither `recipe` nor `bag` refuses as `no-container`, the code
+    # the CLI and the daemon door answer, and nothing reaches the wire. No default wiki exists.
     daemon.output = _PUT_OUTPUT
-    out = _put(uri=_URI, text="the body")
-    assert daemon.wire() == {"verb": "meme-put", "args": {"uri": _URI, "text": "the body"}}
+    for call in (lambda: _put(uri=_URI, text="the body"), lambda: _get(uri=_URI), lambda: _list(),
+                 lambda: _delete(uri=_URI), lambda: _project(uri=_URI, to="html")):
+        with pytest.raises(ValueError, match="no-container"):
+            call()
+    assert daemon.lines == []
+
+
+def test_meme_put_names_the_daemon_wiki_by_its_explicit_name(daemon):
+    # CONTROL: the daemon's own wiki answers to `recipe="default"`, spelled by the caller and sent as spelled.
+    daemon.output = _PUT_OUTPUT
+    out = _put(uri=_URI, text="the body", recipe="default")
+    assert daemon.wire() == {"verb": "meme-put", "args": {"recipe": "default", "uri": _URI, "text": "the body"}}
     assert daemon.lines[-1]["requestedBy"] == "0xwitness"
     assert out == _PUT_OUTPUT
 
@@ -157,7 +167,7 @@ def test_meme_put_carries_the_base(daemon):
 
 def test_meme_put_refuses_recipe_and_bag_together(daemon):
     daemon.output = _PUT_OUTPUT
-    with pytest.raises(ValueError, match="at most one of"):
+    with pytest.raises(ValueError, match="no-container"):
         _put(uri=_URI, text="x", recipe="sdm", bag="lares")
     assert daemon.lines == []                                       # nothing reached the wire
 
@@ -174,8 +184,8 @@ def test_meme_tools_refuse_the_retired_at_form(daemon):
 
 def test_meme_get_default_named_and_bag(daemon):
     daemon.output = _GET_OUTPUT
-    assert _get(uri=_URI) == _GET_MEME
-    assert daemon.wire() == {"verb": "meme-get", "args": {"uri": _URI}}
+    assert _get(uri=_URI, recipe="default") == _GET_MEME
+    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI}}
     _get(uri=_URI, recipe="sdm")
     assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "sdm", "uri": _URI}}
     _get(uri=_URI, bag="lares")
@@ -185,21 +195,21 @@ def test_meme_get_default_named_and_bag(daemon):
 def test_meme_get_absent_meme_reads_null(daemon):
     # an absent meme rides as `meme: null` in the outcome; the tool hands back None — never the envelope.
     daemon.output = {"uri": _URI, "meme": None}
-    assert _get(uri=_URI) is None
+    assert _get(uri=_URI, recipe="default") is None
 
 
 def test_meme_get_refuses_recipe_and_bag_together(daemon):
-    with pytest.raises(ValueError, match="at most one of"):
+    with pytest.raises(ValueError, match="no-container"):
         _get(uri=_URI, recipe="sdm", bag="lares")
     assert daemon.lines == []
 
 
 def test_meme_project_wire_uri_to_and_container(daemon):
-    # `meme_project` rides `meme-project` with {uri, to} + the container law — neither → no container
-    # key (the daemon reads the anchor); `recipe`/`bag` ride through as bare slugs.
+    # `meme_project` rides `meme-project` with {uri, to} + the container law; `recipe`/`bag` ride
+    # through as bare slugs, the daemon's own wiki under its explicit name.
     daemon.output = _PROJECT_OUTPUT
-    out = _project(uri=_URI, to="html")
-    assert daemon.wire() == {"verb": "meme-project", "args": {"uri": _URI, "to": "html"}}
+    out = _project(uri=_URI, to="html", recipe="default")
+    assert daemon.wire() == {"verb": "meme-project", "args": {"recipe": "default", "uri": _URI, "to": "html"}}
     assert out == _PROJECT_OUTPUT
     _project(uri=_URI, to="tid", recipe="sdm")
     assert daemon.wire() == {"verb": "meme-project", "args": {"recipe": "sdm", "uri": _URI, "to": "tid"}}
@@ -210,8 +220,8 @@ def test_meme_project_wire_uri_to_and_container(daemon):
 def test_meme_project_refuses_a_target_off_the_list(daemon):
     daemon.output = _PROJECT_OUTPUT
     with pytest.raises(ValueError, match="`to`"):
-        _project(uri=_URI, to="pdf")
-    with pytest.raises(ValueError, match="at most one of"):
+        _project(uri=_URI, to="pdf", recipe="default")
+    with pytest.raises(ValueError, match="no-container"):
         _project(uri=_URI, to="html", recipe="sdm", bag="lares")
     assert daemon.lines == []                                       # nothing reached the wire
 
@@ -219,22 +229,22 @@ def test_meme_project_refuses_a_target_off_the_list(daemon):
 def test_meme_list_wire_container_and_tree(daemon):
     # `meme_list` addresses the SEAT, never one meme: the container alone rides; `tree` rides only when asked.
     daemon.output = _LIST_OUTPUT
-    out = _list()
-    assert daemon.wire() == {"verb": "meme-list", "args": {}}
+    out = _list(recipe="default")
+    assert daemon.wire() == {"verb": "meme-list", "args": {"recipe": "default"}}
     assert out == _LIST_OUTPUT
     _list(recipe="sdm", tree=True)
     assert daemon.wire() == {"verb": "meme-list", "args": {"recipe": "sdm", "tree": True}}
     _list(bag="lares")
     assert daemon.wire() == {"verb": "meme-list", "args": {"bag": "lares"}}
-    with pytest.raises(ValueError, match="at most one of"):
+    with pytest.raises(ValueError, match="no-container"):
         _list(recipe="sdm", bag="lares")
 
 
 def test_meme_delete_wire_uri_container_and_base(daemon):
     # `meme_delete` rides `meme-delete` with {uri} + the container law; `base` = the hash the writer read.
     daemon.output = _DELETE_OUTPUT
-    out = _delete(uri=_URI)
-    assert daemon.wire() == {"verb": "meme-delete", "args": {"uri": _URI}}
+    out = _delete(uri=_URI, recipe="default")
+    assert daemon.wire() == {"verb": "meme-delete", "args": {"recipe": "default", "uri": _URI}}
     assert out == _DELETE_OUTPUT
     _delete(uri=_URI, bag="lares", base="sha256-get")
     assert daemon.wire() == {"verb": "meme-delete", "args": {"bag": "lares", "uri": _URI, "base": "sha256-get"}}
@@ -244,8 +254,8 @@ def test_meme_delete_stale_base_reads_conflict_and_moves_nothing(daemon):
     # CONTROL: the daemon's 412-shaped answer rides back as the receipt — `decision: conflict`, nothing
     # tombstoned — never an exception, so the caller reads the live hash and decides.
     daemon.output = {"uri": _URI, "decision": "conflict", "tombstoned": [], "canonicalHash": "sha256-live"}
-    out = _delete(uri=_URI, base="sha256-stale")
+    out = _delete(uri=_URI, recipe="default", base="sha256-stale")
     assert out["decision"] == "conflict" and out["tombstoned"] == [] and out["canonicalHash"] == "sha256-live"
-    with pytest.raises(ValueError, match="at most one of"):
+    with pytest.raises(ValueError, match="no-container"):
         _delete(uri=_URI, recipe="sdm", bag="lares")
     assert len(daemon.lines) == 1                                    # the refused call never reached the wire

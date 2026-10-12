@@ -211,7 +211,7 @@ describe("makeMemeProjectReactor — dialect/tongue args", () => {
   test("--dialect/--tongue on a non-md target (html) refuses loud rather than silently ignoring it", async () => {
     const { opts } = verbRig();
     await expect(
-      makeMemeProjectReactor(opts)({ uri: VERB_URI, to: "html", dialect: "GFM" }, ctx()),
+      makeMemeProjectReactor(opts)({ recipe: "default", uri: VERB_URI, to: "html", dialect: "GFM" }, ctx()),
     ).rejects.toThrow(/md.*alone/);
   });
 });
