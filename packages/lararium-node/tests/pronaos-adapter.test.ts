@@ -113,6 +113,29 @@ describe("Pronaos adapter — prepared Herm/Lararium projection", () => {
     expect(wsFace.status).toBe(404);
   });
 
+  /**
+   * THE PATH ALONE IS TESTED FOR TRAVERSAL. A crossing link carries its relay and gate in the query, and a
+   * person who pastes one with the relay percent-encoded (`relay=ws%3A%2F%2F…`) asks for the index page.
+   * A query never names a file here, so an encoded slash inside it reads as data.
+   */
+  test("serves the page for a crossing link whose query carries a percent-encoded URL", async () => {
+    const origin = await start();
+    const relay = encodeURIComponent("ws://hearth.example:4321/ws?x=1%2e");
+    const crossing = await fetch(`${origin}/?relay=${relay}&gate=${"a".repeat(64)}`);
+    expect(crossing.status, "an encoded URL in the query drew the traversal refusal").toBe(200);
+    expect(await crossing.text()).toBe("<!doctype html><title>web</title>");
+    // CONTROL — the same spellings in the PATH stay refused, with or without a query behind them.
+    for (const path of ["/assets/%252e%252e/private.json", `/assets/%2fprivate.json?relay=${relay}`, "/assets/%5c..%5cprivate.json"]) {
+      const refused = await fetch(`${origin}${path}`);
+      expect(refused.status, path).toBe(404);
+      expect(await refused.text(), path).toBe("Pronaos path refused");
+    }
+    // CONTROL — a query cannot smuggle a path: the owned route decides, and an unowned one stays unclaimed.
+    const unowned = await fetch(`${origin}/private/document.json?next=%2Fassets%2Fwiki.worker-def.js`);
+    expect(unowned.status).toBe(404);
+    expect(await unowned.text()).not.toContain("worker");
+  });
+
   test("refuses a prepared projection whose receipt no longer matches its bytes", () => {
     const bad: PronaosProjection = {
       ...projection,

@@ -349,9 +349,13 @@ export function pronaosRequestHandler(
   return (req, res): boolean => {
     const rawUrl = req.url ?? "/";
     // Reject encoded or literal traversal before URL pathname normalization can
-    // turn an attempted private read into a public-looking path.
-    if (/%2e|%2f|%5c|%25/i.test(rawUrl) || rawUrl.includes("..")) {
-      if (rawUrl === "/ws" || rawUrl.startsWith("/oracle") || rawUrl.startsWith("/bulb")) return false;
+    // turn an attempted private read into a public-looking path. The PATH alone
+    // names a file: a query rides behind it as data, and a crossing link's query
+    // may carry a whole percent-encoded URL (`relay=ws%3A%2F%2F…`).
+    const query = rawUrl.search(/[?#]/);
+    const rawPath = query < 0 ? rawUrl : rawUrl.slice(0, query);
+    if (/%2e|%2f|%5c|%25/i.test(rawPath) || rawPath.includes("..")) {
+      if (rawPath === "/ws" || rawPath.startsWith("/oracle") || rawPath.startsWith("/bulb")) return false;
       refuse(res, "Pronaos path refused");
       return true;
     }
