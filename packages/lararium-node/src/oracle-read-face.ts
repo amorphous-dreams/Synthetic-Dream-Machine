@@ -35,13 +35,12 @@ import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
 import type { DocHandle } from "@automerge/automerge-repo";
-import type { Doc } from "@automerge/automerge";
 import {
   ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, DAEMON_BAG_ID, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed,
   type AuthVerifierShore, type OraclePointerFrame,
 } from "@lararium/mesh";
 import {
-  exportOracleSnapshot, buildOraclePointer, oraclePointerId, verifyOraclePointer, snapshotPublicFlowMap,
+  buildOraclePointer, oraclePointerId, verifyOraclePointer, snapshotPublicFlowMap,
   type OracleSnapshot, type OraclePointer, type LarDoc,
 } from "@lararium/mesh";
 
@@ -76,12 +75,15 @@ export async function mountOracleReadFace(args: {
   readonly sort:         SocketSorter;
   readonly dispatcher?:   HttpFaceDispatcher;
   readonly onLog?:       (line: string) => void;
-  /** Export fn — defaults to exportOracleSnapshot (the raw doc). A FLOW-map serve passes a shore
-   *  variant (snapshotPublicFlowMap) so ONLY the public projection ever crosses the wire. */
-  readonly exportSnapshot?: (doc: unknown) => Promise<OracleSnapshot>;
+  /** The export shore — REQUIRED, so no caller serves a raw document by omission. The oracle serve passes
+   *  `snapshotPublicOracle` (the genesis-named floor) and the FLOW-map serve `snapshotPublicFlowMap`, so ONLY
+   *  the public projection ever crosses the wire. A snapshot carrying a `seedCid` has it logged beside the
+   *  snapshot cid. */
+  readonly exportSnapshot: (doc: unknown) => Promise<OracleSnapshot & { readonly seedCid?: string }>;
 }): Promise<OracleReadFace> {
   const { httpServer, oracleHandle, signerSeed, storageDir, onLog } = args;
-  const exportSnapshot = args.exportSnapshot ?? ((doc: unknown) => exportOracleSnapshot(doc as Doc<unknown>));
+  const exportSnapshot = args.exportSnapshot;
+  if (typeof exportSnapshot !== "function") throw new Error("oracle read-face: exportSnapshot is required; no raw document serves by omission");
   const statePath = join(storageDir, STATE_FILE);
 
   let snapshot: OracleSnapshot | null = null;
@@ -103,6 +105,7 @@ export async function mountOracleReadFace(args: {
     if (!doc) return;
     const snap = await exportSnapshot(doc);
     const changed = snap.cid !== persisted.cid;
+    if (initial && snap.seedCid) onLog?.(`oracle read-face: floor seed=${snap.seedCid.slice(0, 12)}… cid=${snap.cid.slice(0, 12)}…`);
     if (!changed && !initial) return;
     if (!changed && initial && persisted.pointer) {
       const durable = await verifyOraclePointer(persisted.pointer);
@@ -123,7 +126,7 @@ export async function mountOracleReadFace(args: {
         mkdirSync(storageDir, { recursive: true });
         atomicWriteFileSync(statePath, JSON.stringify(persisted));
       } catch { /* quota — the in-memory pointer still serves this run */ }
-      onLog?.(`oracle read-face: act=${id.slice(0, 12)}… cid=${snap.cid.slice(0, 12)}… (${snap.bytes.byteLength}B)`);
+      onLog?.(`oracle read-face: act=${id.slice(0, 12)}… ${snap.seedCid ? `seed=${snap.seedCid.slice(0, 12)}… ` : ""}cid=${snap.cid.slice(0, 12)}… (${snap.bytes.byteLength}B)`);
     }
   }
 

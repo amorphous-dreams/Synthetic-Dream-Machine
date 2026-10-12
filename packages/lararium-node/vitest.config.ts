@@ -86,6 +86,7 @@ export const heavy = [
   "tests/readiness-face.test.ts",
   "tests/oracle-closed-door.test.ts",
   "tests/herm-answers-the-knock.test.ts",
+  "tests/oracle-read-face-shore.test.ts",
 ];
 
 /**

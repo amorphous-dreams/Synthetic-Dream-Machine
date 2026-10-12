@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  pullAndVerifyOracle, dialEntryToRecord,
+  pullAndVerifyOracle, dialEntryToRecord, exportOracleSnapshot,
   type MeshPalaceDoc,
 } from "@lararium/mesh";
 import { mountFlowMapReadFace, mountOracleReadFace } from "../src/oracle-read-face.js";
@@ -72,10 +72,10 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
       return r.pointer;
     };
 
-    const first = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter });
+    const first = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
     const p1 = await pointerAt();
     first.dispose();
-    const second = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter });
+    const second = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
     const p1Restart = await pointerAt();
     expect(p1Restart).toEqual(p1);
 

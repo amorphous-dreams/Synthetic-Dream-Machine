@@ -20,6 +20,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ed25519VerifyingKeyFromSeed, NEXUS_DOC_DOMAIN, type NexusDoc } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
+import { exportOracleSnapshot } from "@lararium/mesh";
 import { mountOracleReadFace } from "../src/oracle-read-face.js";
 import { makeSocketSorter, ownPlacePosture, type PlaceClass } from "../src/socket-sorter.js";
 import { provingShore, readerIdentity } from "./oracle-proof-fixture.js";
@@ -48,7 +49,7 @@ async function stand(placeClass: PlaceClass): Promise<{ origin: string; pin: str
     readings: async () => [], carrier: () => false,
     primaryPosture: () => ownPlacePosture(placeClass, null),
   });
-  const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: await provingShore(SEED), sort, dispatcher });
+  const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: await provingShore(SEED), sort, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   return { origin, pin: await ed25519VerifyingKeyFromSeed(SEED), dispose: () => { face.dispose(); dispatcher.dispose(); } };

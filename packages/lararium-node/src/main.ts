@@ -53,7 +53,7 @@ import { readArchiveOpening } from "./archive-passphrase.js";
 import { faceStands } from "./commands/init.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
-import { parseMeshPeer } from "@lararium/mesh";
+import { parseMeshPeer, snapshotPublicOracle, type LarDoc } from "@lararium/mesh";
 import { ratedReceiptRing } from "@lararium/mesh";
 import { startUdsChannel }              from "./uds-channel.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
@@ -70,7 +70,7 @@ import { composePronaosFromEnv } from "./pronaos-composition.js";
 import { houseOriginsOf } from "./pronaos-adapter.js";
 import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
-import { genesisSeedCid } from "./genesis-artifact.js";
+import { genesisSeedCid, readGenesisSeedBytes, parseGenesisSeed } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace } from "./readiness-face.js";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
@@ -526,17 +526,25 @@ async function main(): Promise<void> {
   // PROVEN PEERS over THIS http server's gated oracle socket; an HTTP request for it meets the closed door.
   // Write-refusing by construction (send-only, hash-named, no sync). Best-effort: a
   // read-face failure logs and never crashes boot. lar:///…/lararium-identity#/the-oracle-plane.
+  // The face serves the genesis-named FLOOR alone (`snapshotPublicOracle`): the allow-set derives from the
+  // seed this vessel holds, so a vessel holding NO seed mounts no oracle read-face and never falls to the raw doc.
   let oracleReadFace: { dispose: () => void } | null = null;
-  if (result.oracleDocUrl) {
+  const floorSeedBytes = readGenesisSeedBytes(genesisDir);
+  const floorSeed      = floorSeedBytes ? parseGenesisSeed(floorSeedBytes) : null;
+  if (result.oracleDocUrl && (!floorSeedBytes || !floorSeed)) {
+    console.log(`[lararium] oracle read-face skipped: no genesis seed at ${genesisDir} — the floor derives from the seed, so none is served`);
+  } else if (result.oracleDocUrl && floorSeedBytes && floorSeed) {
     try {
       const oracleHandle = await result.repo.find(result.oracleDocUrl as AutomergeUrl);
       const signerSeed   = await loadVesselSigningSeed();
+      const floorSeedCid = genesisSeedCid(floorSeedBytes);
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
         authShore: result.daemon.authShore,
         sort:      result.socketSorter,
         dispatcher,
         onLog: (line) => console.log(`[lararium] ${line}`),
+        exportSnapshot: (doc) => snapshotPublicOracle(doc as LarDoc, floorSeed, floorSeedCid),
       });
       console.log(`[lararium] oracle read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
     } catch (e) {

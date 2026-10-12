@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, knockPath, ed25519VerifyingKeyFromSeed, verifyAuthProof } from "@lararium/mesh";
+import { exportOracleSnapshot, pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, knockPath, ed25519VerifyingKeyFromSeed, verifyAuthProof } from "@lararium/mesh";
 import type { AuthVerifierShore } from "@lararium/mesh";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
@@ -80,7 +80,7 @@ describe("the oracle face keeps silence", () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
     const face = await mountOracleReadFace({
-      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: await provingShore(SEED), sort: openSorter, dispatcher,
+      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: await provingShore(SEED), sort: openSorter, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never),
     });
     const origin = await listen(server);
     const pin = await ed25519VerifyingKeyFromSeed(SEED);
@@ -147,7 +147,7 @@ describe("the oracle face keeps silence", () => {
         return { ok: true, identifier: peerPubKey, proofVerified: true, ...(peerPubKey === ownKey ? { peerClass: "same-operator" as const } : {}) };
       },
     };
-    const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: shore, sort: privateSorter, dispatcher });
+    const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: shore, sort: privateSorter, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
     const origin = await listen(server);
 
     const stranger = await pullAndVerifyOracle(origin, { identity: await readerIdentity(READER), verifyingKey: pin, frameTimeoutMs: 12_000 });
