@@ -87,7 +87,7 @@ The daemon and the CLI meet at a Unix socket in the container's own `/tmp`, a tm
 
 ''The app never receives the docker socket.'' No container of this house mounts it, and no shim passes it. A process holding that socket holds the host.
 
-So every act on the engine belongs to the host shim: standing the vessel, stopping it, restarting it, reading its log. When a vessel's standing no longer matches its state on disk (a face lit after boot), the CLI inside the container reports that verdict and the host shim performs the restart. The CLI inside never signals, replaces or respawns the container's main process.
+So every act on the engine belongs to the host shim: standing the vessel, stopping it, restarting it, reading its log. When a vessel's standing no longer matches its state on disk (a face lit after boot), the CLI inside the container reports that verdict and the host shim performs the restart. The image declares that the host holds the engine (`LAR_ENGINE=host`), and under that setting every CLI door that would stop, signal or spawn a daemon refuses `EngineHeldByHost`.
 
 The container drops every Linux capability and forbids new privileges. It publishes its port on loopback unless the operator names a wider interface.
 
@@ -129,7 +129,7 @@ The terminator and the resolver attach through one slot in the compose file that
 
 !! The harnesses stand on the image
 
-A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code.
+A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code. One exception stands declared: a browser runner needs a browser engine the product image lacks, so it runs from a browser image and reads the repository read-only.
 
 <<~/ahu>>
 
@@ -145,7 +145,7 @@ A release names one multi-arch image index and one record beside it. The record 
 
 !! No pave, no wipe
 
-No command of the shim, the CLI or the compose file removes a state directory, a workspace or a volume that holds a vessel. A fresh start happens by hand and stays reversible: the operator moves the old homes aside and founds again (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>). Stopping the vessel leaves both mounts as they stood.
+No verb of the host shim and no service of the compose file removes a state directory, a workspace or a volume that holds a vessel. The shim refuses, by name, every CLI verb that would clear a vessel's state. A fresh start happens by hand and stays reversible: the operator moves the old homes aside and founds again (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>). Stopping the vessel leaves both mounts as they stood.
 
 ''Local-first comes first.'' Nothing in the boundary forecloses a keyless ciphertext carrier on a cloud surface later: custody stays in `/state`, and a carrier that holds sealed bytes alone needs neither mount's contents in the clear.
 
@@ -164,6 +164,6 @@ No command of the shim, the CLI or the compose file removes a state directory, a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I6-pJSiuPuu9y181jdTEksGvQNnaGscW7BeXeZeTAZI
+<<^ code="&#x0003;">>ni:///sha-256;Txgmpy4bIgnXV0S2l_eOI7sKGZMo-J0jBigIRzx2XX4
 
 <<^ code="&#x0004;" -> to="?">>
