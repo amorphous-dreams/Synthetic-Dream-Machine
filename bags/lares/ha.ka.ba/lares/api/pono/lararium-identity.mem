@@ -30,7 +30,7 @@ written    = "2026-06-23"
 ! Lararium Identity ~ the vessel key, the bond, and the encrypt-from-start keying
 
 Every Lararium surface stands as a ''causal island carrying its own operator×vessel''
-''key'' — the node vessel, each live browser session, the QA-lab box. A key names a
+''key'' — the node vessel, each browser vessel, the QA-lab box. A key names a
 vessel; a ''signed delegation edge'' binds that vessel to its operator; encryption
 rides ''from the first write''. The model stands whole here rather than scattered across
 the capability, architecture and federation memes, which carry their own faces of it.
@@ -70,7 +70,7 @@ stands ''PROPOSED'' until that settles.
 
 !! The Five Scales (the group axis)
 
-<<~ has Scale Device-Vessel "holds/a distinct on-device key — the user×vessel bond; the base principal, a nameless #has-stack of its own caps ~ node · browser session · QA box; each a causal island, each self-signing">>
+<<~ has Scale Device-Vessel "holds/a distinct on-device key — the user×vessel bond; the base principal, a nameless #has-stack of its own caps ~ node · browser vessel · QA box; each a causal island, each self-signing">>
 <<~ has Scale PersonaGroup "holds/the operator — a principal that #has a stack of its own vessels ~ the delegation edges land here, NOT the device key itself">>
 <<~ has Scale CabalGroup "holds/a neighborhood — a principal that #has a stack of PersonaGroups under a shared charter ~ co-admin authored">>
 <<~ has Scale NexusGroup "holds/a confederation — a principal that #has cabals + independent operators in the mesh">>
@@ -115,7 +115,7 @@ only join their meat-brain. Full ontology: <<~ loulou "lar:///ha.ka.ba/lares/api
 !! The Vessel Key ~ the device key, minted on-device
 
 Each vessel forges its ''own'' Ed25519 keypair, on its own device, private half never
-leaving (NodeFS for the node, WebCrypto for a browser session). The verifying key
+leaving (NodeFS for the node, WebCrypto for a browser vessel). The verifying key
 derives a `did:key`. The literature converges: ''admit by signing, never by sharing''
 — copying one key across vessels (Model A) names the antipattern every surveyed system
 warns against (SSB-fusion, Veilid lose per-device revocation by it; Keybase built its
@@ -128,6 +128,17 @@ the vessel stands as the group's first member, never as the group itself. The de
 absolute plane-index. The behavioral split (drop the `kind="operator"` brand on the device
 tiddler; mint the operator PersonaGroup and sign the delegation edge) rides the genesis
 refactor — single-vessel-correct, no Beelay needed.
+
+!!! Two layers, never fused ~ vessel roots below, the face/persona layer above
+
+''Each vessel holds its own roots, and the human relationship decides how it contracts in above them'' (operator ruling, 2026-10-11; quote license: //"In my mental model, each vessel holds its own roots, and the human relationship determines how they contract in as the face/persona layer above that."//).
+
+# ''VESSEL ROOTS.'' Device-minted, owned by that vessel. Every vessel mints and holds its own: a node, a laptop's browser, a family phone, a traveller's tab. No vessel borrows another's roots, and none stands with no roots. Minting them on first boot takes no ceremony.
+# ''THE FACE/PERSONA LAYER.'' The human relationship decides how a vessel contracts in: the same human's PersonaGroup · a household member · an invited user. A face or persona claim always takes an ACT (#/delegation-edge).
+
+''"Leaf" names a RELATION contracted at the second layer, never a vessel that holds fewer roots.'' A browser that serves as a leaf of its human's node Lararium still holds its own vessel roots. Standing lives in the relation: a browser that loses its storage and recovers no vessel secret stands as a NEW vessel with new roots and contracts in again, and nothing above the vessel layer gets lost with it (the recovery products stand apart at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context#/custody-leans">>).
+
+''A third layer rides above both: the SESSION.'' A vessel wears no face; a session over it does (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>).
 
 <<~/ahu>>
 
@@ -578,6 +589,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eX6Clr1QV0ou7uUfwfNi1a6eKBG62Dxrg19RsP-O_J4
+<<^ code="&#x0003;">>ni:///sha-256;1aeq003b_iMjzda9v753bGtM8CAcz7grTvm_y9DzleQ
 
 <<^ code="&#x0004;" -> to="?">>
