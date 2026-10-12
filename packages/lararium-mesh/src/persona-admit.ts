@@ -50,12 +50,12 @@
 
 import { PERSONA_ADMIT_SEAL_INFO, PERSONA_ENROLL_DOMAIN, PERSONA_GRANT_DOMAIN, PERSONA_JOIN_DOMAIN, PERSONA_SEALED_DOMAIN } from "./domains.js";
 import { x25519 } from "@noble/curves/ed25519.js";
-import * as ed25519 from "@noble/ed25519";
 import { sealToRecipient, openFromSender } from "./sealed-box.js";
 import {
   hex, hexToBytes, utf8Bytes, canonicalJsonBytes, webGetRandomValues,
   base64UrlEncode, base64UrlDecode,
 } from "./crypto.js";
+import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
 // ── Domains — a signature / a key-derivation is meaningless without the domain it was made in ──────────────
 export {
@@ -110,6 +110,13 @@ export interface EnrollmentSecret {
  * offer is INERT — a photograph reveals only a public key and a challenge, granting nothing. `targetVesselId` is
  * B's device verifying key (the ACK-sig key); a malformed one throws BEFORE minting (fail-closed).
  */
+/** A key an admit names passes the Ed25519 door or the act refuses by name: a small-order device key would let
+ *  everyone acknowledge, and prove, as the admitted device. */
+function requireAdmitKey(what: string, keyHex: string): void {
+  const read = acceptEd25519Key(keyHex);
+  if (!read.ok) throw new Error(`persona-admit: admit-key-refused — ${what} refuses at the Ed25519 door (${read.refusal})`);
+}
+
 export function mintEnrollmentOffer(args: {
   readonly targetVesselId: string;
 }): { offer: EnrollmentOffer; secret: EnrollmentSecret } {
@@ -117,6 +124,7 @@ export function mintEnrollmentOffer(args: {
   if (!NYM_RE.test(targetVesselId)) {
     throw new Error("persona-admit: targetVesselId MUST be a 64-hex ed25519 device verifying key");
   }
+  requireAdmitKey("targetVesselId", targetVesselId);
   const ephemeralSecret = x25519.utils.randomSecretKey();
   const ephemeralPubkey = hex(x25519.getPublicKey(ephemeralSecret));
   const nonceB = hex(webGetRandomValues(new Uint8Array(CHALLENGE_LEN)));
@@ -198,6 +206,7 @@ export async function sealPersonaGrant(args: {
   const { offer, personaRef } = args;
   if (offer.kind !== PERSONA_ENROLL_DOMAIN) throw new Error("persona-admit: not an enrollment offer");
   if (!NYM_RE.test(offer.targetVesselId.toLowerCase())) throw new Error("persona-admit: offer targetVesselId malformed");
+  requireAdmitKey("offer targetVesselId", offer.targetVesselId.toLowerCase());   // the device key the grant ADMITS
   if (!NYM_RE.test(personaRef.verifyingKey.toLowerCase())) throw new Error("persona-admit: personaRef.verifyingKey must be 64-hex");
   if (!personaRef.prefix) throw new Error("persona-admit: personaRef.prefix required");
 
@@ -314,7 +323,7 @@ export async function openPersonaGrant(args: {
     return { ok: false, reason: "grant op-key is not the persona prefix head (a rotated/superseded key cannot admit)" };
   }
   let sigOk = false;
-  try { sigOk = await ed25519.verifyAsync(hexToBytes(body.grantSig), canonicalJsonBytes(t), hexToBytes(head)); }
+  try { sigOk = verifyEd25519(body.grantSig, canonicalJsonBytes(t), head); }
   catch { sigOk = false; }
   if (!sigOk) return { ok: false, reason: "grant signature does not verify against the persona prefix head" };
 
@@ -425,7 +434,7 @@ export async function verifyJoinAck(args: {
   if (rec.granterKey.toLowerCase() !== t.personaRef.verifyingKey.toLowerCase()) return { ok: false, reason: "join record granterKey mismatch" };
 
   let sigOk = false;
-  try { sigOk = await ed25519.verifyAsync(hexToBytes(ack.ackSig), joinRecordBytes(rec), hexToBytes(rec.targetVesselId)); }
+  try { sigOk = verifyEd25519(ack.ackSig, joinRecordBytes(rec), rec.targetVesselId); }
   catch { sigOk = false; }
   if (!sigOk) return { ok: false, reason: "ACK signature does not verify against B's device key" };
 

@@ -16,6 +16,7 @@
  */
 
 import { GUARDIAN_REGISTRATION_DOMAIN } from "./domains.js";
+import { acceptEd25519Key } from "./ed25519-door.js";
 import { confirmationPhrase, type GuardianCardSlot } from "./guardian-card.js";
 
 /** A guardian's recovery-pubkey registration — the Fork-B card. */
@@ -45,6 +46,9 @@ export function guardianRecoveryRegistrationCard(
   if (!/^[0-9a-f]{64}$/.test(recoveryPubKey)) {
     throw new Error("[recovery-registration] recovery pubkey must be 64-char lowercase hex");
   }
+  // A guardian key enters the set HERE: a small-order key holds no secret, so everyone would attest as that guardian.
+  const accepted = acceptEd25519Key(recoveryPubKey);
+  if (!accepted.ok) throw new Error(`[recovery-registration] guardian-key-refused — the recovery pubkey refuses at the Ed25519 door (${accepted.refusal})`);
   const label = slot === "mine"
     ? "Recovery-guardian mine"
     : `Recovery-guardian-${slot === "guardian-a" ? "A" : "B"} (${guardianName ?? "unassigned"})`;

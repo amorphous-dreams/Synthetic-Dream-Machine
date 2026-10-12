@@ -48,9 +48,9 @@
  */
 
 import { HANDLE_KEL_DOMAIN } from "./domains.js";
-import * as ed25519 from "@noble/ed25519";
-import { sha256HexSync, canonicalJson, canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { sha256HexSync, canonicalJson, canonicalJsonBytes } from "./crypto.js";
 import { sealKeySetHash } from "./wax-stamp.js";
+import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
 /** The domain the handle-KEL prefix + event bytes tag — separates a Handle's chain from every other hash. */
 export { HANDLE_KEL_DOMAIN } from "./domains.js";
@@ -184,6 +184,16 @@ export function handlePrefixOf(inceptionHandleKeyDid: string, genesisOwnerSetHas
 }
 
 /**
+ * Why a Handle key may not stand, in the Ed25519 door's own name, or null when it may. The key a Handle event
+ * seats reads through the door the moment the event names it: a small-order key holds no secret, so everyone
+ * signs that Handle's cards. A log that seats one refuses whole.
+ */
+export function handleKeyFault(handleKeyDid: unknown): string | null {
+  const read = acceptEd25519Key(typeof handleKeyDid === "string" ? handleKeyDid.replace(/^0x/, "").toLowerCase() : handleKeyDid);
+  return read.ok ? null : `the Handle key refuses at the Ed25519 door (${read.refusal})`;
+}
+
+/**
  * Seat the INCEPTION over a GENESIS OWNER-SET (seq 0, no predecessor): the Handle's own key + its
  * founding owner quorum (members + graft threshold) + a rolling recovery pre-commitment. INCEPTS ARMED
  * — an empty `recoverySetHash`, an empty owner set, or a threshold out of `[1, members.length]` THROWS:
@@ -197,6 +207,8 @@ export function mintHandleInceptionSet(
    *  pre-rotation; a face founding path (mintPersonaGlamour) arms it from its own (seed, handleIndex). */
   nextHandleKeyDigest: string = "",
 ): HandleKelEvent {
+  const weak = handleKeyFault(handleKeyDid);
+  if (weak) throw new Error(`handle inception — ${weak}`);
   if (recoverySetHash.length === 0) {
     throw new Error("handle inception unarmed — an empty recovery pre-commitment mints no prefix");
   }
@@ -530,6 +542,7 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
   if (chain.length === 0) return false;
   const g = chain[0]!;
   if (g.seq !== 0 || g.kind !== "inception" || g.prevEventCid !== null) return false;
+  if (chain.some((e) => handleKeyFault(e.handleKeyDid) !== null)) return false;                 // every seated Handle key passes the door
   if (g.recoverySetHash.length === 0)                                    return false;   // armed, from birth
   if (g.ownerSetMembers.length === 0)                                    return false;   // owned, from birth
   if (g.ownerSetThreshold < 1 || g.ownerSetThreshold > g.ownerSetMembers.length) return false;
@@ -648,6 +661,10 @@ export async function verifyHandleKelFull(
   chain: readonly HandleKelEvent[],
   ownerHeadResolver: OwnerHeadResolver,
 ): Promise<{ ok: boolean; reason?: string }> {
+  for (const e of chain) {
+    const weak = handleKeyFault(e.handleKeyDid);
+    if (weak) return { ok: false, reason: `${e.kind} seq ${e.seq}: ${weak}` };
+  }
   if (!verifyHandleKel(chain)) {
     return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / owner-binding / membership / burn-terminality / cid)" };
   }
@@ -915,7 +932,7 @@ export async function verifyAttestation(
 /** Verify one ed25519 signature against a "0x"-prefixed (or bare) hex key — malformed input counts as no signature. */
 async function verifySig(sigHex: string, bytes: Uint8Array, keyDid: string): Promise<boolean> {
   try {
-    return await ed25519.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(keyDid.replace(/^0x/, "")));
+    return verifyEd25519(sigHex, bytes, keyDid.replace(/^0x/, ""));
   } catch {
     return false;
   }

@@ -35,11 +35,12 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
-import { ed25519, x25519 } from "@noble/curves/ed25519.js";
+import { x25519 } from "@noble/curves/ed25519.js";
 import { canonicalJson, canonicalJsonBytes, hex, hexToBytes, sha256BytesSync, utf8Bytes } from "./crypto.js";
 import { HOSTING_INTRODUCTION_DOMAIN } from "./domains.js";
 import { isInviteToken, type InviteToken } from "./hosting.js";
 import { sealToRecipient, openFromSender, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** A fault the caller made: malformed fields handed to a signer, a secret of the wrong length, an answer asked
  *  of something that is no introduction. Its message leads with the fault's name and carries no secret. */
@@ -183,7 +184,7 @@ export function verifyIntroduction(
     if (!epochs.includes(read.epoch)) return { ok: false, refusal: "introduction-epoch-dead" };
     let signed = false;
     try {
-      signed = ed25519.verify(hexToBytes(read.signature), introductionBytes(read), hexToBytes(read.introducer), { zip215: false });
+      signed = verifyEd25519(read.signature, introductionBytes(read), read.introducer);
     } catch { signed = false; }
     if (!signed) return { ok: false, refusal: "introduction-unsigned" };
     VERIFIED.add(read);

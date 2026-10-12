@@ -31,13 +31,14 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hex, hexToBytes, sha256HexBytesSync } from "./crypto.js";
+import { canonicalJsonBytes, hex, sha256HexBytesSync } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
 import { isHostingGrant, isInviteToken, type HostingGrant, type InviteToken } from "./hosting.js";
 import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_LEAF_PROOF_DOMAIN } from "./domains.js";
 import { webGetRandomValues } from "./crypto.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** Gate → Peer: start of auth exchange. The gate names no key: a dialer proves to the gate key it PINNED, and
  *  an echoed key would only confirm that key to whoever replays a sniffed path. */
@@ -421,7 +422,7 @@ export async function ed25519VerifyingKeyFromSeed(seed: Uint8Array): Promise<str
 
 /** Verify a hex Ed25519 signature over `bytes` under a hex verifying key. Malformed input reads false, never throws. */
 export async function ed25519VerifyHex(sigHex: string, bytes: Uint8Array, verifyingKeyHex: string): Promise<boolean> {
-  try { return await ed25519.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(verifyingKeyHex)); } catch { return false; }
+  try { return verifyEd25519(sigHex, bytes, verifyingKeyHex); } catch { return false; }
 }
 
 /**
@@ -486,7 +487,7 @@ export async function evaluateAuthProof(parts: {
   });
   let ok = false;
   try {
-    ok = await ed25519.verifyAsync(hexToBytes(parts.sig), proof, hexToBytes(parts.peerPubKey));
+    ok = verifyEd25519(parts.sig, proof, parts.peerPubKey);
   } catch (err) {
     return verdict("malformed", false, err instanceof Error ? err.message : "ed25519 verify threw");
   }

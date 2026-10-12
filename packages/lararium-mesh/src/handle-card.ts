@@ -22,7 +22,7 @@
  * Design-of-record: lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault (publication model).
  */
 import { HANDLE_CARD_DOMAIN } from "./domains.js";
-import { canonicalJsonBytes, hexToBytes, sha256Hex, defaultCryptoProvider } from "./crypto.js";
+import { canonicalJsonBytes, sha256Hex, defaultCryptoProvider } from "./crypto.js";
 import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
@@ -30,7 +30,7 @@ import {
   verifyHandleKel, verifyHandleKelFull, headHandleKey, isBurned,
   type HandleKelEvent, type OwnerHeadResolver,
 } from "./handle-kel.js";
-import * as ed25519 from "@noble/ed25519";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The stable identifier a card presents — a handle-KEL prefix (`handle-<64hex>`), fixed across every key
  *  rotation and graft. The nym RETIRED off a bare key onto this chain-anchored name (identity-classes#the-handle-chain). */
@@ -231,7 +231,7 @@ export async function verifyHandleCard(
   const { sig } = card;
   let ok = false;
   try {
-    ok = await ed25519.verifyAsync(hexToBytes(sig), handleCardBytes(cardUnsigned(card)), hexToBytes(headKey.replace(/^0x/, "")));
+    ok = verifyEd25519(sig, handleCardBytes(cardUnsigned(card)), headKey.replace(/^0x/, ""));
   } catch {
     return { ok: false, reject: "malformed" };
   }

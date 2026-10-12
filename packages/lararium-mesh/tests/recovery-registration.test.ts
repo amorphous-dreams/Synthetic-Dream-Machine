@@ -8,6 +8,8 @@
  * provisioning that accepts only typed registrations, never bare hex.
  */
 import { describe, test, expect } from "vitest";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { hex } from "../src/crypto.js";
 import { splitToGuardianCards, confirmationPhrase } from "../src/guardian-card.js";
 import {
   guardianRecoveryRegistrationCard, registrationConfirmationPhrase,
@@ -15,7 +17,9 @@ import {
 } from "../src/recovery-registration.js";
 import { provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
 
-const PUB = "ab".repeat(32);
+// A registration seats a REAL key: the card door refuses a value that names no lawful Ed25519 key.
+const pubOf = (n: number): string => hex(ed25519.getPublicKey(new Uint8Array(32).fill(n)));
+const PUB = pubOf(1);
 
 function counterRng(): { getRandomValues: (b: Uint8Array) => Uint8Array } {
   let c = 0;
@@ -38,12 +42,12 @@ describe("the two custodies are not confusable", () => {
 
   test("★ the provisioning accepts only TYPED registrations — the pre-commit derives from cards, never bare hex ★", () => {
     const regs: GuardianRecoveryRegistration[] = [
-      guardianRecoveryRegistrationCard("mine", "aa".repeat(32), null),
-      guardianRecoveryRegistrationCard("guardian-a", "bb".repeat(32), "Alice"),
-      guardianRecoveryRegistrationCard("guardian-b", "cc".repeat(32), "Bob"),
+      guardianRecoveryRegistrationCard("mine", pubOf(2), null),
+      guardianRecoveryRegistrationCard("guardian-a", pubOf(3), "Alice"),
+      guardianRecoveryRegistrationCard("guardian-b", pubOf(4), "Bob"),
     ];
     const prov = provisionThresholdRecoveryAtFounding({
-      foundingOpKeyDid: `0x${"dd".repeat(32)}`, guardians: regs, recoveryThreshold: 2,
+      foundingOpKeyDid: `0x${pubOf(5)}`, guardians: regs, recoveryThreshold: 2,
     });
     expect(prov.inception.recoverySetHash).not.toBe("");
     expect(prov.recoveryThreshold).toBe(2);

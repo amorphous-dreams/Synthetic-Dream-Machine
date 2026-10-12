@@ -33,9 +33,10 @@
 
 import { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
-import { hex, hexToBytes } from "./crypto.js";
+import { hex } from "./crypto.js";
 import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type LarDid } from "./lar-did.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
+import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
 export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
 const VK_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
@@ -86,6 +87,12 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
   if (typeof d.personaRootDid !== "string" || !DID_RE.test(d.personaRootDid))                 return "personaRootDid not 0x+32-byte lowercase hex";
   if (typeof d.deviceVerifyingKey !== "string" || !VK_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
   if (typeof d.deviceDid !== "string" || d.deviceDid !== didFromVerifyingKey(d.deviceVerifyingKey)) return "deviceDid not bound to deviceVerifyingKey";
+  // Both keys the edge names pass the door before the edge reads: a small-order DEVICE key would let everyone
+  // prove as that device, and a small-order root would let everyone edge a device under that persona.
+  const root = acceptEd25519Key(verifyingKeyFromDid(d.personaRootDid as LarDid));
+  if (!root.ok)   return `personaRootDid refuses at the Ed25519 door (${root.refusal})`;
+  const device = acceptEd25519Key(d.deviceVerifyingKey);
+  if (!device.ok) return `deviceVerifyingKey refuses at the Ed25519 door (${device.refusal})`;
   if (typeof d.hearthTrueName !== "string" || !TRUE_NAME_RE.test(d.hearthTrueName))                       return "hearthTrueName has illegal characters";
   if (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))                 return "boundEpoch not a 1-15 digit decimal";
   if (typeof d.signature !== "string" || !SIG_RE.test(d.signature))                     return "signature not 64-byte lowercase hex";
@@ -185,12 +192,7 @@ export async function evaluateDeviceDelegation(
   }
 
   try {
-    const ok = await ed25519.verifyAsync(
-      hexToBytes(edge.signature),
-      delegationProofBytes(edge),
-      hexToBytes(verifyingKeyFromDid(edge.personaRootDid)),
-      { zip215: false },
-    );
+    const ok = verifyEd25519(edge.signature, delegationProofBytes(edge), verifyingKeyFromDid(edge.personaRootDid));
     if (!ok) return verdict("rejected", false, "signature mismatch");
     return opts?.expectedEpoch === undefined
       ? verdict("unavailable", true, "current resource epoch unavailable")

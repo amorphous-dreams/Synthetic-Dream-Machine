@@ -16,8 +16,9 @@
  */
 
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { canonicalJsonBytes, sha256HexBytesSync, hex, hexToBytes, defaultCryptoProvider, type RandomProvider } from "./crypto.js";
+import { canonicalJsonBytes, sha256HexBytesSync, hex, defaultCryptoProvider, type RandomProvider } from "./crypto.js";
 import { VESSEL_KEL_DOMAIN } from "./domains.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 export interface VesselKelInception {
   readonly t:   "icp";
@@ -67,7 +68,7 @@ export function mintVesselKelInception(signingSeed: Uint8Array, rng: RandomProvi
 export function verifyVesselKelInception(inception: VesselKelInception): boolean {
   try {
     if (inception.t !== "icp" || inception.k.length !== 1) return false;
-    return ed25519.verify(hexToBytes(inception.sig), signedBytes(inception), hexToBytes(inception.k[0]!));
+    return verifyEd25519(inception.sig, signedBytes(inception), inception.k[0]!);
   } catch {
     return false;
   }

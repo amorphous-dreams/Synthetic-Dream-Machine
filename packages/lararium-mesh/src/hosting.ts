@@ -64,6 +64,7 @@ import {
 } from "./domains.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 const KEY_RE   = /^[0-9a-f]{64}$/;
 const SIG_RE   = /^[0-9a-f]{128}$/;
@@ -124,7 +125,7 @@ export function isHostingAct(v: unknown): v is HostingAct {
 /** Does the act's own leaf sign it? Pure; never throws. */
 export async function verifyHostingAct(act: HostingAct): Promise<boolean> {
   if (!isHostingAct(act)) return false;
-  try { return await ed25519.verifyAsync(hexToBytes(act.sig), hostingActBytes(act), hexToBytes(act.hearthLeaf)); }
+  try { return verifyEd25519(act.sig, hostingActBytes(act), act.hearthLeaf); }
   catch { return false; }
 }
 

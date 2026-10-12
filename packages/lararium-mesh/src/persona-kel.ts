@@ -21,12 +21,12 @@
  */
 
 import { PERSONA_KEL_DOMAIN, SEALED_ENROLMENT_DOMAIN } from "./domains.js";
-import { ed25519 } from "@noble/curves/ed25519.js";
-import { sha256HexSync, canonicalJson, canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { sha256HexSync, canonicalJson, canonicalJsonBytes } from "./crypto.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "./device-delegation.js";
 import { verifyingKeyFromDid } from "./lar-did.js";
+import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
 const KEY_RE = /^[0-9a-f]{64}$/;
 const SIG_RE = /^[0-9a-f]{128}$/;
@@ -81,7 +81,7 @@ function sealedEnrolmentVerifies(raw: unknown, prefix: string, opKeyDid: string)
 function signatureHolds(sigHex: string, bytes: Uint8Array, keyHex: string): boolean {
   const key = keyHex.replace(/^0x/, "").toLowerCase();
   if (!KEY_RE.test(key) || !SIG_RE.test(sigHex)) return false;
-  try { return ed25519.verify(hexToBytes(sigHex), bytes, hexToBytes(key)); }
+  try { return verifyEd25519(sigHex, bytes, key); }
   catch { return false; }
 }
 
@@ -205,6 +205,8 @@ export function personaPrefixOf(inceptionOpKeyDid: string, recoverySetHash: stri
  * refuses (nothing stands pre-committed to attest a reveal against).
  */
 export function mintPersonaInception(opKeyDid: string, recoverySetHash: string): PersonaKelEvent {
+  const weak = weakKeyFault("the inception's op-key", opKeyDid);
+  if (weak) throw new Error(`persona inception — ${weak}`);
   const prefix = personaPrefixOf(opKeyDid, recoverySetHash);
   // The genesis set fills BOTH slots: it is the prefix's anti-swap wall AND the first rotation's authority.
   const core: PersonaEventCore = {
@@ -282,6 +284,8 @@ export async function mintPersonaRotation(input: {
   if (head.nextRecoverySetHash.length === 0) {
     return { ok: false, reason: "rotation unarmed — the head event carries no rolling recovery commitment" };
   }
+  const weak = weakKeyFault("the fresh op-key", freshOpKeyDid);
+  if (weak) return { ok: false, reason: weak };
   if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== head.nextRecoverySetHash) {
     return { ok: false, reason: "reveal mismatch — the revealed recovery roster does not match the head's rolling commitment" };
   }
@@ -384,6 +388,10 @@ function rotationQuorum(
   if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== authorizingSetHash) {
     return { ok: false, reason: "revealed roster digest does not match the authorizing commitment" };
   }
+  for (const guardian of recoveryRoster) {
+    const weak = weakKeyFault("a revealed guardian key", guardian);
+    if (weak) return { ok: false, reason: weak };
+  }
   const rosterSet = new Set(recoveryRoster.map((k) => k.toLowerCase()));
   const bytes     = personaEventBytes(core);
   const counted   = new Set<string>();
@@ -395,6 +403,16 @@ function rotationQuorum(
     if (counted.size >= recoveryThreshold) return { ok: true };
   }
   return { ok: false, reason: `below-threshold quorum: ${counted.size}/${recoveryThreshold} distinct valid guardian signatures` };
+}
+
+/**
+ * Why a key may not stand in this log, in the Ed25519 door's own name, or null when it may. An op-key and every
+ * revealed guardian key read through it the moment an event names them: a small-order key holds no secret, so
+ * everyone signs as that persona or as that guardian. An event that names one refuses, and the log with it.
+ */
+function weakKeyFault(what: string, keyHex: unknown): string | null {
+  const read = acceptEd25519Key(typeof keyHex === "string" ? keyHex.replace(/^0x/, "").toLowerCase() : keyHex);
+  return read.ok ? null : `${what} refuses at the Ed25519 door (${read.refusal})`;
 }
 
 /** The bound core of an event — the fields its cid and every signature over it commit. */
@@ -409,6 +427,8 @@ function coreOf(e: PersonaKelEvent): PersonaEventCore {
 /** Why `e` fails as an inception, structurally, or null when it stands as one. */
 function inceptionStructureFault(e: PersonaKelEvent): string | null {
   if (e.seq !== 0 || e.prevEventCid !== null) return "an inception carries seq 0 and no predecessor";
+  const weak = weakKeyFault("the inception's op-key", e.opKeyDid);
+  if (weak) return weak;
   if (e.prefix !== personaPrefixOf(e.opKeyDid, e.recoverySetHash)) return "the prefix does not derive from the inception's op-key and recovery set";
   if (e.nextRecoverySetHash !== e.recoverySetHash) return "an inception seats one recovery set in both slots";
   if (e.provisional || e.vetoOfCid !== null) return "an inception never contests";
@@ -425,6 +445,8 @@ function successorStructureFault(prev: PersonaKelEvent, e: PersonaKelEvent): str
   if (e.recoverySetHash !== prev.recoverySetHash) return "the genesis recovery wall moved";
   if (e.eventCid !== personaEventCidOf(e))        return "the cid does not recompute over the bound core";
   if (!enrolmentsAttested(e))                     return "the enrolment list is not the one the cid commits";
+  const weak = weakKeyFault("the event's op-key", e.opKeyDid);
+  if (weak) return weak;
   if (e.vetoOfCid !== null) {
     // A veto competes AT its contested seq: it links the same predecessor and restores the standing head's
     // op-key and rolling commitment.
