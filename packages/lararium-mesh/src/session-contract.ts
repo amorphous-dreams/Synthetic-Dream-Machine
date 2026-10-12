@@ -1,0 +1,310 @@
+/**
+ * session-contract — the contract a SESSION holds with the vessel it rides.
+ *
+ * One vessel holds one durable Repo, one store lock, custody and one face-blind daemon. Each browser tab or
+ * CLI run opens a volatile SESSION that wears exactly one verified face. This module holds the session's
+ * shape, its validators, the holder's message kinds, and the owner's in-memory table of live routes.
+ *
+ * The invariants:
+ *   · THE ID ROUTES; THE BINDING AUTHORIZES. The owner mints a session's id and binds it to one port or one
+ *     socket. A copied id presented on another binding opens nothing. What a session may DO rests with the
+ *     facets the sovereign worker holds for it; the table carries their labels alone.
+ *   · THE OWNER'S EPOCH FENCES A RESTARTED OWNER. Every message after the open names the epoch of the owner
+ *     that minted its session. The epoch stands opaque: the owner's own boot epoch, never a clock reading.
+ *   · A GENERATION FENCES AN EFFECT. A switch advances the generation by one; a message of any other
+ *     generation refuses, so an effect of an earlier generation never lands in a later one.
+ *   · A FACE HOLDS REFERENCES. Every field of a session's face names something by string. No field can
+ *     hold a persona root, a seed, a signer or any bytes, in the type or at the validator.
+ *   · NO ROSTER. The table lives in memory, hands out frozen copies, and offers no serializer and no
+ *     enumeration: a list of live sessions would record which faces one vessel wore together.
+ *
+ * Pure: no Repo, no key, no signer, no I/O, no timer, no clock.
+ *
+ * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract
+ */
+import { defaultCryptoProvider } from "./crypto.js";
+
+/** The schema every message after the open names. */
+export const SESSION_SCHEMA_VERSION = 1;
+
+export type SessionState = "opening" | "live" | "switching" | "revoked" | "closing" | "closed";
+
+/** Every named refusal the table answers. A refusal never mutates the table. */
+export const SESSION_REFUSALS = [
+  "malformed-message", "stale-owner-epoch", "unknown-session", "unbound-session", "stale-generation",
+  "session-not-live", "session-not-switching", "binding-already-bound", "face-malformed",
+] as const;
+export type SessionRefusal = (typeof SESSION_REFUSALS)[number];
+
+/** A programming fault against the contract: an illegal state step, an unknown id handed to `transition`,
+ *  or a mint that yields no fresh id. Its message leads with the fault's name. */
+export class SessionContractError extends Error {}
+
+/** The absolute ids of a face's four planes. */
+export interface SessionFacePlanes {
+  readonly persona:    string;
+  readonly circles:    string;
+  readonly identities: string;
+  readonly sessions:   string;
+}
+
+/** The resolved face a session wears, immutable within one generation. Every field holds a string REFERENCE. */
+export interface SessionFace {
+  readonly personaGroup:   string;              // the PersonaGroup the face stands in
+  readonly proofSubject:   string;              // the subject the face proves as on the wire
+  readonly admitRef:       string;              // the verified admit the face rides
+  readonly causalRevision: string;              // the causal revision the relation stood at
+  readonly planes:         SessionFacePlanes;
+}
+
+/** The leaves of `T` that hold anything but a string; `never` when every leaf names by string. */
+type NonStringLeaves<T> = T extends string ? never : T extends object ? { [K in keyof T]-?: NonStringLeaves<T[K]> }[keyof T] : T;
+type Holds<T extends never> = T;
+/**
+ * THE FACE HOLDS REFERENCES, proven where the type-check reads it. The first line compiles only while every
+ * leaf of a face is a string. The second carries its own control: a face widened by one byte-holding field
+ * fails the same test, and the expectation of that failure fails the build if the test ever stops seeing it.
+ */
+export type SessionFaceHoldsReferences = Holds<NonStringLeaves<SessionFace>>;
+// @ts-expect-error a face that could hold root bytes fails the references-only law
+export type SessionFaceWithRootRefuses = Holds<NonStringLeaves<SessionFace & { readonly root: Uint8Array }>>;
+
+const FACE_KEYS = ["personaGroup", "proofSubject", "admitRef", "causalRevision", "planes"] as const;
+const PLANE_KEYS = ["persona", "circles", "identities", "sessions"] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function exactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
+  return Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key));
+}
+const nonEmptyString = (value: unknown): value is string => typeof value === "string" && value.length > 0;
+
+/**
+ * Read a face, or null. EXACT keys only: one extra key (a root, a seed, a signer), one non-string or one
+ * empty string refuses the whole face. The face returned is a frozen copy that shares nothing with its input.
+ */
+export function validateSessionFace(v: unknown): SessionFace | null {
+  if (!isRecord(v) || !exactKeys(v, FACE_KEYS)) return null;
+  const planes = v["planes"];
+  if (!isRecord(planes) || !exactKeys(planes, PLANE_KEYS)) return null;
+  const { personaGroup, proofSubject, admitRef, causalRevision } = v;
+  const { persona, circles, identities, sessions } = planes;
+  if (!nonEmptyString(personaGroup) || !nonEmptyString(proofSubject) || !nonEmptyString(admitRef) || !nonEmptyString(causalRevision)) return null;
+  if (!nonEmptyString(persona) || !nonEmptyString(circles) || !nonEmptyString(identities) || !nonEmptyString(sessions)) return null;
+  return Object.freeze({
+    personaGroup, proofSubject, admitRef, causalRevision,
+    planes: Object.freeze({ persona, circles, identities, sessions }),
+  });
+}
+
+/** One mounted surface and the island it leases. */
+export interface SessionSurface {
+  readonly surfaceId: string;
+  readonly kind:      string;
+  readonly island:    string;
+}
+
+/** A session as the owner holds it. The table hands out frozen copies, never its own record. */
+export interface Session {
+  readonly sessionId:  string;                    // routes, and authorizes nothing
+  readonly ownerEpoch: string;                    // the minting owner's boot epoch
+  readonly generation: number;                    // advances by one at each switch
+  readonly face:       SessionFace;
+  readonly caps:       readonly string[];         // facet LABELS; the facets rest with the sovereign worker
+  readonly state:      SessionState;
+  readonly surfaces:   readonly SessionSurface[];
+}
+
+/** An opaque token standing for exactly one port or one socket. Two bindings compare by identity. */
+export interface SessionBinding { readonly kind: "port" | "socket" }
+export function sessionBinding(kind: "port" | "socket"): SessionBinding {
+  return Object.freeze({ kind });
+}
+
+// ── The holder's message kinds ──────────────────────────────────────────────────────────────────
+
+/** What every message after the open carries. */
+export interface SessionEnvelope {
+  readonly schemaVersion: number;
+  readonly ownerEpoch:    string;
+  readonly sessionId:     string;
+  readonly generation:    number;
+}
+/** A request, and the reply that returns to the binding that asked, name the request. */
+export interface SessionRequestEnvelope extends SessionEnvelope { readonly requestId: string }
+/** Surface traffic names its surface. */
+export interface SessionSurfaceEnvelope extends SessionEnvelope { readonly surfaceId: string }
+
+/**
+ * The kinds a holder speaks. The open and its refusal ride BEFORE a session stands, so they carry no envelope;
+ * every other kind does. A reply returns to the originating binding alone; the holder broadcasts nothing.
+ * No kind carries a root, a Repo, or a general signer.
+ */
+export type SessionMessage =
+  | { readonly kind: "session:open"; readonly requestId: string; readonly faceRef: string }
+  | (SessionRequestEnvelope & { readonly kind: "session:opened"; readonly face: SessionFace; readonly caps: readonly string[] })
+  | { readonly kind: "session:refused"; readonly requestId: string; readonly refusal: string }
+  | (SessionRequestEnvelope & { readonly kind: "session:call"; readonly verb: string; readonly args: unknown })
+  | (SessionRequestEnvelope & { readonly kind: "session:result"; readonly result: unknown })
+  | (SessionRequestEnvelope & { readonly kind: "session:surface-open"; readonly surfaceKind: string; readonly ref: string })
+  | (SessionRequestEnvelope & SessionSurfaceEnvelope & { readonly kind: "session:surface-ready"; readonly mountEpoch: number })
+  | (SessionSurfaceEnvelope & { readonly kind: "session:surface-close" })
+  | (SessionSurfaceEnvelope & {
+      readonly kind: "projection:frame"; readonly cameraId: string; readonly mountEpoch: number;
+      readonly state: unknown; readonly membershipKey: string; readonly sensedRevision: number;
+    })
+  | (SessionSurfaceEnvelope & {
+      readonly kind: "wiki:control-event"; readonly mountEpoch: number; readonly eventId: string; readonly controlId: string;
+      readonly frameRevision: number; readonly localRevision: number; readonly value: unknown; readonly geometry?: unknown;
+    })
+  | (SessionSurfaceEnvelope & {
+      readonly kind: "projection:control-result"; readonly mountEpoch: number; readonly eventId: string;
+      readonly outcome: string;                   // `applied` · `stale-target` · a named refusal
+    })
+  | (SessionRequestEnvelope & { readonly kind: "session:switch"; readonly expectedGeneration: number; readonly faceRef: string })
+  | (SessionRequestEnvelope & { readonly kind: "session:switch-result"; readonly outcome: string })
+  | (SessionEnvelope & { readonly kind: "session:revoke"; readonly reason: string })
+  | (SessionEnvelope & { readonly kind: "session:close"; readonly cause: string })
+  | (SessionEnvelope & { readonly kind: "session:closed" });
+
+/** Read the envelope a message carries, or null: the schema it names, non-empty strings, a counting generation. */
+export function validateSessionEnvelope(v: unknown): SessionEnvelope | null {
+  if (!isRecord(v) || v["schemaVersion"] !== SESSION_SCHEMA_VERSION) return null;
+  const { ownerEpoch, sessionId, generation } = v;
+  if (!nonEmptyString(ownerEpoch) || !nonEmptyString(sessionId)) return null;
+  if (typeof generation !== "number" || !Number.isSafeInteger(generation) || generation < 0) return null;
+  return Object.freeze({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch, sessionId, generation });
+}
+
+// ── The state machine ───────────────────────────────────────────────────────────────────────────
+
+const TRANSITIONS: Readonly<Record<SessionState, readonly SessionState[]>> = Object.freeze({
+  opening:   ["live", "closing", "closed"],
+  live:      ["switching", "revoked", "closing"],
+  switching: ["live", "revoked", "closing"],     // back to `live` at the SAME generation: a refused preflight
+  revoked:   ["closing", "closed"],
+  closing:   ["closed"],
+  closed:    [],
+});
+
+/** May a session step from `from` to `to`? No state steps to itself, and `closed` steps nowhere. */
+export function sessionTransitionLegal(from: SessionState, to: SessionState): boolean {
+  return TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+// ── The owner's table ───────────────────────────────────────────────────────────────────────────
+
+export type SessionOpenResult =
+  | { readonly ok: true;  readonly session: Session }
+  | { readonly ok: false; readonly refusal: SessionRefusal };
+export type SessionCheckResult = SessionOpenResult;
+
+interface SessionRecord { session: Session; readonly binding: SessionBinding }
+
+const MINT_TRIES = 32;
+
+function frozenSession(session: Session): Session {
+  return Object.freeze({
+    ...session,
+    caps: Object.freeze([...session.caps]),
+    surfaces: Object.freeze(session.surfaces.map((surface) => Object.freeze({ ...surface }))),
+  });
+}
+
+/**
+ * The owner's LIVE routes, in memory alone. The caller verifies custody or delegation, the admit, the proof
+ * subject and the planes BEFORE it opens; the table then mints the id and binds it. It persists nothing and
+ * enumerates nothing.
+ */
+export class SessionTable {
+  readonly #ownerEpoch: string;
+  readonly #mintId: () => string;
+  readonly #records = new Map<string, SessionRecord>();
+  readonly #bound = new Map<SessionBinding, string>();
+
+  constructor(ownerEpoch: string, mintId: () => string = () => defaultCryptoProvider.randomUUID()) {
+    if (!nonEmptyString(ownerEpoch)) throw new SessionContractError("owner-epoch-absent");
+    this.#ownerEpoch = ownerEpoch;
+    this.#mintId = mintId;
+  }
+
+  /** How many sessions stand. A count, never a list. */
+  get size(): number { return this.#records.size; }
+
+  /**
+   * Open a session on `binding` wearing `face`. One binding holds at most one session. The session stands
+   * `live` at generation 0 under a freshly minted id.
+   */
+  open(binding: SessionBinding, face: unknown, caps: readonly string[] = []): SessionOpenResult {
+    if (this.#bound.has(binding)) return { ok: false, refusal: "binding-already-bound" };
+    const worn = validateSessionFace(face);
+    if (!worn) return { ok: false, refusal: "face-malformed" };
+    if (!Array.isArray(caps) || !caps.every(nonEmptyString)) return { ok: false, refusal: "malformed-message" };
+    let sessionId: string | null = null;
+    for (let i = 0; i < MINT_TRIES && sessionId === null; i++) {
+      const candidate = this.#mintId();
+      if (nonEmptyString(candidate) && !this.#records.has(candidate)) sessionId = candidate;
+    }
+    if (sessionId === null) throw new SessionContractError("session-id-mint-exhausted");
+    const session = frozenSession({
+      sessionId, ownerEpoch: this.#ownerEpoch, generation: 0, face: worn, caps, state: "live", surfaces: [],
+    });
+    this.#records.set(sessionId, { session, binding });
+    this.#bound.set(binding, sessionId);
+    return { ok: true, session };
+  }
+
+  /**
+   * Does `message` stand on `binding`? The first fault in this order names the refusal: a malformed envelope,
+   * another owner's epoch, an unknown id, an id bound elsewhere, a generation other than the session's own,
+   * a session in any state but `live`.
+   */
+  check(message: unknown, binding: SessionBinding): SessionCheckResult {
+    const envelope = validateSessionEnvelope(message);
+    if (!envelope) return { ok: false, refusal: "malformed-message" };
+    if (envelope.ownerEpoch !== this.#ownerEpoch) return { ok: false, refusal: "stale-owner-epoch" };
+    const record = this.#records.get(envelope.sessionId);
+    if (!record) return { ok: false, refusal: "unknown-session" };
+    if (record.binding !== binding) return { ok: false, refusal: "unbound-session" };
+    if (envelope.generation !== record.session.generation) return { ok: false, refusal: "stale-generation" };
+    if (record.session.state !== "live") return { ok: false, refusal: "session-not-live" };
+    return { ok: true, session: record.session };
+  }
+
+  /** Step a session's state. An illegal step or an unknown id throws by name; `closed` removes the record. */
+  transition(sessionId: string, to: SessionState): Session {
+    const record = this.#records.get(sessionId);
+    if (!record) throw new SessionContractError("unknown-session");
+    const from = record.session.state;
+    if (!sessionTransitionLegal(from, to)) throw new SessionContractError(`illegal-session-transition: ${from} -> ${to}`);
+    const stepped = frozenSession({ ...record.session, state: to });
+    if (to === "closed") this.close(sessionId);
+    else record.session = stepped;
+    return stepped;
+  }
+
+  /**
+   * Commit a switch: only from `switching`, only at the expected generation, only onto a lawful face. The
+   * session then wears the new face, live, one generation on. A refusal changes nothing.
+   */
+  advance(sessionId: string, expectedGeneration: number, face: unknown): SessionCheckResult {
+    const record = this.#records.get(sessionId);
+    if (!record) return { ok: false, refusal: "unknown-session" };
+    if (record.session.state !== "switching") return { ok: false, refusal: "session-not-switching" };
+    if (expectedGeneration !== record.session.generation) return { ok: false, refusal: "stale-generation" };
+    const worn = validateSessionFace(face);
+    if (!worn) return { ok: false, refusal: "face-malformed" };
+    record.session = frozenSession({ ...record.session, generation: record.session.generation + 1, face: worn, state: "live" });
+    return { ok: true, session: record.session };
+  }
+
+  /** End a session from any state: its record and its binding both drop. False when no such session stands. */
+  close(sessionId: string): boolean {
+    const record = this.#records.get(sessionId);
+    if (!record) return false;
+    this.#records.delete(sessionId);
+    this.#bound.delete(record.binding);
+    return true;
+  }
+}
