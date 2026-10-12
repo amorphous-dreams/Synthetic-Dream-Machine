@@ -45,7 +45,7 @@ import {
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault, type PlaneEntry,
+  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync,
@@ -79,6 +79,7 @@ import {
   reconcileWellKnownTiddlers, mintLaresIfAbsent, mintLarariumIfAbsent,
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
+import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -1237,8 +1238,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
         }
       }
 
-      // Bootstrap URLs: the vessel's own social bootstrap (init node — authoritative),
-      // falling back to the island oracle (replica vessels).
+      // Bootstrap URLs: the vessel's own social bootstrap answers for the place and every face. The
+      // oracle answers for none of them.
       // BOTH parses are guarded, and a tear reads {} — the same answer every other reader of this file
       // gives (the hearth-dial pin, the bulb, the init packer). The OUTER parse was caught and the inner
       // one was not, so a bootstrap whose outer JSON is valid while its packed `text` is truncated, absent
@@ -1253,43 +1254,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
           bootstrapTiddlers = packed.tiddlers ?? {};
         } catch { /* a torn bootstrap reads as none — never a fatal boot */ }
       }
-      const id   = islandHandle.doc()?.tiddlers;
-      const daemonUrl      = bootstrapTiddlers[DAEMON_BAG_ID]?.text       ?? tiddlerText(id?.[DAEMON_BAG_ID])       ?? null;
-      // THE ONE RESOLUTION POINT on this platform. The vessel reads back the whole FAMILY of compartments
-      // it carries, then resolves the gesture — "the one I stand in" — to that plane's absolute name.
-      // Every reader downstream carries the name; none receives the gesture.
-      const planeEntries: PlaneEntry[] = [
-        ...Object.entries(bootstrapTiddlers).map(([title, t]) => ({ title, text: t?.text ?? null })),
-        ...Object.entries(id ?? {}).map(([title, rec]) => ({ title, text: tiddlerText(rec) })),
-      ];
-      const personaPlanes  = readPersonaPlanes(planeEntries);
-      // A family that could shadow itself never boots. One group entered twice derives ONE bag id and
-      // would mount a second writable layer over the first — the same silent shadowing the one-face law
-      // exists to prevent, arriving through a merge rather than a switch.
-      const planesFault = personaPlanes.length ? personaPlanesFault(personaPlanes) : null;
-      if (planesFault) throw new Error(`[lararium] the PersonaGroup planes this vessel carries do not stand: ${planesFault}`);
-      // The WORN face decides which plane mounts. The bootstrap pin names the FOUNDING face, which is the
-      // right answer only when no switch is owed — and both this reading and the Binding Gate's below must
-      // resolve the SAME face, or the writable plane and the signing authority would belong to two people.
-      const personaGroupId = wornMount?.personaGroupDocIdHex
-        ?? bootstrapTiddlers[PERSONA_GROUP_DOC_ID_TIDDLER]?.text
-        ?? tiddlerText(id?.[PERSONA_GROUP_DOC_ID_TIDDLER]) ?? null;
-      // A vessel standing in compartments but told to wear none it carries halts here rather than
-      // wearing whichever happened to load first.
-      const personaBagId   = personaGroupId && personaPlanes.length
-        ? mountedPlaneBagId(personaPlanes, personaGroupId)
-        : null;
-      const personaUrl     = personaPlanes.find((p) => p.personaGroupId === personaGroupId)?.url ?? null;
-      // THE THREE PLANES THAT TRAVEL WITH THE FACE, read under the face's own names. The plane id
-      // resolved just above carries the tag, so its siblings come from it — the name is the index, and
-      // no second copy of the tag rides the bootstrap to drift from this one. A vessel standing in no
-      // face reads none of them, which is the faceless floor answering honestly.
-      const faceSiblings  = personaBagId ? personaSiblingBagIds(personaBagId) : null;
-      const readPlane = (bagId: string | undefined): string | null =>
-        bagId ? (bootstrapTiddlers[bagId]?.text ?? tiddlerText(id?.[bagId]) ?? null) : null;
-      const identitiesUrl = readPlane(faceSiblings?.identities);
-      const circlesUrl    = readPlane(faceSiblings?.circles);
-      const sessionsUrl   = readPlane(faceSiblings?.sessions);
+      const daemonUrl = bootDaemonUrl(bootstrapTiddlers);
+      // The WORN face decides which plane mounts; the Binding Gate below resolves the same face. The
+      // family, the pin and every face plane read off the bootstrap alone.
+      const {
+        personaPlanes, personaBagId, personaUrl, identitiesUrl, circlesUrl, sessionsUrl,
+      } = bootFacePlanes(bootstrapTiddlers, wornMount?.personaGroupDocIdHex ?? null);
       // ── THE PLACE STANDS ALONE; THE FACE RIDES OPTIONAL ────────────────────────────────────────
       // Only the daemon doc reads required — a founding stands a PLACE first (`lares vessel found`) and a FACE
       // later (`lares persona new 0`), so a vessel that carries and serves while holding no persona names
@@ -2438,13 +2408,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       });
     }
 
-    // Keep oracle tiddlers current — self, ka, ba, social plane, daemon.
-    reconcileWellKnownTiddlers(
-      assembly.islandHandle, catalogHandle.url, assembly.laresHandle?.url,
-      bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null,
-      bootstrap.identitiesUrl, bootstrap.circlesUrl, bootstrap.sessionsUrl,
-      daemonVm.daemonHandle.url,
-    );
+    // Keep the oracle's lares pointer current.
+    reconcileWellKnownTiddlers(assembly.islandHandle, assembly.laresHandle?.url);
   };
 
   // Island pool (worker_threads) + the event bus + the sovereign-worker command bindings.
