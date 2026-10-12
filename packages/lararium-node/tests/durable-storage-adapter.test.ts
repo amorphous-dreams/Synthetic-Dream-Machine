@@ -180,6 +180,25 @@ describe("DurableNodeFSStorageAdapter", () => {
     } finally { held.release(); rmSync(dir, { recursive: true, force: true }); }
   });
 
+  test("a save of a fresh key issued while a removeRange over its prefix runs lands after the removal", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    const held = await holdSync();
+    try {
+      const a = new DurableNodeFSStorageAdapter(dir);
+      const OTHER = [KEY[0]!, "snapshot", "head1"];
+      const saving = a.save(KEY, Uint8Array.from([6]));
+      await held.staged;
+      // The range removal waits on the save in flight; a save of ANOTHER key under the prefix arrives meanwhile.
+      const removing = a.removeRange([KEY[0]!]);
+      const later = a.save(OTHER, Uint8Array.from([9, 9]));
+      held.release();
+      await Promise.all([saving, removing, later]);
+      expect(await a.load(KEY), "the key in flight at the removal stays removed").toBeUndefined();
+      const back = await new DurableNodeFSStorageAdapter(dir).load(OTHER);
+      expect(back && [...back], "the later save stands, landed after the range unlink").toEqual([9, 9]);
+    } finally { held.release(); rmSync(dir, { recursive: true, force: true }); }
+  });
+
   test("the holding outlives the first of two saves in flight: a read answers the later save's bytes until it settles", async () => {
     const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
     // The first file sync passes; every later one waits, so the second save stands in flight after the first settled.

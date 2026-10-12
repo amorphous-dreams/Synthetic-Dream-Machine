@@ -109,8 +109,11 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     if (pending) { pending.binary = binary; pending.saves++; }
     else { pending = { key: [...keyArray], binary, saves: 1 }; this.#pending.set(filePath, pending); }
     const held = pending;
-    const prior = this.#inFlight.get(filePath) ?? Promise.resolve();
-    const write = prior.catch(() => { /* the prior save's fault belongs to its own caller */ }).then(async () => {
+    // A save joins the key's own write order AND every range removal running over its prefix, so its rename
+    // never lands inside a range unlink.
+    const fences = [...this.#ranges].filter(([base]) => filePath === base || filePath.startsWith(base + sep)).map(([, gone]) => gone);
+    const prior = Promise.all([this.#inFlight.get(filePath) ?? Promise.resolve(), ...fences].map((p) => p.catch(() => { /* that fault belongs to its own caller */ })));
+    const write = prior.then(async () => {
       await mkdir(dirname(filePath), { recursive: true });
       await atomicWriteFile(filePath, binary);
     });
@@ -143,8 +146,17 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     // A write whose holding already left still stands in flight under the prefix's directory.
     const base = keyPrefix.length > 0 ? this.#pathOf(keyPrefix) : this.#root;
     for (const path of this.#inFlight.keys()) if (path === base || path.startsWith(base + sep)) paths.add(path);
-    await this.#afterWritesOf([...paths], () => super.removeRange(keyPrefix));
+    const gone = this.#afterWritesOf([...paths], () => super.removeRange(keyPrefix));
+    // The removal fences its whole prefix while it runs: a save of any key beneath it, in flight or not, waits.
+    const fence = gone.catch(() => { /* the removal's fault reaches its own caller below */ });
+    this.#ranges.add([base, fence]);
+    const entry = [...this.#ranges].at(-1)!;
+    try { await gone; }
+    finally { this.#ranges.delete(entry); }
   }
+
+  /** Range removals running now: each fences the directory it clears until it settles. */
+  readonly #ranges = new Set<readonly [string, Promise<void>]>();
 
   /** Run `removal` after every write in flight for `paths`, standing in each path's write order while it runs. */
   async #afterWritesOf(paths: readonly string[], removal: () => Promise<void>): Promise<void> {
