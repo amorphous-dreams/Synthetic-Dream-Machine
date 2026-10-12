@@ -153,7 +153,7 @@ describe("a non-default proofBag round-trips", () => {
 
   test("build -> parse holds under a bag outside the daemon shape", () => {
     const proof = {
-      eventId: "ev-9", island: "lar:///ha.ka.ba/bags/sense-a", requestId: "sense-r9",
+      eventId: "ev-9", seq: 3, island: "lar:///ha.ka.ba/bags/sense-a", requestId: "sense-r9",
       asOf: [] as readonly string[],
       radius: 0, glues: true, vacuous: false,
       gateKind: "reconcilable" as const, dimH1: 0, cost: 0,

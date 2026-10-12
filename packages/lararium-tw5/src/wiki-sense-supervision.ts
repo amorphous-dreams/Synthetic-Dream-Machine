@@ -110,10 +110,15 @@ export function isProofRecordUri(title: string, bagUri?: string): boolean {
 /**
  * The local proof-hold record — the PROOF a cohere read left, never the carrier it read. Every field
  * names a verdict coordinate or a designation; none carries tiddler text, corpus bytes, or vectors.
- * The as-of heads stamp the read causally ("as of my last sync") — the record holds NO wall clock.
+ * The as-of heads stamp the read causally ("as of my last sync") and `seq` orders the ring — the record holds
+ * NO wall clock that decides anything. The event id names the record; the sequence says which came after.
  */
 export interface WikiSenseProofRecord {
+  /** The record's opaque unique name (the title's last segment). It orders nothing. */
   readonly eventId:         string;
+  /** Position in this island's ledger: one counter per designation, a positive integer. The ring keeps the
+   *  highest and drops the lowest; a tie (two writers on one doc) breaks by title. */
+  readonly seq:             number;
   /** The island DESIGNATION the daemon asked — the supervised channel the authority rode. */
   readonly island:          string;
   /** The requestId of the cohere ask this proof answers (the audit link back to the exchange). */
@@ -143,6 +148,7 @@ export function buildProofRecordTiddler(proof: WikiSenseProofRecord, bagUri: str
       title:              proofRecordUri(bagUri, proof.eventId),
       tags:               LARES_PROOF_RECORD_TAG,
       "event-id":         proof.eventId,
+      seq:                String(proof.seq),
       island:             proof.island,
       "request-id":       proof.requestId,
       "as-of":            JSON.stringify(proof.asOf),
@@ -186,6 +192,9 @@ export function parseProofRecord(fields: Record<string, unknown>): WikiSenseProo
     const n = Number(str(k) ?? "0");
     return Number.isFinite(n) ? n : null;
   };
+  const seqText = str("seq");
+  const seq = seqText !== null && /^[1-9][0-9]*$/.test(seqText) ? Number(seqText) : null;
+  if (seq === null || !Number.isSafeInteger(seq)) return null;
   const radius     = num("radius");
   const dimH1      = num("dim-h1");
   const cost       = num("cost");
@@ -196,6 +205,7 @@ export function parseProofRecord(fields: Record<string, unknown>): WikiSenseProo
   const obstructionLoci = jsonArr("obstruction-loci");
   return {
     eventId,
+    seq,
     island,
     requestId,
     asOf:            jsonArr("as-of"),
@@ -206,7 +216,7 @@ export function parseProofRecord(fields: Record<string, unknown>): WikiSenseProo
     dimH1,
     cost,
     obstructionLoci,
-    // pre-ring records carry no loci-total field — the capped list's length answers honestly.
+    // a record with no loci-total answers with the capped list's length.
     lociTotal:       lociTotal > 0 ? lociTotal : obstructionLoci.length,
     corpusSize,
   };
@@ -276,19 +286,27 @@ export function createWikiSenseSupervisor(
   const proofRing = Math.max(1, opts.proofRing ?? PROOF_RING);
   const pending   = new Map<string, PendingAsk>();
 
-  /** The ledger ring — keep the last `proofRing` records for one island; older ones delete forward.
-   *  Event-ids sort by their fixed-width ms prefix, so title order reads as write order. */
-  async function pruneProofLedger(store: LarTiddlerStore, island: string, requestId: string): Promise<void> {
+  /** One island's standing proof records, parsed. A title under the prefix that does not parse counts toward
+   *  nothing: the ring never removes it by guess. */
+  async function standingRecords(
+    store: LarTiddlerStore, island: string,
+  ): Promise<Array<{ title: string; seq: number }>> {
     const prefix = proofLedgerPrefix(proofBag);
-    const titles = (await store.listVisible()).filter((t) => t.startsWith(prefix));
-    const mine: Array<{ title: string; eventId: string }> = [];
-    for (const title of titles) {
+    const mine: Array<{ title: string; seq: number }> = [];
+    for (const title of (await store.listVisible()).filter((t) => t.startsWith(prefix))) {
       const rec = await store.get(title);
       const parsed = rec ? parseProofRecord(rec.tiddler as Record<string, unknown>) : null;
-      if (parsed && parsed.island === island) mine.push({ title, eventId: parsed.eventId });
+      if (parsed && parsed.island === island) mine.push({ title, seq: parsed.seq });
     }
+    return mine;
+  }
+
+  /** The ledger ring — keep the newest `proofRing` records for one island by sequence; older ones delete
+   *  forward. The sequence orders and no clock decides which record leaves; a tie breaks by title. */
+  async function pruneProofLedger(store: LarTiddlerStore, island: string, requestId: string): Promise<void> {
+    const mine = await standingRecords(store, island);
     if (mine.length <= proofRing) return;
-    mine.sort((a, b) => (a.eventId < b.eventId ? -1 : a.eventId > b.eventId ? 1 : 0));
+    mine.sort((a, b) => a.seq - b.seq || (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
     const origin: ChangeOrigin = { kind: "lares-verb", requestId };
     for (const old of mine.slice(0, mine.length - proofRing)) {
       await store.remove(old.title, origin);
@@ -343,8 +361,10 @@ export function createWikiSenseSupervisor(
           `the daemon's own store must carry the ledger (no silent drop)`,
         );
       }
+      const standing = await standingRecords(opts.proofStore, island);
       const proof: WikiSenseProofRecord = {
         eventId:         newId(),
+        seq:             1 + standing.reduce((m, r) => Math.max(m, r.seq), 0),
         island,
         requestId,
         asOf:            verdict.asOf,

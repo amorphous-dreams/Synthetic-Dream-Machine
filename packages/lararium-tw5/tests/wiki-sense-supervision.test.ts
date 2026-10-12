@@ -202,7 +202,7 @@ describe("wiki-sense supervision reads — node tier", () => {
 
   test("the proof tiddler round-trips through the ledger idiom (build → parse)", () => {
     const proof = {
-      eventId: "ev-1", island: ISLAND_A, requestId: "sense-r1",
+      eventId: "ev-1", seq: 1, island: ISLAND_A, requestId: "sense-r1",
       asOf: ["h1", "h2"] as readonly string[],
       radius: 0.42, glues: false, vacuous: false,
       gateKind: "ontological" as const, dimH1: 2, cost: 1,
@@ -210,5 +210,104 @@ describe("wiki-sense supervision reads — node tier", () => {
     };
     const rec = buildProofRecordTiddler(proof, "lar:///ha.ka.ba/bags/daemon");
     expect(parseProofRecord(rec.tiddler as Record<string, unknown>)).toEqual(proof);
+  });
+
+  test("a record with no seq reads torn; one with a seq round-trips", () => {
+    const proof = {
+      eventId: "ev-2", seq: 7, island: ISLAND_A, requestId: "sense-r2",
+      asOf: [] as readonly string[],
+      radius: 0, glues: true, vacuous: false,
+      gateKind: "reconcilable" as const, dimH1: 0, cost: 0,
+      obstructionLoci: [] as readonly string[], lociTotal: 0, corpusSize: 1,
+    };
+    const rec = buildProofRecordTiddler(proof, "lar:///ha.ka.ba/bags/daemon");
+    expect(parseProofRecord(rec.tiddler as Record<string, unknown>)).toEqual(proof);
+    const { seq: _drop, ...bare } = rec.tiddler as Record<string, unknown>;
+    expect(parseProofRecord(bare)).toBeNull();
+    expect(parseProofRecord({ ...bare, seq: "1.5" })).toBeNull();
+    expect(parseProofRecord({ ...bare, seq: "abc" })).toBeNull();
+    expect(parseProofRecord({ ...bare, seq: "0" })).toBeNull();
+  });
+});
+
+describe("the proof ring keeps its newest by sequence, never by clock", () => {
+  const DAEMON = "lar:///ha.ka.ba/bags/daemon";
+
+  /** An id mint answering from a fixed list: a cohere hold mints a request id, then the record's id. */
+  function mint(ids: readonly string[]): () => string {
+    let i = 0;
+    return () => ids[i++] ?? `spare-${i}`;
+  }
+
+  async function holds(
+    islands: readonly string[], order: readonly string[], ids: readonly string[], proofRing: number,
+    seed?: (store: MemoryTiddlerStore) => Promise<void>,
+  ): Promise<{ standing: Array<{ eventId: string; island: string; seq: number }>; titles: string[] }> {
+    const harness = await standChannel(islands);
+    const proofStore = new MemoryTiddlerStore(DAEMON);
+    if (seed) await seed(proofStore);
+    const supervisor = createWikiSenseSupervisor(harness.shores, { proofStore, newId: mint(ids), proofRing });
+    harness.bind(supervisor);
+    try {
+      for (const island of order) await supervisor.cohere(island, { hold: true });
+      const standing: Array<{ eventId: string; island: string; seq: number }> = [];
+      for (const title of await proofStore.listVisible()) {
+        const rec = await proofStore.get(title);
+        const parsed = rec ? parseProofRecord(rec.tiddler as Record<string, unknown>) : null;
+        if (parsed) standing.push({ eventId: parsed.eventId, island: parsed.island, seq: parsed.seq });
+      }
+      standing.sort((a, b) => a.seq - b.seq);
+      return { standing, titles: await proofStore.listVisible() };
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  }
+
+  test("ids running backwards: the two newest holds stand", async () => {
+    const { standing } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A, ISLAND_A],
+      ["r1", "zzz", "r2", "mmm", "r3", "aaa"], 2);
+    expect(standing.map((r) => r.eventId)).toEqual(["mmm", "aaa"]);
+    expect(standing.map((r) => r.seq)).toEqual([2, 3]);
+  });
+
+  test("control: ids running forwards keep the same two newest", async () => {
+    const { standing } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A, ISLAND_A],
+      ["r1", "aaa", "r2", "mmm", "r3", "zzz"], 2);
+    expect(standing.map((r) => r.eventId)).toEqual(["mmm", "zzz"]);
+  });
+
+  test("a record seeded with a far-future id leaves once the ring fills past it", async () => {
+    const { standing } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A],
+      ["r1", "aaa", "r2", "bbb"], 2,
+      async (store) => {
+        const seeded = buildProofRecordTiddler({
+          eventId: "zzzzzzzz-future", seq: 1, island: ISLAND_A, requestId: "sense-seed",
+          asOf: [], radius: 0, glues: true, vacuous: false, gateKind: "reconcilable",
+          dimH1: 0, cost: 0, obstructionLoci: [], lociTotal: 0, corpusSize: 1,
+        }, DAEMON);
+        await store.put(seeded, { kind: "lares-verb", requestId: "seed" }, { bag: DAEMON });
+      });
+    expect(standing.map((r) => r.eventId)).toEqual(["aaa", "bbb"]);
+    expect(standing.map((r) => r.seq)).toEqual([2, 3]);
+  });
+
+  test("each island's ring counts its own records only", async () => {
+    const { standing } = await holds([ISLAND_A, ISLAND_B], [ISLAND_A, ISLAND_B, ISLAND_A, ISLAND_B, ISLAND_A],
+      ["r1", "e1", "r2", "e2", "r3", "e3", "r4", "e4", "r5", "e5"], 2);
+    expect(standing.filter((r) => r.island === ISLAND_A).map((r) => r.eventId)).toEqual(["e3", "e5"]);
+    expect(standing.filter((r) => r.island === ISLAND_B).map((r) => r.eventId)).toEqual(["e2", "e4"]);
+  });
+
+  test("a torn record under the prefix stands untouched", async () => {
+    const { standing, titles } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A, ISLAND_A],
+      ["r1", "a", "r2", "b", "r3", "c"], 2,
+      async (store) => {
+        await store.put(
+          { tiddler: { title: `${DAEMON}/ledger/proof/torn`, island: ISLAND_A }, meta: { authority: "lares-proof-holder" } },
+          { kind: "lares-verb", requestId: "seed" }, { bag: DAEMON });
+      });
+    expect(standing.map((r) => r.eventId)).toEqual(["b", "c"]);
+    expect(titles).toContain(`${DAEMON}/ledger/proof/torn`);
   });
 });
