@@ -62,10 +62,10 @@ jobs:
       # submodule — and every vessel a driver founds reads the engine it names.
       - name: Render the TW5 core blob
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
-      # The Docker files bind-mount this checkout and explicitly trust its host-built dist/. The
-      # browser weld also imports the workspace's Playwright package from this install.
-      # The containers run the product image each witness builds and names by digest (tools/harness-image.sh).
-      # This build serves the host side alone: the witness readers and the tools import the built packages.
+      # The node containers run the product image each witness builds and names by digest
+      # (tools/harness-image.sh). This build serves the host side: the witness readers and the tools import the
+      # built packages, the browser weld imports the workspace's Playwright package from this install, and the
+      # mesh's two Playwright runners read the compiled browser probe from this checkout, read-only.
       - name: Build the tree the host-side readers import
         run: pnpm -r build
       # A STAMP NAMES THE BYTES A BUILD THAT RAN CAME FROM. A step runs only after every earlier step passed, so

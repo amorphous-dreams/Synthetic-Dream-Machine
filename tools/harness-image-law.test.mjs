@@ -58,7 +58,8 @@ function inspect(file, text) {
     const inherited = [...service.text.matchAll(/<<:\s*\*(\w+)/g)].map((m) => anchors.get(m[1]) ?? "").join("\n");
     const body = `${inherited}\n${service.text}`;
     const exception = EXCEPTIONS.has(service.name);
-    const images = [...body.matchAll(/^\s*image:\s*(.+)$/gm)].map((m) => m[1].trim());
+    // The EFFECTIVE image: a service's own `image:` replaces the one its anchor carries, so the last one decides.
+    const images = [...body.matchAll(/^\s*image:\s*(.+)$/gm)].map((m) => m[1].trim()).slice(-1);
     if (exception) {
       assert.match(EXCEPTIONS.get(service.name), /Playwright.*Chromium.*read-only/);
       if (!/mcr\.microsoft\.com\/playwright/.test(images.join(" "))) errors.push(`${service.name}: exception does not use Playwright image`);
@@ -78,6 +79,11 @@ function inspect(file, text) {
         for (; j < bodyLines.length && /^\s+-\s+/.test(bodyLines[j]); j++) volumeMounts.push(bodyLines[j].replace(/^\s+-\s+/, "").trim().replace(/^['"]|['"]$/g, ""));
         i = j - 1;
       }
+    }
+    // Long-form mounts (`- type: bind` / `source:` / `target:` / `read_only:`) read as `source:target[:ro]`.
+    for (const m of body.matchAll(/^\s+-\s+type:\s*bind\s*\n((?:\s+(?:source|target|read_only|bind|consistency):.*\n?)+)/gm)) {
+      const field = (name) => new RegExp(`^\\s+${name}:\\s*["']?([^"'\\n]+?)["']?\\s*$`, "m").exec(m[1])?.[1] ?? "";
+      volumeMounts.push(`${field("source")}:${field("target")}${field("read_only") === "true" ? ":ro" : ""}`);
     }
     for (const mount of volumeMounts) {
       const [source = "", rawTarget = ""] = mount.split(":");
@@ -100,10 +106,24 @@ function inspect(file, text) {
 }
 
 test("CONTROL: every scanner sees its planted compose fault", () => {
-  const planted = `services:\n  vessel:\n    image: node:24-slim\n    build: .\n    volumes:\n      - .:/app\n      - s:/state\n      - ./tools:/app/tools\n    command: node_modules/.bin/tsx probe.ts\n  swallowed:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    command: ["node", "packages/lararium-node/dist/probes/x.js"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: [".:/app"]\n    command: ["node", "probe.ts"]\n`;
+  const planted = `services:\n  vessel:\n    image: node:24-slim\n    build: .\n    volumes:\n      - .:/app\n      - s:/state\n      - ./tools:/app/tools\n    command: node_modules/.bin/tsx probe.ts\n  longform:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: ./packages\n        target: /app/packages\n  swallowed:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    command: ["node", "packages/lararium-node/dist/probes/x.js"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: [".:/app"]\n    command: ["node", "probe.ts"]\n`;
   const hits = inspect("planted.yml", planted);
-  for (const expected of ["image does not require", "build key", "repository bind", "one character", "TypeScript entrypoint", "exception repository mount", "host bind ./tools", "rides entrypoint"])
+  for (const expected of ["image does not require", "build key", "repository bind", "one character", "TypeScript entrypoint", "exception repository mount", "host bind ./tools", "rides entrypoint", "longform: host bind ./packages"])
     assert.ok(hits.some((hit) => hit.includes(expected)), `scanner missed ${expected}: ${hits.join("; ")}`);
+});
+
+test("CONTROL: a service that overrides its anchor's digest image with another image reads red", () => {
+  const text = `x-herm: &herm\n  image: "\${LARES_HARNESS_IMAGE:?digest}"\n\nservices:\n  herm-source:\n    <<: *herm\n    image: node:24-slim\n  herm-relay:\n    <<: *herm\n`;
+  const hits = inspect("override.yml", text);
+  assert.ok(hits.some((hit) => hit.includes("herm-source: image does not require")), hits.join("; "));
+  assert.ok(!hits.some((hit) => hit.startsWith("herm-relay:")), hits.join("; "));
+});
+
+test("CONTROL: a long-form repository bind reads red, and a long-form read-only tools bind passes", () => {
+  const bad = `services:\n  a:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: .\n        target: /app\n`;
+  assert.ok(inspect("long.yml", bad).some((hit) => hit.includes("repository bind")));
+  const good = `services:\n  a:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: ./tools\n        target: /app/tools\n        read_only: true\n`;
+  assert.deepEqual(inspect("long.yml", good), []);
 });
 
 test("each harness service runs the digest image with image-owned code and declared mounts", () => {

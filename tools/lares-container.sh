@@ -8,6 +8,7 @@
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing
+#   lares-container.sh vessel stop               stop the vessel's container (state stays; `up` stands it again)
 #   lares-container.sh <anything else>           run the lares CLI: inside the standing vessel, or through the offline
 #                                                door when no vessel stands (vault status|unlock|bind|unbind read their
 #                                                credential on that TTY)
@@ -18,7 +19,8 @@
 #
 # THE HOST HOLDS THE ENGINE. The app gets no docker socket, and the CLI inside never stops or starts the daemon.
 # After each exec'd verb that succeeds, the shim reads the CLI's standing verdict (`vessel stand --observe --json`)
-# and restarts the vessel itself when the verdict reads `restand` (a face lit after boot).
+# and restarts the vessel itself when the verdict reads `restand` (a face lit after boot). `vessel stop` stops the
+# container. `vessel clear` and `vessel rite rebirth` refuse here: no pave or wipe command runs through this shim.
 # One lararium per HUMAN: nothing here names a face.
 #
 # LARES_STATE and LARES_WORKSPACE come from the environment or `lares-surface.env` beside the compose file
@@ -54,7 +56,12 @@ compose() {
   fi
 }
 
-running_vessel() { [ -n "$(compose ps -q --status running lares)" ]; }
+# Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
+# on a reading, so a broken engine never routes an act beside a live holder.
+running_vessel() {
+  running_id=$(compose ps -q --status running lares) || die "cannot read the vessel's state (docker compose ps failed); nothing ran"
+  [ -n "$running_id" ]
+}
 
 # The CLI's own reading of the standing vessel against its state on disk. It runs without a TTY: the answer is JSON
 # for this script, never a prompt.
@@ -80,7 +87,13 @@ route_cli() {
     # shellcheck disable=SC2046
     if compose exec $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
     if [ "$rc" -ne 0 ]; then return "$rc"; fi
-    if [ -n "$follow_up" ] && observe_standing && verdict_restand; then lift_vessel; fi
+    if [ -z "$follow_up" ]; then return 0; fi
+    # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
+    if ! observe_standing; then
+      printf '%s\n' 'lares-container: the verb succeeded, and the standing check after it failed; run `lares-container.sh vessel stand`' >&2
+      return 1
+    fi
+    if verdict_restand; then lift_vessel; fi
   else
     printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
     # shellcheck disable=SC2046
@@ -110,10 +123,15 @@ case "$verb" in
             /|/home|"$(CDPATH= cd -- "${HOME:-/nonexistent}" 2>/dev/null && pwd -P)") die "--capture refuses $dir — name a session root inside it, never a home directory whole" ;;
           esac
           [ ! -S "$dir" ] || die "--capture refuses $dir — it is a socket, not a session root"
+          # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
+          # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
+          case "$dir" in *"
+"*) die "--capture refuses a path that holds a newline" ;; esac
+          yaml_dir=$(printf '%s' "$dir" | sed -e "s/'/''/g" -e 's/\$/$$/g')
           n=$((n + 1))
           files="$files
       - type: bind
-        source: \"$dir\"
+        source: '$yaml_dir'
         target: /capture/$n
         read_only: true"
           shift 2 ;;
@@ -139,14 +157,27 @@ case "$verb" in
   vessel)
     observing=""
     for arg in "$@"; do if [ "$arg" = --observe ]; then observing=yes; fi; done
-    if [ "${1:-}" = stand ] && [ -z "$observing" ]; then
-      if ! running_vessel; then compose up -d --wait lares
-      elif ! observe_standing; then printf '%s\n' 'lares-container: the standing vessel answered no verdict' >&2; exit 1
-      elif verdict_restand; then lift_vessel
-      else printf '%s\n' "$observe_output"; fi
-    else
-      if [ -n "$observing" ]; then follow_up=""; fi
-      route_cli "$verb" "$@"
-    fi ;;
+    case "${1:-}" in
+      stand)
+        if [ -n "$observing" ]; then follow_up=""; route_cli "$verb" "$@"
+        else
+          # The acting stand belongs to the host and takes no option: it stands, restarts on a `restand` verdict, or
+          # prints the standing. An option the CLI's own stand reads (--install, --init, --admit) has no meaning here.
+          [ "$#" -eq 1 ] || die "vessel stand takes no option through this shim (it stands or restarts the container); --observe reads the standing"
+          if ! running_vessel; then compose up -d --wait lares
+          elif ! observe_standing; then die "the standing vessel answered no verdict"
+          elif verdict_restand; then lift_vessel
+          else printf '%s\n' "$observe_output"; fi
+        fi ;;
+      # Stopping the daemon stops the container's main process: a host act.
+      stop) [ "$#" -eq 1 ] || die "vessel stop takes no option through this shim"; compose stop lares ;;
+      # NO PAVE, NO WIPE. No verb of this shim removes a vessel's state; a fresh start happens by hand
+      # (lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start).
+      clear) die "vessel clear removes a vessel's state; no pave or wipe command runs through this shim (a fresh start happens by hand: move the state directory aside, then found again)" ;;
+      rite)
+        if [ "${2:-}" = rebirth ]; then die "vessel rite rebirth removes a vessel's state; no pave or wipe command runs through this shim (a fresh start happens by hand: move the state directory aside, then found again)"; fi
+        route_cli "$verb" "$@" ;;
+      *) route_cli "$verb" "$@" ;;
+    esac ;;
   *) route_cli "$verb" "$@" ;;
 esac

@@ -24,6 +24,7 @@ import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
 import { fatalLine } from "@lararium/node";
 import { faceStandsOnDisk } from "../floor-cure.js";
+import { engineHeldByHost } from "../port-control.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive } from "../local-connector.js";
@@ -218,7 +219,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     standingReason = verdict.reason;
     standingAct = verdict.act;
     if (verdict.act === "restand" && !observeOnly) {
-      if (process.env["LAR_ENGINE"] === "host") {
+      if (engineHeldByHost()) {
         // THE HOST HOLDS THE ENGINE (`LAR_ENGINE=host`, set by the image). Inside a container the daemon is the
         // container's main process: this CLI neither stops it nor spawns a second one. The verdict rides the
         // payload, and the host shim performs the restart.
@@ -244,7 +245,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
 
   if (!nodeUp && observeOnly) {
     nodeNote = "down — `--observe` withholds the stand; run `lares vessel stand` to serve";
-  } else if (!nodeUp && process.env["LAR_ENGINE"] === "host") {
+  } else if (!nodeUp && engineHeldByHost()) {
     // The host holds the engine: a daemon that does not answer yet is the host's to wait on or restart.
     nodeNote = "the container runs and its daemon has not answered yet — the host holds the engine (lares-container.sh logs)";
   } else if (!nodeUp) {

@@ -12,6 +12,7 @@
  * the single source of truth for the derived gate key) so the operator can hand a hearth what to dial.
  */
 
+import { engineHeldByHost } from "../port-control.js";
 import { existsSync, mkdirSync, openSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
@@ -33,6 +34,8 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
 
   const distMain = join(repoRoot, "packages", "lararium-node", "dist", "src", "main.js");
   const preflight: string | null =
+    // Where the host holds the engine this door spawns nothing: a herm stands as the container's own service.
+    engineHeldByHost()      ? "the host holds the engine — stand a herm from the host: docker compose -f docker-compose.surface.yml --profile herm up -d herm" :
     !existsSync(distMain)   ? "node dist not built — run `pnpm -r build`, then `lares herm`" :
     !existsSync(bootstrap)  ? "no bootstrap — run `lares vessel found` (or point LAR_ROOT at an initialized instance)" :
     null;

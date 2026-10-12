@@ -1,13 +1,13 @@
 /**
  * The host shims (lares-container.sh / .ps1) against a fake `docker` that records argv. The fake answers the two
  * questions the shim asks of a vessel: whether one runs (FAKE_RUNNING_ID) and what standing verdict the CLI reads
- * (FAKE_OBSERVE_OUTPUT). Nothing here starts
+ * (FAKE_OBSERVE_OUTPUT); FAKE_PS_RC, FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three calls fail. Nothing here starts
  * a container: the live proof (found, up, vessel read, ingest, restart, both holder refusals) runs against the
  * real image. This pins the shim's own contract: the verb routing, the refusals by name, the read-only capture
  * binds, and that no argv ever carries the docker socket.
  */
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile, chmod, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile, chmod, rm } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -23,9 +23,10 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
   try {
     const log = join(dir, "calls.log");
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
-      `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; esac\n` +
-      `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}";; esac\n` +
-      `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n`);
+      `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
+      `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
+      `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
@@ -112,7 +113,7 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: vessel stand with no service stands and waits healthy`, async () => {
-    const r = await run(shim, ["vessel", "stand", "--json"], { env: MOUNTS });
+    const r = await run(shim, ["vessel", "stand"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /up -d --wait lares/);
     assert.doesNotMatch(r.calls, /compose .*exec/);
@@ -154,6 +155,68 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
     assert.equal((r.calls.match(/--observe --json/g) ?? []).length, 1);
     assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: a failed state reading refuses, and opens neither door`, async () => {
+    const r = await run(shim, ["persona", "list"], { env: { ...MOUNTS, FAKE_PS_RC: "1" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /cannot read the vessel's state/);
+    assert.doesNotMatch(r.calls, /compose .*exec|run --rm/);
+  });
+
+  test(`${name}: a verb the CLI refuses keeps its exit status, and no standing check follows`, async () => {
+    const r = await run(shim, ["meme", "get", "lar:///x"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
+    assert.equal(r.status, 7);
+    assert.doesNotMatch(r.calls, /--observe/);
+  });
+
+  test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
+    const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /the standing check after it failed/);
+    assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: the host stand takes no option`, async () => {
+    const r = await run(shim, ["vessel", "stand", "--install"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /takes no option/);
+    assert.equal(r.calls, "");
+  });
+
+  test(`${name}: vessel stop stops the container from the host, never from inside it`, async () => {
+    const r = await run(shim, ["vessel", "stop"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /stop lares\s*$/m);
+    assert.doesNotMatch(r.calls, /compose .*exec/);
+  });
+
+  test(`${name}: no pave or wipe verb runs through the shim, with or without a standing vessel`, async () => {
+    for (const argv of [["vessel", "clear", "--force"], ["vessel", "rite", "rebirth"]]) {
+      for (const env of [MOUNTS, { ...MOUNTS, FAKE_RUNNING_ID: "cid" }]) {
+        const r = await run(shim, argv, { env });
+        assert.equal(r.status, 2, argv.join(" "));
+        assert.match(r.stderr, /no pave or wipe command/);
+        assert.equal(r.calls, "");
+      }
+    }
+  });
+
+  test(`${name}: CONTROL another vessel rite still routes to the CLI`, async () => {
+    const r = await run(shim, ["vessel", "rite", "quorum"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node \S+ vessel rite quorum/);
+  });
+
+  test(`${name}: a capture path holding a quote and a dollar sign rides the override as a literal`, async () => {
+    const base = await mkdtemp(join(tmpdir(), "cap-odd-"));
+    const odd = join(base, "it's $HOME");
+    try {
+      await mkdir(odd);
+      const r = await run(shim, ["up", "--capture", odd], { env: MOUNTS });
+      assert.equal(r.status, 0, r.stderr);
+      assert.ok(r.calls.includes(`source: '${odd.replaceAll("'", "''").replaceAll("$", "$$$$")}'`), r.calls);
+    } finally { await rm(base, { recursive: true, force: true }); }
   });
 
   test(`${name}: up stands the lares service detached; down removes it`, async () => {

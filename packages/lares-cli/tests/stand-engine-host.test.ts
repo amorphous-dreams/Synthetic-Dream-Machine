@@ -40,7 +40,7 @@ vi.mock("../src/integration-check.js", () => ({ checkMempalaceIntegration: () =>
 vi.mock("../src/standup.js", () => ({ foundIfAbsent: vi.fn(), }));
 vi.mock("../src/commands/wire.js", () => ({ tendSurfaces: vi.fn(), SURFACES: [] }));
 vi.mock("node:child_process", () => ({ spawn }));
-vi.mock("../src/port-control.js", () => ({ stopIncumbent }));
+vi.mock("../src/port-control.js", () => ({ stopIncumbent, engineHeldByHost: () => process.env["LAR_ENGINE"] === "host" }));
 
 beforeEach(() => {
   vi.resetModules();

@@ -1336,7 +1336,7 @@ run_climb() {
   step "NEG b — a TORN charter REFUSES, and never falls to the floor"
   local OWN_BEFORE OWN_AFTER
   OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-a)
-  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /lar-a/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
   $COMPOSE restart lararium-a >/dev/null 2>&1
   # THE VESSEL IS EXPECTED TO DIE HERE, and `restart: on-failure:8` means it dies eight times. Wait for
   # the refusal to appear rather than for an exit, so a cure that refuses WITHOUT dying still reads.
@@ -1440,7 +1440,7 @@ run_seal() {
   # unit-tested; what no test walks is the CLI process reaching it through a running daemon.
   step "\`vault export\` aimed at the archive carrier REFUSES"
   local EX
-  EX=$($COMPOSE exec -T lararium-a $LARES vault export /lar-a/data/lares/identity/keyhive-archive.bin --force --json 2>&1)
+  EX=$($COMPOSE exec -T lararium-a $LARES vault export /state/data/lares/identity/keyhive-archive.bin --force --json 2>&1)
   if printf '%s' "$EX" | grep -qF 'refusing to export onto the'; then ok
   else
     bad "the export did not refuse the carrier it would destroy"
@@ -1453,7 +1453,7 @@ run_seal() {
   step "a SECOND handle's device share sits outside the guarded set"
   $COMPOSE exec -T lararium-a $LARES persona new 1 --name "second" >/dev/null 2>&1 || true
   local SHARES
-  SHARES=$($COMPOSE exec -T lararium-a sh -c 'ls /lar-a/data/lares/identity/ 2>/dev/null | grep -c "recovery-device-share-h"' 2>/dev/null | tr -d '\r')
+  SHARES=$($COMPOSE exec -T lararium-a sh -c 'ls /state/data/lares/identity/ 2>/dev/null | grep -c "recovery-device-share-h"' 2>/dev/null | tr -d '\r')
   if [ "${SHARES:-0}" -le 1 ]; then
     gap "only ${SHARES:-0} device share stands — a second face minted none, so the h1+ hole is unreached here"
     printf '      archive-passphrase.ts:82 enumerates deviceSharePath() with no index\n'
@@ -1641,7 +1641,7 @@ run_wikis() {
   # no projector at all — the wiki runs, saves answer 204, and nothing ever reaches disk.
   step "NEG c — a missing file names an ABSENT GRANT, never a write-layer failure"
   local ONDISK
-  ONDISK=$($COMPOSE exec -T lararium-a sh -c "find /lar-a -path '*${SLUG}*' -name '*.mem' 2>/dev/null | head -3" 2>/dev/null | tr '\n' ' ')
+  ONDISK=$($COMPOSE exec -T lararium-a sh -c "find /state -path '*${SLUG}*' -name '*.mem' 2>/dev/null | head -3" 2>/dev/null | tr '\n' ' ')
   if [ -n "$ONDISK" ]; then
     printf '\033[33mGAP (%s)\033[0m\n' "on disk: $(printf '%s' "$ONDISK" | cut -c1-110)"
   else
@@ -1714,7 +1714,7 @@ run_conflict() {
   # on every pass and make the ingest leg blind to real edits.
   step "NEG b — a byte-identical re-place churns no mtime"
   local F M1 M2
-  F=$($COMPOSE exec -T lararium-a sh -c "find /lar-a -name '*conflict*' -name '*.mem' 2>/dev/null | head -1" 2>/dev/null | tr -d '\r\n')
+  F=$($COMPOSE exec -T lararium-a sh -c "find /state -name '*conflict*' -name '*.mem' 2>/dev/null | head -1" 2>/dev/null | tr -d '\r\n')
   if [ -z "$F" ]; then
     gap "the carrier projected to no file — the mtime reading has nothing to watch"
   else
@@ -1873,7 +1873,7 @@ run_board() {
   step "NEG c — B's charter is TORN: she REFUSES, and never reads as no-nexus"
   local OWN_BEFORE OWN_AFTER
   OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-b)
-  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /lar-b/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
   $COMPOSE restart lararium-b >/dev/null 2>&1
   local d=$((SECONDS + 180)) tornseen=0
   while [ "$SECONDS" -lt "$d" ]; do

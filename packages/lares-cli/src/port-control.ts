@@ -83,6 +83,23 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
  *  that still branched on it was dead code pretending to be a decision. */
 export interface StopResult { stopped: boolean }
 
+/**
+ * THE HOST HOLDS THE ENGINE (`LAR_ENGINE=host`, the container image's setting). Inside a container the daemon runs
+ * as the container's main process, so no CLI door there stops it, signals it or spawns another: the host shim
+ * stops, stands and restarts the container. Every door that would act on the daemon asks this first.
+ */
+export function engineHeldByHost(env: Readonly<Record<string, string | undefined>> = process.env): boolean {
+  return env["LAR_ENGINE"] === "host";
+}
+
+/** The refusal a door raises where the host holds the engine. */
+export class EngineHeldByHost extends Error {
+  override readonly name = "EngineHeldByHost";
+  constructor(act: string) {
+    super(`${act} — the host holds the engine: use the host shim (lares-container.sh vessel stand | vessel stop | down)`);
+  }
+}
+
 export interface StopIncumbentOpts {
   readonly graceMs?: number;
   readonly pollMs?:  number;
@@ -141,6 +158,7 @@ export async function stopIncumbent(
   port: number,
   opts: StopIncumbentOpts,
 ): Promise<StopResult> {
+  if (engineHeldByHost()) throw new EngineHeldByHost(`this door would stop the daemon on :${port}`);
   const graceMs = opts.graceMs ?? 8_000;
   const pollMs  = opts.pollMs  ?? 200;
   const probe       = opts.probe      ?? probePort;

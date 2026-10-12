@@ -30,17 +30,20 @@ function Compose([string[]]$more) {
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+# Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
+# on a reading, so a broken engine never routes an act beside a live holder.
 function HasRunningVessel {
   $id = & docker compose @Base ps -q --status running lares
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  if ($LASTEXITCODE -ne 0) { Die "cannot read the vessel's state (docker compose ps failed); nothing ran" }
   return -not [string]::IsNullOrWhiteSpace(($id -join ''))
 }
 
 # The CLI's own reading of the standing vessel against its state on disk. It runs without a TTY: the answer is JSON
 # for this script, never a prompt.
+$script:ObserveFailed = $false
 function ObserveStanding {
   $out = & docker compose @Base exec -T lares node $Cli vessel stand --observe --json
-  if ($LASTEXITCODE -ne 0) { return ,@() }
+  $script:ObserveFailed = ($LASTEXITCODE -ne 0)
   return ,@($out)
 }
 
@@ -64,7 +67,12 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   if (HasRunningVessel) {
     Compose (@('exec') + $NoTty + @('lares', 'node', $Cli) + $argv)
     if ($followUp) {
+      # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
       $answer = ObserveStanding
+      if ($script:ObserveFailed) {
+        [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it failed; run `lares-container.ps1 vessel stand`')
+        exit 1
+      }
       if (VerdictRestand $answer) { LiftVessel $answer }
     }
   } else {
@@ -91,8 +99,12 @@ switch ($verb) {
       $dir = (Resolve-Path $d).Path.TrimEnd('/', '\')
       $home_ = [Environment]::GetFolderPath('UserProfile').TrimEnd('/', '\')
       if ($dir -eq '' -or $dir -eq $home_ -or $dir -eq '/home') { Die "--capture refuses $dir — name a session root inside it, never a home directory whole" }
+      # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
+      # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
+      if ($dir.Contains("`n")) { Die '--capture refuses a path that holds a newline' }
+      $yamlDir = $dir.Replace("'", "''").Replace('$', '$$')
       $n++
-      $binds += "      - type: bind`n        source: `"$dir`"`n        target: /capture/$n`n        read_only: true"
+      $binds += "      - type: bind`n        source: '$yamlDir'`n        target: /capture/$n`n        read_only: true"
       $i += 2
     }
     if ($binds.Count -gt 0) {
@@ -111,13 +123,24 @@ switch ($verb) {
   }
   'vessel' {
     $observing = $rest -contains '--observe'
-    if ($rest.Count -gt 0 -and $rest[0] -eq 'stand' -and -not $observing) {
+    $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
+    $wipe = 'removes a vessel''s state; no pave or wipe command runs through this shim (a fresh start happens by hand: move the state directory aside, then found again)'
+    if ($sub -eq 'stand' -and -not $observing) {
+      # The acting stand belongs to the host and takes no option.
+      if ($rest.Count -ne 1) { Die 'vessel stand takes no option through this shim (it stands or restarts the container); --observe reads the standing' }
       if (-not (HasRunningVessel)) { Compose @('up', '-d', '--wait', 'lares') }
       else {
         $answer = ObserveStanding
+        if ($script:ObserveFailed) { Die 'the standing vessel answered no verdict' }
         if (VerdictRestand $answer) { LiftVessel $answer } else { $answer }
       }
-    } else { RouteCli (@($verb) + $rest) (-not $observing) }
+    }
+    # Stopping the daemon stops the container's main process: a host act.
+    elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
+    # NO PAVE, NO WIPE: no verb of this shim removes a vessel's state.
+    elseif ($sub -eq 'clear') { Die "vessel clear $wipe" }
+    elseif ($sub -eq 'rite' -and $rest.Count -gt 1 -and $rest[1] -eq 'rebirth') { Die "vessel rite rebirth $wipe" }
+    else { RouteCli (@($verb) + $rest) (-not $observing) }
   }
   default { RouteCli (@($verb) + $rest) $true }
 }
