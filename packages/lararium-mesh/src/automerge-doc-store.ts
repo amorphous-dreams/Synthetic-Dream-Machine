@@ -247,12 +247,24 @@ export class AutomergeDocStore implements LarTiddlerStore {
     return raw ? _freezeRecord(raw) : null;
   }
 
-  /** Read one record through a synchronous Automerge view at the supplied heads. */
+  /** Read one record, synchronously, as the document stood at the supplied heads. */
   getAt(title: string, heads: readonly string[]): LarTiddlerRecord | null {
-    if (!this.handle.doc()) return null;
-    const encoded = encodeHeads(heads as string[]);
-    const raw = this.handle.view(encoded).doc()?.tiddlers?.[title];
+    const raw = this._docAt(heads)?.tiddlers?.[title];
     return raw ? _freezeRecord(raw) : null;
+  }
+
+  /**
+   * The document as it stood at `heads`. Heads equal to the document's own answer the STANDING document:
+   * a view materialises the whole document at its heads, a cost that grows with the document, and the
+   * Repo keeps a view only while something references it, so a reader that asks once per record would
+   * rebuild it per record. A view is built for heads in the document's past, and only there. The heads
+   * and the document are read in one synchronous stretch, so they name the same state.
+   */
+  private _docAt(heads: readonly string[]): LarDoc | undefined {
+    const standing = this.handle.doc();
+    if (!standing) return undefined;
+    if (headsEqual(heads, decodeHeads(this.handle.heads()))) return standing;
+    return this.handle.view(encodeHeads(heads as string[])).doc();
   }
 
   /** Synchronous current heads, in the raw hexadecimal form returned by getHeads(). */
@@ -315,7 +327,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     }
     let atBase: LarDoc | undefined = docNow;
     try {
-      if (docNow && requestedBase) atBase = this.handle.view(encodeHeads(requestedBase as string[])).doc();
+      if (docNow && requestedBase) atBase = this._docAt(requestedBase);
     } catch (error) {
       throw new Error("AutomergeDocStore.writeFamily: requested base has no readable document view", { cause: error });
     }
