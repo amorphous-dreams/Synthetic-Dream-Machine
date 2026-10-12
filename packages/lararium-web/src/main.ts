@@ -24,7 +24,7 @@ import {
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
-import { Idiomorph } from "idiomorph";
+import { createProjectionSink } from "./projection-sink.js";
 import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -110,124 +110,10 @@ async function readOracle(read: OracleReader): Promise<void> {
   }
 }
 
-// The projection-nalu sink — apply a rendered wiki frame into an isolated shadow root, MORPHED in
-// place (idiomorph) so focus/caret/scroll survive a re-projection. A delegated click relays back to
-// the worker's TW5 by render-id (the interactivity RETURN leg): TW5's own handler fires, navigates,
-// and re-projects — the widget tree never learns the click crossed a thread.
-let _projRev = 0;
-let _sendDomEvent: ((renderId: string, eventType: string, fields: Record<string, number | boolean>) => void) | null = null;
-let _sendDomInput: ((renderId: string, eventType: string, value: string) => void) | null = null;
-let _clickWired = false;
-const compositionEndValue = new WeakMap<Element, string>();
-const composingFields = new WeakSet<Element>();
-let pendingPopupPlacement: { readonly top: number; readonly left: number } | undefined;
-function applyProjection(frame: { html: string; css: string; rev: number }): void {
-  if (frame.rev < _projRev) return;            // drop a stale frame (coalesce ordering)
-  _projRev = frame.rev;
-  const host = $("projection");
-  const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
-  let style = shadow.querySelector("style");
-  if (!style) { style = document.createElement("style"); shadow.appendChild(style); }
-  style.textContent = frame.css;
-  let pane = shadow.querySelector(".lar-projection") as HTMLElement | null;
-  if (!pane) { pane = document.createElement("div"); pane.className = "lar-projection"; shadow.appendChild(pane); }
-  const protectedValues = new Map<string, { value: string; selectionStart: number | null; selectionEnd: number | null }>();
-  for (const field of pane.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[data-lar-rid], textarea[data-lar-rid]")) {
-    if (shadow.activeElement === field || composingFields.has(field)) {
-      protectedValues.set(field.getAttribute("data-lar-rid")!, {
-        value: field.value,
-        selectionStart: field.selectionStart,
-        selectionEnd: field.selectionEnd,
-      });
-    }
-  }
-  // Morph (not innerHTML=) — id-set matching keeps unchanged nodes in place; the in-progress value
-  // is preserved (ignoreActiveValue). The render-id attributes ride the HTML untouched.
-  Idiomorph.morph(pane, frame.html, { morphStyle: "innerHTML", ignoreActiveValue: true });
-  for (const [renderId, saved] of protectedValues) {
-    const field = pane.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-lar-rid="${CSS.escape(renderId)}"]`);
-    if (!field) continue;
-    field.value = saved.value;
-    if (saved.selectionStart !== null && saved.selectionEnd !== null) {
-      field.setSelectionRange(saved.selectionStart, saved.selectionEnd);
-    }
-  }
-  if (pendingPopupPlacement) {
-    const visiblePopup = [...pane.querySelectorAll<HTMLElement>(".tc-popup, .tc-search-drop-down")]
-      .find((popup) => !popup.hidden && getComputedStyle(popup).display !== "none");
-    if (visiblePopup) {
-      // Popup state arrives from TW5; this page replica owns placement using the rectangle carried
-      // with the click that opened it. The worker never chooses a current page position.
-      visiblePopup.style.position = "fixed";
-      visiblePopup.style.top = `${pendingPopupPlacement.top}px`;
-      visiblePopup.style.left = `${pendingPopupPlacement.left}px`;
-      visiblePopup.style.right = "auto";
-      visiblePopup.style.bottom = "auto";
-    }
-    pendingPopupPlacement = undefined;
-  }
-  if (!_clickWired) {
-    _clickWired = true;
-    pane.addEventListener("click", (e) => {
-      const el = (e.target as Element)?.closest?.("[data-lar-rid]");
-      if (!el || !_sendDomEvent) return;
-      e.preventDefault();                        // a projected <a href> must not navigate the host page
-      const me = e as MouseEvent;
-      const rect = el.getBoundingClientRect();
-      pendingPopupPlacement = { top: rect.bottom, left: rect.left };
-      const projectionRect = host.getBoundingClientRect();
-      _sendDomEvent(el.getAttribute("data-lar-rid")!, "click", {
-        metaKey: me.metaKey, ctrlKey: me.ctrlKey, altKey: me.altKey, shiftKey: me.shiftKey, button: me.button,
-        rectTop: rect.top - projectionRect.top, rectLeft: rect.left - projectionRect.left,
-        rectRight: rect.right - projectionRect.left, rectBottom: rect.bottom - projectionRect.top,
-        rectWidth: rect.width, rectHeight: rect.height,
-      });
-    });
-    // The TEXT leg. TW5's edit widgets bind `input` (every keystroke) and `change` (commit on blur), so
-    // the pane relays exactly those two, rid-stamped by the same `closest("[data-lar-rid]")` walk the
-    // click leg makes — the listener allowlist stays two names long and states them here.
-    //
-    // The value rides WHOLE, never as a diff: the worker holds no keystroke history, and a whole value is
-    // idempotent under the coalesced re-projection (a dropped frame cannot desynchronize the field). The
-    // event bubbles out of the composed shadow tree, so `composedPath` names the real origin.
-    const relayWholeValue = (event: Event, kind: "input" | "change", compositionEnd = false): void => {
-      const src = (event.composedPath?.()[0] ?? event.target) as Element | null;
-      const el = src?.closest?.("[data-lar-rid]");
-      if (!src || !el || !_sendDomInput) return;
-      if (!compositionEnd && (composingFields.has(src) || (event as InputEvent).isComposing)) return;
-      const value = (src as HTMLInputElement | HTMLTextAreaElement).value;
-      if (typeof value !== "string") return;       // a non-text control carries no input leg
-      if (value.length > DOM_INPUT_MAX_CHARS) {
-        console.warn(`[vessel] input leg refused — ${value.length} characters exceeds the ${DOM_INPUT_MAX_CHARS} bound; the wiki holds its last accepted value.`);
-        return;
-      }
-      _sendDomInput(el.getAttribute("data-lar-rid")!, kind, value);
-    };
-    pane.addEventListener("input", (event) => {
-      const src = (event.composedPath?.()[0] ?? event.target) as HTMLInputElement | HTMLTextAreaElement | null;
-      if (!src) return;
-      if (composingFields.has(src) || (event as InputEvent).isComposing) return;
-      const endedValue = compositionEndValue.get(src);
-      if (endedValue !== undefined) {
-        compositionEndValue.delete(src);
-        if (endedValue === src.value) return;       // a browser's trailing IME input repeats compositionend
-      }
-      relayWholeValue(event, "input");
-    });
-    pane.addEventListener("change", (event) => relayWholeValue(event, "change"));
-    pane.addEventListener("compositionstart", (event) => {
-      const src = (event.composedPath?.()[0] ?? event.target) as Element | null;
-      if (src) composingFields.add(src);
-    });
-    pane.addEventListener("compositionend", (event) => {
-      const src = (event.composedPath?.()[0] ?? event.target) as HTMLInputElement | HTMLTextAreaElement | null;
-      if (!src || typeof src.value !== "string") return;
-      composingFields.delete(src);
-      compositionEndValue.set(src, src.value);
-      relayWholeValue(event, "input", true);
-    });
-  }
-}
+// The projection-nalu sink: one pane, painted by whichever surface holds the vessel's projection gate. The
+// sink scopes revisions to a surface and stamps each returned event with the surface that painted its target
+// (`projection-sink`); boot arms its return leg once the vessel stands.
+const projectionSink = createProjectionSink($("projection"), { inputMaxChars: DOM_INPUT_MAX_CHARS });
 
 /**
  * Take a carried `device-admit/v1` payload off `location.hash`, and CLEAR the fragment once taken.
@@ -393,7 +279,7 @@ async function bootVessel(): Promise<void> {
       ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
       onPhase: paint,
-      onProjection: applyProjection,
+      onProjection: (frame) => { projectionSink.apply(frame); },
       ...(relayUrl ? { relayUrl } : {}),
       ...(relayGatePubKey ? { relayGatePubKey } : {}),
       ...(admit ? { admit } : {}),
@@ -408,8 +294,8 @@ async function bootVessel(): Promise<void> {
       console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
     }
     void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
-    _sendDomEvent = result.sendDomEvent;        // arm the interactivity RETURN leg — the click half
-    _sendDomInput = result.sendDomInput;        //   … and the text half
+    // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
+    projectionSink.arm({ sendDomEvent: result.sendDomEvent, sendDomInput: result.sendDomInput });
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
     // wiki, so this button + chord flips the projection gate to the daemon from any
     // active surface — a pure gate flip (both surfaces already mounted), no reboot.

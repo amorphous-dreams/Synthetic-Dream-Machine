@@ -23,7 +23,11 @@ export type { SharedHolderCore, SharedHolderCoreOptions, HolderHello, HolderIsla
 export { publishHandleBrowser } from "./browser-handle-publish.js";
 export { burnFaceBrowser, attestFaceBrowser, resolveOwnerBurnHandBrowser } from "./browser-handle-verbs.js";
 export { composeBrowser } from "./browser-caps.js";
-export type { BrowserVesselOptions, BrowserVesselResult } from "./open-browser-vessel.js";
+export type { BrowserVesselOptions, BrowserVesselResult, ProjectionSurfaceFrame } from "./open-browser-vessel.js";
+export { makeSurfaceReturnLeg } from "./surface-return-leg.js";
+export type { SurfaceReturnLeg, ReturnLegVerdict, DaemonReturnDoor, PoolReturnDoor } from "./surface-return-leg.js";
+export { HearthCanonGate, awaitHearthCanon, hearthCanonDocIds, hearthWikiPointer, isOwnHearthCrossing } from "./hearth-canon.js";
+export type { HearthCanonArrival } from "./hearth-canon.js";
 
 export type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 

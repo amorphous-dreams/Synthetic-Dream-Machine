@@ -29,7 +29,7 @@ import {
   standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
   pullAndVerifyOracle, type OraclePullResult,
-  BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
+  BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf, type MeshPeer,
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
@@ -46,6 +46,8 @@ import {
   type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
+import { HearthCanonGate, awaitHearthCanon, isOwnHearthCrossing } from "./hearth-canon.js";
+import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, browserWalkLeaf, requireAdmittedFaceIsland } from "./browser-walk.js";
@@ -60,7 +62,7 @@ import {
   COHERENCE_FRAME,
   SENSORIUM_FRAME,
   createWikiSenseSupervisor, registerWikiSenseVerbs,
-  makeCatalogAccessor,
+  makeCatalogAccessor, effectiveRecipe,
 }                                            from "@lararium/tw5";
 import type { WikiSenseSupervisor }          from "@lararium/tw5";
 import type { CoherenceStatus } from "@lararium/tw5";
@@ -111,6 +113,9 @@ import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
 
+/** How long a boot waits for its own hearth's canon pointer. It bounds the wait and decides nothing else. */
+const HEARTH_CANON_BOUND_MS = 20_000;
+
 interface BrowserBootstrap extends VesselBootstrap {
   personaGroupDocIdHex:   string;
   personaGroupAgentIdHex: string;
@@ -127,6 +132,9 @@ interface BrowserBootstrap extends VesselBootstrap {
   /** The HEARTH's daemon url — the door this vessel knocks on for its seat. Null/absent when it founded
    *  its own face; such a vessel IS the hearth. Persisted at admission, re-read on every later boot. */
   hearthDaemonUrl?:      string | null;
+  /** The gate key of the HEARTH that admitted this vessel, as its admit named it. Null/absent when the vessel
+   *  founded its own face. A crossing pinned to this key reaches the vessel's own hearth (`hearth-canon`). */
+  hearthGatePubKey?:     string | null;
 }
 
 // The oracle doc no longer needs an IDB rendezvous key: it lives under the DETERMINISTIC
@@ -237,7 +245,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   workerScriptUrl?: URL;
   /** Projection-nalu sink: a `projection:frame` (rendered HTML+CSS) from the hot wiki island.
    *  The web surface applies it to a shadow root — the live wiki made visible. */
-  onProjection?:   (frame: { html: string; css: string; rev: number }) => void;
+  onProjection?:   (frame: ProjectionSurfaceFrame) => void;
   /** Coherence-nalu sink: a `coherence:frame` (the wiki's own consistency-radius read as an indicator
    *  frame) from the hot wiki island. The web surface applies it to a DOM coherence indicator via
    *  The web surface's DOM sink may render it over the tiddler-view. */
@@ -269,6 +277,18 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
 // THE SENTINEL IS THE SLUG — one string, no decoding at any boundary, so no call site can decode it
 // wrongly. A sentinel that differs from the slug buys a translation everywhere the two must meet.
 export const DAEMON_SURFACE_ID = "daemon";
+
+/**
+ * A rendered frame as the page receives it: whole HTML and CSS, the emitting surface's own revision, and the
+ * SURFACE that emitted it. Each surface counts revisions on its own, and every event a person raises on the
+ * painted frame returns to that surface (`surface-return-leg`).
+ */
+export interface ProjectionSurfaceFrame {
+  readonly html: string;
+  readonly css:  string;
+  readonly rev:  number;
+  readonly surface: string;
+}
 
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
@@ -302,13 +322,14 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
    *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
   readOracle: <T = unknown>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
-  /** Relay a main-thread DOM event to the ACTIVE surface (interactivity RETURN leg) — routes to the daemon or
-   *  the pinned wiki by the live active-surface pointer. */
-  sendDomEvent: (renderId: string, eventType: string, fields: Record<string, number | boolean>) => void;
-  /** The RETURN leg's TEXT half — a relayed input/change carrying the field's whole bounded value, routed
-   *  to whichever surface holds focus exactly as the click leg routes. Its own message kind, so the click
-   *  channel keeps its primitives-only allowlist. */
-  sendDomInput: (renderId: string, eventType: string, value: string) => void;
+  /** Relay a main-thread DOM event to the surface that PAINTED its target (interactivity RETURN leg): `surface`
+   *  names the frame's own source, and the event routes to that island whatever surface stands active now.
+   *  A surface this vessel does not hold answers `surface-unknown` and nothing is posted. */
+  sendDomEvent: (surface: string, renderId: string, eventType: string, fields: Record<string, number | boolean>) => ReturnLegVerdict;
+  /** The RETURN leg's TEXT half — a relayed input/change carrying the field's whole bounded value, routed to
+   *  its source surface exactly as the click leg routes. Its own message kind, so the click channel keeps its
+   *  primitives-only allowlist. */
+  sendDomInput: (surface: string, renderId: string, eventType: string, value: string) => ReturnLegVerdict;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
    *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip); the durable bags/daemon/active-wiki
    *  marker persists fire-and-forget, consulted only at next cold boot ("live process state is the boundary"). */
@@ -620,6 +641,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       signerDid: admit.signerDid, personaKelPrefix: admit.personaKelPrefix, deviceEdge: admit.deviceEdge,
       contactCard: a.contactCardJson,
       hearthDaemonUrl: a.hearthDaemonUrl,
+      hearthGatePubKey: admit.hearthGatePubKey ?? null,
     };
     bootKeyWrites.bootstrap = bootstrap;
   } else if (!bootstrap) {
@@ -657,6 +679,16 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // A pin chooses which gate to knock; the local contact card supplies peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
   const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));
+  // THE OWN-HEARTH CROSSING: the pinned gate names the hearth whose admit this vessel carries. Such a leaf
+  // takes that hearth's base canon (`hearth-canon`); every other crossing reads the public boards alone.
+  const ownHearth = isOwnHearthCrossing({
+    pinnedGatePubKey: relayPin.dial ? relayPin.gatePubKey : null,
+    hearthGatePubKey: social.hearthGatePubKey,
+    holdsDeviceEdge:  Boolean(social.deviceEdge),
+  });
+  // The oracle doc as this boot holds it: the own-hearth gate reads it at each verdict, and the recipe reader
+  // reads a system wiki's default recipe off it. Null until genesis loads.
+  let oracleAtBoot: DocHandle<LarDoc> | null = null;
   if (relayPin.dial && !social.contactCard) {
     console.warn("[lararium-browser] no social contact card is available for the pinned relay crossing");
   }
@@ -736,7 +768,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // Arm the deny-by-default gate ONLY for a cross-operator crossing (relayGatePubKey names a
     // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
     // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
-    if (relayGatePubKey) fedGate = new DeterministicFederationGate(nexusPubkey);
+    if (relayGatePubKey) {
+      const boards = new DeterministicFederationGate(nexusPubkey);
+      fedGate = ownHearth ? new HearthCanonGate(boards, () => oracleAtBoot?.doc()) : boards;
+    }
     repo.networkSubsystem.addNetworkAdapter(adapter);
   }
 
@@ -780,12 +815,14 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   const pushSwitcherState = (): void => {
     if (!daemon || !vmManager || !wikiActivation) return;
     const active = vmManager.inspect().filter((s) => s.temperature === "wela").map((s) => s.wikiId);
-    // The recipe surface edits the vessel's HOME wiki (always present) — read its
-    // bag-stack off the catalog so the widget paints a live, editable recipe.
+    // The recipe surface edits the vessel's HOME wiki (always present) — read its bag-stack through the ONE
+    // recipe reader (the vessel's own composition in the catalog shadows a system wiki's default in the
+    // oracle), so the widget paints the stack the mount and the live watch stand on.
     const recipeSlug = slotActiveWikiId ? slugFromUri(slotActiveWikiId) : "";
     let recipe: string[] = [];
     if (recipeSlug) {
-      const rec = catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", recipeSlug)];
+      const rec = effectiveRecipe(recipeSlug, (plane, title) =>
+        (plane === "oracle" ? oracleAtBoot : catalogHandle)?.doc()?.tiddlers?.[title])?.record;
       if (rec) recipe = bagStackFromRec(rec);
     }
     // Add-candidates: the daemon-resolvable system library bags not already in this
@@ -910,6 +947,24 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       loadGenesis: async () => {
         await writeBootKeys(idbName, bootKeyWrites);
         const islandHandle = await materializeGenesisIsland(repo, genesisSeed, "browser-genesis");
+        oracleAtBoot = islandHandle;
+        if (ownHearth) {
+          // The hearth's oracle names the wiki this leaf opens. The pointer rides the oracle plane's sync, so the
+          // mount waits on it; the wait ends at once when the crossing closes, and its bound only bounds it.
+          const arrival = await awaitHearthCanon(islandHandle, {
+            boundMs: HEARTH_CANON_BOUND_MS,
+            crossingClosed: (onClosed) => {
+              const closed = (status: string): boolean => status === "refused" || status === "disconnected";
+              if (closed(connectionState.getSnapshot().status)) { onClosed(); return () => {}; }
+              return connectionState.subscribe((snap) => { if (closed(snap.status)) onClosed(); });
+            },
+          });
+          // The canon set moved under a gate the Repo already consulted: every doc re-reads its verdict.
+          try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ }
+          console.log(arrival.arrived
+            ? `[lararium-browser] hearth canon arrived — this leaf mounts the hearth's wiki ${arrival.wikiDocUrl}`
+            : `[lararium-browser] hearth canon absent (${arrival.why}) — this boot mounts a wiki document of its own; the next boot reads the oracle again`);
+        }
         const coreHash = islandHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.sha256 ?? null;
         if (!coreHash) throw new Error("[openBrowserVessel] genesis island missing ENGINE_CORE_ID blob metadata");
         // Populate the OPFS CAS — the worker pulls engine + plugin bytes by CID from here
@@ -1398,6 +1453,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
               html: String(msg.payload["html"] ?? ""),
               css:  String(msg.payload["css"]  ?? ""),
               rev:  Number(msg.payload["rev"]  ?? 0),
+              surface: _id,   // the transport id names the source, never a payload claim
             });
             return;
           }
@@ -1455,7 +1511,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // #projection sink the pool wikis use — gated on the active-surface pointer, so a summoned daemon paints
       // and otherwise its frames drop. One sink, the daemon a peer surface among the wikis (KA·BA braid).
       daemon.onProjection((frame) => {
-        if (activeSurfaceId === DAEMON_SURFACE_ID) onProjection?.(frame);
+        if (activeSurfaceId === DAEMON_SURFACE_ID) onProjection?.({ ...frame, surface: DAEMON_SURFACE_ID });
       });
       // The daemon's OWN verb OUT-path (a projected switcher click → wiki-switch /
       // add-bag / remove-bag): re-enter the dispatcher via placeVerb so the verb runs on
@@ -1489,6 +1545,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     },
   }, [...meshExtraCaps, ...whoExtraCaps]);
 
+  const returnLeg = makeSurfaceReturnLeg({
+    daemonSurfaceId: DAEMON_SURFACE_ID,
+    daemon: () => daemon,
+    pool:   () => vmManager,
+  });
+
   // The connection snapshot carries the actual mounted document alongside the crossing verdict, so a
   // served page can report which node wiki it rendered instead of treating a live socket as mount proof.
   connectionState.setWikiDocUrl(result.wikiHandle.url);
@@ -1521,16 +1583,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     readOracle: <T>(baseUrl: string, gatePubKey: string) => oracleProof
       ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof, verifyingKey: gatePubKey })
       : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: "this vessel holds no card to prove at a peer's gate" }),
-    // The return-leg routes to whichever surface is LIVE-active (read the pointer, never a captured value —
-    // the seat routes the next event to whatever holds focus). daemon → its own worker; else the pinned wiki.
-    sendDomEvent: (renderId, eventType, fields) =>
-      activeSurfaceId === DAEMON_SURFACE_ID
-        ? daemon.sendDomEvent(renderId, eventType, fields)
-        : vmManager.placeWikiEvent(slotActiveWikiId, { renderId, eventType, fields }),
-    sendDomInput: (renderId, eventType, value) =>
-      activeSurfaceId === DAEMON_SURFACE_ID
-        ? daemon.sendDomInput(renderId, eventType, value)
-        : vmManager.placeWikiInput(slotActiveWikiId, { renderId, eventType, value }),
+    // The return leg routes each event to the surface that painted its target; the active pointer plays no
+    // part, so a switch between the person's act and its arrival never moves the event to another island.
+    sendDomEvent: returnLeg.sendDomEvent,
+    sendDomInput: returnLeg.sendDomInput,
     // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
     // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next
     // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
