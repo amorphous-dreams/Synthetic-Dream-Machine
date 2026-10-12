@@ -42,7 +42,7 @@ export type {
   ArchiveFloorCarrier, ArchiveFloorWriters, ArchiveFloorRefusal, ArchiveFloorOutcome, ArchiveFloorInput,
 } from "./archive-floor-write.js";
 
-export { resolveOrMintBinding } from "./resolve-binding.js";
+export { resolveOrMintBinding, unboundMints, restingMinter } from "./resolve-binding.js";
 export type {
   ResolveBindingArgs, ResolveBindingResult, BindingKind, DocMinter,
 } from "./resolve-binding.js";

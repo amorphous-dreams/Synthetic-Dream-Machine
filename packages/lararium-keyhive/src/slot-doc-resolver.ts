@@ -32,7 +32,7 @@ import { resolveOrMintBinding, type BindingKind, type DocMinter } from "./resolv
 
 /** The Automerge-repo surface the resolver needs: mint (`create`) and the floor mint's readiness. */
 export interface SlotDocRepo extends DocMinter {
-  create<T = LarDoc>(initialValue: T): { readonly url: string; whenReady(): Promise<unknown> };
+  create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
 }
 
 export interface SlotDocResolverArgs {
@@ -121,7 +121,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     const existing = await catalog.urlOf(key);
     if (existing || !mint) return existing;
     const handle = args.repo.create<LarDoc>(emptyLarDoc());
-    await handle.whenReady();
+    await handle.whenReady?.();
+    await args.repo.flush([handle.documentId]);
     const catalogHandle = await catalog.handle();
     catalogHandle.change((doc) => {
       (doc.tiddlers as Record<string, LarTiddlerRecord>)[key] = mutableLarRecord(key, {

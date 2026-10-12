@@ -52,6 +52,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  verbs below. Absent (a browser vessel with no fs) → the vault verbs simply never register. The
    *  passphrase rides the verb args over the owner-only 0600 UDS — the same trust boundary as a CLI arg. */
   vault?: (verb: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
+   *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
+   *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
+  restDocuments?: (documentIds: readonly string[]) => Promise<void>;
   /** `bagTier` — the SAME inversion for the crossing gate's tier reader: keyhive stays fs-blind, so
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
@@ -71,6 +75,7 @@ import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRec
 import { base64ToBytes } from "./bytes-base64.js";
 import { ed25519SignerFromSeed, type LarTiddlerRecord } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
+import { unboundMints, restingMinter } from "./resolve-binding.js";
 
 /** A daemon boot cannot stand without the daemon wiki's working layer. */
 export class WorkingLayerAttachRefusal extends Error {
@@ -111,7 +116,7 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, persistVeilArchive, vault, bagTier, ...daemonExtra } = extra;
+  const { persistArchive, persistVeilArchive, vault, bagTier, restDocuments, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) {
     return {
@@ -225,7 +230,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     if (slotDocs) return slotDocs;
     if (!kh) throw new Error("keyhive not booted");
     slotDocs = makeSlotDocResolver({
-      repo: ctx.repo, daemonStore: ctx.composite, keyhive: kh,
+      repo: restDocuments ? restingMinter(ctx.repo, restDocuments) : ctx.repo, daemonStore: ctx.composite, keyhive: kh,
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
       oracle:  ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null,
       vesselDid: () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
@@ -327,6 +332,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
       }));
       registry.register("resolve",    makeResolveReactor(ctx.composite));
+      registry.register("unbound-docs", async () => ({ verb: "unbound-docs", unbound: await unboundMints(ctx.composite) }));
       // Residency ACTION verbs (ADD/COPY/MOVE/CLEAR/DROP/LOAD) — verify-then-delegate
       // gated, the `lares act` front door. The daemon reaches a deep target bag by
       // ACCESS (ephemeral mount, released after — no standing system-bag mount; the
@@ -792,6 +798,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
       // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
       await attachDaemonWorking(ctx);
+      console.log(`[daemon] unbound documents: ${(await unboundMints(ctx.composite)).length} (list them with \`lares vessel unbound\`; nothing removes one)`);
       if (floor.barred) {
         console.log("[daemon] the archive holds shut — the identity archive was NOT re-sealed; every sovereign act waits.");
       }

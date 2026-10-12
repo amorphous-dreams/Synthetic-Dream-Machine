@@ -43,7 +43,7 @@ import type { ParsedArgs } from "./parse-args.js";
  * argues otherwise. Only two motions neither found nor boot — `read` inspects and starts nothing, and
  * `stop` is pure port-control that loads no vessel logic.
  */
-const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help"]);
+const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound"]);
 
 /**
  * The vessel door's own sub-door names, DERIVED from its SUBS table — never a second roster to drift.

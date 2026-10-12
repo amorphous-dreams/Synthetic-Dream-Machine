@@ -10,10 +10,7 @@
  * keyhive. (It also still runs host-inline in `open-node-vessel` until the flip
  * removes the host keyhive.)
  *
- * Mint sequence (Q7 — orphan-tolerant idempotent mint): `repo.create()` →
- * `registerBag()` → `delegate()` → write binding tiddler. Not atomic; a crash
- * mid-sequence orphans a docUrl. Next boot recomputes the same fingerprint,
- * finds no binding, re-mints; the orphan stays unreferenced.
+ * A binding lands only after its document rests durably in repository storage.
  *
  * Daemon reads/writes go through the daemon-bag CompositeStore (`get` /
  * `put({bag: DAEMON_BAG_ID})`) — host: `daemonVm.composite`; island: `ctx.composite`.
@@ -34,12 +31,29 @@ import {
 import type { CapabilityProvider } from "./capability-provider.js";
 
 /**
- * Minimal Automerge-repo surface the minter needs — just `create`. Both the
+ * Minimal Automerge-repo surface the minter needs. Both the
  * node and browser `Repo` satisfy it structurally, so @lararium/keyhive avoids a
  * direct `@automerge/automerge-repo` dependency.
  */
 export interface DocMinter {
-  create<T = LarDoc>(initialValue: T): { readonly url: string };
+  create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
+  /** Resolve once the named documents rest durably in this Repo's storage. */
+  flush(documents?: string[]): Promise<void>;
+}
+
+/**
+ * A minter whose `flush` also waits on a SECOND store's acknowledgment. An island's Repo may keep no store for a
+ * document it mints (the vessel's Repo saves it), so its own `flush` proves nothing about rest; `rest` asks the
+ * store that does save it. `flush` resolves only after both, and rejects when either does.
+ */
+export function restingMinter(repo: DocMinter, rest: (documentIds: readonly string[]) => Promise<void>): DocMinter {
+  return {
+    create: (initialValue) => repo.create(initialValue),
+    flush: async (documents) => {
+      await repo.flush(documents);
+      await rest(documents ?? []);
+    },
+  };
 }
 
 /** The binding kinds — one tiddler `kind` field per slot. */
@@ -121,7 +135,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     return { url: existing, minted: false };
   }
 
-  // Mint-on-absent — Q7 idempotent sequence: create → registerBag → delegate → put.
+  // Mint-on-absent: a binding never names a document before it rests durably.
   const handle = args.repo.create<LarDoc>(emptyLarDoc());
 
   // delegate() throws unless the bag's Keyhive Document already exists, so
@@ -156,9 +170,19 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     }
   }
 
+  const mintKey = `${args.prefix}-minted/${args.fingerprint}/${handle.documentId}`;
+  await args.daemonStore.put(mutableLarRecord(mintKey, {
+    text: handle.url,
+    kind: "binding-mint",
+    "binding-kind": args.kind,
+    fingerprint: args.fingerprint,
+    "minted-by": args.mintedByHex,
+  }, "binding-mints"), originFor(`binding-mint-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
+  await handle.whenReady?.();
+  await args.repo.flush([handle.documentId]);
+
   // Record the binding in the daemon doc — replicates to the operator's other
   // devices, where reuse-on-present finds it next boot.
-  const origin: ChangeOrigin = { kind: "lares-verb", requestId: `binding-${args.fingerprint.slice(0, 8)}` };
   await args.daemonStore.put(mutableLarRecord(key, {
     text:          handle.url,
     kind:          args.kind,
@@ -168,9 +192,40 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     "minted-by":   args.mintedByHex,
     "face-reach":  seated ? "face" : "vessel-only",
     "keyhive-doc-id": keyhiveDocId,
-  }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
+  }, "personal-bindings"), originFor(`binding-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
 
   return { url: handle.url, minted: true };
+}
+
+function originFor(fingerprint: string): ChangeOrigin {
+  return { kind: "lares-verb", requestId: fingerprint.slice(0, 32) };
+}
+
+/** Mints without a matching binding remain visible for operator inspection. */
+export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{ kind: BindingKind; fingerprint: string; url: string }>> {
+  const entries = await daemonStore.entries();
+  const bindings = new Map<string, string>();
+  for (const { title, bagId, record } of entries) {
+    if (bagId === DAEMON_BAG_ID && !title.includes("-minted/")) {
+      const fields = record.tiddler as Record<string, unknown>;
+      if (typeof fields.fingerprint === "string" && typeof fields.kind === "string" && fields.kind !== "binding-mint" && typeof fields.text === "string") {
+        bindings.set(`${title.slice(0, title.lastIndexOf("/"))}/${fields.fingerprint}`, fields.text);
+      }
+    }
+  }
+  const unbound: Array<{ kind: BindingKind; fingerprint: string; url: string }> = [];
+  for (const { title, bagId, record } of entries) {
+    if (bagId !== DAEMON_BAG_ID || !title.includes("-minted/")) continue;
+    const fields = record.tiddler as Record<string, unknown>;
+    const kind = fields["binding-kind"];
+    const fingerprint = fields.fingerprint;
+    const url = fields.text;
+    if ((kind === "personal-binding" || kind === "draft-binding" || kind === "working-binding") && typeof fingerprint === "string" && typeof url === "string") {
+      const bindingPrefix = title.slice(0, title.indexOf("-minted/"));
+      if (bindings.get(`${bindingPrefix}/${fingerprint}`) !== url) unbound.push({ kind, fingerprint, url });
+    }
+  }
+  return unbound;
 }
 
 /**

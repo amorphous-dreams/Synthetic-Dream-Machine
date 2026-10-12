@@ -1,0 +1,227 @@
+// two-phase-boot — a node composition stands on a floor it does not own, reads its private rows through one seam,
+// and tears down whole.
+//
+// The file runs the BUILT node package (`packages/lararium-node/dist`) in this process over a marked scratch root
+// the built `lares vessel found` founded, so the daemon island is a real worker and the store claim a real socket.
+//
+//   T1  a composition tears down and a second one stands on the SAME floor with a fresh Repo and a fresh daemon
+//       island, while the floor's rendezvous name answers a connect throughout.          control: one boot → live
+//   T2  a composition handed `sovereign: null` (the floor) reaches no hot or cold carrier row in this process and
+//       leaves every private row of the three custody homes byte-identical and mints none.
+//                                                                 control: handed readers, the composition runs each
+//                                                                 reader, reads the archive and the keyring rows, and
+//                                                                 the keyring row stands afterward
+//   T3  a boot that refuses frees its store name, whether the refusal lands while the prep stands the Repo or
+//       later while the caps compose.                             control: a standing composition holds the name
+//                                                                 against a second claim
+//   T4  a teardown leaves the caller's WebSocket server with the listeners it had before. control: a standing
+//       composition adds some
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs, { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { syncBuiltinESMExports } from "node:module";
+import { createServer } from "node:http";
+import { connect } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test from "node:test";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const repo = fileURLToPath(new URL("../", import.meta.url));
+const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
+
+/** Stage a marked scratch root with test custody and the tracked genesis; `found` also founds the place. */
+function stage(tag, { found }) {
+  const root = mkdtempSync(join(tmpdir(), `lares-two-phase-${tag}-`));
+  for (const script of ["test-scratch-marker.mjs", "seed-test-custody.mjs"]) {
+    const r = spawnSync(process.execPath, [join(repo, "tools", script), root], { encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
+    assert.equal(r.status, 0, `${script}: ${r.stderr}`);
+  }
+  if (found) {
+    cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
+    const r = spawnSync(process.execPath, [cli, "vessel", "found", "--root", root, "--skip-build"], {
+      cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root },
+    });
+    assert.equal(r.status, 0, `vessel found: ${r.stderr}`);
+  } else {
+    // A genesis the boot can materialize, and no founding: the bootstrap names no daemon doc, so the boot refuses.
+    const dir = join(root, "genesis");
+    mkdirSync(dir, { recursive: true });
+    cpSync(join(repo, "genesis", "seed.json"), join(dir, "seed.json"));
+    symlinkSync(join(repo, "genesis", "cas"), join(dir, "cas"));
+  }
+  return root;
+}
+
+/** Does a connect to the store's rendezvous name reach a listener? */
+function nameAnswers(socketPath) {
+  return new Promise((resolve) => {
+    const sock = connect(socketPath);
+    sock.once("connect", () => { sock.destroy(); resolve(true); });
+    sock.once("error", () => resolve(false));
+  });
+}
+
+/** Every file under the custody homes, by path, with a digest of its bytes. */
+function homesDigest(homes) {
+  const out = {};
+  const walk = (dir) => {
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      const at = join(dir, e.name);
+      if (e.isDirectory()) walk(at);
+      else if (e.isFile()) out[at] = createHash("sha256").update(readFileSync(at)).digest("hex");
+    }
+  };
+  for (const dir of new Set(Object.values(homes))) walk(dir);
+  return out;
+}
+
+/**
+ * Record every path this process reads, probes or writes through `node:fs` while `run` runs. The built modules import their fs
+ * functions by name, and `syncBuiltinESMExports` moves those live bindings, so a read anywhere in node-main lands
+ * here. A worker holds its own `node:fs`; the homes digest reads what a worker wrote.
+ */
+async function recordingReads(run) {
+  const names = ["readFileSync", "openSync", "readdirSync", "existsSync", "statSync", "writeFileSync", "renameSync"];
+  const real = Object.fromEntries(names.map((n) => [n, fs[n]]));
+  const seen = [];
+  for (const n of names) fs[n] = (path, ...rest) => { seen.push(String(path)); return real[n](path, ...rest); };
+  const realAsync = fs.promises.readFile;
+  fs.promises.readFile = (path, ...rest) => { seen.push(String(path)); return realAsync(path, ...rest); };
+  syncBuiltinESMExports();
+  try { return { value: await run(), seen }; }
+  finally {
+    for (const n of names) fs[n] = real[n];
+    fs.promises.readFile = realAsync;
+    syncBuiltinESMExports();
+  }
+}
+
+function counting(readers) {
+  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, keyring: 0, archive: 0, veilArchive: 0 };
+  const wrapped = {};
+  for (const name of Object.keys(calls)) wrapped[name] = (...a) => { calls[name] += 1; return readers[name](...a); };
+  return { calls, readers: wrapped };
+}
+
+test("a composition tears down off its floor and a fresh one stands on it", { timeout: 600_000 }, async (t) => {
+  const prior = { root: process.env.LAR_ROOT, relay: process.env.LAR_HERM_RELAY_PORT };
+  const root = stage("live", { found: true });
+  const bare = stage("bare", { found: false });
+  process.env.LAR_ROOT = root;
+  delete process.env.LAR_HERM_RELAY_PORT;
+  const node = await import(pathToFileURL(join(repo, "packages/lararium-node/dist/src/index.js")).href);
+  const { WebSocketServer } = await import(pathToFileURL(join(repo, "packages/lararium-node/node_modules/ws/wrapper.mjs")).href);
+  const httpServer = createServer();
+  const wss = new WebSocketServer({ noServer: true });
+  const storageDir = node.larDataDir();
+  const genesisDir = join(root, "genesis");
+  const phases = [];
+  const open = (extra) => node.openNodeHerm({
+    hostId: "two-phase", wikiId: "lares", storageDir, genesisDir, rootDir: root, wss, httpServer, catalogUrl: null,
+    onPhase: (p) => phases.push(p), ...extra,
+  });
+  let floor = null;
+  try {
+    assert.equal(typeof node.standNodeFloor, "function", "the node package exports the floor");
+    const baseline = wss.listenerCount("connection");
+    floor = await node.standNodeFloor(storageDir);
+    assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "the floor's name answers before any composition");
+
+    // The carrier table names every private row: a path under a home that a hot or cold row matches.
+    const homes = { identity: node.larIdentityDir(), storage: node.larDataDir(), seal: node.larSealHome() };
+    const privateRow = (path) => {
+      for (const [home, dir] of Object.entries(homes)) {
+        if (!path.startsWith(dir + "/")) continue;
+        const file = path.slice(dir.length + 1);
+        for (const row of node.carrierTable()) {
+          if (row.home === home && (row.custody === "hot" || row.custody === "cold") && row.match.test(file)) return row.row;
+        }
+      }
+      return null;
+    };
+
+    // ── T2: the floor composition reads no private row and moves no byte of the homes ─────────────────────────
+    const privateRows = () => Object.fromEntries(Object.entries(homesDigest(homes)).filter(([path]) => privateRow(path) !== null));
+    const before = privateRows();
+    const atFloor = await recordingReads(() => open({ floor, sovereign: null }));
+    const zero = atFloor.value;
+    assert.equal(phases.at(-1), "live", "T1 control: one composition reaches live");
+    await zero.daemon.workerEa;
+    assert.ok(atFloor.seen.length > 0, "the read recorder saw this process read (a silent recorder proves nothing)");
+    // ONE private row the floor still reaches: the carried-Nexus reading lists the persona roster (`carried-set`).
+    // It rests outside the sovereign seam until the roster's own family moves behind the custody holder.
+    const reached = [...new Set(atFloor.seen.map(privateRow).filter(Boolean))];
+    assert.deepEqual(reached.filter((row) => row !== "persona-roster"), [], "T2: the floor reads, probes and writes no hot or cold row");
+    await zero.teardown();
+    assert.deepEqual(privateRows(), before, "T2: the floor leaves every private row byte-identical and mints none");
+    assert.equal(wss.listenerCount("connection"), baseline);
+
+    // ── T2 control + T1: handed readers, the composition runs each of them and reads the rows ─────────────────
+    phases.length = 0;
+    const first = counting(node.diskSovereignReaders());
+    const sovereignly = await recordingReads(() => open({ floor, sovereign: first.readers }));
+    const one = sovereignly.value;
+    assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
+    await one.daemon.workerEa;
+    for (const name of ["wornMount", "walkRecords", "keyring", "archive", "veilArchive"]) {
+      assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
+    }
+    const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));
+    assert.ok(rowsRead.has("keyring"), `T2 control: the sovereign composition reaches the keyring row (reached: ${[...rowsRead].join(", ") || "none"})`);
+    assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
+    assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
+    assert.ok(wss.listenerCount("connection") > baseline, "T4 control: a standing composition listens on the server");
+    await assert.rejects(node.standNodeFloor(storageDir), (e) => e?.constructor?.name === "StoreHeld",
+      "T3 control: a standing composition holds the store against a second claim");
+
+    // ── T1 / T4: tear down; the floor still answers; the server holds its listeners as before ─────────────────
+    await one.teardown();
+    assert.equal(wss.listenerCount("connection"), baseline, "T4: the teardown removes every listener it added");
+    assert.equal(existsSync(floor.storeClaim.socketPath), true, "T1: the floor's name stands between compositions");
+    assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "T1: the floor's name answers between compositions");
+    assert.ok(Object.keys(homesDigest(homes)).some((p) => privateRow(p) === "keyring"), "T2 control: the keyring row stands once a sovereign composition ran");
+
+    // A third composition stands on the same floor: the teardown left nothing a later stand trips on.
+    const three = await open({ floor, sovereign: null });
+    await three.daemon.workerEa;
+    await three.teardown();
+    assert.equal(wss.listenerCount("connection"), baseline);
+
+    // ── T3: a refusal while the prep stands the Repo frees the store name ────────────────────────────────────
+    await floor.release();
+    floor = null;
+    await assert.rejects(open({ catalogUrl: "automerge:not-a-document" }), /./, "a catalog address no Repo parses refuses the boot");
+    const afterPrepRefusal = await node.standNodeFloor(storageDir);
+    await afterPrepRefusal.release();
+    assert.equal(wss.listenerCount("connection"), baseline, "T3: a boot refused in its prep leaves no listener behind");
+
+    // ── T3: a refusal while the caps compose frees the store name ─────────────────────────────────────────────
+    process.env.LAR_ROOT = bare;
+    const bareStorage = node.larDataDir();
+    await assert.rejects(
+      node.openNodeHerm({ hostId: "two-phase", wikiId: "lares", storageDir: bareStorage, genesisDir: join(bare, "genesis"), rootDir: bare, wss, httpServer, catalogUrl: null }),
+      /names no daemon doc/,
+    );
+    const again = await node.standNodeFloor(bareStorage);
+    await again.release();
+    assert.equal(wss.listenerCount("connection"), baseline, "T3: the refused boot leaves no listener behind");
+  } catch (e) {
+    // Said at once: a composition that leaks a handle keeps this process alive past the runner's own report.
+    console.error(`TWO-PHASE-BOOT FAILED: ${e?.stack ?? e}`);
+    throw e;
+  } finally {
+    await floor?.release();
+    httpServer.close();
+    if (prior.root === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior.root;
+    if (prior.relay !== undefined) process.env.LAR_HERM_RELAY_PORT = prior.relay;
+    rmSync(root, { recursive: true, force: true });
+    rmSync(bare, { recursive: true, force: true });
+    t.diagnostic(`active resources after teardown: ${process.getActiveResourcesInfo().join(", ") || "none"}`);
+    // The runner reports once this process ends; a handle some library keeps never holds the report hostage.
+    setTimeout(() => process.exit(), 3_000).unref();
+  }
+});

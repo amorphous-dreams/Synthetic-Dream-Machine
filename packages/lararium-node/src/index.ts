@@ -162,7 +162,7 @@ export { LarDiskProjector } from "./disk-projector.js";
 export { DaemonAuthGate } from "./daemon-auth-gate.js";
 export type { SocketChallenge, SocketSorter, SortInput, SortVerdict, GateKey, DaemonAuthGateOptions } from "./daemon-auth-gate.js";
 export { makeSocketSorter, socketsNoLongerHeld } from "./socket-sorter.js";
-export { openNodeVessel } from "./open-node-vessel.js";
+export { openNodeVessel, openNodeHerm, standNodeFloor, diskSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
@@ -185,7 +185,7 @@ export type {
 export { sealExpected, setSealExpected } from "./lares-config.js";
 export { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
-export type { NodeVesselOptions, NodeVesselResult, NodeOpenPhase } from "./open-node-vessel.js";
+export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 

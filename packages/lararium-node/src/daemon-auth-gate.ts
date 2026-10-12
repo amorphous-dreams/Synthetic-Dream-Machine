@@ -137,6 +137,11 @@ export class DaemonAuthGate extends EventEmitter {
   private _pending = 0;
   private readonly authTimeoutMs: number;
   private readonly onRefuse: (reason: string) => void;
+  private readonly realWss: WSSType;
+  private closed = false;
+  private readonly onRealConnection = (socket: WebSocket, req: unknown): void => { if (!this.closed) void this._handleConnection(socket, req); };
+  private readonly onRealClose = (): void => { this.emit("close"); };
+  private readonly onRealError = (e: Error): void => { this.emit("error", e); };
   /** socket → the Keyhive Identifier hex the worker proved. */
   private readonly socketToIdentifier = new WeakMap<WebSocket, string>();
   /** socket → the class the sorter answered. */
@@ -152,13 +157,12 @@ export class DaemonAuthGate extends EventEmitter {
 
   constructor(realWss: WSSType, opts: DaemonAuthGateOptions = {}) {
     super();
+    this.realWss = realWss;
     this.authTimeoutMs = opts.authTimeoutMs ?? AUTH_TIMEOUT_MS;
     this.onRefuse = opts.onRefuse ?? ((reason) => { try { console.log(`[gate] silent: ${reason}`); } catch { /* */ } });
-    realWss.on("connection", (socket: WebSocket, req: unknown) => {
-      void this._handleConnection(socket, req);
-    });
-    realWss.on("close", () => this.emit("close"));
-    realWss.on("error", (e: Error) => this.emit("error", e));
+    realWss.on("connection", this.onRealConnection);
+    realWss.on("close", this.onRealClose);
+    realWss.on("error", this.onRealError);
   }
 
   /**
@@ -167,7 +171,19 @@ export class DaemonAuthGate extends EventEmitter {
    * silent until its deadline.
    */
   arm(shore: AuthVerifierShore, daemonBagUrl: string, gate: GateKey, sort: SocketSorter): void {
+    if (this.closed) return;
     this.armed = { shore, daemonBagUrl, gate: { pubKey: gate.pubKey.toLowerCase(), sign: gate.sign }, sort };
+  }
+
+  close(): void {
+    if (this.closed) return;
+    this.closed = true;
+    this.armed = null;
+    this.realWss.off("connection", this.onRealConnection);
+    this.realWss.off("close", this.onRealClose);
+    this.realWss.off("error", this.onRealError);
+    for (const socket of [...this.clients]) this.drop(socket);
+    this.removeAllListeners();
   }
 
   /** The exact upgrade path this gate answers on for `route` (`/ws`, `/oracle`), or null while unarmed. */

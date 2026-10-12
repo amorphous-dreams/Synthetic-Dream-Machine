@@ -4,8 +4,9 @@
  * `wss` (no listener binds). The oracle carries a daemon row in the genesis seed it materializes; the bootstrap
  * file carries the vessel's own row or none.
  *
- * Two seams stand beneath the opener. The store claim is wrapped so each claim a boot takes is released after
- * the file runs (a boot that refuses keeps its claim for the life of the process). The doc-load probe is a
+ * Two seams stand beneath the opener. The store claim is wrapped so the file reads every claim a boot takes; a
+ * boot that refuses frees its own claim, and the file's closing release of each finds nothing left to free. The
+ * doc-load probe is a
  * fake that answers `ok` at once, so the daemon mount skips the probe child and its patience.
  *
  * Each address is an invalid Automerge url on purpose: with the probe answered, the mount reaches

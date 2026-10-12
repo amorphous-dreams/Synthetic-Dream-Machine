@@ -5,7 +5,8 @@
  * spool, or vector-store configuration.
  */
 
-import { runSovereignWorker } from "./sovereign-island-model.js";
+import { parentPort } from "worker_threads";
+import { runSovereignWorker, vesselRestAsker } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountDiskProjection } from "./island-behaviors.js";
 import type { IslandContext } from "@lararium/tw5";
@@ -22,6 +23,10 @@ import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 // `vault` — the SAME inversion for the at-rest seal LIFECYCLE (#60). It runs IN this worker (the one that
 // owns the M3 re-seal), so seal/rotate re-persist the carriers AND update THIS process.env seal policy in
 // one act — no un-rotate. keyhive stays fs-blind; node supplies the fs+crypto lifecycle handler.
+// THE REST DOOR: this island's Repo keeps no store for the slot documents it mints, so each mint asks the vessel
+// to rest the new document and records its binding only on the vessel's acknowledgment.
+const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
+
 runSovereignWorker((manifest) => {
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
@@ -32,6 +37,7 @@ runSovereignWorker((manifest) => {
     // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
+    ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
     persistArchive: (bytes) => persistIdentityArchive(bytes),
     persistVeilArchive: (bytes) => persistVeilArchive(bytes),
     vault:          (verb, args) => runVaultVerb(verb, args),

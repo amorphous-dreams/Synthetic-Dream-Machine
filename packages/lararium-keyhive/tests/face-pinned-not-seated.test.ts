@@ -54,7 +54,7 @@ describe("a face pinned is not a face seated", () => {
       get: async () => undefined,
       put: async (rec: unknown) => { put.push(rec as Record<string, unknown>); },
     } as never;
-    const repo = { create: () => ({ url: "automerge:mintedBinding" }) };
+    const repo = { create: () => ({ url: "automerge:mintedBinding", documentId: "mintedBinding" }), flush: async () => {} };
     const delegated: string[] = [];
     const r = await resolveOrMintBinding({
       kind: "draft-binding", prefix: "lar:///ha.ka.ba/bags/daemon/draft-bindings", fingerprint: "f".repeat(64),
@@ -67,7 +67,7 @@ describe("a face pinned is not a face seated", () => {
     });
     expect(r.minted).toBe(true);
     expect(delegated, "no delegation to an agent the veil cannot name").toEqual([]);
-    const fields = (put[0] as { tiddler?: Record<string, unknown> } | undefined)?.tiddler ?? put[0];
+    const fields = ((put.find((row) => (row as { tiddler?: Record<string, unknown> }).tiddler?.kind === "draft-binding") as { tiddler?: Record<string, unknown> } | undefined)?.tiddler);
     expect(fields?.["face-reach"], "the record names the posture").toBe("vessel-only");
     await joinee.dispose();
   });
@@ -85,7 +85,7 @@ describe("a face pinned is not a face seated", () => {
       get: async (title: string) => stored[title],
       put: async (rec: unknown) => { put.push(rec as Record<string, unknown>); },
     } as never;
-    const repo = { create: () => { throw new Error("reuse mints nothing"); } };
+    const repo = { create: () => { throw new Error("reuse mints nothing"); }, flush: async () => {} };
     const delegated: Array<[string, string]> = [];
     const r = await resolveOrMintBinding({
       kind: "draft-binding", prefix: "lar:///ha.ka.ba/bags/daemon/draft-bindings", fingerprint: "f".repeat(64),
@@ -112,7 +112,7 @@ describe("a face pinned is not a face seated", () => {
     const delegated: string[] = [];
     const r = await resolveOrMintBinding({
       kind: "draft-binding", prefix: "lar:///ha.ka.ba/bags/daemon/draft-bindings", fingerprint: "f".repeat(64),
-      repo: { create: () => { throw new Error("reuse mints nothing"); } },
+      repo: { create: () => { throw new Error("reuse mints nothing"); }, flush: async () => {} },
       daemonStore: {
         get: async () => ({ tiddler: { title: key, text: "automerge:seatedBinding", "face-reach": "face", "keyhive-doc-id": "d2".repeat(16) }, meta: { authority: "personal-bindings" } }),
         put: async (rec: unknown) => { put.push(rec); },
@@ -135,7 +135,7 @@ describe("a face pinned is not a face seated", () => {
     const delegated: string[] = [];
     await resolveOrMintBinding({
       kind: "draft-binding", prefix: "lar:///ha.ka.ba/bags/daemon/draft-bindings", fingerprint: "f".repeat(64),
-      repo: { create: () => { throw new Error("reuse mints nothing"); } },
+      repo: { create: () => { throw new Error("reuse mints nothing"); }, flush: async () => {} },
       daemonStore: {
         get: async () => ({ tiddler: { title: key, text: "automerge:earlierBinding", "face-reach": "vessel-only", "keyhive-doc-id": "d3".repeat(16) }, meta: { authority: "personal-bindings" } }),
         put: async (rec: unknown) => { put.push(rec); },
@@ -155,7 +155,7 @@ describe("a face pinned is not a face seated", () => {
     const key = "lar:///ha.ka.ba/bags/daemon/working-bindings/" + "e".repeat(64);
     const error = await resolveOrMintBinding({
       kind: "working-binding", prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings", fingerprint: "e".repeat(64),
-      repo: { create: () => { throw new Error("reuse mints nothing"); } },
+      repo: { create: () => { throw new Error("reuse mints nothing"); }, flush: async () => {} },
       daemonStore: {
         get: async () => ({ tiddler: { title: key, text: "automerge:unrestorable", "face-reach": "vessel-only" } }),
         put: async () => {},
@@ -212,7 +212,7 @@ describe("a face pinned is not a face seated", () => {
     const args = (provider: KeyhiveProvider, faceSeated: boolean) => ({
       kind: "working-binding" as const,
       prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
-      fingerprint: "b".repeat(64), repo: { create: () => ({ url: bindingUrl }) },
+      fingerprint: "b".repeat(64), repo: { create: () => ({ url: bindingUrl, documentId: "binding" }), flush: async () => {} },
       daemonStore: provider === first ? firstStore : secondStore,
       keyhive: provider, personaGroupAgentIdHex: agent, faceSeated: async () => faceSeated,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
@@ -257,7 +257,7 @@ describe("a face pinned is not a face seated", () => {
     } as never;
     const input = {
       kind: "working-binding" as const, prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
-      fingerprint: "c".repeat(64), repo: { create: () => ({ url: "automerge:face-first" }) }, daemonStore,
+      fingerprint: "c".repeat(64), repo: { create: () => ({ url: "automerge:face-first", documentId: "face-first" }), flush: async () => {} }, daemonStore,
       keyhive: provider, personaGroupAgentIdHex: agent, faceSeated: async () => true,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     };

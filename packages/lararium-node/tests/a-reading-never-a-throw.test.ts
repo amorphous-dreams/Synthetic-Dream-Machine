@@ -151,18 +151,26 @@ describe("CURE 3 — a reading, never a throw", () => {
   // `bootArchiveRead` restates what `open-node-vessel` performs, and a restatement that drifts from
   // its original proves nothing about the boot (the COLLIDE-THE-INSTRUMENT lesson: a fixture pins
   // the grammar, only the corpus pins the reader). So this reads the ACTUAL boot source and pins
-  // that BOTH loads sit behind the one reading — an ungated `loadIdentityArchive()` anywhere in that
-  // file would put the throw back on the boot path with every test above still green.
+  // that BOTH loads sit behind the one reading. The boot reads its private rows through the sovereign
+  // seam: the seam resolves from ONE `archiveOpens()` reading, the two loaders stand in the seam's disk
+  // readers and nowhere else, and no line of the boot calls either loader directly — a direct
+  // `loadIdentityArchive()` anywhere in that file would put the throw back on the boot path with every
+  // test above still green.
   test("WELD — `open-node-vessel` gates BOTH archive loads on ONE `archiveOpens()` reading", () => {
     const src = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
-    // Every call site of either loader, with the 40 chars before it.
-    const calls = [...src.matchAll(/.{0,40}(loadIdentityArchive|loadVeilArchive)\(\)/g)];
-    expect(calls.length, "both loaders are called exactly once each").toBe(2);
-    for (const c of calls) {
-      expect(c[0], `ungated load: ${c[0]}`).toMatch(/opens \? (loadIdentityArchive|loadVeilArchive)\(\)$/);
-    }
+    // The one reading, taken once: handed readers win, else the disk readers ride ONLY an archive that opens.
+    const readings = [...src.matchAll(/archiveOpens\(\)/g)];
+    expect(readings.length, "the boot reads `archiveOpens()` exactly once").toBe(1);
+    expect(src).toMatch(/const sovereign = opts\.sovereign !== undefined \? opts\.sovereign : \(archiveOpens\(\) \? diskSovereignReaders\(\) : null\);/);
+    // No direct call of either loader anywhere in the boot.
+    expect([...src.matchAll(/(loadIdentityArchive|loadVeilArchive)\(/g)], "an ungated load").toHaveLength(0);
+    // Each loader stands exactly once as a value: inside the seam's disk readers.
+    expect([...src.matchAll(/archive: loadIdentityArchive, veilArchive: loadVeilArchive/g)]).toHaveLength(1);
+    // Both loads ride the seam, and a floor composition (no seam) loads neither.
+    expect(src).toMatch(/const archiveBytes = sovereign\?\.archive\(\) \?\? null;/);
+    expect(src).toMatch(/const veilArchiveBytes = sovereign\?\.veilArchive\(\) \?\? null;/);
     // And the SAME reading rides into the worker, so the read gate and the write gate cannot drift.
-    expect(src).toMatch(/const opens = archiveOpens\(\);/);
+    expect(src).toMatch(/const opens = sovereign !== null;/);
     expect(src).toMatch(/archiveOpens:\s*opens,/);
   });
 

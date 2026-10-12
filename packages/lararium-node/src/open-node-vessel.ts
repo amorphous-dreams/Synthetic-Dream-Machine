@@ -92,7 +92,7 @@ import {
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
-import { setCasDoor } from "./worker-handle.js";
+import { setCasDoor, setRestDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
@@ -327,6 +327,74 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  listens; the boot behaves exactly as it did (provably inert). A witness arms it to read WHERE a document
    *  enters or leaves a peer's sync session. */
   onShareVerdict?: ShareVerdictSink;
+  /** The floor this composition stands on. Given: the composition uses its claim and never releases it, so the
+   *  caller composes again on the same floor after a `teardown`. Absent: the composition stands its own floor and
+   *  releases it when it tears down or refuses. */
+  floor?: NodeFloor;
+  /** The private rows this composition reads. `null` composes at the FLOOR: no reader runs, so no private row is
+   *  read and nothing private is minted. Absent: the disk readers when the archive opens, the floor otherwise. */
+  sovereign?: SovereignReaders | null;
+}
+
+/**
+ * THE FLOOR A COMPOSITION STANDS ON — the vessel's one claim on its store, held for the process's life.
+ *
+ * A composition (the Repo, the gate, the daemon island, every closure a boot builds) stands on a floor and
+ * tears down off it; the floor's rendezvous name answers throughout, so a caller that reaches the vessel between
+ * two compositions waits on the name instead of meeting a refused socket. The floor reads no private row.
+ */
+export interface NodeFloor {
+  readonly storageDir: string;
+  readonly storeClaim: StoreClaim & { readonly holder: "vessel" };
+  /** The relay knock registers on the dispatcher once per floor: every composition's gate derives the same path. */
+  relayRegistered: boolean;
+  /** Free the store's name. Idempotent. */
+  readonly release: () => Promise<void>;
+}
+
+/**
+ * THE SOVEREIGN SEAM — every private carrier row a composition reads, behind one object. A composition handed
+ * `null` reads none of them: it stands at the floor, faceless and carrying, and every sovereign act waits.
+ */
+export interface SovereignReaders {
+  readonly wornMount: (storageDir: string) => ReturnType<typeof readWornPersonaMount>;
+  readonly personaRoots: () => ReturnType<typeof listPersonaRoots>;
+  readonly walkRecords: (storageDir: string) => ReturnType<typeof listWalkRecords>;
+  readonly keyring: (a: { sealEpoch: number }) => NexusConvergenceKeyring;
+  readonly archive: () => Uint8Array | null;
+  readonly veilArchive: () => Uint8Array | null;
+}
+
+/** The sovereign rows as they rest on disk. */
+export function diskSovereignReaders(): SovereignReaders {
+  return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
+    keyring: standNexusKeyring, archive: loadIdentityArchive, veilArchive: loadVeilArchive };
+}
+
+/**
+ * Stand the floor: bind the store's rendezvous name before any Repo opens (`claimStore`) and hold it. Every
+ * caller that reaches the name from here on waits on this vessel; a direct act mid-flight is waited out, and
+ * another vessel on this store refuses by name.
+ */
+export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
+  const storeClaim = await claimStore(storageDir, {
+    holder: "vessel", awaitDirect: true,
+    onAwait: (heldBy) => console.log(`[lararium] the store waits on a direct act before this vessel opens it: ${heldBy}`),
+  });
+  console.log(`[lararium] this vessel holds its store at ${storeClaim.socketPath}`);
+  let released: Promise<void> | null = null;
+  return { storageDir, storeClaim, relayRegistered: false, release: () => (released ??= storeClaim.release()) };
+}
+
+/** What a composition stood, in the order it stood it; a teardown runs the list backward. */
+type Stood = Array<{ readonly what: string; readonly down: () => void | Promise<void> }>;
+
+/** Run a composition's teardown list backward. One fault names itself and never skips the entries beneath it. */
+async function standDown(stood: Stood): Promise<void> {
+  for (const entry of stood.splice(0).reverse()) {
+    try { await entry.down(); }
+    catch (e) { console.log(`[lararium] teardown: ${entry.what} — ${e instanceof Error ? e.message : String(e)}`); }
+  }
 }
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
@@ -334,6 +402,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   eventBus:  LarEventBusImpl;
   /** Stop the N-accumulator tick loop (call on graceful shutdown). */
   stopTick:  () => void;
+  /** Tear this composition down whole: every island, timer, socket and listener it stood, then its Repo. The
+   *  floor it was handed keeps standing; a floor it stood itself releases. */
+  teardown: () => Promise<void>;
   /** The ONE sorter this vessel's gates arm with — the oracle socket a host mounts beside the relay takes it. */
   socketSorter: SocketSorter;
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
@@ -370,6 +441,9 @@ export interface NodeHermResult {
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
   dispose:          () => Promise<void>;
+  /** `dispose`, then everything else this composition stood, then its Repo. The floor it was handed keeps
+   *  standing; a floor it stood itself releases. */
+  teardown:         () => Promise<void>;
 }
 
 const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
@@ -432,6 +506,8 @@ interface NodeBootPrep {
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
   activeWikiSource: () => "boot-arg" | "daemon-marker";
+  /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
+  teardown: () => Promise<void>;
 }
 
 /**
@@ -440,7 +516,34 @@ interface NodeBootPrep {
  * verbs, pool, after-hooks). NO sequencing here — `composeLararium`/`composeHerm` wire the order.
  */
 async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass): Promise<NodeBootPrep> {
+  if (opts.floor && opts.floor.storageDir !== opts.storageDir) {
+    throw new Error("[lararium] the floor handed to this composition holds another store");
+  }
+  const floor = opts.floor ?? await standNodeFloor(opts.storageDir);
+  const ownsFloor = opts.floor === undefined;
+  const stood: Stood = [];
+  let down: Promise<void> | null = null;
+  // A REFUSED BOOT FREES ITS STORE. Whatever stood before the refusal stands down, and a floor this composition
+  // stood itself releases, so the next boot never meets a name a dead composition still holds.
+  const teardown = (): Promise<void> => (down ??= (async () => {
+    await standDown(stood);
+    if (ownsFloor) await floor.release();
+  })());
+  try {
+    return await prepareNodeBootOn(opts, placeClass, floor, stood, teardown);
+  } catch (e) {
+    await teardown();
+    throw e;
+  }
+}
+
+async function prepareNodeBootOn(
+  opts: NodeVesselOptions, placeClass: PlaceClass, floor: NodeFloor, stood: Stood, teardown: () => Promise<void>,
+): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
+  // ONE READING OF WHAT THIS COMPOSITION MAY OPEN. Handed readers, it reads the private rows through them; handed
+  // `null`, it stands at the floor and reads none. Left to itself it reads the disk when the archive opens.
+  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (archiveOpens() ? diskSovereignReaders() : null);
   // THE CORPUS ROOT every disk projection mirrors under: the one named, else `LAR_ROOT`, else the repo. A boot
   // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
   // boots repo-relative as it always has.
@@ -452,7 +555,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // mount pins were written by the FOUNDING face and never move again, so a reboot re-mounted h0 whatever
   // mask was on. A worn non-founding face carries its own mount material in its anchors — the pins below
   // default to it. Null means no switch is owed (h0, nothing worn, or anchors without the material).
-  const wornMount = await readWornPersonaMount(storageDir);
+  const wornMount = sovereign ? await sovereign.wornMount(storageDir) : null;
   if (wornMount) {
     console.log(`[persona] worn h${wornMount.handleIndex} — the mount re-pins from its OWN anchors; the founding face's pins name h0`);
   }
@@ -465,17 +568,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // takes for its act (`claimStore`), and holds it for its whole life: through the boot every caller that reaches
   // the name waits on this vessel's verb channel, so no command opens a second Repo beside this one while it boots.
   // A direct act mid-flight is waited out; another vessel on this store refuses the boot by name.
-  const storeClaim = await claimStore(storageDir, {
-    holder: "vessel",
-    awaitDirect: true,
-    onAwait: (heldBy) => console.log(`[lararium] the store waits on a direct act before this vessel opens it: ${heldBy}`),
-  });
-  console.log(`[lararium] this vessel holds its store at ${storeClaim.socketPath}`);
+  const storeClaim = floor.storeClaim;
 
   // ── 1. Repo — NodeFS storage + WebSocket relay behind the DaemonAuthGate ─────
   const storage = new DurableNodeFSStorageAdapter(storageDir);
   const authGate = new DaemonAuthGate(wss);
-  let relayRegistered = false;
+  stood.push({ what: "the relay gate", down: () => authGate.close() });
   let mintServed = false;
   const network  = new ListeningWSServerAdapter(authGate as unknown as typeof wss);
   const peerIdentifierMap = new Map<string, string>();
@@ -665,6 +763,16 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       else if (e.type === "doc-denied")           console.log(`[wire] denied doc=${e.documentId}`);
     });
   }
+  // THE REST DOOR. An island mints a slot document its own Repo keeps no store for; this Repo saves it. The island
+  // asks before it records the binding, and the answer waits until the document has reached this Repo and rests
+  // in its store — so no binding names a document a hard stop could leave unsaved.
+  setRestDoor(async (documentIds) => {
+    for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
+    await repo.flush(documentIds as DocumentId[]);
+  });
+  stood.push({ what: "the rest door", down: () => setRestDoor(null) });
+  // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
+  stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -928,7 +1036,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // The head's place in the lineage IS its depth along the hash links — genesis 0 — so the keyring reads the
   // chain itself rather than a counter any epoch record carries.
   const sealHeadEpoch = Math.max(0, (nexusDocForBoot?.sealLineage?.length ?? 0) - 1);
-  nexusConvergenceKeyring = standNexusKeyring({ sealEpoch: sealHeadEpoch });
+  nexusConvergenceKeyring = sovereign ? sovereign.keyring({ sealEpoch: sealHeadEpoch }) : null;
   // The relay-side discovery index the seal producer announces a sealed cid onto (DHT-free; hint → peers → tracker).
   const casBagTracker = makeBagTracker();
 
@@ -1020,6 +1128,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   if (carriageRelay) {
     console.log(`[carriage] crossroads relay standing — dial ws://<host>:${carriageRelay.port}#${carriageRelay.gatePubKey}`);
   }
+  stood.push({ what: "the carriage serve-loop", down: async () => { await carriageLoop?.stop(); } });
+  stood.push({ what: "the carriage crossroads", down: async () => { await carriageRelay?.close(); } });
 
   // ── THE FETCH DOOR, vessel side — `makeCidResolver(localRead, casTransit, cacheWriteThrough)` ──────────────
   // Fetch-on-read is the default: a read that misses the local `cid/` asks the fleet holders over Socket B, the
@@ -1049,7 +1159,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   const holdsRootOf = async (edge: DeviceDelegationTiddler): Promise<boolean> => {
     let signer: string;
     try { signer = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return false; }
-    for (const index of await listPersonaRoots()) {
+    for (const index of sovereign ? await sovereign.personaRoots() : []) {
       const key = await loadPersonaGroupRootVerifyingKey(index);
       if (key && key.toLowerCase() === signer) return true;
     }
@@ -1061,7 +1171,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // THE HEARTH THIS VESSEL WALKS AT names its own dial: where its relay answers, and the gate key to pin there —
   // kept on the walk record `lares walk take` wrote. It is the dial's last default — an explicit option,
   // `LAR_JOIN_*`, or a hearth pin each outranks it. A vessel walks at one hearth (the take refuses a second).
-  const walkingAt      = listWalkRecords(storageDir).find((w) => w.record.relay) ?? null;
+  const walkingAt      = (sovereign ? sovereign.walkRecords(storageDir) : []).find((w) => w.record.relay) ?? null;
   const joinSyncUrl    = opts.joinSyncUrl    ?? process.env["LAR_JOIN_SYNC"] ?? hearthPin?.syncUrl    ?? walkingAt?.record.relay ?? null;
   const joinGatePubKey = opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? walkingAt?.gatePubKey   ?? null;
   const joinDocUrl     = opts.joinDocUrl     ?? process.env["LAR_JOIN_DOC"]  ?? null;
@@ -1175,6 +1285,21 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     },
   );
   const residency = residencyWiring.residency;
+
+  // EVERYTHING THE CLOSURES BELOW STAND, read at teardown through the same forward refs they set. Each line
+  // tolerates a ref no closure reached, so a boot that refuses midway stands down exactly what stood.
+  stood.push({ what: "the fetch door",        down: () => setCasDoor(null) });
+  stood.push({ what: "the recall holders",    down: async () => {
+    for (const h of recallHolders.values()) await h.close();
+    for (const c of sourceCaptures.values()) await c.close();
+    recallHolders.clear(); sourceCaptures.clear();
+  } });
+  stood.push({ what: "the sibling channel",   down: () => { siblings?.disconnect(); } });
+  stood.push({ what: "the client dial",       down: () => { nexusDial?.stop(); } });
+  stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
+  stood.push({ what: "the event bus",         down: () => { (eventBus as LarEventBusImpl | undefined)?.stop(); } });
+  stood.push({ what: "the daemon island",     down: async () => { await (daemonVm as DaemonVmCore | undefined)?.shutdown(); } });
+  stood.push({ what: "the wiki islands",      down: async () => { await (vmManager as VesselIslandPool | undefined)?.disposeAll(); } });
 
   // Read the daemon doc (idempotent re-resolve; openDaemonVm finds the same handle).
   const readDaemonDoc = async (): Promise<DocHandle<LarDoc>> =>
@@ -1636,9 +1761,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     // fail-closed), which is the DOOR rather than the grant — `node-daemon-island` injects the
     // writers, and a gate there would leave every other route into the worker unchecked
     // (waking-floor #/the-breaks ①). Reading it twice would let the two readings drift apart mid-boot.
-    const opens = archiveOpens();
-    const archiveBytes = opens ? loadIdentityArchive() : null;
-    const veilArchiveBytes = opens ? loadVeilArchive() : null;
+    const opens = sovereign !== null;
+    const archiveBytes = sovereign?.archive() ?? null;
+    const veilArchiveBytes = sovereign?.veilArchive() ?? null;
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
@@ -2400,8 +2525,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     // THE KNOCK. The relay answers an upgrade only on the path its gate key derives; the dispatcher destroys
     // every other upgrade before any HTTP 101. Registered once — a re-armed gate keeps its key and its path.
     const relayPath = authGate.upgradePath("/ws");
-    if (opts.dispatcher && relayPath && !relayRegistered) {
-      relayRegistered = true;
+    if (opts.dispatcher && relayPath && !floor.relayRegistered) {
+      floor.relayRegistered = true;
       opts.dispatcher.registerUpgrade({
         name: "relay", path: relayPath,
         handle: (req, socket, head) => wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req)),
@@ -2564,6 +2689,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
+    teardown,
   };
 }
 
@@ -2588,6 +2714,16 @@ async function carriageIdentity(tag: string): Promise<LeafIdentity | undefined> 
  */
 export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesselResult> {
   const p = await prepareNodeBoot(opts, "lararium");
+  // A composition that refuses past its prep stands down whole, so its store name and its listeners never outlive it.
+  try {
+    return await composeNodeVesselOn(opts, p);
+  } catch (e) {
+    await p.teardown();
+    throw e;
+  }
+}
+
+async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Promise<NodeVesselResult> {
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
@@ -2613,10 +2749,20 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
   // identity; disclosure rides the component's deliberate `announce`, and the only key at boot would be this
   // vessel's substrate key — the one co-surface the two-key atom forbids on a social board.
   const crossroadsHandle = await materializeSharedLarDoc(p.repo, crossroadsDocUrl(p.nexusPubkey), "board:crossroads");
+  // The role caps this hearth adds stand down with the composition: each built component is kept beside its own
+  // disposer, and the teardown runs them backward before the prep stands down beneath them.
+  const roleCaps: Array<() => void | Promise<void>> = [];
   const extraCaps = [
     ...carriageCaps,
     whoFaceCap({ repo: p.repo, crossroadsHandle, nexusPubkey: p.nexusPubkey, residency: p.residency }),
-  ];
+  ].map((cap) => ({
+    ...cap,
+    build: async (resolve: Parameters<typeof cap.build>[0]) => {
+      const component = await cap.build(resolve);
+      if (cap.dispose) roleCaps.push(() => (cap.dispose as (c: unknown) => void | Promise<void>)(component));
+      return component;
+    },
+  }));
   const result = await composeLararium<VesselIslandPool>(p.orchestration, extraCaps);
 
   return {
@@ -2638,6 +2784,12 @@ export async function openNodeVessel(opts: NodeVesselOptions): Promise<NodeVesse
     // Graceful shutdown tears the pool down AND stops the carriage serve-loop (Socket B) + the client dial-out
     // (Socket A) — each a no-op when none stood — so no timer / client socket leaks past close.
     stopTick: () => { void result.pool.disposeAll(); void p.carriageRelay?.close(); void p.carriageLoop?.stop(); p.nexusDial?.stop(); },
+    teardown: async () => {
+      for (const down of roleCaps.splice(0).reverse()) {
+        try { await down(); } catch (e) { console.log(`[lararium] teardown: a role cap — ${e instanceof Error ? e.message : String(e)}`); }
+      }
+      await p.teardown();
+    },
     socketSorter: p.socketSorter,
     siblingChannel: p.siblingChannel,
     storeClaim: p.storeClaim,
@@ -2656,6 +2808,17 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     throw new Error("[lararium] openNodeHerm requires opts.httpServer (the FLOW-map read-face serves over it)");
   }
   const p = await prepareNodeBoot(opts, "herm");
+  try {
+    return await composeNodeHermOn(opts as NodeVesselOptions & { httpServer: NonNullable<NodeVesselOptions["httpServer"]> }, p);
+  } catch (e) {
+    await p.teardown();
+    throw e;
+  }
+}
+
+async function composeNodeHermOn(
+  opts: NodeVesselOptions & { httpServer: NonNullable<NodeVesselOptions["httpServer"]> }, p: NodeBootPrep,
+): Promise<NodeHermResult> {
   // ── The WHO plane at a WAYFARER — recognition for a vessel that holds no face to lose ──
   // A Herm carries a Place DID and NO persona: there are no local human keys to steal at a crossroads. That
   // makes it the vessel with the least to risk and the most to gain from the board — it already recognises
@@ -2716,6 +2879,14 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
   p.emit("vessel-ready");
   p.emit("live");
 
+  const dispose = async (): Promise<void> => {
+    setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
+    await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
+    await p.carriageLoop?.stop();   // stop Socket B serve-loop (a no-op when none stood) — no timer / socket leaks
+    p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood
+    await p.daemonVm().shutdown();
+    await herm.vessel.dispose();   // reverse build order → read-face disposes (clears the HTTP handler)
+  };
   return {
     repo:             p.repo,
     store:            herm.assembly.composite,
@@ -2729,13 +2900,10 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     socketSorter:     p.socketSorter,
     storeClaim:       p.storeClaim,
     mountManifest:    herm.assembly.mountManifest,
-    dispose: async () => {
-      setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
-      await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
-      await p.carriageLoop?.stop();   // stop Socket B serve-loop (a no-op when none stood) — no timer / socket leaks
-      p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood
-      await p.daemonVm().shutdown();
-      await herm.vessel.dispose();   // reverse build order → read-face disposes (clears the HTTP handler)
+    dispose,
+    teardown: async () => {
+      try { await dispose(); } catch (e) { console.log(`[herm] teardown: ${e instanceof Error ? e.message : String(e)}`); }
+      await p.teardown();
     },
   };
 }

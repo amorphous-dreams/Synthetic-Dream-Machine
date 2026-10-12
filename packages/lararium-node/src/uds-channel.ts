@@ -35,7 +35,8 @@
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
-import type { Socket } from "node:net";
+import { type Socket } from "node:net";
+import { PARK_LIMIT } from "./owned-store.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   CompositeStore,
@@ -421,7 +422,95 @@ function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy" | "
 
 export interface UdsChannel { close: () => void; }
 
-export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
+/** One composition's seat on the verb socket: the ledger, the outcome reads and the dispatch bound to its daemon. */
+export interface UdsSeat { readonly handle: (parsed: unknown, sock: Socket) => void; readonly close: () => void; }
+
+/** The floor's hold on the verb socket: it serves the claim once and outlives every composition. */
+export interface UdsFront {
+  /** Seat a composition; held callers are handed over in arrival order without another seat reading them first. */
+  readonly attach: (seat: UdsSeat) => void;
+  /** Unseat it. New callers remain held until the next attach. */
+  readonly detach: () => void;
+  /** Refuse every caller and stop serving. */
+  readonly close: () => void;
+}
+
+export function serveUdsFront(a: {
+  readonly claim: StoreClaim & { readonly holder: "vessel" };
+  readonly onLog?: (line: string) => void;
+  readonly onFrame?: (parsed: unknown, sock: Socket) => boolean;
+  readonly holdLimit?: number;
+}): UdsFront {
+  type Held = { parsed: unknown; sock: Socket; onClose: () => void };
+  const held: Held[] = [];
+  let seat: UdsSeat | null = null;
+  let stopped = false;
+  const refusal = (sock: Socket) => {
+    try { sock.end(JSON.stringify({ status: "error", errorMessage: "the vessel recomposes — run again", refusal: { reason: "recomposing" } }) + "\n"); } catch { /* gone */ }
+  };
+  const hand = (parsed: unknown, sock: Socket): void => {
+    if (stopped) return refusal(sock);
+    if (a.onFrame?.(parsed, sock)) return;
+    if (seat) return seat.handle(parsed, sock);
+    const entry: Held = { parsed, sock, onClose: () => {
+      const i = held.indexOf(entry);
+      if (i !== -1) held.splice(i, 1);
+    } };
+    sock.once("close", entry.onClose);
+    held.push(entry);
+    if (held.length > (a.holdLimit ?? PARK_LIMIT)) {
+      const oldest = held.shift()!;
+      oldest.sock.off("close", oldest.onClose);
+      refusal(oldest.sock);
+    }
+  };
+  a.claim.serve((sock: Socket) => {
+    let buf = "";
+    let read = true;
+    sock.setEncoding("utf8");
+    sock.on("data", (chunk: string) => {
+      if (!read) return;
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl === -1) return;
+      read = false;
+      let parsed: unknown;
+      try { parsed = JSON.parse(buf.slice(0, nl)); }
+      catch { try { sock.end(JSON.stringify({ status: "error", errorMessage: "bad invocation json" }) + "\n"); } catch { /* gone */ } return; }
+      hand(parsed, sock);
+    });
+  });
+  a.onLog?.(`uds verb-channel on ${a.claim.socketPath} (perms 0600)`);
+  return {
+    attach: (next) => {
+      if (stopped) throw new Error("UDS front is closed");
+      if (seat) throw new Error("UDS front already has a seat");
+      seat = next;
+      for (const entry of held.splice(0)) {
+        entry.sock.off("close", entry.onClose);
+        if (!entry.sock.destroyed) next.handle(entry.parsed, entry.sock);
+      }
+    },
+    detach: () => {
+      const old = seat;
+      seat = null;
+      old?.close();
+    },
+    close: () => {
+      if (stopped) return;
+      stopped = true;
+      seat?.close();
+      seat = null;
+      for (const entry of held.splice(0)) {
+        entry.sock.off("close", entry.onClose);
+        refusal(entry.sock);
+      }
+      a.claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`);
+    },
+  };
+}
+
+export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const { daemonHandle, claim } = opts;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
@@ -570,22 +659,11 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
     );
   });
 
-  claim.serve((sock: Socket) => {
-    let buf = "";
-    sock.setEncoding("utf8");
+  const handle = (parsed: unknown, sock: Socket): void => {
     const fail = (msg: string, reason?: string) => {
       try { sock.end(JSON.stringify({ status: "error", errorMessage: msg, ...(reason !== undefined && { refusal: { reason } }) }) + "\n"); } catch { /* gone */ }
     };
     const answerUnknown = (requestId: string) => { try { sock.end(JSON.stringify({ status: "unknown", requestId }) + "\n"); } catch { /* gone */ } };
-    sock.on("data", (chunk: string) => {
-      buf += chunk;
-      const nl = buf.indexOf("\n");
-      if (nl === -1) return;          // one invocation per connection, line-delimited
-      const line = buf.slice(0, nl);
-      buf = "";
-      let parsed: unknown;
-      try { parsed = JSON.parse(line); } catch { return fail("bad invocation json"); }
-
       // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
       if (isReceiptQuery(parsed)) {
         void answerReceipt(parsed.requestId).then(
@@ -671,14 +749,16 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
           },
         );
       })(); }));
-    });
-  });
-  log(`uds verb-channel on ${claim.socketPath} (perms 0600)`);
+  };
 
   return {
-    close: () => {
-      unsubOutcomes();
-      claim.refuse(`the vessel (pid ${process.pid}) on this store stops — run again once it has gone`);
-    },
+    handle,
+    close: () => { unsubOutcomes(); },
   };
+}
+
+export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
+  const front = serveUdsFront({ claim: opts.claim, ...(opts.onLog ? { onLog: opts.onLog } : {}) });
+  front.attach(makeUdsSeat(opts));
+  return { close: () => front.close() };
 }

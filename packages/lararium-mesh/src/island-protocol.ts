@@ -751,7 +751,8 @@ export type VesselToIslandMsg =
   | WikiMsg_DomEvent
   | WikiMsg_DomInput
   | WikiMsg_SensoriumSignal
-  | IslandMsg_CasBlock;
+  | IslandMsg_CasBlock
+  | IslandMsg_DocRested;
 
 // ── Island → vessel ──────────────────────────────────────────────────────────
 
@@ -841,6 +842,27 @@ export interface IslandMsg_CasBlock {
   type: "cas:block";
   requestId: string;
   bytes: Uint8Array | null;
+}
+
+/**
+ * Island → vessel: THE REST DOOR's ask. An island mints a document its own Repo holds no store for; the vessel's
+ * Repo alone saves it. Before the island records any pointer to that document it asks the vessel to rest the
+ * named documents durably, and waits for `doc:rested` on the same `requestId`.
+ */
+export interface IslandMsg_DocRest {
+  schema_version: ProtocolVersion;
+  type: "doc:rest";
+  requestId: string;
+  documentIds: string[];
+}
+
+/** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */
+export interface IslandMsg_DocRested {
+  schema_version: ProtocolVersion;
+  type: "doc:rested";
+  requestId: string;
+  rested: boolean;
+  why?: string;
 }
 
 /**
@@ -967,7 +989,8 @@ export type IslandToVesselMsg =
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
-  | IslandMsg_CasWant;
+  | IslandMsg_CasWant
+  | IslandMsg_DocRest;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -986,13 +1009,13 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
   // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
   if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "doc:rested"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasVersion(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "doc:rest"] as const).includes(
     v.type as IslandToVesselMsg["type"],
   );
 }

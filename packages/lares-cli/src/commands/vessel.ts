@@ -45,6 +45,9 @@ import { cmdRead, cmdStop } from "./read.js";
 import { cmdWire } from "./wire.js";
 import { cmdVesselCard } from "./vessel-card.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
+import { vesselDid } from "../env.js";
+import { runVerb } from "../verb-call.js";
+import { summaryOutput } from "../verb-result.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
 
@@ -160,6 +163,13 @@ async function runRite(args: ParsedArgs): Promise<number> {
 
 /** The door's map. Every entry names a primitive, a read, or the one composed sub-door. */
 const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Sub }>> = {
+  unbound: { summary: "list minted documents with no binding; removes nothing", run: async () => {
+    const result = await runVerb("unbound-docs", {}, await vesselDid());
+    if (result.status === "error") { console.error(result.errorMessage ?? "daemon refused the read"); return 2; }
+    const output = summaryOutput(result);
+    console.log(JSON.stringify(output?.unbound ?? [], null, 2));
+    return 0;
+  } },
   found: { summary: "mint the vessel identity, persona root, social planes and bootstrap (idempotent)", run: (a) => cmdFound(under(a)) },
   // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
   // its card; the founding mints one and nothing surfaced it.

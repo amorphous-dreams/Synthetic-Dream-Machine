@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type IslandMsg_CasWant, type IslandMsg_CasBlock } from "@lararium/mesh";
+import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DocRest, type IslandMsg_DocRested } from "@lararium/mesh";
 
 /** The vessel's answer to a worker's `cas:want` — verified bytes, or null (a miss stays a miss). */
 export type CasDoor = (cid: string) => Promise<Uint8Array | null>;
@@ -33,8 +33,40 @@ function attachCasDoor(w: Worker): void {
   });
 }
 
+/** The vessel's answer to a worker's `doc:rest` — resolves once every named document rests in the vessel's store. */
+export type RestDoor = (documentIds: readonly string[]) => Promise<void>;
+
+// THE REST DOOR, vessel side. A worker's Repo holds no store for the documents it mints beside its own bag: the
+// vessel's Repo saves them. ONE store per vessel, so ONE door, stood with the composition and dropped at its
+// teardown. No door standing answers every ask `rested: false` — a pointer never lands on an unacknowledged save.
+let restDoor: RestDoor | null = null;
+
+/** Stand (or drop) the vessel's rest door. */
+export function setRestDoor(door: RestDoor | null): void { restDoor = door; }
+
+/** Answer one `doc:rest` ask through the door standing now. Exported so a test asks it without a worker. */
+export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "documentIds">): Promise<IslandMsg_DocRested> {
+  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rested" as const, requestId: ask.requestId };
+  const door = restDoor;
+  if (!door) return { ...base, rested: false, why: "no rest door stands on this vessel" };
+  try { await door(ask.documentIds); return { ...base, rested: true }; }
+  catch (e) { return { ...base, rested: false, why: e instanceof Error ? e.message : String(e) }; }
+}
+
+function attachRestDoor(w: Worker): void {
+  w.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_DocRest> | null;
+    if (!m || m.type !== "doc:rest" || typeof m.requestId !== "string" || !Array.isArray(m.documentIds)) return;
+    if (!m.documentIds.every((id) => typeof id === "string")) return;
+    void answerDocRest({ requestId: m.requestId, documentIds: m.documentIds }).then((reply) => {
+      try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
+    });
+  });
+}
+
 export function nodeWorkerHandle(w: Worker): VesselWorkerHandle {
   attachCasDoor(w);
+  attachRestDoor(w);
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
     post:      (msg, transfer) => post(msg, transfer),

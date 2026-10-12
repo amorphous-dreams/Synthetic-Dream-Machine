@@ -39,7 +39,7 @@ import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
-import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
+import { openNodeVessel, openNodeHerm, standNodeFloor, diskSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
 import type { MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
@@ -57,7 +57,7 @@ import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer, snapshotPublicOracle, type LarDoc } from "@lararium/mesh";
 import { ratedReceiptRing } from "@lararium/mesh";
-import { startUdsChannel }              from "./uds-channel.js";
+import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
 import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
@@ -304,6 +304,9 @@ async function main(): Promise<void> {
     }
   });
 
+  const floor = await standNodeFloor(storageDir);
+  const front = serveUdsFront({ claim: floor.storeClaim });
+
   // ── THE BASE COURSE — every vessel stands as a Herm, and the hearth is what it LIFTS to ──────────────
   // The Herm cap-stack (daemon immune core + a served meshpalace FLOW-map, no wiki, no pool) is the FLOOR
   // of this stack rather than a sibling of it. A lararium is a herm with its hearth fire lit, so the lift
@@ -349,152 +352,250 @@ async function main(): Promise<void> {
     console.log("[lararium]   a recognised operator may also raise it for a visit; the door answers, the CLI verb waits.");
   }
 
-  if (standing === "herm") {
-    const pullMs = process.env["LAR_PULL_MS"];   // carriage cadence — tuning, kept separate from membership
-    const herm = await openNodeHerm({
-      // The name follows what STANDS, never which branch reached here. A vessel the operator asked to keep
-      // faceless IS Lares Viales, gods of the crossroads; a hearth waiting on its face stands on the same
-      // floor under its own name, and calling it a wayfarer would tell its operator they built the wrong thing.
-      hostId:     askedStanding === "herm" ? "lares-viales" : "lararium-node",
-      wikiId,
-      storageDir,
-      genesisDir,
-      rootDir,
-      wss,
-      catalogUrl,
-      httpServer,
-      dispatcher,
-      meshSelf,
-      ...(pullMs ? { pullIntervalMs: Number.parseInt(pullMs, 10) } : {}),
-      onPhase:    (phase) => console.log(`[herm] phase → ${phase}`),
-    });
-    console.log(`[herm] live — wiki-less wayfarer | storage: ${storageDir}`);
-    console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
-    console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
-    console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
-    console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
-    logPendingPlanes("[herm]", herm.mountManifest);
 
-    // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
-    // `standAs` above answers what this vessel stands as ALONE. A recognised operator may raise it for the
-    // length of their visit, and those caps ride THEIR key: nothing seats a persona root here, and
-    // `personaSlotCeiling("herm") === 0` keeps that true whatever stands.
-    //
-    // It stands HERE rather than beside `standAs` because the fence lives on a board, and the board opens
-    // with the vessel. The door reads the lease epoch off the live daemon doc every time it is asked —
-    // a remembered epoch would hold a vessel raised past the roll that should have dropped it.
-    //
-    // Nothing here touches disk. A reboot drops this vessel back to its floor with nothing to resume,
-    // which is what keeps SEATED ⊥ RAISED true at rest (waking-floor#the-raise-is-a-vessel-layer-act).
-    // RECOGNITION IS THE VERIFIER'S (O9). A grant carries its recogniser's presented admit, signed by that
-    // admit's LEAF; every answer re-reads the Nexuses this vessel carries off its OWN replica and raises only
-    // on a `held` admit for the Nexus the challenge names. Carried here means either way a vessel carries:
-    // a persona's consent or seated chair (`readCarriedNexuses`, empty on a persona-less herm by class), or
-    // this PLACE's own counted carrier seal on a held charter's board (`placeCarriedNexuses`).
-    //
-    // THE CHALLENGE NAMES A NEXUS BY ITS AID — the first carried at boot, primary charter first. The vessel's
-    // own key names only the vessel a grant must answer for. A vessel that carries no Nexus emits no challenge:
-    // no admit could count, so there is nothing to invite.
-    //
-    // THE RAISE FENCE'S LEASE RESOURCE IS THE CHALLENGE NEXUS'S AID. `leaseEpoch` reads
-    // `effectiveLeaseEpochOnBoard(daemonHandle, raiseNexus)`, so the epoch a raise must match is the one leased under
-    // that AID on this vessel's own daemon board — never the vessel's key, never a wiki, never a second Nexus it also
-    // carries. A `nexus-rekey` that advances the lease for that AID drops every raise standing against the old epoch;
-    // a rekey under any other Nexus leaves this door's fence where it stood.
-    const selfKey  = await loadVesselVerifyingKey();
-    const sealHome = larSealHome();
-    const openRaiseBoard: BoardOpener = async (url, label) =>
-      (await materializeSharedLarDoc(herm.repo, url, label).catch(() => null))?.doc();
-    const raiseReadings = async () => unionReadings(
-      await readCarriedNexuses({ sealHome, ownVesselKey: selfKey, open: openRaiseBoard }),
-      await placeCarriedNexuses({ sealHome, ownVesselKey: selfKey, open: openRaiseBoard }),
-    );
-    const raiseNexus = (await raiseReadings())[0]?.aid ?? null;
-    const raiseDoor = standRaiseDoor({
-      vesselId:   selfKey,
-      nexus:      raiseNexus ?? "",
-      floor:      standing,
-      leaseEpoch: () => (raiseNexus ? effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus) : 0),
-      readings:   raiseReadings,
-      verify:     verifyNymSignature,
-      nonce:      () => randomBytes(32).toString("hex"),
-    });
-    console.log(`[herm] standing:  ${await raiseDoor.standing()} — the raise door answers at the crossroads`);
-
-    // THE VESSEL EMITS ITS OWN CHALLENGE, and emitting it costs nothing. It names what is being raised —
-    // vessel, Nexus, epoch, nonce — and carries nothing of what this vessel holds. A forged challenge buys
-    // an attacker nothing either: a grant answers only the exact nonce the asking vessel still holds, and
-    // an attacker holds no such vessel. One boot, one nonce, until the ask/answer verbs stand.
-    if (raiseNexus) {
-      const invitation = await raiseDoor.ask();
-      console.log(`[herm] raise challenge (hand to a recognised operator; they run \`lares raise sign\`):`);
-      console.log(`[herm]   ${JSON.stringify(invitation)}`);
-    } else {
-      console.log(`[herm] raise door: this vessel carries no Nexus — no admit could count, so no challenge stands`);
+  // ── THE COMPOSITION STANDS ON THE FLOOR ─────────────────────────────────────────────────────────
+  // The floor (the store's claim and the verb socket's front) outlives a composition; everything else a boot
+  // builds stands as ONE composition that tears down whole. What a composition stands AS reads off what holds
+  // at the moment it composes: the face lit then, and whether it was handed the sovereign rows.
+  const ctx: BootContext = {
+    askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
+    reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front,
+    lanSocket: () => lanSocket,
+  };
+  const composeStanding = (sovereign: SovereignReaders | null): Promise<StandingComposition> => {
+    const lit = faceStands();
+    const as  = standAs(askedStanding !== "herm" && lit ? "hearth" : "herm", sovereign !== null);
+    return as === "herm"
+      ? composeHermStanding({ ...ctx, standing: as, faceLit: lit }, sovereign)
+      : composeHearthStanding({ ...ctx, standing: as, faceLit: lit }, sovereign);
+  };
+  // A REFUSED BOOT FREES ITS STORE: the front stops answering and the floor releases the name before the fault
+  // prints, so the next boot never waits on a composition that never stood.
+  //
+  // A REFUSAL ABOVE THE FLOOR LEAVES THE FLOOR STANDING. A composition handed the sovereign rows that refuses
+  // (a face it cannot prove, a row it cannot read) tears itself down whole; the vessel then composes at the floor
+  // and names the fault ONCE, so a supervisor that restarts on exit never loops on a fault no restart cures. Only
+  // a floor that itself refuses ends the process.
+  let composition: StandingComposition;
+  try {
+    try {
+      composition = await composeStanding(sealShut ? null : diskSovereignReaders());
+    } catch (err) {
+      if (sealShut) throw err;
+      console.error(`[lararium] the sovereign composition refused: ${err instanceof Error ? err.message : String(err)}`);
+      console.error("[lararium]   standing at the WAKING FLOOR instead — carrying and serving the public shelf; every sovereign act waits.");
+      console.error("[lararium]   cure the fault named above, then stand again; a restart alone changes nothing.");
+      composition = await composeStanding(null);
     }
-    for (const f of reachFaces) console.log(`[herm] ws:        ${wsUrlForOrigin(f.origin)}   (${f.kind})`);
-
-    // The CARRIAGE CROSSROADS (Socket B) — announced when a relay port rode the config (LAR_HERM_RELAY_PORT).
-    // The operator hands a family hearth the `ws://` URL + the gate key to dial this crossroads. Absent → no line.
-    // The relay binds its OWN port (SEPARATE from the /ws read-face port) on the same host every face names.
-    if (herm.carriageRelayPort !== null) {
-      const relayPort = herm.carriageRelayPort;
-      console.log(`[herm] carriage crossroads (Socket B) — hearths dial this to carry sealed cad bodies:`);
-      console.log(`[herm]   gate key: ${herm.carriageRelayGatePubKey}`);
-      for (const f of reachFaces) {
-        const scheme = f.origin.startsWith("https") ? "wss" : "ws";
-        const bareHost = f.host.replace(/:\d+$/, "");
-        console.log(`[herm]   dial → ${scheme}://${bareHost}:${relayPort}   (${f.kind})`);
-      }
-    }
-
-    // Co-located UDS verb-channel for the local `lares` CLI (the daemon answers).
-    // THE RENDEZVOUS SITS APART FROM THE DATA. A socket answers "where do two processes meet" under a
-    // ~104-byte cap the data home has never heard of; siting it beside the substrate made it inherit the
-    // substrate's depth, and a deep root then refused to bind while everything else stood. Both sides
-    // derive from the SAME resolved dir, so the client finds what this bound.
-    // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
-    // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
-    // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
-    await herm.daemon.workerEa;
-    await herm.daemon.mountHostWorkingLayer();
-    publishStanding(storageDir, standing, faceLit);
-    const hermUds = startUdsChannel({
-      daemonHandle: herm.daemon.daemonHandle,
-      composite:    herm.daemon.composite,
-      placeVerb:    (o) => herm.daemon.placeVerb(o),
-      claim:        herm.storeClaim,
-      repo:         herm.repo,
-      ...(receiptRing !== undefined && { ring: receiptRing }),
-      onLog: (line) => console.log(`[herm] ${line}`),
-    });
-    await markReadyOnceStanding(readinessState, herm.daemon.workerEa);
-
-    let hermShuttingDown = false;
-    const hermShutdown = async (sig: string): Promise<void> => {
-      if (hermShuttingDown) return;
-      hermShuttingDown = true;
-      console.log(`[herm] ${sig} — graceful shutdown`);
-      try {
-        readinessFace.dispose();
-        pronaos?.dispose();
-        hermUds.close();
-        lanSocket?.close();
-        httpServer.close();
-        dispatcher.dispose();
-        await herm.dispose();          // read-face + daemon island flush, then the composed vessel
-        await herm.repo.flush();
-        console.log("[herm] shutdown complete — state flushed durably");
-      } catch (e) {
-        console.error("[herm] shutdown error:", e instanceof Error ? e.message : String(e));
-      } finally {
-        process.exit(0);
-      }
-    };
-    process.on("SIGINT",  () => void hermShutdown("SIGINT"));
-    process.on("SIGTERM", () => void hermShutdown("SIGTERM"));
-    return;
+  } catch (err) {
+    front.close();
+    await floor.release();
+    throw err;
   }
+  // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
+  process.on("SIGINT",  () => composition.onSignal("SIGINT"));
+  process.on("SIGTERM", () => composition.onSignal("SIGTERM"));
+}
+
+
+/** What `main` holds for the process's life and hands to every composition it stands. */
+interface BootContext {
+  readonly askedStanding: AskedStanding;
+  readonly wikiId: string;
+  readonly storageDir: string;
+  readonly genesisDir: string;
+  readonly rootDir: string;
+  readonly catalogUrl: string | null;
+  readonly wss: WebSocket.Server;
+  readonly httpServer: ReturnType<typeof createServer>;
+  readonly dispatcher: ReturnType<typeof mountHttpFaceDispatcher>;
+  readonly meshSelf: ReturnType<typeof deriveMeshSelf>;
+  readonly reachFaces: ReturnType<typeof deriveReachFaces>;
+  readonly originCompositions: ReturnType<typeof originCompositionForFace>[] | null;
+  readonly receiptRing: number | undefined;
+  readonly readinessState: ReturnType<typeof createReadinessState>;
+  readonly readinessFace: ReturnType<typeof mountReadinessFace>;
+  readonly pronaos: ReturnType<typeof composePronaosFromEnv>;
+  /** The store's claim, held for the process's life. */
+  readonly floor: NodeFloor;
+  /** The verb socket's front: it holds callers while no composition sits. */
+  readonly front: UdsFront;
+  readonly lanSocket: () => LanDatagramSocket | null;
+}
+
+/** One composition's own reading of what it stands as, taken when it composes. */
+interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly faceLit: boolean; }
+
+/** A composition standing on the floor: everything a boot builds past the store's claim and the listening faces. */
+interface StandingComposition {
+  readonly standing: "herm" | "hearth";
+  /** Stop the PROCESS gracefully: flush, tear down, exit. */
+  readonly onSignal: (sig: string) => void;
+  /** Tear this composition down and leave the process and its floor standing. */
+  readonly teardown: () => Promise<void>;
+}
+
+/** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
+async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
+  const { askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
+          reachFaces, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket, standing, faceLit } = ctx;
+
+  const pullMs = process.env["LAR_PULL_MS"];   // carriage cadence — tuning, kept separate from membership
+  const herm = await openNodeHerm({
+    // The name follows what STANDS, never which branch reached here. A vessel the operator asked to keep
+    // faceless IS Lares Viales, gods of the crossroads; a hearth waiting on its face stands on the same
+    // floor under its own name, and calling it a wayfarer would tell its operator they built the wrong thing.
+    hostId:     askedStanding === "herm" ? "lares-viales" : "lararium-node",
+    floor,
+    sovereign,
+    wikiId,
+    storageDir,
+    genesisDir,
+    rootDir,
+    wss,
+    catalogUrl,
+    httpServer,
+    dispatcher,
+    meshSelf,
+    ...(pullMs ? { pullIntervalMs: Number.parseInt(pullMs, 10) } : {}),
+    onPhase:    (phase) => console.log(`[herm] phase → ${phase}`),
+  });
+  console.log(`[herm] live — wiki-less wayfarer | storage: ${storageDir}`);
+  console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
+  console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
+  console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
+  console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
+  logPendingPlanes("[herm]", herm.mountManifest);
+
+  // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
+  // `standAs` above answers what this vessel stands as ALONE. A recognised operator may raise it for the
+  // length of their visit, and those caps ride THEIR key: nothing seats a persona root here, and
+  // `personaSlotCeiling("herm") === 0` keeps that true whatever stands.
+  //
+  // It stands HERE rather than beside `standAs` because the fence lives on a board, and the board opens
+  // with the vessel. The door reads the lease epoch off the live daemon doc every time it is asked —
+  // a remembered epoch would hold a vessel raised past the roll that should have dropped it.
+  //
+  // Nothing here touches disk. A reboot drops this vessel back to its floor with nothing to resume,
+  // which is what keeps SEATED ⊥ RAISED true at rest (waking-floor#the-raise-is-a-vessel-layer-act).
+  // RECOGNITION IS THE VERIFIER'S (O9). A grant carries its recogniser's presented admit, signed by that
+  // admit's LEAF; every answer re-reads the Nexuses this vessel carries off its OWN replica and raises only
+  // on a `held` admit for the Nexus the challenge names. Carried here means either way a vessel carries:
+  // a persona's consent or seated chair (`readCarriedNexuses`, empty on a persona-less herm by class), or
+  // this PLACE's own counted carrier seal on a held charter's board (`placeCarriedNexuses`).
+  //
+  // THE CHALLENGE NAMES A NEXUS BY ITS AID — the first carried at boot, primary charter first. The vessel's
+  // own key names only the vessel a grant must answer for. A vessel that carries no Nexus emits no challenge:
+  // no admit could count, so there is nothing to invite.
+  //
+  // THE RAISE FENCE'S LEASE RESOURCE IS THE CHALLENGE NEXUS'S AID. `leaseEpoch` reads
+  // `effectiveLeaseEpochOnBoard(daemonHandle, raiseNexus)`, so the epoch a raise must match is the one leased under
+  // that AID on this vessel's own daemon board — never the vessel's key, never a wiki, never a second Nexus it also
+  // carries. A `nexus-rekey` that advances the lease for that AID drops every raise standing against the old epoch;
+  // a rekey under any other Nexus leaves this door's fence where it stood.
+  const selfKey  = await loadVesselVerifyingKey();
+  const sealHome = larSealHome();
+  const openRaiseBoard: BoardOpener = async (url, label) =>
+    (await materializeSharedLarDoc(herm.repo, url, label).catch(() => null))?.doc();
+  const raiseReadings = async () => unionReadings(
+    await readCarriedNexuses({ sealHome, ownVesselKey: selfKey, open: openRaiseBoard }),
+    await placeCarriedNexuses({ sealHome, ownVesselKey: selfKey, open: openRaiseBoard }),
+  );
+  const raiseNexus = (await raiseReadings())[0]?.aid ?? null;
+  const raiseDoor = standRaiseDoor({
+    vesselId:   selfKey,
+    nexus:      raiseNexus ?? "",
+    floor:      standing,
+    leaseEpoch: () => (raiseNexus ? effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus) : 0),
+    readings:   raiseReadings,
+    verify:     verifyNymSignature,
+    nonce:      () => randomBytes(32).toString("hex"),
+  });
+  console.log(`[herm] standing:  ${await raiseDoor.standing()} — the raise door answers at the crossroads`);
+
+  // THE VESSEL EMITS ITS OWN CHALLENGE, and emitting it costs nothing. It names what is being raised —
+  // vessel, Nexus, epoch, nonce — and carries nothing of what this vessel holds. A forged challenge buys
+  // an attacker nothing either: a grant answers only the exact nonce the asking vessel still holds, and
+  // an attacker holds no such vessel. One boot, one nonce, until the ask/answer verbs stand.
+  if (raiseNexus) {
+    const invitation = await raiseDoor.ask();
+    console.log(`[herm] raise challenge (hand to a recognised operator; they run \`lares raise sign\`):`);
+    console.log(`[herm]   ${JSON.stringify(invitation)}`);
+  } else {
+    console.log(`[herm] raise door: this vessel carries no Nexus — no admit could count, so no challenge stands`);
+  }
+  for (const f of reachFaces) console.log(`[herm] ws:        ${wsUrlForOrigin(f.origin)}   (${f.kind})`);
+
+  // The CARRIAGE CROSSROADS (Socket B) — announced when a relay port rode the config (LAR_HERM_RELAY_PORT).
+  // The operator hands a family hearth the `ws://` URL + the gate key to dial this crossroads. Absent → no line.
+  // The relay binds its OWN port (SEPARATE from the /ws read-face port) on the same host every face names.
+  if (herm.carriageRelayPort !== null) {
+    const relayPort = herm.carriageRelayPort;
+    console.log(`[herm] carriage crossroads (Socket B) — hearths dial this to carry sealed cad bodies:`);
+    console.log(`[herm]   gate key: ${herm.carriageRelayGatePubKey}`);
+    for (const f of reachFaces) {
+      const scheme = f.origin.startsWith("https") ? "wss" : "ws";
+      const bareHost = f.host.replace(/:\d+$/, "");
+      console.log(`[herm]   dial → ${scheme}://${bareHost}:${relayPort}   (${f.kind})`);
+    }
+  }
+
+  // Co-located UDS verb-channel for the local `lares` CLI (the daemon answers).
+  // THE RENDEZVOUS SITS APART FROM THE DATA. A socket answers "where do two processes meet" under a
+  // ~104-byte cap the data home has never heard of; siting it beside the substrate made it inherit the
+  // substrate's depth, and a deep root then refused to bind while everything else stood. Both sides
+  // derive from the SAME resolved dir, so the client finds what this bound.
+  // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
+  // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
+  // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
+  await herm.daemon.workerEa;
+  await herm.daemon.mountHostWorkingLayer();
+  publishStanding(storageDir, standing, faceLit);
+  front.attach(makeUdsSeat({
+    daemonHandle: herm.daemon.daemonHandle,
+    composite:    herm.daemon.composite,
+    placeVerb:    (o) => herm.daemon.placeVerb(o),
+    claim:        floor.storeClaim,
+    repo:         herm.repo,
+    ...(receiptRing !== undefined && { ring: receiptRing }),
+    onLog: (line) => console.log(`[herm] ${line}`),
+  }));
+  console.log(`[herm] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  await markReadyOnceStanding(readinessState, herm.daemon.workerEa);
+
+  let hermShuttingDown = false;
+  const hermShutdown = async (sig: string): Promise<void> => {
+    if (hermShuttingDown) return;
+    hermShuttingDown = true;
+    console.log(`[herm] ${sig} — graceful shutdown`);
+    try {
+      readinessFace.dispose();
+      pronaos?.dispose();
+      front.close();
+      lanSocket()?.close();
+      httpServer.close();
+      dispatcher.dispose();
+      await herm.dispose();          // read-face + daemon island flush, then the composed vessel
+      await herm.repo.flush();
+      console.log("[herm] shutdown complete — state flushed durably");
+    } catch (e) {
+      console.error("[herm] shutdown error:", e instanceof Error ? e.message : String(e));
+    } finally {
+      process.exit(0);
+    }
+  };
+  return {
+    standing: "herm",
+    onSignal: (sig) => void hermShutdown(sig),
+    teardown: async () => { front.detach(); await herm.teardown(); },
+  };
+}
+
+/** The hearth: the floor's caps with the wiki, the pool and the oracle read-face lit over them. */
+async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
+  const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
+          reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
+          standing, faceLit } = ctx;
 
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
   if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
@@ -503,6 +604,8 @@ async function main(): Promise<void> {
   // derived meshSelf — a hearth that navigates the mesh, not a destination beside the roads.
   const result = await openNodeVessel({
     hostId:     "lararium-node",
+    floor,
+    sovereign,
     wikiId,
     storageDir,
     genesisDir,
@@ -595,15 +698,16 @@ async function main(): Promise<void> {
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel
   // answers: a marker that outlives what it names repeats the fault this vessel already met.
   publishStanding(storageDir, standing, faceLit);
-  const uds = startUdsChannel({
+  front.attach(makeUdsSeat({
     daemonHandle: result.daemon.daemonHandle,
     composite:    result.daemon.composite,
     placeVerb:    (o) => result.daemon.placeVerb(o),
-    claim:        result.storeClaim,
+    claim:        floor.storeClaim,
     repo:         result.repo,
     ...(receiptRing !== undefined && { ring: receiptRing }),
     onLog: (line) => console.log(`[lararium] ${line}`),
-  });
+  }));
+  console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
@@ -710,8 +814,8 @@ async function main(): Promise<void> {
       pronaos?.dispose();
       oracleReadFace?.dispose();
       dispatcher.dispose();
-      uds.close();
-      lanSocket?.close();
+      front.close();
+      lanSocket()?.close();
       httpServer.close();
       // M17: print the INSTANT this step resolves, never waiting for the final line below. The
       // final "shutdown complete" line only prints once islands AND daemon have also acked (or
@@ -750,8 +854,11 @@ async function main(): Promise<void> {
       process.exit(1);
     }
   };
-  process.on("SIGINT",  () => void shutdown("SIGINT"));
-  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  return {
+    standing: "hearth",
+    onSignal: (sig) => void shutdown(sig),
+    teardown: async () => { front.detach(); oracleReadFace?.dispose(); await result.teardown(); },
+  };
 }
 
 main().catch((err) => {

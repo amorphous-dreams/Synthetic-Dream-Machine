@@ -36,6 +36,8 @@ import {
   type IslandToVesselMsg,
   type IslandMsg_CasWant,
   type IslandMsg_CasBlock,
+  type IslandMsg_DocRest,
+  type IslandMsg_DocRested,
   type CasTransitTransport,
 } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
@@ -73,6 +75,40 @@ function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", 
       });
     },
   };
+}
+
+/** A worker's rest ask waits this long on the vessel before it reads as unrested; the mint then records no pointer. */
+const DOC_REST_PATIENCE_MS = 60_000;
+
+/**
+ * THE REST DOOR, worker side. A worker's Repo keeps no store for a document it mints beside its own bag; the
+ * vessel's Repo saves it. `restOnVessel` posts `doc:rest` and resolves on `doc:rested` with `rested: true`; an
+ * unrested answer, or none inside this side's own patience, rejects, so the caller records no pointer.
+ */
+export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = DOC_REST_PATIENCE_MS): (documentIds: readonly string[]) => Promise<void> {
+  const pending = new Map<string, (answer: IslandMsg_DocRested | null) => void>();
+  port.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_DocRested> | null;
+    if (!m || m.type !== "doc:rested" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(m as IslandMsg_DocRested);
+  });
+  let seq = 0;
+  return (documentIds) => new Promise<void>((resolve, reject) => {
+    const requestId = `rest-${process.pid}-${++seq}`;
+    const timer = setTimeout(() => { pending.delete(requestId); settleWith(null); }, patienceMs);
+    timer.unref?.();
+    const settleWith = (answer: IslandMsg_DocRested | null): void => {
+      clearTimeout(timer);
+      if (answer?.rested === true) resolve();
+      else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "unrested" : "no answer"})`));
+    };
+    pending.set(requestId, settleWith);
+    const ask: IslandMsg_DocRest = { schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rest", requestId, documentIds: [...documentIds] };
+    port.postMessage(ask);
+  });
 }
 
 function _buildStorage(cfg: IslandStorageConfig | undefined): StorageAdapterInterface | undefined {
