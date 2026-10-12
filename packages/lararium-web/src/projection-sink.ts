@@ -54,6 +54,9 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
   let doors: ProjectionReturnDoors | null = null;
   const compositionEndValue = new WeakMap<Element, string>();
   const composingFields = new WeakSet<Element>();
+  const seenModals = new WeakSet<Element>();
+  let modalWasPresent = false;
+  let restoreRenderId: string | null = null;
   let pendingPopupPlacement: { readonly top: number; readonly left: number } | undefined;
 
   const apply = (frame: ProjectionFrame): "painted" | "stale-frame" => {
@@ -76,9 +79,15 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
       // a person typed there and the popup placement measured there all end with it.
       paneEl.replaceChildren();
       pendingPopupPlacement = undefined;
+      restoreRenderId = null;
+      modalWasPresent = false;
     }
     shownSurface = frame.surface;
     shownRev = frame.rev;
+    // Read where focus stands BEFORE the morph: a frame that brings a modal turns the rest inert, and an
+    // inert node loses focus.
+    const focusedBefore = shadow.activeElement;
+    const focusedRidBefore = focusedBefore && paneEl.contains(focusedBefore) ? focusedBefore.closest("[data-lar-rid]")?.getAttribute("data-lar-rid") ?? null : null;
     // Morph (not innerHTML=) — id-set matching keeps unchanged nodes in place; the in-progress value
     // is preserved (ignoreActiveValue). The render-id attributes ride the HTML untouched.
     Idiomorph.morph(paneEl, frame.html, { morphStyle: "innerHTML", ignoreActiveValue: true });
@@ -104,8 +113,48 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
       }
       pendingPopupPlacement = undefined;
     }
+    // A MODAL IN THE FRAME TAKES FOCUS. The wiki renders its own modal dialog (`aria-modal="true"`) and marks
+    // the rest of its frame `inert`; the page holds focus, so the page moves it in when a modal arrives and
+    // back to the node that held it (by render-id) when the modal leaves. No rule here knows what the modal asks.
+    const modal = paneEl.querySelector<HTMLElement>('[aria-modal="true"]');
+    if (modal) {
+      if (!seenModals.has(modal)) {
+        seenModals.add(modal);
+        if (!modalWasPresent) restoreRenderId = focusedRidBefore;
+        const focusTarget = modal.querySelector<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? modal;
+        focusTarget.focus();
+      }
+      modalWasPresent = true;
+    } else {
+      if (modalWasPresent) {
+        const restore = restoreRenderId === null ? null : [...paneEl.querySelectorAll<HTMLElement>("[data-lar-rid]")]
+          .find((node) => node.getAttribute("data-lar-rid") === restoreRenderId) ?? null;
+        restore?.focus();
+        restoreRenderId = null;
+      }
+      modalWasPresent = false;
+    }
     return "painted";
   };
+
+  // The KEY leg. Typing rides the text leg as a whole value, so only keys that never type cross: Escape, and
+  // any key pressed with ctrl, meta or alt (TW5's keyboard widgets match on `keyCode` plus the four modifier
+  // flags). The island bubbles the event up its own tree, so the nearest painted node with a render-id serves.
+  paneEl.addEventListener("keydown", (event) => {
+    const key = event as KeyboardEvent;
+    if (key.isComposing || ["Control", "Meta", "Alt", "Shift"].includes(key.key)) return;
+    const escape = key.key === "Escape" || key.keyCode === 27;
+    if (!escape && !key.ctrlKey && !key.metaKey && !key.altKey) return;
+    const src = (key.composedPath?.()[0] ?? key.target) as Element | null;
+    const el = src?.closest?.("[data-lar-rid]");
+    if (!el || !doors || shownSurface === null) return;
+    if (escape && src?.closest?.('[aria-modal="true"]')) key.preventDefault();
+    doors.sendDomEvent(shownSurface, el.getAttribute("data-lar-rid")!, "keydown", {
+      keyCode: key.keyCode, metaKey: key.metaKey, ctrlKey: key.ctrlKey, altKey: key.altKey, shiftKey: key.shiftKey,
+    });
+  });
 
   paneEl.addEventListener("click", (e) => {
     const el = (e.target as Element)?.closest?.("[data-lar-rid]");

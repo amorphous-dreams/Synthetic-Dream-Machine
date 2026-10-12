@@ -13,12 +13,13 @@ function mount() {
   document.body.appendChild(host);
   const sink = createProjectionSink(host, { inputMaxChars: 16 });
   const events: string[] = [];
+  const domEvents: Array<{ surface: string; rid: string; type: string; fields: Record<string, number | boolean> }> = [];
   sink.arm({
-    sendDomEvent: (surface, rid, type) => { events.push(`${surface}:${type}:${rid}`); },
+    sendDomEvent: (surface, rid, type, fields) => { events.push(`${surface}:${type}:${rid}`); domEvents.push({ surface, rid, type, fields }); },
     sendDomInput: (surface, rid, type, value) => { events.push(`${surface}:${type}:${rid}=${value}`); },
   });
   const pane = (): HTMLElement => host.shadowRoot!.querySelector<HTMLElement>(".lar-projection")!;
-  return { host, sink, events, pane, done: () => host.remove() };
+  return { host, sink, events, domEvents, pane, done: () => host.remove() };
 }
 const frame = (surface: string, rev: number, html: string): ProjectionFrame => ({ surface, rev, html, css: "" });
 
@@ -42,6 +43,63 @@ describe("★ revisions belong to a surface ★", () => {
 });
 
 describe("★ an event names the surface that painted its target ★", () => {
+  test("Escape relays on a focused button; CONTROL: a bare letter does not", () => {
+    const m = mount();
+    m.sink.apply(frame("lares", 1, `<button data-lar-rid="7">open</button>`));
+    const button = m.pane().querySelector("button")!;
+    button.focus();
+    button.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", keyCode: 27, bubbles: true, composed: true }));
+    expect(m.domEvents.map(({ type, rid, fields }) => [type, rid, fields.keyCode])).toEqual([["keydown", "7", 27]]);
+    // CONTROL: ordinary typing is not relayed.
+    button.dispatchEvent(new KeyboardEvent("keydown", { key: "a", keyCode: 65, bubbles: true, composed: true }));
+    expect(m.domEvents).toHaveLength(1);
+    m.done();
+  });
+
+  test("modified Enter relays from a textarea; CONTROL: plain Enter and bare Control do not", () => {
+    const m = mount();
+    m.sink.apply(frame("lares", 1, `<div data-lar-rid="8"><textarea></textarea></div>`));
+    const area = m.pane().querySelector("textarea")!;
+    area.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, ctrlKey: true, bubbles: true, composed: true }));
+    expect(m.domEvents.map(({ type, rid, fields }) => [type, rid, fields.keyCode, fields.ctrlKey])).toEqual([["keydown", "8", 13, true]]);
+    area.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true, composed: true }));
+    area.dispatchEvent(new KeyboardEvent("keydown", { key: "Control", keyCode: 17, ctrlKey: true, bubbles: true, composed: true }));
+    expect(m.domEvents).toHaveLength(1);
+    m.done();
+  });
+
+  test("a new modal focuses its first button and a held modal does not steal focus", () => {
+    const m = mount();
+    const html = `<div aria-modal="true" role="alertdialog" tabindex="-1"><button data-lar-rid="9">Keep</button><button data-lar-rid="10">Delete</button></div>`;
+    m.sink.apply(frame("lares", 1, html));
+    const buttons = m.pane().querySelectorAll("button");
+    expect(m.host.shadowRoot!.activeElement).toBe(buttons[0]);
+    buttons[1].focus();
+    // CONTROL: a repeated paint of the same modal preserves the person's new focus.
+    m.sink.apply(frame("lares", 2, html));
+    expect(m.host.shadowRoot!.activeElement).toBe(m.pane().querySelectorAll("button")[1]);
+    m.done();
+  });
+
+  test("closing a modal restores prior render-id focus; CONTROL: missing target stays unfocused", () => {
+    const m = mount();
+    m.sink.apply(frame("lares", 1, `<button data-lar-rid="5">Origin</button>`));
+    const origin = m.pane().querySelector("button")!;
+    origin.focus();
+    const modal = `<div aria-modal="true"><button>Continue</button></div>`;
+    m.sink.apply(frame("lares", 2, modal));
+    expect(m.host.shadowRoot!.activeElement?.textContent).toBe("Continue");
+    m.sink.apply(frame("lares", 3, `<button data-lar-rid="5">Restored</button>`));
+    expect(m.host.shadowRoot!.activeElement).toBe(m.pane().querySelector("button"));
+
+    m.sink.apply(frame("lares", 4, `<button data-lar-rid="6">Origin</button>`));
+    m.pane().querySelector("button")!.focus();
+    m.sink.apply(frame("lares", 5, modal));
+    expect(() => m.sink.apply(frame("lares", 6, `<p>gone</p>`))).not.toThrow();
+    expect(m.host.shadowRoot!.activeElement).toBeNull();
+    m.done();
+  });
+
   test("clicks and whole-value input carry the shown surface, and follow a switch", () => {
     const m = mount();
     m.sink.apply(frame("lares", 1, `<button data-lar-rid="7">open</button><input data-lar-rid="9" value="a">`));

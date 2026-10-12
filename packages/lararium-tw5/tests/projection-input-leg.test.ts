@@ -131,3 +131,32 @@ describe("the projection cap's door", () => {
   });
 
 });
+
+describe("projected handler refusals", () => {
+  test("a throwing event listener is warned and dispatch continues — control: a healthy listener warns nothing", () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const thrown = fakeDoc.createElement("button");
+    (thrown as unknown as { addEventListener(t: string, h: () => void): void }).addEventListener("click", () => {
+      throw new TypeError("no action");
+    });
+    expect(dispatchProjectedEvent(thrown.attributes["data-lar-rid"]!, "click", {})).toBe("dispatched");
+    expect(warning).toHaveBeenCalledTimes(1);
+    expect(warning.mock.calls[0]?.[0]).toContain("[wiki-worker] handler refused:");
+    expect(warning.mock.calls[0]?.[0]).toContain("TypeError");
+
+    warning.mockClear();
+    const healthy = boundNode("click");
+    expect(dispatchProjectedEvent(healthy.rid, "click", {})).toBe("dispatched");
+    expect(warning).not.toHaveBeenCalled();
+    warning.mockRestore();
+  });
+});
+
+describe("never-persisted core temporary titles", () => {
+  test("core question and alert titles are transient — control: unrelated temporary title persists", async () => {
+    const { neverPersists } = await import("../src/island-adaptor.js");
+    expect(neverPersists("$:/temp/confirm/1")).toBe(true);
+    expect(neverPersists("$:/temp/alerts/alert")).toBe(true);
+    expect(neverPersists("$:/temp/other")).toBe(false);
+  });
+});

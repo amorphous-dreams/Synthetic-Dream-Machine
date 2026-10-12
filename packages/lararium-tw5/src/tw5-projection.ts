@@ -45,6 +45,7 @@ interface RidNode {
   attributes: Record<string, string | undefined>;
   setAttribute(name: string, value: string): void;
   _larListeners?: { type: string; handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void } }[];
+  parentNode?: RidNode | null;
   /** The field's live text. TW5's edit widgets read `domNodes[0].value`, so the input leg writes it here. */
   value?: string;
   selectionStart?: number;
@@ -62,8 +63,8 @@ interface ProjectionEventScope {
   renderIds: Set<string>;
   liveIds: Set<string>;
   mark?: () => void;
+  alert?: (title: string, text: string) => void;
   pendingAnswer?: { readonly renderId: string; readonly eventType: string; readonly wikiUri: string };
-  pendingRefusal?: { readonly capability: "view.confirm"; readonly message: string };
 }
 const eventScopes = new Map<string, ProjectionEventScope>();
 let activeEventScope: ProjectionEventScope | undefined;
@@ -162,7 +163,7 @@ export function dispatchProjectedInput(renderId: string, eventType: string, valu
   el.selectionStart = el.selectionEnd = value.length;
   const ev = { type: eventType, target: el, currentTarget: el, preventDefault() {}, stopPropagation() {} };
   for (const l of el._larListeners ?? []) {
-    if (l.type === eventType) invokeFakeListener(l.handler, ev);
+    if (l.type === eventType) invokeProjectedListener(scope, l.handler, ev);
   }
   return "dispatched";
 }
@@ -173,6 +174,10 @@ export function dispatchProjectedInput(renderId: string, eventType: string, valu
  * navigator → story change → re-project) the widget tree runs as if the event were local — TW5
  * never learns it crossed a thread. A miss answers `stale-target` to the page and marks that result
  * into the next absolute projection.
+ *
+ * A `keydown` BUBBLES up the fake tree until a listener stops it, because TW5's keyboard widget binds on a
+ * wrapper around the focused control; a click fires on its own node alone. A listener that throws (a
+ * plugin reaching for a blocking `confirm`, say) stops there and reads by name on the wiki's alert rail.
  */
 export function dispatchProjectedEvent(renderId: string, eventType: string, fields: Record<string, number | boolean>): "dispatched" | "stale-target" {
   const el = ridMap.get(renderId);
@@ -196,27 +201,33 @@ export function dispatchProjectedEvent(renderId: string, eventType: string, fiel
   }
   // TW5 navigator.js reads event.event.view before save/cancel/rename. A worker event carries the
   // worker-local, explicitly refusing view capability; no global `window` or DOM crosses the seam.
-  const event = {
+  let propagationStopped = false;
+  const event: Record<string, unknown> = {
     type: eventType, target: el, currentTarget: el, ...fields,
-    view: makeProjectedViewContract((capability, message) => {
-      if (scope) {
-        scope.pendingRefusal = { capability, message };
-        scope.mark?.();
-      }
+    view: makeProjectedViewContract((_capability, message) => {
+      scope?.alert?.("$:/temp/lares/alert/confirm-refused", `This wiki cannot open a blocking prompt: ${message}`);
     }),
-    preventDefault() {}, stopPropagation() {},
+    preventDefault() { this.defaultPrevented = true; },
+    stopPropagation() { propagationStopped = true; },
   };
+  if (eventType === "keydown") { event.key = ""; event.code = ""; }
   const ev = event;
   // TW5 binds its popup closer on the document capture leg; run that before the target's widget
   // handler so a click that opens a popup cannot immediately close the popup it just opened.
   if (eventType === "click") {
     for (const l of scope?.popupRoot._larListeners ?? []) {
-      if (l.type === "click") invokeFakeListener(l.handler, ev);
+      if (l.type === "click") invokeProjectedListener(scope, l.handler, ev);
     }
   }
-  for (const l of el._larListeners ?? []) {
-    if (l.type === eventType) invokeFakeListener(l.handler, ev);
-  }
+  let current: RidNode | null | undefined = el;
+  do {
+    event.currentTarget = current;
+    for (const l of current?._larListeners ?? []) {
+      if (l.type === eventType) invokeProjectedListener(scope, l.handler, ev);
+    }
+    if (eventType !== "keydown" || propagationStopped) break;
+    current = current?.parentNode;
+  } while (current);
   return "dispatched";
 }
 
@@ -236,6 +247,17 @@ function answerStaleTarget(
 function invokeFakeListener(handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void }, event: unknown): void {
   if (typeof handler === "function") handler(event);
   else handler.handleEvent(event);
+}
+
+function invokeProjectedListener(scope: ProjectionEventScope | undefined, handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void }, event: unknown): void {
+  try {
+    invokeFakeListener(handler, event);
+  } catch (error) {
+    const refusal = error instanceof Error ? error : new Error(String(error));
+    const name = refusal.name || "Error";
+    console.warn(`[wiki-worker] handler refused: ${name}: ${refusal.message}`);
+    scope?.alert?.("$:/temp/lares/alert/handler-refused", `An action stopped: ${name}: ${refusal.message}`);
+  }
 }
 
 function numericField(fields: Record<string, number | boolean>, key: string): number | undefined {
@@ -260,7 +282,10 @@ export function mountProjection(ctx: IslandContext): () => void {
   // The worker's fake document has no browser startup, which normally stands TW5's Popup. Reuse
   // TW5's own manager over a fake root so popup state remains ordinary wiki state and every frame
   // remains a complete HTML+CSS snapshot.
-  const scope: ProjectionEventScope = { wikiUri: ctx.wikiUri, popupRoot: fakeDoc.createElement("div"), renderIds: new Set(), liveIds: new Set() };
+  const scope: ProjectionEventScope = {
+    wikiUri: ctx.wikiUri, popupRoot: fakeDoc.createElement("div"), renderIds: new Set(), liveIds: new Set(),
+    alert: (title, text) => tw.wiki.addTiddler(new tw.Tiddler({ title, text, tags: ["$:/tags/Alert"], component: "projection", modified: new Date() })),
+  };
   activeEventScope = scope;
   if (typeof tw.utils?.Popup !== "function") {
     throw new Error("TW5 projection cannot install its own popup manager: $tw.utils.Popup is unavailable");
@@ -302,12 +327,6 @@ export function mountProjection(ctx: IslandContext): () => void {
         const attr = (value: string): string => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
         html += `<output role="status" aria-live="polite" data-lar-interaction-result="stale-target" data-lar-source-rid="${attr(answer.renderId)}" data-lar-source-event="${attr(answer.eventType)}" data-lar-source-wiki="${attr(answer.wikiUri)}">stale-target</output>`;
         delete scope.pendingAnswer;
-      }
-      if (scope.pendingRefusal) {
-        const refusal = scope.pendingRefusal;
-        const attr = (value: string): string => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
-        html += `<output role="status" aria-live="polite" data-lar-interaction-result="capability-refused" data-lar-capability="${refusal.capability}">${refusal.capability} refused: ${attr(refusal.message)}</output>`;
-        delete scope.pendingRefusal;
       }
       ctx.post({
         schema_version: 1,
