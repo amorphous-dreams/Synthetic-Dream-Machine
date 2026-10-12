@@ -83,6 +83,23 @@ describe("CompositeStore.resolveLayered", () => {
     await repo.shutdown();
   });
 
+  test("no layer read waits on another: a record that lands in a lower layer right after the call stays out of the answer", async () => {
+    const repo = new Repo({ network: [] });
+    const composite = new CompositeStore();
+    const lowHandle = repo.create<LarDoc>(emptyLarDoc());
+    const highHandle = repo.create<LarDoc>(emptyLarDoc());
+    composite.addLayer({ bagId: LOW, store: new AutomergeDocStore(lowHandle, LOW), writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: HIGH, store: new AutomergeDocStore(highHandle, HIGH), writable: true });
+    // The walk reads top-down. A wait between its layer reads would let this lower-layer record, written in
+    // the same turn as the call, reach the answer; the composition's state at the call holds no record.
+    const asked = composite.resolveLayered("lands-below-after-the-call");
+    lowHandle.change((doc) => { doc.tiddlers["lands-below-after-the-call"] = { tiddler: { title: "lands-below-after-the-call", text: "late" } }; });
+    expect(await asked, "the answer reads the state that stood at the call").toBeNull();
+    // CONTROL: a call made after the write answers the record.
+    expect((await composite.resolveLayered("lands-below-after-the-call"))?.record.tiddler.text).toBe("late");
+    await repo.shutdown();
+  });
+
   test("a generic layer without readNow resolves through its awaited get", async () => {
     const record: LarTiddlerRecord = { tiddler: { title: "generic", text: "generic value" } };
     const store: LarTiddlerStore = {

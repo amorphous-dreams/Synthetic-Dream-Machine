@@ -87,21 +87,25 @@ describe.skipIf(wikiSkip)(`resident landing failure alert surfaces and clears${s
     const title = "lar:///t/landing/adaptor-failure";
     const next = "lar:///t/landing/adaptor-next";
     const resolve = r.composite.resolveLayered.bind(r.composite);
+    // The composition refuses the title for as long as `refusing` stands, however many waves the store
+    // delivers for it, so the vector reads the owed state and then the recovery, each at a quiet queue.
     let fails = 0;
+    let refusing = true;
     vi.spyOn(r.composite, "resolveLayered").mockImplementation(async (requested) => {
-      if (requested === title && fails < 2) { fails++; throw new Error("composition refused"); }
+      if (requested === title && refusing) { fails++; throw new Error("composition refused"); }
       return resolve(requested);
     });
     const before = r.arrivals.length;
     await r.working.put({ tiddler: { title, text: "recovered value" } }, remote);
     await arrived(r, before, [title]);
     await r.adaptor.landingIdle();
-    expect(fails).toBe(2);
+    expect(fails).toBeGreaterThanOrEqual(2);
     expect(r.wiki.getTiddler(landingFailedAlertTitle(title))?.fields).toMatchObject({
       "alert-kind": "landing-failed",
       "landing-title": title,
     });
 
+    refusing = false;
     const nextBefore = r.arrivals.length;
     await r.working.put({ tiddler: { title: next, text: "next wave" } }, remote);
     await arrived(r, nextBefore, [next]);

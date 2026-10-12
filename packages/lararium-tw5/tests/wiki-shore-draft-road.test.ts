@@ -632,12 +632,16 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
       await afterDispatch();
       timers.fireAll(400);
       await turns(24);
-      if (refuse) r.failures.family = new Error("refused");
+      // The store refuses every write while the refusal stands, a retry included: a wave the store redelivers
+      // late lawfully retries the owed tombstone, and the vector reads the refused state, never that retry.
+      if (refuse) { r.failures.family = new Error("refused"); r.failures.tombstone = new Error("refused"); }
       saveSequence(r, d);
       await afterDispatch();
       await turns(24);
+      await r.adaptor.landingIdle();
       expect(r.wiki.getTiddler(child) !== undefined, refuse ? "the refused tombstone leaves the child" : "the acknowledged tombstone removes the child").toBe(refuse);
       r.failures.family = null;
+      r.failures.tombstone = null;
       await r.stop();
     }
   }, 120_000);

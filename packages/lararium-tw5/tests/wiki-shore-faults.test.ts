@@ -61,8 +61,8 @@ describe("wiki shore fault vectors", () => {
     expect((r.wiki.getTiddler(rejectedTitle) as { fields: Record<string, unknown> }).fields.text).toBe("survives the resolver fault");
     expect((r.wiki.getTiddler(survivorTitle) as { fields: Record<string, unknown> }).fields).toMatchObject({ title: survivorTitle, text: "survivor value", "$origin-bag": r.workingBag });
     expect(r.adaptor.ledger.landedOf(survivorTitle)?.bag).toBe(r.workingBag);
-    await r.adaptor.stop();
     expect(r.adaptor.isResident()).toBe(true);
+    await r.adaptor.stop();
     errors.mockRestore();
     await r.repo.shutdown();
   }, 120_000);

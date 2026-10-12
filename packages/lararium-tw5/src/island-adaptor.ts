@@ -695,6 +695,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.door = null;
     this.landing = null;
     this.engineApply = null;
+    // A stopped shore holds no account of the wiki: a restart seeds its ledger afresh and turns resident
+    // again at its own seed checkpoint, so no stale landed value reads a later change as foam.
+    this.resident = false;
+    this.ledger.clear();
+    this.sent.clear();
+    this.handBase.clear();
+    this.lastWriteBag.clear();
+    this.unlanded.clear();
     this._unsubscribe?.();
     this._unsubscribe = null;
   }
@@ -942,12 +950,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   handleChangeDispatch(changes: Readonly<Record<string, unknown>>): ReadonlySet<string> {
     const consumed = new Set<string>();
     const wiki = this.tw5.$tw.wiki;
+    // ONE WRITE OF A TARGET PER DISPATCH. Two drafts of one target that leave in one dispatch name one
+    // state of that target: the first draft's act carries it and every later draft's act stands as a cancel.
+    const written = new Set<string>();
     for (const draftTitle of Object.keys(changes)) {
       const entry = this.draftBook.get(draftTitle);
       if (!entry || wiki.getTiddler(draftTitle) !== undefined) continue;
       const target = entry.title.trim();
       const standing = target === "" ? undefined : wiki.getTiddler(target);
-      const saves = standing !== undefined && Object.hasOwn(changes, target) && !this.isFoam(target, standing);
+      const saves = standing !== undefined && Object.hasOwn(changes, target) && !this.isFoam(target, standing) && !written.has(target);
+      if (saves) written.add(target);
       const rename = saves && target !== entry.of;
       // ONE set: the titles the act takes are the titles it marks, and the per-title loop skips exactly them.
       // The source joins the act only when the wiki holds no source after the dispatch; a standing one (an
@@ -1065,9 +1077,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       }
       for (const title of g.titles) {
         const acknowledged = (this.writeAcks.get(title) ?? 0) > (ackBefore.get(title) ?? 0);
-        if (!acknowledged) this.sent.delete(title);
         this.lastWriteBag.set(title, g.bag);
-        this.unlanded.add(title);
+        // Only an acknowledged write stands ahead of the ledger; a noop raises no wave to clear the mark.
+        if (acknowledged) this.unlanded.add(title);
+        else this.sent.delete(title);
         this.pendingHand.delete(title);
         this.failedAtTeardown.delete(title);
         this._clearUnsaved(title);
@@ -1220,13 +1233,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.inFlight.set(title, task);
     try {
       await task;
-      // The store took this state for `writeBag`: the title's state stands there, written just now or
-      // equal to what stood (a noop). A noop fires no envelope, so no return wave will land over `sent`.
+      // The store took this state for `writeBag`: the title's state stands there, by this write or because
+      // an equal state already stood (a noop). A noop fires no envelope, so no return wave lands over `sent`
+      // and none clears `unlanded`: only an acknowledged write stands ahead of the ledger.
       const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
       this.lastFlushWrote.set(title, acknowledged);
       if (writeBag) this.lastWriteBag.set(title, writeBag);
-      this.unlanded.add(title);
-      if (!acknowledged) this.sent.delete(title);
+      if (acknowledged) this.unlanded.add(title);
+      else this.sent.delete(title);
       if (this.handed.get(title) === state) this.handed.delete(title);
       this.pendingHand.delete(title);
       this.failedAtTeardown.delete(title);
@@ -1255,12 +1269,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // OUTCOME, never the invocation). A verb invocation carries the CALLER'S WHOLE PAYLOAD, so
   // `act LOAD` over the corpus writes ~7 MB of carriers into one scratch tiddler.
   //
-  // The law lived only in prose. The bag-paths cascade's `[prefix[lar:]…]` catch-all admitted the
-  // plane, and once a live `change` listener carried wiki edits outbound, the whole corpus landed in
-  // the CRDT a SECOND time as ONE monolithic record. Applying that change exhausted the automerge
-  // WASM module's 4 GiB linear memory (`rust_oom` → `Module terminated`), and a terminated module
-  // projects nothing ever again: the disk mirror held ZERO files while the caller waited out its
-  // whole budget. MEASURED: 160 carriers → 1.7 GB RSS and a settled mirror; 381 → 4.9 GB and death.
+  // The cascade's `[prefix[lar:]…]` catch-all admits the plane by its spelling, and a live `change`
+  // listener carries every wiki edit outbound. Persisting the plane would land the caller's whole payload
+  // in the CRDT a second time as ONE monolithic record: a change of that size exhausts the automerge WASM
+  // module's linear memory, and a terminated module projects nothing afterwards.
   //
   // So the refusal sits HERE, in the module the law names, ahead of the cascade — the cascade routes
   // among bags and stays the operator's to edit, and no edit of it may re-open this.
