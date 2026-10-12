@@ -59,7 +59,6 @@ export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
   if (args.options["wiki"])    extraArgs.push("--wiki",    args.options["wiki"]);
   if (args.options["port"])    extraArgs.push("--port",    args.options["port"]);
   if (args.options["root"])    extraArgs.push("--root",    args.options["root"]);
-  if (args.flags["debug"])     extraArgs.push("--debug");
   return runCommand("node", [distMain, ...extraArgs], NODE_PKG);
 }
 

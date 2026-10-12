@@ -25,4 +25,14 @@ describe.skipIf(!existsSync(MAIN))("main.js flag reading", () => {
     expect(r.status).toBe(2);
     expect(r.stderr).toContain("--roott");
   });
+  test("★ `--debug` is no flag the boot reads, so it refuses by name ★", () => {
+    const r = run("--debug");
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain("unknown flag --debug");
+  });
+  test("control: the refusal lists exactly the flags the boot reads", () => {
+    const r = run("--bogus");
+    const listed = /\(reads ([^)]*)\)/.exec(r.stderr)?.[1]?.split(" ") ?? [];
+    expect(listed).toEqual(["--genesis", "--port", "--recipe", "--root", "--wiki"]);
+  });
 });

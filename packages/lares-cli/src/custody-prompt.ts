@@ -4,7 +4,8 @@
  * A credential (a passphrase, or the sheets of a paper pin) comes from a TTY prompt ALONE. No flag, no environment
  * variable and no stdin pipe carries one, and nothing here echoes one. With no TTY every gatherer refuses BY NAME
  * (`CredentialTtyRefusal`) and says how to run the verb attached; a non-interactive test harness founds through
- * `tools/seed-test-custody.mjs`, which names its route in the open and refuses a root outside scratch.
+ * `tools/seed-test-custody.mjs`, which names its route in the open and refuses a root that carries no
+ * `.lar-test-scratch` marker (written only by `tools/test-scratch-marker.mjs` at stage time).
  *
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */

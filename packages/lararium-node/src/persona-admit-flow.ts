@@ -319,7 +319,7 @@ export async function openAdmitFlow(args: {
   if (pending.length === 0) {
     return {
       error: args.onlyEphemeral
-        ? "this session's own offer is no longer pending (withdrawn, expired, or already opened)"
+        ? "this session's own offer is no longer pending (withdrawn or already opened)"
         : "no pending enrollment on this vessel — run `persona admit offer` first",
     };
   }

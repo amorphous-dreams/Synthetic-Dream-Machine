@@ -81,7 +81,7 @@ import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
   const args = process.argv.slice(2);
-  const named = new Set<string>(["--debug"]);   // `--debug` rides `vessel stand --foreground --debug`; nothing here reads it yet
+  const named = new Set<string>();
   const get  = (flag: string, env: string, fallback: string) => {
     named.add(flag);
     const joined = args.find((a) => a.startsWith(`${flag}=`));          // `--k=v` reads as `--k v`

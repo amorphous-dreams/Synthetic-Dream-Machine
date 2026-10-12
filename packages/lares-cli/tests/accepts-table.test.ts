@@ -94,4 +94,12 @@ describe("the accepts rows track the handlers", () => {
       expect(missing, `${c.name} reads ${missing.join(", ")} but its accepts row omits it`).toEqual([]);
     });
   }
+
+  test("★ cabal: every flag its summary offers sits in its row ★", () => {
+    const cabal = COMMANDS.find((c) => c.name === "cabal")!;
+    const offered = [...cabal.summary.matchAll(/--([a-z][a-z-]*)/g)].map((m) => m[1]!);
+    expect(offered.length, "the summary names no flag, so this check reads nothing").toBeGreaterThan(0);
+    const known = new Set([...cabal.accepts, ...GLOBAL_FLAGS]);
+    expect(offered.filter((f) => !known.has(f)), "cabal's summary offers a flag its row refuses").toEqual([]);
+  });
 });
