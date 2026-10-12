@@ -97,6 +97,13 @@ A realm's standing rides ''per-writer lease slots'' — one slot per face, the e
 over all of them. That shape lets a low roll cost nothing and a high one converge without a
 coordinator, and it decides what a roll must prove.
 
+''OPEN ~ which fold the realm's heartbeat rides.'' This section reads a realm's standing as a MAX over
+per-writer slots, the fold `packages/lararium-mesh/src/epoch-lease.ts` (`effectiveLeaseEpoch`) gives
+the admission fence, and a max picks a winner. `cabal-realm#/verb-not-noun` holds that the model
+carries no lease anywhere, and `cabal-realm#/the-tie-break` holds that concurrent rolls of the realm's
+keying epoch merge by blanking and pick no winner. No ruling settles which fold the feed takes; both
+readings stand listed (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-tie-break">>).
+
 ''A roll binds REALM, WRITER and EPOCH together.'' Each alone lifts: a roll carried to another
 realm would offer maintenance a face never made, and nothing could undo a roll lifted to a higher
 number — ''the max never decreases, so a forged high roll stays IRREVERSIBLE''. The property that makes
@@ -127,6 +134,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3Ho6g8UGrwkoYwvElZPt_01Wcjlnj7pPVW9oaeARqvQ
+<<^ code="&#x0003;">>ni:///sha-256;qU5jSGPgIblleYm6_530RAphMlLAx25JuS67WDHIG1A
 
 <<^ code="&#x0004;" -> to="?">>

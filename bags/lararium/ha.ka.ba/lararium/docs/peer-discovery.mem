@@ -44,9 +44,10 @@ Tier 5 — Social graph record            (Nostr NIP-51 / AT Protocol PDS lexico
 
 !! Tier 0 — Well-Known HTTP Endpoint
 
-The node server exposes `GET /api/catalog` → `{ catalogUrl: "automerge:..." }`.
-The HTML `<meta name="lararium-catalog" content="automerge:...">` tag (already
-implemented in `open-browser-lar-peer.ts`) is the server-injected form of this.
+''UNBUILT design.'' No source under `packages/` carries a `GET /api/catalog` route, a
+`<meta name="lararium-catalog">` tag or a `localStorage` catalog cache; the tier stands as a sketch.
+The design: the node server exposes `GET /api/catalog` → `{ catalogUrl: "automerge:..." }`, and an
+HTML `<meta name="lararium-catalog" content="automerge:...">` tag carries the server-injected form.
 The browser reads it on page load; no user action required.
 
 ```
@@ -57,9 +58,10 @@ Browser cold-start:
   4. Cache URL in localStorage for subsequent loads without meta tag.
 ```
 
-''Implementation'': meta tag injection is done. Complement with:
+''Owed, should the tier get built'':
+* the meta tag injection
 * `GET /api/catalog` HTTP endpoint on node server (for non-HTML clients)
-* `localStorage["lararium:catalog-url:<hostId>"]` cache (already implemented)
+* a `localStorage["lararium:catalog-url:<hostId>"]` cache
 
 !! Tier 1 — URL Fragment Invitation Link
 
@@ -147,24 +149,12 @@ connect. Discovery flows through AT Protocol social graph automatically.
 
 !! Tier 4 — mDNS LAN Announcement (Node.js)
 
-The node server announces itself on the LAN via `multicast-dns`:
-
-```typescript
-import mdns from "multicast-dns";
-const m = mdns();
-m.announce("_lararium._tcp.local", {
-  type: "SRV", port: 8080,
-  data: { target: "lararium-node.local", port: 8080 }
-});
-// TXT record carries catalog URL
-m.announce("_lararium._tcp.local", {
-  type: "TXT",
-  data: { catalogUrl: peer.catalogUrl }
-});
-```
-
-Browser peers on the same LAN discover the node server without knowing its IP.
-Works for local dev and studio/home setups with no internet.
+The node module uses `node:dgram` alone for `_lararium._tcp.local` multicast DNS.
+An announcement carries a random eight-hex instance label and the listen port in PTR and SRV records, with an empty TXT record; it carries no catalog URL, document address, key or identifying name.
+The listener builds `http://<datagram source IPv4 address>:<SRV port>` from a valid announcement and ignores the packet's host name.
+A candidate grants nothing: `candidatePin` needs a separately carried 64-hex gate key before it can form a peer entry.
+No timer expires a candidate; the listener retains candidates until its caller closes it.
+`packages/lararium-node/src/main.ts` calls `dgramLanSocket`, `createLanAnnouncement` and `createLanAnnouncer` to announce when `LAR_LAN_DISCOVERY` reads `announce`, and refuses any other value of that setting; no production caller invokes `createLanListener`. A browser opens no multicast socket, so a browser peer reaches a vessel through an address a human carried. The law of the tier stands at `lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery`.
 
 !! Tier 5 — Social Graph Record
 
@@ -203,24 +193,20 @@ the first sync message — removes the need for TLS as the transport trust layer
 # New peer receives the wiki URL + "add" op out-of-band (any tier above).
 # `beelay` sync authenticates using the key chain; ciphertext-only relay.
 
-!! Lararium Bootstrap Sequence (Current Implementation)
+!! Lararium Bootstrap Sequence ~ what stands, and what stays unbuilt
 
 ```
-1. <meta name="lararium-catalog"> tag injected by node server (Tier 0)
-   → browser reads on page load → repo.find(catalogUrl)
+1. STANDS: a browser vessel keeps its catalog URL in IndexedDB under `keystore/catalog-url` (`open-browser-vessel.ts`); the node vessel reads and writes a `catalog-url` file in its storage directory (`open-node-vessel.ts`).
 
-2. If no meta tag (offline / direct browser load):
-   → localStorage["lararium:catalog-url:<hostId>"] cache check
-   → If hit: repo.find(cached URL)
-   → If miss: repo.create(blankCatalog) → tabs-only offline mode
+2. STANDS: a vessel that holds no saved catalog URL creates a blank catalog and saves its URL in that same seat.
 
-3. BroadcastChannel peerMetadata (Tier 2) — TODO: wire catalogUrl into metadata
+3. UNBUILT: BroadcastChannel peerMetadata (Tier 2) — TODO: wire catalogUrl into metadata
    → first tab with catalog URL teaches offline tabs
 
-4. did:web service endpoint (Tier 3) — TODO: populate elyncia.social DID doc
+4. UNBUILT: did:web service endpoint (Tier 3) — TODO: populate elyncia.social DID doc
    → programmatic discovery for non-browser clients
 
-5. URL fragment invite (Tier 1) — TODO: add ?catalog= / #catalog= reader
+5. UNBUILT: URL fragment invite (Tier 1) — TODO: add ?catalog= / #catalog= reader
    → human-shareable wiki invitations
 ```
 
@@ -286,10 +272,11 @@ state stays local-first, no-global-now enacted rather than breached.
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gKIYHN29NEe8FbEimgTHo4FGkUEgmKXTc6gGICrSvBk
+<<^ code="&#x0003;">>ni:///sha-256;AED385izMqR_bzTDwP-7cm0MTJxmoo4aW9ikfUzjzbI
 
 <<^ code="&#x0004;" -> to="?">>

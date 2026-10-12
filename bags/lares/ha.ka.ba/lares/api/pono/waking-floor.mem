@@ -352,11 +352,24 @@ The KEK stays ''passphrase-primary''; a random key beside the ciphertext reads a
 isolation and gets refused; a missing passphrase ''NEVER silently degrades to weak key handling''. ''The
 floor names WHAT A VESSEL SERVES, never what it weakens.''
 
-''OPEN'': whether an unattended boot refuses or rests, what may raise it, and the renewal interval a raise
-expires on. The boot gate throws because ''refusing stays the safe default while the answer stands
-unmade'' — an outage recovers and a silently-raised identity does not.
-<<~ loulou "lar:///ha.ka.ba/lararium/node/archive-passphrase">> carries the option space where the refusal
-happens.
+''RULED'': every boot rests at the floor until a human unlocks, and nothing stored may lift it. An
+unattended boot rests and never refuses.
+
+''What the code does'': a boot whose archive does not open composes at the floor
+(`packages/lararium-node/src/open-node-vessel.ts` reads `archiveOpens()` and hands the composition no
+sovereign readers), and a human's unlock raises it. A boot whose archive opens, through the
+environment passphrase or because no seal stands, takes its sovereign readers at boot with no hand
+present; the ruling retires that road (OWED in code, below).
+`packages/lararium-node/src/archive-passphrase.ts` carries the option space the ruling chose among.
+
+''OWED'': a bounded ember, held as design input and unbuilt. It raises to SERVING alone and never
+signs or admits; a count dial bounds it, and no clock; it wants the device's own unlock plus a second
+signal; each raise gets recorded; any other device of the human removes it.
+
+''OWED in code'': the environment passphrase route (`LARES_ARCHIVE_PASSPHRASE`) and the unsealed
+archive each lift a boot above the floor with no hand present; both leave with the passphrase
+lifecycle and the cleartext archive mode
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
 
 <<~/ahu>>
 
@@ -388,6 +401,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MVhAt-UaUYCfdWofubRrn_mBjWxpURu28rzpH8P8WBM
+<<^ code="&#x0003;">>ni:///sha-256;zf2LlRmJzjxp76qHFexY6K9p0D_hAxD1gd-JZ02g3Vk
 
 <<^ code="&#x0004;" -> to="?">>
