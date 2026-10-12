@@ -94,6 +94,8 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // The USAGE family (2): the bag was DROPped and takes no writes, so the cure is a different
   // request (CREATE a fresh bag), never a fault in the act's own handler.
   "bag-retired":       2,
+  // The USAGE family (2): a content verb named no container, or both; the door's message says which to pass.
+  "no-container":      2,
   // The USAGE family (2): the vessel stands at the waking floor and holds no face; the cure is the
   // lift the refusal names, never a retry.
   "waking-floor":      2,

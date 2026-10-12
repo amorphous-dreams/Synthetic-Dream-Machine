@@ -78,6 +78,8 @@ export interface VerbFailure {
  *                                             CREATE stands a fresh one.
  *   waking-floor                           → waking-floor (2) — the vessel holds no face; the refusal's
  *                                             own message names the lift (`lares persona new 0`).
+ *   no-container                           → no-container (2) — the verb named no container, or both; the
+ *                                             door's own message says which to pass.
  *   cap-denied                             → cap-denied (5) — the caller's cap does not reach the bag.
  *   crossing-outward                       → crossing-outward (5) — the crossing relaxes confinement
  *                                             and wants the kahu quorum.
@@ -95,6 +97,7 @@ export function refusalCode(reason: string): string {
     case "receipt-fact-torn":                    return "receipt-fact-torn";
     case "bag-retired":                          return "bag-retired";
     case "waking-floor":                         return "waking-floor";
+    case "no-container":                         return "no-container";
     case "cap-denied":                           return "cap-denied";
     case "crossing-outward":                     return "crossing-outward";
     default:                                     return "verb-error";
