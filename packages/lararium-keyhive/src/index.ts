@@ -29,8 +29,6 @@ export type { EventStore, EventRecord } from "./event-store.js";
 export { DaemonEventStore, capEventTitle } from "./daemon-event-store.js";
 export type { DaemonEventStoreOptions } from "./daemon-event-store.js";
 
-export const KEYHIVE_PROBE_VERSION = "0.0.0-alpha.56c";
-
 export { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.

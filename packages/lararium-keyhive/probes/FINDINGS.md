@@ -267,3 +267,51 @@ Pre-existing content (a device joining a PersonaGroup with older docs) takes ROU
 each existing chunk after the add (ships only public ops + ciphertext, still no secret in transit). ROUTE B
 (the `*Keyed` shortcut: hand the joinee the 32-byte applicationSecret) DOES ship a secret and DOES need a
 sealed channel — an opt-in escape hatch, not the default.
+
+---
+
+# Probe readings — @keyhive/keyhive 0.3.0-alpha.1 (2026-10-12)
+
+> Run each: `pnpm exec tsx packages/lararium-keyhive/probes/<name>.ts`
+
+## Access and events (`access-enum-and-events`)
+
+`Access.tryFromString` accepts exactly four values: `relay → Relay`, `read → Read`, `edit → Edit`,
+`admin → Admin`, ordered `relay < read < edit < admin` (`Access.atLeast`, `.level`). The D.1.5 candidate
+list above never offered `relay` or `edit`, so its "exactly two" read the list, not the enum:
+0.1.0-alpha.8 parses the same four. `pull` parses under neither.
+
+The delegate ceremony emits 11 events: 6 `PREKEY_ROTATED`, 3 `CGKA_OPERATION`, 2 `DELEGATED`.
+`Event` exposes `asSignedDelegation()` / `asSignedRevocation()`, with `variant`, `toBytes()`,
+`isDelegated`, `isRevoked`. A revocation's subject reads at `SignedRevocation.delegation.subjectId`.
+
+## Operator delegation (`operator-delegate-device`)
+
+`receiveContactCard` returns an `IndividualId`; `generateDocument` returns a `DocumentId`. Membership
+names an `Identifier` and a `MemberedId` (`IndividualId.toIdentifier()`, `MemberedId.document(docId)`);
+`addMember` returns the `SignedDelegation`.
+
+## Co-parent at birth (`tests/g1-scope.probe.test.ts`, DOOR 1)
+
+`generateDocument([coparentIdentifier], …)` RESOLVES, and the co-parent rides the CGKA from the first
+epoch beside the creator (`cgkaMembers()` lists both; `members()` shows both at Admin). The co-parent
+arrives with no `addMember` and so no delegation event of its own.
+
+## Cross-peer decrypt (`cross-peer-decrypt`)
+
+The distinct-identity joinee decrypts the founder's ciphertext from public events and its own prekey
+secret. The content path: `tryEncrypt(docId, …).encryptedContent().toBytes()` and
+`tryDecrypt(docId, Encrypted.fromBytes(bytes))`.
+
+## Prekey persistence and archive (`prekey-persist-reboot`)
+
+- Reading 0, live joinee: decrypt succeeds.
+- Reading 1, same-seed reboot without import: decrypt throws `Key not found`.
+- Reading 2, reboot after importing the earlier prekey secrets: decrypt succeeds.
+- Q3, a rebooted and imported identity: `getExistingContactCard()` and a fresh `contactCard()` both
+  differ from the original card.
+- Q1b, `toArchive()` then `Archive.tryToKeyhive()`: decryption restores; the restored identity does
+  not re-expose the original contact card.
+
+Every reading above matches what the same probe reads on 0.1.0-alpha.8, save the event count of the
+admission (16 public events there, 15 here).

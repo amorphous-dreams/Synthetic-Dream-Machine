@@ -3,7 +3,7 @@
  * pre-named. A probe measures; a refusal is a finding equal to a pass. Doors run ISOLATED so one
  * crash cannot eat another's measurement; each writes its verdict to disk.
  *
- *   DOOR 1 — COPARENT AT BIRTH: `generateDocument(coparents: Peer[], …)` — does seating the veil
+ *   DOOR 1 — COPARENT AT BIRTH: `generateDocument(coparents: Identifier[], …)` — does seating the veil
  *            Individual as a CO-PARENT put it on the CGKA from birth, and does the creator ride too?
  *   DOOR 2 — READ GRADE: does an agent added at Access "read" appear in `cgkaMembers()` — is ANY
  *            access CGKA membership, or only admin?
@@ -24,31 +24,23 @@ const hexOf = (b: Uint8Array): string => "0x" + Array.from(b).map((x) => x.toStr
 const bytesOf = (idHex: string): Uint8Array => Uint8Array.from(Buffer.from(idHex.replace(/^0x/, ""), "hex"));
 
 describe("G1 scope probes", () => {
-  // MEASURED 2026-09-07 — UNMEASURABLE AT THIS SURFACE: passing a `toPeer()` handle back into
-  // `generateDocument(coparents, …)` throws an UNHANDLED wasm marshaling error
-  // ("arg0.__wasm_refgen_toJsPeer is not a function") from inside the binding — the exception fires
-  // async, outside any catch, so the door cannot even record its own refusal from JS. The
-  // coparent-at-birth question moves to the G1 arc's design (a provider-level door, or an upstream
-  // binding fix — the donation ledger carries it beside alpha.8's "Redelagation" spelling).
-  test.skip("DOOR 1 — the veil as CO-PARENT at birth", { timeout: 90_000 }, async () => {
-    try {
-      const creator = await vessel(0x41);
-      const veil = await vessel(0x42);
-      const { id: veilId } = await creator.receiveContactCard(await veil.contactCard());
-      const kh = rawKh(creator);
-      const veilIndividual = await kh.getIndividual(new KH.IndividualId(new KH.Identifier(bytesOf(veilId))));
-      if (!veilIndividual) throw new Error("veil Individual unreachable after contact-card receive");
-      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("lar:///probe.birth.coparent"));
-      const gen = kh.generateDocument([veilIndividual.toPeer()], new KH.ChangeId(new Uint8Array(digest)), []);
-      const doc = await Promise.race([
-        gen,
-        new Promise((_r, rej) => setTimeout(() => rej(new Error("HUNG — generateDocument with a coparent never resolved (60s)")), 60_000)),
-      ]) as { doc_id: { toBytes(): Uint8Array } };
-      const docIdHex = hexOf(doc.doc_id.toBytes());
-      const members = await creator.sentinelCgkaMembers(docIdHex);
-      const creatorId = await creator.vesselIdentifierHex();
-      void members; void creatorId;
-    } catch { /* the upstream Peer-marshaling pothole — the skip note above records it */ }
+  test("DOOR 1 — the veil as CO-PARENT at birth", { timeout: 90_000 }, async () => {
+    const creator = await vessel(0x41);
+    const veil = await vessel(0x42);
+    const { id: veilId } = await creator.receiveContactCard(await veil.contactCard());
+    const creatorId = await creator.vesselIdentifierHex();
+    const kh = rawKh(creator);
+    // CONTROL: a document born with no co-parent seats its creator alone.
+    const { docIdHex: aloneHex } = await creator.createSentinelDoc("lar:///probe.birth.alone");
+    expect(await creator.sentinelCgkaMembers(aloneHex)).toEqual([creatorId]);
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("lar:///probe.birth.coparent"));
+    const docId = await kh.generateDocument([new KH.Identifier(bytesOf(veilId))], new KH.ChangeId(new Uint8Array(digest)), []);
+    const members = await creator.sentinelCgkaMembers(hexOf(docId.toBytes()));
+    // CANARY (measured: TRUE): a co-parent named at birth rides the CGKA from the first epoch, beside the
+    // creator, with no later `addMember` and so no delegation event of its own. An upstream that seats a
+    // co-parent off the tree, or drops the creator, moves what a veil-born group can promise at birth.
+    expect(members.sort(), "the co-parent and the creator both ride the CGKA at birth").toEqual([veilId, creatorId].sort());
+    expect((await creator.verifySentinelMembership(veilId, hexOf(docId.toBytes()))).ok).toBe(true);
   });
 
   test("DOOR 2 — read-grade access vs the CGKA enumeration", { timeout: 90_000 }, async () => {
@@ -60,9 +52,10 @@ describe("G1 scope probes", () => {
       const kh = rawKh(creator);
       const doc = await kh.getDocument(new KH.DocumentId(bytesOf(docIdHex)));
       const agent = await kh.getAgent(new KH.Identifier(bytesOf(readerId)));
+      if (!doc || !agent) throw new Error("read-grade fixture could not resolve its document and agent");
       const access = KH.Access.tryFromString("read");
       if (!access) throw new Error("Access 'read' is not a recognized grade");
-      await kh.addMember(agent, doc.toMembered(), access, []);
+      await kh.addMember(agent.id, KH.MemberedId.document(doc.docId), access, []);
       const members = await creator.sentinelCgkaMembers(docIdHex);
       // CANARY (measured 2026-09-08: TRUE): ANY access grade is CGKA membership — no sub-roster
       // grade exists. An upstream that splits reader-grades off the tree loosens the veil-born

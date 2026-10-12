@@ -22,7 +22,7 @@
   "devDependencies": {
     "@vitest/browser": "5.0.3",
     "@vitest/browser-playwright": "5.0.3",
-    "@keyhive/keyhive": "0.1.0-alpha.8",
+    "@keyhive/keyhive": "0.3.0-alpha.1",
     "@lararium/keyhive": "workspace:*",
     "vite": "8.3.4",
     "vite-plugin-arraybuffer": "0.1.4",

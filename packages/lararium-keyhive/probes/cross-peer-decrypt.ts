@@ -6,7 +6,7 @@
  * delegation, the CGKA ops, the Encrypted blob — with NO secret in transit (no prekey-secret install, no
  * archive, no `*Keyed` application secret)?
  *
- * VERDICT (keyhive alpha.6, running code): YES — the joinee decrypts from public bytes + its OWN prekey
+ * VERDICT (running code): YES — the joinee decrypts from public bytes + its OWN prekey
  * secret alone. keyhive's CGKA keys content to the tree epoch, and add-member climbs a path that encrypts to
  * the new leaf, so nothing secret crosses the relay. The crossing is a TRANSPORT problem, not a crypto one.
  *
@@ -38,7 +38,7 @@ function seed(fill: number): Uint8Array {
 async function makePeer(label: string, fill: number): Promise<KH.Keyhive> {
   const signer = KH.Signer.memorySignerFromBytes(seed(fill));
   const store  = KH.CiphertextStore.newInMemory();
-  const kh = await KH.Keyhive.init(signer, store, () => {});   // alpha.6: no forward_secrecy param
+  const kh = await KH.Keyhive.init(signer, store, () => {});
   console.log(`[probe] ${label} up; whoami=${kh.idString}`);
   return kh;
 }
@@ -64,26 +64,26 @@ async function main(): Promise<void> {
   // Introduce: founder learns the device, device learns the founder.
   const founderCard = await founder.contactCard();
   const deviceCard  = await device.contactCard();
-  const deviceIndividual = await founder.receiveContactCard(deviceCard);
+  const deviceIndividualId = await founder.receiveContactCard(deviceCard);
   await device.receiveContactCard(founderCard);
-  console.log(`[probe] introduced; deviceIndividual=${deviceIndividual.id?.toString()?.slice(0, 24)}…`);
+  console.log(`[probe] introduced; deviceIndividual=${deviceIndividualId.toString().slice(0, 24)}…`);
 
-  const doc = await founder.generateDocument([], changeId(0), []);
-  const docIdHex = Buffer.from(doc.id.toBytes()).toString("hex");
+  const docId = await founder.generateDocument([], changeId(0), []);
+  const docIdHex = Buffer.from(docId.toBytes()).toString("hex");
 
   // ORDER IS LOAD-BEARING (keyhive forward-secrecy boundary): ADD the member FIRST, then ENCRYPT. keyhive's
   // CGKA keys content to the tree epoch at write time; a member reads only content encrypted AT OR AFTER its
   // add. Encrypt-before-add → the PCS op never encrypted to the device's leaf → tryDecrypt "Key not found"
   // (keyhive's own test_cannot_decrypt_content_from_before_joining asserts exactly this).
   const access = KH.Access.tryFromString("read") ?? KH.Access.tryFromString("admin");
-  const deviceAgent = await founder.getAgent(deviceIndividual.id);
+  const deviceAgent = await founder.getAgent(deviceIndividualId.toIdentifier());
   if (!access || !deviceAgent) { console.log(`[probe] FAIL setup: access=${!!access} agent=${!!deviceAgent}`); return; }
-  const signedDelegation = await founder.addMember(deviceAgent, doc.toMembered(), access, []);
+  const signedDelegation = await founder.addMember(deviceIndividualId.toIdentifier(), KH.MemberedId.document(docId), access, []);
   console.log(`[probe] ★ addMember → SignedDelegation (sig ${signedDelegation.signature.length}B) BEFORE encrypt`);
 
   // Encrypt AFTER the add — the fresh PCS update op now encrypts a path secret to the device's leaf.
   const PLAINTEXT = new TextEncoder().encode("the-crossing-holds — a secret only a member may read");
-  const encBytes = (await founder.tryEncrypt(doc, changeId(50), [], PLAINTEXT)).encrypted_content().serialize();
+  const encBytes = (await founder.tryEncrypt(docId, changeId(50), [], PLAINTEXT)).encryptedContent().toBytes();
   console.log(`[probe] encrypted ${PLAINTEXT.length}B → ${encBytes.length}B blob on doc ${docIdHex.slice(0, 16)}…`);
 
   // Ship ONLY PUBLIC bytes — captured AFTER the encrypt so they carry both the add op and the PCS update op.
@@ -98,7 +98,7 @@ async function main(): Promise<void> {
   // Rebuild the DocumentId on the DEVICE from bytes — a WASM object cannot cross instances.
   let deviceDoc: KH.Document | undefined;
   try {
-    deviceDoc = await device.getDocument(new KH.DocumentId(doc.id.toBytes()));
+    deviceDoc = await device.getDocument(new KH.DocumentId(docId.toBytes()));
   } catch (e) { console.log(`[probe] device.getDocument threw: ${e instanceof Error ? e.message : e}`); }
   if (!deviceDoc) {
     console.log(`[probe] ★ device holds ${(reach as unknown[]).length} reachable docs but cannot resolve THIS doc from the public events alone.`);
@@ -107,7 +107,7 @@ async function main(): Promise<void> {
   }
 
   try {
-    const recovered = await device.tryDecrypt(deviceDoc, KH.Encrypted.fromBytes(encBytes));
+    const recovered = await device.tryDecrypt(deviceDoc.docId, KH.Encrypted.fromBytes(encBytes));
     const text = new TextDecoder().decode(recovered);
     const ok = text === new TextDecoder().decode(PLAINTEXT);
     console.log(`[probe] ★★ device.tryDecrypt ${ok ? "SUCCEEDED" : "returned WRONG bytes"}: "${text.slice(0, 40)}…"`);
@@ -119,10 +119,7 @@ async function main(): Promise<void> {
     process.exit(1);
   } catch (e) {
     console.log(`[probe] ★★ device.tryDecrypt FAILED: ${e instanceof Error ? e.message : e}`);
-    console.log(`[probe] VERDICT: on alpha.6 the alpha.3 transport approach yields "Key not found" — the read-scope`);
-    console.log(`[probe]          was reworked (no leafSecrets, forward-chunk secrecy). The cross-peer content pattern`);
-    console.log(`[probe]          (ship the tryEncrypt update_op? use tryEncryptKeyed/decryptWithKey? forward-only?) is`);
-    console.log(`[probe]          UNRESOLVED — see FINDINGS.md. Not "sealed channel required"; a MISSING-OP, most likely.`);
+    console.log(`[probe] VERDICT: public-event transport did not make this content readable; inspect the error and event set.`);
     process.exit(1);
   }
 }
