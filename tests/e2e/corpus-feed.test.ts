@@ -89,7 +89,7 @@ function expectedRoots(): Set<string> {
 }
 
 /**
- * Poll the staged mirror until the projected file count stabilizes.
+ * Poll the staged mirror until every expected corpus root stands and the file count holds still.
  *
  * ── THE CAP IS A MEASUREMENT, NOT A DEADLINE ────────────────────────────────────────────────────
  * A cap reached reads IDENTICALLY to a projector that sites a carrier nowhere: the caller gets a file
@@ -98,22 +98,46 @@ function expectedRoots(): Set<string> {
  * So the cap reports its own trajectory: the counts it saw and the seconds between them, which is what
  * separates "still projecting" from "settled without it".
  */
-async function awaitStableMirror(root: string, capMs = 300_000): Promise<string[]> {
+/** What the mirror wait saw: the final listing, and the trajectory an assertion message carries (the CI report keeps no stdout). */
+interface MirrorReading { readonly files: string[]; readonly measure: string }
+
+async function awaitStableMirror(root: string, expected: ReadonlySet<string>, capMs = 300_000): Promise<MirrorReading> {
   const mirrorRoot = join(root, "bags/lares");
   const start = Date.now();
+  const seconds = (): number => Math.round((Date.now() - start) / 1000);
   let last = -1;
   let stableSince = Date.now();
+  let longestPause = 0;
+  let pauseRead = "";
   const trail: string[] = [];
+  const absentOf = (files: readonly string[]): number => {
+    const have = new Set(files.map((f) => "lar:///" + relative(mirrorRoot, f).split(sep).join("/").replace(/\.mem$/, "")));
+    let absent = 0;
+    for (const uri of expected) if (!have.has(uri)) absent++;
+    return absent;
+  };
   for (;;) {
-    const n = walkFiles(mirrorRoot).length;
-    if (n !== last) { last = n; stableSince = Date.now(); trail.push(`${Math.round((Date.now() - start) / 1000)}s:${n}`); }
-    if (n > 0 && Date.now() - stableSince > 4_000) {
-      console.error(`corpus-feed MEASURE mirror settled at ${n} file(s) in ${Math.round((Date.now() - start) / 1000)}s · ${trail.slice(-12).join(" ")}`);
-      return walkFiles(mirrorRoot);
+    const files = walkFiles(mirrorRoot);
+    const n = files.length;
+    const absent = absentOf(files);
+    if (n !== last) {
+      const paused = Date.now() - stableSince;
+      if (last > 0 && paused > longestPause) { longestPause = paused; pauseRead = `${Math.round(paused / 1000)}s at ${last} file(s)`; }
+      last = n; stableSince = Date.now(); trail.push(`${seconds()}s:${n}`);
+    }
+    // A QUIET STRETCH IS NOT THE END. The projection pauses while the island does other work, with some
+    // files written and others owed; a count that held still for a few seconds read as "settled" there and
+    // named the owed carriers as refused. The mirror has settled when every corpus root stands AND the
+    // count has held still, so a late straggler still reaches the assertions below.
+    if (absent === 0 && Date.now() - stableSince > 4_000) {
+      const measure = `mirror settled at ${n} file(s) in ${seconds()}s · longest pause ${pauseRead || "none"} · ${trail.slice(-12).join(" ")}`;
+      console.error(`corpus-feed MEASURE ${measure}`);
+      return { files: walkFiles(mirrorRoot), measure };
     }
     if (Date.now() - start > capMs) {
-      console.error(`corpus-feed MEASURE mirror NEVER settled — cap ${capMs}ms reached at ${n} file(s) · ${trail.slice(-16).join(" ")}`);
-      return walkFiles(mirrorRoot);
+      const measure = `mirror NEVER settled — cap ${capMs}ms reached at ${n} file(s), ${absent} corpus root(s) absent · longest pause ${pauseRead || "none"} · ${trail.slice(-16).join(" ")}`;
+      console.error(`corpus-feed MEASURE ${measure}`);
+      return { files: walkFiles(mirrorRoot), measure };
     }
     await new Promise((r) => setTimeout(r, 1_000));
   }
@@ -147,7 +171,8 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
 
   test("F2 — group routing at scale: one file per carrier root, no fragments", async () => {
     if (lar.mode !== "staged") return;
-    const files = await awaitStableMirror(lar.root);
+    const roots = expectedRoots();
+    const { files, measure } = await awaitStableMirror(lar.root, roots);
     expect(files.filter((f) => f.includes("#") || /%23/.test(f))).toEqual([]);
     // Full-path-inside-bag ruling: the mirror carries EVERY name the bag
     // holds (lawful residents outside the corpus namespace included), so the
@@ -157,12 +182,15 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
     const fileUris = new Set(files.map((f) =>
       "lar:///" + relative(mirrorRoot, f).split(sep).join("/").replace(/\.mem$/, ""),
     ));
-    const roots = expectedRoots();
     // NAME THE WHOLE ABSENCE, never the first one. A per-root assertion stops at the first missing name
     // and reads as "the projector refuses THIS carrier" — the shape that sent a hand hunting one carrier's
-    // meta when 40 names were absent and the mirror was simply still being written.
+    // meta when 40 names were absent and the mirror was simply still being written. The message carries
+    // the wait's own trajectory and the daemon's last words, so a red names where the projection stood.
     const absent = [...roots].filter((r) => !fileUris.has(r));
-    expect(absent, `${absent.length} of ${roots.size} corpus root(s) never projected — first 8: ${absent.slice(0, 8).join(" · ")}`).toEqual([]);
+    expect(
+      absent,
+      absent.length === 0 ? "" : `${absent.length} of ${roots.size} corpus root(s) never projected — first 8: ${absent.slice(0, 8).join(" · ")} · ${measure} · DAEMON LOG TAIL ${lar.bootLog().slice(-2500)}`,
+    ).toEqual([]);
     expect(fileUris.size).toBe(files.length);   // one file, one name — no aliasing
   }, 360_000);
 
