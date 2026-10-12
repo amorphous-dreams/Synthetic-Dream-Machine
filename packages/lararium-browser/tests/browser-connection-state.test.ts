@@ -54,6 +54,26 @@ describe("browser connection state", () => {
     expect(transitions).toEqual(["connecting", "connected", "disconnected", "connecting"]);
   });
 
+  test("a mounted wiki URL rides the reactive connection snapshot", () => {
+    const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE }, true);
+    const adapter = new FakeRelayAdapter();
+    observeRelayConnection(state, adapter);
+    const transitions: unknown[] = [];
+    state.subscribe((snapshot) => transitions.push(snapshot));
+
+    state.setWikiDocUrl("automerge:aki-mounted-doc");
+    adapter.session = { nonce: "challenge", gatePubKey: GATE };
+    adapter.join();
+
+    expect(state.getSnapshot()).toMatchObject({
+      status: "connected",
+      peer: { gatePubKey: GATE },
+      wikiDocUrl: "automerge:aki-mounted-doc",
+    });
+    expect(transitions).toHaveLength(2);
+    expect(transitions[0]).toMatchObject({ wikiDocUrl: "automerge:aki-mounted-doc" });
+  });
+
   test("a refused handshake names its reason instead of collapsing into disconnection", () => {
     const state = createBrowserConnectionState({ dial: true, gatePubKey: GATE }, true);
     const adapter = new FakeRelayAdapter();

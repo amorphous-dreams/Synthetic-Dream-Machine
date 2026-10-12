@@ -1489,6 +1489,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     },
   }, [...meshExtraCaps, ...whoExtraCaps]);
 
+  // The connection snapshot carries the actual mounted document alongside the crossing verdict, so a
+  // served page can report which node wiki it rendered instead of treating a live socket as mount proof.
+  connectionState.setWikiDocUrl(result.wikiHandle.url);
+
   return {
     identity: vesselIdentity,
     pool: result.pool,

@@ -1,7 +1,7 @@
 import type { RelayPin } from "./browser-relay-pin.js";
 
 /** A visible snapshot of the browser vessel's relay crossing. */
-export type BrowserConnectionSnapshot =
+export type BrowserConnectionSnapshot = (
   | { readonly status: "local" }
   | { readonly status: "missing-pin"; readonly reason: string }
   | { readonly status: "blocked"; readonly gatePubKey: string; readonly reason: string }
@@ -9,7 +9,8 @@ export type BrowserConnectionSnapshot =
   | { readonly status: "connecting"; readonly gatePubKey: string }
   | { readonly status: "refused"; readonly gatePubKey: string; readonly reason: string }
   | { readonly status: "connected"; readonly peer: { readonly gatePubKey: string } }
-  | { readonly status: "disconnected"; readonly gatePubKey: string };
+  | { readonly status: "disconnected"; readonly gatePubKey: string }
+) & { readonly wikiDocUrl?: string };
 
 export type BrowserConnectionListener = (snapshot: BrowserConnectionSnapshot) => void;
 
@@ -17,6 +18,8 @@ export type BrowserConnectionListener = (snapshot: BrowserConnectionSnapshot) =>
 export interface BrowserConnectionState {
   getSnapshot(): BrowserConnectionSnapshot;
   subscribe(listener: BrowserConnectionListener): () => void;
+  /** The mounted wiki's document address joins every later crossing snapshot. */
+  setWikiDocUrl(url: string): void;
 }
 
 /** The small adapter surface needed to observe the existing LarWSClientAdapter lifecycle. */
@@ -31,13 +34,16 @@ export interface RelayConnectionAdapter {
 
 class ObservableBrowserConnectionState implements BrowserConnectionState {
   #snapshot: BrowserConnectionSnapshot;
+  #wikiDocUrl: string | null = null;
   readonly #listeners = new Set<BrowserConnectionListener>();
 
   constructor(initial: BrowserConnectionSnapshot) {
     this.#snapshot = initial;
   }
 
-  getSnapshot = (): BrowserConnectionSnapshot => this.#snapshot;
+  getSnapshot = (): BrowserConnectionSnapshot => this.#wikiDocUrl
+    ? { ...this.#snapshot, wikiDocUrl: this.#wikiDocUrl }
+    : this.#snapshot;
 
   subscribe = (listener: BrowserConnectionListener): (() => void) => {
     this.#listeners.add(listener);
@@ -45,8 +51,21 @@ class ObservableBrowserConnectionState implements BrowserConnectionState {
   };
 
   transition(snapshot: BrowserConnectionSnapshot): void {
-    if (sameSnapshot(this.#snapshot, snapshot)) return;
+    const enriched = this.#wikiDocUrl ? { ...snapshot, wikiDocUrl: this.#wikiDocUrl } : snapshot;
+    if (sameSnapshot(this.getSnapshot(), enriched)) return;
     this.#snapshot = snapshot;
+    this.#publish();
+  }
+
+  setWikiDocUrl(url: string): void {
+    if (!url) throw new Error("mounted wiki document URL must be non-empty");
+    if (this.#wikiDocUrl === url) return;
+    this.#wikiDocUrl = url;
+    this.#publish();
+  }
+
+  #publish(): void {
+    const snapshot = this.getSnapshot();
     for (const listener of this.#listeners) {
       try { listener(snapshot); } catch { /* one view cannot silence another subscriber */ }
     }
@@ -61,6 +80,7 @@ function sameSnapshot(a: BrowserConnectionSnapshot, b: BrowserConnectionSnapshot
 export function createBrowserConnectionState(pin: RelayPin, hasContactCard: boolean): BrowserConnectionState & {
   /** @internal Lifecycle writer used by observeRelayConnection. */
   transition(snapshot: BrowserConnectionSnapshot): void;
+  setWikiDocUrl(url: string): void;
 } {
   const initial: BrowserConnectionSnapshot = pin.dial
     ? hasContactCard
