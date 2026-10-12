@@ -89,6 +89,7 @@ So, MUST:
 * ''Every vessel in a mesh runs the SAME build.'' Not the same version string — the same artefact. A version string proves nothing when one side built its own.
 * ''A local build carries its provenance.'' The fork's commit sha, the channel, the wasm-pack version, and the digest of the emitted `.wasm`, recorded where a vessel can read them. This house already binds a built blob's sha256 into `hearthTrueName` for TiddlyWiki5; the same instinct applies.
 * ''Consuming published npm stays the DEFAULT'' until a build is reproducible and recorded. Standing a toolchain buys the ability to build; it does not oblige us to ship what we build.
+* ''The house consumes Ink & Switch libraries from npm, and a library becomes a source-built workspace member ONLY when it enters the engine'' (operator ruling, 2026-10-11). Entering the engine costs a pinned Rust/WASM stage in the container image and in CI, and the built bytes then bind into the engine's content address, so a re-pin of that library counts as an epoch act, as TiddlyWiki5's already does. A reading copy's re-pin changes nothing that runs.
 * ''A patch we intend to donate gets proven in the fork FIRST'' — upstream's tests, upstream's environment — before it reaches a vessel here. A fix that only passes in our tree makes a fork, not a contribution.
 
 <<~/ahu>>
@@ -135,6 +136,6 @@ So, MUST:
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
-<<^ code="&#x0003;">>ni:///sha-256;T9B1fMAmW8AusF6j19aJ7eKt3NwTw0Eist0PxObQVrM
+<<^ code="&#x0003;">>ni:///sha-256;b3oIT9KBe7v-mTGY7pYoK031B8Jc78dX30k0WfRgTu0
 
 <<^ code="&#x0004;" -> to="?">>
