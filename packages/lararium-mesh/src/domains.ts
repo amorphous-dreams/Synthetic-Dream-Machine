@@ -95,6 +95,13 @@ export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");
  *  its threshold and the next commitment — the KERI rotation event. Its own name: a roll must never verify
  *  as a crossing record, a roll anchor, or any carriage act. */
 export const SEAL_ROLL_DOMAIN = mint("seal-roll");
+/** A seat's NEXT-KEY commitment: the digest of one cold verifying key, the value a charter carries until that
+ *  seat reveals the key to roll. Its own name: a seat digest must never read as a key-set hash or a bare hash. */
+export const SEAT_NEXT_KEY_DOMAIN = mint("seat-next-key");
+/** The COLD-KEY CARD: the checksum that binds every character of a card's code, and the confirm phrase two
+ *  people read to each other over it. Apart from `guardian-confirm`: a seat's card and a guardian's share never
+ *  speak one phrase. */
+export const COLD_KEY_CARD_DOMAIN = mint("cold-key-card");
 
 // ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The vessel's own key-event log: the inception that commits the next floor key's digest. */
