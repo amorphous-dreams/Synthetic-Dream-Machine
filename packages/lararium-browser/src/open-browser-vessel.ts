@@ -643,7 +643,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       contactCard: a.contactCardJson,
       hearthDaemonUrl: a.hearthDaemonUrl,
       hearthGatePubKey: admit.hearthGatePubKey ?? null,
-      hearthCanonDocs: admittedCanonDocs(admit.hearthCanonDocs),
+      hearthCanonDocs: admittedCanonDocs(admit.hearthCanonDocs, nexusPubkey),
     };
     bootKeyWrites.bootstrap = bootstrap;
   } else if (!bootstrap) {
