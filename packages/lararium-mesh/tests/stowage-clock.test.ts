@@ -74,3 +74,54 @@ describe("the stowage idle clock", () => {
     }
   });
 });
+
+describe("the stowage answers its own idleness", () => {
+  test("a realm clock: stats carries idleFor in rolls and the clock's kind, never lastTouched", async () => {
+    let rolls = 10;
+    const mgr = new BagStowage({ idle: 30, clock: () => rolls });
+    await mgr.touch(URL_A);
+    rolls = 13;
+    const stats = mgr.stats();
+    expect(stats.clockKind).toBe("realm");
+    expect(stats.wela).toHaveLength(1);
+    expect(stats.wela[0]!.idleFor).toBe(3);
+    expect(stats.wela[0]).not.toHaveProperty("lastTouched");
+  });
+
+  test("stats reads the clock once, so every entry derives from one reading", async () => {
+    let rolls = 0;
+    const mgr = new BagStowage({ idle: 30, clock: () => rolls });
+    const URL_B = "automerge:stowage-clock-b" as never;
+    await mgr.touch(URL_A);
+    rolls = 2;
+    await mgr.touch(URL_B);
+    rolls = 5;
+    let reads = 0;
+    const counting = new BagStowage({ idle: 30, clock: () => { reads++; return rolls; } });
+    await counting.touch(URL_A);
+    await counting.touch(URL_B);
+    reads = 0;
+    counting.stats();
+    expect(reads).toBe(1);
+    expect(mgr.stats().wela.map((e) => e.idleFor)).toEqual([3, 5]);
+  });
+
+  test("no clock named: the wall floor, named, with a non-negative idleFor in milliseconds", async () => {
+    const mgr = new BagStowage({});
+    await mgr.touch(URL_A);
+    const stats = mgr.stats();
+    expect(stats.clockKind).toBe("wall-floor");
+    expect(stats.wela[0]!.idleFor).toBeGreaterThanOrEqual(0);
+  });
+
+  test("the idleFor reading is the local clock's: a year's wall jump moves it not at all", async () => {
+    let rolls = 0;
+    const mgr = new BagStowage({ idle: 3, clock: () => rolls });
+    await mgr.touch(URL_A);
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 365 * 86_400_000);
+    const idle = mgr.stats().wela[0]!.idleFor;
+    vi.useRealTimers();
+    expect(idle).toBe(0);
+  });
+});

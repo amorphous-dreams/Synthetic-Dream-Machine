@@ -84,13 +84,16 @@ export interface BagResidencyEntry {
   readonly url:          BagUrl;
   readonly temperature:  ResidencyTemperature;   // "wela" | "anu"
   readonly pinned:       boolean;  // orthogonal flag — exempt from cooling
-  readonly lastTouched:  number;   // in the stowage clock's unit (rolls, or ms on the wall floor)
+  readonly idleFor:      number;   // the stowage clock's reading minus the last touch, in its own unit (rolls, or ms on the wall floor)
   readonly pinReason?:   string;   // operator-supplied or system pin reason
   readonly syncActive?:  boolean;  // true when peers are mid-replication
 }
 
 /** Stats summary for `lares residency` instrumentation. */
 export interface BagResidencyStats {
+  /** Which clock `idleFor` counts in: the realm's roll count, or the monotonic wall floor (ms). An idle
+   *  duration crosses the boundary as a duration with its clock kind, never as an instant. */
+  readonly clockKind: "realm" | "wall-floor";
   readonly pinned:   readonly BagUrl[];
   readonly wela:     readonly BagResidencyEntry[];   // unpinned live (hot) entries
   readonly anuCount: number;                         // cold (URL known, unloaded)
@@ -223,12 +226,12 @@ export class BagStowage {
     return s;
   }
 
-  private _entry(url: BagUrl, s: ResidencyState): BagResidencyEntry {
+  private _entry(url: BagUrl, s: ResidencyState, now: number): BagResidencyEntry {
     return {
       url,
       temperature: s.temperature,
       pinned:      s.pinned,
-      lastTouched: s.lastTouched,
+      idleFor:     now - s.lastTouched,
       ...(s.pinReason  !== undefined && { pinReason:  s.pinReason  }),
       ...(s.syncActive !== undefined && { syncActive: s.syncActive }),
     };
@@ -455,7 +458,11 @@ export class BagStowage {
 
   /** Unpinned wela (live) entries, most-recently-touched first. */
   wela(): readonly BagResidencyEntry[] {
-    return this._entriesAt("wela").sort((a, b) => b.lastTouched - a.lastTouched);
+    return this._wela(this.clock());
+  }
+
+  private _wela(now: number): BagResidencyEntry[] {
+    return this._entriesAt("wela", now).sort((a, b) => a.idleFor - b.idleFor);
   }
 
   /** anu (cold) bag URLs — known but not loaded. */
@@ -467,17 +474,19 @@ export class BagStowage {
 
   // Reports UNPINNED entries at a temperature — stats buckets (pinned / wela /
   // anu) stay disjoint, so a pinned-wela bag appears only under pinned().
-  private _entriesAt(temp: ResidencyTemperature): BagResidencyEntry[] {
+  private _entriesAt(temp: ResidencyTemperature, now: number): BagResidencyEntry[] {
     const out: BagResidencyEntry[] = [];
     for (const [url, s] of this._bags)
-      if (!s.pinned && s.temperature === temp) out.push(this._entry(url, s));
+      if (!s.pinned && s.temperature === temp) out.push(this._entry(url, s, now));
     return out;
   }
 
   stats(): BagResidencyStats {
+    const now = this.clock();
     return {
+      clockKind: this.clockKind,
       pinned:   this.pinned(),
-      wela:     this.wela(),
+      wela:     this._wela(now),
       anuCount: this.anu().length,
       hotCap:   this.hotCap,
     };

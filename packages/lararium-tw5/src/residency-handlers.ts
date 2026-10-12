@@ -23,10 +23,11 @@ export function makeResidencyStatsReactor(opts: ResidencyHandlerOptions): VerbRe
   return async () => {
     const stats = opts.residency.stats();
     return {
+      clockKind: stats.clockKind,
       pinned:   [...stats.pinned],
       wela:     stats.wela.map((e) => ({
         url:         e.url,
-        lastTouched: e.lastTouched,
+        idleFor:     e.idleFor,
         ...(e.syncActive !== undefined && { syncActive: e.syncActive }),
       })),
       anuCount: stats.anuCount,
