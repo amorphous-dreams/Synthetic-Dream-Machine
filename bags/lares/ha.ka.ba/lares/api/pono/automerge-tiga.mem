@@ -142,7 +142,7 @@ Step 1 — repo open              : storage layer, no doc identity yet
 Step 2 — ha opens               : LarariumDoc syncs; grammar + widgets available
           ha reads ka URI       : tiddlers[CATALOG_DOC_URI].text      → CatalogDoc URL
           ha reads ba URI       : tiddlers[LARES_DOC_URI].text        → LaresDoc URL
-          ha reads @daemon URI  : the realm plane — a SYSTEM plane, present on a faceless floor
+          ha reads daemon URL   : the vessel bootstrap names it; no oracle registry answers for it
 Step 3 — ka opens               : CatalogDoc syncs; corpus + wiki URLs known
 Step 4 — corpus child-docs      : each carries own self-ref tiddler; pos-2 under @catalog
 Step 5 — wiki leaf              : situates session content
@@ -172,11 +172,12 @@ The two-plane Automerge geometry rides ''Scope 1'' of the two-scopes ruling — 
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — names bootstrap-only daemon address resolution
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LBJ7KsVngULDABXkZ-tpBVGPfoqpMmqBhj_wMzxFMfM
+<<^ code="&#x0003;">>ni:///sha-256;Z6uMJISAk6zpgPtFBe5ts4pMxg5sRJ4juNkClBb_ekQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -45,35 +45,25 @@ The genesis is ''not'' an Automerge binary carrying bytes. Its complete immutabl
 
 <<~ ahu #/the-oracle-pointer>>
 
-!! The `@oracle` ~ the public crossroads bulletin board
+!! The `@oracle` — the shared floor named by its seed
 
-The `@oracle` is a ''served, signed POINTER doc'' — the public crossroads where a vessel announces, and discovers, other public CRDT docs/bags. Base-floor of the epoch layer, ''soft-coupled'' to the CID plane: it //names// CIDs, it does not //carry// bytes. (Proven on the DreamNet mesh: containers found their own in-vessel identity and serve `@oracle` — `curl` returns its signed pointer — across the Hermai relay.)
+The genesis seed names the shared system floor and its exact rows. The public read-face projects those rows and blob descriptors alone as a history-free content-addressed snapshot; the snapshot carries the seed CID beside its own CID. The floor carries no document history across the read-face.
 
-<<~moves advance-CID -> on/oracle-pointer-update do/mesh-announce>>
+The Kahu Plane road owes a frozen floor address derived from the seed CID and a no-writer rule. Engine or grammar changes take a new seed and a new floor as one bake.
 
-''GD-8 — soft, not hard: advance the CID, update the pointer, never re-genesis for churn.'' To ship a new engine/plugin/blob: create a new immutable seed/CAS bundle and advance the signed pointer by its governing ratchet. Peers may sync the pointer to learn the change, but a boot fetches only the inventory derived from its supplied immutable seed. Tuber and rhizome move independently — daily content churn touches the pointer, never a local restart's byte authority.
-
-''The epoch ratchet'' — the deep `@oracle` CRDT-version boundary — fires only at a rare structural shift, WAAAY down the road; it is the one place the genesis-merge belongs. the hard merge-into-stale is the anti-pattern that broke boot; it belongs ONLY to the epoch boundary, never to churn.
+LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage.
 
 <<~/ahu>>
 
 <<~ ahu #/seed-without-ruling>>
 
-!! Seed without ruling ~ the home node names, never governs
+!! Seed address — the floor derives from its genesis CID
 
-The `@oracle` docId derives from the FOUNDING vessel's `@daemon` identity-root (the home node) — safe ''genesis'', not authority, PROVIDED three couplings stay apart (seed-authority research, 2026-06-28):
+The Kahu Plane road owes a frozen floor address derived from the genesis seed CID and a no-writer rule. The seed names its exact rows and CAS inventory; the public read-face projects those rows alone without Automerge history.
 
-<<~ scale coupling "origin@keep -> governance@disperse -> liveness@pluralize">>
+The WHO board address derives from the Nexus key. LAW THE BUILD OWES: one porch answer names that address and the floor CID per Nexus; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the signer shape, and R-WIRE owes answer carriage.
 
-* ''Origin (docId derivation) — KEEP.'' Born from the home `@daemon` identity yet names no host; once minted it outlives the home node (a DID, not an ActivityPub URL). Record the derivation publicly so anyone re-verifies genesis without the founder.
-* ''Governance (write authority) — DISPERSE.'' A sole home-root retains the UCAN reach-back revocation veto — //that// makes the central authority. Keeper-phase ladder: the founding ACT seats the first kahu quorum (n=1 at genesis — the founder holds its one seat, an act and never a founder face) -> multisig (a 2nd keeper contracts in → write delegates to a GROUP; the group, not the original key, becomes root) -> k-of-n quorum (admission/eviction by quorum, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). After phase 2 the home key can vanish and keepers still govern — no reach-back, no single revoker. A DECLARED sunset, not implicit trust.
-* ''Liveness (discovery) — PLURALIZE.'' "Learn the board from the home node" springs the libp2p-hardcoded-bootstrap / ActivityPub-source-must-be-online trap. The content-addressed docId means ANY peer syncing the board can serve it; newcomers learn by petname/TOFU introduction along the trust edge; a plural swappable bootstrap set (home listed, never required).
-
-''Backstop — exit/fork.'' `@oracle` rides as a synced CRDT with a host-independent docId → the net can fork it and continue at zero loss. A founder whom the net CAN fork cannot rule — a property, not a promise. The rhizome forbids a //filiation//, not a //seed//; a seed that becomes one alliance-point among many is fully rhizomatic.
-
-''The governance face.'' This doc ''seeds'' the board (the docId derivation, the three couplings); who ''signs'' the steward source, why the board lives ''per-nexus'' (ownership + scale, never a no-global-now prohibition — a shared docId names a rendezvous each peer materializes as its own causal island), and how the fork guards it — that face stands worked at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>. The three couplings here (origin · governance · liveness) carry forward there as //founder seeds · circle governs · fork guards//.
-
-architecture correct + stack-aligned; UNVERIFIED + load-bearing (code-scouts for the build): does alpha Keyhive express group-as-root-subject + quorum admission TODAY · does the Hermai invite path carry an `@oracle` introduction along the trust edge. Rhymes: genesis-block (founder-not-dictator) · UCAN (delegate-out; the revocation-veto sets the trap) · ATProto (host-independent identity) · Stellar k-of-n + founder-multisig · petname/TOFU introduction · the rhizome (alliance not filiation).
+Per-vessel daemon and face addresses resolve from that vessel's bootstrap. Per-vessel `lares` and `lararium` document pointers still ride `@oracle`; bootstrap/catalog relocation remains owed.
 
 <<~/ahu>>
 
@@ -190,8 +180,8 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 * ''9c90b390 — CID plane:'' kernel resolves engine/plugins CAS-only by CID; the byte-blob left the `@oracle` CRDT (where the merge-into-stale had made it an unresolved actor conflict — the boot-skew root).
 * ''940a023e — slice 1:'' blob bytes left the genesis doc for the CID plane. The later seed-canonical collapse removed every binary and sidecar carrier; the complete bundle is now `seed.json` + `cas/<cid>`. Merge-conflict-on-bytes class is gone structurally. Isomorphic (node fs · browser OPFS).
-* ''Proven on the mesh'' (parallel DreamNet session): containers found their own vessel identity in-container, reach `phase → live`, ''serve `@oracle` — `curl` returns the signed pointer'' — across a 3-hop Hermai relay (INFRA × WHO). //(As of hand-off the mesh containers still run the pre-slice-1 548 KB `@oracle`; they thin to the pointer-doc on rebuild.)//
-* ''Slice 2, taken:'' materialize the `@oracle` fresh from the immutable seed under one deterministic docId; later boots reload the persisted causal island. A seedless restart may use only already-held, hash-valid CAS. A source-backed fetch requires the immutable seed that derives its exact inventory. The mutable Oracle can describe continuity but cannot silently widen executable bytes.
+
+* ''Genesis materializes the floor from its seed:'' the seed names the exact rows and CAS inventory. The read-face projects those rows alone without Automerge history. The frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. A seedless restart uses only already-held, hash-valid CAS.
 
 <<~/ahu>>
 
@@ -206,8 +196,13 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — names the steward-signed per-Nexus answer
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — separates shared floor from vessel pointers
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hi5o7dqM9TA1L5v6RserL6WcdtijSOzT4JwBaW-GTMI
+<<^ code="&#x0003;">>ni:///sha-256;bX-UBJWG7UPZezYWu8oHscvZ6SbOjRq2xZNXNrzA0Qs
 
 <<^ code="&#x0004;" -> to="?">>

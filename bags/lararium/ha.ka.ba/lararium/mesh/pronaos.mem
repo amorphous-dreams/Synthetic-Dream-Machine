@@ -123,7 +123,7 @@ stranger distinguishably reads as an oracle, so the client proves first.
 SILENT    herm (default)   hands over the bulb BY NAME: /bulb/<cid>.bin, /cas/<cid>; describes nothing
 WAYMARK   herm (opt-in)    + one UNSIGNED descriptor at /.well-known/lar: format, route shapes, bulb CID
 TEMPLE    lararium only    its own Pronaos: the arrival page and the arrival descriptor (#/the-first-arrival)
-ORACLE    every vessel     NO rung: the FLOW-map crosses only the gated oracle socket, to a dialer that proved first
+ORACLE    every vessel     NO rung: the floor carries seed-named rows; the porch answer names its CID per Nexus
 ```
 
 ''SILENT.'' The traveler brings the name. The bulb names itself by its genesis seed's CID, which re-derives from
@@ -145,21 +145,9 @@ descriptor hold one dispatcher key, so one vessel can never answer the well-know
 the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
 alone; on a herm that path draws the closed door, since a readiness answer describes the self.
 
-''THE ORACLE STANDS ON NO RUNG.'' A vessel's oracle face shows no HTTP face at any rung: every HTTP path under it,
-the pointer and the snapshot included, draws the one closed door. The signed FLOW-map pointer and the snapshot it
-names cross only the vessel's oracle socket, behind the vessel's own gate handshake: the dialer proves its key
-first, the gate signs its verdict with the vessel key, and only then do the pointer frame and the snapshot frame
-leave. A stranger who opens the socket and proves nothing receives the gate's challenge and its refusal, and no
-frame of the map. The carriage, a browser vessel's reader and the mesh witnesses all read through that socket.
+''THE ORACLE STANDS ON NO RUNG.'' The floor carries the shared system rows named by its genesis seed. Its read-face projects those rows alone as a history-free content-addressed snapshot. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road.
 
-The vessel key signs the pointer, the same key that signs the vessel's carry seals, and a ''proven peer''
-names anyone who mints a key and proves it: the gate checks possession, not standing. So the pointer hands every
-such dialer a signature that ties this place to every Nexus whose carry seals the vessel key signs, the very
-correlation the waymark paragraph guards against. The socket narrows who reads it to dialers who prove first; it
-does not unbind the correlation. The per-Nexus wire key owes that cut at the re-found, where each Nexus's wire
-signs under its own key and no one key spans two. Before any proof the gate's `lar:challenge` carries a fresh nonce
-alone and echoes no gate key (the dialer holds the pin) (`auth-wire.ts`, `LarChallengeMsg`); it still tells an opener that a gate answers — owed to
-the proof-first protocol lane, where the dialer proves first and a stranger draws silence.
+LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The vessel's own gate still admits only proven peers to its oracle socket.
 
 ''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
@@ -412,8 +400,14 @@ without making any approach keeper of every archive, persona, or causal island i
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
 <<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
 
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">> — serves seed bytes and history-free floor rows
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — carries answer authority without herm signatures
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — presents the steward-signed per-Nexus answer
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SNI5uRSjqOH37KPbZa3XuhIBwZI8kvU-I4PEbi6GeMY
+<<^ code="&#x0003;">>ni:///sha-256;F-pmgdPZq_gtz-AQFIlqrhdkePxYpGUkQ-svFnZUmNk
 
 <<^ code="&#x0004;" -> to="?">>

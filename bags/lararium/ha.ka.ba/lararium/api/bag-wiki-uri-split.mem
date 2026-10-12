@@ -85,8 +85,13 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
 * ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
 
-`@oracle` names the runtime system island, and a vessel hands ''the oracle doc itself'' to a proven peer as a content-addressed snapshot (`exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. The signed FLOW-map pointer and the snapshot it names ride the vessel's oracle WebSocket at `/oracle`, behind its own `DaemonAuthGate`: the dialer proves its key first, and only then do the pointer and snapshot frames leave. The oracle shows no HTTP face — every HTTP path under `/oracle` draws the one closed door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>). `lares`/`lararium` stand as ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
+`@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named rows and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>).
 
-<<^ code="&#x0003;">>ni:///sha-256;Q3RRdMg5tJ6SZ0hw03ZMVKr4rTPjj8_ydjNGtOKz7ME
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — sets the read-face projection and answer split
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — separates floor rows from vessel pointers
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model">> — places system floor beneath writable recipe layers
+
+<<^ code="&#x0003;">>ni:///sha-256;3IovcsKqpGL4FSoldPIImfPzSMHxH0d-0cHzLzD5NPE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -338,12 +338,7 @@ their own CID, with byte identity fixed by the digest (the ''true-name'' registe
 * ''plugin-blobs'' — the engine's extensions, content-addressed, composed atop the engine by CID.
 * ''byte-blobs'' — arbitrary sovereign payloads (attachments, media, sealed artifacts), each named by content.
 
-''Served via the read-face.'' The bulb read-face answers `GET /cas/<cid>` and `GET /bulb/<cid>.bin` as the CAS serve, each route addressed by a CID the client already names. The oracle is no HTTP face: the signed FLOW-map pointer and the snapshot it names ride the vessel's `/oracle` WebSocket behind its own `DaemonAuthGate`, to a peer that proved its key first, and every HTTP path under `/oracle` draws the one closed door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">>). The CAS serve stands as
-the content-addressed read-face of the Two-Faced Substrate (#capability-layer;
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">>). This documents a current
-Herm read face, not a composed Pronaos carrier or a general static HTTP surface. A hash-named blob refuses a write
-by its nature — no mutable surface, so the serve guards nothing; its response cache class remains an explicit
-delivery policy.
+''Served by content address.'' The bulb serves the exact genesis seed bytes at `/bulb/<cid>.bin`; its CID names those bytes. The oracle read-face projects only the seed-named system rows and blob descriptors as a history-free content-addressed snapshot, with the seed CID beside the snapshot CID. LAW THE BUILD OWES: one porch answer per Nexus names that floor CID; the Nexus's Kahu steward signs it, and a herm carries and presents it without signing. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
 
 Two tiers cross the read/sealed cut:
 
@@ -623,8 +618,15 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — defines floor projection and scoped answer
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">> — separates bulb delivery from porch carriage
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer">> — names seed bytes and the floor CID
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — states per-Nexus steward answer authority
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xusb80EA10J_Q71OPjfKa0wIvVU1IcaCp5l8TJag9Tg
+<<^ code="&#x0003;">>ni:///sha-256;JlJmI8zZrhn_PVrVrcH5-4lAg-GBdte1dib24L0ZmD4
 
 <<^ code="&#x0004;" -> to="?">>

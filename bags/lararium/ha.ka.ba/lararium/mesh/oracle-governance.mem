@@ -70,35 +70,13 @@ address would not trigger anyway.
 
 <<~ ahu #/board-model>>
 
-!! The Board Model — Global Address, Local Causal State
+!! The Board Model — per-Nexus Address, Local Causal State
 
-The board carries ''one well-known per-nexus ROOT/INDEX `docId`'' — the ''global''
-''address'' — fanning by ''transitive reachability'' to a fan of ''per-topic causal''
-''islands''. This reads the Beelay pattern straight: //a stable global address, local//
-//converging causal state behind it.//
+Each Nexus has one WHO board address, derived from its Nexus key. LAW THE BUILD OWES: one porch answer per Nexus names that board address and the shared floor CID; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority.
 
-```text
-  @oracle ROOT/INDEX docId   ← the well-known global ADDRESS (one per nexus)
-        │  transitive-reachability fan
-        ├─► topic island: announcements   (its own causal island)
-        ├─► topic island: corpus-pointers
-        ├─► topic island: nexus-directory
-        └─► ... users run their OWN topic boards off the same root
-```
+The public floor exposes the system rows named by the genesis seed. Its read-face projects those rows alone as a history-free content-addressed snapshot; the snapshot carries the seed CID beside its own CID. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
 
-The root names //where to begin//; each topic island converges on its own. A reader walks
-the reachability fan from the root and materializes only the topics it cares to read —
-no peer holds the whole board //at once//, and none needs to.
-
-''Coheres with the established `@oracle` (no new invention).'' The corpus already names
-`@oracle` the ''public crossroads bulletin board'' — a host-independent-docId CRDT the
-net may ''fork'' (a founder who CAN be forked cannot rule), riding atop the system
-pointer/recipe plane
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer">>;
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>). This meme adds the
-''governance face'' over that existing board — who signs its public-read projection, at
-what scale — never a second `@oracle`. The forkability the genesis doc already grants
-IS the //liveness// coupling below.
+The Kahu Plane owns the steward-signing shape; R-WIRE owes the answer carriage. The board address derives without a pointer, so no public board document chooses its own address.
 
 <<~/ahu>>
 
@@ -202,8 +180,15 @@ it through a different door (<<~ loulou "lar:///ha.ka.ba/lararium/docs/peer-disc
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">> — distinguishes floor bytes from porch answer
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer">> — carries the seed CID named by each answer
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — places steward authority at the Kahu Plane
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">> — defines herm carriage without public signing
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EsAT8wq84W-3yh7PT9zguk7chFx3bBaYuvTbvGxpDXM
+<<^ code="&#x0003;">>ni:///sha-256;YvEzCdEQJsbc6wx-5I7xTNXtZAj4-X2J8e1Mhv6DKFo
 
 <<^ code="&#x0004;" -> to="?">>

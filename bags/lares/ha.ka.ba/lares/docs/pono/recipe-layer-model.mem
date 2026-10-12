@@ -65,12 +65,12 @@ Laid by `expandRecipe` (`packages/lararium-mesh/src/wiki-recipe.ts`) walked bott
 | `wikis/{slug}/temp` | `MemoryTiddlerStore` | yes | ''never'' (`slotLayerFlags`) | device | none — fresh per boot | none |
 | `wikis/{slug}/draft` | `AutomergeDocStore` | yes | no | fleet when seated · device when not | THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`): `daemon/draft-bindings/{fingerprint}` (PersonaGroup × recipe-fingerprint) when the vessel holds a SEAT; else the floor doc `wikis/{slug}/drafts/{did}` in the catalog registry, `face-reach: vessel-only` | none |
 | `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | fleet | `daemon/personal-bindings/{fingerprint}` — its own layer by ruling | none |
-| `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | fleet | `daemon/working-bindings/{fingerprint}` (the vessel key binds; a seated face composes on top) | `wikis/{slug}/` via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
+| `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | fleet | `daemon/working-bindings/{fingerprint}` (the address derives from a secret only that face's vessels hold; a seated face composes on top) | `wikis/{slug}/` via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
 | `bags/{slug}` (canon) | `AutomergeDocStore` | yes | only while no working handle stands (the floor) | fleet | `grants.wikiUrl` = the catalog's `bags/{slug}` oracle | `bags/{slug}/` via the `selfCanon` grant |
-| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares bag is a library like the lararium bag), laid at boot and reconciled live (`recipe-watch.ts`) | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
-| `bags/oracle` (floor) | `AutomergeDocStore` | yes | no | fleet · federatable | `grants.islandUrl` | none |
+| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares and lararium bags share library-layer behavior), laid at boot and reconciled live (`recipe-watch.ts`); per-vessel `lares` and `lararium` pointers still ride `@oracle`; bootstrap/catalog relocation remains owed | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
+| `bags/oracle` (floor) | `AutomergeDocStore` | no | no | fleet · federatable | `grants.islandUrl` | none |
 
-Two facts the table hides. (1) ''Every CRDT slot registers `writable:true`'' — the island refuses nothing at the store; the cascade alone decides where a save lands. (2) ''A DELETE lands where the save landed.'' `island-adaptor.ts` keeps the LAST-KNOWN-SLOT map (`lar:///ha.ka.ba/lararium/config/slot-of`, a session `Map<title, SlotUri>`): fed at every outbound save with the cascade's verdict and at every inbound apply with the envelope's bag; `deleteTiddler` reads it before the cascade, falls back to the cascade's title read for a title never seen this session, and tombstones through `tombstoneInBag(slot, …)`. Witnesses: `packages/lararium-tw5/tests/routing-totality.test.ts` "a delete lands where the save landed" (+ the `$:/temp/*` CONTROL) and `tests/lar-kind.test.ts` (a draft's delete lands in the draft slot).''
+Two facts the table hides. (1) ''Every CRDT slot except the oracle floor registers `writable:true`'' — the floor mounts read-only, and a write aimed there copies up into the wiki's working layer. A working layer always mounts (operator ruling); `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) falls back to the wiki's canon bag when no working handle stands, and the build owes removing that fallback. (2) ''A DELETE lands where the save landed.'' `island-adaptor.ts` keeps the LAST-KNOWN-SLOT map (`lar:///ha.ka.ba/lararium/config/slot-of`, a session `Map<title, SlotUri>`): fed at every outbound save with the cascade's verdict and at every inbound apply with the envelope's bag; `deleteTiddler` reads it before the cascade, falls back to the cascade's title read for a title never seen this session, and tombstones through `tombstoneInBag(slot, …)`. Witnesses: `packages/lararium-tw5/tests/routing-totality.test.ts` "a delete lands where the save landed" (+ the `$:/temp/*` CONTROL) and `tests/lar-kind.test.ts` (a draft's delete lands in the draft slot).''
 
 !!! B. The daemon ISLAND composite (`recipe: { wikiSlug: "daemon" }`)
 
@@ -83,7 +83,7 @@ Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-brows
 | `bags/daemon` (the daemon bag: verbs, outcomes, bindings — the control plane) | yes | only until the attach | fleet (private plane) | none — excluded by design |
 | `bags/crossroads` | yes | no | fleet · federatable | `bags/crossroads/` (node) — the daemon designates it in its own mirror set (`open-daemon-vm.ts`), so a residency MOVE out of `wikis/daemon/working` publishes there |
 | `bags/lares` · `bags/lararium` | yes | no | fleet | none here |
-| `bags/oracle` | yes | no | fleet · federatable | none |
+| `bags/oracle` | no | no | fleet · federatable | none |
 
 The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki still routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon gained `working` by ruling, not draft or personal.
 
@@ -98,7 +98,7 @@ The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:/
 | `bags/{slug}` | yes | ''yes'' — the host mounts no working layer, so the canon bag holds the floor | fleet | catalog `bags/{slug}` |
 | PersonaGroup · circles · identities · sessions · `bags/daemon` | yes | yes (no `defaultWritable` given → true; registered BELOW the wiki, so the wiki's canon shadows them) | fleet (private) | bootstrap |
 | `bags/lares` · `bags/lararium` | yes | no | fleet | oracle well-known tiddlers |
-| `bags/oracle` | yes | no | fleet · federatable | genesis |
+| `bags/oracle` | no | no | fleet · federatable | genesis |
 | `bags/catalog` | ''no'' | — | fleet (private) | catalog-url file |
 
 The host mounts NO `working` and NO `personal` layer. A role cap composed alongside the core (the meshpalace FLOW-map layer, `defaultWritable: true`) may register AFTER the wiki cap in topo order and take the host composite's office — unmeasured; nothing writes bagless through the host composite today.
@@ -200,7 +200,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 ''What remains'' (owed, named):
 
-* ''The shared oracle plane moves.'' A joiner's founding rewrote the founder's oracle-plane `bags/lares` pointer (measured: `automerge:ZqADt…` mounted, `automerge:2St9f…` after B stood). A reboot of A would mount B's lares doc. Not this carrier's to rule; named.
+* ''Per-vessel system pointers.'' The `bags/lares` and `bags/lararium` pointers still ride the shared oracle doc; bootstrap/catalog relocation remains owed.
 * ''Disk legs for non-meme files:'' the siting cascades ride (#/tw5-surfaces); binaries under `bags/` read OPEN (talk-story).
 * ''The host composite's office.'' A role cap's `defaultWritable: true` layer (meshpalace) may register after the wiki cap; nothing writes bagless through the host composite today.
 
@@ -298,8 +298,12 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
 
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — sets the seed-named read-only floor
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OrP_4YdGcEel3v1WsyDt_nmkmLaFzDU7LSqi7WF99GA
+<<^ code="&#x0003;">>ni:///sha-256;Tqy8JeXE3HtZreOcsjpCOmKyXPMcUoXge2SkSVxgIfs
 
 <<^ code="&#x0004;" -> to="?">>

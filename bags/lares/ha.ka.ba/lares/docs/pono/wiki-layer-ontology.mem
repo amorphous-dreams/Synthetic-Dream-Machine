@@ -102,42 +102,31 @@ composition and never to the meme.
 
 !! Four Homes — Three Registries and the Seed
 
-An oracle (a bag-URI → doc-URL pointer) resolves from the home that owns it; no home projects into another (one home per oracle, zero drift surface). Three are ''registries'' a running vessel reads; the fourth is the ''cold-start seed'' that carries a vessel's own planes before any registry mounts:
+An oracle names DOCUMENTS at one scope. That scope's owner writes its registry; the registry travels no wider than its scope. The bootstrap carries one vessel's daemon URL and face planes. The shared `@oracle` read-face exposes only the system rows named by its genesis seed. No person, face, or vessel-private field crosses that face. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
 
 | Home | Answers | Who may mount |
 |---|---|---|
-| ''bootstrap'' | a vessel's own planes before a registry stands | this vessel, local-first |
-| ''`@oracle`'' | the SYSTEM island — engine blobs, system bag→doc, genesis-cid | every vessel |
-| ''`@catalog`'' | the operator's PRIVATE bag oracles, under OCAP grants | the operator's grant graph |
-| ''`crossroads`'' | PUBLIC + infrastructure (the dreamnet layer) | a stranger, no grant |
+| ''bootstrap'' | this vessel's daemon URL and its face planes | this vessel, local-first |
+| ''`@oracle`'' | the shared, seed-named system floor | every vessel |
+| ''`@catalog`'' | documents at the operator's scope | the operator's grant graph |
+| ''`crossroads`'' | per-Nexus public board address | Nexus relation; address derivation owed |
 
-The three registries carry their authority classes below:
+The read-face projects only the rows named by the supplied seed, as a history-free content-addressed snapshot. The snapshot carries the seed CID beside its own CID. A wiki mounts the floor read-only; an edit aimed there copies up into the wiki's working layer, which every wiki mounts.
 
-| Plane | Oracle home | Holds | Authority class |
+| Plane | Home | Holds | Authority |
 |---|---|---|---|
-| ''System bags'' | the ''`@oracle`'' runtime-island doc's well-known tiddlers | the ''system'' bag→doc oracle (`@oracle`, `lararium`, `lares`) + the ''system wiki-recipes'' (`lares` wiki, `lararium` wiki) + engine BLOBs + genesis-cid | genesis / engine-epoch (operator-admin; engine-watch EW-5) |
-| ''User registry'' | `@catalog` | the operator's ''user'' bags + ''user'' wiki-recipes (minted by init-wiki), each under OCAP grants | operator composition (recipes, ACTION verbs) |
-| ''Public / Infrastructure'' | `crossroads` *(unbuilt — `lar:///ha.ka.ba/lararium/docs/crossroads`)* | ring-1 public bags | federation / community |
+| ''System floor'' | `@oracle` | seed-named system rows and blob descriptors | shared genesis content |
+| ''Operator registry'' | `@catalog` | documents at one operator scope | that scope's owner |
+| ''WHO board'' | derived from the Nexus key | one board per Nexus | the Nexus relation |
+| ''Public answer'' | porch, carried by a herm | the Nexus charter and floor CID | Kahu steward signs; Kahu Plane / R-WIRE build owed |
 
-''The runtime island splits from the corpus (operator ruling, 2026-06-15).'' The protocol-invariant oracle (and the engine BLOBs + genesis-cid it sits beside) lives in ''`@oracle`'' — the genesis-loaded runtime system island, off-disk, federated read-only. ''`lararium`'' is now purely the ''memetic corpus'' (the engine's authored self-docs, `bags/` seed, git-tracked). Full grain: disk-projection #oracle-split. The conflation that put per-deployment `automerge:` pointers + BLOBs in the `lararium` seed surface is resolved by the split — `@oracle` rides the mesh (regenerable), `lararium` stays tracked source.
+`lares` and `lararium` remain system bag names and recipe members. Their per-vessel document pointers still ride `@oracle`; moving them to bootstrap seeds and each vessel's catalog remains owed on Kahu Plane. A leaf learns the admitted canon documents through its admit. A face's planes and the daemon URL resolve from that vessel's bootstrap alone.
 
-''System bags split from user bags (operator ruling, 2026-06-16).'' `lares` and `lararium` are DreamNet ''system bags'': their bag→doc pointers ''and'' their wiki-recipes live in the ''`@oracle`'' system plane, never `@catalog`. `@catalog` holds ''user'' data alone — user bag pointers + user wiki-recipes (init-wiki). The bag-oracle resolution therefore runs ''two-source'': an island resolves a system bag's pointer/recipe from the `@oracle` doc it already holds, and a user bag's from `@catalog`. `@oracle` stands as the sole universal recipe floor; `lares`/`lararium` ride recipes as members and each also stands as its own quine wiki (#/quine). //(Pointer-plane + system-recipe wiring: ruled here, code-enactment tracked at the live handoff torch.)//
+The WHO board address derives from the Nexus key. LAW THE BUILD OWES: one public answer per Nexus names the floor CID; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape, and R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule, the crossroads address derivation, and retirement of `CREATE --plane oracle`.
 
-Islands resolve each slot from its plane: invariants + system bags from the `@oracle` doc they already hold, user library bags from `@catalog`, public bags (future) from `crossroads`. Rotation of a protocol invariant rides the engine-epoch class (offer-never-push, reboot-re-verifies; the ''RECONCILE'' rite, engine-watch EW-6), never the catalog composition class.
+The leaf's own gate opens exactly the canon documents its admit names. It never opens a system plane through that canon grant.
 
-''Invariant mint law (operator-gated, 2026-06-10):'' minting a protocol invariant rides the ''most-restricted grant — operator(admin), timed''. Only the node home (the base @lararium node, the genesis office) mints; the keel only READS the oracle, and wild vessels receive the invariant plane by federating the ''@oracle'' runtime-island doc — absent reads //not-yet-federated//, never mint-it-yourself. Mint-if-absent self-heals at the node's genesis load (boot = first reconcile); two node homes sharing one @oracle doc settle a concurrent mint by LWW: write, re-read, ''adopt the winner''. Grant-proof enforcement arrives with keyhive; placement enforces the gate today. Content arrives by its own arc; the empty doc stands the structure.
-
-''REGISTERED-WHERE-READ, the matched pair.'' A plane resolves when one home ''registers'' its pointer and the reader asks ''that same'' home. A mismatch reads as a missing document rather than as a misplaced question, which is the failure that hides: `seedPersonaDoc` writes a PersonaGroup plane's self-pointer into the plane itself and into NO registry, so a reader asking any home finds nothing. A ''PersonaGroup plane is a user bag and resolves from `@catalog`'' — reaching for it on the system floor asks the wrong home a question it was never given to answer — and the boot bridges seed → registry so the pair matches.
-
-''What the bootstrap carries splits PLACE from FACE.'' A founding writes `@daemon` alone for a PLACE. A FACE mints its PersonaGroup FIRST, then seeds the four planes that one tag names — `@persona-<tag>`, `@circles-<tag>`, `@identities-<tag>`, `@sessions-<tag>` — with the plane sentinel, in one breath, and the boot refuses a partial set. ''The order binds:'' `changeIdForBag` keys a document by hashing its bag URL, so a plane seeded before its tag exists answers to a name nothing reaches again. So a faceless crossroads carries `@daemon` and nothing else, and every face-scoped verb on that floor answers with the act that lifts it rather than with a registry fault.
-
-''A face's four planes resolve from `@catalog` — OPERATOR RULING (2026-08-20), and this line names the KIND of claim because a ruling replaced a measurement here.'' `@oracle` names the SYSTEM bags, the universal floor every vessel carries; a person's relations reach no such universality. So `@persona-<tag>`, `@circles-<tag>`, `@identities-<tag>` and `@sessions-<tag>` share one tag and one home, reached through the single catalog accessor so the two verb families cannot drift onto different planes.
-
-''Why evidence could not settle it.'' The claim standing here before the ruling read as a MEASUREMENT taken on live vessels 2026-08-19 — a hearth's boot wrote the `@circles` pointer into the `@oracle` island doc, the follow verbs read it back through that same home, and a full add/list/remove round-trip landed. That measurement held TRUE and decided nothing: REGISTERED-WHERE-READ matches wherever both halves get written, so a round-trip proves RESOLUTION and never BELONGING. Which registry a face answers to reads as an OWNERSHIP question, and ownership answers to a ruling. ''A meme replacing a measured claim with a ruled one MUST say which kind of claim replaced it'' — a reader finding an unmarked ruling where a measurement stood trusts the measurement.
-
-`@daemon` keeps its seat on `@oracle` as a SYSTEM plane, and the same ruling grounds it: `@daemon` stands alone on a faceless crossroads, which names exactly the universality `@oracle` holds.
-
-''Content face ↔ read face (one `@oracle`, never two boards).'' This recipe/invariant plane names the ''content face'' of `@oracle`; its governed ''read face'' — who signs the public-read projection, at what scale, and how it stays un-capturable — refines forward at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>. Same `@oracle` seen two ways.
+''Content face ↔ read face.'' The floor names the seed-derived system content; the read-face projects its named rows without Automerge history. The public answer carries the Nexus-scoped authority and floor CID. The board address derives from the Nexus key.
 
 <<~/ahu>>
 
@@ -340,8 +329,19 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — defines floor projection and corpus residency
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — separates derived board address from steward answer
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — sets registry scope and herm answer carriage
+<<~ loulou "lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">> — limits read-face export to seed-named rows
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">> — places answer carriage and public signing
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">> — grounds CAS and content-addressed floor delivery
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer">> — names seed-derived floor and porch answer
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model">> — mounts oracle floor read-only with copy-up
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/boot-sequence-mapping">> — resolves daemon address from vessel bootstrap
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;upT_mJtpp1cs5-N6xlTc_l5naLel06uXrRdApjWmKAw
+<<^ code="&#x0003;">>ni:///sha-256;7MKlcWoMkE6Z6ytWAmuwyV9_5VWVIvaGXlWsjM1sKPE
 
 <<^ code="&#x0004;" -> to="?">>
