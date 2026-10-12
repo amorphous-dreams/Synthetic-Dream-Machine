@@ -25,36 +25,30 @@ import {
 } from "../src/carriage-board.js";
 import { isPresentedAdmit } from "../src/auth-wire.js";
 import { makeMultiSigQuorumVerifier, type KahuQuorumSeats } from "../src/kapae-antigen.js";
-import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, type SealEpoch } from "../src/wax-stamp.js";
+import type { SealEpoch } from "../src/wax-stamp.js";
+import { seatedCharter, charterSeatSeeds } from "./charter-fixture.js";
 import { emptyLarDoc } from "../src/base-doc.js";
 import { pubOf, kahuSigners, carriageAct } from "./fixtures/carriage.js";
 
+const fixtureSeed = 741;
+const OLD = charterSeatSeeds(fixtureSeed, 0, 3);
+const MID = charterSeatSeeds(fixtureSeed, 1, 3);
+const NEW = charterSeatSeeds(fixtureSeed, 2, 3);
+const JOINER = new Uint8Array(32).fill(5);
+const FORK = charterSeatSeeds(fixtureSeed + 1, 0, 3);
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
-const OLD  = [seed(1), seed(2), seed(3)];     // the epoch-0 kahu
-const MID  = [seed(21), seed(22), seed(23)];  // the epoch-1 kahu
-const NEW  = [seed(31), seed(32), seed(33)];  // the epoch-2 kahu
-const JOINER = seed(5);
-const FORK   = [seed(41), seed(42), seed(43)];
 
 const keysOf = (seeds: readonly Uint8Array[]): Promise<string[]> => Promise.all(seeds.map(pubOf));
 
-/** A real pre-rotated charter: genesis under OLD, rolled to MID, then (optionally) to NEW. */
+/** A real pre-rotated charter: each generation seats the keys committed by its predecessor. */
 async function charter(rolls: 1 | 2) {
-  const [oldK, midK, newK] = await Promise.all([keysOf(OLD), keysOf(MID), keysOf(NEW)]);
-  const e0 = genesisCharterEpoch(oldK, 2, sealKeySetHash(midK, 2));
-  const r1 = await rotateSealEpoch(e0, { keys: midK, threshold: 2 }, sealKeySetHash(newK, 2), await kahuSigners(MID));
-  if (!r1.ok) throw new Error(r1.reason);
-  const lineage: SealEpoch[] = [e0, r1.epoch];
-  if (rolls === 2) {
-    const r2 = await rotateSealEpoch(r1.epoch, { keys: newK, threshold: 2 }, "", await kahuSigners(NEW));
-    if (!r2.ok) throw new Error(r2.reason);
-    lineage.push(r2.epoch);
-  }
-  const roster = (keys: string[], e: SealEpoch): KahuQuorumSeats => ({ keys, threshold: 2, sealEpochCid: e.epochCid });
+  const genesis = await seatedCharter({ seats: 3, threshold: 2, seed: fixtureSeed });
+  const first = await genesis.roll();
+  const second = rolls === 2 ? await first.roll() : null;
   return {
-    lineage,
-    r0: roster(oldK, lineage[0]!), r1: roster(midK, lineage[1]!),
-    r2: rolls === 2 ? roster(newK, lineage[2]!) : null,
+    lineage: second ? [...second.chain] : [...first.chain],
+    r0: genesis.roster, r1: first.roster,
+    r2: second?.roster ?? null,
   };
 }
 
@@ -129,9 +123,9 @@ describe("an admit in the anchor's past carries across the roll", () => {
   test("★ CONTROL: a non-ancestor chain reads WRONG-EPOCH ★", async () => {
     const c = await charter(1);
     // A FORKED genesis: internally valid, never on this charter's lineage.
-    const forkKeys = await keysOf(FORK);
-    const fork = genesisCharterEpoch(forkKeys, 2, sealKeySetHash(await keysOf(MID), 2));
-    const forkRoster: KahuQuorumSeats = { keys: forkKeys, threshold: 2, sealEpochCid: fork.epochCid };
+    const forkFixture = await seatedCharter({ seats: 3, threshold: 2, seed: fixtureSeed + 1 });
+    const fork = forkFixture.head;
+    const forkRoster: KahuQuorumSeats = forkFixture.roster;
     const admit = await admitAt(fork.epochCid, FORK);
     const roll = await signRollAnchor(
       { prevEpochCid: fork.epochCid, sealEpochCid: c.r1.sealEpochCid, prevKeys: forkRoster.keys,

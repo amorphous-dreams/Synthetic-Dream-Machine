@@ -25,6 +25,7 @@ import { deterministicDocUrl } from "../src/deterministic-doc.js";
 import { NEXUS_DOC_DOMAIN, type NexusDoc } from "../src/nexus-seal-seed.js";
 import type { LarDoc } from "../src/base-doc.js";
 import type { FederationGate, NexusMembership } from "../src/federation-gate.js";
+import { seatedCharter } from "./charter-fixture.js";
 
 const REALM = "epoch-cid-genesis";
 const A = new Uint8Array(32).fill(1);
@@ -43,17 +44,16 @@ async function registrationByA(docUrl: string = DOC_A) {
 }
 
 describe("realm-bag — the realm's name", () => {
-  test("the realm id reads the charter's GENESIS epoch, fixed across a rotation", () => {
+  test("the realm id reads the charter's GENESIS epoch, fixed across a rotation", async () => {
+    const genesis = await seatedCharter({ seats: 2, threshold: 2 });
+    const rolled = await genesis.roll();
     const doc: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: "epoch-1", kahu: [],
-      sealLineage: [
-        { epochCid: REALM, keySetHash: "k0", nextKeyCommit: "n0", prevEpochCid: null },
-        { epochCid: "epoch-1", keySetHash: "n0", nextKeyCommit: "n1", prevEpochCid: REALM },
-      ],
+      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: rolled.head.epochCid, kahu: [],
+      sealLineage: [...rolled.chain],
     };
-    expect(realmIdOfCharter(doc)).toBe(REALM);
-    expect(realmDocUrl(REALM)).toBe(realmDocUrl(REALM));
-    expect(realmDocUrl(REALM)).not.toBe(realmDocUrl("epoch-1"));
+    expect(realmIdOfCharter(doc)).toBe(genesis.aid);
+    expect(realmDocUrl(genesis.aid)).toBe(realmDocUrl(genesis.aid));
+    expect(realmDocUrl(genesis.aid)).not.toBe(realmDocUrl(rolled.head.epochCid));
   });
   test("CONTROL: an unseated charter names no realm", () => {
     expect(realmIdOfCharter(null)).toBeNull();
