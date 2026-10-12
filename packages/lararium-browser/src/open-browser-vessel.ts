@@ -46,7 +46,7 @@ import {
   type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
-import { HearthCanonGate, awaitHearthCanon, isOwnHearthCrossing } from "./hearth-canon.js";
+import { HearthCanonGate, admittedCanonDocs, isOwnHearthCrossing, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
@@ -113,8 +113,6 @@ import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
 
-/** How long a boot waits for its own hearth's canon pointer. It bounds the wait and decides nothing else. */
-const HEARTH_CANON_BOUND_MS = 20_000;
 
 interface BrowserBootstrap extends VesselBootstrap {
   personaGroupDocIdHex:   string;
@@ -135,6 +133,9 @@ interface BrowserBootstrap extends VesselBootstrap {
   /** The gate key of the HEARTH that admitted this vessel, as its admit named it. Null/absent when the vessel
    *  founded its own face. A crossing pinned to this key reaches the vessel's own hearth (`hearth-canon`). */
   hearthGatePubKey?:     string | null;
+  /** The canon documents that hearth's admit named (canon title → document url). A crossing to the vessel's
+   *  own hearth federates exactly these, and the vessel's oracle replica points at them. */
+  hearthCanonDocs?:      HearthCanonDocs;
 }
 
 // The oracle doc no longer needs an IDB rendezvous key: it lives under the DETERMINISTIC
@@ -642,6 +643,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       contactCard: a.contactCardJson,
       hearthDaemonUrl: a.hearthDaemonUrl,
       hearthGatePubKey: admit.hearthGatePubKey ?? null,
+      hearthCanonDocs: admittedCanonDocs(admit.hearthCanonDocs),
     };
     bootKeyWrites.bootstrap = bootstrap;
   } else if (!bootstrap) {
@@ -686,8 +688,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     hearthGatePubKey: social.hearthGatePubKey,
     holdsDeviceEdge:  Boolean(social.deviceEdge),
   });
-  // The oracle doc as this boot holds it: the own-hearth gate reads it at each verdict, and the recipe reader
-  // reads a system wiki's default recipe off it. Null until genesis loads.
+  // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle
+  // replica points at them; the oracle plane itself stays behind the gate.
+  const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(social.hearthCanonDocs) : {};
+  // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
+  // until genesis loads.
   let oracleAtBoot: DocHandle<LarDoc> | null = null;
   if (relayPin.dial && !social.contactCard) {
     console.warn("[lararium-browser] no social contact card is available for the pinned relay crossing");
@@ -770,7 +775,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
     if (relayGatePubKey) {
       const boards = new DeterministicFederationGate(nexusPubkey);
-      fedGate = ownHearth ? new HearthCanonGate(boards, () => oracleAtBoot?.doc()) : boards;
+      fedGate = ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards;
     }
     repo.networkSubsystem.addNetworkAdapter(adapter);
   }
@@ -949,21 +954,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         const islandHandle = await materializeGenesisIsland(repo, genesisSeed, "browser-genesis");
         oracleAtBoot = islandHandle;
         if (ownHearth) {
-          // The hearth's oracle names the wiki this leaf opens. The pointer rides the oracle plane's sync, so the
-          // mount waits on it; the wait ends at once when the crossing closes, and its bound only bounds it.
-          const arrival = await awaitHearthCanon(islandHandle, {
-            boundMs: HEARTH_CANON_BOUND_MS,
-            crossingClosed: (onClosed) => {
-              const closed = (status: string): boolean => status === "refused" || status === "disconnected";
-              if (closed(connectionState.getSnapshot().status)) { onClosed(); return () => {}; }
-              return connectionState.subscribe((snap) => { if (closed(snap.status)) onClosed(); });
-            },
-          });
-          // The canon set moved under a gate the Repo already consulted: every doc re-reads its verdict.
-          try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ }
-          console.log(arrival.arrived
-            ? `[lararium-browser] hearth canon arrived — this leaf mounts the hearth's wiki ${arrival.wikiDocUrl}`
-            : `[lararium-browser] hearth canon absent (${arrival.why}) — this boot mounts a wiki document of its own; the next boot reads the oracle again`);
+          // The admit names the canon this leaf opens. Seated on this vessel's own oracle replica, the keel and
+          // every island mount the hearth's documents through the reading every vessel shares.
+          seatHearthCanon(islandHandle, hearthCanon);
+          const named = Object.keys(hearthCanon);
+          console.log(named.length > 0
+            ? `[lararium-browser] hearth canon named by the admit — this leaf mounts ${named.join(", ")}`
+            : "[lararium-browser] the admit names no hearth canon — this leaf mounts a wiki document of its own; take a fresh admit from the hearth to open its wiki");
         }
         const coreHash = islandHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.sha256 ?? null;
         if (!coreHash) throw new Error("[openBrowserVessel] genesis island missing ENGINE_CORE_ID blob metadata");
