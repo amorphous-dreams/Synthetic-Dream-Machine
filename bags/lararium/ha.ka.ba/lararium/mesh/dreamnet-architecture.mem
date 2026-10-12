@@ -78,6 +78,16 @@ The planes stay ''soft-bridged at the vessel, never fused'' — every crossing e
 
 <<~/ahu>>
 
+<<~ ahu #/bag-home-axes>>
+
+!! Bag homes ~ read, load, and rest
+
+A bag's `cap-tier` constrains who may read it; residency temperature names whether its local copy stands loaded; home names where its bytes rest. None of those axes supplies another's answer. `repository` rests in a configured source-control repository and travels with its clone; `hearth` rests in per-operator state; `ley` receives no durable local directory. A missing or torn home declaration resolves to `hearth`, since that default risks an unshared bag rather than publishing private bytes or discarding durable ones. A repository home names a registered repository id, never a machine path, and resolution refuses an unregistered id. Bag writers ask the home resolver for a directory; a hand-joined bags path bypasses that boundary (`packages/lararium-mesh/src/bag-home.ts`).
+
+Every bag carries its own `meta.mem` declaration of role, `cap-tier`, and home. A declared cap tier may tighten the structural read floor and may never loosen it. Disk holds declaration authority: ingest excludes the bag-root `meta.mem` from CRDT records, so a wiki edit cannot re-home a bag or loosen its cap tier (`packages/lares-cli/src/ingest-core.ts`). Founding reads the declaration from disk.
+
+<<~/ahu>>
+
 <<~ ahu #/the-relay-floor>>
 
 !! The Relay Floor
@@ -599,6 +609,7 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/network-ring">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
@@ -627,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JlJmI8zZrhn_PVrVrcH5-4lAg-GBdte1dib24L0ZmD4
+<<^ code="&#x0003;">>ni:///sha-256;TJSHt-Q00u7SIUmOcYTg7Cqy0vAJkAWF_bUSJlEXEoQ
 
 <<^ code="&#x0004;" -> to="?">>
