@@ -2,7 +2,7 @@
  * e2e/vessel-sealed — a SEALED vessel stands end to end, every step through the built CLI.
  *
  * The at-rest seal wraps the secret carriers the founding leaves (the keyhive archive, the veil archive,
- * the device recovery share the face founding mints) in a scrypt/AES-GCM envelope under an operator
+ * the device recovery share a face founding mints when it opts into the root split) in a scrypt/AES-GCM envelope under an operator
  * passphrase. This witness walks the whole lifecycle a sealed
  * hearth lives by, on a staged vessel it owns:
  *
@@ -89,9 +89,21 @@ const NO_KEY = { LARES_ARCHIVE_PASSPHRASE: "", LARES_ARCHIVE_PASSPHRASE_NEW: "" 
 const KEY_1  = { ...NO_KEY, LARES_ARCHIVE_PASSPHRASE: PASS_1 };
 const KEY_2  = { ...NO_KEY, LARES_ARCHIVE_PASSPHRASE: PASS_2 };
 
+/**
+ * This suite's rite: a place, then a face whose root split stands. A face splits no root unless the
+ * founding asks (`persona new --split-root`), and this suite witnesses the device share that split mints,
+ * sealed, rotated and exported with the vault, so its founding asks.
+ */
+async function foundWithRootSplit(found: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
+  const place = await found(["vessel", "found", "--root", root, "--skip-build"]);
+  if (place.code !== 0) throw new Error(`staged founding failed (${place.code}):\n${place.stderr.slice(-800)}`);
+  const face = await found(["persona", "new", "0", "--name", "staged", "--split-root"]);
+  if (face.code !== 0) throw new Error(`staged face-founding with a root split failed (${face.code}):\n${face.stderr.slice(-800)}`);
+}
+
 describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", () => {
   beforeAll(async () => {
-    lar = await openStaged({ tag: "sealed" });
+    lar = await openStaged({ tag: "sealed", found: foundWithRootSplit });
     const base = { LAR_ROOT: lar.root, LAR_PORT: String(lar.port) };
     cli = (env, args) => cliFor({ ...base, ...env })(args);
     const f = join(lar.root, "seal-carrier.mem");
@@ -113,8 +125,8 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     expect(r.json?.["ok"], said(r)).toBe(true);
     const carriers = carriersOf(r);
     expect(carriers["archive"]?.state).toBe("cleartext");
-    // The face founding ARMS recovery: the device share stands from day one (absent by omission and absent
-    // by choice read identical from outside — only the mint tells them apart). The reserve share belongs
+    // This suite's founding opts into the root split, so the device share stands from day one (absent by
+    // omission and absent by choice read identical from outside — only the mint tells them apart). The reserve share belongs
     // to the seal rite and stays absent here (CONTROL: one leg, not two).
     expect(carriers["device-share-h0"]?.state).toBe("cleartext");
     expect(carriers["reserve-share"]?.state).toBe("absent");
