@@ -940,7 +940,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   let suspended = false;
 
   if (deletions.length > 0) {
-    const liveTitles = await listLiveTitlesInBag(access, action.toBag);
+    // THE BRAKE'S DENOMINATOR COUNTS CARRIERS. Every wave a bag takes leaves an effect record in that
+    // bag's own ledger; counted as carriers they would loosen the brake a little with each wave.
+    const liveTitles = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t));
     const liveCarrierCount = new Set(liveTitles.map((t) => t.split("#")[0])).size;
     const decision = decideDeletions({
       deletes: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })),

@@ -107,6 +107,35 @@ describe("INGEST — whole-carrier deletion wave", () => {
     expect(carriersOnly(await liveTitles(composite))).toEqual(carriersOnly(before)); // no carrier removed (a suspend still audits to the ledger)
   });
 
+  test("the brake counts CARRIERS: the bag's own residency ledger never dilutes the fraction", async () => {
+    // 7 carriers, 3 deletes at 0.25 → 3 > 1.75 → suspend. Every wave this bag takes leaves one effect
+    // record in its own ledger; five of them standing beside the carriers would read as 12 "carriers"
+    // (3 > 3 fails) and the brake would let the wave through.
+    const composite = makeComposite();
+    await seedCarriers(composite, 7);
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: "seed-ledger" };
+    for (let i = 0; i < 5; i++) {
+      await composite.put({ tiddler: { title: `${BAG}/ledger/residency/earlier-wave-${i}`, text: "" } as LarTiddlerRecord["tiddler"] }, origin, { bag: BAG });
+    }
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+
+    const deletions = [0, 1, 2].map((i) => ({ uri: `lar:///c${i}`, syncedHash: `h${i}` }));
+    const args = waveArgs({ deletions, fraction: 0.25 });
+    const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
+
+    expect((result["deletions"] as Record<string, unknown>)["decision"]).toBe("suspend");
+    expect(carriersOnly(await liveTitles(composite)).length).toBe(7);
+
+    // CONTROL: the same wave against 13 real carriers (3 > 3.25 fails) applies.
+    const roomy = makeComposite();
+    await seedCarriers(roomy, 13);
+    const roomyTable = new VerbTable();
+    registerActionReactors(roomyTable, { composite: roomy });
+    const applied = await roomyTable.get("INGEST")!(args, ctx(roomy, args)) as Record<string, unknown>;
+    expect((applied["deletions"] as Record<string, unknown>)["decision"]).toBe("apply");
+  });
+
   test("unique hash-matched add → rename re-link, change-id PRESERVED", async () => {
     const composite = makeComposite();
     await seedCarriers(composite, 10);
