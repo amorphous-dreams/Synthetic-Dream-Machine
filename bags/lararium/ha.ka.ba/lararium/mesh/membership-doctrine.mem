@@ -216,6 +216,16 @@ it pins — so every walker of one hearth reads the one doc, and the Nexus's car
 cross-check. The act grants nothing and names only the hearth. One key per act derives from the leaf seed
 and the act's link (`hosting-key`), with no counter.
 
+''A USER INTRODUCES; AN OPERATOR ADMITS'' (operator ruling, 2026-10-11; quote license: //"Approve the story leans; a user introduces, an operator admits."//).
+An invited user puts a friend forward as a SIGNED ACT that the hearth's operator sees and answers. Only an operator admits, and
+nobody arrives at a hearth by transitivity: a friend of a guest stands nowhere until the operator's own answer. It follows from the
+order a rhizome grows in, where a Lararium stands before its operator invites anyone
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>). ▢ ''OWED'': the code as it stands lets a
+walker-minted invite vest into a guest's standing at the host's next roll with no operator answer (below); the introduction act, the
+operator's answer to it, and the door that shows an operator what waits stand unbuilt. ''Unruled, and left so'': whether an
+introduction's signature outlives the operator's answer. The law below holds that no record chains who invited whom, and a kept
+introduction would stand as exactly that record.
+
 ''THE WORN FACE HOSTS'' (operator-ruled). The per-Nexus leaf of the WORN face signs the act — the same face its walks present. No roster
 order picks anything, and with no face worn no one gets hosted. ⚠ The session ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>)
 names the wearer as a SESSION, never the vessel. Which session's face signs a hearth's standing hosting act, and how that act stands on
@@ -252,7 +262,8 @@ spent-set and every grant outside the two live epochs dies with no list to walk.
 ''THE WALLET FILLS AT ONCE, AND IT VESTS'' (operator-ruled). A walker on a grant mints its whole allowance
 for the epoch in ONE blind batch, never one invite on demand, because mint time would link. A HOST-minted
 invite grants its guest floor 1 at once. A WALKER-minted invite gives a budget that vests only at the
-host's NEXT roll, so a chain grows at most one hop per roll. The purpose label separates the two, and it
+host's NEXT roll, so a chain grows at most one hop per roll. ⚠ Under the ruling above a walker's invite INTRODUCES and the
+operator's answer admits; vesting by a roll alone admits a guest's friend with no such answer, and stands OWED a re-cut. The purpose label separates the two, and it
 never identifies the minting walker. One burn marker per lineage per epoch keeps the digest of the batch,
 so a retry finds its marker and burns nothing new. Every fill drops the wallet's tokens from any epoch the
 host does not hold live, and a hand-out takes the newest, so a walker never hands out a dead invite.
@@ -442,6 +453,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Zw89X_NFe1EWBIxYS45Gud1ozzctjjWhssvNAHSrnLk
+<<^ code="&#x0003;">>ni:///sha-256;b_FNbxdpKbBDwbdEtE0NfMIIfL8wzdnxpxJZcsJn8HA
 
 <<^ code="&#x0004;" -> to="?">>
