@@ -164,6 +164,38 @@ A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears 
 
 <<~/ahu>>
 
+<<~ ahu #/custody-leans>>
+
+!! Custody across a storage reset ~ operator-approved LEANS, with a crucible's conditions
+
+> ''Register: APPROVED LEANS (operator, 2026-10-11), never rulings and never built.'' Quote license: //"Approve the leans; send a Luna pair to crucible it"//. A two-lens crucible then tested them across two traded waves, read-only; its conditions ride below as research the leans must meet.
+
+# ''PRF-wrapped custody REPLACES the cleartext resting form'' of a browser vessel's roots (the cleartext stands measured at #/what-the-key-format-buys). It replaces; it never sits beside the cleartext as an opt-in. PRF wraps and never mints.
+# ''The herm carries the wrapped blob'': carry, never read. Ciphertext rests with the party that cannot read it, and the unwrapping key rests behind the passkey, which a storage reset cannot reach. After an eviction the human presents the passkey, fetches the blob and unwraps it.
+# ''The install gets offered, never required'' (#/storage-that-vanishes). The passkey gives an uninstalled phone its reason to keep its memory.
+# ''Three cautions ride with them.'' A synced passkey reads `cloud-synced`, a seed-class secret, and `vault status` names the class. The served-page hole stays open, since PRF cures nothing there. The herm's blob locator stays an opaque address and never grows into a roster.
+
+!!! The crucible's conditions
+
+* ''A passkey opens ONE keyslot and never names a person.'' It stands as one custody slot beside passphrase and paper. Both lenses rejected a passkey as a pinned identity-as-relation. The rpId, DNS and TLS, the provider's account and device roster, ceremony timeouts and counters all stay at the web2.5 edge and decide no relation verdict.
+* ''Three recovery products never share one "restore".'' A ''vessel reopened'' recovers its own key from a wrapped vessel secret. A ''vessel re-founded'' mints a new key and gets re-admitted under the standing relation; a host may help. ''Memory restored'' rides the user's own route alone.
+* ''Cross-device PRF stays UNMEASURED.'' Field reports name a mismatch on one platform's hybrid (QR) flow. A PRF-only wrap MUST NOT stand as the sole copy.
+* ''The served page counts as part of the custody boundary'': it receives the PRF output.
+
+!!! What the code holds, and what it owes
+
+* The browser's PRF wrap (`packages/lararium-browser/src/seed-wrap-prf.ts`) sits BESIDE the cleartext root and wraps a persona-root seed, never the device signer.
+* The mesh slot tree (`packages/lararium-mesh/src/keyslot.ts`) builds `passphrase` and `paper` pins alone and refuses any other kind; a passkey slot stands unbuilt.
+* Walk carriage (`packages/lararium-mesh/src/walk-carry.ts`) keeps its receipt and read cap ON the walker's device, and the hearth may reclaim the bytes. It serves as no backup until a locator and a retention promise survive a wipe.
+
+⚠ ''One tension stands unreconciled.'' #/two-key-classes holds that a device key never resurrects (re-mint and re-admit), while a //vessel reopened// recovers a vessel secret. Which keys a wrapped blob may hold wants a ruling before a build.
+
+!!! OPEN ~ the operator's question
+
+Quote license: //"Does Passkey-as-pinned-identity-as-relation read 'No global now' pono? Maybe we need a new combination of capabilities no-one has reached for yet... Mu?"// The question stands unruled. The crucible's answer rides as research: a passkey as the identity, no; a passkey as one keyslot, pono under the first condition above. Its candidate shapes: a vessel-key envelope with two independent routes (a PRF slot and a paper or passphrase slot), herm-carried under opaque per-vessel locators, with a causal relation check after reopening · cross-device authentication used ONLY as a witness to re-admit a newly minted vessel, never as a source of root bytes · a credential-derived dead-drop locator with a causally versioned relation capsule. Both lenses advised against combining the passkey's PRF with a herm-held oblivious PRF share as a first move: it turns the herm from a carrier into an online evaluator, and a partitioned herm cannot learn of a burn.
+
+<<~/ahu>>
+
 <<~ ahu #/admit-inertness>>
 
 !! Admit inertness ~ SAS, not a proximity radio
@@ -219,6 +251,6 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GrzZFQvTY5NNZtEO2EqIHwuS91BGkP7_bxJQZYNcJPE
+<<^ code="&#x0003;">>ni:///sha-256;lqYTuP6Coes9KjbebO7SoV_5ZAwawh7-FDQfe_5jKE8
 
 <<^ code="&#x0004;" -> to="?">>
