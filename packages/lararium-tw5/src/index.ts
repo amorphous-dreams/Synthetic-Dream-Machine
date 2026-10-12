@@ -222,7 +222,7 @@ export type {
   VesselOrchestration, VesselCoreResult, VesselDaemonVm, VesselWikiSlot,
   WikiSlotComponent, DaemonCapDeps,
 } from "./core-caps.js";
-export { openDaemonVmCore } from "./daemon-vm-core.js";
+export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
 export type {
   DaemonVmHost,
   DaemonVmCore,

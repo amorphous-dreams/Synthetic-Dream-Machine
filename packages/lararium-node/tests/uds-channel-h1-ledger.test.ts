@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, concludeVerb, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, concludeVerb, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
 import { recordMineDuration, TIMEOUT_FLOOR_MS } from "@lararium/mempalace";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
@@ -70,11 +70,16 @@ async function withChannel(
 ): Promise<void> {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const workingHandle = repo.create<LarDoc>(emptyLarDoc());
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+  composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
   const dir = mkdtempSync(join(tmpdir(), "uds-h1-"));
   const claim = await claimStore(dir, { holder: "vessel" });
   const placed: Placed[] = [];
   const channel = startUdsChannel({
     daemonHandle,
+    composite,
     placeVerb: (o) => { const p = o as Placed; placed.push(p); placeVerbImpl(p, daemonHandle); },
     claim,
     repo,

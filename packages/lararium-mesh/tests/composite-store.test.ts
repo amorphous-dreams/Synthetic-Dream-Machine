@@ -149,12 +149,12 @@ describe("CompositeStore — read priority (ha < corpus < wiki)", () => {
 // ---------------------------------------------------------------------------
 
 describe("CompositeStore — write routing", () => {
-  test("put() without any writable layer throws", async () => {
+  test("put() without a working layer refuses by name", async () => {
     const store = new CompositeStore();
     store.addLayer({ bagId: BAG_IDS.lararium, store: new MemoryTiddlerStore(), writable: false });
     await expect(
       store.put({ tiddler: { title: "lar:///x" } }, systemOrigin()),
-    ).rejects.toThrow(/no writable layer/);
+    ).rejects.toBeInstanceOf(NoWorkingLayerRefusal);
   });
 
   test("put() writes to the registered writable store, not ha island", async () => {
@@ -504,38 +504,40 @@ describe("CompositeStore live layer surgery", () => {
 });
 
 // ---------------------------------------------------------------------------
-// The default writable — working when mounted, canon when not, temp NEVER
+// The default writable — working only, temp NEVER
 // ---------------------------------------------------------------------------
 
-import { expandRecipe, slotLayerFlags, wikiSlotUri, ORACLE_BAG } from "../src/wiki-recipe.js";
+import { defaultWritableSlot, expandRecipe, slotLayerFlags, wikiSlotUri, ORACLE_BAG } from "../src/wiki-recipe.js";
+import { NoWorkingLayerRefusal } from "../src/composite-store.js";
 
 describe("CompositeStore — the default writable under the recipe layer model", () => {
   /** Lay every slot `expandRecipe` names, bottom-up, with the flags the mounters register. */
-  const lay = (slug: string, workingMounted: boolean): CompositeStore => {
+  const lay = (slug: string, includeWorking: boolean): CompositeStore => {
     const composite = new CompositeStore();
     const slots = expandRecipe({ wikiSlug: slug });
     for (let i = slots.length - 1; i >= 0; i--) {
       const slot = slots[i]!;
-      if (slot === wikiSlotUri(slug, "working") && !workingMounted) continue;
-      composite.addLayer({ bagId: slot, store: new MemoryTiddlerStore(slot), ...slotLayerFlags(slot, slug, workingMounted) });
+      if (slot === wikiSlotUri(slug, "working") && !includeWorking) continue;
+      composite.addLayer({ bagId: slot, store: new MemoryTiddlerStore(slot), ...slotLayerFlags(slot, slug) });
     }
     return composite;
   };
 
-  test("★ working holds the default when its handle stands ★", () => {
+  test("★ default writable always names working ★", () => {
+    expect(defaultWritableSlot("w")).toBe(wikiSlotUri("w", "working"));
     expect(lay("w", true).defaultWritableBagId()).toBe(wikiSlotUri("w", "working"));
   });
 
-  test("the canon bag holds the default while no working layer stands (the floor, never a red)", () => {
-    expect(lay("w", false).defaultWritableBagId()).toBe(wikiBagUri("w"));
+  test("no working layer means no default writable", async () => {
+    const composite = lay("w", false);
+    expect(composite.defaultWritableBagId()).toBeNull();
+    await expect(composite.put(record("lar:///no-working", "refused"), wikiOrigin())).rejects.toBeInstanceOf(NoWorkingLayerRefusal);
   });
 
   test("temp NEVER holds the default — it registers last, and a bagless tombstone there resurrects at boot", () => {
-    for (const mounted of [true, false]) {
-      const composite = lay("w", mounted);
-      expect(composite.layerIds[composite.layerIds.length - 1]).toBe(wikiSlotUri("w", "temp"));
-      expect(composite.defaultWritableBagId()).not.toBe(wikiSlotUri("w", "temp"));
-    }
+    const composite = lay("w", true);
+    expect(composite.layerIds[composite.layerIds.length - 1]).toBe(wikiSlotUri("w", "temp"));
+    expect(composite.defaultWritableBagId()).toBe(wikiSlotUri("w", "working"));
   });
 
   // The oracle floor is the system island every vessel shares: a wiki mounts it read-only, and an

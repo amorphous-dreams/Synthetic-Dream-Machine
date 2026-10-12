@@ -9,7 +9,7 @@
  * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
@@ -27,11 +27,15 @@ const meme = (slots: readonly string[]): string =>
 /** The smallest live wiki: four verbs over a Map, the shape `wikiMemeSink` reads. */
 function fakeWiki() {
   const store = new Map<string, Record<string, unknown>>();
+  let workingPointer = bagUri("daemon");
   return {
     store,
+    setWorkingPointer: (value: string) => { workingPointer = value; },
     allTitles: () => [...store.keys()],
     getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t) } : undefined),
-    getTiddlerText: (t: string, d = ""): string => (typeof store.get(t)?.["text"] === "string" ? String(store.get(t)!["text"]) : d),
+    getTiddlerText: (t: string, d = ""): string => t === "lar:///ha.ka.ba/lararium/config/current-wiki-bag"
+      ? workingPointer
+      : (typeof store.get(t)?.["text"] === "string" ? String(store.get(t)!["text"]) : d),
     addTiddler: (f: Record<string, unknown>) => { store.set(String(f["title"]), f); },
     deleteTiddler: (t: string) => { store.delete(t); },
   };
@@ -93,7 +97,7 @@ describe("meme-put — the anchor (recipes/default)", () => {
     expect(capCalls[0]).toEqual({ access: "admin", bag: bagUri("daemon") });
   });
 
-  test("CONTROL: with no cascade config the anchor's cap seat falls to the daemon bag", async () => {
+  test("CONTROL: a mounted working pointer names the anchor's cap seat", async () => {
     const r = rig();
     r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
     capCalls.length = 0;
@@ -101,7 +105,15 @@ describe("meme-put — the anchor (recipes/default)", () => {
     expect(capCalls[0]?.bag).toBe(bagUri("daemon"));
   });
 
-  test("`recipe: \"default\"` reads the same as no target", async () => {
+  test("a bare anchor refuses by name when its working pointer is absent", async () => {
+    const r = rig();
+    r.wiki.setWorkingPointer("");
+    await expect(makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx()))
+      .rejects.toBeInstanceOf(NoWorkingLayerRefusal);
+    expect(r.wiki.store.has(URI)).toBe(false);
+  });
+
+  test("`recipe: \"default\"` resolves through a standing working pointer", async () => {
     const r = rig();
     await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
     expect(r.wiki.store.has(URI)).toBe(true);

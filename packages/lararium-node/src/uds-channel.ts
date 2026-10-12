@@ -6,8 +6,9 @@
  * ~3s/command tax) — it only needs to hand the daemon a capability-bearing
  * invocation and await the receipt. This Unix-domain socket carries exactly that:
  * the CLI writes one invocation line, the daemon writes the summons into its warm
- * daemon doc (the SAME tiddler the worker reacts to from a WS peer), awaits the
- * durable bags/daemon/outcomes/<id> receipt, and returns it over the socket.
+ * daemon working doc (the SAME tiddler the worker reacts to from a WS peer), awaits the
+ * durable bags/daemon/outcomes/<id> outcome, and returns it over the socket. Receipt facts land
+ * in the daemon wiki's working document.
  *
  *   transport  = this socket (kernel-local, authority-agnostic)
  *   authority  = the invocation's requestedBy → the worker's verify-then-delegate
@@ -37,8 +38,9 @@
 import type { Socket } from "node:net";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, AutomergeDocStore, CompositeStore,
-  newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
+  CompositeStore,
+  NoWorkingLayerRefusal, newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
+  wikiSlotUri,
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, buildReceiptFact, parseReceiptFact,
   verbInputDigest, type ReceiptFact, type ReceiptFactDraft,
 } from "@lararium/mesh";
@@ -52,6 +54,8 @@ import type { StoreClaim } from "./owned-store.js";
 export interface UdsChannelOptions {
   /** The daemon's warm daemon doc handle (result.daemon.daemonHandle). */
   readonly daemonHandle: DocHandle<LarDoc>;
+  /** The daemon composite with its attached working layer established as default writable. */
+  readonly composite: CompositeStore;
   /**
    * The DIRECT worker channel (result.daemon.placeVerb) — posts the invocation
    * (verb + `args` CONTENT) straight to the daemon worker over the MessageChannel,
@@ -157,8 +161,8 @@ export class VesselWaitExpired extends Error {
  * co-located worker or a remote summons). The worker never writes a fact, only the outcome tiddler
  * this channel observes — so no two processes ever race one fact's `state` field.
  *
- * A restart loses NOTHING: the fact backing this ledger lives in the Automerge-backed daemon bag
- * (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that is seeded from the
+ * A restart loses NOTHING: the fact backing this ledger lives in the composite's default writable
+ * working layer (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that is seeded from the
  * store on first use and kept warm by every write this process makes. H1R's proven bug — a
  * same-id, same-args reuse re-running after a restart, and a cancelled id's abandonment not
  * surviving one — closes because the fact this ledger reads back IS the fact a prior process wrote,
@@ -169,7 +173,7 @@ export class VesselWaitExpired extends Error {
  * outcome. An evicted id answers `retention-gap`, never a silent re-run and never a bare "unknown"
  * that would invite one.
  */
-class FactLedger {
+export class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
   /** requestIds this ledger has read as TORN — a tiddler under {@link RECEIPT_FACT_URI_PREFIX} that
    *  {@link parseReceiptFact} rejects (an unreadable shape, never "never seen"). Distinct from
@@ -193,6 +197,14 @@ class FactLedger {
     return `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
   }
 
+  /** Receipt facts live in the default writable layer that receives them; the ledger reads no other layer. */
+  private factStore() {
+    const bagId = this.composite.defaultWritableBagId();
+    const store = bagId ? this.composite.storeForBag(bagId) : null;
+    if (!store) throw new NoWorkingLayerRefusal("The receipt ledger read", "Mount the daemon working slot before opening the UDS channel.");
+    return store;
+  }
+
   /** Seed the cache + eviction order + seq counter from the durable store, once. Every public
    *  method awaits this first, so a connection arriving before the scan finishes still reads a
    *  consistent (if momentarily blocked) ledger rather than a false "never seen". `nextSeq`
@@ -203,12 +215,13 @@ class FactLedger {
   private ensureSeeded(): Promise<void> {
     if (this.seeded) return this.seeded;
     this.seeded = (async () => {
-      const titles = await this.composite.listVisible();
+      const store = this.factStore();
+      const titles = await store.listVisible();
       const facts: ReceiptFact[] = [];
       let maxRawSeq = -1;
       for (const title of titles) {
         if (!title.startsWith(RECEIPT_FACT_URI_PREFIX)) continue;
-        const rec = await this.composite.get(title);
+        const rec = await store.get(title);
         if (!rec) continue;
         const raw = rec.tiddler as Record<string, unknown>;
         const rawSeqField = raw["seq"];
@@ -253,7 +266,7 @@ class FactLedger {
     if (this.torn.has(requestId)) return "torn";
     const cached = this.cache.get(requestId);
     if (cached !== undefined) return cached;
-    const rec = await this.composite.get(FactLedger.factTitle(requestId));
+    const rec = await this.factStore().get(FactLedger.factTitle(requestId));
     if (!rec) return null;
     const fact = parseReceiptFact(rec.tiddler as Record<string, unknown>);
     if (fact) { this.cache.set(requestId, fact); return fact; }
@@ -384,7 +397,10 @@ class FactLedger {
         ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
       };
       await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
-      await this.composite.tombstone(`${OUTCOME_URI_PREFIX}${victimId}`, { kind: "lares-verb", requestId: victimId });
+      const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
+      for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
+        await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+      }
       this.cache.set(victimId, evicted);
       evictedAny = true;
     }
@@ -410,16 +426,11 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
 
-  // The composite over the warm daemon handle. It reads the durable outcome tiddler back through
-  // it (never writes the summons here; the carriers ride the direct worker channel, off the CRDT) —
-  // and it is ALSO the receipt-fact ledger's own writable layer (D1): this channel is the fact's
-  // sole writer, so the one composite serves both the read and the write side of the ledger.
-  const composite = new CompositeStore();
-  composite.addLayer({
-    bagId:    DAEMON_BAG_ID,
-    store:    new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID),
-    writable: true,
-  });
+  // Outcomes remain in the explicit daemon bag; bagless receipt facts use the attached working layer.
+  const composite = opts.composite;
+  if (composite.defaultWritableBagId() !== wikiSlotUri("daemon", "working")) {
+    throw new NoWorkingLayerRefusal("Opening the UDS channel", "Mount the daemon working slot (wikis/daemon/working) as the default writable first.");
+  }
 
   // The DURABLE arbitration ledger (D1, H1R+H4+M1+M3″) — one winner per request id, backed by the
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process

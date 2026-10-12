@@ -46,9 +46,11 @@ import {
   type CompositeStore,
   type CapabilityVerifier,
   type VerbTargetResult,
+  type LarTiddlerChange,
   parseVerb,
   VERB_URI_PREFIX,
   OUTCOME_URI_PREFIX,
+  SUMMONS_URI_PREFIX,
   verbInputDigest,
 } from "@lararium/mesh";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
@@ -194,6 +196,7 @@ export class VerbDispatcher {
   private unsubWiki:      (() => void) | null = null;
   private unsubAutomerge: (() => void) | null = null;
   private readonly inFlight = new Set<string>();
+  private readonly seenSummons = new Set<string>();
   /**
    * Effect dedup (D1, P2.5 iter 4) — one chained promise per effectKey. A second attempt
    * under a NEW requestId with the SAME effectKey finds this entry and chains onto it
@@ -203,6 +206,33 @@ export class VerbDispatcher {
   private readonly inFlightEffect = new Map<string, Promise<void>>();
 
   constructor(private readonly opts: VerbDispatcherOptions) {}
+
+  /** Settles when the startup scan of persisted summons has heeded every pending record. */
+  startupScan: Promise<void> = Promise.resolve();
+
+  private async scanSummons(): Promise<void> {
+    const titles = (await this.opts.daemon.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
+    for (const title of titles) {
+      if (!this.unsubAutomerge) return;
+      const top = await this.opts.daemon.resolveTopmost(title);
+      if (!top) continue;
+      await this.receiveSummons({
+        title,
+        record: top.record,
+        origin: { kind: "crdt-remote", edgeIsland: "startup-replay" },
+        bag: top.bagId,
+      });
+    }
+  }
+
+  private receiveSummons(change: LarTiddlerChange): Promise<void> {
+    return heedSummons(change, {
+      daemon: this.opts.daemon,
+      isInFlight: (requestId) => this.inFlight.has(requestId),
+      seenRequestIds: this.seenSummons,
+      placeVerb: (invocation) => { this.placeVerb(invocation); },
+    });
+  }
 
   /** Run the invocation's handler — local registry first, else the verify-then-delegate
    *  route to main, else a "no handler" refusal. Shared by the plain-dispatch path and
@@ -343,13 +373,15 @@ export class VerbDispatcher {
     this.unsubWiki = () => wiki.removeEventListener("change", onWikiChange);
 
     this.unsubAutomerge = this.opts.daemon.subscribe((change) => {
-      heedSummons(change, {
-        daemon:     this.opts.daemon,
-        isInFlight: (requestId) => this.inFlight.has(requestId),
-        placeVerb:  (invocation) => { this.placeVerb(invocation); },
-      }).catch((err) => {
+      this.receiveSummons(change).catch((err) => {
         console.error("[verb-dispatcher] summons relay crashed:", err);
       });
+    });
+
+    // Startup scan: persisted pending summons are heeded once. The request-id set shared with live
+    // delivery keeps a record that also arrives as a change from firing twice.
+    this.startupScan = this.scanSummons().catch((err) => {
+      console.error("[verb-dispatcher] summons startup scan crashed:", err);
     });
 
     console.log(`[verb-dispatcher] live — handlers: ${this.opts.registry.list().join(", ") || "(none)"}`);
@@ -358,6 +390,9 @@ export class VerbDispatcher {
   stop(): void {
     this.unsubWiki?.(); this.unsubWiki = null;
     this.unsubAutomerge?.(); this.unsubAutomerge = null;
+    // The set outlives a heeded summons on purpose (a replica may re-deliver the pending record after our
+    // tombstone landed), so it is released with the dispatcher.
+    this.seenSummons.clear();
   }
 
   placeVerb(opts: SummonsRequest): string {

@@ -24,10 +24,10 @@
 import {
   CATALOG_DOC_URI,
   tiddlerText,
+  findOrThrow,
   AutomergeDocStore,
   type Repo,
   type DocHandle,
-  type AutomergeUrl,
   type LarDoc,
   type LarTiddlerRecord,
   type LarTiddlerStore,
@@ -60,21 +60,9 @@ export interface CatalogAccessor {
  * Asking for `CATALOG_DOC_URI` itself short-circuits to the catalog handle (the
  * registry need not register itself).
  */
-// Partition-as-normal-state: an unavailable doc gets a bounded wait for sync
-// to deliver, then a LOUD throw — never a forever-pending whenReady the caller
-// must guess at by timeout.
-const ACCESS_READY_TIMEOUT_MS = 8_000;
-
-export async function findOrThrow(repo: Repo, url: string, what: string): Promise<DocHandle<LarDoc>> {
-  // automerge-repo 2.6: find() resolves only when READY and REJECTS on
-  // unavailable. Race against a bounded timeout; throw LOUD if it never arrives.
-  const h = await Promise.race([
-    repo.find<LarDoc>(url as AutomergeUrl).catch(() => null),
-    new Promise<DocHandle<LarDoc> | null>((res) => setTimeout(() => res(null), ACCESS_READY_TIMEOUT_MS)),
-  ]);
-  if (h) return h;
-  throw new Error(`[catalog-accessor] ${what} unavailable — doc ${url} never arrived (${ACCESS_READY_TIMEOUT_MS}ms)`);
-}
+// Partition-as-normal-state: an unavailable doc gets a bounded wait for sync to deliver, then a LOUD
+// refusal (mesh's `findOrThrow`, the one bounded resolve) — never a forever-pending whenReady.
+export { findOrThrow };
 
 export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAccessor {
   let _catalog: Promise<DocHandle<LarDoc>> | null = null;

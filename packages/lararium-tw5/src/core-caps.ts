@@ -156,9 +156,13 @@ export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<T
       const daemon   = resolve<VesselDaemonVm>(CORE_CAP.daemon);
       const presetWiki = slot.wikiBagId === LARES_DOC_URI ? assembly.laresHandle ?? undefined : undefined;
       await daemon.workerEa;
+      let slotDocs: ReturnType<typeof resolveSlotDocs> | undefined;
+      const resolveSlots = (wikiUrl: string) => slotDocs ??= resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl });
       const resolveDraft = async (wikiUrl: string): Promise<string> =>
-        (await resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl })).draftUrl;
-      const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, presetWiki);
+        (await resolveSlots(wikiUrl)).draftUrl;
+      const resolveWorking = async (wikiUrl: string): Promise<string> =>
+        (await resolveSlots(wikiUrl)).workingUrl;
+      const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki);
       emit("wiki-ready");
       emit("vessel-ready");
       return { wikiHandle, draftHandle };

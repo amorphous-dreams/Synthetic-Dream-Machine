@@ -179,6 +179,8 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       "request-id":   fact.requestId,
       state:          fact.state,
       seq:            String(fact.seq),
+      // Control-plane record: it follows the working layer and never projects to a disk mirror.
+      "disk-projection": "no",
       ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
       ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
@@ -486,6 +488,8 @@ export function summon(opts: {
       "batch-mode":    opts.batchMode ?? "best-effort",
       "request-id":    requestId,
       status:          "pending",
+      // Control-plane record: it follows the working layer and never projects to a disk mirror.
+      "disk-projection": "no",
       "requested-by":  opts.requestedBy,
       "requested-at":  new Date().toISOString(),
       ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),

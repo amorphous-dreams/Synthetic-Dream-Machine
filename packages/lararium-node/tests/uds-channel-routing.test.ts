@@ -18,12 +18,20 @@ import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import {
   emptyLarDoc, mutableLarRecord, concludeVerb,
-  SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX, type LarDoc,
+  SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc,
 } from "@lararium/mesh";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { claimStore, StoreHeld } from "../src/owned-store.js";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; }
+
+function daemonComposite(repo: Repo, daemonHandle: ReturnType<Repo["create"]>): CompositeStore {
+  const composite = new CompositeStore();
+  const working = repo.create<LarDoc>(emptyLarDoc());
+  composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+  composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(working, wikiSlotUri("daemon", "working")), writable: true });
+  return composite;
+}
 
 function sendInvocation(socketPath: string, inv: unknown): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
@@ -64,6 +72,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
 
     const channel = startUdsChannel({
       daemonHandle,
+      composite: daemonComposite(repo, daemonHandle),
       // Stand in for the daemon worker: land the carriers in the TARGET bag (as the
       // dispatcher's executeIngest does via access.write(destBag)), then write the
       // durable outcome into daemon — the ONLY thing daemon's doc ever sees.
@@ -132,7 +141,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     const placed: Placed[] = [];
-    const channel = startUdsChannel({ daemonHandle, placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
+    const channel = startUdsChannel({ daemonHandle, composite: daemonComposite(repo, daemonHandle), placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
     try {
       await waitForSocket(claim.socketPath);
       const sock = createConnection(claim.socketPath);
@@ -164,6 +173,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const placed: Placed[] = [];
     const channel = startUdsChannel({
       daemonHandle,
+      composite: daemonComposite(repo, daemonHandle),
       placeVerb: (o) => {
         placed.push(o as Placed);
         const outcome = concludeVerb({
@@ -202,7 +212,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
       const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
       const claim = await claimStore(dir, { holder: "vessel" });
       const placed: Placed[] = [];
-      const channel = startUdsChannel({ daemonHandle, placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
+      const channel = startUdsChannel({ daemonHandle, composite: daemonComposite(repo, daemonHandle), placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
       try {
         await waitForSocket(claim.socketPath);
         Date.now = () => realNow() + skewMs; // a set-back or a set-forward device clock
@@ -226,7 +236,8 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     try {
-      const channel = startUdsChannel({ daemonHandle: repo.create<LarDoc>(emptyLarDoc()), placeVerb: () => { /* none */ }, claim, repo });
+      const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+      const channel = startUdsChannel({ daemonHandle, composite: daemonComposite(repo, daemonHandle), placeVerb: () => { /* none */ }, claim, repo });
       channel.close();
       const answer = await sendInvocation(claim.socketPath, { verb: "act", args: {}, requestedBy: "did:key:test-operator" });
       expect(answer["status"]).toBe("error");

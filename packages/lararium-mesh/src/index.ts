@@ -97,6 +97,7 @@ export * from "./recipe.js";
 export * from "./flow.js";
 export { bagStackFromRec } from "./bag-stack-from-rec.js";
 export * from "./composite-store.js";
+export * from "./find-or-throw.js";
 export * from "./sensorium-consistency.js";
 export * from "./sensorium-contract.js";
 export * from "./sensorium-fusion.js";

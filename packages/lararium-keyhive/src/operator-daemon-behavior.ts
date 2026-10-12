@@ -29,7 +29,7 @@ import {
   makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
 
@@ -72,10 +72,19 @@ import { base64ToBytes } from "./bytes-base64.js";
 import { ed25519SignerFromSeed, type LarTiddlerRecord } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 
+/** A daemon boot cannot stand without the daemon wiki's working layer. */
+export class WorkingLayerAttachRefusal extends Error {
+  constructor(slot: string, cause: unknown) {
+    const detail = cause instanceof Error ? cause.message : String(cause);
+    super(`[daemon] WorkingLayerAttachRefusal: working layer "${slot}" could not attach (${detail}); start the vessel again from a fresh store (delete its store directory by hand), which re-seeds every document from the bags.`);
+    this.name = "WorkingLayerAttachRefusal";
+  }
+}
+
 /**
- * Build the operator's daemon-island behavior from a manifest. With no auth
- * material, falls back to the verifier-less behavior (delegated-verb path only);
- * daemon manifests always carry daemonAuth, so that path guards tests.
+ * Build the operator's daemon-island behavior from a manifest. Peer V3 admits
+ * verify against persisted cap-events, and daemon boot requires Keyhive material
+ * for its working-layer binding. Product manifests carry daemonAuth.
  */
 /**
  * The note a live admission verdict carries when the persona-KEL walk set events aside or met a fork: events that
@@ -104,7 +113,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
   const { persistArchive, persistVeilArchive, vault, bagTier, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
-  if (!daemonAuth) return { ...daemonExtra };
+  if (!daemonAuth) {
+    return {
+      ...daemonExtra,
+      verifierFactory: async () => {
+        throw new WorkingLayerAttachRefusal(wikiSlotUri("daemon", "working"), new Error("daemon auth and Keyhive are unavailable"));
+      },
+    };
+  }
 
   let kh: KeyhiveProvider | null = null;
   // The VEIL identity — the group's creator, re-derived from (vessel seed × persisted tag). Stands
@@ -231,40 +247,44 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     return slotDocs;
   };
 
-  // THE DAEMON WIKI HOLDS A WORKING LAYER ABOVE ITS OWN BAG (operator ruling: "working layers for
-  // all wikis"). The vessel builds the daemon's grants before the VM hosting this resolver exists, so
-  // the layer arrives by a LATE ATTACH: the working doc resolves through the same resolver under the
-  // same binding law as every wiki's, splices above the daemon bag as the default writable, and the
-  // cascade's `current-wiki-bag` re-seeds to it — a `lar:` save and the `meme put` anchor land there
-  // from then on. The daemon bag beneath keeps the control plane (verbs, outcomes, bindings).
+  // Every write made by the daemon wiki, including its receipts and audit records, lands in its working
+  // layer. The daemon bag beneath holds only records the daemon wiki names explicitly.
   const attachDaemonWorking = async (ctx: IslandContext): Promise<void> => {
     const slug = ctx.recipe.wikiSlug;
     const working = wikiSlotUri(slug, "working");
-    if (ctx.composite.hasBag(working)) return;
-    const daemonUrl = ctx.handles.get(wikiBagUri(slug))?.url;
-    if (!daemonUrl) return;
-    const recipeTrace = { wikiDocId: daemonUrl, libraryBagDocIds: [] as readonly string[] };
-    const fingerprint = await computeRecipeFingerprint(recipeTrace);
-    const { workingUrl } = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, slug);
-    const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`);
-    const store = new AutomergeDocStore(handle, working);
-    const at = ctx.composite.layerIndexOf(wikiBagUri(slug)) + 1;
-    ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, at);
-    ctx.handles.set(working, handle);
-    store.emitInitialReplay();
-    store.markSyncComplete();
-    // The cap gate keys on the slot's lar: URI — register it the way the vessel registers every wiki
-    // bag it grants, delegated to the face where one is seated.
-    await kh!.registerBag(working);
-    if (daemonAuth.personaGroupAgentIdHex && veilKh && await (veilKh ?? kh!).knowsAgent(daemonAuth.personaGroupAgentIdHex)) {
-      await delegateToFaceViaVeil(working, "admin");
+    try {
+      if (ctx.composite.hasBag(working)) {
+        if (ctx.composite.defaultWritableBagId() !== working) throw new Error("the working layer is not the default writable");
+        return;
+      }
+      const daemonUrl = ctx.handles.get(wikiBagUri(slug))?.url;
+      if (!daemonUrl) throw new Error(`daemon bag ${wikiBagUri(slug)} is unavailable`);
+      if (!kh) throw new Error("Keyhive is unavailable in the daemon boot");
+      const recipeTrace = { wikiDocId: daemonUrl, libraryBagDocIds: [] as readonly string[] };
+      const fingerprint = await computeRecipeFingerprint(recipeTrace);
+      const { workingUrl } = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, slug);
+      const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
+      const store = new AutomergeDocStore(handle, working);
+      const at = ctx.composite.layerIndexOf(wikiBagUri(slug)) + 1;
+      ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, at);
+      ctx.handles.set(working, handle);
+      store.emitInitialReplay();
+      store.markSyncComplete();
+      // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
+      await kh.registerBag(working);
+      if (daemonAuth.personaGroupAgentIdHex && veilKh && await veilKh.knowsAgent(daemonAuth.personaGroupAgentIdHex)) {
+        await delegateToFaceViaVeil(working, "admin");
+      }
+      const temp = wikiSlotUri(slug, "temp");
+      if (ctx.composite.hasWritableBag(temp)) {
+        const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };
+        await ctx.composite.put(mutableLarRecord("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { text: working }, "daemon-working-attach"), origin, { bag: temp });
+      }
+      console.log(`[daemon] working layer attached: ${working}`);
+    } catch (cause) {
+      if (cause instanceof WorkingLayerAttachRefusal) throw cause;
+      throw new WorkingLayerAttachRefusal(working, cause);
     }
-    const temp = wikiSlotUri(slug, "temp");
-    if (ctx.composite.hasWritableBag(temp)) {
-      const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };
-      await ctx.composite.put(mutableLarRecord("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { text: working }, "daemon-working-attach"), origin, { bag: temp });
-    }
-    console.log(`[daemon] working layer attached: ${working}`);
   };
 
   // ── PERSONA-SCOPED ACTS NEED A FACE, AND SAY SO ────────────────────────────────────────────────
@@ -770,24 +790,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         exportArchive: () => keyhive.exportArchive(),
         ...(veilKh ? { exportVeilArchive: () => veilKh!.exportArchive() } : {}),
       });
+      // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
+      await attachDaemonWorking(ctx);
       if (floor.barred) {
         console.log("[daemon] the archive holds shut — the identity archive was NOT re-sealed; every sovereign act waits.");
       }
-      // ── RAIL B's OTHER HALF: the door DECIDED, this frame SURFACES ─────────────────────────────
-      // A GREEN BOOT IS NOT A WRITTEN ARCHIVE. These refusals used to reach `console.warn` and
-      // nothing else, and `disk-projection` rules against exactly that: "Refusals surface LOUDLY —
-      // a silent skip would hide it from the operator." On an unattended vessel stdout has no
-      // audience at all, so a seal refusal at 3am left nothing behind and the next boot warned
-      // again over the same hole.
-      //
-      // RAIL A, REUSED — no fourth rail minted. `makeWardAlertReactor` is already registered on
-      // THIS registry three frames below, and it writes the durable `@daemon` ledger record FIRST
-      // and UNCONDITIONALLY, before it looks for a pinned VM. That is precisely why it works at the
-      // floor: a boot with no wiki mounted still lands the record, and an alert that cannot be
-      // delivered parks durably downstream rather than vanishing.
-      //
-      // `wardKind` names the ward that actually refused, so a seal refusal is not filed as a
-      // disk-ward one. keyhive stays fs-blind: the record names a `lar:` URI, never a path.
+      // Archive refusal records and operator alerts use the attached daemon working layer. `wardKind`
+      // identifies the refusing ward; keyhive stays fs-blind and the record names a `lar:` URI.
       if (floor.refusals.length) {
         for (const r of floor.refusals) {
           console.warn(`[daemon] ${r.carrier} archive export REFUSED: ${r.message}`);
@@ -804,11 +813,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       }
-      // The daemon's own working layer — after the keyhive and the veil stand, inside the fail-closed
-      // boot window (never earlier). A failed attach leaves the write layer on the daemon bag, the
-      // floor; it never takes the boot down.
-      try { await attachDaemonWorking(ctx); }
-      catch (err) { console.warn(`[daemon] working layer attach skipped — saves land in the daemon bag: ${(err as Error)?.message ?? err}`); }
       return keyhive;
     },
 

@@ -326,14 +326,9 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
   ])];
 }
 
-/**
- * The ONE default writable of a wiki: the working slot when its handle stands, else the wiki's canon
- * bag (the floor — a grant-less mount still lands a bagless write somewhere, never a red). The
- * volatile temp slot NEVER holds the office: a tombstone falling into temp hides the lower record
- * for one session and the tiddler resurrects at the next boot.
- */
-export function defaultWritableSlot(slug: string, workingMounted: boolean): SlotUri {
-  return workingMounted ? wikiSlotUri(slug, "working") : wikiBagUri(slug);
+/** The working slot is the only default writable; an absent handle leaves no default writable. */
+export function defaultWritableSlot(slug: string): SlotUri {
+  return wikiSlotUri(slug, "working");
 }
 
 /**
@@ -343,8 +338,8 @@ export function defaultWritableSlot(slug: string, workingMounted: boolean): Slot
  * `defaultWritable` marks `defaultWritableSlot` alone; every other layer registers `false` so the
  * last-registered temp store never takes the office.
  */
-export function slotLayerFlags(slot: SlotUri, slug: string, workingMounted: boolean): { writable: boolean; defaultWritable: boolean } {
-  return { writable: slot !== ORACLE_BAG, defaultWritable: slot === defaultWritableSlot(slug, workingMounted) };
+export function slotLayerFlags(slot: SlotUri, slug: string): { writable: boolean; defaultWritable: boolean } {
+  return { writable: slot !== ORACLE_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
 }
 
 /** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded

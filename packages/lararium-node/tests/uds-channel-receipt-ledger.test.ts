@@ -21,9 +21,9 @@ import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
-import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, type LarDoc } from "@lararium/mesh";
-import { startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
+import { Repo, type DocHandle } from "@automerge/automerge-repo";
+import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { FactLedger, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string; }
@@ -74,10 +74,18 @@ class Vessel {
   constructor(
     readonly repo: Repo,
     readonly daemonHandle: ReturnType<Repo["create"]>,
+    readonly workingHandle: ReturnType<Repo["create"]>,
     readonly dir: string,
     readonly placeVerbImpl: (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => void,
     readonly ring?: number,
   ) {}
+
+  compositeForBoot(): CompositeStore {
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(this.daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(this.workingHandle as never, wikiSlotUri("daemon", "working")), writable: true });
+    return composite;
+  }
 
   static async boot(opts: {
     placeVerbImpl: (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => void;
@@ -88,16 +96,31 @@ class Vessel {
   }): Promise<Vessel> {
     const repo = opts.repo ?? new Repo({ sharePolicy: async () => true });
     const daemonHandle = opts.daemonHandle ?? repo.create<LarDoc>(emptyLarDoc());
+    const workingHandle = repo.create<LarDoc>(emptyLarDoc());
     const dir = opts.dir ?? mkdtempSync(join(tmpdir(), "uds-receipt-ledger-"));
-    const v = new Vessel(repo, daemonHandle, dir, opts.placeVerbImpl, opts.ring);
+    const v = new Vessel(repo, daemonHandle, workingHandle, dir, opts.placeVerbImpl, opts.ring);
     await v.start();
     return v;
+  }
+
+  static async restore(opts: {
+    repo: Repo;
+    daemonHandle: DocHandle<LarDoc>;
+    workingHandle: DocHandle<LarDoc>;
+    placeVerbImpl: (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => void;
+    ring?: number;
+    dir: string;
+  }): Promise<Vessel> {
+    const vessel = new Vessel(opts.repo, opts.daemonHandle, opts.workingHandle, opts.dir, opts.placeVerbImpl, opts.ring);
+    await vessel.start();
+    return vessel;
   }
 
   private async start(): Promise<void> {
     this.claim = await claimStore(this.dir, { holder: "vessel" });
     this.channel = startUdsChannel({
       daemonHandle: this.daemonHandle,
+      composite: this.compositeForBoot(),
       placeVerb: (o) => this.placeVerbImpl(o as Placed, this.daemonHandle),
       claim: this.claim,
       repo: this.repo,
@@ -135,6 +158,60 @@ async function dispatchAndStrand(v: Vessel, counter: { n: number }, inv: Record<
 }
 
 describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)", () => {
+  test("a fresh Repo and fresh stores seed working-layer facts in sequence order", async () => {
+    const counter = { n: 0 };
+    const first = await Vessel.boot({ placeVerbImpl: doneWorker(counter), ring: 8 });
+    let second: Vessel | undefined;
+    let secondRepo: Repo | undefined;
+    try {
+      const ids = ["fresh-repo-1", "fresh-repo-2", "fresh-repo-3"];
+      for (const requestId of ids) {
+        const answer = await sendLine(first.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId });
+        expect(answer["status"]).toBe("done");
+      }
+      const daemonBytes = await first.repo.export(first.daemonHandle.url);
+      const workingBytes = await first.repo.export(first.workingHandle.url);
+      expect(daemonBytes).toBeTruthy();
+      expect(workingBytes).toBeTruthy();
+      first.channel.close();
+      await first.claim.release();
+      await first.repo.shutdown();
+
+      secondRepo = new Repo({ sharePolicy: async () => true });
+      const daemonHandle = secondRepo.import<LarDoc>(daemonBytes!);
+      const workingHandle = secondRepo.import<LarDoc>(workingBytes!);
+      second = await Vessel.restore({ repo: secondRepo, daemonHandle, workingHandle, placeVerbImpl: doneWorker(counter), ring: 8, dir: first.dir });
+      const ledger = new FactLedger(second.compositeForBoot(), secondRepo, 8, second.claim.bootEpoch);
+      const facts = await Promise.all(ids.map((requestId) => ledger.get(requestId)));
+      expect(facts.map((fact) => fact && fact !== "torn" ? fact.seq : null)).toEqual([0, 1, 2]);
+      for (const requestId of ids) {
+        expect((await sendLine(second.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
+      }
+      expect(counter.n).toBe(3);
+    } finally {
+      if (second) await second.teardown();
+      else rmSync(first.dir, { recursive: true, force: true });
+      if (secondRepo) await secondRepo.shutdown();
+    }
+  });
+
+  test("a missing working default refuses before dispatch and records nothing", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+    const dir = mkdtempSync(join(tmpdir(), "uds-no-working-"));
+    const claim = await claimStore(dir, { holder: "vessel" });
+    try {
+      expect(() => startUdsChannel({ daemonHandle, composite, claim, repo, placeVerb: () => {} }))
+        .toThrow(NoWorkingLayerRefusal);
+      expect(Object.keys(daemonHandle.doc()!.tiddlers)).toEqual([]);
+    } finally {
+      await claim.release();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("cancel → restart → a dispatch under the SAME id refuses `abandoned`, with the additive refusal reason", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
@@ -239,6 +316,22 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("a fresh ledger reads receipts only from its working layer", async () => {
+    const v = await Vessel.boot({ placeVerbImpl: () => {} });
+    try {
+      const requestId = "receipt-in-the-daemon-bag";
+      const daemonBagReceipt = buildReceiptFact({ requestId, state: "done", seq: 41, inputDigest: "old-digest" });
+      v.daemonHandle.change((doc) => { doc.tiddlers[daemonBagReceipt.tiddler.title] = daemonBagReceipt as unknown as LarDoc["tiddlers"][string]; });
+      await v.repo.flush();
+      expect(v.daemonHandle.doc()!.tiddlers[daemonBagReceipt.tiddler.title]).toBeDefined();
+      await v.restart();
+
+      const answer = await sendLine(v.socketPath, { op: "receipt", requestId });
+      expect(answer["state"]).toBe("unknown");
+      expect(v.workingHandle.doc()!.tiddlers[daemonBagReceipt.tiddler.title]).toBeUndefined();
+    } finally { await v.teardown(); }
+  });
+
   test("ring N=3: the 4th outcome evicts the 1st — its receipt reads `retention-gap`, and a same-id dispatch answers `retention-gap` with no run", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter), ring: 3 });
@@ -250,8 +343,17 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       }
       expect(counter.n).toBe(4);
 
+      // Bagless receipt facts follow the default working layer. The dispatcher outcome keeps its explicit daemon destination.
+      expect(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ids[0]}`]).toBeDefined();
+      expect(v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ids[0]}`]).toBeUndefined();
+      expect(v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`]).toBeDefined();
+
       const receipt = await sendLine(v.socketPath, { op: "receipt", requestId: ids[0] });
       expect(receipt["state"]).toBe("evicted");
+      const liveOutcome = v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`];
+      expect(liveOutcome?.meta?.deleted).toBe(true);
+      expect(v.workingHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ids[0]}`]).toBeUndefined();
+      expect(await v.compositeForBoot().getLive(`${OUTCOME_URI_PREFIX}${ids[0]}`)).toBeNull();
 
       const redispatch = await sendLine(v.socketPath, { verb: "nexus-kapae", args: { requestId: ids[0] }, requestedBy: "did:key:test", requestId: ids[0] });
       expect(counter.n).toBe(4); // no second run
@@ -263,6 +365,10 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         const receipt2 = await sendLine(v.socketPath, { op: "receipt", requestId });
         expect(receipt2["state"]).toBe("done");
       }
+      await v.restart();
+      const seqs = ids.map((id) => Number((v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${id}`]!.tiddler as Record<string, unknown>)["seq"]));
+      expect(seqs).toEqual([0, 1, 2, 3]);
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: ids[0] }))["state"]).toBe("evicted");
     } finally { await v.teardown(); }
   });
 
@@ -301,7 +407,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       expect(v.claim.bootEpoch).toBeGreaterThan(firstEpoch);
 
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("interrupted");
-      const stored = v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("interrupted");
       expect(stored["boot-epoch"]).toBe(String(firstEpoch));
 
@@ -331,11 +437,12 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       v.channel.close();
       v.channel = startUdsChannel({
         daemonHandle: v.daemonHandle, placeVerb: (o) => v.placeVerbImpl(o as Placed, v.daemonHandle),
+        composite: v.compositeForBoot(),
         claim: v.claim, repo: v.repo, timeoutMs: 1_000,
       });
       await waitForSocket(v.claim.socketPath);
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("committed");
-      const stored = v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("committed");
     } finally { await v.teardown(); }
   });
@@ -377,7 +484,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       });
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
-      const stored = v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("done");
     } finally { await v.teardown(); }
   });
@@ -397,11 +504,11 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
     try {
       const requestId = "req-torn-committed";
-      // Write a raw, torn receipt-fact tiddler directly into the daemon doc — a `committed` fact
+      // Write a raw, torn receipt-fact tiddler directly into the working doc — a `committed` fact
       // (a non-`abandoned` state, which `parseReceiptFact`/ReceiptFactClaimed REQUIRES a digest
       // on) with NO `input-digest` at all. This models a record some other writer left unreadable
       // (never produced by this ledger itself, which always stamps a digest on a claimed state).
-      v.daemonHandle.change((doc) => {
+      v.workingHandle.change((doc) => {
         const title = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
         doc.tiddlers[title] = {
           title, "request-id": requestId, state: "committed", seq: "0",

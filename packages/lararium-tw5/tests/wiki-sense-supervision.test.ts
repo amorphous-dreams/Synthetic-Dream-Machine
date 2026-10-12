@@ -12,7 +12,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { isVesselToIslandMsg, mkSensoriumSignal } from "@lararium/mesh";
+import { CompositeStore, isVesselToIslandMsg, mkSensoriumSignal } from "@lararium/mesh";
 import {
   createWikiSenseSupervisor,
   buildProofRecordTiddler,
@@ -310,4 +310,29 @@ describe("the proof ring keeps its newest by sequence, never by clock", () => {
     expect(standing.map((r) => r.eventId)).toEqual(["b", "c"]);
     expect(titles).toContain(`${DAEMON}/ledger/proof/torn`);
   });
+
+  test("over a composite with no default writable, the 33rd hold prunes the oldest from the bag the put named", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const composite = new CompositeStore();
+    const bag = new MemoryTiddlerStore(DAEMON);
+    composite.addLayer({ bagId: DAEMON, store: bag, writable: true, defaultWritable: false });
+    const ids = Array.from({ length: 33 }, (_, n) => [`r${n}`, `e${String(n).padStart(2, "0")}`]).flat();
+    const supervisor = createWikiSenseSupervisor(harness.shores, { proofStore: composite, newId: mint(ids) });
+    harness.bind(supervisor);
+    try {
+      for (let n = 0; n < 33; n++) await supervisor.cohere(ISLAND_A, { hold: true });
+      const standing: number[] = [];
+      for (const title of await bag.listVisible()) {
+        const parsed = parseProofRecord(((await bag.get(title))!.tiddler) as Record<string, unknown>);
+        if (parsed) standing.push(parsed.seq);
+      }
+      standing.sort((a, b) => a - b);
+      expect(standing).toHaveLength(32);
+      expect(standing[0], "the oldest proof stayed in the bag").toBe(2);
+      expect(composite.defaultWritableBagId()).toBeNull();
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  }, 60_000);
 });

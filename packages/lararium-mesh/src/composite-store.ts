@@ -57,6 +57,17 @@ export interface CompositeLayer {
   readonly writePolicy?: string;
 }
 
+/** A bagless write has no destination until its wiki working layer is mounted. */
+export class NoWorkingLayerRefusal extends Error {
+  readonly code = "NO_WORKING_LAYER";
+
+  /** `write` names the refused write; `remedy` is the one sentence saying what to do. */
+  constructor(write: string, remedy = "Mount the wiki working layer before writing, or name the target bag.") {
+    super(`${write} refused: no default writable layer stands. ${remedy}`);
+    this.name = "NoWorkingLayerRefusal";
+  }
+}
+
 /** Minimal residency-touch shape — kept structural so composite-store
  *  doesn't depend on the BagStowage class directly (avoids
  *  circular imports). The daemon binds it via attachResidency(). */
@@ -270,7 +281,7 @@ export class CompositeStore implements LarTiddlerStore {
         );
       }
     }
-    if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
+    if (!this.writableStore) throw new NoWorkingLayerRefusal(`The bagless ${verb}`);
     return this.writableStore;
   }
 
@@ -319,12 +330,12 @@ export class CompositeStore implements LarTiddlerStore {
 
   async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
     this._requireBagForBase(options, "tombstone");
-    if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
+    if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless tombstone");
     return this.writableStore.tombstone(title, origin, this._writeOptionsFor(options, this.writableStore, "tombstone"));
   }
 
   async remove(title: string, origin: ChangeOrigin): Promise<void> {
-    if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
+    if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
     return this.writableStore.remove(title, origin);
   }
 

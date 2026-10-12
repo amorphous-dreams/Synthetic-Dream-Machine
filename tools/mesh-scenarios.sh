@@ -1568,21 +1568,19 @@ run_title() {
   clear_all
 }
 
-# ── ④ WIKIS-FIRST STAGE 1 — AND THE FALLBACK WEARING A SUCCESS'S FACE ───────────────────────────
-# THE TRAP: `defaultWritableSlot(slug, workingMounted)` returns the working slot when its handle
-# stands and "else the wiki's canon bag (the floor — a grant-less mount still lands a bagless write
-# somewhere, never a red)" (wiki-recipe.ts:341). So a save with no working handle lands in `bags/`
-# LAWFULLY, QUIETLY, and answers the stock 204 — the ruling's exact failure wearing a success's face.
+# ── ④ WIKIS-FIRST STAGE 1 — THE WORKING LAYER OWNS BAGLESS WRITES ───────────────────────────────
+# THE INVARIANT: `defaultWritableSlot(slug)` names the working slot. A wiki without that mounted
+# handle has no default writable; a bagless save refuses instead of landing in `bags/`.
 #
 # ⚠ THE STATUS CODE CARRIES NO SIGNAL. Stock TW5's `put-tiddler.js` answers 204 with an Etag whether
-# the bytes landed in `wikis/<slug>/working` or fell back to `bags/<slug>`. That is what makes this
+# the bytes landed in `wikis/<slug>/working` or another bag. That is what makes this
 # red-able at all: only `lares wiki which` discriminates, and it prints to stdout with NO JSON
 # (wiki.ts:514 — plain `console.log`, no `emit`), so the probe must read lines rather than fields.
 #
 # ⚠ AND IT RUNS ON A VESSEL THAT NEVER SEATED A CABAL — or ①'s red arrives wearing ④'s name.
 # COVERS: private/seed/unfed
 run_wikis() {
-  say "WIKIS — a save lands in the WORKING slot, and the silent fallback is named when it does not"
+  say "WIKIS — bagless saves land in the WORKING slot"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
   local SLUG="climbless"
@@ -1599,17 +1597,16 @@ run_wikis() {
   # prints through plain `console.log` with no `emit` (wiki.ts:514), so it carries no JSON and a probe
   # must scrape lines; `wiki init --json` states the write layer outright in a field:
   #     "writableBag":"lar:///ha.ka.ba/wikis/climbless/working"
-  # That IS `defaultWritableSlot`'s answer, reported at the moment it is computed. Working ⟺ the field
-  # reads `wikis/<slug>/working`; the silent fallback ⟺ it reads `bags/<slug>`.
+  # That IS `defaultWritableSlot`'s answer. The working slot is the only default writable.
   step "★ the mint names its write layer — the WORKING slot, never \`bags/\` alone ★"
   local INIT WRITABLE
   INIT=$($COMPOSE exec -T lararium-a $LARES wiki init "$SLUG" --json 2>&1)
   WRITABLE=$(printf '%s' "$INIT" | grep -oE '"writableBag":"[^"]*"' | head -1 | cut -d'"' -f4)
   if [ "$WRITABLE" = "lar:///ha.ka.ba/wikis/${SLUG}/working" ]; then ok
   elif [ "$WRITABLE" = "lar:///ha.ka.ba/bags/${SLUG}" ]; then
-    bad "THE SILENT FALLBACK TOOK THE OFFICE — the canon bag holds the write layer"
-    printf '      wiki-recipe.ts:341 — workingMounted ? wikiSlotUri(slug,"working") : wikiBagUri(slug)\n'
-    printf '      a save here lands in bags/ lawfully, quietly, and answers a 204\n'
+    bad "THE CANON BAG TOOK THE OFFICE — a working layer must own bagless writes"
+    printf '      wiki-recipe.ts — defaultWritableSlot must name wikis/<slug>/working\n'
+    printf '      this save landed in bags/<slug> instead\n'
   else
     bad "the mint named no write layer at all"
     printf '      %s\n' "$(printf '%s' "$INIT" | tail -1 | cut -c1-240)"
@@ -1622,14 +1619,14 @@ run_wikis() {
   #     meme: bag "lar:///ha.ka.ba/bags/climbless" holds no writable layer in this island
   #           — a placement never shadows up to the default writable
   # That refusal IS the negative holding. A canon bag that accepted the placement would be the
-  # fallback taking a save the working slot was supposed to own.
+  # default writable taking a save the working slot must own.
   step "NEG b — the canon bag REFUSES a placement, so the office is not shared"
   local TITLE="lar:///t.wikis.witness/one" REF
   $COMPOSE exec -T lararium-a sh -c "printf 'a wiki-borne carrier\n' > /tmp/wiki-one.mem" 2>/dev/null
   REF=$($COMPOSE exec -T lararium-a $LARES meme put "$TITLE" --bag "$SLUG" --file /tmp/wiki-one.mem --json 2>&1)
   if printf '%s' "$REF" | grep -qF "holds no writable layer in this island"; then ok
   elif printf '%s' "$REF" | grep -q '"ok":true'; then
-    bad "the CANON bag took the placement — the fallback holds the office beside the working slot"
+    bad "the CANON bag took the placement — it must not hold the default writable office"
   else
     gap "the canon bag refused for another reason — the double-write question stays unanswered"
     printf '      %s\n' "$(printf '%s' "$REF" | tail -1 | cut -c1-220)"
@@ -1650,9 +1647,9 @@ run_wikis() {
   fi
 
   # WHAT THIS SCENARIO CANNOT REACH, and it says so rather than implying coverage. The save that
-  # actually exercises the fallback is the in-wiki TW5 syncer's `PUT /recipes/default/tiddlers/<title>`
-  # answering stock's 204 — and the status code carries NO signal about which root took the bytes,
-  # which is precisely what makes the fallback silent. Measured from the host: that route draws 000
+  # exercises the save route is the in-wiki TW5 syncer's `PUT /recipes/default/tiddlers/<title>`
+  # answering stock's 204 — and the status code carries NO signal about which root took the bytes.
+  # Measured from the host: that route draws 000
   # (no listener) against `lararium-a`'s published port, because the wiki is not mounted as the served
   # recipe in this container. The CLI's `meme put` reaches the doc layer and never that door.
   step "the SYNCER door — the save whose 204 hides which root took it"
@@ -1670,9 +1667,10 @@ run_wikis() {
 # reconcile, neither overwrites".
 #
 # ⚠ WHAT IS UNWALKED IS THE RAIL, NOT THE GATE. The verdict is one thing; an operator SEEING it is
-# another, and the rail crosses three hops no unit test spans — `onRefusal` posts an `IslandMsg_Event`
-# (island-behaviors.ts:64), the admin VM's `makeWardAlertReactor` writes a durable `@daemon` audit
-# under `lar:///ha.ka.ba/bags/daemon/ledger/ward/` and posts a `$:/tags/Alert` tiddler. That is the
+# another, and the rail crosses three hops no unit test spans — `onRefusal` posts an `IslandMsg_Event`,
+# the admin VM's `makeWardAlertReactor` writes a durable audit to the daemon working layer and posts a
+# `$:/tags/Alert` tiddler. The record title starts `lar:///ha.ka.ba/bags/daemon/ledger/ward/`;
+# its title does not choose its storage layer. That is the
 # red: a conflict that decides correctly and tells nobody is the failure this scenario exists to catch.
 #
 # THE GREPPABLE HANDLES: `[disk-ward] write refused` · `projection conflict —` · `disk-ward:refused`
@@ -1751,15 +1749,19 @@ run_conflict() {
   fi
 
   # THE RAIL. A verdict the operator never sees is the failure this scenario exists to catch.
-  step "the operator is TOLD — a durable @daemon audit under the ward ledger"
+  step "the operator is TOLD — a durable daemon working-layer audit under the ward ledger"
   if logs_have "disk-ward" lararium-a; then
-    local AUD
-    AUD=$($COMPOSE exec -T lararium-a $LARES meme list --bag daemon --json 2>&1 | grep -cF "ledger/ward/")
-    if [ "${AUD:-0}" -gt 0 ]; then ok
+    local AUD AUDIT_OUTPUT
+    if ! AUDIT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES meme list --bag lar:///ha.ka.ba/wikis/daemon/working --json 2>&1); then
+      bad "the ward-ledger read failed: $(printf '%s' "$AUDIT_OUTPUT" | tail -1 | cut -c1-200)"
     else
-      gap "the refusal logged but no ward-ledger record stands — the rail stops at the console"
-      printf '      worker-data-verbs.ts:243 writes lar:///ha.ka.ba/bags/daemon/ledger/ward/<id>\n'
-      printf '      wakes when the admin VM reactor runs against a container boot\n'
+      AUD=$(printf '%s\n' "$AUDIT_OUTPUT" | grep -cF "ledger/ward/" || true)
+      if [ "${AUD:-0}" -gt 0 ]; then ok
+      else
+        gap "the refusal logged but no ward-ledger record stands — the rail stops at the console"
+        printf '      worker-data-verbs.ts writes the ward title into the composite default writable: wikis/daemon/working\n'
+        printf '      wakes when the admin VM reactor runs against a container boot\n'
+      fi
     fi
   else
     gap "no refusal fired, so the rail carried nothing to measure"

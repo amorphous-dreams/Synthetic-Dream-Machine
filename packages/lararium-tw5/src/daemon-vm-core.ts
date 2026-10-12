@@ -22,8 +22,14 @@
 
 import {
   DAEMON_BAG_ID,
+  NoWorkingLayerRefusal,
+  WorkingDocumentUnavailableRefusal,
+  DOCUMENT_HANG_BOUND_MS,
+  findOrThrow,
   CompositeStore,
   AutomergeDocStore,
+  computeRecipeFingerprint,
+  wikiSlotUri,
   attachMessageChannelSync,
   awaitIslandMsg,
   mkManifest,
@@ -173,6 +179,8 @@ export interface DaemonVmCoreOptions {
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
   eaSilenceMs?:    number;
+  /** Bound on the host's ask for the daemon working binding; defaults to the document hang bound. */
+  hostBindingBoundMs?: number;
   /** Override the ea progress-stall budget in ms (default 3x silence). */
   eaStallMs?:      number;
 }
@@ -191,9 +199,19 @@ export interface VesselPlaceVerbRequest {
   effectKey?:   string;
 }
 
+/** The worker did not answer the host's ask for the daemon working binding. */
+export class HostWorkingBindingRefusal extends Error {
+  constructor(slot: string, cause: unknown) {
+    super(`[host-working-binding] the daemon worker did not answer the binding for "${slot}" (${cause instanceof Error ? cause.message : String(cause)}); restart the vessel so the worker re-attaches its working layer.`, { cause });
+    this.name = "HostWorkingBindingRefusal";
+  }
+}
+
 export interface DaemonVmCore {
   daemonHandle:    DocHandle<LarDoc>;
   composite:      CompositeStore;
+  /** Resolve the worker's daemon binding and mount that exact document as the host default. */
+  mountHostWorkingLayer: () => Promise<void>;
   workerEa:       Promise<void>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
@@ -328,7 +346,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // ── Vessel composite (cap-event + receipt writes) ──────────────────────────
   const composite  = new CompositeStore();
   const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
-  composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true });
+  composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true, defaultWritable: false });
   daemonStore.markSyncComplete();
   // The PersonaGroup plane this vessel stands in, tended by the SAME VM (one VM, two bags), and
   // mounted under the name its own group derives — the id the registry, the cap ring and the admit
@@ -336,7 +354,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // The persona plane layers only when a face stands; a faceless place carries the daemon bag and nothing of a person.
   if (personaHandle && personaBagId) {
     const personaStore = new AutomergeDocStore(personaHandle, personaBagId);
-    composite.addLayer({ bagId: personaBagId, store: personaStore, writable: true });
+    composite.addLayer({ bagId: personaBagId, store: personaStore, writable: true, defaultWritable: false });
     personaStore.markSyncComplete();
   }
 
@@ -370,13 +388,28 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // this single piece instead of hand-rolling a pending-map each.
   let _askSeq = 0;
   const _pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
-  function askIsland<T>(prefix: string, makeMsg: (requestId: string) => unknown): Promise<T> {
+  function askIsland<T>(prefix: string, makeMsg: (requestId: string) => unknown, boundMs?: number): Promise<T> {
     const requestId = `${prefix}-${++_askSeq}`;
     return new Promise<T>((resolve, reject) => {
-      _pending.set(requestId, { resolve: resolve as (v: unknown) => void, reject });
+      // A bound names a HANG: it ends an ask no live worker will answer, and clears when the ask settles.
+      const timer = boundMs === undefined ? undefined : setTimeout(() => {
+        if (_pending.delete(requestId)) reject(new Error(`the island did not answer ${requestId} within ${boundMs}ms`));
+      }, boundMs);
+      _pending.set(requestId, {
+        resolve: (v) => { clearTimeout(timer); resolve(v as T); },
+        reject:  (e) => { clearTimeout(timer); reject(e); },
+      });
       worker.post(makeMsg(requestId));
     });
   }
+  // A worker that faults or errors answers nothing further: every ask still pending ends there.
+  function failPendingAsks(why: string): void {
+    for (const [id, ask] of [..._pending]) { _pending.delete(id); ask.reject(new Error(why)); }
+  }
+  worker.listen((msg) => {
+    if ((msg as { type?: string }).type === "fault") failPendingAsks(`the island faulted: ${(msg as { error?: string }).error ?? "no detail"}`);
+  });
+  worker.onError((err) => failPendingAsks(`the island errored: ${err instanceof Error ? err.message : String(err)}`));
   function settleAsk(requestId: string, value: unknown, error?: string): void {
     const p = _pending.get(requestId);
     if (!p) return;
@@ -610,9 +643,34 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     worker.post(manifestMsg, transfer);
   });
 
+  const mountHostWorkingLayer = async (): Promise<void> => {
+    const slot = wikiSlotUri("daemon", "working");
+    if (composite.hasBag(slot)) {
+      if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The daemon working layer stands without being the default writable; restart the vessel so it mounts as the default.");
+      return;
+    }
+    await workerEa;
+    const recipeTrace = { wikiDocId: daemonHandle.url, libraryBagDocIds: [] as readonly string[] };
+    const fingerprint = await computeRecipeFingerprint(recipeTrace);
+    let binding: { workingUrl: string };
+    try {
+      binding = await askIsland<{ workingUrl: string }>("binding", (requestId) => mkDaemonResolveBindingRequest({
+        requestId, fingerprint, recipeTrace, wikiSlug: "daemon",
+      }), opts.hostBindingBoundMs ?? DOCUMENT_HANG_BOUND_MS);
+    } catch (cause) {
+      throw new HostWorkingBindingRefusal(slot, cause);
+    }
+    const handle = await findOrThrow(repo, binding.workingUrl, `${slot} (the host's daemon working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+    const store = new AutomergeDocStore(handle, slot);
+    composite.addLayer({ bagId: slot, store, writable: true, defaultWritable: true });
+    store.markSyncComplete();
+    if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The mounted daemon working layer did not become the default writable; restart the vessel.");
+  };
+
   return {
     daemonHandle,
     composite,
+    mountHostWorkingLayer,
     workerEa,
     worker,
     mountMainVerbs: (registry: VerbTable) => {

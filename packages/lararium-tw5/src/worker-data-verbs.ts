@@ -243,7 +243,7 @@ export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOp
 // A wiki island's projector refused a write (sovereign-island disk ward,
 // disk-projection#write-ward). The signal rides the generic worker.event →
 // placeVerb bridge into the daemon VM, which (a) writes a DURABLE audit record
-// into the daemon bag — the operators-with-admin-grants surface — and (b) injects a
+// into the composite's default writable working layer and (b) injects a
 // $:/tags/Alert into the operator's currently PINNED VM via the existing
 // wiki-alert rail (kind "disk-ward"). No cap-gate: the signal originates from
 // the island's own mechanism, grants nothing, and only writes audit + alert.
@@ -288,10 +288,10 @@ export async function fileWardRefusal(
       : `${wardKind} refused a write (${bagId})`;
     const ts     = new Date().toISOString();
 
-    // (a) Durable audit in the daemon bag — append-only ledger, never coalesced.
-    const auditTitle = `lar:///ha.ka.ba/bags/daemon/ledger/ward/${Date.now().toString(32)}-${Math.floor(Math.random() * 1e6).toString(32)}`;
+    // (a) Durable audit in the composite's default writable working layer — append-only, never coalesced.
+    const auditTitle = `lar:///ha.ka.ba/bags/daemon/ledger/ward/${crypto.randomUUID()}`;
     await composite.put(
-      { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts }, meta: { authority: "disk-ward" } },
+      { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, "disk-projection": "no" }, meta: { authority: "disk-ward" } },
       { kind: "lares-verb", requestId: `ward-${ts}` },
     );
 

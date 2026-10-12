@@ -70,7 +70,7 @@ export interface WikiSenseShores {
 
 export interface WikiSenseSupervisorOptions {
   /** The daemon's OWN store the proof-hold writes into. A hold asked without a store fails loud. */
-  proofStore?: LarTiddlerStore;
+  proofStore?: LarTiddlerStore & { removeInBag?(bagId: string, title: string, origin: ChangeOrigin): Promise<void> };
   /** The bag the proof ledger lives in (routes composite writes). Default {@link DAEMON_BAG_ID}. */
   proofBag?: string;
   /** Per-ask reply budget in ms (tests tighten it). Default {@link ASK_TIMEOUT_MS}. */
@@ -303,13 +303,15 @@ export function createWikiSenseSupervisor(
 
   /** The ledger ring — keep the newest `proofRing` records for one island by sequence; older ones delete
    *  forward. The sequence orders and no clock decides which record leaves; a tie breaks by title. */
-  async function pruneProofLedger(store: LarTiddlerStore, island: string, requestId: string): Promise<void> {
+  async function pruneProofLedger(store: NonNullable<WikiSenseSupervisorOptions["proofStore"]>, island: string, requestId: string): Promise<void> {
     const mine = await standingRecords(store, island);
     if (mine.length <= proofRing) return;
     mine.sort((a, b) => a.seq - b.seq || (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
     const origin: ChangeOrigin = { kind: "lares-verb", requestId };
     for (const old of mine.slice(0, mine.length - proofRing)) {
-      await store.remove(old.title, origin);
+      // The record leaves the bag the put named: a composite with no default writable still prunes.
+      if (store.removeInBag) await store.removeInBag(proofBag, old.title, origin);
+      else await store.remove(old.title, origin);
     }
   }
 

@@ -59,7 +59,6 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
-  const workingMounted = handleBySlot.has(wikiSlotUri(slug, "working"));
   const stores: Array<{ slot: SlotUri; store: AutomergeDocStore | MemoryTiddlerStore }> = [];
 
   // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
@@ -68,7 +67,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const slot = slots[i]!;
     if (slot === tempSlot) {
       tempStore = new MemoryTiddlerStore();
-      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug, workingMounted) });
+      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug) });
       stores.push({ slot, store: tempStore });
       continue;
     }
@@ -78,9 +77,9 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     // All CRDT slots accept writes; the in-wiki bag-paths cascade decides routing
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
-    // default (an unbagged write or tombstone) is the working slot, else the canon bag — the ONE
-    // law `slotLayerFlags` spells for the host mount and this island alike.
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, workingMounted) });
+    // default (an unbagged write or tombstone) is the working slot; without its handle no default
+    // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug) });
     stores.push({ slot, store });
   }
 
@@ -92,19 +91,19 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // reads this value via `{lar:///ha.ka.ba/lararium/config/current-wiki-bag}` to
   // resolve `lar:` writes to the wiki's live WRITE LAYER: the per-wiki working slot
   // (`wikis/{slug}/working`, the saved live layer projecting to disk wikis/{slug}); its
-  // bags/{slug} canon rides below as read-only, published only by a promotion MOVE
-  // (wiki-layer-ontology#shore-law). Without a working handle, the write layer is the wiki's OWN bag — the floor,
-  // never a red; the attach re-seeds this record to the working slot. Volatile (lives
-  // in the per-wiki temp), shadows any fallback by priority. The bag-paths cascade reads
+  // bags/{slug} canon rides below, published only by a residency MOVE
+  // (wiki-layer-ontology#shore-law). A recipe without a working binding has no default
+  // writable and seeds an empty write-layer pointer; the daemon attach mounts the slot.
+  // Volatile (lives in the per-wiki temp), shadows no writable fallback. The bag-paths cascade reads
   // these to route by prefix to the wiki's OWN per-wiki live layers — the address tells
   // the truth (no global slot names).
   //
   // Pointer and corpus seeds share the shore queue. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
   // temp store emits each put when it lands — to every registered projection. The adaptor carries the
-  // pointers into the wiki on the same seed wave as the corpus, ahead of the hydration checkpoint, so
-  // the first hand edit finds every slot named.
+  // pointers into the wiki on the same seed wave as the corpus, ahead of the hydration checkpoint;
+  // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
-    const writeLayer = defaultWritableSlot(slug, workingMounted);
+    const writeLayer = handleBySlot.has(wikiSlotUri(slug, "working")) ? defaultWritableSlot(slug) : "";
     const configSeed: Record<string, string> = {
       "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
       "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),

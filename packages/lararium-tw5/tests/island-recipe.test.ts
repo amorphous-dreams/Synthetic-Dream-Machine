@@ -1,12 +1,9 @@
 /**
- * island-recipe.test.ts — the write-layer seed gate (working/canon split).
+ * island-recipe.test.ts — the working-layer seed gate.
  *
- * buildIslandRecipe points config/current-wiki-bag at the wiki's LIVE write
- * layer. An operator content wiki (a working grant resolved) routes live edits
- * to working; a grant-less mount — the administrative daemon bag, a control
- * plane with no working/canon split — falls back to its OWN bag, keeping a
- * writable default path instead of throwing on the first cascade-routed edit
- * (the gate fix; the grant→layer→seed chain the adaptor flip witness skips).
+ * buildIslandRecipe points config/current-wiki-bag at the wiki's working layer
+ * when its binding stands. A mount without that document has no default writable,
+ * seeds an empty pointer, and refuses a save until the binding attaches.
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/shore-law
  */
@@ -16,7 +13,7 @@ import { readFileSync } from "node:fs";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
-import { IslandAdaptor } from "../src/island-adaptor.js";
+import { IslandAdaptor, UnroutedSaveRefusal } from "../src/island-adaptor.js";
 import { HandGate } from "../src/hand-gate.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { CompositeStore, wikiSlotUri, wikiBagUri } from "@lararium/mesh";
@@ -93,16 +90,28 @@ describe("buildIslandRecipe — the write-layer seed gate", () => {
     expect(await currentWikiBag("myproject", stores)).toBe(workingSlot);
   });
 
-  test("no working grant (the daemon bag itself) → falls back to its OWN bag, never throws", async () => {
+  test("no working binding leaves the pointer empty and refuses saves", async () => {
     const composite = new CompositeStore();
+    const tw5 = fakeTw5();
+    const alerts: unknown[] = [];
+    const wiki = tw5.$tw.wiki as unknown as {
+      addTiddler(tiddler: unknown): void;
+      getTiddlerText(title: string, fallback?: string): string | undefined;
+    };
+    wiki.addTiddler = (tiddler) => alerts.push(tiddler);
     const { stores } = buildIslandRecipe({
-      tw5: fakeTw5(),
+      tw5,
       composite,
       recipe: { wikiSlug: "daemon" },
-      ready: [],
+      ready: [{ slot: wikiBagUri("daemon"), handle: fakeHandle() }],
     });
-    // The control-plane daemon keeps its own bag as the default write path.
-    expect(await currentWikiBag("daemon", stores)).toBe(wikiBagUri("daemon"));
+    expect(await currentWikiBag("daemon", stores)).toBe("");
+    expect(composite.defaultWritableBagId()).toBeNull();
+    const adaptor = new IslandAdaptor(tw5, composite, "daemon");
+    await expect(adaptor.saveTiddler({ fields: { title: "lar:///before-attach", text: "held" } }))
+      .rejects.toBeInstanceOf(UnroutedSaveRefusal);
+    expect((alerts[0] as { fields?: { "alert-kind"?: string } } | undefined)?.fields?.["alert-kind"]).toBe("unrouted-save");
+
   });
 });
 
@@ -221,19 +230,23 @@ describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits befo
     const slug = "checkpoint";
     const SEEDED = "lar:///t/recipe/resident-before-behavior";
     const canon = fakeHandle();
+    const working = fakeHandle();
     (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers[SEEDED] = { tiddler: { title: SEEDED, text: "resident" } };
     buildIslandRecipe({
       tw5: engine,
       composite: new CompositeStore(),
       recipe: { wikiSlug: slug },
-      ready: [{ slot: wikiBagUri(slug), handle: canon }],
+      ready: [
+        { slot: wikiBagUri(slug), handle: canon },
+        { slot: wikiSlotUri(slug, "working"), handle: working },
+      ],
     });
     const wiki = engine.$tw.wiki as never as CascadeWiki;
     // CONTROL — the rail is paced: straight after the recipe returns, the wiki holds neither.
     expect(wiki.getTiddlerText!(SEEDED, "")).toBe("");
     await seedDrained(engine);
     expect(wiki.getTiddlerText!(SEEDED, ""), "the checkpoint resolved over a wiki the seed had not reached").toBe("resident");
-    expect(wiki.getTiddlerText!(CURRENT_WIKI_BAG, "")).toBe(wikiBagUri(slug));
+    expect(wiki.getTiddlerText!(CURRENT_WIKI_BAG, "")).toBe(wikiSlotUri(slug, "working"));
   }, 120_000);
 
   test("★ the kernel awaits `seedDrained(tw5)` after the recipe and before `behavior.onEa` ★", () => {

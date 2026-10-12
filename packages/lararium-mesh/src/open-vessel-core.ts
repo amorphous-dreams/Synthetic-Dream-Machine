@@ -22,6 +22,7 @@ import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
+import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, mutableLarRecord, tiddlerText, resolveOracleDoc, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
 import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI } from "./lar-uris.js";
@@ -249,7 +250,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // condemn's quarantine (real integrity evidence already stands on the base verdict).
         const promoted = keel.recoverCleanTail ? await keel.recoverCleanTail(verdict) : null;
         if (promoted && promoted.status === "ok") {
-          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true });
+          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true, defaultWritable: false });
           const cut = promoted.cleanTail;
           entries.push({ bagId, documentId, status: "promoted", reason: cut ? `clean-tail: kept ${cut.kept}, moved ${cut.movedAside.length} aside` : "clean-tail recovery" });
           return;
@@ -273,7 +274,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         return;
       }
     }
-    composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true });
+    composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true, defaultWritable: false });
     entries.push({ bagId, documentId, status: "mounted" });
   };
   // A PLACE names no social plane, so each mount rides its own url standing. A faceless vessel carries
@@ -306,7 +307,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
 }
 
 /**
- * Mount the wiki-slot composite layers (D5: every vessel carries wiki + draft +
+ * Mount the wiki-slot composite layers (every vessel carries wiki + working + draft +
  * temp; the island still owns live VM state). Returns the handles for the mount.
  * The draft doc resolves through the daemon's slot-doc resolver (`resolveSlotDoc` —
  * the face binding when a seat stands, the device floor when none does), so the host
@@ -318,6 +319,8 @@ export async function mountWikiSlot(
   slot: { wikiSlug: string; wikiKey: string; wikiBagId: string; draftBagId: string },
   /** The draft doc url for this wiki, given its canon doc url — the daemon's resolver. */
   resolveDraft: (wikiUrl: string) => Promise<string>,
+  /** The working doc url for this wiki, given its canon doc url. */
+  resolveWorking: (wikiUrl: string) => Promise<string>,
   /** Pre-resolved wiki doc — the lares-as-wiki quine seats the operator-minted
    *  invariant doc as the write layer (its oracle lives on the lararium doc,
    *  never in the catalog registry — no cross-plane resolution, no second mint). */
@@ -335,10 +338,12 @@ export async function mountWikiSlot(
   // When the wiki's own bag coincides with an already-mounted substrate layer
   // (the quine), the read-only substrate layer yields to the writable one.
   if (composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
-  // The host mounts no working layer, so the canon bag holds the default writable — the ONE law
-  // `slotLayerFlags` spells for this mount and the island alike; temp never takes the office.
-  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, false);
+  const workingUrl = await resolveWorking(wikiHandle.url);
+  const workingHandle = await findOrThrow(repo, workingUrl, `${wikiSlotUri(slot.wikiSlug, "working")} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug);
   composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
+  const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
+  composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
 
   const draftHandle = await waitHandle<LarDoc>(await resolveDraft(wikiHandle.url) as AutomergeUrl, () => blankDoc(repo));
   composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), ...flags(slot.draftBagId) });

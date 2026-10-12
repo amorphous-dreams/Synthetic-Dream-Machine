@@ -49,6 +49,35 @@ import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
+import { wikiSlotUri } from "@lararium/mesh";
+
+const WRITE_LAYER_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
+
+/**
+ * Resolves once the wiki reads the working slot as its write-layer pointer. A working layer that
+ * stands as the composite's default writable re-seeds that pointer through the shore's landing queue;
+ * a hand write routed before the pointer lands refuses as unrouted. The wait rides the wiki's own change
+ * event, never a timer. Without a standing working default there is nothing to wait for.
+ */
+function writeLayerPointerStands(ctx: IslandContext): Promise<void> {
+  const working = wikiSlotUri(ctx.recipe.wikiSlug, "working");
+  if (ctx.composite.defaultWritableBagId() !== working) return Promise.resolve();
+  if (!ctx.composite.hasWritableBag(wikiSlotUri(ctx.recipe.wikiSlug, "temp"))) return Promise.resolve();
+  const wiki = ctx.tw5.$tw.wiki as unknown as {
+    getTiddlerText(title: string, fallback?: string): string | undefined;
+    addEventListener(type: string, listener: (changes: Record<string, unknown>) => void): void;
+    removeEventListener(type: string, listener: (changes: Record<string, unknown>) => void): void;
+  };
+  if (wiki.getTiddlerText(WRITE_LAYER_POINTER, "") === working) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    const onChange = (changes: Record<string, unknown>): void => {
+      if (!(WRITE_LAYER_POINTER in changes) || wiki.getTiddlerText(WRITE_LAYER_POINTER, "") !== working) return;
+      wiki.removeEventListener("change", onChange);
+      resolve();
+    };
+    wiki.addEventListener("change", onChange);
+  });
+}
 
 export interface DaemonBehaviorOptions {
   /** A ready verifier (e.g. tests, or a host-provided one). */
@@ -147,13 +176,15 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     name: "daemon-dispatch",
     async onEa(ctx: IslandContext) {
       const { tw5, composite, post } = ctx;
+      // Resolve the verifier: the async factory (bootDaemonKeyhive over the daemon
+      // composite, then the working-layer attach) wins; else a ready verifier; else none (delegated-verb path).
+      const verifier = opts.verifierFactory ? await opts.verifierFactory(ctx) : opts.verifier;
+      // No writer fires before the working layer stands: the wiki reads the re-seeded write-layer pointer first.
+      await writeLayerPointerStands(ctx);
       // The ONE cap-gated daemon protocol seed (the isomorphic seed lift): Ui+Persona+Circle+Flow, once,
       // on the hook BOTH boots reach — so neither entry re-seeds. Gated on `runnableHulls` (absent → skip,
       // preserving old behavior for non-operator callers). Idempotent (each seed setTiddler-overwrites).
       if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls);
-      // Resolve the verifier: the async factory (bootDaemonKeyhive over the daemon
-      // composite) wins; else a ready verifier; else none (delegated-verb path).
-      const verifier = opts.verifierFactory ? await opts.verifierFactory(ctx) : opts.verifier;
       const registry = new VerbTable();
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's

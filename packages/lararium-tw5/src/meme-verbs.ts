@@ -50,7 +50,7 @@
  */
 
 import {
-  AutomergeDocStore, DAEMON_BAG_ID, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, foldRealmBags, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -226,13 +226,13 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
 /**
  * The bag the anchor's cap gate checks: the one the in-wiki cascade routes a `lar:` title to — the same
- * bag the placement will land in through `wikiMemeSink`: the daemon's working layer once its
- * late-attach re-seeds the cascade, the daemon bag until then.
+ * bag the placement will land in through `wikiMemeSink`: the daemon's mounted working layer.
  */
 function anchorBagOf(opts: MemeVerbOptions): string {
   const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
   const configured = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
-  return configured || DAEMON_BAG_ID;
+  if (!configured) throw new NoWorkingLayerRefusal("The bare meme anchor write", "Pass --recipe <slug> or --bag <slug>, or wait until the daemon working layer attaches.");
+  return configured;
 }
 
 async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
