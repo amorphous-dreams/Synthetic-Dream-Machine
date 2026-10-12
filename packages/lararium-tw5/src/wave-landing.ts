@@ -43,6 +43,20 @@ export class WaveLanding {
 
   pending(): number { return this.queue.length; }
 
+  /** Resolves at every quiescent edge; each call observes the queue and current drain afresh. */
+  idle(): Promise<void> {
+    if (!this.draining && this.queue.length === 0 && this.external.size === 0) return Promise.resolve();
+    return new Promise<void>((resolve) => this.idleWaiters.add(resolve));
+  }
+
+  private readonly idleWaiters = new Set<() => void>();
+
+  private settleIdle(): void {
+    if (this.draining || this.queue.length || this.external.size) return;
+    for (const resolve of this.idleWaiters) resolve();
+    this.idleWaiters.clear();
+  }
+
   isStopped(): boolean { return this.stopped; }
 
   track(promise: Promise<unknown>): void {
@@ -50,6 +64,7 @@ export class WaveLanding {
     void promise.finally(() => {
       this.external.delete(promise);
       this.settleSeedIfIdle();
+      this.settleIdle();
     }).catch(() => {});
   }
 
@@ -92,6 +107,7 @@ export class WaveLanding {
     // Clear only at the empty observation. No await separates this from the queue check.
     this.draining = false;
     this.settleSeedIfIdle();
+    this.settleIdle();
     if (!this.stopped && this.queue.length) this.kick();
     else this.drainTask = null;
   }

@@ -61,6 +61,10 @@ export interface RigOptions {
   readonly instanceId?: string;
   readonly timers?: ShoreTimers;
   readonly yieldHost?: () => Promise<void>;
+  /** Whether the canon layer accepts writes (default: it does not). */
+  readonly canonWritable?: boolean;
+  /** Leave the working layer unmounted, though the recipe pointers still name it. */
+  readonly noWorking?: boolean;
   /** Saved docs to import, so a second shore stands over the same history as a first. */
   readonly docs?: { canon?: Uint8Array; working?: Uint8Array; draft?: Uint8Array };
 }
@@ -75,6 +79,7 @@ export async function shoreRig(opts: RigOptions = {}) {
     deleteTiddler(t: string): void;
     getTiddler(t: string): { fields: Record<string, unknown> } | undefined;
     getChangeCount(t: string): number;
+    filterTiddlers(filter: string): string[];
     addEventListener(type: "change", fn: (changes: unknown) => void): void;
   };
   const Tiddler = (engine.$tw as unknown as { Tiddler: new (...f: Array<Record<string, unknown>>) => unknown }).Tiddler;
@@ -90,21 +95,28 @@ export async function shoreRig(opts: RigOptions = {}) {
   const working = new AutomergeDocStore(workingHandle, workingBag);
   const draft = new AutomergeDocStore(draftHandle, draftBag);
   const composite = new CompositeStore();
-  composite.addLayer({ bagId: canonBag, store: canon, writable: false });
-  composite.addLayer({ bagId: workingBag, store: working, writable: true });
-  composite.addLayer({ bagId: draftBag, store: draft, writable: true });
+  composite.addLayer({ bagId: canonBag, store: canon, writable: opts.canonWritable === true, defaultWritable: false });
+  if (opts.noWorking !== true) composite.addLayer({ bagId: workingBag, store: working, writable: true });
+  composite.addLayer({ bagId: draftBag, store: draft, writable: true, defaultWritable: false });
 
   const calls: StoreCall[] = [];
+  /** Every hand-origin put or tombstone the shore sent into a bag outside this wiki's own slots. */
+  const outsideSlots: string[] = [];
+  const ownSlots = new Set<string>([workingBag, draftBag, wikiSlotUri("shore-road", "temp"), wikiSlotUri("shore-road", "personal")]);
   const writeFamily = composite.writeFamily.bind(composite);
   const tombstoneInBag = composite.tombstoneInBag.bind(composite);
   const failures: { family: Error | null; tombstone: Error | null; gate: Promise<void> | null; hold: Promise<void> | null } = { family: null, tombstone: null, gate: null, hold: null };
   vi.spyOn(composite, "writeFamily").mockImplementation((puts, deletes, origin, options) => {
-    calls.push({ kind: "family", bag: options?.bag, puts: puts.map((p) => p.tiddler.title), deletes: [...deletes], base: options?.base });
+    const destination = options?.bag ?? composite.defaultWritableBagId() ?? undefined;
+    if (destination && !ownSlots.has(destination) && origin.kind === "tw-local") outsideSlots.push(`family ${destination}`);
+    calls.push({ kind: "family", bag: destination, puts: puts.map((p) => p.tiddler.title), deletes: [...deletes], base: options?.base });
     if (failures.hold && options?.bag === draftBag) { const held = failures.hold; return held.then(() => writeFamily(puts, deletes, origin, options)); }
     if (failures.family) { const fault = failures.family; return (failures.gate ?? Promise.resolve()).then(() => { throw fault; }); }
     return writeFamily(puts, deletes, origin, options);
   });
   vi.spyOn(composite, "tombstoneInBag").mockImplementation((bag, title, origin, options) => {
+    const destination = bag || composite.defaultWritableBagId() || "";
+    if (!ownSlots.has(destination) && origin.kind === "tw-local") outsideSlots.push(`tombstone ${destination}`);
     calls.push({ kind: "tombstone", bag, puts: [], deletes: [title], base: options?.base });
     if (failures.tombstone) return Promise.reject(failures.tombstone);
     return tombstoneInBag(bag, title, origin, options);
@@ -119,7 +131,7 @@ export async function shoreRig(opts: RigOptions = {}) {
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
   await turns();
   return {
-    engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals,
+    engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals, outsideSlots,
     canonHandle, workingHandle, draftHandle, canon, working, draft,
     handles: { [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle } as Record<string, typeof canonHandle>,
     saved: () => ({
@@ -127,7 +139,13 @@ export async function shoreRig(opts: RigOptions = {}) {
     }),
     doc: (bag: string): LarDoc => (({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc,
     changes: (bag: string): number => automerge.getAllChanges((({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc).length,
-    stop: async (): Promise<void> => { unbridge(); await adaptor.stop(); await repo.shutdown(); },
+    stop: async (): Promise<void> => {
+      unbridge();
+      try {
+        await adaptor.stop();
+        if (outsideSlots.length > 0) throw new Error(`a hand wrote outside the wiki's own slots: ${outsideSlots.join(", ")}`);
+      } finally { await repo.shutdown(); }
+    },
   };
 }
 

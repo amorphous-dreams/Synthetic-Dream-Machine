@@ -33,7 +33,7 @@ async function realRig() {
 }
 
 describe("wiki shore fault vectors", () => {
-  test("a rejected cross-bag tombstone resolver reports its title, queues the tombstone, and drains", async () => {
+  test("a failed composition read retries once during seed and the wiki shows the composition's record", async () => {
     const r = await realRig();
     const rejectedTitle = "lar:///t/shore/fault/rejected-resolver";
     const survivorTitle = "lar:///t/shore/fault/resolved-survivor";
@@ -43,24 +43,41 @@ describe("wiki shore fault vectors", () => {
     await r.working.put(survivorRecord, remote);
     r.working.emitInitialReplay();
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(r.composite, "resolveTopmost").mockImplementation(async (title) => {
-      if (title === rejectedTitle) throw new Error("topmost read failed");
-      if (title === survivorTitle) return { bagId: r.workingBag, record: survivorRecord };
-      return null;
+    // The composition read fails once for the rejected title; the landing retries it and lands what resolves.
+    const resolveLayered = r.composite.resolveLayered.bind(r.composite);
+    let failedOnce = false;
+    vi.spyOn(r.composite, "resolveLayered").mockImplementation(async (title) => {
+      if (title === rejectedTitle && !failedOnce) { failedOnce = true; throw new Error("layered read failed"); }
+      return resolveLayered(title);
     });
     await r.canon.tombstone(rejectedTitle, remote);
     await r.canon.tombstone(survivorTitle, remote);
 
     // The checkpoint includes both resolver promises and the tombstone/survivor queue items.
     await r.adaptor.armSeedCheckpoint();
-    expect(errors).toHaveBeenCalledWith(expect.stringContaining(`"${rejectedTitle}"`));
-    expect(r.adaptor.ledger.landedOf(rejectedTitle)?.tiddler).toBeNull();
-    expect(r.wiki.getTiddler(rejectedTitle)).toBeUndefined();
+    expect(failedOnce, "the composition read failed once and the landing retried it").toBe(true);
+    // The wiki shows what the composition resolves: the working layer's live record stands above canon's tombstone.
+    expect(r.adaptor.ledger.landedOf(rejectedTitle)?.bag).toBe(r.workingBag);
+    expect((r.wiki.getTiddler(rejectedTitle) as { fields: Record<string, unknown> }).fields.text).toBe("survives the resolver fault");
     expect((r.wiki.getTiddler(survivorTitle) as { fields: Record<string, unknown> }).fields).toMatchObject({ title: survivorTitle, text: "survivor value", "$origin-bag": r.workingBag });
     expect(r.adaptor.ledger.landedOf(survivorTitle)?.bag).toBe(r.workingBag);
     await r.adaptor.stop();
     expect(r.adaptor.isResident()).toBe(true);
     errors.mockRestore();
+    await r.repo.shutdown();
+  }, 120_000);
+
+  test("a composition read failing twice on a resident shore is reported with its title", async () => {
+    const r = await realRig();
+    await r.adaptor.armSeedCheckpoint();
+    const title = "lar:///t/shore/fault/resident-read";
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(r.composite, "resolveLayered").mockRejectedValue(new Error("resident composition read failed"));
+    await r.working.put({ tiddler: { title, text: "resident value" } }, remote);
+    await r.adaptor.landingIdle();
+    expect(errors.mock.calls.flat().join(" ")).toContain(title);
+    errors.mockRestore();
+    await r.adaptor.stop();
     await r.repo.shutdown();
   }, 120_000);
 

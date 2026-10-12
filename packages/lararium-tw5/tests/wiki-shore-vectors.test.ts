@@ -576,16 +576,22 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await adaptor.stop();
   }, 120_000);
 
-  test("R2: seedDrained waits for a deferred cross-bag tombstone resolver and its survivor", async () => {
+  test("R2: seedDrained waits for a deferred composition read and the record it resolves", async () => {
     const r = await rig();
     const title = "lar:///t/shore/R2";
     await r.working.put({ tiddler: { title, text: "survivor" } }, remote);
     await turns();
     let release!: (value: { bagId: string; record: LarTiddlerRecord } | null) => void;
     const deferred = new Promise<{ bagId: string; record: LarTiddlerRecord } | null>((resolve) => { release = resolve; });
-    const resolveTopmost = vi.spyOn(r.composite, "resolveTopmost").mockReturnValue(deferred);
+    let resolveArrived!: () => void;
+    const arrived = new Promise<void>((resolve) => { resolveArrived = resolve; });
+    const resolveLayered = vi.spyOn(r.composite, "resolveLayered").mockImplementation((requestedTitle) => {
+      if (requestedTitle === title) resolveArrived();
+      return deferred as never;
+    });
     const tombstone = r.canon.tombstone(title, remote);
-    await turns();
+    // Observe the resolver entry directly; idle remains pending while this composition read is held.
+    await arrived;
     const checkpoint = r.adaptor.armSeedCheckpoint();
     let drained = false;
     void checkpoint.then(() => { drained = true; });
@@ -594,7 +600,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     release({ bagId: workingBag, record: { tiddler: { title, text: "survivor" } } });
     await checkpoint;
     expect((r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields.text).toBe("survivor");
-    expect(resolveTopmost).toHaveBeenCalledWith(title);
+    expect(resolveLayered).toHaveBeenCalledWith(title);
     await tombstone;
     r.unbridge();
     await r.adaptor.stop();
@@ -619,28 +625,17 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     error.mockRestore();
   });
 
-  test("R4: a failing offered headsNow read rejects the seed instead of landing the envelope record", async () => {
+  test("R4: a layer read that fails rejects the seed instead of landing the envelope record", async () => {
     const r = await rig();
     const title = "lar:///t/shore/R4";
-    vi.spyOn(r.working, "headsNow").mockImplementation(() => { throw new Error("heads read failed"); });
+    vi.spyOn(r.working, "readNow").mockImplementation(() => { throw new Error("layer read failed"); });
     const lares = (r.engine.$tw as unknown as { lares: { enqueueNalu(change: unknown): void } }).lares;
     lares.enqueueNalu({ title, bag: workingBag, record: { tiddler: { title, text: "stale envelope" } }, origin: remote });
-    await expect(r.adaptor.armSeedCheckpoint()).rejects.toThrow(/R4.*heads read failed/);
+    await expect(r.adaptor.armSeedCheckpoint()).rejects.toThrow(/R4.*layer read failed/);
     expect(r.wiki.getTiddler(title)).toBeUndefined();
     r.unbridge();
     await r.adaptor.stop();
     await r.repo.shutdown();
-
-    const second = await rig();
-    const getAtTitle = "lar:///t/shore/R4-getAt";
-    vi.spyOn(second.working, "getAt").mockImplementation(() => { throw new Error("record read failed"); });
-    const secondDoor = (second.engine.$tw as unknown as { lares: { enqueueNalu(change: unknown): void } }).lares;
-    secondDoor.enqueueNalu({ title: getAtTitle, bag: workingBag, record: { tiddler: { title: getAtTitle, text: "stale envelope" } }, origin: remote });
-    await expect(second.adaptor.armSeedCheckpoint()).rejects.toThrow(/R4-getAt.*record read failed/);
-    expect(second.wiki.getTiddler(getAtTitle)).toBeUndefined();
-    second.unbridge();
-    await second.adaptor.stop();
-    await second.repo.shutdown();
   }, 120_000);
 
   test("R5: stop waits for an active flush and the later same-title flush queued behind it", async () => {

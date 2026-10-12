@@ -259,9 +259,13 @@ describe("IslandAdaptor — inbound forwarding", () => {
       bag: TARGET_BAG,
       writtenAt: ["own-head"],
     };
+    // The store holds the record the envelope acknowledges: a bagged wave lands what the composition resolves.
+    await store.put(ownChange.record!, localOrigin());
+    await drainQueued();
+    tw5.enqueueCalls.length = 0;
     adaptor.onUriChanged(ownChange);
     await drainQueued();
-    expect(tw5.enqueueCalls).toHaveLength(1);
+    expect(tw5.enqueueCalls.map((call) => call.title)).toEqual([LAR_URI]);
     await adaptor.stop();
   });
 
@@ -296,18 +300,18 @@ describe("IslandAdaptor — inbound forwarding", () => {
 // Cross-bag tombstone resolution
 // ---------------------------------------------------------------------------
 
-describe("IslandAdaptor — cross-bag tombstone resolution", () => {
+describe("IslandAdaptor — a bagged tombstone lands what the composition resolves", () => {
   test("tombstone forwards the live record from another bag, stamped with the SURVIVOR's bag", async () => {
     const tw5   = new FakeTW5Engine();
     const store = new MemoryTiddlerStore();
     const liveRecord = { tiddler: { title: LAR_URI, bag: "other", text: "still-here" } };
-    // resolveTopmost carries {bagId, record} — the survivor's ACTUAL bag.
-    (store as unknown as Record<string, unknown>)["resolveTopmost"] = async () => ({ bagId: "other", record: liveRecord });
+    // resolveLayered carries {bagId, record} — the topmost layer's ACTUAL bag.
+    (store as unknown as Record<string, unknown>)["resolveLayered"] = async () => ({ bagId: "other", record: liveRecord });
 
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
     adaptor.start();
 
-    adaptor.onUriChanged(tombstone(LAR_URI));
+    adaptor.onUriChanged({ ...tombstone(LAR_URI), bag: "emitter" });
     await drainQueued();
 
     expect(tw5.enqueueCalls).toHaveLength(1);
@@ -320,7 +324,7 @@ describe("IslandAdaptor — cross-bag tombstone resolution", () => {
   test("tombstone forwards the tombstone when no live copy remains elsewhere", async () => {
     const tw5   = new FakeTW5Engine();
     const store = new MemoryTiddlerStore();
-    (store as unknown as Record<string, unknown>)["resolveTopmost"] = async () => null;
+    (store as unknown as Record<string, unknown>)["resolveLayered"] = async () => null;
 
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
     adaptor.start();
@@ -613,7 +617,7 @@ describe("IslandAdaptor — the apply flag does not classify a hand", () => {
 
 describe("IslandAdaptor — the family write", () => {
   const WORKING = wikiSlotUri("test-wiki", "working");
-  const DEFAULT = "lar:///ha.ka.ba/bags/default-writable";
+  const DEFAULT = "lar:///ha.ka.ba/bags/writable-canon";
   let tw5: FakeTW5Engine;
 
   beforeEach(() => { vi.useFakeTimers(); tw5 = new FakeTW5Engine(); });
@@ -621,14 +625,14 @@ describe("IslandAdaptor — the family write", () => {
 
   const flush = () => vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
 
-  /** A composite whose cascade target (`working`) is NOT the default writable — a bagless write
-   *  lands in DEFAULT, so a misrouted tombstone reads plainly. */
+  /** A composite with a writable canon layer (`fallback`) beneath the working layer, the default
+   *  writable — a tombstone misrouted beneath the working layer reads plainly. */
   function twoBagComposite(): { composite: CompositeStore; working: MemoryTiddlerStore; fallback: MemoryTiddlerStore } {
     const working  = new MemoryTiddlerStore();
     const fallback = new MemoryTiddlerStore();
     const composite = new CompositeStore();
-    composite.addLayer({ bagId: WORKING, store: working,  writable: true, defaultWritable: false });
-    composite.addLayer({ bagId: DEFAULT, store: fallback, writable: true });
+    composite.addLayer({ bagId: DEFAULT, store: fallback, writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: WORKING, store: working,  writable: true, defaultWritable: true });
     return { composite, working, fallback };
   }
 
@@ -657,7 +661,7 @@ describe("IslandAdaptor — the family write", () => {
     expect(families).toEqual([{ puts: [LAR_URI, `${LAR_URI}#/new`], tombstones: [`${LAR_URI}#/old`], bag: WORKING }]);
   });
 
-  test("★ an orphan's tombstone lands in the bag the child lives in, never the default writable ★", async () => {
+  test("★ an orphan's tombstone lands in the working layer the child lives in, never a layer beneath ★", async () => {
     tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
     const { composite, working, fallback } = twoBagComposite();
     await working.put({ tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, localOrigin());
@@ -673,24 +677,27 @@ describe("IslandAdaptor — the family write", () => {
     expect(await fallback.get(`${LAR_URI}#/old`)).toBeNull();
   });
 
-  test("★ an orphan that arrived from another bag is tombstoned THERE — the last-known-slot law ★", async () => {
+  test("★ an orphan that arrived from another bag is shadowed from the working layer, never written there ★", async () => {
     const OTHER = "lar:///ha.ka.ba/bags/other-writable";
     tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
     const { composite, working, fallback } = twoBagComposite();
-    const other = new MemoryTiddlerStore();
-    composite.addLayer({ bagId: OTHER, store: other, writable: true, defaultWritable: false });
+    const other = new MemoryTiddlerStore(OTHER);
+    // OTHER mounts beneath the working layer: a library bag this wiki can write.
+    composite.addLayer({ bagId: OTHER, store: other, writable: true, defaultWritable: false }, 0);
 
     const adaptor = new IslandAdaptor(tw5 as never, composite, INSTANCE_ID);
     adaptor.start();
-    // The child arrived inbound from OTHER — the envelope names its bag.
-    adaptor.onUriChanged({ title: `${LAR_URI}#/old`, record: { tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, origin: crdtRemote(), bag: OTHER });
+    // The child arrives inbound from OTHER: the store holds it and its envelope names the bag.
+    await other.put({ tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    expect(adaptor.ledger.landedOf(`${LAR_URI}#/old`)?.bag).toBe(OTHER);
     const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
     await flush();
     await done;
     adaptor.stop();
 
-    expect((await other.get(`${LAR_URI}#/old`))?.meta?.deleted).toBe(true);
-    expect(await working.get(`${LAR_URI}#/old`)).toBeNull();
+    expect((await other.get(`${LAR_URI}#/old`))?.meta?.deleted, "the bag beneath keeps its live record").not.toBe(true);
+    expect((await working.get(`${LAR_URI}#/old`))?.meta?.deleted).toBe(true);
     expect(await fallback.get(`${LAR_URI}#/old`)).toBeNull();
   });
 

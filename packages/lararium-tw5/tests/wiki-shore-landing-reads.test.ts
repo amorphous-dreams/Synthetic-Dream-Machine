@@ -21,7 +21,7 @@ describe.skipIf(wikiSkip)(`wiki shore landing reads${skipNote}`, () => {
       await r.canon.writeFamily([{ tiddler: { title, text: `body ${i}` } }], [], remote, { bag: canonBag });
       if (i % 25 === 24) await turns(1);
     }
-    for (let turn = 0; turn < 400 && titles.some((title) => !r.adaptor.ledger.landedOf(title)); turn++) await turns(1);
+    await r.adaptor.landingIdle();
     expect(titles.filter((title) => r.wiki.getTiddler(title)?.fields.text === undefined)).toEqual([]);
     expect(titles.map((title) => r.adaptor.ledger.landedOf(title)?.bag)).toEqual(titles.map(() => canonBag));
     expect({ canon: canonViews.mock.calls.length, working: workingViews.mock.calls.length }).toEqual({ canon: 0, working: 0 });
@@ -33,7 +33,7 @@ describe.skipIf(wikiSkip)(`wiki shore landing reads${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     const title = "lar:///t/landing-reads/control";
     await r.canon.writeFamily([{ tiddler: { title, text: "canon" } }], [], remote, { bag: canonBag });
-    for (let turn = 0; turn < 400 && !r.adaptor.ledger.landedOf(title); turn++) await turns(1);
+    await r.adaptor.landingIdle();
     expect(r.adaptor.ledger.landedOf(title)).toMatchObject({ bag: canonBag, heads: r.canon.headsNow() });
     expect(r.wiki.getTiddler(title)?.fields["$origin-bag"]).toBe(canonBag);
     expect(r.doc(workingBag).tiddlers[title]).toBeUndefined();

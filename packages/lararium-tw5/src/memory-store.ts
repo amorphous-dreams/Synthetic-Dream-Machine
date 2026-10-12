@@ -62,6 +62,10 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
     return this._records.get(title) ?? null;
   }
 
+  readNow(title: string): { record: LarTiddlerRecord | null } {
+    return { record: this._records.get(title) ?? null };
+  }
+
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {
     this._records.set(record.tiddler.title, record);
     this._emit({ title: record.tiddler.title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });

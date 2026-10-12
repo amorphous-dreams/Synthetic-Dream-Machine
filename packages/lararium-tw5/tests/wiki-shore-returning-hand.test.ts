@@ -81,7 +81,7 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("a hand delete of a title from a read-only layer refuses by name and re-lands the record", async () => {
+  test("a hand delete of a title from a read-only layer shadows it from the working layer and raises no alert", async () => {
     const timers = new ManualTimers();
     const r = await shoreRig({ timers });
     const floor = "lar:///t/fault/floor-record";
@@ -95,18 +95,16 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     await afterDispatch();
     timers.fireAll(400);
     await turns(24);
-    const alert = r.wiki.getTiddler(`$:/temp/lares/alert/read-only-delete/${floor}`);
-    expect(alert, "the refusal names itself on the rail").toBeDefined();
-    expect(String(alert!.fields.tags)).toContain("$:/tags/Alert");
-    expect(String(alert!.fields.text)).toContain(floor);
-    expect(r.calls.slice(mark), "0 store calls").toEqual([]);
-    expect(String(r.wiki.getTiddler(floor)?.fields.text), "the record is back in the wiki").toBe("oracle record");
+    expect(r.calls.slice(mark).map((c) => [c.bag, c.deletes])).toEqual([[workingBag, [floor]]]);
+    expect(storeDeleted(r, workingBag, floor)).toBe(true);
+    expect(r.wiki.getTiddler(floor)).toBeUndefined();
+    expect(r.wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]]")).toEqual([]);
 
     r.wiki.deleteTiddler(own);
     await afterDispatch();
     timers.fireAll(400);
     await turns(24);
-    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "a writable layer takes the tombstone").toHaveLength(1);
+    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "a working-layer title tombstones where it lives").toHaveLength(1);
     expect(storeDeleted(r, workingBag, own)).toBe(true);
     expect(r.wiki.getTiddler(own)).toBeUndefined();
     await r.stop();

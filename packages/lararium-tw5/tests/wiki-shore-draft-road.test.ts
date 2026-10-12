@@ -162,6 +162,8 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
       const y = `lar:///t/road/T2-${moved}-to`;
       await seedRecords(r, [{ title: x, text: "landed x" }]);
       await r.adaptor.armSeedCheckpoint();
+      await r.adaptor.landingIdle();
+      expect(r.adaptor.ledger.landedOf(x)).toBeDefined();
       await r.working.put({ tiddler: { title: y, text: "landed y" } }, remote);
       await turns(16);
       const xBase = r.adaptor.ledger.landedOf(x)!.heads!;

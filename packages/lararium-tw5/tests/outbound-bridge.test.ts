@@ -110,6 +110,9 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
   });
 
   test("CONTROL (5): a nalu-applied inbound change fires NO outbound put", async () => {
+    // The fleet's record stands in the store before its wave arrives: a bagged wave lands what the
+    // composition resolves. The base put leaves `store.puts` to the shore's own writes.
+    await MemoryTiddlerStore.prototype.put.call(store, { tiddler: { title: "lar:///t/bridge/inbound", text: "from the fleet" } }, { kind: "crdt-remote", edgeIsland: "peer" });
     lares.enqueueNalu({
       title: "lar:///t/bridge/inbound", bag: SLOTS.working,
       record: { tiddler: { title: "lar:///t/bridge/inbound", text: "from the fleet" } },
@@ -127,6 +130,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     const onChange = (): void => { seen.push(lares.isApplyingNalu()); };
     wiki.addEventListener("change", onChange);
     try {
+      await MemoryTiddlerStore.prototype.put.call(store, { tiddler: { title: "lar:///t/bridge/inbound-2", text: "from the fleet" } }, { kind: "crdt-remote", edgeIsland: "peer" });
       lares.enqueueNalu({
         title: "lar:///t/bridge/inbound-2", bag: SLOTS.working,
         record: { tiddler: { title: "lar:///t/bridge/inbound-2", text: "from the fleet" } },

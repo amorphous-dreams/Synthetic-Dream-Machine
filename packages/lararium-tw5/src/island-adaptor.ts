@@ -15,8 +15,12 @@
  * case that rides pinned, and only while the wiki does not hold it. A placed root's marked slot children
  * ride its family, so the family lands as one change. A refused write raises
  * `$:/temp/lares/alert/unsaved/<title>`, keeps the title owed, arms no timer, and clears when a later write
- * of the title is acknowledged. A delete of a title that landed from a layer this wiki cannot write raises
- * `$:/temp/lares/alert/read-only-delete/<title>`, writes nothing, and lands the layer's record again.
+ * of the title is acknowledged. A delete of a title that landed from a layer beneath the working layer
+ * writes nothing there: it lands a tombstone in the working layer, which shadows the title (kāpae).
+ *
+ * INBOUND, THE COMPOSITION. A bagged wave lands what the composition resolves for its title: the topmost
+ * layer holding any record, a tombstone included, with that layer's bag and heads; no layer holding a
+ * record lands the title absent. A lower layer's record never lands over a higher layer's.
  *
  * THE DRAFT BOOK (draft-book.ts). At a draft's first write the book captures its target's base: the ledger's
  * bag and heads for a target that stands, else the bag the cascade routes the target to plus that bag's
@@ -94,11 +98,6 @@ export function unsavedHandAlertTitle(title: string): string {
   return `$:/temp/lares/alert/unsaved/${title}`;
 }
 
-/** The alert a hand delete of a title from a layer this wiki cannot write raises — one per title. */
-export function readOnlyDeleteAlertTitle(title: string): string {
-  return `$:/temp/lares/alert/read-only-delete/${title}`;
-}
-
 /** True for a title that never persists: the volatile VM plane and the alert rail. */
 export function neverPersists(title: string): boolean {
   return isVolatileVmUri(title) || title.startsWith("$:/temp/lares/alert/");
@@ -124,8 +123,8 @@ export function unroutedSaveAlertTitle(reference: string): string {
  */
 export class UnroutedSaveRefusal extends Error {
   override readonly name = "UnroutedSaveRefusal";
-  constructor(readonly title: string, readonly rule: string, readonly reference: string) {
-    super(`unrouted-save: "${title}" has no bag to land in — the routing rule ${rule} names its bag through ${reference}, and that tiddler holds nothing`);
+  constructor(readonly title: string, readonly rule: string, readonly reference: string, readonly why = "that tiddler holds nothing") {
+    super(`unrouted-save: "${title}" has no bag to land in — the routing rule ${rule} names its bag through ${reference}, and ${why}`);
   }
 }
 
@@ -134,7 +133,7 @@ export class UnroutedSaveRefusal extends Error {
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
  * store that could only write to its own default would land a routed save in a bag no rule chose.
  */
-export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag">;
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "defaultWritableBagId" | "layerIndexOf">;
 
 export class LandingDoorUnavailableError extends Error {
   override readonly name = "LandingDoorUnavailableError";
@@ -187,7 +186,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private resident = false;
   private readonly flushes = new Set<Promise<unknown>>();
   private readonly activeFlushCounts = new Map<string, number>();
-  private readonly resolvers = new Set<Promise<void>>();
   /** What the shore knows of each draft, keyed by the draft's title (see `draft-book.ts`). */
   private readonly draftBook = new Map<string, DraftEntry>();
   /** Discrete acts in flight (a save, a rename, a cancel). */
@@ -225,6 +223,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return this.landing!.checkpoint().then(() => { this.resident = true; });
   }
 
+  landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
+
   isResident(): boolean { return this.resident; }
 
   /** True when a wiki notification repeats the value the last wave left. */
@@ -250,19 +250,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
     const title = change.title;
     const wiki = this.tw5.$tw.wiki;
-    const src = change.bag && typeof this.store.storeForBag === "function" ? this.store.storeForBag(change.bag) as {
-      headsNow?: () => readonly string[];
-      getAt?: (title: string, heads: readonly string[]) => LarTiddlerRecord | null;
-    } | null : null;
     let heads = change.heads;
     let record = change.record;
     let bag = change.bag;
-    if (src && typeof src.headsNow === "function" && typeof src.getAt === "function") {
-      const currentHeads = src.headsNow();
-      if (currentHeads !== null) {
-        heads = currentHeads;
-        record = src.getAt(title, currentHeads);
-      }
+    // THE WIKI SHOWS WHAT THE COMPOSITION RESOLVES: the topmost layer holding any record for the title, a
+    // tombstone included (kāpae), never the emitting layer's record over a higher layer's.
+    if (change.bag) {
+      const resolved = await this.store.resolveLayered(title);
+      record = resolved?.record ?? null;
+      bag = resolved?.bagId ?? change.bag;
+      heads = resolved ? resolved.heads : this._headsOfBag(change.bag);
     }
     const entry = this.ledger.landedOf(title);
     if (bag === undefined) {
@@ -378,18 +375,21 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * The alert lives under `$:/temp/`, whose own pointer may hold nothing too; its save then refuses
    * quietly, since an alert about an alert would recurse without end and the rail already shows it.
    */
-  private _refuseUnrouted(title: string, rule: string, reference: string): UnroutedSaveRefusal {
-    const refusal = new UnroutedSaveRefusal(title, rule, reference);
+  private _refuseUnrouted(title: string, rule: string, reference: string, why?: string): UnroutedSaveRefusal {
+    const refusal = new UnroutedSaveRefusal(title, rule, reference, why);
+    const priorWhy = this._unroutedWhy.get(reference);
+    this._unroutedWhy.set(reference, refusal.why);
     if (title.startsWith(unroutedSaveAlertTitle(""))) return refusal;
     let titles = this._unrouted.get(reference);
     if (!titles) this._unrouted.set(reference, titles = new Set());
-    if (titles.has(title)) return refusal;
+    const changedReason = priorWhy !== undefined && priorWhy !== refusal.why;
+    if (titles.has(title) && !changedReason) return refusal;
     titles.add(title);
     console.warn(`[island-adaptor] ${refusal.message}`);
     this._addAlertIfChanged({
       title: unroutedSaveAlertTitle(reference),
       text: `Nothing you save here reaches a bag: the routing rule <code>${rule}</code> names its bag through ` +
-        `<code>${reference}</code>, and that tiddler holds nothing. What you wrote stands in this page alone ` +
+        `<code>${reference}</code>, and ${this._unroutedWhy.get(reference) ?? refusal.why}. What you wrote stands in this page alone ` +
         `and leaves with it — ${titles.size === 1 ? "this title" : `these ${titles.size} titles`}:\n\n` +
         [...titles].map((t) => `* <$text text=${JSON.stringify(t)}/>`).join("\n"),
       tags: TW5_ALERT_TAG,
@@ -402,6 +402,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /** The titles refused under each empty pointer this session — the alert's own list. */
   private readonly _unrouted = new Map<string, Set<string>>();
+  private readonly _unroutedWhy = new Map<string, string>();
 
   /**
    * Hand a complete envelope to the shore queue. The engine door is preserved as the synchronous applier.
@@ -418,8 +419,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /**
    * Forward each complete change envelope to the shore queue. The queue compares standing values
    * with landed state and meets pending hands before the packed engine applies a slice.
-   * Cross-bag tombstones resolve before enqueue: a tombstone in one bag must
-   * not delete the tiddler if another recipe layer still holds a live copy.
+   * Landing resolves each bagged change through the composition (`resolveLayered`): the wiki shows the
+   * topmost layer's record, so a tombstone in one bag never deletes a title another layer holds above it,
+   * and a lower layer's record never lands over a higher layer's. Every bagged wave requires the
+   * composition reader; only an unbagged wave lands its own record.
    */
   onUriChanged(change: LarTiddlerChange): void {
     this.installLandingQueue();
@@ -431,19 +434,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (change.writtenAt && change.bag) this.handBase.set(change.title, { bag: change.bag, heads: change.writtenAt });
     }
 
-    if (change.record === null || change.record.meta?.deleted) {
-      const store = this.store as { resolveTopmost?: (t: string) => Promise<{ bagId: string; record: LarTiddlerRecord } | null> };
-      if (typeof store.resolveTopmost === "function") {
-        const resolver = this._resolveCrossBagTombstone(change, store.resolveTopmost.bind(store)).catch((error: unknown) => {
-          console.error(`[island-adaptor] cross-bag tombstone resolver for "${change.title}" failed: ${String(error)}`);
-          this._enqueue(change);
-        });
-        this.resolvers.add(resolver);
-        this.landing!.track(resolver);
-        void resolver.finally(() => this.resolvers.delete(resolver)).catch(() => {});
-        return;
-      }
-    }
     this._enqueue(change);
   }
 
@@ -580,7 +570,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   async stop(): Promise<void> {
-    while (this.resolvers.size) await Promise.allSettled([...this.resolvers]);
     while (this.acts.size) await Promise.allSettled([...this.acts]);
     await this.landing?.stop();
     const marked = new Set([...this.pendingHand, ...this.gate.titles()]);
@@ -678,10 +667,22 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     } catch { return true; }
   }
 
-  /** True when `bag` has a layer this wiki reads and no layer it can write. */
-  private _readOnlyLayer(bag: string): boolean {
-    const composite = this.store as { hasWritableBag?: (bag: string) => boolean };
-    return typeof composite.hasWritableBag === "function" && !composite.hasWritableBag(bag) && this._storeFor(bag) !== null;
+  /**
+   * Where a hand's tombstone for `title` lands, given the bag the title landed from. A tombstone shadows
+   * only from above (kāpae), so the composition's own layer order decides, never a wiki tiddler:
+   *   - the working layer is the composition's default writable;
+   *   - a title that landed from the working layer or a layer above it (a draft, a personal record) is
+   *     tombstoned in that layer, where the record lives;
+   *   - a title that landed from any layer beneath the working layer (a canon bag, writable or read-only)
+   *     or from a bag the composition does not mount is never written there: the tombstone lands in the
+   *     working layer and hides it.
+   * A composition with no working layer refuses by the standing named road.
+   */
+  private _tombstoneBag(title: string, landedBag: string): string {
+    const working = this.store.defaultWritableBagId();
+    if (!working) throw this._refuseUnrouted(title, "(a delete shadows from the working layer)", CURRENT_WIKI_BAG, "this wiki mounts no working layer");
+    const landedIndex = this.store.layerIndexOf(landedBag);
+    return landedIndex >= 0 && landedIndex >= this.store.layerIndexOf(working) ? landedBag : working;
   }
 
   /** Re-land the bag's current record for `title` through the landing queue. */
@@ -718,22 +719,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A hand no draft holds stands on the alert rail before the source's record lands over it.
     for (const left of unheld) this._surfaceUnkeptDraft(left, "no draft bag" as SlotUri, new Error("the draft route names no bag for this wiki"));
     this._relandFrom(title, sourceBag);
-  }
-
-  /** A hand delete of a title from a layer this wiki cannot write: refuse by name and re-land the record. */
-  private _refuseReadOnlyDelete(title: string, bag: string): void {
-    console.warn(`[island-adaptor] "${title}" lives in ${bag}, a layer this wiki cannot write — the delete is refused and the record stands again`);
-    this._addAlertIfChanged({
-      title: readOnlyDeleteAlertTitle(title),
-      text: `The title <code>${title}</code> lives in <code>${bag}</code>, a layer this wiki reads and cannot write, so a delete of it cannot be stored. ` +
-        `The record stands again; copy it into the working layer to change it here.`,
-      tags: TW5_ALERT_TAG,
-      "alert-kind": "read-only-delete",
-      "hand-title": title,
-      bag,
-    });
-    this.sent.set(title, null);
-    this._relandFrom(title, bag);
   }
 
   /** A refused store write stays on the alert rail until a later write of the title is acknowledged. */
@@ -919,22 +904,21 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         const standing = this.ledger.landedOf(entry.of);
         const stood = (standing?.tiddler ?? null) !== null || (this.sent.has(entry.of) && this.sent.get(entry.of) !== null);
         if (stood) {
-          const bag = this.lastWriteBag.get(entry.of) ?? standing?.bag ?? entry.baseBag;
-          if (bag) {
-            if (this._readOnlyLayer(bag)) this._refuseReadOnlyDelete(entry.of, bag);
-            else {
-              const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
-              group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of]);
-              sentValues.set(entry.of, null);
-              tombstonedSource = true;
-            }
+          const landedBag = this.lastWriteBag.get(entry.of) ?? standing?.bag ?? entry.baseBag;
+          if (landedBag) {
+            const bag = this._tombstoneBag(entry.of, landedBag);
+            const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
+            group(bag, base && base.length > 0 ? base : undefined, [], [entry.of], [entry.of]);
+            sentValues.set(entry.of, null);
+            tombstonedSource = true;
           }
         }
       }
       if (this._reachedStore(draftTitle)) {
         const bag = entry.bag ?? this.ledger.landedOf(draftTitle)?.bag ?? this.handBase.get(draftTitle)?.bag;
         if (bag) {
-          group(bag, this._handBaseFor(draftTitle, bag), [], [draftTitle], [draftTitle]);
+          const draftBag = this._tombstoneBag(draftTitle, bag);
+          group(draftBag, this._handBaseFor(draftTitle, draftBag), [], [draftTitle], [draftTitle]);
           sentValues.set(draftTitle, null);
         }
       } else this._clearUnsaved(draftTitle);
@@ -1097,20 +1081,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       });
     } else {
       const entry = this.ledger.landedOf(title);
-      const bag = this.lastWriteBag.get(title) ?? entry?.bag ?? this.handBase.get(title)?.bag ?? this._destination(title);
-      if (!bag) {
+      const landedBag = this.lastWriteBag.get(title) ?? entry?.bag ?? this.handBase.get(title)?.bag ?? this._destination(title);
+      if (!landedBag) {
         this.handed.delete(title);
         this.pendingHand.delete(title);
         this.lastFlushWrote.set(title, false);
         return;
       }
-      if (this._readOnlyLayer(bag)) {
-        this.handed.delete(title);
-        this.pendingHand.delete(title);
-        this.lastFlushWrote.set(title, false);
-        this._refuseReadOnlyDelete(title, bag);
-        return;
-      }
+      const bag = this._tombstoneBag(title, landedBag);
       writeBag = bag;
       this.sent.set(title, null);
       const base = this._handBaseFor(title, bag);
@@ -1203,8 +1181,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A DELETE ROUTES LIKE A SAVE, and the tiddler is already gone from the wiki when this runs — so
     // a rule reading a FIELD (`draft.of`) would route its creation and drop its deletion, leaving a
     // record that resurrects on the next boot. The landed ledger answers first; a title never
-    // seen this session falls back to the cascade's title read. The tombstone lands in THAT bag — a
-    // bagless tombstone falls into the composite's default writable, a bag the cascade never named.
+    // seen this session falls back to the cascade's title read. `_tombstoneBag` then picks the bag by the
+    // composition's layer order: the landed layer when it sits at or above the working layer, the working
+    // layer when the title landed beneath it.
     if (!this.gate.has(title) && !this.handBase.has(title)) {
       const entry = this.ledger.landedOf(title);
       if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
@@ -1223,30 +1202,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`) as string[];
   }
 
-  /**
-   * Cross-bag tombstone resolution — async path.
-   * Stays in TS because it needs to read across CompositeStore layers via getLive.
-   * Either enqueues the tombstone (no live copy elsewhere) or enqueues the live
-   * record from another bag (one of the other layers still holds it).
-   */
-  private async _resolveCrossBagTombstone(
-    change:        LarTiddlerChange,
-    resolveTopmost: (t: string) => Promise<{ bagId: string; record: LarTiddlerRecord } | null>,
-  ): Promise<void> {
-    const survivor = await resolveTopmost(change.title);
-    if (survivor) {
-      // Stamp the SURVIVOR's bag — the layer holding the carrier — never change.bag
-      // (the layer that emitted the tombstone). On a cross-bag MOVE the record retracts from the
-      // source and surfaces in a lower bag; tagging it with the source's bag left
-      // the projector targeting the stale source mirror (byte-identical → silent
-      // hash-skip) and never publishing the destination. resolveTopmost carries
-      // the origin-bag the read path needs (residency-model anti-pattern #4).
-      this._enqueue({ title: change.title, record: survivor.record, origin: change.origin, bag: survivor.bagId });
-    } else {
-      this._enqueue(change);
-    }
-  }
-
   /** Remove ahu-slot child tiddlers from TW5 during outbound delete. */
   private _removeSlotChildren(parentUri: string): void {
     const children = this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`);
@@ -1261,10 +1216,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * the family lands through `writeFamily` as a single atomic change — no peer ever sees a root
    * pointing at a tombstoned child.
    *
-   * AN ORPHAN DIES WHERE IT LIVES. A child's tombstone routes like a delete: the landed ledger
-   * first (a child that arrived from another bag is tombstoned there, in its own change), the root's
-   * bag otherwise. A bagless tombstone would land in the composite's default writable and leave the
-   * orphan standing in the doc peers read.
+   * AN ORPHAN IS SHADOWED LIKE ANY HAND DELETE. A child's tombstone routes through `_tombstoneBag`: the
+   * landed layer when it sits at or above the working layer, the working layer when the child landed
+   * beneath it. An orphan whose tombstone lands in the family's target bag rides the family's own
+   * change; one that lands in another layer goes in its own call. A marked child the wiki dropped
+   * follows the same router. No hand's tombstone is written beneath the working layer.
    *
    * A DRAFT NEVER SPLITS. A tiddler carrying `draft.of` (the draft switch, recipe-layer-model) is an
    * edit buffer over its target: its body persists whole, ahu blocks and all. Splitting it would
@@ -1302,6 +1258,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           puts.push(toLarTiddlerRecord({ ...withoutDraftBase(persistedSlot), title: uri }));
           rode.push({ uri, value: standing, acks: this.writeAcks.get(uri) ?? 0 });
         } else if (entry?.tiddler) {
+          // A dropped child is a hand's delete: it rides this family only where the router lands it in this
+          // bag. Anywhere else its own flush carries it, through the same router.
+          let chosen: string;
+          try { chosen = this._tombstoneBag(uri, targetBag); } catch (error) { if (error instanceof UnroutedSaveRefusal) continue; throw error; }
+          if (chosen !== targetBag) continue;
           tombstones.push(uri);
           rode.push({ uri, value: null, acks: this.writeAcks.get(uri) ?? 0 });
         }
@@ -1367,7 +1328,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
       for (const uri of existingChildren) {
         if (newChildren.has(uri)) continue;
-        const slot: SlotUri = (this.ledger.landedOf(uri)?.bag as SlotUri | undefined) ?? targetBag;
+        const slot = this._tombstoneBag(uri, (this.ledger.landedOf(uri)?.bag as string | undefined) ?? targetBag) as SlotUri;
         if (slot === targetBag) tombstones.push(uri);
         else strays.push({ uri, slot });
       }
