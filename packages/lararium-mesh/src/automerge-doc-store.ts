@@ -247,6 +247,17 @@ export class AutomergeDocStore implements LarTiddlerStore {
     return raw ? _freezeRecord(raw) : null;
   }
 
+  /**
+   * The standing document's record for `title` (a tombstone included) with the document's heads, read in
+   * one synchronous stretch. A document that holds no entry for the title, or has not hydrated, answers
+   * `{ record: null }` and reads no heads: absence costs one map lookup.
+   */
+  readNow(title: string): { record: LarTiddlerRecord | null; heads?: readonly string[] } {
+    const raw = this.handle.doc()?.tiddlers?.[title];
+    if (!raw) return { record: null };
+    return { record: _freezeRecord(raw), heads: Object.freeze([...decodeHeads(this.handle.heads())]) };
+  }
+
   /** Read one record, synchronously, as the document stood at the supplied heads. */
   getAt(title: string, heads: readonly string[]): LarTiddlerRecord | null {
     const raw = this._docAt(heads)?.tiddlers?.[title];

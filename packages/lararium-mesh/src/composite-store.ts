@@ -90,6 +90,9 @@ export interface CompositeEntry {
   readonly changeId: string | null;
 }
 
+/** One layer's answer for a title: its record (a tombstone included) and, where the layer has them, its heads. */
+type LayerReading = { record: LarTiddlerRecord | null; heads?: readonly string[] };
+
 export class CompositeStore implements LarTiddlerStore {
   // Ordered lowest-priority → highest-priority.
   private readonly layers:      CompositeLayer[] = [];
@@ -301,28 +304,29 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   /**
-   * One layer's record for `title`, with the heads it was read at. A layer store that offers
-   * `headsNow` and `getAt` (a CRDT doc store) takes its heads first and reads the record AT those
-   * heads, in one synchronous stretch, so the pair can never straddle a write. A store with no
-   * heads answers its record alone.
+   * One layer's record for `title` (a tombstone included), with the heads it was read at. A layer store
+   * that offers `readNow` (a CRDT doc store, the memory store) answers record and heads in one synchronous
+   * stretch, so the pair can never straddle a write, and a layer holding no entry reads no heads. A store
+   * without it answers its record alone, through its awaited `get`.
    */
-  private async _readWithHeads(store: LarTiddlerStore, title: string): Promise<{ record: LarTiddlerRecord | null; heads?: readonly string[] }> {
-    const headed = store as LarTiddlerStore & {
-      headsNow?: () => readonly string[] | null;
-      getAt?: (title: string, heads: readonly string[]) => LarTiddlerRecord | null;
-    };
-    if (typeof headed.headsNow === "function" && typeof headed.getAt === "function") {
-      const heads = headed.headsNow();
-      if (heads) return { record: headed.getAt(title, heads), heads };
-    }
+  private async _readWithHeads(store: LarTiddlerStore, title: string): Promise<LayerReading> {
+    const reader = store as LarTiddlerStore & { readNow?: (title: string) => LayerReading };
+    if (typeof reader.readNow === "function") return reader.readNow(title);
     return { record: await store.get(title) };
   }
 
-  /** The topmost layer holding any record for `title` (a tombstone included), with the heads it was read at. */
+  /**
+   * The topmost layer holding any record for `title` (a tombstone included), with the heads it was read at.
+   * When every layer offers `readNow` the walk runs top-down with no await between layers and answers
+   * before this call's first await: the answer is one state of the composition, the state that stood at
+   * the call. A layer without `readNow` is read through its awaited `get`.
+   */
   private async _resolveLayerRecord(title: string): Promise<{ layer: CompositeLayer; record: LarTiddlerRecord; heads?: readonly string[] } | null> {
+    const readers = this.layers.map((layer) => (layer.store as LarTiddlerStore & { readNow?: (title: string) => LayerReading }).readNow?.bind(layer.store));
+    const synchronous = readers.every((reader) => reader !== undefined);
     for (let i = this.layers.length - 1; i >= 0; i--) {
       const layer = this.layers[i]!;
-      const read = await this._readWithHeads(layer.store, title);
+      const read = synchronous ? readers[i]!(title) : await this._readWithHeads(layer.store, title);
       if (read.record !== null) return { layer, record: read.record, ...(read.heads !== undefined ? { heads: read.heads } : {}) };
     }
     return null;
@@ -476,6 +480,17 @@ export class CompositeStore implements LarTiddlerStore {
       return { bagId: layer.bagId, record: rec };
     }
     return null;
+  }
+
+  /**
+   * The record the composition resolves for `title`, a tombstone INCLUDED: the topmost layer holding any
+   * record for it, with the bag and the heads that record was read at (kāpae: a tombstone above shadows
+   * every live record below). Null when no layer holds a record. A reader the wiki shore lands waves from,
+   * so a lower layer's record never lands over a higher layer's.
+   */
+  async resolveLayered(title: string): Promise<{ bagId: string; record: LarTiddlerRecord; heads?: readonly string[] } | null> {
+    const found = await this._resolveLayerRecord(title);
+    return found ? { bagId: found.layer.bagId, record: found.record, ...(found.heads !== undefined ? { heads: found.heads } : {}) } : null;
   }
 
   /**

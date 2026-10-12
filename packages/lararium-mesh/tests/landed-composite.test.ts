@@ -49,8 +49,7 @@ describe("landed composite laws", () => {
   test("F3: synthetic add and removal envelopes name the answering bag and matching heads", async () => {
     class HeadedMemory extends PlainStore {
       constructor(private readonly heads: readonly string[]) { super(); }
-      headsNow() { return this.heads; }
-      getAt(t: string, heads: readonly string[]) { return heads === this.heads ? this.records.get(t) ?? null : null; }
+      readNow(t: string) { const record = this.records.get(t) ?? null; return record ? { record, heads: this.heads } : { record: null }; }
     }
     const lower = new HeadedMemory(["low-head"]);
     const upper = new HeadedMemory(["high-head"]);
@@ -88,11 +87,14 @@ describe("landed composite laws", () => {
   test("F3 pairing: a synthetic envelope's record is the record AT its heads, though the layer moves while the composite reads", async () => {
     // A headed layer that keeps every version. Its asynchronous `get` answers the NEWEST record, and a
     // write lands while that read is in flight: a composite that awaited `get` and then took heads
-    // would pair one version's record with another's heads.
+    // would pair one version's record with another's heads. The layer's synchronous `readNow` answers both at once.
     class Versioned extends PlainStore {
       private version = 0;
       private readonly at = new Map<string, LarTiddlerRecord>();
-      headsNow(): readonly string[] { return [`v${this.version}`]; }
+      readNow(t: string): { record: LarTiddlerRecord | null; heads?: readonly string[] } {
+        const record = this.records.get(t) ?? null;
+        return record ? { record, heads: [`v${this.version}`] } : { record: null };
+      }
       getAt(_t: string, heads: readonly string[]): LarTiddlerRecord | null { return this.at.get(heads[0]!) ?? null; }
       write(text: string): void {
         this.version++;
