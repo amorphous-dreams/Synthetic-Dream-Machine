@@ -40,6 +40,7 @@ import { signHandleCard, verifyHandleCard } from "../src/handle-card.js";
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
 import { mintEnrollmentOffer, mintJoinAck, openPersonaGrant, sealPersonaGrant, verifyJoinAck, type PersonaRef } from "../src/persona-admit.js";
 import { mintHostingAct, verifyHostingAct } from "../src/hosting.js";
+import { sealGroupSecret } from "../src/persona-group-secret.js";
 import { authProofBytes, ed25519VerifyHex, verifyAuthProof } from "../src/auth-wire.js";
 import { newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
 import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
@@ -325,6 +326,20 @@ describe("persona admit (openPersonaGrant, verifyJoinAck)", () => {
     const { offer } = mintEnrollmentOffer({ targetVesselId: (await honestHand(52)).key });
     await expect(sealPersonaGrant({ offer: { ...offer, targetVesselId: IDENTITY_KEY }, personaRef: { prefix: PREFIX, verifyingKey: persona.key }, personaSigner: persona.sign }))
       .rejects.toThrow(/admit-key-refused.*key-small-order/);
+  });
+});
+
+describe("group secret seal (sealGroupSecret)", () => {
+  test("CONTROL: the secret seals to a lawful device key", async () => {
+    const seal = await sealGroupSecret({ opSeed: seed(61), prefix: "EpersonaAID_prefix_0001", deviceVerifyingKey: (await honestHand(62)).key });
+    expect(Object.values(seal).every((v) => typeof v === "string" && v.length > 0)).toBe(true);
+  });
+  test("a device key the door refuses receives no seal, by name", async () => {
+    await expect(sealGroupSecret({ opSeed: seed(61), prefix: "EpersonaAID_prefix_0001", deviceVerifyingKey: IDENTITY_KEY }))
+      .rejects.toThrow(/device-key-refused.*key-small-order/);
+    // A second encoding of a small-order point: the curve library's own conversion would map it and refuse later.
+    await expect(sealGroupSecret({ opSeed: seed(61), prefix: "EpersonaAID_prefix_0001", deviceVerifyingKey: `ec${"ff".repeat(31)}` }))
+      .rejects.toThrow(/device-key-refused.*key-non-canonical/);
   });
 });
 

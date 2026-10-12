@@ -52,6 +52,7 @@ import {
 } from "./persona-kel.js";
 import { PERSONA_NAMESPACE } from "./lar-uris.js";
 
+import { acceptEd25519Key } from "./ed25519-door.js";
 const KEY_RE = /^[0-9a-f]{64}$/;
 const SIG_RE = /^[0-9a-f]{128}$/;
 const HEX_RE = /^[0-9a-f]+$/;
@@ -120,6 +121,9 @@ export async function sealGroupSecret(args: {
 }): Promise<GroupSecretSeal> {
   const deviceKey = args.deviceVerifyingKey.toLowerCase();
   if (!KEY_RE.test(deviceKey)) throw new Error("[persona-group-secret] cannot seal: the device key is not 32-byte hex");
+  // The device key enters as a recipient HERE: a key the Ed25519 door refuses names no device, and the secret seals to nobody.
+  const accepted = acceptEd25519Key(deviceKey);
+  if (!accepted.ok) throw new Error(`[persona-group-secret] cannot seal: device-key-refused — the device key refuses at the Ed25519 door (${accepted.refusal})`);
   if (args.prefix.length === 0) throw new Error("[persona-group-secret] cannot seal: no KEL prefix names the group");
   const box = sealToRecipient({
     recipientPub: edCurve.utils.toMontgomery(hexToBytes(deviceKey)),
