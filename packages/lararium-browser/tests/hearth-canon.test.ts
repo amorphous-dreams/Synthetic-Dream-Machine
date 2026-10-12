@@ -14,7 +14,7 @@ import {
   crossroadsDocUrl, materializeSharedLarDoc, mutableLarRecord, oracleGenesisDocUrl, emptyLarDoc, tiddlerText,
   type FederationGate, type LarDoc,
 } from "@lararium/mesh";
-import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, isOwnHearthCrossing, seatHearthCanon } from "../src/hearth-canon.js";
+import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, seatHearthCanon } from "../src/hearth-canon.js";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 
 const NEXUS = "ab".repeat(32);
@@ -153,4 +153,50 @@ describe("a leaf's write to the oracle document never reaches its hearth", () =>
       expect(tiddlerText(c.hearthOracle.doc()?.tiddlers["lar:///t/leaf/planted"]), "the instrument cannot see a crossing write").toBe("from the leaf");
     } finally { c.close(); }
   }, 30_000);
+});
+
+describe("hearthCrossingOf — the vessel's crossing wears the widened gate for its own hearth alone", () => {
+  const HEARTH = "cd".repeat(32);
+  const FOREIGN = "ef".repeat(32);
+  const admit = { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL };
+  const at = (over: Partial<Parameters<typeof hearthCrossingOf>[0]>) => hearthCrossingOf({
+    pinnedGatePubKey: HEARTH, hearthGatePubKey: HEARTH, holdsDeviceEdge: true, hearthCanonDocs: admit,
+    relayGatePubKey: HEARTH, nexusPubkey: NEXUS, ...over,
+  });
+  const opens = (gate: FederationGate | null, url: string) => gate?.mayFederate(id(url) as DocumentId);
+
+  test("the own-hearth admit opens exactly the documents it names, and the boards", () => {
+    const own = at({});
+    expect(own.ownHearth).toBe(true);
+    expect(opens(own.gate, LARES_URL)).toBe(true);
+    expect(opens(own.gate, LARARIUM_URL)).toBe(true);
+    expect(opens(own.gate, crossroadsDocUrl(NEXUS))).toBe(true);
+    expect(opens(own.gate, DAEMON_URL)).toBe(false);
+    expect(opens(own.gate, oracleGenesisDocUrl())).toBe(false);
+  });
+
+  test("an own-hearth admit that names no canon opens no canon document", () => {
+    const bare = at({ hearthCanonDocs: {} });
+    expect(opens(bare.gate, LARES_URL)).toBe(false);
+    expect(opens(bare.gate, crossroadsDocUrl(NEXUS))).toBe(true);
+    expect(at({ hearthCanonDocs: undefined }).hearthCanon).toEqual({});
+  });
+
+  test("a foreign hearth, a founder with no hearth key and a vessel without its edge wear the narrow gate and name no canon", () => {
+    for (const foreign of [
+      at({ pinnedGatePubKey: FOREIGN, relayGatePubKey: FOREIGN }),
+      at({ hearthGatePubKey: null }),
+      at({ holdsDeviceEdge: false }),
+    ]) {
+      expect(foreign.ownHearth).toBe(false);
+      expect(foreign.hearthCanon).toEqual({});
+      expect(opens(foreign.gate, LARES_URL)).toBe(false);
+      expect(opens(foreign.gate, LARARIUM_URL)).toBe(false);
+      expect(opens(foreign.gate, crossroadsDocUrl(NEXUS))).toBe(true);
+    }
+  });
+
+  test("CONTROL: no gate key pinned is the operator's own node, so no federation gate stands", () => {
+    expect(at({ relayGatePubKey: undefined }).gate).toBeNull();
+  });
 });

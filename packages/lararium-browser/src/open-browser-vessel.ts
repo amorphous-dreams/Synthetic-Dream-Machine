@@ -46,7 +46,7 @@ import {
   type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
-import { HearthCanonGate, admittedCanonDocs, isOwnHearthCrossing, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
+import { admittedCanonDocs, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
@@ -683,14 +683,18 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));
   // THE OWN-HEARTH CROSSING: the pinned gate names the hearth whose admit this vessel carries. Such a leaf
   // takes that hearth's base canon (`hearth-canon`); every other crossing reads the public boards alone.
-  const ownHearth = isOwnHearthCrossing({
+  const crossing = hearthCrossingOf({
     pinnedGatePubKey: relayPin.dial ? relayPin.gatePubKey : null,
     hearthGatePubKey: social.hearthGatePubKey,
     holdsDeviceEdge:  Boolean(social.deviceEdge),
+    hearthCanonDocs:  social.hearthCanonDocs,
+    relayGatePubKey,
+    nexusPubkey,
   });
+  const { ownHearth } = crossing;
   // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle
   // replica points at them; the oracle plane itself stays behind the gate.
-  const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(social.hearthCanonDocs) : {};
+  const { hearthCanon } = crossing;
   // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
   // until genesis loads.
   let oracleAtBoot: DocHandle<LarDoc> | null = null;
@@ -773,10 +777,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // Arm the deny-by-default gate ONLY for a cross-operator crossing (relayGatePubKey names a
     // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
     // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
-    if (relayGatePubKey) {
-      const boards = new DeterministicFederationGate(nexusPubkey);
-      fedGate = ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards;
-    }
+    fedGate = crossing.gate;
     repo.networkSubsystem.addNetworkAdapter(adapter);
   }
 

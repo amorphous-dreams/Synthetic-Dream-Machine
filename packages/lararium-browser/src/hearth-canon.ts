@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { LARES_DOC_URI, LARARIUM_DOC_URI, mutableLarRecord, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, mutableLarRecord, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -78,6 +78,28 @@ export class HearthCanonGate implements FederationGate {
     if (this.#canon.has(documentId)) return true;
     return this.#outer.mayFederate(documentId, peerId);
   }
+}
+
+/**
+ * The crossing a vessel stands for, read once from its bootstrap: whether the pinned gate is its own hearth,
+ * the canon documents that crossing opens, and the federation gate the relay adapter wears. The gate is null
+ * when no gate key is pinned (the operator's own node: full device sync). Only the own-hearth crossing widens
+ * the narrow boards gate, and only by the documents its admit names; every other crossing, a foreign hearth
+ * included, names no canon and wears the boards alone.
+ */
+export function hearthCrossingOf(at: {
+  readonly pinnedGatePubKey: string | null | undefined;
+  readonly hearthGatePubKey: string | null | undefined;
+  readonly holdsDeviceEdge:  boolean;
+  readonly hearthCanonDocs:  unknown;
+  readonly relayGatePubKey:  string | null | undefined;
+  readonly nexusPubkey:      string;
+}): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
+  const ownHearth = isOwnHearthCrossing(at);
+  const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs) : {};
+  if (!at.relayGatePubKey) return { ownHearth, hearthCanon, gate: null };
+  const boards = new DeterministicFederationGate(at.nexusPubkey);
+  return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };
 }
 
 /** The slice of an oracle handle the seating reads and writes. */
