@@ -102,6 +102,10 @@ services:
         source: .
         target: /repo
         read_only: true
+      # The admit exchange (browser-ci.sh qa-admit): a host-made directory the runner polls for carriages.
+      - type: bind
+        source: ${BROWSER_CI_EXCHANGE_DIR:-/var/empty}
+        target: /exchange
     tmpfs:
       - /tmp:mode=1777
     shm_size: 1gb

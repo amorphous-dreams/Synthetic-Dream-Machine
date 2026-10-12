@@ -2,7 +2,7 @@
 # browser-ci — the HOST driver for docker-compose.browser-ci.yml (a node plus a disposable Playwright runner).
 #
 #   browser-ci.sh up                        build, seed through the test door, stand the node, light one synthetic face
-#                                           (`persona new 0`), restart so the vessel stands as a Lararium, wait healthy.
+#                                           (`persona new 0`) and WEAR it (`persona wear 0`), restart so the vessel stands as a Lararium, wait healthy.
 #                                           Refuses by name when the port already answers or the project already stands.
 #   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy
 #   browser-ci.sh admit [--fragment] <key>  `lares device-admit --joinee-key …` inside the node; prints the carriage
@@ -19,10 +19,23 @@
 #                                           `lares meme get`, JSON on stdout (the text rides in data.text). Default reads
 #                                           AS the mounted wiki (`--recipe <slug>`)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
-#                                           gate public key, the worn face, the wiki slug and the registered bag URIs
+#                                           gate public key, the worn face (`worn`), the wiki slug, the wiki document the
+#                                           mount resolves (`wikiDoc`) and every document registered under the slug, the
+#                                           recipe URI and its bag stack in order, and the registered bag URIs
 #   browser-ci.sh qa <cmd…>                 run <cmd> in the disposable Chromium runner (repo at /repo; the runner shares the node's network, node at http://localhost:4321);
 #                                           LARES_URL, BROWSER_CI_* and LIVE_WIKI_* from the caller's env ride through
+#   browser-ci.sh qa-admit <cmd…>           `qa`, plus the ADMIT EXCHANGE below: the host answers the runner's carriage requests
 #   browser-ci.sh down                      remove containers, network AND the scratch volumes
+#
+# ADMIT EXCHANGE (`qa-admit`). Each fresh browser profile mints its own joinee key, and the runner holds no Docker, so it
+# cannot issue an admit. The host drives a one-shot exchange over a small host directory bind-mounted at /exchange:
+#   runner -> host   one stdout line   ADMIT-REQUEST <64-hex joinee key>
+#   host -> runner   the file /exchange/<key>.admit holding the single `#admit=…` fragment, written whole (tmp + mv), or
+#                    /exchange/<key>.refused holding the refusal text when the key is malformed or the node refuses
+# One run may send any number of requests, one per key; the host answers each as it reads the line. The runner WAITS
+# by polling for either file (a timeout only bounds the wait). The runner sees BROWSER_CI_EXCHANGE=/exchange, and
+# tools/browser-ci-admit.mjs (`requestAdmit(key)`) speaks the runner side. Every other stdout line passes through
+# untouched, and the host exits with the runner's status.
 #
 # PARALLEL SAFETY. Every verb honors the pair
 #   BROWSER_CI_PROJECT  compose project name (default lares-browser-ci); containers, network and volumes derive from it
@@ -81,7 +94,7 @@ bag_uri() {
   esac
 }
 
-[ "$#" -gt 0 ] || die "usage: browser-ci.sh up|restart|admit|bag|ingest|recipe|get|info|qa|down"
+[ "$#" -gt 0 ] || die "usage: browser-ci.sh up|restart|admit|bag|ingest|recipe|get|info|qa|qa-admit|down"
 verb=$1; shift
 
 case "$verb" in
@@ -97,6 +110,8 @@ case "$verb" in
     compose up -d lares
     compose up -d --wait lares
     lares persona new 0 --name "$FACE"
+    # The face stands WORN: `persona wear` records the worn index and the restart below puts the vessel on it.
+    lares persona wear 0
     compose restart lares
     compose up -d --wait lares ;;
   restart)
@@ -141,6 +156,11 @@ case "$verb" in
       add)
         # A freshly founded vessel lists its wiki before it holds a recipe; `wiki init` mints one and is idempotent.
         json_verb wiki init "$slug" --json >/dev/null
+        # FINDING, stated where it bites: a slug that names a [system] wiki (lares, lararium) mounts from the oracle plane,
+        # while `wiki init` and `wiki add-bag` write the CATALOG plane (a second [user] document and a catalog recipe).
+        if lares wiki list | grep -q "^  $slug  *\[system\]"; then
+          printf '%s\n' "browser-ci: note: $slug is a [system] wiki; its mount reads the genesis oracle recipe (oracle lararium lares) before the catalog recipe this verb writes, so the node's \`get --recipe\` sees the bag and a mounting leaf does not; ingest into a bag the oracle recipe stacks (the default lar:///ha.ka.ba/bags/lares) to reach a leaf (see info: recipe.oracleRecipeShadowsCatalog)" >&2
+        fi
         json_verb wiki add-bag "$slug" "$uri" --json ;;
       # remove-bag answers in prose; its exit status carries the verdict.
       remove) lares wiki remove-bag "$slug" "$uri" ;;
@@ -166,7 +186,13 @@ case "$verb" in
     [ -n "$key" ] || die "no face stands; run up first"
     admit=$(lares device-admit --joinee-key "$key" | awk '/^}/ {print; exit} {print}')
     bags=$(lares bag stats | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p')
-    INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_ADMIT=$admit INFO_BAGS=$bags INFO_KEY=$key \
+    # Every document the catalog and the oracle plane register for wikis, as `wiki list` prints them.
+    wikis=$(lares wiki list)
+    # The recipe's bag stack, in order. No read-only verb names it; `wiki pin` walks it (and re-asserts the stowage of
+    # those same bags, which a mounted wiki wants held anyway). A wiki without a catalog recipe yet answers no stack.
+    stack=$(lares wiki pin "$slug" 2>/dev/null | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p' || true)
+    INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_ADMIT=$admit INFO_BAGS=$bags \
+    INFO_KEY=$key INFO_WIKIS=$wikis INFO_STACK=$stack \
     node -e '
       const e = process.env;
       const faces = JSON.parse(e.INFO_FACES).data.personas;
@@ -174,23 +200,75 @@ case "$verb" in
       const admit = JSON.parse(e.INFO_ADMIT);
       const host = "http://127.0.0.1:" + e.INFO_PORT;
       const ws = (o) => o.replace(/^http/, "ws") + "/ws";
+      const lines = e.INFO_WIKIS.split("\n");
+      const docs = [];
+      for (let i = 0; i < lines.length; i++) {
+        const m = /^  (\S+)\s+\[(system|user)\]\s+(lar:\S+)/.exec(lines[i]);
+        const d = m && /^\s+↳ (automerge:[A-Za-z0-9]+)/.exec(lines[i + 1] ?? "");
+        if (m && d) docs.push({ slug: m[1], kind: m[2], bag: m[3], doc: d[1] });
+      }
+      const mine = docs.filter((d) => d.slug === e.INFO_SLUG);
+      // A system wiki (lares, lararium) mounts from the ORACLE plane, whatever `wiki init` registered beside it.
+      const mounted = mine.find((d) => d.kind === "system") ?? mine.find((d) => d.kind === "user") ?? null;
+      const stack = e.INFO_STACK.split("\n").filter((l) => l.startsWith("lar:"));
       process.stdout.write(JSON.stringify({
         origin: { qa: e.INFO_ORIGIN_QA, host },
         relay: { qa: ws(e.INFO_ORIGIN_QA), host: ws(host) },
         gateKey: admit.hearthGatePubKey,
         face: face && { name: face.petname, handleIndex: face.handleIndex, worn: face.active === true, verifyingKey: e.INFO_KEY },
+        worn: face ? face.active === true : false,
         wiki: e.INFO_SLUG,
+        wikiDoc: mounted && { url: mounted.doc, kind: mounted.kind, bag: mounted.bag },
+        wikiDocsRegistered: mine.map((d) => ({ url: d.doc, kind: d.kind })),
+        recipe: {
+          uri: "lar:///ha.ka.ba/bags/catalog/recipes/" + e.INFO_SLUG,
+          bagStack: stack.length ? stack : null,
+          // The node reads the catalog recipe before the oracle one; the mount reads the oracle one first.
+          oracleRecipeShadowsCatalog: mine.some((d) => d.kind === "system"),
+        },
         bags: e.INFO_BAGS.split("\n").filter((l) => l.startsWith("lar:")),
       }) + "\n");' ;;
-  qa)
-    [ "$#" -gt 0 ] || die "qa wants a command"
+  qa|qa-admit)
+    [ "$#" -gt 0 ] || die "$verb wants a command"
     # Pass-through: the caller's LARES_URL, BROWSER_CI_* and LIVE_WIKI_* variables reach the runner by name.
     envargs=""
     for name in $(env | sed -n 's/^\(LARES_URL\|BROWSER_CI_[A-Za-z0-9_]*\|LIVE_WIKI_[A-Za-z0-9_]*\)=.*/\1/p'); do
       envargs="$envargs -e $name"
     done
+    # The exchange directory: host-made, world-writable (the runner's user differs), removed on every exit.
+    xdir=$(mktemp -d "${TMPDIR:-/tmp}/browser-ci-exchange.XXXXXX")
+    chmod 1777 "$xdir"
+    fifo="$xdir.out"
+    mkfifo "$fifo"
+    child=""
+    trap '[ -z "$child" ] || kill "$child" 2>/dev/null || true; rm -rf "$xdir" "$fifo"' EXIT
+    trap 'exit 130' INT TERM
+    export BROWSER_CI_EXCHANGE_DIR="$xdir"
     # shellcheck disable=SC2086
-    compose --profile qa run --rm -T $envargs qa "$@" ;;
+    compose --profile qa run --rm -T $envargs -e BROWSER_CI_EXCHANGE=/exchange qa "$@" >"$fifo" &
+    child=$!
+    while IFS= read -r line; do
+      printf '%s\n' "$line"
+      [ "$verb" = "qa-admit" ] || continue
+      case "$line" in
+        "ADMIT-REQUEST "*)
+          key=${line#ADMIT-REQUEST }
+          safe=$(printf '%s' "$key" | tr -c 'A-Za-z0-9' '_' | cut -c1-80)
+          case "$key" in
+            ""|*[!0-9a-f]*) printf 'the joinee key must be 64 lowercase hex characters\n' >"$xdir/$safe.tmp"; mv "$xdir/$safe.tmp" "$xdir/$safe.refused"; continue ;;
+          esac
+          [ "${#key}" -eq 64 ] || { printf 'the joinee key must be 64 lowercase hex characters\n' >"$xdir/$safe.tmp"; mv "$xdir/$safe.tmp" "$xdir/$safe.refused"; continue; }
+          if frag=$("$0" admit --fragment "$key" 2>"$xdir/$key.err"); then
+            printf '%s\n' "$frag" >"$xdir/$key.tmp"; mv "$xdir/$key.tmp" "$xdir/$key.admit"
+          else
+            { cat "$xdir/$key.err"; printf '%s\n' "$frag"; } >"$xdir/$key.tmp"; mv "$xdir/$key.tmp" "$xdir/$key.refused"
+          fi ;;
+      esac
+    done <"$fifo"
+    status=0
+    wait "$child" || status=$?
+    child=""
+    exit "$status" ;;
   down)
     compose --profile seed --profile qa down -v --remove-orphans "$@" ;;
   *) die "unknown verb $verb" ;;

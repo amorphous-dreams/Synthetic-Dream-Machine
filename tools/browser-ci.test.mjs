@@ -56,7 +56,7 @@ test("ingest copies the carrier in and applies it", async () => {
 test("qa runs the command in the disposable runner; no argv carries the Docker socket", async () => {
   const r = await run(["qa", "node", "x.mjs"]);
   assert.equal(r.status, 0);
-  assert.match(r.calls, /--profile qa run --rm -T (-e \w+ )*qa node x\.mjs/);
+  assert.match(r.calls, /--profile qa run --rm -T (-e [\w=/]+ )*qa node x\.mjs/);
   for (const v of [["up"], ["down"], ["qa", "true"]]) assert.doesNotMatch((await run(v)).calls, /docker\.sock/);
 });
 
@@ -167,4 +167,69 @@ test("the qa runner shares the node's network namespace and dials it by localhos
 test("an unknown verb and a bare call refuse by name", async () => {
   assert.equal((await run([])).status, 2);
   assert.equal((await run(["bogus"])).status, 2);
+});
+
+// ── the admit exchange (qa-admit) ─────────────────────────────────────────────────────────────────────────────
+// The fake runner asks for two carriages (a second fresh profile), a malformed key, and echoes what the host wrote
+// into the shared directory. The fake `exec … device-admit` answers a fragment derived from the key it was handed.
+async function runAdmit(runnerLines, env = {}) {
+  const dir = await mkdtemp(join(tmpdir(), "browser-ci-xchg-"));
+  try {
+    await writeFile(join(dir, "docker"), `#!/bin/sh
+case "$*" in
+  *" run "*)
+    for k in ${runnerLines.map((l) => `"${l}"`).join(" ")}; do
+      echo "ADMIT-REQUEST $k"
+      safe=$(printf '%s' "$k" | tr -c 'A-Za-z0-9' '_' | cut -c1-80)
+      i=0
+      while [ ! -f "$BROWSER_CI_EXCHANGE_DIR/$k.admit" ] && [ ! -f "$BROWSER_CI_EXCHANGE_DIR/$k.refused" ] && [ ! -f "$BROWSER_CI_EXCHANGE_DIR/$safe.refused" ] && [ "$i" -lt 100 ]; do i=$((i+1)); sleep 0.05; done
+      for f in "$BROWSER_CI_EXCHANGE_DIR/$k.admit" "$BROWSER_CI_EXCHANGE_DIR/$k.refused" "$BROWSER_CI_EXCHANGE_DIR/$safe.refused"; do [ -f "$f" ] && echo "GOT $(basename "$f"): $(cat "$f")"; done
+    done
+    echo "passthrough line"
+    exit \${RUNNER_EXIT:-0} ;;
+  *"device-admit --joinee-key cccc"*) echo "node refuses" >&2; exit 1 ;;
+  *"device-admit --joinee-key "*) k=\${*##*--joinee-key }; printf '{\\n}\\n\\n[lares device-admit] carry:\\n  #admit=FRAG-%s\\n' "$k" ;;
+esac
+`);
+    await chmod(join(dir, "docker"), 0o755);
+    return spawnSync("sh", [SH, "qa-admit", "node", "x.mjs"], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: process.env.HOME, BROWSER_CI_PORT: "5499", ...env }, encoding: "utf8" });
+  } finally { await rm(dir, { recursive: true, force: true }); }
+}
+
+test("qa-admit answers each ADMIT-REQUEST with that key's fragment, any number of times per run", async () => {
+  const a = "a".repeat(64), b = "b".repeat(64);
+  const r = await runAdmit([a, b]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, new RegExp(`GOT ${a}\\.admit: #admit=FRAG-${a}`));
+  assert.match(r.stdout, new RegExp(`GOT ${b}\\.admit: #admit=FRAG-${b}`));
+  assert.match(r.stdout, /passthrough line/, "every other runner line passes through");
+});
+
+test("qa-admit refuses a malformed key by name and a node refusal by name, and the runner status carries through", async () => {
+  const bad = await runAdmit(["not-a-key"]);
+  assert.match(bad.stdout, /\.refused: the joinee key must be 64 lowercase hex characters/);
+  const hex = "c".repeat(64);
+  const refused = await runAdmit([hex]);
+  assert.match(refused.stdout, new RegExp(`GOT ${hex}\\.refused: node refuses`));
+  assert.equal((await runAdmit([], { RUNNER_EXIT: "7" })).status, 7);
+});
+
+test("plain qa answers no request and the runner gets the exchange directory by name", async () => {
+  const r = await run(["qa", "true"]);
+  assert.match(r.calls, /-e BROWSER_CI_EXCHANGE=\/exchange/);
+});
+
+test("the compose runner mounts the exchange directory, and the node mounts nothing of it", async () => {
+  const yml = await readFile(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
+  const qa = yml.slice(yml.search(/^  qa:/m), yml.search(/^volumes:/m));
+  assert.match(qa, /target: \/exchange/);
+  assert.match(qa, /BROWSER_CI_EXCHANGE_DIR/);
+  assert.doesNotMatch(yml.slice(0, yml.search(/^  qa:/m)), /\/exchange/);
+});
+
+test("up wears the synthetic face before the restart that puts the vessel on it", async () => {
+  const r = await run(["up"]);
+  const at = (re) => r.calls.search(re);
+  assert.ok(at(/persona new 0/) >= 0 && at(/persona wear 0/) > at(/persona new 0/));
+  assert.ok(r.calls.lastIndexOf("restart lares") > at(/persona wear 0/));
 });
