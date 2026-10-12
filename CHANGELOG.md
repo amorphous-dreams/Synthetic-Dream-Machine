@@ -24,6 +24,10 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **Current-head reads avoid document views.** A record read at its document's own heads uses the standing document, which shortens corpus feeds through the shore.
 - **The repository adapters share one release line.** automerge-repo and its four adapters use 2.6.0-alpha.5.
 - **The browser walk requires its wiki document.** A missing wiki document makes the walk fail.
+- **A vessel that cannot stand its full composition stays up at the floor.** It names the fault once and keeps answering what the floor serves.
+- **A refused boot frees its store.** The next boot meets no store claim left by a refused boot.
+- **The household terminator passes a long socket handshake.** Its header buffers hold a 16k sub-protocol header on the way in and in the vessel's answer.
+- **Passphrase seal verbs refuse a carrier sealed under the vessel key.** The refusal names the carrier and moves no bytes.
 
 **Added**
 - **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
@@ -32,6 +36,9 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **The container offers a household HTTPS slot.** Compose profile `https` adds a terminator and resolver, while `device-admit` carries a `syncUrl` derived from `LAR_PUBLIC_URL`.
 - **Release manifests bind image and source addresses.** The manifest tool ties an image digest to the genesis, engine, and grammar addresses.
 - **The founding runbook walks through the container.** It guides a household step by step and names what stands owed; the harbor carrier states the container boundary.
+- **A standing vessel unlocks and locks without a restart.** `lares vault unlock` opens the vessel key on a running vessel and `lares vault lock` drops it; `lares vault status` reports whether the vessel holds its key. Three failed unlocks close the door until the daemon restarts, and every restart returns the vessel to the floor.
+- **`lares vessel unbound` lists documents minted with no binding.** It removes nothing.
+- **The container offers a one-shot certificate issuer.** Compose profile `issuer` asks for one DNS-01 wildcard certificate per machine. It reads the registrar's credential from two owner-read files in a directory outside both mounts, and it refuses by name on a missing or misplaced directory, a loose file or directory mode, or unaccepted authority terms.
 
 **Changed**
 - **The CLI leaves destructive vessel doors out.** `vessel clear`, `vessel rite rebirth`, and `vessel stand --restart --clear` leave the command surface; `vessel rite refresh` builds, stops, and stands without wiping, and a fresh start runs by hand.
@@ -45,6 +52,8 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **Witnesses wait for the work they measure.** The rite-commands witness reads a command through the host shim, and the corpus-feed witness waits for every corpus root.
 - **Disk projection reconciles roots without timers.** Each run of marks reconciles a carrier root once, with one more pass when a mark arrives during its reconcile; the mount scan marks every resident root that a configured mirror backs.
 - **Disk projection reports its own pause.** A delay of a second or longer between a wiki change and the first file write prints a diagnostic with the elapsed time and lookup count.
+- **The container shims unlock after each start they perform.** With a terminal attached they run `vault unlock`; without one they name that command.
+- **Mesh scenarios name their compose project.** `MESH_PROJECT` names it, with `dreamnet-mesh` as the default, and the mesh's browser vessels read their code from the image.
 
 ### The shore and the oracle floor
 
