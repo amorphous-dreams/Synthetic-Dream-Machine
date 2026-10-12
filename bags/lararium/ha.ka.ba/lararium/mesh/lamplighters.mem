@@ -389,7 +389,7 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 ''A herm cap sits underneath every operator-class Lararium.'' Quote license: //"that herm cap sits underneath every operator-class lararium, contracted into a mesh (Nexus) and a super-mesh-environment (DreamNet)."// The layering reads upward: a herm that carries and never reads · a face lit above it, which makes a Lararium · Lararia contracted into a Nexus · Nexuses into the DreamNet. The relay floor already states the bottom of it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>).
 
-''The herm gossips on the DreamNet side as its OWN voice, separate from its operator-parent.'' Quote license: //"Pono, identity as relation and an operator should have a lararium stood up before they grow their rhizome, herms must also serve as the gossipers on the dreamnet side separate from their operator-parent."// The herm's signing identity never collapses into its operator's persona, and DreamNet-side gossip belongs to the herm. That agrees with the establishment law, where no civic identity mints into a herm (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/herm-establishment">>). The house read the sentence as //a herm signs its local-carry statements under its own single key//, and the operator answered that reading //"Yes"//. What the sentence leaves unruled stands at #/open.
+''The herm gossips on the DreamNet side as its OWN voice, separate from its operator-parent.'' Quote license: //"Pono, identity as relation and an operator should have a lararium stood up before they grow their rhizome, herms must also serve as the gossipers on the dreamnet side separate from their operator-parent."// The herm's signing identity never collapses into its operator's persona, and DreamNet-side gossip belongs to the herm. That agrees with the establishment law, where no civic identity mints into a herm (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/herm-establishment">>). The house read the sentence as //a herm signs its local-carry statements under its own single key//, and the operator answered that reading //"Yes"//. The two questions that sentence left to a later ruling stand answered at #/open.
 
 ''The seeding order.'' Quote license: //"Yes, and an operator should have a node vessel stand into a lararium (herm -> lararium) before seeding any other physical infra like other herms or larariums they 'control'."//
 
@@ -400,22 +400,23 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 ''OWED'': no seeding tool or ceremony yet checks for, and names, the operator's stood Lararium as the origin of what it seeds.
 
-''DEFERRED — cloud-hosted infrastructure.'' Quote license: //"by 'cloud backup' I think I just mean 'cloud infra' so folk that want operator caps later on, when I have civic level resources, don't have to have metal in their closet."// The phrase names hosted infrastructure for a human who wants operator caps without owning hardware, never a backup copy of someone's Lararium. Its design waits until the operator can deploy there (quote license: //"We'll design those open questions around Cloud larariums once I can deploy there, gotta get this 'local first' thing off the ground first."//). One tension rides into that design, unruled: #/open strikes `operate ⊥ sign`, so a hosted operator's custody owes an honest statement of what the host could do.
+''DEFERRED — cloud-hosted infrastructure.'' Quote license: //"by 'cloud backup' I think I just mean 'cloud infra' so folk that want operator caps later on, when I have civic level resources, don't have to have metal in their closet."// The phrase names hosted infrastructure for a human who wants operator caps without owning hardware, never a backup copy of someone's Lararium. Its design waits until the operator can deploy there (quote license: //"We'll design those open questions around Cloud larariums once I can deploy there, gotta get this 'local first' thing off the ground first."//). One tension rides into that design, unruled: #/open strikes `operate ⊥ sign` and rules that tending reaches a herm's key, so a hosted operator's custody owes an honest statement of what the host could do.
 
 <<~/ahu>>
 
 <<~ ahu #/open>>
 
-!! ★ OPEN — the voice-capture question, unruled ★
+!! ★ The voice-capture question ~ both halves ruled ★
 
-> ''RULED IN PART (operator ruling, 2026-10-11; #/under-every-lararium).'' The herm speaks on the DreamNet side as its OWN voice, separate from its operator-parent, and signs its local-carry statements under its own key. ''Two questions stay OPEN, and that ruling answers neither'': whether tending reaches the herm's daemon key (isolate, or accept and price it, below), and whether condemnation-relevant, federation-facing statements need a threshold key (the drift-ward below).
+> ''RULED (operator ruling, 2026-10-11).'' Quote license: //"Approve the story leans; a user introduces, an operator admits."// The leans that sentence approved answer both questions this section held: whose signatures a condemnation needs, and whether tending reaches the herm's key.
 
-''`tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY.'' A tender could then ''speak as the herm'' — and the innate layer could ''synthesize presentations that read as herm self-testimony'', which costs the mesh the independent sensor `#/immune` just gained.
+* ''A herm always may refuse at its own gate, in its own voice.'' It speaks on the DreamNet side as its OWN voice, separate from its operator-parent, and signs its local-carry statements under its own key (#/under-every-lararium).
+* ''A statement asking OTHERS to refuse needs co-signers counted over DISTINCT OPERATORS, never over shares.'' In a Nexus of fewer than three operators no honest threshold forms, so condemnation does not travel there.
+* ''Tending reaches the herm's key: ACCEPTED and NAMED.'' Whoever runs a machine can use its keys. A herm's statement carries, attached and outside the signature, who tends it at that moment. A herm tended by the accused's own house reads as the least credible witness.
 
-''The Union would hold no read-cap over carried traffic and would hold the herm's VOICE.'' Two readings, and the operator has ruled neither:
+''`tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY.'' A tender can then ''speak as the herm'' — and the innate layer can ''synthesize presentations that read as herm self-testimony'', which costs the mesh the independent sensor of `#/immune`.
 
-* ''isolate'' the daemon signing key from the tending cap's blast radius; or
-* ''accept'' it, name it, and price the loss of independent herm testimony.
+''The Union holds no read-cap over carried traffic and holds the herm's VOICE.'' The ruling accepts that and names it. Isolating the daemon signing key from the tending cap's reach would claim a separation that no box a hand can reach delivers (below). The price gets paid in the open: the tender's name rides every herm statement, so a reader weighs each witness by who tends it.
 
 !!!! ★ STRUCK — `operate ⊥ sign` DOES NOT HOLD ★
 
@@ -423,9 +424,13 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 ''And confidential computing rescues nothing on a box a hand can reach.'' TEE.fail (2025) recovers ECDSA attestation keys from Intel's Provisioning Certification Enclave with a sub-$1000 DDR5 interposer, forging quotes that pass attestation. ''A herm stands at a crossroads — physical reach names its job description.''
 
-''So the cure runs the other way: scope SIGNING away from any single island, never repair away from signing.'' Make the Place-DID a threshold key (FROST, RFC 9591) with the herm holding one share; a tender with full root then gains an oracle over one share, which produces nothing that verifies. Every federation-facing herm utterance carries a peer cosignature, so a lone-tender forgery fails ''by construction'' rather than by detection-after-the-fact.
+''So the cure runs the other way: scope CONDEMNATION away from any single island, never repair away from signing.'' A statement that asks others to refuse carries co-signatures from the herms of distinct operators, so a lone tender's forgery fails ''by construction'' rather than by detection-after-the-fact.
 
-<<~ set drift-ward="? · this contradicts the model's own clause that a herm //signs and publishes on its own bearing// — a partitioned herm holding one share cannot speak alone. Threshold the CONDEMNATION-RELEVANT and FEDERATION-FACING utterances; leave local carry single-signed, since carry needs no identity at all. The operator rules whether that split holds.">>
+''The count runs over operators, never over shares.'' Tending reaches every key on a machine its operator runs, so a threshold counted over key shares forms no honest quorum wherever one operator's hands reach several of them.
+
+''The split holds.'' A herm's refusal at its own gate and its local carry stay single-signed: a partitioned herm speaks alone, and carry needs no identity at all. Only a statement asking others to refuse takes co-signers.
+
+▢ ''OWED — the co-signature's mechanism.'' The ruling fixes whom the count runs over and names no mechanism. A threshold signature (FROST, RFC 9591) fits only where each share rests with a distinct operator; each herm co-signing under its own key meets the count as it reads. That comparison stands as a house reading, and no mechanism stands ruled. Likewise owed: the attached field that names a herm's tender, and the reader that weighs it.
 
 ''STOP CLAIMING'' that a tending cap withholds the herm's signing identity, and stop claiming any attested-repair trust boundary on a physically reachable civic box.
 
@@ -443,6 +448,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DIyEV07mYJvIk1tZ1uys2rRVdnkvGcxL8pD_jmoZFqM
+<<^ code="&#x0003;">>ni:///sha-256;ffSAqPhj8eYxzpo5Gm1I_qBm7_akASsymDy3WFcZip8
 
 <<^ code="&#x0004;" -> to="?">>
