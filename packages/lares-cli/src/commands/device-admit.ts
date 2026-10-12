@@ -28,7 +28,7 @@ export async function cmdDeviceAdmit(args: ParsedArgs): Promise<number> {
   const syncUrl = args.options["sync-url"];
   // ONE STORE DOOR: the edge reads the founder's boards on the store's one holder — inside the standing vessel
   // when one stands, here otherwise — and this process alone writes and prints what the door minted.
-  const { payload, carried } = (await storeVerb("device-admit", {
+  const { carried } = (await storeVerb("device-admit", {
     joineeVerifyingKey: joineeKey, ...(syncUrl ? { syncUrl } : {}),
   })).output as unknown as DeviceAdmitResult;
 
@@ -42,7 +42,9 @@ export async function cmdDeviceAdmit(args: ParsedArgs): Promise<number> {
     process.stdout.write(json + "\n");
   }
 
-  // The CARRIED form. The payload is a signed capability, so it needs no trusted channel and no
+  // The CARRIED form — the signed payload PLUS the hearth's gate key and its resolved island kind and scope,
+  // which ride by spread after the signature and so never enter the signed bytes. A taking browser refuses a
+  // fragment without the island, so the fragment encodes `carried`, never the bare `payload`. The payload is a signed capability, so it needs no trusted channel and no
   // reachable issuer: a hostile carrier may WITHHOLD it, never forge it. It rides in the URL FRAGMENT,
   // which browsers do not transmit — so the bytes reach the vessel by whatever the human used (a paste,
   // a QR held up to a screen, a file on a stick) and touch no network on the way.
@@ -50,7 +52,7 @@ export async function cmdDeviceAdmit(args: ParsedArgs): Promise<number> {
   // The alternative — a `GET /admit/<key>` the vessel calls — makes the vessel a client PETITIONING an
   // authority for its own admission, and it demands that authority be REACHABLE at the moment of asking.
   // That is a global now, and this house does not have one.
-  const b64 = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const b64 = Buffer.from(JSON.stringify(carried), "utf8").toString("base64url");
   console.log("");
   console.log("[lares device-admit] carry this to the joining vessel — the fragment never leaves the browser:");
   console.log(`  #admit=${b64}`);
