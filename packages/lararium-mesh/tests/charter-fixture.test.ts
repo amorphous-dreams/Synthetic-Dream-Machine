@@ -128,10 +128,11 @@ describe("a seated fixture charter stands under the roll law", () => {
 
 describe("the funnel holds across the mesh tests", () => {
   const testsDir = dirname(fileURLToPath(import.meta.url));
-  /** The hand-built epoch: the two constructors, and the field an epoch commits its successors under. */
-  const HAND_BUILT = [/\bgenesisCharterEpoch\(/, /\brotateSealEpoch\(/, /\bnextKeyCommit\b/];
+  /** The hand-built epoch: the two constructors, and every field an epoch commits its successors under,
+   *  one digest for the whole next set or one digest per seat with its threshold. */
+  const HAND_BUILT = [/\bgenesisCharterEpoch\(/, /\brotateSealEpoch\(/, /\bnextKeyCommit\b/, /\bnextKeyDigests\b/, /\bnextThreshold\b/];
   /** The helper, its own test, and the roll law's own test: the only files that may build an epoch by hand. */
-  const MAY_BUILD = new Set(["charter-fixture.ts", "charter-fixture.test.ts", "wax-stamp.test.ts"]);
+  const MAY_BUILD = new Set(["charter-fixture.ts", "charter-fixture.test.ts", "wax-stamp.test.ts"].map((name) => join(testsDir, name)));
 
   function sources(dir: string, out: string[] = []): string[] {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -147,7 +148,7 @@ describe("the funnel holds across the mesh tests", () => {
     const files = sources(testsDir);
     expect(files.length).toBeGreaterThan(100);
     const strays = files
-      .filter((file) => !MAY_BUILD.has(basename(file)))
+      .filter((file) => !MAY_BUILD.has(file))
       .filter((file) => { const text = readFileSync(file, "utf8"); return HAND_BUILT.some((p) => p.test(text)); })
       .map((file) => basename(file));
     expect(strays).toEqual([]);
@@ -155,11 +156,15 @@ describe("the funnel holds across the mesh tests", () => {
 
   test("KNOWN POSITIVE: the same scan sees every pattern where the roll law's own test spells it", () => {
     const law = readFileSync(join(testsDir, "wax-stamp.test.ts"), "utf8");
-    for (const pattern of HAND_BUILT) expect(pattern.test(law)).toBe(true);
+    for (const pattern of HAND_BUILT.slice(0, 3)) expect(pattern.test(law)).toBe(true);
     const helper = readFileSync(join(testsDir, "charter-fixture.ts"), "utf8");
     expect(HAND_BUILT[0]!.test(helper) && HAND_BUILT[1]!.test(helper)).toBe(true);
     // A neighbouring word never trips the scan: a key log's own `nextKeyCommitted` is another relation.
     expect(HAND_BUILT[2]!.test("nextKeyCommitted(inception, key)")).toBe(false);
     expect(HAND_BUILT[2]!.test("{ nextKeyCommit: \"\" }")).toBe(true);
+    expect(HAND_BUILT[3]!.test("{ nextKeyDigests: [], nextThreshold: 0 }")).toBe(true);
+    expect(HAND_BUILT[4]!.test("{ nextKeyDigests: [], nextThreshold: 0 }")).toBe(true);
+    // The exemption reads a whole path: a namesake in another directory stays under the scan.
+    expect(MAY_BUILD.has(join(testsDir, "fixtures", "wax-stamp.test.ts"))).toBe(false);
   });
 });
