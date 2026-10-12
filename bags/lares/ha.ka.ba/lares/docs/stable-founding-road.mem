@@ -255,7 +255,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 !! Open ~ what the operator still owns
 
-# ''Seats, recovery and the user road.'' Single-seat Kahu acts, an operator's own herm, guardian count and succession, paper, the backup bundle, the catastrophe rite and the user road's bound stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
+# ''Seats and recovery.'' Single-seat Kahu acts, an operator's own herm, guardian count and succession, paper, the backup bundle, the catastrophe rite and a Handle's DNS binding stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 # ''A root-holding browser leaf's backup slot.'' A WebCrypto non-extractable slot allows no paper backup in-browser; does "a backup at every tier" require such a leaf to hold a paper or passphrase slot too? Lean: yes for a leaf holding a persona root; a floor-only leaf holds no tree.
 # ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never becomes. The lenses split; re-opening W needs the operator's turned key.
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
@@ -284,6 +284,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Z7gxKhOMfcDQKikSWVGtN0zEO4Oy-0vrun9XQlpJlD8
+<<^ code="&#x0003;">>ni:///sha-256;s3Fpj5HcwYDY6yaM1hG0mZLbbPJNS8fEbRTSM2LdhcE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -123,9 +123,8 @@ too. ''WALKING TAKES NONE, and carries its own bound'': a user introduces, an op
 consumes the introduction (#/the-invite). What the code holds: a clockless allowance of
 `min(1 + rolls survived, cap)` per hosting epoch (`lares host roll --cap`); a host-minted guest at floor 1; a
 walker-minted guest vesting at the host's next roll; single-use blind tokens burned at the host; revocation
-by a roll or by a kapae of the guest's leaf; no bound on the operator's own `lares host invite`. What the
-limit counts, whether the operator sees who introduces, whether the operator's own mint takes a bound, and
-whether the survival ladder stays all stand open at
+by a roll or by a kapae of the guest's leaf; no bound on the operator's own `lares host invite`. The bound
+rides three dials on the hosting act (#/the-invite); the home section stands at
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 
 ''Walking reads as HOSPITALITY, never admission.'' An invite hands a guest the road; it confers no
@@ -236,6 +235,31 @@ order a rhizome grows in, where a Lararium stands before its operator invites an
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>). ▢ ''OWED'': the code as it stands lets a
 walker-minted invite vest into a guest's standing at the host's next roll with no operator answer (below); the introduction act, the
 operator's answer to it, and the door that shows an operator what waits stand unbuilt. ''The answer consumes the introduction'' (operator-ruled): no introduction's signature outlives the operator's answer, so no record chains who invited whom.
+
+''THE USER ROAD'S BOUND RIDES THREE DIALS'' (operator-ruled). A guest may ask for one friend at a time, and the
+hearth's operator answers. The operator may pre-answer for a trusted guest. The hearth holds no stranger's
+introduction until its posture opens. Each dial rides the hosting act as a COUNT, and none reads a clock:
+
+# ''Open introductions per guest'': how many introductions one guest may hold unanswered.
+# ''The pre-answered allowance'': a count of invites the operator grants a trusted guest in advance.
+# ''Strangers' introductions held'': how many introductions from strangers the hearth keeps; overflow drops.
+
+''An introduction the operator must answer arrives SIGNED'', so the operator sees who asks. The answer consumes
+it, and no record of who introduced whom survives. ''A pre-answered allowance stays BLIND'': it rides the
+single-use tokens and the clockless allowance of `min(1 + rolls survived, cap)` per hosting epoch, because the
+operator consented in advance and need not learn who used it. ''The operator's own invite carries no bound'',
+and a roll clears outstanding invite strings. Admitting a Kahu or a Lamplighter takes the seat quorum at every
+posture (#/the-three-admissions).
+
+''A posture names a setting of the dials, never a date.'' //Closed//: one open introduction per guest, no
+pre-answered allowance, no stranger's introduction. //More open//: several open introductions by the
+household's choice, with the pre-answered allowance in use. //Public//: a small count of strangers'
+introductions held.
+
+▢ ''OWED'': the signed introduction act, the operator's answer and the door that shows what waits; the re-cut of
+the guest-invite path, so a guest's token buys a knock unless the operator pre-answered
+(`packages/lararium-node/src/socket-sorter.ts`); the three dials on the hosting act, where only the allowance
+cap stands (`lares host roll --cap`); a design for the strangers' dial that resists flooding with no clock.
 
 ''THE WORN FACE HOSTS'' (operator-ruled). The per-Nexus leaf of the WORN face signs the act — the same face its walks present. No roster
 order picks anything, and with no face worn no one gets hosted. ⚠ The session ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>)
@@ -464,6 +488,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WrQqViu58vdQ7QpkyeHk8tmVa0AKT_3-GrcqfEFcR1o
+<<^ code="&#x0003;">>ni:///sha-256;Ri4xiR_K5toi1VT5u2Ht-He1j8YksLwg8VTtg-Asjxw
 
 <<^ code="&#x0004;" -> to="?">>

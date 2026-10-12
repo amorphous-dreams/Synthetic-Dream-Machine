@@ -218,8 +218,10 @@ epoch (`lares host roll --cap`); a host-minted guest at floor 1; a walker-minted
 host's next roll; single-use blind tokens burned at the host; revocation by a roll or by a kapae of the
 guest's leaf; no bound on the operator's own `lares host invite`. ''Owed in code'': a walker's invite
 earns standing by a roll alone, with no operator answer
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). The bound's final shape
-stays open, below.
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). The bound rides three
+dials on the hosting act, each a count and none a clock: open introductions per guest, a pre-answered
+allowance for a trusted guest, and strangers' introductions held. An introduction the operator answers
+arrives signed; a pre-answered allowance stays blind; the operator's own invite carries no bound.
 
 ''GUARDIANS STAY OPTIONAL AND PER FACE.'' Every face starts one-of-one self. No guardian key ever serves
 two faces, and a guardian set recovers a face's key lineage, never its memory
@@ -238,7 +240,7 @@ Each item below stands unruled. Nothing in code decides one.
 * ''Paper.'' The format (SLIP-39 · Codex32 · a house format), and whether a cold-key card names its Nexus or its commitment. Until ruled, a card prints its purpose, its chair label and its generation only.
 * ''The backup bundle.'' What it holds and which verb imports it. A bundle per face keeps faces unlinked on the backup medium.
 * ''The catastrophe rite and any third key.'' Options: no rite · an opt-in, charter-native seat-recovery rite with named witnesses · an outsider's third cold key. At alpha no rite stands, and LOSS AT ALPHA governs.
-* ''The user road's bound.'' What the limit counts (open introductions per guest · introductions per roll · household size); whether the operator sees WHO introduces (a signed introduction · the blind token the code holds); whether the operator's own mint takes a bound; whether the survival ladder stays.
+* ''A Handle's binding to a Nexus's public DNS domain.'' Whether that binding takes the Nexus's Kahu-quorum signature. Options: yes · no. Lean: yes, matching one steward-signed answer per Nexus.
 * ''How a per-Nexus face key gets minted.'' Two carriers disagree: `face-proof#/the-key-hierarchy` mints it at random on the root-holding vessel, while #/nexus-scale and `packages/lararium-node/src/nexus-leaf.ts` derive a Nexus-scope leaf from the persona seed.
 
 !!! The surface ~ where each part reads
@@ -516,6 +518,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F8YjgQXlsW4ReIbWgTRd8DziHkrk45R87uXD0dSLNyM
+<<^ code="&#x0003;">>ni:///sha-256;q_QNzqcpfKnfA-xWL8UVB5G2-Pqo9QvCkao2gdogzMY
 
 <<^ code="&#x0004;" -> to="?">>
