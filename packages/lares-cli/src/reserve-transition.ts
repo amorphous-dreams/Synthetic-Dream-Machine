@@ -22,8 +22,8 @@
 
 import * as ed25519 from "@noble/ed25519";
 import {
-  sha256HexSync, hexToBytes, hex, canonicalJson, canonicalJsonBytes,
-  sealKeySetHash, RESERVE_TRANSITION_DOMAIN, type QuorumSignature,
+  sha256HexSync, hex, canonicalJson, canonicalJsonBytes,
+  sealKeySetHash, verifyEd25519, weakSeatOf, RESERVE_TRANSITION_DOMAIN, type QuorumSignature,
 } from "@lararium/mesh";
 
 /** The authority fields the transition binds — both epochs, both key-set digests, and the rite walked. */
@@ -122,7 +122,7 @@ async function quorumHolds(
     const signer = s.signer.toLowerCase();
     if (counted.has(signer) || !keySet.has(signer)) continue;
     let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(s.sig), bytes, hexToBytes(signer)); } catch { ok = false; }
+    try { ok = verifyEd25519(s.sig, bytes, signer); } catch { ok = false; }
     if (ok) counted.add(signer);
     if (counted.size >= threshold) return true;
   }
@@ -147,6 +147,9 @@ export async function verifyReserveTransition(
     oldKeySetHash: rec.oldKeySetHash, newKeySetHash: rec.newKeySetHash, rite: rec.rite,
   };
   if (rec.transitionCid !== reserveTransitionCidOf(core)) return { ok: false, reason: "cid does not recompute over the bound core" };
+  // Every key the handoff seats or retires passes the door: a small-order seat holds no secret, so everyone signs for it.
+  const weak = weakSeatOf([...expected.oldKeys, ...expected.newKeys]);
+  if (weak) return { ok: false, reason: `a key-set holds a key the Ed25519 door refuses (${weak.refusal})` };
   if (sealKeySetHash(expected.oldKeys, expected.oldThreshold) !== rec.oldKeySetHash) return { ok: false, reason: "outgoing key-set digest mismatch" };
   if (sealKeySetHash(expected.newKeys, expected.newThreshold) !== rec.newKeySetHash) return { ok: false, reason: "incoming key-set digest mismatch" };
   const bytes = reserveTransitionBytes(core);
@@ -161,7 +164,7 @@ export async function verifyReserveTransition(
   for (const w of rec.witnesses) {
     if (holders.has(w.witness.toLowerCase())) continue;   // a keyholder attests as a party, never a witness
     let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(w.sig), witnessSignBytes(core, w.note), hexToBytes(w.witness)); }
+    try { ok = verifyEd25519(w.sig, witnessSignBytes(core, w.note), w.witness); }
     catch { ok = false; }
     if (ok) independent++;
   }

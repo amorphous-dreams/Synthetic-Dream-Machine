@@ -45,8 +45,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/canon-boundary
  */
 
-import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes, PROMOTION_RECEIPT_DOMAIN } from "@lararium/mesh";
+import { canonicalJsonBytes, verifyEd25519, PROMOTION_RECEIPT_DOMAIN } from "@lararium/mesh";
 
 export { PROMOTION_RECEIPT_DOMAIN };
 
@@ -165,11 +164,7 @@ export async function mintPromotionReceipt(input: {
 export async function verifyPromotionReceipt(receipt: PromotionReceipt): Promise<boolean> {
   if (receipt.assertion.domain !== PROMOTION_RECEIPT_DOMAIN) return false;
   try {
-    return await ed25519.verifyAsync(
-      hexToBytes(receipt.sig),
-      promotionAssertionBytes(receipt.assertion),
-      hexToBytes(receipt.assertion.approverKeyDid),
-    );
+    return verifyEd25519(receipt.sig, promotionAssertionBytes(receipt.assertion), receipt.assertion.approverKeyDid);
   } catch { return false; }
 }
 
