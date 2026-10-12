@@ -9,9 +9,17 @@
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing
 #   lares-container.sh vessel stop               stop the vessel's container (state stays; `up` stands it again)
+#   lares-container.sh vault unlock              hand the standing vessel a credential typed on this TTY: it opens its
+#                                                vessel key and composes with what the key opens
+#   lares-container.sh vault lock                the standing vessel drops its key and stands at the floor
 #   lares-container.sh <anything else>           run the lares CLI: inside the standing vessel, or through the offline
-#                                                door when no vessel stands (vault status|unlock|bind|unbind read their
+#                                                door when no vessel stands (vault status|bind|unbind read their
 #                                                credential on that TTY)
+#
+# A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor: it carries and serves its public shelf and
+# every sovereign act waits. So after `up`, after `vessel stand`, and after each restart this shim performs, it runs
+# `vault unlock` attached when this shell holds a TTY, and otherwise names that one command. No flag, env var or
+# pipe carries a credential, and this shim never reads one.
 #
 # ONE STORE DOOR. While a vessel stands the CLI runs by `compose exec`, sharing the daemon's /tmp (the UDS
 # rendezvous), uid and environment. With no vessel standing, one `compose run` of the `offline` service owns the
@@ -75,11 +83,32 @@ verdict_restand() {
   printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"restand"'
 }
 
+# Does the standing vessel hold its key? The custody door answers on `vault status --json`; anything but a plain
+# `"unlocked":true` reads as not held.
+key_held() {
+  compose exec -T lares node "$CLI" vault status --json 2>/dev/null | grep -q '"unlocked"[[:space:]]*:[[:space:]]*true'
+}
+
+# The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name
+# it. A refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it.
+unlock_or_name() {
+  if key_held; then return 0; fi
+  if [ -n "$HAVE_TTY" ]; then
+    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal' >&2
+    if ! compose exec lares node "$CLI" vault unlock; then
+      printf '%s\n' 'lares-container: the vessel still stands at the floor; open it with `lares-container.sh vault unlock`' >&2
+    fi
+  else
+    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock' >&2
+  fi
+}
+
 lift_vessel() {
   reason=$(printf '%s\n' "$observe_output" | sed -n 's/.*"standing"[[:space:]]*:[[:space:]]*{[^}]*"reason"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   printf 'lares-container: %s; restarting the vessel\n' "${reason:-the standing requires a re-stand}" >&2
   if ! compose restart lares; then printf '%s\n' 'lares-container: the vessel restart failed' >&2; return 1; fi
   if ! compose up -d --wait lares; then printf '%s\n' 'lares-container: the vessel did not answer healthy after its restart' >&2; return 1; fi
+  unlock_or_name
 }
 
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
@@ -152,7 +181,8 @@ case "$verb" in
       fi
     else
       compose up -d --wait lares
-    fi ;;
+    fi
+    unlock_or_name ;;
   down)  compose down --remove-orphans "$@" ;;
   logs)  compose logs "$@" lares ;;
   found)
@@ -168,7 +198,7 @@ case "$verb" in
         else
           # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints
           # the standing. Option-bearing forms go to the CLI, which owns their validation and execution.
-          if ! running_vessel; then compose up -d --wait lares
+          if ! running_vessel; then compose up -d --wait lares; unlock_or_name
           elif ! observe_standing || ! verdict_known; then die "the standing vessel answered no verdict"
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi

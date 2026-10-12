@@ -6,8 +6,17 @@
  *   D2  a door that faults answers `rested: false` naming the fault.
  *   D3  the asker rejects when no answer arrives inside its own patience.    control: an answer resolves it
  *   D4  the asker ignores an answer for another request id.
+ *   D5  the vessel's own act rests the document in its store before it resolves: a second reader of the same
+ *       directory finds the document's bytes the instant the act returns.   control: before the act, it finds none
  */
 import { EventEmitter } from "node:events";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Repo, type DocumentId } from "@automerge/automerge-repo";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh";
+import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
+import { restInStore } from "../src/open-node-vessel.js";
 import { afterEach, describe, expect, test } from "vitest";
 import { answerDocRest, setRestDoor } from "../src/worker-handle.js";
 import { vesselRestAsker } from "../src/sovereign-island-model.js";
@@ -57,5 +66,21 @@ describe("the rest door", () => {
     const asking = vesselRestAsker(w.port, 60)(["doc-a"]);
     w.island.emit("message", { type: "doc:rested", requestId: "someone-else", rested: true });
     await expect(asking).rejects.toThrow(/no answer/);
+  });
+
+  test("D5 — the door's act returns only after the store holds the document", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "rest-door-"));
+    try {
+      // A long save debounce: nothing reaches the store on its own inside this test, only through the act.
+      const repo = new Repo({ storage: new DurableNodeFSStorageAdapter(dir), saveDebounceRate: 60_000 });
+      const handle = repo.create<LarDoc>(emptyLarDoc());
+      const stored = async (): Promise<number> => (await new DurableNodeFSStorageAdapter(dir).loadRange([handle.documentId])).length;
+      expect(await stored(), "CONTROL: the store holds nothing of the document before the act").toBe(0);
+      await restInStore(repo, [handle.documentId as DocumentId]);
+      expect(await stored(), "the document rests in the store when the act returns").toBeGreaterThan(0);
+      await repo.shutdown();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

@@ -120,5 +120,21 @@ elif [ -n "${LAR_STAND_KAHU:-}" ]; then
     || echo "[boot] the cabal did NOT seat (see above) — this hearth carries but does not tend"
 fi
 
+# A VESSEL STANDS HOLDING NO KEY, and only a TTY opens one. A DISPOSABLE TEST HARNESS (LAR_STAGE_DIR: the mesh
+# scenarios, the rehearsal) has no TTY, so its staged root unlocks through the test door, which refuses any root
+# without the staging marker this boot wrote above. The door waits in the background for the daemon to answer and
+# sends the unlock frame once; an unstaged container stays at the floor until a person runs `lares vault unlock`.
+if [ -n "${LAR_STAGE_DIR:-}" ]; then
+  (
+    _n=0
+    while [ "$_n" -lt 600 ]; do
+      node tools/unlock-test-custody.mjs "$LAR_ROOT" >/dev/null 2>&1; _rc=$?
+      # rc 3 = no daemon answers yet; any other code settles it (0 opened, 1 the daemon said otherwise, 2 unmarked).
+      if [ "$_rc" -ne 3 ]; then echo "[boot] staged custody unlock: door rc $_rc"; break; fi
+      _n=$((_n + 1)); sleep 0.5
+    done
+  ) &
+fi
+
 echo "[boot] serving…"
 exec node packages/lararium-node/dist/src/main.js

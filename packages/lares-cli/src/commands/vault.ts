@@ -31,6 +31,7 @@ import { gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-
 import { discordianReading } from "@lararium/node";
 import { throughStoreDoor } from "../store-door.js";
 import { udsAlive } from "../local-connector.js";
+import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { canPromptSecret, promptSecret, promptSecretConfirmed } from "../prompt-secret.js";
@@ -177,7 +178,8 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
   try {
     switch (sub) {
       case "status":     return await vaultStatus(args, daemonUp);
-      case "unlock":     return await vaultUnlock(args);
+      case "unlock":     return await vaultUnlock(args, daemonUp);
+      case "lock":       return await vaultLock(args, daemonUp);
       case "bind":       return await vaultBind(args);
       case "unbind":     return await vaultUnbind(args);
       case "passphrase": return vaultPassphrase(args);
@@ -214,10 +216,20 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
   const { output, via } = await throughStoreDoor({ verb: "vault-status", args: vargs, direct: () => ({ ...archiveSealStatus(probe ? { probe } : {}) }), daemonUp });
   const homes = custodyHomes();
   const custody = await custodyStatus({ io: new FsCustodyIo(homes), homes });
+  // What the STANDING vessel holds, read off its custody door: a read, it opens nothing.
+  const door = daemonUp ? await sendCustodyFrame({ op: "custody" }) : null;
   emit(args, {
     ok: true,
-    data: { ...output, via, custody },
+    data: { ...output, via, custody, door },
     human: () => {
+      if (door?.["testScratch"] === true) console.log("TEST SCRATCH ROOT — a harness staged this vessel; its custody opens under the published test route. Never a vessel anyone keeps.");
+      if (door && typeof door["unlocked"] === "boolean") {
+        console.log(door["unlocked"]
+          ? `vessel key     HELD by the standing vessel (slot ${String(door["slot"])}); it stands as ${String(door["standing"])}. \`lares vault lock\` drops it.`
+          : `vessel key     NOT held: the vessel stands as ${String(door["standing"])} with ${String(door["attemptsLeft"])} unlock attempt(s) left this boot. \`lares vault unlock\` opens it.`);
+      } else {
+        console.log("vessel key     no vessel stands on this store, so no process holds it.");
+      }
       printCustody(custody);
       const carriers = (output["carriers"] ?? {}) as Record<string, { state: string; mode?: string; opensUnderProbe?: boolean }>;
       console.log(`vault status (${via}):`);
@@ -383,13 +395,68 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
   return null;
 }
 
-async function vaultUnlock(args: ParsedArgs): Promise<number> {
+/** What the custody door's answer means to a person, one line per reading. */
+function unlockLine(a: CustodyDoorAnswer): string {
+  const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
+  const refused = typeof a["refused"] === "string" ? ` The sovereign composition did not stand: ${a["refused"]}.` : "";
+  switch (a["reading"]) {
+    case "opens":            return `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
+    case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.`;
+    case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
+    case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
+    case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
+    case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
+    case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;
+    default:                 return typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the vessel answered ${JSON.stringify(a)}`;
+  }
+}
+
+/**
+ * `vault unlock`. A vessel that stands holds no key until a person presents a credential: with a daemon up, the
+ * credential rides ONE custody frame to it, the daemon opens the vessel key and composes again with what the key
+ * opens. With no daemon up the credential gets proven against the slot tree and nothing stays open, since no
+ * process stands to hold it.
+ */
+async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
   const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
+  if (daemonUp) {
+    const a = await sendCustodyFrame({ op: "unlock", credentials: creds });
+    if (a === null) {
+      emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
+      return 1;
+    }
+    const ok = a["reading"] === "opens" || a["reading"] === "already-unlocked";
+    emit(args, ok
+      ? { ok: true, data: a, human: () => console.log(unlockLine(a)) }
+      : { ok: false, error: { code: String(a["reading"] ?? (a["refusal"] as { reason?: string } | undefined)?.reason ?? "refused"), message: unlockLine(a) }, data: a, human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });
+    return ok ? 0 : 1;
+  }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);
   if (!u) return 1;
-  emit(args, { ok: true, data: { reading: "opens", slot: u.slot }, human: () => console.log(`unlocked: slot ${u.slot} opened the vessel key.`) });
+  emit(args, {
+    ok: true, data: { reading: "opens", slot: u.slot, held: false },
+    human: () => console.log(`slot ${u.slot} opens the vessel key. No vessel stands on this store, so nothing holds it open — stand the vessel (\`lares vessel stand\`), then run \`lares vault unlock\` again.`),
+  });
+  return 0;
+}
+
+/** `vault lock`: the standing vessel drops its key, tears its sovereign composition down and stands at the floor. */
+async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  if (!daemonUp) {
+    emit(args, { ok: true, data: { locked: true, was: "no-vessel" }, human: () => console.log("no vessel stands on this store: nothing holds a key, so nothing to lock.") });
+    return 0;
+  }
+  const a = await sendCustodyFrame({ op: "lock" });
+  if (a === null || a["locked"] !== true) {
+    const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
+    emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: a, human: () => console.log(a["was"] === "unlocked"
+    ? `locked: the vessel dropped its key and stands as ${String(a["standing"])}; every sovereign act waits on \`lares vault unlock\`.`
+    : `already locked: the vessel holds no key and stands as ${String(a["standing"])}.`) });
   return 0;
 }
 

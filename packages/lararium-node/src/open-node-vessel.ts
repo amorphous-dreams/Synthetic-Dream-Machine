@@ -386,6 +386,15 @@ export async function standNodeFloor(storageDir: string): Promise<NodeFloor> {
   return { storageDir, storeClaim, relayRegistered: false, release: () => (released ??= storeClaim.release()) };
 }
 
+/**
+ * The rest door's whole act: wait until each named document has reached `repo`, then flush them into its store.
+ * It resolves only after the store holds every one durably, so an acknowledgment never runs ahead of the save.
+ */
+export async function restInStore(repo: Pick<Repo, "find" | "flush">, documentIds: readonly string[]): Promise<void> {
+  for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
+  await repo.flush(documentIds as DocumentId[]);
+}
+
 /** What a composition stood, in the order it stood it; a teardown runs the list backward. */
 type Stood = Array<{ readonly what: string; readonly down: () => void | Promise<void> }>;
 
@@ -766,10 +775,7 @@ async function prepareNodeBootOn(
   // THE REST DOOR. An island mints a slot document its own Repo keeps no store for; this Repo saves it. The island
   // asks before it records the binding, and the answer waits until the document has reached this Repo and rests
   // in its store — so no binding names a document a hard stop could leave unsaved.
-  setRestDoor(async (documentIds) => {
-    for (const id of documentIds) await repo.find<LarDoc>(`automerge:${id}` as AutomergeUrl);
-    await repo.flush(documentIds as DocumentId[]);
-  });
+  setRestDoor((documentIds) => restInStore(repo, documentIds));
   stood.push({ what: "the rest door", down: () => setRestDoor(null) });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", down: async () => { await repo.flush(); await repo.shutdown(); } });
@@ -883,6 +889,7 @@ async function prepareNodeBootOn(
     peerIdentifierMap,
   });
   antigenRing = antigenHolder.ring;
+  stood.push({ what: "the antigen ring", down: () => antigenHolder.dispose() });
 
   // Stand the membership consult — the carry-split's member gate — now the island is known. It reads the LEAF
   // MAP alone: a peer stands MEMBER only on an admit its socket PRESENTED, proven by the admit's own leaf over
@@ -901,6 +908,7 @@ async function prepareNodeBootOn(
     void nexusMembershipHolder?.refold();
     void representIfMoved?.();
   });
+  stood.push({ what: "the carried boards", down: () => carriedBoards.dispose() });
   const readCarried = (): Promise<readonly CarriedNexusReading[]> =>
     readCarriedNexuses({ sealHome, ownVesselKey: vesselIdentity.verifyingKey, open: carriedBoards.open });
   // Every Nexus this vessel carries, either way it carries: a persona's consent or seated chair, or this PLACE's
@@ -1216,6 +1224,8 @@ async function prepareNodeBootOn(
     return h;
   };
   let recallContent: ContentPalace | null = null;
+  /** Every persona-KEL ring holder a daemon open stood; each listens on a board until disposed. */
+  const kelHolders: Array<{ dispose(): void }> = [];
   const sovereignRecallClient: RecallClient = {
     // Combined-arms search rides the ONE Python coordinator (recall_session.py → LaresCoordinator): it
     // composes the sensorium's #has recall-surfaces (content-vector ⊕ mempalace lexical+entity), RRF-fuses,
@@ -1294,6 +1304,8 @@ async function prepareNodeBootOn(
     for (const c of sourceCaptures.values()) await c.close();
     recallHolders.clear(); sourceCaptures.clear();
   } });
+  stood.push({ what: "the realm plane",       down: () => { realmPlane?.dispose(); } });
+  stood.push({ what: "the persona-KEL ring",  down: () => { for (const k of kelHolders.splice(0)) k.dispose(); } });
   stood.push({ what: "the sibling channel",   down: () => { siblings?.disconnect(); } });
   stood.push({ what: "the client dial",       down: () => { nexusDial?.stop(); } });
   stood.push({ what: "the residency sweeper", down: () => { residency.stopSweeper(); } });
@@ -1537,6 +1549,7 @@ async function prepareNodeBootOn(
         priorIslands: nexusIslandsBelow(nexusStandsAt),
       });
       const kelHolder = makePersonaKelRingHolder({ repo, nexusPubkey });
+      kelHolders.push(kelHolder);
       await kelHolder.ready;
       personaKelChain = kelHolder.chainForPrefix(personaKelPrefix);
       if (!personaKelChain || personaKelChain.length === 0) {
@@ -2394,7 +2407,8 @@ async function prepareNodeBootOn(
       // it should keep; read fresh here on every sweep (never cached), so a `--held` pin is judged against
       // the boot that actually stands, never a stale re-read of the `.boot-epoch` sidecar file.
       const bootEpoch = storeClaim.bootEpoch;
-      installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+      const sweep = installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+      stood.push({ what: "the CAS sweep tick", down: () => sweep.stop() });
     }
 
     // cas-fetch — the fetch door's explicit READ: resolve a cid through the vessel's door (local `cid/` first,

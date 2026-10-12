@@ -152,6 +152,7 @@ seal land early, and the container's tail lands before the charter train.
 * ''Wiki shore echo law'': an inbound apply writes nothing back. A title named once can raise several changes; every leaked change routes as a save (`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`).
 * ''Canon direction the build owes'': canon crosses hearth → leaf; a leaf never writes the hearth's canon documents, and edits land in the working layer. The admitted leaf-side mount flag stops mount-path writes, while Repo sync carries those documents in both directions.
 * ''Clockless shore law the build owes'': no wall clock decides; the binding record carries a readerless `minted-on` stamp that leaves (`packages/lararium-keyhive/src/resolve-binding.ts`).
+* ''A binding lands after its document rests'': a slot mint records the binding only on the vessel store's acknowledgment (the rest door, `doc:rest` / `doc:rested`); a mint no binding names stays listed (`lares vessel unbound`), and nothing removes one.
 
 !!! 2 · SUBSTRATE ~ two SOLO relays, the fold first, then the seal
 Each runs one spirit per commit, and every commit leaves HEAD building. No other node lane runs beside the
@@ -165,7 +166,7 @@ seal: it owns the compose hunk.
 * ''What it owes'': every `hot` and `cold` row of the carrier table (`vault-carriers.ts`) except the custody root still rests outside the VK — its writer's bytes pass through the one sealed writer (sidecar → re-open → compare → rename, never sealing in place) and its reader through the sealed open. One commit per writer family, derived from the table's writer column, never from a hand list.
 * ''The keyring law the build owes'': name an epoch by (Nexus AID, `epochCid`); let a counter order one writer's own emissions only; keep the convergence secret per Nexus and the face at the session capability. Mint only at the seat. Join delivery by scoped key and refuse different bytes under one name. Keep every verified fork head visible; retain by causal evidence; pass hot bytes through the sealed writer (operator ruling).
 * ''The Nexus keyring debt'': the store keys entries by numeric epoch, mints at boot, overwrites a same-epoch delivery, and writes clear JSON (`packages/lararium-node/src/nexus-convergence-secret-store.ts:35-60,72-81,100-116`).
-* ''First commit, the session and the boot'': the daemon stands at the floor holding no VK and raises on a socket verb whose credential the CLI reads on its TTY; until then `floorWriteCure`'s advice (`lares vault unlock`) names a door that does not yet cure. The test door's marker earns one loud line in `vault status` and the boot log.
+* ''The session and the boot'': the daemon stands at the floor holding no VK and unlocks on a custody frame of its owner-only socket (`unlock` · `lock` · `custody`, `packages/lararium-node/src/custody-frames.ts`), handled ahead of every verb, so the credential the CLI reads on its TTY reaches no receipt, outcome or log. One holder keeps the opened VK in node-main (`custody-holder.ts`); an unlock tears the standing composition down and stands a fresh one on the same floor (`open-node-vessel.ts`), a lock returns it to the floor, and three failed unlocks spend a boot's attempts. A composition that refuses above the floor leaves the floor standing and names its fault once. The passphrase lifecycle refuses a VK-sealed carrier by name, and the settle sweeps a sidecar whose write never landed. The test door (`tools/unlock-test-custody.mjs`) opens marked scratch roots alone, and the marker earns one loud line in `vault status` and the boot log.
 * ''Facts to plan around'': the hosting spend log APPENDS, and a whole-file sealed writer cannot, so it moves to one sealed file per spend; the CLI-side writers move behind node functions, so no CLI file writes a custody row.
 * ''Last commit, the retirement'': `vault seal|rotate|export|repair|passphrase` and `LARES_ARCHIVE_PASSPHRASE` (with its `_NEW` twin in `tools/contract-witness.sh`) leave with the passphrase lifecycle and the cleartext archive mode — never sooner, since they hold the only seal four carriers carry; the bare-row rotation preflight leaves, and the rotation's own census runs BEFORE the unbind, so a carrier that refuses the rotation leaves the slot bound; `vault unbind --rotate` then completes on a real founded vessel, where it refuses by name until that day.
 * The census DERIVES from the carrier table, and a witness refuses any 0600 file or seal outside it. The enumerable carriage rows and the leaf-testability bound close at rest here.
@@ -290,6 +291,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4GCcmm36bslhvIj6OpjevBq2a2HucF7QZjqmGQyyStQ
+<<^ code="&#x0003;">>ni:///sha-256;tlQ7BLflVo7ob3izfOJPVdiHCZz9GiJz5llTHlPSWg4
 
 <<^ code="&#x0004;" -> to="?">>

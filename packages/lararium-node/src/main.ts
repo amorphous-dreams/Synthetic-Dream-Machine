@@ -58,6 +58,12 @@ import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer, snapshotPublicOracle, type LarDoc } from "@lararium/mesh";
 import { ratedReceiptRing } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
+import type { Socket } from "node:net";
+import { makeCustodyHolder } from "./custody-holder.js";
+import { custodyFrameHandler } from "./custody-frames.js";
+import { FsCustodyIo } from "./custody-io.js";
+import { custodyTreeStands } from "./custody-session.js";
+import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
 import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
@@ -65,7 +71,7 @@ import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
 import type { AutomergeUrl }            from "@automerge/automerge-repo";
 import { join } from "path";
-import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
 import { composePronaosFromEnv } from "./pronaos-composition.js";
@@ -137,6 +143,10 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
  * reader can tell a live marker from one a killed process left behind. Best-effort throughout: a
  * vessel that cannot write this still serves, and a caller that finds nothing simply learns nothing.
  */
+/** The marker a test harness writes at a root it staged (`tools/test-scratch-marker.mjs`). */
+const TEST_SCRATCH_MARKER = ".lar-test-scratch";
+
+const standingDropArmed = new Set<string>();
 function publishStanding(storageDir: string, standing: string, faceLit: boolean): void {
   const uid = process.getuid?.() ?? 0;
   const at = standingPath({ root: storageDir, uid });
@@ -154,9 +164,13 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
         if (markerIsOurs(readFileSync(at, "utf8"), process.pid)) rmSync(at, { force: true });
       } catch { /* absent or unreadable — nothing of ours to drop */ }
     };
-    process.once("exit", drop);
-    process.once("SIGTERM", drop);
-    process.once("SIGINT", drop);
+    // One vessel publishes many standings over its life (each composition publishes its own); the drop arms once.
+    if (!standingDropArmed.has(at)) {
+      standingDropArmed.add(at);
+      process.once("exit", drop);
+      process.once("SIGTERM", drop);
+      process.once("SIGINT", drop);
+    }
   } catch { /* a vessel that cannot publish still stands */ }
 }
 
@@ -304,8 +318,19 @@ async function main(): Promise<void> {
     }
   });
 
+  // ── THE FLOOR: the store's claim, the verb socket's front, and the custody door ahead of every verb ──────────
+  // The holder starts empty: a boot holds no vessel key. The custody door stands on the front from the first
+  // caller on, so an unlock frame never reaches a verb seat (its credential would ride a receipt digest there).
   const floor = await standNodeFloor(storageDir);
-  const front = serveUdsFront({ claim: floor.storeClaim });
+  const custodyHomes = vesselCustodyHomes();
+  const holder = makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
+  const testScratch = existsSync(join(rootDir, TEST_SCRATCH_MARKER));
+  if (testScratch) {
+    console.log(`[lararium] TEST SCRATCH ROOT — ${rootDir} carries ${TEST_SCRATCH_MARKER}: a harness staged this vessel and its custody opens under the PUBLISHED test route. Never a vessel anyone keeps.`);
+  }
+  // Late-bound: the door's acts recompose, and the recomposition closes over what `main` builds below.
+  let custodyDoor: ((parsed: unknown, sock: Socket) => boolean) | null = null;
+  const front = serveUdsFront({ claim: floor.storeClaim, onFrame: (parsed, sock) => custodyDoor?.(parsed, sock) ?? false });
 
   // ── THE BASE COURSE — every vessel stands as a Herm, and the hearth is what it LIFTS to ──────────────
   // The Herm cap-stack (daemon immune core + a served meshpalace FLOW-map, no wiki, no pool) is the FLOOR
@@ -342,7 +367,9 @@ async function main(): Promise<void> {
     console.log(`[lararium] the archive holds shut (${opening.kind}) — standing at the WAKING FLOOR, faceless by class.`);
     console.log(`[lararium]   ${opening.why}.`);
     console.log("[lararium]   carrying and serving the public shelf; every sovereign act waits.");
-    console.log(opening.kind === "unreadable"
+    console.log(opening.kind === "vk-sealed"
+      ? "[lararium]   open the vessel key: lares vault unlock"
+      : opening.kind === "unreadable"
       ? "[lararium]   no passphrase opens a torn carrier — recover it from a backup, then boot again."
       : `[lararium]   light the hearth fire: set ${ARCHIVE_PASSPHRASE_ENV} and boot again.`);
     // NAME NO VERB THAT DOES NOT STAND. The raise DOOR stands (vessel-raise, wired below on the Herm
@@ -376,25 +403,63 @@ async function main(): Promise<void> {
   // (a face it cannot prove, a row it cannot read) tears itself down whole; the vessel then composes at the floor
   // and names the fault ONCE, so a supervisor that restarts on exit never loops on a fault no restart cures. Only
   // a floor that itself refuses ends the process.
-  let composition: StandingComposition;
-  try {
-    try {
-      composition = await composeStanding(sealShut ? null : diskSovereignReaders());
-    } catch (err) {
-      if (sealShut) throw err;
-      console.error(`[lararium] the sovereign composition refused: ${err instanceof Error ? err.message : String(err)}`);
-      console.error("[lararium]   standing at the WAKING FLOOR instead — carrying and serving the public shelf; every sovereign act waits.");
-      console.error("[lararium]   cure the fault named above, then stand again; a restart alone changes nothing.");
-      composition = await composeStanding(null);
-    }
-  } catch (err) {
+  let composition: StandingComposition | null = null;
+  /** A floor that itself refuses ends the process: nothing lower stands to fall back to. */
+  const floorRefused = async (err: unknown): Promise<never> => {
     front.close();
     await floor.release();
     throw err;
+  };
+  /** Compose with the sovereign rows; a refusal there names itself once and the floor stands instead. */
+  const composeOrFloor = async (readers: SovereignReaders | null): Promise<{ stood: StandingComposition; refused?: string }> => {
+    if (readers === null) return { stood: await composeStanding(null).catch(floorRefused) };
+    try {
+      return { stood: await composeStanding(readers) };
+    } catch (err) {
+      const refused = err instanceof Error ? err.message : String(err);
+      console.error(`[lararium] the sovereign composition refused: ${refused}`);
+      console.error("[lararium]   standing at the WAKING FLOOR instead — carrying and serving the public shelf; every sovereign act waits.");
+      console.error("[lararium]   cure the fault named above, then stand again; a restart alone changes nothing.");
+      return { stood: await composeStanding(null).catch(floorRefused), refused };
+    }
+  };
+
+  // ── THE CUSTODY DOOR'S RECOMPOSITION ────────────────────────────────────────────────────────────
+  // An unlock stands a FRESH sovereign composition: the standing one tears down whole, the front holds every
+  // caller meanwhile, and the next composition reads the private rows the vessel can open. A lock tears it down
+  // and composes at the floor. A signal that lands between two compositions waits for the next one to stand.
+  let firstStood: () => void = () => {};
+  const first = new Promise<void>((resolve) => { firstStood = resolve; });
+  let signalHeld: string | null = null;
+  const recompose = async (sovereign: boolean): Promise<{ standing: string; refused?: string }> => {
+    await first;
+    const prior = composition;
+    composition = null;
+    await prior?.teardown();
+    const reading = sovereign ? readArchiveOpening() : null;
+    const out = await composeOrFloor(reading?.opens ? diskSovereignReaders() : null);
+    composition = out.stood;
+    if (signalHeld !== null) composition.onSignal(signalHeld);
+    const shut = reading && !reading.opens ? `the archive holds shut (${reading.kind}): ${reading.why}` : undefined;
+    const refused = out.refused ?? shut;
+    return { standing: out.stood.standing, ...(refused !== undefined ? { refused } : {}) };
+  };
+  custodyDoor = custodyFrameHandler({
+    holder, recompose, testScratch,
+    standing: () => composition?.standing ?? "recomposing",
+    onLog: (line) => console.log(`[custody] ${line}`),
+  });
+
+  composition = (await composeOrFloor(sealShut ? null : diskSovereignReaders())).stood;
+  firstStood();
+  // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
+  if (await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
+    console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
   }
   // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
-  process.on("SIGINT",  () => composition.onSignal("SIGINT"));
-  process.on("SIGTERM", () => composition.onSignal("SIGTERM"));
+  const onSignal = (sig: string): void => { if (composition) composition.onSignal(sig); else signalHeld = sig; };
+  process.on("SIGINT",  () => onSignal("SIGINT"));
+  process.on("SIGTERM", () => onSignal("SIGTERM"));
 }
 
 
@@ -587,7 +652,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   return {
     standing: "herm",
     onSignal: (sig) => void hermShutdown(sig),
-    teardown: async () => { front.detach(); await herm.teardown(); },
+    teardown: async () => { await front.detach(); await herm.teardown(); },
   };
 }
 
@@ -857,7 +922,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   return {
     standing: "hearth",
     onSignal: (sig) => void shutdown(sig),
-    teardown: async () => { front.detach(); oracleReadFace?.dispose(); await result.teardown(); },
+    teardown: async () => { await front.detach(); oracleReadFace?.dispose(); await result.teardown(); },
   };
 }
 

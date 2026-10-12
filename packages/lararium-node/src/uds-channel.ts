@@ -423,14 +423,24 @@ function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "requestedBy" | "
 export interface UdsChannel { close: () => void; }
 
 /** One composition's seat on the verb socket: the ledger, the outcome reads and the dispatch bound to its daemon. */
-export interface UdsSeat { readonly handle: (parsed: unknown, sock: Socket) => void; readonly close: () => void; }
+export interface UdsSeat {
+  readonly handle: (parsed: unknown, sock: Socket) => void;
+  /**
+   * Leave the socket. Resolves once every frame this seat was handed has its answer written (or its caller gone),
+   * so the composition beneath it tears down under no request still reading its ledger or awaiting its worker.
+   */
+  readonly close: () => void | Promise<void>;
+}
 
 /** The floor's hold on the verb socket: it serves the claim once and outlives every composition. */
 export interface UdsFront {
   /** Seat a composition; held callers are handed over in arrival order without another seat reading them first. */
   readonly attach: (seat: UdsSeat) => void;
-  /** Unseat it. New callers remain held until the next attach. */
-  readonly detach: () => void;
+  /**
+   * Unseat it. New callers remain held until the next attach. Resolves once the seat's own `close` settles: every
+   * frame already handed to it has answered, so nothing of the retiring composition still serves a caller.
+   */
+  readonly detach: () => Promise<void>;
   /** Refuse every caller and stop serving. */
   readonly close: () => void;
 }
@@ -491,15 +501,15 @@ export function serveUdsFront(a: {
         if (!entry.sock.destroyed) next.handle(entry.parsed, entry.sock);
       }
     },
-    detach: () => {
+    detach: async () => {
       const old = seat;
       seat = null;
-      old?.close();
+      await old?.close();
     },
     close: () => {
       if (stopped) return;
       stopped = true;
-      seat?.close();
+      void seat?.close();
       seat = null;
       for (const entry of held.splice(0)) {
         entry.sock.off("close", entry.onClose);
@@ -659,7 +669,22 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     );
   });
 
+  // EVERY FRAME THIS SEAT HOLDS, until its answer leaves or its caller goes. A seat that closes waits these out:
+  // a request mid-arbitration or mid-wait finishes against the ledger and worker it started on.
+  // `arbitrating` counts the frames still inside their own digest / ledger turn, so a caller that hangs up early
+  // never lets the seat read as drained while its abandonment still writes.
+  const inFlight = new Set<Socket>();
+  let arbitrating = 0;
+  let drained: (() => void) | null = null;
+  const idle = (): boolean => inFlight.size === 0 && arbitrating === 0;
+  const settleOne = (sock: Socket): void => {
+    if (inFlight.delete(sock) && idle()) drained?.();
+  };
   const handle = (parsed: unknown, sock: Socket): void => {
+    inFlight.add(sock);
+    sock.once("finish", () => settleOne(sock));   // this side wrote its answer
+    sock.once("close",  () => settleOne(sock));   // or the caller went away
+    if (sock.destroyed || sock.writableFinished) settleOne(sock);
     const fail = (msg: string, reason?: string) => {
       try { sock.end(JSON.stringify({ status: "error", errorMessage: msg, ...(reason !== undefined && { refusal: { reason } }) }) + "\n"); } catch { /* gone */ }
     };
@@ -696,6 +721,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // `readableEnded: false` for an already-half-closed peer. Nesting a second `setImmediate` lets
       // that extra poll pass run first. A live caller never half-closes before its own answer, so an
       // end seen here always means abandonment.
+      arbitrating += 1;
       setImmediate(() => setImmediate(() => { void (async () => {
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
@@ -748,12 +774,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             fail(err instanceof Error ? err.message : String(err));
           },
         );
-      })(); }));
+      })().finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));
   };
 
   return {
     handle,
-    close: () => { unsubOutcomes(); },
+    close: async () => {
+      if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });
+      unsubOutcomes();
+    },
   };
 }
 

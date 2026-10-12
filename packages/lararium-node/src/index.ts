@@ -484,3 +484,8 @@ export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
+export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
+export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
+export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
+export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";
+export { VkSealedCarrierRefusal } from "./archive-passphrase.js";

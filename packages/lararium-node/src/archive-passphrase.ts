@@ -69,6 +69,7 @@ import { setSealExpected, sealExpected as readSealExpected, type LaresConfig } f
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { vesselKeyCensus, type KeyCensusEntry } from "./key-class.js";
+import { readVkCarrier } from "@lararium/mesh";
 
 const SALT_LEN = 16;
 
@@ -95,6 +96,19 @@ export function weakPassphraseWarning(passphrase: string): string | null {
  */
 type Carrier = VaultCarrier;
 const carriers = vaultCarriers;
+
+/** A carrier sealed under the vessel key answers to the custody door alone; the passphrase lifecycle refuses it by name. */
+export class VkSealedCarrierRefusal extends Error {
+  constructor(readonly carrier: CarrierName, readonly act: string) {
+    super(`[vault] ${act} refused: the ${carrier} carrier rests sealed under the vessel key — the passphrase lifecycle never wraps, rotates, repairs or exports it; open it with \`lares vault unlock\`.`);
+    this.name = "VkSealedCarrierRefusal";
+  }
+}
+
+function refuseVkSeal(carrier: CarrierName, bytes: Uint8Array, act: string): void {
+  const reading = readVkCarrier(bytes);
+  if (reading === "sealed" || reading === "torn" || reading === "unopenable") throw new VkSealedCarrierRefusal(carrier, act);
+}
 // The names stay readable from this surface — every existing importer of `CarrierName` reads the lifecycle,
 // not the enumeration, and this is the lifecycle's door.
 export type { CarrierName, DeviceShareName };
@@ -284,9 +298,12 @@ export function sealArchiveWithPassphrase(passphrase: string): SealResult {
   const skipped: CarrierName[] = [];
   const writes: { path: string; bytes: Uint8Array }[] = [];
   const plaintexts: Uint8Array[] = [];
+  const standing = carriers().filter((c) => existsSync(c.path)).map((c) => ({ c, bytes: readFileSync(c.path) }));
+  for (const { c, bytes } of standing) refuseVkSeal(c.name, bytes, "seal");
   for (const c of carriers()) {
-    if (!existsSync(c.path)) { skipped.push(c.name); continue; }
-    const bytes = readFileSync(c.path);
+    const row = standing.find((s) => s.c.name === c.name);
+    if (!row) { skipped.push(c.name); continue; }
+    const bytes = row.bytes;
     // VERSION-BLIND ON PURPOSE (`readSealCarrier`, not `isSealedEnvelope`). A carrier whose header this
     // build cannot frame — an unknown envelope version, a damaged magic over intact framing — is still a
     // SEALED carrier, and treating it as cleartext would wrap its ciphertext a second time under a fresh
@@ -321,7 +338,9 @@ export interface RotateResult { readonly rotated: CarrierName[]; }
 export function rotateArchivePassphrase(oldPassphrase: string, newPassphrase: string): RotateResult {
   if (!newPassphrase) throw new Error("archive-passphrase: refusing to rotate to an empty passphrase");
   const present = carriers().filter((c) => existsSync(c.path));
-  const readings = present.map((c) => ({ c, reading: readSealCarrier(readFileSync(c.path)) }));
+  const readings = present.map((c) => ({ c, bytes: readFileSync(c.path) }));
+  for (const { c, bytes } of readings) refuseVkSeal(c.name, bytes, "rotate");
+  const classified = readings.map(({ c, bytes }) => ({ c, reading: readSealCarrier(bytes) }));
   // ══ THE CENSUS RUNS BEFORE ANYTHING ELSE, AND IT IS VERSION-AWARE ════════════════════════════════
   // This loop asked `isSealedEnvelope`, which answers a flat false on an envelope version it cannot
   // frame — so a carrier holding an intact seal fell to the cleartext branch below, where "a cleartext
@@ -330,7 +349,7 @@ export function rotateArchivePassphrase(oldPassphrase: string, newPassphrase: st
   // then described a double wrap nothing names, and the carrier's real KEK moved out of the vault's
   // reach. A rotate must converge EVERY carrier on the new KEK; a carrier that cannot move means the
   // act cannot be performed, so refuse the whole rotate rather than leave a split nothing named.
-  const unopenable = readings.filter((r) => r.reading === "unopenable").map((r) => r.c.name);
+  const unopenable = classified.filter((r) => r.reading === "unopenable").map((r) => r.c.name);
   if (unopenable.length > 0) {
     throw new Error(
       `archive-passphrase: refusing to rotate — carrier(s) ${unopenable.join(", ")} hold a seal this ` +
@@ -339,15 +358,15 @@ export function rotateArchivePassphrase(oldPassphrase: string, newPassphrase: st
       `second time. Recover them from a backup, then rotate`,
     );
   }
-  if (!readings.some((r) => r.reading === "sealed")) {
+  if (!classified.some((r) => r.reading === "sealed")) {
     throw new Error("archive-passphrase: nothing is sealed — use `vault seal` to seal cleartext carriers first");
   }
   // PRE-VALIDATE every unseal under the OLD passphrase before touching disk. A wrong old passphrase
   // throws HERE (GCM tag), aborting with zero writes. THE GCM TAG IS THE PROOF OF OPERATOR INTENT —
   // the census above adds a refusal ahead of it and moves no write earlier.
   const plans: { path: string; plaintext: Uint8Array; name: CarrierName }[] = [];
-  for (const { c, reading } of readings) {
-    const bytes = readFileSync(c.path);
+  for (const { c, reading } of classified) {
+    const bytes = readings.find((r) => r.c.name === c.name)!.bytes;
     const plaintext = reading === "sealed"
       ? unsealBytes(decodeEnvelope(bytes), scryptKek(oldPassphrase, decodeEnvelope(bytes).salt))
       : bytes;   // a BARE carrier carries its own plaintext — and only a bare one reaches here
@@ -374,6 +393,7 @@ export function exportSealedArchive(passphrase: string, destPath: string, force 
   if (!passphrase) throw new Error("archive-passphrase: refusing to export under an empty passphrase");
   const src = archivePath();
   if (!existsSync(src)) throw new Error(`archive-passphrase: no keyhive archive at ${src} to export`);
+  refuseVkSeal("archive", readFileSync(src), "export");
   // AN EXPORT PROVES INTENT ABOUT A BACKUP, NEVER ABOUT THE CARRIER IT WAS AIMED AT. Aimed at a live
   // carrier it re-seals the archive under an ARBITRARY passphrase and lands it there, consulting no
   // standing-bytes openability: the plaintext survives (so `vault repair` recovers it) but the live policy
@@ -418,9 +438,12 @@ export function repairSplitKek(openPassphrase: string, sealPassphrase: string): 
   const alreadyConsistent: CarrierName[] = [];
   const writes: { path: string; bytes: Uint8Array }[] = [];
   const plaintexts: Uint8Array[] = [];
+  const standing = carriers().filter((c) => existsSync(c.path)).map((c) => ({ c, bytes: readFileSync(c.path) }));
+  for (const { c, bytes } of standing) refuseVkSeal(c.name, bytes, "repair");
   for (const c of carriers()) {
-    if (!existsSync(c.path)) continue;
-    const bytes = readFileSync(c.path);
+    const row = standing.find((s) => s.c.name === c.name);
+    if (!row) continue;
+    const bytes = row.bytes;
     const reading = readSealCarrier(bytes);
     if (reading === "bare") continue;         // cleartext carriers are not part of a KEK split
     // AN UNOPENABLE CARRIER IS A HARD ERROR, the same as one opening under NEITHER passphrase — and for
@@ -531,6 +554,7 @@ export function repairSplitKek(openPassphrase: string, sealPassphrase: string): 
  * passphrase is now named wrong AT THE POINT IT IS READ instead of passing as open.
  */
 export type ArchiveOpeningKind =
+  | "vk-sealed"
   /** The config marks no seal in force — nothing to open, nothing probed. */
   | "no-seal-expected"
   /** Sealing marked expected, yet no sealed carrier stands on disk — the hint is a config guess, the disk is the fact. */
@@ -591,6 +615,10 @@ export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = p
     let bytes: Uint8Array;
     try { bytes = readFileSync(c.path); } catch {
       return { kind: "unreadable", opens: false, probed: false, why: `the ${c.name} carrier cannot be read from disk` };
+    }
+    const vkReading = readVkCarrier(bytes);
+    if (vkReading === "sealed" || vkReading === "torn" || vkReading === "unopenable") {
+      return { kind: "vk-sealed", opens: false, probed: false, why: `the ${c.name} carrier rests sealed under the vessel key` };
     }
     // ══ THE THIRD READING DECIDES HERE TOO, AND ITS ABSENCE WAS A FAIL-OPEN ═══════════════════════
     // `isSealedEnvelope` answers false on an envelope version this build cannot frame, so an intact

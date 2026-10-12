@@ -47,19 +47,31 @@ describe("main's explicit origin composition weld", () => {
 });
 
 // A REFUSAL ABOVE THE FLOOR LEAVES THE FLOOR STANDING: the boot's own source composes at the floor when a
-// composition handed the sovereign rows refuses, and ends the process only when the floor itself refuses.
+// composition handed the sovereign rows refuses, and ends the process only when the floor itself refuses. The
+// first boot and every custody recomposition take the same road.
 describe("main leaves the floor standing under a sovereign refusal", () => {
+  const start = SOURCE.indexOf("const composeOrFloor = async (");
+  const end = SOURCE.indexOf("// ── THE CUSTODY DOOR'S RECOMPOSITION", start);
+  const road = SOURCE.slice(start, end);
+
   test("the sovereign refusal recomposes at the floor; a floor refusal frees the store and rethrows", () => {
-    const first = SOURCE.indexOf("composition = await composeStanding(sealShut ? null : diskSovereignReaders());");
-    const guard = SOURCE.indexOf("if (sealShut) throw err;", first);
-    const floor = SOURCE.indexOf("composition = await composeStanding(null);", guard);
-    const release = SOURCE.indexOf("await floor.release();", floor);
-    expect(first).toBeGreaterThan(-1);
-    expect(guard).toBeGreaterThan(first);
-    expect(floor).toBeGreaterThan(guard);
-    expect(release).toBeGreaterThan(floor);
-    // The refusal names itself once and never wears the supervisor's `fatal:` marker while the floor stands.
-    expect(SOURCE.slice(guard, floor)).toContain("the sovereign composition refused");
-    expect(SOURCE.slice(guard, floor)).not.toContain("fatal:");
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const sovereign = road.indexOf("return { stood: await composeStanding(readers) };");
+    const named = road.indexOf("the sovereign composition refused", sovereign);
+    const floor = road.indexOf("return { stood: await composeStanding(null).catch(floorRefused), refused };", named);
+    expect(sovereign).toBeGreaterThan(-1);
+    expect(named).toBeGreaterThan(sovereign);
+    expect(floor).toBeGreaterThan(named);
+    // The refusal never wears the supervisor's `fatal:` marker while the floor stands.
+    expect(road).not.toContain("fatal:");
+    // A floor that refuses closes the front, frees the store's name and rethrows.
+    expect(SOURCE).toMatch(/const floorRefused = async \(err: unknown\): Promise<never> => \{\s*front\.close\(\);\s*await floor\.release\(\);\s*throw err;/);
+  });
+
+  test("the first boot and the custody door's recomposition both compose through that one road", () => {
+    expect(SOURCE).toContain("composition = (await composeOrFloor(sealShut ? null : diskSovereignReaders())).stood;");
+    expect(SOURCE).toContain("const out = await composeOrFloor(reading?.opens ? diskSovereignReaders() : null);");
+    expect(SOURCE.match(/composeStanding\(/g)!.length, "no third road composes past composeOrFloor").toBe(3);
   });
 });

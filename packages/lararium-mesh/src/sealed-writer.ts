@@ -379,6 +379,7 @@ export interface SettleRotationArgs {
   readonly io:       CustodyIo;
   readonly treePath: string;
   readonly carriers: readonly SealedCarrier[];
+  readonly onSweep?: (path: string) => void;
 }
 
 async function settleHeld(args: SettleRotationArgs): Promise<"clean" | "completed" | "discarded"> {
@@ -395,12 +396,19 @@ async function settleHeld(args: SettleRotationArgs): Promise<"clean" | "complete
       if (await io.read(side) !== null) await io.rename(side, c.path);
     }
     await io.rename(treeSide, treePath);
+    for (const path of await io.list()) {
+      if (path.endsWith(SEALING_SUFFIX)) { await io.remove(path); args.onSweep?.(path); }
+    }
     return "completed";
   }
   if (treeSideBytes !== null) { await io.remove(treeSide); strays = true; }
   for (const c of args.carriers) {
     const side = `${c.path}${ROTATING_SUFFIX}`;
     if (await io.read(side) !== null) { await io.remove(side); strays = true; }
+  }
+  for (const path of await io.list()) {
+    if (path.endsWith(ROTATING_SUFFIX) && path !== treeSide) { await io.remove(path); strays = true; args.onSweep?.(path); }
+    if (path.endsWith(SEALING_SUFFIX)) { await io.remove(path); strays = true; args.onSweep?.(path); }
   }
   return strays ? "discarded" : "clean";
 }

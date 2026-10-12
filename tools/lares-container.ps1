@@ -5,6 +5,9 @@
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_STATE / LARES_WORKSPACE come from the environment or `lares-surface.env` beside the compose file; keep both
 # mounts inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.
+# A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
+# each restart this shim performs, it runs `vault unlock` attached when this shell holds a TTY, and otherwise names
+# that one command. `vault lock` routes to the CLI like any other verb. No flag, env var or pipe carries a credential.
 $ErrorActionPreference = 'Stop'
 
 function Die([string]$m) { [Console]::Error.WriteLine("lares-container: $m"); exit 2 }
@@ -57,6 +60,26 @@ function VerdictAct([string[]]$output) {
 }
 function VerdictRestand([string[]]$output) { return (VerdictAct $output) -eq 'restand' }
 
+# Does the standing vessel hold its key? The custody door answers on `vault status --json`; anything but a plain
+# `"unlocked":true` reads as not held.
+function KeyHeld {
+  $out = & docker compose @Base exec -T lares node $Cli vault status --json 2>$null
+  return (($out -join "`n") -match '"unlocked"\s*:\s*true')
+}
+
+# The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached; without one, name
+# it. A refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it.
+function UnlockOrName {
+  if (KeyHeld) { return }
+  if ($script:Tty) {
+    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; unlocking it on this terminal')
+    & docker compose @Base exec lares node $Cli vault unlock
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open it with `lares-container.ps1 vault unlock`') }
+  } else {
+    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock')
+  }
+}
+
 function LiftVessel([string[]]$output) {
   $reason = 'the standing requires a re-stand'
   try { $reason = (ConvertFrom-Json -InputObject ($output -join "`n")).data.standing.reason } catch {}
@@ -65,6 +88,7 @@ function LiftVessel([string[]]$output) {
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
   & docker compose @Base up -d --wait lares
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not answer healthy after its restart'); exit $LASTEXITCODE }
+  UnlockOrName
 }
 
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
@@ -87,7 +111,8 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   }
 }
 
-$Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)
+$script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)
+$Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
 
 if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|vessel stand|<lares verb…>' }
@@ -121,6 +146,7 @@ switch ($verb) {
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
     } else { Compose @('up', '-d', '--wait', 'lares') }
+    UnlockOrName
   }
   'down'  { Compose (@('down', '--remove-orphans') + $rest) }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
@@ -132,7 +158,7 @@ switch ($verb) {
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
       # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
-      if (-not (HasRunningVessel)) { Compose @('up', '-d', '--wait', 'lares') }
+      if (-not (HasRunningVessel)) { Compose @('up', '-d', '--wait', 'lares'); UnlockOrName }
       else {
         $answer = ObserveStanding
         if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') { Die 'the standing vessel answered no verdict' }

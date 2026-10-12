@@ -26,6 +26,7 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
@@ -106,6 +107,38 @@ for (const [name, shim] of shims) {
     assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
   });
 
+  // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
+  // that stands or restarts the vessel; a vessel that already holds its key draws no line.
+  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock`);
+  test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /up -d --wait lares[\s\S]*exec -T lares node \S+ vault status --json/);
+    assert.match(r.stderr, NAMES_UNLOCK);
+    assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
+  });
+
+  test(`${name}: CONTROL a vessel that holds its key draws no unlock line`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr, /holding no vessel key/);
+  });
+
+  test(`${name}: a restart the shim performs names vault unlock again`, async () => {
+    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares[\s\S]*vault status --json/);
+    assert.match(r.stderr, NAMES_UNLOCK);
+  });
+
+  test(`${name}: vault lock routes to the CLI inside the standing vessel`, async () => {
+    const r = await run(shim, ["vault", "lock"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node \S+ vault lock/);
+  });
+
   test(`${name}: CONTROL attach verdict does not restart`, async () => {
     const r = await run(shim, ["persona", "list"], {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
@@ -118,7 +151,11 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["vessel", "stand"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /up -d --wait lares/);
-    assert.doesNotMatch(r.calls, /compose .*exec/);
+    // The one exec a fresh stand makes: the custody door's read, after which the shim names the unlock.
+    const execs = r.calls.split("\n").filter((line) => /compose .*exec /.test(line) || /^compose exec |(^| )exec /.test(line));
+    assert.equal(execs.length, 1, r.calls);
+    assert.match(execs[0], /exec -T lares node \S+ vault status --json/);
+    assert.match(r.stderr, NAMES_UNLOCK);
   });
 
   test(`${name}: vessel stand on a standing vessel whose verdict reads restand restarts it`, async () => {
@@ -210,10 +247,10 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: option-bearing vessel stand is validated by the CLI`, async () => {
-    const argv = ["vessel", "stand", "--restart", "--clear"];
+    const argv = ["vessel", "stand", "--restart"];
     const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
     assert.equal(r.status, 2, argv.join(" "));
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart --clear/);
+    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
     assert.doesNotMatch(r.stderr, /takes no option through this shim/);
   });
 

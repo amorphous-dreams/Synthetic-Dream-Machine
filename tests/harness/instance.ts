@@ -41,7 +41,7 @@ import { performance } from "node:perf_hooks";
 function removeStagedRoot(root: string): void {
   rmSync(root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
 }
-import { seedTestCustody } from "./test-door.js";
+import { seedTestCustody, unlockTestCustody } from "./test-door.js";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -220,6 +220,12 @@ export interface StageOptions {
   readonly found?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
   /** Extra environment the DAEMON stands with (a peer to dial, a gate to bind to). The CLI env stays the pair. */
   readonly daemonEnv?: Record<string, string>;
+  /**
+   * Leave the vessel's custody LOCKED once it stands. By default the harness unlocks every staged vessel through
+   * the test door the moment its daemon answers; a suite that measures the floor, or performs its own unlock
+   * walk, asks for the lock here.
+   */
+  readonly locked?: boolean;
 }
 
 /** The default rite: a place, then a face. */
@@ -299,6 +305,21 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   });
   const name = root.split("/").pop() ?? root;
   recordTimeline({ vessel: name, event: "live", foundMs, phases });
+
+  // THE UNLOCK. A vessel stands holding no vessel key; the harness opens it through the test door (the marked
+  // root's published route) the moment the daemon answers. The door returns once the daemon has composed again
+  // with what the key opens, so a suite meets the vessel in the standing it will keep. A root that holds no
+  // custody tree has nothing to unlock and stands as it stood.
+  if (!opts.locked) {
+    const unlocked = unlockTestCustody(root);
+    const reading = unlocked.answer?.["reading"];
+    if (unlocked.code !== 0 && reading !== "tree-absent") {
+      await stopChild(daemon);
+      removeStagedRoot(root);
+      throw new Error(`staged vessel never unlocked (door rc ${unlocked.code}): ${JSON.stringify(unlocked.answer)} ${unlocked.stderr.slice(-400)}\n${log.slice(-1200)}`);
+    }
+    recordTimeline({ vessel: name, event: "unlocked", unlockMs: since() });
+  }
 
   const halt = async (removeRoot: boolean): Promise<void> => {
     const from = since();

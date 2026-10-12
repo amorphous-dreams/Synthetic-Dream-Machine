@@ -451,7 +451,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | bind | unbind <slot-id> | seal | rotate | export <path> | repair | passphrase> [--force] [--yes] [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | seal | rotate | export <path> | repair | passphrase> [--force] [--yes] [--passphrase | --paper] [--rotate]",
     synopsis:
       "At-rest seal LIFECYCLE for the sovereign secret carriers (keyhive archive + recovery share). " +
       "DAEMON-FIRST: a mutating verb routes through the daemon while it stands, so its in-memory policy " +
@@ -461,7 +461,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "its Erisian day beside the vault as a record, never as part of the passphrase.",
     examples: [
       "lares vault status                     # the seal state of both carriers + the custody (VK) tree and rows",
-      "lares vault unlock                     # open the vessel key on a TTY credential; reports the slot that opened",
+      "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
+      "lares vault lock                       # the standing vessel drops its key and stands at the floor",
       "lares vault bind [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back)",
       "lares vault unbind <slot-id> [--rotate]   # unlock, remove a slot; the rotation offer prints EVERY time",
       "lares vault status --check             # ... probing a passphrase → split-KEK detection",

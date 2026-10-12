@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { claimStore } from "../src/owned-store.js";
-import { serveUdsFront, startUdsChannel, type UdsSeat } from "../src/uds-channel.js";
+import { makeUdsSeat, serveUdsFront, startUdsChannel, type UdsSeat } from "../src/uds-channel.js";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, AutomergeDocStore, CompositeStore, wikiSlotUri, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type LarDoc } from "@lararium/mesh";
 
@@ -50,7 +50,7 @@ describe("uds front", () => {
     await first.sent;
     await new Promise((resolve) => setTimeout(resolve, 25));
     expect(a).toEqual([{ verb: "first" }]);
-    front.detach();
+    await front.detach();
     const parked = dial(claim.socketPath, { verb: "parked" });
     await parked.sent;
     await noBytes(parked);
@@ -123,6 +123,43 @@ describe("uds front", () => {
     await forwarded.sent;
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(passed).toEqual([{ consume: false }]);
+    front.close();
+    await claim.release();
+  });
+
+  // A SEAT DRAINS BEFORE IT LEAVES. A frame already handed to a seat finishes against that seat's own ledger and
+  // worker: `detach` resolves only once its answer leaves, so the composition beneath never tears down under it.
+  test("R5: detach waits for a frame the seat already holds; an idle seat detaches at once", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), wikiSlotUri("daemon", "working")), writable: true });
+    const claim = await setup();
+    const front = serveUdsFront({ claim });
+    let land: (() => void) | null = null;
+    const placed = new Promise<void>((resolve) => {
+      front.attach(makeUdsSeat({ daemonHandle, composite, claim, repo, placeVerb: (o) => {
+        land = () => daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId }, meta: {} } as never; });
+        resolve();
+      } }));
+    });
+    const caller = dial(claim.socketPath, { verb: "slow", requestedBy: "did:key:test", requestId: "front-drain" });
+    await caller.sent;
+    await placed;                                  // the seat dispatched; the outcome has not landed
+    let detached = false;
+    const leaving = front.detach().then(() => { detached = true; });
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(detached, "the seat still holds an unanswered frame").toBe(false);
+    expect(caller.read()).toBe("");
+    land!();                                       // the worker's outcome lands; the seat answers and drains
+    await leaving;
+    expect(detached).toBe(true);
+    if (!caller.read().includes("\n")) await new Promise((resolve) => caller.sock.once("data", resolve));
+    expect(JSON.parse(caller.read().trim())).toMatchObject({ status: "done", requestId: "front-drain" });
+    // CONTROL: a seat holding nothing detaches at once.
+    front.attach(seenSeat([]));
+    await front.detach();
     front.close();
     await claim.release();
   });

@@ -92,6 +92,8 @@ a targeting beacon naming which vessel sits unraised (#the-breaks c).
 signs THAT, because a clockless vessel accepting pre-signed material accepts a bearer credential that replays
 forever (#the-breaks b).
 
+''THE CUSTODY DOOR OPENS THE VESSEL'S OWN KEY, AND THE CREDENTIAL TAKES ONE ROAD.'' A vessel stands holding no vessel key: it binds its socket, serves the public shelf, reads no private row and mints nothing. `lares vault unlock` reads a credential on a TTY and sends ONE custody frame on the owner-only socket; the frame meets the custody door ahead of every verb, so it never becomes an invocation and leaves no digest, receipt, outcome or log line. The door hands the credential to the one holder in node-main, which opens the key and the custody root; the standing composition then tears down whole and a fresh one stands on the same floor with what the key opens. `lares vault lock` drops the key and returns the vessel to the floor, and so does every restart: nothing an unlock did touches disk. A refusal names its reading (`no-slot-opens` · `tree-absent` · `tree-unreadable` · `attempts-spent`) and never the input; three failed unlocks spend a boot's attempts, and only a restart restores them. A composition that refuses above the floor leaves the floor standing.
+
 <<~/ahu>>
 
 <<~ ahu #/the-arrival-page>>
@@ -386,6 +388,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nEi22ycsplWWPymSp4KQcxWeTKmjN7Qx_hDmu4DfK14
+<<^ code="&#x0003;">>ni:///sha-256;MVhAt-UaUYCfdWofubRrn_mBjWxpURu28rzpH8P8WBM
 
 <<^ code="&#x0004;" -> to="?">>

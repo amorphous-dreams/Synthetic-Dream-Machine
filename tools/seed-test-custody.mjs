@@ -14,7 +14,9 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { hasMarker, MARKER_NAME } from "./test-scratch-marker.mjs";
 
-export const TEST_PASSPHRASE = "test-founding-passphrase";
+import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
+
+export { TEST_PASSPHRASE };
 
 const here = new URL(".", import.meta.url).pathname;
 const root = process.argv[2] ? resolve(process.argv[2]) : "";

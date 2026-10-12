@@ -128,7 +128,7 @@ tools/lares-container.sh persona list --json
 tools/lares-container.sh meme list --recipe default --json
 ```
 
-The host shim starts the container at `up`. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag. `vessel rite founding` composes found, stand, and seed, but it does not create or wear the operator's persona, so this walk uses the shim's documented order.
+The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key and composes with what the key opens. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag. `vessel rite founding` composes found, stand, and seed, but it does not create or wear the operator's persona, so this walk uses the shim's documented order.
 
 ''See'': `vessel seed` reports its bag holdings; `vessel read` reports the live node; `persona list` marks index zero active; the daemon recipe list returns seeded wiki entries.
 
@@ -338,6 +338,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;56X-ZN2xsXQP3o1pui12AsOpHGFw2zu7INPFChFICm8
+<<^ code="&#x0003;">>ni:///sha-256;ckdgKa5InlvoaSGmV7dt6Zba5JhZJzaN_CTx5EfkmEo
 
 <<^ code="&#x0004;" -> to="?">>
