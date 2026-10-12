@@ -38,7 +38,7 @@ That places us, architecturally, nearest to ''WorkerDOM'' — a DOM in the worke
 !! Where the position is genuinely unusual ~ four
 
 # ''THE FRAMES ARE ABSOLUTE, and nobody else's are.'' Every system in the corpus ships MUTATIONS — WorkerDOM fifteen opcode kinds, remote-dom four, Blazor and LiveView diffs — and every one of them ''must queue'', because dropping a delta corrupts. Whole rendered state can be DROPPED, so newest-wins coalescing is sound. This was never cleverness; it falls out of the engine rendering a whole story river. ⚠ ''It is also the property a replacement DOM most endangers'' (#the-fork).
-# ''THE STORE IS A CRDT, and theirs is not.'' LiveView's hardest machinery — monotone clocks, `PHX_REF_LOCK`, patches morphed into a private clone tree — exists to stop ''one authoritative server overwriting a client edit made after the frame was generated''. Blazor did not solve it and documents the caveat instead. That bug class is a consequence of ''last-writer-wins between an authority and a subordinate''. Two replicas that converge do not have it.
+# ''THE STORE IS A CRDT, and theirs is not.'' LiveView's hardest machinery — monotone clocks, `PHX_REF_LOCK`, patches morphed into a private clone tree — exists to stop ''one authoritative server overwriting a client edit made after the frame was generated''. Blazor did not solve it and documents the caveat instead. That bug class is a consequence of ''last-writer-wins between an authority and a subordinate''. Two replicas that converge do not have it. ⚠ ''The claim covers the STORE.'' A projected frame stands as derived state that no CRDT covers, so the stale-frame-over-a-newer-edit class lives on in the projection until each frame names the sensed revision it took in (#/the-ruling, condition 4).
 # ''WE NEVER RASTERIZE — and this is the one that carries the rest.'' Flutter and Qt moved rendering into engines that own pixels, ''lost the semantic layer'', and had to rebuild accessibility as an absolutely-positioned shadow-DOM overlay: opt-in, off by default for performance, re-positioned every scroll, racing the screen reader. Google Docs shipped the assertion that accessibility was unaffected and WebAIM refused it. ''They paid because after rasterizing the semantics were gone and had to be re-invented as a parallel artifact.'' The tiddler is always here. The widget tree is always here. A rendered surface is ''one camera on a live semantic structure'', never a destination.
 # ''ISOMORPHIC BY CONSTRUCTION — which answers Surma structurally.'' His objection to worker offloading is that it ''"just MOVES the problem… a 2nd main thread, with all the same problems"''. Ours is not a second main thread; it is ''a vessel'' running the same `makeWikiBehavior` the node hearth runs headless, differing only by the capability its `onBoot` mounts — fs there, main thread here. `role = capability ≠ platform`. WorkerDOM is browser-only, LiveView server-only, Blazor picks a side. ''The worker is the ORDINARY environment; the browser is the special case that adds a camera.''
 
@@ -87,10 +87,18 @@ But drop-safety — the property that lets a burst of wiki changes collapse to o
 # ''EVERY FRAME CARRIES ABSOLUTE STATE, KEYED FINE.'' A camera's surface divides into keys; each key carries its WHOLE rendered state and its own monotone revision. Any frame may drop and the next one heals it. ''No delta enters a frame'' — the covenant of #/the-vectors (3) stands untouched.
 # ''THE GRAIN RIDES THE CAMERA, DECLARED AT MOUNT.'' The Story River keys by tiddler frame, with the river's order as a key of its own (the story list already stands as a tiddler). A canvas camera keys by shape. One protocol; the grain varies. The same law as `preventDefault`: declared where the binding gets made (`camera-mount` C-6).
 # ''THE FRUSTUM CULLS.'' A key outside the camera's view frustum emits nothing (`camera-mount` C-3). Relevance belongs to the camera, never to the store.
-# ''SENSED STATE TRAVELS UP THE SAME WAY.'' Geometry, focus, selection and field values live where a person touches them. They cross as absolute snapshots, newest-wins, and the VM-side document answers a geometry read from the last snapshot it holds.
+# ''SENSED STATE TRAVELS UP THE SAME WAY.'' Geometry, focus, selection and field values live where a person touches them. They cross as absolute snapshots carrying a revision and never a timestamp. A snapshot informs later camera work; it never answers a synchronous layout read, since it describes an earlier moment however recent its revision. Geometry measured on the page at the moment of an act may ride that act's event and answer that event's handler: it reads //as of the act//. A synchronous layout read with no carried answer ''refuses by name''. The page places its own popups and sizes its own editors.
 # ''ONLY TRUE EVENTS QUEUE.'' A click, a commit, a `tm-verse-event`: small, idempotent where they can be, and the one traffic class that may not drop.
 
 Two absolute streams and one event leg. Neither side outranks the other (#/the-vectors (4)).
+
+''Five conditions the ruling carries'' (a crucible of two lenses over TiddlyWiki's source, the standing projection and the public field found each one unsaid):
+
+# ''A key paints from nothing, without any other key.'' A Story River frame carries its whole rendered tiddler, transclusions included. Repeated content gets measured before anyone reaches for a finer grain.
+# ''Membership stands as a key of its own.'' Each camera publishes the complete visible set. Omission never means deletion; deletion carries a tombstone; a mount opens with a whole snapshot; a gap asks for a resync of that key.
+# ''One writer per key.'' The island writes rendered keys and the page writes sensed keys. A revision compares only against its own key's earlier revisions within one mount. //Newest-wins// means that single writer's higher revision, never arrival order and never a clock.
+# ''Every frame names the sensed revision it had taken in when it rendered.'' The page keeps a field as its own while its revision exceeds that number, so a frame rendered before an edit never repaints over it. Each message says what its sender has seen of the other side; nothing assumes an order between the two.
+# ''An event carries an id and gets an answer'': `applied`, `stale-target`, or a named refusal. A stale render-id never drops in silence.
 
 ''The neighbouring field already ships this shape.'' Game-engine replication carries the latest state per replicated object, droppable and relevance-culled, beside a separate reliable channel for events. Nobody there ships the whole world each tick, and nobody ships a diff of it.
 
@@ -99,6 +107,26 @@ Two absolute streams and one event leg. Neither side outranks the other (#/the-v
 ''DreamDOM grows out of the standing projection, never beside it.'' The projection-nalu already stores the handlers TW5 builds and stamps opaque render-ids onto the fake element. The replacement document extends that: it holds listeners, stamps identity, keeps the last sensed snapshot, and emits keyed frames.
 
 ⚠ ''MEASURE FIRST'' (#/the-vectors (7)). Whole-surface frames stand until numbers say a camera needs a finer grain. The ruling names where the grain goes; it does not order the build.
+
+<<~/ahu>>
+
+<<~ ahu #/the-layers>>
+
+!! The three layers of a TiddlyWiki surface ~ and the two this house renders through
+
+''Operator direction, 2026-10-11'' (quote license): //"TW5 in the node/browser era uses its native transclusion stack and all its capabilities to render itself, either as a static page … or to boot and re-render itself on the fly in the browser. All of the architecture reads towards that. 1) the main page template, 2) the page template switcher (newer, very un-used in the community), 3) all of the idiosyncratic things like text-areas that we needed in the web2.5 era to render the intended user interface/UX. These all exist as separate layers, and if we un-blur them, we only really want to use the first 2 in the DreamDOM HTML5 era Lararium."//
+
+# ''THE PAGE TEMPLATE.'' Wikitext transcluding wikitext until a whole surface stands: `$:/core/ui/PageTemplate` in the browser, the static templates on export. One stack renders both, and it asks nothing of a live document.
+# ''THE LAYOUT SWITCHER.'' `$:/core/ui/RootTemplate` transcludes whatever `$:/layout` names and falls back to the page template. A layout stands as a root tiddler that composes a surface — which reads exactly as `camera-mount` C-3, the view frustum in a root tiddler.
+# ''THE IDIOSYNCRATIC WIDGETS.'' The editor engines, popup placement, storyview animation, scrolling, drag and drop, file browsing: code that reads and writes a live document's value, selection, geometry and focus. Every crack the crucible found sits in this layer.
+
+''The island renders through layers 1 and 2. Layer 3 belongs to the page.'' The worker runs TiddlyWiki's transclusion stack and emits frames; it reads no geometry, holds no caret, and animates nothing. Where a surface needs a live control, the template names it declaratively and the page supplies a native one — a text field that owns its value and its composition, a popover the browser anchors, a transition the browser runs between two frames — which writes whole values and events back.
+
+''What this dissolves.'' The synchronous layout read, the focused field a frame might repaint, the composition a relay might tear, the popup that needs a geometry answer: each stops crossing the boundary, since the code that asked for it no longer runs in the island. The five `isTiddlyWikiFakeDom` sites of #/what-a-replacement-un-skips stay skipped ON PURPOSE, and the VM-side document stays a render target rather than a second browser.
+
+''What it costs, said plainly.'' The stock edit template leans on layer 3 throughout — the editor toolbar acts on a selection, the tag picker opens a positioned dropdown, the dropzone takes files. Each such surface needs a template of the house's own over a page-native control, or it refuses by name (#/the-vectors (5)). An offering written against layer 3 runs degraded here, and says so.
+
+▢ ''OWED — the reading of this direction into build'': which page-native controls stand first (a field editor, a popover, a disclosure), how a template names one, and which stock surfaces refuse meanwhile. The house's leans on those stay leans until a ruling or a measurement settles them.
 
 <<~/ahu>>
 
@@ -173,6 +201,6 @@ Seven tasked spirits, each handed a framing and NOT a conclusion, each held VERB
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;CGDa7ndyUEI-OUCPHRsKZznZ91XeiDhtP9Jssj_6WDw
+<<^ code="&#x0003;">>ni:///sha-256;DINJw9rCX95CYfpFEpmwmCu9n49iUQJqp6X5_c6ChB0
 
 <<^ code="&#x0004;" -> to="?">>
