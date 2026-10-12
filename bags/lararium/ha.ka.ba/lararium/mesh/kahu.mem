@@ -194,10 +194,11 @@ signature, and the daemon gate keeps it per socket as untrusted input, deciding 
 carries a SET of Nexuses (`carried-set.ts`). No relation witness and no signing domain of its own
 stand beside the gate: an admit proves itself by its quorum signatures and its lineage.
 
-''Owed in code — the cut-over.'' The daemon's carriage decision reads the folded members board
-(`foldCarriageSet` → `nexus-carriage.ts`), and the federation gate reads that fold. The cut-over moves
-the decision onto the verifier and retires the fold as the gate
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>).
+''The daemon's carriage decision rides the verifier.'' `nexus-carriage.ts` seats a peer in its leaf map
+only when the socket that peer stands on PRESENTED an admit and `verifyPresentedAdmit` reads it `held`
+against a Nexus this vessel carries; a peer presenting nothing stays a stranger, whatever the board
+records. `foldCarriageSet` reads the board's RECORD (`nexus members --list`) and no enforcement shore
+reads its answer as an allow set.
 
 ''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
 human across every Nexus that admits them, so the subject stamp signs with a leaf in the ''NEXUS scope
@@ -395,6 +396,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;njGsLo_7ZnCj7f95tJUPVK7Ne7LW8lxLmmv-DPau9kg
+<<^ code="&#x0003;">>ni:///sha-256;-RBdAvpj18_qYE8JzY6pJo5bXnomEqvioZPAqK1MTmU
 
 <<^ code="&#x0004;" -> to="?">>

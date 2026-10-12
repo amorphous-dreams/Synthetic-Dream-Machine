@@ -51,7 +51,7 @@ Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, CRE
 | ''COPY'' | read `from-bag`'s record; overwrite `to-bag`'s version preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
 | ''MOVE'' | ADD into `to-bag` + RETRACT (hard-remove → //absent//) the title in `from-bag` (falls through to a canon copy beneath; never a kāpae) | transfer pair: accession (`to-bag`) + deaccession (`from-bag`) | title, from-bag, to-bag, change-id |
 | ''CLEAR'' | enumerate live titles in bag, tombstone each | disposition (bag-level) | bag |
-| ''DROP'' | tombstone every live title in bag + mark the bag retired | disposition (bag retired) | bag |
+| ''DROP'' | tombstone every live title in bag + write the retirement marker into the bag's own doc; the registry row stays (see Handler Law 6) | disposition (`bag-retired`, under the fixed marker id) | bag |
 | ''LOAD'' | land operator-supplied carriers into `to-bag` (carrier-borne; islands never fetch — `source-uri` = provenance) | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
 | ''INGEST'' | disk→records through the Confluence — the three-way reconcile gate (disk · synced · records meet; replace-by-group, NFC; + whole-carrier `deletions`; surface-never-overwrite) — the non-residency precedent | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
 | ''CREATE'' | mint a new record into a PLANE rather than move one between bags — the plane grades the cap: the catalog plane (household) takes `read`, the oracle plane (temple) takes `admin`. Handled in the REACTOR, never `executeAction`, because the gate must read the plane before the mint | accession (the plane's doc) | plane, title, and the record to mint |
@@ -85,6 +85,14 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]])
 # ''Parse-or-reject.'' `parseResidencyAction(invocation)` validates verb
    membership + per-verb required args; malformed input throws before dispatch.
+# ''A retired bag takes no landing.'' DROP writes one `bag-retired` disposition at a
+   fixed title (`<bag>/ledger/residency/retired`) in the bag's own doc, and a second DROP
+   keeps the first marker. The registry row STAYS, the name's only pointer to the retired
+   doc and its ledger. ADD, COPY, MOVE, LOAD and INGEST read the marker on their
+   destination and refuse by name (`bag-retired: …`), pointing at CREATE; a preview refuses
+   the same. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
+   row, so a retirement always names the doc the row pointed at when DROP ran. A wiki's
+   recipe slot belongs to the wiki (`lares wiki remove-bag`), never to a bag verb.
 
 <<~/ahu>>
 
@@ -117,6 +125,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;309q9UxZRynHdx0HjfAtMpOdNguDNBHZU79ySrZvj5I
+<<^ code="&#x0003;">>ni:///sha-256;8JL7GkzsDzLJjEIm_2fYReuLgRtxG3kTZDD7U1w5Ooc
 
 <<^ code="&#x0004;" -> to="?">>

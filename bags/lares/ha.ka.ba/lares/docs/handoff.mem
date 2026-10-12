@@ -22,51 +22,16 @@ written   = "2026-06-19"
 
 
 
-<<~ ahu #/shift-2026-10-08-hosted-walk-sign-off>>
+<<~ ahu #/the-live-queue>>
 
-!! Shift — the hosted walk's sign-off, 2026-10-08
+!! Where the live queue reads
 
-''What landed.'' ''The hosted walk'' (F1): the auth wire carries no clock; every gate sorts each proven socket — same-operator · contracted · walker · stranger — before its verdict, answers only on its knock, and meets a stranger at a PRIVATE gate with silence. A hearth hosts walkers on a keyed grant: a signed hosting act names the epoch, a blind POPRF token redeems once at the host's own gate, and the hearth carries a walker's own documents sealed. ''Its cleanup'' (B1): the burn binds the leaf that proved; carriage answers to the proven leaf; the wallet keeps only live tokens; host and walk run inside the standing vessel over the one store door; a walker reads only its hearth's hosting doc; a node walks and hosts as the face it wears; a charterless herm answers the knock, so the herm mesh carries; a vessel under `LAR_ROOT` projects into that root. ''Its aftermath'': the hosting modules name only what stands, `mesh-scenarios` reads a dead latest boot as not stood, the road to Stable founding stands in canon (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>), and the adapter note names `LAR_ROOT` as the isolation knob. The Codex crew's session ended; its roadmap reconciles against the code at <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>. The CHANGELOG's `[Unreleased]` lines name every commit.
+This carrier hands on the GRAMMAR watch and the procedures every watch reuses. It ranks no wound and counts no suite.
 
-''Measured at the close.'' E2E 30 of 30 files, 215 passed. Witness fleet 34 of 34 ok, `tree-clean-witness` included. Typecheck clean. Every unit suite green; `tools/*.test.mjs` 53 of 53. The docker herm mesh lit by hand: `herm-mesh-witness` passes, `mesh-scenarios nexus` reads every step ok, `crossing-witness` 4 of 4.
-
-''What it hands on.'' The re-found, one train, and the round-6 lanes stand in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>; the rulings owed — the road's open questions, the two-voice herm, the Lamplighters' question, the two Kairoses, whether the frame's `?` and the wire's keyless challenge cite each other, and the Codex crew's forks — read there under ''Pending operator rulings''.
-
-<<~/ahu>>
-
-<<~ ahu #/shift-2026-10-07-round-five-sign-off>>
-
-!! Shift — the round-five sign-off, 2026-10-07
-
-''What landed.'' The episkopos accepted round five but one finding (F1, on the hosted countersign, its fix in flight). ''The gate signs its verdict'' under the vessel key, and an admitted socket carries `lar:session` frames. ''The PersonaGroup ring composes on both vessels by one function'', onto the one gate each reads; two leaves prove each other through `leaf-peer-proof`, a library whose transport stands owed. ''The oracle crosses only to a peer that proved first'', over the gated `/oracle` socket, and every HTTP path under it draws the one `CLOSED_DOOR`. ''A user invites by its hearth's countersign'', lent over the live session. ''One file frames one carrier'' (R1), and the stream parser leaves the tree. ''The carrier grammar pairs an ahu with the close of its own name'', reproducing every `scanAhu` pair, and a weld holds the two readers together. Bag doors refuse a torn frame; one presenter names every fork on its board, and every door surfaces its findings. The CHANGELOG's `[Unreleased]` SIGN-OFF BATCH lines name every commit.
-
-''Measured at the close.'' E2E 29 of 29 files (208 passed, 1 expected fail). Witness fleet 33 of 33 ok. Typecheck clean across 11 projects. Every `tools/*.test.mjs` green, and CI's witnesses job runs them.
-
-''What it hands on.'' The re-found's full scope (STABLE, CUSTODY, CARRIED) and the round-6 lanes stand in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>. No operator ruling is pending beyond any F1 asks for.
-
-<<~/ahu>>
-
-<<~ ahu #/shift-2026-10-07-sign-off>>
-
-!! Shift — the sign-off of five lanes and the canon scribe, 2026-10-07
-
-''What landed.'' The episkopos accepted every lane and found no blocker. ''The seal rolls sign'': the revealed keys sign every roll under `seal-roll`, and the lineage verifies them, so public keys forge no epoch. ''One presenter'' (`presentationFromBoardDoc`) reads acts and roll anchors off one board, and an orphan anchor closes no admit. ''The herm keeps silence'': it hands over its bulb by CID behind one closed door, a waymark rung is opt-in, and the temple stays the lararium's. ''The bulb is the coal'', named by the seed's published bytes. ''The quoteblock floor runs inside the deserializer'', so every door fences, and the gate reads its frame once. ''Any standing face invites'' on its per-Nexus leaf; the `seat` arm refuses while chairs carry roots. The device edge carries no clock. `KahuQuorumSeats` names the quorum's seats. The CHANGELOG's `[Unreleased]` SIGN-OFF BATCH lines name every commit.
-
-''Measured at the close.'' E2E 28 of 29 files (the red: the Offering crew's untracked suite). Witness fleet 31 ok, `vessel-parity` red. Typecheck clean. `lararium-tw5` 1732 passed, `carrier-edges` 174 of 172 on the crew's research carrier.
-
-''What it hands on.'' The ranked queue, the pending rulings and the re-found train stand in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>. The operator's live `~/.lares` vessel does not verify on this build (clocked device edges, unsigned rolls) — `er-handoff#/vitals` carries the warning.
-
-<<~/ahu>>
-
-<<~ ahu #/shift-2026-10-06-sign-off>>
-
-!! Shift — the sign-off of four lanes, 2026-10-06
-
-''What landed.'' The episkopos read four lanes and found no blocker. ''The first arrival'': the house's own origin answers `/.well-known/lar` with the arrival descriptor (`application/vnd.lar.arrival+json`), derived from the Pronaos route receipt alone plus hash-pinned mirrors (`LAR_PRONAOS_MIRRORS`); `kindle.ts#pullArrival` kindles off the house's origin and never dials a mirror; a lararium at its waking floor serves it. ''Anchored ancestry'': a seal roll lands a roll anchor (domain `carriage-roll-anchor`) before the charter moves, and an admit in its causal past carries to the head — `contract-witness` ⑩. ''The quoteblock floor's whole-chunk grain'' fences an un-decomposable carrier whole at the ingest gate. ''Parallel drafts persist'' in the reading wiki's draft bag. ''Submissions title themselves'' `submissions/<name>`. The face-grant record carries no wall clock; the tree-sitter artifact pins 0.27.0. The CHANGELOG's `[Unreleased]` SIGN-OFF BATCH lines name every commit.
-
-''Measured at the close.'' E2E 27 of 29 files, 205 passed (reds: the Offering crew's untracked suite; the corpus-feed F2 walker racing a projector temp file, green alone). Witness fleet 31 of 32 ok, `vessel-parity` red. Typecheck clean across 11 projects. `lararium-tw5` 1696 of 1703, `carrier-edges` red on +2 from the offering-antigen crew's research carrier.
-
-''What it hands on.'' The ranked round-4 queue and every carried item stand in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> `#/wounds`. Two of them are rulings, not patches: gate the LOAD door and the registered deserializer on the whole-chunk floor or re-true `ahu.mem`'s every-door claim; wire a door to `pullArrival` or re-true `pronaos.mem`'s. Neither carrier was re-trued here.
+* ''Open wounds'' read in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>, ranked HIGH, MEDIUM and LOW, each beside the road path that closes it. The rulings the operator still owes read there under ''Pending operator rulings'' and ''Needs the operator''.
+* ''Vitals'' read in `er-handoff#/vitals`, which names the instrument behind each reading and carries no count: run the instrument fresh before trusting a number. The warning against standing the operator's live `~/.lares` vessel on this build rides there too.
+* ''The road'' reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>: six paths in the order a builder walks them — GROUND, SUBSTRATE, HARBOR, KAHU PLANE, ONE FACE, TWO HEARTHS — with the shore's rungs beside them. The one train that moves identity bytes reads there alone, under KAHU PLANE.
+* ''The Codex crew's roadmap'' reconciles against the code at <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>.
 
 <<~/ahu>>
 
@@ -376,11 +341,11 @@ here still gates a build.
 
 <<~ ahu #/vessel-state>>
 
-!! The ground you stand on — folded into history
+!! The ground you stand on
 
-The 2026-06 boot, co-projection and @oracle-carve narration closed. The live vitals — branch, suites, witness
-fleet, docker mesh — read in `lar:///ha.ka.ba/lares/docs/er-handoff#/vitals`, never here. `disk-projection`
-carries the co-projection law standing; `sovereign-kernel` carries the breath/watchdog law standing.
+No reading of the live ground rests here. `lar:///ha.ka.ba/lares/docs/er-handoff#/vitals` names the instrument
+behind each one — branch, unit suites, typecheck, witness fleet, e2e, CI, docker mesh — and carries no count.
+`disk-projection` carries the co-projection law; `sovereign-kernel` carries the breath and watchdog law.
 
 <<~/ahu>>
 
@@ -400,26 +365,13 @@ and 4 (`admin.hull.unified`) never moved past their design memes (`pattern-integ
 
 !! Burr ledger — live only; each carries its wake condition
 
-Closed and folded into history (full narration in `git log` on this file, pre-2026-09-05): the ingest
-fixture-drift reds; the realm idle clock (closed 2026-09-12, `BagStowage` cools by the realm's own rolls);
-the two-sided relation reading (landed 2026-08-31, walked in docker); restart-blindness read as correct
-and pinned; the mesh grid at 18/18 cells green with the cold-found patience fixed; the antigen share's
-mandatory-tier ruling (it already stood ruled; stop re-opening it); the stale `cabal-realm.ts` comment,
-corrected in source; the transfer-source gate (closed 2026-08-31, `crossingDirection` grades by direction);
-the e2e harness drift measured 2026-09-01 (the counts in `er-handoff#/vitals` now supersede it); the two
-instrument lies (the coverage-vs-pass distinction and the dist-reads-stale-build bug), generalized into the
-standing law that each dist-reading witness refuses a stale build by name (`er-handoff#/cold-start`); the
-nine-then-ten-scenario mesh-isolation note, superseded by the mesh grid above; the island→admin verb-plane
-switchboard retirement and its `#ingest-ordering` hoike, superseded by the verb-pair and in-VM parse work
-this house since built (`project_in_vm_parse_move.md`, `project_boot_holds_family_rewrite.md`).
-
 Still open, wake condition carried forward:
 * ''The cold-boot `unavailable` false-negative'' (automerge-repo). Root cause confirmed from upstream source: on a cold `create()` with no peers, storage answers `unavailable` immediately, by design. `allowableStates` reads deprecated upstream; callers moved to `findWithProgress`. One real ordering defect fixed (`init.ts` now flushes before it publishes the social-bootstrap pointer). An opt-in 2s grace landed for the two `@daemon` reads that expect presence — not a proven cure (six dirty/clean samples split roughly even under identical code). Wakes if the grace proves insufficient: read the per-source map (`peek().sources`) before widening any number again.
 * ''One carrier fails the corpus round-trip'': `bags/elyncia/…/primary-characters/lady-aki.mem` does not render back; proven pre-existing and not a build gap. Wants an owner.
 * ''Operator-ness sits outside the cap stack — enforced by disk access, never a capability.'' A browser vessel reaches no nexus/seal surface, so an operator's own browser device cannot exercise operator power. Wakes when operator power needs to reach a browser (an operator-capped leaf), which is the moment the seam must become a cap rather than a path.
 * ''Co-hosted sovereignty stands claimed and measured, unenforced between same-uid peers.'' `identityHomeClosure` reports an open seal-home mode and never repairs it; a same-uid neighbour still reaches a peer vessel's identity dir whatever the bits hold, and the charter and persona-root seeds still write with no mode floor. Cure shape stands researched (an unforgeable handle, never a path string — Capsicum/`pledge`/Landlock; a delegation token across machines); nobody has built it.
 * ''A deny-only antigen share is not the free lunch it reads as.'' Field evidence on fediverse blocklists (binary, grow-only, effectively permanent entries that sever third parties who never joined the threat model) argues for entries that expire, carried provenance, and a defined merge semantics before two antigen lists ever need merging. The mandatory-tier ruling stands; this is a caution on HOW the shared list behaves, not a reversal.
-* ''One charter per vessel is a guard on a single-slot file, never a law.'' `larSealHome()` names one unparameterized seal home; multi-Nexus already stands canon and tested (`waking-floor:165`, `fleetSpan`) once a second seal home exists. R-CHARTER (`stable-founding-road#/the-road`) re-keys the chairs and re-scopes the keyring per relation; it does not yet give a vessel a second seal home. Wakes on that build.
+* ''One charter per vessel is a guard on a single-slot file, never a law.'' `larSealHome()` names one unparameterized seal home; multi-Nexus already stands canon and tested (`waking-floor:165`, `fleetSpan`) once a second seal home exists. R-CHARTER (`stable-founding-road#/the-road`, under KAHU PLANE) re-keys the chairs to per-Nexus leaves and resolves boards per relation; the road names no second seal home for a vessel. Wakes on that build.
 * ''The crossing rail inherits three unbuilt requirements'': both ends of a crossing must arrive as capabilities the caller presents, never a cap plus a bare string naming the other side; the batch needs a saga shape (every validation before the first outward grant, idempotent and forward-retried after); and the union catalog must declare its deletion semantics before a deaccession can propagate. Research done, nothing built.
 * ''The ledger-move collision against canon'' (a realm's maintenance tally, pre-authorised to move onto the shared substrate) carries three unpriced constraints: the slot-map shape assumes a fixed writer-set, which a realm's arriving dwellers violate; the residency cross-wire ban gets easy to trip once slots live in the substrate doc; and `forward_secrecy=false` lets a newly admitted dweller sync the entire historical tally. Fork the primitive rather than re-home it (`lamplighters:160`); the plumbing to address a realm substrate does not exist yet (`ResolveDaemonStore` takes no realm argument).
 * ''Held, not acted on'' (operator, 2026-09-02): a Lares startup module inside the VM wiring whatever the projection environment lacks. The seam already exists and ships twice (`capture-annotate-vm.ts`, `grammar-cache.ts`). Read `project_off_main_thread_engine_laws.md` before firing it — that research has since landed and may answer this directly.
@@ -458,6 +410,6 @@ Still open, wake condition carried forward:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_JIsYBGGCzAOx7IldZsSWF7xNDKz7sSZIKuSfJSGX2E
+<<^ code="&#x0003;">>ni:///sha-256;XqL9cOsgX5UbHL7wVsoNngQpslH6teogTqpyTs-qvyk
 
 <<^ code="&#x0004;" -> to="?">>
