@@ -19,6 +19,7 @@ import type {
   LarTiddlerChange,
   ChangeOrigin,
   MemeProjection,
+  LarWriteOptions,
 } from "./tiddler-store.js";
 import {
   corpusLarUri,
@@ -139,9 +140,9 @@ export class CompositeStore implements LarTiddlerStore {
     if (this.listeners.size > 0) {
       layer.store.listVisible().then((titles) => {
         for (const title of titles) {
-          layer.store.get(title).then((rec) => {
+          this._readWithHeads(layer.store, title).then(({ record: rec, heads }) => {
             if (!rec) return;
-            const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId } };
+            const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId }, bag: layer.bagId, ...(heads !== undefined ? { heads } : {}) };
             this.listeners.forEach((fn) => fn(change));
           });
         }
@@ -174,8 +175,11 @@ export class CompositeStore implements LarTiddlerStore {
     this.removeLayer(bagId);
     const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: `layer-removed:${bagId}` };
     for (const title of titles) {
-      const remaining = await this.get(title);
-      const change: LarTiddlerChange = { title, record: remaining, origin, bag: bagId };
+      const resolved = await this._resolveLayerRecord(title);
+      const remaining = resolved?.record ?? null;
+      const answeredBy = resolved?.layer ?? layer;
+      const heads = resolved?.heads;
+      const change: LarTiddlerChange = { title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) };
       this.listeners.forEach((fn) => fn(change));
       for (const projection of this.projections.keys()) projection.onUriChanged(change);
     }
@@ -213,8 +217,10 @@ export class CompositeStore implements LarTiddlerStore {
     return null;
   }
 
-  async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: { bag?: string }): Promise<void> {
-    return this._writeTargetFor(options?.bag, "put").put(record, origin, options);
+  async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
+    this._requireBagForBase(options, "put");
+    const store = this._writeTargetFor(options?.bag, "put");
+    return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
   }
 
   /**
@@ -228,12 +234,14 @@ export class CompositeStore implements LarTiddlerStore {
     puts:       readonly LarTiddlerRecord[],
     tombstones: readonly string[],
     origin:     ChangeOrigin,
-    options?:   { bag?: string },
+    options?:   LarWriteOptions,
   ): Promise<void> {
+    this._requireBagForBase(options, "writeFamily");
     const store = this._writeTargetFor(options?.bag, "writeFamily");
-    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, options);
-    for (const record of puts) await store.put(record, origin, options);
-    for (const title of tombstones) await store.tombstone(title, origin);
+    const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
+    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
+    for (const record of puts) await store.put(record, origin, writeOptions);
+    for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
   }
 
   /**
@@ -266,9 +274,53 @@ export class CompositeStore implements LarTiddlerStore {
     return this.writableStore;
   }
 
-  async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
+  private _writeOptionsFor(options: LarWriteOptions | undefined, target: LarTiddlerStore, verb: string): LarWriteOptions | undefined {
+    if (!options?.base) return options;
+    if (!options.bag) throw new Error(`CompositeStore.${verb}: base requires a named bag`);
+    const namedLayer = this.layers.find((layer) => layer.bagId === options.bag);
+    if (namedLayer?.store === target) return options;
+    const { base: _base, ...copyUpOptions } = options;
+    return copyUpOptions;
+  }
+
+  private _requireBagForBase(options: LarWriteOptions | undefined, verb: string): void {
+    if (options?.base !== undefined && options.bag === undefined) {
+      throw new Error(`CompositeStore.${verb}: a base requires a named bag`);
+    }
+  }
+
+  /**
+   * One layer's record for `title`, with the heads it was read at. A layer store that offers
+   * `headsNow` and `getAt` (a CRDT doc store) takes its heads first and reads the record AT those
+   * heads, in one synchronous stretch, so the pair can never straddle a write. A store with no
+   * heads answers its record alone.
+   */
+  private async _readWithHeads(store: LarTiddlerStore, title: string): Promise<{ record: LarTiddlerRecord | null; heads?: readonly string[] }> {
+    const headed = store as LarTiddlerStore & {
+      headsNow?: () => readonly string[] | null;
+      getAt?: (title: string, heads: readonly string[]) => LarTiddlerRecord | null;
+    };
+    if (typeof headed.headsNow === "function" && typeof headed.getAt === "function") {
+      const heads = headed.headsNow();
+      if (heads) return { record: headed.getAt(title, heads), heads };
+    }
+    return { record: await store.get(title) };
+  }
+
+  /** The topmost layer holding any record for `title` (a tombstone included), with the heads it was read at. */
+  private async _resolveLayerRecord(title: string): Promise<{ layer: CompositeLayer; record: LarTiddlerRecord; heads?: readonly string[] } | null> {
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const read = await this._readWithHeads(layer.store, title);
+      if (read.record !== null) return { layer, record: read.record, ...(read.heads !== undefined ? { heads: read.heads } : {}) };
+    }
+    return null;
+  }
+
+  async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    this._requireBagForBase(options, "tombstone");
     if (!this.writableStore) throw new Error("CompositeStore: no writable layer registered");
-    return this.writableStore.tombstone(title, origin);
+    return this.writableStore.tombstone(title, origin, this._writeOptionsFor(options, this.writableStore, "tombstone"));
   }
 
   async remove(title: string, origin: ChangeOrigin): Promise<void> {
@@ -282,8 +334,8 @@ export class CompositeStore implements LarTiddlerStore {
    * ACTION removes the source-bag copy after writing the destination copy).
    * Throws when the named bag is absent or not writable.
    */
-  async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
-    return this._writableLayerOf(bagId).tombstone(title, origin);
+  async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    return this._writableLayerOf(bagId).tombstone(title, origin, options);
   }
 
   /** HARD-remove a title from one bag (ABSENT — falls through), distinct from

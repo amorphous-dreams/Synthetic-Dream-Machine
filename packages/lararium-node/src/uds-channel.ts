@@ -547,6 +547,8 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
   // never arbitrated) still leaves a fact this vessel can answer `{op:"receipt"}` against.
   const unsubOutcomes = composite.subscribe((change) => {
     if (!change.record || !change.title.startsWith(OUTCOME_URI_PREFIX)) return;
+    // A tombstoned outcome still carries the fields it held; a retraction observes no outcome.
+    if (change.record.meta?.deleted) return;
     const requestId = change.title.slice(OUTCOME_URI_PREFIX.length);
     const fields = change.record.tiddler as Record<string, unknown>;
     const status = fields["status"];

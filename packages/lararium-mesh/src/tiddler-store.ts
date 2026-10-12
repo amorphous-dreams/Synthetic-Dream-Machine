@@ -27,7 +27,7 @@
 
 export interface MemeProjection {
   onUriChanged(change: LarTiddlerChange): void;
-  onChangeset?(uris: ReadonlySet<string>, origin: ChangeOrigin): void;
+  onChangeset?(changes: readonly LarTiddlerChange[]): void;
   onSyncComplete?(islandId: string): void;
 }
 
@@ -80,6 +80,7 @@ export type TW5TiddlerFields = ITW5TiddlerFields;
 // ---------------------------------------------------------------------------
 
 export interface LarTiddlerMeta {
+  readonly [key: string]: unknown;
   readonly deleted?:       boolean;
   readonly sourceUri?:     string;
   readonly contentHash?:   string;
@@ -116,6 +117,7 @@ export interface LarTiddlerRecord {
 
 export interface LarWriteOptions {
   readonly bag?: string;
+  readonly base?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -168,6 +170,8 @@ export interface LarTiddlerChange {
   readonly record:    LarTiddlerRecord | null;
   readonly origin:    ChangeOrigin;
   readonly bag?:      string;
+  /** Heads of the bag document read in the same synchronous stretch as record. */
+  readonly heads?:    readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -214,7 +218,7 @@ export interface LarTiddlerStore {
    * default AND SHADOW lower-priority bags in the cascade (kāpae semantics — a
    * deliberate hide; anti-pattern #3, residency-model). origin carries audit.
    */
-  tombstone(title: string, origin: ChangeOrigin): Promise<void>;
+  tombstone(title: string, origin: ChangeOrigin, options?: { readonly base?: readonly string[] }): Promise<void>;
 
   /**
    * Write a meme FAMILY — a root, its slot children, and the orphan children it no longer declares —

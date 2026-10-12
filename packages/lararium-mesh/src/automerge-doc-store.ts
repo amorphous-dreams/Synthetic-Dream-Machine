@@ -20,27 +20,23 @@
  * or created one title, concurrently) raises `onParallelDrafts` listeners — and every registered
  * projection that reads drafts — with every concurrent value as an attributed TW5 draft
  * (`parallel-drafts.ts`), and `parallelDrafts(title)` answers them on demand. The value Automerge merged stays live; the others stay reachable; the store decides nothing.
- * A put assigns only the fields whose value moved, so a writer re-saving the live value never
- * supersedes a concurrent value it has not seen.
+ * A put compares content independently of ceremony metadata, merges only moved content fields, and
+ * preserves metadata the writer omitted. A based put applies at its captured heads so Automerge can
+ * retain concurrent values as field conflicts.
  */
 
-import type { DocHandle } from "@automerge/automerge-repo";
-import { getHeads as automergeGetHeads } from "@automerge/automerge";
+import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
+import { decodeChange, getAllChanges } from "@automerge/automerge";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
 import { readParallelDrafts, readsParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
+import { headsEqual } from "./wiki-recipe.js";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
-  meta?: {
-    deleted?: boolean;
-    sourceUri?: string;
-    contentHash?: string;
-    authority?: string;
-    recipe?: string;
-  };
+  meta?: Record<string, unknown> & { deleted?: boolean };
 };
 
 /** JSON with every map's keys sorted — the doc hands its maps back key-sorted, a caller's record
@@ -52,15 +48,26 @@ function _canonicalJson(value: unknown): string {
       : v);
 }
 
+function _storedValue(value: unknown): unknown {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function _contentValue(record: LarTiddlerRecord): unknown {
+  const tiddler = Object.fromEntries(Object.entries(record.tiddler)
+    .filter(([key]) => key !== "$origin-bag")
+    .map(([key, value]) => [key, _storedValue(value)]));
+  return { tiddler, deleted: record.meta?.deleted === true };
+}
+
 function _contentEquals(cur: LarTiddlerRecord, rec: LarTiddlerRecord): boolean {
-  return _canonicalJson(cur) === _canonicalJson(rec);
+  return _canonicalJson(_contentValue(cur)) === _canonicalJson(_contentValue(rec));
 }
 
 /** Same value in the doc's medium — a list or map compares by its JSON form. */
 function _sameValue(current: unknown, next: unknown): boolean {
   if (current === next) return true;
   if (current === null || next === null || typeof current !== "object" || typeof next !== "object") return false;
-  return JSON.stringify(current) === JSON.stringify(next);
+  return _canonicalJson(current) === _canonicalJson(next);
 }
 
 /**
@@ -71,10 +78,10 @@ function _sameValue(current: unknown, next: unknown): boolean {
 function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord): void {
   const t = target.tiddler;
   for (const key of Object.keys(t)) {
-    if (!(key in record.tiddler)) delete t[key];
+    if (key !== "$origin-bag" && !(key in record.tiddler)) delete t[key];
   }
   for (const [key, raw] of Object.entries(record.tiddler)) {
-    const value = raw instanceof Date ? raw.toISOString() : raw;
+    const value = _storedValue(raw);
     if (key in t && _sameValue(t[key], value)) continue;
     t[key] = value;
   }
@@ -82,10 +89,10 @@ function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord)
   const nextMeta = record.meta ?? {};
   if (!target.meta) target.meta = {};
   const m = target.meta;
-  for (const key of Object.keys(m) as (keyof typeof m)[]) {
-    if (!(key in nextMeta)) delete m[key];
+  for (const [key, value] of Object.entries(nextMeta)) {
+    if (key !== "deleted") m[key] = value;
   }
-  Object.assign(m, nextMeta);
+  m.deleted = nextMeta.deleted === true;
   if (Object.keys(m).length === 0) delete target.meta;
 }
 
@@ -146,6 +153,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     this.provider = new MemeProvider(
       () => (handle.doc()?.tiddlers ?? {}) as Record<string, unknown>,
       () => this.bagId,
+      () => this._headsForEnvelope() ?? null,
     );
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: bagId ?? "automerge" };
@@ -161,10 +169,8 @@ export class AutomergeDocStore implements LarTiddlerStore {
     });
   }
 
-  /**
-   * Every concurrent value standing on `title`, one attributed draft per writing actor
-   * (`parallel-drafts.ts`). Empty when the record carries no conflict. Reads only.
-   */
+  /** Every concurrent operation value on `title`, grouped across distinct fields by writer
+   *  operation identity (`parallel-drafts.ts`). Empty when the record carries no conflict. Reads only. */
   parallelDrafts(title: string): LarTiddlerRecord[] {
     return readParallelDrafts(this.handle.doc()?.tiddlers, title);
   }
@@ -207,19 +213,14 @@ export class AutomergeDocStore implements LarTiddlerStore {
   }
 
   /**
-   * Drive the current doc state through the projection bus as a series of
-   * crdt-remote changes. Called once per bag after `addProjection()` registers
-   * the adaptor + accumulator and before `markSyncComplete()` fires.
-   *
-   * The adaptor's pre-sync buffer collects these; onSyncComplete flushes them
-   * in one `wiki.transact()` per bag during initial replay. The accumulator
-   * drops them (syncReady still false). Live patches after markSyncComplete
-   * flow through the standard handleChange() path into the shared accumulator.
+   * Emit every current record as an initial state envelope carrying the bag's
+   * heads snapshot. Projections receive the same record and heads read together.
    */
   emitInitialReplay(): void {
     const tiddlers = this.handle.doc()?.tiddlers;
     if (!tiddlers) return;
     const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: this.bagId ?? "automerge" };
+    const heads = this._headsForEnvelope();
     for (const raw of Object.values(tiddlers) as LarTiddlerRecord[]) {
       if (!raw || !raw.tiddler?.title) continue;
       const title = raw.tiddler.title;
@@ -228,6 +229,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
         record: _freezeRecord(raw),
         origin,
         ...(this.bagId !== undefined ? { bag: this.bagId } : {}),
+        ...(heads !== undefined ? { heads } : {}),
       });
     }
   }
@@ -245,59 +247,128 @@ export class AutomergeDocStore implements LarTiddlerStore {
     return raw ? _freezeRecord(raw) : null;
   }
 
+  /** Read one record through a synchronous Automerge view at the supplied heads. */
+  getAt(title: string, heads: readonly string[]): LarTiddlerRecord | null {
+    if (!this.handle.doc()) return null;
+    const encoded = encodeHeads(heads as string[]);
+    const raw = this.handle.view(encoded).doc()?.tiddlers?.[title];
+    return raw ? _freezeRecord(raw) : null;
+  }
+
+  /** Synchronous current heads, in the raw hexadecimal form returned by getHeads(). */
+  headsNow(): readonly string[] | null {
+    if (!this.handle.doc()) return null;
+    return Object.freeze([...decodeHeads(this.handle.heads())]);
+  }
+
+  /** Attach the handle's causal snapshot to its state envelope when its API exposes heads. */
+  private _headsForEnvelope(): readonly string[] | undefined {
+    if (!this.handle.doc()) return undefined;
+    if (typeof (this.handle as DocHandle<LarDoc> & { heads?: () => string[] }).heads !== "function") return undefined;
+    return this.headsNow() ?? undefined;
+  }
+
   /**
    * Residency Model: current Automerge Heads for this bag's doc.
    * Returns null when the doc has not yet hydrated (DocHandle.doc() returns
    * undefined). Used by CompositeStore.auditPins() to detect bag-pin drift.
    */
   async getHeads(): Promise<readonly string[] | null> {
-    const doc = this.handle.doc();
-    if (!doc) return null;
-    return automergeGetHeads(doc) as readonly string[];
+    return this.headsNow();
   }
 
   /** A put is a family of one: same skip-when-standing, same single change, same single fire. */
-  async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
-    return this.writeFamily([record], [], origin);
+  async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: { bag?: string; base?: readonly string[] }): Promise<void> {
+    return this.writeFamily([record], [], origin, options);
   }
 
   /**
-   * Write a meme family in ONE `handle.change`: every put merges (or creates) its record and every
+   * Write a meme family in one Automerge change: every put merges (or creates) its record and every
    * tombstone marks its title deleted inside the same Automerge change, so a peer receives the root,
    * its new children and its orphans' tombstones together or not at all. Records whose content
-   * already stands are skipped; when nothing moves, no change is made. Each member then fans out to
-   * projections exactly as a single `put`/`tombstone` would.
+   * content already stands at the selected base are skipped; when nothing moves, no change is made.
+   * A stale base uses `changeAt`, preserving concurrent field values as conflicts.
    */
   async writeFamily(
     puts:       readonly LarTiddlerRecord[],
     tombstones: readonly string[],
     origin:     ChangeOrigin,
+    options?:   { bag?: string; base?: readonly string[] },
   ): Promise<void> {
-    const current = this.handle.doc()?.tiddlers;
+    const docNow = this.handle.doc();
+    const requestedBase = options?.base;
+    let currentHeads: readonly string[] | null = null;
+    if (requestedBase !== undefined) {
+      try {
+        currentHeads = this.headsNow();
+      } catch (error) {
+        throw new Error("AutomergeDocStore.writeFamily: requested base cannot be honored because current heads are unreadable", { cause: error });
+      }
+    }
+    if (requestedBase !== undefined) {
+      if (!docNow || currentHeads === null) {
+        throw new Error("AutomergeDocStore.writeFamily: requested base cannot be honored before document hydration");
+      }
+      const history = new Set(getAllChanges(docNow).map((change) => decodeChange(change).hash));
+      const unknown = requestedBase.filter((head) => !history.has(head));
+      if (unknown.length > 0) {
+        throw new Error(`AutomergeDocStore.writeFamily: requested base contains heads outside this document history (${unknown.join(", ")})`);
+      }
+    }
+    let atBase: LarDoc | undefined = docNow;
+    try {
+      if (docNow && requestedBase) atBase = this.handle.view(encodeHeads(requestedBase as string[])).doc();
+    } catch (error) {
+      throw new Error("AutomergeDocStore.writeFamily: requested base has no readable document view", { cause: error });
+    }
+    if (requestedBase !== undefined && !atBase) {
+      throw new Error("AutomergeDocStore.writeFamily: requested base has no readable document view");
+    }
+    const current = atBase?.tiddlers;
     const moved = puts.filter((r) => {
       const existing = current?.[r.tiddler.title];
       return !(existing && _contentEquals(existing, r));
     });
-    if (moved.length === 0 && tombstones.length === 0) return;
+    const movedTombstones = tombstones.filter((title) => current?.[title]?.meta?.deleted !== true);
+    if (moved.length === 0 && movedTombstones.length === 0) return;
 
-    this.handle.change((doc) => {
+    const based = requestedBase !== undefined && currentHeads !== null && !headsEqual(requestedBase, currentHeads);
+    const change = (doc: LarDoc) => {
       const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
       for (const record of moved) {
         const title = record.tiddler.title;
         const existing = tiddlers[title];
         if (existing) _mergeRecord(existing, record);
-        else tiddlers[title] = _cloneRecord(record) as MutableLarTiddlerRecord;
+        else {
+          const created = _cloneRecord(record) as MutableLarTiddlerRecord;
+          if (based) {
+            if (!created.meta) created.meta = {};
+            created.meta.deleted = record.meta?.deleted === true;
+          }
+          tiddlers[title] = created;
+        }
       }
-      for (const title of tombstones) _markDeleted(tiddlers, title);
-    });
+      for (const title of movedTombstones) _markDeleted(tiddlers, title);
+    };
+    try {
+      if (based) this.handle.changeAt(encodeHeads(requestedBase as string[]), change);
+      else this.handle.change(change);
+    } catch (error) {
+      if (requestedBase !== undefined) {
+        throw new Error("AutomergeDocStore.writeFamily: requested base could not be applied", { cause: error });
+      }
+      throw error;
+    }
     const bag = this.bagId !== undefined ? { bag: this.bagId } : {};
-    for (const record of moved) this.provider.fireImmediate({ title: record.tiddler.title, record, origin, ...bag });
-    for (const title of tombstones) this.provider.fireImmediate({ title, record: _tombstoneRecord(title), origin, ...bag });
+    const heads = this._headsForEnvelope();
+    const tiddlersNow = this.handle.doc()?.tiddlers;
+    for (const record of moved) this.provider.fireImmediate({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, origin, ...bag, ...(heads !== undefined ? { heads } : {}) });
+    for (const title of movedTombstones) this.provider.fireImmediate({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), origin, ...bag, ...(heads !== undefined ? { heads } : {}) });
   }
 
   /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */
-  async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
-    return this.writeFamily([], [title], origin);
+  async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    return this.writeFamily([], [title], origin, options);
   }
 
   /** HARD-remove: delete the key so `get` returns null (ABSENT — falls through
@@ -309,7 +380,8 @@ export class AutomergeDocStore implements LarTiddlerStore {
     });
     // Fire record:null — absence; the adaptor's cross-bag resolution surfaces
     // whatever lower-bag copy now resolves beneath (vs a kāpae stop).
-    this.provider.fireImmediate({ title, record: null, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
+    const heads = this._headsForEnvelope();
+    this.provider.fireImmediate({ title, record: null, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}), ...(heads !== undefined ? { heads } : {}) });
   }
 
   subscribe(fn: (change: LarTiddlerChange) => void): () => void {

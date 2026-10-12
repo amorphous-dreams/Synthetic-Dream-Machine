@@ -1,13 +1,15 @@
 /**
  * parallel-drafts — Talk-Story conflict SURFACING over one bag's Automerge doc.
  *
- * A record merge assigns whole fields, so two actors who set one field concurrently resolve by
+ * A content merge assigns moved fields, so concurrent values on one field resolve by
  * Automerge's deterministic last-writer-wins: one value reads live and the other survives only as a
  * conflict op. This module reads those ops (`getConflicts`) and answers every concurrent value as an
  * ATTRIBUTED PARALLEL DRAFT in TW5's own draft shape — `Draft of '<title>' by <who>`, carrying
  * `draft.of` / `draft.title` — so the losing edit stays reachable beside the winner.
  *
- * It detects and records; it never decides (residency-model #/conflict-resolution). The live value
+ * It detects and records; it never decides (residency-model #/conflict-resolution). Each conflict op
+ * id appears in exactly one draft, with operations across distinct fields grouped when possible. Two
+ * same-writer operations on one field remain distinct drafts. The live value
  * stays exactly what the CRDT merged; nothing here writes, refuses, or picks. The operators — or
  * their agents, through Talk Story — read the drafts and author the resolving edit.
  *
@@ -23,12 +25,13 @@
  *     (a whole-record conflict — two actors creating one title concurrently — takes the actor's whole
  *     record instead);
  *   - `lar-conflict-actor`  — the Automerge actor that wrote these values;
+ *   - `lar-conflict-ops`    — the operation ids grouped into this draft;
  *   - `lar-conflict-fields` — the conflicted field names, space-separated (`*` for a whole record);
  *   - `lar-conflict-live`   — the conflicted fields whose live value is THIS actor's, space-separated
  *     (`*` when its whole record reads live; empty when none does). Last-writer-wins resolves each
  *     key on its own, so the live record can be a mosaic of several actors' values.
- * `<who>` reads the actor's own `modifier` value when it wrote one, else the actor id; two drafts that
- * would share a `<who>` both carry the actor prefix, so a title never names two drafts.
+ * `<who>` reads the actor's own `modifier` value when it wrote one, else the actor id; colliding names
+ * gain actor and operation identity so titles remain unique even for one actor.
  */
 
 import { getConflicts } from "@automerge/automerge";
@@ -91,18 +94,19 @@ function same(a: unknown, b: unknown): boolean {
 }
 
 /**
- * Read every concurrent value standing on `tiddlers[title]` and answer one draft per writing actor.
+ * Read every concurrent value standing on `tiddlers[title]` and answer one draft per grouped operation set.
  * Empty when the record carries no conflict. `tiddlers` is the doc's `tiddlers` map as Automerge
  * hands it out (a doc proxy, so `getConflicts` can read its ops).
  */
 export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddlerRecord[] {
   if (!tiddlers || typeof tiddlers !== "object") return [];
-  const map = tiddlers as Record<string, { tiddler?: Record<string, unknown> } | undefined>;
+  const map = tiddlers as Record<string, { tiddler?: Record<string, unknown>; meta?: Record<string, unknown> } | undefined>;
   const record = map[title];
   if (!record) return [];
 
-  type Draft = { actor: string; fields: Record<string, unknown>; conflicted: string[]; live: string[] };
-  const byActor = new Map<string, Draft>();
+  type Draft = { actor: string; opIds: string[]; fields: Record<string, unknown>; conflicted: string[]; live: string[] };
+  const draftsByActor = new Map<string, Draft[]>();
+  const draftByOp = new Map<string, Draft>();
 
   // A whole-record conflict: two actors created this title concurrently, each map a separate value.
   const whole = getConflicts(map as never, title as never) as Conflicts;
@@ -110,12 +114,15 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
     const liveRecord = plain(record);
     for (const [opId, value] of Object.entries(whole)) {
       const v = plain(value) as { tiddler?: Record<string, unknown> } | undefined;
-      byActor.set(actorOf(opId), {
+      const draft: Draft = {
         actor: actorOf(opId),
+        opIds: [opId],
         fields: { ...(v?.tiddler ?? {}) },
         conflicted: ["*"],
         live: same(v, liveRecord) ? ["*"] : [],
-      });
+      };
+      draftsByActor.set(draft.actor, [...(draftsByActor.get(draft.actor) ?? []), draft]);
+      draftByOp.set(opId, draft);
     }
   } else if (record.tiddler && typeof record.tiddler === "object") {
     // Field conflicts: concurrent assignments to one field of one shared record.
@@ -130,18 +137,68 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
       if (values.every((v) => same(v, values[0]))) continue;
       for (const [opId, value] of Object.entries(ops)) {
         const actor = actorOf(opId);
-        const draft = byActor.get(actor) ?? { actor, fields: { ...liveFields }, conflicted: [], live: [] };
+        let draft = draftByOp.get(opId);
+        if (!draft) {
+          const actorDrafts = draftsByActor.get(actor) ?? [];
+          draft = actorDrafts.find((candidate) => !candidate.conflicted.includes(field));
+          if (!draft) {
+            draft = { actor, opIds: [], fields: { ...liveFields }, conflicted: [], live: [] };
+            actorDrafts.push(draft);
+            draftsByActor.set(actor, actorDrafts);
+          }
+          draftByOp.set(opId, draft);
+        }
         const v = plain(value);
         draft.fields[field] = v;
-        draft.conflicted.push(field);
+        if (!draft.opIds.includes(opId)) draft.opIds.push(opId);
+        if (!draft.conflicted.includes(field)) draft.conflicted.push(field);
         if (same(v, liveFields[field])) draft.live.push(field);
-        byActor.set(actor, draft);
+      }
+    }
+
+    // Liveness is content too. A gone side uses a marker because it has no live tiddler fields.
+    const nestedLiveness = record.meta && typeof record.meta === "object"
+      ? getConflicts(record.meta as never, "deleted" as never) as Conflicts
+      : undefined;
+    const wholeMeta = getConflicts(record as never, "meta" as never) as Conflicts;
+    const liveness = nestedLiveness && Object.keys(nestedLiveness).length > 1
+      ? nestedLiveness
+      : wholeMeta && Object.keys(wholeMeta).length > 1
+        ? Object.fromEntries(Object.entries(wholeMeta).map(([opId, meta]) => [opId, (plain(meta) as { deleted?: unknown } | undefined)?.deleted === true])) as Conflicts
+        : undefined;
+    if (liveness && Object.keys(liveness).length > 1) {
+      const livenessValues = Object.values(liveness).map(plain);
+      if (!livenessValues.every((value) => same(value, livenessValues[0]))) {
+      for (const [opId, rawValue] of Object.entries(liveness)) {
+        const actor = actorOf(opId);
+        let draft = draftByOp.get(opId);
+        if (!draft) {
+          const actorDrafts = draftsByActor.get(actor) ?? [];
+          draft = actorDrafts.find((candidate) => !candidate.conflicted.includes("meta.deleted"));
+          if (!draft) {
+            draft = { actor, opIds: [], fields: { ...liveFields }, conflicted: [], live: [] };
+            actorDrafts.push(draft);
+            draftsByActor.set(actor, actorDrafts);
+          }
+          draftByOp.set(opId, draft);
+        }
+        const gone = plain(rawValue) === true;
+        if (gone) draft.fields = { title, "lar-conflict-deleted": "yes" };
+        if (!draft.opIds.includes(opId)) draft.opIds.push(opId);
+        if (!draft.conflicted.includes("meta.deleted")) draft.conflicted.push("meta.deleted");
+        if (gone === (record.meta?.deleted === true)) draft.live.push("meta.deleted");
+      }
       }
     }
   }
-  if (byActor.size < 2) return [];
+  const drafts = [...draftsByActor.values()].flat();
+  if (drafts.length < 2) return [];
 
-  const drafts = [...byActor.values()].sort((x, y) => (x.actor < y.actor ? -1 : x.actor > y.actor ? 1 : 0));
+  drafts.sort((x, y) => {
+    const left = [...x.opIds].sort()[0] ?? "";
+    const right = [...y.opIds].sort()[0] ?? "";
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
   const whoOf = (d: Draft): string => {
     const modifier = d.fields["modifier"];
     return typeof modifier === "string" && modifier !== "" ? modifier : d.actor;
@@ -151,7 +208,11 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
 
   return drafts.map((d) => {
     const named = whoOf(d);
-    const who = (counts.get(named) ?? 0) > 1 && named !== d.actor ? `${named} @${d.actor.slice(0, 8)}` : named;
+    const opIds = [...new Set(d.opIds)].sort();
+    const opKey = opIds.join("_");
+    const who = (counts.get(named) ?? 0) > 1
+      ? `${named} @${d.actor.slice(0, 8)}#${opKey.replaceAll("@", "_")}`
+      : named;
     return Object.freeze({
       tiddler: Object.freeze({
         ...d.fields,
@@ -159,6 +220,7 @@ export function readParallelDrafts(tiddlers: unknown, title: string): LarTiddler
         "draft.of": title,
         "draft.title": title,
         "lar-conflict-actor": d.actor,
+        "lar-conflict-ops": opIds.join(" "),
         "lar-conflict-fields": d.conflicted.join(" "),
         "lar-conflict-live": d.live.join(" "),
       }),

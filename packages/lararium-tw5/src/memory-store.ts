@@ -41,6 +41,7 @@ import type {
   LarTiddlerChange,
   LarTiddlerStore,
   ChangeOrigin,
+  LarWriteOptions,
 } from "@lararium/mesh";
 
 export class MemoryTiddlerStore implements LarTiddlerStore {
@@ -61,12 +62,12 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
     return this._records.get(title) ?? null;
   }
 
-  async put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> {
+  async put(record: LarTiddlerRecord, origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {
     this._records.set(record.tiddler.title, record);
     this._emit({ title: record.tiddler.title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
-  async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
+  async tombstone(title: string, origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {
     const existing = this._records.get(title);
     const dead: LarTiddlerRecord = {
       ...(existing ?? { tiddler: { title } }),

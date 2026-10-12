@@ -322,16 +322,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this._enqueue(change);
   }
 
-  /**
-   * Scale-3 bulk inbound path — fires when MemeProvider coalesces a large patch.
-   * Translate each URI to a LarTiddlerChange and enqueue. The nalu engine still
-   * applies the whole batch in one wiki.transact() at the next frame.
-   */
-  async onChangeset(uris: ReadonlySet<string>, origin: ChangeOrigin): Promise<void> {
-    await Promise.all(Array.from(uris).map(async (uri) => {
-      const rec = await this.store.get(uri);
-      this._enqueue({ title: uri, record: rec ?? null, origin });
-    }));
+  /** Forward each complete bulk envelope through the per-change bag resolution path. */
+  onChangeset(changes: readonly LarTiddlerChange[]): void {
+    for (const change of changes) this.onUriChanged(change);
   }
 
   /**

@@ -9,13 +9,11 @@
  *   refresh, and disk write-back hammers the filesystem redundantly.
  *
  * Contract:
- *   - Caller owns the DocHandle and feeds raw patches via handleChange().
- *   - Each projection is registered via addProjection(); receives one coalesced
- *     LarTiddlerChange per URI per debounce window (DEBOUNCE_MS).
- *   - After the initial Automerge replay settles, caller calls markSyncComplete().
- *     MemeProvider flushes all pending timers immediately and fires onSyncComplete
- *     on every registered projection — the TW5 projection uses this to trigger a
- *     single bulk-refresh instead of one refresh per tiddler.
+ *   - Caller owns the document and feeds raw patches via handleChange().
+ *   - Each projection receives state envelopes with the record, bag, and heads
+ *     read together at delivery time.
+ *   - After initial replay settles, caller calls markSyncComplete(); pending
+ *     projection work drains before onSyncComplete fires.
  *
  * Isomorphic: zero Automerge import. Works identically in Node and browser.
  * Lives in @lararium/mesh so @dreamdeck/app, @lararium/node, and future packages
@@ -58,9 +56,9 @@ export class MemeProvider {
   /** Set of island IDs whose initial replay has settled. Default island: "automerge". */
   private readonly _syncComplete = new Set<string>();
 
-  /** Per-bag accumulator for the gated changeset path — union the touched-URI set across a storm
-   *  of large transactions; fire ONE onChangeset(union) per window at latest state. */
-  private readonly _changesetPending = new Map<string, { touched: Set<string>; origin: ChangeOrigin }>();
+  /** Per-bag accumulator for the gated changeset path — retain each touched URI's origin and read
+   *  its current record and heads together when the changeset leaves. */
+  private readonly _changesetPending = new Map<string, { touched: Map<string, ChangeOrigin> }>();
   /** The Automerge-boundary nalu (the 5th shore): coalesce a storm of changeset emissions per bag,
    *  storm-safe via maxWaitMs (auditTime — never starves the re-projection under an unbroken flood). */
   private readonly _changesetGate = new KeyedCoalesceGate<string>({
@@ -73,7 +71,9 @@ export class MemeProvider {
     /** Returns the current full document state. Called at debounce-fire time, not patch time. */
     private readonly _getDoc: () => Record<string, unknown>,
     /** Optional bag context for projections that need source-bag awareness. */
-    private readonly _getBag?: () => string | undefined,
+    private readonly _getBag: (() => string | undefined) | undefined,
+    /** Synchronous heads snapshot paired with document reads. */
+    private readonly _getHeads: () => readonly string[] | null,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -105,7 +105,8 @@ export class MemeProvider {
   // ---------------------------------------------------------------------------
 
   /**
-   * Feed raw Automerge patches. Schedules a debounced fire for each touched key.
+   * Feed document patches. Small changes schedule per-URI delivery; large changes coalesce into
+   * complete state envelopes for projections that declare the bulk path.
    *
    * Eligible keys:
    *   lar:    — canonical meme URIs (corpus, wiki, system)
@@ -133,15 +134,14 @@ export class MemeProvider {
     if (touched.size >= MemeProvider.CHANGESET_THRESHOLD) {
       const hasChangesetProjection = [...this._projections].some((p) => p.onChangeset);
       if (hasChangesetProjection) {
-        // The 5th nalu shore: GATE the onChangeset emission per bag. Union the touched-URI set and
-        // coalesce a storm of large transactions into ONE onChangeset(union) per window at latest
-        // state (re-projection is idempotent-on-current-heads, so intermediates drop losslessly).
+        // Gate bulk delivery per bag. Union touched URIs and read their complete state envelopes at
+        // flush, so intermediate values can be omitted without losing the latest document state.
         // Storm-safe — the gate's maxWaitMs guarantees progress under an unbroken flood instead of
         // starving the re-projection (Mogul–Ramakrishnan receive-livelock).
         const bagId = this._getBag?.() ?? "automerge";
         const acc = this._changesetPending.get(bagId);
-        if (acc) { for (const u of touched) acc.touched.add(u); acc.origin = origin; }
-        else { this._changesetPending.set(bagId, { touched: new Set(touched), origin }); }
+        if (acc) { for (const u of touched) acc.touched.set(u, origin); }
+        else { this._changesetPending.set(bagId, { touched: new Map([...touched].map((u) => [u, origin])) }); }
         this._changesetGate.mark(bagId);
 
         // Non-changeset projections still take the per-URI debounce path; drop any per-URI timers
@@ -232,14 +232,28 @@ export class MemeProvider {
     this._pending.set(uri, { origin, timer });
   }
 
-  /** Crest the gated changeset for one bag — fire onChangeset(union) once, at the latest state. */
+  /** Read complete current envelopes and deliver one coalesced changeset per bag. */
   private _flushChangeset(bagId: string): void {
     const acc = this._changesetPending.get(bagId);
     if (!acc || acc.touched.size === 0) return;
     this._changesetPending.delete(bagId);
+    const doc = this._getDoc();
+    const bag = this._getBag?.();
+    const heads = this._getHeads() ?? undefined;
+    const changes: LarTiddlerChange[] = [];
+    for (const [uri, origin] of acc.touched) {
+      const raw = doc[uri] as LarTiddlerRecord | undefined;
+      changes.push({
+        title: uri,
+        record: raw ? Object.freeze({ tiddler: Object.freeze({ ...raw.tiddler }), ...(raw.meta ? { meta: Object.freeze({ ...raw.meta }) } : {}) }) : null,
+        origin,
+        ...(bag !== undefined ? { bag } : {}),
+        ...(heads !== undefined ? { heads } : {}),
+      });
+    }
     for (const p of this._projections) {
       if (p.onChangeset) {
-        try { p.onChangeset(acc.touched, acc.origin); }
+        try { p.onChangeset(changes); }
         catch (e) { console.error("[MemeProvider] projection error in onChangeset:", e); }
       }
     }
@@ -248,9 +262,12 @@ export class MemeProvider {
   private _fire(uri: string, origin: ChangeOrigin): void {
     const doc = this._getDoc();
     const raw = doc[uri] as LarTiddlerRecord | undefined;
-    const record: LarTiddlerRecord | null = raw ? Object.freeze(raw) : null;
+    const record: LarTiddlerRecord | null = raw
+      ? Object.freeze({ tiddler: Object.freeze({ ...raw.tiddler }), ...(raw.meta ? { meta: Object.freeze({ ...raw.meta }) } : {}) })
+      : null;
     const bag = this._getBag?.();
-    const change: LarTiddlerChange = { title: uri, record, origin, ...(bag !== undefined && { bag }) };
+    const heads = this._getHeads() ?? undefined;
+    const change: LarTiddlerChange = { title: uri, record, origin, ...(bag !== undefined && { bag }), ...(heads !== undefined && { heads }) };
     for (const p of this._projections) {
       try { p.onUriChanged(change); }
       catch (e) { console.error("[MemeProvider] projection error in onUriChanged:", e); }
