@@ -29,7 +29,7 @@ Vessel entrypoints (node, browser) bind the I/O; this module names the envelopes
 
 # Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort).
 # The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas.
-# The island owns its timing. The in-wiki nalu engine drives frame-aligned drain (browser `requestAnimationFrame` with Safari fallback; node `setTimeout(16ms)`); deltas accumulate via `$tw.lares.enqueueNalu`; one `wiki.transact()` per frame across all bags. No raw-message-receipt drains.
+# The island owns its timing. The wiki shore queues every inbound change at `$tw.lares.enqueueNalu` and lands the queue in slices, yielding to the host between them; the in-wiki nalu engine applies each change synchronously (`$tw.lares.applyNalu`). One queue serves all bags. No raw-message-receipt drains (`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`).
 # //(retired)// The frame-completion ACK signal — drain timing stays island-internal.
 # Vessel oracle delta delivery removed. CRDT sync via `syncPort` stands as the sole source of tiddler truth.
 # `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null = pre-CAS). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the @lararium CRDT doc after `handle.whenReady()`; two vessels federating @lararium share the engine automatically via Automerge sync.
@@ -113,6 +113,6 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_XMUhuW7UBf114M9ge1DAs3zkbicxPdn6_vfMYFHvI8
+<<^ code="&#x0003;">>ni:///sha-256;hhp0G4ANIulJrf8xZl_LX9zYLu4MMd0ysJ8qHn9q_lQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -25,7 +25,7 @@ uri-path  = "ha.ka.ba/lararium/api/camera-mount"
 `CameraMount` specifies the static structure of one camera:
 the parse tree → widget tree → fake DOM chain that TW5 runs per view frustum.
 
-`mountCamera` constructs the widget tree once and refreshes it on wiki changes. The nalu engine owns frame-aligned draining across bags; cameras attach to that engine through `mountCamera`.
+`mountCamera` constructs the widget tree once and refreshes it on wiki changes. The wiki shore owns the landing of changes across bags and the nalu engine applies them; a camera attaches to the wiki they write through `mountCamera`.
 
 !! Three-Tree Chain
 
@@ -70,8 +70,8 @@ Returns a teardown function that removes the wiki change listener and detaches t
 
 ''C-1 Structural separation.''
 `mountCamera` wires the static chain (parse → widget → fake DOM) once.
-It does not manage tick timing or accumulator drain.
-The nalu engine owns frame-aligned drain and tick timing.
+It does not manage pacing or the landing queue.
+The wiki shore owns the landing queue and its pacing.
 
 ''C-2 One document per camera.''
 Each camera receives its own `document` instance.
@@ -81,8 +81,8 @@ The TW5 wiki (world graph) remains shared — only the render surface separates.
 ''C-3 View frustum in root tiddler.''
 The root tiddler's wikitext body defines the view frustum
 (e.g. `<$list filter="[tag[...]]">` or a transclusion of a story-list tiddler).
-The accumulator carries no filter — the widget tree's dependency graph handles
-selective refresh after each `wiki.transact()`.
+The landing queue carries no camera filter — the widget tree's dependency graph handles
+selective refresh after each `change` dispatch.
 
 ''C-4 Change listener owned by mountCamera.''
 `mountCamera` registers a wiki `change` handler that calls `widget.refresh(changes)`.
@@ -145,6 +145,6 @@ The `mountCamera` interface stays identical. The `document` type changes; the ch
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jkdtuse5evNt3oN4HPTmI7yAUuLX721oI7cvjEwve3g
+<<^ code="&#x0003;">>ni:///sha-256;jaqlKyaq8HrutghzPEhIx9Jfet_wh3B4uOb5zlm8ViE
 
 <<^ code="&#x0004;" -> to="?">>

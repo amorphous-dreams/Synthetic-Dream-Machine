@@ -10,7 +10,7 @@ file-path = "bags/lararium/ha.ka.ba/lararium/docs/verse-mesh.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
-role      = "design narrative for the Verse polychronous CRDT mesh — peer model, VM pool, camera model, accumulator wiring"
+role      = "design narrative for the Verse polychronous CRDT mesh — peer model, VM pool, camera model, landing-queue wiring"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -34,14 +34,14 @@ The invariant: bags persist, wikis compose.
 The Verse mesh runs ''N local clocks'', one per TW5 VM instance.
 Each VM constitutes one clock domain (Signal/INRIA polychronous model, Berry 1991).
 Rendezvous between clock domains happens ''only at CRDT merge boundaries'' —
-when Automerge delivers a remote patch, the island's accumulator gates it to the
-next local frame boundary.
+when Automerge delivers a remote change, the island's wiki shore queues it for a
+landing paced by host task.
 
 No global conductor exists.
 No peer commands another peer's tick rate.
-Each island owns its own frame cadence, inside its own worker.
+Each island owns its own pacing, inside its own worker.
 The CRDT carries state across the water in causal order.
-The accumulator releases it to TW5 one frame at a time.
+The wiki shore lands it in TW5 slice by slice.
 
 !! VM Pool — Every Engine in a Worker
 
@@ -56,8 +56,8 @@ Vessel main thread (coordinates; holds no engine)
  │    ├── island[wiki A]    ← a Worker (worker_threads on node, Web Worker in a browser)
  │    │    ├── Repo-in-island        ← CRDT sync over the transferred syncPort
  │    │    ├── TW5Engine             ← one TW5 wiki — the shared world graph
- │    │    ├── nalu engine           ← ONE accumulator queue across all bags; one transact per frame
- │    │    ├── IslandAdaptor         ← outbound writes
+ │    │    ├── nalu engine           ← applies ONE change, synchronously
+ │    │    ├── IslandAdaptor         ← the wiki shore: one landing queue across all bags; outbound writes
  │    │    └── Camera[story-river]
  │    │         ├── widget tree      ← wiki.makeTranscludeWidget("$:/core/ui/RootTemplate", ...)
  │    │         └── VM-side document ← $tw.fakeDocument; frames cross to the main thread
@@ -120,13 +120,13 @@ frame carries a delta (`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`).
 !!! Shared World Graph — Inverted Control
 
 All cameras in one island ''share one TW5 wiki'' (world graph).
-The wiki fires a `change` event after each `wiki.transact()`.
+The wiki fires one `change` event for the titles its `nextTick` queue gathered.
 Each widget tree registered via `wiki.addEventListener("change", tree.refresh)`
 reacts independently — widget trees with no dependency on the changed tiddlers
 return `refresh()` in O(1) without repaint.
 
-The ''view frustum'' lives in the widget tree's root filter tiddler, not in the accumulator.
-The accumulator carries no camera identity — ''inverted control''.
+The ''view frustum'' lives in the widget tree's root filter tiddler, not in the landing queue.
+The landing queue carries no camera identity — ''inverted control''.
 
 !!! Input Path — No New Machinery
 
@@ -135,7 +135,7 @@ dispatch events through the widget tree's standard TW5 event bus.
 A `dispatchEvent({ type: "tm-verse-event", uri, listenable })` call travels up the
 widget tree to the root widget, where `reaction-router.ts` catches it.
 Outbound writes — when a user saves a tiddler from any camera — go through
-`IslandAdaptor.saveTiddler → store.put()`, the same path the Story River uses.
+`IslandAdaptor.saveTiddler → store.writeFamily()`, the same path the Story River uses.
 No new write-back machinery is necessary for additional cameras.
 
 A browser camera's input starts on the painted surface. The main thread relays a DOM event by the
@@ -195,22 +195,22 @@ Input from any camera writes back through `IslandAdaptor.saveTiddler` →
 
 !! Visibility Gate — The Scale Boundary
 
-The accumulator drains patches for all queued tiddlers by default.
-At document scale (5 000+ tiddlers), a full drain per frame blows the 16ms budget.
+The wiki shore lands the changes of every queued bag, in slices of at most 200.
 
-The visibility gate defers this:
-only flush patches for tiddlers the ''active story river currently renders''.
-Background bags (cold layers not in the active recipe view) accumulate indefinitely
-and flush on the next explicit navigation event.
+A visibility gate would defer part of that work:
+land only the tiddlers the ''active story river currently renders'', and hold
+background bags (cold layers not in the active recipe view) until the next explicit
+navigation event.
 
 This gate stands unbuilt.
 It names the correct scale boundary before the project reaches it.
 
 !! Wiring Law — What Stands, and What Stays Unbuilt
 
-''What stands.'' One accumulator per wiki, inside the wiki: the nalu engine
-(`packages/lararium-tw5/src/modules/nalu-engine.ts`) holds one queue across every CRDT bag and
-drains it once per frame into ONE `wiki.transact()`. The wiki fires `change` once per transact;
+''What stands.'' One queue per wiki, at the wiki shore: `IslandAdaptor` holds one landing queue
+across every CRDT bag and lands it in slices, and the nalu engine
+(`packages/lararium-tw5/src/modules/nalu-engine.ts`) applies each change synchronously. The wiki
+fires `change` on its own `nextTick` schedule, apart from the shore's slices;
 every mounted widget tree sees it, and only trees depending on the changed tiddlers repaint.
 
 ```typescript
@@ -239,28 +239,29 @@ newest wins, and a burst of changes collapses to one post.
 
 !! Tick Sources by Platform
 
-Every row names a tick ''inside a worker''; no row places an engine on a main thread.
+Every row names a pace ''inside a worker''; no row places an engine on a main thread.
 
-| Platform | Where the engine runs | Drain tick (nalu engine) | Paint |
+| Platform | Where the engine runs | Landing pace (wiki shore) | Paint |
 |---|---|---|---|
-| Browser | Web Worker | the worker's `requestAnimationFrame` where the runtime offers one, else `setTimeout(16ms)` | main thread applies `projection:frame` to a shadow root |
-| Node | `worker_threads` Worker | `setTimeout(16ms)` | none — disk projection in-island; `$tw.fakeDocument` for a headless render |
-| Mobile, civil, interplanetary | a worker of that runtime (unbuilt) | that runtime's timer | that platform's surface |
+| Browser | Web Worker | a host task between slices: `scheduler.yield` where the worker offers one, else a `MessageChannel` message | main thread applies `projection:frame` to a shadow root |
+| Node | `worker_threads` Worker | a host task between slices: `setImmediate` | none — disk projection in-island; `$tw.fakeDocument` for a headless render |
+| Mobile, civil, interplanetary | a worker of that runtime (unbuilt) | that runtime's host task | that platform's surface |
 
-The accumulator interface stays identical across all platforms.
-The tick source changes; the drain contract does not.
+The landing queue stays identical across all platforms.
+The host-task seat changes; the landing contract does not. The nalu engine holds no timer.
 
 <<~ ahu #/edges>>
 
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vNIonQM44V4hG7mh-s94pbX78428tmwVl9FKMZouGPc
+<<^ code="&#x0003;">>ni:///sha-256;hZ6mRLKhtnn0hRctuPy83pQha6-Ri8dN1h0K09VVe-o
 
 <<^ code="&#x0004;" -> to="?">>
