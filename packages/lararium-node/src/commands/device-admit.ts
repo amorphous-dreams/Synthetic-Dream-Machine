@@ -33,6 +33,7 @@ import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
+import { wsUrlForOrigin } from "../lan-address.js";
 
 export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive";
 
@@ -73,6 +74,22 @@ export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive"
  */
 export function admitBoardIsland(ownVesselKey: string): string {
   return nodeNexusIsland({ ownVesselKey });
+}
+
+/**
+ * The relay address an admit carries when the caller names none: the vessel's DECLARED reach face
+ * (`LAR_PUBLIC_URL`), turned into its relay URL by the one derivation the banner uses, so an `https` name
+ * carries `wss`. A loopback face never rides an admit: on the joining device `localhost` names that device.
+ * No declaration, or a loopback one, leaves the address null and the joinee dials what its operator supplies.
+ */
+export function deviceAdmitSyncUrl(explicitSyncUrl?: string): string | null {
+  if (explicitSyncUrl !== undefined) return explicitSyncUrl;
+  const publicUrl = process.env["LAR_PUBLIC_URL"]?.trim();
+  if (!publicUrl) return null;
+  let host: string;
+  try { host = new URL(publicUrl).hostname.toLowerCase(); } catch { return null; }
+  if (host === "localhost" || host === "[::1]" || host === "::1" || /^127\./.test(host)) return null;
+  return wsUrlForOrigin(publicUrl);
 }
 
 /** The oracle titles whose documents a joinee mounts as its hearth's base canon. */
@@ -268,7 +285,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaGroupAgentIdHex,
     meshCabalDocIdHex,
     boundEpoch,
-    syncUrl:      opts.syncUrl      ?? null,
+    syncUrl:      deviceAdmitSyncUrl(opts.syncUrl),
     islandDocUrl: opts.islandDocUrl ?? null,
     // THE DOOR. Defaults to this hearth's OWN daemon doc, read from the same bootstrap the sentinel ids come
     // from — a joinee seeds its own plane at admission, so only this url tells it where to knock.
