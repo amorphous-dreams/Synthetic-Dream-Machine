@@ -47,14 +47,14 @@ import type { Verb } from "./verb-tiddler.js";
  * This table is the one place a verb's membership gets declared; the subsets below read it off.
  */
 const ACTION_VERB_TABLE = [
-  { verb: "ADD",    transfer: true,  bagOp: false },
-  { verb: "COPY",   transfer: true,  bagOp: false },
-  { verb: "MOVE",   transfer: true,  bagOp: false },
-  { verb: "CLEAR",  transfer: false, bagOp: true  },
-  { verb: "DROP",   transfer: false, bagOp: true  },
-  { verb: "LOAD",   transfer: false, bagOp: false },
-  { verb: "INGEST", transfer: false, bagOp: false },
-  { verb: "CREATE", transfer: false, bagOp: false },
+  { verb: "ADD",    transfer: true,  bagOp: false, writesBag: true  },
+  { verb: "COPY",   transfer: true,  bagOp: false, writesBag: true  },
+  { verb: "MOVE",   transfer: true,  bagOp: false, writesBag: true  },
+  { verb: "CLEAR",  transfer: false, bagOp: true,  writesBag: true  },
+  { verb: "DROP",   transfer: false, bagOp: true,  writesBag: false },
+  { verb: "LOAD",   transfer: false, bagOp: false, writesBag: true  },
+  { verb: "INGEST", transfer: false, bagOp: false, writesBag: true  },
+  { verb: "CREATE", transfer: false, bagOp: false, writesBag: false },
 ] as const;
 
 export type ActionVerb = typeof ACTION_VERB_TABLE[number]["verb"];
@@ -91,6 +91,20 @@ export const BAG_VERBS: readonly BagVerb[] =
 const BAG_VERB_SET: ReadonlySet<string> = new Set(BAG_VERBS);
 export function isBagVerb(verb: string): verb is BagVerb {
   return BAG_VERB_SET.has(verb);
+}
+
+export type BagWritingVerb = Extract<typeof ACTION_VERB_TABLE[number], { readonly writesBag: true }>["verb"];
+
+/** ACTION verbs that write into a standing bag's doc, so a retired bag refuses them.
+ *  Derived by filtering ACTION_VERB_TABLE's `writesBag` flag — never a separately hand-typed list.
+ *  CLEAR tombstones into the bag's doc; DROP only retires (a re-DROP answers retiredCount 0);
+ *  CREATE is the cure that stands a fresh bag. */
+export const BAG_WRITING_VERBS: readonly BagWritingVerb[] =
+  ACTION_VERB_TABLE.filter((e): e is typeof ACTION_VERB_TABLE[number] & { writesBag: true } => e.writesBag)
+    .map((e) => e.verb);
+const BAG_WRITING_VERB_SET: ReadonlySet<string> = new Set(BAG_WRITING_VERBS);
+export function writesBag(verb: string): verb is BagWritingVerb {
+  return BAG_WRITING_VERB_SET.has(verb);
 }
 
 // ── ResidencyAction discriminated union ────────────────────────────────────

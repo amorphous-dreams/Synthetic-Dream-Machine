@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
 import {
-  ACTION_VERBS, TRANSFER_VERBS, BAG_VERBS,
-  isActionVerb, isTransferVerb, isBagVerb,
+  ACTION_VERBS, TRANSFER_VERBS, BAG_VERBS, BAG_WRITING_VERBS,
+  isActionVerb, writesBag, isTransferVerb, isBagVerb,
   newChangeId,
   encodeResidencyArgs, parseResidencyAction,
   isResidencyActionUri,
@@ -70,6 +70,15 @@ describe("ACTION_VERBS membership", () => {
     expect(isTransferVerb("CLEAR")).toBe(false);
     expect(isTransferVerb("DROP")).toBe(false);
     expect(isTransferVerb("LOAD")).toBe(false);
+  });
+
+  test("BAG_WRITING_VERBS = the verbs that write into a standing bag's doc", () => {
+    expect([...BAG_WRITING_VERBS].sort()).toEqual(["ADD", "CLEAR", "COPY", "INGEST", "LOAD", "MOVE"]);
+    expect(writesBag("CLEAR")).toBe(true);
+    expect(writesBag("DROP")).toBe(false);
+    expect(writesBag("CREATE")).toBe(false);
+    expect(writesBag("NOPE")).toBe(false);
+    for (const v of BAG_WRITING_VERBS) expect(isActionVerb(v)).toBe(true);
   });
 
   test("BAG_VERBS subset = CLEAR, DROP", () => {
