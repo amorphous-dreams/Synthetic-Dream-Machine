@@ -138,7 +138,7 @@ describe("DurableNodeFSStorageAdapter", () => {
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
-  test("a remove while the key's save is in flight drops the held bytes", async () => {
+  test("a remove while the key's save is in flight drops the held bytes, and the key stays removed once that save settles", async () => {
     const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
     const held = await holdSync();
     try {
@@ -147,11 +147,73 @@ describe("DurableNodeFSStorageAdapter", () => {
       await held.staged;
       const before = await a.load(KEY);
       expect(before && [...before]).toEqual([6]);                   // CONTROL: held while in flight
-      await a.remove(KEY);
-      expect(await a.load(KEY)).toBeUndefined();
+      // The remove joins the save in flight and unlinks after it, so it settles only once the save has.
+      const removing = a.remove(KEY);
+      expect(await a.load(KEY), "the held bytes leave at the remove call").toBeUndefined();
       held.release();
       await saving;
+      await removing;
+      expect(await a.load(KEY), "a removed key stays removed once its in-flight save settles").toBeUndefined();
+      expect(await new DurableNodeFSStorageAdapter(dir).load(KEY), "and a fresh opener reads no chunk").toBeUndefined();
+      // CONTROL: a save made after the remove lands and reads back.
+      await a.save(KEY, Uint8Array.from([7, 7]));
+      const after = await new DurableNodeFSStorageAdapter(dir).load(KEY);
+      expect(after && [...after]).toEqual([7, 7]);
     } finally { held.release(); rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("a removeRange while a save under the prefix is in flight drops the held bytes and the key stays removed", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    const held = await holdSync();
+    try {
+      const a = new DurableNodeFSStorageAdapter(dir);
+      const saving = a.save(KEY, Uint8Array.from([6, 6]));
+      await held.staged;
+      const removing = a.removeRange([KEY[0]!]);
+      expect(await a.load(KEY), "the held bytes leave at the removeRange call").toBeUndefined();
+      expect(await a.loadRange([KEY[0]!]), "and the range lists no held chunk").toEqual([]);
+      held.release();
+      await saving;
+      await removing;
+      expect(await a.loadRange([KEY[0]!])).toEqual([]);
+      expect(await new DurableNodeFSStorageAdapter(dir).load(KEY)).toBeUndefined();
+    } finally { held.release(); rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("the holding outlives the first of two saves in flight: a read answers the later save's bytes until it settles", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    // The first file sync passes; every later one waits, so the second save stands in flight after the first settled.
+    const probe = await fsp.open(join(dir, ".probe"), "w");
+    const proto = Object.getPrototypeOf(probe) as { sync: (this: unknown) => Promise<void> };
+    await probe.close();
+    rmSync(join(dir, ".probe"));
+    const realSync = proto.sync;
+    let open!: () => void;
+    const gate = new Promise<void>((r) => { open = r; });
+    let reached!: () => void;
+    const secondStaged = new Promise<void>((r) => { reached = r; });
+    let syncs = 0;
+    let holdAfter = Number.POSITIVE_INFINITY;
+    proto.sync = async function (this: unknown): Promise<void> { if (++syncs > holdAfter) { reached(); await gate; } return realSync.call(this); };
+    try {
+      const a = new DurableNodeFSStorageAdapter(dir);
+      // One save of another key counts the file syncs a save makes; the gate then holds every sync past the first save's.
+      await a.save([KEY[0]!, "snapshot", "counted"], Uint8Array.from([0]));
+      holdAfter = syncs * 2;
+      const first = a.save(KEY, Uint8Array.from([1]));
+      const second = a.save(KEY, Uint8Array.from([2, 2]));
+      await first;
+      await secondStaged;
+      // The known positive: the disk holds the first save's bytes while the second waits on its sync.
+      const shard = join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot", "head0");
+      expect([...readFileSync(shard)]).toEqual([1]);
+      const back = await a.load(KEY);
+      expect(back && [...back], "the adapter answers the save still in flight").toEqual([2, 2]);
+      proto.sync = realSync;
+      open();
+      await second;
+      expect([...readFileSync(shard)]).toEqual([2, 2]);
+    } finally { proto.sync = realSync; open(); rmSync(dir, { recursive: true, force: true }); }
   });
 
   test("strands no temp file in the shard dir after a save", async () => {

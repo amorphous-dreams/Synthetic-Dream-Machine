@@ -32,7 +32,7 @@
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import type { Chunk, StorageKey } from "@automerge/automerge-repo/slim";
 import { mkdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 
 import { atomicWriteFile } from "./fs-atomic.js";
 
@@ -123,15 +123,35 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     }
   }
 
+  /**
+   * A REMOVE JOINS THE KEY'S SAVE IN FLIGHT, THEN UNLINKS. The held bytes leave at the call, so no read
+   * answers them; the unlink waits for every write of the key already issued, so a rename landing late
+   * never brings the key back; and the removal stands in the key's own write order, so a save issued after
+   * it lands after it.
+   */
   override async remove(keyArray: string[]): Promise<void> {
-    this.#pending.delete(this.#pathOf(keyArray));
-    await super.remove(keyArray);
+    const filePath = this.#pathOf(keyArray);
+    this.#pending.delete(filePath);
+    await this.#afterWritesOf([filePath], () => super.remove(keyArray));
   }
 
   override async removeRange(keyPrefix: string[]): Promise<void> {
+    const paths = new Set<string>();
     for (const [path, p] of this.#pending) {
-      if (keyPrefix.every((part, i) => p.key[i] === part)) this.#pending.delete(path);
+      if (keyPrefix.every((part, i) => p.key[i] === part)) { this.#pending.delete(path); paths.add(path); }
     }
-    await super.removeRange(keyPrefix);
+    // A write whose holding already left still stands in flight under the prefix's directory.
+    const base = keyPrefix.length > 0 ? this.#pathOf(keyPrefix) : this.#root;
+    for (const path of this.#inFlight.keys()) if (path === base || path.startsWith(base + sep)) paths.add(path);
+    await this.#afterWritesOf([...paths], () => super.removeRange(keyPrefix));
+  }
+
+  /** Run `removal` after every write in flight for `paths`, standing in each path's write order while it runs. */
+  async #afterWritesOf(paths: readonly string[], removal: () => Promise<void>): Promise<void> {
+    const priors = paths.map((path) => (this.#inFlight.get(path) ?? Promise.resolve()).catch(() => { /* that write's fault belongs to its own caller */ }));
+    const gone = Promise.all(priors).then(removal);
+    for (const path of paths) this.#inFlight.set(path, gone);
+    try { await gone; }
+    finally { for (const path of paths) if (this.#inFlight.get(path) === gone) this.#inFlight.delete(path); }
   }
 }
