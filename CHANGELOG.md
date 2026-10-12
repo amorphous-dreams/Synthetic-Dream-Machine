@@ -28,6 +28,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A refused boot frees its store.** The next boot meets no store claim left by a refused boot.
 - **The household terminator passes a long socket handshake.** Its header buffers hold a 16k sub-protocol header on the way in and in the vessel's answer.
 - **Passphrase seal verbs refuse a carrier sealed under the vessel key.** The refusal names the carrier and moves no bytes.
+- **Every signature reads one strict rule.** Every Ed25519 verifier in the house calls one door: a key reads in its one canonical encoding and outside the eight small-order points, a signature reads canonical, and the equation takes no cofactor. A small-order key, which a lenient verifier lets anyone sign for, refuses by name where it enters a charter seat, a guardian set, a key log, a device edge or an admit; a charter, roll or log that names one refuses whole.
 
 **Added**
 - **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
