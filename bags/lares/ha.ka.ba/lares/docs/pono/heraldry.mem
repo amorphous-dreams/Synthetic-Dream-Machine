@@ -126,7 +126,7 @@ The ruling names three, and they differ by ''what holds the presenting key'', ne
 
 ''A member's contract-in knows exactly one way to seat a vessel, and it runs through a persona root.'' `runNexusContract` requires an admit to carry the operator's own "accepts carriage" seal, and `resolveContractIn` obtains it two ways only — a supplied out-of-band token, or a self-sign from a HELD persona seed (`packages/lararium-node/src/commands/nexus-contract.ts:124-146`). Both walk `generateOrLoadPersonaGroupRoot` / `loadPersonaGroupRootSeed` (`nexus-contract.ts:132-136`). A Herm holds neither, so `resolveContractIn` refuses with the doctrine's own line: //"A Nexus never conscripts an operator into carriage"// (`nexus-contract.ts:138-142`, quote license). ''The refusal reads correct and reaches the wrong subject'': it guards against conscripting a PERSON, and a Herm stands as a place.
 
-''So the relation a Herm enters reads as a CARRIAGE contract, and canon already named it.'' #/herm-establishment rules that an operator "establishes a Herm by signing a Nexus carriage contract from a node vessel" and that the Herm's authority "rides the wax-stamped carriage contract … a frozen causal edge attesting //this operator carriage-contracted this Herm under epoch N//, never a live persona in the Herm" (`identity-classes.mem`, quote license). ''The word carriage already means this; the code has only ever meant the member's contract-in by it'' (`packages/lararium-mesh/src/carriage-registry.ts:78-84` — `contractSig.signer` MUST equal the entry's `nym`).
+''So the relation a Herm enters reads as a CARRIAGE contract, and canon already named it.'' `identity-classes#/herm-establishment` rules that an operator "establishes a Herm by signing a Nexus carriage contract from a node vessel" and that the Herm's authority "rides the wax-stamped carriage contract … a frozen causal edge attesting //this operator carriage-contracted this Herm under epoch N//, never a live persona in the Herm" (`identity-classes.mem`, quote license). ''The word carriage already means this; the code has only ever meant the member's contract-in by it'' (`packages/lararium-mesh/src/carriage-registry.ts:78-84` — `contractSig.signer` MUST equal the entry's `nym`).
 
 <<~moves seat/one-kind-member-contract-in -> seat/two-kinds-MEMBER-and-CARRIER on/a-vessel-key-signed-carriage-contract if/the-signer-is-a-PLACE-and-never-a-person do/admit-as-CARRIER-never-into-members>>
 
@@ -217,7 +217,7 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 !! Questions for the operator
 
 # ''Q1 — does a cabal's Handle owner-set EQUAL `keptBy`, or ride beside it?'' Equal reads elegant and fuses two thresholds that answer different questions (who keeps the book ⊥ who may turn the name), so a steward leaving the book would move the arms. Beside reads honest and asks a cabal to mint a second set. ''The design leans BESIDE'', and names the lean rather than taking it.
-# ''Q2 — may a Herm's card name its operator at all?'' #/herm-establishment says the authority relation rides the wax-sealed contract, "never a live persona in the Herm". A card carrying an `attest` of //"contracted under charter epoch N"// claims the relation without naming a human, and verifies reader-locally like every attestation (`handle-card.mem` #/the-chain). ''Lean: yes, as an attestation of the EPOCH, never of the operator.''
+# ''Q2 — may a Herm's card name its operator at all?'' `identity-classes#/herm-establishment` says the authority relation rides the wax-sealed contract, "never a live persona in the Herm". A card carrying an `attest` of //"contracted under charter epoch N"// claims the relation without naming a human, and verifies reader-locally like every attestation (`handle-card.mem` #/the-chain). ''Lean: yes, as an attestation of the EPOCH, never of the operator.''
 # ''Q3 — does an unlit hearth publish arms?'' `standAs` already returns `"herm"` for it (`vessel-standing.ts:126-129`), so the shape permits it; the cost reads that a hearth later lit would want to burn the place-card and publish a persona card, which the terminal burn makes clean. ''Lean: yes, and the burn makes the right ending.''
 # ''Q4 — a carrier contract's LEASE.'' A member entry is monotone-versioned and revocable by quorum (`carriage-registry.ts:236-257`). A carrier could instead expire by non-renewal — the shape `identity-classes.mem` #/the-office prefers ("the quorum SEATS; the renewal rides the lease-epoch roll"). ''Lean: non-renewal'', but it adds a pace reader this step does not otherwise need.
 # ''Q5 — which glamour does a Herm show?'' A shore-name a traveller reads, or the empty string. A named crossroads reads friendlier and adds one more correlatable datum across restarts. ''Lean: operator-set, defaulting to empty.''
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ChGO7OrfE3OxPbgwQib4RNzmzeLLUcN5q3wTiZS9KQ0
+<<^ code="&#x0003;">>ni:///sha-256;i9NHHHsG5otE8cfJ9jopW07C-WSmnuC0a2XzVo-0qYE
 
 <<^ code="&#x0004;" -> to="?">>

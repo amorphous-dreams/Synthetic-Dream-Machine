@@ -236,11 +236,11 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/ai-phrasebook-design">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h8IFSTATavB1tZkp2uWTONeTFpGTKl9lwNVGdTSPjyk
+<<^ code="&#x0003;">>ni:///sha-256;qLfENf0b2xpunVv4ebCgzpLd7O2I6fTEAnXHs48JSfA
 
 <<^ code="&#x0004;" -> to="?">>

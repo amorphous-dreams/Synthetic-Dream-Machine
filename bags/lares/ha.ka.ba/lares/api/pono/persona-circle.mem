@@ -52,7 +52,7 @@ The base atom carries ''two keys'' (Veilid's peer-identity ⊥ user-identity, a 
 * ''vessel-key'' — the device/substrate identity. ''DEVICE-MINTED, forged on its own device, the private half never leaving'' (#vessel-key doctrine; admit-by-signing-never-by-sharing). It is ''NEVER derived from the persona seed'' — deriving it would be the ''copy-the-key antipattern'' that dissolves per-device revocation (Veilid/SSB). It is a //local substrate secret// and ''MUST NEVER co-surface'' (sign-alongside / share-route / time-correlate) with the veiled-user-key.
 * ''veiled-user-key'' — the sovereign pseudonym presented through the veil. This is the ''anon user-pseudonym'' — a binding whose name is ⊥ until disclosed.
 
-This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-KEM cut (#/four-port-swap); it does not restate it.
+This adds a //new// cut beside the existing per-vessel Ed25519-sign ⊥ X25519-KEM cut (`lararium-identity#/four-port-swap`); it does not restate it.
 
 ''THE TRUE NAME MODEL ~ how the atoms bind without merging.'' The atom holds its two keys apart; a ''signed edge'' is what joins atoms — never shared key material. ''BIND BY EDGE, NEVER BY SEED.'' The alternative fails at the substrate: a key ''copied'' between vessels //is// the collector, presented to every verifier it meets, landing on ''merge'' by the single-bit test (#/the-vault) and linking every self beneath any policy written above it. The edge binds AT the hearth's True Name, which is why a Place must hold a name of its own (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>).
 
@@ -214,7 +214,7 @@ The model closes ''only the key layer'' — and there it closes well: unlinkable
 
 ''Sybil scarcity lives OUTSIDE the math.'' Every field agreed: pseudonym crypto gives //one-nym-per-scope// only — one master secret mints unbounded nyms across DIFFERENT scopes, and no pairing substitutes for scarce enrollment. Global scarcity needs an external root, and in this stack that root IS the ''vouch-lineage'' (#the-siege-gate, lar:///…/admission-on-a-lineage) — the proof-of-personhood the crypto proves it cannot supply alone.
 
-And the substrate itself, by canon, has ''no forward-secrecy and no retroactive revocation'' — a leaked vessel-key reads all its history; //that fact IS the security posture// (#/four-port-swap). Claiming "no observer can link the selves" would be Confabulation-as-Canon. The truthful claim: ''the key layer is solved and unlinkable-by-construction on ed25519-HD; transport and behavioral ride separate, open machinery.''
+And the substrate itself, by canon, has ''no forward-secrecy and no retroactive revocation'' — a leaked vessel-key reads all its history; //that fact IS the security posture// (`lararium-identity#/four-port-swap`). Claiming "no observer can link the selves" would be Confabulation-as-Canon. The truthful claim: ''the key layer is solved and unlinkable-by-construction on ed25519-HD; transport and behavioral ride separate, open machinery.''
 
 <<~/ahu>>
 
@@ -224,6 +224,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;EMcxsKzPesj5hy6X6VeGjD6XacvGO3dW53t740cJ_Ag
+<<^ code="&#x0003;">>ni:///sha-256;ox63kYm51um0kWpT_1_r0DVveZ9tx3U6vIKyT3GDh_8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -107,12 +107,12 @@ fields = ["graph: unknown", "peer?: string", "group?: string", "document?: strin
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/node-host">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/node-host">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/catalog-doc">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/readiness-keys">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7ARUE9eru-ayqRMWOz0FtYuEo2WNp_7LsxSziqFAOs4
+<<^ code="&#x0003;">>ni:///sha-256;Vicw9CQrIgGbYIN9Zi_GLkTF87mZDITFOcWmNKOP7qQ
 
 <<^ code="&#x0004;" -> to="?">>

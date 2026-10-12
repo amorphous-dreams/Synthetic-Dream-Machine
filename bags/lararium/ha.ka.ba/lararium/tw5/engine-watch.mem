@@ -113,7 +113,7 @@ where reads accept BOTH epochs, ending by ''NON-RENEWAL'' of the old like every
 other grant. It is NOT a unilateral fleet-reset — no vessel is evicted, and a
 peer that misses the roll loses nothing (EW-1/5) — and NOT a key-loss recovery:
 kāhuli re-binds the VESSEL onto a new place, it never re-keys a person
-(identity-classes #/the-two-relations). The per-vessel RECONCILE (EW-5/6) is how
+(`identity-classes#/the-two-relations`). The per-vessel RECONCILE (EW-5/6) is how
 each island adopts the roll in; kāhuli is the mesh-scale act that offers it.
 
 <<~/ahu>>
@@ -130,6 +130,6 @@ each island adopts the roll in; kāhuli is the mesh-scale act that offers it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;si6M0-KNcfaihTYVZU8V0I4PJSzlAQEulF8NR35k8_o
+<<^ code="&#x0003;">>ni:///sha-256;1PKqx2a-9SJwyOjvn3ub7nJK392X-wcrIEbM7SbpWzQ
 
 <<^ code="&#x0004;" -> to="?">>

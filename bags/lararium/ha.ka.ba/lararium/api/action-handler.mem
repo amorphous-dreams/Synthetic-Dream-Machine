@@ -127,13 +127,13 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7xYs9SeOF80DYZ_UQndq-uykemeZn3gGxaIrxZ4C_2o
+<<^ code="&#x0003;">>ni:///sha-256;w-L63Wm9QH14uPy6wbGa1xpcfgin_Ts6rSGNf-cPG_g
 
 <<^ code="&#x0004;" -> to="?">>

@@ -50,7 +50,7 @@ The two families cross the ''AUTHORITY ⊥ FLOW'' master cut: VESSEL caps carry 
 
 One vessel, one `#has`-substrate — yet a vessel ''holds'' a cap-stack and ''expresses'' a subset, the way one genome differentiates a cell by //which genes light//. So:
 
-* every lararium ''holds'' the rhizome (relay) cap intrinsically (#/the-relay-floor) —
+* every lararium ''holds'' the rhizome (relay) cap intrinsically (`dreamnet-architecture#/the-relay-floor`) —
 * but ''expresses'' it — actually carries others' traffic — only when it lights the cap.
 
 Role = the ''expressed'' cap-set, not the held one. The same vessel differentiates into full-node / bare-relay / browser-leaf / Mudlet / Unreal by which caps it lights against its context and capacity. //Holding broadly, expressing by situation// — the sovereignty dial.
@@ -98,7 +98,7 @@ Whether a vessel ''expresses'' the rhizome cap — takes on carriage duty — is
 * ''Gnutella ultrapeers'' (CS): a node self-tests reachability · spare bandwidth · uptime, advertises carriage-capable only when it measures spare capacity, and ''accepts demotion'' on request.
 * ''Response-threshold task allocation'' (ant colonies): each unit carries a threshold on a demand stimulus; it engages when demand crosses //its// threshold, the cap deepens by use (reinforcement), and the collective ''re-covers automatically'' when a carrier drops.
 
-The carriage-demand stimulus reads off `r` — the carriage-standing coordinate (#/the-routing-substrate). So the relay floor was never //"every node must carry"//; it is //"every node may, and self-elects by load."// A home browser carries nothing and meshes fine; a fat reachable node volunteers heavy carriage.
+The carriage-demand stimulus reads off `r` — the carriage-standing coordinate (`dreamnet-architecture#/the-routing-substrate`). So the relay floor never said //"every node must carry"//; it says //"every node may, and self-elects by load."// A home browser carries nothing and meshes fine; a fat reachable node volunteers heavy carriage.
 
 <<~/ahu>>
 
@@ -198,6 +198,6 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N7AJaiOr4QK9OpJwfgA9drL2wDFDFllvHool1xeXA-4
+<<^ code="&#x0003;">>ni:///sha-256;oyHRMm-eTAe-oNltNowHuUgGfcS0o-dJdvdbdaRtXuk
 
 <<^ code="&#x0004;" -> to="?">>

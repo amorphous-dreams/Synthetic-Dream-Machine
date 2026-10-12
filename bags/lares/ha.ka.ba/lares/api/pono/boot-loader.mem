@@ -116,11 +116,11 @@ the only place the question means anything.
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-deserializer">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/tw5-deserializer">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Oh7DlFjhJdrkP0fABDFntrSkksjNkcP3WtMBGJablsc
+<<^ code="&#x0003;">>ni:///sha-256;ftrWc3UODTIUDcQPfQTZ0w3GT9shkuzgeiISQGE9CtI
 
 <<^ code="&#x0004;" -> to="?">>

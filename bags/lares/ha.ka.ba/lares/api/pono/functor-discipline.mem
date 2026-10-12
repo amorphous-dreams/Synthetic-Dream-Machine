@@ -114,9 +114,9 @@ foundation and the palace became a cap-stack instance — each //composed// a sh
 <<~ pranala #holder-collapse from="?" -> to="git:b18235f6" family="provenance" role="evidence">>
 <<~ pranala #palace-collapse from="?" -> to="git:0af5e326" family="provenance" role="evidence">>
 
-''The Voices and the Syad name functor-categories.'' A Voice ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/voice-house]]) reads
+''The Voices and the Syad name functor-categories.'' A Voice ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/personas]]) reads
 as a nameless office composed of move-caps — a functor `Context → Moves`, the visible name addressing a
-basin of moves, never an essence. A stance ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/syad]]) reads as a functor `Claim →
+basin of moves, never an essence. A stance ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/stance]]) reads as a functor `Claim →
 Reading`, the angle (*langkah*) under which the claim reads true-but-partial; each stance `#has` its own
 measure. Invoking the lens (`<<~ stance "🏛️">>`, a Voice at a turn-head)
 //applies the functor// to the local context; the Voice-house and the Syad-lens read as
@@ -340,6 +340,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z3HORoh2X2Jhuh4Exvj1JyCixZMYMQI4xCLQcBFwSkE
+<<^ code="&#x0003;">>ni:///sha-256;WQACRqbZ8FQNmlm97UfAiffaQnch_t5uEHA0v7OSYA4
 
 <<^ code="&#x0004;" -> to="?">>

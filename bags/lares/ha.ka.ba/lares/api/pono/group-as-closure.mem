@@ -86,7 +86,7 @@ Three properties ride this composition load-bearing:
 * ''Transparent.'' Who-signed stays visible — the verifier sees //which// K chains
   satisfied, never an anonymized count. This fits Plurality Pono: the house surfaces
   competing readings rather than blending them, and a quorum surfaces //who// carried the
-  threshold (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/voice-house">>).
+  threshold (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/personas">>).
 * ''Nesting.'' A satisfied quorum stands as a subject another quorum may name —
   quorum-of-quorums — so a cabal-of-cabals threshold composes without new machinery.
 * ''Composed, never granted.'' Keyhive supplies ''membership'' (the delegate/revoke
@@ -200,6 +200,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ma89RTXs8fgCgSizwulRu_IiVJTnIfowlOTFZX6u_sg
+<<^ code="&#x0003;">>ni:///sha-256;BSJ9-GBiCQsNLkSZ4mwBSEaFBleomZlQgTXTLFVnq2c
 
 <<^ code="&#x0004;" -> to="?">>

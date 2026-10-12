@@ -138,7 +138,7 @@ The mesh keeps time on ''two clocks that never collapse into one'':
 * ''CRDT-causal ordering'' (TS, structural). Automerge `<counter, actorId>` OpId, `getHeads`/`headsEqual`,
   ITC fork/join, and the authority-first sync order below carry it. This clock rules ''happened-before'' —
   the causal poset the "no global now" gluing obstruction lives in
-  (`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/formal-model`). It stays TS-native,
+  (`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/law`). It stays TS-native,
   web3-local-first, on this side of every causal-island boundary. ''AUTHORITY(safety) rides here.''
 * ''FFZ-recovered rhythm'' (py/R, per-stream, across-the-shore). The chronometer gate recovers a cadence
   (Pulse→Theme) from each stream and stamps freshness/decay grain — the reading a node carries "as of my
@@ -369,6 +369,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;teTHZmqllj5EL-9wrscuFTTf_Msw3JnhpmkhUi5KIBA
+<<^ code="&#x0003;">>ni:///sha-256;JOdZir_hhGTIoE__6NaPY0N5CmSGao4niIFR1y5ujyQ
 
 <<^ code="&#x0004;" -> to="?">>

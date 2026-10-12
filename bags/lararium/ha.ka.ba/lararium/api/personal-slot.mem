@@ -492,7 +492,7 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer">> ~ aligns slot addresses with the face working-layer rule
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/memory-store">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
@@ -503,6 +503,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xhdUVYnXf3qgI-SO9Bi5xNyt1uyEgp_8z5Wfj9i9XP0
+<<^ code="&#x0003;">>ni:///sha-256;T2rgsJPcfvEgLvPkXuioSoHXqLSIRjsldIyQcn-ZinI
 
 <<^ code="&#x0004;" -> to="?">>

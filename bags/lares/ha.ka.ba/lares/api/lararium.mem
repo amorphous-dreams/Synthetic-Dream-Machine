@@ -53,7 +53,7 @@ The lararium prepares the handoff to `lar:///ha.ka.ba/lares/api/pono/config` by 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/exchange-vector">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/lararium/templates/index">>
 
 <<~/ahu>>
@@ -70,6 +70,6 @@ The lararium prepares the handoff to `lar:///ha.ka.ba/lares/api/pono/config` by 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Yrl1GMZGW9NgWYmFf87e97VK4rBL7m_5zlQplVcl3ao
+<<^ code="&#x0003;">>ni:///sha-256;pw__f-md8-w7yd56Ml8KLFu_TS_22qhP6bEen42VI-E
 
 <<^ code="&#x0004;" -> to="?">>

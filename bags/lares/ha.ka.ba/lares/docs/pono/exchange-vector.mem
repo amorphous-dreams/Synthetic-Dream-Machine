@@ -98,13 +98,13 @@ Long-term, the server should validate the vector and render the HUD from the par
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/exchange-vector">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AO8SoYWSmHKwREv60zHTqHQbjQTJcK_aOV-gD9C-OWo
+<<^ code="&#x0003;">>ni:///sha-256;bLIg65POgswPYWcTD_R4RuXkq7ZUvOfsWoZQvP8bX9E
 
 <<^ code="&#x0004;" -> to="?">>

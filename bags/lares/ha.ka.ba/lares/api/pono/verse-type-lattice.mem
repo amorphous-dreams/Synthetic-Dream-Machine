@@ -186,10 +186,10 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/heihei">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5lMF-346RXWZyuj3VKSJ4xVC649q612DX8FDgG_bxxg
+<<^ code="&#x0003;">>ni:///sha-256;Sg5NOhbPNQDS5-a1oWFuPtEnuZ2xwlG7kx9X7ejBIn0
 
 <<^ code="&#x0004;" -> to="?">>

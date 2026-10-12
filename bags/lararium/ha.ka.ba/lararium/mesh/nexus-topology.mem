@@ -31,7 +31,7 @@ written    = "2026-08-08"
 
 > Status: PROPOSED — the names stand registered; the serving layers stand unbuilt.
 
-The two-axis meme (#/dreamnet-architecture) names how a mesh ''relates''; this one names how it ''reaches a browser''. Two questions live here and want to stay apart: ''which public name serves a Nexus'', and ''what a name may therefore claim''. The second answer governs the first: a Nexus name grants ''rendezvous'', never ''identity'' (#/name-and-key), so every layer below stays severable by construction.
+The two-axis meme (#/dreamnet-architecture) names how a mesh ''relates''; this one names how it ''reaches a browser''. Two questions live here and want to stay apart: ''which public name serves a Nexus'', and ''what a name may therefore claim''. The second answer governs the first: a Nexus name grants ''rendezvous'', never ''identity'' (`secure-context#/name-and-key`), so every layer below stays severable by construction.
 
 <<~/ahu>>
 
@@ -73,7 +73,7 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 ''RULED (operator, 2026-08-08).'' The civic kahu cabal holds a contracted operator's DNS records ''in trust''. An operator who would rather not seat that trust ''stands their own Nexus'' — which reads as the honest alternative rather than a threat, since the whole stack exists to make standing one possible.
 
-''AND WILDCARDS STAY MINIMIZED.'' A wildcard's private key stands up ''any'' name under its zone, so every wildcard handed out multiplies the origin-attestation cap (#/the-caps-added). The cabal holds the zone's wildcard and hands out as few as it can.
+''AND WILDCARDS STAY MINIMIZED.'' A wildcard's private key stands up ''any'' name under its zone, so every wildcard handed out multiplies the origin-attestation cap (`secure-context#/the-caps-added`). The cabal holds the zone's wildcard and hands out as few as it can.
 
 ''THE TENSION THIS CREATES, and the shape that resolves it.'' Certificate Transparency publishes every issued certificate to public append-only logs forever, so a ''per-name'' cert publishes that name to the world permanently while ''a wildcard publishes only the wildcard''. Wildcard-only therefore reads as a privacy requirement rather than a convenience — and minimizing wildcards, read naively, would trade household privacy for containment.
 
@@ -99,7 +99,7 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 !!! The mechanism, as the field actually stands (2026-08)
 
-''ACME External Account Binding does NOT carry this.'' RFC 8555 §7.3.4 contemplates exactly one issuer of EAB credentials — the CA operating the ACME server — so a non-CA intermediary cannot mint them; Let's Encrypt does not implement EAB at all. Every multi-tenant EAB pattern in the wild runs on a ''private CA whose root installs on every device'', the path already ruled hostile to a family (#/why-dns-01).
+''ACME External Account Binding does NOT carry this.'' RFC 8555 §7.3.4 contemplates exactly one issuer of EAB credentials — the CA operating the ACME server — so a non-CA intermediary cannot mint them; Let's Encrypt does not implement EAB at all. Every multi-tenant EAB pattern in the wild runs on a ''private CA whose root installs on every device'', the path already ruled hostile to a family (`secure-context#/why-dns-01`).
 
 ''The mechanism exists in the CA/Browser Forum Baseline Requirements §4.2.2.1.2'' — a CA MAY read `accounturi` as naming a ''Parent Account'' and, as an explicit exception to RFC 8657 §3, issue to a ''Subordinate ACME Account'' under an auditable Parent→Subordinate mapping. That names the blessing precisely: the Nexus holds the Parent, each operator holds a Subordinate with their own account key and their own private key, and the CA enforces the relation. ''It reads MAY, mandatory RFC 8657 processing waits until 2027-03-15, and NO CA has implemented it'' — a thing to ask a CA for, never a thing to build on.
 
@@ -181,7 +181,7 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 
 !! What a Nexus name may claim ~ nothing
 
-''NORMATIVE, and it governs every layer above.'' A Nexus name grants ''rendezvous'' — where to reach — and grants ''nothing else''. It authenticates an origin, never a peer (#/name-and-key). Therefore:
+''NORMATIVE, and it governs every layer above.'' A Nexus name grants ''rendezvous'' — where to reach — and grants ''nothing else''. It authenticates an origin, never a peer (`secure-context#/name-and-key`). Therefore:
 
 * A Nexus that stops resolving MUST drop the label and MUST NOT alter the graph. Losing an address costs a convenience, never a self (#attestation-plane, ruling 1).
 * A person's standing NEVER rides a name under these zones. Carry a host-scoped address as ''identity'' rather than as ''address'' and the arrangement repeats the failure the field has already measured — the domain owner comes to hold every identity on it.
@@ -208,7 +208,7 @@ The two-name design carries its own answer to the concentration it creates: ''ea
 * ''The custody shell.'' These registrations sit with a legal person today. The asset shore (#attestation-plane, ruling 4) wants a purpose-built holder with a written exit clause — a ten-month track by the field's own precedent, running in parallel and blocking nothing.
 * ''The rebinding measurement.'' Does public DNS answering with a private address survive common household routers? Unmeasured, and it decides whether the household layer needs a resolver per home or none.
 * ''The preload confirmation.'' The mobile reserve's whole argument rests on the TLD's HSTS posture; confirm before the name carries load.
-* ''Renewal as the one declared bridge.'' Issuance touches the internet; serving does not (#/the-web2-bridge). Two Nexus names double the renewal surface without doubling the drill — one procedure, two subjects, and a lapse on either reads the same.
+* ''Renewal as the one declared bridge.'' Issuance touches the internet; serving does not (`secure-context#/the-web2-bridge`). Two Nexus names double the renewal surface without doubling the drill — one procedure, two subjects, and a lapse on either reads the same.
 * ''A third name appears in canon and no ruling covers it.'' `elyncia.social` rides several memes as a handle domain. It names neither Nexus and holds no seat here; whether it stands registered, and what it would serve, wants an operator word rather than an inference.
 
 <<~/ahu>>
@@ -239,6 +239,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RvfhEIAyHmb0kDiVx_3gNlqjlQI_F5xORE1tvUjzKWo
+<<^ code="&#x0003;">>ni:///sha-256;SDVP2nWOSwsYQc8JisapGF1Gm_BxdpYCWp_Cx_6fQB8
 
 <<^ code="&#x0004;" -> to="?">>

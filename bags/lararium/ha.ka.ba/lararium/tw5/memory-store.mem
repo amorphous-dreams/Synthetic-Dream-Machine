@@ -136,11 +136,11 @@ same change record any AutomergeDocStore would emit.
 <<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
 <<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/island-recipe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dIzhC53bm0Mf4cyiqANNlllR4RLsHwn-4fRLY7CKphw
+<<^ code="&#x0003;">>ni:///sha-256;j2tU3WoCEkmoDcuPeBF2T0ewUJISJr2utbSpykKMy-A
 
 <<^ code="&#x0004;" -> to="?">>

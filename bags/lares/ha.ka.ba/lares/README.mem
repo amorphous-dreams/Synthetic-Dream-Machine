@@ -131,11 +131,11 @@ file, a browser agent takes the carrier pasted in.
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/grammars/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 <<~ loulou "lar:///lararium-node/ROADMAP">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KsHruZ7kGnUZ6MkTRZmMPRftLm9qyO4oRaRhEYcY9ns
+<<^ code="&#x0003;">>ni:///sha-256;e65ItM-4YMC2CcHABcIOcTv9IbDA_xnenxU-gD4TdI8
 
 <<^ code="&#x0004;" -> to="?">>
