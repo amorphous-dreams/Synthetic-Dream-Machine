@@ -64,7 +64,7 @@ function fakeTw5(rules: readonly string[]) {
     },
   };
   const engine = {
-    $tw: { Tiddler, wiki, lares: { enqueueNalu: () => {}, isApplyingNalu: () => false } },
+    $tw: { Tiddler, wiki, lares: { applyNalu: () => {}, isApplyingNalu: () => false } },
   } as unknown as TW5Engine;
   return { engine, added };
 }

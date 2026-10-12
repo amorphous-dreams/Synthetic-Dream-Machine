@@ -100,7 +100,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   //
   // Pointer and corpus seeds share the shore queue. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
   // temp store emits each put when it lands — to every registered projection. The adaptor carries the
-  // pointers into the wiki on the same seed wave as the corpus, ahead of the hydration checkpoint;
+  // pointers into the wiki on the same seed wave as the corpus, ahead of the seed checkpoint;
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
     const writeLayer = handleBySlot.has(wikiSlotUri(slug, "working")) ? defaultWritableSlot(slug) : "";

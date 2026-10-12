@@ -106,7 +106,7 @@ describe("wiki shore fault vectors", () => {
           removeEventListener: () => {},
           transact: (fn: () => void) => fn(),
         },
-        lares: { enqueueNalu: () => {}, flushNalu: () => {}, isApplyingNalu: () => false, naluPending: () => 0 },
+        lares: { isApplyingNalu: () => false, applyNalu: () => {} },
       },
     };
     const repo = new Repo({ network: [] });

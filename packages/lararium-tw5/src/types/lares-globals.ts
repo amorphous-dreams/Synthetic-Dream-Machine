@@ -1,9 +1,7 @@
 /**
  * lares-globals — type surface for the `$tw.lares` extension.
  *
- * The nalu-engine TW5 startup module installs `$tw.lares.enqueueNalu` and
- * friends. IslandAdaptor keeps the original synchronous apply door behind the
- * shore queue; the apply flag is observability only at asynchronous wiki change dispatch.
+ * The engine applies inbound changes synchronously; the shore installs the queue door.
  */
 
 import type { LarTiddlerChange } from "@lararium/mesh";
@@ -56,10 +54,9 @@ export interface LaresMemeFace {
 }
 
 export interface LaresNaluAPI {
-  enqueueNalu(change: LarTiddlerChange): void;
-  flushNalu(budget?: number): void;
+  applyNalu(change: LarTiddlerChange): void;
+  enqueueNalu?: (change: LarTiddlerChange) => void;
   isApplyingNalu(): boolean;
-  naluPending(): number;
   /** The IN-VM capture annotate (capture-annotate-vm startup): parse + harvest a turn IN-REALM with
    *  the full self-hosted grammar → the lar_* patch (+ lar_ast). The daemon wires this as the engine's
    *  annotate so all ast-parsing runs inside the TW5 engine, never the worker. */

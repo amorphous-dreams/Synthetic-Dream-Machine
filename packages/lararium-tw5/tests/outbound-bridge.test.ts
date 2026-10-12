@@ -47,7 +47,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
   let adaptor: IslandAdaptor;
   let wiki: { addTiddler(t: unknown): void; deleteTiddler(t: string): void; getTiddler(t: string): unknown; addEventListener(type: string, fn: (c: unknown) => void): void; removeEventListener(type: string, fn: (c: unknown) => void): void };
   let Tiddler: new (f: Record<string, unknown>) => unknown;
-  let lares: { enqueueNalu(c: unknown): void; flushNalu(): void; isApplyingNalu(): boolean; meme: LaresMemeFace };
+  let lares: { enqueueNalu?: (c: unknown) => void; isApplyingNalu(): boolean; meme: LaresMemeFace };
 
   beforeAll(async () => {
     engine  = await bootTestWiki();
@@ -113,13 +113,12 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     // The fleet's record stands in the store before its wave arrives: a bagged wave lands what the
     // composition resolves. The base put leaves `store.puts` to the shore's own writes.
     await MemoryTiddlerStore.prototype.put.call(store, { tiddler: { title: "lar:///t/bridge/inbound", text: "from the fleet" } }, { kind: "crdt-remote", edgeIsland: "peer" });
-    lares.enqueueNalu({
+    lares.enqueueNalu!({
       title: "lar:///t/bridge/inbound", bag: SLOTS.working,
       record: { tiddler: { title: "lar:///t/bridge/inbound", text: "from the fleet" } },
       origin: { kind: "crdt-remote", edgeIsland: "peer" },
     });
-    lares.flushNalu();
-    await new Promise<void>((resolve) => setImmediate(resolve));
+    await adaptor.landingIdle();
     expect(wiki.getTiddler("lar:///t/bridge/inbound"), "the inbound apply never reached the wiki").toBeTruthy();
     await settle();
     expect(store.puts.filter((p) => p.title === "lar:///t/bridge/inbound"), "an inbound apply echoed back out as a put").toEqual([]);
@@ -131,13 +130,13 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     wiki.addEventListener("change", onChange);
     try {
       await MemoryTiddlerStore.prototype.put.call(store, { tiddler: { title: "lar:///t/bridge/inbound-2", text: "from the fleet" } }, { kind: "crdt-remote", edgeIsland: "peer" });
-      lares.enqueueNalu({
+      lares.enqueueNalu!({
         title: "lar:///t/bridge/inbound-2", bag: SLOTS.working,
         record: { tiddler: { title: "lar:///t/bridge/inbound-2", text: "from the fleet" } },
         origin: { kind: "crdt-remote", edgeIsland: "peer" },
       });
-      lares.flushNalu();
-      expect(lares.isApplyingNalu(), "the guard stays raised past the drain").toBe(false);
+      await adaptor.landingIdle();
+      expect(lares.isApplyingNalu(), "the guard stays raised past the landing").toBe(false);
       await settle();
     } finally {
       wiki.removeEventListener("change", onChange);

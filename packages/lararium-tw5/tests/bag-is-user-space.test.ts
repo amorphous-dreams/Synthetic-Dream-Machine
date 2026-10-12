@@ -81,7 +81,7 @@ class FakeEngine {
       }
     },
     wiki: this.wiki,
-    lares: { isApplyingNalu: () => false, enqueueNalu: () => {}, flushNalu: () => {}, naluPending: () => 0 },
+    lares: { isApplyingNalu: () => false, applyNalu: () => {} },
   };
 }
 

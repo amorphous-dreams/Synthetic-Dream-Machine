@@ -429,9 +429,8 @@ export function runSovereignKernel(
     _adaptor = adaptor;
     // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
     _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
-    // Await the hydration checkpoint before arming behavior — onEa still observes a
-    // fully-resident seed (the invariant), but the drain paced the loop instead of
-    // blocking it. Resolves at once on a wiki-less path (no hydration begun).
+    // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
+    // landed by the shore's queue in host-task slices.
     await seedDrained(tw5);
 
     // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a

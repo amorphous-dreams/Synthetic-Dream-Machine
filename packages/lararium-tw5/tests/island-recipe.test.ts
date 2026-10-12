@@ -46,10 +46,8 @@ function fakeTw5(): TW5Engine {
         transact:            (fn: () => void) => fn(),
       },
       lares: {
-        enqueueNalu:    () => {},
-        flushNalu:      () => {},
+        applyNalu:      () => {},
         isApplyingNalu: () => false,
-        naluPending:    () => 0,
       },
     },
   } as unknown as TW5Engine;
@@ -183,7 +181,7 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
 });
 
 /**
- * NOTHING LEAVES BEFORE THE SEED IS RESIDENT. Between the engine's boot and the hydration checkpoint the
+ * NOTHING LEAVES BEFORE THE SEED IS RESIDENT. Between the engine's boot and the shore's seed checkpoint the
  * wiki holds the engine's own startup state: TiddlyWiki writes a default `$:/StoryList` and `$:/HistoryList`
  * there. Those are no hand's edits. Carried out, the default story would land over the person's stored one
  * before the seed brings it in; routed before the pointers arrive, it would refuse for want of a bag.
@@ -256,7 +254,7 @@ describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits befo
     const drained = src.indexOf("await seedDrained(tw5)");
     const behavior = src.indexOf("await behavior.onEa(");
     expect(recipe, "the kernel builds no recipe").toBeGreaterThan(-1);
-    expect(drained, "the kernel never awaits the hydration checkpoint").toBeGreaterThan(recipe);
-    expect(behavior, "behavior arms ahead of the hydration checkpoint").toBeGreaterThan(drained);
+    expect(drained, "the kernel never awaits the shore's seed checkpoint").toBeGreaterThan(recipe);
+    expect(behavior, "behavior arms ahead of the shore's seed checkpoint").toBeGreaterThan(drained);
   });
 });

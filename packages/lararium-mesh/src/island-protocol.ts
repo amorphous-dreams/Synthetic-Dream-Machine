@@ -7,10 +7,10 @@
  *
  *   1. Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort).
  *   2. The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas.
- *   3. The island owns its timing. The in-wiki nalu engine drives frame-aligned drain:
- *      browser `requestAnimationFrame` (with setTimeout(16ms) fallback for Safari),
- *      node setTimeout(16ms). Tiddler deltas accumulate via $tw.lares.enqueueNalu;
- *      one wiki.transact() per frame across all bags. No raw-message-receipt drains.
+ *   3. The island owns its timing. The wiki shore lands inbound changes from ONE ordered queue
+ *      across all bags, in slices paced by host tasks (`host-task.ts`); the in-wiki nalu engine
+ *      applies each change synchronously. No frame, no timer and no raw-message-receipt drain
+ *      decides when a change lands.
  *   4. (retired) Frame-completion ACK signal — drain timing stays island-internal.
  *   5. Vessel oracle delta delivery is removed. CRDT sync via `syncPort` is the sole
  *      source of tiddler truth for causal islands.

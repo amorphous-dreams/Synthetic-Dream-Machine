@@ -69,14 +69,12 @@ async function rig(timers?: ShoreTimers, yieldHost?: () => Promise<void>) {
   composite.addLayer({ bagId: canonBag, store: canon, writable: false });
   composite.addLayer({ bagId: workingBag, store: working, writable: true });
   const adaptor = new IslandAdaptor(engine, composite, "shore-vector", timers);
-  const lares = (engine.$tw as unknown as { lares: { enqueueNalu(change: unknown): void } }).lares;
-  const engineDoor = lares.enqueueNalu;
   adaptor.installLandingQueue(yieldHost);
   adaptor.start();
   const save = vi.spyOn(adaptor, "saveTiddler");
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
   await turns(); // settle the manual pointer setup while the adaptor is not resident
-  return { engine, wiki, Tiddler, repo, canonHandle, workingHandle, canon, working, composite, adaptor, save, unbridge, engineDoor };
+  return { engine, wiki, Tiddler, repo, canonHandle, workingHandle, canon, working, composite, adaptor, save, unbridge };
 }
 
 describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
@@ -231,7 +229,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     releaseDrain();
     await stoppingPending;
     expect(pending.wiki.getTiddler(pendingTitle)).toBeUndefined();
-    expect((pending.engine.$tw as unknown as { lares: { enqueueNalu(change: unknown): void } }).lares.enqueueNalu).toBe(pending.engineDoor);
+    expect((pending.engine.$tw as unknown as { lares: { enqueueNalu?: (change: unknown) => void } }).lares.enqueueNalu).toBeUndefined();
     pending.unbridge();
     await pending.repo.shutdown();
   }, 120_000);
@@ -455,10 +453,10 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
         expect(r.save, "the change bridge ran before the queued item reached the drain").not.toHaveBeenCalled();
         return originalLand(change, settled);
       });
-    const door = r.adaptor as unknown as { engineEnqueue: (change: { title: string; record?: { tiddler?: { text?: string } } | null }) => void };
-    const originalDoor = door.engineEnqueue;
+    const door = r.adaptor as unknown as { engineApply: (change: { title: string; record?: { tiddler?: { text?: string } } | null }) => void };
+    const originalDoor = door.engineApply;
     const doorCalls: Array<{ title: string; text: string | undefined }> = [];
-    door.engineEnqueue = (change) => {
+    door.engineApply = (change) => {
       doorCalls.push({ title: change.title, text: change.record?.tiddler?.text });
       originalDoor(change);
     };
@@ -470,7 +468,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await turns(20);
     expect(drainSawHand).toHaveBeenCalled();
     expect(r.save).toHaveBeenCalledTimes(0);
-    // The hand write's own store-return wave mutates the wiki once; the stale wave never enters the engine door.
+    // The hand write's own store-return wave mutates the wiki once; the stale wave never reaches the applier.
     expect(r.wiki.getChangeCount(title) - wikiChangesBeforeHand).toBe(2);
     expect(doorCalls).not.toContainEqual({ title, text: "stale wave" });
     const record = (r.workingHandle.doc() as LarDoc).tiddlers[title];
@@ -489,7 +487,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     rawWiki.addEventListener = nativeAdd;
     rawWiki.removeEventListener = nativeRemove;
     await r.adaptor.stop();
-    door.engineEnqueue = originalDoor;
+    door.engineApply = originalDoor;
     await r.repo.shutdown();
   }, 120_000);
 
@@ -673,10 +671,10 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await r.repo.shutdown();
   }, 120_000);
 
-  test("R8: landing setup fails by name when the packed engine door is unavailable", async () => {
+  test("R8: landing setup fails by name when the engine applier is unavailable", async () => {
     const engine = await bootTestWiki();
-    const lares = (engine.$tw as unknown as { lares: { enqueueNalu?: (change: unknown) => void } }).lares;
-    lares.enqueueNalu = undefined;
+    const lares = (engine.$tw as unknown as { lares: { applyNalu?: (change: unknown) => void } }).lares;
+    lares.applyNalu = undefined;
     const repo = new Repo({ network: [] });
     const handle = repo.create<LarDoc>(emptyLarDoc());
     const store = new AutomergeDocStore(handle, workingBag);

@@ -1,6 +1,6 @@
 /**
  * IslandAdaptor — the landed ledger records each inbound wave, the shore applies queued items through
- * the packed synchronous engine door, and resident wiki changes use a capped per-title hand gate.
+ * the synchronous engine applier, and resident wiki changes use a capped per-title hand gate.
  * Unit tests use FakeTW5Engine and MemoryTiddlerStore; real-wiki shore vectors exercise TW5 equality.
  *
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/island-adaptor
@@ -139,10 +139,8 @@ class FakeTW5Engine {
     },
     wiki: this.wiki,
     lares: {
-      enqueueNalu:    (c: LarTiddlerChange): void => { this.enqueueCalls.push(c); },
-      flushNalu:      (_budget?: number): void => {},
+      applyNalu:      (c: LarTiddlerChange): void => { this.enqueueCalls.push(c); },
       isApplyingNalu: (): boolean => this.applying,
-      naluPending:    (): number => 0,
     },
   };
 }

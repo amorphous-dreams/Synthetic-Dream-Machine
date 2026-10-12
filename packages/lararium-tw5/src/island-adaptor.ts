@@ -5,7 +5,7 @@
  * save carries and which titles form one discrete act.
  *
  * INBOUND. The landed ledger records each wave's absolute result. WaveLanding meets queued waves with
- * unsent hands before the packed engine applies a slice. A landed record also teaches the draft book.
+ * unsent hands before the synchronous engine applier receives a change. A landed record also teaches the draft book.
  *
  * OUTBOUND, THE PER-TITLE PATH. A mark names a TITLE. HandGate paces the mark with a trailing window and a
  * non-resetting cap, and what leaves at the flush is the title's state in the wiki at that flush. A state
@@ -137,7 +137,13 @@ export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" |
 
 export class LandingDoorUnavailableError extends Error {
   override readonly name = "LandingDoorUnavailableError";
-  constructor() { super("the TW5 engine must provide enqueueNalu and flushNalu for the wiki shore"); }
+  constructor() { super("the TW5 engine must provide applyNalu for the wiki shore — boot the wiki with the nalu-engine module of this build"); }
+}
+
+/** A second shore asked for an engine's queue door while another holds it. */
+export class LandingDoorOccupiedError extends Error {
+  override readonly name = "LandingDoorOccupiedError";
+  constructor() { super("another wiki shore holds this engine's queue door — stop that shore before a second one lands waves into the same wiki"); }
 }
 
 // ---------------------------------------------------------------------------
@@ -174,8 +180,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   readonly ledger = new LandedLedger();
   private readonly gate: HandGate;
   private landing: WaveLanding | null = null;
-  private engineEnqueue: ((change: LarTiddlerChange) => void) | null = null;
-  private restoreDoor: (() => void) | null = null;
+  private engineApply: ((change: LarTiddlerChange) => void) | null = null;
+  /** The queue door this shore installed at `$tw.lares.enqueueNalu`; null while it holds none. */
+  private door: ((change: LarTiddlerChange) => void) | null = null;
   private readonly sent = new Map<string, unknown>();
   private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
   private readonly lastWriteBag = new Map<string, string>();
@@ -205,17 +212,22 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.gate = new HandGate(timerPort);
   }
 
-  /** Install the shore drain before seed replay or any other engine-door caller. */
+  /**
+   * Install the shore queue door before seed replay or any other inbound caller. One shore owns an
+   * engine's door: a second shore on the same engine refuses by `LandingDoorOccupiedError`. A shore that
+   * stopped installs a fresh queue and its door again.
+   */
   installLandingQueue(yieldHost?: () => Promise<void>): void {
     if (this.landing) return;
     const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
-    if (!lares?.enqueueNalu || !lares.flushNalu) throw new LandingDoorUnavailableError();
-    const engineDoor = lares.enqueueNalu;
-    const enqueue = engineDoor.bind(lares);
-    this.landing = new WaveLanding((change) => this._landOne(change), yieldHost);
-    this.engineEnqueue = enqueue;
-    lares.enqueueNalu = (change) => this.landing?.enqueue(change);
-    this.restoreDoor = () => { lares.enqueueNalu = engineDoor; };
+    if (typeof lares?.applyNalu !== "function") throw new LandingDoorUnavailableError();
+    if (lares.enqueueNalu !== undefined) throw new LandingDoorOccupiedError();
+    const apply = lares.applyNalu.bind(lares);
+    const landing = new WaveLanding((change) => this._landOne(change), yieldHost);
+    this.landing = landing;
+    this.engineApply = apply;
+    this.door = (change) => landing.enqueue(change);
+    lares.enqueueNalu = this.door;
   }
 
   armSeedCheckpoint(): Promise<void> {
@@ -299,12 +311,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     }
     const applies = !sameWithStamp(incoming, standing);
     if (applies) {
-      const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
-      const original = this.engineEnqueue;
-      if (original && lares?.flushNalu) {
-        original({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
-        lares.flushNalu(1);
-      }
+      if (!this.engineApply) throw new LandingDoorUnavailableError();
+      this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
     }
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     this._learnDraft(title, live ? record : null, bag);
@@ -405,7 +413,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly _unroutedWhy = new Map<string, string>();
 
   /**
-   * Hand a complete envelope to the shore queue. The engine door is preserved as the synchronous applier.
+   * Hand a complete envelope to the shore queue; the engine applier receives changes at landing.
    */
   private _enqueue(change: LarTiddlerChange): void {
     this.installLandingQueue();
@@ -585,8 +593,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     }
     for (const [title, error] of this.failedAtTeardown) console.warn(`[island-adaptor] teardown write for "${title}" failed: ${String(error)}`);
     this.failedAtTeardown.clear();
-    this.restoreDoor?.();
-    this.restoreDoor = null;
+    // The door leaves with the shore that installed it, and only that one.
+    const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
+    if (lares && this.door !== null && lares.enqueueNalu === this.door) delete lares.enqueueNalu;
+    this.door = null;
+    this.landing = null;
+    this.engineApply = null;
     this._unsubscribe?.();
     this._unsubscribe = null;
   }

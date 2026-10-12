@@ -136,7 +136,10 @@ export function installLazyResolver(tw5: TW5Engine, resolveByCid: CarrierResolve
       // A base64-family body on a browser island also gains a per-session `blob:` URL — VM only.
       const blobUrl = base64 && objectUrl ? objectUrl(bytes, fields["type"] as string) : null;
       const { lares } = tw5.$tw as unknown as LaresTw5Extension;
-      if (typeof lares?.enqueueNalu !== "function") return;
+      if (typeof lares?.enqueueNalu !== "function") {
+        console.error(`[lazy-resolver] ShoreQueueUnavailableError: cannot land resolved body for ${title}; start the wiki shore before resolving lazy bodies`);
+        return;
+      }
       // The expanded body differs from the skinny standing tiddler, so the queue applies the splice;
       // the ledger then holds the expanded object and the change it raises reads as foam.
       lares.enqueueNalu({

@@ -69,7 +69,7 @@ function fakeTw5() {
     $tw: {
       Tiddler,
       wiki,
-      lares: { enqueueNalu: (c: LarTiddlerChange) => { enqueued.push(c); }, flushNalu: () => {}, isApplyingNalu: () => false },
+      lares: { applyNalu: (c: LarTiddlerChange) => { enqueued.push(c); }, isApplyingNalu: () => false },
     },
   } as unknown as TW5Engine;
   return { engine, enqueued };

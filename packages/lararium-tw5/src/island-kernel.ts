@@ -12,10 +12,11 @@
  *
  *   Entry file orchestration pattern (all vessels):
  *     1. `await handler.bootTw5(wikiUri, coreBlob, pluginTiddlers)` — boots TW5, wires verse events,
- *         installs the in-wiki nalu engine ($tw.lares.enqueueNalu)
+ *         starts the in-wiki nalu applier ($tw.lares.applyNalu)
  *     2. entry file: wire Repo with syncPort, await Repo ready
  *     3. `buildIslandRecipe(...)` — composite layers + IslandAdaptor projection +
- *         seed replay through the shore queue, checkpointed when that queue empties
+ *         the shore queue door ($tw.lares.enqueueNalu) + seed replay through that queue,
+ *         checkpointed when it empties
  *     4. `handler.sendEa(wikiUri)` — signal vessel: island is live
  *     5. live CRDT patches: AutomergeDocStore → MemeProvider → IslandAdaptor →
  *         quota-bounded shore slices → synchronous engine apply
@@ -64,11 +65,11 @@ export class IslandKernel {
   /**
    * Boot the TW5Engine. Does NOT send `ea` — the entry file sends it after the
    * island-side Repo is synced and the recipe (including initial replay through
-   * the nalu engine) has assembled.
+   * the shore queue) has assembled.
    *
    * `preloadedTiddlers` carries the plugin layer (sigils, ahu, pranala, nalu-engine).
-   * Applied during boot so the in-wiki nalu engine + reaction-router are live from
-   * first frame. Passed directly to TW5Engine.boot.
+   * Applied during boot so the in-wiki nalu applier + reaction-router stand before the
+   * first change lands. Passed directly to TW5Engine.boot.
    *
    * Throws (and sends fault) if `coreBlob` carries zero bytes.
    */

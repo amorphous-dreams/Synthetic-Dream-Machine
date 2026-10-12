@@ -4,39 +4,27 @@ type: application/javascript
 module-type: startup
 \*/
 /**
- * nalu-engine — TW5 startup module owning the unified nalu (changeset wave).
+ * nalu-engine — the applier. It lands ONE inbound change in the wiki, synchronously.
  *
- * The wiki is the reactive engine (yin-collapse law, nalu.md).
- * This module lives inside the wiki and owns:
- *   - one unified accumulator queue across ALL CRDT bags (single shared rail)
- *   - the per-frame drain scheduler
- *   - the one `wiki.transact()` per nalu wrapping the entire batch
- *   - the apply-time echo guard (suppresses outbound writes during drain)
+ * The wiki shore (`island-adaptor.ts`, `wave-landing.ts`) owns everything about WHEN a change lands:
+ * the ordered queue, the slices and their host-task pacing, the seed checkpoint, and the meeting of a
+ * wave with an unsent hand. This module owns HOW one lands, and nothing else:
  *
- * Prior-art alignment (DriftWatch [PriorArt]):
- *   Vue 3 scheduler · MobX transaction · Yjs transact · React 18 auto-batch ·
- *   Solid batch · S.js tick · DREAM glitch-freedom.
+ *   applyNalu(change)   a tombstone or an absent record deletes the title; anything else adds the
+ *                       tiddler `toWikiFields` builds from the envelope. No queue, no timer, no frame.
+ *   isApplyingNalu()    true while an `applyNalu` call runs, restored in a `finally`.
  *
- *   Every mature reactive scheduler collapses heterogeneous-source writes into
- *   ONE flush. Per-source transacts produce cascade-refresh and FRP glitches.
- *   We follow the field: one transact per frame across N bags.
+ * The shore installs its own queue door at `$tw.lares.enqueueNalu` and removes it at teardown; this
+ * module never holds one.
  *
  * Position in the stack:
  *
- *   TS shore (irreducible — Automerge, network, crypto, storage)
- *     AutomergeDocStore.handle.on("change") → MemeProvider → projection bus
- *     bridge projection forwards LarTiddlerChange → $tw.lares.enqueueNalu()
+ *   TS shore (Automerge, network, crypto, storage)
+ *     AutomergeDocStore → MemeProvider → projection bus → IslandAdaptor.onUriChanged
+ *     WaveLanding queue → IslandAdaptor._landOne → $tw.lares.applyNalu(change)
  *   ───────────────────────────────────────────────────────────────────────
  *   TW5 startup module (this file)
- *     enqueueNalu(change) — queue
- *     scheduleFrame()     — rAF or setTimeout(16)
- *     drain(budget)       — one wiki.transact() per frame
- *     isApplyingNalu()    — echo guard for IslandAdaptor.saveTiddler
- *
- * Initial replay path:
- *   AutomergeDocStore.emitInitialReplay() fires fireImmediate per existing
- *   tiddler → projection bus → bridge → enqueueNalu(change). Next frame
- *   drains the lot in one transact. No special pre-sync buffer needed.
+ *     applyNalu(change) → wiki.addTiddler / wiki.deleteTiddler
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/modules/nalu-engine
  */
@@ -62,43 +50,17 @@ export const synchronous = true;
 declare const $tw: (Partial<TW5Instance> & LaresTw5Extension) | undefined;
 
 // ---------------------------------------------------------------------------
-// Module-level state (one engine per wiki — singleton)
+// Module-level state (one applier per wiki — singleton)
 // ---------------------------------------------------------------------------
 
-const FRAME_MS      = 16;
-const DEFAULT_BUDGET = 200;
+let _applying                  = false;
+let _wiki:      TW5Wiki | null = null;
 
-let _queue:     LarTiddlerChange[] = [];
-let _scheduled                     = false;
-let _applying                      = false;
-let _wiki:      TW5Wiki | null     = null;
-
-// Progressive-boot hydration checkpoint — the seed drains on the SAME paced rail as live
-// edits (no synchronous unbounded flush); `_seedDrained` resolves the first frame the queue
-// empties after `beginHydration()`, the checkpoint the island awaits before arming behavior.
-let _hydrating                          = false;
-let _seedDrained:        Promise<void> | null = null;
-let _seedDrainedResolve: (() => void)  | null = null;
-
-// ---------------------------------------------------------------------------
-// Scheduler
-// ---------------------------------------------------------------------------
-
-function _scheduleFrame(): void {
-  if (_scheduled) return;
-  _scheduled = true;
-  const tick = (): void => {
-    _scheduled = false;
-    _drain(DEFAULT_BUDGET);
-  };
-  const g = globalThis as { requestAnimationFrame?: (cb: () => void) => number };
-  if (typeof g.requestAnimationFrame === "function") g.requestAnimationFrame(tick);
-  else setTimeout(tick, FRAME_MS);
+/** The applier ran with no wiki under it: boot the TW5 wiki with this module before landing a change. */
+export class NaluWikiUnavailableError extends Error {
+  override readonly name = "NaluWikiUnavailableError";
+  constructor(title: string) { super(`nalu-engine: no wiki stands to apply "${title}" to — boot the TW5 wiki with this module before landing a change`); }
 }
-
-// ---------------------------------------------------------------------------
-// Drain — one wiki.transact() per frame, regardless of bag count
-// ---------------------------------------------------------------------------
 
 /**
  * The wiki fields an inbound change lands as. CRDT records store the title as the doc key, not nested
@@ -117,86 +79,29 @@ export function toWikiFields(change: LarTiddlerChange): TW5TiddlerInputFieldsWit
   };
 }
 
-function _drain(budget: number): void {
-  if (!_wiki || _queue.length === 0) return;
-
-  const batch = _queue.splice(0, budget);
-  const Tiddler = $tw?.Tiddler;
-  if (!Tiddler) return;
-
-  _applying = true;
-  try {
-    const apply = (): void => {
-      for (const change of batch) {
-        if (change.record === null || change.record.meta?.deleted) {
-          _wiki!.deleteTiddler(change.title);
-        } else {
-          _wiki!.addTiddler(new Tiddler(toWikiFields(change)));
-        }
-      }
-    };
-    if (typeof _wiki.transact === "function") _wiki.transact(apply);
-    else apply();
-  } finally {
-    _applying = false;
-  }
-
-  // Remainder carries to next frame; an empty queue settles the hydration checkpoint.
-  if (_queue.length > 0) _scheduleFrame();
-  else _settleHydration();
-}
-
 // ---------------------------------------------------------------------------
 // Public API — exposed at $tw.lares.*
 // ---------------------------------------------------------------------------
 
-function enqueueNalu(change: LarTiddlerChange): void {
-  _queue.push(change);
-  _scheduleFrame();
+/** Apply ONE inbound change to the wiki, synchronously. */
+export function applyNalu(change: LarTiddlerChange): void {
+  const Tiddler = $tw?.Tiddler;
+  if (!_wiki || !Tiddler) throw new NaluWikiUnavailableError(change.title);
+  // An apply that begins inside another (a listener that lands a change of its own) restores the flag it
+  // found, so the outer apply still reads raised until it ends.
+  const outer = _applying;
+  _applying = true;
+  try {
+    if (change.record === null || change.record.meta?.deleted) _wiki.deleteTiddler(change.title);
+    else _wiki.addTiddler(new Tiddler(toWikiFields(change)));
+  } finally {
+    _applying = outer;
+  }
 }
 
-function flushNalu(budget = DEFAULT_BUDGET): void {
-  _drain(budget);
-}
-
-/**
- * Begin the seed-hydration wave (progressive-boot contract). The recipe calls this ONCE right
- * after enqueuing the seed replay, INSTEAD of a synchronous unbounded flush: the seed already
- * sits on the paced queue, so this only arms the checkpoint and lets `_drain` empty it frame by
- * frame — no event-loop block. Idempotent; a begin over an already-empty queue settles at once.
- */
-function beginHydration(): void {
-  if (_seedDrained) return;
-  _seedDrained = new Promise<void>((resolve) => { _seedDrainedResolve = resolve; });
-  _hydrating = true;
-  if (_queue.length === 0) _settleHydration();
-  else _scheduleFrame();
-}
-
-function _settleHydration(): void {
-  if (!_hydrating) return;
-  _hydrating = false;
-  const resolve = _seedDrainedResolve;
-  _seedDrainedResolve = null;
-  resolve?.();
-}
-
-/**
- * Resolves once the seed replay has fully drained into the wiki VM — the catch-up checkpoint
- * the island awaits before arming live reactive behavior, so onEa still observes a fully-resident
- * seed (the invariant preserved, the synchronous block removed). Resolves immediately when no
- * hydration was begun (a wiki-less path).
- */
-function whenSeedDrained(): Promise<void> {
-  return _seedDrained ?? Promise.resolve();
-}
-
-function isApplyingNalu(): boolean {
+/** True while an `applyNalu` call runs. */
+export function isApplyingNalu(): boolean {
   return _applying;
-}
-
-function naluPending(): number {
-  return _queue.length;
 }
 
 // ---------------------------------------------------------------------------
@@ -209,11 +114,7 @@ export function startup(): void {
   _wiki = wiki;
 
   const lares = ($tw!.lares ?? {}) as Record<string, unknown>;
-  lares["enqueueNalu"]     = enqueueNalu;
-  lares["flushNalu"]       = flushNalu;
-  lares["isApplyingNalu"]  = isApplyingNalu;
-  lares["naluPending"]     = naluPending;
-  lares["beginHydration"]  = beginHydration;
-  lares["whenSeedDrained"] = whenSeedDrained;
+  lares["applyNalu"]      = applyNalu;
+  lares["isApplyingNalu"] = isApplyingNalu;
   ($tw as { lares?: Record<string, unknown> }).lares = lares;
 }
