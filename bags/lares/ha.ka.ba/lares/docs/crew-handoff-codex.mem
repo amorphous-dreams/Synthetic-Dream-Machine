@@ -1570,6 +1570,14 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;krnY9582PUDP7FYdzhz0PxPpnmAnz2QIxTh2PNNSlIo
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;0evAe5EaI7jGRzEYTxC_rfMXwZhJ0DxU_W6bf9UMhjo
 
 <<^ code="&#x0004;" -> to="?">>

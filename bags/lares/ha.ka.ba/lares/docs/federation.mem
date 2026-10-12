@@ -159,10 +159,18 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 * ''Python'' — the integration check resolves `python3` → `python` → `py`, so Windows' `python`/`py` is found.
 * ''The wake hook is portable'' — it runs node exec-form (`node lares-wake-hook.mjs`), no shell, identical on Windows and Unix.
 * ''mempalace's keep-hooks are bash'' (`Stop` / `PreCompact`) — on native Windows they need ''Git for Windows'' (which Claude Code already requires for its bash tool). With Git Bash present, `lares vessel stand --claude` wires them as `bash "<path>"`; without it, the verbatim keep-leg stays dark until Git for Windows is installed.
-* ''`lares vessel stand --restart`'' (the dev restart) uses `lsof`/`ss` — Unix-only; it does not run during a normal wake, but the restart loop awaits a Windows (netstat/taskkill) path.
+* ''`lares vessel stand --restart`'' (the dev restart) checks POSIX ports with `lsof` then `ss`, and Windows ports with `netstat`; the restart path signals the discovered process (`packages/lares-cli/src/port-control.ts`).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n2SlyqcvRa-Ze9xtQbJaSHyZGg_ESgqQjUGh8AIU_kU
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;PVJrA-VTpFNsXjgK20fqKxzoEJlrmApHuSZHNXTBDN8
 
 <<^ code="&#x0004;" -> to="?">>

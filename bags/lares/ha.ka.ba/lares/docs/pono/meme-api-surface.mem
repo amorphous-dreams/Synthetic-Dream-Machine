@@ -151,14 +151,14 @@ One law, four skins. Every row calls the same function in `packages/lararium-tw5
 
 | law | route (plain server) | daemon verb | CLI | MCP tool |
 |---|---|---|---|---|
-| `placeMeme` | `PUT …/memes/<scheme>/<path>` | `meme-put {recipe?, bag?, uri, text, base?}` | `lares meme put <uri> [--recipe\|--bag] [--base] [--file]` | `meme_put(uri, text, recipe?, bag?, base?)` |
-| `readMeme` | `GET …/memes/<scheme>/<path>` | `meme-get {recipe?, bag?, uri}` | `lares meme get <uri> [--recipe\|--bag]` | `meme_get(uri, recipe?, bag?)` |
-| `listMemes` | `GET …/memes.json[?tree=1]` | `meme-list {recipe?, bag?, tree?}` | `lares meme list [--recipe\|--bag] [--tree]` | `meme_list(recipe?, bag?, tree?)` |
-| `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `meme-delete {recipe?, bag?, uri, base?}` | `lares meme delete <uri> [--recipe\|--bag] [--if-match]` | `meme_delete(uri, recipe?, bag?, base?)` |
-| the projection | `tiddlywiki --render` through the house templates | `meme-project {recipe?, bag?, uri, to}` | `lares meme project <uri\|file> --to <mem\|md\|html\|tid\|json>` | `meme_project(uri, to, recipe?, bag?)` |
+| `placeMeme` | `PUT …/memes/<scheme>/<path>` | `meme-put {recipe?, bag?, uri, text, base?}` | `lares meme put <uri> (--recipe <slug> \| --bag <slug>) [--base <hash>] [--file <path>]` | `meme_put(uri, text, recipe?, bag?, base?)` |
+| `readMeme` | `GET …/memes/<scheme>/<path>` | `meme-get {recipe?, bag?, uri}` | `lares meme get <uri> (--recipe <slug> \| --bag <slug>)` | `meme_get(uri, recipe?, bag?)` |
+| `listMemes` | `GET …/memes.json[?tree=1]` | `meme-list {recipe?, bag?, tree?}` | `lares meme list (--recipe <slug> \| --bag <slug>) [--tree]` | `meme_list(recipe?, bag?, tree?)` |
+| `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `meme-delete {recipe?, bag?, uri, base?}` | `lares meme delete <uri> (--recipe <slug> \| --bag <slug>) [--if-match <hash>]` | `meme_delete(uri, recipe?, bag?, base?)` |
+| the projection | `tiddlywiki --render` through the house templates | `meme-project {recipe?, bag?, uri, to}` | `lares meme project <uri\|file> --to <mem\|md\|html\|tid\|json> (--recipe <slug> \| --bag <slug>)` for a store-backed projection; `lares meme project <file> --to md` runs local | `meme_project(uri, to, recipe?, bag?)` |
 | `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [--gradient\|--edges]` | — (LOCAL seat, by law) |
 
-The in-VM face publishes the same verbs to a wiki-side caller as `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}`. The CLI's exit classes: a `conflict` exits `conflict`; an absent meme on `get` or `delete` exits `not-found`; a refusal exits `verb-error`. The fixture `packages/lararium-sensorium/scripts/fixtures/cli-verbs.json` welds the MCP names to the CLI spellings; `tools/mirror-parity-witness.sh` reds when it goes stale. The CLI door law: <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>.
+The CLI requires exactly one container on every store verb. A missing or doubled container refuses `no-container` (exit 2) before file reads or daemon calls; `--recipe default` names the daemon's own wiki. The daemon verb and MCP tool accept an omitted container and default to the daemon's own wiki, while rejecting a doubled container. The in-VM face publishes the same verbs to a wiki-side caller as `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}`. The CLI's exit classes: `no-container` exits 2; a `conflict` exits `conflict`; an absent meme on `get` or `delete` exits `not-found`; a refusal exits `verb-error`. The fixture `packages/lararium-sensorium/scripts/fixtures/cli-verbs.json` welds the MCP names to the CLI spellings; `tools/mirror-parity-witness.sh` reds when it goes stale. The CLI door law: <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>.
 
 <<~/ahu>>
 
@@ -203,7 +203,7 @@ curl -si -X DELETE -H 'x-requested-with: TiddlyWiki' -H 'If-Match: "sha256:…"'
 #   HTTP/1.1 204 · a stale If-Match: 412 and the group stands · /recipes/…: 404
 ```
 
-The same walk through the other skins: `lares meme put lar:///t/x --file x.mem` · `lares meme get lar:///t/x` · `lares meme list --tree` · `lares meme delete lar:///t/x --if-match sha256:…`; over MCP, `meme_put` · `meme_get` · `meme_list(tree=True)` · `meme_delete(base=…)`.
+The CLI walk names its container on each store verb: `lares meme put lar:///t/x --recipe default --file x.mem` · `lares meme get lar:///t/x --recipe default` · `lares meme list --recipe default --tree` · `lares meme delete lar:///t/x --recipe default --if-match sha256:…`; over MCP, `meme_put` · `meme_get` · `meme_list(tree=True)` · `meme_delete(base=…)`.
 
 <<~/ahu>>
 
@@ -224,6 +224,6 @@ The same walk through the other skins: `lares meme put lar:///t/x --file x.mem` 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xe487Sp0WBTO12BKLSDi9QTgFk5h3nY6iXrhq6bFT4A
+<<^ code="&#x0003;">>ni:///sha-256;NqcDPDpKwDK5AkoUI2059hxyRPcaUdTPVdALiSUvepg
 
 <<^ code="&#x0004;" -> to="?">>
