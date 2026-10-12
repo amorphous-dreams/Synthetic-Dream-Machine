@@ -58,6 +58,10 @@ describe("an interrupted request reads its own code and cure", () => {
     expect(exitFor("crossing-outward")).toBe(5);
     expect(exitFor("cap-denied")).toBe(5);
   });
+  test("the faceless floor's refusal maps to its own code, in the usage family", () => {
+    expect(refusalCode("waking-floor")).toBe("waking-floor");
+    expect(exitFor("waking-floor")).toBe(2);
+  });
   test("CONTROL: an unrecognized reason still falls to verb-error", () => {
     expect(refusalCode("some-future-reason")).toBe("verb-error");
   });

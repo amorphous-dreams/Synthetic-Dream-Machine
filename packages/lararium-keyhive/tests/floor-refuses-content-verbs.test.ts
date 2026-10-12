@@ -8,7 +8,7 @@
  *   control — with a face the real reactor registers (it fails on its own first line, not the floor's)
  */
 import { describe, test, expect } from "vitest";
-import { ACTION_VERBS } from "@lararium/mesh";
+import { ACTION_VERBS, isVerbRefusal } from "@lararium/mesh";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 import { VerbTable } from "@lararium/tw5";
 
@@ -60,6 +60,16 @@ describe("the faceless floor refuses content verbs by name", () => {
       await expect(registry.get(v)!({}, verbCtx()), v).rejects.toThrow(FLOOR);
     }
     expect(capCalls).toEqual([]);
+  });
+
+  test("V2b — the floor's refusal is a VerbRefusal named waking-floor, so a caller routes on the reason", async () => {
+    const registry = wire(false);
+    for (const v of [...ACTION_VERBS, "REPACK", "init-wiki", "persona-label", "circle-add"]) {
+      const err = await registry.get(v)!({}, verbCtx()).catch((e: unknown) => e);
+      expect(isVerbRefusal(err), v).toBe(true);
+      expect((err as { reason: string }).reason, v).toBe("waking-floor");
+      expect(String((err as Error).message), v).toMatch(FLOOR);
+    }
   });
 
   test("V3 — the refused set covers the mesh table by iteration", () => {

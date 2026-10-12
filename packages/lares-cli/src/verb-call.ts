@@ -76,6 +76,8 @@ export interface VerbFailure {
  *                                             channel refuses to arbitrate over); mint a fresh id.
  *   bag-retired                            → bag-retired (2) — the bag was DROPped and takes no writes;
  *                                             CREATE stands a fresh one.
+ *   waking-floor                           → waking-floor (2) — the vessel holds no face; the refusal's
+ *                                             own message names the lift (`lares persona new 0`).
  *   cap-denied                             → cap-denied (5) — the caller's cap does not reach the bag.
  *   crossing-outward                       → crossing-outward (5) — the crossing relaxes confinement
  *                                             and wants the kahu quorum.
@@ -92,6 +94,7 @@ export function refusalCode(reason: string): string {
     case "retention-gap":                        return "retention-gap";
     case "receipt-fact-torn":                    return "receipt-fact-torn";
     case "bag-retired":                          return "bag-retired";
+    case "waking-floor":                         return "waking-floor";
     case "cap-denied":                           return "cap-denied";
     case "crossing-outward":                     return "crossing-outward";
     default:                                     return "verb-error";

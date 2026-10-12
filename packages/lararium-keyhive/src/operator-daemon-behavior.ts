@@ -29,7 +29,7 @@ import {
   makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { ACTION_VERBS, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
+import { ACTION_VERBS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
 
@@ -91,8 +91,10 @@ export function kelWalkNote(walk: { readonly unreadable?: string; readonly fork?
 // The floor is a state a vessel LIFTS out of, so a refusal there carries the act that lifts it
 // (the law `holdings-witness` keeps for its own corrections: a refusal says what would change the
 // answer). The closure reaches for no face, so standing it costs the boot nothing.
+// The refusal is the house's named `VerbRefusal` (reason `waking-floor`), so a caller routes on the
+// reason and never on the prose.
 const lightAFace = (verb: string): VerbReactor => async () => {
-  throw new Error(
+  throw new VerbRefusal("waking-floor",
     `[daemon] ${verb}: this vessel stands at the WAKING FLOOR and holds no face — ` +
     "light one with `lares persona new 0 --name '<label>'`, then stand the vessel again.",
   );
