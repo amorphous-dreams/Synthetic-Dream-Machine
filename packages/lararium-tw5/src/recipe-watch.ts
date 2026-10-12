@@ -30,12 +30,12 @@ import {
   SYSTEM_BAGS,
   structuralSlots,
   wikiSlotUri,
-  recipeUri,
   bagStackFromRec,
   type ChangeOrigin,
   type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
+import { effectiveRecipe } from "./recipe-planes.js";
 import { REBOOT_ALERT_TITLE } from "./wiki-behavior.js";
 import type { IslandContext } from "./island-context.js";
 
@@ -50,25 +50,23 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
 
   // Two registry planes (wiki-layer-ontology#oracle-planes):
   // the oracle SYSTEM plane carries system-bag pointers + system wiki-recipes
-  // (lares, lararium); the catalog registry carries USER bags + user recipes. A system
-  // wiki's recipe lives in the oracle plane; system bags resolve from the oracle plane.
+  // (lares, lararium) as DEFAULTS; the catalog registry carries USER bags and the vessel's own
+  // recipes. System bags resolve from the oracle plane.
   const catalog   = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
   const sysPlane  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const catHandle = catalog ? await catalog.handle() : null;
   const sysHandle = sysPlane ? await sysPlane.handle() : null;
 
-  const sysRecipeTitle  = recipeUri("oracle",  slug);
-  const userRecipeTitle = recipeUri("catalog", slug);
-
   // System bags resolve from the oracle plane; everything else from the catalog registry.
   const urlOfBag = async (bagId: string): Promise<string | null> =>
     (SYSTEM_BAGS.has(bagId) && sysPlane) ? sysPlane.urlOf(bagId) : (catalog ? catalog.urlOf(bagId) : null);
 
-  // The island's own recipe record: a system wiki reads it from the oracle plane, a user
-  // wiki from the catalog registry. Prefer the oracle plane so a system wiki composes from its plane.
+  // The island's own recipe record, through the one reader every site shares: the vessel's own
+  // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.
   const loadRecipeRec = (): LarTiddlerRecord | undefined =>
-    (sysHandle?.doc()?.tiddlers?.[sysRecipeTitle] as LarTiddlerRecord | undefined)
-    ?? (catHandle?.doc()?.tiddlers?.[userRecipeTitle] as LarTiddlerRecord | undefined);
+    effectiveRecipe(slug, (plane, title) =>
+      (plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers?.[title] as LarTiddlerRecord | undefined,
+    )?.record;
 
   // Slots the recipe model owns structurally (`structuralSlots` — the ONE spelling the record
   // minters and `recipeFromRecord` read too) — everything else in the cascade counts as a library

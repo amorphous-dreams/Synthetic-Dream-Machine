@@ -50,11 +50,12 @@
  */
 
 import {
-  AutomergeDocStore, DAEMON_BAG_ID, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, recipeUri, wikiSlotKindOf,
+  AutomergeDocStore, DAEMON_BAG_ID, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, foldRealmBags, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
+import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IslandContext } from "./island-context.js";
 import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
@@ -91,13 +92,7 @@ export function memeVerbOptions(
 ): MemeVerbOptions {
   const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
   const oracle  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
-  // A user recipe lives in the catalog plane under `bags/catalog/recipes/<slug>`; a system wiki's
-  // (lares, lararium) in the oracle plane under `bags/oracle/recipes/<slug>`.
-  const recipePlanes = [
-    ...(catalog ? [{ accessor: catalog, root: "catalog" }] : []),
-    ...(oracle  ? [{ accessor: oracle,  root: "oracle"  }] : []),
-  ];
-  const planes = recipePlanes.map((p) => p.accessor);
+  const planes = [...(catalog ? [catalog] : []), ...(oracle ? [oracle] : [])];
   return {
     composite: ctx.composite,
     tw5: ctx.tw5,
@@ -107,13 +102,8 @@ export function memeVerbOptions(
       const handle = await findOrThrow(ctx.repo, url, `${bag} (${kind} slot of ${slug})`);
       return new AutomergeDocStore(handle, bag);
     },
-    recipeOf: async (slug) => {
-      for (const { accessor, root } of recipePlanes) {
-        const rec = await accessor.recordOf(recipeUri(root, slug)).catch(() => null);
-        if (rec) return rec;
-      }
-      return null;
-    },
+    // The vessel's own composition shadows a system wiki's default: the one reader, own first.
+    recipeOf: async (slug) => (await effectiveRecipeOf(slug, { catalog, oracle }))?.record ?? null,
     reach: async (key, bag) => {
       // THE REALM PLANE FIRST. A bag the relation carries (registered on the realm's shared CRDT by its
       // stewards' own signatures) shadows this vessel's own bag of the same name: the ford's one book,

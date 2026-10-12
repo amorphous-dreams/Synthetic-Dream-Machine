@@ -663,6 +663,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           composite:   ctx.composite,
           repo:        ctx.repo,
           catalog,
+          ...(sysPlane ? { oracle: sysPlane } : {}),
           rootDir:     "",
           vesselDid: async () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
           registerBag: registerBagCap,
@@ -674,12 +675,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane));
         // Whole-wiki residency policy — read the catalog recipe, command main's manager
         // per bag via daemon:residency-op. Pure policy, no live-layer mechanism.
-        registry.register("pin-wiki",      makeWikiPinReactor(catalog, ctx.post));
-        registry.register("unpin-wiki",    makeWikiUnpinReactor(catalog, ctx.post));
+        registry.register("pin-wiki",      makeWikiPinReactor(catalog, ctx.post, sysPlane));
+        registry.register("unpin-wiki",    makeWikiUnpinReactor(catalog, ctx.post, sysPlane));
         // Recipe composition — write the catalog recipe, command residency via op. NO
         // live-layer mount/unmount: the recipe syncs, islands reconcile their own stacks.
-        registry.register("add-bag",       makeAddBagReactor({ catalog, post: ctx.post }));
-        registry.register("remove-bag",    makeRemoveBagReactor({ catalog, post: ctx.post }));
+        registry.register("add-bag",       makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post }));
+        registry.register("remove-bag",    makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post }));
         // Catalog-writing residency verbs — mint/oracle via accessor + repo, command
         // residency via post. No live-layer swap (oracle/recipe sync; islands reconcile).
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));

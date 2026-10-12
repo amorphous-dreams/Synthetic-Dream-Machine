@@ -10,9 +10,11 @@ import {
   mkDaemonWikiAlert,
   recipeRecordFields,
   recipeUri,
+  SYSTEM_BAGS,
   wikiBagUri,
   wikiSlotUri,
 } from "@lararium/mesh";
+import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";
 import type { WikiHandlerOptions, WikiMintHandlerOptions } from "./wiki-handler-options.js";
@@ -29,6 +31,26 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     }
 
     const wikiKey = wikiBagUri(slug);            // canon (bags/{slug}); identity rides wikis/{slug}
+    // A system wiki's canon doc and default recipe stand in the oracle plane; no act mints a second.
+    if (SYSTEM_BAGS.has(wikiKey)) {
+      const wikiDocUrl = opts.oracle ? await opts.oracle.urlOf(wikiKey) : null;
+      const defaultRec = opts.oracle ? await opts.oracle.recordOf(recipeUri("oracle", slug)).catch(() => null) : null;
+      const effective = wikiDocUrl && defaultRec && defaultRec.meta?.deleted !== true
+        ? await effectiveRecipeOf(slug, { catalog: opts.catalog, oracle: opts.oracle })
+        : null;
+      if (!wikiDocUrl || !effective) {
+        throw new Error(`system-bag: "${slug}" names a system bag, and no wiki stands on it`);
+      }
+      return {
+        slug,
+        status: "already-exists",
+        system: true,
+        wikiUri: wikiKey,
+        wikiDocUrl,
+        recipeUri: effective.title,
+        recipePlane: effective.plane,
+      };
+    }
     const draftBagId = wikiSlotUri(slug, "draft");
     const workingBagId = wikiSlotUri(slug, "working");
     // The user's wiki recipe is REGISTRY data (the user's composition choice) —

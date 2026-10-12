@@ -18,6 +18,7 @@ import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, r
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
+import { effectiveRecipeOf } from "./recipe-planes.js";
 
 /** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
 function isDraftFloorKey(key: string): boolean {
@@ -144,23 +145,13 @@ export function makeResolveReactor(composite: CompositeStore): VerbReactor {
  *  composite layer, so the accessor reads it directly, never through the composite. */
 export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: CatalogAccessor): VerbReactor {
   return async () => {
-    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string }> = [];
-    // User wikis — read the catalog RECIPE entries `wiki init` actually writes
-    // (`catalog/recipes/{slug}`), mirroring the system-wiki path below. The
-    // `@lararium/wikis/` prefix names a pre-plane-split shape nothing writes,
-    // so that path reads zero user wikis.
+    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean }> = [];
     const cat = await catalog.handle();
-    const userRecipePrefix = recipeUri("catalog", "");
-    for (const [title, rec] of Object.entries((cat.doc()?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>)) {
-      if (!title.startsWith(userRecipePrefix)) continue;
-      if (rec.meta?.deleted) continue;               // skip tombstones (listVisible parity)
-      const slug = title.slice(userRecipePrefix.length);
-      if (!slug || slug.includes("/")) continue;
-      const bagUri = wikiBagUri(slug);
-      wikis.push({ slug, uri: bagUri, automergeUrl: await catalog.urlOf(bagUri), kind: "user" });
-    }
-    // System wikis — oracle-plane recipes (the lares/lararium quine system bags).
-    // Their recipe lives in the oracle plane; the wiki bag stands as the system bag itself.
+    const catTiddlers = (cat.doc()?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
+    // System wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
+    // The vessel's own catalog record for the same slug is its composition: the row lists ONCE, as
+    // the system row, and reads `composition: "own"` with whether the own stack differs from the default.
+    const systemSlugs = new Set<string>();
     if (sysPlane) {
       const sys = await sysPlane.handle();
       const recipePrefix = recipeUri("oracle", "");
@@ -170,10 +161,28 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         const slug = title.slice(recipePrefix.length);
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
-        wikis.push({ slug, uri: bagUri, automergeUrl: await sysPlane.urlOf(bagUri), kind: "system" });
+        const own = catTiddlers[recipeUri("catalog", slug)];
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: await sysPlane.urlOf(bagUri), kind: "system", composition: "default" };
+        if (own && !own.meta?.deleted) {
+          row.composition = "own";
+          row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");
+        }
+        systemSlugs.add(slug);
+        wikis.push(row);
       }
     }
-    return { wikis };
+    // User wikis — the catalog RECIPE entries `wiki init` writes (`catalog/recipes/{slug}`).
+    const userRecipePrefix = recipeUri("catalog", "");
+    const userRows: typeof wikis = [];
+    for (const [title, rec] of Object.entries(catTiddlers)) {
+      if (!title.startsWith(userRecipePrefix)) continue;
+      if (rec.meta?.deleted) continue;               // skip tombstones (listVisible parity)
+      const slug = title.slice(userRecipePrefix.length);
+      if (!slug || slug.includes("/") || systemSlugs.has(slug)) continue;
+      const bagUri = wikiBagUri(slug);
+      userRows.push({ slug, uri: bagUri, automergeUrl: await catalog.urlOf(bagUri), kind: "user" });
+    }
+    return { wikis: [...userRows, ...wikis] };
   };
 }
 
@@ -185,13 +194,13 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
 // move cleanly.
 
 /** `pin-wiki` — pin every bag in the wiki's recipe (worker policy → main manager). */
-export function makeWikiPinReactor(catalog: CatalogAccessor, post: ResidencyOpPost): VerbReactor {
+export function makeWikiPinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
   return async (args) => {
     const slug = typeof args["slug"] === "string" ? args["slug"] : "";
     if (!slug) throw new Error("args.slug is required");
-    const recipeTitle = recipeUri("catalog", slug);
-    const recipeRec = await catalog.recordOf(recipeTitle);
-    if (!recipeRec) throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
+    const effective = await effectiveRecipeOf(slug, { catalog, oracle });
+    if (!effective) throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
+    const { record: recipeRec, title: recipeTitle } = effective;
     const bagStack = bagStackFromRec(recipeRec);
     const pinned: Array<{ bagUrl: string; reason: string }> = [];
     for (const bagUrl of bagStack) {
@@ -204,13 +213,13 @@ export function makeWikiPinReactor(catalog: CatalogAccessor, post: ResidencyOpPo
 }
 
 /** `unpin-wiki` — unpin every bag in the wiki's recipe (worker policy → main manager). */
-export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOpPost): VerbReactor {
+export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
   return async (args) => {
     const slug = typeof args["slug"] === "string" ? args["slug"] : "";
     if (!slug) throw new Error("args.slug is required");
-    const recipeTitle = recipeUri("catalog", slug);
-    const recipeRec = await catalog.recordOf(recipeTitle);
-    if (!recipeRec) throw new Error(`recipe not found for "${slug}"`);
+    const effective = await effectiveRecipeOf(slug, { catalog, oracle });
+    if (!effective) throw new Error(`recipe not found for "${slug}"`);
+    const { record: recipeRec, title: recipeTitle } = effective;
     const bagStack = bagStackFromRec(recipeRec);
     const unpinned: string[] = [];
     for (const bagUrl of bagStack) {

@@ -155,6 +155,37 @@ describe("recipe-watch", () => {
     stop?.();
   });
 
+  describe("two planes: the vessel's own composition shadows a system wiki's default", () => {
+    const ORACLE_RECIPE = recipeUri("oracle", SLUG);
+    const withOracle = (h: ReturnType<typeof harness>, stack: string[]) => {
+      const oracle = fakeHandle("automerge:oracle", {
+        [ORACLE_RECIPE]: rec(ORACLE_RECIPE, { "bag-stack": [ORACLE_BAG, ...stack].join(" ") }),
+      });
+      h.registerDoc("automerge:oracle", oracle);
+      (h.ctx as { oracleUrl: string | null }).oracleUrl = "automerge:oracle";
+      return oracle;
+    };
+
+    test("the catalog's recipe mounts over the oracle default, and its tombstone returns the default", async () => {
+      const h = harness({ stack: [WIKI_BAG, LIB_BAG] });
+      withOracle(h, [LARES_BAG, WIKI_BAG]);
+      const stop = await startRecipeWatch(h.ctx);
+      await vi.waitFor(() => expect(h.composite.hasBag(LIB_BAG)).toBe(true));
+      h.catalog.set(RECIPE, { tiddler: { title: RECIPE }, meta: { deleted: true } });
+      await vi.waitFor(() => expect(h.composite.hasBag(LIB_BAG)).toBe(false));
+      stop?.();
+    });
+
+    test("control: with no catalog recipe the oracle default stands", async () => {
+      const h = harness({ stack: [WIKI_BAG] });
+      delete h.catalog.tiddlers[RECIPE];
+      withOracle(h, [LARES_BAG, WIKI_BAG, LIB_BAG]);
+      const stop = await startRecipeWatch(h.ctx);
+      await vi.waitFor(() => expect(h.composite.hasBag(LIB_BAG)).toBe(true));
+      stop?.();
+    });
+  });
+
   test("no recipe record → watch idles without throwing", async () => {
     const h = harness({ stack: [WIKI_BAG] });
     delete h.catalog.tiddlers[RECIPE];

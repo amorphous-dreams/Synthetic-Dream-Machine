@@ -10,8 +10,9 @@
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { placeMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -437,5 +438,33 @@ describe("meme-get/put --bag names a wiki's instance slot", () => {
     const r = rig();
     r.slots.set("garden/temp", new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/garden/temp"));
     await expect(makeMemeGetReactor(r.opts)({ bag: "lar:///ha.ka.ba/wikis/garden/temp", uri: URI }, ctx())).rejects.toThrow(/holds no layer/);
+  });
+});
+
+describe("the recipe readers agree", () => {
+  const mk = (title: string, stack: string): LarTiddlerRecord => ({ tiddler: { title, "bag-stack": stack } });
+  const OWN = recipeUri("catalog", "lares");
+  const DEFAULT = recipeUri("oracle", "lares");
+  const docs: Record<string, Record<string, LarTiddlerRecord>> = {
+    "automerge:cat": { [OWN]: mk(OWN, "own") },
+    "automerge:ora": { [DEFAULT]: mk(DEFAULT, "default") },
+  };
+  const repo = { find: async (url: string) => ({ doc: () => ({ tiddlers: docs[url] }), whenReady: async () => {} }) } as never;
+  const options = () => memeVerbOptions(
+    { composite: new CompositeStore(), tw5: {} as never, repo, catalogUrl: "automerge:cat", oracleUrl: "automerge:ora" },
+    async () => null,
+  );
+
+  test("meme get --recipe reads the record the boot mount and the live watch read: the vessel's own", async () => {
+    const viaVerb = await options().recipeOf("lares");
+    const viaMount = effectiveRecipe("lares", (plane, title) => docs[plane === "oracle" ? "automerge:ora" : "automerge:cat"]![title])?.record;
+    expect(viaVerb).toEqual(viaMount);
+    expect(viaVerb?.tiddler["bag-stack"]).toBe("own");
+  });
+
+  test("control: a slug only the oracle carries reads the default", async () => {
+    delete docs["automerge:cat"]![OWN];
+    expect((await options().recipeOf("lares"))?.tiddler["bag-stack"]).toBe("default");
+    docs["automerge:cat"]![OWN] = mk(OWN, "own");
   });
 });

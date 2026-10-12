@@ -25,6 +25,8 @@ export interface WikiHandlerOptions {
 export interface WikiMintHandlerOptions {
   readonly repo:        Repo;
   readonly catalog:     CatalogAccessor;
+  /** The system plane: a system wiki's canon doc and default recipe stand here. A system slug mints nothing. */
+  readonly oracle?:     CatalogAccessor;
   /** The VESSEL's DID (`0x`+verifying key) — the PLACE that asks. Distinct from the persona
    *  root (the human), which signs delegation edges and never rides a verb request. */
   readonly vesselDid: () => Promise<string> | string;
@@ -59,6 +61,8 @@ export interface PruneStaleOptions extends WikiMintHandlerOptions {
  *  island reconciles its own mount set. */
 export interface WikiComposeOptions {
   readonly catalog: CatalogAccessor;
+  /** The system plane: a system wiki's default recipe stands here; the first edit adopts it into the catalog. */
+  readonly oracle?: CatalogAccessor;
   readonly post:    ResidencyOpPost;
 }
 

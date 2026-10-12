@@ -19,7 +19,6 @@ import {
   AutomergeDocStore,
   computeRecipeFingerprint,
   LARES_DOC_URI, LARARIUM_DOC_URI,
-  recipeUri,
   wikiBagUri, wikiSlotUri,
   type DocHandle,
   type AutomergeUrl,
@@ -32,6 +31,7 @@ import {
   type IslandGrants,
 } from "@lararium/mesh";
 import type { VerbTable } from "./verb-dispatcher.js";
+import { effectiveRecipe } from "./recipe-planes.js";
 
 /** Resolve one bag's doc handle. Encodes the platform/office seed policy
  *  (node relay → throw on miss; browser keeper → create blank). */
@@ -120,15 +120,15 @@ export interface PrimaryMountInputs {
   pluginOfferingsFault?: string;
 }
 
-/** The recipe record a wiki stands on: a system wiki's from the oracle plane, a user wiki's from the
- *  catalog registry — the SAME two planes recipe-watch reads, in the same order. */
+/** The recipe record a wiki stands on: the vessel's own composition (catalog) shadowing a system
+ *  wiki's default (oracle) — the SAME two planes recipe-watch reads, through the same reader. */
 export function recipeRecordOf(
   planes: { islandHandle: DocHandle<LarDoc>; catalogHandle: DocHandle<LarDoc> },
   slug: string,
 ): LarTiddlerRecord | null {
-  return (planes.islandHandle.doc()?.tiddlers?.[recipeUri("oracle", slug)] as LarTiddlerRecord | undefined)
-    ?? (planes.catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)] as LarTiddlerRecord | undefined)
-    ?? null;
+  return effectiveRecipe(slug, (plane, title) =>
+    ((plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers?.[title] as LarTiddlerRecord | undefined),
+  )?.record ?? null;
 }
 
 /** Canonical disk-mirror DESIGNATION (system canon). A pool's held grant decides

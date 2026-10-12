@@ -1,10 +1,14 @@
 import type { LarTiddlerRecord } from "@lararium/mesh";
 import {
   bagStackFromRec,
+  mutableLarRecord,
   recipeUri,
+  SYSTEM_BAGS,
+  wikiBagUri,
   mkDaemonResidencyOp,
   mkDaemonWikiAlert,
 } from "@lararium/mesh";
+import { effectiveRecipeOf, type RecipePlane } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";
 
@@ -20,6 +24,27 @@ function recipeArgs(args: Readonly<Record<string, unknown>>): { slug: string; ba
   };
 }
 import type { WikiComposeOptions } from "./wiki-handler-options.js";
+
+/** The vessel's recipe for a slug, ready to edit. The effective record may stand in the oracle plane
+ *  (a system wiki's default): the edit then writes the vessel's own record into the catalog, the
+ *  default's fields beneath it, `composed-from` naming the default. */
+async function recipeToEdit(
+  opts: WikiComposeOptions, slug: string, authority: string, missing: string,
+): Promise<{ recipeTitle: string; recipeRec: LarTiddlerRecord; adopt: boolean; standsAt: { title: string; plane: RecipePlane } }> {
+  const effective = await effectiveRecipeOf(slug, opts);
+  if (!effective) {
+    throw new Error(SYSTEM_BAGS.has(wikiBagUri(slug))
+      ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this system wiki`
+      : missing);
+  }
+  const recipeTitle = recipeUri("catalog", slug);
+  if (effective.plane === "catalog") return { recipeTitle, recipeRec: effective.record, adopt: false, standsAt: effective };
+  const adopted: LarTiddlerRecord = {
+    ...mutableLarRecord(recipeTitle, {}, authority),
+    tiddler: { ...effective.record.tiddler, title: recipeTitle, "composed-from": effective.title },
+  };
+  return { recipeTitle, recipeRec: adopted, adopt: true, standsAt: effective };
+}
 
 /**
  * `lares wiki add-bag <slug> <bag-uri> [--at <position>]` — add a bag to
@@ -38,16 +63,16 @@ export function makeAddBagReactor(opts: WikiComposeOptions): VerbReactor {
     if (!slug) throw new Error("args.slug is required");
     if (!bagUrl) throw new Error("args.bagUrl is required (the bag's lar: URI)");
 
-    // The user recipe lives in catalog (registry) — read + write via the accessor.
-    const recipeTitle = recipeUri("catalog", slug);
-    const recipeRec = await opts.catalog.recordOf(recipeTitle);
-    if (!recipeRec) {
-      throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
-    }
+    // The vessel's own recipe lives in catalog (registry) — read + write via the accessor; a system
+    // wiki's default (oracle) is adopted into the catalog on the first edit.
+    const { recipeTitle, recipeRec, adopt, standsAt } = await recipeToEdit(
+      opts, slug, "lares-cli:wiki-add-bag",
+      `recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`,
+    );
 
     const stack = bagStackFromRec(recipeRec);
     if (stack.includes(bagUrl)) {
-      return { slug, recipeUri: recipeTitle, status: "already-in-stack", bagUrl };
+      return { slug, recipeUri: standsAt.title, recipePlane: standsAt.plane, status: "already-in-stack", bagUrl };
     }
 
     const nextStack = [...stack, bagUrl];
@@ -77,6 +102,8 @@ export function makeAddBagReactor(opts: WikiComposeOptions): VerbReactor {
     return {
       slug,
       recipeUri: recipeTitle,
+      recipePlane: "catalog" as RecipePlane,
+      ...(adopt ? { adopted: true } : {}),
       status: "added",
       bagUrl,
       stack: nextStack,
@@ -103,15 +130,13 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
     if (!slug) throw new Error("args.slug is required");
     if (!bagUrl) throw new Error("args.bagUrl is required");
 
-    const recipeTitle = recipeUri("catalog", slug);
-    const recipeRec = await opts.catalog.recordOf(recipeTitle);
-    if (!recipeRec) {
-      throw new Error(`recipe not found for "${slug}"`);
-    }
+    const { recipeTitle, recipeRec, adopt, standsAt } = await recipeToEdit(
+      opts, slug, "lares-cli:wiki-remove-bag", `recipe not found for "${slug}"`,
+    );
 
     const stack = bagStackFromRec(recipeRec);
     if (!stack.includes(bagUrl)) {
-      return { slug, recipeUri: recipeTitle, status: "not-in-stack", bagUrl };
+      return { slug, recipeUri: standsAt.title, recipePlane: standsAt.plane, status: "not-in-stack", bagUrl };
     }
 
     const nextStack = stack.filter((u) => u !== bagUrl);
@@ -140,6 +165,8 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
     return {
       slug,
       recipeUri: recipeTitle,
+      recipePlane: "catalog" as RecipePlane,
+      ...(adopt ? { adopted: true } : {}),
       status: "removed",
       bagUrl,
       stack: nextStack,
