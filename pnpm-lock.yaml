@@ -61,14 +61,14 @@ importers:
         specifier: 3.4.1
         version: 3.4.1
       '@automerge/automerge-repo':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-network-messagechannel':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-storage-indexeddb':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@lararium/keyhive':
         specifier: workspace:*
         version: link:../lararium-keyhive
@@ -146,14 +146,14 @@ importers:
         specifier: 3.4.1
         version: 3.4.1
       '@automerge/automerge-repo':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-network-messagechannel':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-network-websocket':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@noble/ciphers':
         specifier: 2.4.0
         version: 2.4.0
@@ -180,17 +180,17 @@ importers:
         specifier: 3.4.1
         version: 3.4.1
       '@automerge/automerge-repo':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-network-messagechannel':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-network-websocket':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-storage-nodefs':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@lararium/keyhive':
         specifier: workspace:*
         version: link:../lararium-keyhive
@@ -297,11 +297,11 @@ importers:
         specifier: 3.4.1
         version: 3.4.1
       '@automerge/automerge-repo':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-storage-indexeddb':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@lararium/browser':
         specifier: workspace:*
         version: link:../lararium-browser
@@ -383,11 +383,11 @@ importers:
   tests:
     devDependencies:
       '@automerge/automerge-repo':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       '@automerge/automerge-repo-storage-nodefs':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3(supports-color@10.2.2)
+        specifier: 2.6.0-alpha.5
+        version: 2.6.0-alpha.5(supports-color@10.2.2)
       vitest:
         specifier: 5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.4(@types/node@26.6.4)(esbuild@0.28.1)(tsx@4.23.15))
@@ -396,24 +396,24 @@ importers:
 
 packages:
 
-  '@automerge/automerge-repo-network-messagechannel@2.6.0-alpha.3':
-    resolution: {integrity: sha512-FhOsCc4aOG2vF1HXPuNrqserismaWtmhIpXX5W3+xLW3GQA9U93UPuiFmSNWfK89sZhWFtKO+yGVj9iZGKAq+Q==}
+  '@automerge/automerge-repo-network-messagechannel@2.6.0-alpha.5':
+    resolution: {integrity: sha512-L9uWJt0Uqu79P5wecPWp2bqiFWvKKONW4UjjppTn35pJ1JWRki7LMh+WYYxW24/YwnjsORSbNXBK6br7JStK/w==}
     engines: {node: '>=22.13'}
 
-  '@automerge/automerge-repo-network-websocket@2.6.0-alpha.3':
-    resolution: {integrity: sha512-8iY+aQm0IZfKjwqFAEmwJLT/QP0izwq/F45mtX0L6Bl+JQ0p9ouJcqYwFyhWItlb7vor3NKMb/yp3NCGmy5A4w==}
+  '@automerge/automerge-repo-network-websocket@2.6.0-alpha.5':
+    resolution: {integrity: sha512-ZwHaBRXMtLhTcCXqIP/04pjd95THbpn4d5TZxv9Yk8WplCmeZ1ERb3Mw1sJobzlMRNRb6gsdeA+UuI9dcPVHjA==}
     engines: {node: '>=22.13'}
 
-  '@automerge/automerge-repo-storage-indexeddb@2.6.0-alpha.3':
-    resolution: {integrity: sha512-WYHsY3aljsQCq2Uu+Z11q33U+Gb8v+PN+/+LTicgHjW9LwoXUrIiASb+dvr+5/s1tT0b5tA2MJPkpsfhej4TIw==}
+  '@automerge/automerge-repo-storage-indexeddb@2.6.0-alpha.5':
+    resolution: {integrity: sha512-ZbLM/8md0jiN4gX5K5Bfg3O49CpvxK2n1aoHh9OEAIzZv31DD91+IfMPZRBsGZDpKZdxjLAJaaYIcjB31KvV0w==}
     engines: {node: '>=22.13'}
 
-  '@automerge/automerge-repo-storage-nodefs@2.6.0-alpha.3':
-    resolution: {integrity: sha512-16GCkPAq+iw6gJs9cOZCwMjGRcsbQokvKKeTa//lxStycvlSfGLls9zjIPIpdhiczdL6oy4b3v7dnn5jnJC47A==}
+  '@automerge/automerge-repo-storage-nodefs@2.6.0-alpha.5':
+    resolution: {integrity: sha512-pNjwWhpDnLzFBMVc+5I0vojNnsBgNyIzTdngwvgdvbhqeO35sTQWn8mMrfPR5VWgpMGn8yMC56O7WFLFmCbp8w==}
     engines: {node: '>=22.13'}
 
-  '@automerge/automerge-repo@2.6.0-alpha.3':
-    resolution: {integrity: sha512-Rn/KdoVHUQwYU0TXqHyy9PdBgVE009JJWnh2YxT2blk5EnbZckh+RfGfu6ngjMGw0DZcZtJLvK3dKDNdAvtQVA==}
+  '@automerge/automerge-repo@2.6.0-alpha.5':
+    resolution: {integrity: sha512-ljXRcPdxipr3g7YQOPcs1qM5kTyRw2NBB/RkU8aU7F8TbsrGQKkq8AKqugjg1Nc3iVWOGS1Wf5WZjuB0NQOusg==}
     engines: {node: '>=22.13'}
 
   '@automerge/automerge@3.4.1':
@@ -1965,16 +1965,16 @@ packages:
 
 snapshots:
 
-  '@automerge/automerge-repo-network-messagechannel@2.6.0-alpha.3(supports-color@10.2.2)':
+  '@automerge/automerge-repo-network-messagechannel@2.6.0-alpha.5(supports-color@10.2.2)':
     dependencies:
-      '@automerge/automerge-repo': 2.6.0-alpha.3(supports-color@10.2.2)
+      '@automerge/automerge-repo': 2.6.0-alpha.5(supports-color@10.2.2)
       eventemitter3: 5.0.4
     transitivePeerDependencies:
       - supports-color
 
-  '@automerge/automerge-repo-network-websocket@2.6.0-alpha.3(supports-color@10.2.2)':
+  '@automerge/automerge-repo-network-websocket@2.6.0-alpha.5(supports-color@10.2.2)':
     dependencies:
-      '@automerge/automerge-repo': 2.6.0-alpha.3(supports-color@10.2.2)
+      '@automerge/automerge-repo': 2.6.0-alpha.5(supports-color@10.2.2)
       cbor-x: 1.6.4
       debug: 4.4.3(supports-color@10.2.2)
       eventemitter3: 5.0.4
@@ -1984,19 +1984,19 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@automerge/automerge-repo-storage-indexeddb@2.6.0-alpha.3(supports-color@10.2.2)':
+  '@automerge/automerge-repo-storage-indexeddb@2.6.0-alpha.5(supports-color@10.2.2)':
     dependencies:
-      '@automerge/automerge-repo': 2.6.0-alpha.3(supports-color@10.2.2)
+      '@automerge/automerge-repo': 2.6.0-alpha.5(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@automerge/automerge-repo-storage-nodefs@2.6.0-alpha.3(supports-color@10.2.2)':
+  '@automerge/automerge-repo-storage-nodefs@2.6.0-alpha.5(supports-color@10.2.2)':
     dependencies:
-      '@automerge/automerge-repo': 2.6.0-alpha.3(supports-color@10.2.2)
+      '@automerge/automerge-repo': 2.6.0-alpha.5(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@automerge/automerge-repo@2.6.0-alpha.3(supports-color@10.2.2)':
+  '@automerge/automerge-repo@2.6.0-alpha.5(supports-color@10.2.2)':
     dependencies:
       '@automerge/automerge': 3.4.1
       bs58check: 4.0.0

@@ -19,10 +19,14 @@
  * key in flight together would rename each other's temp away. Each save of a key therefore waits for the one
  * before it, and the later call's bytes land last — the order the callers asked in.
  *
- * It overrides `save`, `load` and `loadRange`; `remove` / `removeRange` inherit unchanged.
- * The base keeps a write-through read cache (private at the type layer, real at runtime): the
- * override mirrors that cache write so a load-after-save never returns stale bytes, and holds
- * its own copy of the base directory to recompute the shard path the base derives privately.
+ * A SAVE READS BACK FROM THE MOMENT IT IS CALLED. The rename lands later than the call, and the Repo reads a
+ * chunk it has just handed over. This adapter holds each key's latest bytes for exactly as long as a save of that
+ * key stays in flight: `load` answers from them, and `loadRange` lists them beside the chunks on disk. Once the
+ * last save of a key settles the adapter holds nothing for it, and every read follows the disk. The holding is
+ * this adapter's own; it reads and writes no field of the base class.
+ *
+ * It overrides every method that reads or writes; it borrows the base's disk listing (`loadRange`) and disk
+ * removal, and holds its own copy of the base directory to recompute the shard path the base derives privately.
  */
 
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
@@ -40,10 +44,15 @@ export interface DurableStorageOptions {
   readonly onStrandedTemp?: (path: string) => void;
 }
 
+/** One key's bytes while a save of it stays in flight: the latest bytes asked for, and how many saves still run. */
+interface PendingSave { readonly key: StorageKey; binary: Uint8Array; saves: number }
+
 export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
   readonly #root: string;
   /** The last save in flight per file path — the next save of that path waits on it. */
   readonly #inFlight = new Map<string, Promise<void>>();
+  /** The bytes of every key with a save in flight, by file path. Empty whenever no save runs. */
+  readonly #pending = new Map<string, PendingSave>();
   readonly #onStranded: (path: string) => void;
   readonly #named = new Set<string>();
 
@@ -76,18 +85,30 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
 
   override async load(keyArray: StorageKey): Promise<Uint8Array | undefined> {
     if (this.#passOver(keyArray)) return undefined;
-    return await super.load(keyArray);
+    return this.#pending.get(this.#pathOf(keyArray))?.binary ?? await super.load(keyArray);
   }
 
   override async loadRange(keyPrefix: StorageKey): Promise<Chunk[]> {
-    return (await super.loadRange(keyPrefix)).filter((chunk) => !this.#passOver(chunk.key));
+    // The pending set is read BEFORE the disk walk: a save that settles during the walk has landed on disk by
+    // then, so the walk lists it; one read after the walk could miss a key that was neither on disk when the
+    // walk passed nor still pending afterwards.
+    const held = [...this.#pending.values()].filter((p) => keyPrefix.every((part, i) => p.key[i] === part));
+    const chunks = (await super.loadRange(keyPrefix)).filter((chunk) => !this.#passOver(chunk.key));
+    const listed = new Set(chunks.map((chunk) => this.#pathOf(chunk.key)));
+    for (const p of held) {
+      const path = this.#pathOf(p.key);
+      if (listed.has(path)) continue;
+      chunks.push({ key: [...p.key], data: this.#pending.get(path)?.binary ?? await super.load(p.key) });
+    }
+    return chunks;
   }
 
   override async save(keyArray: StorageKey, binary: Uint8Array): Promise<void> {
-    // Mirror the base's write-through cache (keeps load-after-save coherent). `cache` is
-    // TS-private on the base but present at runtime; the base keys it by `path.join(...key)`.
-    (this as unknown as { cache: Record<string, Uint8Array> }).cache[join(...keyArray)] = binary;
     const filePath = this.#pathOf(keyArray);
+    let pending = this.#pending.get(filePath);
+    if (pending) { pending.binary = binary; pending.saves++; }
+    else { pending = { key: [...keyArray], binary, saves: 1 }; this.#pending.set(filePath, pending); }
+    const held = pending;
     const prior = this.#inFlight.get(filePath) ?? Promise.resolve();
     const write = prior.catch(() => { /* the prior save's fault belongs to its own caller */ }).then(async () => {
       await mkdir(dirname(filePath), { recursive: true });
@@ -95,6 +116,22 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     });
     this.#inFlight.set(filePath, write);
     try { await write; }
-    finally { if (this.#inFlight.get(filePath) === write) this.#inFlight.delete(filePath); }
+    finally {
+      if (this.#inFlight.get(filePath) === write) this.#inFlight.delete(filePath);
+      // A remove may have dropped the holding meanwhile; only the holding this save counted into is released.
+      if (--held.saves === 0 && this.#pending.get(filePath) === held) this.#pending.delete(filePath);
+    }
+  }
+
+  override async remove(keyArray: string[]): Promise<void> {
+    this.#pending.delete(this.#pathOf(keyArray));
+    await super.remove(keyArray);
+  }
+
+  override async removeRange(keyPrefix: string[]): Promise<void> {
+    for (const [path, p] of this.#pending) {
+      if (keyPrefix.every((part, i) => p.key[i] === part)) this.#pending.delete(path);
+    }
+    await super.removeRange(keyPrefix);
   }
 }
