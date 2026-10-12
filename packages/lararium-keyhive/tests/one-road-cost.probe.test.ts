@@ -11,7 +11,7 @@
  * road ingests it EVERY call — so call k carries the freight of calls 1..k-1. Per-call cost within one
  * batch (first vs last) reads that directly; a fleet-gather that multiplies callers multiplies exactly this.
  *
- * The verdict lands on disk (one-road-cost.verdict.json beside this file) AND under a LOOSE ceiling
+ * The verdict lands on disk (`VERDICT_PATH`, outside the stamped package subtree) AND under a LOOSE ceiling
  * assertion, so a future regression reds here rather than surfacing as a slow gather in docker.
  *
  * Real Keyhive, no mocks. Timing carries this machine's wasm build — the per-call ms travels poorly
@@ -19,11 +19,9 @@
  */
 import { describe, test, expect } from "vitest";
 import { writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 
-const VERDICT_PATH = join(dirname(fileURLToPath(import.meta.url)), "one-road-cost.verdict.json");
+import { VERDICT_PATH } from "./verdict-path.js";
 
 /** LOOSE ceilings — regression tripwires, never performance claims. A healthy run sits far under. */
 const CEILING_SINGLE_MS   = 3000;  // one trip down the road
