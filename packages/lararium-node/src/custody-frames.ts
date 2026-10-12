@@ -36,7 +36,7 @@ export interface CustodyStanding {
 }
 
 export type CustodyAnswer =
-  | ({ readonly op: "unlock" } & HolderUnlock & Partial<CustodyStanding>)
+  | ({ readonly op: "unlock"; readonly held?: boolean } & HolderUnlock & Partial<CustodyStanding>)
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked" } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string } };
@@ -53,6 +53,9 @@ export interface CustodyFrameDeps {
 }
 
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody"]);
+
+/** How many custody acts may wait their turn at once. */
+export const CUSTODY_LINE = 8;
 
 /** A frame this door owns: its `op` names a custody act. A frame with any other shape belongs to the verb seat. */
 export function isCustodyFrame(v: unknown): v is { op: string } {
@@ -82,6 +85,7 @@ function credentialsOf(v: unknown): readonly Credential[] | null {
 export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, sock: Socket) => boolean {
   const { holder } = deps;
   let chain: Promise<void> = Promise.resolve();
+  let waiting = 0;
   const answer = (sock: Socket, a: CustodyAnswer): void => {
     try { sock.end(JSON.stringify(a) + "\n"); } catch { /* the caller went away */ }
   };
@@ -94,7 +98,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     }
     deps.onLog(`unlocked: slot ${u.slot} opened the vessel key`);
     const stood = await deps.recompose(true);
-    return { op: "unlock", ...u, ...stood };
+    // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
+    // stands at the floor and the holder drops what it opened: held and standing never disagree.
+    if (stood.refused !== undefined) {
+      await holder.lock();
+      deps.onLog("the sovereign composition did not stand; the vessel key dropped again");
+      return { op: "unlock", ...u, ...stood, held: false };
+    }
+    return { op: "unlock", ...u, ...stood, held: true };
   };
 
   const lock = async (): Promise<CustodyAnswer> => {
@@ -124,9 +135,21 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
         standing: deps.standing(), testScratch: deps.testScratch,
       });
     }
+    // THE DOOR HOLDS A SHORT LINE. Past `CUSTODY_LINE` acts waiting, a frame refuses at once by name, and an act
+    // whose caller left before its turn never runs: no caller builds a backlog a later lock must wait behind.
+    if (waiting >= CUSTODY_LINE) {
+      answer(sock, { op, status: "error", errorMessage: `the custody door holds ${CUSTODY_LINE} acts waiting; send this one again once they settle`, refusal: { reason: "custody-door-busy" } });
+      return true;
+    }
+    waiting += 1;
+    const turn = async (): Promise<CustodyAnswer | null> => {
+      waiting -= 1;
+      if (sock.destroyed) return null;
+      return act();
+    };
     // The fault of one act names itself to its own caller and never breaks the chain for the next.
-    chain = chain.then(act).then(
-      (a) => answer(sock, a),
+    chain = chain.then(turn).then(
+      (a) => { if (a) answer(sock, a); },
       (e) => {
         const why = e instanceof Error ? e.message : String(e);
         deps.onLog(`${op}: refused — ${why}`);

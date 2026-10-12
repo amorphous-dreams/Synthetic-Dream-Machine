@@ -400,7 +400,9 @@ function unlockLine(a: CustodyDoorAnswer): string {
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   const refused = typeof a["refused"] === "string" ? ` The sovereign composition did not stand: ${a["refused"]}.` : "";
   switch (a["reading"]) {
-    case "opens":            return `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
+    case "opens":            return a["held"] === false
+      ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}`
+      : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
     case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.`;
     case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
     case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
@@ -427,7 +429,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
       return 1;
     }
-    const ok = a["reading"] === "opens" || a["reading"] === "already-unlocked";
+    const ok = (a["reading"] === "opens" && a["held"] !== false) || a["reading"] === "already-unlocked";
     emit(args, ok
       ? { ok: true, data: a, human: () => console.log(unlockLine(a)) }
       : { ok: false, error: { code: String(a["reading"] ?? (a["refusal"] as { reason?: string } | undefined)?.reason ?? "refused"), message: unlockLine(a) }, data: a, human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });

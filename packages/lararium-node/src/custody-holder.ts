@@ -85,7 +85,6 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   let spent = 0;
   let unlockChain: Promise<unknown> = Promise.resolve();
   let accepting = true;
-  let lockChain: Promise<void> = Promise.resolve();
   const active = new Set<Promise<unknown>>();
 
   const enqueueUnlock = (credentials: readonly Credential[]): Promise<HolderUnlock> => {
@@ -135,7 +134,9 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     unlock: enqueueUnlock,
     lock(): Promise<void> {
       accepting = false;
-      const run = lockChain.then(async () => {
+      // A lock takes its turn on the unlock chain: an unlock already deriving finishes first, so no key lands
+      // after the lock that meant to drop it.
+      const drop = async (): Promise<void> => {
         await Promise.allSettled([...active]);
         vk?.fill(0);
         root?.bytes.fill(0);
@@ -143,8 +144,9 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
         root = null;
         slot = null;
         accepting = true;
-      });
-      lockChain = run;
+      };
+      const run = unlockChain.then(drop, drop);
+      unlockChain = run.catch(() => undefined);
       return run;
     },
     isUnlocked: () => vk !== null,

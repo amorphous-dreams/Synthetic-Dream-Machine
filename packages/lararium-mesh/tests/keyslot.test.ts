@@ -71,7 +71,10 @@ describe("open", () => {
     words[6] = words[6] === "academic" ? "acid" : "academic";
     const o = openVk(tree, [{ kind: "paper", sheets: [words.join(" ")] }]);
     expect(o.reading).toBe("no-slot-opens");
-    expect(o.reading === "no-slot-opens" && o.notes.some((n) => /checksum/.test(n))).toBe(true);
+    expect(o.reading === "no-slot-opens" && o.notes.some((n) => /a paper credential reads no secret: its sheets fail their own check/.test(n))).toBe(true);
+    // The note names the fault and quotes no word of the sheet.
+    const spoken = o.reading === "no-slot-opens" ? o.notes.join("\n") : "";
+    for (const word of new Set(words)) if (word.length > 5) expect(spoken).not.toContain(word);
   });
 });
 

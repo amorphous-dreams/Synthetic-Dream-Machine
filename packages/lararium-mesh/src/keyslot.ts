@@ -268,7 +268,8 @@ export type Credential =
 
 export type VkUnlock =
   | { readonly reading: "opens"; readonly vk: VesselKey; readonly slot: string }
-  /** The credentials open no slot. `notes` names credentials that never reached a pin (a sheet that fails its
+  /** The credentials open no slot. `notes` names credentials that never reached a pin and NEVER quotes one: a note
+   *  carries no word of a sheet and no character of a passphrase, so a caller may print or log it. (a sheet that fails its
    *  checksum, say); a passphrase that simply does not unwrap leaves no note, since the AEAD cannot say why. */
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] };
 
@@ -282,7 +283,7 @@ export function openVk(tree: SlotTree, credentials: readonly Credential[]): VkUn
   const paperSecrets: Uint8Array[] = [];
   for (const c of credentials) {
     if (c.kind !== "paper") continue;
-    try { paperSecrets.push(combineMnemonics(c.sheets)); } catch (err) { notes.push(`a paper credential reads no secret: ${(err as Error).message}`); }
+    try { paperSecrets.push(combineMnemonics(c.sheets)); } catch { notes.push("a paper credential reads no secret: its sheets fail their own check (a mistyped word, a missing sheet, or sheets of two sets)"); }
   }
   const passphrases = credentials.flatMap((c) => (c.kind === "passphrase" ? [c.passphrase] : []));
 

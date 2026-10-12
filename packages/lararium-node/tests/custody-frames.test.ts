@@ -8,11 +8,13 @@
  *   F5  nothing the door logs or answers carries the credential.
  *   F6  a recomposition that throws answers its own caller by name and leaves the door serving the next frame.
  *   F7  an unlock frame with no usable credential refuses before the holder hears of it.
+ *   F8  an unlock whose composition lands at the floor drops the key again: held and standing never disagree.
+ *   F9  the door holds a short line: past it a frame refuses at once, and an act whose caller left never runs.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { describe, expect, test } from "vitest";
-import { custodyFrameHandler } from "../src/custody-frames.js";
+import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
 import type { CustodyHolder, HolderUnlock } from "../src/custody-holder.js";
 
 const RIGHT = "frames-test-passphrase-right";
@@ -24,7 +26,7 @@ function fakeSock(): { sock: Socket; answer: Promise<Record<string, unknown>> } 
   return { sock, answer };
 }
 
-function harness(opts: { recomposeThrows?: boolean } = {}) {
+function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; slowMs?: number } = {}) {
   let unlocked = false;
   let spent = 0;
   const heard: unknown[] = [];
@@ -53,14 +55,16 @@ function harness(opts: { recomposeThrows?: boolean } = {}) {
     standing: () => "herm",
     recompose: async (sovereign) => {
       recomposed.push(sovereign);
-      await new Promise((r) => setTimeout(r, 15));
+      await new Promise((r) => setTimeout(r, opts.slowMs ?? 15));
       if (opts.recomposeThrows) throw new Error("the composition fell over");
+      if (opts.recomposeRefuses && sovereign) return { standing: "herm", refused: "a face it cannot prove" };
       return { standing: sovereign ? "hearth" : "herm" };
     },
     onLog: (line) => logs.push(line),
   });
-  const send = (frame: unknown): { consumed: boolean; answer: Promise<Record<string, unknown>> } => {
+  const send = (frame: unknown, gone = false): { consumed: boolean; answer: Promise<Record<string, unknown>> } => {
     const { sock, answer } = fakeSock();
+    if (gone) (sock as unknown as { destroyed: boolean }).destroyed = true;
     return { consumed: handle(frame, sock), answer };
   };
   return { send, recomposed, logs, heard, holder };
@@ -84,7 +88,7 @@ describe("the custody door", () => {
     expect(miss).toMatchObject({ op: "unlock", reading: "no-slot-opens", attemptsLeft: 2, standing: "herm" });
     expect(h.recomposed).toEqual([]);
     const hit = await h.send(unlockFrame(RIGHT)).answer;
-    expect(hit).toMatchObject({ op: "unlock", reading: "opens", slot: "slot-1", standing: "hearth" });
+    expect(hit).toMatchObject({ op: "unlock", reading: "opens", slot: "slot-1", standing: "hearth", held: true });
     expect(h.recomposed).toEqual([true]);
   });
 
@@ -129,5 +133,31 @@ describe("the custody door", () => {
     }
     expect(h.heard).toEqual([]);
     expect(h.recomposed).toEqual([]);
+  });
+
+  test("F8 — an unlock whose composition lands at the floor drops the key again", async () => {
+    const h = harness({ recomposeRefuses: true });
+    const a = await h.send(unlockFrame(RIGHT)).answer;
+    expect(a).toMatchObject({ op: "unlock", reading: "opens", standing: "herm", refused: "a face it cannot prove", held: false });
+    expect(h.holder.isUnlocked(), "no key rests over a floor").toBe(false);
+    // CONTROL: a composition that stands keeps the key.
+    const ok = harness();
+    expect(await ok.send(unlockFrame(RIGHT)).answer).toMatchObject({ held: true, standing: "hearth" });
+    expect(ok.holder.isUnlocked()).toBe(true);
+  });
+
+  test("F9 — past the door's line a frame refuses at once; an act whose caller left never runs", async () => {
+    const h = harness({ slowMs: 40 });
+    const first = h.send(unlockFrame(RIGHT));                       // holds the chain while it recomposes
+    await new Promise((r) => setTimeout(r, 5));                     // its turn began: it no longer waits in line
+    const gone = h.send({ op: "lock" }, true);                      // its caller left before its turn
+    const waiting = Array.from({ length: CUSTODY_LINE - 1 }, () => h.send({ op: "custody" }));
+    const over = await h.send({ op: "custody" }).answer;            // one past the line
+    expect(over).toMatchObject({ status: "error", refusal: { reason: "custody-door-busy" } });
+    await first.answer;
+    for (const w of waiting) expect(await w.answer).toMatchObject({ op: "custody", unlocked: true });
+    void gone;
+    expect(h.recomposed, "the departed caller's lock never ran").toEqual([true]);
+    expect(h.holder.isUnlocked()).toBe(true);
   });
 });

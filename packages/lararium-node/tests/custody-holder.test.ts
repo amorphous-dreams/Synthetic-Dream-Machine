@@ -148,4 +148,14 @@ describe("CustodyHolder", () => {
     const text = JSON.stringify(h) + inspect(h, { showHidden: true }) + JSON.stringify(results);
     expect(text).not.toContain(RIGHT);
   });
+
+  test("H10 a lock sent while an unlock derives leaves nothing held", async () => {
+    const h = await found();
+    const opening = h.unlock([pass(RIGHT)]);       // inside its key derivation
+    const locking = h.lock();                       // takes its turn behind it
+    expect((await opening).reading).toBe("opens");
+    await locking;
+    expect(h.isUnlocked(), "no key lands after the lock that meant to drop it").toBe(false);
+    expect((await h.unlock([pass(RIGHT)])).reading, "CONTROL: the holder opens again afterward").toBe("opens");
+  });
 });
