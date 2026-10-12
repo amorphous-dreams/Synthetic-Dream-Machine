@@ -11,7 +11,7 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "TS shore between CompositeStore and the wiki's in-process nalu engine — forwards CRDT-remote changes, owns outbound saveTiddler/deleteTiddler, routes them by the bag-path cascade and the last-known-slot map; the outbound bridge carries the wiki's change events to it and holds the inbound echo SET, while $tw.lares.isApplyingNalu guards a synchronous caller"
+role      = "TS wiki shore between CompositeStore and the wiki's in-process nalu engine — owns the landing queue and its door, the landed ledger, the per-title hand gate and the draft book; lands each inbound change as the composition resolves it and routes a hand's saveTiddler/deleteTiddler at or above the working layer; the outbound bridge reads the wiki's change dispatches for it; the law it enacts lives at docs/pono/outbound-bridge"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/api/island-adaptor"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -24,83 +24,103 @@ uri-path  = "ha.ka.ba/lararium/api/island-adaptor"
 
 `IslandAdaptor` provides the narrow TS shore between `CompositeStore` and the wiki.
 It implements `MemeProjection` (inbound) and exposes `saveTiddler` / `deleteTiddler` (outbound).
-It does NOT implement the TW5 `syncadaptor` module contract — `$tw.syncer` does not run. The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`, stood per island in `sovereign-kernel.ts`) carries every live `$tw.wiki` `change` to `saveTiddler` / `deleteTiddler` ([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]]).
+It does NOT implement the TW5 `syncadaptor` module contract — `$tw.syncer` does not run. The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`, stood per island in `sovereign-kernel.ts`) reads every live `$tw.wiki` `change` dispatch for it ([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]]).
 
 Under the yin-collapse law (lar:///ha.ka.ba/lares/api/pono/nalu), the wiki IS the
-reactive engine. The adaptor's responsibility collapsed to shore work that TW5 cannot
-do from inside itself: subscribing to the CompositeStore projection bus, filtering own
-echoes, resolving cross-bag tombstones across recipe layers, and routing outbound TW5
-edits to `store.put` / `store.tombstone`.
+reactive engine. The adaptor holds the shore work that TW5 cannot do from inside itself:
+subscribing to the CompositeStore projection bus, queueing each inbound change and landing it as
+the composition resolves it, keeping the account of what each wave left, and carrying a hand's
+edit to the store with its base. The law it enacts stands at
+`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`; this carrier names the adaptor's
+own invariants and no more.
 
 !! Responsibility Split
 
 | Concern | Owner |
 |---|---|
-| Subscribe to CompositeStore projection bus | IslandAdaptor |
-| Filter own `tw-local` echoes (skip our own writes coming back) | IslandAdaptor |
-| Cross-bag tombstone resolution (`store.getLive` across recipe layers) | IslandAdaptor |
-| Forward inbound `LarTiddlerChange` → `$tw.lares.enqueueNalu` | IslandAdaptor |
-| Unified queue + per-frame `wiki.transact()` drain | nalu-engine (in-wiki) |
-| Carry a live wiki `change` to `saveTiddler` / `deleteTiddler` | the outbound bridge (`outbound-bridge.ts`) |
-| Outbound `saveTiddler` (400 ms debounce + Path-H auto-split) → `store.put` in the layer the cascade names at or above the working layer, or the higher layer where the title already lives | IslandAdaptor |
-| Outbound `deleteTiddler` → `tombstoneInBag` in the last-known slot | IslandAdaptor |
-| Echo law for a `change` that an inbound apply fired | the inbound SET: `noteInbound` (filled at `enqueueNalu`'s door) · `consumeInbound` · `endInboundBurst` |
-| Echo guard for a synchronous caller during a drain | `$tw.lares.isApplyingNalu()` |
+| Subscribe to CompositeStore projection bus | IslandAdaptor (`start`) |
+| The ordered landing queue, its 200-change slices, the host-task yield between them, the seed checkpoint | IslandAdaptor through `WaveLanding` (`wave-landing.ts`) |
+| The queue's door at `$tw.lares.enqueueNalu` | IslandAdaptor (`installLandingQueue`; removed at `stop`) |
+| Resolve a bagged change through the composition (`store.resolveLayered`) | IslandAdaptor (`_landOne`) |
+| Apply ONE change to the wiki | nalu-engine (`$tw.lares.applyNalu`, in-wiki) |
+| The landed ledger: per title the value, bag and heads the last wave left | IslandAdaptor (`LandedLedger`, `landed-ledger.ts`) |
+| Read a live wiki `change` dispatch: discrete acts first, then foam or a hand per title | the outbound bridge (`outbound-bridge.ts`) |
+| Pace a hand per title (trailing window + non-resetting cap), flush at teardown | IslandAdaptor through `HandGate` (`hand-gate.ts`) |
+| Outbound save → the meme family through `store.writeFamily` in the layer the cascade names at or above the working layer, or the higher layer where the title already lives | IslandAdaptor (`_saveBag`, `_writeMeme`) |
+| Outbound delete → `tombstoneInBag` in the bag the composition's layer order picks | IslandAdaptor (`_tombstoneBag`) |
+| A draft's target, wanted title and draft-open base | IslandAdaptor (the draft book, `draft-book.ts`) |
+| Echo guard for a synchronous caller during an apply | `$tw.lares.isApplyingNalu()` |
 
-!! Wiring — One Projection, Not Two
+!! Wiring — One Projection, One Door
 
 ```typescript
-const adaptor = new IslandAdaptor(tw5, store, instanceId, targetBag);
-store.addProjection(adaptor);
+const adaptor = new IslandAdaptor(tw5, composite, wikiSlug);
+adaptor.installLandingQueue();
+adaptor.start();
 ```
 
-No accumulator. No `flushAll`. The wiki's nalu engine owns the queue and the drain.
+No accumulator. No `flushAll`. The adaptor owns the queue and the door; the wiki's nalu engine owns the apply.
 
 !! Invariants
 
-''I-1 Echo filter at the shore.''
-`onUriChanged` returns immediately when `change.origin.kind === "tw-local"` and
-`origin.instanceId === this.instanceId`. Own writes never re-enter the queue.
+''I-1 Every envelope reads as a wave.''
+`onUriChanged` queues every change, this shore's own writes included. An own-origin envelope
+(`origin.kind === "tw-local"` with this `instanceId`) counts as the store's acknowledgment of the
+write, and its `writtenAt` heads become the base the hand's next write builds on. No origin filter
+decides what lands; the landed ledger does.
 
-''I-2 Cross-bag tombstone resolution.''
-On a tombstone change, if the store exposes `getLive(uri)`, resolve in
-recipe-priority order before enqueue (the ''kāpae'' semantics): a tombstone in a
-higher-priority bag SHADOWS the bags beneath it (the cascade stops, the title reads
-gone — resurrection-prevention); only a live copy in a higher-priority bag surfaces
-over a lower tombstone. The winning record — live or tombstone — reaches
-`enqueueNalu`, never both. (the shadow-vs-fall-through cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]])
+''I-2 The wiki shows what the composition resolves.''
+A bagged change lands the record `store.resolveLayered(title)` answers: the topmost layer holding any
+record for the title, a tombstone included (the ''kāpae'' semantics), with that layer's bag and
+heads. A tombstone in a higher-priority bag SHADOWS the bags beneath it and the wiki title reads
+gone; a lower layer's record never lands over a higher layer's; where no layer holds a record the
+title lands absent. Only an unbagged change lands its own record. (the shadow-vs-fall-through cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]])
 
 ''I-3 Single forwarding path for all origins.''
-Every inbound change — `crdt-remote`, `canon-hydrate`, `lares-verb` — flows through
-`enqueueNalu`. No origin gets special-cased to bypass the nalu engine. The engine
-applies one `wiki.transact()` per frame regardless of origin mix.
+Every inbound change — `crdt-remote`, `canon-hydrate`, `lares-verb`, `tw-local` — flows through
+the one landing queue. No origin gets special-cased to bypass it. Seed replay and live changes share
+the queue and its slices.
 
-''I-4 Outbound guards — saveTiddler.''
-Skip if: `$tw.lares.isApplyingNalu()` || the title names the volatile VM plane (`isVolatileVmUri`, refused ahead of any cascade edit) || the bag-paths cascade withholds it (`_destination` answers `null`).
-Everything else routes BY KIND through the cascade (`lar-bag-paths.tid`): a `draft.of` tiddler to the draft slot, `$:/temp/*` and most `$:/state/*` to the temp store, the catch-all to `current-wiki-bag`; the write reaches `store.put()` via the Path-H auto-split (`splitBodyTiddler`) and feeds the last-known-slot map (`_slotOf`).
+''I-4 Outbound save.''
+`saveTiddler` refuses a title that never persists (`neverPersists`: the volatile VM plane and the
+alert rail, ahead of any cascade edit), teaches the draft book when the tiddler carries `draft.of`,
+and marks the title in the hand gate. The flush reads the title's state in the wiki (a direct caller that hands in a tiddler the wiki does not hold rides pinned, its value standing in), routes BY KIND
+through the cascade (`lar-bag-paths.tid`): a `draft.of` tiddler to the draft slot, `$:/temp/*` and
+most `$:/state/*` to the temp store, the personal kind to the personal slot, the catch-all to
+`current-wiki-bag`. `_settle` accepts only a layer the composition mounts at or above the working
+layer and refuses every other answer by name (`UnroutedSaveRefusal`, raised on the alert rail). The
+write reaches `store.writeFamily()` via the Path-H auto-split (`splitBodyTiddler`), carrying its base.
 
-''I-5 Outbound guards — deleteTiddler.''
-Skip if: `$tw.lares.isApplyingNalu()` || the title names the volatile VM plane || neither `_slotOf` nor the cascade names a slot.
-A delete routes LIKE A SAVE: the last-known-slot map answers first (the tiddler has gone, so no field can be read), the cascade's title read second; the tombstone lands in that slot (`tombstoneInBag`), then ahu fragment-parent children
-get removed from the wiki directly (outbound housekeeping, not a drain operation).
+''I-5 Outbound delete.''
+`deleteTiddler` refuses a title that never persists and marks the title like a save. A delete
+routes LIKE A SAVE, and the tiddler has left the wiki by then, so no field answers: the bag of this shore's own last acknowledged write of the title answers first, then the landed ledger's bag,
+a title never seen this session falls to the cascade's title read, and `_tombstoneBag` picks the bag by the composition's layer order (the landed layer at or
+above the working layer; else where a save of the title would land; else the working layer). The
+tombstone lands through `tombstoneInBag` with its base, then ahu fragment-parent children
+get removed from the wiki directly (outbound housekeeping). A composition with no working layer
+refuses the delete by name.
 
 ''I-6 onSyncComplete is observability-only.''
-Under unified-nalu there is no per-island pre-sync buffer. The method exists for
+The shore keeps no per-island pre-sync buffer. The method exists for
 projection-protocol compatibility and may carry future telemetry; it does not
 mutate adaptor or wiki state.
 
-''I-7 onChangeset (FFZ Scale-3) routes through enqueue.''
-For bulk patches (URIs ≥ `MemeProvider.CHANGESET_THRESHOLD`), the adaptor resolves
-each URI via `store.get()` and emits one `enqueueNalu` per URI. The nalu engine
-still drains them in one `wiki.transact()` at the next frame.
+''I-7 onChangeset (FFZ Scale-3) routes through the queue.''
+For bulk patches (URIs ≥ `MemeProvider.CHANGESET_THRESHOLD`), the adaptor receives complete change
+envelopes and hands each to `onUriChanged`, so every one joins the landing queue.
 
-!! Initial replay
+''I-8 A stopped shore holds no account of the wiki.''
+`stop()` awaits acts in flight, stops the queue, flushes every marked hand, removes the door it
+installed, and clears the ledger, the sent values, the hand bases, the last-write bags and the
+unlanded marks. A restart seeds afresh and turns resident at its own seed checkpoint.
 
-The recipe (`buildIslandRecipe`) drives `AutomergeDocStore.emitInitialReplay()` per bag
-after `addProjection(adaptor)` registers. Each existing tiddler flows through
-`provider.fireImmediate` → `adaptor.onUriChanged` → `$tw.lares.enqueueNalu`.
-The recipe then calls `$tw.lares.flushNalu(Number.MAX_SAFE_INTEGER)` so the wiki carries
-its seed state synchronously before `behavior.onEa` runs.
+!! The seed
+
+The recipe (`buildIslandRecipe`) installs the landing queue and starts the adaptor, then drives
+`AutomergeDocStore.emitInitialReplay()` per bag. Each existing record flows through
+the provider → `adaptor.onUriChanged` → the landing queue.
+The recipe then arms the seed checkpoint (`armSeedCheckpoint`), which resolves once the queue and
+its tracked work settle and turns the shore resident (a seed landing that fails twice rejects it); the kernel awaits it before `behavior.onEa` runs.
 
 <<~ ahu #/edges>>
 
@@ -108,10 +128,15 @@ its seed state synchronously before `behavior.onEa` runs.
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L3YT6k5Y7TRDgY0s9Xok9Akc6dANDXLzdw6vQRxCfGo
+<<^ code="&#x0003;">>ni:///sha-256;po7XUHlxgqtOR3RH6ttUfxaYBrhB1IT4-5N2C45Hdtk
 
 <<^ code="&#x0004;" -> to="?">>

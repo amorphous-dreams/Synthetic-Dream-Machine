@@ -399,6 +399,7 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
@@ -410,6 +411,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h0LCAVb--Y5eVLJKlBTHd6hJ38llCrMIPDT0umUK5L0
+<<^ code="&#x0003;">>ni:///sha-256;TzH_UnVKtcQ3Ih1b_IenbK5YxlCKjCAFO3IK6CAhoaY
 
 <<^ code="&#x0004;" -> to="?">>

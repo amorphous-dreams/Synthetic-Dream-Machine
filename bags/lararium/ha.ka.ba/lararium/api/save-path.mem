@@ -12,7 +12,7 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "invariant spec for the outbound TW5→CRDT save path: debounce, draft routing, ephemeral truncation"
+role      = "invariant spec for the outbound TW5→CRDT save path: the per-title pacing gate, draft routing, ephemeral truncation"
 title     = "lar:///ha.ka.ba/lararium/api/save-path"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/save-path"
@@ -46,23 +46,32 @@ into the Automerge store. Without hygiene here, sustained editing produces:
 * ''Draft routing confusion'' — draft tiddlers from TW5 editing UX
   should reach the per-wiki draft bag, not get silently dropped.
 
+The law this path enacts stands at `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`.
+
 <<~/ahu>>
 
 <<~ ahu #/invariants>>
 
 !! Invariants
 
-!!! SP-1 — Capture Debounce
+!!! SP-1 — The Pacing Gate
 
-`saveTiddler` MUST debounce per title. The debounce window: ''400 ms''.
+`saveTiddler` and `deleteTiddler` MUST mark their TITLE in one per-title gate (`HandGate`,
+`packages/lararium-tw5/src/hand-gate.ts`): a trailing window of ''400 ms'' under a non-resetting cap
+of ''2 s''.
 
-* While the timer runs, subsequent saves for the same title cancel the
-  prior timer and restart it with the latest fields.
-* The returned promise settles once per debounce window — at flush time, not
-  at call time; a superseded save's promise resolves when the next one takes
-  its place. Callers MUST tolerate asynchronous settlement.
-* `stop()` MUST cancel all pending timers and drop pending writes without
-  flushing them.
+* A later mark of the same title restarts the trailing window and leaves the cap running, so
+  continuous typing reaches the store within the cap.
+* What leaves at the flush MUST equal the title's state in the wiki at that flush, never the value
+  a mark carried. A state equal to the landed value with nothing sent since leaves nothing. One
+  exception: a direct caller that hands in a tiddler the wiki does not hold rides pinned, and its
+  value stands in for the wiki's.
+* The returned promise settles at flush time, not at call time; every caller that marked the title
+  settles with that flush. Callers MUST tolerate asynchronous settlement.
+* A discrete act (a draft's save, rename or cancel) MUST take its titles out of the gate and leave
+  in the dispatch turn, with no wait.
+* `stop()` MUST flush every marked title and MUST NOT drop a pending write.
+* The timers pace and decide nothing; a refused write arms no timer.
 
 Rationale: human keystroke rate typically runs 3–8 chars/sec. A 400 ms window
 coalesces a full word or short phrase into a single store write. Stays below
@@ -75,17 +84,14 @@ The VOLATILE VM PLANE (`lar:///lararium.local.vm/…`, `VOLATILE_VM_PREFIX` in
 `saveTiddler` and `deleteTiddler` refuse it by `isVolatileVmUri`, ahead of the
 cascade, so no cascade edit can lift the refusal (`island-adaptor.ts`).
 
-Every OTHER title a wiki write touches reaches `saveTiddler`: the outbound
-bridge carries each live `change`, whichever door wrote it, and the cascade's
+Once the shore turns resident, every OTHER title a wiki write touches reaches the outbound
+bridge, whichever door wrote it: the bridge skips foam, sends a standing hand to `saveTiddler` and a gone hand
+to `deleteTiddler`, and the cascade's
 `[prefix[lar:]]` rule routes a `lar:` title to `current-wiki-bag`. So wiki
 scratch that must stay off the store lives under the volatile plane; a scratch
 title spelled anywhere else (`lar:///ha.ka.ba/state/…`, a parse-warning title)
-persists like any authored tiddler.
-
-Auto-truncate sweep: a separate sweeper (outside this adaptor) MAY scan the
-TW5 wiki on a low-frequency timer (≥ 30 s idle) and delete stale
-parse-warning tiddlers. The adaptor owns the debounce; sweep lives in a
-TW5 startup module.
+persists like any authored tiddler. The alert rail (`$:/temp/lares/alert/…`) never
+persists either (`neverPersists`).
 
 !!! SP-3 — Draft Routing
 
@@ -93,8 +99,9 @@ Draft tiddlers from TW5 editing UX (a `draft.of` field standing) MUST route to t
 draft slot (`wikis/{slug}/draft`, a CRDT layer that follows the operator's fleet)
 and MUST NOT be silently dropped. The in-wiki bag-paths cascade carries the rule
 (`[is[draft]then{…/current-wiki-draft}]`), read against TW5's `draft.of` FIELD,
-never the title; the matching delete routes by the last-known-slot map
-(`_slotOf`), since the field has gone by then. No guard in `saveTiddler` withholds a
+never the title; the matching delete routes by the bag the draft last wrote to or
+landed from, since the field has gone by then, and a draft's deletion inside a save, rename or
+cancel leaves with that act. No guard in `saveTiddler` withholds a
 draft. The cascade names its withholdings (`$:/core`, `$:/library/sjcl.js`) and
 ends in a catch-all — a title no rule reaches lands at the write layer and says
 so (wiki-layer-ontology#/totality-law). The measured routing table rides
@@ -102,16 +109,17 @@ recipe-layer-model#/as-routed.
 
 !!! SP-4 — Ceremony Routing
 
-No persisted field names a bag. Residency rides the ENVELOPE: the store fires
+No field on a saved tiddler names its destination bag: `draft.of` selects the draft route, and a
+draft's store-only base fields record its target's base and route nothing. Residency rides the ENVELOPE: the store fires
 each change with its own bag, the nalu stamps `$origin-bag` on the wiki side for
-the projector, and the outbound save strips that stamp before the put. `bag`
+the projector, and the outbound save strips that stamp before the write. `bag`
 stays the author's own field and never routes. A ceremony that targets one
-specific bag (MOVE, promotion, `meme put --bag`) carries the bag on the put
+specific bag (MOVE, promotion, `meme put --bag`) carries the bag on the write
 OPTION (`store.put(record, origin, { bag })`) — never on the record — and a
 bag with no writable layer refuses loud rather than falling through to the
 default writable (wiki-layer-ontology#/write-law).
 
-Live TW5 edits route by the cascade: `_destination(title)` names the slot, and the put carries it as the `{ bag }` option.
+Live TW5 edits route by the cascade and the composition's layer order: `_saveBag(title)` names the layer, at or above the working layer, and the write carries it as the `{ bag }` option.
 
 !!! SP-5 — Single Parser Law
 
@@ -123,36 +131,36 @@ site.
 
 <<~ ahu #/debounce-design>>
 
-!! Debounce Design
+!! Gate Design
 
 ```
 saveTiddler(tiddler): Promise<void>
-  → guards (echo · the volatile VM plane · the cascade's named withholdings)
-  → cancel pending timer for title; resolve the superseded promise
-  → store { fields, resolve, reject, origin } in _pending map
-  → set new timer(400ms) → _flushPending(title)
+  → refuse a title that never persists (the volatile VM plane · the alert rail)
+  → teach the draft book when the tiddler carries draft.of
+  → remember the hand's base (the ledger's bag + heads) at the first mark
+  → gate.mark(title, flush)        trailing 400 ms · cap 2 s
 
-_flushPending(title)
-  → retrieve + delete from _pending
-  → call _writeMeme(title, fields, origin)
-  → settle the promise on resolve/reject
+_flushHand(title)
+  → wait for any in-flight write of the title
+  → read the title's state in the wiki
+  → settled (equal to the landed value, or to the value already sent)? leave nothing
+  → _saveBag(title) · _basePlan(title, bag)      a refused route stays owed
+  → _writeMeme(title, fields, origin, bag, base) → store.writeFamily
+  → settle every waiter of the mark on resolve/reject
 ```
 
-State held on the adaptor:
+State the gate holds per marked title (`hand-gate.ts`):
 
-| Field | Type | Lifecycle |
-|---|---|---|
-| `_debounce` | `Map<string, TimerHandle>` | per pending title; cleared on stop() |
-| `_pending` | `Map<string, PendingWrite>` | tracks latest fields + callback per title |
+| Field | Lifecycle |
+|---|---|
+| `trailing` | the resetting timer; cleared at flush or when a discrete act consumes the title |
+| `cap` | the non-resetting timer armed at the first mark; cleared the same way |
+| `flush` | the latest flush closure for the title |
+| `waiters` | every caller's resolve/reject pair, settled together |
 
-`PendingWrite`:
-```ts
-{ fields: Record<string, string>; resolve: () => void; reject: (err: Error) => void; origin: ChangeOrigin }
-```
-
-On `stop()`: iterate `_debounce`, clearTimeout each, clear both maps and the
-inbound echo SET, and unsubscribe from the projection bus. No write flushes
-after `stop()`.
+On `stop()`: the adaptor awaits discrete acts in flight, stops the landing queue, flushes every
+marked title, and unsubscribes from the projection bus. A write that fails at teardown reports its
+title on the console.
 
 <<~/ahu>>
 
@@ -161,10 +169,13 @@ after `stop()`.
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VqNh7kP_4samCYWvnw1XqSi9qZFAhGI2gVN6u_-TvZc
+<<^ code="&#x0003;">>ni:///sha-256;Pu-4ERSMvmf-XvNZCJ8JDemhvy-9aytd2m1I2mXh7KU
 
 <<^ code="&#x0004;" -> to="?">>
