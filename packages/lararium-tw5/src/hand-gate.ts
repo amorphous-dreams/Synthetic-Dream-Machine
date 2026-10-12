@@ -54,6 +54,24 @@ export class HandGate {
     }
   }
 
+  /**
+   * A discrete act takes every pending entry of its titles at once, synchronously: the timers are cleared
+   * before any await, so no timed flush follows the act. The callers waiting on those entries settle with
+   * the act's result.
+   */
+  consume(titles: readonly string[]): { settle(error?: Error): void } {
+    const waiters: GateEntry["waiters"] = [];
+    for (const title of new Set(titles)) {
+      const entry = this.entries.get(title);
+      if (!entry) continue;
+      this.entries.delete(title);
+      this.timers.clearTimer(entry.trailing);
+      this.timers.clearTimer(entry.cap);
+      waiters.push(...entry.waiters);
+    }
+    return { settle: (error) => waiters.forEach((waiter) => error ? waiter.reject(error) : waiter.resolve()) };
+  }
+
   async flushAll(): Promise<void> {
     const results = await Promise.allSettled([...this.entries.keys()].map((title) => this.flush(title)));
     const failed = results.find((result): result is PromiseRejectedResult => result.status === "rejected");

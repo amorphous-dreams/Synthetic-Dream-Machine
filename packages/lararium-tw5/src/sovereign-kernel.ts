@@ -456,6 +456,9 @@ export function runSovereignKernel(
   // ── Teardown / Demote (OTP terminate) ──────────────────────────────────────
 
   async function _handleTeardown(): Promise<void> {
+    // A hand whose `change` dispatch still sits queued in the wiki reaches the shore before the bridge
+    // unhooks, so `stop()` flushes it as a marked title.
+    if (_adaptor) await _adaptor.awaitWikiDispatch();
     _bridgeUnsub?.();
     _bridgeUnsub = null;
     if (_adaptor) await _adaptor.stop();
