@@ -2,9 +2,10 @@
  * bag-cascade — ONE walk of the in-wiki bag-paths cascade, read by every hand that asks where a title
  * lands: the island adaptor's outbound save and delete, and the backstop's keep-check before a fence.
  *
- * The walk answers one of THREE verdicts, and they mean different things: a rule ROUTES the title to a
- * slot, a rule WITHHOLDS it (`[…]then[]`, the empty operand), or no rule reaches it at all — a router
- * GAP. Each caller acts on the three in its own way; the walk itself never collapses them.
+ * The walk answers one of FOUR verdicts, and they mean different things: a rule ROUTES the title to a
+ * slot, a rule WITHHOLDS it (`[…]then[]`, the empty operand), a rule routes through a reference that
+ * holds nothing (UNRESOLVED), or no rule reaches it at all — a router GAP. Each caller acts on them in
+ * its own way; the walk itself never collapses them.
  *
  * Driven over the REAL TiddlyWiki filter engine: a fake router is exactly the instrument that would
  * bless a rule the engine parses differently.
@@ -20,7 +21,7 @@ import type { TW5Engine } from "../src/tw5-vm.js";
 
 const SLOT = "lar:///ha.ka.ba/wikis/test/working";
 
-describe.skipIf(wikiSkip)(`routeBag — the three verdicts of the one cascade walk${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`routeBag — the four verdicts of the one cascade walk${skipNote}`, () => {
   let engine: TW5Engine;
   let wiki: CascadeWiki & { addTiddler(t: unknown): void; deleteTiddler(t: string): void };
   let Tiddler: new (f: unknown) => unknown;
@@ -56,6 +57,25 @@ describe.skipIf(wikiSkip)(`routeBag — the three verdicts of the one cascade wa
   test("the title-literal form withholds every title — a subject is named through `match`", () => {
     cascade(["[[lar:///t/x]then[]]", `[prefix[lar:]then[${SLOT}]]`]);
     expect(routeBag(wiki, "lar:///t/y")).toEqual({ kind: "withheld", rule: "[[lar:///t/x]then[]]" });
+  });
+
+  /**
+   * A REFERENCE THAT HOLDS NOTHING WITHHOLDS NOTHING. `then{pointer}` over an absent or empty pointer
+   * yields the same empty string `then[]` does, and means the opposite: the rule chose to ROUTE and the
+   * slot it routes to has no name in this wiki. The walk names the rule and the pointer.
+   */
+  test("a rule routing through an empty reference reads UNRESOLVED, naming the rule and the reference", () => {
+    const POINTER = "lar:///t/config/pointer-nobody-seeded";
+    cascade([`[prefix[lar:]then{${POINTER}}]`]);
+    expect(routeBag(wiki, "lar:///t/x")).toEqual({ kind: "unresolved", rule: `[prefix[lar:]then{${POINTER}}]`, reference: POINTER });
+    // An empty pointer reads as an absent one.
+    wiki.addTiddler(new Tiddler({ title: POINTER, text: "" }));
+    expect(routeBag(wiki, "lar:///t/x").kind).toBe("unresolved");
+    // CONTROL — the pointer seeded, the same rule routes; the literal empty operand still withholds.
+    wiki.addTiddler(new Tiddler({ title: POINTER, text: SLOT }));
+    expect(routeBag(wiki, "lar:///t/x")).toEqual({ kind: "slot", uri: SLOT });
+    cascade(["[prefix[lar:]then[]]"]);
+    expect(routeBag(wiki, "lar:///t/x")).toEqual({ kind: "withheld", rule: "[prefix[lar:]then[]]" });
   });
 
   test("a title no rule reaches is a GAP, never a withholding", () => {

@@ -85,6 +85,9 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     stores.push({ slot, store });
   }
 
+  const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
+  composite.addProjection(adaptor);
+
   // Per-wiki cascade reference — the default `lar:///ha.ka.ba/lararium/config/bag-paths`
   // reads this value via `{lar:///ha.ka.ba/lararium/config/current-wiki-bag}` to
   // resolve `lar:` writes to the wiki's live WRITE LAYER: the per-wiki working slot
@@ -96,6 +99,11 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // in the per-wiki temp), shadows any fallback by priority. The bag-paths cascade reads
   // these to route by prefix to the wiki's OWN per-wiki live layers — the address tells
   // the truth (no global slot names).
+  //
+  // SEEDED AFTER THE ADAPTOR STANDS. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
+  // temp store emits each put the moment it lands — to whoever listens then. The adaptor carries the
+  // pointers into the wiki on the same seed wave as the corpus, ahead of the hydration checkpoint, so
+  // the first hand edit finds every slot named.
   if (tempStore) {
     const writeLayer = defaultWritableSlot(slug, workingMounted);
     const configSeed: Record<string, string> = {
@@ -108,9 +116,6 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
       void tempStore.put({ tiddler: { title, text } }, { kind: "canon-hydrate", receipt: "recipe-boot" });
     }
   }
-
-  const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
-  composite.addProjection(adaptor);
 
   // Drive existing CRDT state through the projection bus → adaptor → nalu engine.
   for (const { store } of stores) {

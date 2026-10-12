@@ -6,12 +6,15 @@
  * `$:/config/FileSystemPaths` walk, and takes TW5's `$:/config/SyncFilter` shape too: a total
  * catch-all at the end and NAMED exclusions up front.
  *
- * ⚠ THE THREE VERDICTS ARE NOT ONE. A rule may ROUTE a title to a slot, a rule may WITHHOLD it (the
- * empty-operand form, `[match[$:/core]then[]]`, lawful only from a rule that names its subject), or no
- * rule may reach it at all — a ROUTER GAP, a fault in the cascade rather than a decision about the
- * title. The walk reports which happened; each caller acts on the three in its own way (the island
- * adaptor fills a gap at the write layer so a save never vanishes; the backstop reads anything but a
- * slot as a bag this hearth does not keep).
+ * ⚠ THE FOUR VERDICTS ARE NOT ONE. A rule may ROUTE a title to a slot; a rule may WITHHOLD it (the
+ * empty-operand form, `[match[$:/core]then[]]`, lawful only from a rule that names its subject); a rule
+ * may route through a REFERENCE THAT HOLDS NOTHING (`then{pointer}` over an absent or empty pointer) —
+ * UNRESOLVED, a rule that chose a slot the wiki cannot name; or no rule may reach the title at all — a
+ * ROUTER GAP, a fault in the cascade rather than a decision about the title. `then[]` and an empty
+ * `then{…}` hand the filter engine the same empty string and mean opposite things, so the walk reads the
+ * rule's own spelling to tell them apart. The walk reports which happened; each caller acts in its own
+ * way (the island adaptor fills a gap at the write layer and refuses an unresolved route by name, so a
+ * save never vanishes; the backstop reads anything but a slot as a bag this hearth does not keep).
  *
  * Imports nothing, so it rides inlined into any plugin module that reads it.
  */
@@ -19,11 +22,16 @@
 /** The cascade config tiddler — newline-separated filter expressions; first non-empty result wins. */
 export const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
 
-/** What the cascade did with a title. A withholding and a gap both stop a write and mean opposite things. */
+/** What the cascade did with a title. A withholding, an unresolved route and a gap each stop a write and
+ *  mean different things: a decision, a slot with no name, and a title no rule reached. */
 export type RouteVerdict =
-  | { readonly kind: "slot";     readonly uri:  string }
-  | { readonly kind: "withheld"; readonly rule: string }
-  | { readonly kind: "gap";      readonly why:  string };
+  | { readonly kind: "slot";       readonly uri:  string }
+  | { readonly kind: "withheld";   readonly rule: string }
+  | { readonly kind: "unresolved"; readonly rule: string; readonly reference: string }
+  | { readonly kind: "gap";        readonly why:  string };
+
+/** A rule whose last step names its slot through a text reference: `…then{<title>}]`. */
+const ROUTES_BY_REFERENCE = /then\{([^}]+)\}\]\s*$/;
 
 /** The wiki surface the walk reads. The cascade read is optional: a bare change bus carries none. */
 export interface CascadeWiki {
@@ -46,7 +54,9 @@ export function routeBag(wiki: CascadeWiki, title: string): RouteVerdict {
     const result = wiki.filterTiddlers(filter, undefined, source);
     if (result.length === 0) continue;
     const first = result[0] ?? "";
-    return first === "" ? { kind: "withheld", rule: filter } : { kind: "slot", uri: first };
+    if (first !== "") return { kind: "slot", uri: first };
+    const reference = ROUTES_BY_REFERENCE.exec(filter)?.[1];
+    return reference === undefined ? { kind: "withheld", rule: filter } : { kind: "unresolved", rule: filter, reference };
   }
   return { kind: "gap", why: "no rule reached this title — the cascade lost its catch-all" };
 }

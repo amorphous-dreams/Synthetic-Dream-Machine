@@ -52,6 +52,23 @@ export function parallelDraftAlertTitle(draftTitle: string): string {
   return `$:/temp/lares/alert/parallel-draft/${draftTitle}`;
 }
 
+/** The alert a save with no bag to land in raises — one per slot pointer that holds nothing. */
+export function unroutedSaveAlertTitle(reference: string): string {
+  return `$:/temp/lares/alert/unrouted-save/${reference}`;
+}
+
+/**
+ * A SAVE WITH NO BAG TO LAND IN. The cascade chose to route the title and the slot it routes to has no
+ * name in this wiki: the pointer the rule dereferences (`reference`) holds nothing. The write stops, and
+ * the refusal carries everything a person needs to read it: the title, the rule and the pointer.
+ */
+export class UnroutedSaveRefusal extends Error {
+  override readonly name = "UnroutedSaveRefusal";
+  constructor(readonly title: string, readonly rule: string, readonly reference: string) {
+    super(`unrouted-save: "${title}" has no bag to land in — the routing rule ${rule} names its bag through ${reference}, and that tiddler holds nothing`);
+  }
+}
+
 /**
  * The store the adaptor writes through: one that lands a family, and a tombstone, in the bag the
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
@@ -125,9 +142,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * ── THE CASCADE ROUTES; IT DOES NOT DECIDE WHETHER TO WRITE ───────────────────────────────────
    * Everything a hand edits and saves — memes, `.tid`s, and every other TW5 filetype — travels
    * through the CRDT and round-trips. The cascade answers WHICH slot; the only thing that may
-   * withhold a write is a rule that NAMES what it withholds. A gap read as a withholding drops the
-   * write in silence — the promise resolves, the wiki shows the edit, nothing persists, and the
-   * tiddler is gone on the next boot — so `_destination` acts on the three verdicts apart.
+   * withhold a write is a rule that NAMES what it withholds. A gap or an unresolved route read as a
+   * withholding drops the write in silence — the promise resolves, the wiki shows the edit, nothing
+   * persists, and the tiddler is gone on the next boot — so `_destination` acts on the four verdicts
+   * apart.
    */
   private _routeBag(title: string): RouteVerdict {
     return routeBag(this.tw5.$tw.wiki, title);
@@ -145,18 +163,60 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return this._settle(title, this._routeBag(title));
   }
 
-  /** Act on a cascade verdict: a slot lands there, a named withholding skips, a gap falls to the write layer. */
+  /**
+   * Act on a cascade verdict: a slot lands there, a named withholding skips (null), a gap falls to the
+   * write layer, and a route with no bag behind it THROWS the named refusal after raising it on the
+   * alert rail — an unresolved rule, or a gap while the write layer itself has no name.
+   */
   private _settle(title: string, verdict: RouteVerdict): SlotUri | null {
-    if (verdict.kind === "slot")     return verdict.uri;
-    if (verdict.kind === "withheld") return null;
+    if (verdict.kind === "slot")       return verdict.uri;
+    if (verdict.kind === "withheld")   return null;
+    if (verdict.kind === "unresolved") throw this._refuseUnrouted(title, verdict.rule, verdict.reference);
     const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
     console.warn(
       `[island-adaptor] no cascade rule routes "${title}" (${verdict.why}) — ` +
       (fallback ? `writing to the write layer ${fallback}. ` : "and no write layer resolves. ") +
       `Add a rule to ${BAG_PATHS_CONFIG}; a save must never vanish for want of one.`,
     );
-    return fallback ? (fallback as SlotUri) : null;
+    if (!fallback) throw this._refuseUnrouted(title, `(no rule: ${verdict.why})`, CURRENT_WIKI_BAG);
+    return fallback as SlotUri;
   }
+
+  /**
+   * RAISE THE REFUSAL WHERE A PERSON READS IT, and hand it back for the caller to throw.
+   *
+   * One alert per pointer that holds nothing, on TiddlyWiki's own alert rail (the page template renders
+   * `$:/tags/Alert`): it names the pointer, the rule, and every title refused under it this session, so
+   * a burst of saves reads as one statement rather than a wall. The wiki keeps each title exactly as
+   * the person wrote it — the alert says those words stand in this page alone.
+   *
+   * The alert lives under `$:/temp/`, whose own pointer may hold nothing too; its save then refuses
+   * quietly, since an alert about an alert would recurse without end and the rail already shows it.
+   */
+  private _refuseUnrouted(title: string, rule: string, reference: string): UnroutedSaveRefusal {
+    const refusal = new UnroutedSaveRefusal(title, rule, reference);
+    if (title.startsWith(unroutedSaveAlertTitle(""))) return refusal;
+    let titles = this._unrouted.get(reference);
+    if (!titles) this._unrouted.set(reference, titles = new Set());
+    if (titles.has(title)) return refusal;
+    titles.add(title);
+    console.warn(`[island-adaptor] ${refusal.message}`);
+    this.tw5.$tw.wiki.addTiddler({
+      title: unroutedSaveAlertTitle(reference),
+      text: `Nothing you save here reaches a bag: the routing rule <code>${rule}</code> names its bag through ` +
+        `<code>${reference}</code>, and that tiddler holds nothing. What you wrote stands in this page alone ` +
+        `and leaves with it — ${titles.size === 1 ? "this title" : `these ${titles.size} titles`}:\n\n` +
+        [...titles].map((t) => `* <$text text=${JSON.stringify(t)}/>`).join("\n"),
+      tags: TW5_ALERT_TAG,
+      "alert-kind": "unrouted-save",
+      reference,
+      rule,
+    });
+    return refusal;
+  }
+
+  /** The titles refused under each empty pointer this session — the alert's own list. */
+  private readonly _unrouted = new Map<string, Set<string>>();
 
   // ---------------------------------------------------------------------------
   // Echo guard — delegated to the in-wiki nalu engine
@@ -167,9 +227,21 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return lares?.isApplyingNalu?.() === true;
   }
 
+  /**
+   * Hand a change to the drain, NAMED first. The echo law's set fills here for every change this adaptor
+   * forwards — the boot seed wave included, which is enqueued before any bridge stands to wrap the
+   * engine's door — so a seed title that raises `change` at its drain leaves nothing.
+   */
   private _enqueue(change: LarTiddlerChange): void {
     const { lares } = this.tw5.$tw as unknown as LaresTw5Extension;
+    this.noteInbound(change.title);
     lares?.enqueueNalu?.(change);
+  }
+
+  /** How many inbound changes the drain still holds. A named title cannot have gone stale while its apply waits. */
+  private _draining(): number {
+    const { lares } = this.tw5.$tw as unknown as LaresTw5Extension;
+    return lares?.naluPending?.() ?? 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -178,9 +250,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   //
   // `change` dispatches on nextTick, AFTER the drain lowered `isApplyingNalu` (MEASURED), so a flag cannot
   // tell an inbound apply from a local edit inside a `change` listener. A SET can: every title handed to the
-  // drain is named here BEFORE it applies (the bridge wraps `enqueueNalu`, so the lazy resolver's splice and
-  // any other direct caller name theirs too), the bridge consumes a named title on sight and leaves nothing,
-  // and a stale entry (an apply that raised no change) falls out at a later burst end, past the grace.
+  // drain is named here BEFORE it applies (this adaptor names its own at `_enqueue`; the bridge wraps
+  // `enqueueNalu`, so the lazy resolver's splice and any other direct caller name theirs too), the bridge
+  // consumes a named title on sight and leaves nothing, and a stale entry (an apply that raised no change)
+  // falls out at a later burst end, past the grace. The grace counts from the last burst the drain still
+  // held work: a paced seed wave may take longer than the grace to apply, and a title still waiting its
+  // turn in the queue has not gone stale.
 
   private readonly _inbound = new Map<string, number>();
   /** How long a named-but-unseen inbound title stays named before a burst end drops it. */
@@ -198,6 +273,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /** A `change` burst ended: drop entries older than the grace — an inbound apply that raised no change. */
   endInboundBurst(now = Date.now()): void {
+    if (this._draining() > 0) {
+      for (const title of this._inbound.keys()) this._inbound.set(title, now);
+      return;
+    }
     for (const [title, at] of this._inbound) if (now - at > IslandAdaptor.INBOUND_GRACE_MS) this._inbound.delete(title);
   }
 
@@ -276,7 +355,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (kept.length === 0) return;
     const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: change.bag ?? "automerge" };
     for (const draft of kept) {
-      const bag = this._draftDestination(draft);
+      let bag: SlotUri | null;
+      // A draft with no bag to land in already stands refused on the alert rail; the next draft still gets its turn.
+      try { bag = this._draftDestination(draft); } catch (err) { if (err instanceof UnroutedSaveRefusal) continue; throw err; }
       if (bag === null || bag === change.bag) continue;
       this.store.writeFamily([draft], [], origin, { bag }).catch((err: unknown) => {
         this._surfaceUnkeptDraft(draft, bag, err);
@@ -288,7 +369,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * The bag the cascade routes THIS draft to. The draft is not in the wiki yet, so the cascade reads
    * its fields through a view that answers the draft under its own title — the same rule a saved
    * draft rides, read once, never a second spelling of it. The verdict settles as a save's does: a
-   * named withholding is a lawful quiet skip, and a gap falls to the write layer and says so.
+   * named withholding is a lawful quiet skip, a gap falls to the write layer and says so, and a route
+   * with no bag behind it throws the named refusal.
    */
   private _draftDestination(draft: LarTiddlerRecord): SlotUri | null {
     const wiki = this.tw5.$tw.wiki;
@@ -381,9 +463,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (isVolatileVmUri(title)) return Promise.resolve();
 
     // Cascade pre-check: the in-wiki bag-paths cascade — operator-editable, per-wiki overlayable —
-    // answers where this title lands, and only a NAMED withholding stops the write (`_destination`
-    // fills a router gap and says so). Residency rides the envelope; no field names a bag.
-    if (this._destination(title) === null) return Promise.resolve();
+    // answers where this title lands, and only a NAMED withholding stops the write in quiet
+    // (`_destination` fills a router gap and says so). A route with no bag behind it REJECTS with the
+    // named refusal, already raised on the alert rail. Residency rides the envelope; no field names a bag.
+    try {
+      if (this._destination(title) === null) return Promise.resolve();
+    } catch (err) {
+      // The alert rail's own tiddler refuses in quiet: the rail shows it, and it lives nowhere else by design.
+      return title.startsWith(unroutedSaveAlertTitle("")) ? Promise.resolve() : Promise.reject(err as Error);
+    }
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
 
@@ -421,7 +509,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // record that resurrects on the next boot. The last-known-slot map answers first; a title never
     // seen this session falls back to the cascade's title read. The tombstone lands in THAT bag — a
     // bagless tombstone falls into the composite's default writable, a bag the cascade never named.
-    const slot = this._slotOf.get(title) ?? this._destination(title);
+    let slot: SlotUri | null;
+    try { slot = this._slotOf.get(title) ?? this._destination(title); } catch (err) {
+      return title.startsWith(unroutedSaveAlertTitle("")) ? Promise.resolve() : Promise.reject(err as Error);
+    }
     if (slot === null) return Promise.resolve();
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
