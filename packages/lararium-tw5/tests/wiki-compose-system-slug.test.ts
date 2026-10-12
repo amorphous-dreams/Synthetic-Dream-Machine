@@ -8,7 +8,7 @@ import { describe, test, expect } from "vitest";
 import { recipeUri, wikiBagUri, type LarDoc, type LarTiddlerRecord, type Repo, type DocHandle } from "@lararium/mesh";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
 import { makeAddBagReactor, makeRemoveBagReactor } from "../src/wiki-compose-handlers.js";
-import { makeListWikisReactor, makeWikiPinReactor } from "../src/worker-data-verbs.js";
+import { makeListWikisReactor, makeWikiPinReactor, makeWikiUnpinReactor } from "../src/worker-data-verbs.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
@@ -110,6 +110,24 @@ describe("a system slug composes through the vessel's own record", () => {
     const err = await makeAddBagReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "lares", bagUrl: X }, ctx).catch((e: Error) => e);
     expect(String(err)).toMatch(/oracle plane carries no default recipe/);
     expect(String(err)).not.toMatch(/wiki init/);
+  });
+
+  test("pin-wiki and unpin-wiki on a system slug with no oracle recipe refuse with advice that fits, never `wiki init`", async () => {
+    const r = rig();
+    delete r.oracle.tiddlers[recipeUri("oracle", "lares")];
+    for (const make of [makeWikiPinReactor, makeWikiUnpinReactor]) {
+      const err = await make(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "lares" }, ctx).catch((e: Error) => e);
+      expect(String(err)).toMatch(/oracle plane carries no default recipe/);
+      expect(String(err)).not.toMatch(/wiki init/);
+    }
+  });
+
+  test("CONTROL: pin-wiki and unpin-wiki on an unknown user slug still advise `wiki init` (pin) and refuse by name", async () => {
+    const r = rig();
+    const pin = await makeWikiPinReactor(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "nobody" }, ctx).catch((e: Error) => e);
+    expect(String(pin)).toMatch(/wiki init nobody/);
+    const unpin = await makeWikiUnpinReactor(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "nobody" }, ctx).catch((e: Error) => e);
+    expect(String(unpin)).toMatch(/recipe not found for "nobody"/);
   });
 
   describe("control: a user slug walks the mint-and-append path", () => {

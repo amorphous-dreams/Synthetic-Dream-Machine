@@ -14,7 +14,7 @@
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
  */
 
-import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, wikiBagUri, wikiSlotUri, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
+import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -193,13 +193,21 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
 // bookkeeping). No live composite layer mutation, so unlike add-bag/remove-bag these
 // move cleanly.
 
+/** The refusal for a slug with no effective recipe. A system wiki's recipe stands in the oracle plane
+ *  and `wiki init` mints nothing for it, so its advice names the oracle, never `wiki init`. */
+function recipeNotFound(slug: string, userAdvice: string): Error {
+  return new Error(SYSTEM_BAGS.has(wikiBagUri(slug))
+    ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this system wiki`
+    : `recipe not found for "${slug}"${userAdvice}`);
+}
+
 /** `pin-wiki` — pin every bag in the wiki's recipe (worker policy → main manager). */
 export function makeWikiPinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
   return async (args) => {
     const slug = typeof args["slug"] === "string" ? args["slug"] : "";
     if (!slug) throw new Error("args.slug is required");
     const effective = await effectiveRecipeOf(slug, { catalog, oracle });
-    if (!effective) throw new Error(`recipe not found for "${slug}" — run \`lares wiki init ${slug}\` first`);
+    if (!effective) throw recipeNotFound(slug, ` — run \`lares wiki init ${slug}\` first`);
     const { record: recipeRec, title: recipeTitle } = effective;
     const bagStack = bagStackFromRec(recipeRec);
     const pinned: Array<{ bagUrl: string; reason: string }> = [];
@@ -218,7 +226,7 @@ export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOp
     const slug = typeof args["slug"] === "string" ? args["slug"] : "";
     if (!slug) throw new Error("args.slug is required");
     const effective = await effectiveRecipeOf(slug, { catalog, oracle });
-    if (!effective) throw new Error(`recipe not found for "${slug}"`);
+    if (!effective) throw recipeNotFound(slug, "");
     const { record: recipeRec, title: recipeTitle } = effective;
     const bagStack = bagStackFromRec(recipeRec);
     const unpinned: string[] = [];
