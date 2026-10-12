@@ -84,9 +84,12 @@ async function persistedFace(page) {
 async function admit(page, vesselUrl, gatePubKey) {
   await open(page, withGate(vesselUrl, gatePubKey));
   await waitForLive(page);
+  // The gate answers an unvouched leaf with silence, and silence has no single face on the page: the row reads
+  // pinned or authenticating while the dial stands, and gate-unreachable once the silent socket closes. The
+  // invariant holds in all three: no session, no verdict from a peer, no proven gate key.
   const connectionBeforeAdmit = await readConnection(page);
-  assert.match(connectionBeforeAdmit, /authenticating|gate pinned/i,
-    "the unvouched leaf holds the crossing door without a refusal verdict");
+  assert.match(connectionBeforeAdmit, /^(authenticating|gate pinned|gate-unreachable — )/,
+    `the unvouched leaf meets silence at the gate (row read "${connectionBeforeAdmit}")`);
   assert.equal(await page.locator('[data-live-status="connection"]').getAttribute("data-gate-key"), null,
     "before admission the row names no proven gate key");
 
