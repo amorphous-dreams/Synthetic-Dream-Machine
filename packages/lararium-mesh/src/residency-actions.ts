@@ -217,6 +217,8 @@ export interface LoadAction extends ResidencyActionBase {
 export interface IngestCarrier {
   /** The carrier-root lar: URI this disk path projects. */
   readonly uri:        string;
+  /** The local file path the gesture read this carrier from, when it read one; a refusal names it. */
+  readonly file?:      string;
   /** The settled carrier body (quiet + stat-stable + hash-confirmed by the gesture).
    *  A verb NEVER inlines a body: the gesture stages it to the corpus CAS and rides
    *  `textCid` instead. `text` stays for backward-compat (the island resolves
@@ -432,8 +434,9 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
         if (typeof uri !== "string" || !uri) return null;
+        if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
         // corpus-CAS `textCid`, never neither. The island resolves the ref before the gate.
         const hasText = typeof text === "string" && text.length > 0;
@@ -445,7 +448,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (meta !== undefined && typeof meta !== "string") return null;
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
-        carriers.push({ uri, ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];

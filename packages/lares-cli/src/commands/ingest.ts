@@ -188,6 +188,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       for (const c of carriers) {
         const extra = c["reason"] ?? (Array.isArray(c["tombstoned"]) && (c["tombstoned"] as unknown[]).length ? `tombstoned ${(c["tombstoned"] as unknown[]).length}` : "");
         console.log(`  ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}${extra ? `  (${extra})` : ""}`);
+        if (c["code"] === "never-projected-path") console.error(`  ⚠ ${String(c["reason"] ?? c["uri"])}`);
       }
       console.log(`\n  audit: ${auditUri}`);
     },

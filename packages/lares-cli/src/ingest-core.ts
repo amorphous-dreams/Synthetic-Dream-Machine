@@ -405,7 +405,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
       const type = declaredType(r.meta);
       const staged = stageBodyToCas(r.text, { ext: r.ext, flagged, binary: r.binary ?? false, ...(type ? { type } : {}) });
       return {
-        uri: r.uri, size: staged.size, diskHash: r.diskHash, syncedHash: r.syncedHash, ext: r.ext,
+        uri: r.uri, file: r.file, size: staged.size, diskHash: r.diskHash, syncedHash: r.syncedHash, ext: r.ext,
         ...(staged.staged ? { textCid: staged.cid } : { text: r.text }),
         ...(staged.skinny ? { skinny: true } : {}),
         ...(r.meta !== undefined ? { meta: r.meta } : {}),

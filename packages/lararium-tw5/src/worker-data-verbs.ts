@@ -14,7 +14,7 @@
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
  */
 
-import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
+import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -291,7 +291,7 @@ export async function fileWardRefusal(
     const ts     = new Date().toISOString();
 
     // (a) Durable audit in the composite's default writable working layer — append-only, never coalesced.
-    const auditTitle = `lar:///ha.ka.ba/bags/daemon/ledger/ward/${crypto.randomUUID()}`;
+    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${crypto.randomUUID()}`;
     await composite.put(
       { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, "disk-projection": "no" }, meta: { authority: "disk-ward" } },
       { kind: "lares-verb", requestId: `ward-${ts}` },

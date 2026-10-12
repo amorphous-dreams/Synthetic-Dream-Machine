@@ -117,6 +117,30 @@ export async function taskContentId(
 /** Durable per-request fact tiddlers — `<daemon bag>/receipts/<requestId>`. */
 export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 
+/** Durable ward audits: `<daemon bag>/ledger/ward/<id>`. */
+export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
+
+/**
+ * True for a title whose record never projects to disk: a receipt fact, a verb summons, a ward audit.
+ * The makers stamp such a record `disk-projection: "no"`; no file for it ever comes from the projector,
+ * so a file standing at its address counts as foreign.
+ */
+export function neverProjects(title: string): boolean {
+  return title.startsWith(RECEIPT_FACT_URI_PREFIX)
+    || title.startsWith(SUMMONS_URI_PREFIX)
+    || title.startsWith(WARD_AUDIT_URI_PREFIX);
+}
+
+/** A file whose ingest would write a record that never projects to disk. */
+export class NeverProjectedPathRefusal extends Error {
+  override readonly name = "NeverProjectedPathRefusal";
+  readonly code = "never-projected-path";
+
+  constructor(readonly path: string, readonly title: string) {
+    super(`${path} (${title}): records at this address never project to disk, so a file here never ingests; remove the file`);
+  }
+}
+
 export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
 
 interface ReceiptFactCommon {

@@ -63,7 +63,7 @@ Disk projection serves ''content'' bags (definitions + instances). ''State / vie
 | `@temp` | volatile session layer | ''none'' — runtime |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
-The projector enforces this structurally: ''a bag absent from the mirror list never writes to disk.'' A tiddler MAY also opt out per-record with `disk-projection: no`.
+The projector enforces this structurally: ''a bag absent from the mirror list never writes to disk.'' A tiddler MAY also opt out per-record with `disk-projection: no`. The opt-out holds in both directions: an address whose records never project (a receipt fact, a verb summons, a ward audit; `neverProjects`) and a carrier that declares `disk-projection: no` never ingest, so a file standing there refuses by name (`never-projected-path`), creates nothing, and leaves the wave's other carriers to land.
 
 <<~/ahu>>
 
@@ -215,6 +215,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1M3sduKb_qJo_j28yKCBs1yinuNEah7ik_Tauq-U6HA
+<<^ code="&#x0003;">>ni:///sha-256;llGCLmh8JEYuQpxwQOc7Zv4fwLfo_gAyBcCGk5wA9Co
 
 <<^ code="&#x0004;" -> to="?">>

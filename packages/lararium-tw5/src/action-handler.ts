@@ -53,6 +53,7 @@ import {
   crossingDirection, type CapTier,
   isEffectRecordUri, parseEffectRecord, effectRecordUri,
   writesBag, VerbRefusal,
+  neverProjects, NeverProjectedPathRefusal,
   yieldToHost,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
@@ -884,6 +885,14 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (tear !== null) {
       throw new Error(`LOAD: carrier ${carrier.title ?? "(carrier)"} REFUSED — its frame is torn (${tear}); nothing landed, and any family under that title stands as it stood`);
     }
+    const refusedField = fieldsList.find((fields) => {
+      const title = typeof fields["title"] === "string" ? fields["title"] as string : carrier.title ?? "";
+      return neverProjects(title) || fields["disk-projection"] === "no";
+    });
+    if (refusedField) {
+      const title = typeof refusedField["title"] === "string" ? refusedField["title"] as string : carrier.title ?? "(carrier)";
+      throw new NeverProjectedPathRefusal(carrier.title ?? title, title);
+    }
     warnings.push(...shoreWarnings(fieldsList));
     for (const fields of fieldsList) {
       const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
@@ -924,6 +933,12 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
  * `IngestOps`); the refuse leg fires only where a family grades error (memetic), riding
  * dormant for native (a native deserialize throws rather than grading).
  */
+/** The per-carrier answer for a file whose ingest would write a record that never projects to disk. */
+function neverProjectedRow(uri: string, file: string | undefined, title: string): Record<string, unknown> {
+  const refusal = new NeverProjectedPathRefusal(file ?? uri, title);
+  return { uri, decision: "refuse", code: refusal.code, reason: refusal.message, warnings: [refusal.message] };
+}
+
 async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const o = origin(action);
   const deletions = action.deletions ?? [];
@@ -978,6 +993,10 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       continue;
     }
     const uri = carrier.uri;
+    if (neverProjects(uri)) {
+      results.push(neverProjectedRow(uri, carrier.file, uri));
+      continue;
+    }
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never materializing as a CRDT scalar-string (the automerge OOM wall). The gate
     // runs at content-address grain: the handle's cid IS its render, so an unchanged cid
@@ -1039,6 +1058,13 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // rides ASIDE in `$:/config/OriginalTiddlerPaths`, never on the tiddlers.
     let packInfo: { packPath: string; members: string[] } | null = null;
     if (memetic) {
+      const parsedFields = memeticWikitextDeserializer(carrierText, { title: uri });
+      const refusedField = parsedFields.find((fields) => neverProjects(String(fields["title"] ?? uri)) || fields["disk-projection"] === "no");
+      if (refusedField) {
+        const title = String(refusedField["title"] ?? uri);
+        results.push(neverProjectedRow(uri, carrier.file, title));
+        continue;
+      }
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
       const placed = await placeMeme(
@@ -1090,6 +1116,12 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
         return { ...fields, title: own || uri };
       });
+      const refusedRecord = freshRecords.find((record) => neverProjects(String(record["title"] ?? "")) || record["disk-projection"] === "no");
+      if (refusedRecord) {
+        const title = String(refusedRecord["title"] ?? uri);
+        results.push(neverProjectedRow(uri, carrier.file, title));
+        continue;
+      }
       // Pack detection: any member whose title is NOT the carrier's own loci URI
       // came from a bundle (the file's tiddlers self-title). Record the WHOLE
       // membership → the pack file path, so REPACK can re-collect it and the
