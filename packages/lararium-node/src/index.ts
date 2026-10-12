@@ -181,7 +181,7 @@ export { sealExpected, setSealExpected } from "./lares-config.js";
 export { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeOpenPhase } from "./open-node-vessel.js";
-export { createReadinessState, mountReadinessFace } from "./readiness-face.js";
+export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";

@@ -32,6 +32,17 @@ export function createReadinessState(): ReadinessState {
   };
 }
 
+/**
+ * Mark ready only once the verb dispatcher stands. `dispatcherStands` is the daemon island's `ea`:
+ * the island starts its dispatcher, then posts `ea`, so the event orders the two. A verb that
+ * arrives while health still reads `starting` has no promise of being run; one that arrives after
+ * `ready` meets a live dispatcher. A dispatcher that faults leaves health `starting`.
+ */
+export async function markReadyOnceStanding(state: ReadinessState, dispatcherStands: Promise<unknown>): Promise<void> {
+  await dispatcherStands;
+  state.markReady();
+}
+
 function answer(res: ServerResponse, state: ReadinessState, method: string): void {
   const ready = state.status() === "ready";
   res.writeHead(ready ? 200 : 503, {

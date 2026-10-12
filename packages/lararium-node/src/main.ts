@@ -71,7 +71,7 @@ import { houseOriginsOf } from "./pronaos-adapter.js";
 import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid, readGenesisSeedBytes, parseGenesisSeed } from "./genesis-artifact.js";
-import { createReadinessState, mountReadinessFace } from "./readiness-face.js";
+import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 
@@ -431,6 +431,9 @@ async function main(): Promise<void> {
     // substrate's depth, and a deep root then refused to bind while everything else stood. Both sides
     // derive from the SAME resolved dir, so the client finds what this bound.
     // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
+    // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
+    // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
+    await herm.daemon.workerEa;
     publishStanding(storageDir, standing, faceLit);
     const hermUds = startUdsChannel({
       daemonHandle: herm.daemon.daemonHandle,
@@ -440,7 +443,7 @@ async function main(): Promise<void> {
       ...(receiptRing !== undefined && { ring: receiptRing }),
       onLog: (line) => console.log(`[herm] ${line}`),
     });
-    readinessState.markReady();
+    await markReadyOnceStanding(readinessState, herm.daemon.workerEa);
 
     let hermShuttingDown = false;
     const hermShutdown = async (sig: string): Promise<void> => {
@@ -571,7 +574,7 @@ async function main(): Promise<void> {
     ...(receiptRing !== undefined && { ring: receiptRing }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   });
-  readinessState.markReady();
+  await markReadyOnceStanding(readinessState, result.daemon.workerEa);
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
   // the ~8s cold chromadb start (the pool then stays warm for the daemon's life).
