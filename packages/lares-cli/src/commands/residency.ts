@@ -62,6 +62,18 @@ export async function cmdRegisterCold(args: ParsedArgs): Promise<number> {
   return await runResidencyCommand("register-cold", { url });
 }
 
+/**
+ * The stowage measures its own idleness and answers a duration with its clock's kind; this process shares
+ * no instant with it, so it reads no timestamp and calls no clock. Rolls print as rolls, the monotonic wall
+ * floor's milliseconds as seconds or minutes, and anything else as unknown.
+ */
+function idleText(idleFor: unknown, clockKind: unknown): string {
+  if (typeof idleFor !== "number" || !Number.isFinite(idleFor)) return "unknown";
+  if (clockKind === "realm") return `${idleFor} rolls`;
+  if (clockKind !== "wall-floor") return "unknown";
+  return idleFor < 60_000 ? `${Math.round(idleFor / 1000)}s` : `${Math.round(idleFor / 60_000)}m`;
+}
+
 export async function cmdResidency(_args: ParsedArgs): Promise<number> {
   // UDS fast path, WS fallback (the lares↔lararium binding).
   let r;
@@ -80,7 +92,8 @@ export async function cmdResidency(_args: ParsedArgs): Promise<number> {
   }
   const stats = summaryOutput(r) ?? {};
   const pinned = (stats["pinned"] ?? []) as string[];
-  const wela   = (stats["wela"]   ?? []) as Array<{ url: string; lastTouched: number; syncActive?: boolean }>;
+  const wela   = (stats["wela"]   ?? []) as Array<{ url: string; idleFor?: unknown; syncActive?: boolean }>;
+  const clockKind = stats["clockKind"];
   const anuCount = stats["anuCount"] as number;
   const hotCap   = stats["hotCap"]   as number;
 
@@ -90,10 +103,8 @@ export async function cmdResidency(_args: ParsedArgs): Promise<number> {
   console.log("");
   console.log(`wela (${wela.length}/${hotCap}):`);
   for (const e of wela) {
-    const age   = Date.now() - e.lastTouched;
-    const human = age < 60_000 ? `${Math.round(age/1000)}s ago` : `${Math.round(age/60_000)}m ago`;
     const sync  = e.syncActive ? "  (syncing)" : "";
-    console.log(`  ${e.url}  — touched ${human}${sync}`);
+    console.log(`  ${e.url}  — idle ${idleText(e.idleFor, clockKind)}${sync}`);
   }
   console.log("");
   console.log(`anu count: ${anuCount}`);
