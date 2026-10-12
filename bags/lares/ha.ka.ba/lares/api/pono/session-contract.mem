@@ -54,6 +54,22 @@ written           = "2026-10-11"
 
 <<~/ahu>>
 
+<<~ ahu #/the-working-layer>>
+
+!! The working layer ~ one document per face relation, wiki, and slot kind
+
+One working document follows each `(face relation, wiki, slot kind)`. Its address derives from a secret held only by that face's vessels; no binding record or mint race decides the address. Two vessels mounting offline derive one document and merge their writes.
+
+The working layer follows the wiki across recipe recomposition; it never follows the recipe's composition fingerprint. Here, `wiki` names the face's relation to a composition over bags, never a global wiki name or registry id. Two faces at one table may hold wikis that share bags; sharing happens at the bag. Presence and multiplayer spaces sit above shared bags.
+
+A leaf with an admit and no seat writes nothing to the face's wikis. Join first; the face secret arrives at the face-proof join (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain">>).
+
+The gate and document membership refuse a removed vessel. The working document keeps its address; rotation to a fresh document takes a separate, deliberate act.
+
+The resolver keys bindings by `prefix/fingerprint` and stores them through `daemonStore` (`packages/lararium-keyhive/src/resolve-binding.ts`). The working document follows this address law instead of that binding map.
+
+<<~/ahu>>
+
 <<~ ahu #/the-owner>>
 
 !! The owner ~ acts and outcomes persist; a roster of sessions never does
@@ -207,7 +223,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 # ''The contract in mesh.'' The session type, its validators, the port and socket binding, and refusal of a stale owner epoch or generation.
 # ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store.
 # ''The face proof and its grants.'' Two faces on one vessel present different proof subjects, and a copied id or an own-hand claim gains no plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>).
-# ''The recipe resolver and the pool's identity.'' Two same-face sessions take two islands; a repeated exact mount opens one; a recipe write reaches the next mount by sync and changes no live mount.
+# ''The recipe resolver and the pool's identity.'' The working-layer binding follows #/the-working-layer; two same-face sessions take two islands, a repeated exact mount opens one, and a recipe write reaches the next mount by sync without changing a live mount.
 # ''Node callers move to sessions.'' Two CLI sessions wear different faces at once over one Repo; a copied socket and a cross-face receipt read both refuse; a same-face receipt reads after the CLI that asked has exited.
 # ''The browser holder as owner.'' Two tabs show one backing Repo and one held lock; a failed daemon boot refuses both, releases the lock and permits a retry.
 # ''Browser surfaces.'' Two tabs mount one wiki under separate sessions; frames and control answers reach their source surface alone; no wiki engine runs on the page's main thread.
@@ -228,9 +244,11 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim">> ~ aligns slot addresses with the face working-layer rule
+<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">> ~ keeps camera surfaces within each mounted wiki
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;55s4d88iWPVjdzBRDG4eQe05VqJidSWytkzZCVQJ0s8
+<<^ code="&#x0003;">>ni:///sha-256;z1gIgH0GI5g8_N81h-M0pDh6W3ZB4eqz_IIo6kFgqko
 
 <<^ code="&#x0004;" -> to="?">>
