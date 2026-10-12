@@ -129,6 +129,15 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 * ''Blinding rides RECIPE COMPOSITION by the wearer'', never a filter some host applies. The recipe layers stand taught at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>.
 * ''Bag-level write grants suit the house ceremony.'' Per-meme grants stand OWED for stranger tables.
 
+''What keeps a face out of a bag: a GRANT decides what a face CAN read; a RECIPE decides what a session DOES mount.''
+
+* ''The referee-private bag stays private by a WITHHELD READ GRANT.'' A player face holds no grant to it, so no recipe that face composes can mount it.
+* ''Self-blinding stays a wearer's own choice of recipe, over bags her face MAY read.'' A recipe narrows a view and never widens a grant: it protects a player from spoiling her own table and protects no secret from a face that holds the grant.
+
+> ''A house reading, marked as one.'' The operator's two sentences (a referee-private bag; a player self-blinds by composing a recipe) carry the split between them: the first needs a wall a wearer cannot take down, and the second names a choice a wearer makes. The operator ruled the model and never this sentence.
+
+''The house's own worked example'': `bags/elyncia` holds the table realm and `bags/elyncia-referee` holds the referee's bag. A player face's recipe mounts the first; the referee face's recipe mounts both.
+
 ''The session carries the recipe.'' A session wears one face and holds that face's EFFECTIVE recipe (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>), so a player session and a referee session may stand at once over one vessel, each reading through its own composition. Two devices of one human may likewise wear different faces at once.
 
 ''OWED'': no leaf yet honours a session's effective recipe; an admitted leaf reads its hearth's default recipe. Cabal realms, many per Nexus, stand unbuilt beside the one Nexus realm a vessel stands today.
@@ -235,6 +244,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;QUHYiPPDO45sf0MnsT5NtFo8-eD59KRLUu65sVzCkM8
+<<^ code="&#x0003;">>ni:///sha-256;sccq-p80SnLfLdVx_fegwhqN_2H4R31oJlN_0jL_Hjc
 
 <<^ code="&#x0004;" -> to="?">>
