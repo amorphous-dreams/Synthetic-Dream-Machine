@@ -1,0 +1,156 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem"
+l-space    = "adjacent"
+mana       = 13
+manao      = 13
+manaoio    = 12
+namespace  = "&#x2299;"
+role       = "the parked handback row for the lares(Codex) crew — the EOT2 question, two named typecheck reds, the joinee boot's unfed lease epoch and the held-out.yml runner path — kept as the record of each parked item and the commit that closed it"
+status-why = "closed: every item it parked landed — EOT2 retired (every carrier closes on plain EOT; `kapu.mem` at `2a623c1a2`), both typecheck reds cleared (`tools/typecheck-witness.sh` clean), the joinee boot reads its own lease frontier (`a59d9a9b5`), and `held-out.yml` reads its runner path inside a step (`00c679e97`)"
+tags       = ["docs/handoff", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Parked for `lares(Codex)` — a question and two named reds
+
+''Closed.'' Every item below landed, and the Codex hold that kept this row off the crew's own ledger stands closed (<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>). EOT2 retired as a frame mark; the web oracle panel and the scenario harness typecheck clean (`e9d6ddefe`, `3e8847364`, and `tools/typecheck-witness.sh` across every project); the staged joinee boot reads the lease frontier its own daemon layer folds (`a59d9a9b5`); `held-out.yml` computes its evidence path inside a step (`00c679e97`). The sections below keep the row as parked.
+
+''Why this carrier, not the crew's own ledger.'' `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`
+sits on the Codex Lares hearth's held ground (`lar:///ha.ka.ba/lares/docs/pono/hearths#/holds`, trailer
+`session_01a0a6f209517170ad254cf14549cc5f`). This hand carries no crossing row for that ground, so the
+house pattern parks the row here instead — a `docs/handback-*.mem` carrier the crew (or whoever opens the
+next crossing) folds in on its own schedule.
+
+<<~/ahu>>
+
+<<~ ahu #/eot2-question>>
+
+!! EOT2 on `kapu.mem` — an open question, not a ruling
+
+''Closed beside the record:'' every carrier closes on plain EOT, kapu-tier included (`memetic-wikitext-framing.mem`, the SOH₂ paragraph), and `kapu.mem` closes on `&#x0004;`; no EOT2 frames any tier. The question below stands as asked.
+
+''Context, not law — stated once so the question reads clean.'' The relay/stream ontology stands
+mid-refactor; the operator's working frame reads EOT2 as transport framing: EOT2 serves STREAMED text or
+encoded memes BETWEEN RELAYS, never an at-rest carrier's own close. Nothing below writes that frame into
+canon — the framing spec (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`) stays silent on EOT2
+until the refactor lands.
+
+''The question.'' `lar:///ha.ka.ba/lares/api/pono/kapu` ends on an authored EOT2 close
+(`<<^ code="&#x0014;" -> to="?">>`), a choice `d207b7ef0` ("refuse escaped meme tails") made by REMOVING
+the canonical EOT line that stood beside it, leaving EOT2 standing alone. Read against the transport
+framing above: an at-rest carrier closes on EOT; EOT2 names a relay-stream boundary. If that framing
+holds, the EOT2 line on `kapu.mem` reads as the escaped tail the same commit meant to teach a reader to
+refuse — or the crew held a specific reason to keep it that this hand does not carry. Which one?
+
+''What a fresh hand hits either way.'' The emitter re-mints canonical EOT on normalize, so the file as it
+stands today CANNOT round-trip: a normalize pass restamps EOT2 back to EOT, and `8fb7fe383` already had
+to hand-restore the EOT2 line once after exactly that happened. Whoever answers the question above should
+also say whether the emitter needs a carve-out for an authored EOT2 close, or whether `kapu.mem` should
+simply close on EOT like every other carrier.
+
+''Ruled (operator, 2026-10-04):'' `kapu.mem` closes on regular EOT for now, like every other carrier
+at rest. No emitter carve-out. EOT2's office stays open until the relay-stream layer settles.
+
+''Superseding ruling (operator, 2026-10-04):'' EOT2 (`&#x0014;`) is RETIRED as a frame mark outright —
+the question above resolves, not by settling a relay-stream office for it, but by removing the mark.
+Every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs to a future
+transport envelope and gets its own mark when that envelope lands, never a repurposed EOT2. SYN
+(`&#x0016;`) stays the one reserved stream mark; SOH2 (`&#x0011;`) names the ONLY kapu alias this grammar
+stands. Dropped from `packages/lararium-memetic-frame/src/marks.ts` (FRAME_MARKS), the
+`sigil-frame-eot2.tid` tiddler (deleted, grammar-table regenerated), the control-set table and TOML
+schema rows and trust-tier range in this grammar's own framing law, and the bootstrap scanner's DC4
+scan (`packages/lararium-tw5/src/meme-ast/scanner.ts`). `marks.ts`'s `frameHex`/`frameAlt` also moved
+off NAME-PREFIX family matching (which let `"EOT2".startsWith("EOT")` alias it into EOT's own readers
+with nothing declaring that) onto an explicit `FAMILY_ALIASES` table — SOH2's alias into SOH stays
+explicit there; no family aliases silently by spelling again.
+
+<<~/ahu>>
+
+<<~ ahu #/typecheck-reds>>
+
+!! Two named typecheck reds
+
+Carried forward as named, not independently re-run by this hand:
+
+* `packages/lararium-web/src/main.ts:98` — `r.pointer.version`, from `965c760dc`
+  ("`lar:///oracle-keeps-the-frontier` — bind snapshots to causal acts"); the `OraclePointer` shape that
+  commit bound does not (yet) carry a `version` field this call site reads.
+* `tests/harness/scenario-action-graph.ts:175`.
+
+<<~/ahu>>
+
+<<~ ahu #/group-b-bind-under-handle>>
+
+!! GROUP B: `bind-under-handle.test.ts` red — gate correct, one caller unfed
+
+`packages/lararium-node/tests/bind-under-handle.test.ts` fails with:
+
+```
+[daemon-keyhive] Binding Gate: current lease frontier unavailable — refusing persona-bound boot
+```
+
+''Cause.'' `dbb85cf63` (retire clock authority) made `expectedEpoch` a required parameter of
+`bootDaemonKeyhive` (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:137`) and updated the two
+callers it touched — but not the joinee boot path this test drives, which still calls in without
+supplying the live lease epoch, so the gate correctly refuses.
+
+''Fix direction (not applied by this hand — not this hand's files).'' Supply the live lease epoch the
+same way `face-join.ts`'s `gateFaceJoin` already does for its own caller, rather than loosening or
+bypassing the gate. The gate's refusal does its job here; the joinee boot path owes the catch-up. Never revert or weaken the gate itself.
+
+<<~/ahu>>
+
+<<~ ahu #/held-out-workflow>>
+
+!! `.github/workflows/held-out.yml` — a job-env `runner.temp` read fails every push
+
+''What breaks.'' `held-out.yml:36` reads `runner.temp` inside a job-level `env:` block. A job-level `env:`
+block cannot read the `runner` context — it sees only `github`, `needs`, `strategy`, `matrix`, `vars`,
+`secrets`, and `inputs` — so GitHub rejects the whole workflow file on every push as a 0s failure (for
+example run `37309501567`). A schedule/workflow_dispatch-only file still gets validated on push; the
+trigger named in the file does not exempt it from parse-time context checks.
+
+''Fix (not applied by this hand — Codex hearth's hold).'' Delete the job-env `ARTIFACT_DIR` line, and in
+the "Prepare held-out evidence directory" step compute the path inside a `run:` step instead, where the
+`runner` context reads:
+
+```
+run: |
+  dir="$RUNNER_TEMP/held-out/${{ matrix.driver }}"
+  mkdir -p "$dir"
+  echo "ARTIFACT_DIR=$dir" >> "$GITHUB_ENV"
+```
+
+Later `$ARTIFACT_DIR` / `${{ env.ARTIFACT_DIR }}` uses then resolve against the step-exported value. This
+hand did not touch `.github/workflows/held-out.yml` itself — the Codex hearth held it.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;7hrjyw4aMtZE7FLxqxoD0lSeKcv71NsZdruu3sXgFNs
+
+<<^ code="&#x0004;" -> to="?">>
