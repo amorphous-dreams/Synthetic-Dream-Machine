@@ -80,9 +80,13 @@ usage: lares nexus seal <seat | reserve | rotate | commit | show | export | impo
   import <file>          land a charter at the primary path — only where none stands, or the same one
   import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
                          that AID lands only when its seal lineage extends the held head
-  reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:
+  reserve [refresh|show|rehearse]            custody the pre-rotation's NEXT key-set:
           reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the
                           --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]
+                          no verb rolls the charter from that seed
           reserve refresh re-seed + re-derive + re-issue the cards + print a NEW commit
-          reserve show    the reserve state (commit present, guardians, share sealed)"
+          reserve show    the reserve state (commit present, guardians, share sealed)
+          reserve rehearse --card-a <code> --card-b <code> [--slot-a <slot> --slot-b <slot>] [--generation <n>]
+                          read two SYNTHETIC cards back under a SCRATCH root, prove the rebuilt
+                          key-set against the charter head, write nothing, roll nothing"
 `;

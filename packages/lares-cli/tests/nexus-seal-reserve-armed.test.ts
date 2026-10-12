@@ -2,14 +2,14 @@
  * nexus-seal-reserve-armed — a head armed with the reserve's commit reads so by name, and the one
  * irreversible arming refuses.
  *
- * No verb reads a recovery card, rebuilds the reserve seed, or seats a reserve-derived key, so a head whose
+ * No verb carries a recovery card into a rotation or seats a reserve-derived key, so a head whose
  * `nextKeyCommit` names the reserve key-set never reveals. Proven over a real persona vault + the charter on
  * disk:
  *   · V1 — a genesis armed with the reserve's commit (what the quorum rite seats) reads `reserveArmed`, and
  *     `seal rotate` refuses it as `reserve-armed` with the re-seat named open, charter bytes untouched;
  *   · V2 — `seal rotate --next-key-commit <the reserve's commit>` on a rotated chain refuses as
  *     `reserve-commit-unrevealable`: a chain past genesis never re-seats, so that arming freezes it;
- *   · V3 — the reserve payload names its absent reader (`cardReader: null`);
+ *   · V3 — the reserve payload names its one reader, the rehearsal (which rolls nothing);
  *   · CONTROL — a head armed with the standing roster's commit rolls while a reserve stands beside it, and
  *     reads `reserveArmed: false`.
  */
@@ -116,10 +116,10 @@ describe("seal reserve armed heads", () => {
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
   });
 
-  test("V3 — reserve payload names the absent card reader", async () => {
+  test("V3 — reserve payload names the rehearsal as its one card reader", async () => {
     const { data } = await reserve();
     expect(data["cards"]).toHaveLength(3);
-    expect(data["cardReader"]).toBeNull();
+    expect(data["cardReader"]).toBe("nexus seal reserve rehearse");
   });
 
   test("CONTROL — a roster-armed head rotates when the reserve commit differs", async () => {

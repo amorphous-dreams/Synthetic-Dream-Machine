@@ -39,12 +39,13 @@ import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
   defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
+  GUARDIAN_SLOT_CUSTODIAN, assembleQuorum, reconstructFromQuorum,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats,
   type QuorumSignature, type CharterSealState,
 } from "@lararium/mesh";
 import {
   generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed,
-  RESERVE_THRESHOLD, RESERVE_KAHU_COUNT, type ReserveCard,
+  reserveShareFromCard, RESERVE_THRESHOLD, RESERVE_KAHU_COUNT, type ReserveCard,
 } from "../seal-reserve.js";
 import { rosterStanding } from "../roster-standing.js";
 import { nexusPhase } from "../nexus-phase.js";
@@ -115,12 +116,15 @@ const SEAL_USAGE: readonly string[] = [
   "  import <file>          land a charter at the primary path — only where none stands, or the same one",
   "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
   "                         that AID lands only when its seal lineage extends the held head",
-  "  reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:",
+  "  reserve [refresh|show|rehearse]            custody the pre-rotation's NEXT key-set:",
   "          reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the",
   "                          --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]",
-  "                          no verb reads a recovery card back or rolls the charter from that seed",
+  "                          no verb rolls the charter from that seed",
   "          reserve refresh re-seed + re-derive + re-issue the cards + print a NEW commit",
   "          reserve show    the reserve state (commit present, guardians, share sealed)",
+  "          reserve rehearse --card-a <code> --card-b <code> [--slot-a <slot> --slot-b <slot>] [--generation <n>]",
+  "                          read two SYNTHETIC cards back under a SCRATCH root, prove the rebuilt",
+  "                          key-set against the charter head, write nothing, roll nothing",
 ];
 
 /**
@@ -227,7 +231,7 @@ function reserveArmedReading(chainDepth: number): string {
 }
 
 function reserveArmedRotateMessage(chainDepth: number): string {
-  const invariant = "the head pre-commits the reserve key-set; no lares verb reads a recovery card or carries a reserve key into the vault, so this reveal cannot match.";
+  const invariant = "the head pre-commits the reserve key-set; no lares verb carries a recovery card or a reserve key into a rotation, so this reveal cannot match.";
   return chainDepth === 1
     ? `${invariant} Re-seat with lares nexus seal commit --keys <a key-set this vault can reveal> --threshold <k>, then lares nexus seal seat --next-key-commit <digest>. A re-seat re-mints the genesis epoch, so the epoch CID moves.`
     : `${invariant} The chain stands frozen at this head.`;
@@ -981,8 +985,9 @@ async function cmdCharterReserve(args: ParsedArgs): Promise<number> {
     case "provision": return await sealReserveProvision(args, "provision");
     case "refresh":   return await sealReserveProvision(args, "refresh");
     case "show":      return await sealReserveShow(args);
+    case "rehearse":  return await sealReserveRehearse(args);
     default:
-      console.error(`lares nexus seal reserve: unknown op "${op}" (expected refresh | show | <none>)`);
+      console.error(`lares nexus seal reserve: unknown op "${op}" (expected refresh | show | rehearse | <none>)`);
       return 2;
   }
 }
@@ -1006,11 +1011,14 @@ function reserveCardsEmission(
         console.log(`    ── ${c.label} ──`);
         console.log(`       share code:   ${c.shareCode}`);
         console.log(`       confirm:      ${c.confirmPhrase}   (read out-of-band to verify the card)`);
+        console.log(`       generation:   ${String(data["reserveEpoch"])}   (cards of two generations never combine)`);
+        console.log(`       quorum:       any ${RESERVE_THRESHOLD} of ${RESERVE_KAHU_COUNT} cards of this generation`);
       }
       console.log(``);
       console.log(`  "mine" seals on THIS vessel; a printed/emailed copy of "mine" carries the SAME share —`);
       console.log(`  an operator-full-compromise reveals ONE share → nothing. Any TWO cards rebuild the reserve SEED.`);
-      console.log(`  No lares verb reads a card back, and none rolls the charter from that seed.`);
+      console.log(`  \`lares nexus seal reserve rehearse\` reads two cards back under a scratch root and proves the`);
+      console.log(`  rebuilt key-set against the charter head. No verb rolls the charter from that seed.`);
       console.log(``);
       console.log(`  Arm the pre-rotation:  lares nexus seal seat --next-key-commit ${nextKeyCommit}`);
     },
@@ -1056,9 +1064,9 @@ async function sealReserveProvision(args: ParsedArgs, mode: "provision" | "refre
       args,
       {
         mode, reserveEpoch, nextKeyCommit, threshold: RESERVE_THRESHOLD, kahuCount: RESERVE_KAHU_COUNT,
-        cardReader: null,
+        cardReader: "nexus seal reserve rehearse",
         guardianA, guardianB, chainDepth, reconcile,
-        cards: cards.map((c) => ({ slot: c.slot, label: c.label, custodian: c.custodian, shareCode: c.shareCode, confirmPhrase: c.confirmPhrase })),
+        cards: cards.map((c) => ({ slot: c.slot, label: c.label, custodian: c.custodian, shareCode: c.shareCode, confirmPhrase: c.confirmPhrase, generation: reserveEpoch, threshold: RESERVE_THRESHOLD, shares: RESERVE_KAHU_COUNT })),
       },
       cards,
       nextKeyCommit,
@@ -1109,6 +1117,109 @@ async function sealReserveShow(args: ParsedArgs): Promise<number> {
       console.log(`  guardians:  A=${state.guardianA ?? "unassigned"}  B=${state.guardianB ?? "unassigned"}`);
       console.log(`  mine share: ${state.mineShareSealed ? "SEALED on this vessel" : "NOT sealed"}`);
       console.log(`  (the seed and the full share-set are NEVER shown — only the public commit + labels)`);
+    },
+  });
+  return 0;
+}
+
+// ── The rehearsal — the reserve card's one reader ────────────────────────────────────────────────────
+//
+// A rehearsal decodes two cards, rebuilds the reserve seed IN MEMORY, derives the key-set and proves its
+// commit against the charter head. It speaks public digests alone, writes nothing, and rolls nothing: no
+// verb seats a reserve-derived key. A rebuilt seed stands whole in this process, so the verb runs only
+// under a root a harness staged; a real card meeting a live vessel waits on an operator ruling.
+
+/** The marker a harness writes at stage time (`tools/test-scratch-marker.mjs`); nothing else makes a root scratch. */
+const SCRATCH_MARKER = ".lar-test-scratch";
+
+/** A REHEARSAL ROOT STANDS when `LAR_ROOT` names a root that carries the harness's scratch marker. */
+export function rehearsalRootStands(larRootEnv: string | undefined): boolean {
+  return !!larRootEnv && existsSync(join(larRootEnv, SCRATCH_MARKER));
+}
+
+const RESERVE_SLOTS: readonly ReserveCard["slot"][] = ["mine", "guardian-a", "guardian-b"];
+const reserveSlot = (s: string): ReserveCard["slot"] | null =>
+  (RESERVE_SLOTS as readonly string[]).includes(s) ? (s as ReserveCard["slot"]) : null;
+
+async function sealReserveRehearse(args: ParsedArgs): Promise<number> {
+  const refuse = (code: string, message: string, data?: Record<string, unknown>): number => {
+    emit(args, {
+      ok: false, error: { code, message }, ...(data ? { data } : {}),
+      human: () => console.error(`nexus seal reserve rehearse REFUSED (${code}): ${message}`),
+    });
+    return exitFor(code);
+  };
+
+  // THE SCRATCH GATE READS FIRST: no card decodes, and no state reads, outside a staged root.
+  if (!rehearsalRootStands(process.env["LAR_ROOT"])) {
+    return refuse("rehearsal-needs-scratch-root",
+      "a rehearsal rebuilds a whole reserve seed in this process, so it runs only under a root a harness staged " +
+      "(node tools/test-scratch-marker.mjs <root>, then LAR_ROOT=<root>); whether a real card ever meets a live vessel waits on an operator ruling.");
+  }
+
+  const codeA = args.options["card-a"];
+  const codeB = args.options["card-b"];
+  if (!codeA || !codeB) throw new UsageError("reserve rehearse reads two cards: --card-a <share code> --card-b <share code>");
+  const slotA = reserveSlot(args.options["slot-a"] ?? "guardian-a");
+  const slotB = reserveSlot(args.options["slot-b"] ?? "guardian-b");
+  if (!slotA || !slotB) throw new UsageError(`a slot names one of ${RESERVE_SLOTS.join(" | ")}`);
+  if (slotA === slotB) {
+    return refuse("rehearsal-same-custodian", "two cards of one custodian slot form no quorum; a rehearsal reads two DISTINCT slots.");
+  }
+
+  // THE GENERATION RIDES THE CARD'S LABEL, never its share code: the reader types it, or the vessel's reserve state names it.
+  const typed = args.options["generation"];
+  const generation = typed === undefined ? readCharterReserveState()?.reserveEpoch : Number(typed);
+  if (generation === undefined || !Number.isInteger(generation) || generation < 0) {
+    return refuse("rehearsal-no-generation", "no generation stands for these cards — type the one each card prints: --generation <n>.");
+  }
+
+  const read = (which: "a" | "b", slot: ReserveCard["slot"], shareCode: string): ReturnType<typeof reserveShareFromCard> | string => {
+    try {
+      return reserveShareFromCard({ slot, label: "", custodian: GUARDIAN_SLOT_CUSTODIAN[slot], shareCode, confirmPhrase: "" }, generation);
+    } catch (err) {
+      return `card ${which} reads false: ${err instanceof Error ? err.message : String(err)}`;
+    }
+  };
+  const shareA = read("a", slotA, codeA);
+  if (typeof shareA === "string") return refuse("rehearsal-card-unreadable", shareA);
+  const shareB = read("b", slotB, codeB);
+  if (typeof shareB === "string") return refuse("rehearsal-card-unreadable", shareB);
+
+  let quorum: ReturnType<typeof assembleQuorum>;
+  try { quorum = assembleQuorum([shareA, shareB], RESERVE_THRESHOLD); }
+  catch (err) { return refuse("rehearsal-no-quorum", err instanceof Error ? err.message : String(err)); }
+
+  // THE SEED LIVES INSIDE THIS BLOCK ALONE. Only the public commit leaves it.
+  const seed = reconstructFromQuorum(quorum);
+  let derivedCommit: string;
+  try {
+    const { verifyingKeys } = await deriveReserveKeySet(seed, generation);
+    derivedCommit = normHex(reserveNextKeyCommit(verifyingKeys));
+  } finally {
+    seed.fill(0);
+  }
+
+  const headCommit = normHex(sealLineageHead(readNexusDoc(larSealHome()))?.nextKeyCommit) || null;
+  const reserveCommit = normHex(readCharterReserveState()?.nextKeyCommit);
+  const matchesHead = headCommit !== null && derivedCommit === headCommit;
+  const matchesReserveState = reserveCommit.length > 0 && derivedCommit === reserveCommit;
+  const data = { rehearsed: true, generation, derivedCommit, headCommit, matchesHead, matchesReserveState, wrote: null, rolls: false };
+
+  if (headCommit === null) {
+    return refuse("rehearsal-no-head", "no charter head pre-commits a next key-set here, so the rebuilt key-set proves against nothing — seat the charter first.", data);
+  }
+  if (!matchesHead) {
+    return refuse("rehearsal-commit-mismatch",
+      "the two cards rebuild a key-set the charter head never pre-committed. Three causes read the same: a card of another generation, " +
+      "a card of another Nexus, or a mis-copied or substituted share (plain Shamir rebuilds a value from any two shares and vouches for nothing).", data);
+  }
+  emit(args, {
+    ok: true, data,
+    human: () => {
+      console.log(`nexus seal reserve rehearse — the two cards rebuild the key-set the charter head pre-commits (generation ${generation}).`);
+      console.log(`  commit:  ${derivedCommit}`);
+      console.log(`  nothing written; the seed buffer stands zeroed. No verb rolls the charter from it.`);
     },
   });
   return 0;
