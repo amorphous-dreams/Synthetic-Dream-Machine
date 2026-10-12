@@ -1,9 +1,10 @@
 /**
  * L5 — the store's persistence writes land durably and atomically. `atomicWriteFile` (async)
  * writes bytes and strands no temp; `DurableNodeFSStorageAdapter` overrides save() to route
- * through it while keeping the base's write-through read cache coherent — a load-after-save
- * (and a load-after-overwrite) returns the FRESH bytes, never a torn or stale read. A temp a dead writer
- * stranded never reads back as a chunk: the opener ignores it and names it.
+ * through it — a load-after-save (and a load-after-overwrite) returns the FRESH bytes, never a torn or
+ * stale read. A save reads back from the moment it is called and for as long as it stays in flight; once it
+ * settles the adapter holds nothing and every read follows the disk. A temp a dead writer stranded never
+ * reads back as a chunk: the opener ignores it and names it.
  */
 import { promises as fsp, mkdtempSync, existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -39,6 +40,25 @@ describe("atomicWriteFile (async)", () => {
 });
 
 const KEY = ["44u4T4NwgkkCoBdze4gyY8pFSNQC", "snapshot", "head0"];
+
+/**
+ * Hold every file sync in this process until `release`: a save then stands in flight, staged in its temp and not
+ * yet renamed. `staged` resolves when the first sync is reached.
+ */
+async function holdSync(): Promise<{ staged: Promise<void>; release: () => void }> {
+  const probeDir = mkdtempSync(join(tmpdir(), "lares-hold-"));
+  const probe = await fsp.open(join(probeDir, ".probe"), "w");
+  const proto = Object.getPrototypeOf(probe) as { sync: (this: unknown) => Promise<void> };
+  await probe.close();
+  rmSync(probeDir, { recursive: true, force: true });
+  const realSync = proto.sync;
+  let open!: () => void;
+  const gate = new Promise<void>((r) => { open = r; });
+  let reached!: () => void;
+  const staged = new Promise<void>((r) => { reached = r; });
+  proto.sync = async function (this: unknown): Promise<void> { reached(); await gate; return realSync.call(this); };
+  return { staged, release: () => { proto.sync = realSync; open(); } };
+}
 
 describe("DurableNodeFSStorageAdapter", () => {
 
@@ -81,6 +101,57 @@ describe("DurableNodeFSStorageAdapter", () => {
     const shard = join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot", "head0");
     expect([[1, 1], [2, 2, 2]]).toContainEqual([...readFileSync(shard)]);
     expect(readdirSync(join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot")).filter((n) => n.includes(".tmp"))).toHaveLength(0);
+  });
+
+  test("a save reads back while it is still in flight: load returns it and loadRange lists it", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    const held = await holdSync();
+    try {
+      const a = new DurableNodeFSStorageAdapter(dir);
+      const saving = a.save(KEY, Uint8Array.from([4, 4, 4, 4]));
+      await held.staged;
+      // The known positive: the chunk has NOT reached its name on disk, so only the adapter can answer.
+      const shard = join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot", "head0");
+      expect(existsSync(shard)).toBe(false);
+      const back = await a.load(KEY);
+      const listed = await a.loadRange([KEY[0]!]);
+      held.release();
+      await saving;
+      expect(back && [...back]).toEqual([4, 4, 4, 4]);
+      expect(listed.map((c) => ({ key: c.key, data: c.data && [...c.data] }))).toEqual([{ key: KEY, data: [4, 4, 4, 4] }]);
+    } finally { held.release(); rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("once a save settles the adapter holds nothing: load and loadRange follow the disk", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    try {
+      const a = new DurableNodeFSStorageAdapter(dir);
+      await a.save(KEY, Uint8Array.from([1, 1, 1]));
+      const back = await a.load(KEY);
+      expect(back && [...back]).toEqual([1, 1, 1]);                 // CONTROL: the settled save reads back
+      // Another holder of the store moves the chunk on disk; a held copy would answer the old bytes.
+      writeFileSync(join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot", "head0"), Uint8Array.from([8, 8]));
+      const after = await a.load(KEY);
+      expect(after && [...after]).toEqual([8, 8]);
+      const listed = await a.loadRange([KEY[0]!]);
+      expect(listed.map((c) => c.data && [...c.data])).toEqual([[8, 8]]);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("a remove while the key's save is in flight drops the held bytes", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-"));
+    const held = await holdSync();
+    try {
+      const a = new DurableNodeFSStorageAdapter(dir);
+      const saving = a.save(KEY, Uint8Array.from([6]));
+      await held.staged;
+      const before = await a.load(KEY);
+      expect(before && [...before]).toEqual([6]);                   // CONTROL: held while in flight
+      await a.remove(KEY);
+      expect(await a.load(KEY)).toBeUndefined();
+      held.release();
+      await saving;
+    } finally { held.release(); rmSync(dir, { recursive: true, force: true }); }
   });
 
   test("strands no temp file in the shard dir after a save", async () => {
