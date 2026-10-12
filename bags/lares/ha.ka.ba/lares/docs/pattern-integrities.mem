@@ -115,7 +115,7 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 * ''Usability stays unmeasured.'' No study found gives loss rates for share cards, hex-against-wordlist error rates, or the effect of a rehearsal; 43.4% of 643 respondents identified a seed phrase on sight (CHI 2025). Every object carries its purpose in plain words.
 * ''Anti-patterns, named:'' a card with no reader · a commitment armed, unrevealable and printed ARMED · one seed whose shares rebuild a governing key-set · a share handed to a peer by default · a backup named whole that holds one carrier · a spoken phrase taken for authentication · recovery as silent inheritance · a delay nobody watches · paper beside the node · a quorum counted in cards rather than in distinct, uncorrelated hands.
 * Named: KERI v1.0 (pre-rotation, partial rotation, first-seen) · KERIpy group identifiers · C2SP tlog-witness · Matrix SAS · ZRTP (RFC 6189) · TUF · SLIP-39 · Codex32 · SSKR · FROST (RFC 9591; key generation left out of scope) · Feldman and Pedersen VSS · Glacier · Sequoia revocation certificates (destroying trust runs cheap, restoring it dear) · did:plc · did:webvh witnesses · SPKI/SDSI threshold subjects (RFC 2693; no deployed recovery found).
-* ''Where the house stands:'' [[kahu|lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale]] holds the ruled civic shape (per-seat cold pre-rotation, Guardians recover the PERSON, the catastrophe rite), [[identity-classes|lar:///ha.ka.ba/lararium/mesh/identity-classes#/the-two-forks]] the layered recovery ruling, and [[field-collision|lar:///ha.ka.ba/lares/api/pono/field-collision]] the owed watchers. `lares nexus seal rotate` refuses a head armed with the reserve's commit by name (`reserve-armed`), because no verb carries a card into a rotation; `lares nexus seal reserve rehearse` reads two cards back under a scratch root, proves the rebuilt key-set against the charter head, and rolls nothing.
+* ''Where the house stands:'' [[kahu|lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale]] holds the ruled civic shape (per-seat cold pre-rotation, Guardians recover the PERSON; the catastrophe rite stands OPEN and unbuilt), [[identity-classes|lar:///ha.ka.ba/lararium/mesh/identity-classes#/the-two-forks]] the layered recovery ruling, and [[field-collision|lar:///ha.ka.ba/lares/api/pono/field-collision]] the owed watchers. `lares nexus seal rotate` refuses a head armed with the reserve's commit by name (`reserve-armed`), because no verb carries a card into a rotation; `lares nexus seal reserve rehearse` reads two cards back under a scratch root, proves the rebuilt key-set against the charter head, and rolls nothing.
 
 <<~/ahu>>
 
@@ -134,6 +134,6 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u7bNZ4-SPxC3wz7vSLtAyzgqg17roGf9wlA67gl_iss
+<<^ code="&#x0003;">>ni:///sha-256;boXUvhtRtrzb0SGseERwnvfLnoDgP8qL66s2IHFSJm8
 
 <<^ code="&#x0004;" -> to="?">>

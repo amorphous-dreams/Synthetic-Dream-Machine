@@ -54,7 +54,7 @@ Layer 2 — MemeSyncAdaptor (the wind)
 Layer 3 — nalu (the wave)
   wiki.nextTick() → wiki.refresh(changedTiddlers) fires atomically.
   All observers see the same changedTiddlers map in the same synchronous context.
-  No observer sees partial state. This is the nalu invariant.
+  Within one dispatch no observer sees partial state: the nalu invariant.
   See: lar:///ha.ka.ba/lares/api/pono/nalu
 
 Layer 4 — reaction-router (the shore)
@@ -169,6 +169,6 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gTXBoX_Yq0s2HqctkpvSQSD450Wl6ycqukDBDyNcE7s
+<<^ code="&#x0003;">>ni:///sha-256;Oj3nV_zitzymUrHJ4EFGz1S2tRTHvUolMjNojCu7C2g
 
 <<^ code="&#x0004;" -> to="?">>

@@ -215,7 +215,7 @@ The maintainer (the bounded repair hand of [[steward-doctrine|lar:///ha.ka.ba/la
 | ''recover-from-fork'' | re-anchor a forked island to a trusted line | weak-subjectivity CHECKPOINT — a guardian-signed re-genesis seed |
 | ''re-genesis'' | roll a Nexus whose quorum is lost, through its Guardians | the opt-in catastrophe rite — Guardian weight for rotation only + a contest window counted in witnessed receipts |
 
-Two verbs carry a sharp edge worth naming. ''evict'' runs forward-only — TreeKEM's blank-the-path removes //future// access (the evicted member keeps what it already read); pair it with the membership-stack [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] so the eviction shadows resurrection. ''re-genesis'' carries a ''CONTEST WINDOW by design'' — inside the catastrophe rite a Guardian threshold may roll a Nexus whose quorum is lost, but the window gives a legitimate seat holder a veto: a live seat key supersedes the rite while it stands open. The window counts WITNESSED RECEIPTS — a causal, monotone count — never time, since a veto window measured by a clock hands the race to whoever controls the clock (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). Without the window, the social-recovery path itself becomes the adversary's cleanest entry — designation must carry authority and fail loud, never recover silently.
+Two verbs carry a sharp edge worth naming. ''evict'' runs forward-only — TreeKEM's blank-the-path removes //future// access (the evicted member keeps what it already read); pair it with the membership-stack [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]] so the eviction shadows resurrection. ''re-genesis'' stands OPEN and unbuilt: at two seats, loss of a cold key ends that Nexus and the founders found a successor, and the open readings remain no catastrophe rite, or an opt-in charter-native rite with named witnesses and a specified veto (`kahu#/seed-and-nexus`). Neither reading governs recovery before a ruling. One standing law binds any contest window a ruling admits: it counts WITNESSED RECEIPTS — a causal, monotone count — never time, since a veto window measured by a clock hands the race to whoever controls the clock (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>). Without the window, the social-recovery path itself becomes the adversary's cleanest entry — designation must carry authority and fail loud, never recover silently.
 
 <<~/ahu>>
 
@@ -268,6 +268,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dQ7fQeQ5pVUsrOMTUS3EXSqmhzEJ76yahvdwU5Vqaa8
+<<^ code="&#x0003;">>ni:///sha-256;aT8iap2iPy6ouI1y-_M1ly89MRLAuTCMGFQIbvqykDo
 
 <<^ code="&#x0004;" -> to="?">>

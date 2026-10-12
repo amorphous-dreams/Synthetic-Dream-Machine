@@ -119,7 +119,7 @@ grow a verb per tiddler kind, and the store MUST NOT announce its shelf.
 
 ''The agent writes to the live layers; promotion stays the operator's act.''
 
-A `put` routes through the `bag-paths` cascade into `temp` / `draft` — never into
+A `put` routes through the `bag-paths` cascade into the wiki's live layers (`temp` · `draft` · `personal` · `working`) — never into
 `bags/{slug}` canon. Canon receives by the operator's MOVE alone
 (<<~ loulou "lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">>, shore law).
 
@@ -223,6 +223,6 @@ else moves first.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wKXXBWYJ4AX2_7fLXaTGxpAWKsUw1zVQHw8QmYvA9p8
+<<^ code="&#x0003;">>ni:///sha-256;_8sFApAbJKaYGIyjiR8zUKz0I7T34TS7iE9YHI3icrI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -93,9 +93,9 @@ Optional depth raises yield; it does not replace the minimum shape.
 
 |! level |! rate |! what moves it |
 | the authored grammar | ''fast'' — drifts with use | any author, any pour |
-| engines and plugins | ''slow'' — a rejim cadence | kahu action, never a single hand |
+| the engine | ''slow'' — a rejim cadence | the engine's own cadence threshold, never a single hand |
 
-''So a grammar may retire an address between pours'', while the engine and plugin that parse it retire on a cadence the kahu hold — and a reader that carried the old parse keeps reading correctly until the slower ratchet moves beneath it. The two rates ride the genesis artifact already (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>): a plugin change must never perturb the engine, and neither perturbs what an author wrote yesterday.
+''So a grammar may retire an address between pours'', while the engine that parses it ratchets on its own slower cadence and optional plugins travel as signed offerings a wiki recipe selects — and a reader that carried the old parse keeps reading correctly until the slower ratchet moves beneath it. The two rates ride the genesis artifact already (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>): a plugin change must never perturb the engine, and neither perturbs what an author wrote yesterday.
 
 <<~/ahu>>
 
@@ -172,6 +172,6 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dDo6NxQatUm0qr7YBb1z-ZkwlEbbnNeAEtRUx89u8-o
+<<^ code="&#x0003;">>ni:///sha-256;L9fu6UTHRicOFXdD1_XL1uqzksYcmCZLDcV93szqpv8
 
 <<^ code="&#x0004;" -> to="?">>

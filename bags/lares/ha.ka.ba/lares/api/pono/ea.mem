@@ -85,8 +85,8 @@ The courier (main thread, orchestrator, or peer) acts as a delivery surface only
 
 | Site | Vessel | Ea condition |
 |---|---|---|
-| Browser wiki island | `@lararium/browser` | Repo-in-island wired, rAF drain running, first frame ready |
-| Node wiki island | `@lararium/node` | Repo-in-island wired, setInterval drain running, initial tiddlers applied |
+| Browser wiki island | `@lararium/browser` | Repo-in-island wired, the landing queue draining on the worker's host task, first frame ready |
+| Node wiki island | `@lararium/node` | Repo-in-island wired, the landing queue draining on `setImmediate`, initial tiddlers applied |
 | Future: UEFN device | — | Own CRDT peer, own tick loop |
 | Future: mobile island | — | Own CRDT peer, own timing |
 
@@ -113,6 +113,6 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6mqKeYTYnPU4c-SHRXhAqY_-Hes_k7-Lmacp2ffk-SU
+<<^ code="&#x0003;">>ni:///sha-256;20B2f2Kuzj-niAoYOPFfdM4SrLF_qcBuyuPeGL-QWEU
 
 <<^ code="&#x0004;" -> to="?">>
