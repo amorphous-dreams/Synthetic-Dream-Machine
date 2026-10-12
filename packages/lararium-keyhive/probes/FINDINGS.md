@@ -315,3 +315,23 @@ secret. The content path: `tryEncrypt(docId, …).encryptedContent().toBytes()` 
 
 Every reading above matches what the same probe reads on 0.1.0-alpha.8, save the event count of the
 admission (16 public events there, 15 here).
+
+## Archive across versions (`archive-across-versions`)
+
+**NOT COMPATIBLE.** An Archive and an event carry no format tag; only an attempt answers. Offered the
+bytes `@keyhive/keyhive@0.1.0-alpha.8` wrote (`fixtures/alpha8-archive.fixture.json`, minted by
+`fixtures/mint-alpha8-archive.mjs`):
+
+| At-rest bytes from 0.1.0-alpha.8 | 0.3.0-alpha.1 answers |
+|---|---|
+| Archive (joinee and founder) | `new Archive(bytes)` REFUSES: `signature error: VerifyingKey must be 32 bytes in length` |
+| Public events (`eventsForAgent` bytes) | `ingestEventsBytes` REFUSES the batch with the same error; offered one at a time, 13 of 16 decode and wait pending on dependencies that never arrive, 3 refuse |
+| Sealed chunk (`Encrypted` bytes) | PARSES (its key is unreachable without the archive or the events) |
+| Contact card JSON | PARSES |
+
+Control: the pinned build mints, archives, restores and decrypts the same scenario by itself.
+
+So a keyhive version move is a re-founding for every vessel that holds keyhive state: the archive
+re-mints (`reMintOnUnreadableArchive`, the daemon boot's choice) and the persisted cap events rebuild
+nothing (`ingestTolerant` skips the ones that refuse; the rest never resolve), which leaves the same
+seed-named identity holding fresh prekeys and no membership.
