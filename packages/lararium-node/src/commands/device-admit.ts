@@ -18,12 +18,13 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
+import { isValidAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   leaseEpochPrefix, effectiveLeaseEpoch,
+  LARES_DOC_URI, LARARIUM_DOC_URI, oracleGenesisDocUrl, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
 import { larBootstrapPath } from "../vessel-paths.js";
@@ -72,6 +73,27 @@ export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive"
  */
 export function admitBoardIsland(ownVesselKey: string): string {
   return nodeNexusIsland({ ownVesselKey });
+}
+
+/** The oracle titles whose documents a joinee mounts as its hearth's base canon. */
+const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
+
+/**
+ * THE CANON DOCUMENTS THIS HEARTH NAMES TO A JOINEE — `@lares` and `@lararium`, by document url, as this
+ * vessel's own oracle holds them. They ride the carried admit so the joinee's gate widens by exactly these
+ * documents; the oracle plane itself (which also names this vessel's catalog, its daemon doc and its faces'
+ * planes) never crosses. A pointer the oracle lacks, or holds torn, goes unnamed. A read: a vessel whose
+ * store holds no oracle names nothing, and nothing gets minted here.
+ */
+export async function admitCanonDocs(repo: Repo): Promise<Readonly<Record<string, string>>> {
+  let oracle: LarDoc | undefined;
+  try { oracle = (await repo.find<LarDoc>(oracleGenesisDocUrl())).doc(); } catch { return {}; }
+  const named: Record<string, string> = {};
+  for (const title of HEARTH_CANON_TITLES) {
+    const url = tiddlerText(oracle?.tiddlers?.[title]);
+    if (url && isValidAutomergeUrl(url)) named[title] = url;
+  }
+  return named;
 }
 
 export interface DeviceAdmitOptions {
@@ -280,6 +302,9 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const carried: CarriedAdmitPayload = {
     ...payload,
     hearthGatePubKey: founderVesselKey.toLowerCase(),
+    // THE CANON THIS HEARTH NAMES: the documents the joinee's wiki reads, by url. Its gate opens these and
+    // keeps the oracle plane shut (`admitCanonDocs`).
+    hearthCanonDocs: await admitCanonDocs(repo),
     ...(founderIdentity.kind !== "torn" ? {
       hearthIslandKind:  founderIdentity.kind,
       hearthIslandScope: founderIdentity.scope,

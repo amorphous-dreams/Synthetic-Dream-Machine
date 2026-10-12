@@ -1,6 +1,6 @@
 /**
  * device-admit fragment — the `#admit=` line encodes the CARRIED form, so a taking browser reads the hearth's
- * gate key and its resolved island kind and scope beside the signed payload. The extras ride by spread AFTER
+ * gate key, the canon documents it names and its resolved island kind and scope beside the signed payload. The extras ride by spread AFTER
  * signing, so the bytes the signature covers (the payload fields) arrive unchanged inside the fragment.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -12,7 +12,8 @@ const payload = {
   hearthTrueName: "synthetic-hearth", deviceEdge: { joinee: "ab".repeat(32) },
 };
 const signed = { ...payload, signature: "" };
-const carried = { ...signed, hearthGatePubKey: "cd".repeat(32), hearthIslandKind: "own", hearthIslandScope: "cd".repeat(32) };
+const CANON = { "lar:///ha.ka.ba/bags/lares": "automerge:synthetic-lares", "lar:///ha.ka.ba/bags/lararium": "automerge:synthetic-lararium" };
+const carried = { ...signed, hearthGatePubKey: "cd".repeat(32), hearthCanonDocs: CANON, hearthIslandKind: "own", hearthIslandScope: "cd".repeat(32) };
 
 vi.mock("../src/store-door.js", () => ({ storeVerb: async () => ({ output: { payload: mockPayload, carried: mockCarried } }) }));
 let mockPayload: unknown = signed;
@@ -42,14 +43,18 @@ describe("device-admit fragment", () => {
     expect(got["hearthIslandScope"]).toBe(carried.hearthIslandScope);
   });
 
+  test("carries the canon documents the hearth names, whole", async () => {
+    expect(decode(await fragmentOf())["hearthCanonDocs"]).toEqual(CANON);
+  });
+
   test("CONTROL: the signed payload inside still verifies over the bytes it covers", async () => {
     const pub = await ed.getPublicKeyAsync(seed);
     const covered = new TextEncoder().encode(JSON.stringify(payload));
     const sig = Buffer.from(await ed.signAsync(covered, seed)).toString("hex");
     mockPayload = { ...payload, signature: sig };
-    mockCarried = { ...(mockPayload as object), hearthGatePubKey: carried.hearthGatePubKey, hearthIslandKind: "own", hearthIslandScope: carried.hearthIslandScope };
+    mockCarried = { ...(mockPayload as object), hearthGatePubKey: carried.hearthGatePubKey, hearthCanonDocs: CANON, hearthIslandKind: "own", hearthIslandScope: carried.hearthIslandScope };
     const got = decode(await fragmentOf());
-    const { signature, hearthGatePubKey: _g, hearthIslandKind: _k, hearthIslandScope: _s, ...rest } = got;
+    const { signature, hearthGatePubKey: _g, hearthCanonDocs: _c, hearthIslandKind: _k, hearthIslandScope: _s, ...rest } = got;
     expect(await ed.verifyAsync(Buffer.from(String(signature), "hex"), new TextEncoder().encode(JSON.stringify(rest)), pub)).toBe(true);
   });
 });

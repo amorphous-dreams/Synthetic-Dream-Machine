@@ -42,7 +42,7 @@ export async function cmdDeviceAdmit(args: ParsedArgs): Promise<number> {
     process.stdout.write(json + "\n");
   }
 
-  // The CARRIED form — the signed payload PLUS the hearth's gate key and its resolved island kind and scope,
+  // The CARRIED form — the signed payload PLUS the hearth's gate key, the canon documents it names and its resolved island kind and scope,
   // which ride by spread after the signature and so never enter the signed bytes. A taking browser refuses a
   // fragment without the island, so the fragment encodes `carried`, never the bare `payload`. The payload is a signed capability, so it needs no trusted channel and no
   // reachable issuer: a hostile carrier may WITHHOLD it, never forge it. It rides in the URL FRAGMENT,

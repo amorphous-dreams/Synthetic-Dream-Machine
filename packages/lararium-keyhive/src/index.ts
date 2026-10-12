@@ -162,11 +162,11 @@ export interface DeviceAdmitPayload {
 }
 
 /**
- * The payload as CARRIED: `DeviceAdmitPayload` plus the hearth's gate key (the dial's binding) and the
- * founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed founder's joinee seats
+ * The payload as CARRIED: `DeviceAdmitPayload` plus the hearth's gate key (the dial's binding), the canon
+ * documents that hearth names to the joinee, and the founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed founder's joinee seats
  * where the founder actually stood rather than where its raw vessel key falls.
  *
- * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these three fields are added
+ * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these fields are added
  * by object-spread AFTER the ceremony signature is computed (both the node CLI's `runDeviceAdmit` and the
  * browser's admit-apply path add them post-signing), so they never enter the SIGNED byte image
  * (`delegationProofBytes`, device-delegation.ts). Widening the base interface would blur that boundary —
@@ -179,6 +179,10 @@ export interface DeviceAdmitPayload {
  */
 export type CarriedAdmitPayload = DeviceAdmitPayload & {
   readonly hearthGatePubKey?: string;
+  /** The hearth's base-canon documents the joinee mounts, keyed by canon bag URI (`bags/lares`,
+   *  `bags/lararium`) and valued by document url. The joinee's gate widens by exactly these documents when it
+   *  dials this hearth; the hearth's oracle plane never crosses to it. */
+  readonly hearthCanonDocs?: Readonly<Record<string, string>>;
   /** How the founder's island resolved at admit time — never `torn` (a torn founder refuses before
    *  minting: `admitBoardIsland`/`nodeNexusStanding` throws). Absent on an older payload; a reader
    *  without it falls back to the pre-existing anchor-by-gate-key behavior, unchanged for `own`/`anchor`
