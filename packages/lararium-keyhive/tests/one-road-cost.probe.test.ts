@@ -116,6 +116,7 @@ describe("one-road-cost — the fleet-gather's per-dyad price, measured", () => 
         : "fleet-gather MAY call the road per-dyad at this scale — re-measure at fleet width before trusting it wider",
     };
     writeFileSync(VERDICT_PATH, JSON.stringify(verdict, null, 2) + "\n");
+    console.log(`[one-road-cost] verdict written: ${VERDICT_PATH}`);
 
     // The LOOSE ceiling — a regression tripwire. A healthy road sits far under both lines.
     expect(per1).toBeLessThan(CEILING_SINGLE_MS);
