@@ -223,6 +223,14 @@ dials on the hosting act, each a count and none a clock: open introductions per 
 allowance for a trusted guest, and strangers' introductions held. An introduction the operator answers
 arrives signed; a pre-answered allowance stays blind; the operator's own invite carries no bound.
 
+''A FACE CLAIMS ITS OWN HANDLE; THE NEXUS ANSWERS FOR ITS OWN TABLE.'' A Handle binds by the face's own
+announce and takes no quorum and no permission: a gate on the claim would stand as a registry
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">>). A Nexus's public DNS
+domain presents the Handles seated at that Nexus through the Nexus's own steward-signed answer; that
+answer speaks for the Nexus's table and grants no name. The quorum removes, by kapae, and never names.
+Whoever holds the domain's DNS credential decides what the zone says, so the domain acts as its
+keeper's hand, never as a consensus.
+
 ''GUARDIANS STAY OPTIONAL AND PER FACE.'' Every face starts one-of-one self. No guardian key ever serves
 two faces, and a guardian set recovers a face's key lineage, never its memory
 (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
@@ -240,7 +248,6 @@ Each item below stands unruled. Nothing in code decides one.
 * ''Paper.'' The format (SLIP-39 · Codex32 · a house format), and whether a cold-key card names its Nexus or its commitment. Until ruled, a card prints its purpose, its chair label and its generation only.
 * ''The backup bundle.'' What it holds and which verb imports it. A bundle per face keeps faces unlinked on the backup medium.
 * ''The catastrophe rite and any third key.'' Options: no rite · an opt-in, charter-native seat-recovery rite with named witnesses · an outsider's third cold key. At alpha no rite stands, and LOSS AT ALPHA governs.
-* ''A Handle's binding to a Nexus's public DNS domain.'' Whether that binding takes the Nexus's Kahu-quorum signature. Options: yes · no. Lean: yes, matching one steward-signed answer per Nexus.
 * ''How a per-Nexus face key gets minted.'' Two carriers disagree: `face-proof#/the-key-hierarchy` mints it at random on the root-holding vessel, while #/nexus-scale and `packages/lararium-node/src/nexus-leaf.ts` derive a Nexus-scope leaf from the persona seed.
 
 !!! The surface ~ where each part reads
@@ -518,6 +525,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q_QNzqcpfKnfA-xWL8UVB5G2-Pqo9QvCkao2gdogzMY
+<<^ code="&#x0003;">>ni:///sha-256;tthgFBTRDVXTilG9FcJMlebSqLlp3omvC53pdM54B2Y
 
 <<^ code="&#x0004;" -> to="?">>

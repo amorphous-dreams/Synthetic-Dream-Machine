@@ -259,7 +259,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 # ''A root-holding browser leaf's backup slot.'' A WebCrypto non-extractable slot allows no paper backup in-browser; does "a backup at every tier" require such a leaf to hold a paper or passphrase slot too? Lean: yes for a leaf holding a persona root; a floor-only leaf holds no tree.
 # ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never becomes. The lenses split; re-opening W needs the operator's turned key.
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
-# ''The Kahu's DNS domain and credential home.'' Name the domain and the store for its DNS credential.
+# ''The DNS credential's home.'' The first Nexuses' public domains stand named by their keeper; the store that holds the registrar's DNS credential stays unnamed.
 # ''The fork-resolve act's shape.'' The seal record holds one predecessor.
 # ''The re-seal proof.'' Name the causal record that maps old ciphertext to its replacement.
 
@@ -284,6 +284,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s3Fpj5HcwYDY6yaM1hG0mZLbbPJNS8fEbRTSM2LdhcE
+<<^ code="&#x0003;">>ni:///sha-256;E097sKKVJl4zq84FIgyq0jlNbIWqbq7ifJFvD_mafJA
 
 <<^ code="&#x0004;" -> to="?">>
