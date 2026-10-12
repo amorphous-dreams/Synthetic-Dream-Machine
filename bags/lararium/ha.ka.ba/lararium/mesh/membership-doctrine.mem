@@ -219,22 +219,12 @@ subject stamp's nexus-scoped leaf and the gate's shape stand at
 
 !! The invite ~ a hosted grant the guest carries, burned by its host, about no one
 
-''HOSPITALITY RIDES A HEARTH'' (operator-ruled). A hearth that carries a Nexus HOSTS walkers in it. The
-hearth publishes a ''hosting act'' on its own HOSTING DOC in the Nexus, one doc per (Nexus, hearth gate
-key) (`hosting-act`): its own per-Nexus leaf signs the Nexus, its hosting public key, its hand-out cap and
-the act before it. The act's CID names the EPOCH. No hearth picks a random epoch id, because a fresh id per
-walker would tag each one. A walker computes the doc from what its invite names — the Nexus and the gate key
-it pins — so every walker of one hearth reads the one doc, and the Nexus's carriers replicate it for the
-cross-check. The act grants nothing and names only the hearth. One key per act derives from the leaf seed
-and the act's link (`hosting-key`), with no counter.
-
-''A USER INTRODUCES; AN OPERATOR ADMITS'' (operator ruling, 2026-10-11; quote license: //"Approve the story leans; a user introduces, an operator admits."//).
+''A USER INTRODUCES; AN OPERATOR ADMITS'' (operator-ruled; quote license: //"Approve the story leans; a user introduces, an operator admits."//).
 An invited user puts a friend forward as a SIGNED ACT that the hearth's operator sees and answers. Only an operator admits, and
 nobody arrives at a hearth by transitivity: a friend of a guest stands nowhere until the operator's own answer. It follows from the
 order a rhizome grows in, where a Lararium stands before its operator invites anyone
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>). ▢ ''OWED'': the code as it stands lets a
-walker-minted invite vest into a guest's standing at the host's next roll with no operator answer (below); the introduction act, the
-operator's answer to it, and the door that shows an operator what waits stand unbuilt. ''The answer consumes the introduction'' (operator-ruled): no introduction's signature outlives the operator's answer, so no record chains who invited whom.
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>).
+''The answer consumes the introduction'' (operator-ruled): no introduction's signature outlives the operator's answer, so no record chains who invited whom.
 
 ''THE USER ROAD'S BOUND RIDES THREE DIALS'' (operator-ruled). A guest may ask for one friend at a time, and the
 hearth's operator answers. The operator may pre-answer for a trusted guest. The hearth holds no stranger's
@@ -256,15 +246,33 @@ pre-answered allowance, no stranger's introduction. //More open//: several open 
 household's choice, with the pre-answered allowance in use. //Public//: a small count of strangers'
 introductions held.
 
+''THE BUILT ALLOWANCE READS AS THE PRE-ANSWERED DIAL.'' Of the three dials the code carries one. `allowance`
+(`packages/lararium-mesh/src/hosting.ts`) grants a lineage opened on the hearth's own invite `min(1 + rolls survived, cap)`
+invites per hosting epoch; a lineage opened on a walker's invite counts one roll fewer and holds zero until the
+hearth's next roll. The cap rides the hosting act: `lares host roll --cap <n>` names it, a roll with no `--cap` keeps
+the standing cap, and a first roll takes `DEFAULT_HOSTING_CAP`, three (`packages/lararium-node/src/hosting-store.ts`).
+The hearth's own `lares host invite` mints with no count check (`packages/lararium-node/src/commands/host.ts`).
+
 ▢ ''OWED'': the signed introduction act, the operator's answer and the door that shows what waits; the re-cut of
-the guest-invite path, so a guest's token buys a knock unless the operator pre-answered
-(`packages/lararium-node/src/socket-sorter.ts`); the three dials on the hosting act, where only the allowance
-cap stands (`lares host roll --cap`); a design for the strangers' dial that resists flooding with no clock.
+the walker-invite path, where a `walker-invite` token earns a grant at the gate with no operator answer and its
+budget vests by a roll alone (`packages/lararium-node/src/socket-sorter.ts`), so that a guest's token buys a knock
+unless the operator pre-answered; the two other dials on the hosting act, which carries the allowance cap alone;
+a design for the strangers' dial that resists flooding with no clock; which session's face signs a hearth's
+standing hosting act, and how that act stands on after its signing session ends; how a standing hearth dial binds
+to the session whose face it walks as.
+
+''HOSPITALITY RIDES A HEARTH'' (operator-ruled). A hearth that carries a Nexus HOSTS walkers in it. The
+hearth publishes a ''hosting act'' on its own HOSTING DOC in the Nexus, one doc per (Nexus, hearth gate
+key) (`hosting-act`): its own per-Nexus leaf signs the Nexus, its hosting public key, its hand-out cap and
+the act before it. The act's CID names the EPOCH. No hearth picks a random epoch id, because a fresh id per
+walker would tag each one. A walker computes the doc from what its invite names — the Nexus and the gate key
+it pins — so every walker of one hearth reads the one doc, and the Nexus's carriers replicate it for the
+cross-check. The act grants nothing and names only the hearth. One key per act derives from the leaf seed
+and the act's link (`hosting-key`), with no counter.
 
 ''THE WORN FACE HOSTS'' (operator-ruled). The per-Nexus leaf of the WORN face signs the act — the same face its walks present. No roster
-order picks anything, and with no face worn no one gets hosted. ⚠ The session ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>)
-names the wearer as a SESSION, never the vessel. Which session's face signs a hearth's standing hosting act, and how that act stands on
-after the session that signed it ends, stands OWED and unruled; the code as it stands reads one vessel-wide worn face. ''ROOT-ON-FOUNDER'' keeps a face on one hosting store, and
+order picks anything, and with no face worn no one gets hosted. The session ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>)
+names the wearer as a SESSION, never the vessel. The code reads one vessel-wide worn face; the session's part stands OWED (above). ''ROOT-ON-FOUNDER'' keeps a face on one hosting store, and
 the first roll guards it: before its first act in a Nexus, a roll reads the hosting doc, and an act this face
 signed there that no local state holds refuses the roll aloud and writes nothing. A face hosting from two
 places surfaces; nothing detects it beyond that read.
@@ -297,8 +305,8 @@ spent-set and every grant outside the two live epochs dies with no list to walk.
 ''THE WALLET FILLS AT ONCE, AND IT VESTS'' (operator-ruled). A walker on a grant mints its whole allowance
 for the epoch in ONE blind batch, never one invite on demand, because mint time would link. A HOST-minted
 invite grants its guest floor 1 at once. A WALKER-minted invite gives a budget that vests only at the
-host's NEXT roll, so a chain grows at most one hop per roll. ⚠ Under the ruling above a walker's invite INTRODUCES and the
-operator's answer admits; vesting by a roll alone admits a guest's friend with no such answer, and stands OWED a re-cut. The purpose label separates the two, and it
+host's NEXT roll, so a chain grows at most one hop per roll. The walker class's vesting by a roll alone
+stands OWED a re-cut (above). The purpose label separates the two, and it
 never identifies the minting walker. One burn marker per lineage per epoch keeps the digest of the batch,
 so a retry finds its marker and burns nothing new. Every fill drops the wallet's tokens from any epoch the
 host does not hold live, and a hand-out takes the newest, so a walker never hands out a dead invite.
@@ -313,8 +321,7 @@ no restart; with no vessel standing, the CLI runs the same door and owns the sto
 ''A NODE MAY WALK'' (operator-ruled). The sorter sorts by PROVEN RELATION, never by device type, so a node
 vessel holding a grant sorts as a walker exactly like a browser leaf. Walking grants it no carry duty and
 leaves its own household seed untouched. A walker stands as a person, so it walks as a WORN face:
-no roster order picks anything, and with no face worn it walks nowhere. ⚠ A session wears that face, never the vessel (#/two-maps, clause 5); how a
-standing hearth dial binds to the session whose face it walks as stands OWED with the hosting act above. A node keeps its walk with
+no roster order picks anything, and with no face worn it walks nowhere. A session wears that face, never the vessel (#/two-maps, clause 5). A node keeps its walk with
 three verbs: `lares walk` (where it walks, its standing there, its wallet's count), `lares walk take`
 (keep a carried invite; the vessel's hearth dial walks in on it) and `lares walk invite` (hand out the
 newest invite). A node carries none of its own documents at a hearth: it serves as its own durable store.
@@ -329,7 +336,7 @@ compartments outrank admission control.
 
 ''TWO LIMITS, NAMED.'' The ''one-hearth equivocation bound'': in a seed or any island with one hearth the hearth relays its
 own hosting doc, so nothing detects a forked hosting act until a second carrier holds the doc. The
-''social-inference limit'': in a small household the count, the timing and who is in the room can tell the
+''social-inference limit'': in a small household the count, the timing and who stands in the room can tell the
 host whose invite came in. The cryptography removes the record. It cannot remove what the host can see.
 
 ''WHAT WAITS FOR THE RE-FOUND.'' A per-Nexus wire key (one gate key serves every Nexus a hearth
@@ -476,6 +483,8 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
@@ -488,6 +497,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ri4xiR_K5toi1VT5u2Ht-He1j8YksLwg8VTtg-Asjxw
+<<^ code="&#x0003;">>ni:///sha-256;Bnkn2H0qKLCezSk3zlFGsUBxhOP_cj_2FgKIQlzVoYw
 
 <<^ code="&#x0004;" -> to="?">>

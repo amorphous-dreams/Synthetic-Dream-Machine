@@ -67,16 +67,11 @@ The cures and the witness stand committed beside this carrier.
 
 <<~ ahu #/plan-face-join>>
 
-!! Plan — `face-join` re-grants the bindings minted before the seat
+!! Face-join re-grant ~ the binding reuse road stands
 
-''Measured.'' A pinned-but-unseated face mints its wiki binding on the vessel's own key: `KeyhiveProvider.knowsAgent()` (`packages/lararium-keyhive/src/keyhive-provider.ts:599`) + `faceSeated` route the mint, the record carries `face-reach = "vessel-only"` (`resolve-binding.ts:156`), the daemon logs `face … pinned, not yet seated — bindings mint vessel-only until a face-join lands`. Witness: `packages/lararium-keyhive/tests/face-pinned-not-seated.test.ts`. A later `runFaceJoin` (`packages/lararium-keyhive/src/face-join.ts:197`) re-grants `daemonAuth.registerBags` and never re-delegates those earlier bindings. The joinee-side gap reads wider: no CLI verb, no daemon verb and no doc-relay path lands a later face-join grant ON THE JOINEE — the grant returns to the founder's caller; `capEvents` ingest at founding alone, through `vessel found --admit`.
+''Measured.'' A pinned-but-unseated face mints its wiki binding on the vessel's own key; the record carries `face-reach = "vessel-only"` (`packages/lararium-keyhive/src/resolve-binding.ts:156-169`). On reuse after the face seats, `resolveOrMintBinding` restores the Keyhive registration, re-delegates the binding and rewrites `face-reach = "face"` (`resolve-binding.ts:115-121, 177-222`). The focused witness lives in `packages/lararium-keyhive/tests/face-pinned-not-seated.test.ts` (V3).
 
-''The plan.''
-# Keyhive unit red in `face-pinned-not-seated.test.ts`: reuse-on-present with a record reading `face-reach = "vessel-only"` and `faceSeated()` true → re-delegate through `delegateToFace` and rewrite the record to `face-reach = "face"` (the spelling the records already carry — invent none).
-# Implement in the `resolve-binding.ts` reuse path. The vessel stands admin of a doc it minted, so the re-delegation itself needs no founder signature.
-# The two-vessel e2e (`tests/e2e/meme-two-vessel-bag.test.ts`, 11/11) gains one step, held as a loud `test.fails` until a joinee-side ingestion door exists: after B's face-join, B's wiki binding reads `face-reach = "face"` and a `meme put --recipe lares` on B lands under the face, not the vessel key.
-
-''The fork this plan cannot close alone.'' A door that carries a later grant to the joinee — a daemon verb the founder's caller invokes, or a doc the joinee watches. Which one reads pono against <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">> stands as the founding session's call.
+The founder writes a signed face-join grant record on the PersonaGroup plane (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:608-635`). The joinee's kit reads and verifies that record, takes the seat and re-grants its vessel-only binding on reuse (`:160-205`; `resolve-binding.ts:115-121,177-222`). The two-vessel e2e witnesses that path (`tests/e2e/meme-two-vessel-bag.test.ts:258-295`). Grant verification checks the persona KEL's genesis against the pinned root, then checks the founder's edge against the KEL head and the current lease epoch (`packages/lararium-keyhive/src/face-grant-record.ts`).
 
 <<~/ahu>>
 
@@ -99,10 +94,19 @@ The cures and the witness stand committed beside this carrier.
 
 !! Forks the founding session holds
 
-# ''The joinee's grant door'' — CLOSED 2026-09-11: a signed record on the PersonaGroup plane (`face-grant-record.ts`); the joinee's own kit takes the seat against the published seal; reading never re-cuts. Witnessed `meme-two-vessel-bag` ⑨ (`c3bcab741`). Owed: verify walks the pinned root DID, not the KEL head.
+# ''The joinee's grant door'' — CLOSED 2026-09-11: a signed record on the PersonaGroup plane (`face-grant-record.ts`); the joinee's own kit takes the seat against the published seal; reading never re-cuts. Witnessed `meme-two-vessel-bag` ⑨ (`c3bcab741`). The verify binds the KEL's genesis to the pinned root and walks the founder's edge under the KEL head.
 # ''Where a relation-carried bag registers'' — CLOSED 2026-09-11: the realm's shared CRDT; `@crossroads` names only that the bag exists and who keeps it; read at CONTRACT. The brief stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>; registration itself waits a build.
 # ''`device-share` at founding'' — mint the recovery device share at `vessel found` (and turn the witness red on purpose), or hold it for the recovery-keel pass. Decides whether a sealed vessel carries a recovery leg from day one.
 # ''Which stand reads the seal'' — keep the waking-floor stand (a public shelf with no sovereign acts) as the honest answer to a missing passphrase, or refuse the stand outright. Today the floor stands and the cure only forbids the clobber.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 
 <<~/ahu>>
 
@@ -114,6 +118,6 @@ No moʻolelo closes here. The cures stand green under their witnesses and uncomm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8xQaOqmC0oidiT5slsp7mSoaZ73u1PREX7479oCPZ78
+<<^ code="&#x0003;">>ni:///sha-256;kG6oBA8NrbmvM9pig-ikCQyXpWBa8B1avuQEj0unbhk
 
 <<^ code="&#x0004;" -> to="?">>

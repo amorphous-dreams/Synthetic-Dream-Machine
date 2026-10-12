@@ -271,6 +271,22 @@ cross-vault countersign and no cold-key card stand.
 
 <<~/ahu>>
 
+<<~ ahu #/nexus-lifecycle>>
+
+!! The Nexus lifecycle ~ born by act, lives by traffic, quiet by absence
+
+A Nexus names vessels syncing across ley lines. Liveness reads off the traffic itself; nobody declares or grants it. Nobody dissolves a Nexus; it goes quiet. A cabal realm cools to anu without deletion (`cabal-realm`); a standing lift expires without a lowering act (`lararium-canonical-model`). ''The correct admin capability here reads as NONE.''
+
+<<~ has Stage Birth "verb/nexus-seal-seat admin/none ~ a founding act seats keys in a genesis charter">>
+<<~ has Stage Advance "verb/nexus-seal-rotate admin/none ~ revealed key-set matches the prior pre-commitment">>
+<<~ has Stage Succession "verb/nexus-seal-rotate admin/none ~ the roster becomes exactly what stands">>
+<<~ has Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
+<<~ has Stage Quiet "verb/none admin/none ~ absence of traffic; no dissolution act">>
+
+Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''Owed in code'': `seal rotate` seats the vault personas that stood for a chair and reveals no per-seat cold key; a reserve-armed head refuses rotation, and no verb carries a reserve card into a roll (`packages/lares-cli/src/commands/nexus-seal.ts`).
+
+<<~/ahu>>
+
 <<~ ahu #/nexus-scale>>
 
 !! The Nexus scale ~ a kahu quorum holds admit, kapae and seal
@@ -514,6 +530,8 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
@@ -525,6 +543,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tthgFBTRDVXTilG9FcJMlebSqLlp3omvC53pdM54B2Y
+<<^ code="&#x0003;">>ni:///sha-256;s7b8cKlg5tpp5fSlkpfL9zjc_gZHANtIYE9XaaBZdrU
 
 <<^ code="&#x0004;" -> to="?">>

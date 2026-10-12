@@ -220,9 +220,11 @@ fingerprint:  "${fingerprintHex}"
 recipe-trace: { wikiDocId, libraryBagDocIds }  # optional audit field, for diff/inspection
 minted-on:    "2026-05-31T20:00:00Z"
 minted-by:    "<vesselIndividualHex>"
+face-reach:   "vessel-only" | "face"
+keyhive-doc-id: "<Keyhive DocumentId>"
 ```
 
-The text field carries the authoritative docUrl. The `kind` field tags the tiddler for filter queries (`[kind[personal-binding]]` returns all). The `fingerprint` field duplicates the title suffix for filter convenience. The `recipe-trace` field stores the inputs that produced the fingerprint — operator-facing diagnostic when a binding's recipe context needs inspection. The `minted-on` + `minted-by` fields support audit of which device first instantiated the binding.
+The text field carries the authoritative docUrl. The `kind` field tags the tiddler for filter queries (`[kind[personal-binding]]` returns all). The `fingerprint` field duplicates the title suffix for filter convenience. The `recipe-trace` field stores the inputs that produced the fingerprint — operator-facing diagnostic when a binding's recipe context needs inspection. The `minted-on` + `minted-by` fields support audit of which device first instantiated the binding. `face-reach` records `vessel-only` or `face`. `keyhive-doc-id` holds the Keyhive DocumentId; a later process restores the provider's bag-to-document registration from this value before reusing the binding.
 
 !!! Per-fingerprint pair, not per-bag
 
@@ -353,7 +355,7 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 ''Mint-on-absent.'' First device to boot a vessel into a recipe-fingerprint mints fresh `@personal` and `@draft` Automerge docs, delegates each to the operator's PersonaGroup, writes the bindings.
 
-''Reuse-on-present.'' Subsequent device boots into the same fingerprint read the binding tiddlers from the admin doc and mount the existing Automerge docs.
+''Reuse-on-present.'' Subsequent boots read the binding tiddlers and mount the existing Automerge docs. When a vessel-only binding finds a seated face, reuse restores its Keyhive registration from `keyhive-doc-id`, re-delegates it to the face and rewrites `face-reach` to `face`. If that re-grant lacks `keyhive-doc-id`, `BindingRegistrationRefusal` refuses the boot and tells the operator to "perform a fresh start by hand because no compatibility reader can guess its document identity".
 
 ''Never-delete.'' Operator view state carries durability — `$:/StoryList`, `$:/state/folded/*`, `$:/state/tab-*`, and `$:/palette` represent the operator's actual viewing history per recipe. Bindings persist indefinitely; the operator's view state across all recipes they have ever opened stays recoverable.
 
@@ -482,13 +484,17 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lares/api/keyhive/persona-group">>
+<<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer">> ~ aligns slot addresses with the face working-layer rule
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/keyhive/persona-group">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/memory-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
 ''Tie ~ palettes as casual register.'' A per-operator overlay (palette, view-state) reads as the CASUAL
@@ -497,6 +503,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vfVRy9L97r_YWgOsgGOKPv8luRQj6XyHUqib4NpU8zI
+<<^ code="&#x0003;">>ni:///sha-256;KJhNNYBIPlLoe1LnHIqe2A8BI8GVlnUalMLdr8D50Lg
 
 <<^ code="&#x0004;" -> to="?">>

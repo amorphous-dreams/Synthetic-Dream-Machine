@@ -130,13 +130,13 @@ Columns: capability · status per engine (Chromium / WebKit / Gecko) · the quot
 
 !! Device seats ~ what each stands as under the 2026 field
 
-The house names four standings a device may hold: a ''full vessel'' (islands, CAS, keys, an inbound gate), a ''leaf'' ("a laptop browser, a phone, a tablet. Each stands as a LEAF, CONTRACTED" — <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>, `:1123`; "BIND BY EDGE, NEVER BY SEED", `first-realm-arc.mem:61`), a ''herm'' (the relay that carries and never reads), and a ''probe'' (a surface that reads a seat it never holds). One capability decides each.
+The house names four standings a device may hold: a ''full vessel'' (islands, CAS, keys, an inbound gate), a ''leaf'' (a laptop browser, a phone or a tablet, each joined through its own device key and a signed delegation edge — <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/gather-the-fleet">>; "BIND BY EDGE, NEVER BY SEED", <<~ loulou "lar:///ha.ka.ba/lararium/mesh/first-realm-arc#/the-arc">>), a ''herm'' (the relay that carries and never reads), and a ''probe'' (a surface that reads a seat it never holds). One capability decides each.
 
 | seat | stands as | the deciding capability | what it can honestly promise (2026-09-11) |
 |---|---|---|---|
 | ''phone — iOS 26'' | a ''leaf'', contracted; a full vessel only after Home Screen install | the secure context (`secure-context-gate.ts:5-7`: "A family phone reaching a home node at `http://192.168.1.x` gets neither") → the DNS-01 wildcard path (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context#/why-dns-01">>) | OPFS + Ed25519 + module workers + WebGPU + WebTransport (26.4) + PRF (26.4); NO push, NO durable storage, NO SharedWorker lifetime guarantees until installed ("every website added to the Home Screen opens as a web app", 2025-09-15); NO peripherals ever |
 | ''phone — Android 16 (Chrome 149)'' | a ''leaf''; a full vessel as a WebAPK | the same secure-context wall; SharedWorker returned in 148 (2026-05) | everything iOS grants plus Web Push without install, Storage Buckets, Web Serial (148), SharedWorker; Firefox-on-Android lacks WebCodecs and WebGPU |
-| ''tablet'' | a ''leaf'' that may stand a household's ''waking floor'' ("a tablet left on a shelf … becomes the household's sync-node the day somebody needs one", `waking-floor.mem:148`) | Home Screen install (the seven-day exemption) + `persist()` | the phone's promises with a screen the canvas field names as the retreat from the phone (`canvas-field-scout.mem:365`); never an inbound socket — "a browser cannot listen on a socket" (`open-browser-vessel.ts:9-10`) |
+| ''tablet'' | a ''leaf'' that may stand a household's ''waking floor'' ("a tablet left on a shelf … becomes the household's sync-node the day somebody needs one", `waking-floor.mem:148`) | Home Screen install (the seven-day exemption) + `persist()`; a plain tab on one measured tablet met a `storage.persist()` refusal, so an uninstalled tab keeps evictable storage (#/measured-tablet) | the phone's promises with a screen the canvas field names as the retreat from the phone (`canvas-field-scout.mem:365`); never an inbound socket — "a browser cannot listen on a socket" (`open-browser-vessel.ts:9-10`) |
 | ''desktop browser'' | a ''leaf'' on every engine; a ''full vessel minus the inbound gate'' | `crossOriginIsolated` unused; Web Locks (Baseline 2022) decides one holder per origin | OPFS sync handles in the island worker (all three engines) · Web Locks · WebGPU (Safari 26+, Firefox Windows/macOS) · WebTransport · PRF; a user-visible folder on Chromium alone |
 | ''node'' | the ''full vessel'' and the ''herm'' | the inbound gate: UDS `/tmp/lares-<uid>/<digest>.sock` (`packages/lararium-node/src/uds-channel.ts:56,171-173`), the WS relay + `DaemonAuthGate` (`open-node-vessel.ts:360-362`), Socket B (`:567-572`), `worker_threads` islands (`worker-handle.ts:6,28`), the nodefs Repo (`open-node-vessel.ts:26,360`) | the human-visible `bags/` / `wikis/` projection; hardware; the waking floor; the only seat that may hold a reach credential ("A browser vessel holds NO reach credential … a node in the fleet holds", `blob-carriage.mem:172`) |
 | ''Mudlet 5.0'' | a ''probe'' and a ''leaf behind a node'' — never a vessel | transport: telnet only ("Mudlet does not yet support Websockets", wiki 2020-03-27, unchanged in the 5.0 notes); HTTPS verbs (`getHTTP` … `customHTTP`, `downloadFile`) outbound only | a Lua object-model guest (`wiki-layer-ontology.mem:249`) that reads a projection over HTTP from a node's bulb read-face (`tiddler-carriage.mem:80`) and writes through a node-held verb door; 5.0's keychain-held reconnect token rhymes with a device key it never mints itself |
@@ -193,6 +193,20 @@ Ranked substrate → face → gatherings (GROUNDS BEFORE WINS); none enacted her
 
 <<~/ahu>>
 
+<<~ ahu #/measured-tablet>>
+
+!! One device-class measurement ~ Android tablet, Chrome, and bounded claims
+
+These measurements cover one 16 GB Android 16 tablet on Chrome 153, read by `tools/capability-probe/`. They name one device class, never a platform guarantee.
+
+The probe grants classic and module SharedWorker; two tabs share one instance, which survives a screen lock. WASM memory grows to 1 GiB. Automerge round-trips in a worker. OPFS sync access handles work in a dedicated worker alone. IndexedDB works in page, SharedWorker and dedicated worker contexts. WebCrypto grants Ed25519, X25519, HKDF and AES-GCM; a non-extractable key persists in IndexedDB. `Sec-WebSocket-Protocol` carries 8192 payload bytes as unpadded base64url; 16 MiB frames pass. Custom elements, popover, dialog and file picker work.
+
+`storage.persist()` refuses in a plain tab, so storage stays evictable. A platform authenticator advertises `extension:prf`; the PRF derivation itself remains unmeasured. Chrome sends a desktop user-agent string from this tablet; never branch on UA.
+
+Owed measurements: owner-kill, one-tab lock fallback, long background, PRF derivation, eviction over days and further device classes.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -218,12 +232,13 @@ Ranked substrate → face → gatherings (GROUNDS BEFORE WINS); none enacted her
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/first-realm-arc">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;br6Neyy9IUMpcb4U0DrjbpAVKgYwX7QuLb3OV_Zr2w0
+<<^ code="&#x0003;">>ni:///sha-256;L0XnvqgMeAc7aIdEY8qE-k21k_SAMksWmukrNpL-up0
 
 <<^ code="&#x0004;" -> to="?">>

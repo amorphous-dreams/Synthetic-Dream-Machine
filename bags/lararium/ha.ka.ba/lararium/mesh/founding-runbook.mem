@@ -113,7 +113,7 @@ HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 
 !! 5 · Found the first node
 
-The shim's founding order lights the face before `up`: found, create persona zero, wear persona zero, then bring the vessel up. `persona new` takes the credential route on the attached terminal. A persona's private label, optional public Handle, and private chair label each ride their own argument.
+The shim's founding order lights the face before `up`: found, create persona zero, wear persona zero, then bring the vessel up. `persona new` takes the credential route on the attached terminal. A persona's private label, optional public Handle, and private chair label each ride their own argument. A seat claim needs no Handle; `--chair` labels the seat privately and rides only beside `--seat`. `persona new` splits no root by default; `--split-root` arms the 2-of-3 memory split.
 
 ''Do'': on the first operator's machine, replace the synthetic values and run each line in order.
 
@@ -155,7 +155,7 @@ mv "$LARES_STATE/vault.sealed" /path/to/offline-custody/vault.sealed
 
 The seed's seat holds its own key and commits its own cold next key, which rests on paper off the machine.
 
-▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal reserve`, `seal seat`, and `seal show`: it forges a shared reserve seed and prints three reserve cards. No verb rolls a charter from those cards, and a household treats them as inert.
+▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal reserve`, `seal seat`, and `seal show`; it forges a shared reserve seed and prints three reserve cards that name generation and quorum. No verb carries a card into a rotation. `seal rotate` refuses a reserve-armed head as `reserve-armed` and refuses to arm a roll with the reserve's commit as `reserve-commit-unrevealable` (`packages/lares-cli/src/commands/nexus-seal.ts`).
 
 The credential prompts need the attached terminal. Keep the archive passphrase separate from the archive file. The export backs up the keyhive archive alone. Make a separate, consistent backup of the full state mount, including its custody slots and relation carriers.
 
@@ -169,11 +169,11 @@ The credential prompts need the attached terminal. Keep the archive passphrase s
 
 !! Recovery cards and the guardian signing boundary
 
-`persona new` prints NO recovery material by default. `persona new <index> --name '<label>' --split-root` arms the opt-in memory split, prints a recorded code and an escrow carrier, and prints its own warning about shares. The reserve cards restore no charter; the reserve rehearsal verb reads two SYNTHETIC cards back under a scratch root. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. Reserve cards restore no charter. `lares nexus seal reserve rehearse --card-a <code> --card-b <code>` reads two reserve cards under a scratch root, proves the rebuilt key-set against the charter head's pre-commitment, writes nothing and rolls nothing. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
 `persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. The persona-KEL threshold-attest core accepts independent guardian signatures; this founding supplies no guardian-enrollment command. `identity-classes.mem` tracks that unfinished path.
 
-▢ ''OWED — reserve-backed charter rotation.'' `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
+▢ ''OWED — reserve-backed charter rotation.'' The cold-key rite at #/reserve holds the reserve-backed rotation ruling. `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
 ''Do'': compare each physical or offline copy with the CLI's printed destination instructions, then confirm an independent second location.
 
@@ -313,18 +313,28 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+!!! The founding and custody surface ~ where each part reads
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">> seed and Nexus readings, quorum admission and open rulings
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">> Nexus life stages, succession, liveness and quiet
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">> hosted introductions, admission and three bound dials
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> identity classes and their promotion paths
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">> persona custody, guardians and face rules
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">> personal slot bindings and Keyhive registration
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> face-join re-grants, joinee doors and remaining forks
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> wiki layers, working writes and canon promotion
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">> recovery custody evidence, reserve rehearsal and open work
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> host boundary, vessel shim and household reach
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure origins and browser custody boundaries
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> founding acts, order and household road
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">> vessel command doors and host shim surface
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> browser capability measurements and device limits
 <<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Fc-WOt7JLKPCZTToYA3GRx1drjyGbTx14CHlXXOizCg
+<<^ code="&#x0003;">>ni:///sha-256;iUlkfv4olZQIUMZG9rDSJCajXpfDHtwjEXOMHDUqA3c
 
 <<^ code="&#x0004;" -> to="?">>

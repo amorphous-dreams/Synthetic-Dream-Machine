@@ -205,7 +205,7 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 !!! How it stands
 
-The recipe holds no gap. `expandRecipe` mints the same five slots for every slug, `daemon` included; at open the draft, working and personal slots ''prune for want of a handle'' because the vessel grants the daemon `islandUrl`, `wikiUrl` and `catalogUrl` alone. The daemon's own behavior then LATE-ATTACHES `wikis/daemon/working` (`attachDaemonWorking`, `packages/lararium-keyhive/src/operator-daemon-behavior.ts`) as the default writable, so the write layer leaves the daemon's OWN bag behind (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>, `#/as-mounted`). On a node the working layer projects to `wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors` ← `daemonWorkingMirror`, mounted by `node-daemon-island.ts`'s `onBoot`; witness `packages/lararium-node/tests/daemon-working-mirror.test.ts`), while `bags/daemon` carries no mirror.
+The daemon recipe expands the ordinary slots, then `attachDaemonWorking` resolves, registers and attaches `wikis/daemon/working` as its default writable (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:252-284`; `packages/lararium-mesh/src/wiki-recipe.ts:330-343`). A successful attachment establishes the working layer; an attachment failure throws `WorkingLayerAttachRefusal` and stops that boot path. The daemon working layer projects to `wikis/daemon/` (`open-daemon-vm.ts`, `node-daemon-island.ts`); `bags/daemon` remains distinct from that writable layer (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/as-mounted">>). A hand's delete of a canon-landed title writes an ordinary title-only tombstone into the working layer. Without a working layer, `UnroutedSaveRefusal` reaches the alert rail; the title remains owed and the wiki stays as the hand left it (`packages/lararium-tw5/src/island-adaptor.ts` `_tombstoneBag`).
 
 !!! What closing it must respect
 
@@ -215,7 +215,7 @@ The recipe holds no gap. `expandRecipe` mints the same five slots for every slug
 
 ''THE MINT CONFERS THE HOLD.'' `registerBag` generates the document and its generator holds admin by construction, so a faceless binding names no doc nobody holds — the ''vessel'' holds it, exactly the posture the daemon bag has always stood in. Where a face stands, the same doc delegates to the PersonaGroup on top: ''operator and vessel compose their caps over every critical doc'', and neither one preconditions the other. A Herm resolves its own bindings and can stand a `@daemon` wiki for a lamplighter to reach.
 
-''Wiring remains, never authority.'' The vessel builds the daemon VM's grants before the VM hosting the resolver exists, so its own working layer arrives by a LATE ATTACH — `addLayer(layer, at)` splices into a live cascade and fans projections to the arriving layer, and needs no face to run. ⚠ ''The fail-closed boot window still MUST NOT move'' to make the attach earlier than it stands.
+The archive floor precedes the working-layer attach; the fail-closed boot window MUST NOT move to attach the layer earlier. The daemon attach requires daemon auth and Keyhive. Its refusal propagates through the boot path.
 
 ''The mirror already tells the two coordinates apart.'' `resolveDiskMirrors` resolves a `wikiSlot` designation (working → `wikis/{slug}`) separately from a `selfCanon` one (`bags/{slug}`), so the daemon's working layer reaches disk while the bag beneath it does not — which matters, because that bag carries verb tiddlers, outcomes, flows and binding records, and mirroring it would put the control plane on the operator's tracked tree. Designate one and not the other; nothing owes a new mechanism.
 
@@ -245,13 +245,13 @@ Every boundary a lararium holds reads as a ''causal-island shore'' (`causal-isla
 
 <<~ ahu #/alpha-transition>>
 
-!! The Alpha Transition — why the tree does not yet wear the shore (operator, 2026-09-13)
+!! The Alpha Transition — why the tree does not wear the shore
 
-#shore-law rules the working↔canon crossing and #quine rules that ''no wiki writes into its own canon''. The tree enacts neither today. A reader who meets `bags/` before meeting this section reads the alpha practice as the law, and that misreading has cost this house days of re-derivation. This section names the gap so the next hand spends none.
+#shore-law rules the working↔canon crossing and #quine rules that ''no wiki writes into its own canon''. The tree enacts neither: the alpha practice edits canon carriers in place. A reader who meets `bags/` before this section reads the alpha practice as the law; this section names the gap.
 
-!!! `bags/` survives because the substrate gets thrown away
+!!! `bags/` holds the fresh-vessel seed
 
-A founding paves the vessel substrate whole and `bags/` stands outside the cut: `<lares>/vessel` ''re-forges from `bags/`'', correct to lose because a rite re-makes it from the carriers on disk (`founding-runbook#/fresh-state`). So through the alpha disk genuinely holds the surviving copy, and a hand edits carriers in place, re-stamps them and commits them (`canon-boundary#/the-promotion-boundary`, which reads the corpus the same way). ''That names a property of a substrate under repeated refounding, never a property of `bags/`.'' Under the designed model the doc persists and disk projects from it, and the survivorship argument falls away with the disposability that grounds it.
+`bags/` holds the git-tracked carriers a fresh vessel seeds from, beside committed `genesis/` (`founding-runbook#/fresh-state`). No existing CRDT document needs to survive a re-found. Through the alpha, a hand edits carriers in place, re-stamps them and commits them (`canon-boundary#/the-promotion-boundary`). ''That names a property of an alpha in which no CRDT document needs to survive, never a property of `bags/`.'' Under the designed model the document persists and disk projects from it.
 
 !!! Three roles ride `bags/`; exactly one retires
 
@@ -267,11 +267,11 @@ A founding paves the vessel substrate whole and `bags/` stands outside the cut: 
 
 !!! The carriers already standing stay put
 
-Every `.mem` carrier in `bags/` today (701 at this writing) sits at a hostless address, ''which names the completed END of a promotion rather than a violation of one'' — `canon-boundary#/the-promotion-boundary` reads a hostless address in a canon bag exactly that way. ''Nothing migrates.'' The corpus keeps its bytes, its addresses and its git history; the transition changes the door a future edit walks through, never where a standing carrier lives. No corpus witness sees a changed byte on account of this ruling.
+Every git-tracked `.mem` carrier in `bags/` sits at a hostless address, ''which names the completed END of a promotion rather than a violation of one'' — `canon-boundary#/the-promotion-boundary` reads a hostless address in a canon bag exactly that way. ''Nothing migrates.'' The corpus keeps its bytes, its addresses and its git history; the transition changes the door a future edit walks through, never where a standing carrier lives. No corpus witness sees a changed byte on account of this ruling.
 
 !!! The window carries the risk, never the destination
 
-The habit and the design disagree while the move runs, and ''every instrument sides with the habit'': the vessel grants literal disk mirrors on `bags/lares` and `bags/lararium`, the ingest gate weighs a disk read against the last-projected hash to decide noop / ingest / conflict (`synced-tree`), and the working surface — the `wikis` mirror root standing beside `bags` under the same worker root — holds nothing on disk yet. A weld that refuses hand edits to `bags/` therefore refuses the very work that carries the house across.
+The habit and the design disagree while the move runs, and ''every instrument sides with the habit'': the vessel grants literal disk mirrors on `bags/lares` and `bags/lararium`, the ingest gate weighs a disk read against the last-projected hash to decide noop / ingest / conflict (`synced-tree`), and the working surface uses the `wikis` mirror root beside `bags` under the same worker root. A weld that refuses hand edits to `bags/` therefore refuses the very work that carries the house across.
 
 ''ORDERING: the hand-edit weld lands LAST and stays silent throughout.'' The standing carriers keep their hand-edit door until the working surface stands and the promotion `MOVE` runs; arming that weld earlier stops the transition rather than guarding it.
 
@@ -328,6 +328,7 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — defines floor projection and corpus residency
@@ -342,6 +343,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QMbGQS_5aFdUHDM7fJS6mR_IbSw_1NC1YnnZmnXTRAY
+<<^ code="&#x0003;">>ni:///sha-256;0d1BJROrgmacadHKClW-TunOEETHRFzaslewdtZdN-U
 
 <<^ code="&#x0004;" -> to="?">>
