@@ -10,6 +10,7 @@
 import { describe, test, expect } from "vitest";
 import { verbFailure, DaemonUnreachable, refusalCode, refusalHint } from "../src/verb-call.js";
 import { LocalWaitExpired } from "../src/local-connector.js";
+import { exitFor } from "../src/render.js";
 
 describe("verbFailure — fault told apart by type (M3)", () => {
   test("LocalWaitExpired → outcome-unknown, carrying the request id", () => {
@@ -46,6 +47,16 @@ describe("an interrupted request reads its own code and cure", () => {
     expect(refusalCode("interrupted")).toBe("request-interrupted");
     expect(refusalHint("request-interrupted", "cid-1")).toContain("--change-id cid-1");
     expect(refusalHint("request-interrupted", "cid-1")).toContain("may have landed in part");
+  });
+  test("a reactor's named refusals map to their own codes, and bag-retired names its cure", () => {
+    expect(refusalCode("bag-retired")).toBe("bag-retired");
+    expect(refusalCode("cap-denied")).toBe("cap-denied");
+    expect(refusalCode("crossing-outward")).toBe("crossing-outward");
+    expect(refusalHint("bag-retired", undefined)).toContain("lares act CREATE --bag <bag>");
+    expect(refusalHint("bag-retired", undefined)).toContain("DROPped");
+    expect(exitFor("bag-retired")).toBe(2);
+    expect(exitFor("crossing-outward")).toBe(5);
+    expect(exitFor("cap-denied")).toBe(5);
   });
   test("CONTROL: an unrecognized reason still falls to verb-error", () => {
     expect(refusalCode("some-future-reason")).toBe("verb-error");

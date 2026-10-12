@@ -74,6 +74,11 @@ export interface VerbFailure {
  *   receipt-fact-torn                      → receipt-fact-torn (the 6-family) — the ledger's own
  *                                             fact for this id is unreadable (a torn tiddler the
  *                                             channel refuses to arbitrate over); mint a fresh id.
+ *   bag-retired                            → bag-retired (2) — the bag was DROPped and takes no writes;
+ *                                             CREATE stands a fresh one.
+ *   cap-denied                             → cap-denied (5) — the caller's cap does not reach the bag.
+ *   crossing-outward                       → crossing-outward (5) — the crossing relaxes confinement
+ *                                             and wants the kahu quorum.
  *
  * An unrecognized reason (a future server-side addition this build predates) falls to `verb-error`
  * rather than crashing or silently inventing a code — the additive contract means an older CLI
@@ -86,6 +91,9 @@ export function refusalCode(reason: string): string {
     case "request-id-reused-with-changed-input":  return "request-id-reused";
     case "retention-gap":                        return "retention-gap";
     case "receipt-fact-torn":                    return "receipt-fact-torn";
+    case "bag-retired":                          return "bag-retired";
+    case "cap-denied":                           return "cap-denied";
+    case "crossing-outward":                     return "crossing-outward";
     default:                                     return "verb-error";
   }
 }
@@ -130,6 +138,8 @@ export function refusalHint(code: string, changeId: string | undefined): string 
       return "this change's record was evicted; mint a fresh `--change-id` to run it as a new change.";
     case "receipt-fact-torn":
       return "this request's own ledger record is unreadable (a torn tiddler) — mint a fresh request (a flagless re-run does it).";
+    case "bag-retired":
+      return "the bag was DROPped and takes no writes; `lares act CREATE --bag <bag>` stands a fresh one.";
     default:
       return undefined;
   }

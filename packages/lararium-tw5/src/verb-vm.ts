@@ -10,7 +10,7 @@
 import type { BatchMode, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
 import {
   DAEMON_BAG_ID, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
-  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest,
+  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal,
 } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
 
@@ -235,7 +235,12 @@ export async function dispatchVerb(
     const result = await run();
     await writeOutcome(daemon, { invocation, status: "done", result });
   } catch (err) {
-    await writeOutcome(daemon, { invocation, status: "error", errorMessage: errorText(err) });
+    await writeOutcome(daemon, {
+      invocation, status: "error", errorMessage: errorText(err),
+      // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
+      // failure carries none.
+      ...(isVerbRefusal(err) && { refusal: err.reason }),
+    });
   }
 
   removeVerb(tw5, invocation.title);

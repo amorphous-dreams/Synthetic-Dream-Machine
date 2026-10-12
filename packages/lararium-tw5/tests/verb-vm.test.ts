@@ -1,4 +1,5 @@
 import { describe, test, expect } from "vitest";
+import { VerbRefusal } from "@lararium/mesh";
 import type { CompositeStore, Verb, LarTiddlerRecord } from "@lararium/mesh";
 import {
   OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest,
@@ -222,6 +223,25 @@ describe("verb-vm", () => {
     expect(daemon.writes).toHaveLength(1);
     expect(daemon.writes[0]?.tiddler.status).toBe("error");
     expect(daemon.writes[0]?.tiddler["error-message"]).toBe("boom");
+  });
+
+  test("a reactor that throws a VerbRefusal concludes with its machine reason; a plain Error carries none", async () => {
+    const conclude = async (thrown: Error): Promise<Record<string, unknown>> => {
+      const tw5 = new FakeTW5Engine();
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-refusal", title: `${VERB_URI_PREFIX}req-refusal` });
+      tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+      await dispatchVerb(tw5 as never, daemon as unknown as CompositeStore, invocation, async () => { throw thrown; });
+      return daemon.writes[0]!.tiddler as Record<string, unknown>;
+    };
+    const refused = await conclude(new VerbRefusal("bag-retired", "bag-retired: CLEAR of x refused"));
+    expect(refused["status"]).toBe("error");
+    expect(refused["refusal"]).toBe("bag-retired");
+    expect(refused["error-message"]).toBe("bag-retired: CLEAR of x refused");
+    // CONTROL: a plain Error stamps no reason, even when its prose names one.
+    const plain = await conclude(new Error("bag-retired: CLEAR of x refused"));
+    expect(plain["status"]).toBe("error");
+    expect(plain["refusal"]).toBeUndefined();
   });
 
   // ── digest-on-outcome + the effect index (D1, P2.5 iter 4) ─────────────────────────────────

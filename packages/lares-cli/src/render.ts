@@ -91,6 +91,11 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // `abandoned` verdict and a retention-evicted one. The cure is a fresh request id, never a retry
   // under the torn one.
   "receipt-fact-torn": 6,
+  // The USAGE family (2): the bag was DROPped and takes no writes, so the cure is a different
+  // request (CREATE a fresh bag), never a fault in the act's own handler.
+  "bag-retired":       2,
+  // The cap-denied family (5): the crossing relaxes confinement and wants the kahu quorum.
+  "crossing-outward":  5,
   error:               1,
 };
 

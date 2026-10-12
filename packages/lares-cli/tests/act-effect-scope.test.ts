@@ -236,6 +236,18 @@ describe("K2, P2.5 iteration 7 — the SYNCHRONOUS (live) refusal carries the SA
     expect(payload.error.hint).toContain("fresh request");
   });
 
+  test("a live bag-retired refusal reads its own code, exit 2 and the CREATE cure", async () => {
+    h.reply = { status: "error", requestId: "r", errorMessage: "bag-retired: CLEAR of x refused", refusal: { reason: "bag-retired" } };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+    spy.mockRestore();
+    expect(code).toBe(2);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
+    expect(payload.error.code).toBe("bag-retired");
+    expect(payload.error.hint).toContain("lares act CREATE --bag");
+  });
+
   test("MUTATION: a verb-error refusal carries no hint field — the shared helper never invents one", async () => {
     h.reply = { status: "error", requestId: "r", errorMessage: "boom" };
     const cap: string[] = [];
