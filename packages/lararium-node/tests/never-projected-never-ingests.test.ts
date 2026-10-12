@@ -31,10 +31,18 @@ function rig() {
   composite.addLayer({ bagId: BAG, store, writable: true, defaultWritable: true });
   const table = new VerbTable();
   registerActionReactors(table, { composite });
-  const ingest = async (carriers: Array<{ uri: string; file: string; text: string }>): Promise<Array<Record<string, unknown>>> => {
+  const ingest = async (
+    carriers: Array<{ uri: string; file: string; text: string; meta?: string; skinny?: { cid: string } }>,
+    deletions: Array<{ uri: string; syncedHash: string }> = [],
+  ): Promise<Array<Record<string, unknown>>> => {
     const args = {
       "source-uri": "file:///mirror", "to-bag": BAG, "change-id": "chg-never-projected",
-      carriers: carriers.map((c) => ({ uri: c.uri, file: c.file, text: c.text, diskHash: sha(c.text), syncedHash: null })),
+      carriers: carriers.map((c) => ({
+        uri: c.uri, file: c.file, diskHash: sha(c.text), syncedHash: null,
+        ...(c.skinny ? { textCid: c.skinny.cid, skinny: true, size: c.text.length } : { text: c.text }),
+        ...(c.meta !== undefined ? { meta: c.meta } : {}),
+      })),
+      ...(deletions.length > 0 ? { deletions } : {}),
     };
     const invocation: Verb = {
       requestId: "req-never-projected", title: "lar:///lararium.local.vm/verbs/req-never-projected",
@@ -86,6 +94,38 @@ describe("a path whose records never project out never ingests in", () => {
       expect((await r.store.listVisible()).filter((title) => neverProjects(title))).toEqual([]);
     });
   }
+
+  test("a renamed file never re-homes a record onto a never-projected address", async () => {
+    const r = rig();
+    const text = carrierText(ORDINARY, "! ordinary body");
+    await r.ingest([{ uri: ORDINARY, file: "wikis/daemon/ha.ka.ba/lares/docs/an-ordinary-carrier.mem", text }]);
+    expect((await r.store.get(ORDINARY))?.tiddler.title).toBe(ORDINARY);
+    const forged = FORGED[0]!;
+    // The same bytes vanish from the ordinary path and appear at the forged one: the wave reads as a rename.
+    const rows = await r.ingest([{ uri: forged.uri, file: forged.file, text }], [{ uri: ORDINARY, syncedHash: sha(text) }]);
+    expect(rows.find((row) => row["uri"] === forged.uri)).toMatchObject({ decision: "refuse", code: "never-projected-path" });
+    expect(rows.some((row) => row["decision"] === "rename"), "no re-link ran").toBe(false);
+    expect(await r.store.get(forged.uri), "no record stands at the forged address").toBeNull();
+  });
+
+  test("a pointer carrier whose sidecar declares disk-projection no refuses before its handle lands", async () => {
+    const r = rig();
+    const uri = "lar:///ha.ka.ba/lares/docs/a-large-shard";
+    const rows = await r.ingest([{ uri, file: "wikis/daemon/ha.ka.ba/lares/docs/a-large-shard.bin", text: "x".repeat(64), meta: "title: a-large-shard\ndisk-projection: no\n", skinny: { cid: "bafkreitestcid" } }]);
+    expect(rows[0]).toMatchObject({ decision: "refuse", code: "never-projected-path" });
+    expect(await r.store.get(uri)).toBeNull();
+  });
+
+  test("a vanished file's deletion never tombstones a record no file ever stood for", async () => {
+    const r = rig();
+    const receipt = buildReceiptFact({ requestId: "kept", state: "committed", seq: 0, inputDigest: "d" });
+    await r.composite.put(receipt, { kind: "lares-verb", requestId: "kept" });
+    const parent = RECEIPT_FACT_URI_PREFIX.replace(/\/$/, "");
+    await r.ingest([], [{ uri: parent, syncedHash: sha("gone") }]);
+    const kept = await r.store.get(receipt.tiddler.title);
+    expect(kept?.meta?.deleted, "the receipt fact stands live").not.toBe(true);
+    expect(kept?.tiddler.title).toBe(receipt.tiddler.title);
+  });
 
   test("a file at an ordinary address whose own fields declare disk-projection no refuses the same way", async () => {
     const r = rig();

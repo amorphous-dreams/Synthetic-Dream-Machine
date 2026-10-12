@@ -832,6 +832,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (carrier.skinny && carrier.textCid) {
       const title = carrier.title;
       if (!title) throw new Error("LOAD: a skinny carrier needs a title (its loci URI) — the handle names the body");
+      if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       const cid = carrier.textCid;
       landings.push(async () => {
         await landSkinnyHandle(access, action.toBag, title, cid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
@@ -846,6 +847,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // (never OOM the doc), provided it names a cid to point at and carries no memetic wrapper.
     if (carrier.textCid && !CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length) && carrier.title) {
       const title = carrier.title, cid = carrier.textCid;
+      if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       landings.push(async () => {
         await landSkinnyHandle(access, action.toBag, title, cid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
         titles.push(title);
@@ -933,6 +935,11 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
  * `IngestOps`); the refuse leg fires only where a family grades error (memetic), riding
  * dormant for native (a native deserialize throws rather than grading).
  */
+/** True when a carrier's `.meta` sidecar text declares the per-record disk opt-out (`disk-projection: no`). */
+function declaresNoProjection(meta: string | undefined): boolean {
+  return meta !== undefined && /^disk-projection:[ \t]*no[ \t]*$/m.test(meta);
+}
+
 /** The per-carrier answer for a file whose ingest would write a record that never projects to disk. */
 function neverProjectedRow(uri: string, file: string | undefined, title: string): Record<string, unknown> {
   const refusal = new NeverProjectedPathRefusal(file ?? uri, title);
@@ -971,6 +978,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     } else {
       renames = decision.renames;
       tombstoneUris = decision.tombstones;
+      // A re-link never re-homes a record onto an address whose records never project: that carrier falls to
+      // the gate below and refuses by name, and its vanished source stands as it stood.
+      renames = renames.filter((r) => !neverProjects(r.toUri));
       for (const r of renames) renameTargets.add(r.toUri);
     }
   }
@@ -993,7 +1003,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       continue;
     }
     const uri = carrier.uri;
-    if (neverProjects(uri)) {
+    if (neverProjects(uri) || declaresNoProjection(carrier.meta)) {
       results.push(neverProjectedRow(uri, carrier.file, uri));
       continue;
     }
@@ -1326,6 +1336,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     const live = await listLiveTitlesInBag(access, action.toBag);
     let relinked = 0;
     for (const t of groupOf(live, fromUri)) {
+      if (neverProjects(t)) continue;
       const rec = await readFromBag(access, action.toBag, t);
       if (!rec) continue;
       const newTitle = toUri + t.slice(fromUri.length);
@@ -1351,7 +1362,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   const tombstonedCarriers: string[] = [];
   for (const uri of tombstoneUris) {
     const live = await listLiveTitlesInBag(access, action.toBag);
-    const group = groupOf(live, uri);
+    // A file's deletion never reaches a record that no file ever stood for.
+    const group = groupOf(live, uri).filter((t) => !neverProjects(t));
     for (const t of group) await tombstoneIn(access, action.toBag, t, o);
     results.push({ uri, decision: "tombstone", removed: group.length });
     tombstonedCarriers.push(uri);
