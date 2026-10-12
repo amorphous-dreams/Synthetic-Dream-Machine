@@ -835,14 +835,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   /**
    * THE ONE AFTER-WRITE HOOK — every `store-door-verbs` row that lands a board or a practice joint (a host
    * roll, a kapae/un_kapae, a contract/revoke/carry/uncarry, a posture flip, a taken admit bundle) fires this
-   * when its write counts, and so does a reconnect on either socket after a partition. It keeps what the
-   * retired `nexus-refresh` verb did, minus the step that verb's own existence made necessary: a board write
-   * no longer lands through a SECOND opener beside the standing vessel's Repo (every door row now takes the
-   * ONE held Repo, direct from `open-node-vessel.ts` or `owned-store.ts` — `direct-repo-witness.sh`), so there
-   * is no disk-cold state to merge back in. What remains is re-folding the live holders off what the held
-   * Repo already carries (a same-process write landed in it directly; a remote peer's write already arrived by
-   * CRDT sync): re-fold the antigen and the membership leaf map, re-stand a realm freshly imported, re-verdict
-   * the Repo's cached share answers for every peer, and re-derive this vessel's own dial presentation.
+   * when its write counts, and so does a reconnect on either socket after a partition. Every door row takes
+   * the ONE held Repo, direct from `open-node-vessel.ts` or `owned-store.ts` (`direct-repo-witness.sh`), so no
+   * disk-cold state waits to merge in. The hook re-folds the live holders off what the held Repo already
+   * carries (a same-process write landed in it directly; a remote peer's write arrived by CRDT sync): it
+   * re-folds the antigen and the membership leaf map, re-stands a realm freshly imported, re-verdicts the
+   * Repo's cached share answers for every peer, and re-derives this vessel's own dial presentation.
    * `nexusAid` names the hosting doc a host-roll just opened; every other caller passes nothing.
    *
    * H2 — AWAITED, SERIALIZED, AND TRUTHFUL (never fire-and-forget). Every caller (`store-door-verbs`'s
@@ -2183,9 +2181,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
     // THE STORE'S DOOR TABLE — `lares host`, `lares walk`, `lares nexus kapae/posture/admit-take`, and every other
     // store-touching verb run here while this vessel stands, against the Repo its peers sync and the walk
     // records its walk client writes, so a roll reaches its walkers with no restart and no second Repo ever
-    // writes beside this one. `afterRoll` is the one after-write hook every row that lands a board or a
-    // practice joint fires; the retired `nexus-refresh` verb's whole body lives inside it now (`afterRoll`,
-    // above), reached by the rows instead of by a standalone CLI-dialed verb.
+    // writes beside this one. `afterRoll` (above) is the one after-write hook every row that lands a board or a
+    // practice joint fires; the rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo,
       dialGate: () => joinGatePubKey?.toLowerCase() ?? null,

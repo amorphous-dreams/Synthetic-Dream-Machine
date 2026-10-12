@@ -9,7 +9,7 @@
  * THE REALM DOC. Its id DERIVES from the charter both stewards hold: the GENESIS epoch of the seal lineage
  * (the inception, fixed across every rotation — the realm's NAME), so every member computes one address from
  * the charter alone and no registry has to be consulted to find it (`realmDocUrl`). Every vessel that stands
- * in the charter materializes it at boot and on `nexus refresh`; a vessel that never held the charter never
+ * in the charter materializes it at boot and on its after-write refold; a vessel that never held the charter never
  * names it.
  *
  * THE REGISTRATION RECORD (`REALM_BAG_DOMAIN`, minted in the registry): `{ realmId, bagUri, docUrl, keptBy, readTier }`, signed by
