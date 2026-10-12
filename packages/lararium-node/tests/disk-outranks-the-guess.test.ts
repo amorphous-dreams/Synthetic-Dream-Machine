@@ -10,7 +10,7 @@
  * and the body returned `key-absent` (and `no-seal-expected`) off the config marker + the env var
  * BEFORE any carrier was opened. Reading the disk first settles both seams at once:
  *
- *   S3  a cleared vessel (`rm -rf <lares>/identity` + `vessel clear --force`) keeps `sealExpected`
+ *   S3  an empty vessel store with its identity home removed keeps `sealExpected`
  *       while no carrier stands. The guess said `key-absent` — a FALSE floor. The disk says
  *       `nothing-sealed`, `opens: true`, and the vessel lights its hearth.
  *   S2b a vessel the BOOT sealed carries `sealExpected: false` beside sealed bytes, so the guess
@@ -70,7 +70,7 @@ describe("CURE 2 — the disk outranks the guess", () => {
   });
 
   // ── RED 1 · S3 — the survived marker over an EMPTY disk ─────────────────────────────────────────
-  // `vessel clear --force` does not remove `sealExpected` (founding-runbook §regenesis-live), and
+  // creating an empty vessel store leaves `sealExpected` in the separate identity home, and
   // `rm -rf <lares>/identity` removes every carrier. The guess read a sealed vessel with no key and
   // stood the vessel at a floor nothing on disk justified.
   test("RED — `sealExpected` + NO carrier + no env var reads `nothing-sealed`, and the vessel opens", () => {

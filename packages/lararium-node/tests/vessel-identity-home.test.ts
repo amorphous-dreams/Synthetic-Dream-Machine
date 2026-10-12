@@ -1,5 +1,5 @@
 /**
- * M1 — the identity home resolves in the SPIRITS' house (reset-safe), the ONE resolver. No migration
+ * M1 — the identity home resolves in the SPIRITS' house, the ONE resolver. No migration
  * arm and no second spelling: an empty home re-derives a fresh device key.
  */
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync } from "node:fs";

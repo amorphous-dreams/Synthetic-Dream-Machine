@@ -48,7 +48,7 @@ describe("★ the observe cap never triggers a rebuild ★", () => {
     // CONTROL: the real founding/booting subs STILL build — the gate withholds nothing it was built for.
     expect(needsFreshBuild(args({}, ["stand"]))).toBe(true);
     expect(needsFreshBuild(args({}, ["found"]))).toBe(true);
-    expect(needsFreshBuild(args({}, ["rite"]))).toBe(true);                    // founding/rebuild/rebirth run real logic
+    expect(needsFreshBuild(args({}, ["rite"]))).toBe(true);                    // founding and rebuild run real logic
   });
 
   test("a verb outside the vessel door never reaches the gate at all", () => {

@@ -43,7 +43,7 @@ describe("★ the gate reads the socket before the tree ★", () => {
   });
 
   test("CONTROL: a restart, and every verb that founds or boots regardless of what answers, never asks the socket", async () => {
-    for (const [flags, sub] of [[{ restart: true }, "stand"], [{}, "found"], [{}, "clear"], [{}, "bake"]] as const) {
+    for (const [flags, sub] of [[{ restart: true }, "stand"], [{}, "found"], [{}, "rite"]] as const) {
       const d = deps(true, true);
       expect(await freshBuildGate(["vessel", sub], args({ ...flags }, [sub]), d.deps)).toBe(0);
       expect(d.calls, sub).toEqual(["stale", "build", "reexec"]);

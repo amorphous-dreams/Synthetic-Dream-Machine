@@ -10,12 +10,12 @@
  * HOME untouched. The mempalace sidecar is no part of a founding; its door is
  * `lares mempalace install`.
  *
- * Safety law (the keypair-wipe lesson generalized):
+ * Safety law (identity and founding stay separate):
  *  - the plan is computed by file PRESENCE alone (read-only); only absent steps run;
  *  - the operator keypair is load-or-create — never wiped (node-vessel-identity.ts);
  *  - `lares vessel found` self-guards on the bootstrap (skips the ceremony if present);
  *  - genesis is BUILD-IF-ABSENT ONLY — a rebuild can shift the CID and diverge a
- *    founded identity, so re-founding stays an explicit operator act (`vessel clear`), never
+ *    founded identity, so a rebuild stays a separate operation, never
  *    a stand. `--install` never passes `--force`.
  */
 

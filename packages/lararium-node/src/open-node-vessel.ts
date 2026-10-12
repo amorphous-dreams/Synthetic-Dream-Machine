@@ -711,7 +711,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
   // The Nexus SEAL homes PER-OPERATOR (`<lares>/nexus`), never in the corpus bags tree: a seal sited in the
   // corpus inherits that tree's home, which on a development install sits inside the repository. The seal
   // belongs to the operators who founded it, so it survives every substrate wipe beside the sovereign root
-  // and travels with neither a clone nor a `reset`.
+  // and travels with neither a clone nor the runtime vessel store.
   const sealHome = larSealHome();
 
   // ── THE ISLAND THIS VESSEL STANDS IN — every per-Nexus board keys on THIS, never on the vessel ─────────
@@ -1314,7 +1314,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions, placeClass: PlaceClass):
       const moved = quarantineDoc(storageDir, verdict);
       console.warn(
         `[lararium] DEGRADED plane — quarantined ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"})` +
-        ` → ${moved ?? "already gone"}; the plane mounts read-only until \`lares vessel rite rebirth\` rematerializes it`,
+        ` → ${moved ?? "already gone"}; the plane mounts read-only until a known-good document is restored`,
       );
     },
 

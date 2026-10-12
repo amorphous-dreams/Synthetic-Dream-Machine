@@ -29,12 +29,12 @@ export async function reachHelpMeme(door: string, args: ParsedArgs, read: MemeRe
     console.error(`lares ${door}: this door names no meme — its help above is the whole record.`);
     return 0;
   }
-  // The same argument shape `lares meme get <uri>` parses: the door's flags never ride along, so a
+  // Door memes are wiki help records held by the `lares` recipe. The door's flags never ride along, so a
   // `--help` on the help call cannot re-enter the meme door's own help.
   const passthrough: ParsedArgs = {
     command:    "meme",
     positional: ["get", uri],
-    options:    {},
+    options:    { recipe: "lares" },
     flags:      args.flags["json"] === true ? { json: true } : {},
   };
   return await read(passthrough);

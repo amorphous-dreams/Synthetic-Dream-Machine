@@ -25,9 +25,9 @@
  * persona is what makes the veil → PersonaGroup → Handle architecture implementable at all.
  * See lar:///ha.ka.ba/lares/docs/federation and api/pono/has-stack-ontology.
  *
- * Storage law — identity lives OUTSIDE the wipe zone:
+ * Storage law — identity lives beside the runtime store:
  *   the keypair + card persist to `<lares>/identity` (`larIdentityDir`), in the XDG data
- *   home BESIDE — never inside — the wiped `<lares>/vessel`. No `reset`/`regenesis`/`rebuild`
+ *   home BESIDE — never inside — the runtime `<lares>/vessel` store. No storage operation
  *   can reach it (they rmSync the substrate store, never the home that holds it). This realizes the
  *   law below (the key MUST NOT sit inside an Automerge doc storage path) and the
  *   keypair-wipe lesson: a destructive storage verb cannot reach identity.
@@ -77,9 +77,8 @@ import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 
 /**
  * The identity dir — the ONE resolver, `<lares>/identity` (`larIdentityDir`), in the XDG
- * state home OUTSIDE any substrate wipe. `reset`/`regenesis`/`rebuild` reforge the
- * `<lares>/vessel` store; the key + card + anchors survive here, unreachable by any storage
- * verb. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
+ * data home beside the `<lares>/vessel` store; the key + card + anchors are separate from vessel
+ * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
  *
  * TAKES NO `dataDir` — it never did, in effect: this resolver has always answered off
  * `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never off a caller-supplied path. A `dataDir`
@@ -89,7 +88,7 @@ import { nodeRecoveryShareStore } from "./recovery-share-store.js";
  * `~/.local/share/lares/identity` home instead of its intended isolated one. Removing the parameter
  * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
  * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to
- * keep identity outside a `dataDir`'s own wipe zone, which is exactly the thing this file's storage
+ * keep identity separate from a caller-supplied store path, which is exactly the thing this file's storage
  * law forbids. The ONE sanctioned in-process isolation pattern is now `tests/harness/with-lar-root.ts`.
  */
 function identityDir(): string {
@@ -149,7 +148,7 @@ function keyFileName(login: string | null): string {
 
 // ── Platform shores for the shared keypair lifecycle (vessel-identity-core) ────
 // node mints via the local CSPRNG (generateKeyPairSync) and persists each keypair
-// as a 0o600 JSON file in the wipe-zone-sibling identity dir, stamping the git
+// as a 0o600 JSON file in the runtime-store-sibling identity dir, stamping the git
 // email hint. The core (mesh) owns the generate-or-load control flow over these.
 
 const nodeKeypairCrypto: KeypairCrypto = {
@@ -257,9 +256,8 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
   mkdirSync(idDir, { recursive: true });
 
   const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  // Sweep BOTH identity files out of the wipe zone on every boot/init — the card
-  // is re-mintable but still identity; move it eagerly alongside the key so a
-  // `reset` between CLI identity loads can never strand it in `.lararium/`.
+  // Keep both identity files beside the runtime store on every boot/init — the card
+  // is re-mintable but still identity, and belongs beside its key.
   const keyFile  = join(idDir, keyFileName(hint.login));
 
   const { verifyingKey, created } = await generateOrLoadKeypair(
@@ -399,7 +397,7 @@ export async function loadVesselSigningSeed(): Promise<Uint8Array> {
 //
 // The isomorphic control flow (generate/load/wear/custody-refuse/roster) lives in @lararium/mesh's
 // persona-vault — platform-blind. THIS adapter supplies the node shores: per-index 0o600 KeypairStore
-// slots in `<lares>/identity` (outside every `reset`/`rebuild` wipe), a JSON active-persona selector,
+// slots in `<lares>/identity` (separate from the runtime store), a JSON active-persona selector,
 // the anchor store, and the sealed recovery-share store. The SEAL stays in this adapter — the core
 // never sees plaintext seal policy (custody-by-TYPE: each root is the vessel's OWN sovereign secret).
 //
@@ -565,7 +563,7 @@ export async function listPersonaRoots(): Promise<number[]> {
 
 // ── The two-layer PET-NAME stores — the own-side private label + the own-side public face ────────────
 //
-// Two DISTINCT node fs stores over `<lares>/identity` (0o600, outside every substrate wipe), login-scoped
+// Two DISTINCT node fs stores over `<lares>/identity` (0o600, separate from the runtime store), login-scoped
 // like the vault's slots so developers on one machine keep separate identity homes:
 //   · the PRIVATE pet-name map (`.persona-petnames-${login}.json`) — the human's own label for their own
 //     personas, freely renamable, never PUBLICLY federated (persona-petname). A future device-fleet adapter
@@ -606,7 +604,7 @@ function writePetnameMap(idDir: string, login: string | null, names: Record<stri
 
 /**
  * Build the node fs OwnPersonaPetnameStore — the PRIVATE own-persona pet-name map. Login-scoped, 0o600, in
- * the identity home outside every wipe. The map holds only the human's own labels for their own personas;
+ * the identity home separate from the runtime store. The map holds only the human's own labels for their own personas;
  * nothing here reaches a board (the never-federates wall is structural — no board write exists in this shore).
  */
 export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameStore> {

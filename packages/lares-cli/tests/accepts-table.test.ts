@@ -64,12 +64,12 @@ function literalReads(files: readonly string[]): Set<string> {
 }
 
 /**
- * Reads reached only through args a handler BUILDS for an inner call (`rebirth` hands `act` its own
+ * Reads reached only through args a handler BUILDS for an inner call (seed hands `act` its own
  * `from`/`out`/`title`/`plane`; `sense` reaches `help-mempalace` only through the guest door), so no user
  * line carries them. Named per command, each with its reason, so an exemption never covers a user flag.
  */
 const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
-  vessel: ["from", "out", "title", "plane", "source", "to", "source-uri"],   // rebirth/seed build their act/ingest lines
+  vessel: ["from", "out", "title", "plane", "source", "to", "source-uri"],   // seed builds its act/ingest lines
   sense:  ["help-mempalace"],                  // the guest comparator's help rides `lares mempalace`
 };
 

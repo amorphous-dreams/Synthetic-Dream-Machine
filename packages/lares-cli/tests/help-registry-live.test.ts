@@ -26,4 +26,9 @@ describe("the per-command help registry", () => {
     // summary is the fallback, and forcing a second description per verb is how two of them drift apart.
     expect(Object.keys(COMMAND_HELP).length).toBeLessThan(COMMAND_NAMES.length);
   });
+
+  test("meme help publishes the required store target", () => {
+    const { usage, synopsis, examples } = COMMAND_HELP.meme!;
+    expect({ usage, synopsis, examples: examples?.slice(0, 4) }).toMatchSnapshot("meme help");
+  });
 });

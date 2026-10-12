@@ -7,9 +7,8 @@
  *   · the library answered TERMINALLY — `unavailable`/`failed`. No peer will ever carry it.
  *   · the DEADLINE expired. The library said nothing at all; the doc simply had not resolved yet.
  *
- * Both produced "local corruption (no peer carries it)", and that message sends the operator to
- * `lares vessel rite rebirth` — which WIPES THE STORE. So a vessel whose disk is perfectly intact, merely
- * slow to resolve under load, was told its store was corrupt and handed the verb that destroys it.
+ * Both produced "local corruption (no peer carries it)", which mislabels a timeout as store damage and
+ * recommends a recovery that can destroy a healthy store.
  *
  * MEASURED: the docker mesh's one hearth died this way on every cold start beside three sibling vessels,
  * on a STABLE document id, through three restarts — and stood clean the moment it booted alone. Nothing
@@ -41,9 +40,7 @@ describe("a boot fault names the condition it observed", () => {
     expect(v.reason).toBe("resolve-timeout");
   });
 
-  test("★ and it must NOT hand over the verb that wipes the store ★", () => {
-    // THE HARM, NAMED. `rite rebirth` composes stop · clear · bake · stand · seed. Offering it for a
-    // timeout tells an operator to destroy a healthy store to cure a slow one.
+  test("★ a deadline names a direct recovery without a vessel wipe rite ★", () => {
     const v = bootFaultVerdict({ reason: "deadline", label: "@daemon", url: "automerge:abc", waitedMs: 15_000 });
     expect(v.message).not.toMatch(/rebirth/);
     expect(v.message).not.toMatch(/clear/);
@@ -56,9 +53,12 @@ describe("a boot fault names the condition it observed", () => {
     expect(v.message).toMatch(/again|retry|stand/i);
   });
 
-  test("a terminal verdict MAY still offer rebirth — there the store genuinely holds nothing", () => {
+  test("a terminal verdict names carrier restoration and seeding when the local read is absent", () => {
     const v = bootFaultVerdict({ reason: "terminal", label: "@daemon", url: "automerge:abc" });
-    expect(v.message).toMatch(/rebirth/);
+    expect(v.message).toMatch(/vessel read vessel/);
+    expect(v.message).toMatch(/restore a known-good carrier/);
+    expect(v.message).toMatch(/vessel seed --apply --yes/);
+    expect(v.message).toMatch(/lares vessel found --root <fresh-root>/);
   });
 
   test("both verdicts name the doc, so the operator knows WHICH plane refused", () => {
@@ -79,13 +79,11 @@ describe("a boot fault names the condition it observed", () => {
     expect(v.message).not.toMatch(/the store holds it/i);
   });
 
-  test("★ the terminal verdict leads with the cheap cure, and names the rite as last ★", () => {
+  test("★ the terminal verdict reads local state before naming its recovery ★", () => {
     const v = bootFaultVerdict({ reason: "terminal", label: "@catalog", url: "automerge:abc" });
     const readAt = v.message.search(/vessel read vessel/);
-    const riteAt = v.message.search(/rite rebirth/);
     expect(readAt).toBeGreaterThan(-1);
-    expect(riteAt).toBeGreaterThan(-1);
-    expect(readAt).toBeLessThan(riteAt);
-    expect(v.message).toMatch(/LAST resort/);
+    expect(v.message.indexOf("restore a known-good carrier")).toBeGreaterThan(readAt);
+    expect(v.message).not.toMatch(/rite rebirth|vessel clear/);
   });
 });

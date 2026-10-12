@@ -19,7 +19,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { COMMAND_HELP, memeForDoor, helpLines, renderCommandHelp } from "../src/command-help.js";
-import { COMMAND_NAMES } from "../src/bin/lares.js";
+import { COMMAND_NAMES, COMMANDS } from "../src/bin/lares.js";
 
 const CLI = join(repoRoot, "packages", "lares-cli", "src");
 const CMD_DIR = join(CLI, "commands");
@@ -44,6 +44,19 @@ function wellFormed(uri: string): boolean {
 }
 
 describe("★ the help registry names the meme behind each verb door ★", () => {
+  test("store usage and examples require an explicit container", () => {
+    const meme = COMMAND_HELP.meme!;
+    expect(meme.usage).toContain("(--recipe <slug> | --bag <slug>)");
+    for (const verb of ["get", "put", "list", "delete"]) {
+      const example = meme.examples?.find((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line));
+      expect(example, `${verb} example`).toMatch(/--(?:recipe|bag)\s+\S+/);
+    }
+    expect(meme.synopsis).not.toMatch(/anchor|default wiki/i);
+    const summary = COMMANDS.find((command) => command.name === "meme")!.summary;
+    expect(summary).toContain("(--recipe <slug> | --bag <slug>)");
+    expect(summary).not.toMatch(/anchor|default wiki/i);
+  });
+
   test("every `meme` a door carries reads as a well-formed lar: URI", () => {
     const bad = Object.entries(COMMAND_HELP)
       .filter(([, h]) => h.meme !== undefined)
@@ -148,9 +161,9 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     expect(errs.join("\n")).toMatch(/names no meme/i);
   });
 
-  test("★ a door that names one hands the URI to the meme rail, shaped as `meme get <uri>` ★", async () => {
+  test("★ a door that names one hands its lares wiki target and URI to the meme rail ★", async () => {
     const { reachHelpMeme } = await import("../src/help-meme.js");
-    const seen: { command: string | null; positional: readonly string[] }[] = [];
+    const seen: { command: string | null; positional: readonly string[]; options: Readonly<Record<string, string>> }[] = [];
     const code = await reachHelpMeme(
       "vessel",
       { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true } },
@@ -160,6 +173,7 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     expect(seen, "the help path never wrote a second meme reader").toHaveLength(1);
     expect(seen[0]!.command).toBe("meme");
     expect(seen[0]!.positional).toEqual(["get", "lar:///ha.ka.ba/lares/cli/vessel-door"]);
+    expect(seen[0]!.options).toEqual({ recipe: "lares" });
   });
 
   test("`--json` on the help call rides through to the meme rail; a bare call carries no flag", async () => {

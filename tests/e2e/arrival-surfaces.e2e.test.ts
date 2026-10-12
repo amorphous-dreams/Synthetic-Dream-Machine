@@ -66,8 +66,8 @@ function preparedWeb(): Record<string, string> {
 
 /** The place rite alone — no `persona new`, so the vessel stands at its waking floor. */
 async function foundPlaceOnly(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
-  const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-  if (reset.code !== 0) throw new Error(`place founding failed (${reset.code}):\n${reset.stderr.slice(-800)}`);
+  const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+  if (found.code !== 0) throw new Error(`place founding failed (${found.code}):\n${found.stderr.slice(-800)}`);
 }
 
 const originOf = (lar: LarInstance): string => `http://127.0.0.1:${lar.port}`;

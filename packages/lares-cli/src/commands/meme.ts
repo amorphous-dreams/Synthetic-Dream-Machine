@@ -1,13 +1,14 @@
 /**
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
- *   put <uri> [--recipe <slug> | --bag <slug>] [--base <hash>] [--file <path>]
- *   get <uri> [--recipe <slug> | --bag <slug>]
- *   list [--recipe <slug> | --bag <slug>] [--tree]
- *   delete <uri> [--recipe <slug> | --bag <slug>] [--if-match <hash>]
+ *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
+ *   get <uri> (--recipe <slug> | --bag <slug>)
+ *   list (--recipe <slug> | --bag <slug>) [--tree]
+ *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
  *   normalize <file.mem ...> [--grammar]
  *   check <file.mem ...> [--gradient | --edges | --grammar]
- *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
+ *   project <file.mem> --to md [--out <path>]
+ *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> (--recipe <slug> | --bag <slug>) [--out <path>]
  *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
  *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
@@ -20,8 +21,9 @@
  * (`meme-put` · `meme-get` · `meme-list` · `meme-delete` · `meme-project`) — the one placement function,
  * the one removal, the one listing and the island's own renderers, reached from a terminal.
  *
- * THE CONTAINER LAW (every daemon seat):
- *   · no target        — the ANCHOR: the daemon's own wiki (`recipes/default`), its cascade routing
+ * THE CONTAINER LAW (every store-backed seat):
+ *   · no target        — `no-container` refusal before file reads, socket dials or daemon starts.
+ *   · --recipe default — the daemon's own wiki (`recipes/default`), its cascade routing
  *                        the records to the top bag as an in-wiki edit would.
  *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
  *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
@@ -30,7 +32,8 @@
  *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.
  *   · --tree           — (list) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
- * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; a refusal `verb-error`;
+ * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; an island refusal `verb-error`;
+ * a missing or doubled container exits `no-container` (2);
  * an absent meme on `get` exits `not-found`; drift under `check` exits 1 for a CI gate.
  *
  * ── THE LOCAL LAWS ──────────────────────────────────────────────────────────────────────────────
@@ -86,6 +89,7 @@ import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/mem
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
 import { vesselDid } from "../env.js";
+import { containerArgs } from "../container-target.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
@@ -122,22 +126,11 @@ type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
-/** The container args — at most one of `--recipe` / `--bag`; neither names the anchor. */
-function container(args: ParsedArgs): Record<string, string> {
-  const recipe = typeof args.options["recipe"] === "string" ? args.options["recipe"].trim() : "";
-  const bag    = typeof args.options["bag"]    === "string" ? args.options["bag"].trim()    : "";
-  if (recipe && bag) throw new UsageError("name one of --recipe <slug> / --bag <slug>, never both");
-  const out: Record<string, string> = {};
-  if (recipe) out["recipe"] = recipe;
-  if (bag)    out["bag"]    = bag;
-  return out;
-}
-
 /** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
 export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
   const uri = args.positional[1];
-  if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/...\`)`);
-  const out: Record<string, string> = { uri, ...container(args) };
+  if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
+  const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
   if (sub === "put") {
     const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
     if (base) out["base"] = base;
@@ -154,7 +147,7 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
 
 /** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
 export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
-  const out: Record<string, string | boolean> = { ...container(args) };
+  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
   if (args.flags["tree"]) out["tree"] = true;
   return { verb: "meme-list", args: out };
 }
@@ -185,7 +178,11 @@ export function projectPlan(args: ParsedArgs): ProjectPlan {
     throw new UsageError(`--to names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
   }
   const target = to as ProjectTarget;
-  const cont = container(args);
+  const needsStore = source.startsWith("lar:") || target !== "md";
+  if (!needsStore && (args.options["recipe"] !== undefined || args.options["bag"] !== undefined)) {
+    containerArgs(args, "meme project");
+  }
+  const cont = needsStore ? containerArgs(args, "meme project") : {};
   if (source.startsWith("lar:")) return { seat: "daemon", to: target, uri: source, container: cont };
   if (target === "md") return { seat: "local", to: target, file: source, container: cont };
   return { seat: "daemon", to: target, file: source, container: cont };
@@ -211,6 +208,11 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       case "promote":   return await memePromote(args);
     }
   } catch (err) {
+    if (typeof err === "object" && err !== null && (err as { code?: unknown }).code === "no-container") {
+      const msg = err instanceof Error ? err.message : String(err);
+      emit(args, { ok: false, error: { code: "no-container", message: msg }, human: () => console.error(msg) });
+      return 2;
+    }
     if (err instanceof UsageError) {
       const msg = err.message;
       emit(args, { ok: false, error: { code: "usage", message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
@@ -292,7 +294,7 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     ok: true,
     requestId: result.requestId,
     data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash },
-    // The text alone reaches stdout, so `lares meme get <uri> > file` carries the meme; the base rides stderr.
+    // The text alone reaches stdout, so `lares meme get <uri> --recipe <slug> > file` carries the meme; the base rides stderr.
     human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); },
   });
   return 0;
@@ -782,7 +784,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
       // no carrier shape, and inventing one would be a reading over bytes the question does not fit.
       ...(shape ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
     },
-    // The rendered text alone reaches stdout, so `lares meme project <uri> --to html > file` carries it.
+    // The rendered text alone reaches stdout, so `lares meme project <uri> --recipe <slug> --to html > file` carries it.
     // THE READING GOES TO STDERR, and that placement is load-bearing: stdout is the operator's artifact
     // — the redirect they typed — and a verdict written into it would corrupt the very carrier it warns
     // about. The two streams are the two facts.

@@ -58,7 +58,7 @@ describe("the unknown-command refusal", () => {
 
   test("★ `bake` is retired as a vessel sub-door — the genesis re-derive is an internal rite step, and the mesh-going act rides `nexus kahuli` ★", () => {
     // The single-vessel `vessel bake` door retires (no alias): advancing the genesis composition is a MESH
-    // act (`nexus kahuli`), and the LOCAL re-derive survives only as an internal step of the rebuild/rebirth
+    // act (`nexus kahuli`), and the LOCAL re-derive survives only as an internal step of the rebuild rite
     // rites + the `build:genesis` build script. Asserted at the authoritative sub-set (cmdVessel dispatches
     // exclusively through it, returning 2 for anything absent) — dispatching `vessel bake` live would run
     // the build-genesis script against the repo genesis, so the set is the safe, exact instrument.

@@ -10,7 +10,7 @@
  *
  *   R1 — event store only (the FIRST daemon boot after founding, before any veil archive is written)
  *   R2 — archive + event store (the ordinary sealed reboot)
- *   R3 — archive only, empty store (the identity-preserving re-pave: cap events gone, archive kept)
+ *   R3 — archive only, empty store (the archive-only restore: cap events absent, archive kept)
  *   CONTROL — a genuinely-unknown agent stays unknown through the same restore
  */
 import { describe, test, expect } from "vitest";
@@ -60,12 +60,12 @@ describe("the founder's veil seat survives the night", () => {
     expect(await r2.knowsAgent(f.personaGroupAgentIdHex), "R2 sealed reboot re-knows the face").toBe(true);
     expect(await r2.knowsAgent(UNKNOWN_AGENT), "CONTROL — an unmet agent stays unknown").toBe(false);
 
-    // R3 — archive only, cap events gone (the identity-preserving re-pave).
+    // R3 — archive only, cap events gone (the archive-only restore).
     const emptyStore = { put: async () => {}, list: async () => [] };
     const r3 = new KeyhiveProvider();
     await r3.init({ seed: veilSeed, eventStore: emptyStore, archiveBytes: archive });
     await r3.hydrateFromEventStore();
-    expect(await r3.knowsAgent(f.personaGroupAgentIdHex), "R3 re-pave (archive-only) re-knows the face").toBe(true);
+    expect(await r3.knowsAgent(f.personaGroupAgentIdHex), "R3 archive-only restore re-knows the face").toBe(true);
 
     await r1.dispose(); await r2.dispose(); await r3.dispose();
     await repo.shutdown();

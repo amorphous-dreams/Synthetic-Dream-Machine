@@ -3,7 +3,7 @@
  *
  * `lares ingest` already scans a bag and weighs every carrier's size + type (exactly
  * the knowledge a blob-readiness verdict needs). This shore turns that verdict into a
- * WRITE: for each utf8 carrier that would hit the fault wall at rebirth (a verb rides a
+ * WRITE: for each utf8 carrier that would hit the fault wall during LOAD or INGEST (a verb rides a
  * reference, never a body), it stamps the opt-in `_lar_cas` flag so the body
  * externalizes to CAS on the next INGEST. A pointer-kind carrier (an image, a pdf —
  * THE BLOB LAW, content-handle.ts) rides a pointer by kind and needs no tag.
@@ -61,7 +61,7 @@ export interface TagOutcome {
 }
 
 /**
- * Would this carrier hit the utf8 fault wall at rebirth, and NOT already carry the
+ * Would this carrier hit the utf8 fault wall during LOAD or INGEST, and NOT already carry the
  * opt-in flag? Reuses the exact in-tree law — the flag decides first (already opted
  * in → no tag), a pointer-kind type needs none (kind picks its shape), and only an
  * oversized utf8 body elects a tag. A small un-flagged text body inlines pono.

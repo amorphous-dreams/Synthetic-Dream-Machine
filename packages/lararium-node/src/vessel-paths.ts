@@ -9,9 +9,8 @@
  *   $XDG_DATA_HOME/lararium (~/.local/share/lararium) — THE HOUSE'S OWN: the acquired library and the
  *                                                     SENSORIUMS — operator history and DreamNet
  *                                                     history, capture the machine took once and cannot
- *                                                     take again. LARES PASS; THE LARARIUM ABIDES — and
- *                                                     the wipe zone stands structural in consequence,
- *                                                     a tier held by its house rather than by a list.
+ *                                                     take again. LARES AND LARARIUM HAVE DISTINCT
+ *                                                     HOMES — each tier resolves by the house that owns it.
  *   $XDG_STATE_HOME/lares   (~/.local/state/lares)  — WATERMARKS ALONE: harvest, harvest-stage,
  *                                                     projection. All of it re-derives.
  *   $XDG_CACHE_HOME/lares   (~/.cache/lares)        — ephemeral scratch: sensoriums (swept).
@@ -45,10 +44,8 @@
  *   `<state>`  nobody's for long: watermarks, deletable at any moment, each re-deriving from what it
  *              watches.
  *
- * THE WIPE ZONE STANDS AS A HOUSE, NOT A LIST. `reset` pares `<lares>/vessel` and `<state>/projection`;
- * `<lararium>` shares no prefix with either, so the tier a wipe must never end survives by its ADDRESS.
- * A tier kept safe by sitting one subdirectory aside stays safe only until somebody widens the wipe by a
- * path segment; a tier standing in another house leaves no edge to widen.
+ * EACH HOUSE HAS ITS OWN ADDRESS. Runtime vessel data and its projection state resolve under the Lares
+ * homes; acquired library bodies and sensoriums resolve under the Lararium home. The homes never nest.
  *
  * A rule that fits in one breath needs no warning label.
  */
@@ -137,8 +134,8 @@ export function larHome(): string {
  * both `rmSync` recursively over what the name resolves to — and one of them reaches through the MCP,
  * so the segment arrives from outside this island entirely.
  *
- * The shrine survives a RITE structurally, by standing in a house no wipe-list names. A traversing
- * segment is the one thing that defeats that, because it does not consult the list either: it walks.
+ * The shrine stands in the house that owns acquired bodies and sensoriums. A traversing
+ * segment is the one thing that defeats that boundary: it walks outside the intended root.
  * So the containment holds at the CHOKE-POINT, where a name becomes a path, rather than at each of the
  * dozen verbs downstream — the same mechanism-over-policy shape `confineMirrorWrite` keeps for the
  * projector, and for the same reason (the input is untrusted wherever the policy came from).
@@ -369,17 +366,14 @@ export function scratchSensoriumInstanceDir(id: string): string {
 // ── The vessel substrate (Automerge Repo — NOT a sensorium) ──────────────────────────────────────
 
 /** Storage dir — the Automerge Repo, vessel key, and UDS socket, at `<lares>/vessel`.
- *  WIPED by `reset`. NOT a sensorium (it carries no sensory fiber caps). */
+ *  Runtime store, not a sensorium (it carries no sensory fiber caps). */
 export function larDataDir(): string {
   return join(laresDataHome(), "vessel");
 }
 
 /** Vessel identity dir — the sovereign keypair + the veiled-Handle anchors, at
- *  `<lares>/identity`. It sits BESIDE (never inside) the wiped `<lares>/vessel`, so every
- *  substrate verb (`reset`/`regenesis`/`rebuild`) reforges the CRDT store while the
- *  sovereign root survives untouched — the "share substrate, not sovereignty" law made a
- *  filesystem boundary. The wipe-list names `<lares>/vessel` and `<state>/projection` and
- *  nothing else, so identity here stands outside it. The ONE identity resolver —
+ *  `<lares>/identity`. It sits beside (never inside) the runtime `<lares>/vessel` store, so
+ *  storage and sovereignty remain separate filesystem responsibilities. The ONE identity resolver —
  *  node-vessel-identity resolves any prior location onto it. */
 export function larIdentityDir(): string {
   return join(laresDataHome(), "identity");
@@ -395,8 +389,7 @@ export function larIdentityDir(): string {
  * in a git history nobody meant to write it into.
  *
  * So it homes beside `identity`, per-operator, under the XDG data home: outside the corpus, outside the
- * repo, and outside every substrate wipe (`reset`/`regenesis` reforge the CRDT store; the seal and the
- * sovereign root both survive). A clone of the corpus therefore carries NO Nexus — which reads correct,
+ * repo, and beside the runtime vessel store; the seal and sovereign root are separate from vessel data. A clone of the corpus therefore carries NO Nexus — which reads correct,
  * because a Nexus belongs to the operators who founded it, never to whoever copied the code.
  */
 export function larSealHome(): string {
@@ -435,14 +428,12 @@ export function larHarvestStageDir(): string {
  * the corpus into the home. Three costs came with that address:
  *   · a per-vessel artifact sat inside a shared, copyable directory, so anything copying genesis/
  *     wholesale handed a fresh vessel another vessel's identity — which a rehearsal proved by failing;
- *   · `reset` reached into the corpus tree to delete it, a vessel verb writing across the wall;
+ *   · the bootstrap lived in the corpus tree, so copied seed material carried another vessel's address book;
  *   · a line in .gitignore stood as the only guard, where a placement should have been.
  *
  * ── WHY <lares>/vessel RATHER THAN <state> ───────────────────────────────────────────────────────
- * Identity and the seal sit in `<state>` because they MUST SURVIVE a wipe. This must not. An address
- * book that outlived a `reset` would point at docs the reset destroyed — the precise failure that
- * motivated the move, made permanent. Living inside the store, it dies WITH the docs it addresses:
- * the invariant holds structurally rather than by a wipe-list remembering to name it.
+ * The address book belongs with the vessel store because it names the docs in that store. A fresh store
+ * gets a freshly founded address book beside its documents.
  */
 export function larBootstrapPath(): string {
   return join(larDataDir(), "social-bootstrap.json");

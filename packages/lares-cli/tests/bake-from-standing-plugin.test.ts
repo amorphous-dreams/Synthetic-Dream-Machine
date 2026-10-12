@@ -1,6 +1,5 @@
 /**
- * bake-from-standing-plugin — `lares vessel bake` (and every rite that composes it: clear, rebuild,
- * rebirth, the staged harness) bakes the genesis island FROM THE PLUGIN THAT STANDS.
+ * bake-from-standing-plugin — `lares vessel bake` (and the rebuild rite and staged founding) bakes the genesis island FROM THE PLUGIN THAT STANDS.
  *
  * Two laws under test:
  *   1. the bake runs the genesis script ALONE — it never rebuilds the packed plugin, so a staged boot

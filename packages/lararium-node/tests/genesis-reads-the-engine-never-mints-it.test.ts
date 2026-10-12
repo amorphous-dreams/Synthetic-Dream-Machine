@@ -3,7 +3,7 @@
  * `hearthTrueName`, riding inside the signed preimage of every device-delegation edge — so re-rendering
  * the blob re-binds every vessel that ever joined. `build:genesis` reads the blob that stands and fails
  * loud when none does, naming `build:tw5-vendor` as the intentional act; it never runs that act itself.
- * The e2e harness and `vessel clear` both ride `build:genesis`, so a re-render there moved the epoch
+ * The e2e harness founds its staged root from the standing `build:genesis` artifact, so a re-render there moved the epoch
  * on every staged boot.
  */
 import { describe, test, expect } from "vitest";

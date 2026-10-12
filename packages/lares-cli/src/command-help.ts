@@ -219,9 +219,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
   vessel: {
     synopsis:
-      "THE VESSEL DOOR — one namespace over the vessel's own causal island. Five primitives and one " +
+      "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
-      "halts it on the port · `clear` wipes the store and re-founds (identity survives) · `seed` plants " +
+      "halts it on the port · `seed` plants " +
       "every bags/* holding back into its doc · `read` inspects and starts nothing. Compositions ride " +
       "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
       "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
@@ -231,12 +231,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel wire --claude              # ~/.claude alone",
       "lares vessel read --palaces             # health, plus the palace-organ table",
       "lares vessel seed --apply --yes         # plant every holding (idempotent)",
-      "lares vessel rite refresh               # the post-code-change cure: build · stop · clear · stand",
+      "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
     ],
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",
       "stand --with-web     node + Vite web surface together",
-      "stand --restart [--clear]   free the port first, optionally wiping the store",
+      "stand --restart             free the port, then serve the current vessel",
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --install      found a vessel that holds none, then link `lares` globally — the founding runs first and stays inside LAR_ROOT; the mempalace sidecar has its own door, `mempalace install`",
       "stand --init         founds the same, AND wires every AI surface (reaches ~/.claude etc; `vessel wire` is the door for that alone)",
@@ -244,7 +244,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "wire [--claude|--codex|--copilot|--vscode]   aim that surface here; no flag aims them all",
       "wire --observe       REPORT what a wiring would touch; write nothing",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
-      "rite <petname>       founding · refresh · rebuild · rebirth — the pet-named cap-stacks",
+      "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
     ],
     next: ["lares vessel read --palaces", "lares sense pour --all"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
@@ -280,19 +280,20 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote>",
+    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
       "reach; `put` · `get` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
-      "the daemon verb. No target names the ANCHOR (the daemon's own wiki); `--recipe` edits AS that wiki; " +
+      "the daemon verb. Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
+      "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it. `--base` carries the " +
       "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
     examples: [
-      "lares meme get lar:///ha.ka.ba/lares/api/corpus        # text on stdout, the base on stderr",
-      "lares meme put lar:///ha.ka.ba/... --file note.mem     # land a framed meme through the gate",
-      "lares meme list --tree                                 # nest each root's slot tree",
-      "lares meme delete lar:///ha.ka.ba/... --if-match <hash>   # a stale base moves nothing",
+      "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",
+      "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
+      "lares meme list --recipe lares --tree                                  # nest each root's slot tree",
+      "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",

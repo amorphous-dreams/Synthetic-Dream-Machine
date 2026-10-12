@@ -9,13 +9,11 @@
  * this door. A door absorbs new capability; a plane with no door has nowhere to put it but the top,
  * and that is how a top-level verb count grows back.
  *
- * ── FIVE PRIMITIVES + ONE READ ──────────────────────────────────────────────────────────────────
+ * ── FOUR PRIMITIVES + ONE READ ─────────────────────────────────────────────────────────────────
  * A primitive names ONE motion and cannot be expressed as a sequence of the others. Everything else
  * composes, and a composition earns a pet-name rather than a top-level name:
  *
  *   stop   ends a running daemon by port, graceful then forced — never a restart in disguise
- *   clear  pares the vessel store + the projection watermark — identity, seal, library and registry
- *          stand outside it
  *   found  mints the vessel identity, the persona root, the social planes and the bootstrap —
  *          idempotent, skips what stands
  *   stand  brings the daemon up, foreground or detached, and reports what it found
@@ -24,7 +22,7 @@
  *
  * Re-deriving the genesis island is NOT a standalone door: advancing the composition is a MESH act that
  * rides `nexus kahuli` (the engine/grammar ratchet, past a single vessel), and the LOCAL re-derive lives
- * only as an internal step of the rebuild/rebirth rites + the `build:genesis` build script.
+ * only as an internal step of the rebuild rite + the `build:genesis` build script.
  *
  * `build` — compile the workspace and stamp the source digest — rides inside `rite refresh` rather
  * than standing alone: it moves the TREE, not the vessel, and a door over one island should not hold
@@ -44,12 +42,9 @@ import { cmdStand }     from "./stand.js";
 import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
-import { cmdRebirth } from "./rebirth.js";
 import { cmdWire } from "./wire.js";
 import { cmdVesselCard } from "./vessel-card.js";
-import {
-  cmdStandForeground, cmdStandWithWeb, cmdClear, cmdRestart, cmdRiteRebuild, cmdRiteRefresh,
-} from "./scripted.js";
+import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
 
@@ -62,16 +57,12 @@ type Sub = (args: ParsedArgs) => Promise<number>;
  */
 const under = (args: ParsedArgs): ParsedArgs => ({ ...args, positional: args.positional.slice(1) });
 
-/** Raise a flag on the way down — how one door's spelling reaches a handler that named it otherwise. */
-const withFlag = (args: ParsedArgs, key: string, value = true): ParsedArgs =>
-  ({ ...args, flags: { ...args.flags, [key]: value } });
-
 /**
  * `vessel stand` — the ENTRY POINT, and the one sub-door that carries modes.
  *
  * Standing a vessel runs ONE motion with several postures, and each posture rides a flag:
  * `--foreground` chooses who owns the terminal, `--with-web` adds the Vite face beside it, `--restart`
- * clears the port first. None of them names a different motion.
+ * frees the port first. None of them names a different motion.
  *
  * THEY DO, HOWEVER, REACH IT THROUGH FOUR PROGRAMS, and each program reads a different slice of the
  * command line — `cmdStandWithWeb` reads none of it. `posturePlan` holds that difference so a flag
@@ -86,10 +77,7 @@ async function standVessel(args: ParsedArgs): Promise<number> {
   for (const line of posturePlanNotice(plan)) console.error(`lares vessel stand: ${line}`);
 
   if (a.flags["with-web"])    return cmdStandWithWeb(a);
-  if (a.flags["restart"])     {
-    // `--clear` reads as the operator's word for the wipe; the handler beneath spells it `fresh`.
-    return cmdRestart(a.flags["clear"] ? withFlag(a, "fresh") : a);
-  }
+  if (a.flags["restart"])     return cmdRestart(a);
   if (a.flags["foreground"])  return cmdStandForeground(a);
   return cmdStand(a);                 // the default posture: attach-or-start, detached, and REPORT
 }
@@ -119,11 +107,8 @@ const RITES: Readonly<Record<string, { readonly composes: string; readonly run: 
   // The rite REPORTS which one it got, because the two look identical from outside and an operator who
   // expected a hearth reads a crossroads as a broken founding rather than an unlit one.
   founding: { composes: "found · stand · seed", run: runFoundingRite },
-  refresh:  { composes: "build · stop · clear · stand", run: cmdRiteRefresh },
+  refresh:  { composes: "build · stop · stand",         run: cmdRiteRefresh },
   rebuild:  { composes: "re-derive · stand",            run: cmdRiteRebuild },
-  // Rebirth of a STANDING vessel names a real motion, and stop-wipe-re-derive carries it. A fresh founding
-  // never runs it — nothing stands there to tear down.
-  rebirth:  { composes: "stop · clear · re-derive · stand · seed", run: cmdRebirth },
 };
 
 /**
@@ -179,15 +164,14 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
   // its card; the founding mints one and nothing surfaced it.
   card: { summary: "print this vessel's ContactCard — the artifact another operator needs to relate to it", run: cmdVesselCard },
-  stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart [--clear]]", run: standVessel },
+  stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
   // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring
   // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.
   wire:  { summary: "point every AI surface on this machine at this vessel — idempotent, re-aims drift",  run: (a) => cmdWire(under(a)) },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
-  clear: { summary: "wipe the store + projection watermark, re-derive the island and re-found (identity survives)", run: (a) => cmdClear(under(a)) },
   seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
-  rite:  { summary: "the pet-named procedures: founding · refresh · rebuild · rebirth",                 run: runRite },
+  rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
 };
 
 function printVesselHelp(): void {

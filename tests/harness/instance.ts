@@ -4,7 +4,7 @@
  * Two modes, selected by LAR_TARGET (the env contract: lares-cli/src/env.ts):
  *
  *   staged (default) — the harness OWNS the instance: ephemeral root under
- *     os.tmpdir(), random port, `lares vessel clear --force` → daemon boot → await
+ *     os.tmpdir(), random port, `lares vessel found` on a marked scratch root → daemon boot → await
  *     `phase → live` → tests run → daemon killed, root deleted. QA isolation
  *     by construction; every run starts from genesis.
  *
@@ -125,16 +125,17 @@ export function cliFor(env: Record<string, string>): (args: readonly string[]) =
 
 /**
  * A founding seals custody from birth and gathers its human route from a TTY alone, so a scripted harness names the
- * route EXPLICITLY: before any `vessel found` / `vessel clear` it founds the scratch root's custody with a fixed test
+ * route EXPLICITLY: before `vessel found` it stages the scratch root and founds its custody with a fixed test
  * passphrase (`tools/seed-test-custody.mjs`, idempotent). The product carries no bypass for this.
  */
-const FOUNDING_VERBS = new Set(["found", "clear"]);
+const FOUNDING_VERBS = new Set(["found"]);
 function seedCustodyFor(env: Record<string, string>, args: readonly string[]): void {
   if (args[0] !== "vessel" || !FOUNDING_VERBS.has(args[1] ?? "")) return;
   const at = args.findIndex((a) => a === "--root" || a.startsWith("--root="));
   const named = at < 0 ? undefined : args[at]!.includes("=") ? args[at]!.split("=").slice(1).join("=") : args[at + 1];
   const root = named ?? env["LAR_ROOT"] ?? process.env["LAR_ROOT"];
   if (!root) return;
+  stageGenesis(root);
   seedTestCustody(root);
 }
 
@@ -196,6 +197,13 @@ export function stageDir(): string {
   return tmpdir();
 }
 
+/** Copy the tracked seed island into an isolated root before its founding rite. */
+export function stageGenesis(root: string): void {
+  const target = join(root, "genesis");
+  if (existsSync(join(target, "seed.json")) && existsSync(join(target, "cas"))) return;
+  cpSync(join(REPO_ROOT, "genesis"), target, { recursive: true });
+}
+
 /** How a staged vessel is founded and stood — the defaults are the hearth every suite inherits. */
 export interface StageOptions {
   /** A name for the root, so two vessels in one run read apart on disk (`lares-staged-<tag>-`). */
@@ -205,7 +213,7 @@ export interface StageOptions {
   /** A port already chosen — so a rite that names this vessel's dial (`--sync-url`) can run before it stands. */
   readonly port?: number;
   /**
-   * The founding rite, run before the daemon stands. Defaults to `vessel clear --force` (a place) and
+   * The founding rite, run before the daemon stands. Defaults to `vessel found` on the marked scratch root (a place) and
    * `persona new 0` (a face). A suite standing a JOINER performs its own rite here — admit, re-found —
    * against the same root and env the daemon will then read.
    */
@@ -216,7 +224,7 @@ export interface StageOptions {
 
 /** The default rite: a place, then a face. */
 async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
-  // Genesis — `lares vessel clear --force` seeds the root (init runs inside).
+  // Founding — `lares vessel found` seeds the marked scratch root (init runs inside).
   //
   // ── A WITNESS BUILDS NOTHING ──────────────────────────────────────────────────────────────────
   // `vessel` doors carry a freshness gate that rebuilds the whole workspace (`pnpm -r build`) when any
@@ -224,11 +232,11 @@ async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>,
   // engine, and writing into the shared tree beside whoever else is building there. A staged boot
   // measures the dist that STANDS: the suite names the missing dist on stderr and skips; it never
   // rebuilds. `--skip-build` is the gate's own sentinel for "already fresh — run the handler".
-  const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-  if (reset.code !== 0) throw new Error(`staged reset failed (${reset.code}):\n${reset.stderr.slice(-800)}`);
+  const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+  if (found.code !== 0) throw new Error(`staged founding failed (${found.code}):\n${found.stderr.slice(-800)}`);
 
   // ── THE RITE RUNS IN TWO STEPS, SO THE HARNESS PERFORMS BOTH ───────────────────────────────
-  // `vessel clear` re-founds a PLACE: the daemon bag, the vessel's own Keyhive individual, the hearth
+  // `vessel found` founds a PLACE: the daemon bag, the vessel's own Keyhive individual, the hearth
   // true-name. A place stands and serves while holding no face — which is correct, and which is
   // NOT what these suites test. They exercise a hearth: personas, wiki, catalog, the pairing the
   // boot path derives. So the staged instance lights its face here, and a suite that wants the
@@ -240,6 +248,7 @@ async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>,
 /** Stand ONE staged vessel under its own root and port. `targetInstance` calls this with the defaults. */
 export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> {
   const root = opts.root ?? mkdtempSync(join(stageDir(), `lares-staged-${opts.tag ? `${opts.tag}-` : ""}`));
+  stageGenesis(root);
   // OS-assigned free port — each staged island its own port, collision-free
   // (causal-island isolation; was a PID-stride guess that only reduced collisions).
   const port = opts.port ?? await freePort();
@@ -343,7 +352,7 @@ export async function targetInstance(): Promise<LarInstance> {
  * The vessel's Automerge STORE on disk — the one path a raw-storage read may open.
  *
  * It rides in the SPIRITS' house (`<root>/data/lares/vessel`) because a vessel substrate is the spirits':
- * a Lar wakes, acts and gives way, and `clear`, `bake` and `rebirth` reforge that substrate whole. What
+ * a Lar wakes, acts and gives way, and `bake` re-derives the genesis engine while the staged root starts from a fresh scratch directory. What
  * belongs to the HOUSE — the acquired shelf, the sensoriums — stands beside it at `<root>/data/lararium`,
  * and `<root>/state` keeps watermarks alone. A house never stands where a kind belongs, so an isolated
  * root reads as the real disk with a different prefix.
@@ -409,7 +418,7 @@ export function bootDocUrl(instance: LarInstance, key: string): string | null {
 // and the public read-face (`/bulb/…` · `/cas/<cid>`); A founds a hearth and dials the Herm's crossroads; C
 // founds by A's signed device edge (the admit rite `meme-two-vessel-bag` proves), dials A's `/ws` for the CRDT
 // (Socket A) and the Herm's crossroads for bytes (Socket B), and names the Herm's read-face as its public shore
-// (`LAR_HERM_SHORE`). The Herm lights NO face — `vessel clear` alone founds a PLACE, and a place with no face
+// (`LAR_HERM_SHORE`). The Herm lights NO face — `vessel found` founds a PLACE, and a place with no face
 // stands at the waking floor as a Herm by class.
 
 export interface StagedFleet {
@@ -444,8 +453,8 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
   };
   const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex };
   const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
-    const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-    if (reset.code !== 0) throw new Error(`herm: clear failed (${reset.code})\n${reset.stderr.slice(-800)}`);
+    const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+    if (found.code !== 0) throw new Error(`herm: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
   };
   const crossing: string[] = [];
   try {
@@ -576,6 +585,8 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
   const tag = opts.tag ? `${opts.tag}-` : "";
   const [portA, portB] = await Promise.all([freePort(), freePort()]);
   const rootB = mkdtempSync(join(stageDir(), `lares-staged-${tag}B-`));
+  stageGenesis(rootB);
+  seedTestCustody(rootB);
   const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
   const admit = join(rootB, "admit.json");
   let admitted: CliResult | null = null;
@@ -589,13 +600,13 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
     const A = await openStaged({
       tag: `${tag}A`, port: portA, daemonEnv: { ...(opts.daemonEnv ?? {}), ...(opts.daemonEnvA ?? {}) },
       found: async (cliA, rootA) => {
-        const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
-        if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+        const found = await cliA(["vessel", "found", "--root", rootA, "--skip-build"]);
+        if (found.code !== 0) throw new Error(`A: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
         const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
         if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
         await opts.riteA?.(cliA, rootA);
         // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
-        // `<root>/genesis`, and A's `clear` just derived it (the re-derive is an internal rite step).
+        // `<root>/genesis`, and A's founding derived it (the re-derive is an internal rite step).
         cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
         // The joinee mints FIRST, under its own root: admission signs a key the joiner already holds.
         const { mintVesselKey } = await import("./vessel-key.js");

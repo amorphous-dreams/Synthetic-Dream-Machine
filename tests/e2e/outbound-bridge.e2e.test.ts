@@ -2,7 +2,7 @@
  * e2e/outbound-bridge — the two seams between the daemon's live wiki and its disk, typed through the
  * daemon's own door.
  *
- *   B1  the OUTBOUND BRIDGE: `lares meme put <uri>` with no target lands in the daemon's `$tw.wiki`
+ *   B1  the OUTBOUND BRIDGE: `lares meme put <uri> --recipe default` lands in the daemon's `$tw.wiki`
  *       (the anchor). Nothing carries that wiki change to `IslandAdaptor.saveTiddler`, so the daemon's
  *       working store never receives it — `meme get --bag wikis/daemon/working` answers not-found.
  *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
@@ -74,14 +74,14 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   }, 150_000);
   afterAll(async () => { if (lar) await lar.stop(); });
 
-  test("CONTROL: the anchor put lands in the daemon's wiki — `meme get` with no target reads it back", async () => {
-    const put = await lar.cli(["meme", "put", uriOf(PATH_A), "--file", join(scratch, "anchor.mem"), "--json"]);
+  test("CONTROL: explicit `--recipe default` lands in the daemon wiki and reads it back", async () => {
+    const put = await lar.cli(["meme", "put", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
-    const got = await lar.cli(["meme", "get", uriOf(PATH_A), "--json"]);
+    const got = await lar.cli(["meme", "get", uriOf(PATH_A), "--recipe", "default", "--json"]);
     expect(got.json?.["ok"], said(got)).toBe(true);
   });
 
-  test("B1 the bridge (Road B): the anchor put reaches the daemon's working store — `meme get --bag wikis/daemon/working` answers", async () => {
+  test("B1 the bridge (Road B): the explicit anchor recipe reaches the daemon working store", async () => {
     // The adaptor's capture debounce (400 ms) then the store put — poll to a deadline, never a fixed nap.
     const deadline = Date.now() + 20_000;
     let got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);

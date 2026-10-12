@@ -6,10 +6,9 @@
  * author here and no parse∘render fixed point, so it sits on the seed surface by accident of arrival. Left
  * there it enters git history, and a shelf that grows with every book grows the history with it.
  *
- * The tier stands at `<lararium>/library` (or `LAR_LIBRARY`) — in the SHRINE, the house that abides while a
- * rite reforges the spirit's substrate. `vessel clear` pares `<lares>/vessel` on the premise that its blobs rebuild
- * from the bags carriers; that premise holds for derived blobs and fails completely for acquired ones, so
- * the shelf stands where no wipe reaches rather than one directory aside from one that does.
+ * The tier stands at `<lararium>/library` (or `LAR_LIBRARY`) — the acquired library home. Runtime vessel
+ * documents and acquired bodies have different owners; the separate homes keep acquired bytes independent
+ * of runtime vessel records.
  *
  *     <library>/<collection>/<cid>/<the real filename>
  *     <library>/<collection>/index.mem         (each entry's record rides its own `#/<cid>` ahu slot)

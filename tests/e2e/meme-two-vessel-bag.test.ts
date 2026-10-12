@@ -7,14 +7,14 @@
  * carries a meme whose meta holds `bag = "backpack: rope, lantern"` from A's wiki to B's.
  *
  * THE RITE, every step through the built CLI:
- *   ① A founds (a place, a face)                          `vessel clear --force` · `persona new 0`
+ *   ① A founds (a place, a face)                          `vessel found` on a marked scratch root · `persona new 0`
  *   ② B mints its OWN key first, under its OWN root       the vessel-identity mint (the genesis island stands repo-wide off A's founding)
  *   ③ A signs the edge over B's key, naming A's dial      `device-admit --joinee-key … --sync-url …`
  *   ④ B founds BY that payload                            `vessel found --admit`
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
  *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
- *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get`
- *   ⑧ B edits, promotes; A reads the edit back            `meme put --base` · `act MOVE` · `meme get`
+ *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get --bag lares`
+ *   ⑧ B edits, promotes; A reads the edit back            `meme put --recipe lares --base` · `act MOVE` · `meme get --bag lares`
  *   ⑨ the later grant lands as a RECORD on the PersonaGroup plane; B's kit takes the seat by its own act
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
@@ -146,13 +146,13 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     // resolves through the same resolver under the same binding law, late-attached above the daemon
     // bag as the default writable, and the cascade's `current-wiki-bag` re-seeds to it.
     expect(A!.bootLog()).toContain("[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working");
-    // MEASURED, not ruled: the anchor `meme put` places through the live `$tw.wiki`, and the same
+    // MEASURED: the explicit `--recipe default` places through the live `$tw.wiki`, and the same
     // `change` listener every other wiki edit rides (`outbound-bridge.ts`, wired in `sovereign-kernel.ts`)
     // carries it OUT to `IslandAdaptor.saveTiddler`. `wiki which` below reads where it landed.
     const anchorUri = "lar:///t.witness.npc/anchor";
     const f = join(A!.root, "anchor.mem");
     writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));
-    const put = await A!.cli(["meme", "put", anchorUri, "--file", f, "--json"]);
+    const put = await A!.cli(["meme", "put", anchorUri, "--recipe", "default", "--file", f, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     await new Promise((r) => setTimeout(r, 1500));
     const which = await A!.cli(["wiki", "which", anchorUri, "--no-json"]);

@@ -316,7 +316,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         if (/fatal:/.test(readAttestation())) phase = "fault";
       }
       // A verb rides the UDS SOCKET, which binds LATER than vessel-ready and later than the
-      // WS port — on a cold boot (post-rebirth), tens of seconds later. "Ready" must mean
+      // WS port — on a cold boot after founding, tens of seconds later. "Ready" must mean
       // the socket answers, or a caller (the seed leg, a hook recall) fires into the gap and
       // gets DaemonUnreachable. Poll the socket up to a cold-boot-generous deadline, still
       // bailing on a late fatal.

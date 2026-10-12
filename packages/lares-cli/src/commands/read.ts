@@ -131,7 +131,7 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
  * `lares vessel read vessel` — the DEEP health lens (the `git fsck` role, reached through the one
  * read door rather than a verb of its own): probes every Automerge doc in the vessel store through a
  * disposable child-process boundary and charts MOUNTED vs CONDEMNED (a torn doc that would
- * abort the WASM runtime on load). Read-only; a condemned doc points at `lares vessel rite rebirth`.
+ * abort the WASM runtime on load). Read-only; a condemned doc can be re-seeded from its disk holding with `lares vessel seed --apply --yes`.
  * Exits non-zero on a tear, so a boot/CI gate reads health off the exit code.
  */
 async function cmdReadVessel(args: ParsedArgs): Promise<number> {

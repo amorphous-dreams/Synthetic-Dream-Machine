@@ -21,7 +21,7 @@ import { join } from "node:path";
 import { HandleBook, type HandleBookSnapshot, type CircleStore } from "@lararium/mesh";
 import { larIdentityDir } from "./vessel-paths.js";
 
-/** The private follow-graph file — one JSON map `{ circleId -> nym[] }`, in the identity home outside every wipe. */
+/** The private follow-graph file — one JSON map `{ circleId -> nym[] }`, in the identity home beside the runtime store. */
 const CIRCLES_FILE     = ".circles-follow.json";
 /** The recogniser's serialised handle-book — others' nyms + the private labels the reader keeps for them. */
 const HANDLE_BOOK_FILE = ".handle-book.json";

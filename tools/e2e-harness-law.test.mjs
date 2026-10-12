@@ -228,7 +228,7 @@ test("CONTROL: the port scanner also reads the lowercase, compound, templated an
 
 test("CONTROL: the gated set is derived from the CLI's own tables, and names the founding and booting doors", () => {
   const gated = gatedVesselSubs();
-  for (const door of ["found", "stand", "clear"]) assert.ok(gated.includes(door), `${door} missing from ${gated}`);
+  for (const door of ["found", "stand"]) assert.ok(gated.includes(door), `${door} missing from ${gated}`);
   for (const free of ["read", "stop"]) assert.ok(!gated.includes(free), `${free} is the gate's own exception`);
 });
 
@@ -238,7 +238,7 @@ test("CONTROL: the door scanners read each planted bare door, and pass a gated o
     `lares(["vessel", "found"]);`,                                           // 1
     `await cliB(["vessel", "found", "--admit", admit]);`,                    // 2
     `spawn(process.execPath, [CLI, "vessel", "stand",\n  "--json"])`,        // 3-4
-    `cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);`,  // 5
+    `cli(["vessel", "found", "--root", root, "--skip-build"]);`,  // 5
     `lares(["vessel", "stop"]);`,                                            // 6
     `const sub = "found";`,                                                  // 7
     `cli(["vessel", sub]);`,                                                 // 8 — a var standing in for the literal

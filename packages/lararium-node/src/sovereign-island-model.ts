@@ -103,7 +103,7 @@ export function runSovereignWorker(
   // env (LAR_CAS, else <LAR_ROOT>/cas) so the fs-less worker resolves the SAME dir the CLI
   // stager wrote — process-shared filesystem, no IPC. The `wake` gesture exports LAR_CAS =
   // larCasDir() when it spawns the daemon, so this stays deterministic across the two processes.
-  // Distinct from the runtime `casDir` (engine/plugin bytes under <storage>/cas, wiped on reset):
+  // Distinct from the runtime `casDir` (engine/plugin bytes under <storage>/cas, held by the runtime store):
   // the corpus CAS is repo-relative and persistent.
   const corpusCasDir: string | null =
     process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);

@@ -104,11 +104,8 @@ export interface StopIncumbentOpts {
   readonly graceMs?: number;
   readonly pollMs?:  number;
   /**
-   * REQUIRED (M3). Hears ONCE the declared grace is spent and the port is STILL held, naming who still
-   * holds it. The wait continues past this — it is a report, never a decision point this door acts on.
-   * Making it required turns the typecheck into the witness that every stop caller wires it: before this,
-   * `rebirth.ts` called `stopIncumbent` with none at all, so a wedged daemon there hung mute while every
-   * OTHER caller already named it.
+   * REQUIRED: report the holder exactly once after this door's grace while it remains held. The wait
+   * continues until the holder exits; this report never changes the stop decision. Every caller supplies it.
    */
   readonly onPastGrace: (heldPids: readonly number[]) => void;
   /**

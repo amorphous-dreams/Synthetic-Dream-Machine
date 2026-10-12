@@ -165,7 +165,7 @@ const REAL_DEPS: FreshBuildDeps = {
  */
 function attachesWhenAlive(args: ParsedArgs): boolean {
   return args.command === "vessel" && args.positional[0] === "stand"
-    && !args.flags["restart"] && !args.flags["clear"] && !args.flags["foreground"];
+    && !args.flags["restart"] && !args.flags["foreground"];
 }
 
 export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, deps: FreshBuildDeps = REAL_DEPS): Promise<number | null> {

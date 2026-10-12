@@ -4,11 +4,10 @@
 # ── WHY THE RITE NEEDS AN INSTRUMENT AND NOT A READER ───────────────────────────────────────────
 # The founding runbook is the OPERATOR-INSTRUCTION SOURCE: a human or an agent resolves the next
 # command from it, once, on the night a hearth becomes permanent. A stale command there fails at the
-# worst moment a command can fail — mid-rite, after the clear, with the vault sealed.
+# worst moment a command can fail — mid-rite, with the vault sealed.
 #
 # And it drifts silently. Nothing in a CLI refactor reaches a prose document, so the rite keeps reading
-# fluently while naming verbs that stopped answering. The vessel collapse retired fifteen spellings in
-# one act; the rite named eleven of them.
+# fluently while naming verbs that do not answer.
 #
 # So the reading is derived rather than trusted:
 #   · every FIRST word must appear in the live `lares help` projection
@@ -17,7 +16,7 @@
 # It reads the BUILT binary, never the source — the same discipline the surface-parity witness keeps,
 # because a typecheck agrees with itself while a stale sibling dist ships a door that cannot load.
 #
-# NOTHING IS EXECUTED. The rite instructs `vessel clear --force`; a witness that ran what it checks
+# NOTHING IS EXECUTED. The rite includes founding procedures; a witness that ran what it checks
 # would burn the operator's hearth to prove the command exists.
 #
 # Exit 0 = every instructed command resolves.

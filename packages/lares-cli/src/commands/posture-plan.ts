@@ -31,7 +31,7 @@ export type Posture = (typeof POSTURES)[number];
 const READS: Record<Posture, readonly string[]> = {
   "report":     ["observe", "init", "install", "admit", "claude", "codex", "copilot", "vscode", "port", "root", "json"],
   "foreground": ["wiki", "port", "root", "debug", "json"],
-  "restart":    ["port", "clear", "fresh", "wiki", "root", "debug", "json"],
+  "restart":    ["port", "wiki", "root", "debug", "json"],
   "with-web":   [],
 };
 

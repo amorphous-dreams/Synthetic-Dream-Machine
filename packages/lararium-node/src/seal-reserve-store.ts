@@ -4,7 +4,7 @@
  * reaches disk at all) — the vessel keeps only ONE Shamir share of it (custodian "device"), sealed exactly
  * like the recovery keel's device-share, so an at-rest read of the vessel reveals a single share → nothing.
  *
- * Two carriers, both in the sovereign identity home (`larIdentityDir`, outside every substrate wipe):
+ * Two carriers, both in the sovereign identity home (`larIdentityDir`, separate from the runtime store):
  *   · the SEALED "mine" share (`seal-reserve-mine-share.bin`) — self-sovereign secret material, sealed
  *     through the same `asSelfSovereignSecret` wall the recovery device-share rides,
  *   · the PUBLIC reserve state (`seal-reserve-state.json`) — the pre-rotation commit + guardian labels +

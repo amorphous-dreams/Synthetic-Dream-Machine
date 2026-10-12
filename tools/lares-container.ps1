@@ -130,10 +130,8 @@ switch ($verb) {
   'vessel' {
     $observing = $rest -contains '--observe'
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
-    $wipe = 'removes a vessel''s state; no pave or wipe command runs through this shim (a fresh start happens by hand: move the state directory aside, then found again)'
-    if ($sub -eq 'stand' -and -not $observing) {
-      # The acting stand belongs to the host and takes no option.
-      if ($rest.Count -ne 1) { Die 'vessel stand takes no option through this shim (it stands or restarts the container); --observe reads the standing' }
+    if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
+      # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
       if (-not (HasRunningVessel)) { Compose @('up', '-d', '--wait', 'lares') }
       else {
         $answer = ObserveStanding
@@ -143,9 +141,6 @@ switch ($verb) {
     }
     # Stopping the daemon stops the container's main process: a host act.
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
-    # NO PAVE, NO WIPE: no verb of this shim removes a vessel's state.
-    elseif ($sub -eq 'clear') { Die "vessel clear $wipe" }
-    elseif ($sub -eq 'rite' -and $rest.Count -gt 1 -and $rest[1] -eq 'rebirth') { Die "vessel rite rebirth $wipe" }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
   }
   default { RouteCli (@($verb) + $rest) $true }

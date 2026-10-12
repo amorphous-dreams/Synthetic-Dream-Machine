@@ -456,11 +456,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   await generateOrLoadPersonaGroupRoot(handleIndex);
   const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
 
-  // THE VEIL SURVIVES A PRESERVING RE-PAVE. The founder-veil derives from (vesselSeed, veilTag); the tag
-  // is minted per-founding and lived ONLY in the wiped daemon doc, so a re-light after `vessel clear --force`
-  // (identity home kept) minted a FRESH tag and stood a DIFFERENT veil. When the identity home already
-  // anchors this face, its persisted tag rides back in here and `foundTheFace` re-derives the SAME veil. A
-  // genuine fresh founding (no prior anchors) carries none, and mints one — recovery never fabricates a veil.
+  // The founder-veil derives from (vesselSeed, veilTag). Identity anchors carry the tag beside the
+  // sovereign keys, so founding the same identity against a fresh store derives the same veil. A founding
+  // with no identity anchors carries no tag and mints one — recovery never fabricates a veil.
   const priorVeilTag = loadIdentityAnchors(handleIndex)?.veilTag;
 
   const face = await foundTheFace({
@@ -507,8 +505,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
     personaGroupDocIdHex:   face.personaGroupDocIdHex,
     personaGroupAgentIdHex: face.personaGroupAgentIdHex,
-    // The veil tag backstops the founder-veil across a preserving re-pave — beside the doc-ids, out of every
-    // substrate wipe, so the next re-light re-derives the SAME veil rather than minting a fresh one.
+    // The persisted veil tag and doc ids let the same identity re-derive its founder-veil on a fresh store.
     veilTag:                face.veilTag,
     // THE WEAR-REBOOT MOUNT MATERIAL. A non-active persona (mount:false) pins NONE of these into the daemon
     // doc, so a reboot could never mount-switch to it. Persisted here — all PUBLIC (a signer DID, a KEL

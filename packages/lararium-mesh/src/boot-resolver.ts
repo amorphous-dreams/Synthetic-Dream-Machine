@@ -127,13 +127,9 @@ export function isStillJoining<T>(r: DocHandle<T> | StillJoining): r is StillJoi
  * answer (`unavailable`/`failed`) is the library saying no peer will ever carry this; a DEADLINE is our own
  * patience expiring while the library said nothing at all.
  *
- * Reporting both as "local corruption" spends the operator's data to save a branch: that wording hands over
- * `rite rebirth`, which composes stop · clear · bake · stand · seed — so a vessel merely SLOW to resolve
- * under load gets told to destroy a store that was never damaged. Measured exactly so: the mesh's hearth
- * died this way beside three siblings on a stable document id, and stood clean the moment it booted alone.
- *
- * A timeout's honest first cure costs nothing — read again. Keep the destructive one for the reading that
- * actually establishes an empty store.
+ * A timeout's first recovery costs nothing: read again. If a terminally absent document is missing from the
+ * local store, restore a known-good carrier and run `lares vessel seed --apply --yes`. If the store itself
+ * is damaged, found a fresh root by hand, restore the carriers, and seed that root.
  */
 export interface BootFaultVerdict {
   /** A branch token, stable across wordings. */
@@ -150,18 +146,14 @@ export function bootFaultVerdict(
     return {
       reason:  "doc-unavailable",
       // WHAT THIS BRANCH KNOWS, AND WHAT IT DOES NOT. The library answered UNAVAILABLE: no reachable
-      // copy, here or on any peer. It did NOT read the store, so it cannot say the store holds the
-      // doc — and the earlier wording said exactly that, then handed over a rite composing
-      // stop · clear · bake · stand · seed. Measured: a vessel with SIX healthy documents, the named
-      // id among none of them, cured by deleting one stale pointer file.
+      // copy, here or on any peer. It did NOT read the store, so it cannot say the store holds the doc.
       //
-      // So the cheap cure leads and the destructive one is named as last. A message that asserts more
-      // than its branch established spends an operator's store to sound certain.
+      // The recovery names are conditional on a store reading, never on this network answer alone.
       message: `[boot] ${where} — no reachable copy: this vessel's store did not answer with it, `
              + "and no peer carries it. Read the store first with `lares vessel read vessel` — if that "
-             + "id is ABSENT there, a POINTER OUTLIVED ITS DOCUMENT and clearing the pointer is the whole "
-             + "cure. `lares vessel rite rebirth` rebuilds the vessel and is the LAST resort, for a store "
-             + "that reads damaged.",
+             + "id is ABSENT there, restore a known-good carrier and run `lares vessel seed --apply --yes`. "
+             + "If the store reads damaged, found a fresh root with `lares vessel found --root <fresh-root>`, "
+             + "restore its known-good carriers, and run `lares vessel seed --apply --yes`.",
     };
   }
   return {

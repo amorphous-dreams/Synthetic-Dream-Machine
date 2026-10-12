@@ -48,7 +48,7 @@ describe("a booting vessel holds its store", () => {
     const port = await freePort();
     const env = { LAR_ROOT: root, LAR_PORT: String(port) };
     const cli = cliFor(env);
-    expect((await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"])).code).toBe(0);
+    expect((await cli(["vessel", "found", "--root", root, "--skip-build"])).code).toBe(0);
     expect((await cli(["persona", "new", "0", "--name", "staged"])).code).toBe(0);
 
     // CONTROL: no vessel stands, so the command holds the store itself for its act.

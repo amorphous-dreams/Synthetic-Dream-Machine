@@ -5,15 +5,15 @@
  * witness reads the same law where an operator's hands reach it: a fresh root founded by the CLI, its
  * daemon bound to a socket derived from that root, and the built `lares` binary driven against it.
  *
- *   get (absent)         → not-found, nothing lands
+ *   get (absent)         → not-found, nothing lands (`--recipe lares`)
  *   put --bag lares      → refuses: a placement never shadows up (CONTROL)
  *   put (framed)         → ingest; the root and `#/a` landed
- *   get                  → the same bytes back, with the canonical hash as `base`
+ *   get                  → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
  *   put --base (fresh)   → ingest; the dropped slot tombstoned
  *   put --base (stale)   → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
  *   project --to md      → the submission pair beside `--out`
  *   project --to mem     → the canonical carrier, byte-equal to `get`
- *   project --to html    → a document, rendered from the anchor through the house html template
+ *   project --to html    → a document, rendered from the explicit daemon wiki recipe
  *
  * THE SHARED TREE STAYS STILL. A staged boot bakes its genesis INTO ITS ROOT from the plugin that
  * stands; it never rebuilds the plugin beside a parallel writer. The suite snapshots `git status` over
@@ -40,10 +40,7 @@ const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
  *   · `--recipe lares`  reaches the placement law (this seat)
  *   · `--bag daemon`    reaches it too — the daemon bag is a mounted writable layer
  *   · `--bag lares`     refuses — the bag holds no writable layer here and a placement never shadows up
- *   · no container      the ANCHOR resolves to `lar:///ha.ka.ba/wikis/daemon/temp`, which the cap gate
- *                       holds no registration for, so every anchor call refuses `cap-denied` before
- *                       the placement law is reached; `--to html` renders from the anchor alone
- * The two red-contract vectors below hold the anchor's gap: they flip loud the day it closes.
+ *   · `--recipe default` names the daemon wiki's anchor route; no omitted target is accepted.
  */
 const WIKI = ["--recipe", "lares"] as const;
 const DAEMON_WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
@@ -105,9 +102,10 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
 
   let base = "";
 
-  test("★ the ANCHOR seat (no container) reaches the placement law — its cap seat is the bag the cascade lands in ★", async () => {
-    const r = await lar.cli(["meme", "get", URI, "--json"]);
-    expect((r.json?.["error"] as Record<string, unknown>)?.["code"], said(r)).not.toBe("cap-denied");
+  test("★ a bare store read refuses by name before daemon dispatch ★", async () => {
+    const r = await lar.cli(["meme", "get", URI, "--json"]); // intentional-bare-refusal
+    expect((r.json?.["error"] as Record<string, unknown>)?.["code"], said(r)).toBe("no-container");
+    expect(r.code).toBe(2);
   });
 
   test("CONTROL: `--bag lares` refuses a put — the bag holds no writable layer and a placement never shadows up", async () => {
@@ -219,10 +217,10 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("project --to html from the anchor → a document through the house template, inside the island", async () => {
-    // html renders from the anchor alone, so the meme lands there first — the anchor's own put.
-    const put = await lar.cli(["meme", "put", URI, "--file", join(scratch, "ab.mem"), "--json"]);
+    // html renders from the daemon wiki when explicitly targeted, so the meme lands there first.
+    const put = await lar.cli(["meme", "put", URI, "--recipe", "default", "--file", join(scratch, "ab.mem"), "--json"]);
     expect(put.code, said(put)).toBe(0);
-    const r = await lar.cli(["meme", "project", URI, "--to", "html", "--no-json"]);
+    const r = await lar.cli(["meme", "project", URI, "--recipe", "default", "--to", "html", "--no-json"]);
     expect(r.code, said(r)).toBe(0);
     expect(r.stdout.trimStart().toLowerCase().startsWith("<!doctype html")).toBe(true);
     expect(r.stdout).toContain("tc-story-river");

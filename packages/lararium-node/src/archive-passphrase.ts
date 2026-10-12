@@ -573,7 +573,7 @@ export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = p
   // env var BEFORE any carrier was opened. Two clauses of one module ruled one moment differently.
   //
   // Reading the disk first settles two seams with no config change:
-  //   · a CLEARED vessel keeps `sealExpected` (`vessel clear --force` does not remove it) while no
+  //   · an empty vessel store keeps `sealExpected` while no
   //     carrier stands. The guess said `key-absent` — a FALSE floor over an empty identity home.
   //   · a BOOT-SEALED vessel carries `sealExpected: false` beside sealed bytes (the M3 re-seal never
   //     calls `setSealExpected`), so the guess short-circuited to `no-seal-expected` / `opens: true`

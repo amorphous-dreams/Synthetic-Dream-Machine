@@ -116,8 +116,8 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     const portA = await freePort();
     relayA = `ws://127.0.0.1:${portA}/ws`;
     A = await openStaged({ tag: "hostA", port: portA, found: async (cli, root) => {
-      const clear = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+      if (found.code !== 0) throw new Error(`A: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
       const face = await cli(["persona", "new", "0", "--name", "hearth-keeper"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       let i = 1;
@@ -160,8 +160,8 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     const carried = inviteB;
     const rootB = mkdtempSync(join(stageDir(), "lares-staged-walkB-"));
     B = await openStaged({ tag: "walkB", root: rootB, found: async (cli, root) => {
-      const clear = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`B: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+      if (found.code !== 0) throw new Error(`B: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
       const face = await cli(["persona", "new", "0", "--name", "wayfarer"]);
       if (face.code !== 0) throw new Error(`B: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       // A walker walks as the face it wears: unworn, the take refuses and writes nothing.
@@ -189,8 +189,8 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     expect(decodeInvite(handed)).toMatchObject({ gatePubKey: gateA, relay: relayA, token: { purpose: "walker-invite" } });
     const rootC = mkdtempSync(join(stageDir(), "lares-staged-walkC-"));
     C = await openStaged({ tag: "walkC", root: rootC, found: async (cli, root) => {
-      const clear = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`C: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+      if (found.code !== 0) throw new Error(`C: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
       for (const step of [["persona", "new", "0", "--name", "second-wayfarer"], ["persona", "wear", "0"], ["walk", "take", handed]]) {
         const r = await cli(step);
         if (r.code !== 0) throw new Error(`C: ${step.join(" ")} failed (${r.code})\n${said(r).slice(-800)}`);

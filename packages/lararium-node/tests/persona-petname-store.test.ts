@@ -2,7 +2,7 @@
  * persona-petname-store.test — the node fs adapters for the two-layer pet-names (#64 stage 4).
  *
  * The PRIVATE own-persona label map + the PUBLIC own-published-face record, each a 0o600 JSON file in the
- * identity home outside every substrate wipe. The isomorphic logic (rename/multitude-view/glamour-mint) is
+ * identity home separate from the runtime store. The isomorphic logic (rename/multitude-view/glamour-mint) is
  * proven platform-blind in @lararium/mesh; THIS exercises the node shores round-trip + the never-federates
  * wall (nothing in the private store reaches a board) over the real fs vault.
  */

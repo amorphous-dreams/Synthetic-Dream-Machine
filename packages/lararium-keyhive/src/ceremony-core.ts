@@ -148,7 +148,7 @@ export interface FoundingCeremonyResult {
   /** This vessel's OWN signed device-delegation edge (signer→vessel) — the public binding
    *  (vessel × hearthTrueName). */
   founderEdge:           DeviceDelegationTiddler;
-  /** The founder-veil tag the creator-veil stood under — persisted beside the anchors so a re-pave recovers it. */
+  /** The founder-veil tag the creator-veil stood under — persisted beside the identity anchors. */
   veilTag:               string;
 }
 
@@ -246,8 +246,7 @@ export interface FaceFoundingInput {
   hearthTrueName:     string;
   nexusPubkey:        string;
   /** A persisted founder-veil tag to RE-DERIVE the SAME creator-veil from, rather than minting a fresh one.
-   *  The identity home backstops it across a preserving re-pave (`vessel clear --force`); on re-light the node
-   *  adapter reads it back and hands it here. ABSENT (a genuine fresh founding) → the founding mints a new tag. */
+   *  The identity home carries it across store founding. ABSENT (a genuine fresh founding) → the founding mints a fresh tag. */
   veilTag?:           string;
   /** Whether this face MOUNTS — writes the SINGULAR daemon-doc pins (PersonaGroup / MeshCabal / agentId /
    *  veil-tag / signer / persona-KEL prefix / device-edge / dyad) the boot reads to run the ONE mounted
@@ -262,7 +261,7 @@ export interface FaceFoundingInput {
 
 export interface FaceFoundingResult {
   /** The founder-veil tag this founding stood the creator-veil under — minted fresh, or the persisted one
-   *  re-derived. The caller persists it beside the anchors so a later re-pave recovers the SAME veil. */
+   *  re-derived. The caller persists it beside the identity anchors. */
   veilTag:                string;
   /** The MeshCabal this face founds — a membership structure whose members read as PersonaGroups. */
   meshCabalDocIdHex:      string;
@@ -320,9 +319,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // store (both slices flush to the daemon doc; boot re-derives from the persisted tag). The vessel
   // identity keeps custody and transport; the veil keeps the group.
   //
-  // A persisted tag RE-DERIVES the SAME creator-veil across a preserving re-pave: the veil key is
-  // deterministic in (vesselSeed, veilTag), so a re-light handed the tag its identity home backstopped
-  // stands the same veilDid rather than minting a new one. Absent one, a genuine fresh founding mints.
+  // A persisted tag RE-DERIVES the SAME creator-veil: the veil key is deterministic in
+  // (vesselSeed, veilTag). Absent a tag, a genuine fresh founding mints one.
   //
   // The derivation takes the DEVICE-MINTED brand only (veil-key.ts): `vesselSeed` IS the per-vessel device
   // seed by this input's contract, so the ceremony stands as a mint door; a persona root or a PRF output

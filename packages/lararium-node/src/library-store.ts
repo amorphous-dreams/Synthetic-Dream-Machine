@@ -56,11 +56,9 @@ import { metaFenceAt } from "@lararium/tw5/root-meta";
  * `LAR_ROOT` are equally isolated; a comment naming one would send a reader to reach the operator's
  * real shelf while believing otherwise.
  *
- * IT STANDS IN THE SHRINE, NOT THE SPIRIT. `lares/vessel` is the substrate `reset` and `regenesis`
- * reforge, and an acquired body survives neither on its own merits: it has no author in any tracked tree
- * and no parse∘render fixed point, so nothing re-derives it and a wipe that reached it would end it.
- * Standing it under `lararium/` makes that structural — the tier survives because it lives in another
- * house, never because a directory stayed off somebody's list.
+ * IT STANDS IN THE SHRINE, NOT THE SPIRIT. Runtime vessel documents and acquired bodies have different
+ * owners. The acquired tier lives under `lararium/`, outside the vessel store, so its bytes do not depend
+ * on the vessel's runtime records.
  *
  * The env override exists because a shelf grows without bound and an operator may want it on another
  * disk — the one resource here likely to outgrow its default.

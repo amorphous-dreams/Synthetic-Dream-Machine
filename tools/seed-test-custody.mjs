@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // seed-test-custody — a TEST HARNESS door: found the custody of a STAGED root with a fixed test passphrase, so a
-// scripted `lares vessel found` / `vessel clear` (which has no TTY to gather a route from) finds the slot tree
+// scripted `lares vessel found` (which has no TTY to gather a route from) finds the slot tree
 // already standing. The product has no such door: a production founding gathers its route from a TTY alone and
 // no flag or env var carries a credential.
 //

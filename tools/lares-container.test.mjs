@@ -167,7 +167,7 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a verb the CLI refuses keeps its exit status, and no standing check follows`, async () => {
-    const r = await run(shim, ["meme", "get", "lar:///x"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
+    const r = await run(shim, ["meme", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
     assert.equal(r.status, 7);
     assert.doesNotMatch(r.calls, /--observe/);
   });
@@ -187,11 +187,10 @@ for (const [name, shim] of shims) {
     }
   });
 
-  test(`${name}: the host stand takes no option`, async () => {
+  test(`${name}: option-bearing host stand routes to the CLI`, async () => {
     const r = await run(shim, ["vessel", "stand", "--install"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
-    assert.equal(r.status, 2);
-    assert.match(r.stderr, /takes no option/);
-    assert.equal(r.calls, "");
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --install/);
   });
 
   test(`${name}: vessel stop stops the container from the host, never from inside it`, async () => {
@@ -201,15 +200,21 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.calls, /compose .*exec/);
   });
 
-  test(`${name}: no pave or wipe verb runs through the shim, with or without a standing vessel`, async () => {
+  test(`${name}: unknown vessel sub-doors are handed to the CLI`, async () => {
     for (const argv of [["vessel", "clear", "--force"], ["vessel", "rite", "rebirth"]]) {
-      for (const env of [MOUNTS, { ...MOUNTS, FAKE_RUNNING_ID: "cid" }]) {
-        const r = await run(shim, argv, { env });
-        assert.equal(r.status, 2, argv.join(" "));
-        assert.match(r.stderr, /no pave or wipe command/);
-        assert.equal(r.calls, "");
-      }
+      const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
+      assert.equal(r.status, 2, argv.join(" "));
+      assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs/);
+      assert.doesNotMatch(r.stderr, /no pave or wipe command/);
     }
+  });
+
+  test(`${name}: option-bearing vessel stand is validated by the CLI`, async () => {
+    const argv = ["vessel", "stand", "--restart", "--clear"];
+    const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
+    assert.equal(r.status, 2, argv.join(" "));
+    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart --clear/);
+    assert.doesNotMatch(r.stderr, /takes no option through this shim/);
   });
 
   test(`${name}: CONTROL another vessel rite still routes to the CLI`, async () => {

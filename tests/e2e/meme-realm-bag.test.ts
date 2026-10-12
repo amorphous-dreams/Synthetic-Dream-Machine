@@ -116,8 +116,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // registered book alone. Unarmed (no env) the vessel wraps nothing.
     const wireLog = { LAR_WIRE_LOG: "1" };
     A = await openStaged({ tag: "A", port: portA, daemonEnv: wireLog, found: async (cliA, rootA) => {
-      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+      const found = await cliA(["vessel", "found", "--root", rootA, "--skip-build"]);
+      if (found.code !== 0) throw new Error(`A: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
       const face = await cliA(["persona", "new", "0", "--name", "spider-steward"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       // A FOUNDS THE NEXUS, so it seats the founding kahu who tend it — three chairs, a majority of two —
@@ -136,15 +136,15 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // B: its OWN root, its own founding — a second OPERATOR, never a device of A's. C: a third, alike, that
     // never contracts.
     const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string; json: Record<string, unknown> | null }>, root: string) => {
-      const clear = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`${tag}: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
+      if (found.code !== 0) throw new Error(`${tag}: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
       const face = await cli(["persona", "new", "0", "--name", name, "--json"]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       const vk = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
       if (typeof vk === "string") rootNymOf.set(tag, vk.toLowerCase());
     };
     const dialA = { ...wireLog, LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
-    // Sequential: `vessel clear` holds the fresh-build lock, and two clears racing refuse each other.
+    // Each root is marked and founded independently before its daemon stands.
     B = await openStaged({ tag: "B", root: rootB, port: portB, found: foundOperator("B", "highland-steward"), daemonEnv: dialA });
     C = await openStaged({ tag: "C", root: rootC, port: portC, found: foundOperator("C", "court-spy"), daemonEnv: dialA });
     if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);

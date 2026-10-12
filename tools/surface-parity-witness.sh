@@ -30,11 +30,11 @@ CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
 # A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. This read `nothing to compare` and exited 0, so the
 # day the MCP surface moved or was renamed, the one witness that welds an agent's reach to an operator's
 # would have reported the cleanest run it has ever produced — over a comparison it never made. The CLI
-# half of this same file already keeps the law (`or not doors` → exit 1); the MCP half now answers to it.
+# half of this same file already keeps the law (`or not doors` → exit 1); the MCP half enforces it too.
 if not MCP.exists():
     print(f"[surface-parity] NO MCP SURFACE AT {MCP} — parity is unmeasurable, not clean.")
     print( "      An agent's reach and an operator's reach go uncompared until this file answers.")
-    print( "      If the surface moved, re-aim MCP here; if it retired, retire this witness with it.")
+    print( "      If the surface lives elsewhere, re-aim MCP here; remove this witness when the surface is absent by design.")
     sys.exit(1)
 if not CLI.exists():
     print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
@@ -72,7 +72,7 @@ if proc.returncode != 0 or not doors:
     sys.exit(1)
 
 # THE SUB-VERB MAP COMES FROM SOURCE, NEVER FROM INVOKING ANYTHING. A first draft discovered sub-verbs by
-# running each parent verb with no arguments — which is both slow and RECKLESS: `vessel stand`, `vessel rite rebirth` and
+# running each parent verb with no arguments — which is both slow and RECKLESS: `vessel stand` and
 # `reset` are not questions, and a witness that mutates the vessel it audits is worse than no witness.
 # So the sub-verbs get read out of each command module's own dispatch instead.
 CMDS = pathlib.Path("packages/lares-cli/src/commands")

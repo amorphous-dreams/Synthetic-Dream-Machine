@@ -3,9 +3,9 @@
  * not stand a split provider.
  *
  * ── THE FAULT THIS PINS ──────────────────────────────────────────────────────────────────────────
- * The founder-veil key derives from (vessel seed × a per-founding tag). A preserving re-pave
- * (`vessel clear --force`, identity home untouched) wipes the daemon store but keeps the veil archive on
- * disk; re-lighting the face mints a FRESH tag, so the next lit boot derives a NEW veil key while the
+ * The founder-veil key derives from (vessel seed × a per-founding tag). Restoring a store from a different
+ * founding while retaining an unrelated veil archive leaves that archive on disk; founding the face mints
+ * a FRESH tag, so the next lit boot derives a NEW veil key while the
  * ORPHANED archive of the prior veil still loads. keyhive's `Archive.tryToKeyhive` then restores the
  * archive's OWN identity — so `whoami` reads the archive's key while `contactCard` presents the seed's
  * signer. A peer that receives the card learns the signer id, never the whoami id the delegate names, and
@@ -14,8 +14,7 @@
  *
  * The identity a boot stands is the SEED's, always — the archive is a cache of prekey secrets and the
  * membership DAG for THAT identity, never an identity of its own. So an archive whose identity disagrees
- * with the seed is stale and must be discarded (the caller's event-store hydrate re-establishes the live
- * membership), exactly as `rm -rf identity` would.
+ * with the seed is stale and must be discarded; the event-store hydrate re-establishes live membership.
  */
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
@@ -23,7 +22,7 @@ import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 const SEED_A = new Uint8Array(32).fill(0xa1);
 const SEED_B = new Uint8Array(32).fill(0xb2);
 
-/** Stand identity A, mint a sentinel, export its archive — the orphaned veil archive a re-pave keeps. */
+/** Stand identity A, mint a sentinel, export its archive. */
 async function archiveOfA(): Promise<{ archive: Uint8Array; whoamiA: string; agentA: string }> {
   const a = new KeyhiveProvider();
   await a.init({ seed: SEED_A, eventStore: new InMemoryEventStore() });
@@ -42,7 +41,7 @@ describe("a stale archive under a mismatched seed", () => {
   test("★ the provider stands ONE consistent identity — the seed's, not the archive's ★", async () => {
     const { archive } = await archiveOfA();
 
-    // Boot under seed B with A's archive — the preserving-re-pave shape.
+    // Boot under seed B with A's archive — the mismatched-store shape.
     const boot = new KeyhiveProvider();
     await boot.init({ seed: SEED_B, eventStore: new InMemoryEventStore(), archiveBytes: archive });
 
