@@ -273,6 +273,18 @@ forges a shared reserve seed split across guardian cards
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/reserve">>), and `seal commit --seat`,
 `seal reseat` and the catastrophe rite stand unbuilt.
 
+''A head armed with the reserve's commit never rolls.'' `seal rotate` reveals vault persona roots alone;
+no verb carries a card into a rotation, rebuilds the reserve seed for a roll, or seats a reserve-derived
+key, so the cards restore no charter
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>). `seal show`
+reads such a head as `reserveArmed`. `seal rotate` refuses it by name (`reserve-armed`) and names the
+genesis re-seat while the chain stands unrotated; past genesis that head stands frozen. A roll armed
+with the reserve's own commit refuses too (`reserve-commit-unrevealable`), because a chain past genesis
+never re-seats. `seal reserve rehearse` reads two cards back under a scratch root and proves the
+rebuilt key-set against the charter head; it writes nothing and rolls nothing. The field's principles for
+a recovery object and its reader rest on the shelf
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
+
 !!! Owed in code ~ names that blur the relations
 
 * ''The vessel key signs for two relations'' — the place's carrier seal and the wire's proof (the gate
@@ -393,9 +405,10 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-RBdAvpj18_qYE8JzY6pJo5bXnomEqvioZPAqK1MTmU
+<<^ code="&#x0003;">>ni:///sha-256;6xKZ7xWIpC8KMd1XBsoUlxdMUGzaVe63NYXhCPNWHEA
 
 <<^ code="&#x0004;" -> to="?">>
