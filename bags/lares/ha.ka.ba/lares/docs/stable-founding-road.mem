@@ -44,6 +44,7 @@ git and the CHANGELOG, never here. The live wounds and the vitals read in
 !!! The house as a container
 * ''All CODE runs dockerized''; the host keeps only the hooks into the operator's environment (files and bags, session capture, the editor and CLI entry, custody).
 * ''ONE Lararium per HUMAN, never per face.'' A human's faces keep their data together in one vessel (`PRIVATE-all, PUBLIC-one`); the recorded face-switch act carries plurality. No design assumes a container or a state mount per face.
+* ''A SESSION wears the face; the vessel wears none'' (operator ruling, 2026-10-11; quote license: //"a human might want a tab open as one Persona, and a tab open as another Persona... same vessel. Identity as relation."// and //"a CLI session wears its own face too … those act as ephemeral UX"//). A vessel holds its roots and one store. A session — a browser tab, a CLI run — contracts in as ONE persona, and several sessions may live at once over one vessel, each wearing its own. Every act carries exactly one face. Two faces live from one vessel never link on the wire: each session proves itself under its own face-scoped key, never under a key the vessel shares across them. The vessel-wide parts (custody, the daemon island) serve every session and let none read another's planes.
 * ''Local-first first.'' Cloud "backup larariums" under other humans' delegated keys stand DEFERRED until the operator can deploy to a cloud surface. Nothing in the container or the face-switch work may foreclose a keyless ciphertext carrier later.
 * ''The boundary'' (settled by the house under those rulings): one multi-arch image; `/workspace` mounts bags and wikis, `/state` mounts vessel homes and custody, never an image layer; the local socket stays INSIDE the container and the host CLI enters through `docker compose exec`; the app never receives the docker socket; mDNS offers unauthoritative LAN candidates and a pinned admission alone grants authority; DNS-01 wildcard TLS supplies browser secure contexts; a release manifest binds the image digest to the genesis, engine and grammar CIDs.
 
@@ -202,6 +203,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''R-EMBER'': a household's first ember stands on its second device, which needs the fleet-join door; the slot tree carries passphrase and paper pins today, and this slice adds the ember pin kind.
 
 !!! 5 · ONE FACE ~ the recorded switch act (waits on the signer and the realm shapes)
+⚠ ''This slice predates the session ruling'' (#/rulings: a SESSION wears the face). Read every bullet below against it: the switch act closes and re-dials ONE session's links, never every session the vessel holds; `persona wear` acts on a session; a face resolves once per session's island boot. The slice gets re-cut when the model study of that ruling reports.
 * One act across mesh, node, browser and CLI: it closes EVERY Nexus session the vessel holds, rebinds, and re-dials as the incoming face under a scoped leaf proof. The local record names the outgoing and incoming faces with causal position, rebind result and re-dial result; the wire carries only the incoming session's proof, never a cross-face link.
 * A personal Handle never rides without its owning face; one current personal Handle per PersonaGroup; a collective quorum Handle stays separate.
 * `persona wear` today moves a selector and asks for a reboot; the running worker and every held session keep the prior face until then.
@@ -266,6 +268,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;de-r1tMDAwVVqGEG2AXKIFpCWy153Qlps7v9l63pP7U
+<<^ code="&#x0003;">>ni:///sha-256;IXc3Vz6zQXF7j1vFpTIXNV3j00lLoorlVgwXHRUreJA
 
 <<^ code="&#x0004;" -> to="?">>
