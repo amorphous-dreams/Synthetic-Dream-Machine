@@ -1,6 +1,11 @@
 export type { CorpusSource } from "./node-host.js";
 export { REPO_ROOT, bagsRoot } from "./node-host.js";
 export {
+  createLanAnnouncement, encodePtrQuestion, encodeLanResponse, decodeLanPacket,
+  createLanAnnouncer, createLanListener, candidatePin, dgramLanSocket,
+} from "./lan-discovery.js";
+export type { LanAnnouncement, LanCandidate, LanSocket, LanDatagramSocket, LanPacket, LanRecord } from "./lan-discovery.js";
+export {
   larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
   larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
   larMempalaceDir, larContentDir, scratchSensoriumDir, scratchSensoriumInstanceDir,

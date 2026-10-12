@@ -25,6 +25,8 @@
  *   LAR_ORACLE_ORIGIN — explicit oracle/read-face origin (or set origins.oracle in config.json).
  *   LAR_SAME_ORIGIN  — true/false explicit declaration that every surface the standing has shares the
  *                      relay face's origin: relay = read for a herm, relay = read = Web for a lararium.
+ *   LAR_LAN_DISCOVERY — `announce` answers mDNS questions for `_lararium._tcp` with a bare service and port
+ *                      (candidates only; lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery); unset or empty keeps it off.
  *
  * Bootstrap:
  *   The boot prints the catalog Automerge URL to stdout.
@@ -73,6 +75,7 @@ import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid, readGenesisSeedBytes, parseGenesisSeed } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
+import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
 
 
 // ---------------------------------------------------------------------------
@@ -184,6 +187,12 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
 
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
+  // pass the variable through; any other word refuses by name before a face listens.
+  const lanDiscoveryMode = process.env["LAR_LAN_DISCOVERY"] || undefined;
+  if (lanDiscoveryMode !== undefined && lanDiscoveryMode !== "announce") {
+    throw new Error(`[lararium] LAR_LAN_DISCOVERY refuses value ${JSON.stringify(lanDiscoveryMode)}; supported value: announce`);
+  }
   const receiptsCfg = loadLaresConfig() as unknown as ReceiptsRingConfig;
   const receiptRing = receiptsCfg.receipts?.ring !== undefined ? ratedReceiptRing(receiptsCfg.receipts.ring) : undefined;
   // ORIGIN CUSTODY STAYS WITH A PRESENT KEEPER. A herm is a waystone: it carries for peers, informs
@@ -234,6 +243,7 @@ async function main(): Promise<void> {
   // WS server — path-scoped to /ws. The dispatcher routes each upgrade to the one socket face that claims
   // its path and destroys the rest. Catalog URL advertised via stdout.
   const httpServer = createServer();
+  let lanSocket: LanDatagramSocket | null = null;
   const dispatcher = mountHttpFaceDispatcher(httpServer);
   const wss = new WebSocket.Server({ noServer: true });
   // Health names only the local boot posture. It carries no peer, document,
@@ -279,6 +289,19 @@ async function main(): Promise<void> {
   httpServer.listen(port, () => {
     console.log(`[lararium] WS relay on :${port} — every interface answers:`);
     for (const f of reachFaces) console.log(`[lararium]   ${wsUrlForOrigin(f.origin)}   (${f.kind})`);
+    if (lanDiscoveryMode === "announce") {
+      try {
+        lanSocket = dgramLanSocket();
+        lanSocket.onError((error) => console.log(`[lararium] LAN discovery socket error: ${error.message}`));
+        const announcer = createLanAnnouncer({ socket: lanSocket, announcement: createLanAnnouncement(port) });
+        announcer.announce();
+        console.log(`[lararium] LAN discovery: announcing _lararium._tcp on :${port} (candidates only; a pinned admission alone grants authority)`);
+      } catch (error) {
+        lanSocket?.close();
+        lanSocket = null;
+        console.log(`[lararium] LAN discovery socket error: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
   });
 
   // ── THE BASE COURSE — every vessel stands as a Herm, and the hearth is what it LIFTS to ──────────────
@@ -454,6 +477,7 @@ async function main(): Promise<void> {
         readinessFace.dispose();
         pronaos?.dispose();
         hermUds.close();
+        lanSocket?.close();
         httpServer.close();
         dispatcher.dispose();
         await herm.dispose();          // read-face + daemon island flush, then the composed vessel
@@ -681,6 +705,7 @@ async function main(): Promise<void> {
       oracleReadFace?.dispose();
       dispatcher.dispose();
       uds.close();
+      lanSocket?.close();
       httpServer.close();
       // M17: print the INSTANT this step resolves, never waiting for the final line below. The
       // final "shutdown complete" line only prints once islands AND daemon have also acked (or
