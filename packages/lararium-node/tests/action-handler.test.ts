@@ -16,6 +16,8 @@ import { describe, test, expect } from "vitest";
 import {
   CompositeStore,
   ACTION_VERBS,
+  BAG_WRITING_VERBS,
+  isVerbRefusal,
   newChangeId,
   isEffectRecordUri,
 } from "@lararium/mesh";
@@ -383,20 +385,83 @@ describe("DROP handler", () => {
     expect(afterSecond).toEqual(afterFirst);
   });
 
-  test("M13: ADD / COPY / MOVE into a DROPped bag refuse by name and point at CREATE", async () => {
+  test("M13: every bag-writing verb into a DROPped bag refuses by name and points at CREATE", async () => {
     const composite = makeComposite();
     const table = new VerbTable();
     registerActionReactors(table, { composite });
     await seedTiddler(composite, BAG_LOW, "A", "a", "c-1");
     const drop = { bag: BAG_MID };
     await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
-    for (const verb of ["ADD", "COPY", "MOVE"] as const) {
-      const args = { title: "A", "from-bag": BAG_LOW, "to-bag": BAG_MID, "change-id": "c-1" };
+    const argsFor = (verb: string, bag: string): Record<string, unknown> => {
+      if (verb === "CLEAR") return { bag };
+      if (verb === "LOAD") return { "source-uri": "seed", "to-bag": bag, "change-id": "c-1", carriers: [] };
+      if (verb === "INGEST") {
+        const carrier = { uri: "lar:///ha.ka.ba/x/A", text: "a", diskHash: "d", syncedHash: null };
+        return { "source-uri": "seed", "to-bag": bag, "change-id": "c-1", carriers: [carrier] };
+      }
+      return { title: "A", "from-bag": BAG_LOW, "to-bag": bag, "change-id": "c-1" };
+    };
+    expect(BAG_WRITING_VERBS).toContain("CLEAR");
+    for (const verb of BAG_WRITING_VERBS) {
+      const args = argsFor(verb, BAG_MID);
       await expect(table.get(verb)!(args, makeContext(composite, verb, args))).rejects.toThrow(/bag-retired:.*CREATE/);
     }
     // CONTROL: a bag never dropped takes the same write.
     const ok = { title: "A", "from-bag": BAG_LOW, "to-bag": BAG_HIGH, "change-id": "c-1" };
     await table.get("COPY")!(ok, makeContext(composite, "COPY", ok));
+  });
+
+  test("a CLEAR of a DROPped bag writes nothing into the retired doc and refuses with the reason bag-retired", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    await seedTiddler(composite, BAG_MID, "A", "a");
+    const drop = { bag: BAG_MID };
+    await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
+    const before = JSON.stringify([...(await composite.listVisible())].sort());
+    const beforeRecords = (await effectRecordsIn(composite)).length;
+
+    const args = { bag: BAG_MID };
+    const err = await table.get("CLEAR")!(args, makeContext(composite, "CLEAR", args)).then(() => null, (e: unknown) => e);
+    expect(isVerbRefusal(err)).toBe(true);
+    expect((err as { reason: string }).reason).toBe("bag-retired");
+    expect((err as Error).message).toMatch(/bag-retired: CLEAR of /);
+    expect(JSON.stringify([...(await composite.listVisible())].sort())).toBe(before);
+    expect((await effectRecordsIn(composite)).length).toBe(beforeRecords);
+  });
+
+  test("a refused ADD into a DROPped bag is a VerbRefusal named bag-retired", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    await seedTiddler(composite, BAG_LOW, "A", "a", "c-1");
+    await table.get("DROP")!({ bag: BAG_MID }, makeContext(composite, "DROP", { bag: BAG_MID }));
+    const args = { title: "A", "from-bag": BAG_LOW, "to-bag": BAG_MID, "change-id": "c-1" };
+    const err = await table.get("ADD")!(args, makeContext(composite, "ADD", args)).then(() => null, (e: unknown) => e);
+    expect(isVerbRefusal(err)).toBe(true);
+    expect((err as { reason: string }).reason).toBe("bag-retired");
+  });
+
+  test("a denied destination cap refuses by name: cap-denied", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    const args = { bag: BAG_MID };
+    const ctx = { ...makeContext(composite, "CLEAR", args), cap: denyCap(BAG_MID) };
+    const err = await table.get("CLEAR")!(args, ctx).then(() => null, (e: unknown) => e);
+    expect(isVerbRefusal(err)).toBe(true);
+    expect((err as { reason: string }).reason).toBe("cap-denied");
+    expect((err as Error).message).toMatch(/^cap-denied: admin on /);
+  });
+
+  test("CONTROL: a second DROP still answers retiredCount:0 (DROP writes no content)", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    const drop = { bag: BAG_MID };
+    await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
+    const again = await table.get("DROP")!(drop, makeContext(composite, "DROP", drop));
+    expect(again["retiredCount"]).toBe(0);
   });
 });
 

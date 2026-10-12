@@ -1,7 +1,7 @@
 /**
  * action-handler — Residency Model ACTION verb handler family.
  *
- * Dispatches the six ACTION verbs (ADD / COPY / MOVE / CLEAR / DROP / LOAD)
+ * Dispatches the ACTION verbs (ADD / COPY / MOVE / CLEAR / DROP / LOAD / INGEST / CREATE)
  * against a CompositeStore, wrapped in `withEffectRecord` so every bag
  * mutation lands together with its archival audit tiddler. The verb-tiddler
  * dispatch pipeline routes operator-submitted verb-tiddlers through a
@@ -19,9 +19,12 @@
  *   DROP    tombstone every live title in bag (same enumeration as CLEAR) + the
  *           bag-level disposition record marks the bag removed. True bag-removal
  *           from the recipe is a separate operator gesture (recipe edit).
- *   LOAD    external content fetch — not implemented. Handler throws an
- *           explicit "not yet implemented" error so the verb-table registers but
- *           the operator surface fails loudly rather than silently no-ops.
+ *   LOAD    land operator-supplied carriers into toBag. The island never fetches:
+ *           the operator gesture sends the content with the verb, each carrier
+ *           decomposes through `opts.tw5` by its TW5 filetype, and a verb that
+ *           carries no carriers refuses loudly.
+ *   INGEST  disk -> records through the ingest gate, replace-by-group apply.
+ *   CREATE  mint a bag's doc, register its cap, then designate it in the plane registry.
  *
  * Cap-verify discipline:
  *   - destination-bag admin required for every verb
@@ -49,6 +52,7 @@ import {
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
   isEffectRecordUri, parseEffectRecord, effectRecordUri,
+  writesBag, VerbRefusal,
 } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
@@ -408,7 +412,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       const root  = action.plane === "oracle" ? ORACLE_DOC_URI : CATALOG_DOC_URI;
       const proof = await ctx.cap(grade, root);
       if (!proof.ok) {
-        throw new Error(`cap-denied: ${grade} on ${root} required to CREATE in @${action.plane} plane (${proof.reason ?? "no reason"})`);
+        throw new VerbRefusal("cap-denied", `cap-denied: ${grade} on ${root} required to CREATE in @${action.plane} plane (${proof.reason ?? "no reason"})`);
       }
       if (dryRun) {
         const cap = makeCapturingBagAccess(makeBagAccess(opts));
@@ -421,7 +425,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // Cap-verify destination bag (every verb)
     const destBag = destinationBag(action);
     const destProof = await ctx.cap("admin", destBag);
-    if (!destProof.ok) throw new Error(`cap-denied: admin on ${destBag} required (${destProof.reason ?? "no reason"})`);
+    if (!destProof.ok) throw new VerbRefusal("cap-denied", `cap-denied: admin on ${destBag} required (${destProof.reason ?? "no reason"})`);
 
     // THE SOURCE CARRIES A CAP TOO, and every transfer verb reaches across it. The caller names the
     // source, and this handler reads it with its own reach across both planes — so an unchecked source
@@ -452,7 +456,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       const tierOf = (bag: string): CapTier => opts.bagTier?.(bag) ?? "veil";
       const cost = crossingDirection({ from: tierOf(action.fromBag), to: tierOf(destBag) });
       if (cost.needsQuorum) {
-        throw new Error(
+        throw new VerbRefusal("crossing-outward",
           `crossing-outward: ${action.verb} ${action.fromBag} -> ${destBag} carries ` +
           `${tierOf(action.fromBag)} material into ${tierOf(destBag)} and relaxes confinement — ` +
           `an outward crossing wants the kahu quorum, and no quorum signature rides this invocation`,
@@ -460,7 +464,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       }
       const grade: "read" | "admin" = action.verb === "MOVE" ? "admin" : cost.sourceGrade;
       const srcProof = await ctx.cap(grade, action.fromBag);
-      if (!srcProof.ok) throw new Error(`cap-denied: ${grade} on ${action.fromBag} required (${srcProof.reason ?? "no reason"})`);
+      if (!srcProof.ok) throw new VerbRefusal("cap-denied", `cap-denied: ${grade} on ${action.fromBag} required (${srcProof.reason ?? "no reason"})`);
     }
 
     // Resolve each bag's store by ACCESS — the daemon mounts nothing, it reaches
@@ -480,14 +484,14 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     }
 
     // A RETIRED bag takes no landing. DROP wrote the retirement marker into the bag's own doc;
-    // a write verb that reads it refuses BY NAME and points at CREATE, which mints a fresh doc and
-    // re-points the registry row. Without the refusal a write answers success into a doc CREATE
-    // then abandons (M13). Preview refuses the same.
-    if (verb === "ADD" || verb === "COPY" || verb === "MOVE" || verb === "LOAD" || verb === "INGEST") {
+    // every verb the residency table marks as writing into a bag refuses BY NAME and points at
+    // CREATE, which mints a fresh doc and re-points the registry row. Without the refusal a write
+    // answers success into a doc CREATE then abandons (M13). Preview refuses the same.
+    if (writesBag(verb)) {
       const destStore = await access.write(destBag);
       if (destStore && await storeIsRetired(destStore, destBag)) {
-        throw new Error(
-          `bag-retired: ${verb} into ${destBag} refused — the bag was DROPped and takes no writes. ` +
+        throw new VerbRefusal("bag-retired",
+          `bag-retired: ${verb} ${verb === "CLEAR" ? "of" : "into"} ${destBag} refused — the bag was DROPped and takes no writes. ` +
           `CREATE ${destBag} to stand a fresh bag, then write again.`,
         );
       }
@@ -676,24 +680,26 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
       // Preview: skip the mint + registry write; report the would-mint. The
       // `creation` effect-record (written via access.write) is captured by the
       // dry-run access, so it surfaces in wouldLand — nothing commits.
-      return { bag: action.bag, plane: action.plane, docUrl: "(dry-run: would mint)", wouldRegister: true, count: 1 };
+      return { bag: action.bag, plane: action.plane, docUrl: "(dry-run: would mint)", wouldRegister: true, count: 0 };
     }
     const handle = reach.repo.create(emptyLarDoc());
     await handle.whenReady();
     const docUrl = String(handle.url);
+    // Born-with-its-cap: register the new bag's Keyhive Document + delegate admin
+    // in the SAME act as the mint, BEFORE the registry row designates it. A cap that
+    // refuses leaves the fresh doc unnamed and unreachable and the registry as it
+    // stood, so a re-run mints again. Without the cap a bag would hold a catalog
+    // entry (designation) but no authority — a follow-up write cap-denies. Key on the
+    // lar: bag URL (`action.bag`) — the same string the cap-gate's verify() and
+    // boot-registration key on; the automerge docUrl names the CONTENT doc, a
+    // different object.
+    await opts.registerBag?.(action.bag);
     const regHandle = await registry.handle();
     regHandle.change((doc) => {
       const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
       tiddlers[action.bag] = mutableLarRecord(action.bag, { text: docUrl, kind: "oracle" }, "lares-verb:CREATE");
     });
-    // Born-with-its-cap: register the new bag's Keyhive Document + delegate admin
-    // in the SAME act as the mint. Without it the bag holds a catalog entry
-    // (designation) but no cap (authority) — a follow-up write cap-denies until a
-    // restart re-registers it (the elyncia-bag seed friction). Key on the lar: bag URL
-    // (`action.bag`) — the same string the cap-gate's verify() and boot-registration
-    // key on; the automerge docUrl names the CONTENT doc, a different object.
-    await opts.registerBag?.(action.bag);
-    return { bag: action.bag, plane: action.plane, docUrl, count: 1 };
+    return { bag: action.bag, plane: action.plane, docUrl, count: 0 };
   });
 }
 

@@ -12,7 +12,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { CompositeStore, emptyLarDoc, AutomergeDocStore, effectRecordUri } from "@lararium/mesh";
+import { CompositeStore, emptyLarDoc, AutomergeDocStore, effectRecordUri, isVerbRefusal } from "@lararium/mesh";
 import type { Repo, DocHandle, LarDoc, Verb } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -96,6 +96,76 @@ describe("CREATE — born with its cap", () => {
     const result = await reactor({ bag: "lar:///ha.ka.ba/bags/nocap" }, makeContext());
     expect(result.plane).toBe("catalog");
     expect(typeof result.docUrl).toBe("string");
+  });
+});
+
+describe("CREATE — designates only after the cap stands", () => {
+  const bag = "lar:///ha.ka.ba/bags/cap-first";
+  const registryRow = async (repo: Repo): Promise<unknown> =>
+    (await repo.find(CATALOG_URL)).doc()!.tiddlers[bag];
+
+  test("a registerBag that throws leaves no registry row, and the caller reads the cap's own error", async () => {
+    const { repo } = makeFakeRepo();
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+      registerBag: async () => { throw new Error("cap-register-refused"); },
+    });
+    await expect(reactor({ bag }, makeContext())).rejects.toThrow(/cap-register-refused/);
+    expect(await registryRow(repo)).toBeUndefined();
+  });
+
+  test("a re-run after the refusal mints again and stands one row, not alreadyStood", async () => {
+    const { repo } = makeFakeRepo();
+    let calls = 0;
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+      registerBag: async () => { if (++calls === 1) throw new Error("cap-register-refused"); },
+    });
+    await expect(reactor({ bag }, makeContext())).rejects.toThrow(/cap-register-refused/);
+    const ok = await reactor({ bag }, makeContext());
+    expect(ok.alreadyStood).toBeUndefined();
+    expect(await registryRow(repo)).toBeDefined();
+  });
+
+  test("registerBag runs before the registry row stands", async () => {
+    const { repo } = makeFakeRepo();
+    const seen: unknown[] = [];
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+      registerBag: async () => { seen.push(await registryRow(repo)); },
+    });
+    await reactor({ bag }, makeContext());
+    expect(seen).toEqual([undefined]);
+    expect(await registryRow(repo)).toBeDefined();
+  });
+
+  test("a fresh bag counts zero, live and dry-run", async () => {
+    const { repo } = makeFakeRepo();
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+    });
+    const dry = await reactor({ bag, "dry-run": true }, makeContext());
+    expect(dry.dryRun).toBe(true);
+    expect(dry.count).toBe(0);
+    expect(await registryRow(repo)).toBeUndefined();
+    const live = await reactor({ bag }, makeContext());
+    expect(live.count).toBe(0);
+  });
+
+  test("a CREATE cap denial is a VerbRefusal named cap-denied", async () => {
+    const { repo } = makeFakeRepo();
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null },
+    });
+    const ctx = { ...makeContext(), cap: async () => ({ ok: false, reason: "no" }) } as VerbContext;
+    const err = await reactor({ bag }, ctx).then(() => null, (e: unknown) => e);
+    expect(isVerbRefusal(err)).toBe(true);
+    expect((err as { reason: string }).reason).toBe("cap-denied");
   });
 });
 
