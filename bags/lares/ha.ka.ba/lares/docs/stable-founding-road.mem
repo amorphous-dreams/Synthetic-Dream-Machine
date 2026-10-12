@@ -19,8 +19,8 @@ uri-path  = "ha.ka.ba/lares/docs/stable-founding-road"
 !! The attractor ~ STABLE FOUNDING
 
 ''STABLE FOUNDING'' names the state the house grows toward (operator-ruled). Once a Lararium stands, its
-base state reads STABLE: a PRIVATE personal Nexus for the operator's own devices, and a FOUNDED PERSONA
-ZERO. Everything else flows downstream of it — contracting into other Nexuses, inviting the operator's own
+base state reads STABLE: a PRIVATE household SEED (its own charter, one seat) for the operator's own devices, and a FOUNDED PERSONA
+ZERO. Everything else flows downstream of it — contracting into other Nexuses and founding a Nexus with a second operator, inviting the operator's own
 PersonaGroup devices, and hosting guests who walk.
 
 This carrier holds the road there and ONLY what still binds or stays unbuilt: the rulings (#/rulings), the
@@ -37,7 +37,7 @@ git and the CHANGELOG, never here. The live wounds and the vitals read in
 
 !!! The live test and the fence
 * ''The live test runs with TWO operators on two machines from its first day'': the operator and the operator's daughter, in one house. The face-switch act, the cabal plane, the custody seal and the engine fold ALL land before it.
-* ''The fence.'' The second human's contract-in as a kahu cabal-mate ENDS the alpha line. Every destroy-class or shape-changing act lands BEFORE it: the engine re-mint and the genesis re-bake; the carrier and key-class changes; the Stable re-found (AID, charter, seat, keyring); every signed-shape change; every load-bearing rename. After it, data deserves a migration path.
+* ''The fence.'' The second human's SEAT beside the first at the first Nexus's founding ENDS the alpha line. Every destroy-class or shape-changing act lands BEFORE it: the engine re-mint and the genesis re-bake; the carrier and key-class changes; the Stable re-found (AID, charter, seat, keyring); every signed-shape change; every load-bearing rename. After it, data deserves a migration path.
 * ''A working Lararium comes first'': Live Wiki Browser -><- Live Node, under manual QA on one machine. Sensorium work waits behind that milestone.
 * ''Face plurality stands as a day-one requirement.'' Each of the two humans wears at least three faces, each with a public Handle, on the first Nexus.
 
@@ -53,11 +53,11 @@ git and the CHANGELOG, never here. The live wounds and the vitals read in
 * ''Lapse rides a causal fence'': an epoch roll, a burn marker, or causal supersession at a verified relation fence. A replica missing that history reports an incomplete view, never "expired"; quiet never means lapse.
 
 !!! The Stable state and its consequences
-* ''Every Nexus has a charter.'' The household stands as its own kahu cabal: a CABAL-OF-ONE reads pono, because humans act as pluralities anyway. One "I" may hold several PersonaGroups, independent or aware of each other. A Nexus grows by adding seats, never by changing kind.
-* ''Guests walk the private Nexus.'' Planes stay persona-scoped, so a guest sees its own documents plus the public and infrastructure shelf.
+* ''Every Lararium holds a charter.'' One operator's charter reads as a SEED and two operators' seats in one charter read as a NEXUS (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). A household seed never grows into a Nexus; a Nexus founds fresh at threshold two of two. One "I" may hold several PersonaGroups. A Nexus grows by adding seats through its own rolls.
+* ''Guests walk the household seed.'' Planes stay persona-scoped, so a guest sees its own documents plus the public and infrastructure shelf.
 * ''Add-a-face (A).'' The daemon writes the public half; the terminal seals the recovery share; seating stays a separate act.
 * ''Every leaf starts at the floor with its own root.'' A human may later JOIN a leaf to a PersonaGroup so its devices sync as one fleet; joining never takes the device's own root away.
-* ''Founding persona zero belongs to standing'', never to a later verb. A capable vessel founds its private Nexus, so a "vessel with no charter" reads Mu.
+* ''Founding persona zero belongs to standing'', never to a later verb. A capable vessel founds its household seed, so a "vessel with no charter" reads Mu.
 * ''Stable folds into the re-found'' as its core.
 * ''Forks report per board'': every presenter names every fork on the board it reads (the KERI watcher shape).
 
@@ -70,7 +70,7 @@ git and the CHANGELOG, never here. The live wounds and the vitals read in
 * ''Herm tending'': tending may reach the herm's key; the house accepts that reach and names it (operator ruling).
 * ''Introduction and admission'': a user introduces; an operator admits; the answer consumes the introduction (operator ruling).
 * ''Names and counters'': the keyring epoch name joins (Nexus AID, `epochCid`); a counter orders one writer's own emissions only. The convergence secret stays per Nexus, and the face lives at the session capability (operator ruling).
-* ''Kahu acts fall into four chartered classes'': ordinary (1-of-1); high-impact — charter, admission, trust root (3-of-5, or 2-of-3 for a small body); emergency (2-of-3, a narrow pre-authorized power reviewed by a later causal act); revocation (the threshold of the original act). A challenge appends to the record and may pause LOCAL reliance; it never halts the protocol.
+* ''Kahu acts fall into four chartered classes'': ordinary (1-of-1); high-impact — charter, admission, trust root (3-of-5, or 2-of-3 for a small body); emergency (2-of-3, a narrow pre-authorized power reviewed by a later causal act); revocation (the threshold of the original act). A challenge appends to the record and may pause LOCAL reliance; it never halts the protocol. Admission of a Kahu or a Lamplighter always takes the seat quorum, and no ordinary single-seat class covers it; kapae and rolls take the quorum too; the user road rides its own bound (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
 * ''Renewal runs as three sequences, kept apart'' (the realm feed, a per-renewal causal position, the KEL), and lapse arrives as three distinct events: signed departure, recorded removal by relation-scoped kapae, renewal supersession.
 * ''A cancel crossing a herm yields three receipts'': the caller's abandonment, the relay's delivery (transit only), the vessel's outcome. A caller timeout never counts as a cancel; eviction answers `retention-gap`.
 * ''One face at a time names WHO ANSWERS for an act.'' The switch law reads in `lar:///ha.ka.ba/lares/api/pono/persona-policy#/one-face`.
@@ -133,7 +133,7 @@ still on the road.
 sentinel) change ONCE, inside one train. ''The owner law'': each slice lands its logic in modules, and one
 named owner per step commits the one compose hunk in `open-node-vessel.ts` and `open-browser-vessel.ts`;
 every other lane stops at a module boundary. Each lane's first commit carries its canon. ''The fence''
-(#/rulings) bounds the whole road: every slice that changes a shape lands before the second human contracts in.
+(#/rulings) bounds the whole road: every slice that changes a shape lands before the second operator seats a key in the first Nexus.
 
 ''The order'': GROUND → SUBSTRATE → HARBOR → KAHU PLANE → ONE FACE → TWO HEARTHS. The re-found's train
 rides inside it — R-ENGINE's fold and R-CUSTODY's seal in SUBSTRATE; R-CHARTER → R-WIRE, then R-KAHU,
@@ -186,9 +186,10 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''Thresholded admission and promotion'': the four chartered classes and exact-bytes promotion of #/rulings; chartered Kahu-cabal admission as its own authority act, where a vouch alone admits nobody.
 
 ''R-CHARTER, the one AID train'' (waits on SUBSTRATE whole).
-* ''The Stable founding act'': one interactive act under one passphrase (the VK's first slot) yields the place, persona zero, a PRIVATE charter as a cabal-of-one (one seat, t=1, per-seat next digests) and a keyring named by (Nexus AID, `epochCid`), with a commitment to the secret inside the seat-authored epoch act; mint only at the seat, never at boot (operator ruling).
+* ''The Stable founding act'': one interactive act under one passphrase (the VK's first slot) yields the place, persona zero, a PRIVATE seed charter (one seat, t=1, the seat's own key and its cold next digest) and a keyring named by (Nexus AID, `epochCid`), with a commitment to the secret inside the seat-authored epoch act; mint only at the seat, never at boot (operator ruling).
+* ''The Nexus founding act'': two founders, each from their own vault, seat one key each in a fresh joint genesis at two of two; each reads the other's seat fingerprint aloud; each seat commits its own cold next digest; each founder then signs a carriage contract that both seats countersign (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
 * ''Charter shape'': per-seat pre-rotation (`nextKeyDigests`, `nextThreshold`) replacing the single next-key commit; the cadence inception cited once by the founding act; the seal-roll successor takes the name `charter-seat-roll`; `epoch0-<sha>` names become `nexus-<sha>`; `genesisSealEpochCid` deleted; the seat arms its cold next key at Stable founding (operator ruling).
-* ''Re-scoped keys'': the chairs re-key to per-Nexus leaves (a root-signing seat breaches Q1-strict); the device edge and the dyad scope commit to the Nexus AID; the sentinel (the MeshCabal keyhive identity) re-keys.
+* ''Re-scoped keys'': the chairs re-key to their own SEAT keys, apart from persona roots and per-Nexus dialing leaves (a root-signing seat breaches Q1-strict; a leaf-signing seat puts a warm dialing key in the quorum); the device edge and the dyad scope commit to the Nexus AID; the sentinel (the MeshCabal keyhive identity) re-keys.
 * ''Boards resolve per relation''; the keyring joins delivery by scoped key and refuses different bytes under one name; one fleet-join door replaces `device-admit` and `persona admit`; add-a-face (A); the bare primary-path seal import goes; the mirror guard keys on posture.
 * The staging harness founds through the one act inside the train, because the e2e set reads red from the first charter-byte change until the founding lands.
 
@@ -217,7 +218,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 
 !!! 6 · TWO HEARTHS ~ the fresh start, then the ceremony (waits on everything above)
 * The fresh start by hand (#/fresh-start) on both machines, on the re-found build.
-* The ceremony: both found through the Stable act and stand; the second human contracts in; the founder admits and the joiner takes the admit; both join one shared cabal realm beside others; each wears a face; an edit crosses both ways and reads back after a restart on each machine. Probes use synthetic names; no fixture forges a cast persona's key or Handle.
+* The ceremony: both found their seeds through the Stable act and stand; both found the Nexus fresh through the Nexus founding act; each signs a contract the two seats countersign; both join one shared cabal realm beside others; each wears a face; an edit crosses both ways and reads back after a restart on each machine. Probes use synthetic names; no fixture forges a cast persona's key or Handle.
 
 !!! The shore ~ the browser's five rungs, beside the paths
 * ''The rungs'': 0, an admitted crossing; 1, a carrier the node holds arrives and renders; 2, a typed field edit reaches the node and survives its restart, read from a fresh browser profile; 3, one human, many faces; 4, two hearths. Rungs 0–2 give the one-machine witness the working-Lararium ruling asks for, and the node's own read decides each rung, never a screenshot or a connected socket.
@@ -254,6 +255,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 !! Open ~ what the operator still owns
 
+# ''Seats, recovery and the user road.'' Single-seat Kahu acts, an operator's own herm, guardian count and succession, paper, the backup bundle, the catastrophe rite and the user road's bound stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 # ''A root-holding browser leaf's backup slot.'' A WebCrypto non-extractable slot allows no paper backup in-browser; does "a backup at every tier" require such a leaf to hold a paper or passphrase slot too? Lean: yes for a leaf holding a persona root; a floor-only leaf holds no tree.
 # ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never becomes. The lenses split; re-opening W needs the operator's turned key.
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
@@ -282,6 +284,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j-k4NlLRx0h89AsjMs0Od_db_veFIXN60sE8Hn56D-U
+<<^ code="&#x0003;">>ni:///sha-256;Z7gxKhOMfcDQKikSWVGtN0zEO4Oy-0vrun9XQlpJlD8
 
 <<^ code="&#x0004;" -> to="?">>

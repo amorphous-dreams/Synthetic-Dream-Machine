@@ -30,7 +30,7 @@ written    = "2026-07-20"
 
 !! 1 · What founding makes
 
-A fresh node mints its vessel identity and persona root, then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
+A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). A fresh node mints its vessel identity and persona root, then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
 
 <<~/ahu>>
 
@@ -79,7 +79,7 @@ Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1`
 
 !! 3 · Decide names and custody before typing
 
-Choose the household domain and DNS provider; name the host that the household resolver will answer. Choose a private persona label and an outward Handle for each operator. Choose which persona stands for a Kahu chair. Name the custody holders and separate storage places before the CLI prints recovery cards. Keep domain credentials outside the vessel image, compose inputs, and state mount.
+Choose the household domain and DNS provider; name the host that the household resolver will answer. Choose a private persona label and an outward Handle for each operator. A seat needs no public Handle; choose its private chair label and where its cold-key paper rests. Name the custody holders and separate storage places before the CLI prints recovery cards. Keep domain credentials outside the vessel image, compose inputs, and state mount.
 
 Synthetic examples below use `operator-one`, `Operator One`, and `hearth.home.example.test`. Replace each with household choices. A private label and a public Handle carry separate meanings, even when their text matches.
 
@@ -113,13 +113,13 @@ HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 
 !! 5 · Found the first node
 
-The shim's founding order lights the face before `up`: found, create persona zero, wear persona zero, then bring the vessel up. `persona new` takes the credential route on the attached terminal. A persona's private label, public Handle, and chair declaration each ride their own argument.
+The shim's founding order lights the face before `up`: found, create persona zero, wear persona zero, then bring the vessel up. `persona new` takes the credential route on the attached terminal. A persona's private label, optional public Handle, and private chair label each ride their own argument.
 
 ''Do'': on the first operator's machine, replace the synthetic values and run each line in order.
 
 ```sh
 tools/lares-container.sh found
-tools/lares-container.sh persona new 0 --name 'operator-one' --handle 'Operator One' --seat
+tools/lares-container.sh persona new 0 --name 'operator-one' --handle 'Operator One' --seat --chair 'first-chair'
 tools/lares-container.sh persona wear 0
 tools/lares-container.sh up
 tools/lares-container.sh vessel seed --apply --yes
@@ -153,7 +153,11 @@ mkdir -p /path/to/offline-custody
 mv "$LARES_STATE/vault.sealed" /path/to/offline-custody/vault.sealed
 ```
 
-The quorum rite composes `seal reserve`, `seal seat`, and `seal show`; its reserve prints the next-key commitment and three recovery cards. The credential prompts need the attached terminal. Keep the archive passphrase separate from the archive file. The export backs up the keyhive archive alone. Make a separate, consistent backup of the full state mount, including its custody slots and relation carriers.
+The seed's seat holds its own key and commits its own cold next key, which rests on paper off the machine.
+
+▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal reserve`, `seal seat`, and `seal show`: it forges a shared reserve seed and prints three reserve cards. No verb rolls a charter from those cards, and a household treats them as inert.
+
+The credential prompts need the attached terminal. Keep the archive passphrase separate from the archive file. The export backs up the keyhive archive alone. Make a separate, consistent backup of the full state mount, including its custody slots and relation carriers.
 
 ''See'': vault status reports held slots; the quorum report names its seats and head; export reports the sealed archive path under `/state`.
 
@@ -165,11 +169,11 @@ The quorum rite composes `seal reserve`, `seal seat`, and `seal show`; its reser
 
 !! Recovery cards and the guardian signing boundary
 
-`persona new` prints a recorded code and an escrow carrier; keep both off this device and give the escrow carrier to a trusted peer. `nexus rite quorum` prints three 2-of-3 reserve cards; copies of “mine” still count as one share. Choose two reachable guardians in independent custody domains, aware that their two cards can reconstruct the reserve without the operator. The quorum rite seals the reserve, but the CLI lacks a demonstrated path from recovered reserve material to the keys `seal rotate` reads. The cards alone do not prove a runnable reserve-backed charter rotation.
+`persona new` prints NO recovery material by default. `persona new <index> --name '<label>' --split-root` arms the opt-in memory split, prints a recorded code and an escrow carrier, and prints its own warning about shares. The reserve cards restore no charter; the reserve rehearsal verb reads two SYNTHETIC cards back under a scratch root. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
-`persona new` prints self-custody reconstruction material. The persona-KEL threshold-attest core accepts independent guardian signatures; this founding supplies no guardian-enrollment command. `identity-classes.mem` tracks that unfinished path.
+`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. The persona-KEL threshold-attest core accepts independent guardian signatures; this founding supplies no guardian-enrollment command. `identity-classes.mem` tracks that unfinished path.
 
-▢ ''OWED — reserve-backed charter rotation.'' `stable-founding-road.mem` tracks the charter replacement path.
+▢ ''OWED — reserve-backed charter rotation.'' `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
 ''Do'': compare each physical or offline copy with the CLI's printed destination instructions, then confirm an independent second location.
 
@@ -209,9 +213,15 @@ The first operator starts with a browser leaf; a tablet or phone forms a separat
 
 <<~ ahu #/second-operator>>
 
-!! 9 · Join the second operator's household
+!! 9 · The second operator founds a seed, then both found the Nexus
 
-The second operator founds a separate node on their own machine, with their own state, persona, custody, and device keys. The first operator exports their public charter; the second operator imports it as carried material and accepts carriage. The first operator contracts the second operator's Nym, then the second operator takes the admit bundle. Transfer every public file between workspaces with integrity intact. Carriage joins operators; it never transfers either operator's seed.
+The second operator founds a separate SEED on their own machine (steps 2, 5 and 6), with their own state, persona, custody, seat and device keys. The Nexus founding ceremony runs in five steps: (1) each founder mints a seat key for the new Nexus in their own vault and its cold next key on paper; (2) the two exchange seat public keys and cold digests as files; (3) each reads the other's seat fingerprint aloud, in person; (4) both compose the same fresh genesis at two of two and compare its Nexus AID; (5) each signs a carriage contract and both seats countersign it.
+
+▢ ''OWED — the Nexus founding act.'' The CLI lacks a verb to mint and exchange independent seat keys, verify the in-person fingerprints, compose a fresh two-seat genesis, and countersign founder carriage contracts.
+
+!!! Carriage into one household's seed (built)
+
+This path admits the second operator as a carrier of the FIRST operator's household seed; it founds no Nexus and moves no phase. Neither operator gains a seat in the other's charter. Transfer every public file between workspaces with integrity intact.
 
 ''Do'': the second operator follows steps 2 and 5–6 on their own machine. The first operator exports the charter.
 
@@ -241,7 +251,7 @@ tools/lares-container.sh nexus admit-take /workspace/admit-bundle.json
 
 ''See'': the second operator receives a signed contract-in; the first operator's member list names the second operator after the contract act.
 
-''Proves'': both households retain independent roots and the first Nexus records the second operator's carriage membership.
+''Proves'': both households retain independent roots and the first household seed records the second operator's carriage membership; no Nexus founding occurs.
 
 <<~/ahu>>
 
@@ -295,7 +305,7 @@ The built `nexus seal grow` ceremony records a later charter crossing. It spans 
 
 !! Identity classes
 
-The first operator and second operator each hold their own node identity and persona roots. Each browser device holds a device key minted on that device. A hosted family member holds a user leaf under an operator's Nexus. A carriage contract records an operator relation; a device admission records a device relation. No one class grants another class's seed.
+A seat in a Nexus records a Kahu relation, held by a seat key apart from the persona root. The first operator and second operator each hold their own node identity and persona roots. Each browser device holds a device key minted on that device. A hosted family member holds a user leaf under an operator's Nexus. A carriage contract records an operator relation; a device admission records a device relation. No one class grants another class's seed.
 
 <<~/ahu>>
 
@@ -315,6 +325,6 @@ The first operator and second operator each hold their own node identity and per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mU0LryfB7bdgNuJeUgHOjqpkKUZxC8IAJIYikeCQYIs
+<<^ code="&#x0003;">>ni:///sha-256;Fc-WOt7JLKPCZTToYA3GRx1drjyGbTx14CHlXXOizCg
 
 <<^ code="&#x0004;" -> to="?">>

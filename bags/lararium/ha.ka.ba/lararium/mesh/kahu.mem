@@ -158,6 +158,110 @@ hearth that declined it.
 
 <<~/ahu>>
 
+<<~ ahu #/seed-and-nexus>>
+
+!! Seed and Nexus ~ one charter shape, two readings
+
+''ONE CHARTER SHAPE CARRIES TWO READINGS'' (operator-ruled). A Lararium that one operator founds stands as
+a ''SEED'': a household island with full machinery — its own charter, herm, leaves and hosted guests. A
+''NEXUS'' stands when two operators each seat their own key in one charter. A ''seat'' names one chair in
+a charter's k-of-n; a seat holds a key, never a person. ''The phase turns on a second operator's SEAT,
+never on a carriage contract'': a contract admits a carrier and seats nobody. A Nexus names the
+relationship between operators (quote license: //"a 'nexus' describes the operators relationship, which
+flows down through their infra's relationships with each other's nodes and leafs and herms/many-to-many"//).
+
+''The ladder'': a seed → a Nexus of two seats → an enduring Nexus of three or more.
+
+''A NEXUS FOUNDS FRESH.'' Two founders make a fresh joint genesis beside each household's own seed, at
+threshold two of two. Nobody grows a household's own charter into a Nexus: a second operator's key seated
+there hands that partner quorum over the household. A household seed never takes a foreign seat
+(`foreignSeats`, `packages/lares-cli/src/seal-import.ts`, refuses it by fingerprint).
+
+''TWO VAULTS, CHECKED IN PERSON.'' The co-founding act takes one seat key from each founder's own vault.
+A seat's ''fingerprint'' names a short digest of its key, and each founder reads the other's fingerprint
+aloud before either signs. The ceremony claims no proof of two humans: two keys never prove two humans,
+and the house accepts that cost
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/cryptographic-individual">>).
+
+''A SEAT HOLDS ITS OWN KEY.'' A seat key stands apart from the persona root and apart from the dialing
+leaf. Each seat commits the digest of its own ''cold key'': the next key, kept on paper off the machine
+and used only to roll. The shared reserve seed and its three cards stand retired: the quorum rite prints
+none and arms no head that cannot roll (#/nexus-scale).
+
+''LOSS AT ALPHA.'' A lost cold key at a two-seat Nexus ends that Nexus: the founders found a successor and
+re-issue its admits. Guardians recover a PERSON, never a Nexus seat. A seed that loses both its node and
+its paper gets re-founded.
+
+''THE ENDURING SHAPE.'' Two seats FOUND a Nexus. A Nexus meant to endure SHOULD seat a third chair early
+and pass chairs by its own rolls before loss forces a successor. That intent adds no mechanism beyond
+Kahu admission by roll.
+
+''A SEAT NEEDS NO PUBLIC HANDLE.'' A seat carries a private chair label and a fingerprint. The exported
+charter publishes each seat's key and fingerprint, and no chair's Handle, pet-name or label
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">>).
+
+''FOUNDERS HOLD BOTH STACKS AS TWO SIGNED EVENTS EACH'': a seat in the genesis (the Kahu stack), and a
+carriage contract that the subject signs and the seats countersign (the Lamplighter stack). A founder may
+countersign their own contract; the other seat signs too. That yields two signatures, never two
+independent reviews.
+
+''ADMISSION TAKES THE SEAT QUORUM'' (operator-ruled; quote license: //"Pono, quorum for Kahu and
+Lamplighter invites, another limit on 'user' friend invites sounds pono."//). Admitting a Kahu — a roll
+that adds a seat — and admitting a Lamplighter — a countersigned carriage contract for an operator or a
+place — each take the charter's seat quorum. No single-seat class covers either. Kapae and rolls take the
+quorum too. At two seats the quorum means both.
+
+''THE USER ROAD STANDS SEPARATE.'' A hosted friend's leaf under an operator's own household takes no Kahu
+quorum and carries its own bound: a user introduces, an operator admits, and the answer consumes the
+introduction. What the code holds: a clockless allowance of `min(1 + rolls survived, cap)` per hosting
+epoch (`lares host roll --cap`); a host-minted guest at floor 1; a walker-minted guest vesting at the
+host's next roll; single-use blind tokens burned at the host; revocation by a roll or by a kapae of the
+guest's leaf; no bound on the operator's own `lares host invite`. ''Owed in code'': a walker's invite
+earns standing by a roll alone, with no operator answer
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). The bound's final shape
+stays open, below.
+
+''GUARDIANS STAY OPTIONAL AND PER FACE.'' Every face starts one-of-one self. No guardian key ever serves
+two faces, and a guardian set recovers a face's key lineage, never its memory
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+
+!!! OPEN ~ what the operator still owns
+
+Each item below stands unruled. Nothing in code decides one.
+
+* ''Single-seat Kahu acts.'' Whether any Kahu act other than admission, kapae and rolls may ride one seat at two seats. Options: none · a named ordinary class. Admission stands closed above.
+* ''An operator's own herm.'' Whether an operator may contract their OWN herm with one signature. Options: yes, scoped to one place and one Nexus, falling with a kapae of the operator's own admit · no, the quorum signs each place. Lean: yes, scoped. Cost: a stolen leaf places herms until a denial arrives.
+* ''Guardian count and threshold.'' 2-of-3 survives one lost guardian and forms the impersonation quorum; 2-of-2 ends recovery at one loss.
+* ''Guardian request authentication.'' Options: an agreed channel and a live voice · in person · a device-derived event plus a short string, named a byte check and never an identity proof.
+* ''The veto.'' Options: keep it as a house fork rule and specify it · drop it.
+* ''Death and succession of a person.'' Options: guardian recovery under the same lineage · a separate succession object · no path.
+* ''Paper.'' The format (SLIP-39 · Codex32 · a house format), and whether a cold-key card names its Nexus or its commitment. Until ruled, a card prints its purpose, its chair label and its generation only.
+* ''The backup bundle.'' What it holds and which verb imports it. A bundle per face keeps faces unlinked on the backup medium.
+* ''The catastrophe rite and any third key.'' Options: no rite · an opt-in, charter-native seat-recovery rite with named witnesses · an outsider's third cold key. At alpha no rite stands, and LOSS AT ALPHA governs.
+* ''The user road's bound.'' What the limit counts (open introductions per guest · introductions per roll · household size); whether the operator sees WHO introduces (a signed introduction · the blind token the code holds); whether the operator's own mint takes a bound; whether the survival ladder stays.
+* ''How a per-Nexus face key gets minted.'' Two carriers disagree: `face-proof#/the-key-hierarchy` mints it at random on the root-holding vessel, while #/nexus-scale and `packages/lararium-node/src/nexus-leaf.ts` derive a Nexus-scope leaf from the persona seed.
+
+!!! The surface ~ where each part reads
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the founding acts, the fence and the build order
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">> walking, contracting and seating, and which take the quorum
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/promotion-path">> the class ladder and how an operator takes a seat
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">> guardians per face, and lineage apart from memory
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">> Handles, pet-names and the private chair label
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/office">> the Lamplighter office and its quorum grant
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/second-operator">> the household walk for a seed, then a Nexus
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">> the keys a face presents at a gate
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp">> the charter's epoch chain as provenance
+
+''What the code holds.'' `nexus seal show` reads SEED or NEXUS from two counts — seated keys this vault can
+produce, and seated keys it cannot (`nexus-phase.ts`) — and claims no proof of two humans; a
+seat claim takes no Handle and carries a private chair label; `nexus seal export` carries fingerprints and
+no label. ''Owed in code'': chairs sign with persona ROOT keys; every chair of a charter comes from one
+vault; the quorum rite forges a shared reserve seed and prints three cards; no co-founding verb, no
+cross-vault countersign and no cold-key card stand.
+
+<<~/ahu>>
+
 <<~ ahu #/nexus-scale>>
 
 !! The Nexus scale ~ a kahu quorum holds admit, kapae and seal
@@ -176,7 +280,8 @@ threshold (#/contract), and the corpus-kahu curate at DreamNet scale.
 ''An admit names ONE relation'': an operator or a place CONTRACTING into the Nexus mesh. A user never
 holds one — a user walks on an invite a hosting hearth or a walker it hosts hands them, redeemed at the
 host's own gate for a keyed grant — and a kahu seat never rides one — a
-member takes a seat through the seal lineage. The three stay apart
+member takes a seat through the seal lineage. Admitting a Lamplighter and seating a Kahu each take
+the seat quorum (#/seed-and-nexus). The three stay apart
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>).
 
 !!! ★ THE SUBJECT PRESENTS ITS ADMIT ★
@@ -202,8 +307,9 @@ reads its answer as an allow set.
 
 ''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
 human across every Nexus that admits them, so the subject stamp signs with a leaf in the ''NEXUS scope
-domain'' (`nexusScopeIndex`, `nexus-leaf.ts`), never the circle domain. The quorum's chairs sign with
-the seated roots; the re-found moves the charter's seats onto leaves.
+domain'' (`nexusScopeIndex`, `nexus-leaf.ts`), never the circle domain. ''A seat holds its own key'', apart
+from the persona root and apart from the dialing leaf (#/seed-and-nexus). ''Owed in code'': the quorum's
+chairs sign with the seated persona roots.
 
 ''The gate's shape, ruled'':
 
@@ -245,25 +351,25 @@ by threshold signing. Seats sign as distinct keys, because a quorum change must 
 ''GUARDIANS RECOVER THE PERSON, never the Nexus.'' A Guardian holds a recovery key over a persona's KEL
 and, at recovery, signs that persona's rotation independently; nothing reconstructs
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>). When a seat
-holder loses their keys, their Guardians rotate the person back into continuity, and the surviving kahu
-quorum re-seats that person by its own act (`seal reseat`). ''Guardians carry no weight in the Nexus KEL''
-outside the catastrophe rite. ''Owed in code — the re-found'': `seal reseat` rides the per-seat
-commitment and stands unbuilt.
+holder loses their keys, their Guardians rotate the person back into continuity. Where a quorum survives
+(three or more seats), that quorum re-seats the person by its own roll (`seal reseat`). At two seats no
+quorum survives a lost cold key, and that Nexus ends (#/seed-and-nexus). ''Guardians carry no weight in the
+Nexus KEL.'' A guardian cuts a fresh key for each face they guard
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>). ''Owed in code — the
+re-found'': `seal reseat` rides the per-seat commitment and stands unbuilt.
 
 ''ROAD (iv): A QUORUM CHANGE SURFACES, it never cascades.'' A seat change re-seats nothing on its own.
 The house derives, from records already on the board, which admits and offices leaned on a departed
 signer, and surfaces that set to the new quorum, which revokes openly, by name, on the deny board.
 Standing carries until then. The set derives from the board's own records, so no roster forms.
 
-''THE CATASTROPHE RITE'' — named, opt-in, and OFFERED at founding; for a single-operator Nexus it stands
-as the main survival path. Inside it alone Guardian weight counts, and for ROTATION only. A contest
-window opens, counted in WITNESSED RECEIPTS — a causal, monotone count, never time — and a live seat key
-supersedes the rite inside the window. ''The rite DISCLOSES when one human holds both faces.''
+''THE CATASTROPHE RITE'' stands OPEN and unbuilt (#/seed-and-nexus). At alpha a seed re-founds and a
+two-seat Nexus founds a successor. A rite, once ruled, would name its own weights and witnesses.
 
 ''One human MAY hold both faces.'' The separation lives in the OBJECTS, never in the person: a recovery
-key and a quorum-share stay two keys in two custodies, so one stolen object never opens both. A Nexus can
-begin with one operator holding every seat and every recovery key; spreading the faces across humans
-comes as the Nexus grows, never as the price of founding it.
+key and a quorum-share stay two keys in two custodies, so one stolen object never opens both. A SEED
+begins with one operator holding its seat and its recovery keys; a Nexus stands when two operators each
+seat their own key (#/seed-and-nexus).
 
 ''Retired'': the shared reserve seed and the reserve-reveal verb.
 
@@ -293,8 +399,9 @@ a recovery object and its reader rest on the shelf
 
 The cabal ⊥ quorum split stands in code where it can:
 
-* ''`lares nexus rite quorum`'' seats the kahu QUORUM — it forges the reserve and seats the genesis epoch,
-  and mints no person.
+* ''`lares nexus rite quorum`'' seats the kahu QUORUM: it seats the genesis epoch, arms each seat's cold
+  next digest, prints no reserve card, and mints no person. ''Owed in code'': the rite forges the shared
+  reserve and arms the genesis with its commit.
 * ''`KahuQuorumSeats`'' names the quorum's seats — a seated key-set, its threshold and the charter epoch
   it authorizes. Keys, never people.
 * ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) names the CABAL: a Keyhive membership document
@@ -409,6 +516,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6xKZ7xWIpC8KMd1XBsoUlxdMUGzaVe63NYXhCPNWHEA
+<<^ code="&#x0003;">>ni:///sha-256;F8YjgQXlsW4ReIbWgTRd8DziHkrk45R87uXD0dSLNyM
 
 <<^ code="&#x0004;" -> to="?">>

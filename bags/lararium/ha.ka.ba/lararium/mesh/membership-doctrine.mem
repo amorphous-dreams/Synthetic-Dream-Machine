@@ -85,10 +85,12 @@ the pool.
 | ''end user'' | `walk` — //an operator KEEPS a hearth; a user WALKS the road// |
 | ''Lamplighter'' | `carry` · `tend/island` · `tend/reach` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/reach">>) |
 | ''Kahu'' | the Nexus-scale `quorum-share`; the engine cadence rides a separate threshold, and the corpus-kahu curate at DreamNet scale (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
-| ''Guardian'' | a recovery key over a persona's KEL — Guardians recover the PERSON, and carry weight in a Nexus KEL only inside its opt-in catastrophe rite; one human may hold it beside a Kahu seat, in a separate custody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
+| ''Guardian'' | a recovery key over a persona's KEL — Guardians recover the PERSON, and carry no weight in a Nexus KEL; a guardian cuts a fresh key for each face they guard; one human may hold it beside a Kahu seat, in a separate custody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
 
 ''Founding names an ACT, never a face'': it seats the first kahu quorum, and the founder then holds
-a Kahu seat in that Nexus.
+a Kahu seat in that Nexus. ''Founders hold both stacks as two signed events each'': a seat in the genesis,
+and a carriage contract the subject signs and the seats countersign. One operator's charter reads as a
+SEED; two operators' seats in one charter read as a NEXUS (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
 
 ''Cap stacks COMPOSE on a persona — combined by default, split only by the holder's own act.'' A solo
 operator holds one persona for all their local infrastructure, and every cap they hold rides it; no
@@ -114,6 +116,17 @@ different signer, different trace.
 | a USER ''walks'' | a hearth that hosts in the Nexus, and any walker it hosts | an invite, redeemed once at the host's own gate for a keyed grant (#/the-invite) | nothing: no quorum, no board entry, no who-invited-whom — the host keeps random nonces and a count |
 | an operator or place ''contracts'' | the subject, and ≥k of the kahu quorum | the presented admit, the subject's consent, ≥k Kahu countersigning, the carriage board, the Lamplighter office (`carry` · `tend`) | the carriage contract — and nothing more (#/the-operator-contract) |
 | a member is ''seated'' | the kahu quorum, through the seal lineage | a seat in the lineage's per-seat commitment | the seal lineage itself (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) |
+
+''CONTRACTING AND SEATING EACH TAKE THE SEAT QUORUM'' (operator-ruled). Admitting a Lamplighter and seating a
+Kahu each take the charter's seat quorum, and no single-seat class covers either; kapae and rolls take it
+too. ''WALKING TAKES NONE, and carries its own bound'': a user introduces, an operator admits, and the answer
+consumes the introduction (#/the-invite). What the code holds: a clockless allowance of
+`min(1 + rolls survived, cap)` per hosting epoch (`lares host roll --cap`); a host-minted guest at floor 1; a
+walker-minted guest vesting at the host's next roll; single-use blind tokens burned at the host; revocation
+by a roll or by a kapae of the guest's leaf; no bound on the operator's own `lares host invite`. What the
+limit counts, whether the operator sees who introduces, whether the operator's own mint takes a bound, and
+whether the survival ladder stays all stand open at
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 
 ''Walking reads as HOSPITALITY, never admission.'' An invite hands a guest the road; it confers no
 standing, asks no quorum and leaves no trace on any board (#/the-invite). ''Contracting reads as the one
@@ -222,9 +235,7 @@ nobody arrives at a hearth by transitivity: a friend of a guest stands nowhere u
 order a rhizome grows in, where a Lararium stands before its operator invites anyone
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/under-every-lararium">>). ▢ ''OWED'': the code as it stands lets a
 walker-minted invite vest into a guest's standing at the host's next roll with no operator answer (below); the introduction act, the
-operator's answer to it, and the door that shows an operator what waits stand unbuilt. ''Unruled, and left so'': whether an
-introduction's signature outlives the operator's answer. The law below holds that no record chains who invited whom, and a kept
-introduction would stand as exactly that record.
+operator's answer to it, and the door that shows an operator what waits stand unbuilt. ''The answer consumes the introduction'' (operator-ruled): no introduction's signature outlives the operator's answer, so no record chains who invited whom.
 
 ''THE WORN FACE HOSTS'' (operator-ruled). The per-Nexus leaf of the WORN face signs the act — the same face its walks present. No roster
 order picks anything, and with no face worn no one gets hosted. ⚠ The session ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>)
@@ -277,7 +288,7 @@ no restart; with no vessel standing, the CLI runs the same door and owns the sto
 
 ''A NODE MAY WALK'' (operator-ruled). The sorter sorts by PROVEN RELATION, never by device type, so a node
 vessel holding a grant sorts as a walker exactly like a browser leaf. Walking grants it no carry duty and
-leaves its own private Nexus untouched. A walker stands as a person, so it walks as a WORN face:
+leaves its own household seed untouched. A walker stands as a person, so it walks as a WORN face:
 no roster order picks anything, and with no face worn it walks nowhere. ⚠ A session wears that face, never the vessel (#/two-maps, clause 5); how a
 standing hearth dial binds to the session whose face it walks as stands OWED with the hosting act above. A node keeps its walk with
 three verbs: `lares walk` (where it walks, its standing there, its wallet's count), `lares walk take`
@@ -292,7 +303,7 @@ the inviter carries no liability for the guest, and no record anywhere — board
 who invited whom, because that chain would read as a roster. Membership never confers trust;
 compartments outrank admission control.
 
-''TWO LIMITS, NAMED.'' The ''cabal-of-one equivocation bound'': in a one-hearth Nexus the hearth relays its
+''TWO LIMITS, NAMED.'' The ''one-hearth equivocation bound'': in a seed or any island with one hearth the hearth relays its
 own hosting doc, so nothing detects a forked hosting act until a second carrier holds the doc. The
 ''social-inference limit'': in a small household the count, the timing and who is in the room can tell the
 host whose invite came in. The cryptography removes the record. It cannot remove what the host can see.
@@ -453,6 +464,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;b_FNbxdpKbBDwbdEtE0NfMIIfL8wzdnxpxJZcsJn8HA
+<<^ code="&#x0003;">>ni:///sha-256;WrQqViu58vdQ7QpkyeHk8tmVa0AKT_3-GrcqfEFcR1o
 
 <<^ code="&#x0004;" -> to="?">>
