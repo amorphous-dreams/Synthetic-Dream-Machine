@@ -7,7 +7,7 @@
  * tests stand a minimal fake element (the shape TW5's fakedom presents) and drive the leg end to end,
  * with no TW5 boot, no worker, and no browser.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import { patchFakeElementForEvents, dispatchProjectedInput, dispatchProjectedEvent } from "../src/tw5-projection.js";
 import { hasProjection } from "../src/has-island-watches.js";
 import { mkWikiDomInput, mkWikiDomEvent, DOM_INPUT_MAX_CHARS, ISLAND_PROTOCOL_VERSION } from "@lararium/mesh";
@@ -60,13 +60,22 @@ describe("the projected input leg", () => {
     expect(onChange).toEqual(["c"]);
   });
 
-  test("an unknown render-id DROPS silently — a stale frame is a hiatus, never a throw", () => {
-    expect(() => dispatchProjectedInput("no-such-rid", "input", "x")).not.toThrow();
+  test("an unknown render-id answers stale-target", () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(dispatchProjectedInput("no-such-rid", "input", "x")).toBe("stale-target");
+    expect(dispatchProjectedEvent("no-such-rid", "click", { button: 0 })).toBe("stale-target");
+    expect(warning).toHaveBeenCalledWith("[wiki-worker] stale-target: no-such-rid");
+    warning.mockRestore();
   });
 
   test("the caret verbs an edit widget calls answer harmlessly instead of throwing mid-handler", () => {
     const el = fakeDoc.createElement("textarea") as unknown as Record<string, () => void>;
     for (const verb of ["focus", "blur", "select"]) expect(() => el[verb]!()).not.toThrow();
+  });
+
+  test("an uncarried synchronous geometry read refuses by capability name", () => {
+    const el = fakeDoc.createElement("button") as unknown as { getBoundingClientRect(): unknown };
+    expect(() => el.getBoundingClientRect()).toThrow(/CapabilityRefused: DOM geometry requires an event-time rectangle/);
   });
 });
 
@@ -101,4 +110,24 @@ describe("the projection cap's door", () => {
     dispatchProjectedEvent(el.attributes["data-lar-rid"]!, "click", { button: 0, metaKey: true });
     expect(seen[0]).toMatchObject({ type: "click", button: 0, metaKey: true });
   });
+
+  test("popup triggers read the click-time geometry carried onto the fake node", () => {
+    const el = fakeDoc.createElement("button") as unknown as FakeEl & {
+      getBoundingClientRect(): { top: number; left: number; width: number; height: number };
+      offsetLeft: number; offsetTop: number; offsetWidth: number; offsetHeight: number;
+      addEventListener(type: string, handler: (ev: unknown) => void): void;
+    };
+    let measured: unknown;
+    el.addEventListener("click", () => {
+      measured = { rect: el.getBoundingClientRect(), left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight };
+    });
+    dispatchProjectedEvent(el.attributes["data-lar-rid"]!, "click", {
+      button: 0, rectLeft: 12, rectTop: 34, rectRight: 112, rectBottom: 54, rectWidth: 100, rectHeight: 20,
+    });
+    expect(measured).toEqual({
+      rect: { top: 34, left: 12, right: 112, bottom: 54, width: 100, height: 20, x: 12, y: 34 },
+      left: 12, top: 34, width: 100, height: 20,
+    });
+  });
+
 });

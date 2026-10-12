@@ -25,20 +25,28 @@ const PRONAOS_RECORD = resolve(import.meta.dirname, "../../.pronaos-build/pronao
 function serveGenesis(): Plugin {
   return {
     name: "lararium:serve-genesis",
+    apply: "build",
+    closeBundle() {
+      // The built vessel fetches the same paths, so the build must carry the same tree.
+      if (existsSync(GENESIS_DIR)) cpSync(GENESIS_DIR, resolve(import.meta.dirname, "dist/genesis"), { recursive: true });
+    },
+  };
+}
+
+/** Keep development CAS reads available without letting a dev-server close rewrite the build receipt. */
+function serveGenesisInDev(): Plugin {
+  return {
+    name: "lararium:serve-genesis-dev",
+    apply: "serve",
     configureServer(server) {
       server.middlewares.use("/genesis", (req, res, next) => {
         const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/")).replace(/^(\.\.[/\\])+/, "");
         const file = join(GENESIS_DIR, rel);
-        // Path-escape guard: a `..` in the request must never reach outside the genesis dir.
         if (!file.startsWith(GENESIS_DIR) || !existsSync(file) || !statSync(file).isFile()) return next();
         res.setHeader("Content-Type", "application/octet-stream");
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         createReadStream(file).pipe(res);
       });
-    },
-    closeBundle() {
-      // The built vessel fetches the same paths, so the build must carry the same tree.
-      if (existsSync(GENESIS_DIR)) cpSync(GENESIS_DIR, resolve(import.meta.dirname, "dist/genesis"), { recursive: true });
     },
   };
 }
@@ -52,6 +60,7 @@ function emitPronaosArtifactRecord(): Plugin {
   const digest = (source: string | Uint8Array): string => createHash("sha256").update(source).digest("hex");
   return {
     name: "lararium:pronaos-artifact-record",
+    apply: "build",
     generateBundle(_options, bundle) {
       routes.length = 0;
       for (const output of Object.values(bundle)) {
@@ -89,7 +98,7 @@ function emitPronaosArtifactRecord(): Plugin {
 // so vite-plugin-top-level-await is NOT needed (and dropping it removes the @swc/core
 // native build that snagged pnpm's pre-run deps-check).
 export default defineConfig({
-  plugins: [wasm(), serveGenesis(), emitPronaosArtifactRecord()],
+  plugins: [wasm(), serveGenesisInDev(), serveGenesis(), emitPronaosArtifactRecord()],
 
   // The worker is a SEPARATE rollup build — top-level plugins do NOT inherit, so wasm()
   // must be repeated for the worker to instantiate automerge's wasm. format "es" is

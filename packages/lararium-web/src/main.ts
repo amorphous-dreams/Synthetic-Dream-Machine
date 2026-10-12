@@ -25,6 +25,7 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
+import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
@@ -66,11 +67,6 @@ const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElemen
  * literal `localhost` reads true only where the browser and the node share a machine, and silently points a
  * LAN or a phone at itself. `location.hostname` follows the page home wherever it was fetched from.
  */
-function defaultReadFace(): string {
-  const host = location.hostname || "localhost";
-  return `${location.protocol}//${host}:8080`;
-}
-
 function row(parent: HTMLElement, k: string, v: string, cls = ""): void {
   const d = document.createElement("div");
   d.className = "row";
@@ -91,7 +87,7 @@ function set(id: string, text: string, cls = ""): void {
 type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
 async function readOracle(read: OracleReader): Promise<void> {
   const params = new URLSearchParams(location.search);
-  const readFace = params.get("oracle") ?? defaultReadFace();
+  const readFace = params.get("oracle") ?? defaultReadFace(location);
   const pin = params.get("oracle-gate") ?? params.get("gate");
   if (!pin) { set("oracle-status", "no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
   set("oracle-status", `proving at ${readFace} …`);
@@ -122,6 +118,9 @@ let _projRev = 0;
 let _sendDomEvent: ((renderId: string, eventType: string, fields: Record<string, number | boolean>) => void) | null = null;
 let _sendDomInput: ((renderId: string, eventType: string, value: string) => void) | null = null;
 let _clickWired = false;
+const compositionEndValue = new WeakMap<Element, string>();
+const composingFields = new WeakSet<Element>();
+let pendingPopupPlacement: { readonly top: number; readonly left: number } | undefined;
 function applyProjection(frame: { html: string; css: string; rev: number }): void {
   if (frame.rev < _projRev) return;            // drop a stale frame (coalesce ordering)
   _projRev = frame.rev;
@@ -132,9 +131,41 @@ function applyProjection(frame: { html: string; css: string; rev: number }): voi
   style.textContent = frame.css;
   let pane = shadow.querySelector(".lar-projection") as HTMLElement | null;
   if (!pane) { pane = document.createElement("div"); pane.className = "lar-projection"; shadow.appendChild(pane); }
+  const protectedValues = new Map<string, { value: string; selectionStart: number | null; selectionEnd: number | null }>();
+  for (const field of pane.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[data-lar-rid], textarea[data-lar-rid]")) {
+    if (shadow.activeElement === field || composingFields.has(field)) {
+      protectedValues.set(field.getAttribute("data-lar-rid")!, {
+        value: field.value,
+        selectionStart: field.selectionStart,
+        selectionEnd: field.selectionEnd,
+      });
+    }
+  }
   // Morph (not innerHTML=) — id-set matching keeps unchanged nodes in place; the in-progress value
   // is preserved (ignoreActiveValue). The render-id attributes ride the HTML untouched.
   Idiomorph.morph(pane, frame.html, { morphStyle: "innerHTML", ignoreActiveValue: true });
+  for (const [renderId, saved] of protectedValues) {
+    const field = pane.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-lar-rid="${CSS.escape(renderId)}"]`);
+    if (!field) continue;
+    field.value = saved.value;
+    if (saved.selectionStart !== null && saved.selectionEnd !== null) {
+      field.setSelectionRange(saved.selectionStart, saved.selectionEnd);
+    }
+  }
+  if (pendingPopupPlacement) {
+    const visiblePopup = [...pane.querySelectorAll<HTMLElement>(".tc-popup, .tc-search-drop-down")]
+      .find((popup) => !popup.hidden && getComputedStyle(popup).display !== "none");
+    if (visiblePopup) {
+      // Popup state arrives from TW5; this page replica owns placement using the rectangle carried
+      // with the click that opened it. The worker never chooses a current page position.
+      visiblePopup.style.position = "fixed";
+      visiblePopup.style.top = `${pendingPopupPlacement.top}px`;
+      visiblePopup.style.left = `${pendingPopupPlacement.left}px`;
+      visiblePopup.style.right = "auto";
+      visiblePopup.style.bottom = "auto";
+    }
+    pendingPopupPlacement = undefined;
+  }
   if (!_clickWired) {
     _clickWired = true;
     pane.addEventListener("click", (e) => {
@@ -142,8 +173,14 @@ function applyProjection(frame: { html: string; css: string; rev: number }): voi
       if (!el || !_sendDomEvent) return;
       e.preventDefault();                        // a projected <a href> must not navigate the host page
       const me = e as MouseEvent;
+      const rect = el.getBoundingClientRect();
+      pendingPopupPlacement = { top: rect.bottom, left: rect.left };
+      const projectionRect = host.getBoundingClientRect();
       _sendDomEvent(el.getAttribute("data-lar-rid")!, "click", {
         metaKey: me.metaKey, ctrlKey: me.ctrlKey, altKey: me.altKey, shiftKey: me.shiftKey, button: me.button,
+        rectTop: rect.top - projectionRect.top, rectLeft: rect.left - projectionRect.left,
+        rectRight: rect.right - projectionRect.left, rectBottom: rect.bottom - projectionRect.top,
+        rectWidth: rect.width, rectHeight: rect.height,
       });
     });
     // The TEXT leg. TW5's edit widgets bind `input` (every keystroke) and `change` (commit on blur), so
@@ -153,23 +190,42 @@ function applyProjection(frame: { html: string; css: string; rev: number }): voi
     // The value rides WHOLE, never as a diff: the worker holds no keystroke history, and a whole value is
     // idempotent under the coalesced re-projection (a dropped frame cannot desynchronize the field). The
     // event bubbles out of the composed shadow tree, so `composedPath` names the real origin.
-    for (const kind of ["input", "change"] as const) {
-      pane.addEventListener(kind, (e) => {
-        const src = (e.composedPath?.()[0] ?? e.target) as Element | null;
-        const el = src?.closest?.("[data-lar-rid]");
-        if (!el || !_sendDomInput) return;
-        const value = (src as HTMLInputElement | HTMLTextAreaElement).value;
-        if (typeof value !== "string") return;     // a non-text control carries no input leg
-        // The bound REFUSES rather than truncates: a truncated relay would write a silently shortened
-        // tiddler and the human would find it later. A refusal holds the edit main-side, says so, and
-        // leaves the wiki holding the last value it did accept.
-        if (value.length > DOM_INPUT_MAX_CHARS) {
-          console.warn(`[vessel] input leg refused — ${value.length} characters exceeds the ${DOM_INPUT_MAX_CHARS} bound; the wiki holds its last accepted value.`);
-          return;
-        }
-        _sendDomInput(el.getAttribute("data-lar-rid")!, kind, value);
-      });
-    }
+    const relayWholeValue = (event: Event, kind: "input" | "change", compositionEnd = false): void => {
+      const src = (event.composedPath?.()[0] ?? event.target) as Element | null;
+      const el = src?.closest?.("[data-lar-rid]");
+      if (!src || !el || !_sendDomInput) return;
+      if (!compositionEnd && (composingFields.has(src) || (event as InputEvent).isComposing)) return;
+      const value = (src as HTMLInputElement | HTMLTextAreaElement).value;
+      if (typeof value !== "string") return;       // a non-text control carries no input leg
+      if (value.length > DOM_INPUT_MAX_CHARS) {
+        console.warn(`[vessel] input leg refused — ${value.length} characters exceeds the ${DOM_INPUT_MAX_CHARS} bound; the wiki holds its last accepted value.`);
+        return;
+      }
+      _sendDomInput(el.getAttribute("data-lar-rid")!, kind, value);
+    };
+    pane.addEventListener("input", (event) => {
+      const src = (event.composedPath?.()[0] ?? event.target) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (!src) return;
+      if (composingFields.has(src) || (event as InputEvent).isComposing) return;
+      const endedValue = compositionEndValue.get(src);
+      if (endedValue !== undefined) {
+        compositionEndValue.delete(src);
+        if (endedValue === src.value) return;       // a browser's trailing IME input repeats compositionend
+      }
+      relayWholeValue(event, "input");
+    });
+    pane.addEventListener("change", (event) => relayWholeValue(event, "change"));
+    pane.addEventListener("compositionstart", (event) => {
+      const src = (event.composedPath?.()[0] ?? event.target) as Element | null;
+      if (src) composingFields.add(src);
+    });
+    pane.addEventListener("compositionend", (event) => {
+      const src = (event.composedPath?.()[0] ?? event.target) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (!src || typeof src.value !== "string") return;
+      composingFields.delete(src);
+      compositionEndValue.set(src, src.value);
+      relayWholeValue(event, "input", true);
+    });
   }
 }
 
@@ -277,7 +333,8 @@ async function bootVessel(): Promise<void> {
 
   set("status", "booting…");
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
-  const relayUrl = new URLSearchParams(location.search).get("relay") ?? undefined;
+  const relayParams = new URLSearchParams(location.search);
+  const relayUrl = resolveRelayUrl(location, relayParams);
   // ?gate=<hex> → the RELAY GATE's verifying key. The V3 proof commits to it, and a leaf must hold it
   // out-of-band: the challenge carries it on the wire, but trusting the wire copy would let any relay
   // impersonate the gate. Absent, the leaf binds its proof to its OWN did, the gate recomputes against
@@ -307,7 +364,7 @@ async function bootVessel(): Promise<void> {
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
-      `         To cross:  ?relay=ws://${location.hostname || "localhost"}:8080/ws&gate=<node's gate key>`,
+      `         To cross:  ?relay=${sameOriginRelayUrl(location)}&gate=<node's gate key>`,
     );
   }
   // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
@@ -323,7 +380,7 @@ async function bootVessel(): Promise<void> {
         coordSeed: location.origin,
         peers: meshParam
           ? meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null)
-          : defaultPin ? [{ endpoint: new URLSearchParams(location.search).get("oracle") ?? defaultReadFace(), gatePubKey: defaultPin.toLowerCase() }] : [],
+          : defaultPin ? [{ endpoint: new URLSearchParams(location.search).get("oracle") ?? defaultReadFace(location), gatePubKey: defaultPin.toLowerCase() }] : [],
       }
     : undefined;
   try {
@@ -366,8 +423,11 @@ async function bootVessel(): Promise<void> {
     const vesselEl = $("vessel"); vesselEl.replaceChildren();
     row(vesselEl, "status", "live — sovereign local island", "ok");
     row(vesselEl, "did", did);
-    row(vesselEl, "mode", "browser vessel · anon veil · no node attached", "veil");
+    row(vesselEl, "origin", location.origin);
+    row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
+    mountLiveStatus(vesselEl, result.connectionState);
     row(vesselEl, "wiki", result.activeWikiId);
+    row(vesselEl, "wiki doc", result.wikiDocUrl);
     row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
     // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
     // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed.

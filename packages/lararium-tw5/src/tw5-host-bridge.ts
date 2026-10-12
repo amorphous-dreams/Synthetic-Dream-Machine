@@ -12,6 +12,45 @@ export interface TW5CoreBootBlob {
 
 export type TW5CoreBootInput = Uint8Array | TW5CoreBootBlob;
 
+/**
+ * A projected TW5 event cannot borrow the main Window object. Hand event handlers the worker-local
+ * `view.confirm` capability they read; a collision confirmation refuses by name until an
+ * activation-preserving main-thread prompt can answer synchronously.
+ */
+export function makeProjectedViewContract(onRefusal?: (capability: "view.confirm", message: string) => void): { confirm(message: string): boolean } {
+  return {
+    confirm(message: string): boolean {
+      console.warn(`[wiki-worker] capability refused: window.confirm is unavailable in the projected island (${message})`);
+      onRefusal?.("view.confirm", message);
+      return false;
+    },
+  };
+}
+
+/** CSS.escape's identifier serialization for the worker runtime, where utils-browser's window.CSS is absent. */
+export function escapeCssIdentifier(value: string): string {
+  const input = String(value);
+  let result = "";
+  for (let index = 0; index < input.length; index++) {
+    const code = input.charCodeAt(index);
+    if (code === 0) { result += "\uFFFD"; continue; }
+    if ((code >= 1 && code <= 31) || code === 127 ||
+        (index === 0 && code >= 48 && code <= 57) ||
+        (index === 1 && code >= 48 && code <= 57 && input.charCodeAt(0) === 45)) {
+      result += `\\${code.toString(16)} `;
+      continue;
+    }
+    if (index === 0 && code === 45 && input.length === 1) { result += "\\-"; continue; }
+    if (code >= 128 || code === 45 || code === 95 ||
+        (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+      result += input[index];
+    } else {
+      result += `\\${input[index]}`;
+    }
+  }
+  return result;
+}
+
 const TW5_NODE_BOOT_BUILTINS = new Set([
   "crypto", "node:crypto",
   "path",   "node:path",
@@ -129,6 +168,21 @@ function makeDeniedFsShim(): Record<string, unknown> {
   });
 }
 
+/** TW5's bundled crypto is the sole core-blob writer observed at `window.sjcl`. */
+function makeScopedWindowLend(onSjclWrite: () => void): Record<string, unknown> {
+  let acceptedSjclWrite = false;
+  return new Proxy(globalThis as unknown as Record<string, unknown>, {
+    set(target, key, value) {
+      const written = Reflect.set(target, key, value, target);
+      if (key === "sjcl" && !acceptedSjclWrite) {
+        acceptedSjclWrite = true;
+        onSjclWrite();
+      }
+      return written;
+    },
+  });
+}
+
 /**
  * HeadlessBootEnv — the composable shore of the headless-island TW5 boot.
  *
@@ -216,14 +270,18 @@ function loadTiddlyWikiFromBlob(
   const g = globalThis as Record<string, unknown>;
   const priorTw      = g["$tw"];
   const priorLoad    = g["_load"];
-  const priorWindow  = g["window"];
+  const priorWindowDescriptor = Object.getOwnPropertyDescriptor(g, "window");
+  const removeWindowAccessor = (): void => {
+    if (priorWindowDescriptor) Object.defineProperty(g, "window", priorWindowDescriptor);
+    else delete g["window"];
+  };
+  const windowLend = makeScopedWindowLend(removeWindowAccessor);
   const priorRequire = g["require"];
   let twFromBlob: unknown;
   try {
-    // Temporary virtual window: some bundled TW5 UMD wrappers read a global
-    // `window` symbol during definition even on Node. (`global` is aliased to
-    // globalThis in prepareHostBootInstance for the browser Worker.)
-    g["window"]  = globalThis;
+    // The bundle gets one scoped `window.sjcl` write. It never receives the worker global or a
+    // browser surface; the accessor disappears after that observed crypto initialization.
+    Object.defineProperty(g, "window", { configurable: true, get: () => windowLend });
     g["require"] = requireShim;
     g["$tw"]     = env.preSeedTw;
     // Evaluate with CommonJS-shaped `exports` so the standalone TW5 core (the
@@ -231,7 +289,7 @@ function loadTiddlyWikiFromBlob(
     // the bytes come from the content-addressed LarariumDoc blob, not a package.
     const source   = new TextDecoder().decode(new Uint8Array(coreBlob.bytes));
     const evaluate = new Function("exports", "module", "require", "window", "process", source);
-    evaluate(exportsShim, moduleShim, requireShim, globalThis, env.processArg);
+    evaluate(exportsShim, moduleShim, requireShim, windowLend, env.processArg);
     twFromBlob = g["$tw"];
     if (twFromBlob && typeof twFromBlob === "object") {
       const tw = twFromBlob as Record<string, unknown>;
@@ -244,7 +302,7 @@ function loadTiddlyWikiFromBlob(
     // the shims that were needed during blob evaluation.
     if (priorTw !== undefined) g["$tw"] = priorTw;
     if (priorLoad    === undefined) delete g["_load"];   else g["_load"]   = priorLoad;
-    if (priorWindow  === undefined) delete g["window"];  else g["window"]  = priorWindow;
+    removeWindowAccessor();
     if (priorRequire === undefined) delete g["require"]; else g["require"] = priorRequire;
   }
 
@@ -300,6 +358,9 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // The version IS the engine's content-address (its CID = hearthTrueName) — source-ridden-along,
   // not a magic semver. A content-addressed engine has no version but the hash of its own bytes.
   tw.packageInfo ??= { name: "tiddlywiki", version: engineCid ?? "island-engine" };
+  // TW5's utils-browser escapecss module reads window.CSS.escape. The island stays DOM-less;
+  // provide the same CSS identifier contract as a pure worker capability instead of faking window.
+  if (tw.utils) tw.utils.escapeCSS ??= escapeCssIdentifier;
   // The error reporter is the browser-XOR-node crash: `else if(!$tw.browser){ process.exit(1) }`.
   // Headless surfaces and continues — the island never aborts the worker on a boot warning.
   if (tw.utils) tw.utils.error = (err: unknown): void => {
@@ -389,22 +450,10 @@ export async function bootWithHostBridge(
           const hostShim = (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] as
             ((name: string) => Record<string, unknown>) | undefined;
           if (hostShim && TW5_BROWSER_BOOT_BUILTINS.has(id)) return hostShim(id);
-          // The island keeps both platform flags clear so TW5 skips DOM/Node startup tails. Its
-          // module table still needs the browser branch while resolving one module: that branch
-          // delegates missing titles to the host resolver instead of the core's Node require.
-          const runtime = instance as unknown as { browser: boolean | null };
-          const priorBrowser = runtime.browser;
-          const priorWindow = hostGlobal["window"];
-          runtime.browser = true;
-          // TW5's browser fallback calls `window.require`. A Worker has no `window`, so lend the
-          // same narrow resolver only for this synchronous module-table turn.
-          if (priorWindow === undefined) hostGlobal["window"] = hostGlobal;
-          try { return instance.modules.execute(id); }
-          finally {
-            runtime.browser = priorBrowser;
-            if (priorWindow === undefined) delete hostGlobal["window"];
-            else hostGlobal["window"] = priorWindow;
-          }
+          // TW5's third runtime keeps both platform flags clear. Resolve only engine module-table
+          // names here; known boot host names use their injected shim, and every other name refuses.
+          if (id.startsWith("$:/")) return instance.modules.execute(id);
+          throw new Error(`[wiki-worker] capability refused: unresolved TW5 host module ${JSON.stringify(id)}`);
         }
       : undefined;
     const nodeRequireShim = !isBrowser ? (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] : undefined;

@@ -5,7 +5,24 @@ import { playwright } from "@vitest/browser-playwright";
 // pure functions inside that browser context; no test boots a vessel here.
 export default defineConfig({
   test: {
-    include: ["tests/**/*.test.ts"],
-    browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
+    projects: [
+      {
+        test: {
+          name: "web-browser",
+          include: ["tests/**/*.test.ts"],
+          exclude: ["tests/e2e/**"],
+          browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
+        },
+      },
+      {
+        test: {
+          name: "shore-writes-e2e",
+          include: ["tests/e2e/shore-writes.e2e.test.ts"],
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 90_000,
+        },
+      },
+    ],
   },
 });

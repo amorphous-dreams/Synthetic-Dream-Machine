@@ -58,12 +58,16 @@ describe.skipIf(wikiSkip)(`retained reveal projection${skipNote}`, () => {
 
     await vi.waitFor(() => expect(frames.length).toBeGreaterThan(0));
     const open = renderIdFor(frames.at(-1)!, "open");
-    const close = renderIdFor(frames.at(-1)!, "close");
+    const initialClose = renderIdFor(frames.at(-1)!, "close");
 
     expect(() => dispatchProjectedEvent(open, "click", { button: 0 })).not.toThrow();
     await vi.waitFor(() => expect(frames.at(-1)).toContain("revealed"));
     expect(frames.at(-1)).not.toContain('hidden="true"');
 
+    // Opening the reveal re-renders TW5's widget tree, so the old close button belongs to a
+    // superseded absolute frame. A real page relays the render-id on its currently painted frame.
+    expect(initialClose).not.toBe(renderIdFor(frames.at(-1)!, "close"));
+    const close = renderIdFor(frames.at(-1)!, "close");
     expect(() => dispatchProjectedEvent(close, "click", { button: 0 })).not.toThrow();
     await vi.waitFor(() => expect(frames.at(-1)).toContain('hidden="true"'));
     // `retain=yes` deliberately keeps its child nodes; the close callback is what applies hidden.
