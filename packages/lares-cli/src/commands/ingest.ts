@@ -22,7 +22,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, submitIngest, recordLandedPacks, applyConfirmedRenames } from "../ingest-core.js";
+import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, submitIngest, recordLandedCarriers, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 
@@ -167,15 +167,15 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   }
   const summary = summaryOutput(result) ?? {};
 
-  // Pack echo-gate: record each landed PACK's synced observation (the projector
-  // never does — a pack file has no project-back), so an unchanged pack noops on
-  // the next scan instead of re-landing the whole bundle.
+  // The gesture records what it landed; the projector records what it projects;
+  // both write the same key and the same hash where they agree. An unchanged
+  // carrier then noops on the next scan instead of re-landing.
   const landedCarriers = (summary as { carriers?: Array<Record<string, unknown>> }).carriers ?? [];
-  const packsRecorded = recordLandedPacks(tree, toBag, candidates, landedCarriers);
+  const carriersRecorded = recordLandedCarriers(tree, toBag, candidates, landedCarriers);
   // R2 — a confirmed rename moves its observation to the new location (delete old key,
   // set new), so the moved carrier reads `unchanged` next scan instead of re-landing.
   const renamesMoved = applyConfirmedRenames(tree, toBag, candidates, (summary as { deletions?: Record<string, unknown> }).deletions);
-  if (packsRecorded + renamesMoved > 0) tree.flush();
+  if (carriersRecorded + renamesMoved > 0) tree.flush();
 
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
   emit(args, {

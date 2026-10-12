@@ -215,13 +215,20 @@ export function scanFiles(
 }
 
 /**
- * Record a landed PACK's synced observation — the gesture's job, because a pack
- * file never projects back (its foreign-titled members don't map to the carrier
- * URI), so the projector never sets its synced hash. Without this every re-scan
- * re-lands the whole bundle; with it, an UNCHANGED pack reads "unchanged" next
- * scan and noops. Returns the count recorded; the caller flushes the tree.
+ * Record a landed carrier's synced observation. The gesture records what it landed;
+ * the projector records what it projects; both write the same key and the same hash
+ * where they agree. A bag no mounted wiki mirrors never projects, and a pack file
+ * never projects back, so without the gesture's record the next scan reads every
+ * landed carrier `new` and a vanished file never reads as a deletion.
+ *
+ * Records the candidate's disk hash for each result that decided `ingest` or `noop`
+ * (a noop says the records already match the disk). Never records `conflict`,
+ * `refuse`, or a result naming no candidate. Before recording, the file is hashed
+ * as it stands NOW: where the disk moved since the scan, the projector wrote it and
+ * owns that observation, so nothing records. Returns the count recorded; the caller
+ * flushes the tree.
  */
-export function recordLandedPacks(
+export function recordLandedCarriers(
   tree: SyncedTree,
   toBag: string,
   candidates: readonly ScanRow[],
@@ -230,12 +237,24 @@ export function recordLandedPacks(
   const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
   let recorded = 0;
   for (const c of resultCarriers) {
-    if (c["decision"] === "ingest" && typeof c["pack"] === "string") {
-      const cand = byUri.get(String(c["uri"]));
-      if (cand) { tree.set(syncedTreeKey(toBag, cand.uri), cand.diskHash); recorded++; }
-    }
+    if (c["decision"] !== "ingest" && c["decision"] !== "noop") continue;
+    const cand = byUri.get(String(c["uri"]));
+    if (!cand || cand.diskHash === "") continue;
+    if (diskHashNow(cand.file) !== cand.diskHash) continue;
+    tree.set(syncedTreeKey(toBag, cand.uri), cand.diskHash);
+    recorded++;
   }
   return recorded;
+}
+
+/** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
+function diskHashNow(file: string): string | null {
+  try {
+    const { text } = readCarrierText(file);
+    const metaPath = file + ".meta";
+    const meta = existsSync(metaPath) ? readFileSync(metaPath, "utf8") : undefined;
+    return carrierHash(text, meta);
+  } catch { return null; }
 }
 
 /**
