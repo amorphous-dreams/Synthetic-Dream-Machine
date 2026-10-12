@@ -118,10 +118,11 @@ A browser mints keys only in a secure context, so a phone on the LAN needs an `h
 * ''A TLS terminator stands in front of the vessel'' and holds the wildcard certificate. The vessel serves plaintext to the terminator alone and keeps its loopback publication.
 * ''One split-horizon resolver'' on the always-on node answers the household name with the LAN address. No device installs anything.
 * ''The vessel names its reach face from one setting'', `LAR_PUBLIC_URL`. An `https` name carries `wss` for the relay, and the crossing URL the vessel prints (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>) uses that same name throughout.
-* ''The operator supplies the domain, the DNS credential and the issuance.'' The house builds nothing that holds them. The credential never enters the image, the compose file or the state mount of the vessel.
+* ''The operator supplies the domain and the DNS credential; a one-shot issuer reads it.'' The credential rests as two owner-read files in a host directory the operator names, outside both mounts of #/the-two-mounts. The issuer service alone mounts that directory, read-only, asks for one wildcard certificate per machine and exits. No credential value enters the image, the compose file, an environment variable, `/state` or `/workspace`, and the vessel's container mounts none of it.
+* ''The first always-on node issues; a second machine receives its certificate by hand.'' One node holds the credential. Every other machine gets a certificate and key a human carried to it.
 * ''Issuance and renewal sit at the edge of the causal island.'' A certificate's validity window belongs to the browser's trust decision. It decides no admission, no revocation and no act inside the vessel.
 
-The terminator and the resolver attach through one slot in the compose file that stays off until the operator turns it.
+The terminator, the resolver and the issuer attach through profiles in the compose file that stay off until the operator turns them.
 
 <<~/ahu>>
 
@@ -129,7 +130,7 @@ The terminator and the resolver attach through one slot in the compose file that
 
 !! The harnesses stand on the image
 
-A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code. One exception stands declared: a browser runner needs a browser engine the product image lacks, so it runs from a browser image and reads the repository read-only.
+A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code. A browser runner needs a browser engine the product image lacks, so it runs from a browser image. The mesh's browser vessels still read their code from the product image, through a volume that image fills. One exception stands declared: the browser CI runner reads the repository read-only. A harness run names its own compose project, so two runs on one host share no container, network or volume.
 
 <<~/ahu>>
 
@@ -164,6 +165,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Txgmpy4bIgnXV0S2l_eOI7sKGZMo-J0jBigIRzx2XX4
+<<^ code="&#x0003;">>ni:///sha-256;Grq3_HkasB9NNM5lfvhOfQCLrNqsK0LeuPjw8-Vtz9Y
 
 <<^ code="&#x0004;" -> to="?">>

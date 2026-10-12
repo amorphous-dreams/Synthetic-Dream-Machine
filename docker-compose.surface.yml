@@ -29,17 +29,45 @@
 #                     Neither stands on by default. Without multicast, the admit's QR code or `lar:` URI carries
 #                     the address.
 #
-# Optional household HTTPS slot (off by default): the operator supplies the domain and a DNS-01 wildcard
-# certificate issued and renewed by an operator-owned tool outside this file, the host paths for its
-# certificate and key, LARES_TLS_NAME (for example hearth.home.example.test), LARES_TLS_ZONE (for example
-# home.example.test), LARES_LAN_ADDRESS, and a router DHCP setting that gives household devices the resolver's
-# address. Stand it with `docker compose -f docker-compose.surface.yml --profile https up -d`. Set
-# LAR_PUBLIC_URL=https://<LARES_TLS_NAME> and keep LARES_BIND on loopback. Both slot services publish on
-# loopback until the operator names the LAN interface (LARES_TLS_BIND, LARES_DNS_BIND): a resolver published on
-# every interface of a multi-homed host would forward for strangers. The terminator reaches `lares` on
-# the compose network at lares:4321, never through its published port. No DNS credential or ACME client enters
-# this file or any service. The resolver answers names under the zone with the LAN address and forwards all
-# other names to LARES_DNS_UPSTREAM (default 1.1.1.1).
+# Optional household HTTPS slot (off by default), in two profiles. Both stay off until the operator turns them.
+#
+#   --profile https    the TLS terminator and the split-horizon resolver. The operator supplies LARES_TLS_NAME (for
+#                      example hearth.home.example.test), LARES_TLS_ZONE (for example home.example.test),
+#                      LARES_LAN_ADDRESS, the host paths LARES_TLS_CERT and LARES_TLS_KEY, and a router DHCP setting
+#                      that gives household devices the resolver's address. Stand it with
+#                        docker compose -f docker-compose.surface.yml --profile https up -d
+#                      Set LAR_PUBLIC_URL=https://<LARES_TLS_NAME> and keep LARES_BIND on loopback. Both services
+#                      publish on loopback until the operator names the LAN interface (LARES_TLS_BIND,
+#                      LARES_DNS_BIND): a resolver published on every interface of a multi-homed host would forward
+#                      for strangers. The terminator reaches `lares` on the compose network at lares:4321, never
+#                      through its published port. The resolver answers names under the zone with the LAN address
+#                      and forwards all other names to LARES_DNS_UPSTREAM (default 1.1.1.1).
+#   --profile issuer   one ACME client, one-shot, on the household's always-on node:
+#                        docker compose -f docker-compose.surface.yml --profile issuer run --rm issuer
+#                      It asks the certificate authority for ONE WILDCARD certificate over LARES_TLS_ZONE and proves
+#                      control of the zone by a TXT record written through the DNS host's API (DNS-01), so nothing
+#                      reaches inward to the house. A run issues, and a later run renews. The operator supplies
+#                      LARES_TLS_ZONE, LARES_TLS_DIR (a host directory the issuer writes), LARES_DNS_CREDENTIAL_DIR
+#                      and LARES_ACME_ACCEPT_TOS=yes (the operator, never this file, accepts the authority's terms).
+#                      Optional: LARES_TLS_CERT_NAME (default household; one name per machine), LARES_ACME_SERVER,
+#                      LARES_ISSUER_IMAGE.
+#                      THE CREDENTIAL RESTS AS TWO FILES in LARES_DNS_CREDENTIAL_DIR, a host directory outside both
+#                      mounts and outside any repository (mode 0700): `porkbun-api-key` and `porkbun-secret-api-key`,
+#                      each mode 0400 and owned by the uid the issuer runs as. The issuer alone mounts that
+#                      directory, read-only, and refuses by name a directory inside LARES_STATE or LARES_WORKSPACE,
+#                      a relative or dotted path, and a file or directory others can read. It compares path
+#                      strings and cannot see a symlink on the host: keep the directory a real directory. No
+#                      credential VALUE enters this file, an environment variable, the image, /state or /workspace;
+#                      the vessel mounts and names none of it.
+#                      The issuer writes certificates/<name>.crt and certificates/<name>.key under LARES_TLS_DIR;
+#                      point LARES_TLS_CERT and LARES_TLS_KEY at that pair. After a renewal, confirm the
+#                      certificate changed, then restart the terminator so it reads the new bytes; recreate it
+#                      (`up -d --force-recreate terminator`) when a hand replaced either file with a new one, since
+#                      a single-file bind holds the file it met at start. ONE CERTIFICATE PER MACHINE: a run under another
+#                      LARES_TLS_CERT_NAME issues a second certificate with its own key, which a human carries to
+#                      that machine. A wildcard publishes only the wildcard to the public transparency logs; a
+#                      per-name certificate would publish that name.
+#                      Proof with no real credential, domain or zone: tools/household-https-witness.sh.
 #
 # THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store takes its own claim at
 # /state/.holder, a socket on the state mount, so a second container on the same /state refuses with StoreHeld
@@ -250,6 +278,85 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # The one-shot certificate issuer (lego, an ACME client). INVARIANTS:
+  #   · It alone reads the DNS credential: two owner-read files in a host directory the operator names, bound
+  #     read-only at /run/dns and handed to the DNS provider through its `_FILE` names. No variable of any service
+  #     carries a credential value.
+  #   · It proves control of the zone by a TXT record through the DNS host's API, so nothing reaches inward.
+  #   · It asks for the wildcard alone and writes into LARES_TLS_DIR, the one directory it may write.
+  #   · It shares no mount with the vessel, and refuses a credential directory that lies inside either vessel mount.
+  # Sources: provider `porkbun`, variables PORKBUN_API_KEY and PORKBUN_SECRET_API_KEY, "The environment variable
+  # names can be suffixed by _FILE to reference a file instead of a value": https://go-acme.github.io/lego/dns/porkbun/
+  # Image goacme/lego, tag v5.5.2: https://hub.docker.com/r/goacme/lego/tags
+  issuer:
+    profiles: [issuer]
+    image: ${LARES_ISSUER_IMAGE:-goacme/lego:v5.5.2}
+    user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=4m
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        refuse() { echo "household-issuer: $$1" >&2; exit 2; }
+        [ -n "$$LARES_TLS_ZONE" ] || refuse 'LARES_TLS_ZONE stands unset — name the household DNS zone'
+        case "$$LARES_TLS_ZONE" in *[!a-z0-9.-]*|.*|*.|*..*) refuse "LARES_TLS_ZONE ($$LARES_TLS_ZONE) reads as no DNS zone — lowercase letters, digits, hyphens and dots" ;; esac
+        [ -n "$$LARES_TLS_DIR" ] || refuse 'LARES_TLS_DIR stands unset — supply the host certificate directory'
+        [ -n "$$LARES_DNS_CREDENTIAL_DIR" ] || refuse 'LARES_DNS_CREDENTIAL_DIR stands unset — supply the host directory holding the two DNS credential files'
+        [ "$$LARES_ACME_ACCEPT_TOS" = yes ] || refuse 'LARES_ACME_ACCEPT_TOS stands unset — set it to yes after accepting the authority terms'
+        [ -n "$$LARES_TLS_CERT_NAME" ] || refuse 'LARES_TLS_CERT_NAME stands unset — name this machine certificate'
+        case "$$LARES_TLS_CERT_NAME" in *[!a-z0-9-]*) refuse 'LARES_TLS_CERT_NAME stands invalid — use only lowercase letters, digits, and hyphens' ;; esac
+        # Each host path reads absolute and plain (no `.` or `..` segment, no doubled slash), so the prefix checks
+        # below compare like with like; a trailing slash drops first. A symlink stays invisible from in here: the
+        # operator keeps the credential directory a real directory.
+        plain() {
+          p=$$2; while [ "$$p" != / ] && [ "$${p%/}" != "$$p" ]; do p=$${p%/}; done
+          case "$$p" in /*) ;; *) refuse "$$1 ($$2) stands relative — give an absolute host path" ;; esac
+          case "$$p/" in *//*|*/./*|*/../*) refuse "$$1 ($$2) holds a dot segment or a doubled slash — give the plain absolute path" ;; esac
+          printf '%s' "$$p"
+        }
+        credential=$$(plain LARES_DNS_CREDENTIAL_DIR "$$LARES_DNS_CREDENTIAL_DIR")
+        certificates=$$(plain LARES_TLS_DIR "$$LARES_TLS_DIR")
+        [ -z "$$LARES_STATE" ] || state=$$(plain LARES_STATE "$$LARES_STATE")
+        [ -z "$$LARES_WORKSPACE" ] || workspace=$$(plain LARES_WORKSPACE "$$LARES_WORKSPACE")
+        [ -z "$${state:-}" ] || case "$$credential/" in "$$state/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE — place it outside the state mount' ;; esac
+        [ -z "$${workspace:-}" ] || case "$$credential/" in "$$workspace/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_WORKSPACE — place it outside the workspace mount' ;; esac
+        case "$$credential/" in "$$certificates/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_TLS_DIR — keep the credential apart from the certificates' ;; esac
+        [ "$$(stat -c %d:%i /run/dns)" != "$$(stat -c %d:%i /certs)" ] || refuse 'LARES_DNS_CREDENTIAL_DIR and LARES_TLS_DIR name one directory — keep the credential apart from the certificates'
+        [ -d /run/dns ] || refuse 'LARES_DNS_CREDENTIAL_DIR names no directory'
+        mode=$$(stat -c %a /run/dns)
+        case "$$mode" in 700|500) ;; *) refuse "LARES_DNS_CREDENTIAL_DIR mode ($$mode) lets group or other in — set mode 0700" ;; esac
+        for pair in 'PORKBUN_API_KEY_FILE:/run/dns/porkbun-api-key' 'PORKBUN_SECRET_API_KEY_FILE:/run/dns/porkbun-secret-api-key'; do
+          name=$${pair%%:*}; file=$${pair#*:}
+          [ -s "$$file" ] || refuse "$$name reads missing or empty — place $${file##*/} in LARES_DNS_CREDENTIAL_DIR"
+          [ "$$(stat -c %u "$$file")" = "$$(id -u)" ] || refuse "$$name file belongs to another user — the issuer's own uid must own it"
+          mode=$$(stat -c %a "$$file")
+          [ "$$mode" = 400 ] || refuse "$$name file mode ($$mode) reads wider than its owner — set mode 0400"
+        done
+        exec /lego run --accept-tos --account-id household --server "$$LARES_ACME_SERVER" --path /certs --dns "$$LARES_ISSUER_DNS" --cert.name "$$LARES_TLS_CERT_NAME" -d "*.$$LARES_TLS_ZONE"
+    environment:
+      LARES_TLS_ZONE: ${LARES_TLS_ZONE:-}
+      LARES_TLS_DIR: ${LARES_TLS_DIR:-}
+      LARES_DNS_CREDENTIAL_DIR: ${LARES_DNS_CREDENTIAL_DIR:-}
+      LARES_TLS_CERT_NAME: ${LARES_TLS_CERT_NAME:-household}
+      LARES_ACME_ACCEPT_TOS: ${LARES_ACME_ACCEPT_TOS:-}
+      LARES_ACME_SERVER: ${LARES_ACME_SERVER:-https://acme-v02.api.letsencrypt.org/directory}
+      LARES_ISSUER_DNS: ${LARES_ISSUER_DNS:-porkbun}
+      LARES_STATE: ${LARES_STATE:-}
+      LARES_WORKSPACE: ${LARES_WORKSPACE:-}
+      PORKBUN_API_KEY_FILE: /run/dns/porkbun-api-key
+      PORKBUN_SECRET_API_KEY_FILE: /run/dns/porkbun-secret-api-key
+    volumes:
+      - type: bind
+        source: ${LARES_DNS_CREDENTIAL_DIR:-/dev/null}
+        target: /run/dns
+        read_only: true
+      - type: bind
+        source: ${LARES_TLS_DIR:-/dev/null}
+        target: /certs
+    restart: "no"
+
 configs:
   household-terminator-nginx-main:
     content: |
@@ -263,6 +370,11 @@ configs:
         access_log /dev/stdout;
         sendfile on;
         keepalive_timeout 65;
+        # The browser's first gate message rides Sec-WebSocket-Protocol, and one header line must fit one buffer.
+        # nginx documents a default of `4 8k`; a measured tablet sends 8192 bytes in that one header, which with
+        # its name overflows 8k and draws 400. Set at the http level, so the default server cannot shadow it.
+        # https://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers
+        large_client_header_buffers 4 16k;
         include /etc/nginx/conf.d/*.conf;
       }
   household-terminator-nginx:
@@ -287,6 +399,12 @@ configs:
           proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
           # A relay socket rests idle between changes. The proxy's idle timers bound transport alone, at the edge
           # of the vessel: they decide no admission and no lapse, and a dropped socket simply dials again.
+          # The vessel answers an upgrade by echoing the chosen subprotocol, so the response head carries the same
+          # long header back. nginx reads a response head into one buffer of one memory page (4k or 8k) by default
+          # and answers 502 past it; the buffer set must hold what the request side admits.
+          # https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffer_size
+          proxy_buffer_size 16k;
+          proxy_buffers 8 16k;
           proxy_read_timeout 1h;
           proxy_send_timeout 1h;
           # A carrier save may exceed the proxy's default body bound; the vessel sets its own.

@@ -73,15 +73,20 @@ DNS-01 needs the internet ''only at issuance / renewal (~every 60d), never at se
 
 <<~ ahu #/behind-the-terminator>>
 
-!! Behind the terminator ~ a vessel that names itself from configuration breaks the moment the wall comes down
+!! Behind the terminator ~ one setting names the reach face, and no request renames the vessel
 
-Something ''in front of'' the vessel earns the trusted origin: the cert lives at a terminator, and the vessel itself binds loopback and serves plaintext to it. That topology carries the cure — and it makes every URL the vessel writes about ''itself'' a hazard.
+Something ''in front of'' the vessel earns the trusted origin: the certificate lives at a terminator, and the vessel serves plaintext to that terminator alone. That topology carries the cure, and it turns every URL the vessel writes about ''itself'' into a hazard.
 
-* ''BIND LOOPBACK.'' The vessel listens on `127.0.0.1`; the terminator proxies to it. Any wider bind names a development override — the one that stops reading harmless the day the machine becomes reachable.
-* ''DERIVE THE SELF-URL FROM THE REQUEST, NEVER FROM CONFIGURATION.'' The relay address handed to a page comes from the request's own host, and the scheme from the forwarded protocol. A hardcoded `host:port` holds in exactly the setup carrying no terminator — so ''it works right up until the wall comes down'', and then hands the phone a socket address other than the one it reached.
-* ''THE SCHEME TRAVELS WITH THE ORIGIN.'' A page served over the earned `https` origin cannot open `ws:` (#the-wall names the cascade), so the forwarded scheme makes the `wss:` selection correct rather than a guess. Getting it wrong fails as mixed content — silent in some browsers, and never at the layer that chose it.
+* ''PUBLISH ON LOOPBACK.'' The vessel publishes its port on `127.0.0.1`; the terminator reaches it across the private compose network. Any wider bind names an override the operator turned by name.
+* ''ONE SETTING NAMES THE REACH FACE.'' `LAR_PUBLIC_URL` holds the one name a browser or a peer dials. Every URL the vessel prints about itself derives from that setting: the relay address an admit carries, the crossing URL, the boot banner (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor#/household-https">>).
+* ''NOTHING A REQUEST SAYS NAMES THE VESSEL.'' `Host`, `X-Forwarded-Proto`, `X-Forwarded-Host` and every other header arrive from whoever sent the request. A vessel that built its own name from them would hand the pen to any caller: one forged `Host` would steer an admit's address or a relay URL toward a stranger's machine. The terminator may forward such headers; the vessel reads them as a description of one request and never as its own name.
+* ''THE SCHEME TRAVELS WITH THE SETTING.'' An `https` reach face carries `wss` for the relay, since a page served over the earned origin cannot open `ws:` (#/the-wall names the cascade). The scheme comes from the setting's own scheme, never from a forwarded header. A served page dials the relay at the origin its own address bar holds, which a browser reports and no request header supplies.
+* ''A MISMATCH LOGS ONCE.'' When a request arrives under a host other than the one the setting names, the vessel logs that mismatch once per boot and keeps serving under the setting. The line tells the operator that a resolver, a terminator or the setting itself fell out of step.
+* ''NO SETTING EARNS A LOUD NOTICE AT BOOT.'' A vessel standing without `LAR_PUBLIC_URL` says so at boot, in one loud line that names the loopback address it will print in its place. A household then learns of the gap from the log, never from a phone that cannot connect.
 
-⚠ ''The failure survives testing by its shape.'' Loopback development has no terminator and no forwarded headers, so a vessel that reads its own name from configuration runs green on the desk and broken on the LAN — precisely the crossing this whole carrier exists to make.
+⚠ ''The failure survives testing by its shape.'' Loopback development runs no terminator and knows one name, so a wrong or missing setting runs green on the desk and breaks on the LAN, the crossing this whole carrier exists to make. The boot notice and the mismatch line guard that crossing.
+
+▢ ''OWED'' (the code half): the node entry reads `LAR_PUBLIC_URL` and derives no self-URL from a request header; it falls back to loopback without a word when the setting stands absent. The once-logged mismatch and the loud boot notice stand unbuilt, as does a test that a forged `Host` and a forged `X-Forwarded-Proto` change no printed URL.
 
 <<~/ahu>>
 
@@ -260,9 +265,13 @@ FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tu
 
 <<~ ahu #/provenance>>
 
-!! Provenance ~ a built slot and an operator-supplied household
+!! Provenance ~ a built slot, an issuer proven against a test authority, and an operator-supplied household
 
-The `https` compose profile supplies a TLS terminator and split-horizon resolver; `LAR_PUBLIC_URL` names the vessel's reach face, and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, DNS credential, certificate issuance and renewal. The proposed path includes per-device-free DNS-01 wildcard TLS and household DNS; installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
+The `https` compose profile supplies a TLS terminator and a split-horizon resolver. The `issuer` profile runs one ACME client as a one-shot: it asks for one wildcard certificate over the household zone, answers the DNS-01 challenge through the DNS host's API, and writes the certificate where the terminator reads it. The DNS credential rests as two owner-read files in a host directory the operator names, outside both vessel mounts; the issuer alone mounts that directory, read-only, refuses by name a directory inside either mount or a file wider than its owner, and no credential value enters the compose file, an environment variable, the image, the state mount or the workspace mount. The first always-on node issues one certificate per machine, and a human carries a second machine's certificate to it by hand.
+
+`tools/household-https-witness.sh` walks the slot with no real credential, domain or zone: a test certificate authority issues the wildcard through the same issuer service, a stand-in answers for the DNS host's API, the terminator serves the issued certificate, a knocked socket upgrade passes through, a header of the measured tablet size passes both ways, and the vessel's container, state and workspace show no trace of the credential. The stand-in leaves the registrar's own provider code unwalked.
+
+`LAR_PUBLIC_URL` names the vessel's reach face (#/behind-the-terminator), and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, the registrar's API key pair, the LAN address and the router's DNS setting. A live issuance against the public authority through the registrar's API, a renewal on its ~60d clock with the terminator's restart, installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
 
 <<~/ahu>>
 
@@ -287,6 +296,6 @@ The `https` compose profile supplies a TLS terminator and split-horizon resolver
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-ltrEFPZf6rDaOhU3ByIY3FxfIG-X11Ga-xtihBZZXE
+<<^ code="&#x0003;">>ni:///sha-256;ofD_Ge3yTBn1Knr3x_7Pw63jzxMTuqjAzlgaeSprUXs
 
 <<^ code="&#x0004;" -> to="?">>
