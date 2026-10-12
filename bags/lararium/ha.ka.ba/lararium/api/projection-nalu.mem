@@ -125,7 +125,7 @@ The three nalus do not live in bespoke worker classes. Each rides a ''sovereign 
 
 <<~ scale cap "hasCapture/IN-accumulate -> hasProjection/OUT-coalesce -> hasDispatch/the-synapse -> hasEngineWatch/hasRecipeWatch/drift">>
 
-A wiki island = `[hasDispatch, hasProjection, hasEngineWatch, hasRecipeWatch]`; the ''@daemon'' (the bound-operator's vessel-only worker, severed from federation) = `[hasDispatch, hasEngineWatch, hasCapture]` — telemetry ''folds into @daemon as an IDEMPOTENT cap'': every @daemon carries it (tending the operator's session-capture is a daemon duty), no longer a bespoke worker nor a standalone island. The capture cap stays a DISTINCT `#has` unit (FLOW) beside dispatch (AUTHORITY) — the master cut holds at the cap shore, never the worker — and is INERT until a sink + feed are wired (a valid resting state). The breath is two gate-families on one island substrate (IN-axon + OUT-dendrite, the neuron rhyme); dispatch is the third, non-gate channel. A cap injects its substrate shore, never imports it — the same stack composes on node, browser, any vessel.
+A wiki island = `[hasDispatch, hasProjection, hasEngineWatch, hasRecipeWatch]`; the ''@daemon'' (the bound-operator's vessel-only worker, severed from federation) = `[hasDispatch, hasEngineWatch, hasCapture]` — telemetry ''folds into @daemon as an IDEMPOTENT cap'': every @daemon carries it (tending the operator's session-capture is a daemon duty), neither a bespoke worker nor a standalone island. The capture cap stays a DISTINCT `#has` unit (FLOW) beside dispatch (AUTHORITY) — the master cut holds at the cap shore, never the worker — and is INERT until a sink + feed are wired (a valid resting state). The breath is two gate-families on one island substrate (IN-axon + OUT-dendrite, the neuron rhyme); dispatch is the third, non-gate channel. A cap injects its substrate shore, never imports it — the same stack composes on node, browser, any vessel.
 
 <<~/ahu>>
 
@@ -185,6 +185,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oSBqimlJsdSLPR9TJmwW28IvcEBmFDgUNEZT4E244mA
+<<^ code="&#x0003;">>ni:///sha-256;LZPxIWNGjOPDTXCPV_58PEUWpvqIrENg4ESe7zn94rc
 
 <<^ code="&#x0004;" -> to="?">>
