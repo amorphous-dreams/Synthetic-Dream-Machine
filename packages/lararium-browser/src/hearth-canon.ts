@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, mutableLarRecord, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, mutableLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -46,14 +46,27 @@ export function isOwnHearthCrossing(at: {
  * What a carried admit's `hearthCanonDocs` may name, read as DATA: the canon titles alone, each with a
  * well-formed document url. Any other title, a torn url or a non-string falls out, so a carriage names
  * neither a private plane nor a key of the leaf's oracle beyond the two canon pointers.
+ *
+ * A CANON TITLE NEVER NAMES A SYSTEM PLANE. The carried fields ride the unsigned part of the admit, so a url
+ * whose document id DERIVES (the oracle genesis document, and every board the Nexus boards gate federates
+ * for `nexusPubkey`) falls out; the refusal set comes from those derivations, never from a listed id. One url
+ * under both titles names two documents as one, so both fall out. A dropped entry mounts no canon.
  */
-export function admittedCanonDocs(carried: unknown): HearthCanonDocs {
+export function admittedCanonDocs(carried: unknown, nexusPubkey?: string): HearthCanonDocs {
   const named: Record<string, string> = {};
   if (!carried || typeof carried !== "object") return named;
+  const oracleId = interpretAsDocumentId(oracleGenesisDocUrl());
+  const boards = nexusPubkey ? new DeterministicFederationGate(nexusPubkey) : null;
+  const reserved = (url: string): boolean => {
+    const docId = interpretAsDocumentId(url as AutomergeUrl);
+    return docId === oracleId || (boards?.mayFederate(docId as DocumentId) ?? false);
+  };
   for (const title of HEARTH_CANON_TITLES) {
     const url = (carried as Record<string, unknown>)[title];
-    if (typeof url === "string" && isValidAutomergeUrl(url)) named[title] = url;
+    if (typeof url === "string" && isValidAutomergeUrl(url) && !reserved(url)) named[title] = url;
   }
+  const urls = Object.values(named).map((u) => interpretAsDocumentId(u as AutomergeUrl));
+  if (new Set(urls).size !== urls.length) return {};
   return named;
 }
 
@@ -96,7 +109,7 @@ export function hearthCrossingOf(at: {
   readonly nexusPubkey:      string;
 }): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
   const ownHearth = isOwnHearthCrossing(at);
-  const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs) : {};
+  const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
   if (!at.relayGatePubKey) return { ownHearth, hearthCanon, gate: null };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
   return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };

@@ -11,7 +11,7 @@ import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, t
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import {
   DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, CATALOG_DOC_URI, DAEMON_BAG_ID,
-  crossroadsDocUrl, materializeSharedLarDoc, mutableLarRecord, oracleGenesisDocUrl, emptyLarDoc, tiddlerText,
+  crossroadsDocUrl, whoBoardDocUrl, materializeSharedLarDoc, mutableLarRecord, oracleGenesisDocUrl, emptyLarDoc, tiddlerText,
   type FederationGate, type LarDoc,
 } from "@lararium/mesh";
 import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, seatHearthCanon } from "../src/hearth-canon.js";
@@ -48,6 +48,32 @@ describe("admittedCanonDocs — what a carried admit may name", () => {
     expect(admittedCanonDocs(undefined)).toEqual({});
     expect(admittedCanonDocs("automerge:x")).toEqual({});
     expect([...hearthCanonDocIds({ [LARES_DOC_URI]: LARES_URL })]).toEqual([id(LARES_URL)]);
+  });
+});
+
+describe("admittedCanonDocs — a canon title never names a system plane", () => {
+  const HONEST = { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL };
+  test("CONTROL: an honest admit still opens exactly its two documents", () => {
+    expect(admittedCanonDocs(HONEST, NEXUS)).toEqual(HONEST);
+    const gate = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: HONEST, relayGatePubKey: "cd".repeat(32), nexusPubkey: NEXUS });
+    expect(gate.hearthCanon).toEqual(HONEST);
+  });
+  test("the oracle plane named under a canon title opens nothing", () => {
+    const oracle = oracleGenesisDocUrl();
+    expect(admittedCanonDocs({ [LARES_DOC_URI]: oracle, [LARARIUM_DOC_URI]: LARARIUM_URL }, NEXUS)).toEqual({ [LARARIUM_DOC_URI]: LARARIUM_URL });
+    expect(admittedCanonDocs({ [LARES_DOC_URI]: oracle })).toEqual({});
+    const crossing = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: { [LARES_DOC_URI]: oracle }, relayGatePubKey: "cd".repeat(32), nexusPubkey: NEXUS });
+    expect(crossing.hearthCanon).toEqual({});
+    expect(crossing.gate!.mayFederate(id(oracle))).toBe(false);
+  });
+  test("a per-Nexus board named under a canon title opens nothing beyond the boards gate", () => {
+    const board = whoBoardDocUrl(NEXUS);
+    expect(admittedCanonDocs({ [LARARIUM_DOC_URI]: board, [LARES_DOC_URI]: LARES_URL }, NEXUS)).toEqual({ [LARES_DOC_URI]: LARES_URL });
+    const crossing = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: { [LARARIUM_DOC_URI]: board }, relayGatePubKey: "cd".repeat(32), nexusPubkey: NEXUS });
+    expect(crossing.hearthCanon).toEqual({});
+  });
+  test("one url under both titles names two documents in one: both fall out", () => {
+    expect(admittedCanonDocs({ [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARES_URL }, NEXUS)).toEqual({});
   });
 });
 
