@@ -16,8 +16,15 @@
  *   · THE ANSWER RIDES SEALED TO THE NEWCOMER AND REPEATS NOTHING. The operator's answer holds the admit, the
  *     Nexus, the epoch and, on an admit, a fresh host-purpose token: no key, no nonce and no signature of the
  *     introduction. It leaves this module sealed to the newcomer's key under a fresh sender key, padded to one
- *     length. So an answer shares no byte with its introduction; a holder of both cannot match them; an admit
- *     and a decline weigh the same; and only the friend's secret opens it.
+ *     length. So an answer shares no byte with its introduction; a holder of both records finds nothing in
+ *     them to match one to the other; an admit and a decline weigh the same; and the friend's secret opens
+ *     it. (The seal hides its recipient from a reader. It makes no promise that a box an adversary BUILT
+ *     opens under one key alone; nothing here leans on that.)
+ *   · EVERY VALUE GETS READ ONCE. A handed-in introduction is copied field by field into a frozen record
+ *     before anything is checked, and the bytes signed, the key verified under and the answer built all read
+ *     that copy. A value that answers differently at each read gains nothing.
+ *   · ONLY THE ENCODER'S OWN BYTES OPEN. An opened answer must re-encode to exactly the plaintext that was
+ *     sealed, so no extra key, repeated key or stray byte rides inside a box.
  *   · THE DIAL READS A COUNT. How many introductions one guest may hold open is a number on the hosting act;
  *     no field anywhere holds a clock reading.
  *   · THIS MODULE KEEPS NOTHING. It holds no store and no key. Consuming an introduction means the caller
@@ -67,13 +74,39 @@ const exactKeys = (x: Record<string, unknown>, keys: readonly string[]): boolean
 const hex64 = (v: unknown): v is string => typeof v === "string" && HEX_64.test(v);
 const aid = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 
+/** Do four already-read values hold the shapes an introduction's fields take? */
+function shapesHold(nexus: unknown, epoch: unknown, newcomerKey: unknown, introducer: unknown): boolean {
+  return aid(nexus) && hex64(epoch) && hex64(newcomerKey) && hex64(introducer);
+}
+
+/** Copy an introduction's fields out of a handed-in value, each read ONCE, or null when the shape fails. */
+function fieldsOf(v: unknown): IntroductionFields | null {
+  try {
+    if (!isRecord(v) || !exactKeys(v, FIELD_KEYS)) return null;
+    const nexus = v["nexus"], epoch = v["epoch"], newcomerKey = v["newcomerKey"], introducer = v["introducer"];
+    if (!shapesHold(nexus, epoch, newcomerKey, introducer)) return null;
+    return Object.freeze({ nexus: normAid(nexus as string), epoch: epoch as string, newcomerKey: newcomerKey as string, introducer: introducer as string });
+  } catch { return null; }
+}
+
+/** Copy a whole introduction out of a handed-in value, each field read ONCE, or null when the shape fails. */
+function introductionOf(v: unknown): Introduction | null {
+  try {
+    if (!isRecord(v) || !exactKeys(v, INTRODUCTION_KEYS)) return null;
+    const kind = v["kind"], signature = v["signature"];
+    const nexus = v["nexus"], epoch = v["epoch"], newcomerKey = v["newcomerKey"], introducer = v["introducer"];
+    if (kind !== HOSTING_INTRODUCTION_DOMAIN || !shapesHold(nexus, epoch, newcomerKey, introducer)) return null;
+    if (typeof signature !== "string" || !HEX_128.test(signature)) return null;
+    return Object.freeze({
+      kind: HOSTING_INTRODUCTION_DOMAIN, nexus: normAid(nexus as string), epoch: epoch as string,
+      newcomerKey: newcomerKey as string, introducer: introducer as string, signature,
+    });
+  } catch { return null; }
+}
+
 /** Run a structural read; a value that throws while being read (a proxy, a getter) reads as malformed. */
 function guarded(read: () => boolean): boolean {
   try { return read(); } catch { return false; }
-}
-
-function fieldsHold(x: Record<string, unknown>): boolean {
-  return aid(x["nexus"]) && hex64(x["epoch"]) && hex64(x["newcomerKey"]) && hex64(x["introducer"]);
 }
 
 /** The X25519 secret a newcomer's 32 bytes derive, under the introduction's own name. The caller zeroes it. */
@@ -99,28 +132,28 @@ export function introductionBytes(fields: IntroductionFields): Uint8Array {
 
 /** Structural guard: exactly the six keys, each of its lawful shape. `verifyIntroduction` reads the signature. */
 export function isIntroduction(v: unknown): v is Introduction {
-  return guarded(() => isRecord(v) && exactKeys(v, INTRODUCTION_KEYS) && v["kind"] === HOSTING_INTRODUCTION_DOMAIN &&
-    fieldsHold(v) && typeof v["signature"] === "string" && HEX_128.test(v["signature"]));
+  return introductionOf(v) !== null;
 }
 
-/** Sign an introduction. Malformed fields refuse before the signer gets asked for anything. */
+/** Sign an introduction. Malformed fields refuse before the signer gets asked for anything, and the act
+ *  returned names exactly the fields the signer saw. */
 export async function signIntroduction(
   fields: IntroductionFields,
   sign:   (bytes: Uint8Array) => Promise<string>,
 ): Promise<Introduction> {
-  if (!guarded(() => isRecord(fields) && exactKeys(fields, FIELD_KEYS) && fieldsHold(fields))) throw new IntroductionError("introduction-malformed");
-  const signature = await sign(introductionBytes(fields));
+  const read = fieldsOf(fields);
+  if (read === null) throw new IntroductionError("introduction-malformed");
+  const signature = await sign(introductionBytes(read));
   if (typeof signature !== "string" || !HEX_128.test(signature)) throw new IntroductionError("introduction-signature-malformed");
-  return {
-    kind: HOSTING_INTRODUCTION_DOMAIN, nexus: normAid(fields.nexus), epoch: fields.epoch,
-    newcomerKey: fields.newcomerKey, introducer: fields.introducer, signature,
-  };
+  return Object.freeze({ kind: HOSTING_INTRODUCTION_DOMAIN, ...read, signature });
 }
 
 export type IntroductionRefusal =
   | "introduction-malformed" | "introduction-nexus-foreign" | "introduction-epoch-dead" | "introduction-unsigned";
+/** A lawful verdict hands back the frozen copy it verified: the caller shows and answers THAT, never the value it
+ *  was handed. */
 export type IntroductionVerdict =
-  | { readonly ok: true }
+  | { readonly ok: true; readonly introduction: Introduction }
   | { readonly ok: false; readonly refusal: IntroductionRefusal };
 
 /**
@@ -135,16 +168,17 @@ export function verifyIntroduction(
   live:  { readonly nexus: string; readonly epochs: readonly string[] },
 ): IntroductionVerdict {
   try {
-    if (!isIntroduction(intro)) return { ok: false, refusal: "introduction-malformed" };
+    const read = introductionOf(intro);
+    if (read === null) return { ok: false, refusal: "introduction-malformed" };
     const nexus = live.nexus, epochs = live.epochs;
     if (typeof nexus !== "string" || !Array.isArray(epochs)) return { ok: false, refusal: "introduction-malformed" };
-    if (normAid(intro.nexus) !== normAid(nexus)) return { ok: false, refusal: "introduction-nexus-foreign" };
-    if (!epochs.includes(intro.epoch)) return { ok: false, refusal: "introduction-epoch-dead" };
+    if (read.nexus !== normAid(nexus)) return { ok: false, refusal: "introduction-nexus-foreign" };
+    if (!epochs.includes(read.epoch)) return { ok: false, refusal: "introduction-epoch-dead" };
     let signed = false;
     try {
-      signed = ed25519.verify(hexToBytes(intro.signature), introductionBytes(intro), hexToBytes(intro.introducer), { zip215: false });
+      signed = ed25519.verify(hexToBytes(read.signature), introductionBytes(read), hexToBytes(read.introducer), { zip215: false });
     } catch { signed = false; }
-    return signed ? { ok: true } : { ok: false, refusal: "introduction-unsigned" };
+    return signed ? { ok: true, introduction: read } : { ok: false, refusal: "introduction-unsigned" };
   } catch {
     return { ok: false, refusal: "introduction-malformed" };
   }
@@ -188,6 +222,22 @@ export function isSealedAnswer(v: unknown): v is SealedAnswer {
     typeof v["ciphertext"] === "string" && HEX_EVEN.test(v["ciphertext"]));
 }
 
+/** The one plaintext an answer seals as: its canonical JSON, then spaces out to the fixed width. */
+function answerPlaintext(answer: Answer): Uint8Array {
+  const body = utf8Bytes(canonicalJson(answer));
+  if (body.length > ANSWER_PLAINTEXT_BYTES) throw new IntroductionError("answer-too-wide");
+  const plaintext = new Uint8Array(ANSWER_PLAINTEXT_BYTES).fill(0x20);
+  plaintext.set(body, 0);
+  return plaintext;
+}
+
+/** Rebuild an answer from a parsed value, key by key, or null: nothing beyond the lawful keys survives. */
+function answerOf(v: unknown): Answer | null {
+  if (!isAnswer(v)) return null;
+  const admitted = v.admitted, nexus = normAid(v.nexus), epoch = v.epoch, token = v.token;
+  return token === undefined ? { admitted, nexus, epoch } : { admitted, nexus, epoch, token: { purpose: token.purpose, n: token.n, y: token.y } };
+}
+
 /**
  * Consume an introduction into the operator's answer, sealed to the newcomer. The caller verifies first and
  * drops `intro` after. On an admit, `mint` (the hearth passes its own host-token mint) runs once; on a decline
@@ -196,28 +246,27 @@ export function isSealedAnswer(v: unknown): v is SealedAnswer {
  * two seals of one answer share no byte.
  */
 export function answerIntroduction(intro: Introduction, admit: boolean, mint?: () => InviteToken): SealedAnswer {
-  if (!isIntroduction(intro)) throw new IntroductionError("introduction-malformed");
+  const read = introductionOf(intro);
+  if (read === null) throw new IntroductionError("introduction-malformed");
   const admitted = admit === true;
-  const nexus = normAid(intro.nexus), epoch = intro.epoch;
+  const nexus = read.nexus, epoch = read.epoch;
   let answer: Answer = { admitted, nexus, epoch };
   if (admitted && mint !== undefined) {
     const token = mint();
     if (!isInviteToken(token)) throw new IntroductionError("answer-token-malformed");
     answer = { admitted, nexus, epoch, token: { purpose: token.purpose, n: token.n, y: token.y } };
   }
-  const body = utf8Bytes(canonicalJson(answer));
-  if (body.length > ANSWER_PLAINTEXT_BYTES) throw new IntroductionError("answer-too-wide");
-  const plaintext = new Uint8Array(ANSWER_PLAINTEXT_BYTES).fill(0x20);     // JSON reads trailing spaces as nothing
-  plaintext.set(body, 0);
+  const plaintext = answerPlaintext(answer);
   let box;
-  try { box = sealToRecipient({ recipientPub: hexToBytes(intro.newcomerKey), plaintext, info: ANSWER_SEAL_INFO }); }
+  try { box = sealToRecipient({ recipientPub: hexToBytes(read.newcomerKey), plaintext, info: ANSWER_SEAL_INFO }); }
   catch { throw new IntroductionError("newcomer-key-malformed"); }
   return { sender: hex(box.senderEphemeralPub), nonce: hex(box.aeadNonce), ciphertext: hex(box.ciphertext) };
 }
 
 /**
  * Open a sealed answer as the friend who holds `secret`. Null on ANY failure: another secret, a tampered or
- * malformed box, a body that reads as no answer. The caller learns nothing about which check refused.
+ * malformed box, a body that reads as no answer or that the answer's own encoder would not have written. The
+ * caller learns nothing about which check refused.
  */
 export function openAnswer(sealed: SealedAnswer, secret: Uint8Array): Answer | null {
   if (!isSealedAnswer(sealed)) return null;
@@ -229,8 +278,13 @@ export function openAnswer(sealed: SealedAnswer, secret: Uint8Array): Answer | n
       ciphertext: hexToBytes(sealed.ciphertext), info: ANSWER_SEAL_INFO,
     });
     if (plaintext === null || plaintext.length !== ANSWER_PLAINTEXT_BYTES) return null;
-    const answer: unknown = JSON.parse(new TextDecoder().decode(plaintext));
-    return isAnswer(answer) ? answer : null;
+    const answer = answerOf(JSON.parse(new TextDecoder().decode(plaintext)));
+    if (answer === null) return null;
+    // Only the encoder's own bytes open: the answer read must re-encode to exactly what was sealed.
+    const again = answerPlaintext(answer);
+    let differs = 0;
+    for (let i = 0; i < ANSWER_PLAINTEXT_BYTES; i++) differs |= again[i]! ^ plaintext[i]!;
+    return differs === 0 ? answer : null;
   } catch {
     return null;
   } finally {

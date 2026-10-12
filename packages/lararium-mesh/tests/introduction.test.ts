@@ -22,6 +22,7 @@ import * as ed from "@noble/ed25519";
 import { ed25519 as ed25519Curve } from "@noble/curves/ed25519.js";
 import { canonicalJsonBytes, hex, hexToBytes } from "../src/crypto.js";
 import { HOSTING_ACT_DOMAIN, HOSTING_INTRODUCTION_DOMAIN } from "../src/domains.js";
+import { sealToRecipient } from "../src/sealed-box.js";
 import { hostingActBytes, mintHostingAct, mintHostToken, tokenVerifiesAt, type InviteToken } from "../src/hosting.js";
 import {
   IntroductionError, answerIntroduction, introductionBytes, isAnswer, isIntroduction, isSealedAnswer,
@@ -61,7 +62,7 @@ describe("an introduction stands only as its guest signed it", () => {
   test("★ each field tampered in turn refuses by name ★", async () => {
     const { intro, live, previous } = await standing();
     expect(isIntroduction(intro)).toBe(true);
-    expect(verifyIntroduction(intro, live)).toEqual({ ok: true });                       // CONTROL
+    expect(verifyIntroduction(intro, live).ok).toBe(true);                       // CONTROL
     const refusalOf = (v: unknown) => verifyIntroduction(v, live);
     expect(refusalOf({ ...intro, nexus: `epoch0-${"b2".repeat(32)}` })).toEqual({ ok: false, refusal: "introduction-nexus-foreign" });
     expect(refusalOf({ ...intro, epoch: flip(intro.epoch) })).toEqual({ ok: false, refusal: "introduction-epoch-dead" });
@@ -82,7 +83,7 @@ describe("an introduction stands only as its guest signed it", () => {
     const forged = await signIntroduction(fields, signerOf(STRANGER));       // names GUEST, signed by STRANGER
     expect(forged.introducer).toBe(await pubOf(GUEST));
     expect(verifyIntroduction(forged, live)).toEqual({ ok: false, refusal: "introduction-unsigned" });
-    expect(verifyIntroduction(intro, live)).toEqual({ ok: true });           // CONTROL
+    expect(verifyIntroduction(intro, live).ok).toBe(true);           // CONTROL
   });
 
   test("★ a small-order introducer key signs for nobody ★", async () => {
@@ -101,6 +102,39 @@ describe("an introduction stands only as its guest signed it", () => {
     expect(ed25519Curve.verify(hexToBytes(forged.signature), introductionBytes({ ...fields, introducer: identity }), hexToBytes(identity), { zip215: true })).toBe(true);
   });
 
+  test("★ a value that answers differently at each read signs for nobody ★", async () => {
+    const { fields, live } = await standing();
+    // The attacker signs bytes that NAME the guest, under its own key, then hands over an object whose
+    // `introducer` reads as the guest's key for the signed bytes and as the attacker's key for the verify.
+    const guestKey = await pubOf(GUEST), attackerKey = await pubOf(STRANGER);
+    const signature = await signerOf(STRANGER)(introductionBytes({ ...fields, introducer: guestKey }));
+    for (const attackerOn of [[2], [3], [2, 3], [1, 3], [3, 4]]) {
+      let reads = 0;
+      const shifting = {
+        kind: HOSTING_INTRODUCTION_DOMAIN, nexus: fields.nexus, epoch: fields.epoch, newcomerKey: fields.newcomerKey,
+        get introducer(): string { reads++; return attackerOn.includes(reads) ? attackerKey : guestKey; },
+        signature,
+      };
+      const verdict = verifyIntroduction(shifting, live);
+      expect(verdict.ok).toBe(false);
+      expect(reads).toBe(1);                                                 // read once, then never again
+    }
+    // What a lawful verdict hands back is a frozen copy: the caller answers THAT, never the value it was handed.
+    const { intro } = await standing();
+    const verdict = verifyIntroduction(intro, live);
+    if (!verdict.ok) throw new Error("the control introduction refused");
+    expect(verdict.introduction).toEqual(intro);
+    expect(verdict.introduction).not.toBe(intro);
+    expect(Object.isFrozen(verdict.introduction)).toBe(true);
+    // A signer that receives shifting fields signs what it validated, and the act names what it signed.
+    let fieldReads = 0;
+    const shiftingFields = { ...fields, get introducer(): string { fieldReads++; return fieldReads === 1 ? guestKey : attackerKey; } };
+    const signed = await signIntroduction(shiftingFields, signerOf(GUEST));
+    expect(fieldReads).toBe(1);
+    expect(signed.introducer).toBe(guestKey);
+    expect(verifyIntroduction(signed, live).ok).toBe(true);
+  });
+
   test("a guard never throws at a hostile object", async () => {
     const { intro, live } = await standing();
     const thrower = new Proxy({}, { ownKeys() { throw new Error("hostile"); }, get() { throw new Error("hostile"); }, has() { throw new Error("hostile"); } });
@@ -113,17 +147,17 @@ describe("an introduction stands only as its guest signed it", () => {
       expect(openAnswer(hostile as never, FRIEND_SECRET)).toBeNull();
     }
     expect(verifyIntroduction(intro, thrower as never)).toEqual({ ok: false, refusal: "introduction-malformed" });
-    expect(verifyIntroduction(intro, live)).toEqual({ ok: true });           // CONTROL
+    expect(verifyIntroduction(intro, live).ok).toBe(true);           // CONTROL
   });
 
   test("it stands at the current and the previous epoch, and at no other", async () => {
     const { fields, intro, live, previous } = await standing();
     const atPrevious = await signIntroduction({ ...fields, epoch: previous.cid }, signerOf(GUEST));
-    expect(verifyIntroduction(atPrevious, live)).toEqual({ ok: true });
+    expect(verifyIntroduction(atPrevious, live).ok).toBe(true);
     expect(verifyIntroduction(atPrevious, { ...live, epochs: [live.epochs[0]!] })).toEqual({ ok: false, refusal: "introduction-epoch-dead" });
     expect(verifyIntroduction(intro, { ...live, epochs: [] })).toEqual({ ok: false, refusal: "introduction-epoch-dead" });
     // The Nexus reads case-blind and trimmed, as every hosting act reads it.
-    expect(verifyIntroduction(intro, { ...live, nexus: `  ${NEXUS.toUpperCase()} ` })).toEqual({ ok: true });
+    expect(verifyIntroduction(intro, { ...live, nexus: `  ${NEXUS.toUpperCase()} ` }).ok).toBe(true);
   });
 
   test("a guest signs nothing malformed", async () => {
@@ -190,6 +224,33 @@ describe("the answer consumes the introduction", () => {
     expect(again.nonce).not.toBe(declined.nonce);
     expect(again.ciphertext).not.toBe(declined.ciphertext);
     expect(opened(again)).toEqual(opened(declined));                            // CONTROL: one answer inside
+  });
+
+  test("★ only the exact bytes the answer's own encoder writes open as an answer ★", async () => {
+    const { intro, current } = await standing();
+    const info = canonicalJsonBytes({ kind: HOSTING_INTRODUCTION_DOMAIN, part: "answer" });
+    const sealBody = (body: string, width = 512) => {
+      const plaintext = new Uint8Array(width).fill(0x20);
+      plaintext.set(new TextEncoder().encode(body), 0);
+      const box = sealToRecipient({ recipientPub: hexToBytes(intro.newcomerKey), plaintext, info });
+      return { sender: hex(box.senderEphemeralPub), nonce: hex(box.aeadNonce), ciphertext: hex(box.ciphertext) };
+    };
+    const n = "1".repeat(64), y = "2".repeat(128);
+    const lawful = `{"admitted":true,"epoch":"${current.cid}","nexus":"${NEXUS}","token":{"n":"${n}","purpose":"host-invite","y":"${y}"}}`;
+    // CONTROL: the canonical body, sealed by hand under the same name, opens.
+    expect(openAnswer(sealBody(lawful), FRIEND_SECRET)).toEqual({ admitted: true, epoch: current.cid, nexus: NEXUS, token: STUB_TOKEN });
+    const crafted = [
+      lawful.replace(`"y":"${y}"`, `"y":"${y}","note":"extra meaning"`),                 // a token with one more key
+      `{"nexus":"${NEXUS}","admitted":true,"epoch":"${current.cid}"}`,                   // the keys in another order
+      `{"admitted":false,"admitted":true,"epoch":"${current.cid}","nexus":"${NEXUS}"}`,  // a key spelled twice
+      ` {"admitted":true,"epoch":"${current.cid}","nexus":"${NEXUS}"}`,                  // a body that starts late
+      `{"admitted":true, "epoch":"${current.cid}","nexus":"${NEXUS}"}`,                  // inner whitespace
+      `{"admitted":true,"epoch":"${current.cid}","nexus":"${NEXUS.toUpperCase()}"}`,     // a Nexus in another case
+    ];
+    for (const body of crafted) expect(openAnswer(sealBody(body), FRIEND_SECRET)).toBeNull();
+    expect(new TextEncoder().encode(lawful).length).toBeLessThan(512);                    // the widest lawful answer fits
+    expect(openAnswer(sealBody(lawful, 600), FRIEND_SECRET)).toBeNull();                  // another width
+    expect(openAnswer(sealBody(`{"admitted":true,"epoch":"${current.cid}","nexus":"${NEXUS}"}`), FRIEND_SECRET)).toEqual({ admitted: true, epoch: current.cid, nexus: NEXUS });
   });
 
   test("★ two guests' answers for one newcomer open alike ★", async () => {
