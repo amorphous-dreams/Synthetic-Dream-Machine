@@ -168,11 +168,29 @@ function makeDeniedFsShim(): Record<string, unknown> {
   });
 }
 
-/** TW5's bundled crypto is the sole core-blob writer observed at `window.sjcl`. */
-function makeScopedWindowLend(onSjclWrite: () => void): Record<string, unknown> {
+/**
+ * The names the core blob writes on `window` while it evaluates, each measured on a real boot:
+ *   sjcl  TW5's bundled crypto: its own module body writes it, and the bundle's loader writes it again
+ *   $tw   `$:/boot/bootprefix.js` seats the instance (`window.$tw = _bootprefix(window.$tw)`); the boot flow
+ *         reads the instance back from exactly this name
+ */
+export const LENT_WINDOW_NAMES: ReadonlySet<string> = new Set(["sjcl", "$tw"]);
+
+/**
+ * The scoped `window` lend. It admits a write to the names in `LENT_WINDOW_NAMES` and to nothing else: any
+ * other property, a define and a delete each refuse by name, so the bundle never grows the worker global
+ * through the lend. Reads pass: the bundle probes `window.crypto`, `window.performance` and the like, which a
+ * worker holds. `onSjclWrite` fires on the first `sjcl` write, where the caller withdraws the global `window`
+ * accessor.
+ */
+export function makeScopedWindowLend(onSjclWrite: () => void): Record<string, unknown> {
   let acceptedSjclWrite = false;
+  const refuse = (act: string, key: string | symbol): never => {
+    throw new Error(`CapabilityRefused: window.${String(key)} (${act}) — the worker lends \`window\` for the engine's own names (${[...LENT_WINDOW_NAMES].join(", ")}) and nothing else`);
+  };
   return new Proxy(globalThis as unknown as Record<string, unknown>, {
     set(target, key, value) {
+      if (typeof key !== "string" || !LENT_WINDOW_NAMES.has(key)) return refuse("write", key);
       const written = Reflect.set(target, key, value, target);
       if (key === "sjcl" && !acceptedSjclWrite) {
         acceptedSjclWrite = true;
@@ -180,6 +198,8 @@ function makeScopedWindowLend(onSjclWrite: () => void): Record<string, unknown> 
       }
       return written;
     },
+    defineProperty(_target, key) { return refuse("define", key); },
+    deleteProperty(_target, key) { return refuse("delete", key); },
   });
 }
 
@@ -279,8 +299,8 @@ function loadTiddlyWikiFromBlob(
   const priorRequire = g["require"];
   let twFromBlob: unknown;
   try {
-    // The bundle gets one scoped `window.sjcl` write. It never receives the worker global or a
-    // browser surface; the accessor disappears after that observed crypto initialization.
+    // The bundle gets the lend's two names (`LENT_WINDOW_NAMES`). It never receives the worker global or a
+    // browser surface; the global accessor disappears at the first write of the crypto initialization.
     Object.defineProperty(g, "window", { configurable: true, get: () => windowLend });
     g["require"] = requireShim;
     g["$tw"]     = env.preSeedTw;

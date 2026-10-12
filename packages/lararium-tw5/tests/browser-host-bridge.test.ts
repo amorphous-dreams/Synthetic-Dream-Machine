@@ -6,7 +6,7 @@
  * and a normal `$:/core/modules/widgets/widget.js` lookup is misread as a Node builtin request.
  */
 import { describe, expect, test } from "vitest";
-import { bootWithHostBridge, escapeCssIdentifier, makeProjectedViewContract, prepareHostBootInstance } from "../src/tw5-host-bridge.js";
+import { bootWithHostBridge, escapeCssIdentifier, LENT_WINDOW_NAMES, makeProjectedViewContract, makeScopedWindowLend, prepareHostBootInstance } from "../src/tw5-host-bridge.js";
 
 const fixtureCore = new TextEncoder().encode(
   'exports.TiddlyWiki = () => ({ boot: {}, utils: {} });',
@@ -39,6 +39,62 @@ describe("prepareHostBootInstance — browser Worker bridge boundary", () => {
     } finally {
       if (prior) Object.defineProperty(globals, "window", prior);
       else delete globals["window"];
+    }
+  });
+
+  test("the window lend takes the engine's two names and refuses every other mutation by name", () => {
+    const globals = globalThis as Record<string, unknown>;
+    const priorSjcl = Object.getOwnPropertyDescriptor(globals, "sjcl");
+    const priorTw = Object.getOwnPropertyDescriptor(globals, "$tw");
+    let firstSjclWrites = 0;
+    const lend = makeScopedWindowLend(() => { firstSjclWrites += 1; });
+    try {
+      expect([...LENT_WINDOW_NAMES].sort()).toEqual(["$tw", "sjcl"]);
+      // A write of any other property refuses by name and leaves the worker global untouched.
+      expect(() => { lend["larProbe"] = 1; }).toThrow(/CapabilityRefused: window\.larProbe \(write\)/);
+      expect("larProbe" in globals).toBe(false);
+      expect(() => Object.defineProperty(lend, "larProbe", { value: 1 })).toThrow(/CapabilityRefused: window\.larProbe \(define\)/);
+      expect(() => Object.defineProperty(lend, "sjcl", { value: 1 })).toThrow(/CapabilityRefused: window\.sjcl \(define\)/);
+      expect(() => { delete lend["sjcl"]; }).toThrow(/CapabilityRefused: window\.sjcl \(delete\)/);
+      expect(firstSjclWrites).toBe(0);
+      // CONTROL: the admitted names land on the global. The engine writes sjcl twice (the crypto module body,
+      // then the bundle's loader); both land, and the first-write notice fires once.
+      const crypto = { ready: true };
+      lend["sjcl"] = crypto;
+      lend["sjcl"] = crypto;
+      expect(globals["sjcl"]).toBe(crypto);
+      expect(firstSjclWrites).toBe(1);
+      const instance = { boot: {} };
+      lend["$tw"] = instance;
+      expect(globals["$tw"]).toBe(instance);
+      expect(firstSjclWrites).toBe(1);
+      // A write of another property AFTER the admitted writes refuses as it did before them.
+      expect(() => { lend["larSecond"] = 2; }).toThrow(/CapabilityRefused: window\.larSecond \(write\)/);
+      expect("larSecond" in globals).toBe(false);
+      // Reads pass through: the bundle probes what the worker global already holds.
+      expect(lend["Uint32Array"]).toBe(Uint32Array);
+    } finally {
+      if (priorSjcl) Object.defineProperty(globals, "sjcl", priorSjcl); else delete globals["sjcl"];
+      if (priorTw) Object.defineProperty(globals, "$tw", priorTw); else delete globals["$tw"];
+    }
+  });
+
+  test("a core blob that writes a second window property fails its evaluation by name and leaves no window behind", async () => {
+    const globals = globalThis as Record<string, unknown>;
+    const prior = Object.getOwnPropertyDescriptor(globals, "window");
+    const priorSjcl = Object.getOwnPropertyDescriptor(globals, "sjcl");
+    const core = new TextEncoder().encode(
+      'window.sjcl = { ready: true }; window.larSecond = 1; exports.TiddlyWiki = () => ({ boot: {}, utils: {} });',
+    );
+    try {
+      await expect(prepareHostBootInstance({ bytes: core })).rejects.toThrow(/CapabilityRefused: window\.larSecond \(write\)/);
+      expect("larSecond" in globals).toBe(false);
+      expect(Object.getOwnPropertyDescriptor(globals, "window")).toEqual(prior);
+    } finally {
+      if (prior) Object.defineProperty(globals, "window", prior);
+      else delete globals["window"];
+      if (priorSjcl) Object.defineProperty(globals, "sjcl", priorSjcl);
+      else delete globals["sjcl"];
     }
   });
 
