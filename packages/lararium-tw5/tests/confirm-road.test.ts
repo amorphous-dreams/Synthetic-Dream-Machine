@@ -266,8 +266,14 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     // A title no question ever wore reads the same.
     answer(nav, "$:/temp/confirm/never-asked", "yes");
     expect(r.wiki.getTiddler(a)).toBeDefined();
-    // CONTROL: the standing question applies.
+    // A question whose own tiddler no longer reads as asked answers nothing.
+    r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(second)!.fields, { text: "Keep the tiddler?" }));
     answer(nav, second, "yes");
+    expect(r.wiki.getTiddler(b)?.fields["text"], "an altered question deletes nothing").toBe("two");
+    expect(questions(r)).toEqual([]);
+    // CONTROL: asked afresh and left as asked, the question applies.
+    nav.dispatchEvent({ type: "tm-delete-tiddler", tiddlerTitle: b });
+    answer(nav, standingQuestion(r).title, "yes");
     expect(r.wiki.getTiddler(b)).toBeUndefined();
     expect(r.wiki.getTiddler(a)).toBeDefined();
     await turns(24);

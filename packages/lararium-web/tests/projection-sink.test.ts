@@ -81,6 +81,23 @@ describe("★ an event names the surface that painted its target ★", () => {
     m.done();
   });
 
+  test("a modal turns every painted sibling inert, marked by the frame or not; CONTROL: no modal, nothing inert", () => {
+    const m = mount();
+    const aside = `<div class="aside"><button data-lar-rid="3">behind</button></div>`;
+    const modal = `<div class="wrap"><div class="near">near</div><div aria-modal="true" role="alertdialog" tabindex="-1"><button data-lar-rid="9">Keep</button></div></div>`;
+    // CONTROL: the same siblings with no modal stay live.
+    m.sink.apply(frame("lares", 1, `${aside}<div class="wrap"><div class="near">near</div></div>`));
+    expect(m.pane().querySelectorAll("[inert]")).toHaveLength(0);
+    m.sink.apply(frame("lares", 2, `${aside}${modal}`));
+    expect(m.pane().querySelector(".aside")!.hasAttribute("inert"), "a sibling of the modal's ancestor").toBe(true);
+    expect(m.pane().querySelector(".near")!.hasAttribute("inert"), "the modal's own sibling").toBe(true);
+    expect(m.pane().querySelector('[aria-modal="true"]')!.closest("[inert]"), "the modal and its ancestors stay live").toBeNull();
+    // The modal leaves: the next frame carries no mark, and the page keeps none.
+    m.sink.apply(frame("lares", 3, `${aside}<div class="wrap"><div class="near">near</div></div>`));
+    expect(m.pane().querySelectorAll("[inert]")).toHaveLength(0);
+    m.done();
+  });
+
   test("closing a modal restores prior render-id focus; CONTROL: missing target stays unfocused", () => {
     const m = mount();
     m.sink.apply(frame("lares", 1, `<button data-lar-rid="5">Origin</button>`));

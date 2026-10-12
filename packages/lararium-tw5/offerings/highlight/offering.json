@@ -2,11 +2,11 @@
   "blobs": [
     {
       "id": "$:/plugins/tiddlywiki/highlight",
-      "version": "develop@18e60c989",
-      "sha256": "8bce7b392ac467283ea71cbc33369a8a2c20b2f97f58f31d042df817e5dcf46b",
+      "version": "develop@24fa60be2",
+      "sha256": "cd6540bd10093afe0ef0f03e124c0f97603a29eaac86af38649e7db8e76604c1",
       "provenance": {
         "source": "https://github.com/TiddlyWiki/TiddlyWiki5",
-        "commit": "18e60c98992b3af8c177478ced476edbce61af83",
+        "commit": "24fa60be26e3977173efe2e6c103f6e61bf54c21",
         "path": "plugins/tiddlywiki/highlight",
         "licence": "BSD-3-Clause",
         "author": "Jeremy Ruston and contributors"

@@ -456,12 +456,11 @@ async function confirmRoads() {
     await open(page, withGate(vesselUrl, gatePubKey));
     await waitForLive(page);
     await page.locator("#projection .tc-site-title").first().waitFor({ state: "visible", timeout: 60_000 });
+    // The words "New Tiddler" stand inside other tiddlers' text, so the search may count body matches; the
+    // TITLE list holds the answer.
     const results = await search(page, made);
-    await page.waitForFunction(() => {
-      const root = document.querySelector("#projection")?.shadowRoot;
-      const count = [...(root?.querySelectorAll("button") ?? [])].find((b) => /\bmatches\b/.test(b.textContent ?? ""));
-      return /^\s*0 matches/.test(count?.textContent ?? "");
-    }, undefined, { timeout: 30_000 });
+    await results.getByText("Title matches:").first().waitFor({ state: "visible", timeout: 30_000 });
+    await page.waitForTimeout(WALK_SETTLE_MS);
     assert.equal(await results.getByText(made, { exact: true }).count(), 0, "the reloaded wiki holds no such title");
 
     assert.deepEqual(prompts, [], "no browser prompt opened anywhere");

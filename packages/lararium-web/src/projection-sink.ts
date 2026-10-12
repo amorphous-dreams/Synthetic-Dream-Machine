@@ -118,6 +118,13 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     // back to the node that held it (by render-id) when the modal leaves. No rule here knows what the modal asks.
     const modal = paneEl.querySelector<HTMLElement>('[aria-modal="true"]');
     if (modal) {
+      // The island marks what its own document can mark; a node it could not reach (raw markup) still reads
+      // inert here. A later frame without the modal carries no mark, and the morph drops these with it.
+      for (let node: Element = modal; node !== paneEl && node.parentElement; node = node.parentElement) {
+        for (const sibling of node.parentElement.children) {
+          if (sibling !== node && !sibling.hasAttribute("inert")) sibling.setAttribute("inert", "");
+        }
+      }
       if (!seenModals.has(modal)) {
         seenModals.add(modal);
         if (!modalWasPresent) restoreRenderId = focusedRidBefore;

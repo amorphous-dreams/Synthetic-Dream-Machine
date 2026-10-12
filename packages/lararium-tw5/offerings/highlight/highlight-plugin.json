@@ -5,7 +5,7 @@
   "author": "Joao Bolila",
   "list": "readme usage license",
   "stability": "STABILITY_2_STABLE",
-  "version": "develop@18e60c989",
+  "version": "develop@24fa60be2",
   "plugin-type": "plugin",
   "dependents": "",
   "type": "application/json",
