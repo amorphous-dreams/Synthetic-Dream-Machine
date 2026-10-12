@@ -4,6 +4,37 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 
 ## Unreleased
 
+### The working layer and the founded seat
+
+**Fixed**
+- **Wiki deletes leave canon intact.** Deleting a canon title writes a tombstone into the working layer, where it hides the title; a later save replaces that tombstone. A composition without a working layer refuses the delete by name.
+- **The wiki follows its bag composition.** It shows the topmost resolved record, including a working tombstone or copy-up, when canon changes beneath it.
+- **Draft actions land as one act.** Save, rename, and cancel carry the base from when the draft opened; opening an editor and discarding or saving immediately leaves no stray draft, and returning to the landed value writes nothing.
+- **Every wiki mounts a working layer.** No canon bag serves as the default writable. The daemon's working layer projects to `wikis/daemon/`, while its receipts, ward audits, and summons stay off disk. A vessel that first boots without a face gains its working layer once a face seats and the vessel stands again; the binding carries its Keyhive document, and an attach that cannot stand refuses the boot by name.
+- **The wiki shore owns queued changes.** The nalu engine applies one change synchronously, while the shore owns the queue and its door; genesis carries that applier.
+- **Current-head reads avoid document views.** A record read at its document's own heads uses the standing document, which shortens corpus feeds through the shore.
+- **The repository adapters share one release line.** automerge-repo and its four adapters use 2.6.0-alpha.5.
+- **The browser walk requires its wiki document.** A missing wiki document makes the walk fail.
+
+**Added**
+- **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki.
+- **Seats need no Handle.** `persona new --seat [--chair <label>]` claims a seat with a private chair label; the seal names seats by fingerprint, and `nexus seal export` carries keys and fingerprints without chair labels.
+- **Reserve cards support scratch-root rehearsal.** `lares nexus seal reserve rehearse` reads two cards under a scratch root, proves the rebuilt key-set against the charter head, writes nothing, and rolls nothing. Cards print their generation and quorum.
+- **The container offers a household HTTPS slot.** Compose profile `https` adds a terminator and resolver, while `device-admit` carries a `syncUrl` derived from `LAR_PUBLIC_URL`.
+- **Release manifests bind image and source addresses.** The manifest tool ties an image digest to the genesis, engine, and grammar addresses.
+- **The founding runbook walks through the container.** It guides a household step by step and names what stands owed; the harbor carrier states the container boundary.
+
+**Changed**
+- **The CLI leaves destructive vessel doors out.** `vessel clear`, `vessel rite rebirth`, and `vessel stand --restart --clear` leave the command surface; `vessel rite refresh` builds, stops, and stands without wiping, and a fresh start runs by hand.
+- **Seal readings follow seated keys.** `nexus seal show` reads `seed` or `nexus` from seats, and a carriage contract moves no phase. `persona new` leaves root splitting opt-in through `--split-root`.
+- **Seal rotation names reserve refusals.** `nexus seal rotate` reports `rotation-unarmed`, `reveal-mismatch`, `reserve-armed`, and `reserve-commit-unrevealable`; `seal show` and `seal seat` report `reserveArmed`.
+- **A Handle binds through its face's announce.** A Nexus domain presents its own table, and quorum removal needs no Handle name.
+- **Canon states the recovery boundary.** The seed and Nexus readings, quorum admission, the user road's three dials, and guardians per face hold in canon; no verb carries a recovery card into rotation.
+- **The host shim holds the engine.** It opens a persona door before `up`, restarts the vessel when a face lands, and refuses in-container stand and stop by name under `LAR_ENGINE=host`.
+- **LAN discovery offers candidates only.** It stays off by default; `LAR_LAN_DISCOVERY=announce` enables discovery, and candidates carry no authority.
+- **Harnesses run the image by digest.** `LARES_HARNESS_IMAGE` names the image used by the mesh, kahu, crossing, swarm, and burn harnesses.
+- **Witnesses wait for the work they measure.** The rite-commands witness reads a command through the host shim, and the corpus-feed witness waits for every corpus root.
+
 ### The shore and the oracle floor
 
 **Fixed**
