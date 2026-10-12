@@ -92,7 +92,7 @@ no outside consumers).
 ''Modeled on the nalu'' (lar:///ha.ka.ba/lares/api/pono/nalu) — collect-then-flush
 across heterogeneous sources, the unified-nalu law (one boundary across many sources):
 
-<<~ scale capture-nalu "collect ~ every producer (parallel sessions · worker swarms · Codex/Claude/Copilot) processes its turn forward and ENQUEUES a born-annotated DrawerRecord into ONE unified nalu via the daemon verb-channel -> crest ~ the daemon's SERVER TICK (the 20 Hz `setInterval` lar-event-bus loop = the `LarTickCounter`, server-side where the palace lives — the game cadence; NOT the browser `requestAnimationFrame` boundary, which crests the OTHER, federated in-wiki nalu), backpressure-GATED -> flush ~ ONE `mine --source lares` drain → the palace, ONE writer, ONE lock; each record carries `lar_ffz` (felt) + `LarTickCounter` (physical)">>
+<<~ scale capture-nalu "collect ~ every producer (parallel sessions · worker swarms · Codex/Claude/Copilot) processes its turn forward and ENQUEUES a born-annotated DrawerRecord into ONE unified nalu via the daemon verb-channel -> crest ~ the daemon's SERVER TICK (the 20 Hz `setInterval` lar-event-bus loop = the `LarTickCounter`, server-side where the palace lives — the game cadence; NOT the wiki shore's host-task pacing and TW5's `nextTick` dispatch, which carry the OTHER, federated in-wiki nalu), backpressure-GATED -> flush ~ ONE `mine --source lares` drain → the palace, ONE writer, ONE lock; each record carries `lar_ffz` (felt) + `LarTickCounter` (physical)">>
 
 ''The writer ~ a SEPARATE, LOCAL, non-federated worker-VM.'' NOT the federated @daemon
 (which would pull local work-memory into the mesh — the locality cut forbids it). The
@@ -343,6 +343,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PTBbE3H1fcXJYW5kGV9wrdXzq8TT7ns7TdjdC1NWqG0
+<<^ code="&#x0003;">>ni:///sha-256;DGpou40PnjZell1qLCXEzRvxKfhTacqaWO9EhhAS3Ms
 
 <<^ code="&#x0004;" -> to="?">>
