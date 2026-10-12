@@ -319,6 +319,49 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("a second channel over the SAME claim (same boot epoch) leaves this boot's `committed` fact `committed`", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
+    try {
+      const requestId = "req-same-claim";
+      const inv = { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId, timeoutMs: 100 };
+      await dispatchAndStrand(v, counter, inv);
+      // Only the channel closes; the claim (and so the boot epoch) stays. A fact whose epoch EQUALS
+      // the seeding channel's epoch belongs to this boot and never settles.
+      v.channel.close();
+      v.channel = startUdsChannel({
+        daemonHandle: v.daemonHandle, placeVerb: (o) => v.placeVerbImpl(o as Placed, v.daemonHandle),
+        claim: v.claim, repo: v.repo, timeoutMs: 1_000,
+      });
+      await waitForSocket(v.claim.socketPath);
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("committed");
+      const stored = v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      expect(stored["state"]).toBe("committed");
+    } finally { await v.teardown(); }
+  });
+
+  test("the seed settle flushes the repo when it settled a fact, and not when it settled none", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
+    try {
+      const inv = { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-flush-spy", timeoutMs: 100 };
+      await dispatchAndStrand(v, counter, inv);
+      let flushes = 0;
+      const realFlush = v.repo.flush.bind(v.repo);
+      v.repo.flush = ((...a: Parameters<Repo["flush"]>) => { flushes++; return realFlush(...a); }) as Repo["flush"];
+
+      await v.restart(); // settles req-flush-spy to `interrupted`
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: "req-flush-spy" }))["state"]).toBe("interrupted");
+      expect(flushes).toBeGreaterThanOrEqual(1);
+
+      // CONTROL: a further restart finds nothing `committed` of an earlier boot, so it settles none.
+      flushes = 0;
+      await v.restart();
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: "req-flush-spy" }))["state"]).toBe("interrupted");
+      expect(flushes).toBe(0);
+    } finally { await v.teardown(); }
+  });
+
   test("an outcome that landed after the channel closed settles the fact `done` at the next boot, never `interrupted`", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
