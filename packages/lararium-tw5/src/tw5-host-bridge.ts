@@ -189,6 +189,9 @@ export function makeScopedWindowLend(onSjclWrite: () => void): Record<string, un
     throw new Error(`CapabilityRefused: window.${String(key)} (${act}) — the worker lends \`window\` for the engine's own names (${[...LENT_WINDOW_NAMES].join(", ")}) and nothing else`);
   };
   return new Proxy(globalThis as unknown as Record<string, unknown>, {
+    // A platform accessor (`crypto`, `performance`) answers only to the real global, so every read names it
+    // as the receiver; a read through the proxy itself draws "Illegal invocation" from the browser.
+    get(target, key) { return Reflect.get(target, key, target); },
     set(target, key, value) {
       if (typeof key !== "string" || !LENT_WINDOW_NAMES.has(key)) return refuse("write", key);
       const written = Reflect.set(target, key, value, target);
