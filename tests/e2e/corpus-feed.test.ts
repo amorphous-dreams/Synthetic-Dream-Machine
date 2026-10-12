@@ -183,13 +183,22 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
     const projected = join(lar.root, "bags/lares", BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
     const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", LARES_URI, "--yes", "--json"]);
+    let late = "";
+    if (r.json?.["ok"] !== true) {
+      // A verb that answered `outcome-unknown` may still be running: read its receipt once more after a
+      // pause, so a slow landing and a never-landing read apart.
+      const rid = String(r.json?.["requestId"] ?? "");
+      await new Promise((res) => setTimeout(res, 30_000));
+      const rr = await lar.cli(["receipt", rid, "--json"]);
+      late = ` · LATE receipt code ${rr.code} ${`${rr.stdout}\n${rr.stderr}`.trim().slice(-700)} · DAEMON LOG TAIL ${lar.bootLog().slice(-3000)}`;
+    }
     // NAME WHAT IT SAID: the CI report keeps no stdout, so the answer rides in the assertion message.
     expect(
       r.json?.["ok"],
-      `re-feed LOAD answered code ${r.code} · json ${JSON.stringify(r.json ?? null).slice(0, 800)} · stderr ${String(r.stderr ?? "").trim().slice(-600)} · stdout ${String(r.stdout ?? "").trim().slice(-600)}`,
+      `re-feed LOAD answered code ${r.code} · json ${JSON.stringify(r.json ?? null).slice(0, 800)} · stderr ${String(r.stderr ?? "").trim().slice(-600)} · stdout ${String(r.stdout ?? "").trim().slice(-600)}${late}`,
     ).toBe(true);
     // allow a flush wave, then assert the canonical form held still
     await new Promise((res) => setTimeout(res, 8_000));
     expect(readFileSync(projected, "utf8")).toBe(before);
-  }, 60_000);
+  }, 120_000);
 });
