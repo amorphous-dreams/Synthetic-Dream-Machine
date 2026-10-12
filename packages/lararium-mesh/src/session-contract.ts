@@ -17,6 +17,9 @@
  *     hold a persona root, a seed, a signer or any bytes, in the type or at the validator.
  *   · NO ROSTER. The table lives in memory, hands out frozen copies, and offers no serializer and no
  *     enumeration: a list of live sessions would record which faces one vessel wore together.
+ *   · A CLOSED ID NEVER ROUTES AGAIN. Within one owner epoch no id serves two sessions, so an envelope kept
+ *     from a closed session opens nothing. The table keeps a closed session's id for that, and nothing else
+ *     of it: no face, no binding.
  *
  * Pure: no Repo, no key, no signer, no I/O, no timer, no clock.
  *
@@ -82,9 +85,13 @@ const nonEmptyString = (value: unknown): value is string => typeof value === "st
 
 /**
  * Read a face, or null. EXACT keys only: one extra key (a root, a seed, a signer), one non-string or one
- * empty string refuses the whole face. The face returned is a frozen copy that shares nothing with its input.
+ * empty string refuses the whole face. The face returned is a frozen copy that shares nothing with its input:
+ * each value gets read ONCE, so a getter that answers differently later changes nothing a session wears.
  */
 export function validateSessionFace(v: unknown): SessionFace | null {
+  try { return readSessionFace(v); } catch { return null; }      // a value that throws while read is no face
+}
+function readSessionFace(v: unknown): SessionFace | null {
   if (!isRecord(v) || !exactKeys(v, FACE_KEYS)) return null;
   const planes = v["planes"];
   if (!isRecord(planes) || !exactKeys(planes, PLANE_KEYS)) return null;
@@ -170,6 +177,9 @@ export type SessionMessage =
 
 /** Read the envelope a message carries, or null: the schema it names, non-empty strings, a counting generation. */
 export function validateSessionEnvelope(v: unknown): SessionEnvelope | null {
+  try { return readSessionEnvelope(v); } catch { return null; }
+}
+function readSessionEnvelope(v: unknown): SessionEnvelope | null {
   if (!isRecord(v) || v["schemaVersion"] !== SESSION_SCHEMA_VERSION) return null;
   const { ownerEpoch, sessionId, generation } = v;
   if (!nonEmptyString(ownerEpoch) || !nonEmptyString(sessionId)) return null;
@@ -222,6 +232,8 @@ export class SessionTable {
   readonly #mintId: () => string;
   readonly #records = new Map<string, SessionRecord>();
   readonly #bound = new Map<SessionBinding, string>();
+  /** The ids of closed sessions: ids alone, so that none routes a second session within this owner's epoch. */
+  readonly #spent = new Set<string>();
 
   constructor(ownerEpoch: string, mintId: () => string = () => defaultCryptoProvider.randomUUID()) {
     if (!nonEmptyString(ownerEpoch)) throw new SessionContractError("owner-epoch-absent");
@@ -244,7 +256,7 @@ export class SessionTable {
     let sessionId: string | null = null;
     for (let i = 0; i < MINT_TRIES && sessionId === null; i++) {
       const candidate = this.#mintId();
-      if (nonEmptyString(candidate) && !this.#records.has(candidate)) sessionId = candidate;
+      if (nonEmptyString(candidate) && !this.#records.has(candidate) && !this.#spent.has(candidate)) sessionId = candidate;
     }
     if (sessionId === null) throw new SessionContractError("session-id-mint-exhausted");
     const session = frozenSession({
@@ -299,12 +311,14 @@ export class SessionTable {
     return { ok: true, session: record.session };
   }
 
-  /** End a session from any state: its record and its binding both drop. False when no such session stands. */
+  /** End a session from any state: its record and its binding both drop, and its id never serves another
+   *  session of this table. False when no such session stands. */
   close(sessionId: string): boolean {
     const record = this.#records.get(sessionId);
     if (!record) return false;
     this.#records.delete(sessionId);
     this.#bound.delete(record.binding);
+    this.#spent.add(sessionId);
     return true;
   }
 }

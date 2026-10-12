@@ -178,6 +178,43 @@ describe("session contract", () => {
     expect(a.sessionId).not.toBe(b.sessionId);
   });
 
+  test("★ a closed id never routes again: an envelope kept from a closed session opens nothing ★", () => {
+    // A mint that repeats itself: the id of a session that closed comes back for the next open.
+    const ids = ["session-a", "session-a", "session-b"];
+    const table = new SessionTable("epoch-a", () => ids.shift() ?? "session-z");
+    const binding = sessionBinding("socket");
+    const first = opened(table, binding);
+    const kept = envelope(first.sessionId);                                  // generation 0, as a fresh session reads
+    expect(table.check(kept, binding).ok).toBe(true);                        // CONTROL: live, it routes
+    table.close(first.sessionId);
+    const second = opened(table, binding, face("b"));                        // the SAME binding, another face
+    expect(second.sessionId).toBe("session-b");
+    expect(table.check(kept, binding)).toEqual({ ok: false, refusal: "unknown-session" });
+    expect(table.check(envelope(second.sessionId), binding)).toMatchObject({ ok: true, session: { face: face("b") } });
+    // What the table keeps of a closed session is its id alone: no face, no binding, nothing a caller can read.
+    expect(table.size).toBe(1);
+    expect(JSON.stringify(table)).toBe("{}");
+  });
+
+  test("a guard never throws at a hostile object", () => {
+    const thrower = new Proxy({}, { ownKeys() { throw new Error("hostile"); }, get() { throw new Error("hostile"); } });
+    const getter = { ...face(), get proofSubject(): string { throw new Error("hostile"); } };
+    const table = new SessionTable("epoch-a");
+    for (const hostile of [thrower, getter]) {
+      expect(validateSessionFace(hostile)).toBeNull();
+      expect(validateSessionEnvelope(hostile)).toBeNull();
+      expect(table.open(sessionBinding("port"), hostile)).toEqual({ ok: false, refusal: "face-malformed" });
+      expect(table.check(hostile, sessionBinding("port"))).toEqual({ ok: false, refusal: "malformed-message" });
+    }
+    // A face whose getter answers lawfully gets COPIED by value: what the session wears never re-reads its source.
+    let reads = 0;
+    const shifting = { ...face(), get admitRef(): string { reads++; return reads === 1 ? "admit-first" : "admit-later"; } };
+    const worn = validateSessionFace(shifting);
+    expect(worn?.admitRef).toBe("admit-first");
+    expect(worn?.admitRef).toBe("admit-first");
+    expect(table.size).toBe(0);
+  });
+
   test("one binding holds one session and can reopen after close", () => {
     const table = new SessionTable("epoch-a", (() => { let id = 0; return () => `session-${++id}`; })());
     const binding = sessionBinding("port");
@@ -191,7 +228,7 @@ describe("session contract", () => {
     const table = new SessionTable("epoch-a", () => "session-a");
     const binding = sessionBinding("port");
     const session = opened(table, binding);
-    if (state === "switching" || state === "revoked" || state === "closing") table.transition(session.sessionId, state);
+    table.transition(session.sessionId, state);
     expect(table.check(envelope(session.sessionId), binding)).toEqual({ ok: false, refusal: "session-not-live" });
   });
 
