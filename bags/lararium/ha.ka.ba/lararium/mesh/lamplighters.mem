@@ -11,7 +11,7 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 namespace = "&#x269A;"
-role      = "the Lamplighters' Union (the MECHANISM half; the faction carrier holds the Elyncia reading) and the OFFICE (kuleana) that seats a civic standing — who tends a faceless crossroads, what authority a tender holds, and how that authority ends. Carries the immune coupling (PRESENTATION ⊥ CONDEMNATION: tenders present, only a quorum condemns), the ZERO-WEIGHT ruling on presentation (a count of presenters needs a roster, and a roster carries a global now), the REACH split on tending caps (never a claimed body-location), and DEATH-AND-REBIRTH on physical touch. Grounded 2026-08-14 against Tor bad-relays, Ethereum slashing, CT, TUF, PeerReview, EigenTrust's Sybil collapse, the IPMI/BMC record, TCG physical-presence and FIDO user-presence. Holds ONE open question the operator has not ruled: whether island-admin tending reaches the herm's own signing key."
+role      = "the Lamplighters' Union (the MECHANISM half; the faction carrier holds the Elyncia reading) and the OFFICE (kuleana) that seats a civic standing — who tends a faceless crossroads, what authority a tender holds, and how that authority ends. Carries the immune coupling (PRESENTATION ⊥ CONDEMNATION: tenders present, only a quorum condemns), the ZERO-WEIGHT ruling on presentation (a count of presenters needs a roster, and a roster carries a global now), the REACH split on tending caps (never a claimed body-location), and DEATH-AND-REBIRTH on physical touch. Grounded 2026-08-14 against Tor bad-relays, Ethereum slashing, CT, TUF, PeerReview, EigenTrust's Sybil collapse, the IPMI/BMC record, TCG physical-presence and FIDO user-presence. Carries the 2026-10-11 rulings that a herm stands under every operator-class Lararium, gossips on the DreamNet side as its own voice apart from its operator-parent, and that an operator stands a Lararium before seeding other infrastructure. Holds two questions the operator has not ruled: whether island-admin tending reaches the herm's own signing key, and whether condemnation-relevant, federation-facing statements need a threshold key."
 tags      = ["mesh/identity-classes", "mesh/carry-contract", "mesh/epoch-binding-surfaces", "api/pono/waking-floor", "api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/mesh/lamplighters"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -383,9 +383,32 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
+<<~ ahu #/under-every-lararium>>
+
+!! The herm under every Lararium ~ its own voice, and the seeding order (operator rulings, 2026-10-11)
+
+''A herm cap sits underneath every operator-class Lararium.'' Quote license: //"that herm cap sits underneath every operator-class lararium, contracted into a mesh (Nexus) and a super-mesh-environment (DreamNet)."// The layering reads upward: a herm that carries and never reads · a face lit above it, which makes a Lararium · Lararia contracted into a Nexus · Nexuses into the DreamNet. The relay floor already states the bottom of it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>).
+
+''The herm gossips on the DreamNet side as its OWN voice, separate from its operator-parent.'' Quote license: //"Pono, identity as relation and an operator should have a lararium stood up before they grow their rhizome, herms must also serve as the gossipers on the dreamnet side separate from their operator-parent."// The herm's signing identity never collapses into its operator's persona, and DreamNet-side gossip belongs to the herm. That agrees with the establishment law, where no civic identity mints into a herm (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/herm-establishment">>). The house read the sentence as //a herm signs its local-carry statements under its own single key//, and the operator answered that reading //"Yes"//. What the sentence leaves unruled stands at #/open.
+
+''The seeding order.'' Quote license: //"Yes, and an operator should have a node vessel stand into a lararium (herm -> lararium) before seeding any other physical infra like other herms or larariums they 'control'."//
+
+* An operator's FIRST act stands one node vessel up into a Lararium: found, then light a face (herm → Lararium).
+* Only then does that operator grow a rhizome: inviting friends, and seeding further herms or Lararia they control.
+* No operator stands a fleet of herms with no home Lararium behind them.
+* ''A seeded vessel names its origin as a relation between two vessels, never in a roster.'' The origin rides the contract edge the seeding vessel signs, as establishment already runs it; no list of an operator's vessels forms anywhere.
+
+''OWED'': no seeding tool or ceremony yet checks for, and names, the operator's stood Lararium as the origin of what it seeds.
+
+''DEFERRED — cloud-hosted infrastructure.'' Quote license: //"by 'cloud backup' I think I just mean 'cloud infra' so folk that want operator caps later on, when I have civic level resources, don't have to have metal in their closet."// The phrase names hosted infrastructure for a human who wants operator caps without owning hardware, never a backup copy of someone's Lararium. Its design waits until the operator can deploy there (quote license: //"We'll design those open questions around Cloud larariums once I can deploy there, gotta get this 'local first' thing off the ground first."//). One tension rides into that design, unruled: #/open strikes `operate ⊥ sign`, so a hosted operator's custody owes an honest statement of what the host could do.
+
+<<~/ahu>>
+
 <<~ ahu #/open>>
 
 !! ★ OPEN — the voice-capture question, unruled ★
+
+> ''RULED IN PART (operator ruling, 2026-10-11; #/under-every-lararium).'' The herm speaks on the DreamNet side as its OWN voice, separate from its operator-parent, and signs its local-carry statements under its own key. ''Two questions stay OPEN, and that ruling answers neither'': whether tending reaches the herm's daemon key (isolate, or accept and price it, below), and whether condemnation-relevant, federation-facing statements need a threshold key (the drift-ward below).
 
 ''`tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY.'' A tender could then ''speak as the herm'' — and the innate layer could ''synthesize presentations that read as herm self-testimony'', which costs the mesh the independent sensor `#/immune` just gained.
 
@@ -409,7 +432,7 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 !!! Also owed
 
 * ''Grammar agreement GRADES intelligibility; it never gates belonging.'' A node belongs to a Nexus by ''contract'' and by an ''engine'' its device edges sign, inside the Nexus's admitted window; the grammar lives and drifts like a dialect, and graceful parsing carries what a reader does not know (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). Every grant this carrier designs rides the contract half; the engine half rides the delegation edge.
-* ''Cross-Nexus gossip DEFERRED to post-founding'' (operator ruling). Keys run per-Nexus and no //act as a visitor// path stands, so a tender walking to another Nexus arrives carrying nothing and contracts in from zero; that contract-in joins its daemon's carried set as one more Nexus id (#/head).
+* ''Cross-Nexus gossip DEFERRED to post-founding'' (operator ruling). When it comes, the herm carries it as its own voice (#/under-every-lararium). Keys run per-Nexus and no //act as a visitor// path stands, so a tender walking to another Nexus arrives carrying nothing and contracts in from zero; that contract-in joins its daemon's carried set as one more Nexus id (#/head).
 * ''Nothing in the field welds place-anchored authority to term-bounded office.'' The nearest misses: CT's `previous_operators` (resolves the office-holder ''at the time of the act'', yet only to attribute), Kubernetes bound ServiceAccount tokens (term = the life of a place, no succession), DNSSEC root TCRs (real term-bounded office, ''procedural and legal, never cryptographic''), and SPKI §7.7 (held the whole vocabulary in 1999, shipped nothing).
 
 <<~/ahu>>
@@ -420,6 +443,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UQhzI3YQbGKO_fLQK6JpysGSAXbuI5YWFLqhcAQ85bU
+<<^ code="&#x0003;">>ni:///sha-256;DIyEV07mYJvIk1tZ1uys2rRVdnkvGcxL8pD_jmoZFqM
 
 <<^ code="&#x0004;" -> to="?">>
