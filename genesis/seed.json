@@ -1,12 +1,12 @@
 {
   "format": "lararium-genesis-seed/v1",
-  "actorSeed": "e62b6cf4258d20816fc551f79369d29020aa686227f787b59b89fb5925015071",
+  "actorSeed": "46e0865a82243c41f29717c11cd229981c7949aa33fb82549e78f1720edc3402",
   "schemaVersion": "0.1",
   "blobs": {
     "tiddlywikicore": {
       "id": "tiddlywikicore",
       "version": "5.5.0-prerelease",
-      "sha256": "93492f07f622015f5fe1de46f2bf48515a2ec65d451c47861adda67bc35a87f6",
+      "sha256": "4da77b1097b522bfeb83cd3f7c747f5c6644d05352161af509c039f7dbdc5f92",
       "mimeType": "application/javascript",
       "license": "BSD-3-Clause",
       "author": "UnaMesa Association",
@@ -148,7 +148,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/tiddlywikicore",
         "text": "tiddlywikicore",
-        "sha256": "93492f07f622015f5fe1de46f2bf48515a2ec65d451c47861adda67bc35a87f6",
+        "sha256": "4da77b1097b522bfeb83cd3f7c747f5c6644d05352161af509c039f7dbdc5f92",
         "version": "5.5.0-prerelease",
         "mimeType": "application/javascript",
         "author": "UnaMesa Association",
@@ -165,7 +165,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine",
         "text": "",
-        "cid": "bafkreid4cycbiz5xad4ks3les46db2jghnokadhfebg2lua273gbcmwbda",
+        "cid": "bafkreidcjnfwa5uzvgk2is6qdqpmf32ham7ce32nxjnrobwsvokv5vpeya",
         "note": "engine content-CID (TW5 core + version) — the hearth true-name; slow ratchet",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
