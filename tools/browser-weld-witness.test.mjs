@@ -21,7 +21,7 @@ const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worke
 const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 process.env.LEAF_BOOT_TRACE = "1";
-const { instrumentBootSource } = await import("./browser-weld/leaf-continuity.mjs");
+const { instrumentBootSource, observeKelRead } = await import("./browser-weld/leaf-continuity.mjs");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -361,6 +361,38 @@ async function testSignalReapsTheViteProcessGroup() {
   }
 }
 
+/**
+ * A route handler outlives the context it serves: the walk closes its profile while module requests are still
+ * in flight, and Playwright then disposes their responses. A read of a disposed response rejects the HANDLER, and
+ * a rejected handler is an unhandled rejection that ends the whole driver with rc 1 after every vector read ok.
+ * The handler aborts that one route and lets the walk's own waitFor decide the verdict. Ordering is injected
+ * through the fake route (no browser, no timer).
+ */
+async function testObservationRouteSurvivesADisposedResponse() {
+  let handler;
+  await observeKelRead({ route: async (_pattern, fn) => { handler = fn; } }, {});
+  const disposed = () => Promise.reject(new Error("apiResponse.text: Response has been disposed"));
+  const aborted = [];
+  const route = {
+    fetch: async () => ({ headers: () => ({ "content-type": "text/javascript" }), text: disposed }),
+    fulfill: async () => { throw new Error("fulfilled a disposed response"); },
+    abort: async (code) => { aborted.push(code); },
+  };
+  await handler(route);
+  assert.deepEqual(aborted, ["connectionreset"], "the disposed route aborts and does not reject the handler");
+
+  // CONTROL: a live response is still read, fulfilled and left unaborted.
+  const fulfilled = [];
+  const live = {
+    fetch: async () => ({ headers: () => ({ "content-type": "text/javascript" }), text: async () => "export {};" }),
+    fulfill: async (arg) => { fulfilled.push(arg); },
+    abort: async () => { throw new Error("aborted a live route"); },
+  };
+  await handler(live);
+  assert.equal(fulfilled.length, 1, "a live response is fulfilled");
+}
+
+await testObservationRouteSurvivesADisposedResponse();
 await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
 await testC4TraceInstrumentsCompiledAwaitIslandMsg();

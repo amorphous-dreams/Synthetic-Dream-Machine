@@ -376,15 +376,22 @@ async function observeKelRead(context, page) {
         await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
       }
     }
-    const type = response.headers()["content-type"] ?? "";
-    if (!/javascript/.test(type)) return route.fulfill({ response });
-    const source = await response.text();
-    const read = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/;
-    const traced = instrumentBootSource(source);
-    if (!read.test(source)) return route.fulfill({ response, body: traced });
-    observations += 1;
-    const body = traced.replace(read, `$&\n      globalThis.__laresC4PersonaKel = { prefix: personaKelPrefix, eventCids: personaKelChain?.map((event) => event.eventCid) ?? [] };`);
-    return route.fulfill({ response, body });
+    // The handler outlives its context: the walk closes the profile while module requests are in flight, and a
+    // disposed response then rejects here. An unhandled rejection would end the whole driver after every vector
+    // read ok, so the one route aborts and the walk's own waitFor keeps the verdict.
+    try {
+      const type = response.headers()["content-type"] ?? "";
+      if (!/javascript/.test(type)) return await route.fulfill({ response });
+      const source = await response.text();
+      const read = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/;
+      const traced = instrumentBootSource(source);
+      if (!read.test(source)) return await route.fulfill({ response, body: traced });
+      observations += 1;
+      const body = traced.replace(read, `$&\n      globalThis.__laresC4PersonaKel = { prefix: personaKelPrefix, eventCids: personaKelChain?.map((event) => event.eventCid) ?? [] };`);
+      return await route.fulfill({ response, body });
+    } catch {
+      return route.abort("connectionreset").catch(() => {});
+    }
   });
   return () => {
     if (observations < 1) throw new Error("C4 observation route never reached the Binding Gate KEL read");
@@ -503,4 +510,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await malformedAnchorWalk();
 }
 
-export { instrumentBootSource };
+export { instrumentBootSource, observeKelRead };
