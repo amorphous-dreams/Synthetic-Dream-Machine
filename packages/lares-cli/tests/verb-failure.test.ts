@@ -8,7 +8,7 @@
  * `verbFailure` must NOT special-case.
  */
 import { describe, test, expect } from "vitest";
-import { verbFailure, DaemonUnreachable } from "../src/verb-call.js";
+import { verbFailure, DaemonUnreachable, refusalCode, refusalHint } from "../src/verb-call.js";
 import { LocalWaitExpired } from "../src/local-connector.js";
 
 describe("verbFailure — fault told apart by type (M3)", () => {
@@ -38,5 +38,16 @@ describe("verbFailure — fault told apart by type (M3)", () => {
     const f = verbFailure("a bare string throw");
     expect(f.code).toBe("verb-error");
     expect(f.message).toBe("a bare string throw");
+  });
+});
+
+describe("an interrupted request reads its own code and cure", () => {
+  test("★ the channel's `interrupted` reason maps to request-interrupted, with a hint naming --change-id ★", () => {
+    expect(refusalCode("interrupted")).toBe("request-interrupted");
+    expect(refusalHint("request-interrupted", "cid-1")).toContain("--change-id cid-1");
+    expect(refusalHint("request-interrupted", "cid-1")).toContain("may have landed in part");
+  });
+  test("CONTROL: an unrecognized reason still falls to verb-error", () => {
+    expect(refusalCode("some-future-reason")).toBe("verb-error");
   });
 });

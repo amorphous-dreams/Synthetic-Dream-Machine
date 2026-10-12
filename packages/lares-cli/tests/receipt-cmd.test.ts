@@ -96,6 +96,17 @@ describe("lares receipt <requestId> (M14)", () => {
     expect(code).not.toBe(0);
   });
 
+  test("★ an `interrupted` receipt reads its OWN code, request-interrupted, in the exit-6 family ★", async () => {
+    await standStub({ requestId: "req-int", state: "interrupted" });
+    const cap = captured();
+    const code = await cmdReceipt(jsonArgs(["req-int"]));
+    cap.restore();
+    const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
+    expect(payload.ok).toBe(false);
+    expect(payload.error.code).toBe("request-interrupted");
+    expect(code).toBe(6);
+  });
+
   test("★ an `evicted` receipt (M1 — the receipt ring dropped this id past retention) reads its own code, retention-gap ★", async () => {
     await standStub({ requestId: "req-evicted", state: "evicted" });
     const cap = captured();

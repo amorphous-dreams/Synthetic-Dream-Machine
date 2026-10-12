@@ -73,6 +73,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // itself — there is none, the act never started) or the bare `outcome-unknown` (which would tell a
   // caller to keep wondering about an id this vessel has already settled).
   "request-abandoned": 6,
+  // THE SAME EXIT FAMILY (6), outcome-unknown's sharper kin: the vessel that committed this request
+  // stopped before an outcome landed, so the effect may have landed in part.
+  "request-interrupted": 6,
   // A caller reused a requestId the vessel already arbitrated, but with CHANGED content (D1,
   // M3″ — `uds-channel.ts`'s `request-id-reused-with-changed-input`). A fresh code (2, the
   // USAGE family) rather than `verb-error`'s 4: the fix is "mint a new id", a USAGE correction,

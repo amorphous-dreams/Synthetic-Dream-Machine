@@ -177,9 +177,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
         result = readBack;
       } else {
         if (receipt?.state === "abandoned") {
-          const hint = "this vessel already refused this request before commit — it never ran. Re-run to try again.";
+          const hint = refusalHint("request-abandoned", undefined)!;
           emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
+        }
+        if (receipt?.state === "interrupted") {
+          const hint = refusalHint("request-interrupted", undefined)!;
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+          return exitFor("request-interrupted");
         }
         const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares receipt ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
@@ -198,7 +203,11 @@ async function actRepack(args: ParsedArgs): Promise<number> {
     const code = result.refusal?.reason !== undefined
       ? refusalCode(result.refusal.reason)
       : /^cap-denied/.test(msg) ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: msg }, human: () => console.error(`REPACK failed: ${msg}`) });
+    const hint = refusalHint(code, undefined);
+    emit(args, {
+      ok: false, requestId: result.requestId ?? repackRequestId, error: { code, message: msg, ...(hint !== undefined ? { hint } : {}) },
+      human: () => { console.error(`REPACK failed: ${msg}`); if (hint !== undefined) console.error(`  ${hint}`); },
+    });
     return exitFor(code);
   }
 
@@ -472,6 +481,14 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
           data: { changeId },
         });
         return exitFor("request-abandoned");
+      } else if (receipt?.state === "interrupted") {
+        const hint = refusalHint("request-interrupted", changeId)!;
+        emit(args, {
+          ok: false, requestId, error: { code: "request-interrupted", message: msg, hint },
+          human: () => { console.error(`lares act: request interrupted. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          data: { changeId },
+        });
+        return exitFor("request-interrupted");
       } else if (receipt?.state === "evicted") {
         // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
         // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer

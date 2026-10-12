@@ -65,6 +65,8 @@ export interface VerbFailure {
  *
  *   abandoned                              → request-abandoned (6) — this vessel already refused
  *                                             the request before commit; it never ran.
+ *   interrupted                            → request-interrupted (6) — the vessel stopped while the
+ *                                             request ran; its effect may have landed in part.
  *   request-id-reused-with-changed-input   → request-id-reused (2) — a caller reused a requestId
  *                                             with DIFFERENT content; minting a fresh id is the cure.
  *   retention-gap                          → retention-gap (the 6-family) — the receipt ring
@@ -80,6 +82,7 @@ export interface VerbFailure {
 export function refusalCode(reason: string): string {
   switch (reason) {
     case "abandoned":                            return "request-abandoned";
+    case "interrupted":                          return "request-interrupted";
     case "request-id-reused-with-changed-input":  return "request-id-reused";
     case "retention-gap":                        return "retention-gap";
     case "receipt-fact-torn":                    return "receipt-fact-torn";
@@ -99,6 +102,9 @@ export function refusalCode(reason: string): string {
  *   request-abandoned  — this vessel already refused the request before commit; it never ran.
  *                         Reusing `--change-id` keeps a re-run a RETRY of the same change rather
  *                         than minting a new one.
+ *   request-interrupted — the vessel stopped while the request ran, so its effect may have landed
+ *                          in part. Re-running with `--change-id` lets the effect index answer
+ *                          what landed without running it twice.
  *   retention-gap       — the receipt ring evicted this id's outcome past its retention bound; a
  *                          fresh `--change-id` runs it as a new change (the old one is unrecoverable).
  *   receipt-fact-torn   — the ledger's own fact for this id is unreadable; a fresh REQUEST (a
@@ -109,11 +115,18 @@ export function refusalCode(reason: string): string {
  * Any other code (cap-denied, conflict, verb-error, …) carries no standing cure, so this answers
  * `undefined` — a caller folds that into "no hint" exactly as `VerbFailure.hint` already does.
  */
-export function refusalHint(code: string, changeId: string): string | undefined {
+export function refusalHint(code: string, changeId: string | undefined): string | undefined {
+  // A verb that carries no effect key (a read such as REPACK) passes no change id: its cure names
+  // a plain re-run, since there is nothing it could land twice.
   switch (code) {
     case "request-abandoned":
+      if (changeId === undefined) return "this vessel already refused this request before commit — it never ran. Re-run to try again.";
       return `this vessel already refused this request before commit — it never ran. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change.`;
+    case "request-interrupted":
+      if (changeId === undefined) return "the vessel stopped while this request ran. It reads and carries no effect key, so re-running it is safe.";
+      return `the vessel stopped while this request ran, so its effect may have landed in part. Re-run with \`--change-id ${changeId}\`: the effect index answers what landed without running it twice.`;
     case "retention-gap":
+      if (changeId === undefined) return "this request's record was evicted; re-run it as a fresh request.";
       return "this change's record was evicted; mint a fresh `--change-id` to run it as a new change.";
     case "receipt-fact-torn":
       return "this request's own ledger record is unreadable (a torn tiddler) — mint a fresh request (a flagless re-run does it).";

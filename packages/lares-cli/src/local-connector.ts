@@ -245,7 +245,7 @@ export interface ReceiptAnswer {
    * arbitrated this id), `unanswered` means no answer arrived at all — a frozen or wedged peer. Never
    * read as a verdict on the act.
    */
-  readonly state: "abandoned" | "committed" | "done" | "error" | "evicted" | "unknown" | "unanswered";
+  readonly state: "abandoned" | "committed" | "interrupted" | "done" | "error" | "evicted" | "unknown" | "unanswered";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
 }

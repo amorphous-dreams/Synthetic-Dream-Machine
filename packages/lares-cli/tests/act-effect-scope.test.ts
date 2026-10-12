@@ -169,6 +169,33 @@ describe("M10 — the outcome-unknown/abandoned/retention-gap hints name the exa
   });
 });
 
+describe("a read-back that finds the request interrupted names the code and the --change-id cure", () => {
+  test("★ an interrupted read-back exits 6 as request-interrupted with the change id in its hint ★", async () => {
+    h.throwLWE = true;
+    h.receipt = { requestId: "r", state: "interrupted" };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-interrupted"));
+    spy.mockRestore();
+    expect(code).toBe(6);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
+    expect(payload.error.code).toBe("request-interrupted");
+    expect(payload.error.hint).toContain("--change-id cid-interrupted");
+  });
+
+  test("a live `interrupted` refusal reads the same code and hint", async () => {
+    h.reply = { status: "error", requestId: "r", errorMessage: "stopped", refusal: { reason: "interrupted" } };
+    const cap: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-live-int"));
+    spy.mockRestore();
+    expect(code).toBe(6);
+    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
+    expect(payload.error.code).toBe("request-interrupted");
+    expect(payload.error.hint).toContain("cid-live-int");
+  });
+});
+
 describe("K2, P2.5 iteration 7 — the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back", () => {
   test("★ a live retention-gap refusal carries the hint on both error.hint and the human line ★", async () => {
     // The connection never drops here — the refusal rides straight back as `result.refusal`,
