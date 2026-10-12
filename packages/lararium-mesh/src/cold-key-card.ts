@@ -118,9 +118,14 @@ const FIELD_LABEL: Readonly<Record<ColdKeyCardField, string>> = Object.freeze({
   purpose: "purpose", chairLabel: "chair", generation: "generation", charterFingerprint: "charter",
 });
 
+/** A character that breaks or hides a line. A display field holding one could print a second code row or a
+ *  second confirm line, and a person reading the card back could not tell which to trust. */
+const UNPRINTABLE = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/;
+
 /**
  * The lines of one card: each field the caller NAMED, in the order named, then the code in rows of six
  * groups, then the confirm phrase. A named field with no value refuses; a field left unnamed never prints.
+ * Every field prints on ONE line under its own label, so no field's text reads as a code row or a phrase.
  * With no fields named, the card shows all four, so a caller holding no charter fingerprint names the three it holds.
  */
 export function coldKeyCardLines(
@@ -137,6 +142,7 @@ export function coldKeyCardLines(
     if (field === "generation" && !(Number.isSafeInteger(value) && (value as number) >= 0)) {
       throw new ColdKeyCardError("cold-key-card-field-invalid: generation");
     }
+    if (typeof value === "string" && UNPRINTABLE.test(value)) throw new ColdKeyCardError(`cold-key-card-field-invalid: ${field}`);
     lines.push(`${FIELD_LABEL[field]}: ${String(value)}`);
   }
   for (let i = 0; i < groups.length; i += GROUPS_PER_ROW) lines.push(groups.slice(i, i + GROUPS_PER_ROW).join("-"));

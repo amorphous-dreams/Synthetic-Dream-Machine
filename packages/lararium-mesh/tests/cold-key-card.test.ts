@@ -179,6 +179,22 @@ describe("the card — four fields beside the code", () => {
     expect(coldKeyCardLines(SEED, bare, THREE)).toHaveLength(3 + 3 + 1);   // CONTROL
   });
 
+  test("★ no display field forges a line of the card ★", () => {
+    const lawful: ColdKeyCardFields = { purpose: "seed seat", chairLabel: "copper chair", generation: 2, charterFingerprint: "fp-synthetic-0042" };
+    const forged = ["copper chair\nconfirm: amber-ash-oak", "copper\rchair", "copper\tchair", "copper\u0000chair", "copper\u2028chair", "aaaa-bbbb\u0085cccc"];
+    for (const text of forged) {
+      for (const field of ["purpose", "chairLabel", "charterFingerprint"] as const) {
+        expect(() => coldKeyCardLines(SEED, { ...lawful, [field]: text })).toThrow(`cold-key-card-field-invalid: ${field}`);
+      }
+    }
+    // A label shaped like a code row still prints under its own label, never as a bare row.
+    const rowLike = coldKeyCardLines(SEED, { ...lawful, chairLabel: "aaaa-bbbb-cccc-dddd-eeee-ffff" });
+    expect(rowLike[1]).toBe("chair: aaaa-bbbb-cccc-dddd-eeee-ffff");
+    expect(codeOf(rowLike)).toBe(coldKeyCode(SEED));
+    expect(rowLike.filter((l) => l.startsWith("confirm: "))).toHaveLength(1);
+    expect(coldKeyCardLines(SEED, lawful)).toHaveLength(8);   // CONTROL
+  });
+
   test("★ a card with and without a fingerprint round-trips one code, and no display field moves it ★", () => {
     const withFp = coldKeyCardLines(SEED, fields);
     const without = coldKeyCardLines(SEED, { purpose: "nexus seat", chairLabel: "tin chair", generation: 9 }, THREE);
