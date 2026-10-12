@@ -12,7 +12,7 @@
  */
 
 import type { VesselWorkerHandle } from "@lararium/mesh";
-import type { HolderHello } from "./shared-holder-core.js";
+import type { HolderHello, HolderRefused } from "./shared-holder-core.js";
 
 /** The one platform member the door reads — injected so a witness drives a fake. */
 export interface SharedWorkerHost {
@@ -28,6 +28,19 @@ export function ambientSharedWorkerHost(): SharedWorkerHost {
 export type SharedHolderAttach =
   | { readonly kind: "attached"; readonly port: MessagePort; readonly hello: HolderHello }
   | { readonly kind: "floor";    readonly why: string };
+
+/** The shared holder named its store-lock refusal; this tab must stop at the attachment door. */
+export class SharedHolderRefusal extends Error {
+  readonly storeName: string;
+  override readonly cause: string;
+
+  constructor(refusal: HolderRefused) {
+    super(`[shared-holder] refused store "${refusal.storeName}": ${refusal.cause}`);
+    this.name = "SharedHolderRefusal";
+    this.storeName = refusal.storeName;
+    this.cause = refusal.cause;
+  }
+}
 
 /** Connect to the holder and wait for its greeting; the floor where the engine offers no SharedWorker. */
 export async function attachSharedHolder(args: {
@@ -46,11 +59,15 @@ export async function attachSharedHolder(args: {
   } catch (e) {
     return { kind: "floor", why: `SharedWorker refused to start (${e instanceof Error ? e.message : String(e)}); the daemon island rides a dedicated worker` };
   }
-  const hello = await new Promise<HolderHello | null>((resolve) => {
+  const greeting = await new Promise<HolderHello | HolderRefused | null>((resolve) => {
     let timer: ReturnType<typeof setTimeout>;
     const onMsg = (e: MessageEvent): void => {
       const d = e.data as { kind?: unknown };
-      if (d && d.kind === "holder:hello") { clearTimeout(timer); port.removeEventListener("message", onMsg); resolve(e.data as HolderHello); }
+      if (d && (d.kind === "holder:hello" || d.kind === "holder:refused")) {
+        clearTimeout(timer);
+        port.removeEventListener("message", onMsg);
+        resolve(e.data as HolderHello | HolderRefused);
+      }
     };
     port.addEventListener("message", onMsg);
     port.start();
@@ -60,8 +77,12 @@ export async function attachSharedHolder(args: {
       resolve(null);
     }, args.helloTimeoutMs ?? 5_000);
   });
-  if (!hello) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
-  return { kind: "attached", port, hello };
+  if (!greeting) return { kind: "floor", why: "the shared holder never greeted; the daemon island rides a dedicated worker" };
+  if (greeting.kind === "holder:refused") {
+    port.close();
+    throw new SharedHolderRefusal(greeting);
+  }
+  return { kind: "attached", port, hello: greeting };
 }
 
 /** The holder's port as the mesh worker-handle shape — the daemon core's spawn seam on the holder path. */

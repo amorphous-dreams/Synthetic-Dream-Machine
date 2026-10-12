@@ -40,6 +40,12 @@ import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
 const KEY_RECORD = "vessel-key";
+const IDENTITY_CONTINUITY_PREFIX = "lares:vessel:continuity:";
+
+/** Origin-local companion marker: it survives an IndexedDB-only clear and lets the next open refuse a re-found key. */
+export function browserIdentityContinuityKey(idbName: string): string {
+  return `${IDENTITY_CONTINUITY_PREFIX}${idbName}`;
+}
 
 // The IndexedDB object stores this vessel keeps. `keystore`/`bootstrap` carry the device key + the
 // social bootstrap (the founding floor); the persona-multitude stores mirror the node fs vault's
@@ -240,7 +246,39 @@ export async function generateOrLoadBrowserVesselIdentity(
   idbName    = "lares:vessel",
   displayName?: string,
 ): Promise<BrowserVesselIdentity> {
-  const { verifyingKey } = await generateOrLoadKeypair(idbKeypairStore(idbName), browserKeypairCrypto);
+  let continuity: string | null;
+  try {
+    continuity = localStorage.getItem(browserIdentityContinuityKey(idbName));
+  } catch (error) {
+    throw new Error(`[browser-vessel-identity] local-storage-unavailable — refusing to mint before continuity can be recorded: ${String(error)}`);
+  }
+
+  const keyStore = idbKeypairStore(idbName);
+  const existing = await keyStore.load();
+  if (continuity === "founded" && !existing) {
+    throw new Error(
+      `[browser-vessel-identity] local-storage-lost — origin marker for "${idbName}" remains, but its IndexedDB identity is absent; ` +
+      `refusing to found a blank vessel under the old name. Restore the origin data or recover the vessel before opening it.`,
+    );
+  }
+  if (continuity !== null && continuity !== "founded" && continuity !== "founding") {
+    throw new Error(`[browser-vessel-identity] local-storage-state-invalid — continuity marker for "${idbName}" has an unknown value.`);
+  }
+
+  if (!existing) {
+    try {
+      localStorage.setItem(browserIdentityContinuityKey(idbName), "founding");
+    } catch (error) {
+      throw new Error(`[browser-vessel-identity] local-storage-unavailable — refusing to mint before continuity can be recorded: ${String(error)}`);
+    }
+  }
+
+  const { verifyingKey } = await generateOrLoadKeypair(keyStore, browserKeypairCrypto);
+  try {
+    localStorage.setItem(browserIdentityContinuityKey(idbName), "founded");
+  } catch (error) {
+    throw new Error(`[browser-vessel-identity] local-storage-unavailable — identity exists but its continuity marker could not be sealed: ${String(error)}`);
+  }
   const base: BrowserVesselIdentity = { verifyingKey };
   return displayName ? { ...base, displayName } : base;
 }

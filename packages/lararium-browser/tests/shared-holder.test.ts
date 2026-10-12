@@ -116,18 +116,130 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const island = fakeIslandFactory();
     const core = makeSharedHolderCore({ lockName: vesselLockName(IDB), locks: null, spawnIsland: island.spawn });
     const { port1, port2 } = new MessageChannel();
-    const messages: unknown[] = [];
-    port1.addEventListener("message", (event) => messages.push(event.data));
+    const received = new Promise<unknown>((resolve) => port1.addEventListener("message", (event) => resolve(event.data), { once: true }));
     port1.start();
 
     await core.connect(port2);
 
     expect(island.boots()).toBe(0);
     expect(core.tabs).toBe(0);
-    expect(messages).toEqual([]);
+    expect(await received).toEqual({
+      kind: "holder:refused",
+      storeName: vesselLockName(IDB),
+      cause: expect.stringMatching(/Web Locks/),
+    });
     port1.close();
     port2.close();
   });
+
+  test("a named holder lock refusal reaches the tab immediately with its store and cause", async () => {
+    const lockTable = new Map<string, string>([[vesselLockName(IDB), "other-holder"]]);
+    const host = fakeSharedWorkerHost((url) => makeSharedHolderCore({
+      lockName: vesselLockName(IDB),
+      locks: fakeLocks(`holder:${url}`, lockTable),
+      spawnIsland: () => { throw new Error("a refused holder must not boot an island"); },
+    }));
+
+    await expect(attachSharedHolder({
+      holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
+      host,
+      helloTimeoutMs: 5_000,
+    })).rejects.toMatchObject({
+      name: "SharedHolderRefusal",
+      storeName: vesselLockName(IDB),
+      cause: expect.stringMatching(/another holder owns the lock/),
+    });
+  });
+
+  test("a refused holder retries after contention releases", async () => {
+    const lockName = vesselLockName(`${IDB}:retry`);
+    const lockTable = new Map<string, string>([[lockName, "temporary-owner"]]);
+    const island = fakeIslandFactory();
+    const core = makeSharedHolderCore({ lockName, locks: fakeLocks("retrying-holder", lockTable), spawnIsland: island.spawn });
+    const host = fakeSharedWorkerHost(() => core);
+    const holderUrl = new URL("https://vessel.test/shared-holder.worker.js");
+
+    await expect(attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 }))
+      .rejects.toMatchObject({ name: "SharedHolderRefusal", storeName: lockName });
+    expect(island.boots()).toBe(0);
+
+    lockTable.delete(lockName);
+    const recovered = await attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 });
+    expect(recovered.kind).toBe("attached");
+    if (recovered.kind !== "attached") return;
+    expect(recovered.hello.islandBoots).toBe(1);
+    expect(island.boots()).toBe(1);
+    recovered.port.close();
+  });
+
+  test("REAL CHROMIUM — two SharedWorker clients share the mounted wiki, and a fresh attachment reads its edit", async () => {
+    const lockName = vesselLockName(`lares:test:chromium:${crypto.randomUUID()}`);
+    const holderUrl = new URL("./fixtures/shared-holder-live.worker.ts", import.meta.url);
+    holderUrl.searchParams.set("lock", lockName);
+    const host: SharedWorkerHost = {
+      SharedWorker: SharedWorker as unknown as SharedWorkerHost["SharedWorker"],
+    };
+    const first = await attachSharedHolder({ holderUrl, host });
+    const second = await attachSharedHolder({ holderUrl, host });
+    expect(first.kind).toBe("attached");
+    expect(second.kind).toBe("attached");
+    if (first.kind !== "attached" || second.kind !== "attached") return;
+    expect(first.hello.islandBoots).toBe(1);
+    expect(second.hello.islandBoots).toBe(1);
+    expect(first.port).not.toBe(second.port);
+
+    const firstHandle = holderWorkerHandle(first.port);
+    const secondHandle = holderWorkerHandle(second.port);
+    const firstRead = new Promise<unknown>((resolve) => firstHandle.listen(resolve));
+    firstHandle.post({ kind: "read" });
+    expect(await firstRead).toEqual({ kind: "wiki", title: "Lady Aki", level: "2" });
+
+    const secondEdit = new Promise<unknown>((resolve) => secondHandle.listen((message) => {
+      if ((message as { level?: unknown }).level === "3") resolve(message);
+    }));
+    firstHandle.post({ kind: "change", level: "3" });
+    expect(await secondEdit).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+
+    second.port.close();
+    const reattached = await attachSharedHolder({ holderUrl, host });
+    expect(reattached.kind).toBe("attached");
+    if (reattached.kind !== "attached") return;
+    expect(reattached.hello.islandBoots).toBe(1);
+    const reattachedHandle = holderWorkerHandle(reattached.port);
+    const retained = new Promise<unknown>((resolve) => reattachedHandle.listen((message) => {
+      if ((message as { level?: unknown }).level === "3") resolve(message);
+    }));
+    reattachedHandle.post({ kind: "read" });
+    expect(await retained).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+
+    first.port.close();
+    reattached.port.close();
+  }, 10_000);
+
+  test("REAL CHROMIUM MUTATION — another page's lock yields an immediate named holder refusal", async () => {
+    const lockName = vesselLockName(`lares:test:chromium-refusal:${crypto.randomUUID()}`);
+    const holderUrl = new URL("./fixtures/shared-holder-live.worker.ts", import.meta.url);
+    holderUrl.searchParams.set("lock", lockName);
+    let releaseLock: (() => void) | undefined;
+    let signalHeld: (() => void) | undefined;
+    const held = new Promise<void>((resolve) => { signalHeld = resolve; });
+    const lockLife = navigator.locks.request(lockName, { ifAvailable: true }, (lock) => {
+      if (!lock) throw new Error("the mutation could not acquire its source lock");
+      signalHeld?.();
+      return new Promise<void>((resolve) => { releaseLock = resolve; });
+    });
+    await held;
+    const host: SharedWorkerHost = {
+      SharedWorker: SharedWorker as unknown as SharedWorkerHost["SharedWorker"],
+    };
+    try {
+      await expect(attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 }))
+        .rejects.toMatchObject({ name: "SharedHolderRefusal", storeName: lockName });
+    } finally {
+      releaseLock?.();
+      await lockLife;
+    }
+  }, 10_000);
 
   test("a delayed holder greeting cannot open an unguarded fallback", async () => {
     const noGreeting: SharedWorkerHost = {

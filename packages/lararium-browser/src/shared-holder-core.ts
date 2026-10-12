@@ -33,6 +33,13 @@ export interface HolderHello {
   readonly lockClientId: string | null;
 }
 
+/** A holder that cannot own its store names the refusal before a tab considers opening a local holder. */
+export interface HolderRefused {
+  readonly kind: "holder:refused";
+  readonly storeName: string;
+  readonly cause: string;
+}
+
 /** A port as the holder sees it — the two members `MessagePort` and a fake alike carry. */
 export interface HolderPort {
   postMessage(msg: unknown, transfer?: Transferable[]): void;
@@ -64,7 +71,7 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
   // never lets go; a reaped SharedWorker releases it the one way a crashed holder can.
   const takeLock = (): Promise<void> => {
     if (lockTaken) return lockTaken;
-    lockTaken = (async () => {
+    const attempt = (async () => {
       if (!opts.locks || typeof opts.locks.request !== "function") {
         throw new Error(`[vessel] shared holder cannot open store "${opts.lockName}": this engine offers no Web Locks.`);
       }
@@ -89,7 +96,13 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
         } catch { lockClientId = null; }
       }
     })();
-    return lockTaken;
+    lockTaken = attempt;
+    // A refusal describes this lock attempt, not the holder's whole lifetime. Once the other owner
+    // releases, a later tab may retry through this same SharedWorker and become the sole holder.
+    void attempt.catch(() => {
+      if (lockTaken === attempt) lockTaken = null;
+    });
+    return attempt;
   };
 
   const bootIsland = (): HolderIsland => {
@@ -105,9 +118,13 @@ export function makeSharedHolderCore(opts: SharedHolderCoreOptions): SharedHolde
     get islandBoots() { return islandBoots; },
     get tabs()        { return ports.size; },
     async connect(port) {
-      // A failed or unavailable lock leaves this port without a greeting. The page's own lock door then
-      // refuses by store name; this worker never becomes an unguarded second holder.
-      try { await takeLock(); } catch { return; }
+      // The attachment door needs the named cause now; a silent port would make the tab wait on its bound.
+      try { await takeLock(); } catch (error) {
+        const cause = error instanceof Error ? error.message : String(error);
+        const refused: HolderRefused = { kind: "holder:refused", storeName: opts.lockName, cause };
+        port.postMessage(refused);
+        return;
+      }
       const isl = bootIsland();
       ports.add(port);
       // A tab's message rides to the island whole; a transferred port (the manifest's sync port) rides with it.
