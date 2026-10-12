@@ -65,7 +65,7 @@ The wall stays custody-by-TYPE: wearing a persona ''REQUIRES that this vessel HO
 | the daemon island, face-blind | a face-scoped proof subject | fresh transport keys per dial; ONE face's proof and admit, presented |
 | the switch RECORD, vessel-private | | the switch ACT |
 
-''What the ruling states outright'': a vessel holds its roots and one store; a session contracts in as ONE persona; the vessel-wide parts (custody, the daemon island) serve every session and let none read another's planes; each session proves itself under its own face-scoped key. ''The remaining cells place objects as a model study read them against canon and code (2026-10-11)'': builders read those cells as the standing model, unbuilt, and a later ruling may move one. The face-scoped proof subject stands named and undesigned (OWED, below).
+''What the ruling states outright'': a vessel holds its roots and one store; a session contracts in as ONE persona; the vessel-wide parts (custody, the daemon island) serve every session and let none read another's planes; each session proves itself under its own face-scoped key. ''The remaining cells place objects as a model study read them against canon and code (2026-10-11)'': builders read those cells as the standing model, unbuilt, and a later ruling may move one. Two carriers state the model as a contract: what a session carries and how its vessel answers it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>), and the face-scoped proof subject a session presents at a gate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>).
 
 !!! What never links on the wire
 
@@ -75,7 +75,7 @@ The wall stays custody-by-TYPE: wearing a persona ''REQUIRES that this vessel HO
 
 !!! The switch ~ one session's act
 
-''A switch belongs to ONE session.'' It closes that session's Nexus links, resolves the incoming face, and re-dials as that face; every other session the vessel holds stays untouched. `persona wear` acts on a session. A face resolves once per session's island boot, never once per vessel boot. The vessel keeps the record (#/one-face) as a vessel-local causal act; the record never crosses the wire.
+''A switch belongs to ONE session.'' It closes that session's Nexus links, resolves the incoming face, and re-dials as that face; every other session the vessel holds stays untouched. `persona wear` acts on a session. A face resolves once per session's island boot, never once per vessel boot. The vessel keeps the record (#/one-face) as a vessel-local causal act; the record never crosses the wire. The act's five steps stand at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-switch">>.
 
 !!! OWED ~ the build
 
@@ -87,7 +87,7 @@ The code as it stands cracks against the ruling in three places (read 2026-10-11
 
 ''A per-Nexus wire key alone does not close crack 2.'' It removes the vessel's cross-Nexus link (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>) and leaves two faces of one vessel on the SAME Nexus sharing it; per-dial transport keys serve the sibling channel, never the gate proof. The gate owes a face-scoped proof subject.
 
-''Five seams carry the build'' (the model study's cut; a lane plan, never law): a session face contract replaces the vessel selector's live authority · mounts, planes and the effective recipe resolve at SESSION-island boot · leaf identity, gate proof, admit binding and the PersonaGroup grant lookup move to a face-scoped proof subject that exposes no root bytes · each session takes a capability-limited Repo path, and the holder answers the requesting session alone · the switch records as a vessel-local causal act scoped to one session.
+''Five seams carry the build'' (the model study's cut; a lane plan, never law): a session face contract replaces the vessel selector's live authority · mounts, planes and the effective recipe resolve at SESSION-island boot · leaf identity, gate proof, admit binding and the PersonaGroup grant lookup move to a face-scoped proof subject that exposes no root bytes · each session takes a capability-limited Repo path, and the holder answers the requesting session alone · the switch records as a vessel-local causal act scoped to one session. The debts those seams break into stand in order at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/standing-and-owed">> and <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>.
 
 !!! Three bounds, ruled (operator ruling, 2026-10-11)
 
@@ -97,9 +97,9 @@ Quote license: //"approve your leans, let's get this Craft across a goalpost lin
 * ''Plane isolation inside a vessel runs by CAPABILITY-LIMITED sessions, and the vessel's own daemon stands TRUSTED.'' No per-plane encryption stands against the vessel's own daemon; a session reaches the planes its face grants and no other.
 * ''The browser's protection stops at two named residuals'': hostile same-origin code, and the device owner.
 
-!!! OWED ~ unruled
+!!! How a face-scoped proof key comes into being
 
-* ''How does a face-scoped proof key come into being without moving a persona root?'' Derivation against delegation stands unsettled; a design study runs on it, and no lean stands approved. A builder MUST NOT harden either answer into code as law.
+''By certification, never by derivation, and no persona root moves.'' The root-holding vessel keeps the face proof key; each joined vessel mints its OWN face-scoped key, and the face key certifies it once at the join. No private face key travels. The house adopted that per-vessel shape under the operator's standing grant, and the operator read it and overruled nothing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">>). What stays unproven stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>, and a builder MUST NOT harden an unproven part into code as law.
 
 <<~/ahu>>
 
@@ -236,9 +236,11 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gfho0r4oyX6AwFLmpecP5RI6vN9MgjWCTinITdU6eAE
+<<^ code="&#x0003;">>ni:///sha-256;awBce9q305mhf2cyhNUWbI7vmpMv7SU8Qqyfyu9wrGE
 
 <<^ code="&#x0004;" -> to="?">>
