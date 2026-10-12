@@ -14,12 +14,16 @@
  *                      the node's default bag first), and shows her title, the typed field at 2 in the standard
  *                      field editor, an ahu section with its heading and a followed lar: link.
  *                      CONTROL: a title never ingested reads absent by name
- *   edit-aki           rung 2, the page half: 2 -> 3 through the standard field editor, saved, read back
+ *   edit-aki           rung 2, the page half: 2 -> 3 through the standard field editor, saved and read back; no
+ *                      refusal stands on the alert rail; the SAME profile, reloaded, reads 3 from its own store
  *   fresh-profile-aki  rung 2, the far half: a new profile with its own key and admit reads the stored field
  *                      (LIVE_WIKI_EXPECT_LEVEL, default 3)
  *
- * The host reads the node between walks (`browser-ci.sh get <aki> --bag lares`, `restart`); a walk asserts
- * only what its page shows. LIVE_WIKI_TRACE=1 prints the page's vessel console lines after each walk.
+ * WHERE THE SAVE LANDS. A saved edit lands in the wiki's WORKING layer; canon moves only by a residency move.
+ * So the host reads the node AS THE WIKI between walks (`browser-ci.sh get <aki> --recipe lares` reads 3) and
+ * reads the canon bag as the control (`browser-ci.sh get <aki> --bag lares` reads 2 until someone promotes it),
+ * with a `restart` between. A walk asserts only what its page shows. LIVE_WIKI_TRACE=1 prints the page's vessel
+ * console lines after each walk.
  */
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
@@ -32,10 +36,8 @@ function required(name) {
 }
 
 /**
- * The crossing URL: the served origin plus the gate pin, written as plain text. The page derives its relay
- * from the origin that served it, so the walk names no relay. A 64-hex pin needs no percent-encoding, and the
- * walk never re-serializes a query: the node's static door refuses any request whose URL carries `%2f`, so a
- * re-encoded `relay=ws%3A%2F%2F…` answers 404 "Pronaos path refused" and the page never loads.
+ * The crossing URL: the served origin plus the gate pin. The page derives its relay from the origin that
+ * served it, so the walk names no relay.
  */
 function withGate(source, gate) {
   const url = new URL(source);
@@ -244,6 +246,9 @@ async function openLevelEditor(page) {
   return level;
 }
 
+/** How many unrouted-save refusals the projected page shows on TiddlyWiki's alert rail. */
+const unroutedAlerts = (page) => page.locator("#projection .tc-alert").filter({ hasText: "Nothing you save here reaches a bag" }).count();
+
 async function renderAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
   const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
@@ -306,11 +311,24 @@ async function editAki() {
     assert.equal(await reopened.inputValue(), "3", "the standard editor reads back the saved field");
     await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
     await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
-    // The save rides the document's sync to the node; the host reads the node next. This bounded pause only
-    // lets the last sync frame leave before the browser closes; the node read carries the verdict.
+    // A save with no bag to land in refuses by name on the alert rail; a save that landed raises nothing.
+    assert.equal(await unroutedAlerts(page), 0, "no save stands refused on the alert rail");
+    // The save left the wiki island for the working layer. This bounded pause only lets the capture debounce
+    // and the store's write settle before the page goes; the reload below carries the verdict.
+    await page.waitForTimeout(3_000);
+
+    // The SAME profile, reloaded: the wiki island boots from this vessel's own store and reads the saved field.
+    await open(page, withGate(vesselUrl, gatePubKey));
+    await waitForLive(page);
+    await openAki(page);
+    const afterReload = await openLevelEditor(page);
+    assert.equal(await afterReload.inputValue(), "3", "the reloaded profile reads the saved field from its own working layer");
+    await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
+    await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
+    assert.equal(await unroutedAlerts(page), 0, "the reloaded wiki raises no refusal");
     await page.waitForTimeout(3_000);
     assert.deepEqual(errors, [], "editing Aki emits zero page or wiki-worker errors");
-    console.log(`edit-aki OK — ${LEVEL_FIELD} saved 2 -> 3 through the standard field editor`);
+    console.log(`edit-aki OK — ${LEVEL_FIELD} saved 2 -> 3 through the standard field editor; no refusal on the alert rail; the reloaded profile reads 3`);
   });
 }
 
