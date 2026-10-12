@@ -96,7 +96,9 @@ persists either (`neverPersists`).
 !!! SP-3 — Draft Routing
 
 Draft tiddlers from TW5 editing UX (a `draft.of` field standing) MUST route to the wiki's per-wiki
-draft slot (`wikis/{slug}/draft`, a CRDT layer that follows the operator's fleet)
+draft slot (`wikis/{slug}/draft`, a CRDT layer: the face's binding where the vessel holds a seated
+PersonaGroup, so the layer follows the operator's fleet, and a floor document keyed by the vessel's
+own DID where it holds none; `packages/lararium-keyhive/src/slot-doc-resolver.ts`)
 and MUST NOT be silently dropped. The in-wiki bag-paths cascade carries the rule
 (`[is[draft]then{…/current-wiki-draft}]`), read against TW5's `draft.of` FIELD,
 never the title; the matching delete routes by the bag the draft last wrote to or
@@ -132,6 +134,8 @@ site.
 <<~ ahu #/debounce-design>>
 
 !! Gate Design
+
+This section, anchored `#/debounce-design`, holds the pacing gate's design: the save flow, the flush and the state the gate keeps per marked title.
 
 ```
 saveTiddler(tiddler): Promise<void>
@@ -176,6 +180,6 @@ title on the console.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Pu-4ERSMvmf-XvNZCJ8JDemhvy-9aytd2m1I2mXh7KU
+<<^ code="&#x0003;">>ni:///sha-256;oaYPIfzMitesTkrQFM0OUlbOc7PLxzi7dFzEUioSiSE
 
 <<^ code="&#x0004;" -> to="?">>

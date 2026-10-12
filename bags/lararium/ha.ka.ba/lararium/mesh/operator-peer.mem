@@ -222,7 +222,7 @@ budget choices, never architectural forks.
 | Storage adapter | `NodeFSStorageAdapter` (disk) | IndexedDB adapter |
 | Operator keypair | Ed25519 on disk at 0o600 | WebCrypto non-extractable |
 | VM island | `worker_threads` island | `DedicatedWorkerGlobalScope` island |
-| Tick source | `setInterval(16)` | `requestAnimationFrame` + `setTimeout(16)` fallback |
+| Landing pace | a host task between slices (`setImmediate`) | a host task between slices (`scheduler.yield` where the worker offers one, else a `MessageChannel` message) |
 | Admin lane | ✅ boots at open | ✅ boots at open |
 | Active wiki lanes | pool-managed, piscina for stateless parse | pool-managed, dedicated islands |
 | Founding ceremony | `runFoundingCeremony(repo, seed)` via `@lararium/keyhive` | same |
@@ -253,6 +253,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Nf6edaNWp2LFBv8KbtJEP2AQooRTIa3a02ENpJRD_wU
+<<^ code="&#x0003;">>ni:///sha-256;P57mcETyewliG0Ndw2egTR03Xhw5zQ3YRfwDOaktNEM
 
 <<^ code="&#x0004;" -> to="?">>

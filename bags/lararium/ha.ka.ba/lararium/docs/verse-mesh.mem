@@ -231,7 +231,7 @@ newest wins, and a burst of changes collapses to one post.
 ''What stays unbuilt.''
 * A second camera on one island, and with it a document per camera beyond `$tw.fakeDocument`.
 * Per-camera tick rates and drain budgets. No `startRenderLoop` and no per-camera accumulator
-  stand in code; one frame beat serves the whole wiki.
+  stand in code; one coalesce gate paces the frames of the whole surface.
 * A frame grain finer than the whole surface. The ruling names where the grain goes and orders no
   build: whole-surface frames stand until a measurement says a camera needs finer
   (`dreamdom#/the-ruling`).
@@ -262,6 +262,6 @@ The host-task seat changes; the landing contract does not. The nalu engine holds
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hZ6mRLKhtnn0hRctuPy83pQha6-Ri8dN1h0K09VVe-o
+<<^ code="&#x0003;">>ni:///sha-256;5OuBEshOBcpxQ4CzqKQMIQZG4qG2HXgZ9Nbkpur9Qtw
 
 <<^ code="&#x0004;" -> to="?">>

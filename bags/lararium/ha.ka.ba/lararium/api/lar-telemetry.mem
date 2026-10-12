@@ -12,7 +12,7 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "lar-telemetry — the process by which the @daemon TW5 engine reads a turn's instrument sigils (the gauges) into gradient-valued readings, holds them on the nalu queue, and flushes on the next wave to project lar_* onto the mempalace drawer; the chat sigils as SharktoothSigil instruments; gradient readings never verdicts; verbatim-always / telemetry-eventual; @daemon owns it all"
+role      = "lar-telemetry — the process that reads a turn's instrument sigils (the gauges) into gradient-valued readings and projects lar_* onto the mempalace drawer: the built `lar-telemetry` verb sweeps the drawers the `lar_hv` gate marks, and the hold-then-flush-on-the-wave leg stands as unbuilt design; the chat sigils as SharktoothSigil instruments; gradient readings never verdicts; verbatim-always / telemetry-eventual; @daemon owns it all"
 tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/lar-telemetry"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -32,8 +32,9 @@ written   = "2026-06-24"
 the turn — `hud` the aperture/loop dials, `confidence` the certainty vow, `ward`
 the L-Prime drift-register, `oracle` the entropy meter, `lares` the bearing. The
 @daemon TiddlyWiki engine reads those instruments into ''gradient-valued''
-''readings'', holds them on the nalu queue, and on the next wave flushes them across
-the shore as `lar_*` onto the mempalace drawer.
+''readings'' and projects them across the shore as `lar_*` onto the mempalace drawer.
+The design below holds them for the next wave; that hold stands unbuilt
+(#/the-telemetry-flow).
 
 Telemetry, never verdict: an instrument transmits a //value on a band//, never a
 pass/fail light. lar-telemetry carries the `register-dressed-never-gated` law in
@@ -145,6 +146,12 @@ PreCompact). The hook adds a leg beside the verbatim mine: it hands the turn to
 @daemon through the verb spine (the `lar-telemetry` verb, riding the
 summons/outcome rail slice-1 `recall` proved).
 
+''What stands in code.'' The `lar-telemetry` verb (`packages/lararium-tw5/src/verb-caps.ts`,
+`telemetryVerbCap`) calls the telemetry writeback provider, and
+`packages/lararium-sensorium/src/telemetry-writeback.ts` sweeps the drawers the `lar_hv` gate marks,
+reads each turn's gradient (`harvestTurnGradient`) and projects the `lar_*` patch onto the drawer.
+No caller holds a reading on a queue: the three steps below state UNBUILT design.
+
 <<~flows turn -> @daemon-reads-the-instruments -> hold(enqueueNalu) -> next-nalu-flush -> Cmd-projects-lar_*-across-the-shore -> mempalace-drawer>>
 
 # ''Read'' — the @daemon VM wikifies the turn through the instrument `\procedures`;
@@ -153,8 +160,8 @@ summons/outcome rail slice-1 `recall` proved).
 # ''Hold'' — @daemon ''`enqueueNalu`''s the readings: they sit on the shared queue,
    scheduled, undelivered. //The swell builds.// (`nalu` = the changeset wave;
    `lar:///ha.ka.ba/lares/api/pono/nalu`.)
-# ''Flush on the next nalu'' — the frame-aligned drain delivers the readings
-   atomically; a ''nalu-triggered effect'' (the Elm `Cmd` shape) projects them
+# ''Flush on the next nalu'' — the next wave delivers the readings;
+   a ''nalu-triggered effect'' (the Elm `Cmd` shape) projects them
    across the causal-island shore as `lar_*` ''tension on the mempalace drawer''.
 
 The hold is load-bearing: it sequences the
@@ -224,6 +231,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6bBl3whm5e6sAAJQsTZwdaSjNIiE3I6GqUWI7NA2DNk
+<<^ code="&#x0003;">>ni:///sha-256;QYS3BzvLqV2A6e4TQGQ765m3axo-Ir-Y0jzu6HHJn8U
 
 <<^ code="&#x0004;" -> to="?">>

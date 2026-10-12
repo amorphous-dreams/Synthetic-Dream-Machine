@@ -62,6 +62,8 @@ The TW5 module `nalu-engine` holds the one piece the adaptor deliberately does n
 
 !! The Landed Ledger
 
+This section, anchored `#/slot-of`, holds the landed ledger: what the shore records per title and which acts read it.
+
 The adaptor's landed ledger (`packages/lararium-tw5/src/landed-ledger.ts`) records, per title, what the last wave left: the wiki value, the bag it landed from and that bag's heads. Every landing writes it; nothing else does.
 
 ''A delete reads it BEFORE the cascade,'' because by then the tiddler has left the wiki and no field answers (the bag of the adaptor's own last acknowledged write of the title, where one stands, answers ahead of the ledger). That ordering lets a draft loaded from the CRDT at boot, and deleted before any save, resolve to its bag. The composition's layer order then picks where the tombstone lands (`_tombstoneBag`).
@@ -96,6 +98,6 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7OwRPPA--dnBv3Y5Lzvf6DvqQX4px2sjRHrtvgacXUA
+<<^ code="&#x0003;">>ni:///sha-256;llWmhXxkJHNxQP8v0vIEr7vfC0wSi0rtwowORW6Dq2c
 
 <<^ code="&#x0004;" -> to="?">>

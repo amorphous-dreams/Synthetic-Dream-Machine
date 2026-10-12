@@ -275,9 +275,9 @@ Each row names what the house built, how it rhymes with the lease, and where it 
 | ''the CAS sweep'' (`node-cas.ts:222-338`, `cas-caps.ts`) | sweeps at a cadence paced by the realm's roll rate, ''abstaining under two rolls'' — //"a realm nobody feeds never sweeps — never a calendar"// | supersession's own temper: no motion, no ageing. Grace counts ROLLS, so //"a day of silence ages nothing"// | one honest seam its own hand named: the pace reader ''derives'' ms-per-roll from observed rolls over elapsed wall time — a wall reading feeding a cadence (liveness), never a verdict (safety). Lawful under the quarantine, worth watching |
 | ''the ahi-kā reading'' (`ahi-ka.ts`) | renders standing as a RATIO of a realm's own pace against an ''independent ambient'' it cannot drive, with an `abstain` floor | the escape from the accrual impossibility, and the ruling's quarantine honored exactly: a reading, never an ordering | it delivers what the ruling assigned to φ-accrual by a different mechanism. The ledger line //"LIVENESS = φ-accrual"// now names a shape the house superseded by ruling (2026-09-11) |
 | ''the realm registration `expiry`'' (`realm-bag.ts:114-142`, `:348-352`) | a lease in ROLLS; past it the WRITE side lapses and ''the read side never moves'' | the PIN-shaped `expiry` the charge asks about: an `expiry` field that survives by changing its UNIT, not by leaving | nowhere. And it fails OPEN — a reader naming no pace //"cannot judge, so it never narrows"// — the opposite polarity to the pointer's `nowMs >= expiry` fail-closed-on-a-local-clock |
-| ''the outbound bridge's echo SET'' (`outbound-bridge.mem` `#/island-holds`, `#/back-parity`; `outbound-bridge.ts`) | an inbound apply MUST NOT re-save; the guard rides a COUNT or a SET of applied titles, //"never a flag"// | the same instinct the lease runs on: a ''monotone recorded fact'' beats an ambient mode. TW5's own `changeCount` stamp reads as a per-title high-water mark | a near-miss worth naming: this SET is exactly the roster-of-moments shape `waking-floor:207` STRUCK for epochs. It stays lawful because it lives ''inside one island for one tick'' and answers //did I just apply this//, never //is this newer// |
+| ''the wiki shore's landed ledger'' (`outbound-bridge.mem` `#/the-shore-law`, `#/back-parity`; `landed-ledger.ts`) | an inbound apply MUST NOT re-save; the shore compares what a title holds against the value the last wave landed there, and a hand leaves with the bag and heads it built on | the same instinct the lease runs on: a ''recorded fact'' beats an ambient mode. The foam test reads no flag, no count and no clock, and the base a hand carries names a causal frontier (the bag's heads) that the store alone advances | the ledger orders nothing: it answers //does this title hold what landed//, never //which came later//, so it stands beside the lease and takes no verdict from it. It lives in memory, one per shore, and a stopped shore clears it |
 
-''The shape all five share.'' Every one of them puts a ''monotone quantity someone else drives'' under the verdict, and every one of them either counts in a logical unit or NAMES the wall reading as a floor. The oracle pointer sits alone among them in gating a verdict on an un-named local clock.
+''The shape the rows share.'' The first four put a ''monotone quantity someone else drives'' under the verdict, and each either counts in a logical unit or NAMES the wall reading as a floor; the fifth reads content and a causal frontier, and asks no clock. The oracle pointer sits alone among them in gating a verdict on an un-named local clock.
 
 <<~/ahu>>
 
@@ -354,6 +354,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jy0bhJvFGxY8urKdKPoI6JMLZpJQI3OmgKqLkw3t8Po
+<<^ code="&#x0003;">>ni:///sha-256;3iXqw6B50JHA1ioMexolssd6qWSBrpl19OaBPa7ExtQ
 
 <<^ code="&#x0004;" -> to="?">>

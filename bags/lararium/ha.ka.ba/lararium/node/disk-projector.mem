@@ -54,6 +54,8 @@ and every guarantee stands without it.
 
 !! The level-triggered reconcile gate
 
+This section, anchored `#/the-servo`, holds the disk shore's level-triggered reconcile gate, its teardown and its measure; no servo and no timer stand in it.
+
 `LarDiskProjector.start` keys the timer-free `KeyedReconcileGate` by carrier root; a child change climbs `$fragment-parent` to that root. A clean mark queues one reconcile, a queued mark changes nothing, and a mark during a running reconcile makes the key run once more on completion. M marks to one key cost at most M + 1 reconciles, and no mark storm starves a key. One drain owns the queue until it empties, reconciling keys one at a time in first-marked order and yielding to the host between reconciles. The mount scan marks mirror-backed roots in the same synchronous turn as change-bus subscription; the first reconcile starts in a microtask. Each reconcile reads settled wiki state. The unsubscribe removes the listener and awaits `stop()`, which stops admission, drops waiting work, waits for a running reconcile, and flushes the synced tree. The measure fields count change events, elapsed time from the last change event to the first file write, `bagsHolding` calls in that window, and file writes.
 
 <<~/ahu>>
@@ -72,6 +74,6 @@ and every guarantee stands without it.
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/guards">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
 
-<<^ code="&#x0003;">>ni:///sha-256;f9Q3Gt0G36OCrxZbgYoO_Ktq6Z5paZ2KUiSQQIoD9YE
+<<^ code="&#x0003;">>ni:///sha-256;A6Uw-T20Y6KMJpViAVfZEeTYf3fU6yENv4IheE0F9k8
 
 <<^ code="&#x0004;" -> to="?">>

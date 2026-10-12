@@ -59,7 +59,7 @@ A future debug path may expose a limited inspector surface; that surface does no
 constitute sovereignty.
 
 ''BV-7 — Islands tick themselves; the host does not drive state changes.''
-Each island authority runs its own rAF drain loop (or `setTimeout` fallback in environments without `requestAnimationFrame`). The host MAY send messages; the island drains them at frame boundaries, never on raw message receipt. This preserves the island's causal sovereignty — its internal state advances on its own clock, not the host's.
+Each island authority lands inbound changes through its own landing queue (`packages/lararium-tw5/src/wave-landing.ts`): a drain begins on a host task of the island's own runtime and yields to the host between slices of 200 changes. The host MAY send messages; the island lands them in its own turn, never inside a message's receipt. This preserves the island's causal sovereignty — its internal state advances on its own task queue, never at the host's command.
 
 ''BV-8 — RootTemplate supplies source material, not constitutional authority.''
 `$:/core/ui/RootTemplate` and `$:/core/ui/PageTemplate` name prior art.
@@ -139,6 +139,6 @@ These questions do not block charter adoption. They require measurement before r
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TpfJHbzKr6MJ9p8Hl3bCjDEoeX65eKZLxfcLzLHsZ-c
+<<^ code="&#x0003;">>ni:///sha-256;cdkAyGymavgFENwPZjUwUKY1RJn9rf5RHGLhLBYLAbM
 
 <<^ code="&#x0004;" -> to="?">>
