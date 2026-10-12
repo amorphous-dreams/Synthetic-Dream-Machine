@@ -61,6 +61,23 @@ export function connectionPresentation(snapshot: BrowserConnectionSnapshot, auth
   }
 }
 
+/**
+ * What the connection row publishes as data, for a reader that must not parse prose:
+ *   data-gate-key      the gate key the relay PROVED on this session; absent in every other state
+ *   data-wiki-doc-url  the document the vessel mounted as its wiki; absent until a mount stands
+ */
+export function connectionData(snapshot: BrowserConnectionSnapshot): { readonly gateKey: string | null; readonly wikiDocUrl: string | null } {
+  return {
+    gateKey: snapshot.status === "connected" ? snapshot.peer.gatePubKey : null,
+    wikiDocUrl: snapshot.wikiDocUrl ?? null,
+  };
+}
+
+function setOrRemove(element: HTMLElement, name: string, value: string | null): void {
+  if (value === null) element.removeAttribute(name);
+  else element.setAttribute(name, value);
+}
+
 /** Paint the vessel's replica of its current relay state; this reports the adapter's causal edges. */
 export function mountLiveStatus(parent: HTMLElement, state: BrowserConnectionState): () => void {
   const connectionRow = makeRow(parent, "crossing", "connection");
@@ -71,6 +88,9 @@ export function mountLiveStatus(parent: HTMLElement, state: BrowserConnectionSta
     const presentation = connectionPresentation(snapshot, authenticatedBefore);
     connectionRow.value.textContent = presentation.connection;
     connectionRow.value.className = `v ${presentation.tone}`;
+    const data = connectionData(snapshot);
+    setOrRemove(connectionRow.value, "data-gate-key", data.gateKey);
+    setOrRemove(connectionRow.value, "data-wiki-doc-url", data.wikiDocUrl);
     modeRow.value.textContent = presentation.mode;
     modeRow.value.className = `v ${presentation.tone}`;
   };
