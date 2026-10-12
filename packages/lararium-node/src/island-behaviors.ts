@@ -31,7 +31,7 @@ import { join } from "path";
  * A wiki island and the daemon island call the same function — the daemon wiki projects to
  * `<root>/wikis/daemon/` exactly as a wiki's working layer projects to `<root>/wikis/<slug>/`.
  */
-export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandContext): (() => void) | undefined {
+export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandContext): (() => Promise<void>) | undefined {
   const mirrorDefs = manifest.diskMirrors;
   if (!mirrorDefs?.length) return undefined;
   const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles }) =>

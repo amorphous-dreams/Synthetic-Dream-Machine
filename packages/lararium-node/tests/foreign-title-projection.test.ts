@@ -12,7 +12,7 @@
  * ② THE UNIQUIFIER. TW5's adaptor resolves a path collision by trying `title.tid`, `title_1.tid`, …
  *    until `fs.existsSync` reads free, and stays STABLE across restarts because `$tw.boot.files`
  *    holds the title→path assignment for the process's life. This projector holds no such registry —
- *    it reconciles per carrier root, statelessly, on a debounce — so a naive `existsSync` loop would
+ *    it reconciles per carrier root against settled VM state — so a naive `existsSync` loop would
  *    write `title.tid` on the first boot and `title_1.tid` on the second, growing one file per boot.
  *    The free-path test is therefore "absent OR ALREADY MINE", and MINE is proved FROM DISK: every
  *    native projection writes its own `title:` — in the `.tid` field block, in the `.json` array, or
@@ -48,7 +48,6 @@ function rig(file: (uri: string) => CarrierFile | null, refusals: string[] = [])
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: "wiki", mirrorRoot: root }],
     carrierFileFn: async (uri) => file(uri),
-    debounceMs: 1,
     onRefusal: (r) => refusals.push(r.reason),
   }) as unknown as Flushable;
   return { projector, root };
@@ -59,7 +58,6 @@ function restart(mirrorRoot: string, file: (uri: string) => CarrierFile | null, 
   return new LarDiskProjector({
     mirrors: [{ bagId: "wiki", mirrorRoot }],
     carrierFileFn: async (uri) => file(uri),
-    debounceMs: 1,
     onRefusal: (r) => refusals.push(r.reason),
   }) as unknown as Flushable;
 }
@@ -78,7 +76,7 @@ describe("foreign-title projection — the form cut", () => {
     expect(readFileSync(join(root, "My Notes.tid"), "utf8")).toContain("a plain title.");
   });
 
-  test("★ the change handler no longer withholds a foreign title by FORM ★", () => {
+  test("★ the change handler admits a foreign title by FORM ★", async () => {
     const { projector } = rig(() => null);
     const marked: string[] = [];
     let handler: ((c: Record<string, unknown>) => void) | undefined;
@@ -96,7 +94,7 @@ describe("foreign-title projection — the form cut", () => {
     const gate = (projector as unknown as { gate: { mark: (k: string) => void } }).gate;
     gate.mark = (k) => marked.push(k);
     handler?.({ "My Notes": {}, "lar:///ha.ka.ba/lares/api/x": {}, "$:/state/tab": {} });
-    stop();
+    await stop();
     expect(marked).toContain("My Notes");
     expect(marked).toContain("lar:///ha.ka.ba/lares/api/x");
   });
@@ -237,7 +235,6 @@ describe("foreign-title projection — the CONTROLs", () => {
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: "wiki", mirrorRoot: root }],
       carrierFileFn: async (uri) => { seen.push(uri); return nativeFile(uri, "x\n"); },
-      debounceMs: 1,
     });
     (projector as unknown as { _tw5: unknown })._tw5 = {
       $tw: { wiki: { getTiddler: (t: string) => (tiddlers[t] ? { fields: tiddlers[t] } : undefined) } },

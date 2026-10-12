@@ -43,6 +43,7 @@
 // CoalesceGate below); both are exported from the mesh barrel alongside this module.
 import { adaptWindow } from "./gate-tuning.js";
 import type { WindowServo } from "./gate-tuning.js";
+import { yieldToHost } from "./host-task.js";
 
 /** Which family a projection's gate belongs to — the conserved dichotomy. */
 export type GateFamily = "accumulate" | "coalesce";
@@ -152,7 +153,7 @@ export interface KeyedCoalesceGateOptions<K> {
    *  its prior reconcile drains) and servos `debounceMs` via {@link adaptWindow} on the EWMA'd
    *  reconcile cost. Absent → fixed-debounce behavior, unchanged. */
   readonly servo?: WindowServo;
-  /** clock for cost measurement (servo only); default Date.now. */
+  /** clock for cost measurement (servo only); default performance.now. */
   readonly now?: () => number;
   /** EWMA smoothing factor for the cost signal (servo only); default 0.2. */
   readonly ewmaAlpha?: number;
@@ -251,5 +252,134 @@ export class KeyedCoalesceGate<K> implements ProjectionGate {
     this.timers.clear();
     this.maxTimers.clear();
     this.dirty.clear();
+  }
+}
+
+export interface KeyedReconcileGateOptions<K> {
+  /** Reconcile the live source for `key` against the sink, reading the state that stands when it runs. */
+  readonly reconcile: (key: K) => void | Promise<void>;
+  /** The host-task yield between reconciles; defaults to `yieldToHost`. */
+  readonly yieldFn?: () => Promise<void>;
+  /** A reconcile that threw (with its key), or a host yield that rejected (no key). Default: `console.error`. */
+  readonly onError?: (error: unknown, key: K | undefined) => void;
+}
+
+interface ReconcileRecord {
+  queued: boolean;
+  running: boolean;
+  dirty: boolean;
+}
+
+/**
+ * A level-triggered reconcile queue with no timer. Per key, two states: RUNNING and DIRTY.
+ *   - a mark on a clean key queues one reconcile;
+ *   - a mark on a queued key changes nothing (the reconcile it waits for reads the latest state);
+ *   - a mark on a running key sets it dirty, and a dirty key runs exactly once more on completion.
+ * So M marks to one key cost at most M + 1 reconciles and no storm of marks can starve one.
+ *
+ * ONE DRAIN owns the queue from its first key until the queue empties: keys reconcile one at a time in
+ * first-marked order, and the drain yields to the host between reconciles, so a vessel message or an
+ * operator's invocation takes the next slice. A mark that arrives while the drain yields joins the
+ * queue the drain already owns; it never starts a second one.
+ *
+ * The first reconcile after an idle gate starts in a microtask: a caller that marks many keys in one
+ * synchronous turn (a mount scan) finishes its turn before any reconcile runs.
+ *
+ * A reconcile that throws, and a host yield that rejects, are reported through `onError` and the drain
+ * continues. `settle()` stops admission, drops what waits, and resolves when the running reconcile
+ * completes; the records hold truth, so a dropped observation costs one later reconcile.
+ */
+export class KeyedReconcileGate<K> {
+  private readonly records = new Map<K, ReconcileRecord>();
+  private readonly queue: K[] = [];
+  private readonly reconcile: (key: K) => void | Promise<void>;
+  private readonly yieldFn: () => Promise<void>;
+  private readonly onError: (error: unknown, key: K | undefined) => void;
+  /** True from the moment a drain is scheduled until it finds the queue empty. */
+  private draining = false;
+  /** True while one reconcile call is in flight. */
+  private reconciling = false;
+  private stopped = false;
+  private idleWaiters: Array<() => void> = [];
+  private settleWaiters: Array<() => void> = [];
+
+  constructor(options: KeyedReconcileGateOptions<K>) {
+    this.reconcile = options.reconcile;
+    this.yieldFn = options.yieldFn ?? yieldToHost;
+    this.onError = options.onError ?? ((error, key) => console.error("[KeyedReconcileGate] reconcile failed", key, error));
+  }
+
+  mark(key: K): void {
+    if (this.stopped) return;
+    const record = this.records.get(key);
+    if (record?.running) {
+      record.dirty = true;
+      return;
+    }
+    if (record?.queued) return;
+    this.records.set(key, { queued: true, running: false, dirty: false });
+    this.queue.push(key);
+    if (this.draining) return;
+    this.draining = true;
+    void Promise.resolve().then(() => this.drain());
+  }
+
+  /** Resolve when no reconcile runs and no key waits in the queue. */
+  idle(): Promise<void> {
+    if (!this.draining) return Promise.resolve();
+    return new Promise((resolve) => this.idleWaiters.push(resolve));
+  }
+
+  /** Stop admission, drop queued observations, and wait for the running reconcile to complete. */
+  settle(): Promise<void> {
+    this.stopped = true;
+    this.queue.length = 0;
+    for (const [key, record] of this.records) {
+      if (record.running) record.dirty = false;
+      else this.records.delete(key);
+    }
+    if (!this.reconciling) return Promise.resolve();
+    return new Promise((resolve) => this.settleWaiters.push(resolve));
+  }
+
+  private report(error: unknown, key: K | undefined): void {
+    try { this.onError(error, key); }
+    catch (reportError) { console.error("[KeyedReconcileGate] error reporter failed", reportError); }
+  }
+
+  private async drain(): Promise<void> {
+    try {
+      while (!this.stopped && this.queue.length > 0) {
+        const key = this.queue.shift()!;
+        const record = this.records.get(key);
+        if (!record) continue;
+        record.queued = false;
+        record.running = true;
+        this.reconciling = true;
+        try {
+          await this.reconcile(key);
+        } catch (error) {
+          this.report(error, key);
+        }
+        record.running = false;
+        this.reconciling = false;
+        if (!this.stopped && record.dirty) {
+          record.dirty = false;
+          record.queued = true;
+          this.queue.push(key);
+        } else {
+          this.records.delete(key);
+        }
+        if (this.stopped) break;
+        if (this.queue.length > 0) {
+          try { await this.yieldFn(); }
+          catch (error) { this.report(error, undefined); }
+        }
+      }
+    } finally {
+      this.draining = false;
+      for (const resolve of this.settleWaiters.splice(0)) resolve();
+      for (const resolve of this.idleWaiters.splice(0)) resolve();
+    }
   }
 }

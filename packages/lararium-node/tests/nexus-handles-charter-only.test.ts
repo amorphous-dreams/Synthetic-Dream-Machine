@@ -39,7 +39,6 @@ describe("the charter-only crossroads mirror guard", () => {
     const projector = new LarDiskProjector({
       mirrors: [mirror],
       carrierFileFn: async () => ({ ext: ".tid", body: "title: x\n\nautomerge:fakehandle\n" }),
-      debounceMs: 1,
     });
     const uri = nexusHandlesUri(OWN_NEXUS);
     await flushOn(projector)("crossroads", uri);
@@ -52,7 +51,6 @@ describe("the charter-only crossroads mirror guard", () => {
     const projector = new LarDiskProjector({
       mirrors: [mirror],
       carrierFileFn: async () => ({ ext: ".tid", body: "title: x\n\nautomerge:fakehandle\n" }),
-      debounceMs: 1,
     });
     const uri = nexusHandlesUri("deadbeef00112233");
     await flushOn(projector)("crossroads", uri);
@@ -66,7 +64,6 @@ describe("the charter-only crossroads mirror guard", () => {
     const projector = new LarDiskProjector({
       mirrors: [mirror],
       carrierFileFn: async () => ({ ext: ".tid", body: "title: x\n\nautomerge:fakehandle\n" }),
-      debounceMs: 1,
     });
     const uri = nexusHandlesUri(CHARTER_NEXUS);
     await flushOn(projector)("crossroads", uri);
@@ -79,7 +76,6 @@ describe("the charter-only crossroads mirror guard", () => {
     const projector = new LarDiskProjector({
       mirrors: [mirror],
       carrierFileFn: async () => ({ ext: ".mem", body: "a curated library carrier\n" }),
-      debounceMs: 1,
     });
     await flushOn(projector)("crossroads", "lar:///ha.ka.ba/lares/library/oracles/doa/index");
     expect(existsSync(join(root, "bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem"))).toBe(true);

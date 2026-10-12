@@ -28,7 +28,6 @@ function rig(file: () => CarrierFile | null): { projector: Flushable; root: stri
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: "lares", mirrorRoot: root }],
     carrierFileFn: async () => file(),
-    debounceMs: 1,
   }) as unknown as Flushable;
   return { projector, root };
 }
@@ -74,7 +73,6 @@ describe("ruled siting — the projector sites where the FileSystemPaths rule sa
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: "lares", mirrorRoot: root }],
       carrierFileFn: async () => ({ ext: ".md", body: "# note", relPath: "../escape.md" }),
-      debounceMs: 1,
       onRefusal: (r) => refusals.push(r.reason),
     }) as unknown as Flushable;
     await projector.flush("lares", URI);

@@ -72,7 +72,6 @@ function rig(recordsFields: Record<string, unknown>, syncedHash: string | null):
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: "wiki", mirrorRoot: root }],
     carrierFileFn: async () => file,
-    debounceMs: 1,
     syncedTree,
     canonicalizeNativeFn: (u, ext, diskBody, diskMeta) => canonicalizeNativeCarrierText(deserializer, u, ext, diskBody, diskMeta),
   });
@@ -132,7 +131,6 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: "wiki", mirrorRoot: root }],
       carrierFileFn: async () => file,
-      debounceMs: 1,
       syncedTree,
       // NO canonicalizeNativeFn — the pre-existing wiring.
     });

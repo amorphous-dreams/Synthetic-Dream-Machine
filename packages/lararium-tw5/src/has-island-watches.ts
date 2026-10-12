@@ -35,7 +35,7 @@ export function hasRecipeWatch(): IslandCap {
  * "pin the daemon" and "pin any wiki" ride one path (it's all the same VM under the hood). role = capability
  * ≠ platform: the caller's onBoot supplies the disk or DOM mount; the cap stays the same.
  */
-export function hasProjection(onBoot?: (ctx: IslandContext) => (() => void) | undefined): IslandCap {
+export function hasProjection(onBoot?: (ctx: IslandContext) => (() => void | Promise<void>) | undefined): IslandCap {
   return {
     name: "wiki-projection",
     onEa: (ctx) => onBoot?.(ctx),

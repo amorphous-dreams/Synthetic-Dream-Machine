@@ -101,7 +101,6 @@ function stand(diskBody: string, opts: { canonicalize: boolean }): {
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: BAG, mirrorRoot: root }],
     carrierFileFn: async () => ({ ext: MEME_EXT, body: RECORDS_RENDER, encoding: "utf8" }),
-    debounceMs: 1,
     syncedTree: tree,
     onConflict: (info) => { conflicts.push(info); },
     ...(opts.canonicalize ? { canonicalizeFn: collapseFraming } : {}),
@@ -128,7 +127,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     expect(conflicts[0]!.uri).toBe(URI);
     expect(conflicts[0]!.reason).toContain("both moved past the last projection");
 
-    stop();
+    await stop();
   });
 
   test("the ORDINARY round trip WRITES — the streams say the same thing, so it normalizes", async () => {
@@ -148,7 +147,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     expect(readFileSync(abs, "utf-8")).toBe(RECORDS_RENDER);
     expect(conflicts).toHaveLength(0);
 
-    stop();
+    await stop();
   });
 
   test("CONTROL — with NO canonicalizer the same framing-only edit still CONFLICTS", async () => {
@@ -161,7 +160,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     expect(readFileSync(abs, "utf-8")).toBe(DISK_FRAMED);   // nothing written
     expect(conflicts).toHaveLength(1);                      // and it surfaced
 
-    stop();
+    await stop();
   });
 
   test("THE NATIVE SHORE RIDES FAIL-CLOSED — a `.tid` standoff conflicts, congruence or not", async () => {
@@ -182,7 +181,6 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: BAG, mirrorRoot: root }],
       carrierFileFn: async () => ({ ext: ".tid", body: RECORDS_RENDER, encoding: "utf8" }),
-      debounceMs: 1,
       syncedTree: tree,
       onConflict: (info) => { conflicts.push(info); },
       canonicalizeFn: collapseFraming,   // injected, and DELIBERATELY not consulted for `.tid`
@@ -193,7 +191,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
 
     expect(readFileSync(abs, "utf-8")).toBe(DISK_FRAMED);   // the operator's bytes stand
     expect(conflicts).toHaveLength(1);                      // and the divergence surfaced
-    stop();
+    await stop();
   });
 
   test("CONTROL — a carrier absent from disk projects, canonicalizer or not", async () => {
@@ -207,14 +205,13 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
       const projector = new LarDiskProjector({
         mirrors: [{ bagId: BAG, mirrorRoot: root }],
         carrierFileFn: async () => ({ ext: MEME_EXT, body: RECORDS_RENDER, encoding: "utf8" }),
-        debounceMs: 1,
         ...(canonicalize ? { canonicalizeFn: collapseFraming } : {}),
       });
       const stop = projector.start(fakeEngine());
       await reconcile(projector, URI);
       expect(existsSync(abs), `canonicalizer: ${canonicalize}`).toBe(true);
       expect(readFileSync(abs, "utf-8")).toBe(RECORDS_RENDER);
-      stop();
+      await stop();
     }
   });
 });

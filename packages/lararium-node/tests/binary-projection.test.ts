@@ -39,7 +39,6 @@ describe("binary projection — base64 body decodes to raw bytes on disk", () =>
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: "lares", mirrorRoot: root }],
       carrierFileFn: async () => ({ ext: ".png", body: b64, metaBody: "type: image/png\n", encoding: "base64" }),
-      debounceMs: 1,
     });
     await (projector as unknown as { flush: (b: string, u: string) => Promise<void> })
       .flush("lares", "lar:///ha.ka.ba/lares/api/pic");
@@ -64,7 +63,6 @@ describe("THE POINTER projects as the WHOLE FILE beside its .meta", () => {
       carrierFileFn: async () => ({ ext: ".png", body: "", metaBody: META, encoding: "base64", pointerCid: CID }),
       resolveByCid: async (cid) => { asked.push(cid); return cid === CID ? new Uint8Array(PNG) : null; },
       syncedTree: tree,
-      debounceMs: 1,
     });
     await flushOf(projector)("lares", "lar:///ha.ka.ba/lares/api/photo");
 
@@ -85,7 +83,6 @@ describe("THE POINTER projects as the WHOLE FILE beside its .meta", () => {
       mirrors: [{ bagId: "lares", mirrorRoot: root }],
       carrierFileFn: async () => ({ ext: ".png", body: "", metaBody: META, encoding: "base64", pointerCid: CID }),
       resolveByCid: async () => null,
-      debounceMs: 1,
     });
     await flushOf(projector)("lares", "lar:///ha.ka.ba/lares/api/photo");
     expect(readFileSync(join(dir, "photo.png.meta"), "utf8")).toBe(META);
@@ -98,7 +95,6 @@ describe("THE POINTER projects as the WHOLE FILE beside its .meta", () => {
       mirrors: [{ bagId: "lares", mirrorRoot: root }],
       carrierFileFn: async () => ({ ext: ".png", body: "", metaBody: META, encoding: "base64", pointerCid: CID }),
       resolveByCid: async () => new Uint8Array(Buffer.from("tampered")),
-      debounceMs: 1,
     });
     await flushOf(projector)("lares", "lar:///ha.ka.ba/lares/api/photo");
     expect(existsSync(join(root, "ha.ka.ba/lares/api/photo.png"))).toBe(false);

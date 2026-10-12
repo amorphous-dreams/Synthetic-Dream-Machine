@@ -81,7 +81,6 @@ describe("pack projection-suppress — a pack member never self-projects", () =>
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: BAG, mirrorRoot: root }],
       carrierFileFn: async (uri) => ({ ext: ".tid", body: `title: ${uri}\n\nbody`, encoding: "utf8" }),
-      debounceMs: 1,
     });
     const stop = projector.start(engine);
 
@@ -112,7 +111,7 @@ describe("pack projection-suppress — a pack member never self-projects", () =>
     for (const f of memberFiles) expect(existsSync(f)).toBe(false);
     expect(readFileSync(packAbs, "utf-8")).toBe(packBytes);          // pack file untouched by the re-scan
 
-    stop();
+    await stop();
   });
 
   test("with the provenance map ABSENT, the same tiddlers project normally (no over-suppression)", async () => {
@@ -124,11 +123,10 @@ describe("pack projection-suppress — a pack member never self-projects", () =>
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: BAG, mirrorRoot: root }],
       carrierFileFn: async (uri) => ({ ext: ".tid", body: `title: ${uri}\n\nbody`, encoding: "utf8" }),
-      debounceMs: 1,
     });
     const stop = projector.start(engine);
     await reconcile(projector, PACK_URI_A);
     expect(existsSync(join(root, "ha.ka.ba/pack/alpha.tid"))).toBe(true);   // no pack → normal projection
-    stop();
+    await stop();
   });
 });

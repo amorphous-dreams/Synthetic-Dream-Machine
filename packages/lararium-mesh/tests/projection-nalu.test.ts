@@ -7,7 +7,7 @@
 
 import { describe, expect, test } from "vitest";
 
-import { CoalesceGate, KeyedCoalesceGate, CaptureNalu } from "../src/index.js";
+import { CoalesceGate, KeyedCoalesceGate, KeyedReconcileGate, CaptureNalu } from "../src/index.js";
 
 type Fire = (() => void) | null;
 
@@ -104,6 +104,173 @@ describe("KeyedCoalesceGate", () => {
     expect(gate.pending()).toBe(0);
   });
 });
+
+describe("disk gate progress vectors against the timed gate", () => {
+  function deferred<T = void>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((res) => { resolve = res; });
+    return { promise, resolve };
+  }
+  const tick = async () => { await Promise.resolve(); await Promise.resolve(); };
+
+  test("K: 1,000 marks during one held reconcile produce one more start; one mark is the control", async () => {
+    const first = deferred();
+    const second = deferred();
+    let starts = 0;
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: () => { starts++; return starts === 1 ? first.promise : second.promise; },
+      yieldFn: async () => {},
+    });
+    gate.mark("root");
+    await tick();
+    for (let i = 0; i < 1000; i++) gate.mark("root");
+    expect(starts).toBe(1);
+    first.resolve();
+    await tick();
+    expect(starts).toBe(2);
+    second.resolve();
+    await gate.idle();
+
+    let controlStarts = 0;
+    const control = new KeyedReconcileGate<string>({ reconcile: () => { controlStarts++; }, yieldFn: async () => {} });
+    control.mark("root");
+    await control.idle();
+    expect(controlStarts).toBe(1);
+  });
+
+  test("L: a mark before, during and after each completion gives 3 starts; stopped marks go idle", async () => {
+    const runs = [deferred(), deferred(), deferred()];
+    let starts = 0;
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: () => runs[starts++]!.promise,
+      yieldFn: async () => {},
+    });
+    gate.mark("root");
+    await tick();
+    for (let i = 0; i < 2; i++) {
+      gate.mark("root");
+      runs[i]!.resolve();
+      await tick();
+    }
+    runs[2]!.resolve();
+    await tick();
+    expect(starts).toBe(3);
+    await gate.idle();
+
+    const controlRuns = [deferred(), deferred()];
+    let controlStarts = 0;
+    const control = new KeyedReconcileGate<string>({
+      reconcile: () => controlRuns[controlStarts++]!.promise,
+      yieldFn: async () => {},
+    });
+    control.mark("root");
+    await tick();
+    control.mark("root");
+    controlRuns[0]!.resolve();
+    await tick();
+    controlRuns[1]!.resolve();
+    await control.idle();
+    expect(controlStarts).toBe(2);
+  });
+
+  test("keys are serialized in first-marked order and yield lets a pending host task run", async () => {
+    const order: string[] = [];
+    const hostTasks: Array<() => void> = [];
+    let yields = 0;
+    let running = 0;
+    let maxRunning = 0;
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: async (key) => { running++; maxRunning = Math.max(maxRunning, running); order.push(key); await Promise.resolve(); running--; },
+      yieldFn: async () => { yields++; hostTasks.shift()?.(); },
+    });
+    gate.mark("a"); gate.mark("b"); gate.mark("c");
+    hostTasks.push(() => order.push("host-task"));
+    expect(order).toEqual([]);
+    await gate.idle();
+    expect(order).toEqual(["a", "host-task", "b", "c"]);
+    expect(yields).toBe(2);
+    expect(maxRunning).toBe(1);
+  });
+
+  test("a fault clears a and b still runs with the key reported once", async () => {
+    const errors: Array<{ error: unknown; key: string }> = [];
+    const done: string[] = [];
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: (key) => { if (key === "a") throw new Error("fault"); done.push(key); },
+      yieldFn: async () => {},
+      onError: (error, key) => errors.push({ error, key: key! }),
+    });
+    gate.mark("a"); gate.mark("b");
+    await gate.idle();
+    expect(done).toEqual(["b"]);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.key).toBe("a");
+  });
+
+  test("a mark made while the drain yields joins the same drain: never two reconciles at once", async () => {
+    const yielding = deferred();
+    const held = deferred();
+    const order: string[] = [];
+    let running = 0;
+    let maxRunning = 0;
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: async (key) => {
+        running++; maxRunning = Math.max(maxRunning, running); order.push(key);
+        if (key === "b") await held.promise;
+        running--;
+      },
+      yieldFn: () => yielding.promise,
+    });
+    gate.mark("a"); gate.mark("b");
+    await tick();                       // a ran; the drain now waits in its host yield
+    expect(order).toEqual(["a"]);
+    gate.mark("c");                     // arrives mid-yield
+    await tick(); await tick();
+    expect(order).toEqual(["a"]);       // no second drain started c behind the first one's back
+    yielding.resolve();
+    await tick(); await tick();
+    expect(order).toEqual(["a", "b"]);
+    held.resolve();
+    await gate.idle();
+    expect(order).toEqual(["a", "b", "c"]);
+    expect(maxRunning).toBe(1);
+  });
+
+  test("a host yield that rejects is reported and the queue still drains", async () => {
+    const errors: unknown[] = [];
+    const done: string[] = [];
+    let yields = 0;
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: (key) => { done.push(key); },
+      yieldFn: async () => { if (++yields === 1) throw new Error("no host"); },
+      onError: (error, key) => { errors.push([String(error), key]); },
+    });
+    gate.mark("a"); gate.mark("b"); gate.mark("c");
+    await gate.idle();
+    expect(done).toEqual(["a", "b", "c"]);
+    expect(errors).toEqual([["Error: no host", undefined]]);
+  });
+
+  test("settle waits for the running key, drops queued keys and rejects later marks", async () => {
+    const held = deferred();
+    const starts: string[] = [];
+    const gate = new KeyedReconcileGate<string>({ reconcile: (key) => { starts.push(key); if (key === "a") return held.promise; }, yieldFn: async () => {} });
+    gate.mark("a"); gate.mark("b");
+    await tick();
+    let settled = false;
+    const stopping = gate.settle().then(() => { settled = true; });
+    gate.mark("c");
+    await tick();
+    expect(settled).toBe(false);
+    held.resolve();
+    await stopping;
+    expect(starts).toEqual(["a"]);
+    gate.mark("d");
+    await gate.idle();
+    expect(starts).toEqual(["a"]);
+  });
+});
+
 
 describe("ProjectionGate family discriminant", () => {
   test("the two coalesce engines tag coalesce; the accumulate engine tags accumulate", () => {

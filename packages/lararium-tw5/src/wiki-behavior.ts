@@ -42,7 +42,7 @@ export interface WikiBehaviorOptions {
    * cleanup run on demote, or undefined for none. Browser supplies nothing —
    * the disk projector is a node-held capability (fs), composed in, not forked.
    */
-  onBoot?: (ctx: IslandContext) => (() => void) | undefined;
+  onBoot?: (ctx: IslandContext) => (() => void | Promise<void>) | undefined;
   /**
    * Further #has caps the worker composes onto the wiki island's stack (e.g. the
    * `hasWikiSensorium` perceiver). They fold AFTER the base caps, so the dispatch and

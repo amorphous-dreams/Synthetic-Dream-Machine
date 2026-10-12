@@ -37,8 +37,8 @@
  *
  * Group routing (carrier-whole at rest, disk-projection#projection-routing):
  *   memetic-wikitext records form a tiddler-group keyed by the carrier root.
- *   A child change climbs `$fragment-parent` to the root; debounce keys per
- *   (bag, root); the flush renders the ROOT — one carrier, one file. A
+ *   A child change climbs `$fragment-parent` to the root; the gate queues each
+ *   root once across bags; reconcile renders the ROOT — one carrier, one file. A
  *   fragment URI never owns a disk path (bag-paths returns null for them).
  *
  * Echo suppression ranks (Confluence): the CONTENT-HASH gates carry the law —
@@ -62,9 +62,9 @@ import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
+import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedReconcileGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
-import type { ReadinessMap, WindowServo } from "@lararium/mesh";
+import type { ReadinessMap } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 import type { BagMirrorConfig } from "./bag-paths.js";
 
@@ -95,8 +95,6 @@ export interface LarDiskProjectorOptions {
    * true MOVE/promotion). Absent → the unlink clears every other mirror by path.
    */
   readonly bagsHolding?: (tiddlerUri: string) => Promise<readonly string[]>;
-  /** Debounce delay in ms (default 1000). */
-  readonly debounceMs?: number;
   /** Fired on every disk-ward refusal — the island routes it to the daemon VM. */
   readonly onRefusal?: (info: { bagId: string; uri: string; reason: string }) => void;
   /**
@@ -158,16 +156,6 @@ export interface LarDiskProjectorOptions {
    * bytes match disk skips silently (no event, no churn).
    */
   readonly syncedTree?: SyncedTree;
-  /**
-   * Self-regulation for the reconcile gate (the COALESCE servo), OPT-IN. The disk reconcile is
-   * variable-cost + bursty with no natural clock — exactly where a window servo pays (unlike a
-   * display gate, which stays frame-pinned). When set, the gate self-clocks on each reconcile's
-   * completion and grows/shrinks `debounceMs` toward `targetMs` (adaptWindow). `targetMs` is a
-   * reconcile-COST set-point (ms above which the window WIDENS) — NOT the window length; `minMs`/
-   * `maxMs` bound the window. Absent → fixed debounce (the proven default; the capability ships
-   * inert until an operator calibrates a real cost target).
-   */
-  readonly servo?: WindowServo;
 }
 
 /** Read a file and compare it byte-for-byte against `body`; a missing or
@@ -217,7 +205,7 @@ function fieldBlockTitle(text: string): string | undefined {
 /**
  * WHO OWNS a candidate path — read FROM DISK ALONE, no registry, no memory.
  *
- * The projector reconciles statelessly per carrier root on a debounce, so it holds nothing like
+ * The projector reconciles statelessly per carrier root through the keyed queue, so it holds nothing like
  * TW5's `$tw.boot.files` title→path map. Its uniquifier's free-path test must therefore read
  * "absent OR ALREADY MINE" — a plain `existsSync` test would write `title.tid` on the first boot
  * and `title_1.tid` on the second, growing one file per boot, which clobbers worse than the
@@ -263,9 +251,8 @@ export class LarDiskProjector {
    */
   readonly writing = new Set<string>();
 
-  /** The keyed coalesce gate (mesh/projection-nalu) — debounce per carrier-root URI, so a MOVE's
-   *  source-tombstone and destination-add settle into ONE level-triggered reconcile. Born in start(). */
-  private gate: KeyedCoalesceGate<string> | null = null;
+  /** Reconcile queue keyed by carrier-root URI. Born in start(). */
+  private gate: KeyedReconcileGate<string> | null = null;
   private _firstFlushDone = false;
 
   private _tw5: TW5Engine | null = null;
@@ -283,7 +270,6 @@ export class LarDiskProjector {
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
   private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
-  private readonly debounceMs: number;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly onConflict: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
@@ -293,14 +279,12 @@ export class LarDiskProjector {
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree | undefined;
-  private readonly servo: WindowServo | undefined;
 
   constructor(opts: LarDiskProjectorOptions) {
     this.mirrors      = opts.mirrors;
     this.carrierFileFn = opts.carrierFileFn;
     this.resolveByCid = opts.resolveByCid;
     this.bagsHolding  = opts.bagsHolding;
-    this.debounceMs   = opts.debounceMs ?? 1000;
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
     this.canonicalizeFn = opts.canonicalizeFn;
@@ -308,11 +292,6 @@ export class LarDiskProjector {
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree;
-    // The reconcile gate's COALESCE servo is OPT-IN — absent leaves the proven fixed debounce
-    // untouched (no default-on adaptive window; a guessed cost-target would silently mutate the
-    // proven path). The capability (self-clock + adaptWindow) is ready when an operator passes a
-    // servo with a real reconcile-cost `targetMs`.
-    this.servo = opts.servo;
   }
 
   /**
@@ -325,9 +304,9 @@ export class LarDiskProjector {
    * envelope; the projector reads it from the TW5 tiddler directly. `bag` is the
    * author's field and names nothing here.
    *
-   * Returns an unsubscribe fn.
+   * Returns an async unsubscribe that completes the running reconcile.
    */
-  start(tw5: TW5Engine): () => void {
+  start(tw5: TW5Engine): () => Promise<void> {
     this._tw5 = tw5;
     const wiki = tw5.$tw.wiki;
     // Group routing: a fragment record's change belongs to its carrier root.
@@ -347,16 +326,11 @@ export class LarDiskProjector {
 
     // LEVEL-TRIGGERED (K8s reconciliation prior-art): every change is a NUDGE to
     // reconcile this carrier root against the CURRENT settled VM state — never an edge that
-    // licenses a destructive action off a transient view. The keyed gate debounces per ROOT (not
-    // per bag+root) so a MOVE's source-tombstone and destination-add COALESCE into ONE reconcile
-    // that sees the final owner — closing the unlink/write race structurally (a per-(bag,root)
-    // flush + immediate gone-unlink would not coalesce).
-    const gate = new KeyedCoalesceGate<string>({
-      debounceMs: this.debounceMs,
-      // Return the reconcile PROMISE (not void) so the servo can self-clock on its completion +
-      // measure its true async cost (the sync-trigger/async-cost gap, closed Nagle-style).
-      onFlush: (rootUri) => this.reconcile(rootUri),
-      ...(this.servo ? { servo: this.servo } : {}),
+    // licenses a destructive action off a transient view. A MOVE's source-tombstone and
+    // destination-add mark one root. Reconcile reads settled VM state, so the last owner is visible;
+    // a mark during that read sets dirty and causes one more read when it completes.
+    const gate = new KeyedReconcileGate<string>({
+      reconcile: (rootUri) => this.reconcile(rootUri),
     });
     this.gate = gate;
     // NO FORM CUT. Every changed title reaches the gate — a `lar:` URI, `My Notes`, `$:/config/Foo`
@@ -367,24 +341,35 @@ export class LarDiskProjector {
     // down in `reconcile`: a title whose `$origin-bag` names no mirror drops there. That covers the
     // volatile plane (never persisted, so never stamped), `$:/state/`, `$:/temp/`, `$:/boot/` and
     // drafts (the in-wiki cascade routes them to unmirrored bags), and `$:/core` (named withholding).
-    // The cost the cut was also paying, undocumented: state churn no longer marks the gate for free.
-    // It is a debounce mark and a `getTiddler` + one field read per change — the reconcile is
+    // Each title change is one queue mark and a `getTiddler` + one field read — the reconcile is
     // level-triggered and idempotent, so a nudge that resolves to no mirror costs exactly that.
     const handler = (changes: Record<string, unknown>) => {
       for (const title of Object.keys(changes)) gate.mark(routeToRoot(title));
     };
     wiki.addEventListener?.("change", handler);
-    return () => { wiki.removeEventListener?.("change", handler); this.stop(); };
+    // The scan follows subscription in this synchronous turn. The gate starts in a microtask and
+    // yields between roots, so a mounted seed receives a complete, paced projection pass.
+    // Every title, system titles included: the residency bar below is the only bar (`getTiddlers`
+    // answers non-system titles alone).
+    const titles = (wiki as unknown as { allTitles?: () => string[] }).allTitles?.() ?? [];
+    const roots = new Set<string>();
+    for (const title of titles) roots.add(routeToRoot(title));
+    for (const rootUri of roots) {
+      const fields = wiki.getTiddler?.(rootUri)?.fields as Record<string, unknown> | undefined;
+      const bagId = fields?.["$origin-bag"];
+      if (typeof bagId === "string" && this.mirrors.some((mirror) => mirror.bagId === bagId)) gate.mark(rootUri);
+    }
+    return async () => { wiki.removeEventListener?.("change", handler); await this.stop(); };
   }
 
-  stop(): void {
-    this.gate?.dispose();
+  /** Resolve when no reconcile runs and no root waits in the queue. */
+  idle(): Promise<void> {
+    return this.gate?.idle() ?? Promise.resolve();
+  }
+
+  async stop(): Promise<void> {
+    await this.gate?.settle();
     this.writing.clear();
-    // Shutdown grace: pending coalesced observations land before the
-    // island unmounts. (Un-rendered debounced flushes lawfully die — the
-    // records hold truth; the next change or the ingest gesture's full
-    // scan re-projects. Losing an OBSERVATION costs a fresh-adoption
-    // decision; losing a render costs nothing durable.)
     this.syncedTree?.flush();
   }
 
@@ -394,7 +379,7 @@ export class LarDiskProjector {
    * naming a mirror) → flush that owner (render + write + cross-mirror cleanup).
    * Gone from the resolved view → unlink from every mirror whose bag no longer
    * holds it (a true delete; a bag still holding the carrier keeps its file). A
-   * MOVE shows its new owner here, the add having merged within the debounce.
+   * MOVE shows its new owner here because this read observes settled VM state.
    * Idempotent: a later nudge re-reconciles, so a transient "gone" self-heals
    * when the destination lands — the unlink can never be the final word for a
    * carrier a bag still holds.

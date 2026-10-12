@@ -33,7 +33,6 @@ function rig(bagsHolding?: (uri: string) => Promise<string[]>): { projector: Flu
   const projector = new LarDiskProjector({
     mirrors: [daemonWorkingMirror(root)],
     carrierFileFn: async () => file,
-    debounceMs: 1,
     ...(bagsHolding ? { bagsHolding } : {}),
   }) as unknown as Flushable;
   return { projector, root };

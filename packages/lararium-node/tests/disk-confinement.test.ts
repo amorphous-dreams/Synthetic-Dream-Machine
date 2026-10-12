@@ -87,7 +87,6 @@ describe("disk ward — refusal signal (the alert chain's first link)", () => {
       // derives from the URI (`carrierBaseRelPath`), so a `../`-laden title
       // escapes the root and the confinement ward refuses it.
       carrierFileFn: async () => ({ ext: ".mem", body: "never-rendered" }),
-      debounceMs: 1,
       onRefusal: (info) => refusals.push(info),
     });
     await (projector as unknown as { flush: (b: string, u: string) => Promise<void> })
@@ -115,7 +114,6 @@ describe("disk ward — cross-mirror stale-unlink guards on PATH, not bag", () =
           { bagId: "b", mirrorRoot: root },
         ],
         carrierFileFn: async () => ({ ext: ".mem", body: "the carrier body" }),
-        debounceMs: 1,
       });
       await (projector as unknown as { flush: (b: string, u: string) => Promise<void> })
         .flush("a", uri);
@@ -152,7 +150,6 @@ describe("disk ward — a working edit SHADOWS its canon copy, never deletes it"
         carrierFileFn: async () => ({ ext: ".mem", body: "the boot seed" }),
         // The carrier lives in BOTH bags — a working edit shadowing its canon copy.
         bagsHolding: async () => [WORKING, CANON],
-        debounceMs: 1,
       });
 
       // LOAD into working → flush the working owner (as a --to working ingest does).
