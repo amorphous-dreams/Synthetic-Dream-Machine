@@ -156,10 +156,11 @@ case "$verb" in
       add)
         # A freshly founded vessel lists its wiki before it holds a recipe; `wiki init` mints one and is idempotent.
         json_verb wiki init "$slug" --json >/dev/null
-        # FINDING, stated where it bites: a slug that names a [system] wiki (lares, lararium) mounts from the oracle plane,
-        # while `wiki init` and `wiki add-bag` write the CATALOG plane (a second [user] document and a catalog recipe).
+        # WHERE THIS LANDS: `wiki add-bag` writes the NODE's own composition (its catalog recipe), which shadows a
+        # system wiki's default (oracle) recipe for the node's mount, its live watch and `get --recipe` alike. A
+        # catalog never crosses, so an admitted leaf still mounts the default recipe.
         if lares wiki list | grep -q "^  $slug  *\[system\]"; then
-          printf '%s\n' "browser-ci: note: $slug is a [system] wiki; its mount reads the genesis oracle recipe (oracle lararium lares) before the catalog recipe this verb writes, so the node's \`get --recipe\` sees the bag and a mounting leaf does not; ingest into a bag the oracle recipe stacks (the default lar:///ha.ka.ba/bags/lares) to reach a leaf (see info: recipe.oracleRecipeShadowsCatalog)" >&2
+          printf '%s\n' "browser-ci: note: $slug is a [system] wiki; this verb writes the node's own recipe (its catalog), which the node's mount and \`get --recipe\` read, and which no leaf receives. An admitted leaf mounts the default recipe (oracle lararium lares): ingest into a bag that recipe stacks (the default lar:///ha.ka.ba/bags/lares) to reach a leaf (see info: recipe.leafReadsDefaultRecipe)" >&2
         fi
         json_verb wiki add-bag "$slug" "$uri" --json ;;
       # remove-bag answers in prose; its exit status carries the verdict.
@@ -208,7 +209,7 @@ case "$verb" in
         if (m && d) docs.push({ slug: m[1], kind: m[2], bag: m[3], doc: d[1] });
       }
       const mine = docs.filter((d) => d.slug === e.INFO_SLUG);
-      // A system wiki (lares, lararium) mounts from the ORACLE plane, whatever `wiki init` registered beside it.
+      // A system wiki (lares, lararium) registers its canon document on the ORACLE plane.
       const mounted = mine.find((d) => d.kind === "system") ?? mine.find((d) => d.kind === "user") ?? null;
       const stack = e.INFO_STACK.split("\n").filter((l) => l.startsWith("lar:"));
       process.stdout.write(JSON.stringify({
@@ -223,8 +224,9 @@ case "$verb" in
         recipe: {
           uri: "lar:///ha.ka.ba/bags/catalog/recipes/" + e.INFO_SLUG,
           bagStack: stack.length ? stack : null,
-          // The node reads the catalog recipe before the oracle one; the mount reads the oracle one first.
-          oracleRecipeShadowsCatalog: mine.some((d) => d.kind === "system"),
+          // One reader walks the planes catalog first, oracle second, on the node. A catalog never crosses, so
+          // a leaf mounting a system wiki reads the default (oracle) recipe whatever the node composed.
+          leafReadsDefaultRecipe: mine.some((d) => d.kind === "system"),
         },
         bags: e.INFO_BAGS.split("\n").filter((l) => l.startsWith("lar:")),
       }) + "\n");' ;;
