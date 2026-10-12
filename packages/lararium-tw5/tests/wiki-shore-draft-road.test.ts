@@ -372,8 +372,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     widget.render($tw.fakeDocument.createElement("div"), null);
     const find = (w: NavWidget): NavWidget | null => { if (typeof w.handleEditTiddlerEvent === "function") return w; for (const c of w.children ?? []) { const f = find(c); if (f) return f; } return null; };
     const navigator = find(widget)!;
-    const win = { confirm: () => true };
-    const event = (type: string, tiddlerTitle: string) => ({ type, tiddlerTitle, event: { view: win } });
+    const event = (type: string, tiddlerTitle: string) => ({ type, tiddlerTitle });
 
     navigator.dispatchEvent(event("tm-edit-tiddler", x));
     const d = draftTitleOf(x);
@@ -541,9 +540,8 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     widget.render($tw.fakeDocument.createElement("div"), null);
     const find = (w: NavWidget): NavWidget | null => { if (typeof w.handleEditTiddlerEvent === "function") return w; for (const c of w.children ?? []) { const f = find(c); if (f) return f; } return null; };
     const navigator = find(widget)!;
-    let asked = 0;
-    const win = { confirm: () => { asked++; return true; } };
-    const event = (type: string, tiddlerTitle: string) => ({ type, tiddlerTitle, event: { view: win } });
+    const asked = (): string[] => (r.engine.$tw as unknown as { wiki: { getTiddlersWithTag(tag: string): string[] } }).wiki.getTiddlersWithTag("$:/tags/Confirmation");
+    const event = (type: string, tiddlerTitle: string) => ({ type, tiddlerTitle });
 
     navigator.dispatchEvent(event("tm-edit-tiddler", x));
     const d = draftTitleOf(x);
@@ -556,7 +554,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     navigator.dispatchEvent(event("tm-cancel-tiddler", d));
     await afterDispatch();
     await turns(16);
-    expect(asked, "TiddlyWiki's own isDraftModified reads an untouched draft as unmodified").toBe(0);
+    expect(asked(), "TiddlyWiki's own isDraftModified reads an untouched draft as unmodified, so no question parks").toEqual([]);
     expect(storeDeleted(r, workingBag, d)).toBe(true);
 
     navigator.dispatchEvent(event("tm-edit-tiddler", z));

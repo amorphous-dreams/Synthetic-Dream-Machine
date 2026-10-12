@@ -132,6 +132,23 @@ Two absolute streams and one event leg. Neither side outranks the other (#/the-v
 
 <<~/ahu>>
 
+<<~ ahu #/the-question>>
+
+!! The question the wiki asks ~ one confirm road, rendered through layers 1 and 2
+
+''TiddlyWiki asks its confirm questions through the wiki itself.'' A handler that needs a person's answer (delete, discard a changed draft, overwrite on rename, edit a shadow, `$action-confirm`) parks ONE question as a tiddler under `$:/temp/confirm/`, tagged `$:/tags/Confirmation`, and exits having written nothing else. The root template renders the standing question through `$:/core/ui/ConfirmTemplate` as an alert dialog with its own two buttons. A button sends `tm-confirm`; on "yes" the engine dispatches the asking message again, so the handler runs from the top against the wiki as it then stands and finds its question answered. No closure resumes, and no blocking prompt stands anywhere on the road. Upstream's import flow (`$:/Import` parks, a button performs) names the idiom.
+
+# ''One mechanism, three places.'' The Node server's browser client, the single-file wiki and the island under a projected frame run the same wikitext and the same handlers. No code asks which host it stands in.
+# ''The question never persists and never syncs.'' `$:/temp/` falls outside TiddlyWiki's sync and saver filters, and the shore's `neverPersists` names `$:/temp/confirm/` and `$:/temp/alerts/`, so neither takes a store call. The question stays in the VM that raised it: two tabs over one shared island both see it and either may answer; another device never sees it.
+# ''One question stands at a time.'' A newer ask withdraws the older. An answer to a withdrawn question, or to one whose subject tiddlers changed in content since the ask, does nothing and says so on the alert rail. The comparison ignores the fields `$:/config/ConfirmIgnoredFields` lists; the grammar plugin sets that list to the landing envelope's fields, so a draft that lands while its question stands still answers.
+# ''The dialog reads as a modal by markup alone.'' The `$dialog` widget marks its element `aria-modal="true"` and sets `inert` on every sibling of itself and of each ancestor. Over the fake document those marks ride the frame, and the page's real nodes turn inert with no page code. The page keeps two generic rules, and neither knows what a modal asks: a frame that brings an `aria-modal` element moves focus to its first control (the declining button), and the frame that drops it returns focus by render-id; a keydown for Escape, or for any key pressed with ctrl, meta or alt, crosses on the click leg's own message and bubbles up the island's tree to the keyboard widget.
+# ''Headless, nobody presses.'' A message no person raised parks its question like any other, and the act does not happen. A script reads `[all[tiddlers]tag[$:/tags/Confirmation]]` and answers with `tm-confirm`; the verb doors (`lares act … --yes`) remain the headless road.
+# ''A plugin that still reaches for a blocking `confirm`'' keeps working where a window exists. In the island it meets the projected view's refusal, or throws at the dispatch boundary; both read by name on the alert rail.
+
+''What the road does not promise.'' Actions that follow a question in one action string run before the answer arrives; work that must wait belongs inside `$action-confirm`. The hooks `th-editing-tiddler` and `th-cancelling-tiddler` run before their questions, and so run again on the confirmed pass.
+
+<<~/ahu>>
+
 <<~ ahu #/what-a-replacement-un-skips>>
 
 !! What replacing the fake document UN-SKIPS
@@ -203,6 +220,6 @@ Seven tasked spirits, each handed a framing and NOT a conclusion, each held VERB
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;A6ujHClrzigJ6oyXhIBWxH5uJhrhgxD2NcuSkAj35ZY
+<<^ code="&#x0003;">>ni:///sha-256;qL3xK3vM7KcIj1IAuQx1-gSBgevPuiLloj_-bNPu-Jg
 
 <<^ code="&#x0004;" -> to="?">>

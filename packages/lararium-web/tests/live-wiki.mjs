@@ -18,6 +18,11 @@
  *                      refusal stands on the alert rail; the SAME profile, reloaded, reads 3 from its own store
  *   fresh-profile-aki  rung 2, the far half: a new profile with its own key and admit reads the stored field
  *                      (LIVE_WIKI_EXPECT_LEVEL, default 3)
+ *   confirm-roads      the wiki asks its own questions in the frame: a typed draft's Discard shows TiddlyWiki's
+ *                      dialog with focus on the declining button and the rest of the frame inert; Escape keeps
+ *                      the draft and its typed value; "Discard changes" closes it; an untouched draft's Discard
+ *                      asks nothing; Delete of a tiddler made in the walk asks, deletes on "Delete", and the
+ *                      reloaded profile finds no such title. No browser prompt opens anywhere
  *
  * WHERE THE SAVE LANDS. A saved edit lands in the wiki's WORKING layer; canon moves only by a residency move.
  * So the host reads the node AS THE WIKI between walks (`browser-ci.sh get <aki> --recipe lares` reads 3) and
@@ -155,7 +160,7 @@ async function withBrowser(run) {
   const trace = [];
   page.on("console", (message) => {
     const text = message.text();
-    if (/\[wiki-worker\] (error|stale-target)|CapabilityRefused|surface-unknown/.test(text)) errors.push(text);
+    if (/\[wiki-worker\] (error|stale-target|capability refused|handler refused)|CapabilityRefused|surface-unknown/.test(text)) errors.push(text);
     if (TRACE.test(text) || message.type() === "error") trace.push(`[${message.type()}] ${text}`);
   });
   page.on("pageerror", (error) => errors.push(`[page] ${error.message}`));
@@ -364,12 +369,114 @@ async function freshProfileAki() {
   });
 }
 
+/** The wiki's own question, as the projected frame shows it. */
+const question = (page) => page.locator('#projection .tc-confirm[role="alertdialog"][aria-modal="true"]');
+const focusedClass = (page) => page.evaluate(() => document.querySelector("#projection")?.shadowRoot?.activeElement?.className ?? "(nothing focused)");
+const frameInert = (page) => page.evaluate(() => document.querySelector("#projection")?.shadowRoot?.querySelector(".tc-page-container")?.hasAttribute("inert") ?? false);
+
+async function awaitQuestion(page, declineWord, acceptWord) {
+  await question(page).waitFor({ state: "visible", timeout: 30_000 });
+  await page.waitForFunction(() => (document.querySelector("#projection")?.shadowRoot?.activeElement?.className ?? "").includes("tc-confirm-decline"),
+    undefined, { timeout: 30_000 }).catch(() => {});
+  assert.match(await focusedClass(page), /tc-confirm-decline/, "focus starts on the declining button");
+  assert.equal((await question(page).locator(".tc-confirm-decline").innerText()).trim(), declineWord, "the declining button's word");
+  assert.equal((await question(page).locator(".tc-confirm-accept").innerText()).trim(), acceptWord, "the confirming button's word");
+  assert.equal(await frameInert(page), true, "the rest of the frame reads inert while the question stands");
+}
+
+async function confirmRoads() {
+  const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
+  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
+  await withBrowser(async (page, errors) => {
+    const prompts = [];
+    page.on("dialog", async (dialog) => { prompts.push(dialog.message()); await dialog.dismiss(); });
+    await admit(page, vesselUrl, gatePubKey);
+    await openAki(page);
+
+    // CONTROL: an untouched draft's Discard asks nothing.
+    await openLevelEditor(page);
+    await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
+    await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
+    assert.equal(await question(page).count(), 0, "an untouched draft closes with no question");
+    await page.waitForTimeout(WALK_SETTLE_MS);
+
+    // A typed draft: Discard asks; Escape keeps the draft and what the person typed.
+    const level = await openLevelEditor(page);
+    const typed = "7";
+    await level.fill(typed);
+    await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
+    await awaitQuestion(page, "Keep editing", "Discard changes");
+    assert.match(await question(page).locator(".tc-confirm-message").innerText(), /discard changes to the tiddler/, "the question carries TiddlyWiki's own sentence");
+    await page.keyboard.press("Escape");
+    await question(page).waitFor({ state: "detached", timeout: 30_000 });
+    assert.equal(await frameInert(page), false, "the frame reads live again");
+    assert.equal(await editFrame(page, AKI).count(), 1, "Escape keeps the draft open");
+    const kept = editFrame(page, AKI).locator("tr.tc-edit-field").filter({ hasText: `${LEVEL_FIELD}:` }).locator("input.tc-edit-fieldeditor");
+    assert.equal(await kept.inputValue(), typed, "and keeps the typed value");
+
+    // Discard again, and confirm.
+    await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
+    await awaitQuestion(page, "Keep editing", "Discard changes");
+    await question(page).locator(".tc-confirm-accept").click();
+    await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
+    assert.equal(await editFrame(page, AKI).count(), 0, "the draft frame leaves");
+    assert.equal(await viewFrame(page, AKI).count(), 1, "the view frame returns");
+    await page.waitForTimeout(WALK_SETTLE_MS);
+    await assertNoDraft(page, AKI, "confirmed discard");
+    const reread = await openLevelEditor(page);
+    assert.notEqual(await reread.inputValue(), typed, "the discarded value never reached the tiddler");
+    await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
+    await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
+
+    // Delete: a tiddler made in this walk, saved, then deleted from its draft's toolbar.
+    const made = "New Tiddler";
+    await page.locator('#projection button[title="Create a new tiddler"]').first().click();
+    await editFrame(page, made).waitFor({ state: "visible", timeout: 30_000 });
+    await editFrame(page, made).locator('button[title="Confirm changes to this tiddler"]').click();
+    await viewFrame(page, made).waitFor({ state: "visible", timeout: 30_000 });
+    await page.waitForTimeout(WALK_SETTLE_MS);
+    await viewFrame(page, made).locator('button[title="Edit this tiddler"]').click();
+    await editFrame(page, made).waitFor({ state: "visible", timeout: 30_000 });
+    await editFrame(page, made).locator('button[title="Delete this tiddler"]').click();
+    await awaitQuestion(page, "Keep", "Delete");
+    // Declining first: nothing moves.
+    await question(page).locator(".tc-confirm-decline").click();
+    await question(page).waitFor({ state: "detached", timeout: 30_000 });
+    assert.equal(await editFrame(page, made).count(), 1, "Keep leaves the draft standing");
+    await editFrame(page, made).locator('button[title="Delete this tiddler"]').click();
+    await awaitQuestion(page, "Keep", "Delete");
+    await question(page).locator(".tc-confirm-accept").click();
+    await question(page).waitFor({ state: "detached", timeout: 30_000 });
+    await page.waitForFunction((title) => !document.querySelector("#projection")?.shadowRoot
+      ?.querySelector(`.tc-tiddler-frame[data-tiddler-title="${title}"], .tc-tiddler-frame[data-tiddler-title="Draft of '${title}'"]`),
+      made, { timeout: 30_000 });
+    await page.waitForTimeout(WALK_SETTLE_MS);
+
+    // The SAME profile, reloaded: the deleted title stays gone.
+    await open(page, withGate(vesselUrl, gatePubKey));
+    await waitForLive(page);
+    await page.locator("#projection .tc-site-title").first().waitFor({ state: "visible", timeout: 60_000 });
+    const results = await search(page, made);
+    await page.waitForFunction(() => {
+      const root = document.querySelector("#projection")?.shadowRoot;
+      const count = [...(root?.querySelectorAll("button") ?? [])].find((b) => /\bmatches\b/.test(b.textContent ?? ""));
+      return /^\s*0 matches/.test(count?.textContent ?? "");
+    }, undefined, { timeout: 30_000 });
+    assert.equal(await results.getByText(made, { exact: true }).count(), 0, "the reloaded wiki holds no such title");
+
+    assert.deepEqual(prompts, [], "no browser prompt opened anywhere");
+    assert.deepEqual(errors, [], "the confirm roads emit zero page errors, worker errors or refusals");
+    console.log("confirm-roads OK — untouched Discard asked nothing; typed Discard asked in the frame (focus on \"Keep editing\", frame inert), Escape kept the draft and its value, \"Discard changes\" closed it; Delete asked, \"Keep\" kept, \"Delete\" deleted, and the reloaded profile finds no such title; no browser prompt");
+  });
+}
+
 const command = process.argv[2];
 if (command === "crossing") await crossing();
 else if (command === "render-aki") await renderAki();
 else if (command === "edit-aki") await editAki();
 else if (command === "fresh-profile-aki") await freshProfileAki();
+else if (command === "confirm-roads") await confirmRoads();
 else {
-  console.error("usage: node packages/lararium-web/tests/live-wiki.mjs crossing|render-aki|edit-aki|fresh-profile-aki");
+  console.error("usage: node packages/lararium-web/tests/live-wiki.mjs crossing|render-aki|edit-aki|fresh-profile-aki|confirm-roads");
   process.exitCode = 2;
 }

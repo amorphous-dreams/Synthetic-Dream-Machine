@@ -13,9 +13,10 @@ export interface TW5CoreBootBlob {
 export type TW5CoreBootInput = Uint8Array | TW5CoreBootBlob;
 
 /**
- * A projected TW5 event cannot borrow the main Window object. Hand event handlers the worker-local
- * `view.confirm` capability they read; a collision confirmation refuses by name until an
- * activation-preserving main-thread prompt can answer synchronously.
+ * A projected TW5 event cannot borrow the main Window object. The engine asks its own confirm questions
+ * through the wiki (a parked question tiddler, rendered in the frame), so nothing in core reads this view.
+ * A plugin that still reaches for `event.view.confirm` meets this worker-local capability, which refuses by
+ * name: a blocking prompt holds no place in an island.
  */
 export function makeProjectedViewContract(onRefusal?: (capability: "view.confirm", message: string) => void): { confirm(message: string): boolean } {
   return {
