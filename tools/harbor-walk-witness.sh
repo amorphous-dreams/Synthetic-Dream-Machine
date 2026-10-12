@@ -114,6 +114,12 @@ log=$(boot_log)
 result 'leg 2: the shim restarted the vessel by itself'         test "$before" != "$after"
 result 'leg 2: the lifted boot stands as a Lararium'            contains "$log" 'live — wiki:'
 result 'leg 2: the lifted boot left the waking floor'           not_contains "$log" 'WAKING FLOOR'
+# A vessel that first booted at the waking floor still attaches its working layer once a face lifts it: a save
+# through the daemon wiki lands in the working layer, never in the daemon's canon bag.
+result 'leg 2: the working layer attaches after the lift'       contains "$log" 'working layer attached'
+result 'leg 2: no working-layer attach got skipped'             not_contains "$log" 'working layer attach skipped'
+anchor=$(lares meme list --recipe default --json 2>&1 || :)
+result 'leg 2: the daemon wiki writes into its working layer'   contains "$anchor" 'wikis/daemon/working'
 before=$(started_at)
 lares persona list --json >/dev/null
 result 'control: a reading verb restarts nothing'               test "$before" = "$(started_at)"

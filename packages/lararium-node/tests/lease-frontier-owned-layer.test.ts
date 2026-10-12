@@ -23,7 +23,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, makeIslandRepo, attachMessageChannelSync,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
@@ -55,6 +55,10 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     schemaVersion: "lar/1",
     tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: cer.daemonUrl } } },
   } as unknown as LarDoc);
+  const catalog = vesselRepo.create<LarDoc>({
+    schemaVersion: "lar/1",
+    tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: cer.daemonUrl } } },
+  } as unknown as LarDoc);
 
   // The island's MAIN repo denies the daemon doc (owned-document split).
   // A plain MessageChannel (the global one) — the sync leg the kernel's island repo rides; no nested island stands.
@@ -72,8 +76,9 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     store.markSyncComplete();
   }
   const ctx = {
-    wikiUri: "lar:///ha.ka.ba/wikis/daemon", composite, tw5: {} as never, handles: new Map(), post: () => {},
-    repo: islandRepo, catalogUrl: null, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
+    wikiUri: "lar:///ha.ka.ba/wikis/daemon", composite, tw5: {} as never,
+    handles: new Map([[wikiBagUri("daemon"), daemonHandle]]), post: () => {},
+    repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
   } as never;
   const daemonAuth = {

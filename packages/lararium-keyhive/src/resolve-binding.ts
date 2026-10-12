@@ -91,16 +91,23 @@ export interface ResolveBindingResult {
   readonly minted: boolean;
 }
 
+export class BindingRegistrationRefusal extends Error {
+  constructor(bindingKey: string, bagUrl: string) {
+    super(`BindingRegistrationRefusal: binding ${bindingKey} cannot restore Keyhive registration for ${bagUrl}; perform a fresh start by hand because no compatibility reader can guess its document identity.`);
+    this.name = "BindingRegistrationRefusal";
+  }
+}
+
 /**
  * Resolve the bound doc URL for a (PersonaGroup × recipe-fingerprint) slot, or
  * mint + delegate + record it when absent.
  *
- * Reuse-on-present returns the stored URL WITHOUT minting or delegating — the
- * binding (and its delegation) already federated to this device through the
- * daemon-doc keyhive layer. Reuse MUST NOT block boot on a doc not yet
- * decryptable on this device (the two-phase Keyhive window): the caller mounts
- * the URL and the island surfaces it when sync delivers the BeeKEM key. See
- * personal-slot#lifecycle "authorized-but-undecryptable window".
+ * Reuse-on-present returns the stored URL without minting. A vessel-only record
+ * may re-grant after the face seats; its recorded Keyhive document ID restores
+ * the process-local bag mapping before delegation. Reuse MUST NOT block boot on
+ * a doc not yet decryptable on this device (the two-phase Keyhive window): the
+ * caller mounts the URL and the island surfaces it when sync delivers the BeeKEM
+ * key. See personal-slot#lifecycle "authorized-but-undecryptable window".
  */
 export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<ResolveBindingResult> {
   const key = `${args.prefix}/${args.fingerprint}`;
@@ -109,7 +116,8 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   const record = await args.daemonStore.get(key);
   const existing = tiddlerText(record);
   if (existing) {
-    await regrantOnSeat(args, key, existing, record?.tiddler as Record<string, unknown> | undefined);
+    const fields = record?.tiddler as Record<string, unknown> | undefined;
+    await regrantOnSeat(args, key, existing, fields);
     return { url: existing, minted: false };
   }
 
@@ -117,8 +125,9 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   const handle = args.repo.create<LarDoc>(emptyLarDoc());
 
   // delegate() throws unless the bag's Keyhive Document already exists, so
-  // registerBag mints it first. The minting device becomes implicit admin.
-  await args.keyhive.registerBag(handle.url);
+  // registerBag mints it first. The provider mapping is process-local, so the
+  // binding carries this document ID for the reuse path. The minting device is implicit admin.
+  const { docId: keyhiveDocId } = await args.keyhive.registerBag(handle.url);
 
   // COMPOSE A FACE ONTO THE VESSEL'S HOLD, where one stands. The vessel is already this document's
   // admin by having generated it; this delegation widens the hold to the operator's PersonaGroup so
@@ -133,7 +142,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   // A PIN IS STANDING; A SEAT IS CAPABILITY. A vessel admitted by edge alone pins the group's agent id and
   // holds no seat in the group yet — its veil cannot name that agent, and a delegation to it throws. The
   // binding then stays on the vessel's own key, the same posture a faceless vessel holds, and the record
-  // says so; a seat landing later re-grants the vessel's registered bags, never a binding minted before it.
+  // says so; a seated face re-grants a vessel-only binding when its resolver reuses it.
   const seated = args.personaGroupAgentIdHex ? await (args.faceSeated?.() ?? Promise.resolve(true)) : false;
   if (args.personaGroupAgentIdHex && seated) {
     if (args.delegateToFace) {
@@ -158,6 +167,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     "minted-on":   new Date().toISOString(),
     "minted-by":   args.mintedByHex,
     "face-reach":  seated ? "face" : "vessel-only",
+    "keyhive-doc-id": keyhiveDocId,
   }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 
   return { url: handle.url, minted: true };
@@ -180,6 +190,7 @@ async function regrantOnSeat(
   if (!args.personaGroupAgentIdHex) return;
   const seated = await (args.faceSeated?.() ?? Promise.resolve(true));
   if (!seated) return;
+  restoreBagRegistration(args, key, url, fields);
   if (args.delegateToFace) {
     await args.delegateToFace(url, "admin");
   } else {
@@ -196,4 +207,18 @@ async function regrantOnSeat(
     text:         url,
     "face-reach": "face",
   }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
+}
+
+/** A reused binding carries its Keyhive document identity beside its Automerge URL. */
+function restoreBagRegistration(
+  args: ResolveBindingArgs,
+  key: string,
+  url: string,
+  fields: Record<string, unknown> | undefined,
+): void {
+  const keyhiveDocId = fields?.["keyhive-doc-id"];
+  if (typeof keyhiveDocId !== "string" || keyhiveDocId.length === 0) {
+    throw new BindingRegistrationRefusal(key, url);
+  }
+  args.keyhive.adoptBag(url, keyhiveDocId);
 }

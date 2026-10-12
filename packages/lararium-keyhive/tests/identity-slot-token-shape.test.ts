@@ -17,6 +17,7 @@ const DOC = "automerge:doc-under-test";
 /** A provider that delegates a fixed event and clears exactly one (audience, bag) pair. */
 function fakeProvider(granted: { presenter: string; bagUrl: string }): CapabilityProvider {
   return {
+    adoptBag: () => {},
     delegate: async () => ({ delegationId: "deleg-1", bytes: new Uint8Array([1, 2, 3]) }),
     verify:   async (a: { presenter: string; bagUrl: string }) =>
       ({ ok: a.presenter === granted.presenter && a.bagUrl === granted.bagUrl }),

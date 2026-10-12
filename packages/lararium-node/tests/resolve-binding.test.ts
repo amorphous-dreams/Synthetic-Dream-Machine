@@ -40,6 +40,7 @@ function makeFakeKeyhive() {
   const registered: string[] = [];
   const delegations: DelegateArgs[] = [];
   const provider = {
+    adoptBag() {},
     async registerBag(bagUrl: string) {
       registered.push(bagUrl);
       return { docId: `doc-${bagUrl}` };

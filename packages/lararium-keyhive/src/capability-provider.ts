@@ -98,6 +98,9 @@ export interface CapabilityProvider extends CapabilityVerifier {
    *  Document for the bag (or looks up one already minted). */
   registerBag(bagUrl: string): Promise<{ docId: string }>;
 
+  /** Restore the process-local mapping for a document whose identity is carried by a binding record. */
+  adoptBag(bagUrl: string, docIdHex: string): void;
+
   delegate(args: DelegateArgs): Promise<DelegateResult>;
   revoke(delegationId: string): Promise<{ bytes: Uint8Array }>;
   verify(args: VerifyArgs): Promise<VerifyResult>;
