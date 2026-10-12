@@ -107,6 +107,29 @@ describe("lares receipt <requestId> (M14)", () => {
     expect(code).toBe(6);
   });
 
+  test("★ an `interrupted` receipt carries a hint beside the code, in the JSON error and on the prose path ★", async () => {
+    await standStub({ requestId: "req-int-hint", state: "interrupted" });
+    const cap = captured();
+    await cmdReceipt(jsonArgs(["req-int-hint"]));
+    cap.restore();
+    const payload = JSON.parse(cap.lines.join("")) as { error: { code: string; hint?: string } };
+    expect(payload.error.hint).toMatch(/change-id/);
+    expect(payload.error.hint).toMatch(/may have landed in part/);
+
+    const out: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
+    await cmdReceipt(parseArgs(["receipt", "req-int-hint", "--no-json"]));
+    expect(out.join("\n")).toMatch(/change-id/);
+  });
+
+  test("CONTROL: a `done` receipt carries no hint", async () => {
+    await standStub({ requestId: "req-done-nohint", state: "done" });
+    const cap = captured();
+    await cmdReceipt(jsonArgs(["req-done-nohint"]));
+    cap.restore();
+    expect(JSON.parse(cap.lines.join(""))).not.toHaveProperty("error");
+  });
+
   test("★ an `evicted` receipt (M1 — the receipt ring dropped this id past retention) reads its own code, retention-gap ★", async () => {
     await standStub({ requestId: "req-evicted", state: "evicted" });
     const cap = captured();
@@ -115,6 +138,7 @@ describe("lares receipt <requestId> (M14)", () => {
     const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
     expect(payload.ok).toBe(false);
     expect(payload.error.code).toBe("retention-gap");
+    expect((payload.error as { hint?: string }).hint).toMatch(/fresh request/);
     expect(code).not.toBe(0);
     expect(code).toBe(6); // the same exit family as outcome-unknown/request-abandoned
   });

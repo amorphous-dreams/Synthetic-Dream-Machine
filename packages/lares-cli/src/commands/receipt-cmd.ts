@@ -18,6 +18,7 @@
 
 import { queryReceipt, cancelRequest, UdsUnreachable, type ReceiptAnswer } from "../local-connector.js";
 import { emit, exitFor } from "../render.js";
+import { refusalHint } from "../verb-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 function printReceiptUsage(verb: "receipt" | "cancel"): void {
@@ -35,6 +36,18 @@ function codeFor(state: ReceiptAnswer["state"]): string {
     case "unknown":    return "not-found";
     default:           return "ok"; // "committed" | "done"
   }
+}
+
+/**
+ * The cure beside a refusal code, the same words `lares act` carries. The receipt door knows no
+ * change id and no verb, so an `interrupted` id cannot claim a re-run is safe: it names the
+ * effect index that answers what landed.
+ */
+function hintFor(code: string): string | undefined {
+  if (code === "request-interrupted") {
+    return "the vessel stopped while this request ran, so its effect may have landed in part. If the original gesture carried a `--change-id`, re-run it with that same id: the effect index answers what landed without running it twice.";
+  }
+  return refusalHint(code, undefined);
 }
 
 async function runReadOnlyDoor(
@@ -64,13 +77,15 @@ async function runReadOnlyDoor(
 
   const code = codeFor(answer.state);
   const ok   = code === "ok";
+  const hint = ok ? undefined : hintFor(code);
   emit(args, {
     ok, requestId,
     data: { state: answer.state, ...(answer.results !== undefined ? { results: answer.results } : {}) },
-    ...(ok ? {} : { error: { code, message: answer.errorMessage ?? `request ${requestId} reads "${answer.state}"` } }),
+    ...(ok ? {} : { error: { code, message: answer.errorMessage ?? `request ${requestId} reads "${answer.state}"`, ...(hint !== undefined ? { hint } : {}) } }),
     human: () => {
       console.log(`${verb} ${requestId}: ${answer.state}`);
       if (answer.errorMessage !== undefined) console.log(`  ${answer.errorMessage}`);
+      if (hint !== undefined) console.log(`  ${hint}`);
       if (answer.results !== undefined) console.log(`  results: ${JSON.stringify(answer.results)}`);
     },
   });
