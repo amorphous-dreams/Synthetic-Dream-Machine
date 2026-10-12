@@ -1,4 +1,8 @@
-/** Wiki changes equal to landed state are foam; every other resident title is a hand for its per-title gate. */
+/**
+ * Wiki changes equal to landed state are foam; every other resident title is a hand for its per-title gate.
+ * A title that already holds a hand (marked, or sent and not yet landed) is never foam: its change re-marks it,
+ * so the flush reads the title's state at flush even when that state has returned to the landed value.
+ */
 import type { TW5Engine } from "./tw5-vm.js";
 import type { IslandAdaptor } from "./island-adaptor.js";
 
@@ -17,8 +21,9 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
     if (!adaptor.isResident()) return;
   for (const [title] of Object.entries(changes ?? {})) {
       const current = wiki.getTiddler(title) ?? null;
-      if (adaptor.isFoam(title, current)) continue;
-      if (adaptor.wasSent(title, current)) continue;
+      const held = adaptor.holdsHand(title);
+      if (!held && adaptor.isFoam(title, current)) continue;
+      if (!held && adaptor.wasSent(title, current)) continue;
       if (current) {
         void adaptor.saveTiddler(current).catch((err: unknown) => console.warn(`[outbound-bridge] save "${title}" faulted: ${String(err)}`));
       } else {

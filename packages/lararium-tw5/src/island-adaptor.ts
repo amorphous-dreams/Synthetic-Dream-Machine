@@ -3,6 +3,11 @@
  * WaveLanding meets queued waves with unsent hands before using the packed engine as a synchronous
  * applier. HandGate paces absolute per-title writes and carries the ledger heads as their base.
  *
+ * A mark names a TITLE. What leaves at a flush is the title's state in the wiki at that flush: a state
+ * equal to the landed value with nothing sent since leaves nothing, a title the store never saw and the
+ * wiki no longer holds raises no tombstone, and a state that differs from a write still in flight leaves
+ * after it. A placed root's marked slot children ride the root's family, so the family lands as one change.
+ *
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/island-adaptor
  */
 
@@ -113,6 +118,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly sent = new Map<string, unknown>();
   private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
   private readonly lastWriteBag = new Map<string, string>();
+  /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
+  private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
   private readonly pendingHand = new Set<string>();
   private resident = false;
@@ -160,6 +167,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   wasSent(title: string, value: unknown): boolean { return this.sent.get(title) === value; }
 
+  /** True while a hand stands for the title: marked for a flush, or sent and not yet landed by its wave. */
+  holdsHand(title: string): boolean {
+    return this.gate.has(title) || this.pendingHand.has(title) || this.sent.has(title);
+  }
+
   private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
     const title = change.title;
     const wiki = this.tw5.$tw.wiki;
@@ -191,13 +203,18 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const standing = wiki.getTiddler(title) ?? null;
     const known = entry ? entry.tiddler : null;
     if (this.landing?.isStopped()) return;
-    const isHand = !handSettled && this.resident && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing);
+    // A marked title holds a hand even when its state has returned to the landed value: the flush decides
+    // from the state at flush, and a write still in flight for it must be superseded before this wave lands.
+    const marked = this.gate.has(title) || this.pendingHand.has(title);
+    const isHand = !handSettled && this.resident
+      && (marked || (!same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) {
       for (let pass = 0; pass < 8; pass++) {
         const wrote = await this._leaveNow(title);
         const latest = wiki.getTiddler(title) ?? null;
         const currentEntry = this.ledger.landedOf(title);
-        const unsent = !same(latest, currentEntry ? currentEntry.tiddler : null) && !(this.sent.has(title) && this.sent.get(title) === latest);
+        const unsent = this.gate.has(title) || this.pendingHand.has(title)
+          || (!same(latest, currentEntry ? currentEntry.tiddler : null) && !(this.sent.has(title) && this.sent.get(title) === latest));
         if (wrote) {
           if (unsent) continue;
           return;
@@ -218,6 +235,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     this.sent.delete(title);
     this.handBase.delete(title);
+    this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
   }
 
@@ -525,9 +543,29 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   private async _flushHandImpl(title: string): Promise<void> {
+    // A flush queued behind a failed one still tries: the earlier write's fault belongs to its own waiters.
     const prior = this.inFlight.get(title);
-    if (prior) await prior;
+    if (prior) await prior.catch(() => {});
+    // ABSOLUTE STATE: what leaves is the title's state at flush. A caller that handed a value the wiki does
+    // not hold (`handed`) is the one exception, and its value stands in for the wiki's.
     const state = this.handed.has(title) ? this.handed.get(title)! : this.tw5.$tw.wiki.getTiddler(title) ?? null;
+    // A state equal to what the last wave landed, with nothing sent since, owes the store nothing: the hand
+    // returned to the landed value inside its window. A title the store never saw and the wiki no longer
+    // holds raises no tombstone. A state identical to the value already sent owes nothing either.
+    const landed = this.ledger.landedOf(title);
+    // The ledger answers only once the seed wave has rebuilt it (a resident shore), and never for a title
+    // this shore wrote whose wave has not landed: there the state leaves and the store decides.
+    const settled = this.sent.has(title)
+      ? this.sent.get(title) === state
+      : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null);
+    if (settled) {
+      if (this.handed.get(title) === state) this.handed.delete(title);
+      this.pendingHand.delete(title);
+      if (!this.sent.has(title)) this.handBase.delete(title);
+      this.lastFlushWrote.set(title, false);
+      this.failedAtTeardown.delete(title);
+      return;
+    }
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
     const ackBefore = this.writeAcks.get(title) ?? 0;
     let writeBag: string | undefined;
@@ -576,6 +614,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
       this.lastFlushWrote.set(title, acknowledged);
       if (writeBag) this.lastWriteBag.set(title, writeBag);
+      this.unlanded.add(title);
       if (!acknowledged) this.sent.delete(title);
       if (this.handed.get(title) === state) this.handed.delete(title);
       this.pendingHand.delete(title);
@@ -623,7 +662,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
     }
     this.pendingHand.add(title);
-    this.handed.set(title, tiddler);
+    // A mark names the title; the flush reads the wiki. Only a value the wiki does not hold rides pinned.
+    if ((this.tw5.$tw.wiki.getTiddler(title) ?? null) === tiddler) this.handed.delete(title);
+    else this.handed.set(title, tiddler);
     return this.gate.mark(title, () => this._flushHand(title));
   }
 
@@ -645,7 +686,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
     }
     this.pendingHand.add(title);
-    this.handed.set(title, null);
+    if (this.tw5.$tw.wiki.getTiddler(title)) this.handed.set(title, null);
+    else this.handed.delete(title);
     return this.gate.mark(title, () => this._flushHand(title));
   }
 
@@ -751,7 +793,44 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       }
     }
 
-    await this.store.writeFamily(puts, familyTombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
+    // A PLACED ROOT CARRIES ITS MARKED SLOTS. The flush reads the wiki's state, and a root the wiki already
+    // holds in placed form splits into no children: its slot children stand as their own wiki tiddlers, each
+    // with its own mark. They ride this family so the root and its slots still land as one change: a marked
+    // child the wiki holds joins the puts, a marked child the wiki dropped joins the tombstones, and each
+    // reads as sent so its own flush finds nothing left to write.
+    const rode: Array<{ uri: string; value: unknown | null; acks: number }> = [];
+    if (children.length === 0 && cut < 0 && fields["draft.of"] === undefined) {
+      const wiki = this.tw5.$tw.wiki;
+      const marked = (uri: string): boolean => (this.gate.has(uri) || this.pendingHand.has(uri)) && !this.handed.has(uri);
+      // Slot children carry the root's address plus a fragment, so the marked titles alone name them.
+      for (const uri of this.pendingHand) {
+        if (!uri.startsWith(`${title}#`) || !marked(uri)) continue;
+        const entry = this.ledger.landedOf(uri);
+        if (((entry?.bag as SlotUri | undefined) ?? targetBag) !== targetBag) continue;
+        const standing = wiki.getTiddler(uri) as { fields?: Record<string, unknown> } | undefined;
+        if (standing) {
+          if (standing.fields?.["$fragment-parent"] !== title) continue;
+          const { "$origin-bag": _slotOrigin, ...persistedSlot } = extractFields(this.tw5, standing);
+          puts.push(toLarTiddlerRecord({ ...persistedSlot, title: uri }));
+          rode.push({ uri, value: standing, acks: this.writeAcks.get(uri) ?? 0 });
+        } else if (entry?.tiddler) {
+          familyTombstones.push(uri);
+          rode.push({ uri, value: null, acks: this.writeAcks.get(uri) ?? 0 });
+        }
+      }
+      for (const member of rode) this.sent.set(member.uri, member.value);
+    }
+
+    try {
+      await this.store.writeFamily(puts, familyTombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
+    } catch (error) {
+      for (const member of rode) if (this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
+      throw error;
+    }
+    // A member the store took as a noop raises no envelope, so no return wave will clear its `sent`.
+    for (const member of rode) {
+      if ((this.writeAcks.get(member.uri) ?? 0) === member.acks && this.sent.get(member.uri) === member.value) this.sent.delete(member.uri);
+    }
     for (const { uri, slot } of strayTombstones) await this.store.tombstoneInBag(slot, uri, origin);
 
   }
