@@ -115,6 +115,33 @@ describe("MOVE carries an ordinary tombstone to the chosen holder", () => {
     } finally { await r.repo.shutdown(); }
   });
 
+  test("a tombstoned member the target does not hold stays in the source and the answer names it", async () => {
+    const r = await rig();
+    try {
+      for (const title of ["R", "R#/a"]) await r.stores.get(canonBag)!.put(live(title), hand);
+      for (const title of ["R", "R#/a", "R#/only-in-source"]) await r.stores.get(workingBag)!.tombstone(title, hand);
+      const result = await r.run(workingBag, canonBag, "R");
+      expect(result).toMatchObject({ moved: 2, carried: "tombstone", left: ["R#/only-in-source"] });
+      expect(await r.stores.get(canonBag)!.get("R#/only-in-source"), "the target takes no tombstone for a title it never held").toBeNull();
+      expect(await r.stores.get(workingBag)!.get("R#/only-in-source")).toMatchObject({ meta: { deleted: true } });
+      expect(await r.stores.get(workingBag)!.get("R#/a")).toBeNull();
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("a move naming one bag as source and target refuses by name and writes nothing", async () => {
+    const r = await rig();
+    try {
+      await r.stores.get(canonBag)!.put(live("T"), hand);
+      await r.stores.get(workingBag)!.tombstone("T", hand);
+      await r.stores.get(workingBag)!.put(live("L"), hand);
+      const heads = [canonBag, workingBag].map((bag) => r.stores.get(bag)!.headsNow());
+      await expect(r.run(workingBag, workingBag)).rejects.toMatchObject({ name: "MoveWithinOneBagRefusal" });
+      await expect(r.run(workingBag, workingBag, "L")).rejects.toMatchObject({ name: "MoveWithinOneBagRefusal" });
+      expect([canonBag, workingBag].map((bag) => r.stores.get(bag)!.headsNow())).toEqual(heads);
+      expect(await r.stores.get(workingBag)!.get("L")).toMatchObject({ tiddler: { text: "L" } });
+    } finally { await r.repo.shutdown(); }
+  });
+
   test("dry-run captures destination tombstones and source retracts without moving heads", async () => {
     const r = await rig();
     try {

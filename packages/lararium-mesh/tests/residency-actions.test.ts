@@ -131,6 +131,21 @@ describe("newChangeId", () => {
 // ---------------------------------------------------------------------------
 
 describe("parseResidencyAction — valid cases", () => {
+  test("the shadow ask rides a MOVE alone, as true, and round-trips through the args bag", () => {
+    const transfer = { title: "T", "from-bag": "lar:///ha.ka.ba/wikis/w/working", "to-bag": "lar:///ha.ka.ba/bags/w", "change-id": "c-shadow" };
+    const move = parseResidencyAction(makeInvocation("MOVE", { ...transfer, shadow: true }));
+    expect(move).toMatchObject({ verb: "MOVE", shadow: true });
+    expect(encodeResidencyArgs(move!)).toMatchObject({ shadow: true });
+    // CONTROL: a MOVE without the ask carries no shadow member.
+    const plain = parseResidencyAction(makeInvocation("MOVE", transfer));
+    expect(plain).not.toBeNull();
+    expect(plain).not.toHaveProperty("shadow");
+    expect(encodeResidencyArgs(plain!)).not.toHaveProperty("shadow");
+    expect(parseResidencyAction(makeInvocation("MOVE", { ...transfer, shadow: "yes" }))).toBeNull();
+    expect(parseResidencyAction(makeInvocation("ADD", { ...transfer, shadow: true }))).toBeNull();
+    expect(parseResidencyAction(makeInvocation("COPY", { ...transfer, shadow: true }))).toBeNull();
+  });
+
   test("parses ADD with title + from-bag + to-bag + change-id", () => {
     const inv = makeInvocation("ADD", {
       title:       "MyTiddler",

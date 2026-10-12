@@ -242,6 +242,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
       .map((r) => _titleOf(r));
   }
 
+  /** The titles this bag holds as tombstones: what a residency move that carries a tombstone reads. */
+  listTombstoned(): string[] {
+    const tiddlers = this.handle.doc()?.tiddlers;
+    if (!tiddlers) return [];
+    return Object.entries(tiddlers as Record<string, LarTiddlerRecord>).filter(([, r]) => r && _isDeleted(r)).map(([title]) => title);
+  }
+
   async get(title: string): Promise<LarTiddlerRecord | null> {
     const raw = this.handle.doc()?.tiddlers?.[title];
     return raw ? _freezeRecord(raw) : null;

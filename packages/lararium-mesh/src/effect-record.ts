@@ -415,6 +415,9 @@ export async function withEffectRecord<T>(
   mutate: () => Promise<T>,
   opts?: MapOptions,
 ): Promise<T> {
+  // The effect rows derive once before the mutation (an action with no honest rows refuses before any bag
+  // changes) and again after it, since a MOVE's road reads from what the executor answered.
+  mapActionToEffects(action, opts);
   const result  = await mutate();
   const effects = mapActionToEffects(action, { ...opts, result });
   for (const effect of effects) {

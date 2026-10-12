@@ -50,6 +50,11 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
   private _records = new Map<string, LarTiddlerRecord>();
   private _subscribers: ((change: LarTiddlerChange) => void)[] = [];
 
+  /** The titles this store holds as tombstones. */
+  listTombstoned(): string[] {
+    return [...this._records].filter(([, rec]) => rec.meta?.deleted === true).map(([title]) => title);
+  }
+
   async listVisible(): Promise<string[]> {
     const out: string[] = [];
     for (const [title, rec] of this._records) {

@@ -1425,24 +1425,46 @@ function groupOf(titles: readonly string[], root: string): string[] {
 
 async function executeMove(action: MoveAction, access: BagAccess): Promise<Record<string, unknown>> {
   const o = origin(action);
+  // A bag never moves a title onto itself: landing and then retracting in one bag would delete the title.
+  if (action.fromBag === action.toBag) throw new MoveWithinOneBagRefusal(action.title, action.fromBag);
   const rootRecord = await readFromBag(access, action.fromBag, action.title);
   if (rootRecord?.meta?.deleted) {
+    // THE TOMBSTONE ROAD. The source record stands as a tombstone, so the move carries the delete down.
+    // Everything gets read and refused BEFORE the first write: both bags must take a write, and the
+    // target must hold the title (or the hand must have asked for a shadow).
+    const sourceStore = await access.write(action.fromBag);
+    if (!sourceStore) throw new Error(`MOVE: source bag "${action.fromBag}" unreachable — cannot retract its tombstone (no silent misroute).`);
     const targetRecord = await readFromBag(access, action.toBag, action.title);
     const targetHoldsTitle = targetRecord !== null && targetRecord.meta?.deleted !== true;
     if (!targetHoldsTitle && action.shadow !== true) throw new TombstoneTargetHoldsNothingRefusal(action.title, action.toBag);
-    const candidates = targetHoldsTitle
-      ? groupOf((await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t)), action.title)
-      : [action.title];
-    const tombstones = [action.title, ...candidates.filter((t) => t !== action.title)];
-    const group: string[] = [];
-    for (const title of tombstones) {
-      const source = await readFromBag(access, action.fromBag, title);
-      if (source?.meta?.deleted) group.push(title);
+    // The family reads from the SOURCE: the title's own tombstone plus every tombstone of its group there
+    // (a store that lists none answers the title alone plus each group member the target holds live).
+    const lister = (await access.read(action.fromBag)) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null;
+    const sourceTombstones = typeof lister?.listTombstoned === "function"
+      ? groupOf(lister.listTombstoned().filter((t) => !isEffectRecordUri(t)), action.title)
+      : [];
+    const family = new Set<string>([action.title, ...sourceTombstones]);
+    if (typeof lister?.listTombstoned !== "function") {
+      for (const t of groupOf((await listLiveTitlesInBag(access, action.toBag)).filter((x) => !isEffectRecordUri(x)), action.title)) {
+        if ((await readFromBag(access, action.fromBag, t))?.meta?.deleted) family.add(t);
+      }
     }
-    if (!group.includes(action.title)) group.unshift(action.title);
-    for (const title of group) await tombstoneIn(access, action.toBag, title, o);
-    for (const title of group) await removeIn(access, action.fromBag, title, o);
-    return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved: group.length, carried: "tombstone", ...(action.shadow === true && !targetHoldsTitle ? { shadow: true } : { shadow: false }) };
+    // A member's delete takes place where the target holds that member; under a shadow ask every member
+    // lands. A member the target does not hold stays a tombstone in the source and the answer names it.
+    const carried: string[] = [];
+    const left: string[] = [];
+    for (const t of family) {
+      if (t === action.title || action.shadow === true) { carried.push(t); continue; }
+      const held = await readFromBag(access, action.toBag, t);
+      if (held !== null && held.meta?.deleted !== true) carried.push(t); else left.push(t);
+    }
+    for (const t of carried) await tombstoneIn(access, action.toBag, t, o);
+    for (const t of carried) await removeIn(access, action.fromBag, t, o);
+    return {
+      title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId,
+      moved: carried.length, carried: "tombstone", shadow: action.shadow === true && !targetHoldsTitle,
+      ...(left.length > 0 ? { left, note: `the target holds no record for ${left.length} tombstoned member(s) of this title's group; each stays a tombstone in ${action.fromBag}` } : {}),
+    };
   }
   if (action.shadow === true) throw new ShadowRequiresTombstoneRefusal(action.title);
   // Carrier-group MOVE: a MOVE of a carrier root
@@ -1482,6 +1504,14 @@ export class TombstoneTargetHoldsNothingRefusal extends Error {
   constructor(title: string, bag: string) {
     super(`MOVE: ${title} in ${bag}: this bag does not hold the title; to hide it for everyone who composes this bag above its holders, ask for a shadow (--shadow)`);
     this.name = "TombstoneTargetHoldsNothingRefusal";
+  }
+}
+
+export class MoveWithinOneBagRefusal extends Error {
+  readonly code = "MOVE_WITHIN_ONE_BAG";
+  constructor(title: string, bag: string) {
+    super(`MOVE: ${title}: --from and --to both name ${bag}; a move needs two bags. Name the bag the title moves into.`);
+    this.name = "MoveWithinOneBagRefusal";
   }
 }
 

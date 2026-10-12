@@ -409,7 +409,8 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     const changeId = str("change-id");
     if (!title || !fromBag || !toBag || !changeId) return null;
     const shadow = inv.action === "MOVE" && args["shadow"] === true ? { shadow: true as const } : {};
-    if (inv.action === "MOVE" && args["shadow"] !== undefined && args["shadow"] !== true) return null;
+    // The shadow ask rides a MOVE alone, and only as `true`.
+    if (args["shadow"] !== undefined && (inv.action !== "MOVE" || args["shadow"] !== true)) return null;
     return { ...base, verb: inv.action, title, fromBag, toBag, changeId, ...shadow };
   }
 

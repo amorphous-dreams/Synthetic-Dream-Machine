@@ -63,7 +63,7 @@ describe("lares act MOVE carrying a tombstone", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdAct(actArgs(["MOVE"], { title: T, from: WORKING }))).toBe(2);
     expect(h.calls.map((c) => c.verb)).toEqual(["where"]);
-    expect(lines).toEqual([CANON, "lar:///ha.ka.ba/bags/library", "name the bag where the delete takes place with --to <bag>"]);
+    expect(lines).toEqual(["bags holding the title:", CANON, "lar:///ha.ka.ba/bags/library", "name the bag where the delete takes place with --to <bag>"]);
   });
 
   test("wiki resolve names the bag that hides a title and prints no winner for it", async () => {
@@ -85,6 +85,13 @@ describe("lares act MOVE carrying a tombstone", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdAct(actArgs(["ADD"], { title: T, from: WORKING }))).toBe(2);
     expect(await cmdAct(actArgs(["COPY"], { title: T, from: WORKING }))).toBe(2);
+    expect(h.calls).toEqual([]);
+  });
+
+  test("the shadow ask on ADD or COPY refuses by usage and touches no wire", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await cmdAct(actArgs(["ADD"], { title: T, from: WORKING, to: CANON }, { shadow: true }))).toBe(2);
+    expect(await cmdAct(actArgs(["COPY"], { title: T, from: WORKING, to: CANON }, { shadow: true }))).toBe(2);
     expect(h.calls).toEqual([]);
   });
 });

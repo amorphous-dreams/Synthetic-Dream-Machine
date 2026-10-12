@@ -269,6 +269,10 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       console.error(`lares act ${verb}: --title, --from, --to all required`);
       return 2;
     }
+    if (verb !== "MOVE" && args.flags["shadow"]) {
+      console.error(`lares act ${verb}: --shadow rides a MOVE of a tombstone alone`);
+      return 2;
+    }
     if (verb === "MOVE" && !toBag) {
       try {
         const did = await vesselDid();
@@ -278,10 +282,12 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
           console.error("lares act MOVE: --title, --from, --to all required");
           return 2;
         }
+        console.log("bags holding the title:");
         for (const bag of holders.filter((candidate) => candidate !== fromBag)) console.log(bag);
         console.log("name the bag where the delete takes place with --to <bag>");
       } catch (err) {
-        console.error(`lares act MOVE: could not read candidates: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(`lares act MOVE: could not read the bags holding ${title}: ${err instanceof Error ? err.message : String(err)}`);
+        return 4;
       }
       return 2;
     }
