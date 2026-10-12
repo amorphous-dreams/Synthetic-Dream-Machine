@@ -5,9 +5,12 @@
  *   · an introduction stands only as its guest signed it: each field tampered in turn refuses by name, and a
  *     signature by any key but the named introducer refuses;
  *   · it stands only in the hearth's Nexus and at one of its live hosting epochs;
- *   · THE CONSUMPTION: an answer holds no byte of the introducer's key or of the signature, two guests'
- *     answers for one newcomer read alike, and an answer's keys stand fixed;
- *   · the friend who holds the nonce's secret owns the answer, and nobody else does;
+ *   · a small-order introducer key, which signs for anyone under a lenient verify, refuses;
+ *   · THE CONSUMPTION: an answer rides sealed to the newcomer's key. Opened, it holds no nonce, no key and no
+ *     signature of the introduction; sealed, it shares no byte with it and reads the same length whether it
+ *     admits or declines; two guests' answers for one newcomer open alike;
+ *   · the friend who holds the secret opens the answer, and nobody else does;
+ *   · a guard never throws at a hostile object;
  *   · the open-introductions dial reads a count per proven key and no clock;
  *   · a decline mints nothing, an admit mints once, and the minted token verifies at the hearth's epoch;
  *   · an introduction's signature verifies as no hosting act;
@@ -16,13 +19,14 @@
 import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
+import { ed25519 as ed25519Curve } from "@noble/curves/ed25519.js";
 import { canonicalJsonBytes, hex, hexToBytes } from "../src/crypto.js";
 import { HOSTING_ACT_DOMAIN, HOSTING_INTRODUCTION_DOMAIN } from "../src/domains.js";
 import { hostingActBytes, mintHostingAct, mintHostToken, tokenVerifiesAt, type InviteToken } from "../src/hosting.js";
 import {
-  IntroductionError, answerIntroduction, answerIsFor, introductionBytes, isAnswer, isIntroduction,
-  newcomerNonceOf, openSlots, signIntroduction, verifyIntroduction,
-  type Introduction, type IntroductionFields,
+  IntroductionError, answerIntroduction, introductionBytes, isAnswer, isIntroduction, isSealedAnswer,
+  newcomerKeyOf, openAnswer, openSlots, signIntroduction, verifyIntroduction,
+  type Answer, type Introduction, type IntroductionFields,
 } from "../src/introduction.js";
 
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -40,7 +44,7 @@ async function standing(guest: Uint8Array = GUEST, secret: Uint8Array = FRIEND_S
   const current = await mintHostingAct({ leafSeed: HEARTH, nexusAid: NEXUS, prev: previous.cid, cap: 3 });
   const live = { nexus: NEXUS, epochs: [current.cid, previous.cid] };
   const fields: IntroductionFields = {
-    nexus: NEXUS, epoch: current.cid, newcomerNonce: newcomerNonceOf(secret), introducer: await pubOf(guest),
+    nexus: NEXUS, epoch: current.cid, newcomerKey: newcomerKeyOf(secret), introducer: await pubOf(guest),
   };
   const intro = await signIntroduction(fields, signerOf(guest));
   return { previous, current, live, fields, intro };
@@ -63,12 +67,12 @@ describe("an introduction stands only as its guest signed it", () => {
     expect(refusalOf({ ...intro, epoch: flip(intro.epoch) })).toEqual({ ok: false, refusal: "introduction-epoch-dead" });
     // A LIVE epoch other than the one signed still breaks the signature: the epoch sits under it.
     expect(refusalOf({ ...intro, epoch: previous.cid })).toEqual({ ok: false, refusal: "introduction-unsigned" });
-    expect(refusalOf({ ...intro, newcomerNonce: flip(intro.newcomerNonce) })).toEqual({ ok: false, refusal: "introduction-unsigned" });
+    expect(refusalOf({ ...intro, newcomerKey: flip(intro.newcomerKey) })).toEqual({ ok: false, refusal: "introduction-unsigned" });
     expect(refusalOf({ ...intro, introducer: await pubOf(OTHER_GUEST) })).toEqual({ ok: false, refusal: "introduction-unsigned" });
     expect(refusalOf({ ...intro, signature: flip(intro.signature) })).toEqual({ ok: false, refusal: "introduction-unsigned" });
     for (const malformed of [
       { ...intro, kind: HOSTING_ACT_DOMAIN }, { ...intro, extra: "x" }, { ...intro, signature: intro.signature.slice(2) },
-      { ...intro, introducer: intro.introducer.toUpperCase() }, { ...intro, newcomerNonce: 7 }, { ...intro, nexus: "" },
+      { ...intro, introducer: intro.introducer.toUpperCase() }, { ...intro, newcomerKey: 7 }, { ...intro, nexus: "" },
       (({ signature: _s, ...rest }) => rest)(intro), null, "an introduction", [intro],
     ]) expect(refusalOf(malformed)).toEqual({ ok: false, refusal: "introduction-malformed" });
   });
@@ -78,6 +82,37 @@ describe("an introduction stands only as its guest signed it", () => {
     const forged = await signIntroduction(fields, signerOf(STRANGER));       // names GUEST, signed by STRANGER
     expect(forged.introducer).toBe(await pubOf(GUEST));
     expect(verifyIntroduction(forged, live)).toEqual({ ok: false, refusal: "introduction-unsigned" });
+    expect(verifyIntroduction(intro, live)).toEqual({ ok: true });           // CONTROL
+  });
+
+  test("★ a small-order introducer key signs for nobody ★", async () => {
+    const { fields, live } = await standing();
+    // The identity point as a key, the identity as R and zero as S: an equation a cofactored verify reads true
+    // for EVERY message, so "signed by the named introducer" would mean nothing.
+    const identity = `01${"00".repeat(31)}`;
+    const forged = {
+      kind: HOSTING_INTRODUCTION_DOMAIN, ...fields, introducer: identity, signature: `${identity}${"00".repeat(32)}`,
+    };
+    expect(isIntroduction(forged)).toBe(true);                               // well-formed by shape alone
+    expect(verifyIntroduction(forged, live)).toEqual({ ok: false, refusal: "introduction-unsigned" });
+    const eightTorsion = "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a";   // a point of order 8
+    expect(verifyIntroduction({ ...forged, introducer: eightTorsion }, live)).toEqual({ ok: false, refusal: "introduction-unsigned" });
+    // KNOWN POSITIVE: the lenient equation does read this forgery as signed, so the vector bites.
+    expect(ed25519Curve.verify(hexToBytes(forged.signature), introductionBytes({ ...fields, introducer: identity }), hexToBytes(identity), { zip215: true })).toBe(true);
+  });
+
+  test("a guard never throws at a hostile object", async () => {
+    const { intro, live } = await standing();
+    const thrower = new Proxy({}, { ownKeys() { throw new Error("hostile"); }, get() { throw new Error("hostile"); }, has() { throw new Error("hostile"); } });
+    const getter = { ...intro, get signature(): string { throw new Error("hostile"); } };
+    for (const hostile of [thrower, getter]) {
+      expect(verifyIntroduction(hostile, live)).toEqual({ ok: false, refusal: "introduction-malformed" });
+      expect(isIntroduction(hostile)).toBe(false);
+      expect(isAnswer(hostile)).toBe(false);
+      expect(isSealedAnswer(hostile)).toBe(false);
+      expect(openAnswer(hostile as never, FRIEND_SECRET)).toBeNull();
+    }
+    expect(verifyIntroduction(intro, thrower as never)).toEqual({ ok: false, refusal: "introduction-malformed" });
     expect(verifyIntroduction(intro, live)).toEqual({ ok: true });           // CONTROL
   });
 
@@ -95,7 +130,7 @@ describe("an introduction stands only as its guest signed it", () => {
     const { fields } = await standing();
     let asked = 0;
     const sign = (bytes: Uint8Array): Promise<string> => { asked++; return signerOf(GUEST)(bytes); };
-    for (const bad of [{ ...fields, epoch: "not-a-cid" }, { ...fields, introducer: "ff" }, { ...fields, newcomerNonce: "" }, { ...fields, nexus: " " }]) {
+    for (const bad of [{ ...fields, epoch: "not-a-cid" }, { ...fields, introducer: "ff" }, { ...fields, newcomerKey: "" }, { ...fields, nexus: " " }]) {
       await expect(signIntroduction(bad, sign)).rejects.toThrow(IntroductionError);
     }
     expect(asked).toBe(0);
@@ -106,32 +141,63 @@ describe("an introduction stands only as its guest signed it", () => {
 });
 
 describe("the answer consumes the introduction", () => {
-  test("★ no answer holds a byte of the introducer's key or of the signature ★", async () => {
+  /** Open an answer as the friend, or fail the test. */
+  const opened = (sealed: unknown, secret: Uint8Array = FRIEND_SECRET): Answer => {
+    const answer = openAnswer(sealed as never, secret);
+    if (answer === null) throw new Error("the friend's secret opened nothing");
+    return answer;
+  };
+
+  test("★ an opened answer holds no nonce, no key and no signature of the introduction ★", async () => {
     const { intro } = await standing();
-    const admitted = answerIntroduction(intro, true, () => STUB_TOKEN);
-    const declined = answerIntroduction(intro, false);
+    const admitted = opened(answerIntroduction(intro, true, () => STUB_TOKEN));
+    const declined = opened(answerIntroduction(intro, false));
+    expect(Object.keys(declined).sort()).toEqual(["admitted", "epoch", "nexus"]);
+    expect(Object.keys(admitted).sort()).toEqual(["admitted", "epoch", "nexus", "token"]);
     for (const answer of [admitted, declined]) {
       const bytes = JSON.stringify(answer);
-      expect(holdsAnyRunOf(bytes, intro.introducer)).toBe(false);
-      expect(holdsAnyRunOf(bytes, intro.signature)).toBe(false);
+      for (const part of [intro.introducer, intro.signature, intro.newcomerKey]) expect(holdsAnyRunOf(bytes, part)).toBe(false);
       expect(isAnswer(answer)).toBe(true);
+      expect(answer.nexus).toBe(NEXUS);
+      expect(answer.epoch).toBe(intro.epoch);
     }
-    // KNOWN POSITIVE: the same probe finds both in the introduction itself.
-    expect(holdsAnyRunOf(JSON.stringify(intro), intro.introducer)).toBe(true);
-    expect(holdsAnyRunOf(JSON.stringify(intro), intro.signature)).toBe(true);
-    expect(Object.keys(declined).sort()).toEqual(["admitted", "epoch", "newcomerNonce", "nexus"]);
-    expect(Object.keys(admitted).sort()).toEqual(["admitted", "epoch", "newcomerNonce", "nexus", "token"]);
-    expect(isAnswer({ ...declined, introducer: intro.introducer })).toBe(false);
-    expect(isAnswer({ ...declined, signature: intro.signature })).toBe(false);
+    // KNOWN POSITIVE: the same probe finds all three in the introduction itself.
+    for (const part of [intro.introducer, intro.signature, intro.newcomerKey]) expect(holdsAnyRunOf(JSON.stringify(intro), part)).toBe(true);
+    for (const extra of [{ introducer: intro.introducer }, { signature: intro.signature }, { newcomerKey: intro.newcomerKey }]) {
+      expect(isAnswer({ ...declined, ...extra })).toBe(false);
+    }
     expect(isAnswer({ ...declined, token: STUB_TOKEN })).toBe(false);          // a decline carries no token
   });
 
-  test("★ two guests' answers for one newcomer read alike ★", async () => {
+  test("★ a sealed answer shares no byte with its introduction, and reads one length either way ★", async () => {
+    const { intro } = await standing();
+    const admitted = answerIntroduction(intro, true, () => STUB_TOKEN);
+    const declined = answerIntroduction(intro, false);
+    const again = answerIntroduction(intro, false);
+    for (const sealed of [admitted, declined]) {
+      expect(isSealedAnswer(sealed)).toBe(true);
+      expect(Object.keys(sealed).sort()).toEqual(["ciphertext", "nonce", "sender"]);
+      const bytes = JSON.stringify(sealed);
+      // 8-character runs: a link by a short copy would show as surely as a whole one.
+      for (const part of [intro.introducer, intro.signature, intro.newcomerKey, intro.epoch]) {
+        for (let i = 0; i + 8 <= part.length; i += 8) expect(bytes.includes(part.slice(i, i + 8))).toBe(false);
+      }
+    }
+    // An admit and a decline weigh the same, so a reader of the sealed bytes learns neither.
+    expect(admitted.ciphertext.length).toBe(declined.ciphertext.length);
+    // Two seals of one answer share no sender key, nonce or ciphertext: nothing indexes a sealed answer by its newcomer.
+    expect(again.sender).not.toBe(declined.sender);
+    expect(again.nonce).not.toBe(declined.nonce);
+    expect(again.ciphertext).not.toBe(declined.ciphertext);
+    expect(opened(again)).toEqual(opened(declined));                            // CONTROL: one answer inside
+  });
+
+  test("★ two guests' answers for one newcomer open alike ★", async () => {
     const a = await standing(GUEST), b = await standing(OTHER_GUEST);
     expect(a.intro.introducer).not.toBe(b.intro.introducer);                   // CONTROL: two guests
     expect(a.intro.signature).not.toBe(b.intro.signature);
     for (const admit of [true, false]) {
-      expect(answerIntroduction(a.intro, admit, () => STUB_TOKEN)).toEqual(answerIntroduction(b.intro, admit, () => STUB_TOKEN));
+      expect(opened(answerIntroduction(a.intro, admit, () => STUB_TOKEN))).toEqual(opened(answerIntroduction(b.intro, admit, () => STUB_TOKEN)));
     }
   });
 
@@ -139,20 +205,20 @@ describe("the answer consumes the introduction", () => {
     const { intro, current } = await standing();
     let calls = 0;
     const mint = (): InviteToken => { calls++; return mintHostToken(current); };
-    const declined = answerIntroduction(intro, false, mint);
+    const declined = opened(answerIntroduction(intro, false, mint));
     expect("token" in declined).toBe(false);
     expect(declined.admitted).toBe(false);
     expect(calls).toBe(0);
-    const admitted = answerIntroduction(intro, true, mint);
+    const admitted = opened(answerIntroduction(intro, true, mint));
     expect(calls).toBe(1);
     expect(admitted.admitted).toBe(true);
     expect(admitted.token!.purpose).toBe("host-invite");
     expect(tokenVerifiesAt(current, admitted.token!)).toBe(true);
-    expect("token" in answerIntroduction(intro, true)).toBe(false);            // an admit with no mint carries none
+    expect("token" in opened(answerIntroduction(intro, true))).toBe(false);    // an admit with no mint carries none
     // The token's nonce runs random: nothing of the introduction derives it.
-    const again = answerIntroduction(intro, true, mint);
+    const again = opened(answerIntroduction(intro, true, mint));
     expect(again.token!.n).not.toBe(admitted.token!.n);
-    for (const part of [intro.newcomerNonce, intro.introducer, intro.signature]) expect(holdsAnyRunOf(JSON.stringify(admitted.token), part)).toBe(false);
+    for (const part of [intro.newcomerKey, intro.introducer, intro.signature]) expect(holdsAnyRunOf(JSON.stringify(admitted.token), part)).toBe(false);
   });
 
   test("only a well-formed introduction gets answered", async () => {
@@ -160,21 +226,28 @@ describe("the answer consumes the introduction", () => {
     expect(() => answerIntroduction({ ...intro, extra: "x" } as Introduction, true)).toThrow(IntroductionError);
     expect(() => answerIntroduction(null as unknown as Introduction, false)).toThrow(IntroductionError);
     expect(() => answerIntroduction(intro, true, () => ({ purpose: "host-invite", n: "short", y: "short" }))).toThrow(IntroductionError);
-    expect(answerIntroduction(intro, false).newcomerNonce).toBe(intro.newcomerNonce);   // CONTROL
+    expect(() => answerIntroduction({ ...intro, newcomerKey: "00".repeat(32) }, false)).toThrow(IntroductionError);   // a key nobody holds
+    expect(opened(answerIntroduction(intro, false)).admitted).toBe(false);     // CONTROL
   });
 
-  test("the friend who holds the secret owns the answer, and nobody else does", async () => {
+  test("★ the friend who holds the secret opens the answer, and nobody else does ★", async () => {
     const { intro } = await standing();
-    const answer = answerIntroduction(intro, true, () => STUB_TOKEN);
-    expect(answerIsFor(answer, FRIEND_SECRET)).toBe(true);
-    expect(answerIsFor(answer, OTHER_SECRET)).toBe(false);
-    expect(answerIsFor(answer, FRIEND_SECRET.slice(0, 31))).toBe(false);
-    expect(answerIsFor({ ...answer, introducer: intro.introducer } as never, FRIEND_SECRET)).toBe(false);
-    expect(() => newcomerNonceOf(new Uint8Array(31))).toThrow(IntroductionError);
-    expect(newcomerNonceOf(FRIEND_SECRET)).toMatch(/^[0-9a-f]{64}$/);
-    // The nonce commits to the secret and never spells it.
+    const sealed = answerIntroduction(intro, true, () => STUB_TOKEN);
+    expect(opened(sealed).admitted).toBe(true);
+    expect(openAnswer(sealed, OTHER_SECRET)).toBeNull();
+    expect(openAnswer(sealed, FRIEND_SECRET.slice(0, 31))).toBeNull();
+    // The guest holds the introduction and every public value in it, and still opens nothing.
+    expect(openAnswer(sealed, hexToBytes(intro.newcomerKey))).toBeNull();
+    expect(openAnswer(sealed, GUEST)).toBeNull();
+    for (const field of ["sender", "nonce", "ciphertext"] as const) {
+      expect(openAnswer({ ...sealed, [field]: flip(sealed[field]) }, FRIEND_SECRET)).toBeNull();
+    }
+    expect(openAnswer({ ...sealed, extra: "x" } as never, FRIEND_SECRET)).toBeNull();
+    expect(() => newcomerKeyOf(new Uint8Array(31))).toThrow(IntroductionError);
+    expect(newcomerKeyOf(FRIEND_SECRET)).toMatch(/^[0-9a-f]{64}$/);
+    expect(newcomerKeyOf(FRIEND_SECRET)).not.toBe(newcomerKeyOf(OTHER_SECRET));
+    // The key commits to the secret and never spells it.
     expect(holdsAnyRunOf(JSON.stringify(intro), hex(FRIEND_SECRET))).toBe(false);
-    expect(newcomerNonceOf(FRIEND_SECRET)).not.toBe(newcomerNonceOf(OTHER_SECRET));
   });
 });
 
@@ -192,6 +265,10 @@ describe("the open-introductions dial reads a count per proven key", () => {
     expect(openSlots([g], G.toUpperCase(), 1)).toBe(0);                        // one key, however spelled
     for (const who of [G, H, S]) expect(openSlots([g], who, 0)).toBe(0);       // CONTROL: a closed dial
     for (const dial of [-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) expect(openSlots([], H, dial)).toBe(0);
+    // A damaged entry still holds its guest's slot: damage never frees one.
+    const damaged = { ...g, signature: "torn" } as Introduction;
+    expect(openSlots([damaged], G, 1)).toBe(0);
+    expect(openSlots([null as never, "junk" as never, damaged], H, 1)).toBe(1);
     expect(openSlots([], H, 2)).toBe(2);
   });
 });
