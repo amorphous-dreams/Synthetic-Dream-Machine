@@ -67,7 +67,6 @@ written    = "2026-09-14"
 * ''The clock audit's named seams'' — the auth wire carries no clock (`dd856ea29`); carriage, kapae, oracle and handle publications read causal frontiers, never a scalar latest (`f2c97194b`, `965c760dc`, `fdfbb46ea`).
 * ''The Offering source and the receiver's local inspection'' (`507e9c391`, `9f9395307`), and the receiver witness committed (`750bf21fe`).
 * ''The emergency handoff's red board'' — the presented-admit cut-over (`0730dd41b`, one presenter `f4f1c9a6e`); signed seal rolls (`83445b41a`); vessel parity, the PersonaGroup ring composed on both shores by one function (`3384b183c`).
-* ''The parked handback'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds">>) — EOT2 retired; both typecheck reds closed; the joinee boot reads its own lease frontier (`a59d9a9b5`); `held-out.yml` reads its runner path inside a step (`00c679e97`).
 
 !! Superseded
 
@@ -1571,6 +1570,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;upo-qmhdShBrkmbG-DP6moJuUXRmxf7gQVdC_rJ2FlM
+<<^ code="&#x0003;">>ni:///sha-256;krnY9582PUDP7FYdzhz0PxPpnmAnz2QIxTh2PNNSlIo
 
 <<^ code="&#x0004;" -> to="?">>
