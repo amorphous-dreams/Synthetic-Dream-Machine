@@ -12,8 +12,7 @@
 #   browser-ci.sh ingest <path>             copy a repo carrier (bags/<bag>/<w.w.w>/…) into the scratch workspace volume and
 #                                           `lares ingest --source … --to <bag uri> --apply --yes`
 #                                           (default bag lar:///ha.ka.ba/bags/lares; BROWSER_CI_BAG overrides)
-#   browser-ci.sh recipe add <bag-uri>      add the bag to the recipe of the wiki the browser mounts (`wiki init` first,
-#                                           which is idempotent, then `wiki add-bag`)
+#   browser-ci.sh recipe add <bag-uri>      ensure the catalog recipe exists, then add the bag to the wiki the browser mounts
 #   browser-ci.sh recipe remove <bag-uri>   `wiki remove-bag` — the swarm's negative control
 #   browser-ci.sh get <meme-uri> [--bag <slug> | --recipe <slug>]
 #                                           `lares meme get`, JSON on stdout (the text rides in data.text). Default reads
@@ -86,6 +85,21 @@ wiki_slug() {
   printf '%s\n' "$slug"
 }
 
+walk_document_preflight() {
+  slug=$(wiki_slug)
+  wikis=$(lares wiki list --json) || die "WIKI_DOC_MISSING: cannot read the registered document for $slug; run wiki init for that wiki before starting the walk"
+  INFO_SLUG=$slug INFO_WIKIS=$wikis node -e '
+    const e = process.env;
+    const wikis = JSON.parse(e.INFO_WIKIS).data?.wikis ?? [];
+    const mine = wikis.filter((wiki) => wiki.slug === e.INFO_SLUG);
+    const mounted = mine.find((wiki) => wiki.kind === "system") ?? mine.find((wiki) => wiki.kind === "user");
+    if (!mounted || typeof mounted.automergeUrl !== "string" || !/^automerge:.+$/.test(mounted.automergeUrl)) {
+      process.stderr.write(`WIKI_DOC_MISSING: wikiDoc is absent or invalid for ${e.INFO_SLUG}; run wiki init for that wiki before starting the walk.\n`);
+      process.exit(2);
+    }
+  '
+}
+
 bag_uri() {
   case "$1" in
     lar:*) printf '%s\n' "$1" ;;
@@ -154,12 +168,21 @@ case "$verb" in
     slug=$(wiki_slug)
     case "$act" in
       add)
-        # A freshly founded vessel lists its wiki before it holds a recipe; `wiki init` mints one and is idempotent.
+        # The catalog recipe exists before composition changes are applied.
         json_verb wiki init "$slug" --json >/dev/null
         # WHERE THIS LANDS: `wiki add-bag` writes the NODE's own composition (its catalog recipe), which shadows a
         # system wiki's default (oracle) recipe for the node's mount, its live watch and `get --recipe` alike. A
         # catalog never crosses, so an admitted leaf still mounts the default recipe.
-        if lares wiki list | grep -q "^  $slug  *\[system\]"; then
+        wikis=$(lares wiki list --json)
+        if printf '%s' "$wikis" | node -e '
+          let input = "";
+          process.stdin.setEncoding("utf8");
+          process.stdin.on("data", (chunk) => input += chunk);
+          process.stdin.on("end", () => {
+            const reply = JSON.parse(input);
+            const wikis = reply.data?.wikis;
+            process.exit(Array.isArray(wikis) && wikis.some((wiki) => wiki.slug === process.argv[1] && wiki.kind === "system") ? 0 : 1);
+          });' "$slug"; then
           printf '%s\n' "browser-ci: note: $slug is a [system] wiki; this verb writes the node's own recipe (its catalog), which the node's mount and \`get --recipe\` read, and which no leaf receives. An admitted leaf mounts the default recipe (oracle lararium lares): ingest into a bag that recipe stacks (the default lar:///ha.ka.ba/bags/lares) to reach a leaf (see info: recipe.leafReadsDefaultRecipe)" >&2
         fi
         json_verb wiki add-bag "$slug" "$uri" --json ;;
@@ -187,8 +210,8 @@ case "$verb" in
     [ -n "$key" ] || die "no face stands; run up first"
     admit=$(lares device-admit --joinee-key "$key" | awk '/^}/ {print; exit} {print}')
     bags=$(lares bag stats | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p')
-    # Every document the catalog and the oracle plane register for wikis, as `wiki list` prints them.
-    wikis=$(lares wiki list)
+    # Every document the catalog and oracle plane register is data in the JSON wiki list.
+    wikis=$(lares wiki list --json)
     # The recipe's bag stack, in order. No read-only verb names it; `wiki pin` walks it (and re-asserts the stowage of
     # those same bags, which a mounted wiki wants held anyway). A wiki without a catalog recipe yet answers no stack.
     stack=$(lares wiki pin "$slug" 2>/dev/null | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p' || true)
@@ -201,16 +224,19 @@ case "$verb" in
       const admit = JSON.parse(e.INFO_ADMIT);
       const host = "http://127.0.0.1:" + e.INFO_PORT;
       const ws = (o) => o.replace(/^http/, "ws") + "/ws";
-      const lines = e.INFO_WIKIS.split("\n");
-      const docs = [];
-      for (let i = 0; i < lines.length; i++) {
-        const m = /^  (\S+)\s+\[(system|user)\]\s+(lar:\S+)/.exec(lines[i]);
-        const d = m && /^\s+↳ (automerge:[A-Za-z0-9]+)/.exec(lines[i + 1] ?? "");
-        if (m && d) docs.push({ slug: m[1], kind: m[2], bag: m[3], doc: d[1] });
-      }
+      const reply = JSON.parse(e.INFO_WIKIS);
+      const docs = (reply.data?.wikis ?? []).filter((wiki) =>
+        typeof wiki.slug === "string" && typeof wiki.uri === "string" && typeof wiki.kind === "string" &&
+        typeof wiki.automergeUrl === "string" && /^automerge:.+$/.test(wiki.automergeUrl)).map((wiki) => ({
+          slug: wiki.slug, kind: wiki.kind, bag: wiki.uri, doc: wiki.automergeUrl,
+        }));
       const mine = docs.filter((d) => d.slug === e.INFO_SLUG);
       // A system wiki (lares, lararium) registers its canon document on the ORACLE plane.
       const mounted = mine.find((d) => d.kind === "system") ?? mine.find((d) => d.kind === "user") ?? null;
+      if (!mounted) {
+        process.stderr.write(`WIKI_DOC_MISSING: wikiDoc is absent for ${e.INFO_SLUG}; run wiki init for that wiki before starting the walk.\n`);
+        process.exit(2);
+      }
       const stack = e.INFO_STACK.split("\n").filter((l) => l.startsWith("lar:"));
       process.stdout.write(JSON.stringify({
         origin: { qa: e.INFO_ORIGIN_QA, host },
@@ -219,7 +245,7 @@ case "$verb" in
         face: face && { name: face.petname, handleIndex: face.handleIndex, worn: face.active === true, verifyingKey: e.INFO_KEY },
         worn: face ? face.active === true : false,
         wiki: e.INFO_SLUG,
-        wikiDoc: mounted && { url: mounted.doc, kind: mounted.kind, bag: mounted.bag },
+        wikiDoc: { url: mounted.doc, kind: mounted.kind, bag: mounted.bag },
         wikiDocsRegistered: mine.map((d) => ({ url: d.doc, kind: d.kind })),
         recipe: {
           uri: "lar:///ha.ka.ba/bags/catalog/recipes/" + e.INFO_SLUG,
@@ -232,6 +258,11 @@ case "$verb" in
       }) + "\n");' ;;
   qa|qa-admit)
     [ "$#" -gt 0 ] || die "$verb wants a command"
+    for arg do
+      case "$arg" in
+        */live-wiki.mjs|live-wiki.mjs) walk_document_preflight; break ;;
+      esac
+    done
     # Pass-through: the caller's LARES_URL, BROWSER_CI_* and LIVE_WIKI_* variables reach the runner by name.
     envargs=""
     for name in $(env | sed -n 's/^\(LARES_URL\|BROWSER_CI_[A-Za-z0-9_]*\|LIVE_WIKI_[A-Za-z0-9_]*\)=.*/\1/p'); do

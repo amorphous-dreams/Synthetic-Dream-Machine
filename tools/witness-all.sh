@@ -23,6 +23,7 @@ declare -A HELD_OUT=(
   [herm-mesh-witness]="stands the docker-compose relay mesh"
   [mesh-scenarios]="stands the docker-compose mesh on the product image, scenario by scenario — needs docker"
   [browser-weld-witness]="drives a real browser against a standing web surface"
+  [tree-clean-witness]="the e2e set runs through the CI shards; a local run stages vessels and reads any write into the tracked tree as red"
   [witness-all]="this script"
 )
 

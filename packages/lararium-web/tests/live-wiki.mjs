@@ -35,6 +35,8 @@ function required(name) {
   return value;
 }
 
+const WALK_SETTLE_MS = 3_000;
+
 /**
  * The crossing URL: the served origin plus the gate pin. The page derives its relay from the origin that
  * served it, so the walk names no relay.
@@ -84,6 +86,8 @@ async function persistedFace(page) {
  * proven gate key and the mounted document, both read as data off the connection row.
  */
 async function admit(page, vesselUrl, gatePubKey) {
+  const nodeWikiDoc = process.env.LIVE_WIKI_NODE_DOC;
+  assert.ok(nodeWikiDoc, "LIVE_WIKI_NODE_DOC must be supplied by the standing-vessel fixture");
   await open(page, withGate(vesselUrl, gatePubKey));
   await waitForLive(page);
   // The gate answers an unvouched leaf with silence, and silence has no single face on the page: the row reads
@@ -135,11 +139,8 @@ async function admit(page, vesselUrl, gatePubKey) {
   }));
   assert.equal(shown.gateKey, gatePubKey.toLowerCase(), "the connection row names the gate key the relay proved");
   assert.match(shown.wikiDocUrl ?? "", /^automerge:/, "the connection row names the mounted wiki document");
-  const nodeWikiDoc = process.env.LIVE_WIKI_NODE_DOC;
-  if (nodeWikiDoc) {
-    assert.equal(shown.wikiDocUrl, nodeWikiDoc,
-      `the admitted leaf mounts the node's wiki document (leaf ${shown.wikiDocUrl ?? "(unreported)"}, node ${nodeWikiDoc})`);
-  }
+  assert.equal(shown.wikiDocUrl, nodeWikiDoc,
+    `the admitted leaf mounts the node's wiki document (leaf ${shown.wikiDocUrl ?? "(unreported)"}, node ${nodeWikiDoc})`);
   return { ...shown, deviceKey: browserKey };
 }
 
@@ -230,6 +231,18 @@ async function search(page, term) {
   return dropdown;
 }
 
+async function assertNoDraft(page, title, phase) {
+  const draftTitle = `Draft of '${title}'`;
+  const results = await search(page, draftTitle);
+  await page.waitForFunction(() => {
+    const root = document.querySelector("#projection")?.shadowRoot;
+    const count = [...(root?.querySelectorAll("button") ?? [])].find((button) => /\bmatches\b/.test(button.textContent ?? ""));
+    return /^\s*0 matches/.test(count?.textContent ?? "");
+  }, undefined, { timeout: 30_000 });
+  const standing = await results.getByText(draftTitle, { exact: true }).count();
+  assert.equal(standing, 0, `${phase}: draft title ${draftTitle} still stands in the wiki`);
+}
+
 /** Open Aki through the search a person would use, and wait for her view frame. */
 async function openAki(page) {
   const dropdown = await search(page, "lady-aki");
@@ -273,6 +286,10 @@ async function renderAki() {
     assert.equal(await level.inputValue(), "2", `the typed field ${LEVEL_FIELD} reads 2 in the standard field editor`);
     await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
     await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
+    await page.waitForTimeout(WALK_SETTLE_MS);
+    await assertNoDraft(page, AKI, "quick open-and-discard");
+    assert.equal(await viewFrame(page, AKI).count(), 1, "quick discard leaves Aki's view frame in the story river");
+    assert.equal(await editFrame(page, AKI).count(), 0, "quick discard leaves no Aki draft frame in the story river");
 
     // The followed lar: link — a click on the projected anchor navigates the wiki, never the host page.
     const before = page.url();
@@ -307,26 +324,27 @@ async function editAki() {
     await level.fill("3");
     await editFrame(page, AKI).locator('button[title="Confirm changes to this tiddler"]').click();
     await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
+    await assertNoDraft(page, AKI, "immediate save");
     const reopened = await openLevelEditor(page);
     assert.equal(await reopened.inputValue(), "3", "the standard editor reads back the saved field");
     await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
     await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
     // A save with no bag to land in refuses by name on the alert rail; a save that landed raises nothing.
     assert.equal(await unroutedAlerts(page), 0, "no save stands refused on the alert rail");
-    // The save left the wiki island for the working layer. This bounded pause only lets the capture debounce
-    // and the store's write settle before the page goes; the reload below carries the verdict.
-    await page.waitForTimeout(3_000);
+    // The hand gate's pacing window closes before the profile goes away, so the reload reads the handed title state.
+    await page.waitForTimeout(WALK_SETTLE_MS);
 
     // The SAME profile, reloaded: the wiki island boots from this vessel's own store and reads the saved field.
     await open(page, withGate(vesselUrl, gatePubKey));
     await waitForLive(page);
     await openAki(page);
+    await assertNoDraft(page, AKI, "reload after save");
     const afterReload = await openLevelEditor(page);
     assert.equal(await afterReload.inputValue(), "3", "the reloaded profile reads the saved field from its own working layer");
     await editFrame(page, AKI).locator('button[title="Discard changes to this tiddler"]').click();
     await viewFrame(page, AKI).waitFor({ state: "visible", timeout: 30_000 });
     assert.equal(await unroutedAlerts(page), 0, "the reloaded wiki raises no refusal");
-    await page.waitForTimeout(3_000);
+    await page.waitForTimeout(WALK_SETTLE_MS);
     assert.deepEqual(errors, [], "editing Aki emits zero page or wiki-worker errors");
     console.log(`edit-aki OK — ${LEVEL_FIELD} saved 2 -> 3 through the standard field editor; no refusal on the alert rail; the reloaded profile reads 3`);
   });

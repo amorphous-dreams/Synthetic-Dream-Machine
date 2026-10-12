@@ -18,7 +18,20 @@ async function run(argv, env = {}) {
   const dir = await mkdtemp(join(tmpdir(), "browser-ci-"));
   try {
     const log = join(dir, "calls.log");
-    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\ncase "$*" in *"ps -a -q"*) [ "$STAND" = "yes" ] && echo cid123;; *"ps -q"*) echo cid123;; esac\ncase "$*" in *"wiki active"*) printf "\\nactive wikis (1/4):\\n     lares\\n  rotatable pin budget: 3\\n";; esac\n`);
+    await writeFile(join(dir, "docker"), `#!/bin/sh
+printf '%s\\n' "$*" >> "$CALL_LOG"
+case "$*" in
+  *"ps -a -q"*) [ "$STAND" = "yes" ] && echo cid123 ;;
+  *"ps -q"*) echo cid123 ;;
+  *"printenv LAR_PORT"*) echo 4321 ;;
+  *"persona list --json"*) echo '{"ok":true,"data":{"personas":[]}}' ;;
+  *"persona new 0"*) echo '{"verifyingKey":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
+  *"device-admit --joinee-key"*) echo '{"hearthGatePubKey":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}' ;;
+  *"wiki list --json"*) printf '%s\\n' "$INFO_WIKIS" ;;
+  *" --json"*) echo '{"ok":true}' ;;
+  *"wiki active"*) printf "\\nactive wikis (1/4):\\n     lares\\n  rotatable pin budget: 3\\n" ;;
+esac
+`);
     await chmod(join(dir, "docker"), 0o755);
     const r = spawnSync("sh", [SH, ...argv], { env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, STAND: "no", BROWSER_CI_PORT: "5499", ...env }, encoding: "utf8" });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
@@ -111,9 +124,15 @@ test("bag creates a bag through act CREATE and prints its URI", async () => {
 
 test("recipe add inits the mounted wiki, then adds; remove only removes", async () => {
   const bag = "lar:///ha.ka.ba/bags/aki-fixture";
-  const add = await run(["recipe", "add", bag]);
+  const add = await run(["recipe", "add", bag], {
+    INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [
+      { slug: "lares", kind: "system", uri: "lar:///ha.ka.ba/bags/lares", automergeUrl: "automerge:doc" },
+    ] } }),
+  });
   assert.match(add.calls, /wiki active/);
   assert.match(add.calls, /wiki init lares --json/);
+  assert.match(add.calls, /wiki list --json/);
+  assert.match(add.stderr, /note: lares is a \[system\] wiki/);
   const rm = await run(["recipe", "remove", bag]);
   assert.equal(rm.status, 0);
   assert.match(rm.calls, /wiki remove-bag lares lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture/);
@@ -172,10 +191,15 @@ test("an unknown verb and a bare call refuse by name", async () => {
 // ── the admit exchange (qa-admit) ─────────────────────────────────────────────────────────────────────────────
 // The fake runner asks for two carriages (a second fresh profile), a malformed key, and echoes what the host wrote
 // into the shared directory. The fake `exec … device-admit` answers a fragment derived from the key it was handed.
-async function runAdmit(runnerLines, env = {}) {
+async function runAdmit(runnerLines, env = {}, command = ["node", "x.mjs"]) {
   const dir = await mkdtemp(join(tmpdir(), "browser-ci-xchg-"));
+  const log = join(dir, "calls.log");
   try {
     await writeFile(join(dir, "docker"), `#!/bin/sh
+printf '%s\\n' "$*" >> "$CALL_LOG"
+case "$*" in
+  *"wiki list --json"*) printf '%s\\n' "$INFO_WIKIS"; exit 0 ;;
+esac
 case "$*" in
   *" run "*)
     for k in ${runnerLines.map((l) => `"${l}"`).join(" ")}; do
@@ -192,7 +216,9 @@ case "$*" in
 esac
 `);
     await chmod(join(dir, "docker"), 0o755);
-    return spawnSync("sh", [SH, "qa-admit", "node", "x.mjs"], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: process.env.HOME, BROWSER_CI_PORT: "5499", ...env }, encoding: "utf8" });
+    const r = spawnSync("sh", [SH, "qa-admit", ...command], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: process.env.HOME, CALL_LOG: log, BROWSER_CI_PORT: "5499", ...env }, encoding: "utf8" });
+    let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
+    return { ...r, calls };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -232,4 +258,89 @@ test("up wears the synthetic face before the restart that puts the vessel on it"
   const at = (re) => r.calls.search(re);
   assert.ok(at(/persona new 0/) >= 0 && at(/persona wear 0/) > at(/persona new 0/));
   assert.ok(r.calls.lastIndexOf("restart lares") > at(/persona wear 0/));
+});
+
+test("CONTROL: info reads the mounted wiki document from a registered JSON system wiki", async () => {
+  const r = await run(["info"], {
+    BROWSER_CI_WIKI: "lares",
+    INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [
+      { slug: "lares", uri: "lar:///ha.ka.ba/bags/lares", kind: "system", automergeUrl: "automerge:21Bk4FPMkZ6Gpbde8XXvZfxhCZcg" },
+    ] } }),
+  });
+  assert.equal(r.status, 0, r.stderr);
+  const info = JSON.parse(r.stdout);
+  assert.deepEqual(info.wikiDoc, {
+    url: "automerge:21Bk4FPMkZ6Gpbde8XXvZfxhCZcg", kind: "system", bag: "lar:///ha.ka.ba/bags/lares",
+  });
+  assert.deepEqual(info.wikiDocsRegistered, [{ url: info.wikiDoc.url, kind: "system" }]);
+  assert.equal(info.recipe.leafReadsDefaultRecipe, true);
+  assert.match(r.calls, /wiki list --json/);
+});
+
+test("info refuses a walk start by name when the wiki has no document", async () => {
+  const r = await run(["info"], {
+    BROWSER_CI_WIKI: "lares",
+    INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [] } }),
+  });
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /wikiDoc/);
+  assert.equal(r.stdout, "");
+});
+
+test("qa-admit refuses a live walk before the runner starts when its wiki document is absent", async () => {
+  const r = await runAdmit([], {
+    BROWSER_CI_WIKI: "lares",
+    INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [] } }),
+  }, ["node", "packages/lararium-web/tests/live-wiki.mjs", "crossing"]);
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /WIKI_DOC_MISSING/);
+  assert.match(r.stderr, /wiki init/);
+  assert.doesNotMatch(r.calls, / run .*qa /, "the QA container stays unstarted");
+});
+
+test("qa-admit treats empty and non-Automerge document URLs as absent", async () => {
+  for (const automergeUrl of ["", "https://example.test/doc"]) {
+    const r = await runAdmit([], {
+      BROWSER_CI_WIKI: "lares",
+      INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [
+        { slug: "lares", uri: "lar:///ha.ka.ba/bags/lares", kind: "system", automergeUrl },
+      ] } }),
+    }, ["node", "packages/lararium-web/tests/live-wiki.mjs", "crossing"]);
+    assert.equal(r.status, 2, JSON.stringify({ automergeUrl }));
+    assert.match(r.stderr, /WIKI_DOC_MISSING/);
+    assert.match(r.stderr, /wiki init/);
+    assert.doesNotMatch(r.calls, / run .*qa /, "the QA container stays unstarted");
+  }
+});
+
+test("CONTROL: qa-admit starts a live walk when the registered document is an Automerge URL", async () => {
+  const r = await runAdmit([], {
+    BROWSER_CI_WIKI: "lares",
+    INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [
+      { slug: "lares", uri: "lar:///ha.ka.ba/bags/lares", kind: "system", automergeUrl: "automerge:21Bk4FPMkZ6Gpbde8XXvZfxhCZcg" },
+    ] } }),
+  }, ["node", "packages/lararium-web/tests/live-wiki.mjs", "crossing"]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /wiki list --json/);
+  assert.match(r.calls, / run .*qa /);
+});
+
+test("the live wiki walk requires its document and asserts that quick edit flows leave no drafts", async () => {
+  const source = await readFile(join(ROOT, "packages/lararium-web/tests/live-wiki.mjs"), "utf8");
+  assert.match(source, /assert\.ok\(nodeWikiDoc,[^)]*LIVE_WIKI_NODE_DOC/);
+  assert.doesNotMatch(source, /if\s*\(nodeWikiDoc\)/);
+  assert.match(source, /assertNoDraft[\s\S]*Draft of/);
+  const discard = source.match(/await assertNoDraft\(page, AKI, "quick open-and-discard"\);/);
+  const save = source.match(/await assertNoDraft\(page, AKI, "immediate save"\);/);
+  const reload = source.match(/await assertNoDraft\(page, AKI, "reload after save"\);/);
+  assert.ok(discard, "discard flow asserts draft absence");
+  assert.ok(save, "immediate save flow asserts draft absence");
+  assert.ok(reload, "post-reload flow asserts draft absence");
+  const helper = source.slice(source.indexOf("async function assertNoDraft"), source.indexOf("/** Open Aki through"));
+  assert.match(helper, /waitForFunction/);
+  assert.ok(helper.indexOf("waitForFunction") < helper.indexOf("getByText(draftTitle"), "draft search results settle before the row count is read");
+  assert.match(source, /quick discard leaves Aki's view frame in the story river/);
+  assert.match(source, /viewFrame\(page, AKI\)\.waitFor\(\{ state: "visible"/);
+  assert.match(source, /Confirm changes to this tiddler/);
+  assert.match(source, /level\.fill\("3"\)/, "CONTROL: the standard field edit and save remain in the walk");
 });
