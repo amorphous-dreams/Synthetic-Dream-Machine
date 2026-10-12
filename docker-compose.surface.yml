@@ -22,14 +22,16 @@
 #
 # THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store takes its own claim at
 # /state/.holder, a socket on the state mount, so a second container on the same /state refuses with StoreHeld
-# through any entrypoint. Never run a one-shot CLI container beside the daemon. Reach the standing vessel with
+# through any entrypoint. Reach a standing vessel through exec; with none standing, the offline CLI door owns
+# the store for one act and refuses by name if a vessel holds it. The CLI reports a needed re-stand while
+# LAR_ENGINE=host leaves restart authority with the host shim. The standing vessel's CLI door is
 #   docker compose -f docker-compose.surface.yml exec lares node packages/lares-cli/bin/lares.mjs <verb…>
 # so the CLI shares the daemon's /tmp (the UDS rendezvous), uid and environment. The UDS lives in the
 # container's own tmpfs /tmp: never bind it to the host, never share it between two containers, never put it
 # on a Windows share (its claim hard-links a staging socket, which a 9P/SMB filesystem may refuse).
 #
-# FOUNDING is an offline act on the store: with the vessel stopped,
-#   docker compose -f docker-compose.surface.yml --profile found run --rm found
+# FOUNDING is an offline act on the store:
+#   docker compose -f docker-compose.surface.yml --profile offline run --rm offline vessel found --skip-build --root /state --genesis /app/genesis
 # The founding gathers the human route (a passphrase and/or a paper pin) on a TTY: `run` attaches one when the
 # host terminal has one, and `run -T`, a pipe or a detached `up` has none, so the CLI refuses by name
 # (CredentialTtyRefusal). No flag and no env var carries a credential. After the founding, `lares vault status`,
@@ -65,6 +67,7 @@ x-vessel: &vessel
     LAR_WIKIS: /workspace/wikis
     LAR_GENESIS: /app/genesis
     LAR_PORT: "4321"
+    LAR_ENGINE: host
   # The UDS rendezvous (/tmp/lares-<uid>/…) stays INSIDE this container.
   tmpfs:
     - /tmp:mode=1777
@@ -99,14 +102,13 @@ services:
       retries: 5
       start_period: 120s
 
-  # The offline founding act (optional service → profile). Holds the store for its act; refuses by name while
-  # a vessel stands on it.
-  found:
+  # The offline CLI door owns the store for one act and refuses by name while a vessel stands.
+  offline:
     <<: *vessel
-    profiles: [found]
+    profiles: [offline]
     entrypoint: ["node", "packages/lares-cli/bin/lares.mjs"]
     stdin_open: true   # the route prompt reads the attached terminal; `run` allocates the TTY itself
-    command: ["vessel", "found", "--skip-build", "--root", "/state", "--genesis", "/app/genesis"]
+    command: ["help"]
     restart: "no"
 
   # The VPS-herm surface: the same image standing wiki-less (the carriage crossroads). A herm handed any

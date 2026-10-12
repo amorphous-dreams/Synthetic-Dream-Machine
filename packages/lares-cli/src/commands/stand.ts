@@ -205,7 +205,8 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   let liftReason: string | null = null;
   let standingReason: string | null = null;
   let standingAct: "attach" | "restand" | null = null;
-  if (nodeUp && !observeOnly) {
+  let hostRefusal: { readonly code: string; readonly message: string } | undefined;
+  if (nodeUp) {
     const verdict = standingVerdict({
       marker:     readStandingMarker(),
       faceOnDisk: existsSync(bootstrap) && faceStandsOnDisk(bootstrap),
@@ -216,21 +217,36 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     // decided to attach or had never reached the decision. The reason rides the payload always.
     standingReason = verdict.reason;
     standingAct = verdict.act;
-    if (verdict.act === "restand") {
-      liftReason = verdict.reason;
-      console.log(`[lares vessel stand] lifting: ${verdict.reason}`);
-      const forced = await freePortForLift(port);
-      if (forced !== null) {
-        liftReason = `${verdict.reason} — ${forced}`;
-        console.log(`[lares vessel stand] ${forced}`);
+    if (verdict.act === "restand" && !observeOnly) {
+      if (process.env["LAR_ENGINE"] === "host") {
+        // THE HOST HOLDS THE ENGINE (`LAR_ENGINE=host`, set by the image). Inside a container the daemon is the
+        // container's main process: this CLI neither stops it nor spawns a second one. The verdict rides the
+        // payload, and the host shim performs the restart.
+        hostRefusal = {
+          code: "EngineHeldByHost",
+          message: `${verdict.reason} — restart the vessel from the host: lares-container.sh vessel stand`,
+        };
+        console.error(`[lares vessel stand] EngineHeldByHost: ${hostRefusal.message}`);
+        nodeNote = "attached; the standing asks for a re-stand and the host holds the engine";
+      } else {
+        liftReason = verdict.reason;
+        console.log(`[lares vessel stand] lifting: ${verdict.reason}`);
+        const forced = await freePortForLift(port);
+        if (forced !== null) {
+          liftReason = `${verdict.reason} — ${forced}`;
+          console.log(`[lares vessel stand] ${forced}`);
+        }
+        nodeUp = false;
+        nodeNote = "re-stood — the standing no longer matched the face on disk";
       }
-      nodeUp = false;
-      nodeNote = "re-stood — the standing no longer matched the face on disk";
     }
   }
 
   if (!nodeUp && observeOnly) {
     nodeNote = "down — `--observe` withholds the stand; run `lares vessel stand` to serve";
+  } else if (!nodeUp && process.env["LAR_ENGINE"] === "host") {
+    // The host holds the engine: a daemon that does not answer yet is the host's to wait on or restart.
+    nodeNote = "the container runs and its daemon has not answered yet — the host holds the engine (lares-container.sh logs)";
   } else if (!nodeUp) {
     const distMain = join(repoRoot, "packages", "lararium-node", "dist", "src", "main.js");
     if (!existsSync(distMain)) {
@@ -383,6 +399,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   const ok = integration.ok && nodeUp;
   emit(args, {
     ok,
+    ...(hostRefusal !== undefined ? { error: hostRefusal } : {}),
     data: {
       // `cap` names which half the caller HELD, so a reader tells a vessel that refused to stand from one
       // nobody asked. Without it `up:false` reads identically under both, and that difference carries the
@@ -454,5 +471,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     },
   });
 
-  return 0; // the wake never blocks the session; `ok` in the payload carries the verdict.
+  // The wake never blocks the session; `ok` in the payload carries the verdict. One refusal exits non-zero: an
+  // acting stand the host alone may perform.
+  return hostRefusal === undefined ? 0 : 3;
 }

@@ -18,6 +18,7 @@ cd "$(dirname "$0")/.." || exit 1
 # must not assume — not because they matter less.
 declare -A HELD_OUT=(
   [civic-witness]="stands containerized vessels — run it directly"
+  [harbor-walk-witness]="stands a docker vessel"
   [crossing-witness]="stands a docker-compose crossing matrix"
   [herm-mesh-witness]="stands the docker-compose relay mesh"
   [mesh-scenarios]="stands the docker-compose mesh, scenario by scenario — needs docker + a host-built dist"

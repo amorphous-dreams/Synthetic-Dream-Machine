@@ -1,5 +1,7 @@
 /**
- * The host shims (lares-container.sh / .ps1) against a fake `docker` that records argv. Nothing here starts
+ * The host shims (lares-container.sh / .ps1) against a fake `docker` that records argv. The fake answers the two
+ * questions the shim asks of a vessel: whether one runs (FAKE_RUNNING_ID) and what standing verdict the CLI reads
+ * (FAKE_OBSERVE_OUTPUT). Nothing here starts
  * a container: the live proof (found, up, vessel read, ingest, restart, both holder refusals) runs against the
  * real image. This pins the shim's own contract: the verb routing, the refusals by name, the read-only capture
  * binds, and that no argv ever carries the docker socket.
@@ -21,6 +23,8 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
   try {
     const log = join(dir, "calls.log");
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
+      `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; esac\n` +
+      `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}";; esac\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
@@ -50,7 +54,7 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
       encoding: "utf8",
     });
     const calls = await readFile(log, "utf8");
-    assert.match(calls, /--profile found run --rm found\s*$/m);
+    assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/state --genesis \/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /-T/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
@@ -72,20 +76,88 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /--env-file \S*lares-surface\.env/);
   });
 
-  test(`${name}: any other argv runs the CLI inside the container by exec, never run`, async () => {
-    const r = await run(shim, ["vessel", "read", "--json"], { env: MOUNTS });
+  test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
+    const r = await run(shim, ["vessel", "read", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /compose .*exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
-    assert.doesNotMatch(r.calls, /\brun\b/);
   });
 
-  test(`${name}: found is the one run, on the found profile`, async () => {
-    const r = await run(shim, ["found"], { env: MOUNTS });
-    assert.match(r.calls, /--profile found run --rm -T found\s*$/m);
+  test(`${name}: a verb with no running vessel uses the offline door`, async () => {
+    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /--profile offline run --rm -T offline persona new 0 --name ci-face/);
+    assert.doesNotMatch(r.calls, /compose .*exec/);
+  });
+
+  test(`${name}: found uses the offline CLI door`, async () => {
+    const r = await run(shim, ["found", "--json"], { env: MOUNTS });
+    assert.match(r.calls, /--profile offline run --rm -T offline vessel found --skip-build --root \/state --genesis \/app\/genesis --json\s*$/m);
+  });
+
+  test(`${name}: a successful exec with a restand verdict restarts and waits healthy`, async () => {
+    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares/);
+    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+  });
+
+  test(`${name}: CONTROL attach verdict does not restart`, async () => {
+    const r = await run(shim, ["persona", "list"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: vessel stand with no service stands and waits healthy`, async () => {
+    const r = await run(shim, ["vessel", "stand", "--json"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /up -d --wait lares/);
+    assert.doesNotMatch(r.calls, /compose .*exec/);
+  });
+
+  test(`${name}: vessel stand on a standing vessel whose verdict reads restand restarts it`, async () => {
+    const r = await run(shim, ["vessel", "stand"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    // The acting stand never runs inside the container: the one exec carries --observe.
+    assert.doesNotMatch(r.calls, /vessel stand\s*$/m);
+  });
+
+  test(`${name}: CONTROL vessel stand on a vessel whose verdict reads attach prints the reading and restarts nothing`, async () => {
+    const r = await run(shim, ["vessel", "stand"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /"act":"attach"/);
+    assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: --observe anywhere in a vessel stand argv keeps it a reading`, async () => {
+    const r = await run(shim, ["vessel", "stand", "--json", "--observe"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node \S+ vessel stand --json --observe/);
+    assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: vessel stand --observe passes through as a reading`, async () => {
+    const r = await run(shim, ["vessel", "stand", "--observe", "--json"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
+    assert.equal((r.calls.match(/--observe --json/g) ?? []).length, 1);
+    assert.doesNotMatch(r.calls, /restart lares/);
   });
 
   test(`${name}: up stands the lares service detached; down removes it`, async () => {
-    assert.match((await run(shim, ["up"], { env: MOUNTS })).calls, /up -d lares/);
+    assert.match((await run(shim, ["up"], { env: MOUNTS })).calls, /up -d --wait lares/);
     assert.match((await run(shim, ["down"], { env: MOUNTS })).calls, /down --remove-orphans/);
   });
 

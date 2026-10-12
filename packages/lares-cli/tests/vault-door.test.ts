@@ -89,7 +89,8 @@ describe("vault door — a credential rides a TTY alone", () => {
     tty = false;
     const refusal = await gatherFoundingRoute().catch((e: unknown) => e);
     expect(refusal).toBeInstanceOf(CredentialTtyRefusal);
-    expect((refusal as Error).message).toMatch(/docker compose run --rm -it found/);
+    expect((refusal as Error).message).toMatch(/tools\/lares-container\.sh found/);
+    expect((refusal as Error).message).toMatch(/--profile offline run --rm offline vessel found/);
   });
 
   it("the founding gatherer on a TTY returns one passphrase slot", async () => {

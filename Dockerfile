@@ -122,6 +122,9 @@ ENV LAR_ROOT=/state \
     LAR_GENESIS=/app/genesis
 # A HOME for an arbitrary runtime uid (`user:` in compose) that has no passwd entry.
 ENV HOME=/tmp
+# THE HOST HOLDS THE ENGINE. The daemon runs as this container's main process, so the CLI inside reports a
+# standing verdict and never stops or spawns a daemon; the host shim restarts the container.
+ENV LAR_ENGINE=host
 # Peer port — single surface: WS /ws + GET /api/health
 ENV LAR_PORT=4321
 # Auth env vars — set via docker compose or -e flags

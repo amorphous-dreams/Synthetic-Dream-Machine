@@ -1,17 +1,25 @@
 #!/bin/sh
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml).
 #
-#   lares-container.sh up [--capture <dir>]...   stand the vessel (detached)
+#   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
 #   lares-container.sh down                      stop it and remove its container (state stays in LARES_STATE)
-#   lares-container.sh found [vessel-found args] the offline founding act, under a TTY (it gathers the human route: a
-#                                                passphrase and/or a paper pin; with no TTY the CLI refuses CredentialTtyRefusal)
+#   lares-container.sh found [vessel-found args] the founding act, under a TTY (it gathers the human route: a passphrase
+#                                                and/or a paper pin; with no TTY the CLI refuses CredentialTtyRefusal)
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
-#   lares-container.sh <anything else>           run the lares CLI INSIDE the standing container (vault status|unlock|bind|
-#                                                unbind read their credential on that TTY)
+#   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
+#                                                longer matches its state on disk; otherwise print the standing
+#   lares-container.sh <anything else>           run the lares CLI: inside the standing vessel, or through the offline
+#                                                door when no vessel stands (vault status|unlock|bind|unbind read their
+#                                                credential on that TTY)
 #
-# The CLI runs by `compose exec`, never `run`: it shares the daemon's /tmp (the UDS rendezvous), uid and
-# environment. `found` is the one `run`, because founding is an offline act on a stopped store. The engine gets no
-# docker socket; engine control stays with the host. One lararium per HUMAN: nothing here names a face.
+# ONE STORE DOOR. While a vessel stands the CLI runs by `compose exec`, sharing the daemon's /tmp (the UDS
+# rendezvous), uid and environment. With no vessel standing, one `compose run` of the `offline` service owns the
+# store for that act. So a face lights before `up`: found, `persona new 0 --name <label>`, `persona wear 0`, up.
+#
+# THE HOST HOLDS THE ENGINE. The app gets no docker socket, and the CLI inside never stops or starts the daemon.
+# After each exec'd verb that succeeds, the shim reads the CLI's standing verdict (`vessel stand --observe --json`)
+# and restarts the vessel itself when the verdict reads `restand` (a face lit after boot).
+# One lararium per HUMAN: nothing here names a face.
 #
 # LARES_STATE and LARES_WORKSPACE come from the environment or `lares-surface.env` beside the compose file
 # (KEY=VALUE lines, as compose reads them). Neither standing refuses by name.
@@ -46,13 +54,47 @@ compose() {
   fi
 }
 
+running_vessel() { [ -n "$(compose ps -q --status running lares)" ]; }
+
+# The CLI's own reading of the standing vessel against its state on disk. It runs without a TTY: the answer is JSON
+# for this script, never a prompt.
+observe_output=""
+observe_standing() { observe_output=$(compose exec -T lares node "$CLI" vessel stand --observe --json); }
+verdict_restand() {
+  printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"restand"'
+}
+
+lift_vessel() {
+  reason=$(printf '%s\n' "$observe_output" | sed -n 's/.*"standing"[[:space:]]*:[[:space:]]*{[^}]*"reason"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+  printf 'lares-container: %s; restarting the vessel\n' "${reason:-the standing requires a re-stand}" >&2
+  if ! compose restart lares; then printf '%s\n' 'lares-container: the vessel restart failed' >&2; return 1; fi
+  if ! compose up -d --wait lares; then printf '%s\n' 'lares-container: the vessel did not answer healthy after its restart' >&2; return 1; fi
+}
+
+# Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
+# vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it. A caller
+# that asked for the reading itself (`--observe`) gets that reading alone.
+follow_up=yes
+route_cli() {
+  if running_vessel; then
+    # shellcheck disable=SC2046
+    if compose exec $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+    if [ "$rc" -ne 0 ]; then return "$rc"; fi
+    if [ -n "$follow_up" ] && observe_standing && verdict_restand; then lift_vessel; fi
+  else
+    printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
+    # shellcheck disable=SC2046
+    compose --profile offline run --rm $(tty_flag) offline "$@"
+  fi
+}
+
 # Read the terminal NOW: inside `$(tty_flag)` stdout is the substitution's pipe, so a `[ -t 1 ]` there is always false
 # and every founding would lose its TTY.
 HAVE_TTY=""
 if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
 tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|found|logs|<lares verb…>"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|found|logs|vessel stand|<lares verb…>"
 verb=$1; shift
 
 case "$verb" in
@@ -82,23 +124,29 @@ case "$verb" in
       override=$(mktemp)
       printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
       if [ -n "$ENV_ARGS" ]; then
-        docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d lares
+        docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
       else
-        docker compose -f "$COMPOSE_FILE_PATH" -f "$override" up -d lares
+        docker compose -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
       fi
     else
-      compose up -d lares
+      compose up -d --wait lares
     fi ;;
   down)  compose down --remove-orphans "$@" ;;
   logs)  compose logs "$@" lares ;;
   found)
     # shellcheck disable=SC2046
-    if [ "$#" -eq 0 ]; then
-      compose --profile found run --rm $(tty_flag) found
+    compose --profile offline run --rm $(tty_flag) offline vessel found --skip-build --root /state --genesis /app/genesis "$@" ;;
+  vessel)
+    observing=""
+    for arg in "$@"; do if [ "$arg" = --observe ]; then observing=yes; fi; done
+    if [ "${1:-}" = stand ] && [ -z "$observing" ]; then
+      if ! running_vessel; then compose up -d --wait lares
+      elif ! observe_standing; then printf '%s\n' 'lares-container: the standing vessel answered no verdict' >&2; exit 1
+      elif verdict_restand; then lift_vessel
+      else printf '%s\n' "$observe_output"; fi
     else
-      compose --profile found run --rm $(tty_flag) found vessel found --skip-build --root /state --genesis /app/genesis "$@"
+      if [ -n "$observing" ]; then follow_up=""; fi
+      route_cli "$verb" "$@"
     fi ;;
-  *)
-    # shellcheck disable=SC2046
-    compose exec $(tty_flag) lares node "$CLI" "$verb" "$@" ;;
+  *) route_cli "$verb" "$@" ;;
 esac

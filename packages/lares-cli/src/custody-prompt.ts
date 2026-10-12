@@ -29,7 +29,8 @@ export class CredentialTtyRefusal extends Error {
 
 /** The container recipe a refusal names: the founding runs attached to a pseudo-terminal. */
 export const CONTAINER_FOUND_HOW =
-  "In the container run it attached: `docker compose run --rm -it found` (or `tools/lares-container.sh found`); " +
+  "In the container run it attached: `tools/lares-container.sh found` from a terminal (the shim runs " +
+  "`docker compose --profile offline run --rm offline vessel found …`); " +
   "`-T`, a pipe or a detached `up` has no TTY.";
 
 /** Refuse by name unless a TTY stands on both ends. */
