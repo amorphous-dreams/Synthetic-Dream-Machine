@@ -13,7 +13,7 @@ manao             = 16
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "persona-policy — the operator's three rulings on the multi-persona identity core: ONE face per vessel at a time (PRIVATE-all, PUBLIC-one); a switch closes Nexus sessions, records the transition locally, and re-dials as the incoming face · each PersonaGroup a CRYPTOGRAPHIC INDIVIDUAL (Sybil-of-one the accepted IoC cost, answered socially never in crypto) · DISTINCT recovery custodians per persona. Plus the two-layer pet-names (private map ⊥ public glamour) under Zooko — the pet-name FLEET-SYNCS among the human's own vessels and never PUBLICLY federates — under THE BINDING LAW: only a publicly announced Handle binds a PersonaGroup to a public glamour, so no other path may carry a persona's name onto a federating surface. Identity carries no universal index; the mesh refuses to build the SIN even to defend itself"
+role              = "persona-policy — the operator's rulings on the multi-persona identity core: a SESSION wears the face and the vessel wears none, so every act carries exactly ONE face (PRIVATE-all, PUBLIC-one); a switch runs as ONE session's act, recorded on the vessel and never on the wire; two faces live from one vessel never link on the wire · each PersonaGroup a CRYPTOGRAPHIC INDIVIDUAL (Sybil-of-one the accepted IoC cost, answered socially never in crypto) · DISTINCT recovery custodians per persona. Plus the two-layer pet-names (private map ⊥ public glamour) under Zooko — the pet-name FLEET-SYNCS among the human's own vessels and never PUBLICLY federates — under THE BINDING LAW: only a publicly announced Handle binds a PersonaGroup to a public glamour, so no other path may carry a persona's name onto a federating surface. Identity carries no universal index; the mesh refuses to build the SIN even to defend itself"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/persona-policy"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -29,21 +29,77 @@ written           = "2026-07-20"
 
 ! Persona-Policy ~ one face out, the multitude within
 
-The multi-persona identity core (persona-circle: a human as a private Circle of selves, each an all-hardened key at its own handle-index) ''carries three operator rulings'' that fix how a vessel wears its selves and how it recovers them. Each ruling ''bends toward the same law'': the mesh refuses a global identity-now, so it never builds the Single Identity Number even to defend itself. The rulings land 2026-07-20, dispatched to code at #64 stage 4.
+The multi-persona identity core (persona-circle: a human as a private Circle of selves, each an all-hardened key at its own handle-index) ''carries three operator rulings'' that fix how a human's selves get worn over a vessel and how they recover. Each ruling ''bends toward the same law'': the mesh refuses a global identity-now, so it never builds the Single Identity Number even to defend itself. The rulings land 2026-07-20, dispatched to code at #64 stage 4; the session ruling (#/the-session) lands 2026-10-11 and names WHAT wears a face.
 
 <<~/ahu>>
 
 <<~ ahu #/one-face>>
 
-!! Ruling 1 ~ one face per vessel at a time (PRIVATE-all, PUBLIC-one)
+!! Ruling 1 ~ one face per act (PRIVATE-all, PUBLIC-one)
 
-''A vessel wears ONE face at a time.'' The public/carry shore serves ''only the WORN persona''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward.
+''Every act carries exactly ONE face.'' A SESSION wears it, and the vessel wears none (#/the-session). A session's public/carry shore serves ''only the persona that session WEARS''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward.
 
-''A face names WHO ANSWERS for an act'' — one blame-bearer per act; correlation stays secondary. The ruling calls for recording outgoing and incoming faces locally with causal position and rebind/re-dial results, closing every Nexus session, then re-dialing as the incoming face. The recorded switch act stands ruled, unbuilt: the code as it stands resolves the worn face at boot, so a switch takes a restart until that act lands. A vessel wears ONE face at a time, either a private face alone or paired with its public Handle; a personal Handle never rides without its owning face.
+''A face names WHO ANSWERS for an act'' — one blame-bearer per act; correlation stays secondary. The ruling calls for recording outgoing and incoming faces locally with causal position and rebind/re-dial results, closing the switching session's Nexus links, then re-dialing as the incoming face (#/the-session: the switch belongs to ONE session and touches no other). The recorded switch act stands ruled, unbuilt: the code as it stands keeps ONE vessel-wide selector and resolves one worn face at vessel boot, so a switch takes a restart until that act lands. A session wears ONE face at a time, either a private face alone or paired with its public Handle; a personal Handle never rides without its owning face.
 
 ''The human keeps many faces and many Handles across many cabals.'' Faces and Handles relate many-to-many with cabals; one current personal Handle belongs to each PersonaGroup, and a renamed face rotates its Handle. A collective quorum Handle stays separate and speaks only for its chartered acts. No root or switch notice joins face names.
 
 The wall stays custody-by-TYPE: wearing a persona ''REQUIRES that this vessel HOLD its sovereign root'' — you sign only as a self whose secret you carry (persona-vault#wearPersona).
+
+<<~/ahu>>
+
+<<~ ahu #/the-session>>
+
+!! Ruling 1b ~ a SESSION wears the face; the vessel wears none (operator ruling, 2026-10-11)
+
+''A SESSION wears the face — a browser tab, a CLI run — and the vessel wears none.'' Quote license: //"Consider a human might want a tab open as one Persona, and a tab open as another Persona... same vessel. Identity as relation."// and //"Yes, a CLI session wears its own face too. Pono question, as those act as ephemeral UX."// Sessions stand as ephemeral UX over a vessel. Several may live at once over one vessel, each wearing its own persona, and ''every act carries exactly one face''.
+
+''One Lararium per human, never one per face'' (operator ruling, 2026-10-11; quote license: //"I don't think running 3 docker images for 1 human shall hold up at civic scale … what if every human I invite has 10 'faces' (they need their data together, I need maintainable/manageable IaC for the IaMyth)."//). A human's faces keep their data together in the one vessel (#/one-face, PRIVATE-all). Plurality rides sessions and the switch act, never a fleet of per-face vessels. Face plurality stands as an ordinary case from the first Nexus onward (quote license: //"Both Freyja and I shall 'wear' many personas (w/ public Handles) on the first Nexus of the DreamNet. We both have at least 3."//).
+
+!!! Three layers ~ where each object lives
+
+|! VESSEL |! PERSONA |! SESSION |
+| its own roots, device-minted (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key">>) | the persona root, held in the vessel's custody; it never travels | the worn face |
+| the one store and its one backing Repo | its planes (`@persona` · `@circles` · `@identities` · `@sessions`) | a capability-limited view of that Repo |
+| the device key, serving custody and local identity ONLY | its admit relation | access to the worn face's planes and to no other face's |
+| custody, the store lock, the holder | its ONE current public Handle | the EFFECTIVE recipe |
+| the daemon island, face-blind | a face-scoped proof subject | fresh transport keys per dial; ONE face's proof and admit, presented |
+| the switch RECORD, vessel-private | | the switch ACT |
+
+''What the ruling states outright'': a vessel holds its roots and one store; a session contracts in as ONE persona; the vessel-wide parts (custody, the daemon island) serve every session and let none read another's planes; each session proves itself under its own face-scoped key. ''The remaining cells place objects as a model study read them against canon and code (2026-10-11)'': builders read those cells as the standing model, unbuilt, and a later ruling may move one. The face-scoped proof subject stands named and undesigned (OWED, below).
+
+!!! What never links on the wire
+
+''Two faces live from one vessel never link on the wire.'' Each session proves itself under its own face-scoped key, never under a key the vessel shares across sessions. So the protocol carries no shared vessel identifier across faces, no cross-face proof, and no artifact that joins two faces. No root or switch notice joins face names (#/one-face).
+
+''The residuals, named.'' The promise reads as SCOPED separation, never blanket unlinkability. The protocol cannot hide: a network address · timing · a shared destination · a human's own self-disclosure · hostile same-origin code · the device owner · co-residency on one device. A herm's carriage still shows locators and timing. The field's precedents (browser containers, Tor stream isolation, pairwise identifiers, Noise identity hiding) each promise the scoped kind and no more.
+
+!!! The switch ~ one session's act
+
+''A switch belongs to ONE session.'' It closes that session's Nexus links, resolves the incoming face, and re-dials as that face; every other session the vessel holds stays untouched. `persona wear` acts on a session. A face resolves once per session's island boot, never once per vessel boot. The vessel keeps the record (#/one-face) as a vessel-local causal act; the record never crosses the wire.
+
+!!! OWED ~ the build
+
+The code as it stands cracks against the ruling in three places (read 2026-10-11, nothing run):
+
+# ''One vessel-wide selector.'' `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) moves one active pointer; the node and browser boots each resolve ONE worn face, and `persona wear` asks for a reboot.
+# ''The gate proof names the VESSEL.'' The leaf identity loads the vessel seed and ContactCard (`packages/lararium-node/src/leaf-identity.ts`), and the auth wire proves the vessel key and binds the admit to it (`packages/lararium-mesh/src/auth-wire.ts`). Two sessions of one vessel that wear different faces correlate at any gate both dial.
+# ''The holder broadcasts.'' The shared holder forwards every island message to every tab (`packages/lararium-browser/src/shared-holder-core.ts`), and the PersonaGroup ring's own-hand path skips the grant check (`packages/lararium-mesh/src/persona-group-ring.ts`), so plane names separate bags without authorizing sessions.
+
+''A per-Nexus wire key alone does not close crack 2.'' It removes the vessel's cross-Nexus link (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>) and leaves two faces of one vessel on the SAME Nexus sharing it; per-dial transport keys serve the sibling channel, never the gate proof. The gate owes a face-scoped proof subject.
+
+''Five seams carry the build'' (the model study's cut; a lane plan, never law): a session face contract replaces the vessel selector's live authority · mounts, planes and the effective recipe resolve at SESSION-island boot · leaf identity, gate proof, admit binding and the PersonaGroup grant lookup move to a face-scoped proof subject that exposes no root bytes · each session takes a capability-limited Repo path, and the holder answers the requesting session alone · the switch records as a vessel-local causal act scoped to one session.
+
+!!! Three bounds, ruled (operator ruling, 2026-10-11)
+
+Quote license: //"approve your leans, let's get this Craft across a goalpost line"//. The three leans the model study carried now stand as law:
+
+* ''Two sessions wearing the SAME face may correlate.'' A face's proof identity and its public Handle link that face's own acts by design. Only a link BETWEEN faces stays forbidden.
+* ''Plane isolation inside a vessel runs by CAPABILITY-LIMITED sessions, and the vessel's own daemon stands TRUSTED.'' No per-plane encryption stands against the vessel's own daemon; a session reaches the planes its face grants and no other.
+* ''The browser's protection stops at two named residuals'': hostile same-origin code, and the device owner.
+
+!!! OWED ~ unruled
+
+* ''How does a face-scoped proof key come into being without moving a persona root?'' Derivation against delegation stands unsettled; a design study runs on it, and no lean stands approved. A builder MUST NOT harden either answer into code as law.
 
 <<~/ahu>>
 
@@ -63,7 +119,7 @@ The honest wall stays lit, dual to the wax-stamp's: ''"a valid key" reads as cry
 
 !! Ruling 2b ~ the MANAGED persona, and why the human stays unbound (operator ruling, 2026-09-04)
 
-''A human `#has` multiple PersonaGroups, and WEARS a Persona on a device.'' The Persona carries identity here; the human enters as no object at all.
+''A human `#has` multiple PersonaGroups, and WEARS a Persona on a device.'' The Persona carries identity here; the human enters as no object at all. The session ruling sharpens the grain: the wearing binds a SESSION over that device's vessel, so one device may carry several worn Personas at once (#/the-session).
 
 ''A PERSONA MANAGES A PERSONAGROUP — never a device owner, and never a human.'' Management runs ''inside'' the persona layer, and that keeps the human unbound: no owner-of-record stands anywhere for a chain to climb to.
 
@@ -178,9 +234,11 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I98XsVoakjuofj3hk4Xb2jKOEwyzL9lYPMRAuv4jo48
+<<^ code="&#x0003;">>ni:///sha-256;Gfho0r4oyX6AwFLmpecP5RI6vN9MgjWCTinITdU6eAE
 
 <<^ code="&#x0004;" -> to="?">>
