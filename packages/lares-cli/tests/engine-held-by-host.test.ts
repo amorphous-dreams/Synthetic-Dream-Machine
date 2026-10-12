@@ -23,6 +23,17 @@ describe("the host holds the engine", () => {
     expect(kill).not.toHaveBeenCalled();
   });
 
+  it("the foreground and with-web stands boot nothing and refuse by name", async () => {
+    vi.stubEnv("LAR_ENGINE", "host");
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { cmdStandForeground, cmdStandWithWeb } = await import("../src/commands/scripted.js");
+    const { parseArgs } = await import("../src/parse-args.js");
+    expect(await cmdStandForeground(parseArgs(["vessel", "stand", "--foreground"]))).toBe(3);
+    expect(await cmdStandWithWeb(parseArgs(["vessel", "stand", "--with-web"]))).toBe(3);
+    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toMatch(/EngineHeldByHost: vessel stand --foreground[\s\S]*EngineHeldByHost: vessel stand --with-web/);
+    err.mockRestore();
+  });
+
   it("CONTROL without the setting the door runs: a free port answers stopped false and signals nobody", async () => {
     vi.stubEnv("LAR_ENGINE", "");
     const kill = vi.fn();

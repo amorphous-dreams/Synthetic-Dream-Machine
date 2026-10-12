@@ -79,17 +79,29 @@ export function admitBoardIsland(ownVesselKey: string): string {
 /**
  * The relay address an admit carries when the caller names none: the vessel's DECLARED reach face
  * (`LAR_PUBLIC_URL`), turned into its relay URL by the one derivation the banner uses, so an `https` name
- * carries `wss`. A loopback face never rides an admit: on the joining device `localhost` names that device.
- * No declaration, or a loopback one, leaves the address null and the joinee dials what its operator supplies.
+ * carries `wss`.
+ *
+ * The declaration counts only as a bare http(s) ORIGIN: a scheme, a host and an optional port. Credentials, a
+ * path, a query or a fragment name something other than a reach face, and any of them leaves the address null.
+ * A loopback or unspecified host never rides an admit: on the joining device `localhost` names that device, and
+ * `0.0.0.0` names no device. No usable declaration leaves the address null, and the joinee dials what its
+ * operator supplies.
  */
 export function deviceAdmitSyncUrl(explicitSyncUrl?: string): string | null {
   if (explicitSyncUrl !== undefined) return explicitSyncUrl;
-  const publicUrl = process.env["LAR_PUBLIC_URL"]?.trim();
-  if (!publicUrl) return null;
-  let host: string;
-  try { host = new URL(publicUrl).hostname.toLowerCase(); } catch { return null; }
-  if (host === "localhost" || host === "[::1]" || host === "::1" || /^127\./.test(host)) return null;
-  return wsUrlForOrigin(publicUrl);
+  const declared = process.env["LAR_PUBLIC_URL"]?.trim();
+  if (!declared) return null;
+  let url: URL;
+  try { url = new URL(declared); } catch { return null; }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  if (url.username || url.password || url.search || url.hash || (url.pathname !== "/" && url.pathname !== "")) return null;
+  const host = url.hostname.toLowerCase().replace(/\.$/, "").replace(/^\[|\]$/g, "");
+  const loopbackOrUnspecified =
+    host === "" || host === "localhost" || host.endsWith(".localhost") ||
+    /^127\./.test(host) || host === "0.0.0.0" ||
+    host === "::1" || host === "::" || /^::ffff:(127\.|0\.0\.0\.0$|7f[0-9a-f]{2}:)/.test(host) || host === "::ffff:0:0";
+  if (loopbackOrUnspecified) return null;
+  return wsUrlForOrigin(url.origin);
 }
 
 /** The oracle titles whose documents a joinee mounts as its hearth's base canon. */

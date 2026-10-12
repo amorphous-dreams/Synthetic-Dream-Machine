@@ -11,6 +11,7 @@
 // this tool emits and verifies the record and publishes nothing. The CIDs follow the genesis directory it reads,
 // so a release cut after the engine fold names the folded CIDs with no change here.
 import { readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -23,6 +24,28 @@ const node = await import(pathToFileURL(resolve(ROOT, "packages/lararium-node/di
 const SEED_CID = /^[0-9a-f]{64}$/;
 const REGION_CID = /^b[a-z2-7]{58}$/;
 const SHAPE = { seedCid: SEED_CID, engineCid: REGION_CID, grammarCid: REGION_CID };
+
+const PLATFORM = /^[a-z0-9]+\/[a-z0-9_]+(?:\/[a-z0-9]+)?$/;
+function assertPlatforms(platforms) {
+  if (!Array.isArray(platforms) || platforms.length === 0) throw new Error("[release-manifest] a release names at least one platform (--platform <os/arch>)");
+  for (const p of platforms) if (typeof p !== "string" || !PLATFORM.test(p)) throw new Error(`[release-manifest] platform reads as no os/arch pair: ${String(p)}`);
+}
+
+/** The record holds exactly its declared fields: a missing one or an extra one names a different record. */
+function shapeDifferences(manifest) {
+  const out = [];
+  const keys = (value, wanted, where) => {
+    const got = value && typeof value === "object" && !Array.isArray(value) ? Object.keys(value).sort().join(",") : "(no object)";
+    if (got !== wanted) out.push(`${where}: fields=${got} expected=${wanted}`);
+  };
+  keys(manifest, "engine,format,genesis,grammar,image", "record");
+  keys(manifest?.image, "digest,platforms", "image");
+  keys(manifest?.genesis, "seedCid", "genesis");
+  keys(manifest?.engine, "cid", "engine");
+  keys(manifest?.grammar, "cid", "grammar");
+  try { assertPlatforms(manifest?.image?.platforms); } catch (error) { out.push(`image.platforms: ${error.message}`); }
+  return out;
+}
 
 function assertCids(cids, where) {
   for (const [field, shape] of Object.entries(SHAPE)) {
@@ -48,6 +71,13 @@ function readGenesisCids(genesisDir) {
   if (!node.readGenesisCasManifest(genesisDir)) {
     throw new Error(`[release-manifest] genesis directory has no readable seed or CAS manifest: ${genesisDir}`);
   }
+  // An address binds bytes only where the bytes stand: every blob the seed names hashes to the name it rests under.
+  for (const [id, blob] of Object.entries(JSON.parse(bytes.toString("utf8")).blobs ?? {})) {
+    let held;
+    try { held = readFileSync(resolve(genesisDir, "cas", String(blob.sha256))); }
+    catch { throw new Error(`[release-manifest] genesis CAS holds no blob for ${id} (${blob.sha256})`); }
+    if (createHash("sha256").update(held).digest("hex") !== blob.sha256) throw new Error(`[release-manifest] genesis CAS blob ${id} does not hash to its address ${blob.sha256}`);
+  }
   const cids = {
     seedCid: node.genesisSeedCid(bytes),
     engineCid: node.readGenesisEngineCid(genesisDir),
@@ -60,10 +90,12 @@ function readGenesisCids(genesisDir) {
 /** Build the content-address-only release record. */
 export function buildReleaseManifest({ image, genesisDir = resolve(ROOT, "genesis"), platforms = [] }) {
   const digest = digestOfImage(image);
+  const named = [...new Set(platforms)].sort();
+  assertPlatforms(named);
   const cids = readGenesisCids(genesisDir);
   return {
     format: "lararium-release-manifest/v1",
-    image: { digest, platforms: [...new Set(platforms)].sort() },
+    image: { digest, platforms: named },
     genesis: { seedCid: cids.seedCid },
     engine: { cid: cids.engineCid },
     grammar: { cid: cids.grammarCid },
@@ -83,7 +115,7 @@ export function canonicalJson(value) {
 /** Compare a manifest with local genesis CIDs or CIDs read from an image. */
 export function verifyReleaseManifest(manifest, { genesisDir = resolve(ROOT, "genesis"), image, imageCids } = {}) {
   const expected = imageCids ?? readGenesisCids(genesisDir);
-  const differences = [];
+  const differences = shapeDifferences(manifest);
   const compare = (field, actual, wanted) => {
     if (actual !== wanted) differences.push(`${field}: manifest=${String(actual)} expected=${String(wanted)}`);
   };
@@ -105,17 +137,36 @@ export function verifyReleaseManifest(manifest, { genesisDir = resolve(ROOT, "ge
   return { ok: differences.length === 0, differences };
 }
 
-const imageReadScript = `import('/app/packages/lararium-node/dist/src/index.js').then(async n => { const {readFileSync}=await import('node:fs'); const dir='/app/genesis'; const bytes=readFileSync(dir+'/seed.json'); if (!n.readGenesisCasManifest(dir)) throw new Error('image genesis seed or CAS manifest unreadable'); console.log(JSON.stringify({ seedCid:n.genesisSeedCid(bytes), engineCid:n.readGenesisEngineCid(dir), grammarCid:n.readGenesisGrammarCid(dir) })); }).catch(e => { console.error(e.message); process.exitCode=1; });`;
+// Runs INSIDE the image: reads the three CIDs and proves every CAS blob the seed names hashes to its address.
+const imageReadScript = `import('/app/packages/lararium-node/dist/src/index.js').then(async n => { const {readFileSync}=await import('node:fs'); const {createHash}=await import('node:crypto'); const dir='/app/genesis'; const bytes=readFileSync(dir+'/seed.json'); if (!n.readGenesisCasManifest(dir)) throw new Error('image genesis seed or CAS manifest unreadable'); for (const [id,b] of Object.entries(JSON.parse(bytes.toString('utf8')).blobs||{})) { if (createHash('sha256').update(readFileSync(dir+'/cas/'+b.sha256)).digest('hex')!==b.sha256) throw new Error('image CAS blob '+id+' does not hash to its address'); } console.log(JSON.stringify({ seedCid:n.genesisSeedCid(bytes), engineCid:n.readGenesisEngineCid(dir), grammarCid:n.readGenesisGrammarCid(dir) })); }).catch(e => { console.error(e.message); process.exitCode=1; });`;
 
 /** Read the three genesis CIDs carried by an image. `exec` receives argv and returns {status,stdout,stderr}. */
-export async function readImage({ image, exec = defaultExec }) {
+export async function readImage({ image, platform, exec = defaultExec }) {
   digestOfImage(image);
-  const result = await exec("docker", ["run", "--rm", "--entrypoint", "node", image, "-e", imageReadScript]);
+  if (platform !== undefined) assertPlatforms([platform]);
+  const result = await exec("docker", ["run", "--rm", ...(platform ? ["--platform", platform] : []), "--entrypoint", "node", image, "-e", imageReadScript]);
   if (result.status !== 0) throw new Error(`[release-manifest] image read failed: ${result.stderr || result.stdout}`);
   let cids;
   try { cids = JSON.parse(result.stdout); } catch { throw new Error("[release-manifest] image did not return a JSON CID record"); }
   assertCids(cids, "image");
   return cids;
+}
+
+/**
+ * Check a record against the image itself. A multi-arch index holds one image per platform and each carries its
+ * own genesis bytes; the record binds them all, so every platform the record names gets read, and a difference
+ * names its platform.
+ */
+export async function verifyAgainstImage(manifest, { image, exec = defaultExec }) {
+  const differences = shapeDifferences(manifest);
+  if (differences.length > 0) return { ok: false, differences };
+  for (const platform of manifest.image.platforms) {
+    let imageCids;
+    try { imageCids = await readImage({ image, platform, exec }); }
+    catch (error) { differences.push(`${platform}: ${error.message}`); continue; }
+    for (const d of verifyReleaseManifest(manifest, { image, imageCids }).differences) differences.push(`${platform}: ${d}`);
+  }
+  return { ok: differences.length === 0, differences };
 }
 
 function defaultExec(command, args) {
@@ -128,10 +179,11 @@ function parseArgs(argv) {
   const options = {};
   for (let i = 0; i < rest.length; i++) {
     const arg = rest[i];
-    if (arg === "--platform") (options.platforms ??= []).push(rest[++i]);
-    else if (arg.startsWith("--")) options[arg.slice(2)] = rest[++i];
-    else throw new Error(`[release-manifest] unexpected argument: ${arg}`);
-    if (options["out"] === "undefined" || options["genesis"] === "undefined") throw new Error(`[release-manifest] ${arg} requires a value`);
+    if (!arg.startsWith("--")) throw new Error(`[release-manifest] unexpected argument: ${arg}`);
+    const value = rest[++i];
+    if (value === undefined || value.startsWith("--")) throw new Error(`[release-manifest] ${arg} requires a value`);
+    if (arg === "--platform") (options.platforms ??= []).push(value);
+    else options[arg.slice(2)] = value;
   }
   return { command, options };
 }
@@ -153,16 +205,18 @@ async function main(argv) {
     if (!options.manifest) throw new Error("[release-manifest] verify requires --manifest <file>");
     const manifest = JSON.parse(readFileSync(resolve(options.manifest), "utf8"));
     let result;
+    let checked;
     if (options["from-image"]) {
-      const imageCids = await readImage({ image: options["from-image"] });
-      result = verifyReleaseManifest(manifest, { image: options["from-image"], imageCids });
+      result = await verifyAgainstImage(manifest, { image: options["from-image"] });
+      checked = `the image carries the record's genesis, engine and grammar on ${manifest?.image?.platforms?.join(", ")}`;
     } else {
       result = verifyReleaseManifest(manifest, { genesisDir: options.genesis ?? resolve(ROOT, "genesis"), image: options.image });
+      checked = options.image ? "the record matches the genesis directory and the image digest given" : "the record matches the genesis directory; NO image got read (pass --from-image <ref> to check the image itself)";
     }
     if (!result.ok) {
       for (const difference of result.differences) console.error(difference);
       process.exitCode = 1;
-    } else process.stdout.write("release manifest verified\n");
+    } else process.stdout.write(`release manifest verified: ${checked}\n`);
     return;
   }
   throw new Error("usage: release-manifest.mjs emit --image <digest-ref> [--genesis <dir>] [--platform <os/arch>]... [--out <file>] | verify --manifest <file> [--genesis <dir>] [--image <ref>] [--from-image <ref>] | read-image --image <ref>");

@@ -70,7 +70,15 @@ describe("LAN candidate discovery", () => {
     expect(() => encodeLanResponse({ instance: "a1b2c3d4", port: 80, key: "f".repeat(64) } as never)).toThrow();
   });
 
-  test("candidate host comes from datagram source even when packet target names another host", () => {
+  test("the candidate host comes from the datagram source, never from a name inside the packet", () => {
+    const socket = new Party(new Bus(), "listener");
+    const listener = createLanListener({ socket, onCandidate: () => {} });
+    socket.inject(encodeLanResponse({ instance: "a1b2c3d4", port: 8080 }), "10.4.5.6");
+    expect(listener.candidates()).toEqual([{ url: "http://10.4.5.6:8080", instance: "a1b2c3d4" }]);
+    listener.close();
+  });
+
+  test("a response whose SRV target names another host holds bytes the bare format never emits, and yields nothing", () => {
     const socket = new Party(new Bus(), "listener");
     const listener = createLanListener({ socket, onCandidate: () => {} });
     const response = encodeLanResponse({ instance: "a1b2c3d4", port: 8080 });
@@ -83,7 +91,18 @@ describe("LAN candidate discovery", () => {
     expect(targetAt).toBeGreaterThan(0);
     anotherHost.set(new TextEncoder().encode("evilhost"), targetAt + 1);
     socket.inject(anotherHost, "10.4.5.6");
+    expect(listener.candidates()).toEqual([]);
+    // CONTROL: the same bytes untouched yield the candidate.
+    socket.inject(response, "10.4.5.6");
     expect(listener.candidates()).toEqual([{ url: "http://10.4.5.6:8080", instance: "a1b2c3d4" }]);
+    listener.close();
+  });
+
+  test("a caller may lower the candidate bound and never raise it past the module's ceiling", () => {
+    const socket = new Party(new Bus(), "listener");
+    const listener = createLanListener({ socket, limit: Number.MAX_SAFE_INTEGER, onCandidate: () => {} });
+    for (let i = 0; i < 80; i++) socket.inject(encodeLanResponse({ instance: i.toString(16).padStart(8, "0"), port: 8080 }), `10.9.${Math.floor(i / 200)}.${i % 200 + 1}`);
+    expect(listener.candidates()).toHaveLength(64);
     listener.close();
   });
 

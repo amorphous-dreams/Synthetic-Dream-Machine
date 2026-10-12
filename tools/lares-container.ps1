@@ -47,9 +47,15 @@ function ObserveStanding {
   return ,@($out)
 }
 
-function VerdictRestand([string[]]$output) {
-  try { return (ConvertFrom-Json -InputObject ($output -join "`n")).data.standing.act -eq 'restand' } catch { return $false }
+# The verdict an answer names, or '' when it names none this shim knows (an empty or unreadable answer).
+function VerdictAct([string[]]$output) {
+  try {
+    $act = [string](ConvertFrom-Json -InputObject ($output -join "`n")).data.standing.act
+    if ($act -eq 'attach' -or $act -eq 'restand') { return $act }
+  } catch {}
+  return ''
 }
+function VerdictRestand([string[]]$output) { return (VerdictAct $output) -eq 'restand' }
 
 function LiftVessel([string[]]$output) {
   $reason = 'the standing requires a re-stand'
@@ -69,8 +75,8 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
     if ($followUp) {
       # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
       $answer = ObserveStanding
-      if ($script:ObserveFailed) {
-        [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it failed; run `lares-container.ps1 vessel stand`')
+      if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') {
+        [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.ps1 vessel stand`')
         exit 1
       }
       if (VerdictRestand $answer) { LiftVessel $answer }
@@ -131,7 +137,7 @@ switch ($verb) {
       if (-not (HasRunningVessel)) { Compose @('up', '-d', '--wait', 'lares') }
       else {
         $answer = ObserveStanding
-        if ($script:ObserveFailed) { Die 'the standing vessel answered no verdict' }
+        if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') { Die 'the standing vessel answered no verdict' }
         if (VerdictRestand $answer) { LiftVessel $answer } else { $answer }
       }
     }

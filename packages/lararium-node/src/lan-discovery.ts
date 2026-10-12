@@ -216,12 +216,15 @@ export function decodeLanPacket(input: Uint8Array): LanPacket | null {
     const ptrs = records.filter((r): r is Extract<LanRecord, { type: "PTR" }> => r.type === "PTR");
     const srvs = records.filter((r): r is Extract<LanRecord, { type: "SRV" }> => r.type === "SRV");
     const txts = records.filter((r): r is Extract<LanRecord, { type: "TXT" }> => r.type === "TXT");
+    // The bare announcement holds exactly these three records. A response carrying anything more, or an SRV
+    // target other than the instance's own `.local` name, holds bytes this format never emits and yields nothing.
+    if (records.length !== 3 || an + ns + ar !== 3) return null;
     if (ptrs.length !== 1 || srvs.length !== 1 || txts.length !== 1) return null;
     const ptr = ptrs[0]!, srv = srvs[0]!, txt = txts[0]!;
     const match = /^([0-9a-f]{8})\._lararium\._tcp\.local$/.exec(ptr.target);
     if (!match || ptr.name.toLowerCase() !== SERVICE || srv.name.toLowerCase() !== ptr.target.toLowerCase() ||
         txt.name.toLowerCase() !== ptr.target.toLowerCase() || srv.priority !== 0 || srv.weight !== 0 ||
-        srv.port < 1 || srv.port > 65535 ||
+        srv.port < 1 || srv.port > 65535 || srv.target.toLowerCase() !== `${match[1]!.toLowerCase()}.local` ||
         txt.strings.length !== 1 || txt.strings[0] !== "") return null;
     const instance = match[1]!.toLowerCase();
     return { kind: "response", announcement: { instance, port: srv.port }, records };
@@ -250,7 +253,8 @@ export function createLanListener(opts: {
   ownInstance?: string;
   limit?: number;
 }): { query(): void; candidates(): readonly LanCandidate[]; close(): void } {
-  const max = opts.limit === undefined ? MAX_CANDIDATES : Number.isInteger(opts.limit) ? Math.max(0, opts.limit) : 0;
+  // A caller may lower the bound and never raise it: the module's own ceiling holds whatever a caller passes.
+  const max = opts.limit === undefined ? MAX_CANDIDATES : Number.isInteger(opts.limit) ? Math.min(MAX_CANDIDATES, Math.max(0, opts.limit)) : 0;
   const found: LanCandidate[] = [];
   const urls = new Set<string>();
   let closed = false;

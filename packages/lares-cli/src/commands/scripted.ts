@@ -7,6 +7,13 @@
 
 import { join } from "node:path";
 import { runTsxScript, runCommand } from "../spawn.js";
+import { engineHeldByHost, EngineHeldByHost } from "../port-control.js";
+
+/** Refuse, by name, an act on the daemon where the host holds the engine. */
+function refuseEngineAct(act: string): number {
+  console.error(`${new EngineHeldByHost(act).name}: ${new EngineHeldByHost(act).message}`);
+  return 3;
+}
 import { repoRoot as REPO_ROOT } from "@lararium/mesh/node";
 import { larDataDir, larProjectionDir, larIdentityDir, larariumDataHome, larRoot } from "../env.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -49,6 +56,7 @@ export async function cmdTestQuine(_args: ParsedArgs): Promise<number> {
  *  worker ERR_MODULE_NOT_FOUND). `node dist/src/main.js` names the only sound boot
  *  (= the package `start` script, the e2e harness). */
 export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
+  if (engineHeldByHost()) return refuseEngineAct("vessel stand --foreground would boot a second daemon");
   const { existsSync } = await import("node:fs");
   const distMain = join(NODE_PKG, "dist", "src", "main.js");
   if (!existsSync(distMain)) {
@@ -64,6 +72,7 @@ export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
 
 /** `lares vessel stand --with-web` — boot node + Vite web surface concurrently (full dev experience). */
 export async function cmdStandWithWeb(_args: ParsedArgs): Promise<number> {
+  if (engineHeldByHost()) return refuseEngineAct("vessel stand --with-web would boot a second daemon and a dev server");
   // Defer to the workspace-root `pnpm dev` script which already wires
   // `concurrently -n node,vite`. Touching that orchestration here would
   // duplicate config that's better kept at one site.

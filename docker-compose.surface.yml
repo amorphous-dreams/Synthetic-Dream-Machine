@@ -34,7 +34,9 @@
 # certificate and key, LARES_TLS_NAME (for example hearth.home.example.test), LARES_TLS_ZONE (for example
 # home.example.test), LARES_LAN_ADDRESS, and a router DHCP setting that gives household devices the resolver's
 # address. Stand it with `docker compose -f docker-compose.surface.yml --profile https up -d`. Set
-# LAR_PUBLIC_URL=https://<LARES_TLS_NAME> and keep LARES_BIND on loopback. The terminator reaches `lares` on
+# LAR_PUBLIC_URL=https://<LARES_TLS_NAME> and keep LARES_BIND on loopback. Both slot services publish on
+# loopback until the operator names the LAN interface (LARES_TLS_BIND, LARES_DNS_BIND): a resolver published on
+# every interface of a multi-homed host would forward for strangers. The terminator reaches `lares` on
 # the compose network at lares:4321, never through its published port. No DNS credential or ACME client enters
 # this file or any service. The resolver answers names under the zone with the LAN address and forwards all
 # other names to LARES_DNS_UPSTREAM (default 1.1.1.1).
@@ -173,6 +175,9 @@ services:
         [ -n "$$LARES_TLS_KEY" ]  || refuse 'LARES_TLS_KEY stands unset — supply the host path of the key file'
         [ -n "$$LARES_TLS_ZONE" ] || refuse 'LARES_TLS_ZONE stands unset — name the zone the resolver answers (for example home.example.test)'
         [ -n "$$LARES_LAN_ADDRESS" ] || refuse 'LARES_LAN_ADDRESS stands unset — give the LAN address the household name answers with'
+        case "$$LARES_TLS_NAME" in *".$$LARES_TLS_ZONE") ;; *) refuse "LARES_TLS_NAME ($$LARES_TLS_NAME) lies outside LARES_TLS_ZONE ($$LARES_TLS_ZONE) — the resolver would never answer it" ;; esac
+        printf '%s\n' "$$LARES_LAN_ADDRESS" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$$' || refuse "LARES_LAN_ADDRESS ($$LARES_LAN_ADDRESS) reads as no IPv4 address"
+        case "$$LARES_LAN_ADDRESS" in 0.*|127.*|255.*) refuse "LARES_LAN_ADDRESS ($$LARES_LAN_ADDRESS) names no device on the LAN" ;; esac
         exec nginx -g 'daemon off;'
     environment:
       LARES_TLS_NAME: ${LARES_TLS_NAME:-}
@@ -187,7 +192,7 @@ services:
       timeout: 3s
       retries: 12
     ports:
-      - "${LARES_TLS_BIND:-0.0.0.0}:${LARES_TLS_PORT:-443}:8443"
+      - "${LARES_TLS_BIND:-127.0.0.1}:${LARES_TLS_PORT:-443}:8443"
     volumes:
       - type: bind
         source: ${LARES_TLS_CERT:-/dev/null}
@@ -230,8 +235,8 @@ services:
       LARES_LAN_ADDRESS: ${LARES_LAN_ADDRESS:-}
       LARES_DNS_UPSTREAM: ${LARES_DNS_UPSTREAM:-1.1.1.1}
     ports:
-      - "${LARES_DNS_BIND:-0.0.0.0}:${LARES_DNS_PORT:-53}:1053/udp"
-      - "${LARES_DNS_BIND:-0.0.0.0}:${LARES_DNS_PORT:-53}:1053/tcp"
+      - "${LARES_DNS_BIND:-127.0.0.1}:${LARES_DNS_PORT:-53}:1053/udp"
+      - "${LARES_DNS_BIND:-127.0.0.1}:${LARES_DNS_PORT:-53}:1053/tcp"
     configs:
       - source: household-resolver-corefile
         target: /etc/coredns/Corefile
@@ -262,9 +267,14 @@ configs:
       }
   household-terminator-nginx:
     content: |
+      # A request for any other name gets no certificate and no vessel: the handshake refuses.
+      server {
+        listen 8443 ssl default_server;
+        ssl_reject_handshake on;
+      }
       server {
         listen 8443 ssl;
-        server_name ${LARES_TLS_NAME:-};
+        server_name ${LARES_TLS_NAME:-unset.invalid};
         ssl_certificate /run/tls/tls.crt;
         ssl_certificate_key /run/tls/tls.key;
         location / {
@@ -275,6 +285,12 @@ configs:
           proxy_set_header Host $$http_host;
           proxy_set_header X-Forwarded-Proto https;
           proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+          # A relay socket rests idle between changes. The proxy's idle timers bound transport alone, at the edge
+          # of the vessel: they decide no admission and no lapse, and a dropped socket simply dials again.
+          proxy_read_timeout 1h;
+          proxy_send_timeout 1h;
+          # A carrier save may exceed the proxy's default body bound; the vessel sets its own.
+          client_max_body_size 0;
         }
       }
   household-resolver-corefile:

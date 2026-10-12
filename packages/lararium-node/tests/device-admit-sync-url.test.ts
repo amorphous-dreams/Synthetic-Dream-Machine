@@ -33,6 +33,36 @@ describe("device-admit relay address", () => {
     }
   });
 
+  test("a declaration normalizes to its origin: an uppercase scheme and a trailing slash change nothing", () => {
+    process.env.LAR_PUBLIC_URL = "HTTPS://Hearth.Home.Example.Test:8443/";
+    expect(deviceAdmitSyncUrl(undefined)).toBe("wss://hearth.home.example.test:8443/ws");
+  });
+
+  test("anything beyond a bare http(s) origin names no reach face", () => {
+    for (const face of [
+      "https://hearth.home.example.test/base", "https://hearth.home.example.test/?q=1", "https://hearth.home.example.test/#x",
+      "https://user:pass@hearth.home.example.test", "ftp://hearth.home.example.test", "wss://hearth.home.example.test",
+    ]) {
+      process.env.LAR_PUBLIC_URL = face;
+      expect(deviceAdmitSyncUrl(undefined), face).toBeNull();
+    }
+  });
+
+  test("every spelling of a loopback or unspecified host stays off the admit", () => {
+    for (const face of [
+      "http://localhost.:4321", "http://app.localhost:4321", "http://0.0.0.0:4321", "http://[::]:4321",
+      "http://[::ffff:127.0.0.1]:4321", "http://127.1.2.3",
+    ]) {
+      process.env.LAR_PUBLIC_URL = face;
+      expect(deviceAdmitSyncUrl(undefined), face).toBeNull();
+    }
+  });
+
+  test("CONTROL: an IPv6 LAN literal carries through", () => {
+    process.env.LAR_PUBLIC_URL = "http://[fd00::20]:4321";
+    expect(deviceAdmitSyncUrl(undefined)).toBe("ws://[fd00::20]:4321/ws");
+  });
+
   test("a declaration that parses as no URL leaves the address null", () => {
     process.env.LAR_PUBLIC_URL = "not a url";
     expect(deviceAdmitSyncUrl(undefined)).toBeNull();

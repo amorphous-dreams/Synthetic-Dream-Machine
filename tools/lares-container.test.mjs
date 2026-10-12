@@ -32,7 +32,9 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
     await writeFile(compose, "services: {}\n");
     if (envFile) await writeFile(join(dir, "lares-surface.env"), envFile);
     const cmd = shim === SH ? ["sh", [SH, ...argv]] : ["pwsh", ["-NoProfile", "-File", PS1, ...argv]];
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose };
+    // A standing vessel answers a steady verdict unless a test scripts another answer.
+    const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
     const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...env }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     return { ...r, calls, dir };
@@ -173,8 +175,16 @@ for (const [name, shim] of shims) {
   test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
     const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
     assert.equal(r.status, 1);
-    assert.match(r.stderr, /the standing check after it failed/);
+    assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: a standing check that exits zero and names no verdict never passes as "no lift"`, async () => {
+    for (const answer of ["", "not json", '{"data":{}}', '{"data":{"standing":{"act":"dance"}}}']) {
+      const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer } });
+      assert.equal(r.status, 1, JSON.stringify(answer));
+      assert.match(r.stderr, /answered no verdict/);
+    }
   });
 
   test(`${name}: the host stand takes no option`, async () => {

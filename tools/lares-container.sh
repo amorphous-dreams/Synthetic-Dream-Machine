@@ -67,6 +67,10 @@ running_vessel() {
 # for this script, never a prompt.
 observe_output=""
 observe_standing() { observe_output=$(compose exec -T lares node "$CLI" vessel stand --observe --json); }
+# An answer counts only when it names a verdict this shim knows; an empty or unreadable answer names none.
+verdict_known() {
+  printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"(attach|restand)"'
+}
 verdict_restand() {
   printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"restand"'
 }
@@ -89,8 +93,8 @@ route_cli() {
     if [ "$rc" -ne 0 ]; then return "$rc"; fi
     if [ -z "$follow_up" ]; then return 0; fi
     # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
-    if ! observe_standing; then
-      printf '%s\n' 'lares-container: the verb succeeded, and the standing check after it failed; run `lares-container.sh vessel stand`' >&2
+    if ! observe_standing || ! verdict_known; then
+      printf '%s\n' 'lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.sh vessel stand`' >&2
       return 1
     fi
     if verdict_restand; then lift_vessel; fi
@@ -165,7 +169,7 @@ case "$verb" in
           # prints the standing. An option the CLI's own stand reads (--install, --init, --admit) has no meaning here.
           [ "$#" -eq 1 ] || die "vessel stand takes no option through this shim (it stands or restarts the container); --observe reads the standing"
           if ! running_vessel; then compose up -d --wait lares
-          elif ! observe_standing; then die "the standing vessel answered no verdict"
+          elif ! observe_standing || ! verdict_known; then die "the standing vessel answered no verdict"
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi
         fi ;;
