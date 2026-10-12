@@ -59,17 +59,19 @@ The rulings owed read in ''Pending operator rulings''.
 
 ''HIGH''
 # ''Custody rests bare outside the tree and the root'' (SUBSTRATE, the seal). The slot tree and the custody root seal from birth; every other `hot` and `cold` carrier still rests as its own writer leaves it, and the keyhive archive rests cleartext in the state home where no archive passphrase stands. No boot path opens the VK. `lares vault unbind --rotate` refuses `RotationPreflightRefusal` on every real founded vessel, since `vessel-next` rests bare from birth.
-# ''The main tree's workspace links read ABSOLUTE'' (environment; the controller's or the operator's hand). The links under `packages/*/node_modules/@lararium/` point at absolute host paths, so they dangle inside any repo-mounted container: `civic`, `crossing` and `herm-mesh` read red in the main tree and green in a worktree whose links pnpm wrote relative. Cure: `pnpm install --frozen-lockfile`; where the links stay absolute, remove those `@lararium` link directories first and install again. The engine fold's proofs want this cured, or a worktree with its own install.
-# ''No browser has yet joined a node live'' (the shore). The device admit, the face join, the granted recipe and a typed edit read back from the node all stay unproven; whether the wiki worker still faults on a save or a popup stands unmeasured in this tree. The node owes the durability receipt.
+# ''The shore's rung 2 node half waits on ONE FACE's working layer.'' Rungs 0 and 1 pass live; rung 2's leaf half saves and survives a reload of the same profile. The node still owes its authenticated durability receipt (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`).
+# ''The wiki shore echoes inbound applies as saves'' (GROUND). After a corpus LOAD, the wiki shore saves inbound applies back; the disk mirror trickles and a following verb misses its bound, because each leaked change routes as a real save. F4 reads red in CI (`tests/e2e/corpus-feed.test.ts:181-203`; commit subject `a red F4 re-reads the act's receipt after a pause and carries the daemon log tail`). `outbound-bridge.ts:52-75` consumes each inbound title once, while `island-adaptor.ts:274-292` expires the echo set after a wall-clock grace (`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`).
 
 ''MEDIUM''
 # ''The steward signer'' (KAHU PLANE). The docker `meme` scenario fails at "B edits, promotes": the steward gets named by a per-Nexus LEAF key, while the realm-bag co-sign looks for the persona ROOT key. The signer stands RULED (the worn face or a quorum Handle, never the root); the build owes it, and neither a root workaround nor a leaf fallback closes it.
-# ''A faceless vessel half-lands `act CREATE`'' (GROUND). In the container the verb answers a veil error advising a re-found, yet the bag registers; on the host it reads `outcome-unknown` and an `ingest --apply` behind it reads `cap-denied`. The floor should refuse content verbs by name before any registration.
-# ''A re-scan after `ingest --apply` reads the carrier `new`'' (GROUND). `recordLandedPacks` (`packages/lares-cli/src/ingest-core.ts`) records an observation only for a result naming a `pack`; a single-meme carrier names none. Content stays safe (a second apply reads `noop`), but the watcher re-submits every wave and can never see a deletion.
 # ''Recipe wiring lacks a vessel-level proof.'' No test drives a recipe that names an offering through a vessel path; the resolver tests prove the selector, never the wiring on the node daemon VM, the browser pool or the browser daemon VM.
+# ''The admit's canon list and gate key ride outside the signature'' (KAHU PLANE). `device-admit.ts` includes them in `carried`, outside the signed `payload` (`packages/lararium-node/src/commands/device-admit.ts:302-313`).
+# ''An admitted leaf's Repo sync writes the hearth's canon documents both ways'' (KAHU PLANE). The leaf-side mount flag stops mount-path writes only; the Repo sync still carries changes to and from those documents (measured on an admitted leaf; `packages/lararium-browser/src/hearth-canon.ts:112-131`, `packages/lararium-browser/src/open-browser-vessel.ts:646`).
+# ''The Nalu canon names absent core and gate calls'' (GROUND). The Nalu canon names one `wiki.transact` per frame (`bags/lares/ha.ka.ba/lares/api/pono/nalu.mem:60-64`), while the vendored core under `packages/lararium-tw5/tw5-core/` holds no `transact`, so the drain applies in a bare loop (`packages/lararium-tw5/src/modules/nalu-engine.ts`); the gate-families canon prescribes a non-resetting cap against receive-livelock (`lar:///ha.ka.ba/lararium/api/projection-nalu`), while the disk projector hands its keyed gate a trailing debounce alone (`packages/lararium-node/src/disk-projector.ts`).
+# ''A wiki can mount with no working layer'' (GROUND). A working layer always mounts (operator ruling); `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) falls back to the wiki's canon bag when no working handle stands, so an edit can land in canon. The build owes removing that fallback.
+# ''A store change touching ten or more titles lands without its bag stamp'' (GROUND). `IslandAdaptor.onChangeset` enqueues changed URIs without a bag (`packages/lararium-tw5/src/island-adaptor.ts:330-335`).
 # ''Refold answers may overclaim.'' `represented:true` survives a re-presentation that found no dial, and `after-roll-awaited.test.ts` reads source shape only.
 # ''A vite dev server's close rewrites the Pronaos receipt'' (the shore). `emitPronaosArtifactRecord().closeBundle` in `packages/lararium-web/vite.config.ts` runs on any close and writes whatever it holds, so a `browser-weld` run leaves three tools tests red until a web rebuild. Cure: both plugins take `apply: "build"`.
-# ''`vessel stand --install` reaches outside `LAR_ROOT` before the founding can refuse'' (GROUND): `standup.ts` links into `~/.local/bin` and runs the mempalace install first, where `stand.ts` says founding stands the vessel and nothing else.
 
 ''LOW, by path''
 # ''GROUND — retired bags.'' The write gate enumerates its verbs by hand (`action-handler.ts`); the refusal's `error.code` reads generic where its message names `bag-retired`; CLEAR on a retired bag still writes into the retired doc; a fresh CREATE of an empty bag stamps `count: 1`; the ingest preview ignores retirement; a wiki-island save and the watcher's ingest-back into a retired bag stand unprobed; canon still says DROP "marks the bag retired" (`action-handler.mem`) without the refusal that follows.
@@ -92,9 +94,7 @@ The rulings owed read in ''Pending operator rulings''.
 * `packages/lararium-sensorium/requirements.txt` calls the tree-sitter versions one (Python binding 0.26, CLI 0.27; both ABI 15).
 
 ''Pending operator rulings''
-* ''The road's open questions'' — `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`: the seal-roll successor's name; a root-holding browser leaf's backup slot; the seat's cold next key at founding; a sealed receipt manifest for carriage; carriage across leaves.
-* ''The two-voice herm'' (research done): may a herm speak in a voice of its own, or only through a share of one? `lar:///ha.ka.ba/lararium/mesh/lamplighters#/open` strikes `operate ⊥ sign` and proposes a FROST Place-DID with the herm holding one share; its drift-ward splits the utterances — federation-facing and condemnation-relevant ones thresholded, local carry single-signed — and `#/immune`'s "herms present" (the victim testifies) reads beside "the least credible witness to its own neglect". The split stands as the ruling owed.
-* ''The Lamplighters' question'': whether island-admin tending (`tend.repair`) reaches the herm's own `@daemon` signing key — ISOLATE it, or ACCEPT it and price the lost independent testimony (`lamplighters#/open`; its `role` line advertises it).
+* ''The road's open questions'' — `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`: a root-holding browser leaf's backup slot; a sealed receipt manifest for carriage; carriage across leaves; the Kahu's DNS domain and credential home; the fork-resolve act's shape; the re-seal proof.
 * ''Two Kairoses'': the fiction's KAIROS watches the noosphere across nodes and speaks unasked (`elyncia/Elyncia_02_The_Lares_DreamNet.md`); the code's Kairos names, as a pet-name, an unbuilt OAuth-refresh entity that waits for the right moment (`lar:///ha.ka.ba/lararium/mesh/reach-plane`). One entity, or two that share a name?
 * ''The Codex crew's forks'', reconciled against the code in `lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled`: the Offering Antigen scope (and the charter-inception identity it rests on); the crossing record's emission threshold and destination receipts; seam (b)'s altitude; `bag-residency.ts`'s home.
 
@@ -163,7 +163,8 @@ The rulings owed read in ''Pending operator rulings''.
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the road holds rulings, build order, shore rungs, open questions
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> outbound bridge explains the inbound echo wound and shore saves
 <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
@@ -171,6 +172,6 @@ The rulings owed read in ''Pending operator rulings''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jjFFUyxIO062LSY2-DoVRQkCvUO5ReApiNDcX3iI0cQ
+<<^ code="&#x0003;">>ni:///sha-256;uoK-P2qVTwyIkbKpQTCfncA1tD85327hrNxqmFF9gP0
 
 <<^ code="&#x0004;" -> to="?">>

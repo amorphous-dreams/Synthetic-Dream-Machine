@@ -66,10 +66,15 @@ git and the CHANGELOG, never here. The live wounds and the vitals read in
 * ''Kahu drafts in the realm the charter derives''; publishing to `@crossroads` stands as a separate, recorded promotion act. A second Kahu realm gets made only for a genuinely different relation.
 * ''Promotion approves the EXACT BYTES'' (hash, purpose, surface) under a threshold the charter sets, with a higher bar for charter, admission and trust-root changes. A CID, a clerk's edit or an active persona never stands in for collective approval.
 * ''Steward signing.'' A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the collective owns; the root never appears publicly. A human wears MANY faces and many public Handles, each in many cabals, and signs a steward edge with the face or Handle worn IN THAT CABAL.
+* ''Oracle answer'': one public answer per Nexus, signed by that Nexus's Kahu steward; a herm carries and presents it and signs nothing public. The engine floor rides as one shared content-addressed bake, and each answer names its floor CID (operator ruling).
+* ''Herm tending'': tending may reach the herm's key; the house accepts that reach and names it (operator ruling).
+* ''Introduction and admission'': a user introduces; an operator admits; the answer consumes the introduction (operator ruling).
+* ''Names and counters'': the keyring epoch name joins (Nexus AID, `epochCid`); a counter orders one writer's own emissions only. The convergence secret stays per Nexus, and the face lives at the session capability (operator ruling).
 * ''Kahu acts fall into four chartered classes'': ordinary (1-of-1); high-impact — charter, admission, trust root (3-of-5, or 2-of-3 for a small body); emergency (2-of-3, a narrow pre-authorized power reviewed by a later causal act); revocation (the threshold of the original act). A challenge appends to the record and may pause LOCAL reliance; it never halts the protocol.
 * ''Renewal runs as three sequences, kept apart'' (the realm feed, a per-renewal causal position, the KEL), and lapse arrives as three distinct events: signed departure, recorded removal by relation-scoped kapae, renewal supersession.
 * ''A cancel crossing a herm yields three receipts'': the caller's abandonment, the relay's delivery (transit only), the vessel's outcome. A caller timeout never counts as a cancel; eviction answers `retention-gap`.
 * ''One face at a time names WHO ANSWERS for an act.'' The switch law reads in `lar:///ha.ka.ba/lares/api/pono/persona-policy#/one-face`.
+* ''A session wears the face; the vessel wears none'' (operator ruling).
 
 !!! Custody ~ the Vessel KEK
 * One Vessel KEK (VK), minted at the Stable founding, lives only inside LUKS-style keyslots, each a Clevis `sss` tree. Pin kinds: passphrase · paper (SLIP-39) · ember · tpm (one share only).
@@ -138,26 +143,26 @@ seal land early, and the container's tail lands before the charter train.
 
 !!! 1 · GROUND ~ the residue (no identity bytes; waits on nothing; rides beside SUBSTRATE on disjoint files)
 * ''Outcome-doc rotation'', so the receipt ring bounds bytes as well as count.
-* ''`committed` then crash reads `interrupted`'', decided by the boot epoch.
 * ''The herm route for cancel and receipts'': the three receipts of #/rulings, mesh → node → CLI.
 * ''`KeyhiveIdentitySlot` production wiring.''
-* ''The floor refuses content verbs by name, before any registration.'' A faceless vessel half-lands `act CREATE` today.
-* ''A landed single-meme carrier records its observation.'' A re-scan after `ingest --apply` still reads it `new`, so the watcher re-submits every wave and never sees a deletion.
-* ''`vessel stand --install` founds before it reaches outside `LAR_ROOT`.''
 * ''The evergreen sweep and the quiet doors'', itemized in `lar:///ha.ka.ba/lares/docs/er-handoff#/wounds`.
 * ''Measures'': the full-corpus per-verb flush re-measure; pack-PIN recursion; a production `assertBodyIndexTier` caller.
+* ''Wiki shore echo law'': an inbound apply writes nothing back. A title named once can raise several changes; every leaked change routes as a save (`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`).
+* ''Canon direction the build owes'': canon crosses hearth → leaf; a leaf never writes the hearth's canon documents, and edits land in the working layer.
+* ''Clockless shore law the build owes'': no wall clock decides; replace the echo-set grace and readerless `minted-on` stamps (`packages/lararium-tw5/src/island-adaptor.ts:274-292`; `packages/lararium-keyhive/src/resolve-binding.ts:158`).
 
 !!! 2 · SUBSTRATE ~ two SOLO relays, the fold first, then the seal
 Each runs one spirit per commit, and every commit leaves HEAD building. No other node lane runs beside the
 seal: it owns the compose hunk.
 
 ''R-ENGINE, the fold.''
-* The dependency line, in fixed order: automerge-repo's alpha line (alpha.5 carrying #742) → keyhive 0.3 → subduction (fast-forward the reading copy to upstream; never merge main in) → the genesis re-bake (`GENESIS_ENGINE_CID`, every fixture holding the hearth true-name, the untracked CAS in the same commit) → the fold's own live proof on the rebuilt image, with a pushed shard run reading green.
+* The R-ENGINE fold target dependency line, in fixed order: automerge-repo and its four listed adapters at alpha.5 → `@automerge/automerge` 3.4.1 → `@keyhive/keyhive` 0.3.0-alpha.1; no Subduction or Onomancy dependency → the genesis re-bake (`GENESIS_ENGINE_CID`, every fixture holding the hearth true-name, the untracked CAS in the same commit) → the fold's own live proof on the rebuilt image, with a pushed shard run reading green. Current manifests pin automerge-repo and its listed adapters at 2.6.0-alpha.3, `@automerge/automerge` at 3.4.1 (`packages/lararium-node/package.json:25-30`), and `@keyhive/keyhive` at 0.1.0-alpha.8 (`packages/lararium-keyhive/package.json:26`).
 * TW5 core and the memetic-wikitext bootstrap fold into `engineCid`; the vocabulary leaves the engine as content; the coal-only seed carries no `schemaVersion`; the island `schema_version` drops its counter.
-* ''Waits on'': the shore lanes' hold on the browser and web manifests (the relay starts once they land, or takes the manifests and the lockfile by explicit handoff, never their source); and a tree whose workspace links read relative, since its proofs stand vessels in repo-mounted containers (`er-handoff#/wounds`).
 
 ''R-CUSTODY, the seal'' (P3-SEAL).
 * ''What it owes'': every `hot` and `cold` row of the carrier table (`vault-carriers.ts`) except the custody root still rests outside the VK — its writer's bytes pass through the one sealed writer (sidecar → re-open → compare → rename, never sealing in place) and its reader through the sealed open. One commit per writer family, derived from the table's writer column, never from a hand list.
+* ''The keyring law the build owes'': name an epoch by (Nexus AID, `epochCid`); let a counter order one writer's own emissions only; keep the convergence secret per Nexus and the face at the session capability. Mint only at the seat. Join delivery by scoped key and refuse different bytes under one name. Keep every verified fork head visible; retain by causal evidence; pass hot bytes through the sealed writer (operator ruling).
+* ''The Nexus keyring debt'': the store keys entries by numeric epoch, mints at boot, overwrites a same-epoch delivery, and writes clear JSON (`packages/lararium-node/src/nexus-convergence-secret-store.ts:35-60,72-81,100-116`).
 * ''First commit, the session and the boot'': the daemon stands at the floor holding no VK and raises on a socket verb whose credential the CLI reads on its TTY; until then `floorWriteCure`'s advice (`lares vault unlock`) names a door that does not yet cure. The test door's marker earns one loud line in `vault status` and the boot log.
 * ''Facts to plan around'': the hosting spend log APPENDS, and a whole-file sealed writer cannot, so it moves to one sealed file per spend; the CLI-side writers move behind node functions, so no CLI file writes a custody row.
 * ''Last commit, the retirement'': `vault seal|rotate|export|repair|passphrase` and `LARES_ARCHIVE_PASSPHRASE` (with its `_NEW` twin in `tools/contract-witness.sh`) leave with the passphrase lifecycle and the cleartext archive mode — never sooner, since they hold the only seal four carriers carry; the bare-row rotation preflight leaves, and the rotation's own census runs BEFORE the unbind, so a carrier that refuses the rotation leaves the slot bound; `vault unbind --rotate` then completes on a real founded vessel, where it refuses by name until that day.
@@ -168,7 +173,7 @@ seal: it owns the compose hunk.
 * ''A persona door before `up`'': the shim founds, then stops at `persona` until the service stands; a face lights only after `up` plus a restart.
 * ''A fresh container vessel projects into `/workspace`'', and a fresh founding serves a wiki whose recipe resolves: today the workspace stays empty and a bare `meme get` reads `not-found` where `--bag` reads the carrier.
 * ''LAN candidate discovery'': two machines find candidate URLs and keys on a household LAN; a wrong key refuses, a right key still wants explicit admission; the QR or URI fallback covers a LAN multicast cannot cross.
-* ''Household HTTPS'': DNS-01 wildcard names, one reachable name per vessel, so a browser on the other machine reads a secure context.
+* ''Household HTTPS'': a DNS-01 wildcard on a domain the Kahu holds, one split-horizon resolver on the always-on node, and no install on any device (`lar:///ha.ka.ba/lararium/mesh/secure-context`).
 * ''The harnesses stand on the image'': the mesh, kahu, crossing, swarm and burn compose files and their witnesses run the built image by digest and regain no source bind.
 * ''The release manifest'': a multi-arch index whose record binds the image digest to the genesis, engine and grammar CIDs. Waits on the fold for its final CIDs.
 
@@ -181,10 +186,10 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''Thresholded admission and promotion'': the four chartered classes and exact-bytes promotion of #/rulings; chartered Kahu-cabal admission as its own authority act, where a vouch alone admits nobody.
 
 ''R-CHARTER, the one AID train'' (waits on SUBSTRATE whole).
-* ''The Stable founding act'': one interactive act under one passphrase (the VK's first slot) yields the place, persona zero, a PRIVATE charter as a cabal-of-one (one seat, t=1, per-seat next digests) and the keyring keyed by `epochCid`, minted at the seat and never at boot.
-* ''Charter shape'': per-seat pre-rotation (`nextKeyDigests`, `nextThreshold`) replacing the single next-key commit; the cadence inception cited once by the founding act; the seal-roll successor named (#/open); `epoch0-<sha>` names become `nexus-<sha>`; `genesisSealEpochCid` deleted.
+* ''The Stable founding act'': one interactive act under one passphrase (the VK's first slot) yields the place, persona zero, a PRIVATE charter as a cabal-of-one (one seat, t=1, per-seat next digests) and a keyring named by (Nexus AID, `epochCid`), with a commitment to the secret inside the seat-authored epoch act; mint only at the seat, never at boot (operator ruling).
+* ''Charter shape'': per-seat pre-rotation (`nextKeyDigests`, `nextThreshold`) replacing the single next-key commit; the cadence inception cited once by the founding act; the seal-roll successor takes the name `charter-seat-roll`; `epoch0-<sha>` names become `nexus-<sha>`; `genesisSealEpochCid` deleted; the seat arms its cold next key at Stable founding (operator ruling).
 * ''Re-scoped keys'': the chairs re-key to per-Nexus leaves (a root-signing seat breaches Q1-strict); the device edge and the dyad scope commit to the Nexus AID; the sentinel (the MeshCabal keyhive identity) re-keys.
-* ''Boards resolve per relation''; the keyring takes deliveries additively and never overwrites the private Nexus's secret; one fleet-join door replaces `device-admit` and `persona admit`; add-a-face (A); the bare primary-path seal import goes; the mirror guard keys on posture.
+* ''Boards resolve per relation''; the keyring joins delivery by scoped key and refuses different bytes under one name; one fleet-join door replaces `device-admit` and `persona admit`; add-a-face (A); the bare primary-path seal import goes; the mirror guard keys on posture.
 * The staging harness founds through the one act inside the train, because the e2e set reads red from the first charter-byte change until the founding lands.
 
 ''R-WIRE, the per-Nexus wire key'' (waits on R-CHARTER).
@@ -195,6 +200,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 * The vessel key stops linking a walker's leaves across Nexuses on the wire (`two-maps` clause 5's residual), and the oracle pointer's vessel-key correlation goes with it (`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`).
 * ''Per-dial transport keys on the sibling channel'': a leaf proves to a herm under a key fresh per dial, and the leaf-peer transcript binds that key in place of the device key the relay stamps, so a herm colluding with a revoked leaf reads no sibling's device key off its own gate (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-persona-group-secret`).
 * ''Owed (a), the dialer's name rides the clear'': the dialer's ContactCard crosses in cleartext in `lar:auth` over plain `ws://` (`packages/lararium-mesh/src/auth-wire.ts`, `LarAuthMsg`) — a live THR_2 leak that Noise IK's encrypted first message cures, the dialer's static riding inside message one instead.
+* ''The admit signature the build owes'': the canon-document list and gate key enter the signed bytes; `device-admit.ts` carries them outside the signature (`packages/lararium-node/src/commands/device-admit.ts:302-313`). The browser's first proof rides `Sec-WebSocket-Protocol` (`lar:///ha.ka.ba/lares/api/pono/face-proof`).
 * ''Owed (b), the knock tests offline'': the knock path computes an HMAC of the public gate key (`packages/lararium-mesh/src/gate-knock.ts`, `knockSegment`); an observer holding candidate keys tests a sniffed knock offline, so not echoing the key protects only against an observer with no candidates.
 
 ''Behind the train, each waiting on R-CHARTER''.
@@ -203,10 +209,10 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''R-EMBER'': a household's first ember stands on its second device, which needs the fleet-join door; the slot tree carries passphrase and paper pins today, and this slice adds the ember pin kind.
 
 !!! 5 · ONE FACE ~ the recorded switch act (waits on the signer and the realm shapes)
-⚠ ''This slice predates the session ruling'' (#/rulings: a SESSION wears the face). Read every bullet below against it: the switch act closes and re-dials ONE session's links, never every session the vessel holds; `persona wear` acts on a session; a face resolves once per session's island boot. The slice gets re-cut when the model study of that ruling reports.
-* One act across mesh, node, browser and CLI: it closes EVERY Nexus session the vessel holds, rebinds, and re-dials as the incoming face under a scoped leaf proof. The local record names the outgoing and incoming faces with causal position, rebind result and re-dial result; the wire carries only the incoming session's proof, never a cross-face link.
+* The slice builds `session-contract.mem` in its build order and `face-proof.mem`. A session wears the face; the vessel wears none. The switch acts on ONE session and closes and re-dials only that session's links under the incoming face's scoped proof.
+* ''Working-layer law the build owes'': one working document per (face, wiki, slot kind); its address derives from a secret only that face's vessels hold. The working layer follows its wiki across recipe recomposition. A leaf with an admit and no seat writes nothing to face wikis until join completion. Vessel removal leaves the address standing; the gate and document membership refuse the removed vessel (operator ruling).
+* A wiki names one face's composition over bags; sharing happens at the bag (operator ruling).
 * A personal Handle never rides without its owning face; one current personal Handle per PersonaGroup; a collective quorum Handle stays separate.
-* `persona wear` today moves a selector and asks for a reboot; the running worker and every held session keep the prior face until then.
 * The compose hunk in `open-node-vessel.ts` belongs to this slice's owner; cabal runtime work stops at its module boundary.
 
 !!! 6 · TWO HEARTHS ~ the fresh start, then the ceremony (waits on everything above)
@@ -215,7 +221,8 @@ identity bytes; then R-WIRE, so every pin changes once.
 
 !!! The shore ~ the browser's five rungs, beside the paths
 * ''The rungs'': 0, an admitted crossing; 1, a carrier the node holds arrives and renders; 2, a typed field edit reaches the node and survives its restart, read from a fresh browser profile; 3, one human, many faces; 4, two hearths. Rungs 0–2 give the one-machine witness the working-Lararium ruling asks for, and the node's own read decides each rung, never a screenshot or a connected socket.
-* ''What blocks rungs 0–2'': no live walk has yet joined an admitted browser to a node — the device admit, the face join, the granted recipe and the absent-carrier control stay unproven — and the node owes a ''durability receipt'' on the authenticated session (`docUrl`, the stored heads, the holder's boot epoch, sent only after the holder commits those heads; no clock in the frame).
+* ''What blocks rungs 0–2'': rungs 0 and 1 pass live (`tools/browser-ci.sh`, the crossing and render walks); rung 2's leaf half saves and survives a reload of the same profile, while its node half waits on ONE FACE's working layer. The node owes a ''durability receipt'' on the authenticated session (`docUrl`, the stored heads, the holder's boot epoch, sent only after the holder commits those heads; no clock in the frame).
+* Device capabilities get measured by `tools/capability-probe/` on real devices, never assumed.
 * ''What blocks rung 3 onward'': rung 3 waits on ONE FACE. Rung 4 waits on HARBOR's household HTTPS, on the KAHU PLANE's grant for a foreign leaf, and on #/open's second question before a persona root enters a browser.
 * The walks ride `tools/browser-ci.sh`, and build under `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`: a frame carries absolute state, and a worker defines no global `window`.
 
@@ -247,27 +254,33 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 !! Open ~ what the operator still owns
 
-# ''The seal-roll successor's name.'' Mint it inside the standing `seal` family (`seal-seat-roll`), or choose a family word first (`charter-roll`). The name changes with the bytes either way.
 # ''A root-holding browser leaf's backup slot.'' A WebCrypto non-extractable slot allows no paper backup in-browser; does "a backup at every tier" require such a leaf to hold a paper or passphrase slot too? Lean: yes for a leaf holding a persona root; a floor-only leaf holds no tree.
-# ''The seat's cold next key at founding.'' Arm it at the Stable founding (one sheet, two labelled sections — the VK backup and the seat's next key — each read back), or leave the seat to commit later? Lean: arm it; an unarmed charter never rotates.
 # ''A sealed receipt manifest for carriage.'' It would let a root restored from paper re-open its carriage after device loss — and would turn carriage toward the backup W rules it never becomes. The lenses split; re-opening W needs the operator's turned key.
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
+# ''The Kahu's DNS domain and credential home.'' Name the domain and the store for its DNS credential.
+# ''The fork-resolve act's shape.'' The seal record holds one predecessor.
+# ''The re-seal proof.'' Name the causal record that maps old ciphertext to its replacement.
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> the handoff tracks landed work, wounds, and operator questions
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">> persona policy binds one face to each session
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> dreamdom carries browser shore rules and absolute frames
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">> session contract orders one session's capabilities and switch
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">> face proof binds the browser's first gate message
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">> page controls carry edits across browser frames
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> outbound bridge defines the inbound echo boundary
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure context names the household browser transport
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IXc3Vz6zQXF7j1vFpTIXNV3j00lLoorlVgwXHRUreJA
+<<^ code="&#x0003;">>ni:///sha-256;NBgHCDyetsscpj1Q3z2XgqxQmvPrUpKoWPe29umXjZs
 
 <<^ code="&#x0004;" -> to="?">>
