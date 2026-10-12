@@ -44,11 +44,12 @@ async function call(
   }
 }
 
-export async function cmdWikiList(_args: ParsedArgs): Promise<number> {
+export async function cmdWikiList(args: ParsedArgs): Promise<number> {
   const did    = await vesselDid();
   const r = await call("list-wikis", {}, did);
   if (r.status === "error") {
-    console.error(`list failed: ${r.errorMessage ?? "unknown"}`);
+    const msg = r.errorMessage ?? "unknown";
+    emit(args, { ok: false, requestId: r.requestId, error: msg, human: () => console.error(`list failed: ${msg}`) });
     return 4;
   }
   const result = summaryOutput(r) ?? {};
@@ -57,21 +58,33 @@ export async function cmdWikiList(_args: ParsedArgs): Promise<number> {
     uri: string;
     automergeUrl: string | null;
     kind?: string;
+    composition?: string;
+    defaultDiffers?: boolean;
   }>;
-  console.log("");
-  if (wikis.length === 0) {
-    console.log("(no wikis registered)");
-    console.log("");
-    return 0;
-  }
-  console.log(`wikis (${wikis.length}):`);
-  for (const w of wikis) {
-    const url = w.automergeUrl ? w.automergeUrl.slice(0, 40) + "…" : "(no doc)";
-    const tag = w.kind ? ` [${w.kind}]` : "";
-    console.log(`  ${w.slug.padEnd(20)}${tag} ${w.uri}`);
-    console.log(`    ↳ ${url}`);
-  }
-  console.log("");
+  // `--json` answers the daemon's reply verbatim; the prose view adds `composition` (a system wiki's
+  // own stack or the default) and whether an own stack differs from the default.
+  emit(args, {
+    ok: true, requestId: r.requestId, data: result,
+    human: () => {
+      console.log("");
+      if (wikis.length === 0) {
+        console.log("(no wikis registered)");
+        console.log("");
+        return;
+      }
+      console.log(`wikis (${wikis.length}):`);
+      for (const w of wikis) {
+        const url = w.automergeUrl ? w.automergeUrl.slice(0, 40) + "…" : "(no doc)";
+        const tag = w.kind ? ` [${w.kind}]` : "";
+        const comp = w.composition
+          ? `  composition: ${w.composition}${w.defaultDiffers === true ? " (default differs)" : ""}`
+          : "";
+        console.log(`  ${w.slug.padEnd(20)}${tag} ${w.uri}${comp}`);
+        console.log(`    ↳ ${url}`);
+      }
+      console.log("");
+    },
+  });
   return 0;
 }
 
