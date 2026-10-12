@@ -47,8 +47,11 @@ async function standing(guest: Uint8Array = GUEST, secret: Uint8Array = FRIEND_S
   const fields: IntroductionFields = {
     nexus: NEXUS, epoch: current.cid, newcomerKey: newcomerKeyOf(secret), introducer: await pubOf(guest),
   };
-  const intro = await signIntroduction(fields, signerOf(guest));
-  return { previous, current, live, fields, intro };
+  const signed = await signIntroduction(fields, signerOf(guest));
+  const verdict = verifyIntroduction(signed, live);
+  if (!verdict.ok) throw new Error(`the standing introduction refused: ${verdict.refusal}`);
+  // `intro` is the VERIFIED copy: the only thing an operator may answer. `signed` is what came over the wire.
+  return { previous, current, live, fields, intro: verdict.introduction, signed };
 }
 
 /** Does `text` hold `value`, or any 16-character run of it? */
@@ -126,6 +129,22 @@ describe("an introduction stands only as its guest signed it", () => {
     expect(verdict.introduction).toEqual(intro);
     expect(verdict.introduction).not.toBe(intro);
     expect(Object.isFrozen(verdict.introduction)).toBe(true);
+    // ★ ONLY a verified copy gets answered. The value that was handed in, a look-alike with every byte equal, and
+    // a shifting object that verified a moment ago all refuse: nothing re-reads a value after its signature read. ★
+    const wire = await signIntroduction(fields, signerOf(GUEST));
+    expect(verifyIntroduction(wire, live).ok).toBe(true);
+    expect(() => answerIntroduction(wire, true)).toThrow("introduction-unverified");
+    expect(() => answerIntroduction({ ...verdict.introduction }, true)).toThrow("introduction-unverified");
+    const attackerBox = newcomerKeyOf(seed(77));
+    let keyReads = 0;
+    const swapping = { ...wire, get newcomerKey(): string { keyReads++; return keyReads === 1 ? wire.newcomerKey : attackerBox; } };
+    const swapVerdict = verifyIntroduction(swapping, live);
+    expect(swapVerdict.ok).toBe(true);                                       // it verifies: the first read is the signed key
+    expect(() => answerIntroduction(swapping as Introduction, true)).toThrow("introduction-unverified");
+    if (!swapVerdict.ok) throw new Error("unreachable");
+    const sealed = answerIntroduction(swapVerdict.introduction, false);      // CONTROL: the verdict's copy answers,
+    expect(openAnswer(sealed, FRIEND_SECRET)).not.toBeNull();                // sealed to the key the guest SIGNED,
+    expect(openAnswer(sealed, seed(77))).toBeNull();                         // never to the swapped one.
     // A signer that receives shifting fields signs what it validated, and the act names what it signed.
     let fieldReads = 0;
     const shiftingFields = { ...fields, get introducer(): string { fieldReads++; return fieldReads === 1 ? guestKey : attackerKey; } };
@@ -286,8 +305,18 @@ describe("the answer consumes the introduction", () => {
     const { intro } = await standing();
     expect(() => answerIntroduction({ ...intro, extra: "x" } as Introduction, true)).toThrow(IntroductionError);
     expect(() => answerIntroduction(null as unknown as Introduction, false)).toThrow(IntroductionError);
-    expect(() => answerIntroduction(intro, true, () => ({ purpose: "host-invite", n: "short", y: "short" }))).toThrow(IntroductionError);
-    expect(() => answerIntroduction({ ...intro, newcomerKey: "00".repeat(32) }, false)).toThrow(IntroductionError);   // a key nobody holds
+    expect(() => answerIntroduction(intro, true, () => ({ purpose: "host-invite", n: "short", y: "short" }))).toThrow("answer-token-malformed");
+    // A minted token gets read ONCE: a token that reads lawful first and otherwise after never rides an answer.
+    let tokenReads = 0;
+    const shiftingToken = { purpose: "host-invite" as const, y: STUB_TOKEN.y, get n(): string { tokenReads++; return tokenReads === 1 ? STUB_TOKEN.n : "f".repeat(64); } };
+    const withShifting = openAnswer(answerIntroduction(intro, true, () => shiftingToken), FRIEND_SECRET);
+    expect(tokenReads).toBe(1);
+    expect(withShifting?.token).toEqual(STUB_TOKEN);
+    // A key nobody holds: a guest signs an all-zero newcomer key, it verifies, and the seal refuses to address nobody.
+    const { fields, live } = await standing();
+    const toNobody = verifyIntroduction(await signIntroduction({ ...fields, newcomerKey: "00".repeat(32) }, signerOf(GUEST)), live);
+    if (!toNobody.ok) throw new Error("the all-zero key should verify by shape and signature");
+    expect(() => answerIntroduction(toNobody.introduction, false)).toThrow("newcomer-key-malformed");
     expect(opened(answerIntroduction(intro, false)).admitted).toBe(false);     // CONTROL
   });
 

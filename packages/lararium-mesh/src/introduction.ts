@@ -21,8 +21,11 @@
  *     it. (The seal hides its recipient from a reader. It makes no promise that a box an adversary BUILT
  *     opens under one key alone; nothing here leans on that.)
  *   · EVERY VALUE GETS READ ONCE. A handed-in introduction is copied field by field into a frozen record
- *     before anything is checked, and the bytes signed, the key verified under and the answer built all read
- *     that copy. A value that answers differently at each read gains nothing.
+ *     before anything is checked, and the bytes signed and the key verified under both read that copy. A
+ *     value that answers differently at each read gains nothing.
+ *   · ONLY A VERIFIED COPY GETS ANSWERED. `verifyIntroduction` hands back the frozen copy it verified, and
+ *     `answerIntroduction` answers that very object and nothing else: not the value that was handed in, and
+ *     not a look-alike. So an answer always seals to the newcomer key the guest signed.
  *   · ONLY THE ENCODER'S OWN BYTES OPEN. An opened answer must re-encode to exactly the plaintext that was
  *     sealed, so no extra key, repeated key or stray byte rides inside a box.
  *   · THE DIAL READS A COUNT. How many introductions one guest may hold open is a number on the hosting act;
@@ -50,6 +53,10 @@ const HEX_EVEN = /^(?:[0-9a-f]{2})+$/;
 const ANSWER_PLAINTEXT_BYTES = 512;
 /** The sealed box's key separation: the introduction's own name, under the part that seals an answer. */
 const ANSWER_SEAL_INFO = canonicalJsonBytes({ kind: HOSTING_INTRODUCTION_DOMAIN, part: "answer" });
+
+/** The frozen copies `verifyIntroduction` handed back, by identity. Held weakly: a copy the caller drops leaves
+ *  no trace here, so this keeps no record of any introduction. */
+const VERIFIED = new WeakSet<Introduction>();
 const normAid = (aid: string): string => aid.trim().toLowerCase();
 
 /** What the guest signs. Every field holds a string; none holds a clock reading. */
@@ -178,7 +185,9 @@ export function verifyIntroduction(
     try {
       signed = ed25519.verify(hexToBytes(read.signature), introductionBytes(read), hexToBytes(read.introducer), { zip215: false });
     } catch { signed = false; }
-    return signed ? { ok: true, introduction: read } : { ok: false, refusal: "introduction-unsigned" };
+    if (!signed) return { ok: false, refusal: "introduction-unsigned" };
+    VERIFIED.add(read);
+    return { ok: true, introduction: read };
   } catch {
     return { ok: false, refusal: "introduction-malformed" };
   }
@@ -231,6 +240,15 @@ function answerPlaintext(answer: Answer): Uint8Array {
   return plaintext;
 }
 
+/** Copy a token's three values out of a handed-in value, each read ONCE, or null when the copy is no token. */
+function tokenOf(v: unknown): InviteToken | null {
+  try {
+    if (!isRecord(v)) return null;
+    const copy = { purpose: v["purpose"], n: v["n"], y: v["y"] };
+    return isInviteToken(copy) ? Object.freeze({ purpose: copy.purpose, n: copy.n, y: copy.y }) : null;
+  } catch { return null; }
+}
+
 /** Rebuild an answer from a parsed value, key by key, or null: nothing beyond the lawful keys survives. */
 function answerOf(v: unknown): Answer | null {
   if (!isAnswer(v)) return null;
@@ -239,22 +257,29 @@ function answerOf(v: unknown): Answer | null {
 }
 
 /**
- * Consume an introduction into the operator's answer, sealed to the newcomer. The caller verifies first and
- * drops `intro` after. On an admit, `mint` (the hearth passes its own host-token mint) runs once; on a decline
+ * Consume a VERIFIED introduction into the operator's answer, sealed to the newcomer. `intro` must be the very
+ * copy `verifyIntroduction` handed back; anything else refuses `introduction-unverified`. The caller drops it
+ * after. On an admit, `mint` (the hearth passes its own host-token mint) runs once; on a decline
  * it never runs. The answer takes the Nexus and the epoch from the introduction and nothing else, one by one,
  * so a field an introduction gains later never reaches an answer. The seal draws a fresh sender key and nonce:
  * two seals of one answer share no byte.
  */
 export function answerIntroduction(intro: Introduction, admit: boolean, mint?: () => InviteToken): SealedAnswer {
-  const read = introductionOf(intro);
-  if (read === null) throw new IntroductionError("introduction-malformed");
+  let read: Introduction;
+  try {
+    if (!isRecord(intro)) throw new IntroductionError("introduction-malformed");
+    if (!VERIFIED.has(intro)) throw new IntroductionError(introductionOf(intro) === null ? "introduction-malformed" : "introduction-unverified");
+    read = intro;                                  // the frozen copy this module verified: plain data, no getter
+  } catch (error) {
+    throw error instanceof IntroductionError ? error : new IntroductionError("introduction-malformed");
+  }
   const admitted = admit === true;
   const nexus = read.nexus, epoch = read.epoch;
   let answer: Answer = { admitted, nexus, epoch };
   if (admitted && mint !== undefined) {
-    const token = mint();
-    if (!isInviteToken(token)) throw new IntroductionError("answer-token-malformed");
-    answer = { admitted, nexus, epoch, token: { purpose: token.purpose, n: token.n, y: token.y } };
+    const token = tokenOf(mint());
+    if (token === null) throw new IntroductionError("answer-token-malformed");
+    answer = { admitted, nexus, epoch, token };
   }
   const plaintext = answerPlaintext(answer);
   let box;
