@@ -37,8 +37,7 @@
 import type { DocumentId, PeerId, AutomergeUrl } from "@automerge/automerge-repo";
 import { REALM_BAG_DOMAIN, REALM_BAG_ANNOUNCE_DOMAIN } from "./domains.js";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
-import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes } from "./crypto.js";
 import { deterministicDocUrl } from "./deterministic-doc.js";
 import { bagUri } from "./lar-uris.js";
 import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
@@ -46,6 +45,7 @@ import type { QuorumSignature } from "./kapae-antigen.js";
 import type { NexusDoc } from "./nexus-seal-seed.js";
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The realm plane's registry name on a vessel's oracle plane — the pointer a boot writes to the realm doc. */
 export const REALM_DOC_URI = bagUri("realm");
@@ -238,7 +238,7 @@ export async function realmBagRegistrationCounts(rec: RealmBagRegistration, real
     const sig = rec.signatures.find((s) => s.signer.toLowerCase() === nym);
     if (!sig) return false;
     let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(sig.sig), bytes, hexToBytes(nym)); } catch { ok = false; }
+    try { ok = verifyEd25519(sig.sig, bytes, nym); } catch { ok = false; }
     if (!ok) return false;
   }
   return true;

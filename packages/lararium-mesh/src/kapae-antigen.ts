@@ -20,8 +20,8 @@
  */
 
 import { KAPAE_ANTIGEN_DOMAIN } from "./domains.js";
-import * as ed25519 from "@noble/ed25519";
-import { hexToBytes, sha256HexBytesSync, canonicalJsonBytes } from "./crypto.js";
+import { sha256HexBytesSync, canonicalJsonBytes } from "./crypto.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The domain a Kapae-antigen entry signs over — a signature is meaningless without its domain. */
 export { KAPAE_ANTIGEN_DOMAIN } from "./domains.js";
@@ -132,7 +132,7 @@ export function makeMultiSigQuorumVerifier(): QuorumVerifier {
         if (counted.has(s.signer))    continue;   // a signer pads the quorum at most once
         if (!rosterKeys.has(s.signer)) continue;  // a non-roster signer never counts
         let ok = false;
-        try { ok = await ed25519.verifyAsync(hexToBytes(s.sig), bytes, hexToBytes(s.signer)); }
+        try { ok = verifyEd25519(s.sig, bytes, s.signer); }
         catch { ok = false; }                     // a malformed sig/key counts as no signature
         if (ok) counted.add(s.signer);
         if (counted.size >= roster.threshold) return true;

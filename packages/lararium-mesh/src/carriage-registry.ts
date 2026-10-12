@@ -38,11 +38,11 @@
  */
 
 import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
-import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
+import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import type { QuorumSignature, KahuQuorumSeats } from "./kapae-antigen.js";
 import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
 import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The domain a CarriageEntry's quorum signs over — a signature is meaningless without its domain. */
 export { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
@@ -182,7 +182,7 @@ export async function verifyCarrierContract(
   if (!/^[0-9a-f]{64}$/.test(nym)) return false;
   if (!/^[0-9a-f]+$/.test(seal.sig) || seal.sig.length === 0) return false;
   const bytes = carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid });
-  try { return await ed25519.verifyAsync(hexToBytes(seal.sig), bytes, hexToBytes(nym)); }
+  try { return verifyEd25519(seal.sig, bytes, nym); }
   catch { return false; }
 }
 
@@ -214,7 +214,7 @@ async function quorumSignaturesCount(
     if (counted.has(signer))     continue;   // a signer pads the quorum at most once
     if (!rosterKeys.has(signer)) continue;   // a non-roster signer never counts
     let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(s.sig), bytes, hexToBytes(s.signer)); }
+    try { ok = verifyEd25519(s.sig, bytes, s.signer); }
     catch { ok = false; }                    // a malformed sig / key counts as no signature
     if (ok) counted.add(signer);
     if (counted.size >= roster.threshold) return true;
@@ -481,7 +481,7 @@ export async function verifyCarriageConsent(
   if (!/^[0-9a-f]{64}$/.test(nym)) return false;
   if (!/^[0-9a-f]+$/.test(consent.contractSig) || consent.contractSig.length === 0) return false;
   const bytes = carriageContractBytes({ nym, sealEpochCid: consent.sealEpochCid });
-  try { return await ed25519.verifyAsync(hexToBytes(consent.contractSig), bytes, hexToBytes(nym)); }
+  try { return verifyEd25519(consent.contractSig, bytes, nym); }
   catch { return false; }
 }
 

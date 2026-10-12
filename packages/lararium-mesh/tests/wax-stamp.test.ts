@@ -9,9 +9,11 @@ import {
   verifySealLineage, verifySealRoll, classifySeal, detectDuplicity,
   mintWaxStamp, verifyWaxStampSig, singleKeySetHash,
   sealKeySetHash, sealEpochCidOf, mintCharterEpoch, sealRollBytes,
-  genesisCharterEpoch, rotateSealEpoch,
+  genesisCharterEpoch, rotateSealEpoch, weakSeatOf,
   type SealEpoch, type SealRollSigner, type WaxStamp,
 } from "../src/wax-stamp.js";
+import { foundingRoster, emptyFoundingCharterDoc } from "../src/nexus-seal-seed.js";
+import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
 import { ed25519SignerFromSeed } from "../src/auth-wire.js";
 import { SEAL_ROLL_DOMAIN } from "../src/domains.js";
 
@@ -255,5 +257,73 @@ describe("charter-epoch CHAIN minter — pre-rotation seat + SIGNED rotate cerem
     const otherPrev = genesisCharterEpoch(["c".repeat(64)], 1, g.nextKeyCommit);
     const spliced = mintCharterEpoch({ ...e1, prevEpochCid: otherPrev.epochCid }, e1.roll);
     expect(verifySealLineage([otherPrev, spliced])).toBe(false);
+  });
+});
+
+// ── THE STRICT DOOR ──────────────────────────────────────────────────────────────────────────────────────────
+// A roll, a stamp and a seat read through `ed25519-door.ts`. The torsion hand (`./ed25519-torsion.ts`) holds a
+// key that seats lawfully and signs what only a lenient verifier reads; the identity key holds no secret at all.
+interface DoorHand { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }
+const honestHand = async (n: number): Promise<DoorHand> => {
+  const seed = new Uint8Array(32).fill(n);
+  return { key: hexOf(await ed25519.getPublicKeyAsync(seed)), sign: ed25519SignerFromSeed(seed) };
+};
+
+describe("charter roll under the strict door (verifySealRoll)", () => {
+  const roll = async (next: DoorHand) => {
+    const founder = await honestHand(1);
+    const genesis = genesisCharterEpoch([founder.key], 1, sealKeySetHash([next.key], 1));
+    return rotateSealEpoch(genesis, { keys: [next.key], threshold: 1 }, sealKeySetHash([(await honestHand(3)).key], 1),
+      [{ signer: next.key, sign: next.sign }]);
+  };
+  test("CONTROL: the committed hand rolls the charter", async () => { expect((await roll(await honestHand(2))).ok).toBe(true); });
+  test("a signature only a lenient verifier reads rolls nothing", async () => {
+    expect(await roll(torsionHand(2))).toMatchObject({ ok: false, code: "roll-short-of-revealed-quorum" });
+  });
+  test("a founding seat the door refuses seats nothing, by name", async () => {
+    expect(() => genesisCharterEpoch([IDENTITY_KEY], 1, "")).toThrow(/charter-seats-a-weak-key.*key-small-order/);
+    expect(weakSeatOf([(await honestHand(1)).key, IDENTITY_KEY])).toEqual({ key: IDENTITY_KEY, refusal: "key-small-order" });
+    expect(weakSeatOf([(await honestHand(1)).key])).toBeNull();
+  });
+  test("a committed small-order key surfaces at its reveal: the roll refuses whole, by name", async () => {
+    // The commitment hides the key, so the genesis reads lawful; the reveal names it, and nobody's signature rides it.
+    const founder = await honestHand(1), genesis = genesisCharterEpoch([founder.key], 1, sealKeySetHash([IDENTITY_KEY], 1));
+    const rolled = await rotateSealEpoch(genesis, { keys: [IDENTITY_KEY], threshold: 1 }, "", [{ signer: IDENTITY_KEY, sign: async () => NOBODYS_SIGNATURE }]);
+    expect(rolled).toMatchObject({ ok: false, code: "roll-holds-a-weak-key" });
+    // A hand-built epoch carrying that roll reads the same refusal, and the lineage with it.
+    const honest = await roll(await honestHand(2));
+    if (!honest.ok) throw new Error("control roll refused");
+    const forged = { ...honest.epoch, roll: { ...honest.epoch.roll!, revealed: { keys: [IDENTITY_KEY, honest.epoch.roll!.keys[0]!], threshold: 1 } } };
+    expect(verifySealRoll(genesisCharterEpoch([founder.key], 1, sealKeySetHash([(await honestHand(2)).key], 1)), forged)).toBe("roll-holds-a-weak-key");
+    expect(verifySealLineage([genesis, forged])).toBe(false);
+  });
+});
+
+describe("wax stamp under the strict door (verifyWaxStampSig)", () => {
+  const stands = async (h: DoorHand): Promise<boolean> => {
+    const epoch = genesisCharterEpoch([h.key], 1, "");
+    const stamp = await mintWaxStamp({ artifactHash: "ab".repeat(32), epoch, sealedAt: "itc:1", sign: h.sign });
+    return verifyWaxStampSig(stamp, epoch, h.key, (k, hash) => sealKeySetHash([k], 1) === hash);
+  };
+  test("CONTROL: an honest seat's stamp stands", async () => { expect(await stands(await honestHand(11))).toBe(true); });
+  test("a stamp only a lenient verifier reads stands nowhere", async () => { expect(await stands(torsionHand(11))).toBe(false); });
+});
+
+describe("charter doc (foundingRoster)", () => {
+  test("a doc that seats a key the door refuses roots nothing", async () => {
+    const good = await honestHand(1);
+    const lawful = {
+      ...emptyFoundingCharterDoc(), threshold: 1, kahu: [{ displayName: "chair", verifyingKey: good.key }],
+      sealLineage: [genesisCharterEpoch([good.key], 1, "")],
+    };
+    expect(foundingRoster(lawful).keys).toEqual([good.key]);                                     // CONTROL
+    // Built past `genesisCharterEpoch`, which would refuse: a doc arrives from disk or a peer, never from the builder.
+    const keys = [good.key, IDENTITY_KEY].sort();
+    const weak = {
+      ...lawful, kahu: keys.map((k) => ({ displayName: "chair", verifyingKey: k })),
+      sealLineage: [mintCharterEpoch({ keySetHash: sealKeySetHash(keys, 1), nextKeyCommit: "", prevEpochCid: null })],
+    };
+    expect(verifySealLineage(weak.sealLineage)).toBe(true);                                      // the lineage alone hides the seat
+    expect(foundingRoster(weak)).toMatchObject({ keys: [], sealEpochCid: "" });
   });
 });

@@ -22,11 +22,10 @@
  * carries a sequence number.
  */
 
-import * as ed25519 from "@noble/ed25519";
-import { ed25519 as ed25519Sync } from "@noble/curves/ed25519.js";
-import { sha256HexSync, hexToBytes, canonicalJson, canonicalJsonBytes } from "./crypto.js";
+import { sha256HexSync, canonicalJson, canonicalJsonBytes } from "./crypto.js";
 import { SEAL_ROLL_DOMAIN } from "./domains.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
+import { acceptEd25519Key, verifyEd25519, type Ed25519KeyRefusal } from "./ed25519-door.js";
 
 /** A key-set and the quorum rule over it — the preimage `sealKeySetHash` digests. */
 export interface SealKeySet {
@@ -196,6 +195,8 @@ export function mintCharterEpoch(fields: SealEpochFields, roll?: SealRoll): Seal
  * a reveal against.
  */
 export function genesisCharterEpoch(keys: readonly string[], threshold: number, nextKeyCommit: string): SealEpoch {
+  const weak = weakSeatOf(keys);
+  if (weak !== null) throw new Error(`charter-seats-a-weak-key — a founding seat refuses (${weak.refusal}): ${weak.key}`);
   return mintCharterEpoch({
     keySetHash:    sealKeySetHash(keys, threshold),
     nextKeyCommit,
@@ -215,6 +216,20 @@ export interface SealRollSigner {
 }
 
 const normKeys = (keys: readonly string[]): string[] => [...new Set(keys.map((k) => k.toLowerCase()))].sort();
+
+/**
+ * The first key of a set that may not hold a seat, with the door's name for why; null when every key may.
+ * A seat reads through `acceptEd25519Key`: a small-order key holds no secret, so everyone signs for its seat,
+ * and a second encoding of a seated key would count one hand twice. A charter, a roll or a reveal that names
+ * such a key refuses WHOLE: dropping the seat alone would move the threshold nobody signed for.
+ */
+export function weakSeatOf(keys: readonly unknown[]): { readonly key: string; readonly refusal: Ed25519KeyRefusal } | null {
+  for (const k of keys) {
+    const read = acceptEd25519Key(typeof k === "string" ? k.toLowerCase() : k);
+    if (!read.ok) return { key: typeof k === "string" ? k : String(typeof k), refusal: read.refusal };
+  }
+  return null;
+}
 
 /**
  * The canonical bytes a roll's hands sign: the predecessor's cid, the seated key-set and its threshold, and
@@ -241,6 +256,8 @@ const isThreshold = (t: unknown): t is number => typeof t === "number" && Number
  * Is `epoch` a lawful roll from `prev`? Null when it holds, else the named refusal. FAILS CLOSED:
  *   · `roll-unsigned`                 — no roll rides the epoch;
  *   · `roll-malformed`                — a threshold below one, or a key or signature that is not hex;
+ *   · `roll-holds-a-weak-key`         — a seated or revealed key the Ed25519 door refuses (small order, a
+ *                                       second encoding, off the curve): the whole roll refuses, never one seat;
  *   · `roll-key-set-unbound`          — the roll's seated set does not hash to the epoch's `keySetHash`;
  *   · `rotation-unarmed`              — the predecessor pre-committed nothing;
  *   · `reveal-mismatch`               — the revealed set does not hash to the predecessor's commitment;
@@ -257,6 +274,7 @@ export function verifySealRoll(prev: SealEpoch, epoch: SealEpoch): string | null
   if (!Array.isArray(revealed.keys) || !isThreshold(revealed.threshold)) return "roll-malformed";
   const hex64 = (k: unknown): k is string => typeof k === "string" && /^[0-9a-fA-F]{64}$/.test(k);
   if (!roll.keys.every(hex64) || !revealed.keys.every(hex64)) return "roll-malformed";
+  if (weakSeatOf(roll.keys) !== null || weakSeatOf(revealed.keys) !== null) return "roll-holds-a-weak-key";
   if (sealKeySetHash(roll.keys, roll.threshold) !== epoch.keySetHash) return "roll-key-set-unbound";
   if (prev.nextKeyCommit.length === 0) return "rotation-unarmed";
   if (sealKeySetHash(revealed.keys, revealed.threshold) !== prev.nextKeyCommit) return "reveal-mismatch";
@@ -273,7 +291,7 @@ export function verifySealRoll(prev: SealEpoch, epoch: SealEpoch): string | null
     if (signed.has(signer) || !(seated.has(signer) || committed.has(signer))) continue;
     if (!/^[0-9a-f]{128}$/i.test(s.sig)) continue;
     let ok = false;
-    try { ok = ed25519Sync.verify(hexToBytes(s.sig), bytes, hexToBytes(signer)); } catch { ok = false; }
+    try { ok = verifyEd25519(s.sig, bytes, signer); } catch { ok = false; }
     if (ok) signed.add(signer);
   }
   const count = (set: ReadonlySet<string>): number => [...set].filter((k) => signed.has(k)).length;
@@ -352,6 +370,6 @@ export async function verifyWaxStampSig(
 ): Promise<boolean> {
   if (!keyInSet(signerKeyHex, epoch.keySetHash)) return false;      // the signer is not authorized by this epoch
   const msg = waxStampProofBytes(stamp.artifactHash, stamp.epochCid, stamp.sealedAt);
-  try { return await ed25519.verifyAsync(hexToBytes(stamp.signature), msg, hexToBytes(signerKeyHex)); }
+  try { return verifyEd25519(stamp.signature, msg, signerKeyHex); }
   catch { return false; }
 }

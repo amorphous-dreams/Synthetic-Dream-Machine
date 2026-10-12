@@ -24,7 +24,8 @@ import { save, getHeads, type Doc } from "@automerge/automerge";
 import { pinnedDoc } from "./pinned-doc.js";
 import type { GenesisSeed } from "./genesis-doc.js";
 import type { LarDoc } from "./base-doc.js";
-import { hex, hexToBytes, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
+import { hex, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 export { ORACLE_POINTER_DOMAIN } from "./domains.js";
 const HEX64_RE = /^[0-9a-f]{64}$/;   // sha256 hex / ed25519 verifying-key hex / automerge head
@@ -218,9 +219,7 @@ export async function verifyOraclePointer(
   // Signature.
   let sigOk = false;
   try {
-    sigOk = await ed25519.verifyAsync(
-      hexToBytes(p.sig), utf8Bytes(pointerSigningString(p)), hexToBytes(p.pub),
-    );
+    sigOk = verifyEd25519(p.sig, utf8Bytes(pointerSigningString(p)), p.pub);
   } catch { sigOk = false; }
   if (!sigOk) return { ok: false, reason: "signature verify failed" };
 

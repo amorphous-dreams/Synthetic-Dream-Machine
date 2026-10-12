@@ -30,10 +30,10 @@
  */
 
 import { effectiveLeaseEpoch, rolledLeaseEpoch } from "./epoch-lease.js";
-import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
-import * as ed25519 from "@noble/ed25519";
+import { canonicalJsonBytes } from "./crypto.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { realmFeedPrefix, realmFeedSlotUri, type CabalRealm } from "./cabal-realm.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** One maintainer's standing — the writer and how deep it has rolled the realm's lease. */
 export interface MaintainerStanding {
@@ -311,6 +311,6 @@ export async function verifyRealmFeedSlot(
   if (!/^[0-9a-f]{64}$/.test(writer)) return false;
   if (!/^[0-9a-f]+$/.test(slot.sig) || slot.sig.length === 0) return false;
   const bytes = realmFeedBytes({ realm: slot.realm, writer, epoch: slot.epoch });
-  try { return await ed25519.verifyAsync(hexToBytes(slot.sig), bytes, hexToBytes(writer)); }
+  try { return verifyEd25519(slot.sig, bytes, writer); }
   catch { return false; }
 }

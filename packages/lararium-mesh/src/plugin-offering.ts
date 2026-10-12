@@ -20,10 +20,10 @@
  * who offers what accrues anywhere (the no-roster law the Lamplighters' resilience rests on).
  */
 
-import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
+import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { computePluginsCid } from "./genesis-doc.js";
 import { PLUGIN_OFFERING_DOMAIN } from "./domains.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /**
  * PUBLISHER PROVENANCE — the claim this Nexus makes about where a blob's bytes came from, carried
@@ -281,7 +281,7 @@ export async function verifyPluginOffering(offering: PluginOffering): Promise<Of
 
   let sigOk = false;
   try {
-    sigOk = await ed25519.verifyAsync(hexToBytes(offering.sig), pluginOfferingBytes(offering), hexToBytes(offering.offeror));
+    sigOk = verifyEd25519(offering.sig, pluginOfferingBytes(offering), offering.offeror);
   } catch { sigOk = false; }                       // a malformed sig or key counts as no signature
   if (!sigOk) return { ok: false, code: "bad-signature", reason: "the offeror's signature does not verify over these bytes" };
 

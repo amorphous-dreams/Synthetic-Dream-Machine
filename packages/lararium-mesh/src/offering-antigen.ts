@@ -34,10 +34,10 @@
  * seize, and a reader that wanted one would have to construct it from records that were never gathered.
  */
 
-import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
+import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN } from "./domains.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 
 // ── THE INNATE LAYER: a tender presents ─────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ export type PresentationVerdict = { readonly ok: true } | { readonly ok: false; 
 export async function verifyOfferingPresentation(p: OfferingPresentation): Promise<PresentationVerdict> {
   if (p?.kind !== OFFERING_PRESENTATION_DOMAIN) return { ok: false, reason: "not an offering presentation" };
   try {
-    const ok = await ed25519.verifyAsync(hexToBytes(p.sig), offeringPresentationBytes(p), hexToBytes(p.presenter));
+    const ok = verifyEd25519(p.sig, offeringPresentationBytes(p), p.presenter);
     return ok ? { ok: true } : { ok: false, reason: "the presenter's signature does not verify" };
   } catch { return { ok: false, reason: "a malformed signature or presenter key" }; }
 }
@@ -331,7 +331,7 @@ async function verifyOfferingQuorum(entry: OfferingKapaeEntry, roster: KahuQuoru
     if (counted.has(s.signer))     continue;   // a signer pads the quorum at most once
     if (!rosterKeys.has(s.signer)) continue;   // a stranger never counts
     let ok = false;
-    try { ok = await ed25519.verifyAsync(hexToBytes(s.sig), bytes, hexToBytes(s.signer)); }
+    try { ok = verifyEd25519(s.sig, bytes, s.signer); }
     catch { ok = false; }
     if (ok) counted.add(s.signer);
   }

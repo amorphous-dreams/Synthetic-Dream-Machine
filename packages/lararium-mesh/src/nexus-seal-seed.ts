@@ -49,7 +49,7 @@
 import { NEXUS_DOC_DOMAIN, SEAT_FINGERPRINT_DOMAIN } from "./domains.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { sha256HexSync, canonicalJson } from "./crypto.js";
-import { type SealEpoch, verifySealLineage, sealKeySetHash } from "./wax-stamp.js";
+import { type SealEpoch, verifySealLineage, sealKeySetHash, weakSeatOf } from "./wax-stamp.js";
 import { type FederationPosture, DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 import { type CabalJoinPolicy, DEFAULT_JOIN_POLICY } from "./cabal-invite.js";
 import type { AdmissionDials } from "./admission-price.js";
@@ -188,6 +188,7 @@ export function foundingRoster(doc: NexusDoc | null): KahuQuorumSeats {
   // lineage AND its HEAD must bind the seated key-set — either failure folds to the empty (inert)
   // roster. The antigen then roots on the cryptographically-verified chain HEAD, never a bare stored
   // string. No lineage at all → nothing roots (the legacy genesis-inception fallback is gone).
+  if (weakSeatOf(keys) !== null) return empty;                                  // a seat the Ed25519 door refuses → the charter roots nothing
   if (!doc?.sealLineage || doc.sealLineage.length === 0) return empty;
   if (!verifySealLineage(doc.sealLineage)) return empty;                        // broken lineage → deny
   const head = doc.sealLineage[doc.sealLineage.length - 1]!;

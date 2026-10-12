@@ -34,8 +34,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/persistence-keel
  */
 
-import * as ed25519 from "@noble/ed25519";
-import { hexToBytes } from "./crypto.js";
+
+import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The 0..20 STANDING dial's floor/step/ceiling for a testimony's lifecycle. */
 export const STANDING_FLOOR = 3;    // born at the noise band — quiet, honest, not failed
@@ -204,7 +204,7 @@ export async function verifyWitnessSig(
   if (!/^[0-9a-fA-F]{128}$/.test(edge.signature)) return false;   // not a 64-byte signature
   const msg = witnessProofBytes(claimCid, edge);
   try {
-    return await ed25519.verifyAsync(hexToBytes(edge.signature), msg, hexToBytes(signerKeyHex));
+    return verifyEd25519(edge.signature, msg, signerKeyHex);
   } catch {
     return false;
   }
