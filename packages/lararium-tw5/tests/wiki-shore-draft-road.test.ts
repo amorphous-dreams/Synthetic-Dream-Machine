@@ -531,9 +531,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     const r = await shoreRig({ timers, yieldHost: async () => { if (hold) await held; } });
     const x = "lar:///t/road/untouched";
     const z = "lar:///t/road/two-drafts";
-    // A landed draft is restamped with its own bag's `$origin-bag`, so `isDraftModified` reads a draft modified
-    // whenever the draft bag differs from the target's bag. The draft lives beside its target here, so only the
-    // base fields could make it read modified.
+    // The draft and target both land in working here, isolating the store-only draft-base fields.
     r.wiki.addTiddler(new r.Tiddler({ title: "lar:///ha.ka.ba/lararium/config/current-wiki-draft", text: workingBag }));
     await seedRecords(r, [{ title: x, text: "landed" }, { title: z, text: "landed" }]);
     await r.adaptor.armSeedCheckpoint();

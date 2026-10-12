@@ -37,14 +37,14 @@ describe.skipIf(wikiSkip)(`routeBag — the three verdicts of the one cascade wa
 
   test("a rule that names a slot ROUTES the title there", () => {
     cascade([`[prefix[lar:]then[${SLOT}]]`]);
-    expect(routeBag(wiki, "lar:///t/x")).toEqual({ kind: "slot", uri: SLOT });
+    expect(routeBag(wiki, "lar:///t/x")).toMatchObject({ kind: "slot", uri: SLOT });
   });
 
   test("the empty-operand form WITHHOLDS, and names the rule that did", () => {
     cascade(["[match[lar:///t/x]then[]]", `[prefix[lar:]then[${SLOT}]]`]);
     expect(routeBag(wiki, "lar:///t/x")).toEqual({ kind: "withheld", rule: "[match[lar:///t/x]then[]]" });
     // CONTROL — the withholding names its subject; a sibling falls through to the catch-all.
-    expect(routeBag(wiki, "lar:///t/y")).toEqual({ kind: "slot", uri: SLOT });
+    expect(routeBag(wiki, "lar:///t/y")).toMatchObject({ kind: "slot", uri: SLOT });
   });
 
   /**

@@ -99,7 +99,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     expect(r.adaptor.ledger.landedOf(child)?.bag).toBe(canonBag);
-    // The write-layer pointer names the writable canon bag, so the cascade routes the ROOT's save there.
+    // The write-layer pointer names the writable canon bag; the composition's layer order still decides.
     r.unbridge();
     r.wiki.addTiddler(new r.Tiddler({ title: WORKING_POINTER, text: canonBag }));
     await afterDispatch();
@@ -117,11 +117,13 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     expect(storeDeleted(r, canonBag, child)).toBe(false);
     expect(storeDeleted(r, workingBag, child)).toBe(true);
     expect(r.wiki.getTiddler(child)).toBeUndefined();
-    // The root's own save followed the edited pointer: that write is the cascade's, and this vector names it.
-    expect(issued.filter((c) => c.puts.includes(root)).map((c) => c.bag)).toEqual([canonBag]);
-    r.outsideSlots.length = 0;
+    // The root's own save refuses by name: a pointer steers nothing beneath the working layer.
+    expect(issued.filter((c) => c.puts.includes(root))).toEqual([]);
+    expect(String(r.wiki.getTiddler(unroutedSaveAlertTitle(WORKING_POINTER))?.fields.text)).toContain(root);
     rebridged();
-    await r.stop();
+    r.unbridge();
+    await r.adaptor.stop().catch(() => undefined);
+    await r.repo.shutdown();
   }, 120_000);
 
   test("a later re-create lands in the working layer over the tombstone and the composition shows it", async () => {

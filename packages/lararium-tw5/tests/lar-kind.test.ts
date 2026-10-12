@@ -34,7 +34,7 @@ import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { PERSONAL_TITLE_PREFIXES } from "../src/filters/lar-kind.js";
+import { PERSONAL_TITLE_EXACT, PERSONAL_TITLE_PREFIXES } from "../src/filters/lar-kind.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh";
 
@@ -54,6 +54,8 @@ const CENSUS: ReadonlyArray<Record<string, string>> = [
   { title: "$:/state/folded/HelloThere", text: "hide" },
   { title: "$:/state/tab-sidebar", text: "$:/core/ui/SideBar/Open" },
   { title: "$:/palette", text: "$:/palettes/Vanilla" },
+  { title: "$:/palettes/Vanilla", text: "definition" },
+  { title: "$:/StoryListX", text: "system control" },
   { title: "$:/status/UserName", text: "Alice" },
   { title: "$:/SiteTitle", text: "Parity" },
   { title: "$:/state/other", text: "" },
@@ -94,6 +96,13 @@ describe.skipIf(wikiSkip)(`lar-kind — one word for the kind of a raw tiddler${
 
   test("CONTROL: `Draft of Beer` with no `draft.of` field reads content", () => {
     expect(kindOf("Draft of Beer")).toBe("content");
+  });
+
+  test("personal titles match exact view-state names and explicit state prefixes", () => {
+    expect(kindOf("$:/palette")).toBe("personal");
+    expect(kindOf("$:/palettes/Vanilla")).toBe("system");
+    expect(kindOf("$:/StoryList")).toBe("personal");
+    expect(kindOf("$:/StoryListX")).toBe("system");
   });
 
   test("the kinds agree with TiddlyWiki's own spellings of the same predicates", () => {
@@ -167,7 +176,20 @@ describe.skipIf(wikiSkip)(`lar-kind — the cascade reads the kind${skipNote}`, 
       if (kind === "personal") expect(route(t), t).toBe(SLOT_PERSONAL);
       else expect(route(t), t).not.toBe(SLOT_PERSONAL);
     }
+    for (const title of PERSONAL_TITLE_EXACT) expect(route(title)).toBe(SLOT_PERSONAL);
     for (const p of PERSONAL_TITLE_PREFIXES) expect(route(`${p}x`)).toBe(SLOT_PERSONAL);
+  });
+
+  test("sync-filter exclusions with no personal-state rule route to the temporary slot", () => {
+    expect(route("$:/isEncrypted")).toBe(SLOT_TEMP);
+    wiki.addTiddler(new (engine.$tw as never as { Tiddler: new (fields: Record<string, unknown>) => unknown }).Tiddler({
+      title: "$:/imports/pending", status: "pending", "plugin-type": "import", text: "pending",
+    }));
+    wiki.addTiddler(new (engine.$tw as never as { Tiddler: new (fields: Record<string, unknown>) => unknown }).Tiddler({
+      title: "$:/imports/complete", status: "complete", "plugin-type": "import", text: "complete",
+    }));
+    expect(route("$:/imports/pending")).toBe(SLOT_TEMP);
+    expect(route("$:/imports/complete")).toBe(SLOT_WORKING);
   });
 });
 

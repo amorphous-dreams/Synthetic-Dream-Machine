@@ -39,15 +39,18 @@ export type TiddlerKind = "volatile" | "temporary" | "draft" | "personal" | "sys
  * predicate for this set; the house names it here and the bag-paths cascade reads it through this
  * operator, so the set has one spelling.
  */
-export const PERSONAL_TITLE_PREFIXES: readonly string[] = [
+export const PERSONAL_TITLE_EXACT: readonly string[] = [
   "$:/StoryList",
-  "$:/state/folded/",
-  "$:/state/tab-",
   "$:/palette",
 ];
 
+export const PERSONAL_TITLE_PREFIXES: readonly string[] = [
+  "$:/state/folded/",
+  "$:/state/tab-",
+];
+
 export function isPersonalTitle(title: string): boolean {
-  return PERSONAL_TITLE_PREFIXES.some((p) => title.startsWith(p));
+  return PERSONAL_TITLE_EXACT.includes(title) || PERSONAL_TITLE_PREFIXES.some((p) => title.startsWith(p));
 }
 
 /** The kind of one tiddler, reading TiddlyWiki's own predicates in their order of specificity. */

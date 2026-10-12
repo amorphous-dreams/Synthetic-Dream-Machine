@@ -77,6 +77,9 @@ function fakeStore(fail?: Error) {
       writes.push({ titles: puts.map((p) => p.tiddler.title), bag: opts?.bag });
       return fail ? Promise.reject(fail) : Promise.resolve();
     },
+    // The composition this wiki stands over: the working layer with the draft layer above it.
+    defaultWritableBagId: () => WRITE_LAYER,
+    layerIndexOf: (bag: string) => [WRITE_LAYER, DRAFT_BAG].indexOf(bag),
   } as unknown as IslandStore;
   return { store, writes };
 }

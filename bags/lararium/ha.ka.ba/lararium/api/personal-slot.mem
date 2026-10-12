@@ -416,7 +416,7 @@ The handoff names "S9 / lararium-browser S4 real boot" as still in flight (Index
 
 The approved [[residency-model|lar:///ha.ka.ba/lararium/api/residency-model]] coordinate-space architecture governs how the recipe walks bag manifestations for any title. This slot + its bindings sit BELOW it: they govern how the resolver builds the bag-URL map that feeds the recipe in the first place. The slot URI, the `(PersonaGroup × recipe-fingerprint)` keying, and the Yang/Yin/Chao position above the `bags/{slug}` canon all survive the residency model intact. Three layers compose, one operator gesture:
 
-* The cascade tiddler (`lar:///ha.ka.ba/lararium/config/bag-paths`) routes `$:/StoryList` writes to the personal layer (via `current-wiki-personal`) as a ''first-write default'', not authoritative routing. Under the residency model a title MAY have residency in `wikis/{slug}/personal` AND `bags/{slug}` AND a canon library simultaneously; the recipe walks priority and surfaces the topmost Manifestation. The cascade only decides where the first-write goes when no other bag already holds the title.
+* The cascade tiddler (`lar:///ha.ka.ba/lararium/config/bag-paths`) routes `$:/StoryList` writes to the personal layer (via `current-wiki-personal`) as a ''first-write default'', not authoritative routing. Under the residency model a title MAY have residency in `wikis/{slug}/personal` AND `bags/{slug}` AND a canon library simultaneously; the recipe walks priority and surfaces the topmost Manifestation. The cascade decides where a write goes unless a layer above its choice already holds the title: that title stays where it lives, and a title only a lower layer holds copies up into the cascade's layer.
 * The binding tiddler in the admin doc names which Automerge document THIS device, in THIS recipe, mounts at the `wikis/{slug}/personal` URI.
 * The residency model surfaces `$:/StoryList` as the topmost manifestation in the resolver-defined priority order.
 
@@ -457,7 +457,7 @@ This unified ledger renumbers once; every in-body cross-reference resolves here.
 
 Q1 (slot priority order) ✅ approved — `personal` among the per-wiki live slots, above the `bags/{slug}` canon.
 Q2 (one @personal or per-wiki) ✅ resolved — a per-wiki slot URI (`wikis/{slug}/personal`); the resolver binds the doc per `(PersonaGroup × recipe-fingerprint)`.
-Q3 (`$:/palette` scope) ✅ resolved — palette routes to the personal layer (operator-across-devices). The cascade rule `[prefix[$:/palette]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]` lands above the `$:/state/` catch-all. Custom palette definitions under `$:/palettes/*` are NOT covered — open follow-up if operator-built palettes need to travel across recipes.
+Q3 (`$:/palette` scope) ✅ resolved — palette routes to the personal layer (operator-across-devices). The personal rule (`[lar-kind[]match[personal]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]`) matches the palette-choice title `$:/palette` exactly and lands above the `$:/state/` catch-all. Custom palette definitions under `$:/palettes/*` are NOT covered — open follow-up if operator-built palettes need to travel across recipes.
 Q4 (fingerprint algorithm) ✅ resolved — SHA-256 over canonical encoding of `(bags/{slug}-doc-id + sorted libraryBags doc-ids)` only. `lares` and `lararium` doc-ids do NOT participate — switching Lares personality or system bag does not fork the operator's view state across devices. `computeRecipeFingerprint()` in `wiki-recipe.ts` carries the same exclusion.
 
 ''Binding storage''
@@ -503,6 +503,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KJhNNYBIPlLoe1LnHIqe2A8BI8GVlnUalMLdr8D50Lg
+<<^ code="&#x0003;">>ni:///sha-256;xhdUVYnXf3qgI-SO9Bi5xNyt1uyEgp_8z5Wfj9i9XP0
 
 <<^ code="&#x0004;" -> to="?">>

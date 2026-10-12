@@ -612,15 +612,16 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await expect(failing.checkpoint()).rejects.toThrow(/lar:\/\/\/t\/shore\/R3-seed.*read cause/);
     expect(attempts).toBe(2);
 
-    const error = vi.spyOn(console, "error").mockImplementation(() => {});
     let residentAttempts = 0;
-    const resident = new WaveLanding(async () => { residentAttempts++; throw new Error("resident cause"); }, async () => {});
+    const reported: string[] = [];
+    const resident = new WaveLanding(async () => { residentAttempts++; throw new Error("resident cause"); }, async () => {}, (title, error) => { reported.push(`${title}: ${error.message}`); });
     await resident.checkpoint();
     resident.enqueue({ title: "lar:///t/shore/R3-resident", record: null, origin: remote });
     await turns();
     expect(residentAttempts).toBe(2);
-    expect(error).toHaveBeenCalledWith(expect.stringContaining('"lar:///t/shore/R3-resident"'));
-    error.mockRestore();
+    expect(reported).toHaveLength(1);
+    expect(reported[0]).toContain("lar:///t/shore/R3-resident");
+    expect(reported[0]).toContain("resident cause");
   });
 
   test("R4: a layer read that fails rejects the seed instead of landing the envelope record", async () => {

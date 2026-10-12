@@ -15,12 +15,15 @@ import {
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import type { ShoreTimers } from "../src/hand-gate.js";
+import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bootTestWiki } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 export const canonBag = wikiSlotUri("shore-road", "canon");
 export const workingBag = wikiSlotUri("shore-road", "working");
 export const draftBag = wikiSlotUri("shore-road", "draft");
+export const personalBag = wikiSlotUri("shore-road", "personal");
+export const tempBag = wikiSlotUri("shore-road", "temp");
 export const remote = { kind: "crdt-remote", edgeIsland: "shore-road-peer" } as const;
 
 const meshRequire = createRequire(import.meta.resolve("@lararium/mesh"));
@@ -63,10 +66,12 @@ export interface RigOptions {
   readonly yieldHost?: () => Promise<void>;
   /** Whether the canon layer accepts writes (default: it does not). */
   readonly canonWritable?: boolean;
+  /** Mount the personal layer (above working) and the temp layer (on top), as a recipe's composition does. */
+  readonly upperSlots?: boolean;
   /** Leave the working layer unmounted, though the recipe pointers still name it. */
   readonly noWorking?: boolean;
   /** Saved docs to import, so a second shore stands over the same history as a first. */
-  readonly docs?: { canon?: Uint8Array; working?: Uint8Array; draft?: Uint8Array };
+  readonly docs?: { canon?: Uint8Array; working?: Uint8Array; draft?: Uint8Array; personal?: Uint8Array };
 }
 
 export type Rig = Awaited<ReturnType<typeof shoreRig>>;
@@ -94,10 +99,15 @@ export async function shoreRig(opts: RigOptions = {}) {
   const canon = new AutomergeDocStore(canonHandle, canonBag);
   const working = new AutomergeDocStore(workingHandle, workingBag);
   const draft = new AutomergeDocStore(draftHandle, draftBag);
+  const personalHandle = open(opts.docs?.personal);
+  const personal = new AutomergeDocStore(personalHandle, personalBag);
+  const temp = new MemoryTiddlerStore();
   const composite = new CompositeStore();
   composite.addLayer({ bagId: canonBag, store: canon, writable: opts.canonWritable === true, defaultWritable: false });
   if (opts.noWorking !== true) composite.addLayer({ bagId: workingBag, store: working, writable: true });
+  if (opts.upperSlots === true) composite.addLayer({ bagId: personalBag, store: personal, writable: true, defaultWritable: false });
   composite.addLayer({ bagId: draftBag, store: draft, writable: true, defaultWritable: false });
+  if (opts.upperSlots === true) composite.addLayer({ bagId: tempBag, store: temp, writable: true, defaultWritable: false });
 
   const calls: StoreCall[] = [];
   /** Every hand-origin put or tombstone the shore sent into a bag outside this wiki's own slots. */
@@ -132,13 +142,13 @@ export async function shoreRig(opts: RigOptions = {}) {
   await turns();
   return {
     engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals, outsideSlots,
-    canonHandle, workingHandle, draftHandle, canon, working, draft,
-    handles: { [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle } as Record<string, typeof canonHandle>,
+    canonHandle, workingHandle, draftHandle, personalHandle, canon, working, draft, personal, temp,
+    handles: { [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>,
     saved: () => ({
       canon: automerge.save(canonHandle.doc()), working: automerge.save(workingHandle.doc()), draft: automerge.save(draftHandle.doc()),
     }),
-    doc: (bag: string): LarDoc => (({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc,
-    changes: (bag: string): number => automerge.getAllChanges((({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc).length,
+    doc: (bag: string): LarDoc => (({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc,
+    changes: (bag: string): number => automerge.getAllChanges((({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc).length,
     stop: async (): Promise<void> => {
       unbridge();
       try {

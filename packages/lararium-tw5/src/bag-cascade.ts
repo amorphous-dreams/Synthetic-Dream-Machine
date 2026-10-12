@@ -21,7 +21,7 @@ export const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
 
 /** What the cascade did with a title. A withholding and a gap both stop a write and mean opposite things. */
 export type RouteVerdict =
-  | { readonly kind: "slot";     readonly uri:  string }
+  | { readonly kind: "slot";     readonly uri:  string; readonly rule: string }
   | { readonly kind: "withheld"; readonly rule: string }
   | { readonly kind: "gap";      readonly why:  string };
 
@@ -46,7 +46,7 @@ export function routeBag(wiki: CascadeWiki, title: string): RouteVerdict {
     const result = wiki.filterTiddlers(filter, undefined, source);
     if (result.length === 0) continue;
     const first = result[0] ?? "";
-    return first === "" ? { kind: "withheld", rule: filter } : { kind: "slot", uri: first };
+    return first === "" ? { kind: "withheld", rule: filter } : { kind: "slot", uri: first, rule: filter };
   }
   return { kind: "gap", why: "no rule reached this title — the cascade lost its catch-all" };
 }

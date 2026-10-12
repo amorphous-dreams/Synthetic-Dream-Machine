@@ -9,6 +9,7 @@ export interface LandingQueueDoor {
 export class WaveLanding {
   static readonly QUOTA = 200;
   private readonly queue: LarTiddlerChange[] = [];
+  private readonly owed = new Map<string, LarTiddlerChange>();
   private draining = false;
   private stopped = false;
   private drainTask: Promise<void> | null = null;
@@ -23,10 +24,13 @@ export class WaveLanding {
   constructor(
     private readonly landOne: (change: LarTiddlerChange) => Promise<void>,
     private readonly yieldHost: HostTaskYield = yieldToHost,
+    private readonly onLandingFailed: (title: string, error: Error) => void = () => {},
+    private readonly onLandingRecovered: (title: string) => void = () => {},
   ) {}
 
   enqueue(change: LarTiddlerChange): void {
     if (this.stopped) return;
+    if (this.owed.has(change.title)) this.owed.set(change.title, change);
     this.queue.push(change);
     this.kick();
   }
@@ -71,6 +75,7 @@ export class WaveLanding {
   async stop(): Promise<void> {
     this.stopped = true;
     this.queue.length = 0;
+    this.owed.clear();
     await this.drainTask;
   }
 
@@ -83,19 +88,44 @@ export class WaveLanding {
   private async drain(): Promise<void> {
     // Always begin on a host task. Marks during this yield join this same drain.
     await this.yieldHost();
+    if (!this.stopped && this.seedCompleted && this.owed.size) {
+      for (const [title, change] of [...this.owed]) {
+        if (this.stopped) break;
+        try {
+          await this.landOne(change);
+          if (this.owed.get(title) === change) {
+            this.owed.delete(title);
+            this.onLandingRecovered(title);
+          }
+        } catch (error) {
+          const named = error instanceof Error ? error : new Error(String(error));
+          if (this.owed.get(title) === change) this.onLandingFailed(title, named);
+        }
+      }
+    }
     while (!this.stopped && this.queue.length) {
       const count = Math.min(WaveLanding.QUOTA, this.queue.length);
-      const failed: Array<{ item: LarTiddlerChange; error: unknown }> = [];
+      const failed: Array<{ item: LarTiddlerChange; error: unknown; at: number }> = [];
+      const landedAt = new Map<string, number>();
       for (let i = 0; i < count; i++) {
         const item = this.queue.shift()!;
-        try { await this.landOne(item); }
-        catch (error) { failed.push({ item, error }); }
+        try {
+          await this.landOne(item);
+          landedAt.set(item.title, i);
+          if (this.owed.delete(item.title)) this.onLandingRecovered(item.title);
+        }
+        catch (error) { failed.push({ item, error, at: i }); }
       }
       for (const failure of failed) {
+        // A later change of the same title landed in this slice: it superseded the failed one.
+        if ((landedAt.get(failure.item.title) ?? -1) > failure.at) continue;
         try { await this.landOne(failure.item); }
         catch (cause) {
           const error = new Error(`wave landing for "${failure.item.title}" failed twice: ${String(cause)}`, { cause });
-          if (this.seedCompleted) console.error(`[wave-landing] ${error.message}`);
+          if (this.seedCompleted) {
+            this.owed.set(failure.item.title, failure.item);
+            this.onLandingFailed(failure.item.title, error);
+          }
           else {
             this.seedFailure = error;
             this.seedReject?.(error);

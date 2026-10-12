@@ -70,6 +70,7 @@ import type {
   SlotUri,
 } from "@lararium/mesh";
 import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle } from "@lararium/mesh";
+import { maskedExecAll } from "@lararium/memetic-frame";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
@@ -96,6 +97,11 @@ export function parallelDraftAlertTitle(draftTitle: string): string {
 /** The alert a hand whose store write was refused raises — one per title, cleared when a later write lands. */
 export function unsavedHandAlertTitle(title: string): string {
   return `$:/temp/lares/alert/unsaved/${title}`;
+}
+
+/** The alert a title whose resident landing failed raises until a later wave lands it. */
+export function landingFailedAlertTitle(title: string): string {
+  return `$:/temp/lares/alert/landing-failed/${title}`;
 }
 
 /** True for a title that never persists: the volatile VM plane and the alert rail. */
@@ -167,6 +173,17 @@ function toTW5FieldStrings(
   return {};
 }
 
+/**
+ * The child slot addresses a placed text names through its `kahea` references, rooted at `rootUri`. A
+ * reference quoted inside a code fence names no child.
+ */
+function kaheaChildUris(rootUri: string, text: string): Set<string> {
+  const uris = new Set<string>();
+  if (!text.includes("<<~ kahea ahu ")) return uris;
+  for (const match of maskedExecAll(text, /<<~ kahea ahu (#[^\s>]+)>>/g)) uris.add(rootUri + match[1]!);
+  return uris;
+}
+
 function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string> {
   return toTW5FieldStrings(tw5, tiddler);
 }
@@ -223,7 +240,25 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (typeof lares?.applyNalu !== "function") throw new LandingDoorUnavailableError();
     if (lares.enqueueNalu !== undefined) throw new LandingDoorOccupiedError();
     const apply = lares.applyNalu.bind(lares);
-    const landing = new WaveLanding((change) => this._landOne(change), yieldHost);
+    const landing = new WaveLanding(
+      (change) => this._landOne(change),
+      yieldHost,
+      (title, error) => {
+        console.warn(`[wave-landing] ${error.message}`);
+        this._addAlertIfChanged({
+          title: landingFailedAlertTitle(title),
+          text: `Landing "${title}" failed. The wiki may show an older value for it until the next change arrives; the shore tries again then.`,
+          tags: TW5_ALERT_TAG,
+          "alert-kind": "landing-failed",
+          "landing-title": title,
+          error: error.message,
+        });
+      },
+      (title) => {
+        const alert = landingFailedAlertTitle(title);
+        if (this.tw5.$tw.wiki.getTiddler(alert)) this.tw5.$tw.wiki.deleteTiddler(alert);
+      },
+    );
     this.landing = landing;
     this.engineApply = apply;
     this.door = (change) => landing.enqueue(change);
@@ -350,26 +385,87 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /**
-   * Act on a cascade verdict: a slot lands there, a named withholding skips (null), a gap falls to the
-   * write layer, and a route with no bag behind it THROWS the named refusal after raising it on the
-   * alert rail — a rule that routes through an empty pointer, or a gap while the write layer itself
-   * has no name.
+   * Act on a cascade verdict: a slot the composition mounts at or above the working layer lands there, a
+   * named withholding skips (null), a gap falls to the write layer, and every other answer THROWS the named
+   * refusal after raising it on the alert rail: a rule that routes through an empty pointer, a gap while
+   * the write layer itself has no name, a slot the composition does not mount, a slot beneath the working
+   * layer, and any route through the write-layer pointer while no working layer mounts.
+   *
+   * THE CASCADE AND ITS POINTERS STEER NOTHING INTO CANON. They choose among the layers a hand may write:
+   * the working layer and the layers above it. The composition's own layer order answers which those are,
+   * so no wiki tiddler, edited by hand or by a peer, lands a save beneath the working layer.
    */
   private _settle(title: string, verdict: RouteVerdict): SlotUri | null {
-    if (verdict.kind === "slot") return verdict.uri;
     if (verdict.kind === "withheld") {
       const reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1];
       if (reference === undefined) return null;
       throw this._refuseUnrouted(title, verdict.rule, reference);
     }
-    const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
-    console.warn(
-      `[island-adaptor] no cascade rule routes "${title}" (${verdict.why}) — ` +
-      (fallback ? `writing to the write layer ${fallback}. ` : "and no write layer resolves. ") +
-      `Add a rule to ${BAG_PATHS_CONFIG}; a save must never vanish for want of one.`,
-    );
-    if (!fallback) throw this._refuseUnrouted(title, `(no rule: ${verdict.why})`, CURRENT_WIKI_BAG);
-    return fallback as SlotUri;
+    let uri: string;
+    let rule: string;
+    let reference: string;
+    if (verdict.kind === "slot") {
+      uri = verdict.uri;
+      rule = verdict.rule;
+      reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1] ?? verdict.uri;
+    } else {
+      const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
+      console.warn(
+        `[island-adaptor] no cascade rule routes "${title}" (${verdict.why}) — ` +
+        (fallback ? `writing to the write layer ${fallback}. ` : "and no write layer resolves. ") +
+        `Add a rule to ${BAG_PATHS_CONFIG}; a save must never vanish for want of one.`,
+      );
+      rule = `(no rule: ${verdict.why})`;
+      reference = CURRENT_WIKI_BAG;
+      if (!fallback) throw this._refuseUnrouted(title, rule, reference);
+      uri = fallback;
+    }
+    const working = this.store.defaultWritableBagId();
+    if (!working && reference === CURRENT_WIKI_BAG) throw this._refuseUnrouted(title, rule, reference, "this wiki mounts no working layer");
+    const index = this.store.layerIndexOf(uri);
+    if (index < 0) throw this._refuseUnrouted(title, rule, reference, `it names ${uri}, a bag this wiki does not mount`);
+    if (working && index < this.store.layerIndexOf(working)) {
+      throw this._refuseUnrouted(title, rule, reference, `it names ${uri}, a layer beneath this wiki's working layer; a bag changes only by a residency move`);
+    }
+    return uri as SlotUri;
+  }
+
+  /**
+   * The slot the cascade routes `title` to when the composition mounts it at or above the working layer,
+   * else null. Raises nothing: a reader that needs the refusal asks `_destination`.
+   */
+  private _routeAtOrAboveWorking(title: string): string | null {
+    const verdict = this._routeBag(title);
+    if (verdict.kind !== "slot") return null;
+    const working = this.store.defaultWritableBagId();
+    const index = this.store.layerIndexOf(verdict.uri);
+    return working && index >= 0 && index >= this.store.layerIndexOf(working) ? verdict.uri : null;
+  }
+
+  /**
+   * Whether `bag` holds a record for `title` at this instant (a tombstone counts; an absent entry does not).
+   * The ledger names where a title landed; a residency move may have retracted that record since, with its
+   * wave still queued, so the bag's own store answers. A store with no synchronous reader answers yes.
+   */
+  private _holdsRecord(bag: string, title: string): boolean {
+    const reader = this._storeFor(bag) as { readNow?: (title: string) => { record: LarTiddlerRecord | null } } | null;
+    return typeof reader?.readNow === "function" ? reader.readNow(title).record !== null : true;
+  }
+
+  /**
+   * Where a hand's save of `title` lands. The cascade names the layer; a title that already lives in a
+   * layer above that one stays where it lives, so the wiki shows the edit: a record a higher layer holds
+   * (a tombstone included) shadows whatever lands beneath it. A title living beneath the working layer
+   * never draws a save down: the cascade's layer takes it and shadows the lower record.
+   */
+  private _saveBag(title: string): SlotUri | null {
+    const routed = this._destination(title);
+    if (routed === null) return null;
+    const lives = this.lastWriteBag.get(title) ?? this.ledger.landedOf(title)?.bag;
+    const working = this.store.defaultWritableBagId();
+    if (!lives || !working || !this._holdsRecord(lives, title)) return routed;
+    const livesAt = this.store.layerIndexOf(lives);
+    return livesAt >= this.store.layerIndexOf(working) && livesAt > this.store.layerIndexOf(routed) ? lives as SlotUri : routed;
   }
 
   /**
@@ -681,20 +777,23 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /**
    * Where a hand's tombstone for `title` lands, given the bag the title landed from. A tombstone shadows
-   * only from above (kāpae), so the composition's own layer order decides, never a wiki tiddler:
+   * only from above (kāpae), so the composition's own layer order decides, never a wiki pointer:
    *   - the working layer is the composition's default writable;
    *   - a title that landed from the working layer or a layer above it (a draft, a personal record) is
-   *     tombstoned in that layer, where the record lives;
-   *   - a title that landed from any layer beneath the working layer (a canon bag, writable or read-only)
-   *     or from a bag the composition does not mount is never written there: the tombstone lands in the
-   *     working layer and hides it.
+   *     tombstoned in that layer, where the record lives, while that layer still holds a record for it;
+   *   - a title that landed from any layer beneath the working layer (a canon bag, writable or read-only),
+   *     from a bag the composition does not mount, or from a layer whose record a residency move has since
+   *     retracted is never written there: the tombstone lands where a
+   *     save of the title would (the layer the cascade names at or above the working layer: the temp slot
+   *     for session state, the personal slot for a person's view state), else in the working layer.
    * A composition with no working layer refuses by the standing named road.
    */
   private _tombstoneBag(title: string, landedBag: string): string {
     const working = this.store.defaultWritableBagId();
     if (!working) throw this._refuseUnrouted(title, "(a delete shadows from the working layer)", CURRENT_WIKI_BAG, "this wiki mounts no working layer");
     const landedIndex = this.store.layerIndexOf(landedBag);
-    return landedIndex >= 0 && landedIndex >= this.store.layerIndexOf(working) ? landedBag : working;
+    if (landedIndex >= 0 && landedIndex >= this.store.layerIndexOf(working) && this._holdsRecord(landedBag, title)) return landedBag;
+    return this._routeAtOrAboveWorking(title) ?? working;
   }
 
   /** Re-land the bag's current record for `title` through the landing queue. */
@@ -765,7 +864,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const own = this.unlanded.has(target) ? this.handBase.get(target) : undefined;
     if (own) return { baseBag: own.bag, baseHeads: own.heads, absent: false };
     if (entry?.tiddler != null && entry.bag) return { baseBag: entry.bag, baseHeads: entry.heads ?? [], absent: false };
-    const bag = this._destination(target);
+    const bag = this._saveBag(target);
     if (bag === null) return { baseHeads: [], absent: true };
     return { baseBag: bag, baseHeads: this._headsOfBag(bag) ?? [], absent: true };
   }
@@ -895,7 +994,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (saves && !neverPersists(target)) {
         const value = wiki.getTiddler(target)!;
         const fields = extractFields(this.tw5, value);
-        const dest = this._destination(target);
+        const dest = this._saveBag(target);
         if (dest !== null) {
           const landed = this.ledger.landedOf(target);
           const standsAtY = rename && landed?.tiddler != null && landed.bag !== undefined && landed.heads !== undefined;
@@ -1067,7 +1166,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const draft = fields["draft.of"] !== undefined ? this.draftBook.get(title) : undefined;
       if (fields["draft.of"] !== undefined) { delete fields[DRAFT_BASE_BAG]; delete fields[DRAFT_BASE_HEADS]; }
       if (draft?.baseBag) Object.assign(fields, draftBaseFields(draft));
-      const dest = this._destination(title);
+      let dest: SlotUri | null;
+      try { dest = this._saveBag(title); }
+      catch (error) {
+        // A refused route leaves the title owed: marked, with the refusal on the alert rail.
+        this.lastFlushWrote.set(title, false);
+        this.failedAtTeardown.set(title, error);
+        throw error;
+      }
       if (dest === null) {
         this.handed.delete(title);
         this.pendingHand.delete(title);
@@ -1093,7 +1199,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       });
     } else {
       const entry = this.ledger.landedOf(title);
-      const landedBag = this.lastWriteBag.get(title) ?? entry?.bag ?? this.handBase.get(title)?.bag ?? this._destination(title);
+      const landedBag = this.lastWriteBag.get(title) ?? entry?.bag ?? this.handBase.get(title)?.bag ?? this._routeAtOrAboveWorking(title) ?? this.store.defaultWritableBagId();
       if (!landedBag) {
         this.handed.delete(title);
         this.pendingHand.delete(title);
@@ -1209,6 +1315,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  /** True while the wiki holds `uri`, or the last wave landed it live. */
+  private _stands(uri: string): boolean {
+    return this.tw5.$tw.wiki.getTiddler(uri) !== undefined || (this.ledger.landedOf(uri)?.tiddler ?? null) !== null;
+  }
 
   private _childUrisOf(parentUri: string): string[] {
     return this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`) as string[];
@@ -1326,24 +1437,40 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const puts: LarTiddlerRecord[] = [toLarTiddlerRecord({ ...persist(parent, isDraft), title })];
     const tombstones: string[] = [];
     const strays: Array<{ uri: string; slot: SlotUri }> = [];
+    if (isDraft) return { puts, tombstones, strays, split: false };
 
-    if (children.length > 0) {
-      const existingChildren = new Set<string>(this._childUrisOf(title));
-      const newChildren      = new Set<string>();
+    const newChildren = new Set<string>();
+    for (const child of children) {
+      const childTitle = String(child["title"] ?? "");
+      if (!childTitle.startsWith("lar:")) continue;
+      newChildren.add(childTitle);
+      puts.push(toLarTiddlerRecord({ ...persist(child, false), title: childTitle }));
+    }
 
-      for (const child of children) {
-        const childTitle = String(child["title"] ?? "");
-        if (!childTitle.startsWith("lar:")) continue;
-        newChildren.add(childTitle);
-        puts.push(toLarTiddlerRecord({ ...persist(child, false), title: childTitle }));
-      }
-
-      for (const uri of existingChildren) {
-        if (newChildren.has(uri)) continue;
-        const slot = this._tombstoneBag(uri, (this.ledger.landedOf(uri)?.bag as string | undefined) ?? targetBag) as SlotUri;
-        if (slot === targetBag) tombstones.push(uri);
-        else strays.push({ uri, slot });
-      }
+    // THE ORPHANS ARE THE CHILD REFERENCES THE EDIT REMOVED. A placed parent names each child slot by a
+    // `kahea` reference, so the references its landed text held and its saved text does not hold name the
+    // children the hand removed, the last one included: a parent that splits into no children still
+    // compares. A body saved whole (its ahu blocks split here) also drops every standing child it does not
+    // declare. A parent that never referenced a child compares two empty sets and tombstones nothing.
+    const rootUri = cut < 0 ? title : title.slice(0, cut);
+    const declared = kaheaChildUris(rootUri, String(parent["text"] ?? ""));
+    const landedParent = this.ledger.landedOf(title)?.tiddler as { fields?: Record<string, unknown> } | null | undefined;
+    const before = new Set<string>(kaheaChildUris(rootUri, String(landedParent?.fields?.["text"] ?? "")));
+    const standing = new Set<string>(children.length > 0 ? this._childUrisOf(title) : []);
+    for (const uri of standing) before.add(uri);
+    const orphans: string[] = [];
+    for (const uri of before) {
+      if (declared.has(uri) || newChildren.has(uri) || !(standing.has(uri) || this._stands(uri))) continue;
+      orphans.push(uri);
+    }
+    // A removed child takes its own slot children with it, at every depth.
+    for (let i = 0; i < orphans.length; i++) {
+      for (const nested of this._childUrisOf(orphans[i]!)) if (!newChildren.has(nested) && !orphans.includes(nested)) orphans.push(nested);
+    }
+    for (const uri of orphans) {
+      const slot = this._tombstoneBag(uri, (this.ledger.landedOf(uri)?.bag as string | undefined) ?? targetBag) as SlotUri;
+      if (slot === targetBag) tombstones.push(uri);
+      else strays.push({ uri, slot });
     }
     return { puts, tombstones, strays, split: children.length > 0 };
   }

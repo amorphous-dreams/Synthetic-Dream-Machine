@@ -138,8 +138,8 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
     expect(pointer("draft")).toBe(wikiSlotUri(slug, "draft"));
     expect(pointer("personal")).toBe(wikiSlotUri(slug, "personal"));
     // The one walk every save takes answers a slot for a meme title, a draft and a volatile title.
-    expect(routeBag(wiki, "lar:///t/recipe/lady-aki")).toEqual({ kind: "slot", uri: workingSlot });
-    expect(routeBag(wiki, "$:/temp/recipe/scratch")).toEqual({ kind: "slot", uri: wikiSlotUri(slug, "temp") });
+    expect(routeBag(wiki, "lar:///t/recipe/lady-aki")).toMatchObject({ kind: "slot", uri: workingSlot });
+    expect(routeBag(wiki, "$:/temp/recipe/scratch")).toMatchObject({ kind: "slot", uri: wikiSlotUri(slug, "temp") });
   }, 120_000);
 
   /**

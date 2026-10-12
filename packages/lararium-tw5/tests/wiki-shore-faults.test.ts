@@ -71,12 +71,12 @@ describe("wiki shore fault vectors", () => {
     const r = await realRig();
     await r.adaptor.armSeedCheckpoint();
     const title = "lar:///t/shore/fault/resident-read";
-    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const warnings = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(r.composite, "resolveLayered").mockRejectedValue(new Error("resident composition read failed"));
     await r.working.put({ tiddler: { title, text: "resident value" } }, remote);
     await r.adaptor.landingIdle();
-    expect(errors.mock.calls.flat().join(" ")).toContain(title);
-    errors.mockRestore();
+    expect(warnings.mock.calls.flat().join(" ")).toContain(title);
+    warnings.mockRestore();
     await r.adaptor.stop();
     await r.repo.shutdown();
   }, 120_000);

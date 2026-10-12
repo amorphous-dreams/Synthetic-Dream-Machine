@@ -42,7 +42,7 @@ edits to `store.put` / `store.tombstone`.
 | Forward inbound `LarTiddlerChange` → `$tw.lares.enqueueNalu` | IslandAdaptor |
 | Unified queue + per-frame `wiki.transact()` drain | nalu-engine (in-wiki) |
 | Carry a live wiki `change` to `saveTiddler` / `deleteTiddler` | the outbound bridge (`outbound-bridge.ts`) |
-| Outbound `saveTiddler` (400 ms debounce + Path-H auto-split) → `store.put` in the bag the cascade names | IslandAdaptor |
+| Outbound `saveTiddler` (400 ms debounce + Path-H auto-split) → `store.put` in the layer the cascade names at or above the working layer, or the higher layer where the title already lives | IslandAdaptor |
 | Outbound `deleteTiddler` → `tombstoneInBag` in the last-known slot | IslandAdaptor |
 | Echo law for a `change` that an inbound apply fired | the inbound SET: `noteInbound` (filled at `enqueueNalu`'s door) · `consumeInbound` · `endInboundBurst` |
 | Echo guard for a synchronous caller during a drain | `$tw.lares.isApplyingNalu()` |
@@ -112,6 +112,6 @@ its seed state synchronously before `behavior.onEa` runs.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uNz_oT4yKe3i36JYG_eZrlTaXiPZrHJ6aBUabVBzNSU
+<<^ code="&#x0003;">>ni:///sha-256;L3YT6k5Y7TRDgY0s9Xok9Akc6dANDXLzdw6vQRxCfGo
 
 <<^ code="&#x0004;" -> to="?">>

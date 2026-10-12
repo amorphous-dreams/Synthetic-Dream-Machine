@@ -8,6 +8,8 @@ type: text/vnd.tiddlywiki
 [prefix[$:/status/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [prefix[$:/boot/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [prefix[$:/HistoryList]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[match[$:/isEncrypted]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[status[pending]plugin-type[import]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [lar-kind[]match[personal]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
 [prefix[$:/state/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
 [is[draft]then{lar:///ha.ka.ba/lararium/config/current-wiki-draft}]

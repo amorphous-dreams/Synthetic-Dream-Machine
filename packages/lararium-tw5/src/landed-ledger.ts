@@ -1,3 +1,5 @@
+import { ENVELOPE_FIELDS } from "./envelope-fields.js";
+
 export interface LandedEntry {
   /** Explicit null means the last wave left no tiddler at this title. */
   readonly tiddler: unknown | null;
@@ -21,7 +23,7 @@ export function same(a: unknown | null | undefined, b: unknown | null | undefine
   if (a == null || b == null) return a == null && b == null;
   if (a === b) return true;
   const equal = (a as { isEqual?: (other: unknown, exclude?: string[]) => boolean }).isEqual;
-  return typeof equal === "function" && equal.call(a, b, ["$origin-bag"]);
+  return typeof equal === "function" && equal.call(a, b, [...ENVELOPE_FIELDS]);
 }
 
 export function sameWithStamp(a: unknown | null | undefined, b: unknown | null | undefined): boolean {
