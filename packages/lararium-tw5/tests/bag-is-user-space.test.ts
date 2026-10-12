@@ -11,6 +11,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { toWikiFields } from "../src/modules/nalu-engine.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
@@ -105,7 +106,7 @@ describe("★ the outbound adaptor ★", () => {
 
   test("★ an author's `bag` never routes the save and rides into the record whole ★", async () => {
     const done = adaptor.saveTiddler({ fields: { title: URI, text: "an NPC", bag: INVENTORY, "$origin-bag": ORIGIN_BAG } });
-    await vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+    await vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
     await done;
     expect(puts).toHaveLength(1);
     // Residency rides the envelope: the cascade's bag, never the field's value.

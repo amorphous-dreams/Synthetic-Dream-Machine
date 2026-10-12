@@ -12,9 +12,9 @@
  * The resolver walks the body home lazily (on render, not eagerly): read the content-address the
  * handle names, pull the bytes from the corpus CAS via `resolveByCid`, re-verify
  * `cid == sha256(bytes)` (Island Sovereignty — trust CONTENT, never the host), then splice the
- * `text` into the VM tiddler. The write rides the GUARDED nalu rail (`$tw.lares.enqueueNalu`)
- * under the `_applying` echo-guard, so the rehydrated body NEVER echoes back out to the CRDT —
- * that would re-inline the body and re-open the #51 overflow the skinny handle exists to close.
+ * `text` into the VM tiddler. The engine enqueue door is redirected through the shore's landing queue,
+ * so the splice meets the landed ledger before the packed engine applies it. The lazy body remains a
+ * VM value and never becomes a store write when its fields equal the landed handle.
  *
  * THE CID HASHES THE RAW BYTES (THE BLOB LAW, content-handle.ts): the CAS holds `photo.png` as
  * its file bytes. The VM's `text` for a type TW5 registers `base64` (`$tw.config.contentTypeInfo`)
@@ -106,7 +106,7 @@ export function installLazyResolver(tw5: TW5Engine, resolveByCid: CarrierResolve
   };
   if (typeof wiki.addEventListener !== "function") return () => {};
 
-  // A title enters `enqueued` once its body has been handed to the guarded rail — TW5 may
+  // A title enters `enqueued` once its body has been handed to the shore queue — TW5 may
   // re-fire lazyLoad before the drain lands the `text`, and a duplicate resolve would waste a
   // CAS pull. A PENDING / integrity-fault title stays OUT of the set, so a later render re-tries.
   const enqueued = new Set<string>();
@@ -137,10 +137,8 @@ export function installLazyResolver(tw5: TW5Engine, resolveByCid: CarrierResolve
       const blobUrl = base64 && objectUrl ? objectUrl(bytes, fields["type"] as string) : null;
       const { lares } = tw5.$tw as unknown as LaresTw5Extension;
       if (typeof lares?.enqueueNalu !== "function") return;
-      // Splice `text` in through the GUARDED rail — applied under `_applying`, so the
-      // IslandAdaptor echo-guard suppresses the outbound CRDT save. Every skinny field stays
-      // (so the projector still reads the handle at rest, T3); only `text` (and, on a browser,
-      // the session's `blob:` `_canonical_uri`) is added.
+      // The expanded body differs from the skinny standing tiddler, so the queue applies the splice;
+      // the ledger then holds the expanded object and the change it raises reads as foam.
       lares.enqueueNalu({
         title,
         record: { tiddler: { ...(fields as Record<string, string>), title, text, ...(blobUrl ? { _canonical_uri: blobUrl } : {}) } },

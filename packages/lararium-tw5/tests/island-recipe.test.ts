@@ -17,6 +17,7 @@ import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { HandGate } from "../src/hand-gate.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { CompositeStore, wikiSlotUri, wikiBagUri } from "@lararium/mesh";
 import type { LarDoc, DocHandle, LarTiddlerRecord, SlotUri } from "@lararium/mesh";
@@ -26,8 +27,19 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
 /** Minimal TW5 engine — buildIslandRecipe only constructs an adaptor + flushes. */
 function fakeTw5(): TW5Engine {
+  class FakeTiddler {
+    constructor(readonly fields: Record<string, unknown>) {}
+    getFieldStrings(): Record<string, string> { return Object.fromEntries(Object.entries(this.fields).map(([key, value]) => [key, String(value)])); }
+    isEqual(other: unknown, exclude: string[] = []): boolean {
+      const fields = (other as FakeTiddler | null)?.fields;
+      if (!fields) return false;
+      const keys = new Set([...Object.keys(this.fields), ...Object.keys(fields)]);
+      return [...keys].filter((key) => !exclude.includes(key)).every((key) => this.fields[key] === fields[key]);
+    }
+  }
   return {
     $tw: {
+      Tiddler: FakeTiddler,
       wiki: {
         getTiddlerText:      () => "",
         getTiddler:          () => undefined,
@@ -52,6 +64,8 @@ function fakeHandle(): DocHandle<LarDoc> {
   return {
     url:    "automerge:fake-working",
     doc:    () => doc,
+    heads:  () => [],
+    view:   () => ({ doc: () => doc }),
     on:     () => {},
     change: (fn: (d: LarDoc) => void) => fn(doc),
   } as unknown as DocHandle<LarDoc>;
@@ -109,8 +123,7 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
       recipe: { wikiSlug: slug },
       ready: [{ slot: workingSlot, handle: fakeHandle() }],
     });
-    const lares = (engine.$tw as never as { lares: { flushNalu(): void } }).lares;
-    lares.flushNalu();
+    await seedDrained(engine);
     const wiki = engine.$tw.wiki as never as CascadeWiki;
     const pointer = (name: string): string | undefined => wiki.getTiddlerText!(`lar:///ha.ka.ba/lararium/config/current-wiki-${name}`, "");
     expect(pointer("bag"), "the write-layer pointer never reached the wiki").toBe(workingSlot);
@@ -144,17 +157,17 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
       ready: [{ slot: canonSlot, handle: canon }, { slot: workingSlot, handle: working }],
     });
     const stop = bridgeWikiToAdaptor(engine, adaptor);
-    (engine.$tw as never as { lares: { flushNalu(): void } }).lares.flushNalu();
+    await seedDrained(engine);
     const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void };
     expect(wiki.getTiddlerText!(SEEDED, ""), "the canon seed never reached the wiki").toBe("canon holds this");
-    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 150));
+    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
     const held = (h: DocHandle<LarDoc>): string[] => Object.keys((h.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers);
     expect(held(working), "the seed wave echoed into the working layer").toEqual([]);
     expect(held(canon)).toEqual([SEEDED]);
     // CONTROL — a hand edit after the drain does leave, into the working layer the pointer names.
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
     wiki.addTiddler(new Tiddler({ title: "lar:///t/recipe/hand-edit", text: "typed" }));
-    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 150));
+    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
     expect(held(working)).toEqual(["lar:///t/recipe/hand-edit"]);
     stop();
   }, 120_000);
@@ -185,12 +198,12 @@ describe.skipIf(wikiSkip)(`the outbound bridge holds until the seed stands${skip
     // The engine's own startup write, standing in the wiki ahead of the paced seed.
     wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted" }));
     await seedDrained(engine);
-    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 150));
+    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
     expect(Object.keys(held(personal)), "the engine's startup story left for the personal layer").toEqual([]);
     expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]"), "a startup write raised a refusal").toEqual([]);
     // CONTROL — the wiki stands resident; a person opening a tiddler moves the story, and that leaves.
     wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted [[Lady Aki]]" }));
-    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 150));
+    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
     expect(Object.keys(held(personal))).toEqual(["$:/StoryList"]);
     stop();
   }, 120_000);

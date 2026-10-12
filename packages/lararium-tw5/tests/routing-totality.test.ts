@@ -33,6 +33,7 @@ import path from "node:path";
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import { CompositeStore } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "../src/bag-cascade.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -280,7 +281,7 @@ describe.skipIf(wikiSkip)(`routing totality — a delete lands where the save la
   test("★ deleting a plain-titled tiddler tombstones it in WORKING, never in temp ★", async () => {
     const { adaptor, stores } = rig();
     await adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } });
-    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 50));
+    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 50));
     expect(await stores.working.get("Shopping List"), "the save missed working").not.toBeNull();
     await adaptor.deleteTiddler("Shopping List");
     expect(await tombstoned(stores.working, "Shopping List"), "the tombstone missed the bag the save landed in — it resurrects at the next boot").toBe(true);
@@ -290,7 +291,7 @@ describe.skipIf(wikiSkip)(`routing totality — a delete lands where the save la
   test("CONTROL: a $:/temp/* delete still lands in temp", async () => {
     const { adaptor, stores } = rig();
     await adaptor.saveTiddler({ fields: { title: "$:/temp/scratch", text: "x" } });
-    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 50));
+    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 50));
     expect(await stores.temp.get("$:/temp/scratch"), "the volatile save missed temp").not.toBeNull();
     await adaptor.deleteTiddler("$:/temp/scratch");
     expect(await tombstoned(stores.temp, "$:/temp/scratch")).toBe(true);

@@ -183,7 +183,7 @@ describe("installLazyResolver — rehydrate on lazyLoad", () => {
     const vm = enqueued[0]!.record?.tiddler as Record<string, string>;
     expect(vm._canonical_uri).toMatch(/^blob:/);
     expect(vm.text).toBe(png.toString("base64"));
-    // the splice rides the guarded rail — never the CRDT (the blob: URL dies with the session)
+    // the splice rides the shore landing queue and keeps the blob: URL in the VM only
     expect(enqueued[0]!.origin).toEqual({ kind: "crdt-remote", edgeIsland: "cas-rehydrate" });
   });
 

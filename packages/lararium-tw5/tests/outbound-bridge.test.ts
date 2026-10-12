@@ -1,33 +1,9 @@
-/**
- * outbound-bridge — the wire from a live `$tw.wiki` change to `IslandAdaptor.saveTiddler` / `deleteTiddler`.
- *
- * ── THE SEAM THIS HOLDS ─────────────────────────────────────────────────────────────────────────
- * The adaptor's outbound half stands complete: `saveTiddler` walks the cascade, debounces, strips the
- * host's `$origin-bag` stamp and puts into the slot the cascade named; `deleteTiddler` reads the
- * last-known-slot map and tombstones there. What the island never wired is the SUBSCRIPTION — nothing
- * carries a `wiki.addEventListener("change")` into those two methods. `sovereign-kernel.ts` drops the
- * adaptor `buildIslandRecipe` returns; `tw5-vm.ts` subscribes `tm-verse-event` alone; TW5's own
- * `$tw.syncer` never stands because no `module-type: syncadaptor` registers. So a hand edit, and the
- * anchor `meme put`, land in `$tw.wiki` and go no further.
- *
- * Every vector below drives the REAL wiki and a recording store with NO wire of its own — each reads
- * red for exactly the seam it named until the bridge landed (Road B, basket-one #/the-bridge); each now
- * stands as one clause of the five-clause contract both roads must pass. The
- * CONTROLS stand green today and MUST stay green under the bridge.
- *
- * ── THE ECHO TRAP THE CONTROLS MEASURE ──────────────────────────────────────────────────────────
- * TiddlyWiki dispatches `change` on `$tw.utils.nextTick` (`core/modules/wiki.js` `enqueueTiddlerEvent`),
- * AFTER the nalu drain's `finally` lowered `_applying`. A bridge riding `change` therefore sees
- * `isApplyingNalu()` already false for every inbound apply — the guard gates a SYNCHRONOUS caller
- * only. TW5's syncer carries its own echo law for the same reason: `tiddlerInfo[title].changeCount`,
- * stamped at `storeTiddler` and compared at `chooseNextTask`. The bridge owes one of those.
- *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/outbound-bridge
- */
+/** Wiki changes equal to landed state are foam; each other resident title is a hand for its per-title gate. */
 
 import { describe, test, expect, beforeAll, afterEach } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -56,8 +32,8 @@ class RecordingStore extends MemoryTiddlerStore {
   }
 }
 
-/** Past the adaptor's capture debounce and the wiki's nextTick dispatch. */
-const settle = (): Promise<void> => new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 100));
+/** Past the per-title trailing window and the wiki's nextTick dispatch. */
+const settle = (): Promise<void> => new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 100));
 
 const URI  = "lar:///t/bridge/anchor";
 const meme = (slots: readonly string[]): string =>
@@ -89,9 +65,10 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     adaptor = new IslandAdaptor(engine, asIslandStore(store), "outbound-bridge");
     // The projection registers — the INBOUND half — and the OUTBOUND BRIDGE (Road B) stands over it, the SAME
     // call the kernel makes after `buildIslandRecipe`: one `change` listener, the echo law read off the
-    // adaptor's inbound set.
+    // adaptor's landed ledger.
     adaptor.start();
     bridgeWikiToAdaptor(engine, adaptor);
+    await adaptor.armSeedCheckpoint();
   }, 120_000);
 
   afterEach(() => { store.puts.length = 0; store.tombstones.length = 0; });
@@ -113,14 +90,14 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     expect(put!.bag).toBe(SLOTS.draft);
   });
 
-  test("(3) SEAM `change`(deleted)→deleteTiddler: `$tw.wiki.deleteTiddler` → `tombstoneInBag` in the slot the map recorded", async () => {
+  test("(3) a saved draft deletion uses the draft bag after the wiki title is gone", async () => {
     wiki.addTiddler(new Tiddler({ title: "Draft of 'Gone'", "draft.of": "Gone", "draft.title": "Gone", text: "" }));
     await settle();
     wiki.deleteTiddler("Draft of 'Gone'");
     await settle();
     const gone = store.tombstones.find((t) => t.title === "Draft of 'Gone'");
     expect(gone, "the delete never reached the store — the record resurrects on the next boot").toBeDefined();
-    // The tiddler is gone when the delete runs; only the map knows it was a draft.
+    // The acknowledged draft save owns its delete bag until a wave lands over the title.
     expect(gone!.bag).toBe(SLOTS.draft);
   });
 
@@ -139,6 +116,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
       origin: { kind: "crdt-remote", edgeIsland: "peer" },
     });
     lares.flushNalu();
+    await new Promise<void>((resolve) => setImmediate(resolve));
     expect(wiki.getTiddler("lar:///t/bridge/inbound"), "the inbound apply never reached the wiki").toBeTruthy();
     await settle();
     expect(store.puts.filter((p) => p.title === "lar:///t/bridge/inbound"), "an inbound apply echoed back out as a put").toEqual([]);

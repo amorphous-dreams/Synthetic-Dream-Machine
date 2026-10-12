@@ -15,10 +15,10 @@
  *         installs the in-wiki nalu engine ($tw.lares.enqueueNalu)
  *     2. entry file: wire Repo with syncPort, await Repo ready
  *     3. `buildIslandRecipe(...)` — composite layers + IslandAdaptor projection +
- *         initial replay through the wiki's nalu engine
+ *         seed replay through the shore queue, checkpointed when that queue empties
  *     4. `handler.sendEa(wikiUri)` — signal vessel: island is live
  *     5. live CRDT patches: AutomergeDocStore → MemeProvider → IslandAdaptor →
- *         $tw.lares.enqueueNalu → one wiki.transact() per frame
+ *         quota-bounded shore slices → synchronous engine apply
  *     6. on teardown: `handler.teardown()` — dispose TW5
  *
  * ## What this class owns
@@ -32,7 +32,7 @@
  *   Automerge WASM  — never loaded in this thread. Island-side Repo lives in the entry file.
  *   CryptoKey       — stays in vessel (GP-4).
  *   syncPort        — MessagePort for Repo sync; consumed by the entry file.
- *   nalu drain      — lives inside the wiki as a TW5 startup module (nalu-engine).
+ *   nalu apply      — lives inside the wiki; the shore owns queue order and pacing.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/island-kernel
  */

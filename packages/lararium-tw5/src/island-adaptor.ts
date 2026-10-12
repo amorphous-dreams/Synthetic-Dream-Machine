@@ -1,25 +1,7 @@
 /**
- * island-adaptor — TS shore between CompositeStore and the wiki's nalu engine.
- *
- * Narrowed role under the yin-collapse law (nalu.md):
- *   - inbound (projection)  → forward LarTiddlerChange → $tw.lares.enqueueNalu()
- *   - outbound (TW5 edits)  → saveTiddler() / deleteTiddler() → store.put/tombstone
- *   - cross-bag tombstone resolution stays in TS (needs async getLive on composite)
- *   - echo guard delegates to $tw.lares.isApplyingNalu() (wiki owns apply lifetime)
- *   - a surfaced parallel draft persists into THIS wiki's draft bag (operator ruling)
- *
- * The TW5 module nalu-engine owns (not this adaptor):
- *   - the per-island buffer — initial replay flows through enqueueNalu
- *   - batch flush on sync — the sync gate is observability only
- *   - IslandAccumulator wiring — one shared queue lives in the wiki
- *   - flushAll(accs, budget) — frame drain lives in the wiki
- *   - wiki.transact() wrapping — one transact per nalu, wiki side
- *   - kernel.applyDelta calls — the wiki module owns wiki writes
- *
- * Initial replay path:
- *   AutomergeDocStore.emitInitialReplay() fires fireImmediate per existing tiddler
- *     → MemeProvider fan-out → this adaptor.onUriChanged → $tw.lares.enqueueNalu
- *     → next frame drains the lot in one wiki.transact()
+ * Wiki shore between CompositeStore and TW5. The landed ledger records each wave's absolute result;
+ * WaveLanding meets queued waves with unsent hands before using the packed engine as a synchronous
+ * applier. HandGate paces absolute per-title writes and carries the ledger heads as their base.
  *
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/island-adaptor
  */
@@ -40,6 +22,9 @@ import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js"
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
+import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
+import { WaveLanding } from "./wave-landing.js";
+import { HandGate, type ShoreTimers } from "./hand-gate.js";
 
 /** The wiki's live write layer — where a save the cascade cannot route still lands. */
 const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
@@ -82,7 +67,12 @@ export class UnroutedSaveRefusal extends Error {
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
  * store that could only write to its own default would land a routed save in a bag no rule chose.
  */
-export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag">;
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag">;
+
+export class LandingDoorUnavailableError extends Error {
+  override readonly name = "LandingDoorUnavailableError";
+  constructor() { super("the TW5 engine must provide enqueueNalu and flushNalu for the wiki shore"); }
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -115,34 +105,121 @@ function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string>
 
 export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   readonly name = "lararium-island";
-
-  // SP-1 — 400 ms capture debounce on outbound saves.
-  static readonly DEBOUNCE_MS = 400;
-  private readonly _debounce = new Map<string, ReturnType<typeof setTimeout>>();
-  private readonly _pending  = new Map<string, {
-    fields:  Record<string, string>;
-    resolve: () => void;
-    reject:  (err: Error) => void;
-    origin:  ChangeOrigin;
-  }>();
+  readonly ledger = new LandedLedger();
+  private readonly gate: HandGate;
+  private landing: WaveLanding | null = null;
+  private engineEnqueue: ((change: LarTiddlerChange) => void) | null = null;
+  private restoreDoor: (() => void) | null = null;
+  private readonly sent = new Map<string, unknown>();
+  private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
+  private readonly lastWriteBag = new Map<string, string>();
+  private readonly handed = new Map<string, unknown | null>();
+  private readonly pendingHand = new Set<string>();
+  private resident = false;
+  private readonly flushes = new Set<Promise<unknown>>();
+  private readonly activeFlushCounts = new Map<string, number>();
+  private readonly resolvers = new Set<Promise<void>>();
 
   private _unsubscribe: (() => void) | null = null;
-
-  /**
-   * THE LAST-KNOWN-SLOT MAP (`lar:///ha.ka.ba/lararium/config/slot-of`) — the slot each title last
-   * landed in this session: fed at every outbound save with the cascade's verdict, and at every
-   * inbound apply with the envelope's bag (the value the nalu stamps as `$origin-bag`), so a draft
-   * loaded from the CRDT at boot and deleted before any save still resolves. A delete reads it before
-   * the cascade, because the tiddler is gone by then and no field can be read. Volatile: one adaptor,
-   * one session.
-   */
-  private readonly _slotOf = new Map<string, SlotUri>();
 
   constructor(
     private readonly tw5:   TW5Engine,
     private readonly store: IslandStore,
     readonly instanceId:    string,
-  ) {}
+    timers?: ShoreTimers,
+  ) {
+    const timerPort = timers && typeof timers.setTimer === "function" && typeof timers.clearTimer === "function" ? timers : undefined;
+    this.gate = new HandGate(timerPort);
+  }
+
+  /** Install the shore drain before seed replay or any other engine-door caller. */
+  installLandingQueue(yieldHost?: () => Promise<void>): void {
+    if (this.landing) return;
+    const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
+    if (!lares?.enqueueNalu || !lares.flushNalu) throw new LandingDoorUnavailableError();
+    const engineDoor = lares.enqueueNalu;
+    const enqueue = engineDoor.bind(lares);
+    this.landing = new WaveLanding((change) => this._landOne(change), yieldHost);
+    this.engineEnqueue = enqueue;
+    lares.enqueueNalu = (change) => this.landing?.enqueue(change);
+    this.restoreDoor = () => { lares.enqueueNalu = engineDoor; };
+  }
+
+  armSeedCheckpoint(): Promise<void> {
+    this.installLandingQueue();
+    return this.landing!.checkpoint().then(() => { this.resident = true; });
+  }
+
+  isResident(): boolean { return this.resident; }
+
+  /** True when a wiki notification repeats the value the last wave left. */
+  isFoam(title: string, value: unknown | null): boolean {
+    const entry = this.ledger.landedOf(title);
+    return entry ? same(entry.tiddler, value) : value === null;
+  }
+
+  wasSent(title: string, value: unknown): boolean { return this.sent.get(title) === value; }
+
+  private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
+    const title = change.title;
+    const wiki = this.tw5.$tw.wiki;
+    const src = change.bag && typeof this.store.storeForBag === "function" ? this.store.storeForBag(change.bag) as {
+      headsNow?: () => readonly string[];
+      getAt?: (title: string, heads: readonly string[]) => LarTiddlerRecord | null;
+    } | null : null;
+    let heads = change.heads;
+    let record = change.record;
+    let bag = change.bag;
+    if (src && typeof src.headsNow === "function" && typeof src.getAt === "function") {
+      const currentHeads = src.headsNow();
+      if (currentHeads !== null) {
+        heads = currentHeads;
+        record = src.getAt(title, currentHeads);
+      }
+    }
+    const entry = this.ledger.landedOf(title);
+    if (bag === undefined) {
+      bag = entry?.bag;
+      if (heads === undefined) heads = entry?.heads;
+    }
+    const live = record !== null && !record?.meta?.deleted;
+    const incoming = live ? new this.tw5.$tw.Tiddler({
+      ...record!.tiddler,
+      title,
+      ...(bag !== undefined ? { "$origin-bag": bag } : {}),
+    }) : null;
+    const standing = wiki.getTiddler(title) ?? null;
+    const known = entry ? entry.tiddler : null;
+    if (this.landing?.isStopped()) return;
+    const isHand = !handSettled && this.resident && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing);
+    if (isHand) {
+      for (let pass = 0; pass < 8; pass++) {
+        const wrote = await this._leaveNow(title);
+        const latest = wiki.getTiddler(title) ?? null;
+        const currentEntry = this.ledger.landedOf(title);
+        const unsent = !same(latest, currentEntry ? currentEntry.tiddler : null) && !(this.sent.has(title) && this.sent.get(title) === latest);
+        if (wrote) {
+          if (unsent) continue;
+          return;
+        }
+        return this._landOne(change, true);
+      }
+      return;
+    }
+    const applies = !sameWithStamp(incoming, standing);
+    if (applies) {
+      const lares = (this.tw5.$tw as unknown as LaresTw5Extension).lares;
+      const original = this.engineEnqueue;
+      if (original && lares?.flushNalu) {
+        original({ ...change, record, ...(bag !== undefined ? { bag } : {}) });
+        lares.flushNalu(1);
+      }
+    }
+    this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
+    this.sent.delete(title);
+    this.handBase.delete(title);
+    if (applies) this.lastWriteBag.delete(title);
+  }
 
   /**
    * Walk the in-wiki bag-path cascade (`bag-cascade.routeBag`) over this engine's wiki.
@@ -213,7 +290,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (titles.has(title)) return refusal;
     titles.add(title);
     console.warn(`[island-adaptor] ${refusal.message}`);
-    this.tw5.$tw.wiki.addTiddler({
+    this._addAlertIfChanged({
       title: unroutedSaveAlertTitle(reference),
       text: `Nothing you save here reaches a bag: the routing rule <code>${rule}</code> names its bag through ` +
         `<code>${reference}</code>, and that tiddler holds nothing. What you wrote stands in this page alone ` +
@@ -230,92 +307,44 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** The titles refused under each empty pointer this session — the alert's own list. */
   private readonly _unrouted = new Map<string, Set<string>>();
 
-  // ---------------------------------------------------------------------------
-  // Echo guard — delegated to the in-wiki nalu engine
-  // ---------------------------------------------------------------------------
-
-  private _isApplying(): boolean {
-    const { lares } = this.tw5.$tw as unknown as LaresTw5Extension;
-    return lares?.isApplyingNalu?.() === true;
-  }
-
   /**
-   * Hand a change to the drain, NAMED first. The echo law's set fills here for every change this adaptor
-   * forwards — the boot seed wave included, which is enqueued before any bridge stands to wrap the
-   * engine's door — so a seed title that raises `change` at its drain leaves nothing.
+   * Hand a complete envelope to the shore queue. The engine door is preserved as the synchronous applier.
    */
   private _enqueue(change: LarTiddlerChange): void {
-    const { lares } = this.tw5.$tw as unknown as LaresTw5Extension;
-    this.noteInbound(change.title);
-    lares?.enqueueNalu?.(change);
-  }
-
-  /** How many inbound changes the drain still holds. A named title cannot have gone stale while its apply waits. */
-  private _draining(): number {
-    const { lares } = this.tw5.$tw as unknown as LaresTw5Extension;
-    return lares?.naluPending?.() ?? 0;
+    this.installLandingQueue();
+    this.landing!.enqueue(change);
   }
 
   // ---------------------------------------------------------------------------
-  // THE ECHO LAW'S SET (outbound-bridge, clause 3) — titles the inbound drain was handed
-  // ---------------------------------------------------------------------------
-  //
-  // `change` dispatches on nextTick, AFTER the drain lowered `isApplyingNalu` (MEASURED), so a flag cannot
-  // tell an inbound apply from a local edit inside a `change` listener. A SET can: every title handed to the
-  // drain is named here BEFORE it applies (this adaptor names its own at `_enqueue`; the bridge wraps
-  // `enqueueNalu`, so the lazy resolver's splice and any other direct caller name theirs too), the bridge
-  // consumes a named title on sight and leaves nothing, and a stale entry (an apply that raised no change)
-  // falls out at a later burst end, past the grace. The grace counts from the last burst the drain still
-  // held work: a paced seed wave may take longer than the grace to apply, and a title still waiting its
-  // turn in the queue has not gone stale.
-
-  private readonly _inbound = new Map<string, number>();
-  /** How long a named-but-unseen inbound title stays named before a burst end drops it. */
-  static readonly INBOUND_GRACE_MS = 5_000;
-
-  /** Name a title the inbound drain is about to apply. */
-  noteInbound(title: string, now = Date.now()): void { this._inbound.set(title, now); }
-
-  /** The bridge asks: did the inbound drain apply this title? Answering yes CONSUMES the entry (once). */
-  consumeInbound(title: string): boolean {
-    if (!this._inbound.has(title)) return false;
-    this._inbound.delete(title);
-    return true;
-  }
-
-  /** A `change` burst ended: drop entries older than the grace — an inbound apply that raised no change. */
-  endInboundBurst(now = Date.now()): void {
-    if (this._draining() > 0) {
-      for (const title of this._inbound.keys()) this._inbound.set(title, now);
-      return;
-    }
-    for (const [title, at] of this._inbound) if (now - at > IslandAdaptor.INBOUND_GRACE_MS) this._inbound.delete(title);
-  }
-
-  // ---------------------------------------------------------------------------
-  // MemeProjection — inbound CRDT→wiki via the nalu engine
+  // MemeProjection — inbound CRDT→wiki via the shore landing queue
   // ---------------------------------------------------------------------------
 
   /**
-   * Forward each change to the wiki's nalu engine. The engine batches them
-   * across all bags and drains one wiki.transact() per frame.
-   *
-   * Own tw-local echoes are filtered here so they never re-enter the queue.
+   * Forward each complete change envelope to the shore queue. The queue compares standing values
+   * with landed state and meets pending hands before the packed engine applies a slice.
    * Cross-bag tombstones resolve before enqueue: a tombstone in one bag must
    * not delete the tiddler if another recipe layer still holds a live copy.
    */
   onUriChanged(change: LarTiddlerChange): void {
-    if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
-
-    // The envelope names the bag a live record arrived from — the last-known slot for its delete.
-    if (change.bag !== undefined && change.record !== null && !change.record.meta?.deleted) {
-      this._slotOf.set(change.title, change.bag as SlotUri);
+    this.installLandingQueue();
+    // Own writes return with the heads the next hand must build on; every envelope is a wave.
+    // An own-origin envelope IS the store's acknowledgment of this shore's write, whatever the store
+    // (a store with no heads names none); `writtenAt` then says where the hand's next write builds.
+    if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) {
+      this.writeAcks.set(change.title, (this.writeAcks.get(change.title) ?? 0) + 1);
+      if (change.writtenAt && change.bag) this.handBase.set(change.title, { bag: change.bag, heads: change.writtenAt });
     }
 
     if (change.record === null || change.record.meta?.deleted) {
       const store = this.store as { resolveTopmost?: (t: string) => Promise<{ bagId: string; record: LarTiddlerRecord } | null> };
       if (typeof store.resolveTopmost === "function") {
-        void this._resolveCrossBagTombstone(change, store.resolveTopmost.bind(store));
+        const resolver = this._resolveCrossBagTombstone(change, store.resolveTopmost.bind(store)).catch((error: unknown) => {
+          console.error(`[island-adaptor] cross-bag tombstone resolver for "${change.title}" failed: ${String(error)}`);
+          this._enqueue(change);
+        });
+        this.resolvers.add(resolver);
+        this.landing!.track(resolver);
+        void resolver.finally(() => this.resolvers.delete(resolver)).catch(() => {});
         return;
       }
     }
@@ -329,8 +358,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /**
    * onSyncComplete is observability-only under the unified-nalu model.
-   * The wiki's nalu engine has no per-bag sync gate — initial replay flows
-   * through the same enqueue/drain path as live changes.
+   * Initial replay and live changes share the shore queue and its host-task slices.
    */
   onSyncComplete(_islandId = "automerge"): void {
     // intentionally empty
@@ -348,7 +376,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * routes a `draft.of` tiddler to — THIS wiki's draft bag (`[is[draft]…]` → `current-wiki-draft` →
    * `wikis/<slug>/draft`) — through the one write path, and arrives back here as an inbound change, so
    * the wiki shows it (a quiet badge on the target, `parallel-drafts-badge.tid`) until a human
-   * discards it; that delete tombstones in the same bag (the last-known-slot map).
+   * discards it; its deletion uses the landed ledger's bag and heads.
    *
    * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
    * conflicted field live) is the live record, so it is never copied. A parallel draft never fuses
@@ -402,7 +430,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const draftOf = String(draft.tiddler["draft.of"] ?? title);
     const text = typeof draft.tiddler.text === "string" ? draft.tiddler.text : "";
     console.warn(`[island-adaptor] a parallel draft of "${draftOf}" could not persist in ${bag}: ${error} — held on the alert rail`);
-    this.tw5.$tw.wiki.addTiddler({
+    this._addAlertIfChanged({
       title: parallelDraftAlertTitle(title),
       text: `A parallel draft of [[${draftOf}]] could not persist in ${bag} (${error}). ` +
         `This alert holds the only surviving copy of its text:\n\n${quoteblockFence(text)}`,
@@ -414,6 +442,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       bag,
       error,
     });
+  }
+
+  /** Alert rail writes are idempotent at their source; temp records never enter the CRDT road. */
+  private _addAlertIfChanged(fields: Record<string, unknown>): void {
+    const title = String(fields.title ?? "");
+    const current = this.tw5.$tw.wiki.getTiddler(title) ?? null;
+    const next = new this.tw5.$tw.Tiddler(fields);
+    if (same(current, next)) return;
+    this.tw5.$tw.wiki.addTiddler(next);
   }
 
   // ---------------------------------------------------------------------------
@@ -429,13 +466,128 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return () => this.stop();
   }
 
-  stop(): void {
-    for (const t of this._debounce.values()) clearTimeout(t);
-    this._debounce.clear();
-    this._pending.clear();
-    this._inbound.clear();
+  async stop(): Promise<void> {
+    while (this.resolvers.size) await Promise.allSettled([...this.resolvers]);
+    await this.landing?.stop();
+    const marked = new Set([...this.pendingHand, ...this.gate.titles()]);
+    await Promise.all([...marked].map(async (title) => {
+      try {
+        if (this.gate.has(title)) await this.gate.flush(title);
+        else if (!this.activeFlushCounts.has(title)) await this._flushHand(title);
+      }
+      catch (error) { this.failedAtTeardown.set(title, error); }
+    }));
+    while (this.flushes.size) await Promise.allSettled([...this.flushes]);
+    for (const [title, error] of this.failedAtTeardown) console.warn(`[island-adaptor] teardown write for "${title}" failed: ${String(error)}`);
+    this.failedAtTeardown.clear();
+    this.restoreDoor?.();
+    this.restoreDoor = null;
     this._unsubscribe?.();
     this._unsubscribe = null;
+  }
+
+  private readonly inFlight = new Map<string, Promise<void>>();
+  private readonly failedAtTeardown = new Map<string, unknown>();
+  private readonly writeAcks = new Map<string, number>();
+
+  private _handBaseFor(title: string, bag: string): readonly string[] | undefined {
+    const hand = this.handBase.get(title);
+    if (hand?.bag === bag) return hand.heads;
+    const entry = this.ledger.landedOf(title);
+    return entry?.bag === bag ? entry.heads : undefined;
+  }
+
+  /**
+   * The hand at `title` leaves at once, skipping the gate's timers. Answers whether THIS flush's own
+   * write was acknowledged by the store: writes of one title never overlap, and a flush queued behind
+   * this one cannot finish before this await resumes, so the title's last finished flush is this one.
+   */
+  private async _leaveNow(title: string): Promise<boolean> {
+    if (this.gate.has(title)) await this.gate.flush(title);
+    else await this._flushHand(title);
+    return this.lastFlushWrote.get(title) === true;
+  }
+
+  /** Whether the last finished flush of each title had its own write acknowledged. */
+  private readonly lastFlushWrote = new Map<string, boolean>();
+
+  private _flushHand(title: string): Promise<void> {
+    this.activeFlushCounts.set(title, (this.activeFlushCounts.get(title) ?? 0) + 1);
+    const task = this._flushHandImpl(title);
+    this.flushes.add(task);
+    void task.finally(() => {
+      this.flushes.delete(task);
+      const remaining = (this.activeFlushCounts.get(title) ?? 1) - 1;
+      if (remaining === 0) this.activeFlushCounts.delete(title);
+      else this.activeFlushCounts.set(title, remaining);
+    }).catch(() => {});
+    return task;
+  }
+
+  private async _flushHandImpl(title: string): Promise<void> {
+    const prior = this.inFlight.get(title);
+    if (prior) await prior;
+    const state = this.handed.has(title) ? this.handed.get(title)! : this.tw5.$tw.wiki.getTiddler(title) ?? null;
+    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const ackBefore = this.writeAcks.get(title) ?? 0;
+    let writeBag: string | undefined;
+    let task: Promise<void>;
+    if (state !== null) {
+      const fields = extractFields(this.tw5, state);
+      const dest = this._destination(title);
+      if (dest === null) {
+        this.handed.delete(title);
+        this.pendingHand.delete(title);
+        this.lastFlushWrote.set(title, false);
+        return;
+      }
+      writeBag = dest;
+      this.sent.set(title, state);
+      const base = this._handBaseFor(title, dest);
+      task = this._writeMeme(title, fields, origin, dest, base).catch(async (error: unknown) => {
+        if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
+        console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
+        await this._writeMeme(title, fields, origin, dest);
+      });
+    } else {
+      const entry = this.ledger.landedOf(title);
+      const bag = this.lastWriteBag.get(title) ?? entry?.bag ?? this.handBase.get(title)?.bag ?? this._destination(title);
+      if (!bag) {
+        this.handed.delete(title);
+        this.pendingHand.delete(title);
+        this.lastFlushWrote.set(title, false);
+        return;
+      }
+      writeBag = bag;
+      this.sent.set(title, null);
+      const base = this._handBaseFor(title, bag);
+      task = this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
+        .catch(async (error: unknown) => {
+          if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
+          console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
+          await this.store.tombstoneInBag(bag, title, origin);
+        }).then(() => { this._removeSlotChildren(title); });
+    }
+    this.inFlight.set(title, task);
+    try {
+      await task;
+      // The store took this state for `writeBag`: the title's state stands there, written just now or
+      // equal to what stood (a noop). A noop fires no envelope, so no return wave will land over `sent`.
+      const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
+      this.lastFlushWrote.set(title, acknowledged);
+      if (writeBag) this.lastWriteBag.set(title, writeBag);
+      if (!acknowledged) this.sent.delete(title);
+      if (this.handed.get(title) === state) this.handed.delete(title);
+      this.pendingHand.delete(title);
+      this.failedAtTeardown.delete(title);
+    } catch (error) {
+      this.sent.delete(title);
+      this.lastFlushWrote.set(title, false);
+      this.failedAtTeardown.set(title, error);
+      throw error;
+    } finally {
+      if (this.inFlight.get(title) === task) this.inFlight.delete(title);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -459,72 +611,42 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // among bags and stays the operator's to edit, and no edit of it may re-open this.
 
   saveTiddler(tiddler: unknown): Promise<void> {
-    if (this._isApplying()) return Promise.resolve();
-
     const fields = extractFields(this.tw5, tiddler);
     const title  = fields["title"] ?? "";
 
     // THE VOLATILE VM PLANE NEVER PERSISTS, and no cascade edit may lift that.
     if (isVolatileVmUri(title)) return Promise.resolve();
+    if (title.startsWith("$:/temp/lares/alert/")) return Promise.resolve();
 
-    // Cascade pre-check: the in-wiki bag-paths cascade — operator-editable, per-wiki overlayable —
-    // answers where this title lands, and only a NAMED withholding stops the write in quiet
-    // (`_destination` fills a router gap and says so). A route with no bag behind it REJECTS with the
-    // named refusal, already raised on the alert rail. Residency rides the envelope; no field names a bag.
-    try {
-      if (this._destination(title) === null) return Promise.resolve();
-    } catch (err) {
-      // The alert rail's own tiddler refuses in quiet: the rail shows it, and it lives nowhere else by design.
-      return title.startsWith(unroutedSaveAlertTitle("")) ? Promise.resolve() : Promise.reject(err as Error);
+    if (!this.gate.has(title) && !this.handBase.has(title)) {
+      const entry = this.ledger.landedOf(title);
+      if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
     }
-
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
-
-    const existing = this._debounce.get(title);
-    if (existing !== undefined) {
-      clearTimeout(existing);
-      this._pending.get(title)?.resolve();
-    }
-    return new Promise<void>((resolve, reject) => {
-      this._pending.set(title, { fields, resolve, reject, origin });
-      this._debounce.set(title, setTimeout(() => this._flushPending(title), IslandAdaptor.DEBOUNCE_MS));
-    });
+    this.pendingHand.add(title);
+    this.handed.set(title, tiddler);
+    return this.gate.mark(title, () => this._flushHand(title));
   }
 
   saveRecord(record: LarTiddlerRecord): Promise<void> {
     return this.saveTiddler({ fields: toTW5FieldStrings(this.tw5, record.tiddler) });
   }
 
-  private _flushPending(title: string): void {
-    this._debounce.delete(title);
-    const p = this._pending.get(title);
-    this._pending.delete(title);
-    if (!p) return;
-    this._writeMeme(title, p.fields, p.origin)
-      .then(p.resolve)
-      .catch(p.reject);
-  }
-
   deleteTiddler(title: string): Promise<void> {
-    if (this._isApplying()) return Promise.resolve();
     // Nothing volatile ever landed, so nothing volatile gets a tombstone (see `saveTiddler`).
     if (isVolatileVmUri(title)) return Promise.resolve();
+    if (title.startsWith("$:/temp/lares/alert/")) return Promise.resolve();
     // A DELETE ROUTES LIKE A SAVE, and the tiddler is already gone from the wiki when this runs — so
     // a rule reading a FIELD (`draft.of`) would route its creation and drop its deletion, leaving a
-    // record that resurrects on the next boot. The last-known-slot map answers first; a title never
+    // record that resurrects on the next boot. The landed ledger answers first; a title never
     // seen this session falls back to the cascade's title read. The tombstone lands in THAT bag — a
     // bagless tombstone falls into the composite's default writable, a bag the cascade never named.
-    let slot: SlotUri | null;
-    try { slot = this._slotOf.get(title) ?? this._destination(title); } catch (err) {
-      return title.startsWith(unroutedSaveAlertTitle("")) ? Promise.resolve() : Promise.reject(err as Error);
+    if (!this.gate.has(title) && !this.handBase.has(title)) {
+      const entry = this.ledger.landedOf(title);
+      if (entry?.bag && entry.heads) this.handBase.set(title, { bag: entry.bag, heads: entry.heads });
     }
-    if (slot === null) return Promise.resolve();
-
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
-    return this.store.tombstoneInBag(slot, title, origin).then(() => {
-      this._slotOf.delete(title);
-      this._removeSlotChildren(title);
-    });
+    this.pendingHand.add(title);
+    this.handed.set(title, null);
+    return this.gate.mark(title, () => this._flushHand(title));
   }
 
   // ---------------------------------------------------------------------------
@@ -547,16 +669,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   ): Promise<void> {
     const survivor = await resolveTopmost(change.title);
     if (survivor) {
-      // Stamp the SURVIVOR's bag — where the carrier NOW lives — never change.bag
-      // (the bag it just LEFT). On a cross-bag MOVE the record retracts from the
+      // Stamp the SURVIVOR's bag — the layer holding the carrier — never change.bag
+      // (the layer that emitted the tombstone). On a cross-bag MOVE the record retracts from the
       // source and surfaces in a lower bag; tagging it with the source's bag left
       // the projector targeting the stale source mirror (byte-identical → silent
       // hash-skip) and never publishing the destination. resolveTopmost carries
       // the origin-bag the read path needs (residency-model anti-pattern #4).
-      this._slotOf.set(change.title, survivor.bagId as SlotUri);
       this._enqueue({ title: change.title, record: survivor.record, origin: change.origin, bag: survivor.bagId });
     } else {
-      this._slotOf.delete(change.title);
       this._enqueue(change);
     }
   }
@@ -575,7 +695,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * the family lands through `writeFamily` as a single atomic change — no peer ever sees a root
    * pointing at a tombstoned child.
    *
-   * AN ORPHAN DIES WHERE IT LIVES. A child's tombstone routes like a delete: the last-known-slot map
+   * AN ORPHAN DIES WHERE IT LIVES. A child's tombstone routes like a delete: the landed ledger
    * first (a child that arrived from another bag is tombstoned there, in its own change), the root's
    * bag otherwise. A bagless tombstone would land in the composite's default writable and leave the
    * orphan standing in the doc peers read.
@@ -590,13 +710,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     title:  string,
     fields: Record<string, string>,
     origin: ChangeOrigin,
+    targetBag: SlotUri,
+    base?: readonly string[],
   ): Promise<void> {
-    // The in-wiki cascade (lar:///ha.ka.ba/lararium/config/bag-paths) names the bag a save lands in;
-    // null when no rule matches or an explicit-skip rule fires (e.g. $:/* system tiddlers).
-    const targetBag = this._destination(title) ?? undefined;
-    if (!targetBag) return;
-    this._slotOf.set(title, targetBag);
-
     const bodyText = fields["text"] ?? "";
     // A slot child saved at its own address splits under the fragment it already carries: its own
     // slots compose onto that ONE path (`#/a/z`), never a second fragment (`#/a#/z`).
@@ -608,7 +724,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         : splitBodyTiddler(title.slice(0, cut), title.slice(cut), bodyText, fields);
     // `$origin-bag` is the host's stamp on the wiki tiddler (nalu-engine), never a persisted field;
     // `bag` is the author's and rides through whole.
-    const { "$origin-bag": _origin, ...persistedParent } = parent;
+    const { "$origin-bag": _origin, ...withoutHostBag } = parent;
+    const persistedParent = withoutHostBag;
 
     const puts: LarTiddlerRecord[] = [toLarTiddlerRecord({ ...persistedParent, title })];
     const familyTombstones: string[] = [];
@@ -628,17 +745,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
       for (const uri of existingChildren) {
         if (newChildren.has(uri)) continue;
-        const slot: SlotUri = this._slotOf.get(uri) ?? targetBag;
+        const slot: SlotUri = (this.ledger.landedOf(uri)?.bag as SlotUri | undefined) ?? targetBag;
         if (slot === targetBag) familyTombstones.push(uri);
         else strayTombstones.push({ uri, slot });
       }
     }
 
-    await this.store.writeFamily(puts, familyTombstones, origin, { bag: targetBag });
+    await this.store.writeFamily(puts, familyTombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
     for (const { uri, slot } of strayTombstones) await this.store.tombstoneInBag(slot, uri, origin);
 
-    for (const record of puts.slice(1)) this._slotOf.set(record.tiddler.title, targetBag);
-    for (const uri of familyTombstones) this._slotOf.delete(uri);
-    for (const { uri } of strayTombstones) this._slotOf.delete(uri);
   }
 }

@@ -1,21 +1,7 @@
 /**
- * IslandAdaptor — unit tests for the narrowed TS shore between the
- * CompositeStore and the wiki's nalu engine.
- *
- * Under unified-nalu (yin-collapse law), the adaptor's job collapsed to:
- *   - forward inbound LarTiddlerChange events → $tw.lares.enqueueNalu()
- *   - filter own tw-local echoes (don't re-enqueue our own writes)
- *   - resolve cross-bag tombstones (read getLive across composite layers)
- *   - outbound saveTiddler / deleteTiddler → store.put / store.tombstone
- *   - echo guard via $tw.lares.isApplyingNalu() (delegated to nalu engine)
- *
- * What the adaptor no longer owns (moved into TW5 nalu-engine startup module):
- *   - per-island pre-sync buffer + onSyncComplete batch flush
- *   - flushAll(accumulators, budget) frame drain
- *   - wiki.transact() wrapping
- *   - direct wiki.addTiddler / wiki.deleteTiddler calls (inbound)
- *
- * All tests use FakeTW5Engine (no TW5 boot) and MemoryTiddlerStore.
+ * IslandAdaptor — the landed ledger records each inbound wave, the shore applies queued items through
+ * the packed synchronous engine door, and resident wiki changes use a capped per-title hand gate.
+ * Unit tests use FakeTW5Engine and MemoryTiddlerStore; real-wiki shore vectors exercise TW5 equality.
  *
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/island-adaptor
  */
@@ -25,6 +11,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
+import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { isPersonalTitle }  from "../src/filters/lar-kind.js";
@@ -167,6 +154,7 @@ class FakeTW5Engine {
 const INSTANCE_ID = "test-adaptor";
 const TARGET_BAG  = "lar:///ha.ka.ba/bags/test-wiki/draft";
 const LAR_URI     = "lar:///ha.ka.ba/lares/memes/SESSION";
+const drainQueued = async (): Promise<void> => { for (let i = 0; i < 8; i++) await new Promise<void>((resolve) => setImmediate(resolve)); };
 
 function crdtRemote(islandId = "automerge"): ChangeOrigin {
   return { kind: "crdt-remote", edgeIsland: islandId };
@@ -189,7 +177,7 @@ function tombstone(title: string, islandId = "automerge"): LarTiddlerChange {
 // ---------------------------------------------------------------------------
 
 describe("IslandAdaptor — lifecycle", () => {
-  test("start() registers via addProjection when the store supports it", () => {
+  test("start() registers via addProjection when the store supports it", async () => {
     const tw5   = new FakeTW5Engine();
     const store = new MemoryTiddlerStore();
     const projections: unknown[] = [];
@@ -201,7 +189,7 @@ describe("IslandAdaptor — lifecycle", () => {
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
     adaptor.start();
     expect(projections).toHaveLength(1);
-    adaptor.stop();
+    await adaptor.stop();
   });
 
   test("start() falls back to subscribe() when addProjection absent — change forwards to enqueueNalu", async () => {
@@ -213,8 +201,9 @@ describe("IslandAdaptor — lifecycle", () => {
     adaptor.start();
 
     await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "hello" } }, crdtRemote());
+    await drainQueued();
     expect(tw5.enqueueCalls.length).toBeGreaterThan(0);
-    adaptor.stop();
+    await adaptor.stop();
   });
 
   test("stop() disconnects — further store changes do not reach the nalu engine", async () => {
@@ -224,7 +213,7 @@ describe("IslandAdaptor — lifecycle", () => {
 
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
     adaptor.start();
-    adaptor.stop();
+    await adaptor.stop();
 
     await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "after-stop" } }, crdtRemote());
     expect(tw5.enqueueCalls).toHaveLength(0);
@@ -247,50 +236,59 @@ describe("IslandAdaptor — inbound forwarding", () => {
     adaptor.start();
   });
 
-  test("crdt-remote change forwards to enqueueNalu — no direct TW5 write", () => {
+  test("crdt-remote change lands through the shore queue — no direct TW5 write", async () => {
     adaptor.onUriChanged(liveChange(LAR_URI, "hello"));
+    await drainQueued();
     expect(tw5.enqueueCalls).toHaveLength(1);
     expect(tw5.enqueueCalls[0]?.title).toBe(LAR_URI);
     expect(tw5.addTiddlerCalls).toHaveLength(0);
   });
 
-  test("tombstone change forwards to enqueueNalu with record:null", () => {
+  test("tombstone change lands through the shore queue with record:null", async () => {
     adaptor.onUriChanged(tombstone(LAR_URI));
-    expect(tw5.enqueueCalls).toHaveLength(1);
-    expect(tw5.enqueueCalls[0]?.record).toBeNull();
+    await drainQueued();
+    expect(tw5.enqueueCalls, "an absent title is already the absolute result").toHaveLength(0);
+    expect(adaptor.ledger.landedOf(LAR_URI)?.tiddler).toBeNull();
   });
 
-  test("own tw-local echo is filtered — never reaches the nalu engine", () => {
+  test("own tw-local write envelopes are queued with all other waves", async () => {
     const ownChange: LarTiddlerChange = {
       title:  LAR_URI,
       record: { tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "own" } },
       origin: localOrigin(),
+      bag: TARGET_BAG,
+      writtenAt: ["own-head"],
     };
     adaptor.onUriChanged(ownChange);
-    expect(tw5.enqueueCalls).toHaveLength(0);
+    await drainQueued();
+    expect(tw5.enqueueCalls).toHaveLength(1);
+    await adaptor.stop();
   });
 
-  test("multiple bags converge on one accumulator — unified rail (per prior-art)", () => {
+  test("multiple bag envelopes enter the same shore queue", async () => {
     adaptor.onUriChanged(liveChange("lar:///a", "a", "bag-a"));
     adaptor.onUriChanged(liveChange("lar:///b", "b", "bag-b"));
     adaptor.onUriChanged(liveChange("lar:///c", "c", "bag-a"));
+    await drainQueued();
     expect(tw5.enqueueCalls).toHaveLength(3);
   });
 
-  test("non-crdt origin (canon-hydrate, lares-verb) also forwards via enqueueNalu", () => {
+  test("non-crdt origin (canon-hydrate, lares-verb) also enters the shore queue", async () => {
     const canonChange: LarTiddlerChange = {
       title:  LAR_URI,
       record: { tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "canon" } },
       origin: { kind: "canon-hydrate", receipt: "test" },
     };
     adaptor.onUriChanged(canonChange);
+    await drainQueued();
     expect(tw5.enqueueCalls).toHaveLength(1);
   });
 
-  test("onSyncComplete is observability-only — no buffer to flush, no side effect", () => {
+  test("onSyncComplete is observability-only — no buffer to flush, no side effect", async () => {
     adaptor.onSyncComplete("automerge");
     expect(tw5.enqueueCalls).toHaveLength(0);
     expect(tw5.addTiddlerCalls).toHaveLength(0);
+    await adaptor.stop();
   });
 });
 
@@ -310,7 +308,7 @@ describe("IslandAdaptor — cross-bag tombstone resolution", () => {
     adaptor.start();
 
     adaptor.onUriChanged(tombstone(LAR_URI));
-    await new Promise((r) => setTimeout(r, 0)); // let microtask flush
+    await drainQueued();
 
     expect(tw5.enqueueCalls).toHaveLength(1);
     expect(tw5.enqueueCalls[0]?.record).toEqual(liveRecord);
@@ -328,10 +326,10 @@ describe("IslandAdaptor — cross-bag tombstone resolution", () => {
     adaptor.start();
 
     adaptor.onUriChanged(tombstone(LAR_URI));
-    await new Promise((r) => setTimeout(r, 0));
+    await drainQueued();
 
-    expect(tw5.enqueueCalls).toHaveLength(1);
-    expect(tw5.enqueueCalls[0]?.record).toBeNull();
+    expect(tw5.enqueueCalls).toHaveLength(0);
+    expect(adaptor.ledger.landedOf(LAR_URI)?.tiddler).toBeNull();
   });
 });
 
@@ -357,7 +355,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     vi.useRealTimers();
   });
 
-  const flush = () => vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+  const flush = () => vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
 
   test("★ a slot the saved body no longer declares tombstones — the scan reads `$fragment-parent`, the field the split mints ★", async () => {
     tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
@@ -512,7 +510,9 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     const orig = store.put.bind(store);
     store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
-    await adaptor.saveTiddler({ fields: { title: "$:/core", text: "megabytes of engine" } });
+    const done = adaptor.saveTiddler({ fields: { title: "$:/core", text: "megabytes of engine" } });
+    await flush();
+    await done;
     expect(puts).toHaveLength(0);
   });
 });
@@ -560,11 +560,11 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Echo-loop guard — delegated to $tw.lares.isApplyingNalu()
+// Apply-flag observation — outbound classification uses landed state, not the engine flag.
 // ---------------------------------------------------------------------------
 
-describe("IslandAdaptor — echo-loop guard", () => {
-  test("saveTiddler skips when the nalu engine reports applying", async () => {
+describe("IslandAdaptor — the apply flag does not classify a hand", () => {
+  test("saveTiddler still leaves its explicitly supplied state while the flag is raised", async () => {
     vi.useFakeTimers();
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
@@ -576,15 +576,17 @@ describe("IslandAdaptor — echo-loop guard", () => {
     store.put = async (rec, o) => { putCount++; return orig(rec, o); };
 
     tw5.applying = true;
-    await adaptor.saveTiddler({ fields: { title: LAR_URI, text: "echo", bag: TARGET_BAG } });
-    await vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+    const saved = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "hand", bag: TARGET_BAG } });
+    await vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
+    await saved;
 
-    expect(putCount).toBe(0);
-    adaptor.stop();
+    expect(putCount).toBe(1);
+    await adaptor.stop();
     vi.useRealTimers();
   });
 
-  test("deleteTiddler skips when the nalu engine reports applying", async () => {
+  test("deleteTiddler leaves its explicitly supplied state while the flag is raised", async () => {
+    vi.useFakeTimers();
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
@@ -595,9 +597,13 @@ describe("IslandAdaptor — echo-loop guard", () => {
     store.tombstone = async (t, o) => { tombstoneCount++; return orig(t, o); };
 
     tw5.applying = true;
-    await adaptor.deleteTiddler(LAR_URI);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
+    await deleted;
 
-    expect(tombstoneCount).toBe(0);
+    expect(tombstoneCount).toBe(1);
+    await adaptor.stop();
+    vi.useRealTimers();
   });
 });
 
@@ -613,7 +619,7 @@ describe("IslandAdaptor — the family write", () => {
   beforeEach(() => { vi.useFakeTimers(); tw5 = new FakeTW5Engine(); });
   afterEach(() => { vi.useRealTimers(); });
 
-  const flush = () => vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+  const flush = () => vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
 
   /** A composite whose cascade target (`working`) is NOT the default writable — a bagless write
    *  lands in DEFAULT, so a misrouted tombstone reads plainly. */

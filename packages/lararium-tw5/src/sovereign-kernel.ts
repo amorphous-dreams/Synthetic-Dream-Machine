@@ -126,13 +126,12 @@ export function runSovereignKernel(
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
+  let _adaptor: import("./island-adaptor.js").IslandAdaptor | null = null;
   let _activeWikiUri                    = "";
 
   // Live CRDT patches flow through AutomergeDocStore.handle.on("change") →
-  // MemeProvider → IslandAdaptor → $tw.lares.enqueueNalu. The wiki's
-  // nalu-engine startup module owns the drain (one wiki.transact() per frame
-  // across all bags). No worker-side drain loop, no _pendingAdded array, no
-  // raw handle subscription.
+  // MemeProvider → IslandAdaptor → the shore queue. The packed engine is a synchronous applier;
+  // the shore owns quota, host-task pacing, and the seed checkpoint.
 
   // ── Message dispatch ──────────────────────────────────────────────────────
 
@@ -419,9 +418,7 @@ export function runSovereignKernel(
     const tw5 = handler.tw5()!;
     // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
     // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
-    // the seed replay on the paced nalu rail (progressive-boot: no synchronous
-    // unbounded flush). The seed then drains frame-by-frame off the critical
-    // path, so this thread keeps breathing while the corpus streams in.
+    // the seed replay on the shore's quota-bounded host-task queue.
     tick("recipe");
     const { adaptor } = buildIslandRecipe({
       tw5,
@@ -429,9 +426,8 @@ export function runSovereignKernel(
       recipe: msg.recipe,
       ready,
     });
-    // THE OUTBOUND BRIDGE — ROAD B (basket-one #/the-bridge): ONE direct listener carries a live `$tw.wiki`
-    // change to the adaptor's saveTiddler / deleteTiddler; the echo law reads the adaptor's inbound SET.
-    // Held here, cancelled at teardown. No syncadaptor module, no `$tw.syncer`, no poll timer.
+    _adaptor = adaptor;
+    // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
     _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
     // Await the hydration checkpoint before arming behavior — onEa still observes a
     // fully-resident seed (the invariant), but the drain paced the loop instead of
@@ -462,6 +458,8 @@ export function runSovereignKernel(
   async function _handleTeardown(): Promise<void> {
     _bridgeUnsub?.();
     _bridgeUnsub = null;
+    if (_adaptor) await _adaptor.stop();
+    _adaptor = null;
     _lazyUnsub?.();
     _lazyUnsub = null;
     if (_ctx && behavior) await behavior.onHooAnu(_ctx);

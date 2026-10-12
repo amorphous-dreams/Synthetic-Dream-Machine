@@ -58,7 +58,10 @@ function fakeTw5(rules: readonly string[]) {
       if (!fields || !("draft.of" in fields)) return [];
       return [m[1] ? texts.get(m[1]) ?? "" : ""];
     },
-    addTiddler: (fields: Record<string, unknown>) => { added.set(String(fields["title"]), fields); },
+    addTiddler: (value: Record<string, unknown> | { fields: Record<string, unknown> }) => {
+      const fields = "fields" in value ? value.fields : value;
+      added.set(String(fields["title"]), fields);
+    },
   };
   const engine = {
     $tw: { Tiddler, wiki, lares: { enqueueNalu: () => {}, isApplyingNalu: () => false } },

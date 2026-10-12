@@ -216,11 +216,8 @@ describe.skipIf(wikiSkip)(`lar-kind — the adaptor lands a draft where the fiel
     expect(store.putBags.get(fields.title)).toBe(SLOT_DRAFT);
   });
 
-  /**
-   * `deleteTiddler` runs after the wiki has dropped the tiddler; `is[draft]` reads nothing; the
-   * cascade falls to working. The adaptor tombstones in the slot it last routed this title to.
-   */
-  test("★ deleting a draft tombstones in the DRAFT slot, not working ★", async () => {
+  /** An acknowledged draft save keeps its destination beside the hand base until a wave lands. */
+  test("★ deleting a saved draft uses its own last acknowledged bag after its fields are gone ★", async () => {
     const { adaptor, store, wiki } = rig();
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
     const fields = { title: "Draft of 'Y' by Alice", "draft.of": "Y", "draft.title": "Y", text: "drafting" };

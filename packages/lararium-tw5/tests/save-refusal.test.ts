@@ -11,9 +11,10 @@
  * would raise it.
  */
 
-import { describe, test, expect, beforeAll } from "vitest";
+import { describe, test, expect, beforeAll, vi } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor, unroutedSaveAlertTitle, UnroutedSaveRefusal } from "../src/island-adaptor.js";
+import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -33,7 +34,7 @@ class RecordingStore extends MemoryTiddlerStore {
   }
 }
 
-const settle = (): Promise<void> => new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 100));
+const settle = (): Promise<void> => new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 100));
 
 interface Wiki {
   addTiddler(t: unknown): void;
@@ -58,6 +59,7 @@ describe.skipIf(wikiSkip)(`a save with no bag to land in refuses by name${skipNo
     adaptor = new IslandAdaptor(engine, asIslandStore(store), "save-refusal");
     adaptor.start();
     bridgeWikiToAdaptor(engine, adaptor);
+    await adaptor.armSeedCheckpoint();
     // No slot pointer stands in this wiki: the shipped cascade routes through references that hold nothing.
   }, 120_000);
 
@@ -117,6 +119,26 @@ describe.skipIf(wikiSkip)(`a save with no bag to land in refuses by name${skipNo
     wiki.addTiddler(new Tiddler({ title: "$:/temp/refusal/scratch", text: "volatile" }));
     await settle();
     expect(wiki.getTiddlerText(unroutedSaveAlertTitle(POINTER_TEMP))).toContain("$:/temp/refusal/scratch");
+  });
+
+  test("an unrouted bridge save raises one alert and the alert title resolves quietly", async () => {
+    const warnings: string[] = [];
+    const warn = vi.spyOn(console, "warn").mockImplementation((...args) => { warnings.push(args.map(String).join(" ")); });
+    const destination = (adaptor as unknown as { _destination(title: string): string | null })._destination.bind(adaptor);
+    const destinationSpy = vi.spyOn(adaptor as unknown as { _destination(title: string): string | null }, "_destination").mockImplementation((candidate) => {
+      if (candidate.startsWith("$:/temp/lares/alert/")) throw new UnroutedSaveRefusal(candidate, "alert refusal", POINTER_TEMP);
+      return destination(candidate);
+    });
+    const title = "lar:///t/refusal/alert-quiet";
+    wiki.addTiddler(new Tiddler({ title, text: "needs a route" }));
+    await settle();
+    const alertTitle = unroutedSaveAlertTitle(POINTER_BAG);
+    expect(wiki.getTiddler(alertTitle)).toBeDefined();
+    await expect(adaptor.saveTiddler(wiki.getTiddler(alertTitle))).resolves.toBeUndefined();
+    expect(destinationSpy).not.toHaveBeenCalledWith(alertTitle);
+    expect(warnings.filter((message) => message.includes(`[outbound-bridge]`) && message.includes(alertTitle))).toEqual([]);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   test("CONTROL: a literal empty operand still withholds in quiet — a decision, never a refusal", async () => {

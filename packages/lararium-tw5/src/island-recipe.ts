@@ -6,8 +6,7 @@
  *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
  *   3) temp slot uses a MemoryTiddlerStore; all other slots use AutomergeDocStore
  *   4) IslandAdaptor projection registers
- *   5) initial replay + sync complete + synchronous flushNalu so the wiki carries
- *      its seed state before behavior.onEa runs
+ *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
  *
  * Node and browser sovereign workers both call this helper so recipe behavior
  * stays one shape across platforms.
@@ -86,22 +85,22 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   }
 
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
-  composite.addProjection(adaptor);
+  adaptor.installLandingQueue();
+  adaptor.start();
 
   // Per-wiki cascade reference — the default `lar:///ha.ka.ba/lararium/config/bag-paths`
   // reads this value via `{lar:///ha.ka.ba/lararium/config/current-wiki-bag}` to
   // resolve `lar:` writes to the wiki's live WRITE LAYER: the per-wiki working slot
   // (`wikis/{slug}/working`, the saved live layer projecting to disk wikis/{slug}); its
   // bags/{slug} canon rides below as read-only, published only by a promotion MOVE
-  // (wiki-layer-ontology#shore-law). While no working handle stands (the daemon before
-  // its late-attach lands) the write layer falls to the wiki's OWN bag — the floor,
+  // (wiki-layer-ontology#shore-law). Without a working handle, the write layer is the wiki's OWN bag — the floor,
   // never a red; the attach re-seeds this record to the working slot. Volatile (lives
   // in the per-wiki temp), shadows any fallback by priority. The bag-paths cascade reads
   // these to route by prefix to the wiki's OWN per-wiki live layers — the address tells
   // the truth (no global slot names).
   //
-  // SEEDED AFTER THE ADAPTOR STANDS. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
-  // temp store emits each put the moment it lands — to whoever listens then. The adaptor carries the
+  // Pointer and corpus seeds share the shore queue. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
+  // temp store emits each put when it lands — to every registered projection. The adaptor carries the
   // pointers into the wiki on the same seed wave as the corpus, ahead of the hydration checkpoint, so
   // the first hand edit finds every slot named.
   if (tempStore) {
@@ -117,7 +116,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   }
 
-  // Drive existing CRDT state through the projection bus → adaptor → nalu engine.
+  // Drive existing CRDT state through the projection bus → adaptor → shore queue.
   for (const { store } of stores) {
     if (store instanceof AutomergeDocStore) {
       store.emitInitialReplay();
@@ -125,12 +124,8 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   }
 
-  // Progressive-boot: the seed is already enqueued on the paced nalu rail (emitInitialReplay
-  // above). Arm the hydration checkpoint instead of a synchronous unbounded flush — the seed
-  // drains frame-by-frame without blocking the loop, and the island awaits `whenSeedDrained()`
-  // before onEa, so behavior still fires against a fully-resident seed.
-  const lares = (tw5.$tw as { lares?: { beginHydration?: () => void } }).lares;
-  lares?.beginHydration?.();
+  const checkpoint = adaptor.armSeedCheckpoint();
+  seedCheckpoints.set(tw5, checkpoint);
 
   return { adaptor, stores };
 }
@@ -138,10 +133,14 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
 /**
  * THE HYDRATION CHECKPOINT. Resolves once the seed wave `buildIslandRecipe` armed stands in the wiki —
  * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
- * behavior arms over a resident seed and its first write finds every slot named. Resolves at once on an
- * engine that began no hydration.
+ * behavior arms over a resident seed and its first write finds every slot named. An engine no recipe was
+ * built over holds no checkpoint, and asking for one refuses by name: a seed nobody queued must never
+ * read as a seed that landed.
  */
 export function seedDrained(tw5: TW5Engine): Promise<void> {
-  const lares = (tw5.$tw as { lares?: { whenSeedDrained?: () => Promise<void> } }).lares;
-  return lares?.whenSeedDrained?.() ?? Promise.resolve();
+  const checkpoint = seedCheckpoints.get(tw5);
+  if (!checkpoint) throw new Error("island-recipe: no seed checkpoint stands for this engine — build its recipe (`buildIslandRecipe`) before awaiting `seedDrained`");
+  return checkpoint;
 }
+
+const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();
