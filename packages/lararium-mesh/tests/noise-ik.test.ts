@@ -287,12 +287,14 @@ describe("a fixed ephemeral enters through the vector harness alone", () => {
     expect(hex(one.message1)).not.toBe(hex(two.message1));
     const answered = { prologue: PROLOGUE, s: RESP, message1: one.message1, ephemeral: () => new Uint8Array(32).fill(0x55) };
     expect(hex(noiseRespond(answered).writeMessage2().message2)).not.toBe(hex(noiseRespond(answered).writeMessage2().message2));
-    // KNOWN POSITIVE, and the reason the doors refuse it: one ephemeral used twice under one static pair writes two
-    // first messages under ONE key and ONE nonce. Their sealed statics come out byte-identical.
+    // The reason the doors refuse it: one ephemeral used twice under one static pair writes two first messages
+    // under ONE key and ONE nonce. So even the harness spends a fixed ephemeral: its second use refuses, on
+    // either side, whatever the payload.
     const fixedE = new Uint8Array(32).fill(0x44);
     const a = noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: text("knock-a") }, fixedE);
-    const c = noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: text("knock-c") }, fixedE);
-    expect(hex(a.message1.slice(0, 80))).toBe(hex(c.message1.slice(0, 80)));
+    expect(hex(a.message1.slice(0, 32))).toBe(hex(noiseKeyPair(fixedE).publicKey));        // KNOWN POSITIVE: the harness does fix it
+    expectTheOneError(() => noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey, payload: text("knock-c") }, fixedE));
+    expectTheOneError(() => noiseVectorHarness.respond({ prologue: PROLOGUE, s: RESP, message1: a.message1 }, new Uint8Array(fixedE)));
     expect(hex(fixedE)).toBe("44".repeat(32));                                             // the harness copies; the caller's bytes stand
     expectTheOneError(() => noiseVectorHarness.initiate({ prologue: PROLOGUE, s: INIT, rs: RESP.publicKey }, new Uint8Array(31)));
   });

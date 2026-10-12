@@ -28,7 +28,7 @@
  *   · EVERY EXCHANGE DRAWS A FRESH EPHEMERAL. One ephemeral used twice under one static pair writes two first
  *     messages under one key and one nonce. So the two lawful doors take no ephemeral and draw their own from
  *     the platform's random source; a fixed one enters through `noiseVectorHarness` alone, the door that
- *     reproduces published vectors, which no source file imports.
+ *     reproduces published vectors, which no source file imports and which serves each fixed ephemeral once.
  *   · NO MESSAGE PASSES 65535 BYTES, written or read, handshake or transport.
  *   · SECRETS DROP AT THE SPLIT. The ephemeral secret, the working copy of the static secret, the chaining key,
  *     the handshake key and every DH output get zeroed once the transport keys stand, or once the exchange
@@ -249,13 +249,27 @@ export function noiseRespond(parts: RespondParts): NoiseResponderPending {
 
 /**
  * The door that reproduces PUBLISHED VECTORS: each side under an ephemeral secret the vector fixes. A fixed
- * ephemeral used for two exchanges under one static pair reuses a key and a nonce, so no source file imports
- * this door and no caller outside a test may.
+ * ephemeral used for two exchanges under one static pair reuses a key and a nonce, so the door serves each
+ * fixed ephemeral once, no source file imports it, and no caller outside a test may. A module that re-exports
+ * this file names its exports one by one and leaves this door out.
  */
 export const noiseVectorHarness = Object.freeze({
-  initiate: (parts: InitiateParts, ephemeralSecret: Uint8Array): NoiseInitiatorPending => initiate(parts, () => ephemeralSecret),
-  respond:  (parts: RespondParts, ephemeralSecret: Uint8Array): NoiseResponderPending => respond(parts, () => ephemeralSecret),
+  initiate: (parts: InitiateParts, ephemeralSecret: Uint8Array): NoiseInitiatorPending => initiate(parts, once(ephemeralSecret)),
+  respond:  (parts: RespondParts, ephemeralSecret: Uint8Array): NoiseResponderPending => respond(parts, once(ephemeralSecret)),
 });
+
+/** The digests of the fixed ephemerals the harness has served. A vector fixes each ephemeral for ONE exchange,
+ *  so the harness serves each once and refuses it after. */
+const SERVED = new Set<string>();
+function once(ephemeralSecret: Uint8Array): () => Uint8Array {
+  return () => {
+    need(bytesOf(ephemeralSecret, DHLEN));
+    const mark = Array.from(sha256(ephemeralSecret), (b) => b.toString(16).padStart(2, "0")).join("");
+    need(!SERVED.has(mark));
+    SERVED.add(mark);
+    return ephemeralSecret;
+  };
+}
 
 function initiate(parts: InitiateParts, ephemeral: () => Uint8Array): NoiseInitiatorPending {
   const sym = new SymmetricState();
