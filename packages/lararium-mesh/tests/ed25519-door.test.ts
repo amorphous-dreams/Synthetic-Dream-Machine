@@ -213,7 +213,7 @@ describe("every producer the house uses signs through the door", () => {
     const pair = await subtle.generateKey({ name: "Ed25519" }, false, ["sign", "verify"]) as CryptoKeyPair;
     expect(pair.privateKey.extractable).toBe(false);
     const pub = new Uint8Array(await subtle.exportKey("raw", pair.publicKey));
-    const sig = new Uint8Array(await subtle.sign({ name: "Ed25519" }, pair.privateKey, MSG));
+    const sig = new Uint8Array(await subtle.sign({ name: "Ed25519" }, pair.privateKey, new Uint8Array(MSG)));
     expect(acceptEd25519Key(pub)).toEqual({ ok: true });
     expect(verifyEd25519(sig, MSG, pub)).toBe(true);
   });
@@ -239,6 +239,16 @@ describe("the door never throws", () => {
     for (const s of hostile) expect(readEd25519(s, MSG, pub)).toEqual({ ok: false, refusal: "signature-malformed" });
     for (const m of hostile.filter((v) => !(v instanceof Uint8Array)))
       expect(readEd25519(RFC8032[0]![3], m, pub)).toEqual({ ok: false, refusal: "signature-malformed" });
+  });
+  test("a typed array behind a Proxy that throws while read answers by name", () => {
+    const [, pub, , sig] = RFC8032[0]!;
+    const trap = (): never => { throw new Error("read"); };
+    const hostileBytes = (length: number): Uint8Array =>
+      new Proxy(new Uint8Array(length), { get: (target, key) => (key === Symbol.iterator || key === "length" || typeof key === "string" && /^\d+$/.test(key) ? trap() : Reflect.get(target, key)) });
+    expect(hostileBytes(1) instanceof Uint8Array).toBe(true);                       // it passes the type test
+    expect(readEd25519(sig, hostileBytes(1), pub)).toEqual({ ok: false, refusal: "signature-malformed" });
+    expect(readEd25519(hostileBytes(64), MSG, pub)).toEqual({ ok: false, refusal: "signature-malformed" });
+    expect(acceptEd25519Key(hostileBytes(32))).toEqual({ ok: false, refusal: "key-malformed" });
   });
   test("one key, one spelling: upper-case hex names nobody", () => {
     const [, pub, , sig] = RFC8032[0]!;

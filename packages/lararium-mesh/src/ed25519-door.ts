@@ -73,6 +73,12 @@ function bytesOf(value: unknown, length: number): Uint8Array | null {
   } catch { return null; }
 }
 
+/** A message → a private copy, or null. A Proxy that passes `instanceof` and then throws while read answers null. */
+function messageOf(value: unknown): Uint8Array | null {
+  try { return value instanceof Uint8Array ? new Uint8Array(value) : null; }
+  catch { return null; }
+}
+
 function leToBigInt(bytes: Uint8Array): bigint {
   let n = 0n;
   for (let i = bytes.length - 1; i >= 0; i--) n = (n << 8n) | BigInt(bytes[i]!);
@@ -117,8 +123,8 @@ export function readEd25519(signature: unknown, message: unknown, publicKey: unk
   const key = readKey(keyBytes);
   if (!("point" in key)) return { ok: false, refusal: key.refusal };
   const sig = bytesOf(signature, 64);
-  if (sig === null || !(message instanceof Uint8Array)) return { ok: false, refusal: "signature-malformed" };
-  const msg = new Uint8Array(message);
+  const msg = messageOf(message);
+  if (sig === null || msg === null) return { ok: false, refusal: "signature-malformed" };
   const rBytes = sig.subarray(0, 32);
   const s = leToBigInt(sig.subarray(32, 64));
   if (s >= L) return { ok: false, refusal: "signature-scalar-non-canonical" };
