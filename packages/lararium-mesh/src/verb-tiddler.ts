@@ -117,7 +117,7 @@ export async function taskContentId(
 /** Durable per-request fact tiddlers — `<daemon bag>/receipts/<requestId>`. */
 export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
 
-export type ReceiptFactState = "committed" | "abandoned" | "done" | "error" | "evicted";
+export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
 
 interface ReceiptFactCommon {
   readonly requestId:  string;
@@ -140,10 +140,23 @@ export interface ReceiptFactAbandoned extends ReceiptFactCommon {
   readonly inputDigest?: string;
 }
 
-export interface ReceiptFactClaimed extends ReceiptFactCommon {
-  readonly state:       "committed" | "done" | "error" | "evicted";
+/** A request the vessel committed and has not seen land. `bootEpoch` names the boot that committed
+ *  it (a per-store counter, a fence, never a time): a later boot settles a `committed` fact of an
+ *  earlier epoch to `interrupted` when no outcome landed. Both states REQUIRE the epoch. */
+export interface ReceiptFactInFlight extends ReceiptFactCommon {
+  readonly state:       "committed" | "interrupted";
   readonly inputDigest: string;
+  readonly bootEpoch:   number;
 }
+
+/** A request that reached a verdict; it keeps the epoch of the boot that committed it when known. */
+export interface ReceiptFactSettled extends ReceiptFactCommon {
+  readonly state:       "done" | "error" | "evicted";
+  readonly inputDigest: string;
+  readonly bootEpoch?:  number;
+}
+
+export type ReceiptFactClaimed = ReceiptFactInFlight | ReceiptFactSettled;
 
 /** One request's durable fact — the channel's read-through arbitration ledger. */
 export type ReceiptFact = ReceiptFactAbandoned | ReceiptFactClaimed;
@@ -151,10 +164,10 @@ export type ReceiptFact = ReceiptFactAbandoned | ReceiptFactClaimed;
 /** A fact not yet assigned its `seq` — distributed per-branch (never a bare `Omit` over the
  *  union, which would collapse the discriminant and let a `committed`/`done`/`error`/`evicted`
  *  draft through with no digest). */
-export type ReceiptFactDraft = Omit<ReceiptFactAbandoned, "seq"> | Omit<ReceiptFactClaimed, "seq">;
+export type ReceiptFactDraft = Omit<ReceiptFactAbandoned, "seq"> | Omit<ReceiptFactInFlight, "seq"> | Omit<ReceiptFactSettled, "seq">;
 
 function isReceiptFactState(v: unknown): v is ReceiptFactState {
-  return v === "committed" || v === "abandoned" || v === "done" || v === "error" || v === "evicted";
+  return v === "committed" || v === "interrupted" || v === "abandoned" || v === "done" || v === "error" || v === "evicted";
 }
 
 /** Build a receipt-fact tiddler record for the channel's single-writer ledger. */
@@ -169,6 +182,7 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
       ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
+      ...("bootEpoch" in fact && fact.bootEpoch !== undefined && { "boot-epoch":   String(fact.bootEpoch) }),
     },
     meta: { authority: "lares-daemon-channel" },
   };
@@ -205,11 +219,21 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   // Every state but `abandoned` claims a digest — a committed/done/error/evicted fact with
   // none on the wire reads as torn, never as a legacy-shaped "unverifiable" absence.
   if (inputDigest === undefined) return null;
-  return {
-    requestId, state, seq, inputDigest,
+  const epochRaw = fields["boot-epoch"];
+  const epoch = typeof epochRaw === "string" && /^\d+$/.test(epochRaw) ? Number.parseInt(epochRaw, 10)
+              : typeof epochRaw === "number" && Number.isInteger(epochRaw) && epochRaw >= 0 ? epochRaw
+              : undefined;
+  const common: { requestId: string; seq: number; inputDigest: string; effectKey?: string; terminal?: "done" | "error" } = {
+    requestId, seq, inputDigest,
     ...(effectKey !== undefined && { effectKey }),
     ...(terminal  !== undefined && { terminal }),
   };
+  // An in-flight fact names the boot that committed it; none on the wire reads as torn.
+  if (state === "committed" || state === "interrupted") {
+    if (epoch === undefined) return null;
+    return { ...common, state, bootEpoch: epoch };
+  }
+  return { ...common, state, ...(epoch !== undefined && { bootEpoch: epoch }) };
 }
 
 /**

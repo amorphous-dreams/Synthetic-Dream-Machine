@@ -69,7 +69,7 @@ function doneWorker(counter: { n: number }) {
  *  on-disk store dir. Only the CLAIM and the CHANNEL are torn down and re-made — the shape of an
  *  orderly `main.ts` shutdown + reboot, never a bare in-memory reset. */
 class Vessel {
-  claim!: StoreClaim;
+  claim!: StoreClaim & { readonly holder: "vessel" };
   channel!: UdsChannel;
   constructor(
     readonly repo: Repo,
@@ -111,9 +111,10 @@ class Vessel {
 
   /** Orderly shutdown + reboot — a FRESH channel/ledger, nothing in-memory carried over except
    *  the repo/doc and the store dir (the durable floor this whole lane exists to prove). */
-  async restart(): Promise<void> {
+  async restart(whileDown?: () => void): Promise<void> {
     this.channel.close();
     await this.claim.release();
+    whileDown?.();
     await this.start();
   }
 
@@ -122,6 +123,15 @@ class Vessel {
     await this.claim.release();
     rmSync(this.dir, { recursive: true, force: true });
   }
+}
+
+/** Dispatch `inv` to a worker that never lands an outcome, and return once the worker holds it: the
+ *  fact is `committed` and flushed. The caller's wait stays open (its budget is the verb's own
+ *  adaptive bound), so the test ends this boot instead of waiting it out. */
+async function dispatchAndStrand(v: Vessel, counter: { n: number }, inv: Record<string, unknown>): Promise<void> {
+  void sendLine(v.socketPath, inv).catch(() => { /* the boot ends under it */ });
+  for (let i = 0; i < 500 && counter.n === 0; i++) await new Promise((r) => setTimeout(r, 10));
+  expect(counter.n).toBe(1);
 }
 
 describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)", () => {
@@ -274,6 +284,59 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         } finally { Date.now = realNow; }
       } finally { await v.teardown(); }
     }
+  });
+
+  test("a request committed by a boot that ended with no outcome reads `interrupted` after the next boot, and refuses a same-id dispatch without waiting", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } }); // never lands an outcome
+    try {
+      const requestId = "req-interrupted";
+      const inv = { verb: "nexus-kapae", args: { a: 1 }, requestedBy: "did:key:test", requestId, timeoutMs: 100 };
+      await dispatchAndStrand(v, counter, inv);
+      // CONTROL: the same boot still reads `committed`.
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("committed");
+      const firstEpoch = v.claim.bootEpoch;
+
+      await v.restart();
+      expect(v.claim.bootEpoch).toBeGreaterThan(firstEpoch);
+
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("interrupted");
+      const stored = v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      expect(stored["state"]).toBe("interrupted");
+      expect(stored["boot-epoch"]).toBe(String(firstEpoch));
+
+      const t0 = performance.now();
+      const retry = await sendLine(v.socketPath, { ...inv, timeoutMs: 5_000 });
+      expect(performance.now() - t0).toBeLessThan(1_000);
+      expect(counter.n).toBe(1);
+      expect(retry["status"]).toBe("error");
+      expect((retry["refusal"] as { reason?: string } | undefined)?.reason).toBe("interrupted");
+
+      // CONTROL: a fresh id after the restart runs once.
+      void sendLine(v.socketPath, { ...inv, requestId: "req-interrupted-fresh" }).catch(() => { /* the boot ends under it */ });
+      for (let i = 0; i < 500 && counter.n < 2; i++) await new Promise((r) => setTimeout(r, 10));
+      expect(counter.n).toBe(2);
+    } finally { await v.teardown(); }
+  });
+
+  test("an outcome that landed after the channel closed settles the fact `done` at the next boot, never `interrupted`", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
+    try {
+      const requestId = "req-landed-unobserved";
+      const inv = { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId, timeoutMs: 100 };
+      await dispatchAndStrand(v, counter, inv);
+      await v.restart(() => {
+        const outcome = concludeVerb({
+          requestId, verb: inv.verb, status: "done", requestedBy: inv.requestedBy, cause: "test-worker",
+          batchMode: "best-effort", results: { summary: { ok: true } },
+        });
+        v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      });
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
+      const stored = v.daemonHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      expect(stored["state"]).toBe("done");
+    } finally { await v.teardown(); }
   });
 
   test("CONTROL: a fresh id runs exactly once, undisturbed by any of the above", async () => {

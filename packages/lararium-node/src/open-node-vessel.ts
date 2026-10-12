@@ -338,7 +338,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
   siblingChannel: () => SiblingChannelStatus | null;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
-  storeClaim: StoreClaim;
+  storeClaim: StoreClaim & { readonly holder: "vessel" };
   /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
    *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
    *  above); `pending` entries carried NO log line at all until this field threaded them out here for
@@ -364,7 +364,7 @@ export interface NodeHermResult {
   /** The ONE sorter this vessel's gates arm with. */
   socketSorter:     SocketSorter;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
-  storeClaim:       StoreClaim;
+  storeClaim:       StoreClaim & { readonly holder: "vessel" };
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -378,7 +378,7 @@ const blankMemeStore = (repo: Repo): (() => DocHandle<LarDoc>) =>
 interface NodeBootPrep {
   repo:             Repo;
   /** The store's claim, taken before the Repo opened and held for the vessel's life. */
-  storeClaim:       StoreClaim;
+  storeClaim:       StoreClaim & { readonly holder: "vessel" };
   catalogHandle:    DocHandle<LarDoc>;
   /** This vessel's own daemon doc — the plane a caller writes a verb SUMMONS onto (VesselResult carries it
    *  out, so a host surface can ask this vessel rather than only render it).

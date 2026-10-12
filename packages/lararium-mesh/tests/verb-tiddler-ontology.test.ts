@@ -87,7 +87,7 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
   });
 
   test("a minimal fact (no effectKey/terminal) round-trips with those absent", () => {
-    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1 };
+    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1, bootEpoch: 4 };
     const parsed = parseReceiptFact(buildReceiptFact(fact).tiddler as Record<string, unknown>);
     expect(parsed).toEqual(fact);
   });
@@ -103,9 +103,23 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
   test("EVERGREEN: a non-abandoned fact with no digest refuses by name — parseReceiptFact returns null, never a legacy-shaped optional absence", () => {
     // CONTROL: the identical field bag with `state: "abandoned"` instead parses fine (proven above),
     // so this refusal is keyed on the state/digest pairing, not on a malformed bag in general.
-    for (const state of ["committed", "done", "error", "evicted"] as const) {
+    for (const state of ["committed", "interrupted", "done", "error", "evicted"] as const) {
       expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r2c`, "request-id": "r2c", state, seq: 3 })).toBeNull();
     }
+  });
+
+  test("an in-flight fact (`committed` or `interrupted`) with no boot-epoch reads as torn; with one it round-trips", () => {
+    for (const state of ["committed", "interrupted"] as const) {
+      const bag = { title: `${RECEIPT_FACT_URI_PREFIX}r5`, "request-id": "r5", "input-digest": "sha256:dd", state, seq: "2" };
+      expect(parseReceiptFact(bag)).toBeNull();
+      const fact = { requestId: "r5", inputDigest: "sha256:dd", state, seq: 2, bootEpoch: 3 };
+      const record = buildReceiptFact(fact);
+      expect(record.tiddler["boot-epoch"]).toBe("3");
+      expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
+    }
+    // CONTROL: a settled fact needs no boot-epoch.
+    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r6`, "request-id": "r6", "input-digest": "sha256:ee", state: "done", seq: "2" }))
+      .toEqual({ requestId: "r6", inputDigest: "sha256:ee", state: "done", seq: 2 });
   });
 
   test("a torn fact (bad state, non-numeric seq) parses to null, never throws", () => {

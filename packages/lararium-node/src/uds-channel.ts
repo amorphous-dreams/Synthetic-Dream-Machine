@@ -61,7 +61,7 @@ export interface UdsChannelOptions {
    */
   readonly placeVerb: (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string }) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
-  readonly claim: StoreClaim;
+  readonly claim: StoreClaim & { readonly holder: "vessel" };
   /**
    * The vessel's Automerge Repo — the receipt-fact ledger's own durability floor (D1). `arbitrate`
    * awaits `repo.flush()` AFTER writing a `committed`/`abandoned` fact and BEFORE this channel calls
@@ -120,15 +120,16 @@ export interface ReceiptAnswer {
   /**
    * `abandoned`  — this vessel refused the request before commit (an EOF-drop or an explicit
    *                `cancel`); re-run to try again, never read back as a verdict on the act.
-   * `committed`  — dispatched, no durable outcome has landed yet (still running, or lost to a
-   *                restart before it could write one — indistinguishable from here; re-query).
+   * `committed`  — dispatched by THIS boot, no durable outcome has landed yet (still running; re-query).
+   * `interrupted` — committed by an EARLIER boot, and no outcome landed before that boot ended: the
+   *                effect may have landed in part. Re-run under a fresh request id.
    * `done`/`error` — the durable outcome, read back exactly as `runVerb` would have returned it.
    * `evicted`    — the receipt ring (D1) dropped this id's full outcome past its retention bound;
    *                its fact survives (digest, effect key, terminal) but the result body is gone.
    * `unknown`    — this vessel never arbitrated this id (a fresh process since dispatch, no
    *                durable outcome either) — the honest "no idea", never told as `error`.
    */
-  readonly state: "abandoned" | "committed" | "done" | "error" | "evicted" | "unknown";
+  readonly state: "abandoned" | "committed" | "interrupted" | "done" | "error" | "evicted" | "unknown";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
   /** Additive, mirroring the socket's own direct-refusal shape — a terminal outcome's own
@@ -185,6 +186,7 @@ class FactLedger {
     private readonly composite: CompositeStore,
     private readonly repo: Pick<Repo, "flush">,
     private readonly ring: number,
+    private readonly bootEpoch: number,
   ) {}
 
   private static factTitle(requestId: string): string {
@@ -219,6 +221,23 @@ class FactLedger {
         else this.torn.add(title.slice(RECEIPT_FACT_URI_PREFIX.length));
       }
       facts.sort((a, b) => a.seq - b.seq);
+      // SETTLE AT SEED. A `committed` fact of an EARLIER boot can no longer complete: its worker's
+      // invocation lived in that process's scratch. An outcome that landed unobserved promotes the
+      // fact to that terminal; none reads `interrupted`. A fact of THIS boot stays `committed`.
+      let settledAny = false;
+      for (let i = 0; i < facts.length; i++) {
+        const fact = facts[i]!;
+        if (fact.state !== "committed" || fact.bootEpoch >= this.bootEpoch) continue;
+        const landed = await this.composite.get(`${OUTCOME_URI_PREFIX}${fact.requestId}`);
+        const status = landed && !landed.meta?.deleted ? (landed.tiddler as Record<string, unknown>)["status"] : undefined;
+        const settled: ReceiptFact = status === "done" || status === "error"
+          ? { ...fact, state: status, terminal: status }
+          : { ...fact, state: "interrupted" };
+        await this.composite.put(buildReceiptFact(settled), { kind: "lares-verb", requestId: fact.requestId });
+        facts[i] = settled;
+        settledAny = true;
+      }
+      if (settledAny) await this.repo.flush();
       for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); }
       this.nextSeq = maxRawSeq + 1;
     })();
@@ -271,16 +290,17 @@ class FactLedger {
    */
   async arbitrate(requestId: string, inputDigest: string):
     | Promise<{ readonly verdict: "run" }
-      | { readonly verdict: "refuse"; readonly reason: "abandoned" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" | "receipt-fact-torn" }> {
+      | { readonly verdict: "refuse"; readonly reason: "abandoned" | "interrupted" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" | "receipt-fact-torn" }> {
     const existing = await this.get(requestId);
     if (existing === "torn") return { verdict: "refuse", reason: "receipt-fact-torn" };
     if (existing) {
       if (existing.state === "evicted") return { verdict: "refuse", reason: "retention-gap" };
       if (existing.state === "abandoned") return { verdict: "refuse", reason: "abandoned" };
+      if (existing.state === "interrupted") return { verdict: "refuse", reason: "interrupted" };
       if (existing.inputDigest !== inputDigest) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
       return { verdict: "refuse", reason: "already-committed" };
     }
-    await this.record({ requestId, inputDigest, state: "committed" });
+    await this.record({ requestId, inputDigest, state: "committed", bootEpoch: this.bootEpoch });
     return { verdict: "run" };
   }
 
@@ -405,7 +425,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT);
+  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch);
 
   const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
@@ -517,6 +537,7 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
       };
     }
     if (fact?.terminal) return { requestId, state: fact.terminal }; // the fact reached done/error but the outcome body itself is unreadable right now
+    if (fact?.state === "interrupted") return { requestId, state: "interrupted" };
     return { requestId, state: fact?.state === "committed" ? "committed" : "unknown" };
   };
 
@@ -620,6 +641,8 @@ export function startUdsChannel(opts: UdsChannelOptions): UdsChannel {
         if (verdict.verdict === "refuse") {
           const why = verdict.reason === "abandoned"
             ? `this vessel already refused request ${requestId} before commit — mint a fresh request id`
+            : verdict.reason === "interrupted"
+            ? `this vessel stopped while request ${requestId} ran — it may have landed in part; mint a fresh request id`
             : verdict.reason === "retention-gap"
             ? `this vessel's receipt ring evicted request ${requestId} before it could be re-read — mint a fresh request id`
             : verdict.reason === "receipt-fact-torn"
