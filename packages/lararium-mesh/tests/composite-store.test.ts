@@ -507,7 +507,7 @@ describe("CompositeStore live layer surgery", () => {
 // The default writable — working when mounted, canon when not, temp NEVER
 // ---------------------------------------------------------------------------
 
-import { expandRecipe, slotLayerFlags, wikiSlotUri } from "../src/wiki-recipe.js";
+import { expandRecipe, slotLayerFlags, wikiSlotUri, ORACLE_BAG } from "../src/wiki-recipe.js";
 
 describe("CompositeStore — the default writable under the recipe layer model", () => {
   /** Lay every slot `expandRecipe` names, bottom-up, with the flags the mounters register. */
@@ -536,5 +536,26 @@ describe("CompositeStore — the default writable under the recipe layer model",
       expect(composite.layerIds[composite.layerIds.length - 1]).toBe(wikiSlotUri("w", "temp"));
       expect(composite.defaultWritableBagId()).not.toBe(wikiSlotUri("w", "temp"));
     }
+  });
+
+  // The oracle floor is the system island every vessel shares: a wiki mounts it read-only, and an
+  // edit aimed at it copies UP into the wiki's own default writable (Law 4) — never into the floor.
+  test("the oracle floor mounts read-only; every other slot keeps its flag", () => {
+    const composite = lay("w", true);
+    expect(composite.hasBag(ORACLE_BAG)).toBe(true);
+    expect(composite.hasWritableBag(ORACLE_BAG)).toBe(false);
+    expect(composite.hasWritableBag(wikiBagUri("w"))).toBe(true);
+    expect(composite.hasWritableBag(wikiSlotUri("w", "working"))).toBe(true);
+  });
+
+  test("a put naming the oracle floor copies up into the wiki's working layer and survives there", async () => {
+    const composite = lay("w", true);
+    const floor = composite.storeForBag(ORACLE_BAG)!;
+    const before = await floor.listVisible();
+    await composite.put(record("lar:///floor-title", "a person's edit", ORACLE_BAG), wikiOrigin(), { bag: ORACLE_BAG });
+    expect(await floor.listVisible()).toEqual(before);
+    const working = composite.storeForBag(wikiSlotUri("w", "working"))!;
+    expect((await working.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
+    expect((await composite.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
   });
 });

@@ -337,12 +337,14 @@ export function defaultWritableSlot(slug: string, workingMounted: boolean): Slot
 }
 
 /**
- * The layer flags a slot registers with. Every slot is writable — the in-wiki cascade decides
- * routing, the composite refuses nothing. `defaultWritable` marks `defaultWritableSlot` alone; every
- * other layer registers `false` so the last-registered temp store never takes the office.
+ * The layer flags a slot registers with. Every slot is writable except the oracle floor: the floor is
+ * the system island every vessel shares, so a wiki mounts it read-only and an edit aimed at it copies
+ * UP into the wiki's default writable (Law 4) — the floor's one writer is the node home, by handle.
+ * `defaultWritable` marks `defaultWritableSlot` alone; every other layer registers `false` so the
+ * last-registered temp store never takes the office.
  */
-export function slotLayerFlags(slot: SlotUri, slug: string, workingMounted: boolean): { writable: true; defaultWritable: boolean } {
-  return { writable: true, defaultWritable: slot === defaultWritableSlot(slug, workingMounted) };
+export function slotLayerFlags(slot: SlotUri, slug: string, workingMounted: boolean): { writable: boolean; defaultWritable: boolean } {
+  return { writable: slot !== ORACLE_BAG, defaultWritable: slot === defaultWritableSlot(slug, workingMounted) };
 }
 
 /** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded
