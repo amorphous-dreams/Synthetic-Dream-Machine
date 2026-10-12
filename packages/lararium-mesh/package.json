@@ -84,6 +84,10 @@
       "import": "./dist/sensorium-fusion.js",
       "types": "./dist/sensorium-fusion.d.ts"
     },
+    "./host-task": {
+      "import": "./dist/host-task.js",
+      "types": "./dist/host-task.d.ts"
+    },
     "./tiddler-store": {
       "import": "./dist/tiddler-store.js",
       "types": "./dist/tiddler-store.d.ts"
