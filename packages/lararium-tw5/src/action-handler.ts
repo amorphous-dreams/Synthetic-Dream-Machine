@@ -1425,6 +1425,26 @@ function groupOf(titles: readonly string[], root: string): string[] {
 
 async function executeMove(action: MoveAction, access: BagAccess): Promise<Record<string, unknown>> {
   const o = origin(action);
+  const rootRecord = await readFromBag(access, action.fromBag, action.title);
+  if (rootRecord?.meta?.deleted) {
+    const targetRecord = await readFromBag(access, action.toBag, action.title);
+    const targetHoldsTitle = targetRecord !== null && targetRecord.meta?.deleted !== true;
+    if (!targetHoldsTitle && action.shadow !== true) throw new TombstoneTargetHoldsNothingRefusal(action.title, action.toBag);
+    const candidates = targetHoldsTitle
+      ? groupOf((await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t)), action.title)
+      : [action.title];
+    const tombstones = [action.title, ...candidates.filter((t) => t !== action.title)];
+    const group: string[] = [];
+    for (const title of tombstones) {
+      const source = await readFromBag(access, action.fromBag, title);
+      if (source?.meta?.deleted) group.push(title);
+    }
+    if (!group.includes(action.title)) group.unshift(action.title);
+    for (const title of group) await tombstoneIn(access, action.toBag, title, o);
+    for (const title of group) await removeIn(access, action.fromBag, title, o);
+    return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved: group.length, carried: "tombstone", ...(action.shadow === true && !targetHoldsTitle ? { shadow: true } : { shadow: false }) };
+  }
+  if (action.shadow === true) throw new ShadowRequiresTombstoneRefusal(action.title);
   // Carrier-group MOVE: a MOVE of a carrier root
   // carries its WHOLE group — root + #fragment + /path — so promotion publishes
   // a meme entire and never orphans a fragment from its root (#shore-law). The
@@ -1455,6 +1475,22 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     moved++;
   }
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, moved };
+}
+
+export class TombstoneTargetHoldsNothingRefusal extends Error {
+  readonly code = "TOMBSTONE_TARGET_HOLDS_NOTHING";
+  constructor(title: string, bag: string) {
+    super(`MOVE: ${title} in ${bag}: this bag does not hold the title; to hide it for everyone who composes this bag above its holders, ask for a shadow (--shadow)`);
+    this.name = "TombstoneTargetHoldsNothingRefusal";
+  }
+}
+
+export class ShadowRequiresTombstoneRefusal extends Error {
+  readonly code = "SHADOW_REQUIRES_TOMBSTONE";
+  constructor(title: string) {
+    super(`MOVE: ${title}: --shadow rides a tombstone alone; source record is live. Choose a tombstone source or omit --shadow.`);
+    this.name = "ShadowRequiresTombstoneRefusal";
+  }
 }
 
 async function executeClear(action: ClearAction, access: BagAccess): Promise<Record<string, unknown>> {

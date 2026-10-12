@@ -132,11 +132,13 @@ export function makeResolveReactor(composite: CompositeStore): VerbReactor {
     if (!tiddler) throw new Error("args.tiddler is required");
     const live       = await composite.resolveAll(tiddler);
     const tombstones = await composite.listKapaeBags(tiddler);
+    const top = await composite.resolveLayered(tiddler);
+    const hiddenBy = top?.record.meta?.deleted ? top.bagId : null;
     const manifestations = live.map((entry) => {
       const changeId = entry.record.meta?.changeId;
       return changeId !== undefined ? { bagId: entry.bagId, changeId } : { bagId: entry.bagId };
     });
-    return { tiddler, manifestations, tombstones, winningBag: live[0]?.bagId ?? null };
+    return { tiddler, manifestations, tombstones, hiddenBy, winningBag: hiddenBy ? null : live[0]?.bagId ?? null };
   };
 }
 

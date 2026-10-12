@@ -489,6 +489,7 @@ export async function cmdWikiResolve(args: ParsedArgs): Promise<number> {
   const manifestations = (result["manifestations"] ?? []) as Array<{ bagId: string; changeId?: string }>;
   const tombstones    = (result["tombstones"]    ?? []) as string[];
   const winning       = (result["winningBag"]    ?? null) as string | null;
+  const hiddenBy      = (result["hiddenBy"]       ?? null) as string | null;
 
   console.log("");
   console.log(`Residency for ${tiddler}`);
@@ -507,12 +508,14 @@ export async function cmdWikiResolve(args: ParsedArgs): Promise<number> {
       console.log(`    ${marker} ${m.bagId}${idTag}`);
     }
     console.log("");
-    console.log(`  Winning surface (origin-bag): ${winning}`);
+    if (winning) console.log(`  Winning surface (origin-bag): ${winning}`);
     console.log("");
   } else {
     console.log("  (no live Manifestations — the title carries only kāpae marks)");
     console.log("");
   }
+
+  if (hiddenBy) console.log(`  Hidden by: ${hiddenBy}`);
 
   if (tombstones.length > 0) {
     console.log("  Kāpae marks (bags that have set this title aside at their priority):");

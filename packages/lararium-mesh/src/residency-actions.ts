@@ -140,6 +140,7 @@ export interface MoveAction extends ResidencyActionBase {
   readonly fromBag:     string;
   readonly toBag:       string;
   readonly changeId:    string;
+  readonly shadow?:    true;
 }
 
 /** CLEAR — empty bag (preserve bag identity; effect log retained). */
@@ -331,6 +332,7 @@ interface ResidencyArgs {
   readonly bag?:         string;
   readonly "source-uri"?: string;
   readonly "change-id"?:  string;
+  readonly shadow?:      true;
   readonly carriers?:    readonly LoadCarrier[];
   readonly plane?:       "catalog" | "oracle";
 }
@@ -346,6 +348,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         "from-bag":   action.fromBag,
         "to-bag":     action.toBag,
         "change-id":  action.changeId,
+        ...(action.verb === "MOVE" && action.shadow === true ? { shadow: true as const } : {}),
       };
     case "CLEAR":
     case "DROP":
@@ -405,7 +408,9 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     const toBag    = str("to-bag");
     const changeId = str("change-id");
     if (!title || !fromBag || !toBag || !changeId) return null;
-    return { ...base, verb: inv.action, title, fromBag, toBag, changeId };
+    const shadow = inv.action === "MOVE" && args["shadow"] === true ? { shadow: true as const } : {};
+    if (inv.action === "MOVE" && args["shadow"] !== undefined && args["shadow"] !== true) return null;
+    return { ...base, verb: inv.action, title, fromBag, toBag, changeId, ...shadow };
   }
 
   if (isBagVerb(inv.action)) {

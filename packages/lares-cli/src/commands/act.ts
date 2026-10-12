@@ -96,6 +96,9 @@ function printUsage(): void {
   console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
+  console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
+  console.error("                     carries the delete down into a bag that holds the title; with no --to the");
+  console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
   console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
   console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
@@ -262,14 +265,31 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
-    if (!title || !fromBag || !toBag) {
+    if (!title || !fromBag || (verb !== "MOVE" && !toBag)) {
       console.error(`lares act ${verb}: --title, --from, --to all required`);
+      return 2;
+    }
+    if (verb === "MOVE" && !toBag) {
+      try {
+        const did = await vesselDid();
+        const where = await runVerb("where", { tiddler: title }, did);
+        const holders = ((summaryOutput(where)?.["bags"] ?? []) as string[]);
+        if (holders.includes(fromBag)) {
+          console.error("lares act MOVE: --title, --from, --to all required");
+          return 2;
+        }
+        for (const bag of holders.filter((candidate) => candidate !== fromBag)) console.log(bag);
+        console.log("name the bag where the delete takes place with --to <bag>");
+      } catch (err) {
+        console.error(`lares act MOVE: could not read candidates: ${err instanceof Error ? err.message : String(err)}`);
+      }
       return 2;
     }
     actionArgs["title"]      = title;
     actionArgs["from-bag"]   = fromBag;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
+    if (verb === "MOVE" && args.flags["shadow"]) actionArgs["shadow"] = true;
   } else if (isBagVerb(verb)) {
     const bag = args.options["bag"];
     if (!bag) {

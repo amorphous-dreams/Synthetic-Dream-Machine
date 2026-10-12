@@ -211,6 +211,8 @@ interface MapOptions {
   readonly now?: string;
   /** Override event-id factory (tests). Defaults to newEventId(). */
   readonly newId?: () => string;
+  /** Executor summary determines the MOVE road after its bag writes succeed. */
+  readonly result?: unknown;
 }
 
 /**
@@ -264,6 +266,22 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         reason:       "copy-overwrite",
       }];
     case "MOVE": {
+      const summary = opts?.result && typeof opts.result === "object" ? opts.result as Record<string, unknown> : {};
+      if (summary["carried"] === "tombstone") {
+        const shadow = summary["shadow"] === true;
+        return [
+          {
+            ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.toBag,
+            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            destBag: action.toBag, disposition: `${shadow ? "shadowed" : "deleted"}-by-move-from:${action.fromBag}`,
+          },
+          {
+            ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.fromBag,
+            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            destBag: action.toBag, disposition: `transferred-to:${action.toBag}`,
+          },
+        ];
+      }
       const transferId = newId();
       return [
         {
@@ -397,8 +415,8 @@ export async function withEffectRecord<T>(
   mutate: () => Promise<T>,
   opts?: MapOptions,
 ): Promise<T> {
-  const effects = mapActionToEffects(action, opts);
   const result  = await mutate();
+  const effects = mapActionToEffects(action, { ...opts, result });
   for (const effect of effects) {
     await writeEffectRecord(resolveStore, effect);
   }
