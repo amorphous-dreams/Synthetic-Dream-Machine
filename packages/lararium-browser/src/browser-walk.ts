@@ -14,7 +14,33 @@ import {
   deriveNexusScopedKey, hexToBytes, PERSONA_GLAMOUR_CONTEXT,
   type WalkLeaf, type WalkRecord, type WalkStore,
 } from "@lararium/mesh";
+import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { openVesselIdb, idbGet, idbPut, WALK_STORE, loadBrowserPersonaRootSeed } from "./browser-vessel-identity.js";
+
+/**
+ * A face join must follow the island the issuing hearth resolved when it minted admission. Earlier
+ * browser fallthroughs derived a private island when those carried pins were absent; that mounted
+ * a different recipe plane and made shared carriers look absent. The browser refuses the missing
+ * relation by name rather than rebuilding it from a gate key.
+ */
+export function requireAdmittedFaceIsland<
+  T extends Pick<CarriedAdmitPayload, "hearthIslandKind" | "hearthIslandScope">,
+>(
+  payload: T,
+): asserts payload is T & {
+  readonly hearthIslandKind: NonNullable<CarriedAdmitPayload["hearthIslandKind"]>;
+  readonly hearthIslandScope: string;
+} {
+  const { hearthIslandKind, hearthIslandScope } = payload;
+  if (
+    !hearthIslandKind ||
+    !["own", "anchor", "charter", "explicit"].includes(hearthIslandKind) ||
+    typeof hearthIslandScope !== "string" ||
+    hearthIslandScope.length === 0
+  ) {
+    throw new Error("[face-join] admission lacks the hearth's resolved island kind and scope");
+  }
+}
 
 /** The walk store over this vessel's own IndexedDB, keyed by the hearth's gate key. */
 export function browserWalkStore(idbName: string): WalkStore {

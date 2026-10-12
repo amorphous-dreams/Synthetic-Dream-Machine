@@ -68,3 +68,6 @@ export type {
 export {
   readSecureContext, assertCanMint, ambientHost, requestDurableStorage, ambientStorage, storageFloorReport,
 } from "./secure-context-gate.js";
+export { SharedHolderRefusal } from "./shared-holder.js";
+export type { HolderRefused } from "./shared-holder-core.js";
+export { browserIdentityContinuityKey } from "./browser-vessel-identity.js";

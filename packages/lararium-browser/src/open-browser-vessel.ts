@@ -48,7 +48,7 @@ import {
 import { relayPinFor } from "./browser-relay-pin.js";
 import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
-import { browserWalkStore, browserWalkLeaf } from "./browser-walk.js";
+import { browserWalkStore, browserWalkLeaf, requireAdmittedFaceIsland } from "./browser-walk.js";
 import {
   MemoryTiddlerStore,
   selectActiveWikiSlug,
@@ -530,6 +530,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // this leaf composes the SAME ruling the node's `init.ts` does, not a second reading of it.
   let nexusPubkey: string;
   if (admit) {
+    // The node must carry the island relation it resolved at admission. Without both fields this
+    // browser would silently derive its own island and mount a private recipe plane under a face
+    // that the hearth believes joined its shared one.
+    requireAdmittedFaceIsland(admit);
     nexusPubkey = admittedJoineeIsland({
       hearthGatePubKey:  admit.hearthGatePubKey,
       hearthIslandKind:  admit.hearthIslandKind,
@@ -537,7 +541,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       ownVesselKey:      vesselVerifyingKey,
     });
     console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (admitted — the founder's resolved `
-      + `island at mint time, kind=${admit.hearthIslandKind ?? "anchor (older payload, no island fields carried)"})`);
+      + `island at mint time, kind=${admit.hearthIslandKind})`);
   } else {
     const nexusStanding = nexusIdentity(nexusStandsAt);
     nexusPubkey = nexusScopeOrThrow(nexusStanding);
