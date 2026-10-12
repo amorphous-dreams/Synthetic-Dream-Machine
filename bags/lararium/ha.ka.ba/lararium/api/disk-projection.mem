@@ -63,6 +63,8 @@ Disk projection serves ''content'' bags (definitions + instances). ''State / vie
 | `@temp` | volatile session layer | ''none'' — runtime |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
+The daemon wiki's working layer projects under `wikis/daemon/`, while the daemon control bag projects nowhere.
+
 The projector enforces this structurally: ''a bag absent from the mirror list never writes to disk.'' A tiddler MAY also opt out per-record with `disk-projection: no`. The opt-out holds in both directions: an address whose records never project (a receipt fact, a verb summons, a ward audit; `neverProjects`) and a carrier that declares `disk-projection: no` never ingest, so a file standing there refuses by name (`never-projected-path`), creates nothing, and leaves the wave's other carriers to land.
 
 <<~/ahu>>
@@ -110,7 +112,7 @@ A hand MAY add a future debug-only disk projection behind an explicit flag; it M
 # ''RENDER, not copy'' (Fontany-Fuller-Zelenka). Disk projection recomposes the whole carrier from normalized tiddler records via the shore's recompose inverse (`expandMemeRefs`, published as `$tw.lares.meme.recompose`, running inside the island VM). It never copies stored bytes raw — byte-fidelity comes from the proven parse∘render fixed point, not retention.
 # ''Store → disk runs one direction; ingest runs another.'' The projector runs one way (store → disk): no disk byte ever reaches a record through it. It does READ disk — the Confluence gate below must know what the operator's hands left there before it may write over it — and ''a read that decides whether to write performs no ingest''. Re-reading operator edits INTO the records (disk → store) stays a ''separate file-watcher / ingest path''. The `writing` guard set prevents the projector's own writes from echoing back through ingest.
 # ''The git diff carries the operator's signature.'' When a residency ''MOVE'' (the canon ACTION verb) relocates a tiddler between bags, the disk side effect is a file move between surfaces; the diff records the operator's intent. ''Promotion'' rides this rite — a cap-gated `MOVE` from the `@working` live layer to canon crosses the ''working↔canon shore'', and a `MOVE` of a bag's pointer between planes (`@catalog ⇄ @oracle`) crosses the ''plane shore''. Both stay loose causal-island crossings — no shared-now, no synchronous bridge (`wiki-layer-ontology#shore-law`).
-# ''Debounce per (bag, carrier root).'' A child change climbs `fragment-parent` to its root; the group flushes as ONE carrier write (carrier-whole at rest). The projection-side gate skips byte-identical writes entirely — no event, no mtime churn.
+# ''Reconcile per carrier root.'' A child change climbs `$fragment-parent` to its root; the group flushes as ONE carrier write (carrier-whole at rest). The gate holds no timer: every change marks its root, each reconcile reads the settled wiki state, a root marked while its reconcile runs reconciles once more, and no storm of marks starves a root. A mount scan marks every root whose `$origin-bag` names a mirror, in the turn that subscribes the wiki's change bus; each reconcile then honors the pack-member and per-record projection guards. The projection-side gate skips byte-identical writes entirely — no event, no mtime churn. The gate's mechanics: `lar:///ha.ka.ba/lararium/node/disk-projector#/the-servo`.
 # ''BOTH LEGS RECONCILE, AND BOTH RUN WIRED'' (operator ruling, 2026-09-13: //"Approve conflict-surfacing in BOTH legs of round-trip memes."//). The projecting leg carries its own pure three-way decision (`projection-gate`, `decideProjection`) over the SAME three streams the ingest leg reads — the records' render · the last-projected anchor (Synced tree) · the bytes standing on disk. Its verdicts mirror `ingest-gate`'s: ''noop'' (`disk-matches-records`, the echo gate riding first · `records-unmoved`) · ''project'' (`absent-on-disk` · `never-projected` · `disk-unmoved` · `canonical-equivalent`) · ''conflict'' (`both-moved`). The gate decides; it never writes. `LarDiskProjector.flush` consults it on every flush the byte-identity skip does not already answer, and owns every I/O and every alert: ''project'' writes, ''noop'' stands down silently (the ingest leg owns that state), ''conflict'' stands down LOUDLY on the ward-alert rail — ONE rail, `wardKind` naming the mechanism that actually stood down, never a second idiom. Ingest's fourth verdict, `refuse`, rides ABSENT here: it grades a parse of untrusted disk bytes, and the render this leg writes comes from the VM registry, whose faults surface as a null `CarrierFile` before the gate consults anything.<br>''THE `≈` CLAUSE MAKES THE WIRE SAFE.'' The ordinary round trip leaves all three streams different — the projector lands a carrier, the operator edits the file, `ingest --apply` ADOPTS the edit into the records — and on byte-hashes alone that reads as a standoff. It makes none: the adoption enacts the other leg agreeing, and the write that follows NORMALIZES rather than drowns. So clause 6 transposes ingest's rule 3 — `render(parse(disk))` == the records' render → ''project'' `canonical-equivalent` — and it rides ONE STEP AHEAD OF THE CONFLICT, refining the standoff and leaving every other verdict untouched (no gofmt loop runs on this shore: what the projector writes stands as the canonical form, so its own output converges at clause 1 after a single write).<br>''Its verdict lands a WRITE, never a noop'' — measured 2026-09-14: the ingest scan's status reads `digestsEqual(diskHash, syncedHash)` and nothing else, so only a projection advances the merge base; a noop leaves the carrier reporting `changed` forever, `wikis-ingest-back` WB2 red at `expected 1 to be +0` — the same red as omitting the clause entirely. The design says so twice over: `recordLandedPacks` records a pack's synced hash explicitly //because// a pack never projects back, so for every other carrier ''the projector's own write advances the anchor''; and an applied ingest advances the anchor for renames and packs alone.<br>''The view comes from ONE door:'' `canonicalizeCarrierText` (`@lararium/tw5/carrier-canonical`, a PURE subpath — no barrel, no wasm), injected at the composition root beside `carrierFileFn`. It reuses `memeticIngestOps`, so exactly one implementation of `≈` stands in the tree, and it carries the ahu-fidelity guard — which BITES HARDER on this shore, because here a lossy round trip would not merely fail to land an edit, it would replace the operator's bytes with a text that no longer carries the slot. A lossy round trip therefore answers null, and an ABSENT canonical view reads as the standoff, NEVER as equivalence.
 
 <<~/ahu>>
@@ -167,20 +169,20 @@ projector onRefusal (wiki island)
   → main's generic worker.event → adminVm.placeVerb bridge
   → admin VM "ward-alert" reactor:
       (a) DURABLE audit record  lar:///ha.ka.ba/bags/daemon/ledger/ward/<id>
-          — the operators-with-admin-grants surface (@daemon doc readers)
+          — lands in the daemon wiki's working layer, stamped `disk-projection: no`
       (b) reads its own active-wiki marker → the operator's PINNED VM
   → admin:wiki-alert (kind "disk-ward") → main → system-alert verb
   → pinned island writes $:/temp/lares/alert/disk-ward tagged $:/tags/Alert
       — ring-0 operator surface (@temp, island-local, self-clearing on reboot)
 ```
 
-Visibility holds by construction: the durable record lives in `@daemon` (admin-grant readers only); the live alert lives in the pinned wiki's `@temp` (the operator's own island; never federated — `noise`/`data` stay node-local). The reactor carries no cap-gate: the signal originates from the island's own mechanism, grants nothing, and writes only audit + alert.
+Visibility holds by construction: the durable record lands in the daemon wiki's working layer and never projects to disk; the live alert lives in the pinned wiki's `@temp` (the operator's own island; never federated — `noise`/`data` stay node-local). The reactor carries no cap-gate: the signal originates from the island's own mechanism, grants nothing, and writes only audit + alert.
 
 ''What the gate says over the real corpus'' (measured 2026-09-13, `bags/` at 701 hand-authored carriers, against the live Synced tree): ''655'' read `noop:disk-matches-records` — `render(parse(disk))` returns the disk bytes exactly — ''46'' read `project:never-projected` (the `sdm` bag carries no anchors; those write, as they write today), and ''0'' read CONFLICT — a stale merge base cannot manufacture a storm where disk and records agree. The 46 name the corpus's //non-canonical-at-rest// carriers (`meme-corpus-roundtrip`'s own finding: framing normalizes on render), so rule 1 misses on them and only the absent anchor keeps them clear; once an anchor lands they read `disk-unmoved` and project. Re-measure by walking `bags/` with the shore's deserializer + `expandMemeRefs` against `synced-tree.json`.
 
-''One rail, two refusals — the shape a projection conflict WILL take.'' A projection conflict rides this same chain: the projector calls the same `onRefusal`, so the operator reads it in the same pinned-wiki alert and the same durable `@daemon` ledger. No second rail — a signal with no audience repeats the fault of a fold that stands ready and uncalled. One alert per DISTINCT standoff (the disk-hash + records-hash pair), since a level-triggered reconcile re-decides on every nudge; a standoff that MOVES surfaces afresh. This rides ''unwired'' with the gate above, awaiting the canonical-view clause.
+''One rail, two refusals.'' A projection conflict calls the projector's `onConflict`, which sends `ward-alert` with `wardKind: projection-conflict` down the same alert chain a disk-ward refusal rides, so the operator reads it in the same pinned-wiki alert and the same durable ledger. No second rail — a signal with no audience repeats the fault of a fold that stands ready and uncalled. The projector leaves the disk file untouched, and each reconcile that meets the standoff may send the alert again.
 
-Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (13 — traversal, absolute, cross-bag, above-bags, new-subdir, grantless, inert-grant, refusal-signal) · `packages/lararium-node/tests/projection-conflict-surfaces.test.ts` (6 — the standoff refuses + surfaces, the repeat stays quiet, a moved standoff re-surfaces, clean-project · noop-no-churn · disk-alone-stands-down controls, and the 701-carrier corpus reading zero conflicts in steady state).
+Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (traversal, absolute, cross-bag, above-bags, new-subdir, grantless, inert-grant, refusal-signal) · `packages/lararium-node/tests/projection-conflict-surfaces.test.ts` (the projection verdicts, canonical equivalence and the corpus conflict controls) · `packages/lararium-node/tests/projection-conflict-reaches-the-operator.test.ts`.
 
 <<~/ahu>>
 
@@ -188,7 +190,7 @@ Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (13 — tr
 
 !! CLI capability
 
-The operator drives the disk-projection Artifact through the `@lares/cli` surface (alongside `lares wiki` / `lares bag` / `lares act`). The live projector runs inside the vessel (TW5 change → debounce → render → write); the CLI exposes the deliberate snapshot/inspect verbs. `namedBagMirror(bagId, scope, mirrorRoot)` configures a bag mirror; the island reconstructs it from the serializable `diskMirrors` manifest field.
+The operator drives the disk-projection Artifact through the `@lares/cli` surface (alongside `lares wiki` / `lares bag` / `lares act`). The live projector runs inside the vessel (TW5 change → level-triggered reconcile → render → write); the CLI exposes the deliberate snapshot/inspect verbs. `namedBagMirror(bagId, scope, mirrorRoot)` configures a bag mirror; the island reconstructs it from the serializable `diskMirrors` manifest field.
 
 <<~/ahu>>
 
@@ -204,6 +206,10 @@ The operator drives the disk-projection Artifact through the `@lares/cli` surfac
 <<~ loulou "lar:///ha.ka.ba/lararium/api/sync-namespace">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/catalog-doc">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/disk-projector">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
 
 ''Tie ~ bags/ holds the formal register.'' This surface (the seed/canon `bags/`, mana-entrenched) carries exactly
 the FORMAL register of the living grammar ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/three-registers]]) — the curated band
@@ -215,6 +221,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;llGCLmh8JEYuQpxwQOc7Zv4fwLfo_gAyBcCGk5wA9Co
+<<^ code="&#x0003;">>ni:///sha-256;w9KzSNDZhimsjDVvw1_UqBlN2HkYeqB59t1Mm8aSqGI
 
 <<^ code="&#x0004;" -> to="?">>

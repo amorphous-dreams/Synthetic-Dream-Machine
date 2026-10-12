@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
 l-space     = "lararium"
 mana        = 8
-role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the coalesce servo's set-point semantics. Surface law, granularity and routing live at api/disk-projection."
+role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the level-triggered reconcile gate. Surface law, granularity and routing live at api/disk-projection."
 source-file = "packages/lararium-node/src/disk-projector.ts"
 title       = "lar:///ha.ka.ba/lararium/node/disk-projector"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -52,16 +52,9 @@ and every guarantee stands without it.
 
 <<~ ahu #/the-servo>>
 
-!! The coalesce servo ~ opt-in, inert until calibrated
+!! The level-triggered reconcile gate
 
-The disk reconcile runs variable-cost and bursty with no natural clock, which names the place a window
-servo pays — unlike a display gate, which stays frame-pinned. Given a `WindowServo` the gate
-self-clocks on each reconcile's completion and moves `debounceMs` toward `targetMs`.
-
-''`targetMs` names a reconcile COST set-point'' — the millisecond figure above which the window
-WIDENS — never the window's own length; `minMs` and `maxMs` bound the window itself. Absent a servo
-the debounce holds fixed at `debounceMs`, and the capability ships inert until an operator calibrates
-a real cost target against a measured reconcile.
+`LarDiskProjector.start` keys the timer-free `KeyedReconcileGate` by carrier root; a child change climbs `$fragment-parent` to that root. A clean mark queues one reconcile, a queued mark changes nothing, and a mark during a running reconcile makes the key run once more on completion. M marks to one key cost at most M + 1 reconciles, and no mark storm starves a key. One drain owns the queue until it empties, reconciling keys one at a time in first-marked order and yielding to the host between reconciles. The mount scan marks mirror-backed roots in the same synchronous turn as change-bus subscription; the first reconcile starts in a microtask. Each reconcile reads settled wiki state. The unsubscribe removes the listener and awaits `stop()`, which stops admission, drops waiting work, waits for a running reconcile, and flushes the synced tree. The measure fields count change events, elapsed time from the last change event to the first file write, `bagsHolding` calls in that window, and file writes.
 
 <<~/ahu>>
 
@@ -75,7 +68,10 @@ a real cost target against a measured reconcile.
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/guards">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
 
-<<^ code="&#x0003;">>ni:///sha-256;JzLXv3ts3U9E3JrMAgbG3XkRBKyrCoO5tLp9uYtwPtU
+<<^ code="&#x0003;">>ni:///sha-256;f9Q3Gt0G36OCrxZbgYoO_Ktq6Z5paZ2KUiSQQIoD9YE
 
 <<^ code="&#x0004;" -> to="?">>
