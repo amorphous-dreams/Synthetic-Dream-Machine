@@ -9,7 +9,16 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 **Fixed**
 - **Wiki deletes leave canon intact.** Deleting a canon title writes a tombstone into the working layer, where it hides the title; a later save replaces that tombstone. A composition without a working layer refuses the delete by name.
 - **The wiki follows its bag composition.** It shows the topmost resolved record, including a working tombstone or copy-up, when canon changes beneath it.
-- **Draft actions land as one act.** Save, rename, and cancel carry the base from when the draft opened; opening an editor and discarding or saving immediately leaves no stray draft, and returning to the landed value writes nothing.
+- **Draft actions land as one act.** Save, rename, and cancel carry the base from when the draft opened; opening an editor and discarding or saving immediately leaves no stray draft, and returning to the landed value writes nothing. An untouched draft reads unmodified, and Cancel asks nothing.
+- **Hand saves respect the composition.** The composition's own order keeps every save at or above the working layer; a route through an empty pointer or a rule naming canon raises a named refusal.
+- **Titles keep their layer on save.** A title held above its routed layer saves where it lives; session state and view state route to the temp and personal layers.
+- **Removed child references take their family with them.** Editing a placed root to remove a child reference tombstones that child and every descendant.
+- **Failed landings raise a named alert.** A landing that fails twice surfaces an alert naming its title, and the next wave retries it.
+- **Meme moves carry deletes down.** `lares act MOVE` carries a tombstone into the named bag, and `--shadow` hides a title from a bag that holds none; `lares wiki resolve` prints `Hidden by` for the hiding bag.
+- **Never-projected addresses refuse ingest.** A file at an address that never projects to disk refuses with `never-projected-path`.
+- **Removed storage keys stay removed.** A removal waits for writes already in flight, and a range removal fences saves beneath its prefix until the removal settles.
+- **The stopped shore forgets its wiki.** Teardown clears its ledger and write records after pending hand edits settle; a noop write marks nothing, and one dispatch writes a target at most once.
+- **Hand edits pace by title activity.** The gate groups edits by title whatever the title's kind, and teardown flushes every marked title.
 - **Every wiki mounts a working layer.** No canon bag serves as the default writable. The daemon's working layer projects to `wikis/daemon/`, while its receipts, ward audits, and summons stay off disk. A vessel that first boots without a face gains its working layer once a face seats and the vessel stands again; the binding carries its Keyhive document, and an attach that cannot stand refuses the boot by name.
 - **The wiki shore owns queued changes.** The nalu engine applies one change synchronously, while the shore owns the queue and its door; genesis carries that applier.
 - **Current-head reads avoid document views.** A record read at its document's own heads uses the standing document, which shortens corpus feeds through the shore.
@@ -17,7 +26,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **The browser walk requires its wiki document.** A missing wiki document makes the walk fail.
 
 **Added**
-- **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki.
+- **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
 - **Seats need no Handle.** `persona new --seat [--chair <label>]` claims a seat with a private chair label; the seal names seats by fingerprint, and `nexus seal export` carries keys and fingerprints without chair labels.
 - **Reserve cards support scratch-root rehearsal.** `lares nexus seal reserve rehearse` reads two cards under a scratch root, proves the rebuilt key-set against the charter head, writes nothing, and rolls nothing. Cards print their generation and quorum.
 - **The container offers a household HTTPS slot.** Compose profile `https` adds a terminator and resolver, while `device-admit` carries a `syncUrl` derived from `LAR_PUBLIC_URL`.
@@ -34,6 +43,8 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **LAN discovery offers candidates only.** It stays off by default; `LAR_LAN_DISCOVERY=announce` enables discovery, and candidates carry no authority.
 - **Harnesses run the image by digest.** `LARES_HARNESS_IMAGE` names the image used by the mesh, kahu, crossing, swarm, and burn harnesses.
 - **Witnesses wait for the work they measure.** The rite-commands witness reads a command through the host shim, and the corpus-feed witness waits for every corpus root.
+- **Disk projection reconciles roots without timers.** Each run of marks reconciles a carrier root once, with one more pass when a mark arrives during its reconcile; the mount scan marks every resident root that a configured mirror backs.
+- **Disk projection reports its own pause.** A delay of a second or longer between a wiki change and the first file write prints a diagnostic with the elapsed time and lookup count.
 
 ### The shore and the oracle floor
 
