@@ -4,7 +4,10 @@ import * as A from "@automerge/automerge";
 import {
   exportOracleSnapshot, verifyOracleSnapshotBytes, buildOraclePointer,
   oraclePointerId, verifyOraclePointer, foldOraclePointerVerdict,
+  publicOracleFloor, snapshotPublicOracle,
 } from "../src/oracle-substrate.js";
+import type { GenesisSeed } from "../src/genesis-doc.js";
+import type { LarDoc } from "../src/base-doc.js";
 
 const SEED  = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const OTHER = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
@@ -107,5 +110,57 @@ describe("oracle causal pointer", () => {
 
   test("malformed input is rejected without throwing", async () => {
     expect((await verifyOraclePointer({ cid: "nope" } as never)).ok).toBe(false);
+  });
+});
+
+// ── The public floor: only the genesis-named rows cross, at their live values, with no history ──
+
+const FLOOR_SEED = {
+  format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16), schemaVersion: "0.1",
+  blobs: { "lar:///core": { id: "core", version: "1", sha256: "c".repeat(64), mimeType: "application/javascript" } },
+  tiddlers: { "lar:///seeded": { tiddler: { title: "lar:///seeded", text: "seed value" } } },
+} as unknown as GenesisSeed;
+
+function liveDoc(extra: (d: Record<string, any>) => void = () => {}): LarDoc {
+  let d = A.from<any>({
+    schemaVersion: "0.1",
+    blobs: { "lar:///core": { ...(FLOOR_SEED.blobs["lar:///core"] as object) } },
+    tiddlers: { "lar:///seeded": { tiddler: { title: "lar:///seeded", text: "seed value" } } },
+  });
+  d = A.change(d, (x: any) => extra(x));
+  return d as unknown as LarDoc;
+}
+
+describe("oracle public floor", () => {
+  test("drops a non-seed title and blob row, keeps a seed title at its LIVE value, strips the bytes field", () => {
+    const live = liveDoc((d) => {
+      d.tiddlers["bags/catalog"] = { tiddler: { text: "private" } };
+      d.blobs["lar:///private-blob"] = { id: "p", version: "1", sha256: "d".repeat(64), mimeType: "x/y" };
+      d.tiddlers["lar:///seeded"].tiddler.text = "advanced value";
+      d.blobs["lar:///core"].blob = new Uint8Array([1, 2, 3]);
+    });
+    const floor = publicOracleFloor(live, FLOOR_SEED) as any;
+    expect(Object.keys(floor.tiddlers)).toEqual(["lar:///seeded"]);
+    expect(Object.keys(floor.blobs)).toEqual(["lar:///core"]);
+    expect(floor.tiddlers["lar:///seeded"].tiddler.text).toBe("advanced value");
+    expect("blob" in floor.blobs["lar:///core"]).toBe(false);
+    expect(floor.blobs["lar:///core"].sha256).toBe("c".repeat(64));
+  });
+
+  test("CONTROL: a doc holding the seed alone projects to all of it", () => {
+    const floor = publicOracleFloor(liveDoc(), FLOOR_SEED) as any;
+    expect(Object.keys(floor.tiddlers)).toEqual(Object.keys(FLOOR_SEED.tiddlers));
+    expect(Object.keys(floor.blobs)).toEqual(Object.keys(FLOOR_SEED.blobs));
+  });
+
+  test("purity: docs differing only in a private key share one cid; the snapshot carries one change and the seed cid", async () => {
+    const a = await snapshotPublicOracle(liveDoc(), FLOOR_SEED, "5".repeat(64));
+    const b = await snapshotPublicOracle(liveDoc((d) => {
+      d.tiddlers["bags/daemon"] = { tiddler: { text: "x" } };
+      d.tiddlers["bags/daemon"].tiddler.text = "superseded-private-value";
+    }), FLOOR_SEED, "5".repeat(64));
+    expect(b.cid).toBe(a.cid);
+    expect(A.getAllChanges(A.load(a.bytes)).length).toBe(1);
+    expect(a.seedCid).toBe("5".repeat(64));
   });
 });

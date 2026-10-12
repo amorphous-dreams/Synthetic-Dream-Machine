@@ -21,6 +21,9 @@
 import { ORACLE_POINTER_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { save, getHeads, type Doc } from "@automerge/automerge";
+import { pinnedDoc } from "./pinned-doc.js";
+import type { GenesisSeed } from "./genesis-doc.js";
+import type { LarDoc } from "./base-doc.js";
 import { hex, hexToBytes, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 
 export { ORACLE_POINTER_DOMAIN } from "./domains.js";
@@ -60,6 +63,49 @@ export async function exportOracleSnapshot<T>(
   const cid   = await sha256Hex(bytes, provider);
   const heads = canonicalHeads(getHeads(doc) as string[]);
   return { cid, heads, bytes };
+}
+
+function plainCopy(v: unknown): unknown {
+  if (v instanceof Uint8Array) return v.slice();
+  if (Array.isArray(v)) return v.map(plainCopy);
+  if (v && typeof v === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v as Record<string, unknown>)) out[k] = plainCopy(x);
+    return out;
+  }
+  return v;
+}
+
+/** The oracle doc's public floor: the titles and blob rows the genesis seed names, at the values the live
+ *  doc holds for them. Every other key stays home. A blob row crosses as its descriptor fields; a `blob`
+ *  bytes field never crosses (the bytes ride the content-addressed store). */
+export function publicOracleFloor(doc: LarDoc, seed: GenesisSeed): LarDoc {
+  const live = doc as unknown as { tiddlers?: Record<string, unknown>; blobs?: Record<string, Record<string, unknown>> };
+  const tiddlers: Record<string, unknown> = {};
+  for (const title of Object.keys(seed.tiddlers).sort()) {
+    const rec = live.tiddlers?.[title];
+    if (rec !== undefined) tiddlers[title] = plainCopy(rec);
+  }
+  const blobs: Record<string, unknown> = {};
+  for (const key of Object.keys(seed.blobs).sort()) {
+    const row = live.blobs?.[key];
+    if (row === undefined) continue;
+    const { blob: _bytes, ...descriptor } = row;
+    blobs[key] = plainCopy(descriptor);
+  }
+  return { schemaVersion: (doc as { schemaVersion: string }).schemaVersion, blobs, tiddlers } as unknown as LarDoc;
+}
+
+/** The floor as a content-addressed snapshot: a pure function of the floor's content, carrying no history.
+ *  `seedCid` names the genesis seed (sha256 over its published bytes) the floor derives from; the caller
+ *  holds those bytes and passes the cid through, so the one seed carries one name. */
+export async function snapshotPublicOracle(
+  doc: LarDoc,
+  seed: GenesisSeed,
+  seedCid: string,
+): Promise<OracleSnapshot & { readonly seedCid: string }> {
+  const snap = await exportOracleSnapshot(pinnedDoc(publicOracleFloor(doc, seed) as unknown as Record<string, unknown>));
+  return { ...snap, seedCid };
 }
 
 /** A downloaded blob is the named snapshot iff its hash matches the cid. */
