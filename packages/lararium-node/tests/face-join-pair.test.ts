@@ -14,6 +14,7 @@ import { veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, runFaceJoin, type FaceJoinContext } from "@lararium/keyhive";
 import { buildDeviceDelegation } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -308,8 +309,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     const { DocHandle } = await import("@automerge/automerge-repo");
     void DocHandle;
     const daemon = await repo.find(applied.daemonUrl as never);
-    const held = (daemon.doc() as { tiddlers?: Record<string, { tiddler?: { text?: string } }> })
-      ?.tiddlers?.[HEARTH_DAEMON_URL_TIDDLER]?.tiddler?.text;
+    const held = tiddlerText((daemon.doc() as { tiddlers?: Record<string, never> })?.tiddlers?.[HEARTH_DAEMON_URL_TIDDLER]);
     expect(held).toBe(HEARTH_DOOR);
   }, 60_000);
 });

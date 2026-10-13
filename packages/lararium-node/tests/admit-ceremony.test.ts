@@ -20,6 +20,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import { hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh";
 
 /** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
  *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
@@ -167,7 +168,7 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     // The crossing's own events, PLUS the ones the joinee's keyhive fires standing itself (its card mint) —
     // the admit path writes its event store to the daemon doc the same way the founding path does, so a
     // boot replays this vessel's whole lattice rather than the crossing alone.
-    const texts = capTiddlers.map((t) => (doc.tiddlers[t] as { tiddler: { text: string } }).tiddler.text);
+    const texts = capTiddlers.map((t) => tiddlerText(doc.tiddlers[t] as never));
     for (const ev of capEvents) expect(texts, "a crossing event never reached the doc").toContain(ev);
     expect(capTiddlers.length).toBeGreaterThanOrEqual(capEvents.length);
   });
