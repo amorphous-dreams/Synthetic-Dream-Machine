@@ -18,7 +18,7 @@ import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
 import {
-  emptyLarDoc, mutableLarRecord,
+  emptyLarDoc, storedLarRecord, storedRecord,
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID,
   bootSetPluginCids, bootSetIds, verifyCasBytesAsync,
@@ -788,7 +788,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // ── Catalog ────────────────────────────────────────────────────────────────
   const blankCatalog = (): DocHandle<LarDoc> => {
     const h = repo.create<LarDoc>(emptyLarDoc());
-    h.change((doc) => { doc.tiddlers[CATALOG_DOC_URI] = mutableLarRecord(CATALOG_DOC_URI, { text: h.url }, "browser-boot"); });
+    h.change((doc) => { doc.tiddlers[CATALOG_DOC_URI] = storedLarRecord(CATALOG_DOC_URI, { text: h.url }, "browser-boot"); });
     return h;
   };
   let catalogHandle: DocHandle<LarDoc>;
@@ -1326,8 +1326,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       const ownerDaemonDoc = (): LarDoc => {
         const d: LarDoc = { tiddlers: {} } as LarDoc;
         if (social.personaKelPrefix) {
-          (d.tiddlers as Record<string, unknown>)[PERSONA_KEL_PREFIX_TIDDLER] =
-            { tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: social.personaKelPrefix, kind: "persona-kel-prefix" } };
+          d.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
+            tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: social.personaKelPrefix, kind: "persona-kel-prefix" },
+          });
         }
         return d;
       };

@@ -62,7 +62,7 @@ import {
 } from "@lararium/mesh";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
-import { buildCeremonyTiddlers, webDigest, hex as hexEncode } from "@lararium/mesh";
+import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, type StoredTiddlers } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import type { VeilDeriver } from "./veil-key.js";
 import { InMemoryEventStore } from "./event-store.js";
@@ -231,10 +231,10 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
   await flushCapEvents(store, daemonHandle);
 
   daemonHandle.change((doc) => {
-    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = {
+    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: hearthTrueName, kind: "hearth-true-name" },
       meta: { authority: "lares-init" },
-    };
+    });
   });
 
   const contactCardJson = new TextDecoder().decode(await keyhive.contactCard());
@@ -308,13 +308,13 @@ export interface FaceFoundingResult {
 
 /** Rest a device's PersonaGroup secret seal on its daemon doc, keyed by the group. Call inside `change()`. */
 function writeGroupSecretSeal(
-  doc: { tiddlers: Record<string, unknown> }, personaGroupDocIdHex: string, seal: GroupSecretSeal, authority = "lares-init",
+  doc: { tiddlers: StoredTiddlers }, personaGroupDocIdHex: string, seal: GroupSecretSeal, authority = "lares-init",
 ): void {
   const title = groupSecretSealTitle(personaGroupDocIdHex);
-  doc.tiddlers[title] = {
+  doc.tiddlers[title] = storedRecord({
     tiddler: { title, text: JSON.stringify(seal), kind: "group-secret-seal" },
     meta: { authority },
-  };
+  });
 }
 
 /**
@@ -381,7 +381,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     const handle = t.bag === IDENTITIES_NAMESPACE ? identitiesHandle : circlesHandle;
     handle.change((doc) => {
       if (!doc.tiddlers[t.title]) {
-        doc.tiddlers[t.title] = { tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } };
+        doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
       }
     });
   }
@@ -397,22 +397,22 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // THE SINGULAR MOUNT PINS — one key each per daemon doc, read at boot for the ONE mounted face. Only the
   // mounting face writes them; an additional compartment leaves the mounted face's pins standing.
   if (mount) daemonHandle.change((doc) => {
-    doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = {
+    doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = storedRecord({
       tiddler: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabal.docIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init" },
-    };
-    doc.tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER] = {
+    });
+    doc.tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_DOC_ID_TIDDLER, text: personaGroup.docIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init" },
-    };
-    doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = {
+    });
+    doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_AGENT_ID_TIDDLER, text: personaGroup.agentIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init" },
-    };
-    doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = {
+    });
+    doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = storedRecord({
       tiddler: { title: DYAD_VEIL_TAG_TIDDLER, text: veilTag, kind: "dyad-veil-tag" },
       meta: { authority: "lares-init" },
-    };
+    });
   });
 
   // ── The binding edge: (vessel × hearthTrueName), SIGNED here or CARRIED in ──
@@ -515,20 +515,20 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // continuity is walkable the day it comes to be worn — without unseating the face standing now.
   if (mount) daemonHandle.change((doc) => {
     writeDyad(doc, dyadRecord);
-    doc.tiddlers[SIGNER_DID_TIDDLER] = {
+    doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: signerDid, kind: "operator-root-did" },
       meta: { authority: "lares-init" },
-    };
+    });
     // The PINNED identifier — the pin's root of trust (the operator's own sovereign daemon home). The boot
     // path reads THIS prefix, threads it beside the local KEL chain, and the worker asserts chain[0].prefix === it.
-    doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = {
+    doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: personaKelPrefix, kind: "persona-kel-prefix" },
       meta: { authority: "lares-init" },
-    };
-    doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = {
+    });
+    doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...founderEdge },
       meta: { authority: "lares-init" },
-    };
+    });
   });
 
   // THE VEIL'S ARCHIVE LEAVES BEFORE ITS PROVIDER DOES. The veil created the group and the cabal in this act; the
@@ -567,7 +567,7 @@ async function flushCapEvents(
     const title   = capEventTitle(hash);
     daemonHandle.change((doc) => {
       if (!doc.tiddlers[title]) {
-        doc.tiddlers[title] = {
+        doc.tiddlers[title] = storedRecord({
           tiddler: {
             title,
             text:        bytesToBase64(evt.bytes),
@@ -583,7 +583,7 @@ async function flushCapEvents(
             "bytes-len": String(evt.bytes.length),
           },
           meta: { authority },
-        };
+        });
       }
     });
   }
@@ -595,7 +595,7 @@ export async function replayCapEvents(
 ): Promise<InMemoryEventStore> {
   const store = new InMemoryEventStore();
   const doc   = daemonHandle.doc();
-  for (const [title, rec] of Object.entries(doc?.tiddlers ?? {})) {
+  for (const [title, rec] of plainEntries(doc?.tiddlers)) {
     if (!title.startsWith(`${DAEMON_BAG_ID}/cap/`)) continue;
     if (rec?.meta?.deleted) continue;
     const fields = rec?.tiddler as Record<string, string> | undefined;
@@ -846,13 +846,13 @@ export async function runApplyAdmitPayload(
     if (t.bag === IDENTITIES_NAMESPACE) {
       identitiesHandle.change((doc) => {
         if (!doc.tiddlers[t.title]) {
-          doc.tiddlers[t.title] = { tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } };
+          doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
       });
     } else {
       circlesHandle.change((doc) => {
         if (!doc.tiddlers[t.title]) {
-          doc.tiddlers[t.title] = { tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } };
+          doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
         }
       });
     }
@@ -870,31 +870,31 @@ export async function runApplyAdmitPayload(
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
   daemonHandle.change((doc) => {
     writeDyad(doc, joineeDyad);
-    doc.tiddlers[SIGNER_DID_TIDDLER] = {
+    doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: payload.signerDid, kind: "operator-root-did" },
       meta: { authority: "lares-init-admit" },
-    };
-    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = {
+    });
+    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: payload.hearthTrueName, kind: "hearth-true-name" },
       meta: { authority: "lares-init-admit" },
-    };
-    doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = {
+    });
+    doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...payload.deviceEdge },
       meta: { authority: "lares-init-admit" },
-    };
+    });
     writeGroupSecretSeal(doc, payload.personaGroupDocIdHex, seal, "lares-init-admit");
     // The joinee's veil tag IS the carried group doc id (the split's second moment) — persisted under
     // the same tiddler the founder's minted tag rides, so ONE boot rule stands either veil.
-    doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = {
+    doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = storedRecord({
       tiddler: { title: DYAD_VEIL_TAG_TIDDLER, text: payload.personaGroupDocIdHex, kind: "dyad-veil-tag" },
       meta: { authority: "lares-init-admit" },
-    };
+    });
     // The PINNED identifier — the joinee's Binding Gate walks THIS to the current head op-key (the founder's
     // persona-root, until a Reading-B rotation). The raw signer-DID above stays for provenance only.
-    doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = {
+    doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: payload.personaKelPrefix, kind: "persona-kel-prefix" },
       meta: { authority: "lares-init-admit" },
-    };
+    });
   });
 
   // Seed the joinee's LOCAL KEL board from the founder's chain snapshot (REQUIRED, guarded above), so the
@@ -909,27 +909,27 @@ export async function runApplyAdmitPayload(
 
   // Write sentinel oracle tiddlers.
   daemonHandle.change((doc) => {
-    doc.tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER] = {
+    doc.tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_DOC_ID_TIDDLER, text: payload.personaGroupDocIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init-admit" },
-    };
-    doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = {
+    });
+    doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = storedRecord({
       tiddler: { title: PERSONA_GROUP_AGENT_ID_TIDDLER, text: payload.personaGroupAgentIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init-admit" },
-    };
-    doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = {
+    });
+    doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = storedRecord({
       tiddler: { title: MESH_CABAL_DOC_ID_TIDDLER, text: payload.meshCabalDocIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init-admit" },
-    };
+    });
     // THE DOOR, KEPT. The payload names the hearth's own daemon doc once; a joinee spends its payload and boots
     // for years after, so the url lands on the plane the joinee always reads. Every other url here rides the
     // RESULT into one bootstrap; this one is also the only address a joinee cannot re-derive from anything it
     // holds, so it earns a tiddler beside the sentinel ids.
     if (payload.hearthDaemonUrl) {
-      doc.tiddlers[HEARTH_DAEMON_URL_TIDDLER] = {
+      doc.tiddlers[HEARTH_DAEMON_URL_TIDDLER] = storedRecord({
         tiddler: { title: HEARTH_DAEMON_URL_TIDDLER, text: payload.hearthDaemonUrl, kind: "hearth-door" },
         meta: { authority: "lares-init-admit" },
-      };
+      });
     }
   });
 

@@ -36,7 +36,7 @@ import type {
 } from "@lararium/mesh";
 import {
   verifyingKeyFromDid,
-  emptyLarDoc, mutableLarRecord, tiddlerText,
+  emptyLarDoc, storedLarRecord, tiddlerText, plainRecord, plainRecordOrNull,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
@@ -809,7 +809,7 @@ async function prepareNodeBootOn(
   const blankCatalog = async (): Promise<DocHandle<LarDoc>> => {
     const h = repo.create<LarDoc>(emptyLarDoc());
     h.change((doc) => {
-      doc.tiddlers[CATALOG_DOC_URI] = mutableLarRecord(CATALOG_DOC_URI, { text: h.url }, "lararium-seed");
+      doc.tiddlers[CATALOG_DOC_URI] = storedLarRecord(CATALOG_DOC_URI, { text: h.url }, "lararium-seed");
     });
     await repo.flush();
     try { mkdirSync(storageDir, { recursive: true }); writeFileSync(catalogUrlFile, h.url, "utf8"); } catch { /* quota */ }
@@ -1520,7 +1520,7 @@ async function prepareNodeBootOn(
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
-    const deviceEdge = wornMount?.deviceEdge ?? (edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined);
+    const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
     // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
     // presents no dyad. The read only observes — but a FACE
@@ -1654,7 +1654,7 @@ async function prepareNodeBootOn(
     if (joinSyncUrl) {
       try {
         const leafIdentity = await loadLeafIdentity();
-        const selfEdge = wornMount?.deviceEdge ?? (daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined);
+        const selfEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER])?.tiddler as unknown as DeviceDelegationTiddler | undefined);
         const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
         const fleetEdge = selfEdge !== undefined && !selfSigned ? selfEdge : null;
         const presentationNow = (): Promise<DialPresentation | null> => fleetEdge
@@ -1753,7 +1753,7 @@ async function prepareNodeBootOn(
     const registerInCatalog = (bagId: string, url: string | null | undefined): void => {
       if (!url || tiddlerText(assembly.catalogHandle.doc()?.tiddlers?.[bagId]) === url) return;
       assembly.catalogHandle.change((doc) => {
-        doc.tiddlers[bagId] = mutableLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
+        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "vessel-boot");
       });
     };
     for (const plane of bootstrap.personaPlanes) {
@@ -2892,7 +2892,7 @@ async function composeNodeHermOn(
     // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through over Socket B) IFF the crossroads board — the public plane by construction — names the cid.
     publicCas: publicCasShore({
       casDir: casDirForStorage(opts.storageDir),
-      references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: record as { tiddler: Record<string, unknown> } })),
+      references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: plainRecord(record) })),
       bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null),
       // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every
       // pointer a peer landed in a public bag. Each standing registration this realm carries names its book

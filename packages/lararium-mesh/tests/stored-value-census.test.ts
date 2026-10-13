@@ -42,12 +42,9 @@ const EXEMPT: Readonly<Record<string, { readonly count: number; readonly reason:
   "tools/daemon-dvr-node-receipt.mjs": { count: 1, reason: "a recovery witness that plants one marker and asks only whether the title stands" },
 };
 
-/** Lines that wait on another hand's uncommitted change in the same file. Each count names saved patch lines. */
-const OWED: Readonly<Record<string, { readonly count: number; readonly reason: string }>> = {
-  "packages/lararium-keyhive/src/ceremony-core.ts": { count: 23, reason: "the founding ceremony writes its sentinel records as plain literals; they read correctly through the door and rest as Text until the write door wraps them" },
-  "packages/lararium-browser/src/open-browser-vessel.ts": { count: 3, reason: "two writes of pointer records as plain literals, one of them through a cast" },
-  "packages/lararium-node/src/open-node-vessel.ts": { count: 3, reason: "two writes of pointer records as plain literals, and one crossroads reference read through a cast (`casReferences` unwraps what it receives)" },
-};
+/** Lines that wait on another hand's uncommitted change in the same file: none stands owed. An entry
+ *  names the file, the exact count of flagged lines, and why they wait. */
+const OWED: Readonly<Record<string, { readonly count: number; readonly reason: string }>> = {};
 
 export function findRawReads(path: string, source: string): string[] {
   const found: string[] = [];
