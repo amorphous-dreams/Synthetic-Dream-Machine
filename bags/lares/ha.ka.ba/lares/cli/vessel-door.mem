@@ -93,7 +93,7 @@ Every substrate motion in this CLI composes from these, and no composition earns
 presence, storage size, port, seal state, personas, quorum).
 
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
-`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, `--init`, and `--admit <file>` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions.
+`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, `--init`, and `--admit <file>` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing.
 
 ''RE-DERIVING THE GENESIS ISLAND IS NOT A DOOR.'' Advancing the composition (the engine, the memetic-wikitext
 grammar) is a MESH act that goes out past a single vessel — it rides `nexus kahuli`, the engine/grammar
@@ -247,6 +247,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eQan96hUYXzTO5Q0Vc-MTmJMy_cL13JTBQNB4g4wwDw
+<<^ code="&#x0003;">>ni:///sha-256;_ksD5YH9bivhjaK9fPsjm9BQe2KUzpzv8Vzb11ZdyDE
 
 <<^ code="&#x0004;" -> to="?">>

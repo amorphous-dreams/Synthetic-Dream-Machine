@@ -89,6 +89,8 @@ The daemon and the CLI meet at a Unix socket in the container's own `/tmp`, a tm
 
 So every act on the engine belongs to the host shim: standing the vessel, stopping it, restarting it, reading its log. When a vessel's standing no longer matches its state on disk (a face lit after boot), the CLI inside the container reports that verdict and the host shim performs the restart. The image declares that the host holds the engine (`LAR_ENGINE=host`), and under that setting every CLI door that would stop, signal or spawn a daemon refuses `EngineHeldByHost`.
 
+''A vessel stands holding no key, and the shim says so.'' Every start returns a vessel to the floor. After each stand and each restart it performs, the shim runs `vault unlock` attached when its shell holds a terminal, and otherwise names that one command; a refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. `vault lock` passes through: the standing vessel drops its key and stands at the floor again. The shim reads no credential and carries none.
+
 The container drops every Linux capability and forbids new privileges. It publishes its port on loopback unless the operator names a wider interface.
 
 <<~/ahu>>
@@ -165,6 +167,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Grq3_HkasB9NNM5lfvhOfQCLrNqsK0LeuPjw8-Vtz9Y
+<<^ code="&#x0003;">>ni:///sha-256;VXSWmZ5Iksh4HND_zosd0bmACX4Uh3lz0czBNMEoAYk
 
 <<^ code="&#x0004;" -> to="?">>

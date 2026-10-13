@@ -136,7 +136,7 @@ Keyhive (Ink & Switch — Zelenka, Mumm, Good) builds Automerge-native access co
   and advertise which docs they hold capability for — the catalog problem dissolves
   into capability propagation.
 
-''As built.'' The house pins `@keyhive/keyhive` at `0.1.0-alpha.8`, a pre-alpha, behind a narrow
+''As built.'' The house pins `@keyhive/keyhive` at `0.3.0-alpha.1`, a pre-alpha, behind a narrow
 `CapabilityProvider` (`packages/lararium-keyhive/src/capability-provider.ts`). The node vessel's
 `sharePolicy` runs a class-keyed verdict (`packages/lararium-node/src/self-slot-share.ts`), never the open
 `async () => true` stub. `sharePolicy` stays ADVISORY: it decides which docs a repo volunteers, and a private
@@ -226,6 +226,6 @@ doc bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YNrlyUg2RPJOHslFTeU5KoqXxAsh4cMV_X7a7WKqesQ
+<<^ code="&#x0003;">>ni:///sha-256;_HVbXsDTI6I_Vsff4KumdelZ7I825d4Clnz05TUkcmw
 
 <<^ code="&#x0004;" -> to="?">>
