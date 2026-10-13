@@ -1930,6 +1930,9 @@ async function prepareNodeBootOn(
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
         provenKeyOf: (peerId) => peerIdentifierMap.get(peerId) ?? null,
         siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
+        // THE DYAD'S SHADOW at the face-grant seat and the sibling lane (kapae#/reach): a device the fleet root
+        // set aside holds no seat here, whatever record or session it proves. No ring yet reads as aside.
+        deviceAside: (vesselKey) => edgeShadows ? edgeShadows.deviceAside(vesselKey) : true,
       });
       if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
       // The fleet's own edge board rides the sibling lane beside the public boards, so a root's raise reaches every device.

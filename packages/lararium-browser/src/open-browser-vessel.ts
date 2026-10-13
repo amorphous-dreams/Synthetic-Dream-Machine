@@ -1194,6 +1194,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
           personaKel: daemonAuth.personaKel,
           provenKeyOf: (peerId) => ringRelay?.provenKeyOf(peerId) ?? null,
           siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
+          // THE DYAD'S SHADOW at the face-grant seat and the sibling lane (kapae#/reach): a device the fleet root
+          // set aside holds no seat here. Until this leaf's first read of the fleet board lands, every key reads aside.
+          deviceAside: (vesselKey) => !fleetShadows || fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, vesselKey))?.stands === true,
         });
         if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
         // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every

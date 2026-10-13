@@ -48,6 +48,10 @@ describe("the boot composes the PersonaGroup identity-slot ring", () => {
     expect(CODE).toMatch(/siblingKeyOf:\s*\(peerId\)\s*=>\s*siblings\?\.provenKeyOf\(peerId\)/);
   });
 
+  test("the ring reads the dyad's shadow off the one live reading, and reads aside while no ring stands", () => {
+    expect(CODE).toMatch(/deviceAside:\s*\(vesselKey\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.deviceAside\(vesselKey\)\s*:\s*true,/);
+  });
+
   test("the ring wires behind an injected witness — the boot names no Date.now", () => {
     // The clockless law: the boot holds no wall clock; the witness rides in on opts (`now`).
     expect(CODE).not.toMatch(/Date\.now/);

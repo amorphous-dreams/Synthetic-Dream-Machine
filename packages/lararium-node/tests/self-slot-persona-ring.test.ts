@@ -129,6 +129,7 @@ async function ringOver(
     ...(kel ? { personaKel: kel } : {}),
     provenKeyOf: (p) => identifiers.get(p) ?? null,
     isOwnHand: (p) => p === OWN,
+    deviceAside: () => false,
   });
   return { ring, governedDoc, foreignDoc };
 }
