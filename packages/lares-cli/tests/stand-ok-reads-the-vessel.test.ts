@@ -34,6 +34,12 @@ describe("how the memory library stands", () => {
     expect(mempalaceStanding([check("submodule", true), check("integration-package", false), check("holder-deps", true), check("recall-plugin", true)])).toBe("incomplete");
   });
 
+  test("a source directory that holds files and lacks its entry reads INCOMPLETE, though both library checks fail", () => {
+    const partial: IntegrationCheck[] = [{ ...check("submodule", false), partial: true }, check("integration-package", true), check("holder-deps", false), check("recall-plugin", false)];
+    expect(mempalaceStanding(partial)).toBe("incomplete");
+    expect(standOk(true, mempalaceStanding(partial))).toBe(false);
+  });
+
   test("CONTROL: a report that names neither library check reads incomplete, never absent", () => {
     expect(mempalaceStanding([check("recall-plugin", false)])).toBe("incomplete");
   });

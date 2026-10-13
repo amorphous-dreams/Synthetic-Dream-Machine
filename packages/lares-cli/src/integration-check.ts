@@ -7,7 +7,7 @@
  * present and runnable so the witness organ is reachable.
  */
 
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
@@ -29,6 +29,9 @@ export interface IntegrationCheck {
   readonly name: string;
   readonly ok: boolean;
   readonly detail: string;
+  /** True where the check fails while a PART of what it probes stands (a source directory that holds
+   *  files and lacks its entry): a hand began something here, so the library never reads `absent`. */
+  readonly partial?: boolean;
 }
 
 /**
@@ -57,7 +60,7 @@ const LIBRARY_CHECKS: ReadonlySet<string> = new Set(["submodule", "holder-deps"]
 export function mempalaceStanding(checks: readonly IntegrationCheck[]): MempalaceStanding {
   if (checks.every((c) => c.ok)) return "integrated";
   const library = checks.filter((c) => LIBRARY_CHECKS.has(c.name));
-  return library.length > 0 && library.every((c) => !c.ok) ? "absent" : "incomplete";
+  return library.length > 0 && library.every((c) => !c.ok && c.partial !== true) ? "absent" : "incomplete";
 }
 
 /**
@@ -74,10 +77,16 @@ export function checkMempalaceIntegration(): IntegrationReport {
   const checks: IntegrationCheck[] = [];
 
   const submoduleOk = existsSync(MEMPALACE_HOLDER_ENTRY);
+  // A source directory that holds files and lacks its entry names a checkout a hand began: a part stands.
+  // An empty directory (a submodule nobody initialized) and no directory at all both read as nothing here.
+  const submodulePartial = !submoduleOk && (() => { try { return readdirSync(MEMPALACE_DIR).length > 0; } catch { return false; } })();
   checks.push({
     name: "submodule",
     ok: submoduleOk,
-    detail: submoduleOk ? MEMPALACE_DIR : "absent — `lares mempalace install` (submodule + pip)",
+    detail: submoduleOk ? MEMPALACE_DIR : submodulePartial
+      ? `${MEMPALACE_DIR} holds files and lacks its entry — \`lares mempalace install\` (submodule + pip)`
+      : "absent — `lares mempalace install` (submodule + pip)",
+    ...(submodulePartial ? { partial: true } : {}),
   });
 
   const pkgOk = existsSync(join(MEMPALACE_PKG, "package.json"));
