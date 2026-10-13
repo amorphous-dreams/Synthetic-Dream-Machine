@@ -42,6 +42,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **An unreadable archive refuses the stand by name.** So does an archive of another identity.
 - **A stand presents one contact card.** The card gets minted before the stand's Archive leaves, so every later stand opens what the card promised.
 - **The joinee rite dials the hearth's own gate.** A founder that also stands a carriage relay no longer hands a joiner the relay's key.
+- **An island asks again when no peer stood behind an "unavailable".** A daemon whose main thread sat busy at an unlock no longer faults its own floor, which had killed a joinee mid-rite. The test door reads a refused composition as a refusal.
 - **A contested removal keeps its shadow.** A lower lifts an edge shadow only by causally following every raise; a racing lower, a missing parent or a relabeled act leaves it up. `lares cabal join` reads the edge-kapae board and names each vouch set aside, `lares edge` reports the verdict, and `lares cabal vouch` prints the edge id.
 - **An edge removal takes two hands.** The holder an edge names, or the seat quorum, raises a shadow; a lower lifts only its own hand's raises. `lares edge kapae` names a relation by edge id, by `--member` with `--realm`, or by `--device`, and `--quorum` signs with the held seats.
 - **A shadow carries across a seal roll.** An edge anchor chains from the charter head, so a lift at the new head cites the earlier raise. A vessel keeps every act, anchor and vouch it counted and returns it to a board that lost it.
@@ -82,6 +83,10 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A Nexus convergence secret answers to its Nexus and its epoch.** The seat's act mints it, named by (Nexus AID, epochCid); no boot mints one. `nexus seal seat` and `nexus seal rotate` need the vessel key and report `keyring: { minted }`, and `cad-seal` answers `nexusAid` and `epochCid` and refuses on an unseated vessel. A vessel founded on the earlier keyring shape re-founds.
 - **The keyring, the follow graph, the handle-book and the admit rows rest sealed under the vessel key.** A missing or unreadable keyring row refuses by name. A delivered keyring joins by scoped name and refuses different bytes under a held name. The `circle` and `persona admit` verbs need the key.
 - **An admit hop survives a death midway.** A hop records its admission before it drops its pending entry, so it resumes from the same carriage, and an offer completes one grant: the first that verifies against it.
+- **The vessel-identity rows rest sealed.** The persona roster, roots, selector, pet-names, declarations, published-face record and next-key seed rest under the vessel key; the roster commits a root, and `lares persona list` names a root a stopped founding left, which `persona new` adopts. A vessel key mints only inside a held custody, and a boot at the floor reads no identity row.
+- **The custody write door and the rest door answer the daemon island alone.** A wiki island's ask refuses by name.
+- **A removed device or member loses sync, sorting and serve on a standing vessel.** The composers consult the edge shadow ring, and at the floor every fleet lane stays shut.
+- **An admitted leaf sends no change to its hearth's canon,** and the browser's plugin selection refuses a torn offerings field as the node does.
 - **A browser vessel keeps its keyhive Archives in its keystore.** A browser founded earlier refuses to boot until its site data gets cleared.
 - **Stores written before immutable values do not read.** Found anew; the genesis seed itself carries on unchanged.
 - **A capability layer takes a write by name alone.** The WHO board and the mesh palace refuse a bagless write.
