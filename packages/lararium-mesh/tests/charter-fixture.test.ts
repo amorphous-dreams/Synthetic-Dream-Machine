@@ -16,8 +16,11 @@ import { fileURLToPath } from "node:url";
 import { basename, dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
-import { sealKeySetHash, verifySealLineage, verifySealRoll } from "../src/wax-stamp.js";
-import { charterSeatSeeds, seatedCharter } from "./charter-fixture.js";
+import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, verifySealLineage, verifySealRoll } from "../src/wax-stamp.js";
+import { NEXUS_DOC_DOMAIN } from "../src/domains.js";
+import { foundingRoster } from "../src/nexus-seal-seed.js";
+import { realmIdOfCharter } from "../src/realm-bag.js";
+import { charterSeatSeeds, heldCharter, namedCharter, seatedCharter } from "./charter-fixture.js";
 
 describe("a seated fixture charter stands under the roll law", () => {
   test.each([[1, 1], [2, 2], [3, 2]] as const)("★ %i seat(s) at threshold %i verify at genesis and across two rolls ★", async (seats, threshold) => {
@@ -123,6 +126,136 @@ describe("a seated fixture charter stands under the roll law", () => {
     // A roll from another fixture family never continues this lineage.
     const stranger = await (await seatedCharter({ seats: 2, threshold: 2, seed: 2 })).roll();
     expect(verifySealLineage([genesis!, stranger.head])).toBe(false);
+  });
+});
+
+describe("a charter over keys the caller holds", () => {
+  const seedOf = (n: number) => new Uint8Array(32).fill(n);
+  const keyOf = (n: number) => ed.getPublicKeyAsync(seedOf(n)).then(hex);
+  const handOf = async (n: number) => ({ signer: await keyOf(n), sign: (bytes: Uint8Array) => ed.signAsync(bytes, seedOf(n)).then(hex) });
+  const keysOf = (ns: readonly number[]) => Promise.all(ns.map(keyOf));
+  const handsOf = (ns: readonly number[]) => Promise.all(ns.map(handOf));
+
+  test("★ an unarmed held genesis reads the bytes the constructor mints over the same seats, and refuses to roll ★", async () => {
+    const keys = await keysOf([1, 2, 3]);
+    const held = heldCharter({ keys, threshold: 2 });
+    expect(held.head).toEqual(genesisCharterEpoch(keys, 2, ""));
+    expect(held.chain).toEqual([held.head]);
+    expect(held.aid).toBe(held.head.epochCid);
+    expect(held.generation).toBe(0);
+    expect(held.keys).toEqual(keys);
+    expect(held.roster).toEqual({ keys, threshold: 2, sealEpochCid: held.aid });
+    expect(verifySealLineage(held.chain)).toBe(true);
+    await expect(held.roll(await handsOf([1, 2, 3]))).rejects.toMatchObject({ code: "rotation-unarmed" });
+  });
+
+  test("★ a held genesis that names its successors rolls under their hands, twice, and each epoch reads the constructor's bytes ★", async () => {
+    const [first, second, third] = await Promise.all([keysOf([1, 2, 3]), keysOf([4, 5, 6]), keysOf([7, 8])]);
+    const genesis = heldCharter({ keys: first!, threshold: 2, successors: { keys: second!, threshold: 2 } });
+    expect(genesis.head).toEqual(genesisCharterEpoch(first!, 2, sealKeySetHash(second!, 2)));
+
+    const rolled = await genesis.roll(await handsOf([4, 5, 6]), { keys: third!, threshold: 1 });
+    const byHand = await rotateSealEpoch(genesis.head, { keys: second!, threshold: 2 }, sealKeySetHash(third!, 1), await handsOf([4, 5, 6]));
+    expect(byHand.ok && byHand.epoch).toEqual(rolled.head);              // the whole epoch: its cid, its roll, every signature
+    expect(rolled.keys).toEqual(second);
+    expect(rolled.threshold).toBe(2);
+    expect(rolled.aid).toBe(genesis.aid);
+    expect(rolled.generation).toBe(1);
+    expect(rolled.roster).toEqual({ keys: second, threshold: 2, sealEpochCid: rolled.head.epochCid });
+    expect(verifySealLineage(rolled.chain)).toBe(true);
+    expect(genesis.chain).toHaveLength(1);                                // the receiver stands as it stood
+
+    const again = await rolled.roll(await handsOf([7, 8]));
+    const unarmedByHand = await rotateSealEpoch(rolled.head, { keys: third!, threshold: 1 }, "", await handsOf([7, 8]));
+    expect(unarmedByHand.ok && unarmedByHand.epoch).toEqual(again.head);   // no `then`: the rolled head commits nothing
+    expect(again.keys).toEqual(third);
+    expect(again.threshold).toBe(1);
+    expect(verifySealLineage(again.chain)).toBe(true);
+    await expect(again.roll(await handsOf([7, 8]))).rejects.toMatchObject({ code: "rotation-unarmed" });   // no `then`: unarmed
+  });
+
+  test("the same seats may roll at another threshold, so a lineage may alternate its quorum", async () => {
+    const keys = await keysOf([1, 2, 3]);
+    let c = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+    c = await c.roll(await handsOf([1, 2, 3]), { keys, threshold: 2 });
+    c = await c.roll(await handsOf([1, 2, 3]));
+    expect(c.chain).toHaveLength(3);
+    expect(c.threshold).toBe(2);
+    expect(verifySealLineage(c.chain)).toBe(true);
+  });
+
+  test("hands short of the committed quorum, and hands of another set, refuse under the roll law's own code", async () => {
+    const [first, second] = await Promise.all([keysOf([1, 2, 3]), keysOf([4, 5, 6])]);
+    const genesis = heldCharter({ keys: first!, threshold: 2, successors: { keys: second!, threshold: 2 } });
+    await expect(genesis.roll(await handsOf([4]))).rejects.toMatchObject({ code: "roll-short-of-revealed-quorum" });
+    await expect(genesis.roll(await handsOf([1, 2, 3]))).rejects.toMatchObject({ code: "roll-short-of-revealed-quorum" });
+    expect(verifySealLineage((await genesis.roll(await handsOf([4, 5]))).chain)).toBe(true);   // CONTROL: a quorum of them rolls
+  });
+
+  test("a variant names another charter over the same seats, and never rolls", async () => {
+    const keys = await keysOf([1, 2, 3]);
+    const plain = heldCharter({ keys, threshold: 2 });
+    const one = heldCharter({ keys, threshold: 2, variant: 1 }), two = heldCharter({ keys, threshold: 2, variant: 2 });
+    expect(new Set([plain.aid, one.aid, two.aid]).size).toBe(3);
+    expect(heldCharter({ keys, threshold: 2, variant: 1 }).aid).toBe(one.aid);
+    expect(one.head.keySetHash).toBe(plain.head.keySetHash);
+    expect(verifySealLineage(one.chain)).toBe(true);
+    await expect(one.roll(await handsOf([1, 2, 3]))).rejects.toMatchObject({ code: "rotation-unarmed" });
+    expect(() => heldCharter({ keys, threshold: 2, variant: 1, successors: { keys, threshold: 2 } })).toThrow(/variant-never-rolls/);
+  });
+
+  test("a shape no quorum could meet refuses by name, at the genesis and for a named generation", async () => {
+    const keys = await keysOf([1, 2]);
+    expect(() => heldCharter({ keys, threshold: 3 })).toThrow(/roll-malformed/);
+    expect(() => heldCharter({ keys: [], threshold: 1 })).toThrow(/roll-malformed/);
+    expect(() => heldCharter({ keys: [keys[0]!, keys[0]!], threshold: 2 })).toThrow(/roll-malformed/);
+    expect(() => heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } })).toThrow(/roll-malformed/);
+    const armed = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 1 } });
+    await expect(armed.roll(await handsOf([1, 2]), { keys, threshold: 0 })).rejects.toMatchObject({ code: "roll-malformed" });
+  });
+});
+
+describe("the charter doc a fixture hands out", () => {
+  test("★ a doc carries the head, the whole lineage and every seat, and roots the roster the charter names ★", async () => {
+    const rolled = await (await seatedCharter({ seats: 3, threshold: 2 })).roll();
+    const doc = rolled.doc();
+    expect(doc.kind).toBe(NEXUS_DOC_DOMAIN);
+    expect(doc.threshold).toBe(2);
+    expect(doc.sealEpochCid).toBe(rolled.head.epochCid);
+    expect(doc.sealLineage).toEqual(rolled.chain);
+    expect(doc.kahu).toEqual(rolled.keys.map((verifyingKey, i) => ({ displayName: `Seat ${i}`, verifyingKey })));
+    expect(foundingRoster(doc)).toEqual({ keys: [...rolled.keys].sort(), threshold: 2, sealEpochCid: rolled.head.epochCid });
+    expect(realmIdOfCharter(doc)).toBe(rolled.aid);
+  });
+
+  test("labels name the chairs in seat order; a label past the last key names an unseated chair; dials ride beside", async () => {
+    const key = await ed.getPublicKeyAsync(new Uint8Array(32).fill(9)).then(hex);
+    const held = heldCharter({ keys: [key], threshold: 1 });
+    const dials = { federationPosture: "open", joinPolicy: { kind: "open" }, admissionDials: { epsilon: 0.5, beta: 0.5, rho: 1, supply: 8, alpha: 0.1 } } as const;
+    const doc = held.doc({ labels: ["Kahu Alpha", "Kahu Beta"], dials });
+    expect(doc.kahu).toEqual([{ displayName: "Kahu Alpha", verifyingKey: key }, { displayName: "Kahu Beta", verifyingKey: null }]);
+    expect(doc.joinPolicy).toEqual({ kind: "open" });
+    expect(doc.federationPosture).toBe("open");
+    expect(doc.admissionDials).toEqual(dials.admissionDials);
+    expect(held.doc().federationPosture).toBeUndefined();
+    expect(held.doc().admissionDials).toBeUndefined();
+    expect(foundingRoster(doc)).toEqual(held.roster);
+    expect(held.doc().joinPolicy).toBeUndefined();
+  });
+
+  test("CONTROL: a doc whose lineage loses its head roots no roster", async () => {
+    const rolled = await (await seatedCharter({ seats: 2, threshold: 2 })).roll();
+    expect(foundingRoster(rolled.doc()).keys).toHaveLength(2);
+    expect(foundingRoster({ ...rolled.doc(), sealLineage: rolled.chain.slice(0, 1) }).keys).toEqual([]);
+  });
+
+  test("a named charter names its realm and roots no roster", () => {
+    const doc = namedCharter("a-synthetic-name");
+    expect(realmIdOfCharter(doc)).toBe("a-synthetic-name");
+    expect(doc.sealEpochCid).toBe("a-synthetic-name");
+    expect(doc.sealLineage).toHaveLength(1);
+    expect(foundingRoster(doc).keys).toEqual([]);
+    expect(doc.kahu).toEqual([]);
   });
 });
 
