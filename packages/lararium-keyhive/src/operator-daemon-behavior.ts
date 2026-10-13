@@ -65,7 +65,6 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
 import { verifyAuthProof, verifyEdgeAgainstPersonaKel } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
@@ -673,13 +672,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // in the daemon bag + $:/tags/Alert into the operator's pinned VM.
       registry.register("ward-alert", makeWardAlertReactor(ctx.composite, ctx.post));
 
-      // The at-rest seal LIFECYCLE (#60) — DAEMON-FIRST: seal/rotate/export/repair/status route THROUGH
-      // this worker (which owns the M3 archive re-seal), so the daemon updates its OWN in-memory seal
+      // The share carriers' passphrase LIFECYCLE (#60) — DAEMON-FIRST: seal/rotate/repair/status route THROUGH
+      // this worker, so the daemon updates its OWN in-memory seal
       // policy in the same act it re-persists the carriers — no un-rotate. The node-injected `vault`
       // handler does the fs + policy work (keyhive stays fs-blind). The passphrase rides the args over
       // the owner-only 0600 UDS. Absent injection (no fs) → the verbs never register.
       if (vault) {
-        for (const v of ["vault-status", "vault-seal", "vault-rotate", "vault-export", "vault-repair"] as const) {
+        for (const v of ["vault-status", "vault-seal", "vault-rotate", "vault-repair"] as const) {
           registry.register(v, async (args) => vault(v, args));
         }
       }
@@ -754,13 +753,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
       kh = keyhive;
       mintedByHex = did;
-      if (daemonAuth.dyadVeilTag) {
-        // The boot re-derives the founder-veil through the one door: the vessel seed reads as the device-minted key,
-        // never a seed-class or cloud-synced source (the veil ruling, `veil-key.ts`).
-        const veilKeys = await deriveVeilFromDeviceKey(mintDeviceMintedKey(daemonAuth.seed), daemonAuth.dyadVeilTag);
+      if (daemonAuth.dyadVeil) {
+        // THE SHORE DERIVES THE VEIL, never this island: the veil's root rests where the shore keeps it (a sealed
+        // custody root the island never holds), so the mounted face's veil key arrives already derived.
         const v = new KeyhiveProvider();
         await v.init({
-          seed: meshHexToBytes(veilKeys.signingKey),
+          seed: meshHexToBytes(daemonAuth.dyadVeil.signingKey),
           eventStore: new DaemonEventStore({ daemon: ctx.composite }),
           ...(daemonAuth.veilArchiveBytes ? { archiveBytes: daemonAuth.veilArchiveBytes } : {}),
         });

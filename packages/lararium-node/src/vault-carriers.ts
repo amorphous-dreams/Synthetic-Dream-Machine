@@ -20,7 +20,8 @@
  * never enter it.
  *
  * ── ONE TABLE, EVERY READER DERIVES ─────────────────────────────────────────────────────────────
- * The key census (`key-class`), the passphrase seal lifecycle (`vaultCarriers`, read by `archive-passphrase`)
+ * The key census (`key-class`), the passphrase seal lifecycle (`vaultCarriers`, read by `archive-passphrase`; it
+ * governs the share rows alone)
  * and the custody shape reader (`custody-shape`) all read these rows. A second list of filenames anywhere
  * else would drift from this one, and the drift costs in both directions: a carrier a sweep omits stays
  * unsealed while the sweep reports success; a carrier a sweep invents gets written over by an act nobody
@@ -46,7 +47,7 @@ import { readdirSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import { rotateVk, type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type VesselKey } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
-import { archivePath, veilArchivePath } from "./identity-anchors.js";
+import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { deviceSharePath } from "./recovery-share-store.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
@@ -76,12 +77,15 @@ export function vesselCustodyHomes(): CustodyHomes {
 }
 
 /**
- * A passphrase seal lifecycle carrier's name. Three are singletons and one names a family: a vessel wearing
+ * A passphrase seal lifecycle carrier's name. One is a singleton and one names a family: a vessel wearing
  * several personas splits each persona-root on its own, so every handle-index's device share is its own
  * carrier. The name carries the index because h0's quorum leg and h1's are different secrets.
  */
 export type DeviceShareName = `device-share-h${number}`;
-export type CarrierName = "archive" | "veil" | "reserve-share" | DeviceShareName;
+export type CarrierName = "reserve-share" | DeviceShareName;
+
+/** Whose a carrier is: one face's own (its handle-index), or the vessel's (every face, or none). */
+export type CarrierFace = number | "vessel";
 
 /** One row of the table. */
 export interface CarrierRow {
@@ -101,6 +105,11 @@ export interface CarrierRow {
   readonly name:     (m: RegExpExecArray) => string;
   /** The passphrase seal lifecycle carrier this match is, or null when that lifecycle does not govern it. */
   readonly lifecycle: ((m: RegExpExecArray) => CarrierName | null) | null;
+  /**
+   * Whose this match is. A file that names one face and holds nothing of another answers that face's
+   * handle-index; every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
+   */
+  readonly face:     (m: RegExpExecArray) => CarrierFace;
 }
 
 /** One carrier standing on disk, named by the row it matched. */
@@ -114,6 +123,7 @@ export interface CarrierEntry {
   readonly custody:   CustodyClass;
   readonly keyClass:  KeyClass | null;
   readonly lifecycle: CarrierName | null;
+  readonly face:      CarrierFace;
 }
 
 /** The device-share filename law, read back: the family's spelling in `recovery-share-store`. */
@@ -133,11 +143,14 @@ const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
 /** A hosting directory: `hosting/<the 32-hex digest of a Nexus AID>/`. */
 const HOSTING = "hosting/[0-9a-f]{32}/";
 
-type RowSpec = Omit<CarrierRow, "name" | "lifecycle"> & Partial<Pick<CarrierRow, "name" | "lifecycle">>;
+type RowSpec = Omit<CarrierRow, "name" | "lifecycle" | "face"> & Partial<Pick<CarrierRow, "name" | "lifecycle" | "face">>;
 
 function row(spec: RowSpec): CarrierRow {
-  return Object.freeze({ name: () => spec.row, lifecycle: null, ...spec });
+  return Object.freeze({ name: () => spec.row, lifecycle: null, face: () => "vessel" as const, ...spec });
 }
+
+/** The face a per-face filename names: its first capture, a handle-index. */
+const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
 
 function buildTable(): readonly CarrierRow[] {
   const id = (r: Omit<RowSpec, "home" | "under">): CarrierRow => row({ home: "identity", under: "", ...r });
@@ -166,9 +179,9 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "custody-root", match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
     id({ row: "keyhive-archive", match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors", lifecycle: () => "archive" }),
-    id({ row: "veil-archive", match: exact(veilArchivePath()), custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors", name: () => "veil", lifecycle: () => "veil" }),
+         writer: "identity-anchors" }),
+    id({ row: "veil-archive", match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
+         writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
     id({ row: "keyring", match: file(".nexus-convergence-secrets.json"), custody: "hot", keyClass: "relation",
          writer: "nexus-convergence-secret-store" }),
     id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
@@ -177,8 +190,8 @@ function buildTable(): readonly CarrierRow[] {
          writer: "node-persona-admit-store" }),
     id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
          writer: "node-persona-admit-store" }),
-    id({ row: "anchors", match: /^anchors-h\d+\.json$/, custody: "hot", keyClass: null,
-         writer: "identity-anchors" }),
+    id({ row: "anchors", match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
+         writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf }),
     id({ row: "anchor-roster", match: file("anchor-roster.json"), custody: "hot", keyClass: null,
          writer: "identity-anchors" }),
     id({ row: "persona-roster", match: loginKeyed("persona-roster"), custody: "hot", keyClass: null,
@@ -216,9 +229,9 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "vessel-next", match: loginKeyed("vessel-next"), custody: "cold", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)" }),
     id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
-         writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}` }),
+         writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf }),
     id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
-         writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`,
+         writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf,
          lifecycle: (m) => (Number.isSafeInteger(Number(m[1])) ? deviceShareName(Number(m[1])) : null) }),
     id({ row: "reserve-share", match: exact(reserveMineSharePath()), custody: "cold", keyClass: "seed",
          writer: "seal-reserve-store", name: () => "seal-reserve-mine-share", lifecycle: () => "reserve-share" }),
@@ -261,7 +274,7 @@ function censusHome(home: CustodyHome, dir: string): CarrierEntry[] {
         const lifecycle = r.lifecycle ? r.lifecycle(m) : null;
         out.push({
           row: r.row, name: r.name(m), home, file: rel, path: join(dir, ...rel.split("/")),
-          custody: r.custody, keyClass: r.keyClass, lifecycle,
+          custody: r.custody, keyClass: r.keyClass, lifecycle, face: r.face(m),
         });
         break;
       }
@@ -355,8 +368,6 @@ export function deviceShareCarriers(): readonly VaultCarrier[] {
 /** The passphrase-sealed carriers, in a FIXED order (the rename sequence the ratify flow commits in). */
 export function vaultCarriers(): readonly VaultCarrier[] {
   return [
-    { name: "archive",       path: archivePath() },
-    { name: "veil",          path: veilArchivePath() },
     ...deviceShareCarriers(),
     { name: "reserve-share", path: reserveMineSharePath() },
   ];

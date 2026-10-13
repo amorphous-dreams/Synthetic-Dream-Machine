@@ -39,7 +39,7 @@ import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
-import { openNodeVessel, openNodeHerm, standNodeFloor, diskSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
+import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
 import type { MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, ORACLE_SOCKET_ROUTE } from "@lararium/mesh";
@@ -51,15 +51,14 @@ import { readCarriedNexuses, type BoardOpener } from "./nexus-carriage.js";
 import { larSealHome } from "./vessel-paths.js";
 import { materializeSharedLarDoc } from "@lararium/mesh";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
-import { readArchiveOpening } from "./archive-passphrase.js";
 import { faceStands } from "./commands/init.js";
-import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer, snapshotPublicOracle, type LarDoc } from "@lararium/mesh";
 import { ratedReceiptRing } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
 import type { Socket } from "node:net";
 import { makeCustodyHolder } from "./custody-holder.js";
+import { seatCustody } from "./custody-seat.js";
 import { custodyFrameHandler } from "./custody-frames.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
@@ -269,7 +268,7 @@ async function main(): Promise<void> {
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
   //
   // THE FIRST ARRIVAL ANSWERS BEFORE THE ARCHIVE IS READ (pronaos#/the-first-arrival, waking-floor#/the-arrival-page).
-  // The composition runs here, before `readArchiveOpening` and `standAs` below, and reads only the public genesis
+  // The composition runs here, before `standAs` below, and reads only the public genesis
   // dir and the prepared Web artifact — no key, no archive, no face. So a lararium at its waking floor serves its
   // arrival page, worker, seed, seed-named CAS members and the `/.well-known/lar` descriptor exactly as a raised
   // hearth does: liveness ⊥ readiness. Every origin this house answers on is handed in — each reach face on every
@@ -324,6 +323,9 @@ async function main(): Promise<void> {
   const floor = await standNodeFloor(storageDir);
   const custodyHomes = vesselCustodyHomes();
   const holder = makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
+  // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
+  // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.
+  seatCustody(holder);
   const testScratch = existsSync(join(rootDir, TEST_SCRATCH_MARKER));
   if (testScratch) {
     console.log(`[lararium] TEST SCRATCH ROOT — ${rootDir} carries ${TEST_SCRATCH_MARKER}: a harness staged this vessel and its custody opens under the PUBLISHED test route. Never a vessel anyone keeps.`);
@@ -340,8 +342,8 @@ async function main(): Promise<void> {
   // TWO FACTS LIFT IT, and they answer different questions. A FACE lit — `lares persona new 0` landed a
   // PersonaGroup onto this place — names what the vessel HOLDS; a place founded and no face yet holds a
   // crossroads, and composing a hearth over it reaches for a face during boot and takes its own standing
-  // with it. The ARCHIVE opening names what the vessel can OPEN right now; a hearth whose archive holds
-  // shut carries, serves the public shelf, and holds every sovereign act closed until a key arrives.
+  // with it. The VESSEL KEY held names what the vessel can OPEN right now; a hearth holding no key
+  // carries, serves the public shelf, and holds every sovereign act closed until the key arrives.
   //
   // `--recipe herm` DECLINES the lift — a public crossroads an operator means to keep faceless — rather
   // than selecting a different kind of thing. Nothing is ever lowered here: a vessel that cannot open
@@ -350,33 +352,15 @@ async function main(): Promise<void> {
   // The class stays orthogonal to the CEILING. `personaSlotCeiling("herm") === 0` bars a SEATED persona
   // root on a crossroads; standing at the floor for want of a face bars nothing — `lares persona new`
   // reads its own ceiling and lights the face that lifts the next boot. MAY-HOLD-A-FACE ⊥ HOLDS-ONE-NOW.
-  // THE READING CARRIES ITS REASON, AND THE FLOOR MUST SPEAK IT. `readArchiveOpening` answers five
-  // kinds — `key-absent`, `key-wrong`, `unreadable`, `nothing-sealed`, `no-seal-expected` — and a boot
-  // that folds them to a boolean prints ONE cure for all of them. An operator whose carrier TORE reads
-  // "set the passphrase" and re-types a credential that was never the fault. The reading rides whole.
-  const opening  = readArchiveOpening();
-  const sealShut = !opening.opens;
+  // EVERY BOOT RESTS AT THE FLOOR. A vessel's private rows rest sealed under its vessel key, and a boot holds no
+  // key: nothing stored lifts it, so the first composition stands faceless and carrying whatever this place
+  // holds. `lares vault unlock` hands the key in on the custody door, and the vessel composes again as what it
+  // then opens.
   const faceLit  = faceStands();
-  const standing = standAs(askedStanding !== "herm" && faceLit ? "hearth" : "herm", !sealShut);
-  if (standing === "herm" && !sealShut && askedStanding !== "herm" && !faceLit) {
+  if (askedStanding !== "herm" && !faceLit) {
     console.log("[lararium] the PLACE stands and no face is lit — standing at the WAKING FLOOR.");
     console.log("[lararium]   carrying and serving the public shelf; every sovereign act waits.");
     console.log("[lararium]   light the hearth fire:  lares persona new 0 --name '<label>'   (then stand again)");
-  }
-  if (sealShut) {
-    console.log(`[lararium] the archive holds shut (${opening.kind}) — standing at the WAKING FLOOR, faceless by class.`);
-    console.log(`[lararium]   ${opening.why}.`);
-    console.log("[lararium]   carrying and serving the public shelf; every sovereign act waits.");
-    console.log(opening.kind === "vk-sealed"
-      ? "[lararium]   open the vessel key: lares vault unlock"
-      : opening.kind === "unreadable"
-      ? "[lararium]   no passphrase opens a torn carrier — recover it from a backup, then boot again."
-      : `[lararium]   light the hearth fire: set ${ARCHIVE_PASSPHRASE_ENV} and boot again.`);
-    // NAME NO VERB THAT DOES NOT STAND. The raise DOOR stands (vessel-raise, wired below on the Herm
-    // branch); the CLI ceremony that carries a challenge out and a grant back does not. A line naming
-    // `lares raise` here would spend the reader's trust the first time they typed it — the same law
-    // `holdings-witness` already carries for its own corrections.
-    console.log("[lararium]   a recognised operator may also raise it for a visit; the door answers, the CLI verb waits.");
   }
 
 
@@ -436,13 +420,10 @@ async function main(): Promise<void> {
     const prior = composition;
     composition = null;
     await prior?.teardown();
-    const reading = sovereign ? readArchiveOpening() : null;
-    const out = await composeOrFloor(reading?.opens ? diskSovereignReaders() : null);
+    const out = await composeOrFloor(sovereign ? seatedSovereignReaders() : null);
     composition = out.stood;
     if (signalHeld !== null) composition.onSignal(signalHeld);
-    const shut = reading && !reading.opens ? `the archive holds shut (${reading.kind}): ${reading.why}` : undefined;
-    const refused = out.refused ?? shut;
-    return { standing: out.stood.standing, ...(refused !== undefined ? { refused } : {}) };
+    return { standing: out.stood.standing, ...(out.refused !== undefined ? { refused: out.refused } : {}) };
   };
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
@@ -450,7 +431,7 @@ async function main(): Promise<void> {
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
-  composition = (await composeOrFloor(sealShut ? null : diskSovereignReaders())).stood;
+  composition = (await composeOrFloor(null)).stood;
   firstStood();
   // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
   if (await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {

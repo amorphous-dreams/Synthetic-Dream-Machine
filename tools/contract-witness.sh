@@ -97,6 +97,19 @@ run_b() { step "$1"; shift; if out=$(as_b "$@" 2>&1); then ok; else bad "$?"; pr
 # subcommand. A grep-the-output check needs a shell that inherits the vessel's environment instead.
 sh_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; sh -c "$1" ); }
 run_sh_a() { step "$1"; if out=$(sh_a "$2" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
+unlock_root() {
+  root=$1 label=$2 tries=0 rc=0
+  while [ "$tries" -lt 30 ]; do
+    node "$REPO_ROOT/tools/unlock-test-custody.mjs" "$root"
+    rc=$?
+    [ "$rc" -eq 0 ] && return 0
+    [ "$rc" -eq 3 ] || break
+    sleep 0.2
+    tries=$((tries + 1))
+  done
+  bad "$label test-door unlock rc $rc"
+  return 1
+}
 
 say "contract-witness — two vessels, no shared key"
 echo "  A (the Nexus):  $A_ROOT"
@@ -144,6 +157,7 @@ step "seed A's genesis (the hearth true-name lives there)"
 if seed_genesis "$A_ROOT"; then ok; else bad "cp genesis"; fi
 stage_custody "$A_ROOT" A
 run_a "A founds"                        vessel stand --install --skip-build
+unlock_root "$A_ROOT" A || exit 1
 assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
 # with green that means nothing — the cascade a founding check must refuse.
@@ -186,6 +200,7 @@ if seed_genesis "$B_ROOT"; then ok; else bad "cp genesis"; fi
 stage_custody "$B_ROOT" B
 BEFORE=$FAILED
 run_b "B founds (own device key, own vault)"  vessel stand --install --skip-build
+unlock_root "$B_ROOT" B || exit 1
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
   exit "$FAILED"

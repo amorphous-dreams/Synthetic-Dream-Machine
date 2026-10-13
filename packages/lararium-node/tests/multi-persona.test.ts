@@ -25,6 +25,7 @@ import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
 import { provisionRecoveryAtFounding } from "../src/recovery-keel.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
+import { seatScratchCustody } from "./custody-seat-fixture.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -67,15 +68,18 @@ const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
 
 describe("multi-persona-per-vessel (#63)", () => {
   let root: string;
+  let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
   const dataDir = () => root;   // identityDir ignores it — the store resolves under XDG state
-  beforeEach(() => {
+  beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), "lares-multipersona-"));
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
     setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);   // exercise the cleartext-parity path
+    seated = await seatScratchCustody("multi-persona");
   });
-  afterEach(() => {
+  afterEach(async () => {
+    await seated.drop();
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
@@ -160,16 +164,16 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect([...recovered]).not.toEqual([...await loadPersonaGroupRootSeed(0)]);
   });
 
-  test("veiled-Handle anchors extend to a SET — each persona anchors to its OWN PersonaGroup", () => {
+  test("veiled-Handle anchors extend to a SET — each persona anchors to its OWN PersonaGroup", async () => {
     const a0 = { personaGroupDocIdHex: "a0".repeat(32), meshCabalDocIdHex: "b0".repeat(32), personaGroupAgentIdHex: "c0".repeat(32) };
     const a1 = { personaGroupDocIdHex: "a1".repeat(32), meshCabalDocIdHex: "b1".repeat(32), personaGroupAgentIdHex: "c1".repeat(32) };
-    persistIdentityAnchors(a0);          // default index 0 (founding) → anchors-h0.json, uniform keying
-    persistIdentityAnchors(a1, 1);       // persona 1 → anchors-h1.json
+    await persistIdentityAnchors(a0);          // default index 0 (founding) → anchors-h0.json, uniform keying
+    await persistIdentityAnchors(a1, 1);       // persona 1 → anchors-h1.json
 
-    expect(loadIdentityAnchors()).toEqual(a0);       // the founding-persona read round-trips
-    expect(loadIdentityAnchors(1)).toEqual(a1);
+    expect(await loadIdentityAnchors()).toEqual(a0);       // the founding-persona read round-trips
+    expect(await loadIdentityAnchors(1)).toEqual(a1);
     expect(existsSync(join(larIdentityDir(), "anchors-h0.json"))).toBe(true);   // uniform founding spelling
-    expect(listAnchoredPersonas()).toEqual([0, 1]);   // the explicit roster record
+    expect(await listAnchoredPersonas()).toEqual([0, 1]);   // the explicit roster record
   });
 
   /**
@@ -183,7 +187,7 @@ describe("multi-persona-per-vessel (#63)", () => {
     test("★ a worn NON-founding persona resolves ITS OWN mount material from anchors-hN ★", async () => {
       await generateOrLoadPersonaGroupRoot(0);
       await generateOrLoadPersonaGroupRoot(1);
-      persistIdentityAnchors(anchorsFor(1, true), 1);
+      await persistIdentityAnchors(anchorsFor(1, true), 1);
       await wearPersona(1);
 
       const worn = await readWornPersonaMount(dataDir());
@@ -197,7 +201,7 @@ describe("multi-persona-per-vessel (#63)", () => {
 
     test("CONTROL — the FOUNDING face resolves NO switch: the daemon-doc pins already name h0", async () => {
       await generateOrLoadPersonaGroupRoot(0);
-      persistIdentityAnchors(anchorsFor(0, true), 0);
+      await persistIdentityAnchors(anchorsFor(0, true), 0);
       await wearPersona(0);
       expect(await readWornPersonaMount(dataDir()), "h0 needs no re-pin — the pins are already its own").toBeNull();
     });
@@ -205,7 +209,7 @@ describe("multi-persona-per-vessel (#63)", () => {
     test("CONTROL — anchors carrying NO mount material read as no switch (pre-slot anchors, or a joinee)", async () => {
       await generateOrLoadPersonaGroupRoot(0);
       await generateOrLoadPersonaGroupRoot(1);
-      persistIdentityAnchors(anchorsFor(1, false), 1);   // doc-ids only — no signer, prefix or edge
+      await persistIdentityAnchors(anchorsFor(1, false), 1);   // doc-ids only — no signer, prefix or edge
       await wearPersona(1);
       expect(await readWornPersonaMount(dataDir()), "a half-anchor never re-pins a mount").toBeNull();
     });

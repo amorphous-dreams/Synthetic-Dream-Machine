@@ -29,14 +29,10 @@
  * WHAT IT DOES NOT GOVERN. The deliberate policy-movers — `vault seal`, `rotate`, `repair` — stage their own
  * atomic writes in `archive-passphrase.ts`, each having PRE-VALIDATED every unseal under the current key
  * before a single temp is written. There the GCM tag already proves operator intent; a second guard in front
- * of a working pre-validation would only duplicate it. `vault export` carries its own distinct refusal (a
- * destination that resolves onto a carrier), because an export proves intent about a BACKUP, never about the
- * carrier it was aimed at.
+ * of a working pre-validation would only duplicate it.
  *
- * THE GUARD PROVES THE KEY, NEVER THE CONTENT. An opening key still admits an empty archive over a full one;
- * the boot closes that separately (`prepareNodeBoot` gates `archiveBytes` on the same `archiveOpens()`
- * reading, so a key that opens also HYDRATES keyhive and the export is no longer empty). Two independent
- * facts holding one invariant — they stay two.
+ * THE GUARD PROVES THE KEY, NEVER THE CONTENT. An opening key still admits a different share over a standing
+ * one; what a share holds stays its writer's own rite to prove. Two independent facts, and they stay two.
  *
  * The write throws (a carrier writer's caller warns and carries on) and the sealed bytes stand.
  */
@@ -68,7 +64,7 @@ export class FloorWriteRefused extends Error {
  * THE REFUSAL NAMES WHICH FACT IT MET, because folding them inverts the pin-reader law: a torn carrier
  * reported as a credential error sends an operator to re-type a passphrase that was right all along, while
  * the corruption sits unnamed. The three-valued distinction is NOT re-derived here — it rides
- * `probeArchiveBytes`, the same atom `readArchiveOpening` reads its five answers from.
+ * `probeArchiveBytes`, the one atom every reading of a passphrase seal derives from.
  */
 export function refuseWriteOverUnopenableSeal(path: string, policy: SealPolicy): void {
   if (!existsSync(path)) return;
@@ -108,7 +104,7 @@ export function refuseWriteOverUnopenableSeal(path: string, policy: SealPolicy):
       throw new Error(
         `archive-seal: refusing to write over the sealed carrier at ${path} — the carrier is TORN (it will ` +
         `not decode as a sealed envelope), so no passphrase can open it and none is at fault here — ` +
-        `recover it from a backup (\`lares vault export\` copy, or \`lares vault repair\`) rather than ` +
+        `recover it from a backup, or \`lares vault repair\`, rather than ` +
         `re-typing a credential`,
       );
     case "key-fails":

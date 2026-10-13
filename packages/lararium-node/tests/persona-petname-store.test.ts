@@ -19,6 +19,7 @@ import {
   generateOrLoadPersonaGroupRoot,
 } from "../src/node-vessel-identity.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
+import { seatScratchCustody } from "./custody-seat-fixture.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -38,14 +39,17 @@ const OWNER = "persona-" + "ab".repeat(32);
 
 describe("node persona pet-name stores (#64 stage 4)", () => {
   let root: string;
+  let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
   const dataDir = () => root;
-  beforeEach(() => {
+  beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), "lares-petname-"));
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    seated = await seatScratchCustody("petname-store");
   });
-  afterEach(() => {
+  afterEach(async () => {
+    await seated.drop();
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });

@@ -8,9 +8,11 @@
 //       island, while the floor's rendezvous name answers a connect throughout.          control: one boot → live
 //   T2  a composition handed `sovereign: null` (the floor) reaches no hot or cold carrier row in this process and
 //       leaves every private row of the three custody homes byte-identical and mints none.
-//                                                                 control: handed readers, the composition runs each
-//                                                                 reader, reads the archive and the keyring rows, and
-//                                                                 the keyring row stands afterward
+//                                                                 control: holding the vessel key and handed the
+//                                                                 seated readers, the composition runs each reader,
+//                                                                 reads the archive and the keyring rows, lands the
+//                                                                 island's archive exports through the custody write
+//                                                                 door, and both archives rest sealed afterward
 //   T3  a boot that refuses frees its store name, whether the refusal lands while the prep stands the Repo or
 //       later while the caps compose.                             control: a standing composition holds the name
 //                                                                 against a second claim
@@ -44,6 +46,11 @@ function stage(tag, { found }) {
       cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root },
     });
     assert.equal(r.status, 0, `vessel found: ${r.stderr}`);
+    // A face, so the composition that holds the key stands a veil and reads that face's own rows.
+    const f = spawnSync(process.execPath, [cli, "persona", "new", "0", "--name", "two-phase"], {
+      cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root },
+    });
+    assert.equal(f.status, 0, `persona new: ${f.stderr}`);
   } else {
     // A genesis the boot can materialize, and no founding: the bootstrap names no daemon doc, so the boot refuses.
     const dir = join(root, "genesis");
@@ -101,7 +108,7 @@ async function recordingReads(run) {
 }
 
 function counting(readers) {
-  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, keyring: 0, archive: 0, veilArchive: 0 };
+  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, keyring: 0, archive: 0, veilArchive: 0, veil: 0, writeArchive: 0, writeVeilArchive: 0 };
   const wrapped = {};
   for (const name of Object.keys(calls)) wrapped[name] = (...a) => { calls[name] += 1; return readers[name](...a); };
   return { calls, readers: wrapped };
@@ -152,23 +159,42 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.equal(phases.at(-1), "live", "T1 control: one composition reaches live");
     await zero.daemon.workerEa;
     assert.ok(atFloor.seen.length > 0, "the read recorder saw this process read (a silent recorder proves nothing)");
-    // ONE private row the floor still reaches: the carried-Nexus reading lists the persona roster (`carried-set`).
-    // It rests outside the sovereign seam until the roster's own family moves behind the custody holder.
+    // ONE FAMILY the floor still reaches: the carried-Nexus reading lists the persona roster and reads each listed
+    // root's public key (`carried-set`). Both rows belong to the vessel-identity family, which rests outside the
+    // sovereign seam until that family moves behind the custody holder.
     const reached = [...new Set(atFloor.seen.map(privateRow).filter(Boolean))];
-    assert.deepEqual(reached.filter((row) => row !== "persona-roster"), [], "T2: the floor reads, probes and writes no hot or cold row");
+    const identityFamily = new Set(["persona-roster", "persona-root"]);
+    assert.deepEqual(reached.filter((row) => !identityFamily.has(row)), [], "T2: the floor reads, probes and writes no hot or cold row");
     await zero.teardown();
     assert.deepEqual(privateRows(), before, "T2: the floor leaves every private row byte-identical and mints none");
     assert.equal(wss.listenerCount("connection"), baseline);
 
     // ── T2 control + T1: handed readers, the composition runs each of them and reads the rows ─────────────────
+    // The key opens first, by the staged root's published route: the seated holder then reads and writes the rows.
+    const { TEST_PASSPHRASE } = await import(pathToFileURL(join(repo, "tools/test-custody-route.mjs")).href);
+    const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
+    const holder = node.makeCustodyHolder({ io: new node.FsCustodyIo(homes), homes });
+    node.seatCustody(holder);
+    t.after(async () => { await holder.lock(); node.unseatCustody(holder); });
+    assert.equal(node.custodyHeld(), false, "T2: a seated holder that never unlocked holds nothing");
+    assert.equal((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading, "opens");
+    const archiveAt = join(homes.identity, "keyhive-archive.bin");
+    const veilAt = join(homes.identity, "veil-archive-h0.bin");
+    const restBefore = { archive: readFileSync(archiveAt), veil: readFileSync(veilAt) };
     phases.length = 0;
-    const first = counting(node.diskSovereignReaders());
+    const first = counting(node.seatedSovereignReaders());
     const sovereignly = await recordingReads(() => open({ floor, sovereign: first.readers }));
     const one = sovereignly.value;
     assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
     await one.daemon.workerEa;
-    for (const name of ["wornMount", "walkRecords", "keyring", "archive", "veilArchive"]) {
+    for (const name of ["wornMount", "walkRecords", "keyring", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
+    }
+    // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
+    for (const [name, at] of [["archive", archiveAt], ["veil", veilAt]]) {
+      const now = readFileSync(at);
+      assert.equal(mesh.readVkCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under the vessel key`);
+      assert.equal(now.equals(restBefore[name]), false, `T2 control: the island's ${name} export replaced the row`);
     }
     const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));
     assert.ok(rowsRead.has("keyring"), `T2 control: the sovereign composition reaches the keyring row (reached: ${[...rowsRead].join(", ") || "none"})`);

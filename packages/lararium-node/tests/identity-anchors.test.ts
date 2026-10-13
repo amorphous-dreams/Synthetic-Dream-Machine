@@ -1,163 +1,162 @@
 /**
- * M2 — the veiled-Handle anchors round-trip through the sovereign identity home, so a
- * substrate rebirth can re-read the SAME PersonaGroup/MeshCabal ids + agentId.
+ * identity-anchors — the identity home's sealed family: each face's anchors, the anchor roster, the vessel's keyhive
+ * archive and each face's veil archive. Every row rests sealed under the vessel key and reads through the custody
+ * seat.
+ *
+ *   A1  an anchors row seals at rest and reads back whole.              control: before the write it reads null
+ *   A2  the mount material round-trips at an index above zero, and the roster records each index once.
+ *   A3  a row that opens and holds another shape refuses by name.        control: the well-shaped row reads
+ *   A4  a torn row refuses `torn`; a BARE row (plain bytes at the path) refuses `bare`. Neither reads null.
+ *   A5  at the floor (the holder locked) every reader and writer refuses `CustodyLocked`, and no file moves.
+ *   A6  THE TAMPER PROBE: a write under key A lands; a holder over key B refuses the write (`TreeVkRefusal`), the
+ *       standing bytes never move, and they still open under A. The keyhive archive, a veil archive and an anchors
+ *       row each carry the probe.
+ *   A7  one face's veil archive rests in its own row: three faces keep three rows, each reads its own bytes, and
+ *       one face's sealed bytes carried to another face's path open for nobody.
+ *                                                                        control: back at its own path it opens
+ *   A8  an archive written through the family never rests in the clear: the file carries the vessel key's seal
+ *       and none of the plaintext.
  */
-import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { mintVk, readVkCarrier, TreeVkRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
+import {
+  persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive,
+  persistVeilArchive, loadVeilArchive, veilArchivePath, archivePath, type IdentityAnchors,
+} from "../src/identity-anchors.js";
+import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { seatCustody, unseatCustody } from "../src/custody-seat.js";
+import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+vi.setConfig({ testTimeout: 120_000 });
 
-import { larIdentityDir } from "../src/vessel-paths.js";
-import { persistIdentityAnchors, loadIdentityAnchors, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../src/identity-anchors.js";
-import { isSealedEnvelope, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
-import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
+const anchors: IdentityAnchors = { personaGroupDocIdHex: "aa11", meshCabalDocIdHex: "bb22", personaGroupAgentIdHex: "cc33" };
+const edge: DeviceDelegationTiddler = {
+  kind: "device-delegation", personaRootDid: "0xaa11" as LarDid, deviceDid: "0xbb22" as LarDid,
+  deviceVerifyingKey: "cc".repeat(32), hearthTrueName: "", boundEpoch: "1", signature: "dd".repeat(64),
+};
+const bytesOf = (marker: string): Uint8Array => new TextEncoder().encode(`${marker}:${"x".repeat(64)}`);
 
-const saved: Record<string, string | undefined> = {};
-function setEnv(k: string, v: string | undefined): void {
-  saved[k] = process.env[k];
-  if (v === undefined) delete process.env[k]; else process.env[k] = v;
-}
+let c: SeatedScratchCustody;
+const at = (file: string): string => join(c.homes.identity, file);
+beforeEach(async () => { c = await seatScratchCustody("anchors"); });
+afterEach(async () => { await c.drop(); });
 
-/**
- * SIZED FROM A MEASURED RUN: the two sealed-archive tests derive a scrypt key on every seal, open and refused
- * write, so their time is KDF time. Idle they took 2.0-2.4 s and 3.5-3.8 s; under 24 CPU burners on a 12-core
- * box they took 3.9-5.2 s and 6.3-8.0 s, and over the 5 s default they read "timed out" with every assertion
- * green. 30 s gives ~8x the idle time for full-suite load and still bounds a hang.
- */
-const SEALED_ARCHIVE_TIMEOUT_MS = 30_000;
-
-describe("identity anchors (M2)", () => {
-  let root: string;
-  const anchors: IdentityAnchors = {
-    personaGroupDocIdHex:   "aa11",
-    meshCabalDocIdHex:      "bb22",
-    personaGroupAgentIdHex: "cc33",
-  };
-  beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-anchors-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
-  });
-  afterEach(() => {
-    for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
-    rmSync(root, { recursive: true, force: true });
+describe("the identity home's sealed family", () => {
+  test("A1 an anchors row seals at rest and reads back whole", async () => {
+    expect(await loadIdentityAnchors()).toBeNull();
+    await persistIdentityAnchors(anchors);
+    expect(readVkCarrier(readFileSync(at("anchors-h0.json")))).toBe("sealed");
+    expect(readFileSync(at("anchors-h0.json")).includes(Buffer.from("aa11"))).toBe(false);
+    expect(await loadIdentityAnchors()).toEqual(anchors);
   });
 
-  test("persists into the identity home and reads back identically", () => {
-    expect(loadIdentityAnchors()).toBeNull();               // nothing yet
-    persistIdentityAnchors(anchors);
-    expect(existsSync(join(larIdentityDir(), "anchors-h0.json"))).toBe(true);
-    expect(loadIdentityAnchors()).toEqual(anchors);
+  test("A2 the mount material round-trips at index N; the roster records each index once", async () => {
+    const withMount: IdentityAnchors = { ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: edge, veilTag: "ab".repeat(32) };
+    expect(await listAnchoredPersonas()).toEqual([]);
+    await persistIdentityAnchors(withMount, 2);
+    await persistIdentityAnchors(anchors, 0);
+    await persistIdentityAnchors(withMount, 2);
+    expect(await loadIdentityAnchors(2)).toEqual(withMount);
+    expect(await listAnchoredPersonas()).toEqual([0, 2]);
+    expect(readVkCarrier(readFileSync(at("anchor-roster.json")))).toBe("sealed");
   });
 
-  test("an incomplete anchors file reads as null (never a partial Handle)", () => {
-    persistIdentityAnchors(anchors);
-    // Overwrite with a partial record.
-    writeFileSync(join(larIdentityDir(), "anchors-h0.json"), JSON.stringify({ personaGroupDocIdHex: "aa11" }));
-    expect(loadIdentityAnchors()).toBeNull();
+  test("A3 a row that opens and holds another shape refuses by name", async () => {
+    await c.holder.writeRow("identity", "anchors-h0.json", new TextEncoder().encode(JSON.stringify({ personaGroupDocIdHex: "aa11" })));
+    await expect(loadIdentityAnchors()).rejects.toThrow(CustodyRowUnavailable);
+    await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads malformed/);
+    await c.holder.writeRow("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ ...anchors, deviceEdge: "not-an-object" })));
+    await expect(loadIdentityAnchors(1)).rejects.toThrow(/malformed/);
+    // control
+    await persistIdentityAnchors(anchors, 3);
+    expect(await loadIdentityAnchors(3)).toEqual(anchors);
   });
 
-  // The wear-reboot mount-switch: an added persona (N>0) founds mount:false and pins nothing into the daemon
-  // doc, so its mount material must persist HERE to survive a reboot. All three are PUBLIC (a signer DID, a
-  // KEL prefix, a signed grant record — no secret), so they belong beside the doc-ids.
-  const edge: DeviceDelegationTiddler = {
-    kind: "device-delegation",
-    personaRootDid: "0xaa11" as LarDid,
-    deviceDid: "0xbb22" as LarDid,
-    deviceVerifyingKey: "cc".repeat(32),
-    hearthTrueName: "",
-    boundEpoch: "1",
-    signature: "dd".repeat(64),
-  };
-
-  test("CONTROL — the mount material (signerDid · KEL prefix · signed device edge) round-trips at index N", () => {
-    const withMount: IdentityAnchors = {
-      ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: edge,
-    };
-    persistIdentityAnchors(withMount, 1);
-    expect(loadIdentityAnchors(1)).toEqual(withMount);
+  test("A4 a torn row and a bare row each refuse by name; neither reads null", async () => {
+    await persistIdentityAnchors(anchors);
+    await persistIdentityArchive(bytesOf("archive"));
+    const sealed = readFileSync(at("anchors-h0.json"));
+    writeFileSync(at("anchors-h0.json"), sealed.subarray(0, sealed.length - 9));
+    await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads (torn|key-fails)/);
+    writeFileSync(archivePath(), bytesOf("a bare archive from an earlier shape"));
+    await expect(loadIdentityArchive()).rejects.toThrow(/keyhive-archive\.bin reads bare/);
+    // a writer never lands over what it cannot open
+    await expect(persistIdentityArchive(bytesOf("fresh"))).rejects.toThrow();
+    expect(readFileSync(archivePath()).equals(Buffer.from(bytesOf("a bare archive from an earlier shape")))).toBe(true);
   });
 
-  test("★ a malformed device edge reads as null — the re-pin never trusts a torn grant ★", () => {
-    persistIdentityAnchors(anchors);
-    // A well-formed anchor except the device edge is not an object (a torn/garbage write). The boot re-pin
-    // would hand this to verifyDeviceDelegation; fail closed at the READ instead of feeding it a non-record.
-    writeFileSync(join(larIdentityDir(), "anchors-h0.json"),
-      JSON.stringify({ ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: "not-an-object" }));
-    expect(loadIdentityAnchors()).toBeNull();
+  test("A5 at the floor every reader and writer refuses CustodyLocked and no file moves", async () => {
+    await persistIdentityAnchors(anchors);
+    await persistIdentityArchive(bytesOf("archive"));
+    await persistVeilArchive(bytesOf("veil"), 0);
+    const before = ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", "veil-archive-h0.bin"].map((f) => readFileSync(at(f)));
+    await c.holder.lock();
+    await expect(loadIdentityAnchors()).rejects.toThrow(CustodyLocked);
+    await expect(listAnchoredPersonas()).rejects.toThrow(CustodyLocked);
+    await expect(loadIdentityArchive()).rejects.toThrow(CustodyLocked);
+    await expect(loadVeilArchive(0)).rejects.toThrow(CustodyLocked);
+    await expect(persistIdentityAnchors(anchors, 1)).rejects.toThrow(CustodyLocked);
+    await expect(persistIdentityArchive(bytesOf("floor"))).rejects.toThrow(CustodyLocked);
+    await expect(persistVeilArchive(bytesOf("floor"), 0)).rejects.toThrow(CustodyLocked);
+    expect(existsSync(at("anchors-h1.json"))).toBe(false);
+    ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", "veil-archive-h0.bin"].forEach((f, i) => {
+      expect(readFileSync(at(f)).equals(before[i]!), f).toBe(true);
+    });
+    // no seat at all reads the same floor
+    unseatCustody(c.holder);
+    await expect(loadIdentityArchive()).rejects.toThrow(CustodyLocked);
+    seatCustody(c.holder);
   });
 
-  test("the keyhive archive round-trips through the identity home (M3)", () => {
-    expect(loadIdentityArchive()).toBeNull();
-    const bytes = Uint8Array.from([0x85, 0x6f, 0x4a, 0x83, 0x01, 0x02, 0x03]);
-    persistIdentityArchive(bytes);
-    expect(existsSync(join(larIdentityDir(), "keyhive-archive.bin"))).toBe(true);
-    expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(bytes));
+  test("A6 TAMPER PROBE: a holder over another key lands no write; the standing bytes still open under the first", async () => {
+    await persistIdentityArchive(bytesOf("archive-under-A"));
+    await persistVeilArchive(bytesOf("veil-under-A"), 0);
+    await persistIdentityAnchors(anchors);
+    const files = ["keyhive-archive.bin", "veil-archive-h0.bin", "anchors-h0.json"];
+    const standing = files.map((f) => readFileSync(at(f)));
+
+    // Key B: a stranger vessel key the slot tree never committed to, held by a holder over the SAME homes. The
+    // holder's own door refuses a key the custody root does not open under, so B writes through the sealed writer
+    // directly, exactly as a holder that kept a retired key would.
+    const { writeSealedCarrier } = await import("@lararium/mesh");
+    const { vkSlotsPath } = await import("../src/vault-carriers.js");
+    const keyB = mintVk();
+    for (const f of files) {
+      await expect(writeSealedCarrier({
+        io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity),
+        carrier: { name: `identity/${f}`, path: at(f), keyClass: null }, plaintext: bytesOf("under-B"),
+      })).rejects.toThrow(TreeVkRefusal);
+    }
+    await expect(makeCustodyHolder({ io: c.io, homes: c.homes }).adopt(keyB)).rejects.toThrow(/custody root reads key-fails/);
+    files.forEach((f, i) => expect(readFileSync(at(f)).equals(standing[i]!), `${f} never moved`).toBe(true));
+    expect(Array.from((await loadIdentityArchive())!)).toEqual(Array.from(bytesOf("archive-under-A")));
+    expect(Array.from((await loadVeilArchive(0))!)).toEqual(Array.from(bytesOf("veil-under-A")));
+    expect(await loadIdentityAnchors()).toEqual(anchors);
   });
 
-  // A vessel standing at the WAKING FLOOR boots WITHOUT its archive (no passphrase) and the M3 floor still
-  // exports the keyhive it booted — a fresh, empty identity. Written over the sealed archive as cleartext,
-  // that would replace the sovereign identity with nothing and read as "unsealed" to every later boot.
-  test("a cleartext write REFUSES to replace a sealed archive (the floor writes no identity)", () => {
-    const sovereign = Uint8Array.from([0x85, 0x6f, 0x4a, 0x83, 0x01, 0x02, 0x03]);
-    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-anchors");
-    persistIdentityArchive(sovereign);
-    persistVeilArchive(sovereign);
-    const sealed = readFileSync(join(larIdentityDir(), "keyhive-archive.bin"));
-    expect(isSealedEnvelope(sealed)).toBe(true);
+  test("A7 three faces keep three veil archives and none opens at another's path", async () => {
+    for (const n of [0, 1, 2]) await persistVeilArchive(bytesOf(`veil-of-face-${n}`), n);
+    for (const n of [0, 1, 2]) {
+      expect(readVkCarrier(readFileSync(veilArchivePath(n)))).toBe("sealed");
+      expect(Array.from((await loadVeilArchive(n))!)).toEqual(Array.from(bytesOf(`veil-of-face-${n}`)));
+    }
+    expect(await loadVeilArchive(3)).toBeNull();
+    const own = readFileSync(veilArchivePath(0));
+    copyFileSync(veilArchivePath(1), veilArchivePath(0));
+    await expect(loadVeilArchive(0)).rejects.toThrow(/veil-archive-h0\.bin reads key-fails/);
+    // control: its own bytes back at its own path open again
+    writeFileSync(veilArchivePath(0), own);
+    expect(Array.from((await loadVeilArchive(0))!)).toEqual(Array.from(bytesOf("veil-of-face-0")));
+  });
 
-    setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
-    const fresh = Uint8Array.from([0x00, 0x01]);
-    expect(() => persistIdentityArchive(fresh)).toThrow(/sealed/);
-    expect(() => persistVeilArchive(fresh)).toThrow(/sealed/);
-    expect(readFileSync(join(larIdentityDir(), "keyhive-archive.bin")).equals(sealed), "bytes untouched").toBe(true);
-    expect(isSealedEnvelope(readFileSync(join(larIdentityDir(), "veil-archive.bin")))).toBe(true);
-
-    // CONTROL: under the passphrase the same write lands (a re-seal, fresh salt), and reads back.
-    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-anchors");
-    persistIdentityArchive(sovereign);
-    expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
-    expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
-  }, SEALED_ARCHIVE_TIMEOUT_MS);
-
-  /**
-   * ── THE OTHER HALF OF THE SAME FLOOR, AND IT COSTS THE IDENTITY ────────────────────────────────
-   * The cleartext guard above reads "no key" as the floor's only shape. A WRONG key wears the same
-   * floor: `readArchiveOpening` answers `key-wrong`, the boot stands faceless, and the M3 export
-   * still fires — this time with a passphrase in hand, so the seal SUCCEEDS and a fresh, empty
-   * keyhive lands over the sovereign one, re-sealed under a passphrase that never opened it.
-   *
-   * MEASURED end to end: `vault rotate` old→new, then a stand under the OLD passphrase, and the
-   * sealed archive comes back readable only under the OLD one. The next stand under the NEW
-   * passphrase reads `key-wrong` and stands at the floor — `tests/e2e/vessel-sealed.test.ts` ⑤,
-   * failing on `bag not registered: lar:///ha.ka.ba/wikis/lares/working`.
-   *
-   * THE INVARIANT: a write lands over a SEALED carrier only under a key that OPENS it. The seal
-   * governs the write as well as the read; a mistyped passphrase destroys nothing.
-   */
-  test("★ a write under a NON-OPENING passphrase REFUSES to replace a sealed archive ★", () => {
-    const sovereign = Uint8Array.from([0x85, 0x6f, 0x4a, 0x83, 0x01, 0x02, 0x03]);
-    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-current");
-    persistIdentityArchive(sovereign);
-    persistVeilArchive(sovereign);
-    const sealed = readFileSync(join(larIdentityDir(), "keyhive-archive.bin"));
-    const sealedVeil = readFileSync(join(larIdentityDir(), "veil-archive.bin"));
-
-    // The floor's fresh keyhive, offered under a passphrase the sealed bytes never answer to.
-    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-stale-x");
-    const fresh = Uint8Array.from([0x00, 0x01]);
-    expect(() => persistIdentityArchive(fresh)).toThrow(/sealed/);
-    expect(() => persistVeilArchive(fresh)).toThrow(/sealed/);
-    expect(readFileSync(join(larIdentityDir(), "keyhive-archive.bin")).equals(sealed), "the stale key rewrote the archive").toBe(true);
-    expect(readFileSync(join(larIdentityDir(), "veil-archive.bin")).equals(sealedVeil), "the stale key rewrote the veil").toBe(true);
-
-    // CONTROL — the OPENING passphrase still writes, and the sovereign bytes read back whole.
-    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-current");
-    persistIdentityArchive(sovereign);
-    persistVeilArchive(sovereign);
-    expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
-    expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
-  }, SEALED_ARCHIVE_TIMEOUT_MS);
+  test("A8 an archive never rests in the clear", async () => {
+    const marker = bytesOf("PLAINTEXT-MARKER-keyhive-archive");
+    await persistIdentityArchive(marker);
+    const rest = readFileSync(archivePath());
+    expect(readVkCarrier(rest)).toBe("sealed");
+    expect(rest.includes(Buffer.from("PLAINTEXT-MARKER"))).toBe(false);
+    expect(Array.from((await loadIdentityArchive())!)).toEqual(Array.from(marker));
+  });
 });

@@ -31,7 +31,7 @@ import { mkdtempSync, rmSync, cpSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
-import { freePort } from "../harness/instance.js";
+import { freePort, unlockStaged } from "../harness/instance.js";
 import { seedTestCustody } from "../harness/test-door.js";
 
 const REPO = new URL("../..", import.meta.url).pathname;
@@ -96,6 +96,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     const out = lares(["vessel", "stand", "--skip-build"]);
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);
+    unlockStaged(root);
     const report = JSON.parse(out.slice(out.indexOf("{")));
     expect(report.data.node.started).toBe(true);
   });
@@ -109,6 +110,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // "local corruption (no peer carries it)" would be reading an absence somewhere else as damage here.
     lares(["vessel", "stop"]);
     const out = lares(["vessel", "stand", "--skip-build"], { LAR_PEERS: `http://127.0.0.1:9/never-stands#${"ab".repeat(32)}` });
+    unlockStaged(root);
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);
   });

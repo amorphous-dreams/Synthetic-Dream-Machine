@@ -142,24 +142,23 @@ The host shim starts the container at `up`. The vessel stands holding no vessel 
 
 Keep a recovery route for the persona root and for the Nexus seal. The CLI prints one-time recovery material at the acts that mint it. Write each recovery card onto its intended medium and move it to the holder and place chosen in step 3. Never treat a displayed secret as a backup until the human has copied it and checked that copy.
 
-''Do'': inspect the vault, provision and seat the Nexus quorum, inspect the resulting seal, then export a separately passphrase-sealed vault archive.
+''Do'': inspect the vault, provision and seat the Nexus quorum, then inspect the resulting seal.
 
 ```sh
 tools/lares-container.sh vault status
 tools/lares-container.sh nexus rite quorum
 tools/lares-container.sh nexus seal show
-tools/lares-container.sh vault export /state/vault.sealed
-mkdir -p /path/to/offline-custody
-mv "$LARES_STATE/vault.sealed" /path/to/offline-custody/vault.sealed
 ```
 
 The seed's seat holds its own key and commits its own cold next key, which rests on paper off the machine.
 
 ▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal reserve`, `seal seat`, and `seal show`; it forges a shared reserve seed and prints three reserve cards that name generation and quorum. No verb carries a card into a rotation. `seal rotate` refuses a reserve-armed head as `reserve-armed` and refuses to arm a roll with the reserve's commit as `reserve-commit-unrevealable` (`packages/lares-cli/src/commands/nexus-seal.ts`).
 
-The credential prompts need the attached terminal. Keep the archive passphrase separate from the archive file. The export backs up the keyhive archive alone. Make a separate, consistent backup of the full state mount, including its custody slots and relation carriers.
+The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. Stop the vessel, then make one consistent backup of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel.
 
-''See'': vault status reports held slots; the quorum report names its seats and head; export reports the sealed archive path under `/state`.
+▢ ''OWED — the per-face backup bundle.'' A sealed bundle that carries one face's rows under its own route, and the verb that restores from it, stand unbuilt; the state-mount copy above stays the one backup road until they land.
+
+''See'': vault status reports held slots and names each sealed row; the quorum report names its seats and head.
 
 ''Proves'': the first operator has recorded the node's custody state and holds recovery material apart from the running machine.
 
@@ -273,7 +272,7 @@ A further family member may ride as a user leaf under an operator's Nexus. That 
 
 !! 11 · Aftercare and the next road
 
-Keep `/state` and `/workspace` backups distinct. The state backup holds vessel homes and custody; the workspace holds the editable corpus. Keep the sealed vault export away from both. Renew the DNS-01 certificate through the operator-owned renewal route when that path lands. Keep the host shim and its hooks on the host; keep vessel code in the image.
+Keep `/state` and `/workspace` backups distinct. The state backup holds vessel homes and custody; the workspace holds the editable corpus. Keep the custody passphrase or paper pin away from both. Renew the DNS-01 certificate through the operator-owned renewal route when that path lands. Keep the host shim and its hooks on the host; keep vessel code in the image.
 
 A live vessel may continue with its local corpus while household HTTPS, browser leaves, or user admission remain owed. The road carries these build steps and the two-household live check. The sensorium runbook carries a separate later walk.
 
@@ -338,6 +337,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xfsSAkLTao1ekUW-r9TxyGr_-6GSuw2i3ZAUULClkCk
+<<^ code="&#x0003;">>ni:///sha-256;z-qyKMqZeJ_fh3QAvvbsrsF9JiQ24ywxWRmq5Jhwz4M
 
 <<^ code="&#x0004;" -> to="?">>

@@ -13,7 +13,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, personaPrefixOf, sealKeySetHash, deriveSelfRecoveryKey,
@@ -28,7 +28,7 @@ const FOUNDER_SEED = new Uint8Array(32).fill(7);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({
+  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
     repo,
     vesselSeed:         FOUNDER_SEED,
     vesselVerifyingKey: verifyingKey,

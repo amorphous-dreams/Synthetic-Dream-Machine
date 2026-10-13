@@ -8,7 +8,7 @@ export type {
   PeerDID, KeyhiveAccess, EventStoreRef,
 } from "./capability-provider.js";
 
-export { KeyhiveProvider, ensureKeyhiveWasm, setKeyhiveWasmBytes } from "./keyhive-provider.js";
+export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes } from "./keyhive-provider.js";
 export { KeyhiveIdentitySlot } from "./keyhive-identity-slot.js";
 export type { KeyhiveIdentitySlotOpts } from "./keyhive-identity-slot.js";
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
@@ -65,8 +65,8 @@ export type {
 } from "./ceremony-core.js";
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
 // The veil's key-class door: the dyad veil derives from a DEVICE-MINTED key and refuses every other class.
-export { mintDeviceMintedKey, isDeviceMintedKey, deriveVeilFromDeviceKey, VeilKeyClassRefused } from "./veil-key.js";
-export type { DeviceMintedKey, ClassedKey, KeyClassName } from "./veil-key.js";
+export { mintDeviceMintedKey, isDeviceMintedKey, deriveVeilFromDeviceKey, veilFromDeviceKey, VeilKeyClassRefused } from "./veil-key.js";
+export type { DeviceMintedKey, ClassedKey, KeyClassName, VeilDeriver } from "./veil-key.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,
   DeviceAdmitEdgeInput,

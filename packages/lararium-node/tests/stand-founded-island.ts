@@ -7,7 +7,7 @@
  */
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, wikiBagUri, type LarDoc,
@@ -23,7 +23,7 @@ const FOUNDER_SEED = seed(71);
 export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({
+  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
     repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });

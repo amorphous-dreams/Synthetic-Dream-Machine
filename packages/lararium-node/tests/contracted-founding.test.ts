@@ -17,7 +17,7 @@ import {
   personaGroupSecret, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, tiddlerText,
   type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 
 const OPERATOR_SEED = new Uint8Array(32).fill(11);   // the CONTRACTING operator's persona root
 const HERM_SEED     = new Uint8Array(32).fill(22);   // the faceless vessel's own device key
@@ -47,7 +47,7 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
 }
 
 async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], deviceKey: string, repo = new Repo({ sharePolicy: async () => true })) {
-  return runFoundingCeremony({
+  return runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(HERM_SEED)),
     repo,
     vesselSeed: HERM_SEED,
     vesselVerifyingKey: deviceKey,

@@ -1,31 +1,27 @@
 /**
- * archive-passphrase.test (#60) — the at-rest seal LIFECYCLE over the two secret carriers.
+ * archive-passphrase.test (#60) — the at-rest seal LIFECYCLE over the share carriers.
  *
  * Proves the fail-closed guarantees the passphrase surface stands on:
- *   · seal      → cleartext carriers become sealed envelopes; a later boot without the passphrase fails.
- *   · rotate    → both carriers open under the NEW passphrase and FAIL (GCM) under the old.
+ *   · seal      → cleartext shares become sealed envelopes.
+ *   · rotate    → both shares open under the NEW passphrase and FAIL (GCM) under the old.
  *   · wrong old → ZERO writes: the on-disk bytes stay byte-identical to the pre-call state.
- *   · export    → a sealed backup re-opens to the IDENTICAL plaintext.
  *   · status    → truthful per-carrier state, including a SPLIT-KEK (and repair closes it).
- *   · daemon-up (runVaultVerb) and daemon-down (direct) land byte-identical carriers.
+ *   · daemon-up (runVaultVerb) and daemon-down (direct) land byte-identical shares.
  *
  * The seal itself is proved in archive-seal.test; this proves the LIFECYCLE composed over it.
  */
-import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { isSealedEnvelope, decodeEnvelope } from "@lararium/mesh";
 import { scryptKek, unsealBytes, ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { archivePath, veilArchivePath } from "../src/identity-anchors.js";
-import { reserveMineSharePath } from "../src/seal-reserve-store.js";
-import { deviceSharePath } from "../src/recovery-share-store.js";
-import { sealExpected } from "../src/lares-config.js";
+import { deviceSharePath, persistRecoveryDeviceShare } from "../src/recovery-share-store.js";
+import { reserveMineSharePath, sealReserveMineShare } from "../src/seal-reserve-store.js";
 import {
   archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
-  exportSealedArchive, repairSplitKek, assertSealReady, runVaultVerb, weakPassphraseWarning,
-  archiveOpens, readArchiveOpening,
+  repairSplitKek, runVaultVerb, weakPassphraseWarning,
 } from "../src/archive-passphrase.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -37,8 +33,9 @@ function setEnv(k: string, v: string | undefined): void {
 const PASS_A = "correct horse battery staple";
 const PASS_B = "a different long passphrase here";
 
-const ARCHIVE_PLAIN  = Uint8Array.from([0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 9, 10, 11, 12]);
-const SHARE_PLAIN    = Uint8Array.from(Array.from({ length: 40 }, (_, i) => (i * 13 + 3) & 0xff));
+const DEVICE_SHARE = { bytes: { x: 17, ys: new Uint8Array([18, 19, 20]) }, custodian: "device" as const, recoveryEpoch: 1 };
+const DEVICE_SHARE_PLAIN = new TextEncoder().encode(JSON.stringify({ x: 17, ys: [18, 19, 20], custodian: "device", recoveryEpoch: 1 }));
+const SECOND_SHARE_PLAIN = new TextEncoder().encode(JSON.stringify({ x: 45, ys: [46, 47, 48], custodian: "device", recoveryEpoch: 1 }));
 
 /** Unseal a sealed carrier's bytes under a passphrase (mirrors the core's private opener). */
 function opensUnder(bytes: Uint8Array, pass: string): boolean {
@@ -53,10 +50,9 @@ function plainUnder(bytes: Uint8Array, pass: string): Uint8Array {
 describe("archive-passphrase — the at-rest seal lifecycle", () => {
   let root: string;
 
-  const writeCleartextCarriers = (opts: { share?: boolean } = {}): void => {
-    mkdirSync(larIdentityDir(), { recursive: true });
-    writeFileSync(archivePath(), Buffer.from(ARCHIVE_PLAIN));
-    if (opts.share !== false) writeFileSync(deviceSharePath(), Buffer.from(SHARE_PLAIN));
+  const writeCleartextShares = (opts: { second?: boolean } = {}): void => {
+    persistRecoveryDeviceShare(DEVICE_SHARE, 0);
+    if (opts.second) persistRecoveryDeviceShare({ bytes: { x: 45, ys: new Uint8Array([46, 47, 48]) }, custodian: "device", recoveryEpoch: 1 }, 1);
   };
 
   beforeEach(() => {
@@ -71,215 +67,110 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("seal → cleartext carriers become sealed; a boot without the passphrase fails PRECISELY", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
+  test("seal → cleartext device share becomes sealed and status records the seal policy", { timeout: 60_000 }, () => {
+    writeCleartextShares();
     const r = sealArchiveWithPassphrase(PASS_A);
-    expect(r.sealed.sort()).toEqual(["archive", "device-share-h0"]);
-    expect(isSealedEnvelope(readFileSync(archivePath()))).toBe(true);
-    expect(isSealedEnvelope(readFileSync(deviceSharePath()))).toBe(true);
-    // the boot-gate marker landed, so a boot with no passphrase throws a PRECISE message.
-    expect(sealExpected()).toBe(true);
-    expect(() => assertSealReady()).toThrow(new RegExp(ARCHIVE_PASSPHRASE_ENV));
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    expect(() => assertSealReady()).not.toThrow();   // with the passphrase set, boot proceeds
-    // the sealed archive really carries the original plaintext under PASS_A.
-    expect([...plainUnder(readFileSync(archivePath()), PASS_A)]).toEqual([...ARCHIVE_PLAIN]);
+    expect(r.sealed).toEqual(["device-share-h0"]);
+    expect(isSealedEnvelope(readFileSync(deviceSharePath(0)))).toBe(true);
+    expect(archiveSealStatus().sealExpected).toBe(true);
+    expect([...plainUnder(readFileSync(deviceSharePath(0)), PASS_A)]).toEqual([...DEVICE_SHARE_PLAIN]);
   });
 
   test("seal is idempotent — a second seal skips the already-sealed carriers", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
+    writeCleartextShares();
     sealArchiveWithPassphrase(PASS_A);
-    const before = readFileSync(archivePath());
+    const before = readFileSync(deviceSharePath(0));
     const r2 = sealArchiveWithPassphrase(PASS_A);
     expect(r2.sealed).toEqual([]);                   // nothing re-sealed
-    expect(r2.skipped.sort()).toEqual(["archive", "device-share-h0", "reserve-share", "veil"]);   // absent SINGLETON carriers skip too
-    expect([...readFileSync(archivePath())]).toEqual([...before]);   // untouched
+    expect(r2.skipped).toEqual(["device-share-h0", "reserve-share"]);
+    expect([...readFileSync(deviceSharePath(0))]).toEqual([...before]);
   });
 
-  test("rotate old→new — BOTH carriers open under the new passphrase and FAIL under the old", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
+  test("rotate old→new — BOTH device shares open under the new passphrase and FAIL under the old", { timeout: 60_000 }, () => {
+    writeCleartextShares({ second: true });
     sealArchiveWithPassphrase(PASS_A);
     const r = rotateArchivePassphrase(PASS_A, PASS_B);
-    expect(r.rotated.sort()).toEqual(["archive", "device-share-h0"]);
-    for (const p of [archivePath(), deviceSharePath()]) {
+    expect(r.rotated.sort()).toEqual(["device-share-h0", "device-share-h1"]);
+    for (const p of [deviceSharePath(0), deviceSharePath(1)]) {
       expect(opensUnder(readFileSync(p), PASS_B)).toBe(true);
       expect(opensUnder(readFileSync(p), PASS_A)).toBe(false);
     }
     // plaintext survives the rotation intact.
-    expect([...plainUnder(readFileSync(archivePath()), PASS_B)]).toEqual([...ARCHIVE_PLAIN]);
-    expect([...plainUnder(readFileSync(deviceSharePath()), PASS_B)]).toEqual([...SHARE_PLAIN]);
+    expect([...plainUnder(readFileSync(deviceSharePath(0)), PASS_B)]).toEqual([...DEVICE_SHARE_PLAIN]);
+    expect([...plainUnder(readFileSync(deviceSharePath(1)), PASS_B)]).toEqual([...SECOND_SHARE_PLAIN]);
   });
 
-  test("rotate with ONE carrier — the archive alone rotates when the share is absent", { timeout: 60_000 }, () => {
-    writeCleartextCarriers({ share: false });
+  test("rotate with ONE device share — h0 rotates when h1 is absent", { timeout: 60_000 }, () => {
+    writeCleartextShares();
     sealArchiveWithPassphrase(PASS_A);
     const r = rotateArchivePassphrase(PASS_A, PASS_B);
-    expect(r.rotated).toEqual(["archive"]);
-    expect(opensUnder(readFileSync(archivePath()), PASS_B)).toBe(true);
-    expect(existsSync(deviceSharePath())).toBe(false);
+    expect(r.rotated).toEqual(["device-share-h0"]);
+    expect(opensUnder(readFileSync(deviceSharePath(0)), PASS_B)).toBe(true);
+    expect(existsSync(deviceSharePath(1))).toBe(false);
   });
 
   test("wrong old passphrase → ZERO writes (on-disk bytes byte-identical to pre-call)", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
+    writeCleartextShares();
     sealArchiveWithPassphrase(PASS_A);
-    const archiveBefore = readFileSync(archivePath());
-    const shareBefore   = readFileSync(deviceSharePath());
+    const shareBefore = readFileSync(deviceSharePath(0));
     expect(() => rotateArchivePassphrase("the WRONG old passphrase", PASS_B)).toThrow();
     // fail-closed: not one byte moved.
-    expect([...readFileSync(archivePath())]).toEqual([...archiveBefore]);
-    expect([...readFileSync(deviceSharePath())]).toEqual([...shareBefore]);
-    // and the carriers still open under the ORIGINAL passphrase (never un-rotated).
-    expect(opensUnder(readFileSync(archivePath()), PASS_A)).toBe(true);
-  });
-
-  // ── THE BOOT READING: a PROBE, never a presence check ──────────────────────────────────────────
-  //
-  // `archiveOpens` gates `standAs` at main.ts. Reading the ENV VAR's PRESENCE answers a question nobody
-  // asked: a wrong passphrase is present, so the vessel rose to hearth on a key that cannot unseal, and
-  // the fault surfaced far from its cause. These pin the reading as a TRIAL-OPEN, and pin the three
-  // answers apart — the pin-reader law: one default covering both "absent" and "torn" inverts
-  // fail-closed into fail-open.
-
-  test("★ RED — a WRONG passphrase in the environment reads SHUT, and is NAMED wrong ★", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
-    sealArchiveWithPassphrase(PASS_A);
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);            // present, and it does NOT open the archive
-    const reading = readArchiveOpening();
-    expect(reading.kind, "a wrong passphrase passed as an open archive — presence read as fitness").toBe("key-wrong");
-    expect(archiveOpens(), "the boot would have raised the vessel on a key that cannot unseal").toBe(false);
-  });
-
-  test("CONTROL — the CORRECT passphrase still opens, and the probe says so", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
-    sealArchiveWithPassphrase(PASS_A);
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    expect(readArchiveOpening().kind).toBe("opens");
-    expect(archiveOpens()).toBe(true);
-  });
-
-  test("CONTROL — no seal expected: the vessel opens and NO probe runs", () => {
-    // Nothing sealed, no marker. The reading must not derive a KEK to answer this (it has no key to try).
-    expect(sealExpected()).toBe(false);
-    const reading = readArchiveOpening();
-    expect(reading.kind).toBe("no-seal-expected");
-    expect(reading.probed, "a probe ran where the config asked for none").toBe(false);
-    expect(archiveOpens()).toBe(true);
-  });
-
-  test("CONTROL — seal expected and NO key: still SHUT, and named absent (never 'wrong')", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
-    sealArchiveWithPassphrase(PASS_A);
-    setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
-    const reading = readArchiveOpening();
-    expect(reading.kind).toBe("key-absent");
-    expect(reading.probed).toBe(false);                // no key to try — nothing was probed
-    expect(archiveOpens()).toBe(false);
-  });
-
-  test("CONTROL — a TORN archive reads 'unreadable', never 'key-wrong'", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
-    sealArchiveWithPassphrase(PASS_A);
-    // Keep the LARK magic + version (so it still reads as a sealed envelope) and truncate the body: the
-    // envelope will not DECODE. No key can be judged against it, so no key may be BLAMED for it.
-    writeFileSync(archivePath(), Buffer.from(readFileSync(archivePath()).subarray(0, 7)));
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);            // the RIGHT passphrase, against a torn carrier
-    const reading = readArchiveOpening();
-    expect(reading.kind, "a torn carrier was blamed on the passphrase — cannot-probe read as probed-and-failed").toBe("unreadable");
-    expect(archiveOpens()).toBe(false);                // fail-closed: unopenable is unopenable
-  });
-
-  test("CONTROL — seal marked expected but NOTHING sealed on disk: opens, and says nothing was probed", { timeout: 60_000 }, () => {
-    // The marker is a config HINT and the disk is the fact. With no sealed carrier the boot's readers pass
-    // cleartext straight through, so the vessel genuinely opens — but the reading must not claim a probe.
-    writeCleartextCarriers();
-    sealArchiveWithPassphrase(PASS_A);
-    rmSync(archivePath(), { force: true });
-    rmSync(deviceSharePath(), { force: true });
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    expect(sealExpected()).toBe(true);                 // the hint stands
-    const reading = readArchiveOpening();
-    expect(reading.kind).toBe("nothing-sealed");
-    expect(reading.probed).toBe(false);
-    expect(archiveOpens()).toBe(true);
-  });
-
-  test("export → a passphrase-sealed backup re-opens to the IDENTICAL plaintext", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
-    sealArchiveWithPassphrase(PASS_A);
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);          // the live policy opens the current sealed archive
-    const dest = join(root, "backup", "archive.sealed.bin");
-    const r = exportSealedArchive(PASS_B, dest, false);   // backup sealed under a DIFFERENT passphrase
-    expect(r.dest).toBe(dest);
-    expect(isSealedEnvelope(readFileSync(dest))).toBe(true);
-    expect([...plainUnder(readFileSync(dest), PASS_B)]).toEqual([...ARCHIVE_PLAIN]);
-    // refuses a silent overwrite, honors --force.
-    expect(() => exportSealedArchive(PASS_B, dest, false)).toThrow(/force/);
-    expect(() => exportSealedArchive(PASS_B, dest, true)).not.toThrow();
-  });
-
-  test("export from a CLEARTEXT vessel still writes an ENCRYPTED backup", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();                        // never sealed → archive is bare
-    const dest = join(root, "backup2.bin");
-    exportSealedArchive(PASS_B, dest);
-    expect(isSealedEnvelope(readFileSync(dest))).toBe(true);   // the backup is ALWAYS sealed
-    expect([...plainUnder(readFileSync(dest), PASS_B)]).toEqual([...ARCHIVE_PLAIN]);
+    expect([...readFileSync(deviceSharePath(0))]).toEqual([...shareBefore]);
+    // The device share still opens under the ORIGINAL passphrase.
+    expect(opensUnder(readFileSync(deviceSharePath(0)), PASS_A)).toBe(true);
   });
 
   test("status — truthful per-carrier state (absent/cleartext/sealed) and split detection + repair", { timeout: 60_000 }, () => {
-    // cleartext state
-    writeCleartextCarriers({ share: false });
+    // Cleartext share state.
+    writeCleartextShares();
     let s = archiveSealStatus();
-    expect(s.carriers.archive.state).toBe("cleartext");
-    // A FAMILY REPORTS ITS MEMBERS, NEVER ITS ABSENCES. The device share is enumerated off the disk
-    // (one carrier per `recovery-device-share-h${N}.bin` standing there), so a share that has never been
-    // written carries no name to report — unlike the three singletons, whose location is fixed and whose
-    // absence is therefore a fact about a known carrier.
-    expect(Object.keys(s.carriers)).not.toContain("device-share-h0");
+    expect(s.carriers["device-share-h0"]!.state).toBe("cleartext");
+    // The reserve share never stood: its singleton row reads absent. A device share that never stood names no
+    // carrier at all (the family reads the disk).
+    expect(s.carriers["reserve-share"]!.state).toBe("absent");
+    expect(s.carriers["device-share-h1"]).toBeUndefined();
 
-    // seal only the archive, then hand-craft a SPLIT: seal the share under a DIFFERENT passphrase.
-    sealArchiveWithPassphrase(PASS_A);               // archive → sealed under PASS_A
-    writeFileSync(deviceSharePath(), Buffer.from(SHARE_PLAIN));
-    // seal the share alone by rotating it under PASS_B via a direct seal on a fresh cleartext share:
-    // sealArchiveWithPassphrase seals any cleartext carrier — but it would use PASS given. Seal the share
-    // under PASS_B by temporarily making the archive look sealed (already is) so only the share is cleartext.
-    sealArchiveWithPassphrase(PASS_B);               // archive already sealed (skip); share → sealed under PASS_B
+    // Seal h0 under PASS_A, then add and seal h1 under PASS_B to create a split.
+    sealArchiveWithPassphrase(PASS_A);
+    persistRecoveryDeviceShare({ bytes: { x: 45, ys: new Uint8Array([46, 47, 48]) }, custodian: "device", recoveryEpoch: 1 }, 1);
+    sealArchiveWithPassphrase(PASS_B);
     s = archiveSealStatus({ probe: PASS_A });
-    expect(s.carriers.archive.opensUnderProbe).toBe(true);
-    expect(s.carriers["device-share-h0"]!.opensUnderProbe).toBe(false);
+    expect(s.carriers["device-share-h0"]!.opensUnderProbe).toBe(true);
+    expect(s.carriers["device-share-h1"]!.opensUnderProbe).toBe(false);
     expect(s.split).toBe(true);                      // the carriers disagree on PASS_A → split-KEK
 
     // repair: bring the lagging share (opens under PASS_B) UNDER PASS_A.
     const rep = repairSplitKek(PASS_B, PASS_A);
-    expect(rep.repaired).toEqual(["device-share-h0"]);
-    expect(rep.alreadyConsistent).toEqual(["archive"]);
+    expect(rep.repaired).toEqual(["device-share-h1"]);
+    expect(rep.alreadyConsistent).toEqual(["device-share-h0"]);
     const after = archiveSealStatus({ probe: PASS_A });
     expect(after.split).toBe(false);
-    expect(after.carriers.archive.opensUnderProbe).toBe(true);
     expect(after.carriers["device-share-h0"]!.opensUnderProbe).toBe(true);
+    expect(after.carriers["device-share-h1"]!.opensUnderProbe).toBe(true);
   });
 
   test("daemon-up (runVaultVerb) and daemon-down (direct) land byte-equivalent carriers + set the in-memory policy", { timeout: 60_000 }, async () => {
     // daemon-down: direct seal.
-    writeCleartextCarriers();
+    writeCleartextShares();
     sealArchiveWithPassphrase(PASS_A);
-    const directArchive = plainUnder(readFileSync(archivePath()), PASS_A);
+    const directPlaintext = plainUnder(readFileSync(deviceSharePath(0)), PASS_A);
 
     // fresh vessel, daemon-up path: the same seal through the verb handler.
     rmSync(larIdentityDir(), { recursive: true, force: true });
-    writeCleartextCarriers();
+    writeCleartextShares();
     setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
     const out = await runVaultVerb("vault-seal", { passphrase: PASS_A });
     expect(out["verb"]).toBe("vault-seal");
-    expect(isSealedEnvelope(readFileSync(archivePath()))).toBe(true);
+    expect(isSealedEnvelope(readFileSync(deviceSharePath(0)))).toBe(true);
     // the handler updated the worker's OWN in-memory seal policy (no un-rotate on the next M3 seal).
     expect(process.env[ARCHIVE_PASSPHRASE_ENV]).toBe(PASS_A);
     // both paths recover the SAME plaintext.
-    expect([...plainUnder(readFileSync(archivePath()), PASS_A)]).toEqual([...directArchive]);
+    expect([...plainUnder(readFileSync(deviceSharePath(0)), PASS_A)]).toEqual([...directPlaintext]);
 
     // rotate through the handler moves the policy with the carriers.
     await runVaultVerb("vault-rotate", { old: PASS_A, new: PASS_B });
     expect(process.env[ARCHIVE_PASSPHRASE_ENV]).toBe(PASS_B);
-    expect(opensUnder(readFileSync(archivePath()), PASS_B)).toBe(true);
+    expect(opensUnder(readFileSync(deviceSharePath(0)), PASS_B)).toBe(true);
 
     // status through the handler is a pure read (no policy mutation).
     const st = await runVaultVerb("vault-status", {});
@@ -287,37 +178,34 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
   });
 
   test("empty passphrase is refused (fail-closed); a weak one only WARNS (soft floor)", { timeout: 60_000 }, () => {
-    writeCleartextCarriers();
+    writeCleartextShares();
     expect(() => sealArchiveWithPassphrase("")).toThrow();
     expect(weakPassphraseWarning("short")).toMatch(/floor/);
     expect(weakPassphraseWarning(PASS_A)).toBeNull();
   });
 
-  // EVERY carrier the boot opens under the seal policy rides the lifecycle. The veil archive
-  // (`persistVeilArchive`) and the reserve mine-share (`sealReserveMineShare`) seal under the same policy
-  // the vessel archive does; a rotate that moved the archive alone left them under the OLD passphrase,
-  // and the next boot faulted at the veil's GCM tag under the new one — a split the status never named.
-  test("rotate carries the veil archive and the reserve share with the archive — no carrier stays behind", { timeout: 120_000 }, () => {
-    writeCleartextCarriers();
-    const VEIL_PLAIN = Uint8Array.from([0xd1, 0xd2, 0xd3, 0xd4, 0xd5]);
-    const MINE_PLAIN = Uint8Array.from([0xe1, 0xe2, 0xe3]);
-    writeFileSync(veilArchivePath(), Buffer.from(VEIL_PLAIN));
-    writeFileSync(reserveMineSharePath(), Buffer.from(MINE_PLAIN));
+  // The second device-share handle and the reserve share remain on the lifecycle through rotation.
+  test("rotate carries every device share and the reserve share — no carrier stays behind", { timeout: 120_000 }, () => {
+    writeCleartextShares();
+    const MINE_PLAIN = new TextEncoder().encode(JSON.stringify({ x: 55, ys: [56, 57, 58], custodian: "device", recoveryEpoch: 1 }));
+    persistRecoveryDeviceShare({ bytes: { x: 45, ys: new Uint8Array([46, 47, 48]) }, custodian: "device", recoveryEpoch: 1 }, 1);
+    sealReserveMineShare({ bytes: { x: 55, ys: new Uint8Array([56, 57, 58]) }, custodian: "device", recoveryEpoch: 1 });
 
     const sealed = sealArchiveWithPassphrase(PASS_A);
-    expect(sealed.sealed.sort()).toEqual(["archive", "device-share-h0", "reserve-share", "veil"]);
-    expect(isSealedEnvelope(readFileSync(veilArchivePath()))).toBe(true);
+    expect(sealed.sealed.sort()).toEqual(["device-share-h0", "device-share-h1", "reserve-share"]);
+    expect(isSealedEnvelope(readFileSync(deviceSharePath(1)))).toBe(true);
     expect(isSealedEnvelope(readFileSync(reserveMineSharePath()))).toBe(true);
 
     const rotated = rotateArchivePassphrase(PASS_A, PASS_B);
-    expect(rotated.rotated.sort()).toEqual(["archive", "device-share-h0", "reserve-share", "veil"]);
-    expect(opensUnder(readFileSync(veilArchivePath()), PASS_B)).toBe(true);
-    expect(opensUnder(readFileSync(veilArchivePath()), PASS_A)).toBe(false);
-    expect(Array.from(plainUnder(readFileSync(veilArchivePath()), PASS_B))).toEqual(Array.from(VEIL_PLAIN));
+    expect(rotated.rotated.sort()).toEqual(["device-share-h0", "device-share-h1", "reserve-share"]);
+    expect(opensUnder(readFileSync(deviceSharePath(1)), PASS_B)).toBe(true);
+    expect(opensUnder(readFileSync(deviceSharePath(1)), PASS_A)).toBe(false);
+    expect(Array.from(plainUnder(readFileSync(deviceSharePath(0)), PASS_B))).toEqual(Array.from(DEVICE_SHARE_PLAIN));
+    expect(Array.from(plainUnder(readFileSync(deviceSharePath(1)), PASS_B))).toEqual(Array.from(SECOND_SHARE_PLAIN));
     expect(Array.from(plainUnder(readFileSync(reserveMineSharePath()), PASS_B))).toEqual(Array.from(MINE_PLAIN));
 
     const status = archiveSealStatus({ probe: PASS_B });
-    expect(status.carriers.veil).toMatchObject({ state: "sealed", opensUnderProbe: true });
+    expect(status.carriers["device-share-h1"]).toMatchObject({ state: "sealed", opensUnderProbe: true });
     expect(status.carriers["reserve-share"]).toMatchObject({ state: "sealed", opensUnderProbe: true });
     expect(status.split).toBe(false);
   });

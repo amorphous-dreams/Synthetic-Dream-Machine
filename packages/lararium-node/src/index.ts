@@ -162,25 +162,23 @@ export { LarDiskProjector } from "./disk-projector.js";
 export { DaemonAuthGate } from "./daemon-auth-gate.js";
 export type { SocketChallenge, SocketSorter, SortInput, SortVerdict, GateKey, DaemonAuthGateOptions } from "./daemon-auth-gate.js";
 export { makeSocketSorter, socketsNoLongerHeld } from "./socket-sorter.js";
-export { openNodeVessel, openNodeHerm, standNodeFloor, diskSovereignReaders } from "./open-node-vessel.js";
+export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
-export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive, archivePath, type IdentityAnchors } from "./identity-anchors.js";
+export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, archivePath, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
 
-// The passphrase-LIFECYCLE surface over the at-rest seal (#60) — status/seal/rotate/export/repair + the
-// boot-gate + the daemon vault handler. No new crypto; composes archive-seal's atoms under a ratify
-// discipline (two carriers, independent write lifecycles, never one shared envelope).
+// The passphrase-LIFECYCLE surface over the share carriers (#60) — status/seal/rotate/repair + the
+// daemon vault handler. No new crypto; composes archive-seal's atoms under a ratify
+// discipline (several carriers, independent write lifecycles, never one shared envelope).
 export {
-  archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase, exportSealedArchive,
-  repairSplitKek, assertSealReady, runVaultVerb, weakPassphraseWarning, PASSPHRASE_MIN_LENGTH,
-  archiveOpens, readArchiveOpening,
+  archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
+  repairSplitKek, runVaultVerb, weakPassphraseWarning, PASSPHRASE_MIN_LENGTH,
 } from "./archive-passphrase.js";
 export type {
-  ArchiveOpening, ArchiveOpeningKind,
   ArchiveSealStatus, CarrierStatus, CarrierState, CarrierName,
-  SealResult, RotateResult, ExportResult, RepairResult,
+  SealResult, RotateResult, RepairResult,
 } from "./archive-passphrase.js";
 export { sealExpected, setSealExpected } from "./lares-config.js";
 export { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
@@ -484,7 +482,9 @@ export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
-export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
+export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
+export { seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, custodyVeilKeys } from "./custody-seat.js";
+export type { CustodyOpener } from "./custody-seat.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";

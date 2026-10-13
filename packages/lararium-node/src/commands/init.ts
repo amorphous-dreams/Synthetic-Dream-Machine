@@ -34,7 +34,9 @@ import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "./device-admit.js";
 import { listPersonaRoots } from "../node-vessel-identity.js";
-import { persistIdentityAnchors, loadIdentityAnchors } from "../identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive } from "../identity-anchors.js";
+import { custodyVeilKeys, openedCustody, seatCustody } from "../custody-seat.js";
+import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
 import {
@@ -209,10 +211,22 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   // The slot tree and the custody root land first, so a store that already holds a carrier refuses
   // (`OldShapeRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
   // sealed custody: the VK stays, and nothing here re-mints it.
+  //
+  // THE FOUNDING HOLDS THE KEY IT MINTED. Every identity row this act writes rests sealed under the vessel key,
+  // so the founding seats a fresh holder over the key `foundCustody` hands back and asks nobody for it. Over a
+  // tree that already stands, the caller's seat opens it (a human route on a terminal); with no seat, the first
+  // sealed write below refuses `CustodyLocked` and nothing private lands.
   if (custodyStands) {
+    // THE KEY COMES FIRST: this act seals rows under the standing key, so it opens the seat before it mints or
+    // writes anything. A vessel whose key stays shut refuses here, by name, with the identity home untouched.
+    await openedCustody();
     console.log("[lares vessel found] custody already sealed (vk-slots.bin stands) — the VK and its slots stay as they are.");
   } else {
-    await foundCustody({ io: custodyIo, homes: custodyHomes, slots: opts.custody.slots });
+    const founded = await foundCustody({ io: custodyIo, homes: custodyHomes, slots: opts.custody.slots });
+    const holder = makeCustodyHolder({ io: custodyIo, homes: custodyHomes });
+    await holder.adopt(founded.vk);
+    founded.vk.fill(0);
+    seatCustody(holder);
     console.log("[lares vessel found] custody sealed from birth: vk-slots.bin and the custody root.");
   }
 
@@ -236,9 +250,14 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
     // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
     const admitSeed = await loadVesselSigningSeed();
-    const { contactCardJson, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl } = await runApplyAdmitPayload({
+    // An archive already at rest restores into the admit's provider, so the archive written back keeps what it held.
+    const standingAdmitArchive = await loadIdentityArchive();
+    const { contactCardJson, archive, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl } = await runApplyAdmitPayload({
       repo,
       vesselSeed: admitSeed,
+      // The joinee's veil derives from ITS OWN sealed custody root.
+      deriveVeil: custodyVeilKeys,
+      ...(standingAdmitArchive ? { archiveBytes: standingAdmitArchive } : {}),
       vesselVerifyingKey: operatorIdentity.verifyingKey,
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
@@ -274,9 +293,12 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
     // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.
     await persistVesselCard(contactCardJson);
+    // The archive behind that card rests sealed beside it: the prekey secrets the card names, and the membership
+    // this vessel absorbed. A stand that restores from it presents the same card the hearth admitted.
+    await persistIdentityArchive(archive);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
-    persistIdentityAnchors({
+    await persistIdentityAnchors({
       personaGroupDocIdHex:    payload.personaGroupDocIdHex,
       meshCabalDocIdHex:       payload.meshCabalDocIdHex,
       personaGroupAgentIdHex:  payload.personaGroupAgentIdHex,
@@ -304,11 +326,18 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   // never types the second at all.
   const vesselSeed = await loadVesselSigningSeed();
 
-  const place = await foundThePlace({ repo, vesselSeed, hearthTrueName });
+  // A PLACE FOUNDED AGAIN KEEPS ITS ARCHIVE. An archive already at rest (a re-seed over a kept identity) holds the
+  // prekey secrets behind the vessel's card and everything the vessel individual created; the founding provider
+  // restores from it, so the archive written back below still carries all of it. A row that stands and does not
+  // open refuses here, before anything lands.
+  const standingArchive = await loadIdentityArchive();
+  const place = await foundThePlace({ repo, vesselSeed, hearthTrueName, ...(standingArchive ? { archiveBytes: standingArchive } : {}) });
 
   // Cache the vessel's ContactCard for the light leaf-identity path — a CLI/agent
   // re-presents it on every peer handshake without booting keyhive (OP-AP5).
   await persistVesselCard(place.contactCardJson);
+  // The vessel's own keyhive archive rests sealed from this act on: the prekey secrets behind that card.
+  await persistIdentityArchive(place.archive);
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -417,6 +446,10 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   }
   const packed = readPackedTiddlers(bootstrap);
 
+  // THE KEY COMES FIRST. This act mints a root and seals rows under the vessel key, so it reads its own anchors
+  // row before it mints anything: a vessel holding no key refuses here, by name, with nothing landed.
+  const priorAnchors = await loadIdentityAnchors(handleIndex);
+
   // IDEMPOTENCE, PER INDEX. The mounting face reads its sentinel pin; an added compartment reads its own
   // anchor — a fresh mint at a standing index would orphan the group already there.
   if (mounts) {
@@ -425,9 +458,10 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       return { alreadyStood: true, personaGroupDocIdHex: already, personaKelPrefix: "", signerDid: "" };
     }
   } else {
-    const anchored = loadIdentityAnchors(handleIndex);
-    if (anchored) {
-      return { alreadyStood: true, personaGroupDocIdHex: anchored.personaGroupDocIdHex, personaKelPrefix: "", signerDid: "" };
+    // A COMPARTMENT STANDS WHEN ITS PLANE ENTRY STANDS. The bootstrap entry lands last (below), so anchors with no
+    // entry mark a founding that stopped midway: the act runs again and completes, re-deriving the same veil.
+    if (priorAnchors && packed[personaScopedBagIds(priorAnchors.personaGroupDocIdHex).identities]?.text) {
+      return { alreadyStood: true, personaGroupDocIdHex: priorAnchors.personaGroupDocIdHex, personaKelPrefix: "", signerDid: "" };
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
     if (!packed[PERSONA_GROUP_DOC_ID_TIDDLER]?.text) {
@@ -456,10 +490,11 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   await generateOrLoadPersonaGroupRoot(handleIndex);
   const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
 
-  // The founder-veil derives from (vesselSeed, veilTag). Identity anchors carry the tag beside the
-  // sovereign keys, so founding the same identity against a fresh store derives the same veil. A founding
-  // with no identity anchors carries no tag and mints one — recovery never fabricates a veil.
-  const priorVeilTag = loadIdentityAnchors(handleIndex)?.veilTag;
+  // The founder-veil derives from (the sealed custody root, veilTag). Identity anchors carry the tag, so founding
+  // the same identity against a fresh store derives the same veil, and that veil restores from its own archive. A
+  // founding with no identity anchors carries no tag and mints one — recovery never fabricates a veil.
+  const priorVeilTag = priorAnchors?.veilTag;
+  const priorVeilArchive = priorVeilTag ? await loadVeilArchive(handleIndex) : null;
 
   const face = await foundTheFace({
     repo,
@@ -489,6 +524,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       }));
     })(),
     ...(priorVeilTag ? { veilTag: priorVeilTag } : {}),
+    ...(priorVeilArchive ? { veilArchiveBytes: priorVeilArchive } : {}),
+    // The veil derives from this vessel's sealed custody root, never the floor key.
+    deriveVeil: custodyVeilKeys,
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
@@ -500,8 +538,19 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
                    face.personaGroupDocIdHex, face.meshCabalDocIdHex)
     : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
                         face.personaGroupDocIdHex);
-  writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
-  persistIdentityAnchors({
+  // THREE WRITES, ONE COMMIT POINT. The veil's archive rests first, under this face's own row; the anchors and
+  // their roster line follow; the bootstrap entry lands LAST and commits the face. Every "already stood" reading
+  // above reads that entry, so a founding that stops anywhere before it runs again whole. An entry never stands
+  // over a missing archive or missing anchors.
+  //
+  // WHAT AN UNCOMMITTED FOUNDING LEFT BELONGS TO NO FACE. The run that completes mints its own PersonaGroup and
+  // MeshCabal and writes this face's archive, anchors and (for the mounting face) pins over whatever the stopped
+  // run left; the stopped run's group stays in the store named by nothing, since only the entry written here makes
+  // a group a face. Where the stopped run reached its anchors, the tag they carry re-derives the same veil and that
+  // veil restores from its own archive; where it stopped sooner, a fresh tag derives a fresh veil and its archive
+  // replaces the row.
+  await persistVeilArchive(face.veilArchive, handleIndex);
+  await persistIdentityAnchors({
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
     personaGroupDocIdHex:   face.personaGroupDocIdHex,
     personaGroupAgentIdHex: face.personaGroupAgentIdHex,
@@ -516,6 +565,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     deviceEdge:             face.founderEdge,
   }, handleIndex);
   await repo.flush();
+  writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
 
   return {
     alreadyStood: false,

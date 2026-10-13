@@ -37,12 +37,12 @@ describe("vesselKeyCensus — every key the identity dir holds, with its class",
       writeFileSync(join(dir, ".persona-group-root-joshua-h0.json"), "{}");
       writeFileSync(join(dir, ".persona-group-root-joshua-h2.json"), "{}");
       writeFileSync(join(dir, "keyhive-archive.bin"), "x");
-      writeFileSync(join(dir, "veil-archive.bin"), "x");
+      writeFileSync(join(dir, "veil-archive-h0.bin"), "x");
       writeFileSync(join(dir, ".vessel-card-joshua.json"), "{}");   // a CARD is public — never a key
       const keys = vesselKeyCensus(dir);
       const byName = Object.fromEntries(keys.map((k) => [k.name, k.class]));
       expect(byName["vessel-key"]).toBe("device-minted");
-      expect(byName["veil"]).toBe("device-minted");
+      expect(byName["veil-archive-h0"]).toBe("device-minted");
       expect(byName["persona-root-h0"]).toBe("seed");
       expect(byName["persona-root-h2"]).toBe("seed");
       expect(keys.every((k) => isKeyClass(k.class))).toBe(true);
@@ -79,7 +79,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
     const dir = mkdtempSync(join(tmpdir(), "lar-custody-"));
     writeFileSync(join(dir, ".vessel-key-joshua.json"), "{}");
     writeFileSync(join(dir, "keyhive-archive.bin"), "x");
-    writeFileSync(join(dir, "veil-archive.bin"), "x");
+    writeFileSync(join(dir, "veil-archive-h0.bin"), "x");
     writeFileSync(join(dir, ".persona-group-root-joshua-h0.json"), "{}");
     writeFileSync(join(dir, "recovery-device-share-h0.bin"), "x");
     writeFileSync(join(dir, "seal-reserve-mine-share.bin"), "x");
@@ -114,8 +114,10 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k]));
       expect(byName["recovery-device-share-h0"]!.carrier).toBe("device-share-h0");
       expect(byName["seal-reserve-mine-share"]!.carrier).toBe("reserve-share");
-      expect(byName["keyhive-archive"]!.carrier).toBe("archive");
-      expect(byName["veil"]!.carrier).toBe("veil");
+      expect(byName["keyhive-archive"]!.carrier).toBeNull();
+      expect(byName["veil-archive-h0"]!.carrier).toBeNull();
+      expect(byName["keyhive-archive"]!.atRest).toBe("cleartext");
+      expect(byName["veil-archive-h0"]!.atRest).toBe("cleartext");
       // A cleartext-custody key names NO carrier — null states "no carrier owed", it never loses one.
       expect(byName["persona-root-h0"]!.carrier).toBeNull();
       expect(byName["vessel-key"]!.carrier).toBeNull();
@@ -134,7 +136,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       //   write over a file no rotate owns). `vault status` naming `recovery-device-share-h1` under `keys`
       //   while omitting it from `carriers` was this disagreement, one direction, in the field.
       for (const f of censusSealed) expect(governed.has(f), `the census calls ${f} sealed; the vault governs no carrier there`).toBe(true);
-      expect(governed.size).toBe(4);   // archive · veil · device-share-h0 · reserve-share
+      expect(governed.size).toBe(2);   // device-share-h0 · reserve-share
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
@@ -144,7 +146,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.custody]));
       expect(byName).toEqual({
         "vessel-key": "floor",
-        "keyhive-archive": "hot", "veil": "hot",
+        "keyhive-archive": "hot", "veil-archive-h0": "hot",
         "persona-root-h0": "cold", "recovery-device-share-h0": "cold", "seal-reserve-mine-share": "cold",
       });
     } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -155,7 +157,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
     try {
       const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.class]));
       expect(byName["vessel-key"]).toBe("device-minted");
-      expect(byName["veil"]).toBe("device-minted");
+      expect(byName["veil-archive-h0"]).toBe("device-minted");
       expect(byName["keyhive-archive"]).toBe("device-minted");
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });

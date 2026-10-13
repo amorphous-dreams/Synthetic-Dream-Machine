@@ -13,7 +13,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
+import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type DyadRecord,
@@ -29,7 +29,7 @@ const JOINEE_SEED  = new Uint8Array(32).fill(11);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({
+  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
     repo,
     vesselSeed:         FOUNDER_SEED,
     vesselVerifyingKey: verifyingKey,
@@ -93,7 +93,7 @@ describe("the ceremony mints the dyad", () => {
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({
+    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
       repo: joineeRepo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
       vesselDisplayName: "Ichi", payload, nexusPubkey: joineeKey,
     });

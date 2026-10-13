@@ -109,6 +109,14 @@ async function contentRefBytes(content: Uint8Array): Promise<Uint8Array> {
   return webDigest("SHA-256", content);
 }
 
+/** An Archive that decodes and restores an identity other than the one the seed derives. Nothing stands. */
+export class ArchiveIdentityMismatch extends Error {
+  override readonly name = "ArchiveIdentityMismatch";
+  constructor(readonly restored: string, readonly seed: string) {
+    super(`the at-rest archive restores identity ${restored}… and the seed derives ${seed}…: the archive belongs to another identity, and nothing stands over it`);
+  }
+}
+
 export class KeyhiveProvider implements CapabilityProvider {
   private kh:         KH.Keyhive | null = null;
   private eventStore: CapabilityProviderInitOpts["eventStore"] | null = null;
@@ -155,7 +163,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     this.eventStore = opts.eventStore;
 
     const signer = KH.Signer.memorySignerFromBytes(opts.seed);
-    let   store  = KH.CiphertextStore.newInMemory();
+    const store  = KH.CiphertextStore.newInMemory();
     // The identity a boot stands is the SEED's — an Individual's Identifier IS its signer's verifying key
     // (`whoami.bytes` === `signer.verifyingKey`). An archive that restores a DIFFERENT identity is a cache
     // of some other founding, never this seed's identity.
@@ -192,36 +200,20 @@ export class KeyhiveProvider implements CapabilityProvider {
     // stable card — or a fresh init orphans them and the shared content reads "Key not found". Absent an
     // archive, mint a fresh identity (the founding path, and every not-yet-admitted vessel).
     if (opts.archiveBytes) {
-      try {
-        this.kh = await new KH.Archive(opts.archiveBytes).tryToKeyhive(store, signer, handler);
-      } catch (err) {
-        // The seal already validated these bytes on unseal (a wrong/absent key throws earlier, at the GCM
-        // tag), so a decode failure HERE is a keyhive-version FORMAT skew — the prior identity is unrecoverable
-        // under this build regardless. Re-mint fresh rather than brick a lit vessel WHEN the caller opts in;
-        // otherwise keep the fail-loud default.
-        if (!opts.reMintOnUnreadableArchive) throw err;
-        console.warn(
-          `[keyhive] the at-rest archive is UNREADABLE under this build (${String((err as Error)?.message ?? err).slice(0, 80)}) — ` +
-          `standing a FRESH keyhive identity; the prior identity is unrecoverable across this format skew`,
-        );
-        this.kh = await KH.Keyhive.init(signer, store, handler);
-      }
-      // A READABLE archive whose identity DISAGREES with the seed is an ORPHAN — a cache of a superseded
-      // founding, not this seed's identity. It reaches here after a preserving re-pave: the founder-veil key
-      // derives from a per-founding tag, so re-lighting the face mints a fresh tag while the prior veil's
-      // archive still loads. Restoring it splits the provider — `whoami` reads the archive's key while
-      // `contactCard` presents the seed's signer — so a peer that receives the card never knows the delegate
-      // audience (`audience not known to this provider`). The seed decides the identity: discard the orphan and
-      // stand fresh, exactly as `rm -rf identity` would, and let the caller's hydrateFromEventStore re-establish
-      // the live membership. A fresh store — the discarded archive's ciphertext must not ride into the new one.
-      if (this.kh && bytesToHex(this.kh.whoami.bytes) !== seedIdentity) {
-        console.warn(
-          `[keyhive] the at-rest archive restores a DIFFERENT identity than the seed derives ` +
-          `(${bytesToHex(this.kh.whoami.bytes).slice(0, 20)}… vs ${seedIdentity.slice(0, 20)}…) — ` +
-          `an orphaned archive from a superseded founding; standing fresh from the seed and re-hydrating`,
-        );
-        store = KH.CiphertextStore.newInMemory();
-        this.kh = await KH.Keyhive.init(signer, store, handler);
+      // AN ARCHIVE THAT DOES NOT DECODE REFUSES THE STAND. These bytes opened under the vessel key, so a decode
+      // fault means this build cannot read what the vessel keeps; standing a fresh identity in its place would
+      // strand every group the kept one created, silently. The fault names itself and nothing mints over it.
+      this.kh = await new KH.Archive(opts.archiveBytes).tryToKeyhive(store, signer, handler);
+      // A READABLE ARCHIVE OF ANOTHER IDENTITY REFUSES THE STAND. An Individual's identifier IS its signer's
+      // verifying key, so an archive that restores any other identity belongs to another seed. Restoring it would
+      // split the provider (`whoami` reads the archive's key while the contact card presents the seed's signer),
+      // and standing fresh in its place would let the next export land an empty identity over the kept row. The
+      // row and the seed disagree: the fault names itself, the provider holds nothing, and whoever founds a face
+      // anew writes that face's own archive in the act that founds it.
+      if (bytesToHex(this.kh.whoami.bytes) !== seedIdentity) {
+        const restored = bytesToHex(this.kh.whoami.bytes).slice(0, 20);
+        this.kh = null;
+        throw new ArchiveIdentityMismatch(restored, seedIdentity.slice(0, 20));
       }
     } else {
       this.kh = await KH.Keyhive.init(signer, store, handler);

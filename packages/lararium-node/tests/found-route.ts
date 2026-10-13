@@ -10,6 +10,8 @@ import { runInit, type InitOptions } from "../src/commands/init.js";
 import { direct } from "./direct-store.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
+import { makeCustodyHolder } from "../src/custody-holder.js";
+import { seatCustody } from "../src/custody-seat.js";
 import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 
 /** The fixed test passphrase. It guards nothing: every founding here lives under a scratch root. */
@@ -33,5 +35,22 @@ export function foundDirect(opts: Omit<InitOptions, "repo" | "custody"> & { read
  */
 export async function sealTestCustody(): Promise<void> {
   const homes = { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
-  await foundCustody({ io: new FsCustodyIo(homes), homes, slots: TEST_CUSTODY.slots });
+  const io = new FsCustodyIo(homes);
+  const founded = await foundCustody({ io, homes, slots: TEST_CUSTODY.slots });
+  // The founding that follows writes rows sealed under this key, so the suite seats the holder that keeps it.
+  const holder = makeCustodyHolder({ io, homes });
+  await holder.adopt(founded.vk);
+  seatCustody(holder);
+}
+
+/**
+ * Seat an unlocked holder over the custody ALREADY standing at the current `LAR_ROOT`, by the test route: for a
+ * suite that returns to a root some earlier act founded and reads or writes its sealed rows.
+ */
+export async function openTestCustody(): Promise<void> {
+  const homes = { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
+  const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
+  const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+  if (opened.reading !== "opens") throw new Error(`the test route did not open this root's custody: ${opened.reading}`);
+  seatCustody(holder);
 }

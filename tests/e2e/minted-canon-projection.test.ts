@@ -20,7 +20,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { existsSync, readdirSync, statSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { targetInstance, unlockStaged, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
@@ -115,6 +115,8 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
         else if (performance.now() - t0 > 120_000) { clearInterval(poll); reject(new Error(`reboot never reached live:\n${secondLog.slice(-800)}`)); }
       }, 500);
     });
+
+    unlockStaged(lar.root);
 
     // sanity: the reboot actually activated the minted wiki (not the lares-wiki fallback) —
     // asserted only once the causal marker above proves the activation line has been written.

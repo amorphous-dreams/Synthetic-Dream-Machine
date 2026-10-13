@@ -518,7 +518,7 @@ export async function browserJoineePersonaIndex(idbName = "lares:vessel"): Promi
   if (worn !== undefined) return worn;                 // an explicit worn pointer wins
   const roots = await vault.listRoots();
   if (roots.length > 0) return roots[0];               // a founder with no explicit pointer → its founding root
-  const anchored = vault.anchors.list();               // a joinee holds anchors, no root → its admitted index
+  const anchored = await vault.anchors.list();         // a joinee holds anchors, no root → its admitted index
   return anchored.length > 0 ? anchored[0] : undefined;
 }
 

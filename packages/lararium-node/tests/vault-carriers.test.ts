@@ -13,7 +13,7 @@ import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wr
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
-  CUSTODY_CLASSES, carrierTable, carrierCensus, vaultCarrierFiles, vkSealedCarriers, rotateVesselVk, vkSlotsPath,
+  CUSTODY_CLASSES, carrierTable, carrierCensus, vaultCarrierFiles, vaultCarriers, vesselCustodyHomes, vkSealedCarriers, rotateVesselVk, vkSlotsPath,
   type CustodyHomes, type CustodyClass,
 } from "../src/vault-carriers.js";
 import { vesselKeyCensus } from "../src/key-class.js";
@@ -69,7 +69,7 @@ const SOWN: Record<string, string> = {
   "identity/vk-slots.bin":                      "slots",
   "identity/custody-root.bin":                  "root",
   "identity/keyhive-archive.bin":               "x",
-  "identity/veil-archive.bin":                  "x",
+  "identity/veil-archive-h0.bin":               "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
   "identity/recovery-device-share-h0.bin":      "x",
   "identity/seal-reserve-mine-share.bin":       "x",
@@ -155,6 +155,10 @@ describe("the carrier table", () => {
       expect(at("seal", "nexus/carriage-consent/AID1.json")?.row).toBe("carriage-consent");
       expect(at("seal", "nexus/carriage-admit/AID1.json")?.row).toBe("carriage-admit");
       expect(at("seal", "transitions.json")?.custody).toBe("hot");
+      expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", lifecycle: null });
+      expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, lifecycle: null });
+      expect(at("identity", "anchors-h0.json")).toMatchObject({ row: "anchors", face: 0 });
+      expect(census.every((entry) => entry.face === "vessel" || typeof entry.face === "number")).toBe(true);
       // Every sown file lands on exactly one row, and every row stands in the sowing.
       expect(census.length).toBe(Object.keys(SOWN).length);
       expect(new Set(census.map((e) => e.row))).toEqual(new Set(Object.keys(RULED)));
@@ -210,8 +214,29 @@ describe("the carrier table", () => {
       sow(homes, SOWN);
       const lifecycle = carrierCensus(homes).filter((e) => e.lifecycle !== null);
       expect(new Set(lifecycle.map((e) => e.file))).toEqual(vaultCarrierFiles(homes.identity));
-      expect(lifecycle.map((e) => e.lifecycle).sort()).toEqual(["archive", "device-share-h0", "reserve-share", "veil"]);
+      expect(lifecycle.map((e) => e.lifecycle).sort()).toEqual(["device-share-h0", "reserve-share"]);
+      expect(carrierCensus(homes).filter((e) => e.row === "keyhive-archive" || e.row === "veil-archive")
+        .every((e) => e.lifecycle === null)).toBe(true);
     } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("the lifecycle API lists share carriers alone", () => {
+    const root = mkdtempSync(join(tmpdir(), "lar-vault-carriers-"));
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    const homes = vesselCustodyHomes();
+    try {
+      sow(homes, {
+        "identity/recovery-device-share-h0.bin": "x",
+        "identity/seal-reserve-mine-share.bin": "x",
+        "identity/keyhive-archive.bin": "x",
+        "identity/veil-archive-h0.bin": "x",
+      });
+      expect(vaultCarriers().map((carrier) => carrier.name).sort()).toEqual(["device-share-h0", "reserve-share"]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 

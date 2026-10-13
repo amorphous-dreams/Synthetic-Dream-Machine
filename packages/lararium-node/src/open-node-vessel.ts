@@ -92,7 +92,7 @@ import {
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
-import { setCasDoor, setRestDoor } from "./worker-handle.js";
+import { setCasDoor, setRestDoor, setCustodyWriteDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
@@ -143,9 +143,9 @@ import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
-import { loadIdentityArchive, loadVeilArchive } from "./identity-anchors.js";
+import { loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
+import { custodyHeld, custodyVeilKeys } from "./custody-seat.js";
 import { readWornPersonaMount } from "./worn-mount.js";
-import { archiveOpens } from "./archive-passphrase.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import {
   makeResidencyStatsReactor,
@@ -332,7 +332,8 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    *  releases it when it tears down or refuses. */
   floor?: NodeFloor;
   /** The private rows this composition reads. `null` composes at the FLOOR: no reader runs, so no private row is
-   *  read and nothing private is minted. Absent: the disk readers when the archive opens, the floor otherwise. */
+   *  read and nothing private is minted. Absent: the seated custody's rows when this process holds its vessel key,
+   *  the floor otherwise. */
   sovereign?: SovereignReaders | null;
 }
 
@@ -361,14 +362,23 @@ export interface SovereignReaders {
   readonly personaRoots: () => ReturnType<typeof listPersonaRoots>;
   readonly walkRecords: (storageDir: string) => ReturnType<typeof listWalkRecords>;
   readonly keyring: (a: { sealEpoch: number }) => NexusConvergenceKeyring;
-  readonly archive: () => Uint8Array | null;
-  readonly veilArchive: () => Uint8Array | null;
+  /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
+  readonly archive: () => Promise<Uint8Array | null>;
+  /** One face's veil archive, or null when none stands. */
+  readonly veilArchive: (handleIndex: number) => Promise<Uint8Array | null>;
+  /** The veil keys a tag names, derived from the sealed custody root. */
+  readonly veil: (groupTag: string) => Promise<{ signingKey: string; verifyingKey: string }>;
+  /** Seal the vessel's keyhive archive at rest. */
+  readonly writeArchive: (bytes: Uint8Array) => Promise<void>;
+  /** Seal one face's veil archive at rest. */
+  readonly writeVeilArchive: (bytes: Uint8Array, handleIndex: number) => Promise<void>;
 }
 
-/** The sovereign rows as they rest on disk. */
-export function diskSovereignReaders(): SovereignReaders {
+/** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
+export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
-    keyring: standNexusKeyring, archive: loadIdentityArchive, veilArchive: loadVeilArchive };
+    keyring: standNexusKeyring, archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
+    writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive };
 }
 
 /**
@@ -551,8 +561,9 @@ async function prepareNodeBootOn(
 ): Promise<NodeBootPrep> {
   const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
   // ONE READING OF WHAT THIS COMPOSITION MAY OPEN. Handed readers, it reads the private rows through them; handed
-  // `null`, it stands at the floor and reads none. Left to itself it reads the disk when the archive opens.
-  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (archiveOpens() ? diskSovereignReaders() : null);
+  // `null`, it stands at the floor and reads none. Left to itself it reads the seated custody's rows when this
+  // process holds its vessel key, and stands at the floor when it holds none.
+  const sovereign = opts.sovereign !== undefined ? opts.sovereign : (custodyHeld() ? seatedSovereignReaders() : null);
   // THE CORPUS ROOT every disk projection mirrors under: the one named, else `LAR_ROOT`, else the repo. A boot
   // isolated under `LAR_ROOT` projects into that root, never into the tracked tree; with neither, a fresh clone
   // boots repo-relative as it always has.
@@ -1775,13 +1786,30 @@ async function prepareNodeBootOn(
     // writers, and a gate there would leave every other route into the worker unchecked
     // (waking-floor #/the-breaks ①). Reading it twice would let the two readings drift apart mid-boot.
     const opens = sovereign !== null;
-    const archiveBytes = sovereign?.archive() ?? null;
-    const veilArchiveBytes = sovereign?.veilArchive() ?? null;
+    // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own handle-index; the face this
+    // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
+    // row the island's export lands in. The veil's key derives HERE, from the sealed custody root: the island
+    // receives it derived and holds no root.
+    const mountedFace = wornMount?.handleIndex ?? 0;
+    const archiveBytes = sovereign ? await sovereign.archive() : null;
+    const dyadVeil = sovereign && dyadVeilTag
+      ? { tag: dyadVeilTag, signingKey: (await sovereign.veil(dyadVeilTag)).signingKey }
+      : null;
+    const veilArchiveBytes = sovereign && dyadVeil ? await sovereign.veilArchive(mountedFace) : null;
+    // THE CUSTODY WRITE DOOR stands with a sovereign composition and drops at its teardown: the island's archive
+    // exports reach the sealed writer here, under the key this thread holds. At the floor no door stands, so an
+    // island's ask answers unwritten.
+    if (sovereign) {
+      setCustodyWriteDoor((carrier, bytes) => carrier === "archive"
+        ? sovereign.writeArchive(bytes)
+        : sovereign.writeVeilArchive(bytes, mountedFace));
+      stood.push({ what: "the custody write door", down: () => setCustodyWriteDoor(null) });
+    }
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
       archiveOpens:         opens,
-      ...(dyadVeilTag ? { dyadVeilTag } : {}),
+      ...(dyadVeil ? { dyadVeil } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as
       // explicit `undefined` would read as a torn face rather than an unlit one.

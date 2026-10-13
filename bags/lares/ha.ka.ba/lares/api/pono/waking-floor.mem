@@ -355,20 +355,20 @@ floor names WHAT A VESSEL SERVES, never what it weakens.''
 ''RULED'': every boot rests at the floor until a human unlocks, and nothing stored may lift it. An
 unattended boot rests and never refuses.
 
-''What the code does'': a boot whose archive does not open composes at the floor
-(`packages/lararium-node/src/open-node-vessel.ts` reads `archiveOpens()` and hands the composition no
-sovereign readers), and a human's unlock raises it. A boot whose archive opens, through the
-environment passphrase or because no seal stands, takes its sovereign readers at boot with no hand
-present; the ruling retires that road (OWED in code, below).
-`packages/lararium-node/src/archive-passphrase.ts` carries the option space the ruling chose among.
+''What the code does'': every boot composes at the floor. `packages/lararium-node/src/main.ts` hands its
+first composition no sovereign readers, and a composition reaches a private row only through the custody
+seat (`packages/lararium-node/src/custody-seat.ts`), which refuses `CustodyLocked` while no key rests in
+it. A human's unlock raises the vessel. The keyhive archive, each face's veil archive and each face's
+anchors rest sealed under the vessel key from the founding's first write, so no stored passphrase and no
+unsealed archive lifts a boot.
 
 ''OWED'': a bounded ember, held as design input and unbuilt. It raises to SERVING alone and never
 signs or admits; a count dial bounds it, and no clock; it wants the device's own unlock plus a second
 signal; each raise gets recorded; any other device of the human removes it.
 
-''OWED in code'': the environment passphrase route (`LARES_ARCHIVE_PASSPHRASE`) and the unsealed
-archive each lift a boot above the floor with no hand present; both leave with the passphrase
-lifecycle and the cleartext archive mode
+''OWED in code'': the passphrase lifecycle (`LARES_ARCHIVE_PASSPHRASE`) still seals the share carriers
+(the device recovery shares and the reserve share) and lifts no boot; it leaves when those rows move
+under the vessel key
 (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
 
 <<~/ahu>>
@@ -401,6 +401,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zf2LlRmJzjxp76qHFexY6K9p0D_hAxD1gd-JZ02g3Vk
+<<^ code="&#x0003;">>ni:///sha-256;GcW1hiMprT6Nufqiv1vQcXZRNxMb1iZSMtaoX_53juA
 
 <<^ code="&#x0004;" -> to="?">>

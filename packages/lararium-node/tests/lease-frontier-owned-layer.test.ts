@@ -20,7 +20,7 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
@@ -42,7 +42,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({
+  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
     repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });

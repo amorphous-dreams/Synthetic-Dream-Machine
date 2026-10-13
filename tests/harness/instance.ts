@@ -228,6 +228,28 @@ export interface StageOptions {
   readonly locked?: boolean;
 }
 
+/**
+ * Unlock a staged vessel a suite stood by its own hand. A vessel stands holding no vessel key; this opens it
+ * through the test door and returns once the daemon has composed again. A root holding no custody tree has nothing
+ * to unlock. Any other refusal throws, naming the door's answer.
+ */
+export function unlockStaged(root: string): void {
+  // The door answers rc 3 while no daemon holds the root's rendezvous name yet: a stand a suite just asked for may
+  // still open its claim. The wait COUNTS looks (a short pause between them) and never compares a clock.
+  let last = unlockTestCustody(root);
+  for (let look = 0; last.code === 3 && look < UNLOCK_LOOKS; look++) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250);
+    last = unlockTestCustody(root);
+  }
+  const { code, answer, stderr } = last;
+  if (code !== 0 && answer?.["reading"] !== "tree-absent") {
+    throw new Error(`staged vessel never unlocked (door rc ${code}): ${JSON.stringify(answer)} ${stderr.slice(-400)}`);
+  }
+}
+
+/** How many looks `unlockStaged` gives a daemon that does not answer yet. */
+const UNLOCK_LOOKS = 240;
+
 /** The default rite: a place, then a face. */
 async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
   // Founding — `lares vessel found` seeds the marked scratch root (init runs inside).
@@ -311,12 +333,12 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   // with what the key opens, so a suite meets the vessel in the standing it will keep. A root that holds no
   // custody tree has nothing to unlock and stands as it stood.
   if (!opts.locked) {
-    const unlocked = unlockTestCustody(root);
-    const reading = unlocked.answer?.["reading"];
-    if (unlocked.code !== 0 && reading !== "tree-absent") {
+    try {
+      unlockStaged(root);
+    } catch (err) {
       await stopChild(daemon);
       removeStagedRoot(root);
-      throw new Error(`staged vessel never unlocked (door rc ${unlocked.code}): ${JSON.stringify(unlocked.answer)} ${unlocked.stderr.slice(-400)}\n${log.slice(-1200)}`);
+      throw err;
     }
     recordTimeline({ vessel: name, event: "unlocked", unlockMs: since() });
   }

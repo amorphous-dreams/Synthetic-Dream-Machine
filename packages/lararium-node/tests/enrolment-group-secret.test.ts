@@ -11,7 +11,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
-import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
+import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import {
   hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, groupSecretSealTitle,
   groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, tiddlerText, type LarDoc,
@@ -30,7 +30,7 @@ async function restedSeal(repo: Repo, daemonUrl: string, group: string): Promise
 async function founded() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({
+  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
     repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "founder",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
   });
@@ -52,7 +52,7 @@ async function admitFor(founder: Awaited<ReturnType<typeof founded>>, joineeKey:
 const apply = async (payload: Awaited<ReturnType<typeof runDeviceAdmitEdge>>) => {
   const repo = new Repo({ sharePolicy: async () => true });
   const joineeKey = await pubOf(JOINEE_SEED);
-  const applied = await runApplyAdmitPayload({ repo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey, vesselDisplayName: "joinee", payload, nexusPubkey: joineeKey });
+  const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)), repo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey, vesselDisplayName: "joinee", payload, nexusPubkey: joineeKey });
   return { repo, applied };
 };
 

@@ -16,7 +16,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, KeyhiveProvider, DaemonEventStore } from "@lararium/keyhive";
+import { runFoundingCeremony, KeyhiveProvider, DaemonEventStore, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, hexToBytes, deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText,
@@ -31,7 +31,7 @@ describe("the founder's veil seat survives the night", () => {
   test("★ knowsAgent(the founding PersonaGroup) holds through every reboot shape ★", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const verifyingKey = await pubOf(FOUNDER_SEED);
-    const f = await runFoundingCeremony({
+    const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
       repo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: verifyingKey,
       vesselDisplayName: "Reboot Shrine",
       binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },

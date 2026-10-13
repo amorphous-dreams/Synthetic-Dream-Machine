@@ -18,8 +18,7 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
-  runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents, readLeaseFrontier,
-} from "@lararium/keyhive";
+  runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents, readLeaseFrontier, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import { deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, hexToBytes } from "@lararium/mesh";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, type LarDoc,
@@ -63,7 +62,7 @@ describe("two vessels bind under one Handle", () => {
   test("the joinee joins the founder's PersonaGroup and reads its shared content — real ceremony + boot", async () => {
     const founderRepo = new Repo({ sharePolicy: async () => true });
     const founderKey = await pubOf(FOUNDER_SEED);
-    const cer = await runFoundingCeremony({
+    const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
       repo: founderRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: founderKey,
       vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: founderKey,
     });
@@ -103,7 +102,7 @@ describe("two vessels bind under one Handle", () => {
 
     // Joinee applies the payload (writes the membership to its own daemon doc), then BOOTS restoring its Archive.
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({
+    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
       repo: joineeRepo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
       vesselDisplayName: "Joinee", payload, nexusPubkey: joineeKey,
     });

@@ -17,7 +17,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
 import { FloorWriteRefused } from "../src/archive-write-guard.js";
-import { persistIdentityArchive, archivePath } from "../src/identity-anchors.js";
+import { persistRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { rotateVesselVk, vesselCustodyHomes, vkSealedCarriers, vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 
@@ -233,43 +233,45 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
 });
 
 describe("PROOF 2 — the floor guard: an overwrite the floor cannot open refuses", () => {
-  const FLOOR_EXPORT = Uint8Array.from([0x00, 0x01]);
+  const recoveryShare = (x: string) => ({ bytes: { x, ys: Uint8Array.from([1, 2, 3]) }, custodian: "device" as const, recoveryEpoch: 1 });
+  const deviceSharePath = () => join(homes.identity, "recovery-device-share-h0.bin");
 
-  test("a VK-sealed carrier at the archive path refuses the floor's write, with and without a passphrase, and its bytes stand", async () => {
+  test("a VK-sealed device share refuses the floor's write, with and without a passphrase, and its bytes stand", async () => {
     const io = new FsCustodyIo(homes);
     const vk = mintVk();
     const treePath = vkSlotsPath(homes.identity);
     await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) });
-    const carrier: SealedCarrier = { name: "identity/keyhive-archive.bin", path: archivePath() };
+    const carrier: SealedCarrier = { name: "identity/recovery-device-share-h0.bin", path: deviceSharePath() };
     await writeSealedCarrier({ io, vk, treePath, carrier, plaintext: text("sovereign") });
-    const stood = readFileSync(archivePath());
+    const stood = readFileSync(deviceSharePath());
     expect(readVkCarrier(stood)).toBe("sealed");
-    // The hole this guard closes: the passphrase reader frames nothing in a VK seal, so the OLD guard read it `bare` and let the write through.
+    // The passphrase reader frames nothing in a VK seal, so the guard must inspect the VK frame before writing.
     expect(readSealCarrier(stood)).toBe("bare");
 
-    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(FloorWriteRefused);   // floor, no key
+    expect(() => persistRecoveryDeviceShare(recoveryShare("fresh"))).toThrow(FloorWriteRefused);   // floor, no key
     setEnv(ARCHIVE_PASSPHRASE_ENV, "a-passphrase-that-is-not-the-vk");
-    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(/floor holds no VK/);   // floor, a "key" of the wrong kind
-    expect(readFileSync(archivePath()).equals(stood)).toBe(true);
+    expect(() => persistRecoveryDeviceShare(recoveryShare("fresh"))).toThrow(/floor holds no VK/);   // floor, a "key" of the wrong kind
+    expect(readFileSync(deviceSharePath()).equals(stood)).toBe(true);
     // And the sealed writer, holding the VK, still replaces it.
     await writeSealedCarrier({ io, vk, treePath, carrier, plaintext: text("sovereign-2") });
     expect(str((await openSealedCarrier({ io, vk, carrier }) as { plaintext: Uint8Array }).plaintext)).toBe("sovereign-2");
   });
 
-  test("a TORN VK frame also refuses (no key can be judged), where the old guard read it bare", () => {
-    writeFileSync(archivePath(), Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]));
-    const stood = readFileSync(archivePath());
+  test("a TORN VK frame refuses because no key can be judged", () => {
+    writeFileSync(deviceSharePath(), Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]));
+    const stood = readFileSync(deviceSharePath());
     expect(readVkCarrier(stood)).toBe("torn");
     expect(readSealCarrier(stood)).toBe("bare");
-    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(FloorWriteRefused);
-    expect(readFileSync(archivePath()).equals(stood)).toBe(true);
+    expect(() => persistRecoveryDeviceShare(recoveryShare("fresh"))).toThrow(FloorWriteRefused);
+    expect(readFileSync(deviceSharePath()).equals(stood)).toBe(true);
   });
 
-  test("CONTROL: an absent path and a bare cleartext archive both still take the write", () => {
-    persistIdentityArchive(FLOOR_EXPORT);                       // absent: a founding is never blocked
-    expect(readFileSync(archivePath()).equals(Buffer.from(FLOOR_EXPORT))).toBe(true);
-    persistIdentityArchive(Uint8Array.from([9, 9, 9]));         // bare cleartext answers to the cleartext policy
-    expect(readFileSync(archivePath()).equals(Buffer.from([9, 9, 9]))).toBe(true);
+  test("CONTROL: an absent path and a bare cleartext device share both still take the write", () => {
+    persistRecoveryDeviceShare(recoveryShare("first"));         // absent: a founding is never blocked
+    const first = readFileSync(deviceSharePath());
+    expect(JSON.parse(first.toString("utf8")).x).toBe("first");
+    persistRecoveryDeviceShare(recoveryShare("second"));       // bare cleartext answers to the cleartext policy
+    expect(JSON.parse(readFileSync(deviceSharePath(), "utf8")).x).toBe("second");
   });
 });
 

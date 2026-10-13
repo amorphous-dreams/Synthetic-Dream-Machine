@@ -6,7 +6,7 @@
  *
  * The M3 boot re-seal exported the identity archive on EVERY boot, and its own comment named the
  * seam: "seed the on-disk archive FLOOR every boot" — written when only one boot shape existed.
- * A vessel whose archive holds SHUT boots too now (`standAs`, `readArchiveOpening`), and canon rules
+ * A vessel holding no vessel key boots too (`standAs`: every boot rests at the floor), and canon rules
  * what it may do there:
  *
  *   waking-floor #/the-shape:
@@ -108,7 +108,7 @@ export interface ArchiveFloorOutcome {
 
 export interface ArchiveFloorInput {
   /**
-   * Whether THIS vessel's identity archive opens — the node's `readArchiveOpening().opens`, carried
+   * Whether THIS vessel's identity archive opens — true only for a composition that holds the vessel key, carried
    * across the worker boundary on `daemonAuth`. Typed `unknown` deliberately: the door reads
    * `=== true` and bars everything else, so an omitted or drifted answer fails CLOSED rather than
    * relying on a caller's good manners.

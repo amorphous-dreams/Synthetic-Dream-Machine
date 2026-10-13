@@ -125,7 +125,7 @@ export async function personaMultitudeView(
   publicView?: OwnPublicHandleView,
 ): Promise<PersonaMultitudeEntry[]> {
   const roots     = await vault.listRoots();
-  const anchored  = vault.anchors.list();
+  const anchored  = await vault.anchors.list();
   const named     = (await petnames.entries()).map(([i]) => i);
   const federated = publicView ? await publicView.list() : [];
 

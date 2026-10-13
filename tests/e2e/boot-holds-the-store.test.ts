@@ -20,7 +20,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { cliFor, freePort, stageDir, stopChild, rendezvousSocket, type LarInstance } from "../harness/instance.js";
+import { cliFor, freePort, stageDir, stopChild, rendezvousSocket, unlockStaged, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
@@ -78,6 +78,7 @@ describe("a booting vessel holds its store", () => {
       while (!bootLog.includes("phase → live") && daemon?.exitCode === null && performance.now() < by) {
         await new Promise((r) => setTimeout(r, 50));
       }
+      if (bootLog.includes("phase → live")) unlockStaged(root);
       liveAt = performance.now();
     })();
     // Half the loops start at the spawn, before the boot begins; half start the instant it does, so an act begins

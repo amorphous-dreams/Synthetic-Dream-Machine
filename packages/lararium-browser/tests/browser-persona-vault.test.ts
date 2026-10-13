@@ -16,7 +16,7 @@
  */
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed,
@@ -115,7 +115,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     const signerSeed = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
 
-    const f = await runFoundingCeremony({
+    const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
       repo,
       vesselSeed,
       vesselVerifyingKey: device.verifyingKey,
@@ -146,7 +146,7 @@ describe("the True Name Model — the founding mints a DISTINCT persona-root as 
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const signer0 = await loadBrowserPersonaRootSeed(name, 0);
     await wearBrowserPersona(name, 0);
-    await runFoundingCeremony({
+    await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
       repo, vesselSeed, vesselVerifyingKey: device.verifyingKey,
       vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
     });

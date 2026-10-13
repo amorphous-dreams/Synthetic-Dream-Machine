@@ -1,9 +1,10 @@
 /**
- * `lares vault {status,seal,rotate,export <path>,repair}` — the at-rest seal LIFECYCLE surface.
+ * `lares vault {status,unlock,lock,bind,unbind,seal,rotate,repair}` — the vessel key custody door, and the
+ * retiring passphrase lifecycle over the share carriers.
  *
- * The vessel seals TWO secret carriers at rest under a scrypt-derived passphrase KEK: the keyhive archive
- * (the sovereign identity floor) and the device recovery share. This command is the operator's door to
- * their lifecycle — see them, seal them, rotate the passphrase, export a sealed backup, repair a split.
+ * The vessel key seals the vessel's private rows; `unlock`, `lock`, `bind` and `unbind` open, drop and re-route
+ * it. The passphrase lifecycle (`seal`, `rotate`, `repair`) governs the share carriers alone: the device recovery
+ * shares and the reserve share.
  *
  * DAEMON-FIRST: when the daemon holds the socket, the MUTATING verbs route THROUGH it, so the
  * daemon re-persists the carriers AND updates its own in-memory seal policy in one act (no un-rotate).
@@ -14,11 +15,11 @@
  * environment variable (LARES_ARCHIVE_PASSPHRASE / _NEW), never a flag. It drops the instant the op returns.
  */
 
-import { resolve, join } from "node:path";
+import { join } from "node:path";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import {
   archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
-  exportSealedArchive, repairSplitKek, weakPassphraseWarning,
+  repairSplitKek, weakPassphraseWarning,
   ARCHIVE_PASSPHRASE_ENV,
 } from "@lararium/node";
 import {
@@ -37,7 +38,7 @@ import { helpLines } from "../command-help.js";
 import { canPromptSecret, promptSecret, promptSecretConfirmed } from "../prompt-secret.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-/** The env var carrying a NEW/target passphrase for non-interactive seal/rotate/export. */
+/** The env var carrying a NEW/target passphrase for non-interactive seal/rotate. */
 const NEW_PASS_ENV = "LARES_ARCHIVE_PASSPHRASE_NEW";
 
 function usage(args: ParsedArgs, typed?: string): number {
@@ -185,7 +186,6 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "passphrase": return vaultPassphrase(args);
       case "seal":    return await vaultSeal(args, daemonUp);
       case "rotate":  return await vaultRotate(args, daemonUp);
-      case "export":  return await vaultExport(args, daemonUp);
       case "repair":  return await vaultRepair(args, daemonUp);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
@@ -325,22 +325,6 @@ async function vaultRotate(args: ParsedArgs, daemonUp: boolean): Promise<number>
   emit(args, {
     ok: true, data: { ...output, via },
     human: () => console.log(`rotated ${((output["rotated"] ?? []) as string[]).join(", ") || "(none)"} (${via})`),
-  });
-  return 0;
-}
-
-async function vaultExport(args: ParsedArgs, daemonUp: boolean): Promise<number> {
-  const path = args.positional[1];
-  if (!path) throw new UsageError("export needs a destination path: `lares vault export <path>`");
-  const dest = resolve(path);
-  const force = Boolean(args.flags["force"]);
-  // The BACKUP seal passphrase (a fresh choice for the portable file) — double-entry at a TTY.
-  const pass = await newPass(args, "backup passphrase");
-  warnIfWeak(pass);
-  const { output, via } = await throughStoreDoor({ verb: "vault-export", args: { passphrase: pass, dest, force }, direct: () => ({ ...exportSealedArchive(pass, dest, force) }), daemonUp });
-  emit(args, {
-    ok: true, data: { ...output, via },
-    human: () => console.log(`exported sealed backup → ${output["dest"]} (${output["bytes"]} bytes, ${via})`),
   });
   return 0;
 }

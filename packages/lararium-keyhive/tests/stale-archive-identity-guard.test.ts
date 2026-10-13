@@ -1,23 +1,17 @@
 /**
- * A KEYHIVE ARCHIVE IS A CACHE OF ONE IDENTITY — a boot that restores it under a DIFFERENT seed must
- * not stand a split provider.
+ * A KEYHIVE ARCHIVE BELONGS TO ONE IDENTITY — a stand that meets an Archive of another identity REFUSES.
  *
- * ── THE FAULT THIS PINS ──────────────────────────────────────────────────────────────────────────
- * The founder-veil key derives from (vessel seed × a per-founding tag). Restoring a store from a different
- * founding while retaining an unrelated veil archive leaves that archive on disk; founding the face mints
- * a FRESH tag, so the next lit boot derives a NEW veil key while the
- * ORPHANED archive of the prior veil still loads. keyhive's `Archive.tryToKeyhive` then restores the
- * archive's OWN identity — so `whoami` reads the archive's key while `contactCard` presents the seed's
- * signer. A peer that receives the card learns the signer id, never the whoami id the delegate names, and
- * `delegate({ audience: whoami })` throws `audience not known to this provider`. The fresh-from-void cure
- * (`rm -rf identity`) only works because it removes the orphaned archive.
+ * An Individual's identifier IS its signer's verifying key. `Archive.tryToKeyhive` restores the archive's OWN
+ * identity whatever signer it gets handed, so an Archive of identity A stood under seed B yields a split provider:
+ * `whoami` reads A while the contact card presents B, and a peer that receives the card never learns the id a
+ * delegation names. Discarding the Archive and standing fresh would hide the mismatch and let the next export
+ * land an empty identity over the kept row. So the stand refuses by name and the provider holds nothing.
  *
- * The identity a boot stands is the SEED's, always — the archive is a cache of prekey secrets and the
- * membership DAG for THAT identity, never an identity of its own. So an archive whose identity disagrees
- * with the seed is stale and must be discarded; the event-store hydrate re-establishes live membership.
+ *   S1  an Archive of another identity refuses `ArchiveIdentityMismatch`; nothing stands.
+ *   S2  control: a matching Archive restores its identity and what it created, and whoami agrees with the card.
  */
 import { describe, test, expect } from "vitest";
-import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
+import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "../src/index.js";
 
 const SEED_A = new Uint8Array(32).fill(0xa1);
 const SEED_B = new Uint8Array(32).fill(0xb2);
@@ -38,27 +32,15 @@ async function idPeerLearns(p: KeyhiveProvider): Promise<string> {
 }
 
 describe("a stale archive under a mismatched seed", () => {
-  test("★ the provider stands ONE consistent identity — the seed's, not the archive's ★", async () => {
+  test("S1 an Archive of another identity refuses the stand, and the provider holds nothing", async () => {
     const { archive } = await archiveOfA();
-
-    // Boot under seed B with A's archive — the mismatched-store shape.
     const boot = new KeyhiveProvider();
-    await boot.init({ seed: SEED_B, eventStore: new InMemoryEventStore(), archiveBytes: archive });
-
-    const whoami = await boot.vesselIdentifierHex();
-    const learned = await idPeerLearns(boot);
-
-    // The whole claim: whoami and the presented card name the SAME identity, so a delegate to `whoami`
-    // targets an agent a peer that received the card actually knows. A split provider fails both.
-    expect(whoami, "whoami agrees with the contact card the provider presents").toBe(learned);
-
-    // And that one identity is the SEED's (B), never the orphaned archive's (A).
-    const fresh = new KeyhiveProvider();
-    await fresh.init({ seed: SEED_B, eventStore: new InMemoryEventStore() });
-    expect(whoami, "the seed decides the identity; the stale archive is discarded").toBe(await fresh.vesselIdentifierHex());
+    await expect(boot.init({ seed: SEED_B, eventStore: new InMemoryEventStore(), archiveBytes: archive }))
+      .rejects.toThrow(ArchiveIdentityMismatch);
+    await expect(boot.whoami()).rejects.toThrow(/not initialized/);
   });
 
-  test("★ CONTROL — a MATCHING archive still restores its identity + membership (no regression) ★", async () => {
+  test("S2 control: a matching Archive restores its identity and membership", async () => {
     const { archive, whoamiA, agentA } = await archiveOfA();
 
     const boot = new KeyhiveProvider();

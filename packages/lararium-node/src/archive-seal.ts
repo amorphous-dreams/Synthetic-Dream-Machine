@@ -129,8 +129,8 @@ export function passphraseSealPolicy(passphrase: string): SealPolicy {
  *
  * The third value exists because collapsing it into `key-fails` is the pin-reader inversion: one answer
  * covering both "the key is wrong" and "the carrier is torn" sends an operator to re-type a passphrase that
- * was right all along, and hides a corruption behind a credential error. `readArchiveOpening` reads its five
- * boot answers from this, and `refuseWriteOverUnopenableSeal` names its refusals from it — one distinction,
+ * was right all along, and hides a corruption behind a credential error. `archiveSealStatus` reads its
+ * probe verdict from this, and `refuseWriteOverUnopenableSeal` names its refusals from it — one distinction,
  * derived once, so the two can never drift apart.
  *
  * CALLERS HANDLE THE CLEARTEXT POLICY FIRST. A policy carrying no `unseal` cannot open anything, so it reads
@@ -187,7 +187,7 @@ export function sealArchiveBytes(plaintext: SelfSovereignSecret, policy: SealPol
  * false on every envelope version it cannot frame, so bytes holding an intact seal from a later
  * vessel took the cleartext branch and this function HANDED BACK THE CIPHERTEXT AS THOUGH IT WERE
  * PLAINTEXT. Nothing downstream can tell that apart from a genuinely bare archive, so a re-seal
- * (`vault export`) wrapped it again and a reader parsed garbage far from the cause. Only `bare`
+ * wrapped it again and a reader parsed garbage far from the cause. Only `bare`
  * passes through; `unopenable` throws, naming what stands rather than what is missing.
  */
 export function openArchiveBytes(stored: Uint8Array, policy: SealPolicy = resolveSealPolicy()): Uint8Array {

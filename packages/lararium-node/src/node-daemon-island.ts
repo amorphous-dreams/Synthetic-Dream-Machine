@@ -6,19 +6,19 @@
  */
 
 import { parentPort } from "worker_threads";
-import { runSovereignWorker, vesselRestAsker } from "./sovereign-island-model.js";
+import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountDiskProjection } from "./island-behaviors.js";
 import type { IslandContext } from "@lararium/tw5";
-import { persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 
-// The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that
-// lands the keyhive Archive in the sovereign identity home. The worker inherits process.env, so it
-// resolves the SAME `<lares>/identity` path as main — the archive persists direct, no worker→main hop.
+// The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
+// keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
+// to the vessel through the custody write door, and the vessel's main thread seals them under the key it holds.
+// The island names the carrier, never a path.
 //
 // `vault` — the SAME inversion for the at-rest seal LIFECYCLE (#60). It runs IN this worker (the one that
 // owns the M3 re-seal), so seal/rotate re-persist the carriers AND update THIS process.env seal policy in
@@ -26,6 +26,7 @@ import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 // THE REST DOOR: this island's Repo keeps no store for the slot documents it mints, so each mint asks the vessel
 // to rest the new document and records its binding only on the vessel's acknowledgment.
 const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
+const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
 
 runSovereignWorker((manifest) => {
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
@@ -38,8 +39,10 @@ runSovereignWorker((manifest) => {
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
     ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
-    persistArchive: (bytes) => persistIdentityArchive(bytes),
-    persistVeilArchive: (bytes) => persistVeilArchive(bytes),
+    ...(sealOnVessel ? {
+      persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
+      persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
+    } : {}),
     vault:          (verb, args) => runVaultVerb(verb, args),
     // The crossing gate reads each bag's declared cap-tier off this vessel's hearth manifests,
     // so an outward transfer (veil-ward -> public-ward) refuses without the kahu-cabal.

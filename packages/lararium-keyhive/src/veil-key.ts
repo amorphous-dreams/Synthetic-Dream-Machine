@@ -79,3 +79,14 @@ export async function deriveVeilFromDeviceKey(
   }
   return deriveDyadVeil(key.seed, groupTag);
 }
+
+/** The derivation a shore hands a ceremony: a veil tag in, that veil's keys out. The shore owns the root. */
+export type VeilDeriver = (groupTag: string) => Promise<{ signingKey: string; verifyingKey: string }>;
+
+/**
+ * The deriver of a shore whose veil root is its device-minted vessel key: a shore that holds no sealed custody
+ * root. A shore that holds one derives from that root instead and never calls this.
+ */
+export function veilFromDeviceKey(key: DeviceMintedKey): VeilDeriver {
+  return (groupTag) => deriveVeilFromDeviceKey(key, groupTag);
+}

@@ -10,6 +10,7 @@
  * only sealed content after the join would pass while proving that rule not at all, so the sealed-before case
  * runs here too and is expected to STAY shut.
  */
+import { veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, runFaceJoin, type FaceJoinContext } from "@lararium/keyhive";
 import { buildDeviceDelegation } from "@lararium/mesh";
@@ -268,7 +269,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
       boundEpoch: 0,
     });
     const repo = new Repo({});
-    const applied = await runApplyAdmitPayload({
+    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(new Uint8Array(32).fill(71))),
       repo,
       vesselSeed:         new Uint8Array(32).fill(71),
       vesselVerifyingKey: await rawKeyOf(joinee),

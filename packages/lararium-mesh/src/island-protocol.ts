@@ -220,8 +220,10 @@ export interface IslandMsg_Manifest {
    * boundary (operator-confirmed): the daemon island is the authn/z home.
    */
   daemonAuth?: {
-    /** The founding veil tag — boot re-derives the group's creator-veil from (vessel seed × tag). */
-    dyadVeilTag?: string;
+    /** The mounted face's creator-veil: its tag, and the signing key the SHORE derived for it. The veil's root
+     *  rests with the shore (a sealed custody root the island never holds), so the key arrives derived and the
+     *  island derives none. Absent: no veil identity stands in this island. */
+    dyadVeil?: { readonly tag: string; readonly signingKey: string };
     /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
      *  keeps opening across boots. */
     veilArchiveBytes?: Uint8Array;
@@ -253,7 +255,8 @@ export interface IslandMsg_Manifest {
      *  replaying daemon cap-events. Absent on a first boot / a vessel that never persisted one. */
     archiveBytes?:         Uint8Array;
     /**
-     * WHETHER THIS VESSEL'S IDENTITY ARCHIVE OPENS — the node's `readArchiveOpening().opens`, carried
+     * WHETHER THIS VESSEL'S IDENTITY ARCHIVE OPENS — true only when the composition stands holding the vessel
+     * key (it was handed the sovereign rows), carried
      * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.
      *
      * REQUIRED, and that is the point. The M3 re-seal used to export the sovereign archive on EVERY
@@ -752,7 +755,8 @@ export type VesselToIslandMsg =
   | WikiMsg_DomInput
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
-  | IslandMsg_DocRested;
+  | IslandMsg_DocRested
+  | IslandMsg_CustodyWritten;
 
 // ── Island → vessel ──────────────────────────────────────────────────────────
 
@@ -864,6 +868,18 @@ export interface IslandMsg_DocRested {
   rested: boolean;
   why?: string;
 }
+
+/** The carriers the custody write door lands: the vessel's own keyhive archive, and the mounted face's veil archive. */
+export type CustodyWriteCarrier = "archive" | "veil";
+/**
+ * Island → vessel: THE CUSTODY WRITE DOOR's ask. The vessel key rests in the vessel's main thread alone, so an
+ * island that holds bytes to seal at rest hands them to the vessel, which seals them under the key it holds and
+ * answers `custody:written` on the same `requestId`. The island names the CARRIER, never a path: the vessel decides
+ * where the bytes rest.
+ */
+export interface IslandMsg_CustodyWrite { schema_version: ProtocolVersion; type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
+/** Vessel → island: the custody write door's answer: the bytes rest sealed, or `why` they do not. */
+export interface IslandMsg_CustodyWritten { schema_version: ProtocolVersion; type: "custody:written"; requestId: string; written: boolean; why?: string; }
 
 /**
  * Vessel → island: place a wiki-scope verb invocation into a wiki island's TW5 wiki.
@@ -990,7 +1006,8 @@ export type IslandToVesselMsg =
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
   | IslandMsg_CasWant
-  | IslandMsg_DocRest;
+  | IslandMsg_DocRest
+  | IslandMsg_CustodyWrite;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1009,13 +1026,13 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
   // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
   if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "doc:rested"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "doc:rested", "custody:written"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasVersion(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "doc:rest"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "doc:rest", "custody:write"] as const).includes(
     v.type as IslandToVesselMsg["type"],
   );
 }

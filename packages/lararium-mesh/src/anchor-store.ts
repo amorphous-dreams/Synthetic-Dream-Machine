@@ -5,9 +5,9 @@
  * keyhive's CSPRNG — unreproducible from any seed. Those ids live OUTSIDE the wiped substrate so a
  * rebirth reforges the store while re-reading the SAME anchors, and the Handle survives the substrate.
  *
- * The core owns only the SHAPE + the roster contract; the platform supplies HOW it persists. Anchors
- * carry PUBLIC doc-ids — no secret material rides here, so no seal touches this shore. (The at-rest
- * seal governs the keyhive ARCHIVE, a distinct node-adapter concern; the core never sees seal policy.)
+ * The core owns only the SHAPE + the roster contract; the platform supplies HOW it persists, and whether the
+ * rows rest sealed (a shore that seals them answers by promise, and refuses rather than answer for a row it
+ * cannot open). The ids name which Handles one vessel wears, so a shore that can close them at rest does.
  *
  * PLURALITY PONO at the identity layer: a vessel that wears several personas anchors EACH to its OWN
  * veiled Handle (a distinct PersonaGroup + MeshCabal + agentId), so the store keys by handle-index. The
@@ -51,11 +51,11 @@ export interface IdentityAnchors {
  */
 export interface AnchorStore {
   /** Read ONE persona's anchors back, or null when that index holds none. */
-  load(handleIndex: number): IdentityAnchors | null;
+  load(handleIndex: number): IdentityAnchors | null | Promise<IdentityAnchors | null>;
   /** Write ONE persona's anchors, recording the index into the roster. */
-  save(handleIndex: number, anchors: IdentityAnchors): void;
+  save(handleIndex: number, anchors: IdentityAnchors): void | Promise<void>;
   /** The anchored-persona roster — every handle-index this vessel anchors, ascending. */
-  list(): number[];
+  list(): number[] | Promise<number[]>;
 }
 
 /**

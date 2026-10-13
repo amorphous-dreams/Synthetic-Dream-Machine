@@ -29,7 +29,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import {
   hex, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   personaKelEventsFromBoard, nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow,
@@ -58,7 +58,7 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
   const ownKey  = await pubOf(vesselSeed);
   const founding = nexusIdentity({ ownVesselKey: ownKey });
   expect(founding.kind, "a fresh founding stands a PRIVATE NEXUS OF ONE").toBe("own");
-  const cer = await runFoundingCeremony({
+  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
     repo, vesselSeed, vesselVerifyingKey: ownKey, vesselDisplayName: "A",
     binding: { mode: "self-stood", signerSeed: vesselSeed }, hearthTrueName: "",
     nexusPubkey: nexusScopeOrThrow(founding),

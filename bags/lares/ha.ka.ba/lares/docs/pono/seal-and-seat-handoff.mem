@@ -97,7 +97,7 @@ The founder writes a signed face-join grant record on the PersonaGroup plane (`p
 # ''The joinee's grant door'' — CLOSED 2026-09-11: a signed record on the PersonaGroup plane (`face-grant-record.ts`); the joinee's own kit takes the seat against the published seal; reading never re-cuts. Witnessed `meme-two-vessel-bag` ⑨ (`c3bcab741`). The verify binds the KEL's genesis to the pinned root and walks the founder's edge under the KEL head.
 # ''Where a relation-carried bag registers'' — CLOSED 2026-09-11: the realm's shared CRDT; `@crossroads` names only that the bag exists and who keeps it; read at CONTRACT. The brief stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>; registration itself waits a build.
 # ''`device-share` at founding'' — mint the recovery device share at `vessel found` (and turn the witness red on purpose), or hold it for the recovery-keel pass. Decides whether a sealed vessel carries a recovery leg from day one.
-# ''Which stand reads the seal'' — keep the waking-floor stand (a public shelf with no sovereign acts) as the honest answer to a missing passphrase, or refuse the stand outright. Today the floor stands and the cure only forbids the clobber.
+# ''Which stand reads the seal'' — RULED: every boot rests at the waking floor (a public shelf with no sovereign acts) until a human unlocks, and nothing stored lifts it. The keyhive archive and each face's veil archive rest sealed under the vessel key; `lares vault unlock` opens it on the custody door (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>).
 
 <<~/ahu>>
 
@@ -118,6 +118,6 @@ No moʻolelo closes here. The cures stand green under their witnesses and uncomm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kG6oBA8NrbmvM9pig-ikCQyXpWBa8B1avuQEj0unbhk
+<<^ code="&#x0003;">>ni:///sha-256;OP1qhyzY6Ak_7GdwZ7xYdLiMskOyvqMBUrueaMrzN4k
 
 <<^ code="&#x0004;" -> to="?">>

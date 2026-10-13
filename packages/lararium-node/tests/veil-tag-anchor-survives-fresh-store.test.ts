@@ -10,7 +10,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { foundThePlace, foundTheFace } from "@lararium/keyhive";
+import { foundThePlace, foundTheFace, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type LarDoc,
@@ -25,7 +25,7 @@ async function lightAFace(
   repo: Repo, verifyingKey: string, veilTag?: string,
 ): Promise<{ tag: string; veilVk: string }> {
   const place = await foundThePlace({ repo, vesselSeed: SEED, hearthTrueName: "" });
-  await foundTheFace({
+  await foundTheFace({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
     repo,
     daemonHandle:       place.daemonHandle,
     vesselSeed:         SEED,

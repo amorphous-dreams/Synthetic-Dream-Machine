@@ -69,7 +69,7 @@ import type { CoherenceStatus } from "@lararium/tw5";
 import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
-import { runFoundingCeremony, runApplyAdmitPayload, assemblePersonaGroupRing } from "@lararium/keyhive";
+import { runFoundingCeremony, runApplyAdmitPayload, assemblePersonaGroupRing, mintDeviceMintedKey, veilFromDeviceKey } from "@lararium/keyhive";
 import { vesselDyads } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
@@ -626,6 +626,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // The ISLAND this leaf crosses into keys the KEL board — an admitted leaf seeds its inception onto the
       // board its HEARTH stands, never onto one only it resolves (a leaf alone on a board reads as agreement).
       nexusPubkey,
+      // A browser leaf holds no sealed custody root: its veil root is its device-minted key.
+      deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
     });
     bootstrap = {
       identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl,
@@ -666,6 +668,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
       // its own key — a private nexus of one, the same value by a different derivation.
       nexusPubkey,
+      // A browser leaf holds no sealed custody root: its veil root is its device-minted key.
+      deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
     });
     bootstrap = {
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
@@ -1076,7 +1080,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       const daemonAuth = {
         seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
         // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
-        // vacuously open here — the node's `readArchiveOpening()` equivalent is `no-seal-expected`.
+        // vacuously open here: no seal stands that could hold it shut.
         // It stays INERT regardless: this entry injects no `persistArchive`/`persistVeilArchive`, so
         // the door has no writer to call ("the archive floor simply never persists"). The field rides
         // REQUIRED so a populator that answers nothing fails at the compiler rather than at review.

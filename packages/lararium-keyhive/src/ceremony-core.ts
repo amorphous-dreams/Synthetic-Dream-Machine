@@ -64,7 +64,7 @@ import {
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 import { buildCeremonyTiddlers, webDigest, hex as hexEncode } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
-import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
+import type { VeilDeriver } from "./veil-key.js";
 import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
@@ -121,6 +121,8 @@ export interface FoundingCeremonyInput {
    *  seats the KEL INCEPTION onto that board so the very first boot walks the identifier→head mapping locally.
    *  REQUIRED: a founding that seats no inception leaves the Binding Gate with no head to walk (it fails closed). */
   nexusPubkey:         string;
+  /** The veil's root on this shore (see `FaceFoundingInput.deriveVeil`). */
+  deriveVeil:          VeilDeriver;
 }
 
 export interface FoundingCeremonyResult {
@@ -150,6 +152,10 @@ export interface FoundingCeremonyResult {
   founderEdge:           DeviceDelegationTiddler;
   /** The founder-veil tag the creator-veil stood under — persisted beside the identity anchors. */
   veilTag:               string;
+  /** The vessel's own keyhive Archive as the place founding left it. RAW SECRET material; the shore keeps it. */
+  archive:               Uint8Array;
+  /** The creator-veil's keyhive Archive (see `FaceFoundingResult.veilArchive`). */
+  veilArchive:           Uint8Array;
 }
 
 // ── THE TWO HALVES OF A FOUNDING ───────────────────────────────────────────────────────────────
@@ -182,6 +188,10 @@ export interface PlaceFoundingInput {
   vesselSeed:         Uint8Array;
   /** The hearth true-name (engine content-CID) this place stands at. */
   hearthTrueName:     string;
+  /** The vessel's own keyhive Archive when one already rests on this shore (a place founded again over a kept
+   *  identity). Present, the vessel individual RESTORES from it, so the archive this founding hands back still
+   *  carries every prekey secret and all the state the kept one held. Absent: a first founding. */
+  archiveBytes?:      Uint8Array;
 }
 
 export interface PlaceFoundingResult {
@@ -194,6 +204,10 @@ export interface PlaceFoundingResult {
   vesselIdentifierHex:  string;
   /** The self-certifying ContactCard the light leaf-identity path re-presents (OP-AP5). */
   contactCardJson:      string;
+  /** The vessel's own keyhive Archive as this founding left it: the prekey secrets behind the card above and the
+   *  key agreement state of what it created. RAW SECRET material; the shore seals it at rest, and every later act
+   *  that re-stands this individual restores from it. */
+  archive:              Uint8Array;
 }
 
 /**
@@ -210,7 +224,7 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
 
   const keyhive = new KeyhiveProvider();
   const store   = new InMemoryEventStore();
-  await keyhive.init({ seed: vesselSeed, eventStore: store });
+  await keyhive.init({ seed: vesselSeed, eventStore: store, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
 
   const vesselIdentifierHex = await keyhive.vesselIdentifierHex();
 
@@ -224,6 +238,9 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
   });
 
   const contactCardJson = new TextDecoder().decode(await keyhive.contactCard());
+  // THE ARCHIVE LEAVES BEFORE THE PROVIDER DOES. The card above names prekeys whose secrets live in this provider
+  // alone; disposed with no archive taken, the vessel's next stand mints other prekeys under the same card's name.
+  const archive = await keyhive.exportArchive();
   await keyhive.dispose();
 
   return {
@@ -231,6 +248,7 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
     daemonHandle,
     vesselIdentifierHex,
     contactCardJson,
+    archive,
   };
 }
 
@@ -248,6 +266,12 @@ export interface FaceFoundingInput {
   /** A persisted founder-veil tag to RE-DERIVE the SAME creator-veil from, rather than minting a fresh one.
    *  The identity home carries it across store founding. ABSENT (a genuine fresh founding) → the founding mints a fresh tag. */
   veilTag?:           string;
+  /** THE VEIL'S ROOT, chosen by the shore: the derivation that turns a veil tag into the creator-veil's keys. A
+   *  shore that holds a sealed custody root derives from it; a shore that holds none derives from its
+   *  device-minted key (`veilFromDeviceKey`). The ceremony never picks, and never reads `vesselSeed` for a veil. */
+  deriveVeil:         VeilDeriver;
+  /** The archive of the veil this founding RE-DERIVES (a persisted `veilTag`), as it stands at rest. */
+  veilArchiveBytes?:  Uint8Array;
   /** Whether this face MOUNTS — writes the SINGULAR daemon-doc pins (PersonaGroup / MeshCabal / agentId /
    *  veil-tag / signer / persona-KEL prefix / device-edge / dyad) the boot reads to run the ONE mounted
    *  face's Binding Gate. DEFAULT true — the founding face (h0) mounts, exactly as before. A per-persona
@@ -277,6 +301,9 @@ export interface FaceFoundingResult {
   founderEdge:            DeviceDelegationTiddler;
   /** The PersonaGroup secret sealed to this device beside `founderEdge`. */
   groupSecretSeal:        GroupSecretSeal;
+  /** The creator-veil's keyhive Archive: the key agreement state of the group and cabal it created here. Without
+   *  it the creator seats nobody and seals nothing after it re-stands. RAW SECRET material; sealed per face. */
+  veilArchive:            Uint8Array;
 }
 
 /** Rest a device's PersonaGroup secret seal on its daemon doc, keyed by the group. Call inside `change()`. */
@@ -315,20 +342,19 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // The creator's identifier rides every carried event in CLEARTEXT (the host-surface probe), a
   // creator can never leave its roster, and any access grade IS roster membership — so the raw
   // vessel Individual must never create or hold the WHO-plane sentinels. The founding mints a tag,
-  // derives the creator-veil off the VESSEL seed, and stands the veil identity over the SAME event
-  // store (both slices flush to the daemon doc; boot re-derives from the persisted tag). The vessel
-  // identity keeps custody and transport; the veil keeps the group.
+  // derives the creator-veil through the shore's own root (`input.deriveVeil`), and stands the veil
+  // identity over the SAME event store (both slices flush to the daemon doc; boot re-derives from the
+  // persisted tag). The vessel identity keeps custody and transport; the veil keeps the group.
   //
   // A persisted tag RE-DERIVES the SAME creator-veil: the veil key is deterministic in
-  // (vesselSeed, veilTag). Absent a tag, a genuine fresh founding mints one.
-  //
-  // The derivation takes the DEVICE-MINTED brand only (veil-key.ts): `vesselSeed` IS the per-vessel device
-  // seed by this input's contract, so the ceremony stands as a mint door; a persona root or a PRF output
-  // never reaches this line, at the type or at runtime.
+  // (the shore's veil root, veilTag). Absent a tag, a genuine fresh founding mints one.
   const veilTag      = input.veilTag ?? mintVeilTag();
-  const dyadVeilKeys = await deriveVeilFromDeviceKey(mintDeviceMintedKey(vesselSeed), veilTag);
+  const dyadVeilKeys = await input.deriveVeil(veilTag);
   const veilKeyhive  = new KeyhiveProvider();
-  await veilKeyhive.init({ seed: hexToBytes(dyadVeilKeys.signingKey), eventStore: store });
+  await veilKeyhive.init({
+    seed: hexToBytes(dyadVeilKeys.signingKey), eventStore: store,
+    ...(input.veilArchiveBytes ? { archiveBytes: input.veilArchiveBytes } : {}),
+  });
   await veilKeyhive.hydrateFromEventStore();
 
   const personaGroup = await veilKeyhive.createSentinelDoc(PERSONA_GROUP_SENTINEL_URI);
@@ -473,7 +499,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   daemonHandle.change((doc) => { writeGroupSecretSeal(doc, personaGroup.docIdHex, groupSecretSeal); });
 
   // ── The DYAD, minted where the face meets the device ──
-  // The veil derives off THIS vessel's seed, scoped by the PersonaGroup — never the persona root,
+  // The veil derives off THIS vessel's own veil root, scoped by the PersonaGroup — never the persona root,
   // which spans devices and names no veil. Self-stood, the group root stands in these same hands,
   // so the binding SIGNS at the genesis epoch; contracted, no root is present and the absence
   // travels as binding:null rather than hiding behind a label.
@@ -505,10 +531,15 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     };
   });
 
+  // THE VEIL'S ARCHIVE LEAVES BEFORE ITS PROVIDER DOES. The veil created the group and the cabal in this act; the
+  // key agreement state that lets it seat a member or seal a chunk lives in its provider alone. The vessel's own
+  // provider created nothing here, so its archive stays the one its place founding handed out.
+  const veilArchive = await veilKeyhive.exportArchive();
   await keyhive.dispose();
   await veilKeyhive.dispose();
 
   return {
+    veilArchive,
     meshCabalDocIdHex: meshCabal.docIdHex,
     identitiesUrl: identitiesHandle.url as string,
     circlesUrl:    circlesHandle.url    as string,
@@ -605,10 +636,12 @@ export async function runFoundingCeremony(
     binding:            input.binding,
     hearthTrueName:     input.hearthTrueName,
     nexusPubkey:        input.nexusPubkey,
+    deriveVeil:         input.deriveVeil,
   });
   return {
     daemonUrl:       place.daemonUrl,
     contactCardJson: place.contactCardJson,
+    archive:         place.archive,
     ...face,
   };
 }
@@ -733,11 +766,19 @@ export interface ApplyAdmitInput {
   /** The joinee's own Nexus pubkey (its gate key) — the per-Nexus KEL board the joinee seeds the founder's
    *  inception snapshot onto, so its LOCAL boot walks to a head with no sync wait (no-global-now). */
   nexusPubkey:          string;
+  /** The veil's root on this shore (see `FaceFoundingInput.deriveVeil`). */
+  deriveVeil:           VeilDeriver;
+  /** The vessel's own keyhive Archive when one already rests on this shore. Present, the vessel individual
+   *  RESTORES from it, so the archive handed back still carries what the kept one held. */
+  archiveBytes?:        Uint8Array;
 }
 
 export interface ApplyAdmitResult {
   /** The joinee's own self-certifying ContactCard JSON — the leaf identity it presents at the V3 gate. */
   contactCardJson: string;
+  /** The joinee's own keyhive Archive: the prekey secrets behind that card and the membership it absorbed. RAW
+   *  SECRET material; the shore seals it at rest. */
+  archive:         Uint8Array;
   identitiesUrl: string;
   circlesUrl:    string;
   sessionsUrl:   string;
@@ -817,10 +858,10 @@ export async function runApplyAdmitPayload(
     }
   }
 
-  // The joinee's DYAD: its veil derives off its OWN seed, scoped by the group it joins. No group
+  // The joinee's DYAD: its veil derives off its OWN veil root, scoped by the group it joins. No group
   // root stands on this vessel, so the slot lands binding:null — presented, not yet gathered — and
   // `fleetOfGroup` will not count it until a root signs the binding (the absence travels).
-  const joineeVeil = await deriveVeilFromDeviceKey(mintDeviceMintedKey(vesselSeed), payload.personaGroupDocIdHex);
+  const joineeVeil = await input.deriveVeil(payload.personaGroupDocIdHex);
   const joineeRef: DyadRef = { vesselDid: payload.deviceEdge.deviceDid, veilDid: didFromVerifyingKey(joineeVeil.verifyingKey) };
   const joineeDyad: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(joineeRef), ref: joineeRef, edge: payload.deviceEdge, binding: null };
 
@@ -901,7 +942,7 @@ export async function runApplyAdmitPayload(
   // which is why an admitted vessel could be perfectly bound and still never dial.
   const keyhive = new KeyhiveProvider();
   const capStore = new InMemoryEventStore();
-  await keyhive.init({ seed: vesselSeed, eventStore: capStore });
+  await keyhive.init({ seed: vesselSeed, eventStore: capStore, ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}) });
   const contactCardJson = new TextDecoder().decode(await keyhive.contactCard());
 
   // Keyhive membership cap-events (packPersonaCrossing), when the founder packed them: take them into this
@@ -916,10 +957,12 @@ export async function runApplyAdmitPayload(
     await absorbCapEvents(keyhive, capStore, payload.capEvents.map(base64ToBytes));
     await flushCapEvents(capStore, daemonHandle, "lares-init-admit");
   }
+  const archive = await keyhive.exportArchive();
   await keyhive.dispose();
 
   return {
     contactCardJson,
+    archive,
     identitiesUrl: identitiesHandle.url as string,
     circlesUrl:    circlesHandle.url    as string,
     sessionsUrl:   sessionsHandle.url   as string,

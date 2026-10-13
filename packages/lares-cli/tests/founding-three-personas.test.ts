@@ -104,7 +104,7 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
       expect(await cmdPersona(personaArgs(["new", String(i)], { name: LABELS[i]!, handle: KAHU[i]! }, { seat: true }))).toBe(0);
     }
     for (let i = 0; i < KAHU.length; i++) {
-      const a = loadIdentityAnchors(i);
+      const a = await loadIdentityAnchors(i);
       expect(a, `h${i} anchors exist`).not.toBeNull();
       expect(a?.signerDid, `h${i} anchors carry its signer DID`).toBeTruthy();
       expect(a?.personaKelPrefix, `h${i} anchors carry its KEL prefix`).toBeTruthy();

@@ -31,12 +31,13 @@
  * Meme: lar:///ha.ka.ba/lararium/node/device-admit
  */
 import { mkdtempSync, rmSync } from "node:fs";
+import { createPrivateKey, createPublicKey } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { runFoundingCeremony } from "@lararium/keyhive";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import {
   hex, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   nexusIdentity, nexusScopeOrThrow, genesisCharterEpoch,
@@ -64,7 +65,7 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
   const ownKey   = await pubOf(vesselSeed);
   const founding = nexusIdentity({ ownVesselKey: ownKey });
   expect(founding.kind, "a fresh founding stands a PRIVATE NEXUS OF ONE").toBe("own");
-  const cer = await runFoundingCeremony({
+  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
     repo, vesselSeed, vesselVerifyingKey: ownKey, vesselDisplayName: "A",
     binding: { mode: "self-stood", signerSeed: vesselSeed }, hearthTrueName: "",
     nexusPubkey: nexusScopeOrThrow(founding),
@@ -76,7 +77,9 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
  *  verified genesis lineage (the retired bare-`sealEpochCid` legacy path carries none). Returns
  *  the minted epoch's cid — distinct `salt` values distinguish tests, not any crypto meaning. */
 function climb(salt: number): string {
-  const key = salt.toString(16).padStart(2, "0").repeat(32);
+  // A charter seats only a key the Ed25519 door reads lawful, so the stand-in derives a REAL key from the salt.
+  const pkcs8 = Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.alloc(32, salt)]);
+  const key = Buffer.from(createPublicKey(createPrivateKey({ key: pkcs8, format: "der", type: "pkcs8" })).export({ format: "jwk" }).x!, "base64url").toString("hex");
   const genesis = genesisCharterEpoch([key], 1, "");
   writeNexusDoc(larSealHome(), {
     kind: NEXUS_DOC_DOMAIN,

@@ -21,13 +21,18 @@
  * derivation runs. Nothing resets the count but a restart: no success, no lock. Unlocks run one at a time, so
  * parallel guesses never outrun the bound.
  *
+ * ── A FOUNDING HANDS ITS KEY STRAIGHT IN ────────────────────────────────────────────────────────
+ * The act that minted the vessel key holds it already; `adopt` takes that key, opens the custody root under it and
+ * holds both. It asks no credential and spends no attempt, and it refuses a key the custody root does not open
+ * under, so a stranger key never sits here.
+ *
  * Node-main only: a worker never imports this module.
  */
 import {
   openSealedCarrier, writeSealedCarrier,
   type Credential, type CustodyIo, type VesselKey,
 } from "@lararium/mesh";
-import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
+import { custodyDerive, custodyRootFromBytes, custodyVeil, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { unlockCustody } from "./custody-session.js";
 import { carrierTable, vkSlotsPath, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
 
@@ -48,7 +53,7 @@ export type RowReading =
 
 export class CustodyLocked extends Error {
   override readonly name = "CustodyLocked";
-  constructor() { super("custody holder is locked"); }
+  constructor() { super("this vessel's key rests unopened, so its sealed rows stay shut: open it with `lares vault unlock`"); }
 }
 /** A cold row that stands and does not open: the act never runs over anything but the row's own plaintext. */
 export class CustodyRowUnavailable extends Error {
@@ -67,7 +72,11 @@ export class CustodyRowUnknown extends Error {
 export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
 
 export interface CustodyHolder {
+  /** The homes this holder's rows rest in. */
+  readonly homes: CustodyHomes;
   unlock(credentials: readonly Credential[]): Promise<HolderUnlock>;
+  /** Hold a vessel key the caller already opened (a founding's own mint). Refuses a key the custody root does not open under. */
+  adopt(vk: VesselKey): Promise<void>;
   lock(): Promise<void>;
   isUnlocked(): boolean;
   attemptsLeft(): number;
@@ -76,6 +85,14 @@ export interface CustodyHolder {
   writeRow(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void>;
   openColdRow<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
   derive(domain: string): Uint8Array;
+  /** The dyad veil for `groupTag`, derived from the custody root. */
+  veil(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }>;
+}
+
+/** A key handed to `adopt` that the custody root does not open under. */
+export class CustodyAdoptRefused extends Error {
+  override readonly name = "CustodyAdoptRefused";
+  constructor(reading: string) { super(`the custody root reads ${reading} under the key handed in; nothing is held`); }
 }
 
 export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: CustodyHomes }): CustodyHolder {
@@ -130,8 +147,23 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     return { row, path: `${a.homes[home]}/${file}`, name: `${home}/${file}` };
   };
 
+  const doAdopt = async (handed: VesselKey): Promise<void> => {
+    if (vk !== null) return;
+    const opened = await openCustodyRootCarrier({ io: a.io, vk: handed, identityDir: a.homes.identity });
+    if (opened.reading !== "opens") throw new CustodyAdoptRefused(opened.reading);
+    vk = Uint8Array.from(handed) as VesselKey;
+    root = custodyRootFromBytes(opened.opened);
+    slot = null;
+  };
+
   return {
+    homes: a.homes,
     unlock: enqueueUnlock,
+    adopt(handed) {
+      const run = unlockChain.then(() => doAdopt(handed), () => doAdopt(handed));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
     lock(): Promise<void> {
       accepting = false;
       // A lock takes its turn on the unlock chain: an unlock already deriving finishes first, so no key lands
@@ -181,6 +213,10 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     derive(domain) {
       if (!accepting || root === null) throw new CustodyLocked();
       return custodyDerive(root, domain);
+    },
+    veil(groupTag) {
+      if (!accepting || root === null) return Promise.reject(new CustodyLocked());
+      return custodyVeil(root, groupTag);
     },
   };
 }

@@ -27,7 +27,7 @@ import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync, spawn } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
-import { freePort, stageDir } from "../harness/instance.js";
+import { freePort, stageDir, unlockStaged } from "../harness/instance.js";
 import { seedTestCustody } from "../harness/test-door.js";
 
 /**
@@ -285,6 +285,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // stand and says nothing about WHY — and this vector has flaked without ever telling anyone what the
     // lifted boot was doing when it did. The log the vessel wrote is the only witness to that.
     expect(live, `the lift left the vessel unable to stand:\n${log.slice(-2000)}`).toBe(true);
+    unlockStaged(root);
 
     const dir = sockStands(root) ? substrateDir(root) : null;
     expect(dir, "the lifted hearth bound no UDS door — nothing to ask, and no fallback that would be this hearth").not.toBeNull();

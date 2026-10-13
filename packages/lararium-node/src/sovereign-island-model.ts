@@ -38,6 +38,9 @@ import {
   type IslandMsg_CasBlock,
   type IslandMsg_DocRest,
   type IslandMsg_DocRested,
+  type CustodyWriteCarrier,
+  type IslandMsg_CustodyWrite,
+  type IslandMsg_CustodyWritten,
   type CasTransitTransport,
 } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
@@ -107,6 +110,36 @@ export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: 
     };
     pending.set(requestId, settleWith);
     const ask: IslandMsg_DocRest = { schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rest", requestId, documentIds: [...documentIds] };
+    port.postMessage(ask);
+  });
+}
+
+/**
+ * THE CUSTODY WRITE DOOR, worker side. Workers hold bytes to seal but never the vessel key; the vessel seals the
+ * named carrier and answers on the same request id. A refusal or silence rejects without exposing the bytes.
+ */
+export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }, patienceMs: number = DOC_REST_PATIENCE_MS): (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void> {
+  const pending = new Map<string, (answer: IslandMsg_CustodyWritten | null) => void>();
+  port.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_CustodyWritten> | null;
+    if (!m || m.type !== "custody:written" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(m as IslandMsg_CustodyWritten);
+  });
+  let seq = 0;
+  return (carrier, bytes) => new Promise<void>((resolve, reject) => {
+    const requestId = `custody-${process.pid}-${++seq}`;
+    const timer = setTimeout(() => { pending.delete(requestId); settleWith(null); }, patienceMs);
+    timer.unref?.();
+    const settleWith = (answer: IslandMsg_CustodyWritten | null): void => {
+      clearTimeout(timer);
+      if (answer?.written === true) resolve();
+      else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer ? answer.why ?? "unwritten" : "no answer"})`));
+    };
+    pending.set(requestId, settleWith);
+    const ask: IslandMsg_CustodyWrite = { schema_version: ISLAND_PROTOCOL_VERSION, type: "custody:write", requestId, carrier, bytes };
     port.postMessage(ask);
   });
 }

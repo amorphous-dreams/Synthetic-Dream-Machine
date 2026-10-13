@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DocRest, type IslandMsg_DocRested } from "@lararium/mesh";
+import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten } from "@lararium/mesh";
 
 /** The vessel's answer to a worker's `cas:want` — verified bytes, or null (a miss stays a miss). */
 export type CasDoor = (cid: string) => Promise<Uint8Array | null>;
@@ -53,6 +53,37 @@ export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "
   catch (e) { return { ...base, rested: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 
+/** The vessel's answer to a worker's `custody:write` — seals the bytes under the vessel key. */
+export type CustodyWriteDoor = (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void>;
+
+// THE CUSTODY WRITE DOOR, vessel side. Workers hold bytes but never the vessel key; the main thread seals them.
+let custodyWriteDoor: CustodyWriteDoor | null = null;
+
+/** Stand (or drop) the vessel's custody write door. */
+export function setCustodyWriteDoor(door: CustodyWriteDoor | null): void { custodyWriteDoor = door; }
+
+/** Answer one `custody:write` ask through the door standing now. */
+export async function answerCustodyWrite(ask: Pick<IslandMsg_CustodyWrite, "requestId" | "carrier" | "bytes">): Promise<IslandMsg_CustodyWritten> {
+  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "custody:written" as const, requestId: ask.requestId };
+  if ((ask.carrier !== "archive" && ask.carrier !== "veil") || !(ask.bytes instanceof Uint8Array)) {
+    return { ...base, written: false, why: "bad custody write ask" };
+  }
+  const door = custodyWriteDoor;
+  if (!door) return { ...base, written: false, why: "no custody write door stands on this vessel" };
+  try { await door(ask.carrier, ask.bytes); return { ...base, written: true }; }
+  catch (e) { return { ...base, written: false, why: e instanceof Error ? e.message : String(e) }; }
+}
+
+function attachCustodyWriteDoor(w: Worker): void {
+  w.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_CustodyWrite> | null;
+    if (!m || m.type !== "custody:write" || typeof m.requestId !== "string") return;
+    void answerCustodyWrite({ requestId: m.requestId, carrier: m.carrier as CustodyWriteCarrier, bytes: m.bytes as Uint8Array }).then((reply) => {
+      try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
+    });
+  });
+}
+
 function attachRestDoor(w: Worker): void {
   w.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_DocRest> | null;
@@ -67,6 +98,7 @@ function attachRestDoor(w: Worker): void {
 export function nodeWorkerHandle(w: Worker): VesselWorkerHandle {
   attachCasDoor(w);
   attachRestDoor(w);
+  attachCustodyWriteDoor(w);
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
     post:      (msg, transfer) => post(msg, transfer),

@@ -2,29 +2,25 @@
  * archive-passphrase (node atom) — the passphrase-LIFECYCLE surface over the at-rest seal (G1, #60).
  *
  * `archive-seal` frames the crypto atoms (scrypt KEK, AES-256-GCM seal/unseal, the envelope). This file
- * adds NO new crypto — it composes those atoms into the operator's four lifecycle gestures over the two
- * secret carriers the vessel holds at rest:
- *   · keyhive-archive.bin           — the sovereign identity floor; the daemon RE-SEALS it every boot (M3).
- *   · veil-archive.bin              — the veil identity's archive; re-sealed beside the vessel's every boot.
+ * adds NO new crypto — it composes those atoms into the operator's lifecycle gestures over the share
+ * carriers the vessel still keeps under a passphrase:
  *   · recovery-device-share-h${N}.bin — the device recovery share, ONE PER PERSONA (written at each
  *                                     persona's founding). The enumeration READS THE DISK for them —
  *                                     a family spelled as a single path is a family that escapes rotate,
- *                                     repair, status and the export refusal (see `deviceShareCarriers`).
+ *                                     repair and status (see `deviceShareCarriers`).
  *   · seal-reserve-mine-share.bin   — the vessel's one share of the Nexus reserve seed; written at the seal rite.
+ * The keyhive archive and the veil archives rest under the vessel key (`identity-anchors`); this lifecycle
+ * governs neither, and refuses any carrier it meets sealed that way.
  *
  * ONE RULE NAMES THE SET: every file a boot opens through `openArchiveBytes` under the resolved seal policy
  * rides this lifecycle. A carrier sealed under the policy and left out of a rotate stays under the OLD
  * passphrase, and the next boot faults at its GCM tag under the new one — a split no status named.
  *
- * TWO-CARRIER ATOMICITY (FORK-2, RATIFY — the collapse was blocked). The two carriers hold GENUINELY
- * INDEPENDENT write lifecycles: the archive re-seals on every boot (a frequent write the M3 path owns,
- * which does NOT hold the device-share in scope and writes even under the cleartext policy), while the
- * device-share writes only at founding. One shared envelope would force the frequent M3 writer to
- * unseal-and-rebundle a co-tenant secret it never holds — corrupting the device-share on any boot that
- * ran without it. So the carriers stay TWO files, and this surface holds them consistent through a
- * ratification discipline instead: PRE-VALIDATE every unseal, STAGE every temp, then RENAME in sequence.
- * A crash strictly BETWEEN the two renames is the only residual split-KEK window, which `archiveSealStatus`
- * DETECTS and `repairSplitKek` re-seals shut.
+ * SEVERAL CARRIERS, ONE RATIFICATION. The carriers hold independent write lifecycles (each share writes at its
+ * own rite), so they stay separate files, and this surface holds them consistent through a ratification
+ * discipline: PRE-VALIDATE every unseal, STAGE every temp, then RENAME in sequence. A crash strictly BETWEEN two
+ * renames is the only residual split-KEK window, which `archiveSealStatus` DETECTS and `repairSplitKek` re-seals
+ * shut.
  *
  * THE PASSPHRASE NEVER PERSISTS. Every function DERIVES a KEK at the moment and DROPS the passphrase when
  * it returns; plaintext buffers zeroize the instant they are re-sealed. No function returns or logs key
@@ -35,35 +31,24 @@
  * envelope version it cannot frame. Every lifecycle verb here asks the writer's question instead —
  * "does a seal already stand?" — because folding `unopenable` onto `cleartext` made each verb draw a
  * different wrong conclusion from one wrong reading: status told the operator no seal stands, rotate
- * wrapped the ciphertext a second time, repair reported success over a broken carrier, and the boot
- * reading came up `opens: true` over a sealed archive. Reach for the strict probe only where a decode
- * is about to happen.
+ * wrapped the ciphertext a second time, and repair reported success over a broken carrier. Reach for the strict
+ * probe only where a decode is about to happen.
  *
  * FAIL-CLOSED throughout: a wrong old passphrase throws at the GCM tag BEFORE any byte is written
- * (zero-write), an empty passphrase is refused, and a would-be silent overwrite on export is refused.
- *
- * THE BOOT READING PROBES; IT NEVER COUNTS THE ENVIRONMENT. `archiveOpens`/`readArchiveOpening` decide
- * whether a boot can open what it must read by TRIAL-OPENING the boot carriers under the supplied
- * passphrase. A key that is merely PRESENT proves nothing: a wrong one satisfies presence and the vessel
- * would rise on a key that cannot unseal, the GCM tag refusing it later at whichever sovereign act read
- * the archive first. The reading names FIVE answers rather than one boolean, because folding "no key",
- * "wrong key" and "torn carrier" together inverts fail-closed into fail-open. What should HAPPEN after a
- * failed probe stands OPEN as a fork — see `readArchiveOpening`; the waking floor still stands here.
+ * (zero-write), and an empty passphrase is refused.
  */
 
-import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync } from "node:fs";
-import { dirname, resolve, basename, join } from "node:path";
+import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync } from "node:fs";
+import { dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 import { decodeEnvelope, readSealCarrier } from "@lararium/mesh";
 import {
-  scryptKek, sealBytes, unsealBytes, openArchiveBytes, ARCHIVE_PASSPHRASE_ENV,
+  scryptKek, sealBytes, unsealBytes, ARCHIVE_PASSPHRASE_ENV,
   passphraseSealPolicy, probeArchiveBytes, type CarrierProbe,
 } from "./archive-seal.js";
-import { archivePath } from "./identity-anchors.js";
-import { deviceSharePath } from "./recovery-share-store.js";
 import {
-  vaultCarriers, deviceShareName, DEVICE_SHARE_FILE,
-  type VaultCarrier, type CarrierName, type DeviceShareName,
+  vaultCarriers,
+  type CarrierName, type DeviceShareName,
 } from "./vault-carriers.js";
 import { setSealExpected, sealExpected as readSealExpected, type LaresConfig } from "./lares-config.js";
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
@@ -94,7 +79,6 @@ export function weakPassphraseWarning(passphrase: string): string | null {
  * `carriers` was exactly that drift, one output disagreeing with itself. See that file for why the DISK is
  * the source and why every location is spelled by its writer's own path function.
  */
-type Carrier = VaultCarrier;
 const carriers = vaultCarriers;
 
 /** A carrier sealed under the vessel key answers to the custody door alone; the passphrase lifecycle refuses it by name. */
@@ -112,45 +96,6 @@ function refuseVkSeal(carrier: CarrierName, bytes: Uint8Array, act: string): voi
 // The names stay readable from this surface — every existing importer of `CarrierName` reads the lifecycle,
 // not the enumeration, and this is the lifecycle's door.
 export type { CarrierName, DeviceShareName };
-
-/**
- * Resolve a path the way the FILESYSTEM will, so a comparison against a carrier path compares LOCATIONS
- * rather than spellings. A string check wearing a path check's clothes misses three ordinary shapes: a
- * RELATIVE dest (resolved through the process cwd), a `..` TRAVERSAL that lands back on a carrier, and a
- * SYMLINK whose target is a carrier.
- *
- * `realpathSync` needs the leaf to exist, and an export destination usually does not — so it falls back to
- * realpath'ing the deepest EXISTING ancestor (the directory) and rejoining the basename. That resolves a
- * symlinked directory on the way in while still naming a leaf that has yet to be created.
- */
-function resolvedLocation(p: string): string {
-  const abs = resolve(p);
-  try { return realpathSync(abs); } catch { /* the leaf does not stand yet */ }
-  try { return join(realpathSync(dirname(abs)), basename(abs)); } catch { return abs; }
-}
-
-/**
- * Which sealed carrier a path RESOLVES onto, or null when it names somewhere else entirely.
- *
- * A DEVICE-SHARE SLOT COUNTS EVEN WHILE IT HOLDS NOTHING. The other three carriers exist or do not, but
- * the share family has slots the writer will mint later, and an export landing on an empty one seals an
- * arbitrary backup exactly where `persistRecoveryDeviceShare(share, N)` must write — after which the
- * write guard refuses that write forever, over bytes no passphrase in the vault opens. The pattern names
- * the family; standing bytes are not what makes a location a carrier's.
- */
-function carrierAtPath(p: string): CarrierName | null {
-  const target = resolvedLocation(p);
-  const standing = carriers().find((c) => resolvedLocation(c.path) === target)?.name;
-  if (standing) return standing;
-  const m = DEVICE_SHARE_FILE.exec(basename(target));
-  if (m) {
-    const index = Number(m[1]);
-    if (Number.isSafeInteger(index) && resolvedLocation(deviceSharePath(index)) === target) {
-      return deviceShareName(index);
-    }
-  }
-  return null;
-}
 
 /**
  * THREE READINGS PLUS ABSENCE, BECAUSE FOLDING ANY TWO LIES TO THE OPERATOR. `unopenable` names a seal
@@ -380,49 +325,6 @@ export function rotateArchivePassphrase(oldPassphrase: string, newPassphrase: st
   return { rotated: plans.map((p) => p.name) };
 }
 
-export interface ExportResult { readonly dest: string; readonly bytes: number; readonly mode: "passphrase"; }
-
-/**
- * Export the keyhive archive as a passphrase-SEALED backup to an operator path — NEVER the raw cleartext.
- * The CURRENT archive is opened through the vessel's live policy (`LARES_ARCHIVE_PASSPHRASE` when sealed;
- * bare when cleartext); the backup is then ALWAYS re-sealed under `passphrase` (fresh salt) — so a
- * cleartext vessel still writes an ENCRYPTED backup. Refuses a silent overwrite (pass `force` to replace).
- * Atomic + 0600. The passphrase drops and the plaintext zeroizes on return.
- */
-export function exportSealedArchive(passphrase: string, destPath: string, force = false): ExportResult {
-  if (!passphrase) throw new Error("archive-passphrase: refusing to export under an empty passphrase");
-  const src = archivePath();
-  if (!existsSync(src)) throw new Error(`archive-passphrase: no keyhive archive at ${src} to export`);
-  refuseVkSeal("archive", readFileSync(src), "export");
-  // AN EXPORT PROVES INTENT ABOUT A BACKUP, NEVER ABOUT THE CARRIER IT WAS AIMED AT. Aimed at a live
-  // carrier it re-seals the archive under an ARBITRARY passphrase and lands it there, consulting no
-  // standing-bytes openability: the plaintext survives (so `vault repair` recovers it) but the live policy
-  // stops opening the carrier and the next boot reads the floor. Refuse the destination instead — BEFORE
-  // the exists/force question, so `--force` cannot walk past it.
-  const carrierHit = carrierAtPath(destPath);
-  if (carrierHit) {
-    throw new Error(
-      `archive-passphrase: refusing to export onto the "${carrierHit}" carrier itself (${destPath}) — an ` +
-      `export re-seals under the passphrase you supplied here, which would leave the live policy unable to ` +
-      `open the carrier and the next boot reading the waking floor. Write the backup somewhere else; use ` +
-      `\`lares vault rotate\` to change the passphrase a carrier rides`,
-    );
-  }
-  if (existsSync(destPath) && !force) {
-    throw new Error(`archive-passphrase: ${destPath} exists — pass --force to overwrite (refusing a silent clobber)`);
-  }
-  // Open the current archive through the LIVE policy: a sealed archive needs LARES_ARCHIVE_PASSPHRASE
-  // (openArchiveBytes throws PRECISELY when it is sealed but unconfigured); a cleartext archive passes through.
-  const plaintext = openArchiveBytes(readFileSync(src));
-  const sealed = sealUnder(plaintext, passphrase);
-  wipe(plaintext);
-  mkdirSync(dirname(destPath), { recursive: true });
-  // atomicWriteFileSync-equivalent kept inline so the export shares the SAME temp→fsync→rename discipline
-  // and lands 0600 in one act.
-  stageAndCommit([{ path: destPath, bytes: sealed }]);
-  return { dest: destPath, bytes: sealed.length, mode: "passphrase" };
-}
-
 export interface RepairResult { readonly repaired: CarrierName[]; readonly alreadyConsistent: CarrierName[]; }
 
 /**
@@ -473,231 +375,6 @@ export function repairSplitKek(openPassphrase: string, sealPassphrase: string): 
 }
 
 /**
- * The BOOT-GATE (FORK-3/5). Called on the boot load path: when the config marks sealing expected but no
- * `LARES_ARCHIVE_PASSPHRASE` rides the environment, throw a PRECISE message that names the fix — instead
- * of the generic sealed-without-key throw that surfaces only once the reader hits the envelope. The marker
- * is a HINT (config), never a secret; this only reads presence of the env var, never its value.
- *
- * ══ THE UNATTENDED-REBOOT TENSION — NAMED, NOT SOLVED (operator, 2026-08-08) ═════════════════════
- *
- * THIS GATE THROWS, AND AT CIVIC SCALE THAT READS WRONG. A hearth serving a neighbourhood reboots at 3am
- * after a power cut. Nobody is awake to type a passphrase. Today the vessel REFUSES TO BOOT and the place
- * goes dark until a human returns — so the at-rest seal, which exists to protect a STOLEN DISK, converts an
- * ordinary power cut into an outage. That trade is defensible for one operator's laptop and indefensible
- * for a crossroads a family depends on.
- *
- * THE OPTION SPACE, with what each actually costs:
- *   · CLEARTEXT + warning        — boots always, protects nothing at rest. Honest, and the current fallback.
- *   · PASSPHRASE IN A DOTFILE    — boots always, and the KEK sits beside the ciphertext it protects. This is
- *                                  obfuscation posing as isolation — the exact thing `archive-seal` refuses
- *                                  to do automatically, done by hand instead. It reports SEALED while
- *                                  offering no offline protection, which is worse than honest cleartext
- *                                  because it stops the operator looking.
- *   · OS KEYCHAIN                — distrusted here by ruling: on WSL2 a KEK can land in the kernel keyutils
- *                                  cache and BRICK the identity on reboot. The leg stays dark behind two
- *                                  independent probes.
- *   · TPM / HARDWARE-SEALED      — survives reboot, binds to platform state, needs hardware a Pi-class
- *                                  crossroads may or may not carry. UNEXPLORED here.
- *   · BOOT LOCKED, UNSEAL LATER  — the vessel STANDS without its secrets and serves what needs none; an act
- *                                  unseals it afterward. See below; this reads most pono and stands UNBUILT.
- *
- * WHY "BOOT LOCKED" FITS THE HOUSE ALREADY. The veil-ladder rules that every vessel stands anon at its floor
- * — its own key, its own local content, no group — and MUST always fall back there; caps stack above the
- * floor and never dissolve it. A vessel that cannot open its archive has lost the caps, not the floor. So the
- * pono shape is not a refusal but a DEGRADE: come up at the anon floor, serve the public shelf (which needs
- * no secret to serve), hold every sovereign act closed, and say loudly what it cannot do until unsealed.
- *
- * AND THE RAISE BELONGS TO THIS LAYER ALONE — a correction, because an earlier reading put it one layer out.
- * Opening a vessel's archive is the act of whoever holds THAT VESSEL's opening secret. It cannot be a kahu
- * quorum: a cabal is seated FROM declared Handles standing on an already-raised lararium, so a raise waiting
- * on a quorum could never found the first Nexus — the dependency runs in a circle. A quorum's acts sit one
- * layer out (the antigen, carriage contracts, the seal lineage) and reach no vessel's archive; a kahu
- * holding shares would become the collector the vault exists to refuse (waking-floor: KAHU MUST NOT HOLD
- * SHARES; Tang gives the escrow-free shape a share-holding quorum cannot).
- *
- * WHAT STAYS RULED AND WHAT STAYS OPEN, so a later hand does not mistake one for the other:
- *   RULED   the KEK is passphrase-primary; a random key beside the ciphertext is refused; a missing
- *           passphrase NEVER silently degrades to weak key handling.
- *   OPEN    whether a sealed vessel REFUSES or DEGRADES on an unattended boot, and what may unseal it
- *           afterward. This gate throws because refusing is the safe default while the answer is unmade —
- *           an outage is recoverable and a silently-unsealed identity is not. It is a placeholder for a
- *           ruling, never the ruling.
- *
- * The shape, the Elyncia reading, and the OPEN downgrade-attack question live at
- * lar:///ha.ka.ba/lares/api/pono/waking-floor — the waking floor.
- */
-/**
- * ══ THE READING PROBES; IT DOES NOT COUNT THE ENVIRONMENT ════════════════════════════════════════
- *
- * `archiveOpens` gates `standAs` on the boot path (`main.ts`). Asking only whether
- * `LARES_ARCHIVE_PASSPHRASE` CARRIES A VALUE answers presence where the boot asked fitness: a WRONG
- * passphrase satisfies presence, the vessel rises to hearth on a key that cannot unseal, and the GCM
- * tag refuses it later — at whichever sovereign act happens to read the archive first, far from the
- * cause. So the reading TRIAL-OPENS the carriers a boot actually opens, reusing this module's own
- * unseal atoms (the same `vault status --check` probes with) rather than minting a second derivation.
- *
- * FIVE ANSWERS, BECAUSE TWO INVERT FAIL-CLOSED (the pin-reader law). A single boolean folded "no seal
- * expected", "no key present" and "key present but refused" onto one another; and a torn carrier —
- * bytes that never even framed — would fold onto "wrong passphrase", sending an operator to re-type a
- * credential that was right all along while a corruption sat unnamed. Each answer therefore carries
- * its own name and its own `why`, and only `opens` is derived from an actual successful unseal.
- *
- * WHICH CARRIERS. The BOOT opens the keyhive archive and the veil archive (`open-node-vessel.ts`), so
- * those are what a boot reading probes. A disagreement among the OTHER carriers is a split-KEK, which
- * `archiveSealStatus`/`vault repair` own and which does not decide whether this vessel can stand.
- *
- * ⚠ THE FORK THIS DOES NOT RULE, and deliberately leaves standing. What should HAPPEN after a failed
- * probe — keep the waking-floor stand, or refuse the stand outright — stands OPEN at
- * `lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff` #/forks ("Which stand reads the seal"), beside
- * the wider unattended-reboot tension named above. Nothing here answers it: the floor STILL STANDS on a
- * shut archive, exactly as before. This changes only what the reading KNOWS and what it SAYS — a wrong
- * passphrase is now named wrong AT THE POINT IT IS READ instead of passing as open.
- */
-export type ArchiveOpeningKind =
-  | "vk-sealed"
-  /** The config marks no seal in force — nothing to open, nothing probed. */
-  | "no-seal-expected"
-  /** Sealing marked expected, yet no sealed carrier stands on disk — the hint is a config guess, the disk is the fact. */
-  | "nothing-sealed"
-  /** A key rides the environment and it TRIAL-OPENED every boot carrier. */
-  | "opens"
-  /** Sealing expected and no key rides the environment. */
-  | "key-absent"
-  /** A key rides the environment and the GCM tag REFUSED it. Presence held; fitness did not. */
-  | "key-wrong"
-  /** A sealed boot carrier will not DECODE. No key can be judged against it, so none is blamed. */
-  | "unreadable";
-
-export interface ArchiveOpening {
-  readonly kind: ArchiveOpeningKind;
-  /** Can the boot open what it must read? Only `opens`, `no-seal-expected` and `nothing-sealed` say yes. */
-  readonly opens: boolean;
-  /** Did an actual trial-unseal run? False whenever there was no key, or nothing sealed to try it on. */
-  readonly probed: boolean;
-  /** Operator-facing reason, key-free — never the passphrase, never any derived material. */
-  readonly why: string;
-}
-
-/** The carriers a BOOT opens through `openArchiveBytes`, in read order. */
-function bootCarriers(): readonly Carrier[] {
-  return carriers().filter((c) => c.name === "archive" || c.name === "veil");
-}
-
-/**
- * Read whether this vessel's archive OPENS — a reading, never a verdict on whether to proceed.
- *
- * The boot asks this and stands accordingly: open → the class the recipe asked for; shut → the waking floor
- * (`standAs`). A reading rather than a throw is the whole ruling — refusing converts an ordinary power cut
- * into an outage, while the seal exists against a stolen disk.
- */
-export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): ArchiveOpening {
-  // ══ THE DISK OUTRANKS THE GUESS ═════════════════════════════════════════════════════════════════
-  // This module's own `nothing-sealed` clause already rules it — "the hint is a config guess, the disk
-  // is the fact" — and an earlier body contradicted that clause by returning off the marker and the
-  // env var BEFORE any carrier was opened. Two clauses of one module ruled one moment differently.
-  //
-  // Reading the disk first settles two seams with no config change:
-  //   · an empty vessel store keeps `sealExpected` while no
-  //     carrier stands. The guess said `key-absent` — a FALSE floor over an empty identity home.
-  //   · a BOOT-SEALED vessel carries `sealExpected: false` beside sealed bytes (the M3 re-seal never
-  //     calls `setSealExpected`), so the guess short-circuited to `no-seal-expected` / `opens: true`
-  //     and a MISTYPED passphrase read as opening. The disk names it `key-wrong`.
-  // NO CONFIG CHANGE is the point: an unattended vessel is never made to demand a passphrase it was
-  // never given (founding-runbook — "the var exists so one ceremony can run unattended, never so a
-  // machine can seal itself forever"). Only a vessel with SEALED BYTES ON DISK is ever asked for one.
-  //
-  // FAIL-CLOSED MOVES WITH THE ORDER, it does not soften: sealed carriers standing + no key still
-  // reads `key-absent`, shut. What changes is that the sealed bytes, not the marker, decide WHETHER
-  // the question of a key arises at all.
-  const sealed: { name: CarrierName; bytes: Uint8Array }[] = [];
-  for (const c of bootCarriers()) {
-    if (!existsSync(c.path)) continue;
-    let bytes: Uint8Array;
-    try { bytes = readFileSync(c.path); } catch {
-      return { kind: "unreadable", opens: false, probed: false, why: `the ${c.name} carrier cannot be read from disk` };
-    }
-    const vkReading = readVkCarrier(bytes);
-    if (vkReading === "sealed" || vkReading === "torn" || vkReading === "unopenable") {
-      return { kind: "vk-sealed", opens: false, probed: false, why: `the ${c.name} carrier rests sealed under the vessel key` };
-    }
-    // ══ THE THIRD READING DECIDES HERE TOO, AND ITS ABSENCE WAS A FAIL-OPEN ═══════════════════════
-    // `isSealedEnvelope` answers false on an envelope version this build cannot frame, so an intact
-    // seal fell to this `continue`, the `sealed` list came up EMPTY, and the reading below returned
-    // `no-seal-expected` / `opens: true` over a sealed archive — the exact inversion the five answers
-    // exist to prevent. This module already NAMES the right answer (`unreadable`), and names it apart
-    // from `key-wrong` on purpose: these bytes never framed, so no passphrase was ever tested and none
-    // may be blamed. The reading is reported BEFORE the key question arises, so it holds with or
-    // without a key in the environment.
-    const reading = readSealCarrier(bytes);
-    if (reading === "bare") continue;         // bare cleartext passes straight through the boot's reader
-    if (reading === "unopenable") {
-      return {
-        kind: "unreadable", opens: false, probed: false,
-        why: `the ${c.name} carrier holds a seal this build cannot frame (an unknown envelope version, ` +
-             `or a damaged magic over intact framing) — no passphrase can open it (recover it from a backup)`,
-      };
-    }
-    sealed.push({ name: c.name, bytes });
-  }
-  // Nothing sealed stands. The marker only chooses which TRUE thing to say; both open.
-  if (sealed.length === 0) {
-    return readSealExpected(cfg)
-      ? {
-          kind: "nothing-sealed", opens: true, probed: false,
-          why: "sealing is marked expected and no sealed boot carrier stands on disk — nothing to open",
-        }
-      : { kind: "no-seal-expected", opens: true, probed: false, why: "no seal stands in force — the archive reads bare" };
-  }
-  // Sealed bytes stand, so a key is genuinely owed — whatever the marker guessed.
-  const key = env[ARCHIVE_PASSPHRASE_ENV];
-  if (!key) {
-    return {
-      kind: "key-absent", opens: false, probed: false,
-      why: `your archive is sealed and ${ARCHIVE_PASSPHRASE_ENV} carries no passphrase`,
-    };
-  }
-  // Trial-open every SEALED boot carrier. A cleartext or absent one needed no key and was skipped above.
-  const results: { name: CarrierName; probe: CarrierProbe }[] =
-    sealed.map((s) => ({ name: s.name, probe: probeCarrier(s.bytes, key) }));
-  const torn = results.find((r) => r.probe === "unreadable");
-  if (torn) {
-    // NAMED APART FROM A WRONG KEY on purpose: these bytes never framed, so the passphrase was never tested.
-    return {
-      kind: "unreadable", opens: false, probed: false,
-      why: `the ${torn.name} carrier will not decode as a sealed envelope — no passphrase can open it (recover it from a backup)`,
-    };
-  }
-  const refused = results.find((r) => r.probe === "key-fails");
-  if (refused) {
-    return {
-      kind: "key-wrong", opens: false, probed: true,
-      why: `${ARCHIVE_PASSPHRASE_ENV} does not open the ${refused.name} carrier — the passphrase is present but wrong`,
-    };
-  }
-  return { kind: "opens", opens: true, probed: true, why: "the supplied passphrase opened every sealed boot carrier" };
-}
-
-/**
- * Whether this vessel's archive OPENS. A PROBE — see `readArchiveOpening` for the five answers it folds
- * and for the fork this deliberately leaves open. Callers wanting the reason read that instead.
- */
-export function archiveOpens(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): boolean {
-  return readArchiveOpening(cfg, env).opens;
-}
-
-/**
- * The boot-gate throw. It now fires on a WRONG passphrase as well as an absent one, and says WHICH —
- * the message an operator reads decides whether they re-type a credential or go find a backup.
- */
-export function assertSealReady(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): void {
-  const reading = readArchiveOpening(cfg, env);
-  if (reading.opens) return;
-  throw new Error(
-    `[lararium] ${reading.why} — set ${ARCHIVE_PASSPHRASE_ENV} to the passphrase that sealed it, then boot again`,
-  );
-}
-
-/**
  * The DAEMON vault handler — the node-side shore injected into the daemon behavior (the persistArchive
  * inversion, #60). It runs IN the daemon worker, so it does the carrier fs ops AND updates the worker's
  * OWN in-memory seal policy: after a successful seal/rotate/repair it sets `process.env[ARCHIVE_PASSPHRASE_ENV]`
@@ -731,13 +408,6 @@ export async function runVaultVerb(verb: string, args: Record<string, unknown>):
       const newPass = str("new");
       const r = rotateArchivePassphrase(oldPass, newPass);
       process.env[ARCHIVE_PASSPHRASE_ENV] = newPass;      // no un-rotate: the policy moves with the carriers
-      return { verb, ...r };
-    }
-    case "vault-export": {
-      const passphrase = str("passphrase");
-      const dest = str("dest");
-      const force = args["force"] === true;
-      const r = exportSealedArchive(passphrase, dest, force);
       return { verb, ...r };
     }
     case "vault-repair": {

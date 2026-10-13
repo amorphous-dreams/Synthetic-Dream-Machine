@@ -12,9 +12,7 @@
  *                                They then act on that map: export, rotate, re-seal.
  *   · `rotateArchivePassphrase`→ treated the ciphertext as its own plaintext and WRAPPED IT AGAIN.
  *   · `repairSplitKek`         → skipped it silently and reported success over a carrier still broken.
- *   · `readArchiveOpening`     → FAIL-OPEN. The sealed list came up empty, so the boot read
- *                                `no-seal-expected` / `opens: true` over a sealed archive.
- *   · `openArchiveBytes`       → handed the CIPHERTEXT back as though it were plaintext.
+ *   · the boot-opening reader    → must not infer openability for a carrier outside this lifecycle.
  *
  * THE CURE IS ONE READER, ASKED EVERYWHERE. `unopenable` is reported as its OWN state and folded into
  * neither neighbour — the pin-reader law: a default that STATES a fact is fine, one that LOSES a fact
@@ -33,15 +31,16 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { larIdentityDir } from "../src/vessel-paths.js";
-import { persistIdentityArchive, persistVeilArchive, archivePath, veilArchivePath } from "../src/identity-anchors.js";
+import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
+import { FsCustodyIo } from "../src/custody-io.js";
+import { foundCustody } from "../src/custody-session.js";
+import { persistRecoveryDeviceShare, loadRecoveryDeviceShare, deviceSharePath } from "../src/recovery-share-store.js";
 import {
-  archiveSealStatus, rotateArchivePassphrase, repairSplitKek, readArchiveOpening,
-  sealArchiveWithPassphrase, exportSealedArchive,
+  archiveSealStatus, rotateArchivePassphrase, repairSplitKek, sealArchiveWithPassphrase, VkSealedCarrierRefusal,
 } from "../src/archive-passphrase.js";
-import { ARCHIVE_PASSPHRASE_ENV, openArchiveBytes, passphraseSealPolicy } from "../src/archive-seal.js";
+import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { setSealExpected } from "../src/lares-config.js";
-import { isSealedEnvelope, readSealCarrier } from "@lararium/mesh";
+import { isSealedEnvelope, readSealCarrier, readVkCarrier, writeSealedCarrier } from "@lararium/mesh";
 
 const PASS_A = "unopenable-passphrase-alpha-0";
 const PASS_B = "unopenable-passphrase-bravo-0";
@@ -52,8 +51,11 @@ function setEnv(k: string, v: string | undefined): void {
   if (v === undefined) delete process.env[k]; else process.env[k] = v;
 }
 
-const SOVEREIGN = Uint8Array.from(Array.from({ length: 64 }, (_, i) => (i * 7 + 3) & 0xff));
-const VEIL = Uint8Array.from(Array.from({ length: 48 }, (_, i) => (i * 11 + 5) & 0xff));
+const RECOVERY_SHARE = { bytes: { x: 7, ys: new Uint8Array([8, 9, 10]) }, custodian: "device" as const, recoveryEpoch: 1 };
+const device0Path = () => deviceSharePath(0);
+const device1Path = () => deviceSharePath(1);
+const persistDeviceShare0 = () => persistRecoveryDeviceShare(RECOVERY_SHARE, 0);
+const persistDeviceShare1 = () => persistRecoveryDeviceShare(RECOVERY_SHARE, 1);
 
 describe("a seal this build cannot frame reads `unopenable`, never `cleartext`", { timeout: 120_000 }, () => {
   let root: string;
@@ -72,68 +74,68 @@ describe("a seal this build cannot frame reads `unopenable`, never `cleartext`",
     rmSync(root, { recursive: true, force: true });
   });
 
-  /** Land a real sealed archive under PASS_A, then BUMP its envelope version — a seal from a later vessel. */
-  function standVersionBumpedArchive(): Uint8Array {
+  /** Land a sealed h0 share under PASS_A, then bump its envelope version. */
+  function standVersionBumpedShare(): Uint8Array {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    persistIdentityArchive(SOVEREIGN);
-    const sealed = readFileSync(archivePath());
+    persistDeviceShare0();
+    const sealed = readFileSync(device0Path());
     expect(isSealedEnvelope(sealed), "the rig failed to seal — every assertion below would test nothing").toBe(true);
     const bumped = Uint8Array.from(sealed);
     bumped[4] = 0x02;                          // envelope v2: magic intact, version this build cannot frame
-    writeFileSync(archivePath(), bumped);
+    writeFileSync(device0Path(), bumped);
     // The premise, pinned: the strict probe reads FALSE here and the three-valued reader reads a seal.
-    expect(isSealedEnvelope(readFileSync(archivePath())), "the strict probe is what lied").toBe(false);
-    expect(readSealCarrier(readFileSync(archivePath())), "the reader that tells the truth").toBe("unopenable");
+    expect(isSealedEnvelope(readFileSync(device0Path())), "the strict probe is what lied").toBe(false);
+    expect(readSealCarrier(readFileSync(device0Path())), "the reader that tells the truth").toBe("unopenable");
     return bumped;
   }
 
-  /** A sealed VEIL carrier under PASS_A, so a rotate has something genuinely sealed to rotate. */
-  function standSealedVeil(): Uint8Array {
+  /** Land a sealed h1 share under PASS_A for lifecycle controls. */
+  function standSealedDeviceShare1(): Uint8Array {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    persistVeilArchive(VEIL);
-    const bytes = readFileSync(veilArchivePath());
+    persistDeviceShare1();
+    const bytes = readFileSync(device1Path());
     expect(isSealedEnvelope(bytes), "the rig failed to seal the veil").toBe(true);
     return bytes;
   }
 
   // ── RED ① · THE STATUS LIE ──────────────────────────────────────────────────────────────────────
   test("RED — `vault status` reports `unopenable`, NOT `cleartext`, over a seal it cannot frame", () => {
-    standVersionBumpedArchive();
+    standVersionBumpedShare();
     const s = archiveSealStatus();
-    expect(s.carriers.archive!.state, "status told the operator no seal stands where one stands")
+    expect(s.carriers["device-share-h0"]!.state, "status told the operator no seal stands where one stands")
       .toBe("unopenable");
     // FAULT-PIN against a WEAKENING, not only an absence: a cure that folded `unopenable` onto
     // `sealed` would also clear the assertion above if it were written as a `not.toBe("cleartext")`.
     // These two bite either fold.
-    expect(s.carriers.archive!.state).not.toBe("cleartext");
-    expect(s.carriers.archive!.state).not.toBe("sealed");
+    expect(s.carriers["device-share-h0"]!.state).not.toBe("cleartext");
+    expect(s.carriers["device-share-h0"]!.state).not.toBe("sealed");
     // A mode read off a header this build cannot decode would be a fabrication — none is offered.
-    expect(s.carriers.archive!.mode, "no mode may be claimed from an undecodable header").toBeUndefined();
+    expect(s.carriers["device-share-h0"]!.mode, "no mode may be claimed from an undecodable header").toBeUndefined();
   });
 
   test("RED — `status --check` claims NO openability verdict over an unopenable carrier", () => {
-    standVersionBumpedArchive();
+    standVersionBumpedShare();
     const s = archiveSealStatus({ probe: PASS_A });   // the passphrase that ACTUALLY sealed these bytes
-    expect(s.carriers.archive!.state).toBe("unopenable");
+    expect(s.carriers["device-share-h0"]!.state).toBe("unopenable");
     // The pin-reader law at the probe: no key can be judged against bytes that never framed, so none
     // may be blamed. A `false` here would send the operator to re-type a credential that was right.
-    expect(s.carriers.archive!.opensUnderProbe, "a key was never tested, so none is reported").toBeUndefined();
+    expect(s.carriers["device-share-h0"]!.opensUnderProbe, "a key was never tested, so none is reported").toBeUndefined();
     expect(s.split, "one unopenable carrier is not a KEK split").toBe(false);
   });
 
   // ── RED ② · THE DOUBLE WRAP ─────────────────────────────────────────────────────────────────────
   test("RED — `vault rotate` REFUSES rather than wrapping an unopenable carrier a second time", () => {
-    const veilBefore = standSealedVeil();
-    const bumped = standVersionBumpedArchive();      // sealed veil + unopenable archive, both present
+    const veilBefore = standSealedDeviceShare1();
+    const bumped = standVersionBumpedShare();      // sealed veil + unopenable archive, both present
 
     expect(() => rotateArchivePassphrase(PASS_A, PASS_B)).toThrow(/unopenable|cannot (be )?frame/i);
 
     // ZERO-WRITE, both carriers — the refusal lands BEFORE any temp, exactly as a wrong old passphrase does.
-    expect(readFileSync(archivePath()).equals(Buffer.from(bumped)), "the unopenable bytes stood").toBe(true);
-    expect(readFileSync(veilArchivePath()).equals(Buffer.from(veilBefore)), "the healthy carrier was not touched").toBe(true);
+    expect(readFileSync(device0Path()).equals(Buffer.from(bumped)), "the unopenable bytes stood").toBe(true);
+    expect(readFileSync(device1Path()).equals(Buffer.from(veilBefore)), "the healthy carrier was not touched").toBe(true);
     // FAULT-PIN on the WRAP itself, not only on the throw: a cure that threw AFTER staging would leave
-    // the archive double-wrapped. One unwrap under PASS_B must not reveal another envelope.
-    const stillOne = readFileSync(archivePath());
+    // the h0 double-wrapped. One unwrap under PASS_B must not reveal another envelope.
+    const stillOne = readFileSync(device0Path());
     expect(readSealCarrier(stillOne)).toBe("unopenable");
     // And no temp file survived the refusal.
     expect(readdirSync(larIdentityDir()).filter((f) => f.includes("vault-tmp")), "a temp outlived the refusal").toEqual([]);
@@ -141,107 +143,104 @@ describe("a seal this build cannot frame reads `unopenable`, never `cleartext`",
 
   // ── RED ③ · THE SILENT SKIP ─────────────────────────────────────────────────────────────────────
   test("RED — `vault repair` refuses an unopenable carrier instead of reporting success over it", () => {
-    standSealedVeil();
-    const bumped = standVersionBumpedArchive();
+    standSealedDeviceShare1();
+    const bumped = standVersionBumpedShare();
     expect(() => repairSplitKek(PASS_A, PASS_B)).toThrow(/unopenable|cannot (be )?frame/i);
-    expect(readFileSync(archivePath()).equals(Buffer.from(bumped))).toBe(true);
+    expect(readFileSync(device0Path()).equals(Buffer.from(bumped))).toBe(true);
   });
 
-  // ── RED ④ · THE FAIL-OPEN AT BOOT ───────────────────────────────────────────────────────────────
-  test("RED — the boot reading names `unreadable` over an unopenable boot carrier (it read `opens` before)", () => {
-    standVersionBumpedArchive();
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    const r = readArchiveOpening();
-    expect(r.kind).toBe("unreadable");
-    expect(r.opens, "the boot believed it could open an archive it cannot even frame").toBe(false);
-    expect(r.probed, "no key was tested against bytes that never framed").toBe(false);
-    expect(r.why).toMatch(/archive/);
-    // FAULT-PIN: with NO key the reading must STILL name the carrier, never the missing key — a cure
-    // that only re-ordered the key check would read `key-absent` here and mislead the operator.
-    setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
-    expect(readArchiveOpening().kind).toBe("unreadable");
-  });
+  test("CONTROL — passphrase lifecycle verbs refuse a VK-sealed h0 share by name", async () => {
+    const homes = { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
+    const io = new FsCustodyIo(homes);
+    const { vk } = await foundCustody({
+      io,
+      homes,
+      slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "synthetic custody pin" }] }],
+    });
+    const path = device0Path();
+    await writeSealedCarrier({
+      io,
+      vk,
+      treePath: join(homes.identity, "vk-slots.bin"),
+      carrier: { name: "identity/recovery-device-share-h0.bin", path, keyClass: "seed" },
+      plaintext: new TextEncoder().encode("synthetic recovery share"),
+    });
+    expect(readVkCarrier(readFileSync(path))).toBe("sealed");
+    expect(archiveSealStatus().carriers["device-share-h0"]!.state).toBe("cleartext");
 
-  // ── RED ⑤ · CIPHERTEXT HANDED BACK AS PLAINTEXT ─────────────────────────────────────────────────
-  test("RED — `openArchiveBytes` refuses an unopenable carrier instead of returning its ciphertext", () => {
-    const bumped = standVersionBumpedArchive();
-    expect(() => openArchiveBytes(bumped, passphraseSealPolicy(PASS_A))).toThrow(/cannot (be )?frame|unopenable/i);
-    // FAULT-PIN on the actual harm: whatever it does, it must never hand back the stored bytes.
-    let out: Uint8Array | null = null;
-    try { out = openArchiveBytes(bumped, passphraseSealPolicy(PASS_A)); } catch { /* the refusal */ }
-    expect(out, "ciphertext was returned as though it were plaintext").toBeNull();
-  });
-
-  test("RED — `vault export` refuses an unopenable source instead of re-sealing its ciphertext", () => {
-    standVersionBumpedArchive();
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    const dest = join(root, "backup.bin");
-    expect(() => exportSealedArchive(PASS_B, dest)).toThrow(/cannot (be )?frame|unopenable/i);
+    for (const [act, verb] of [
+      ["seal", () => sealArchiveWithPassphrase(PASS_A)],
+      ["rotate", () => rotateArchivePassphrase(PASS_A, PASS_B)],
+      ["repair", () => repairSplitKek(PASS_A, PASS_B)],
+    ] as const) {
+      let refusal: unknown;
+      try { verb(); } catch (error) { refusal = error; }
+      expect(refusal).toBeInstanceOf(VkSealedCarrierRefusal);
+      expect(refusal).toMatchObject({ carrier: "device-share-h0", act });
+    }
   });
 
   // ══ CONTROLS — a set of only negatives is satisfied by INERTNESS, so each one asserts a POSITIVE ══
 
   test("CONTROL — a genuinely BARE carrier still reads `cleartext`", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
-    persistIdentityArchive(SOVEREIGN);
-    expect(readSealCarrier(readFileSync(archivePath()))).toBe("bare");
-    expect(archiveSealStatus().carriers.archive!.state).toBe("cleartext");
-    expect(readArchiveOpening().opens, "a bare carrier still opens").toBe(true);
+    persistDeviceShare0();
+    expect(readSealCarrier(readFileSync(device0Path()))).toBe("bare");
+    expect(archiveSealStatus().carriers["device-share-h0"]!.state).toBe("cleartext");
   });
 
   test("CONTROL — a NORMAL sealed carrier still reads `sealed`, with its mode and its probe verdict", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    persistIdentityArchive(SOVEREIGN);
+    persistDeviceShare0();
     const s = archiveSealStatus({ probe: PASS_A });
-    expect(s.carriers.archive!.state).toBe("sealed");
-    expect(s.carriers.archive!.mode).toBe("passphrase");
-    expect(s.carriers.archive!.opensUnderProbe, "the right key still reads open").toBe(true);
-    expect(archiveSealStatus({ probe: PASS_B }).carriers.archive!.opensUnderProbe, "the wrong key still reads shut").toBe(false);
-    expect(readArchiveOpening().kind).toBe("opens");
+    expect(s.carriers["device-share-h0"]!.state).toBe("sealed");
+    expect(s.carriers["device-share-h0"]!.mode).toBe("passphrase");
+    expect(s.carriers["device-share-h0"]!.opensUnderProbe, "the right key still reads open").toBe(true);
+    expect(archiveSealStatus({ probe: PASS_B }).carriers["device-share-h0"]!.opensUnderProbe, "the wrong key still reads shut").toBe(false);
   });
 
   test("CONTROL — a correct rotate still succeeds end-to-end, and the new passphrase opens the result", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    persistIdentityArchive(SOVEREIGN);
-    persistVeilArchive(VEIL);
+    persistDeviceShare0();
+    persistDeviceShare1();
     const r = rotateArchivePassphrase(PASS_A, PASS_B);
-    expect(r.rotated).toContain("archive");
-    expect(r.rotated).toContain("veil");
-    // The POSITIVE: the bytes open under the NEW passphrase and yield the ORIGINAL plaintext.
-    const opened = openArchiveBytes(readFileSync(archivePath()), passphraseSealPolicy(PASS_B));
-    expect(Buffer.from(opened).equals(Buffer.from(SOVEREIGN)), "rotate lost the plaintext").toBe(true);
-    expect(archiveSealStatus({ probe: PASS_B }).carriers.archive!.opensUnderProbe).toBe(true);
+    expect(r.rotated).toContain("device-share-h0");
+    expect(r.rotated).toContain("device-share-h1");
+    // The new passphrase opens the share and yields the record written before rotation.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
+    expect(loadRecoveryDeviceShare(0), "rotate lost the share plaintext").toEqual(RECOVERY_SHARE);
+    expect(archiveSealStatus({ probe: PASS_B }).carriers["device-share-h0"]!.opensUnderProbe).toBe(true);
   });
 
   test("CONTROL — a WRONG old passphrase still writes ZERO bytes (the GCM tag is the proof of intent)", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    persistIdentityArchive(SOVEREIGN);
-    persistVeilArchive(VEIL);
-    const before = readFileSync(archivePath());
-    const veilBefore = readFileSync(veilArchivePath());
-    const mtime = statSync(archivePath()).mtimeMs;
+    persistDeviceShare0();
+    persistDeviceShare1();
+    const before = readFileSync(device0Path());
+    const secondBefore = readFileSync(device1Path());
+    const mtime = statSync(device0Path()).mtimeMs;
 
     expect(() => rotateArchivePassphrase("the-wrong-old-passphrase", PASS_B)).toThrow();
 
-    expect(readFileSync(archivePath()).equals(before), "the archive took a write").toBe(true);
-    expect(readFileSync(veilArchivePath()).equals(veilBefore), "the veil took a write").toBe(true);
-    expect(statSync(archivePath()).mtimeMs, "the carrier was rewritten with identical bytes").toBe(mtime);
+    expect(readFileSync(device0Path()).equals(before), "the share took a write").toBe(true);
+    expect(readFileSync(device1Path()).equals(secondBefore), "h1 took a write").toBe(true);
+    expect(statSync(device0Path()).mtimeMs, "the carrier was rewritten with identical bytes").toBe(mtime);
     expect(readdirSync(larIdentityDir()).filter((f) => f.includes("vault-tmp")), "a temp was staged before the tag").toEqual([]);
     // The POSITIVE: the RIGHT old passphrase still rotates afterward — the refusal left nothing wedged.
-    expect(rotateArchivePassphrase(PASS_A, PASS_B).rotated).toContain("archive");
+    expect(rotateArchivePassphrase(PASS_A, PASS_B).rotated).toContain("device-share-h0");
   });
 
   test("CONTROL — `vault seal` still skips an unopenable carrier (the reading it already asked kept its answer)", () => {
-    const bumped = standVersionBumpedArchive();
+    const bumped = standVersionBumpedShare();
     const r = sealArchiveWithPassphrase(PASS_B);
-    expect(r.skipped).toContain("archive");
-    expect(r.sealed).not.toContain("archive");
-    expect(readFileSync(archivePath()).equals(Buffer.from(bumped))).toBe(true);
+    expect(r.skipped).toContain("device-share-h0");
+    expect(r.sealed).not.toContain("device-share-h0");
+    expect(readFileSync(device0Path()).equals(Buffer.from(bumped))).toBe(true);
   });
 
   test("CONTROL — sealing still records the boot-gate marker over a healthy carrier", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
-    persistIdentityArchive(SOVEREIGN);
+    persistDeviceShare0();
     expect(archiveSealStatus().sealExpected).toBe(false);
     sealArchiveWithPassphrase(PASS_A);
     expect(archiveSealStatus().sealExpected, "the marker did not land").toBe(true);

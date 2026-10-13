@@ -1367,84 +1367,60 @@ run_climb() {
   clear_all
 }
 
-# ── ② THE SEAL DESTRUCTION, IN THE SHAPES A UNIT TEST CANNOT REACH ──────────────────────────────
-# `archive-write-guard-attacks.test.ts` already stands 15 attacks at unit grain, and they are real
-# cures. Every one of them drives an IN-PROCESS function under `mkdtemp` — no daemon, no CLI process,
-# no boot path. This reading walks the two shapes that live outside that reach.
-#
-# ⚠ RED TODAY, and the tree names it in its own test title (attack 14, :390):
-#     "★ a boot-sealed archive leaves `sealExpected` FALSE — the five readings never probe a wrong key ★"
-# `readArchiveOpening` (archive-passphrase.ts:497) short-circuits before it ever probes:
-#     if (!readSealExpected(cfg)) return { kind: "no-seal-expected", opens: true, probed: false, … };
-# So a vessel sealed by the BOOT's M3 export — never by `vault seal` — carries `sealExpected:false`,
-# and a wrong passphrase reads `opens:true` at the floor. The write guard still catches the CARRIER
-# write; the boot's own gate does not, and only a booted vessel can show that.
-#
-# AND THE SECOND SHAPE: the M3 refusal is SWALLOWED. operator-daemon-behavior.ts:672 catches the
-# guard's throw into `console.warn` — "[daemon] keyhive archive export skipped: " — so a refused
-# re-seal leaves exit code 0 and a warn line. A green boot is not a written archive.
+# ── ② THE SEAL AT REST, IN THE SHAPES A UNIT TEST CANNOT REACH ───────────────────────────────────
+# The unit suites drive the sealed writer and the custody holder IN-PROCESS under `mkdtemp`: no container, no
+# CLI process, no boot path. This reading walks what only a booted vessel can show: a founded vessel's identity
+# rows rest under the vessel key's seal on the volume itself, the staged boot's unlock lands (the boot line names
+# the door's own return code), and the doors a caller might still reach for answer as they should.
 # COVERS: private/seed/unfed
 run_seal() {
-  say "SEAL — the boot path's own reading of a wrong key, and the refusal it swallows"
+  say "SEAL — a founded vessel's identity rows rest sealed under the vessel key"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
 
-  step "A stands and seals its archive from the BOOT (never \`vault seal\`)"
+  step "A stands"
   if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 \
      && up_and_answering lararium-a; then ok
   else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
 
-  step "the floor names what the archive did — the reading is stdout, never an exit code"
-  local OPENING
-  OPENING=$($COMPOSE logs lararium-a 2>&1 | grep -oE 'the archive holds shut \([a-z-]+\)' | tail -1)
-  if [ -n "$OPENING" ]; then
-    printf '\033[33mGAP (%s)\033[0m\n' "the floor reads: ${OPENING}"
-  else ok; fi
+  # ★ THE READING. Each row of the founding's sealed family carries the vessel key's seal frame at rest: the
+  # frame's own magic leads the file. A bare archive would lead with keyhive's bytes, a passphrase envelope with
+  # its own four-byte magic.
+  step "★ the keyhive archive, the veil archive and the anchors each lead with the vessel key's seal ★"
+  local ROW HEAD BARE=""
+  for ROW in keyhive-archive.bin veil-archive-h0.bin anchors-h0.json anchor-roster.json; do
+    HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 13 /state/data/lares/identity/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
+    [ "$HEAD" = "lares-vk-seal" ] || BARE="$BARE $ROW"
+  done
+  if [ -z "$BARE" ]; then ok
+  else bad "rows that do not lead with the vessel key's seal:$BARE"; fi
 
-  # ★ THE READING. A wrong passphrase must not read as an opening one. `sealExpected:false` is exactly
-  # the state a boot-sealed vessel carries, so this asks the vessel the question its own test defers.
-  step "★ a WRONG passphrase must NOT read as \`opens\` at the floor ★"
+  # THE STAGED UNLOCK. Every boot rests at the floor; a staged container opens through the test door, and the
+  # boot script prints the door's return code. A scenario that read `answering` alone would call a vessel still
+  # at the floor healthy.
+  step "the boot says it stands holding no key, and the staged unlock lands (door rc 0)"
+  if logs_have "this vessel stands holding no vessel key" lararium-a && logs_have "staged custody unlock: door rc 0" lararium-a; then ok
+  else
+    bad "the floor line or the staged unlock's rc 0 never reached the log"
+    printf '      %s\n' "$($COMPOSE logs lararium-a 2>&1 | grep -E 'custody' | tail -3 | cut -c1-200)"
+  fi
+
+  # THE PASSPHRASE LIFECYCLE governs the share carriers alone: its status names no archive.
+  step "\`vault status\` names the share carriers and no archive"
   local ST
-  ST=$($COMPOSE exec -T -e LARES_ARCHIVE_PASSPHRASE="a-passphrase-that-never-sealed-anything" \
-        lararium-a $LARES vault status --json 2>&1)
-  if printf '%s' "$ST" | grep -q '"sealExpected":true'; then ok
+  ST=$($COMPOSE exec -T lararium-a $LARES vault status --json 2>&1)
+  if printf '%s' "$ST" | grep -q '"reserve-share"' && ! printf '%s' "$ST" | grep -qE '"carriers":\{[^}]*"(archive|veil)"'; then ok
   else
-    bad "the vessel reads no seal in force under a wrong key — a wrong passphrase reads as opening"
-    printf '      %s\n' "$(printf '%s' "$ST" | grep -oE '"sealExpected":[a-z]+|"split":[a-z]+|"passphraseEnvSet":[a-z]+' | tr '\n' ' ')"
-    printf '      archive-passphrase.ts:497 returns no-seal-expected/opens:true before it probes\n'
+    bad "the passphrase lifecycle's status still names an archive carrier"
+    printf '      %s\n' "$(printf '%s' "$ST" | tail -1 | cut -c1-220)"
   fi
 
-  # THE SWALLOWED REFUSAL. A boot whose M3 export the guard refused still exits 0; the only witness is
-  # a warn line. A scenario that read the exit code alone would call this vessel healthy.
-  step "a refused M3 export surfaces as a WARN, never an exit — assert the line is reachable"
-  if logs_have "keyhive archive export skipped:" lararium-a; then
-    ok
-  else
-    gap "no refusal fired this boot — the swallow is unproven from a healthy vessel"
-    printf '      operator-daemon-behavior.ts:672 catches the guard throw into console.warn\n'
-    printf '      wakes when the scenario can seat a carrier the guard refuses, then boot over it\n'
-  fi
-
-  # CONTROL — THE GCM TAG PROVES INTENT, AND A CORRECT ROTATE MUST STILL SUCCEED. Without this the
-  # whole family could be "cured" by refusing every write, which is the failure wearing a fix's face.
-  step "CONTROL — a correct rotate still succeeds"
-  local ROT
-  ROT=$($COMPOSE exec -T -e LARES_ARCHIVE_PASSPHRASE="" -e LARES_ARCHIVE_PASSPHRASE_NEW="a-new-one" \
-        lararium-a $LARES vault rotate --yes --json 2>&1)
-  if printf '%s' "$ROT" | grep -q '"ok":true'; then ok
-  else
-    gap "the rotate refused on this vessel — a cleartext floor has no old passphrase to rotate FROM"
-    printf '      %s\n' "$(printf '%s' "$ROT" | tail -1 | cut -c1-200)"
-  fi
-
-  # THE EXPORT DOOR, WALKED AGAINST A LIVE VESSEL. The refusal is built (archive-passphrase.ts:324) and
-  # unit-tested; what no test walks is the CLI process reaching it through a running daemon.
-  step "\`vault export\` aimed at the archive carrier REFUSES"
+  step "\`vault export\` stands as no door"
   local EX
-  EX=$($COMPOSE exec -T lararium-a $LARES vault export /state/data/lares/identity/keyhive-archive.bin --force --json 2>&1)
-  if printf '%s' "$EX" | grep -qF 'refusing to export onto the'; then ok
+  EX=$($COMPOSE exec -T lararium-a $LARES vault export /state/backup.seal --json 2>&1)
+  if printf '%s' "$EX" | grep -qF 'unknown sub-verb'; then ok
   else
-    bad "the export did not refuse the carrier it would destroy"
+    bad "\`vault export\` answered as a door"
     printf '      %s\n' "$(printf '%s' "$EX" | tail -1 | cut -c1-220)"
   fi
 

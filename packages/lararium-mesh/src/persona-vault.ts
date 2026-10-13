@@ -283,7 +283,7 @@ export async function readWornPersonaMount(
     return null;
   };
 
-  const anchors = vault.anchors.load(handleIndex);
+  const anchors = await vault.anchors.load(handleIndex);
   if (!anchors) return refuse("any anchors at all");
   const { signerDid, personaKelPrefix, deviceEdge, veilTag } = anchors;
   // ALL OR NONE — see the fail-closed note above. The veil tag joins the set: mounting a face whose tag is
