@@ -452,3 +452,62 @@ export function checkFaceChain(input: {
   CHAINS.add(chain);
   return Object.freeze({ verdict: "verified", chain, memory: now });
 }
+
+// ── The vessel's own chain: what a session opens on ─────────────────────────────────────────────
+
+/**
+ * This vessel's own chain under one face: the face key's certificate over the vessel's face-scoped key,
+ * against a memory that holds no denial of that key, no fork and no gap. It holds NO session key and no
+ * session certificate: a session opens on it, and the signer mints the session's key only after the open.
+ * Only `checkVesselChain` mints one.
+ */
+export interface VerifiedVesselChain {
+  readonly scope:         FaceScope;
+  readonly vesselFaceKey: VesselFaceKey;
+  readonly certificate:   VesselFaceCertificate;
+  /** The frontier the check stood at. */
+  readonly frontier:      WithdrawalFrontier;
+}
+
+const VESSEL_CHAINS = new WeakSet<VerifiedVesselChain>();
+/** Did `checkVesselChain` mint `value`? A chain the gate's check minted, or one spelled by hand, never did. */
+export function isVerifiedVesselChain(value: unknown): value is VerifiedVesselChain {
+  return typeof value === "object" && value !== null && VESSEL_CHAINS.has(value as VerifiedVesselChain);
+}
+
+export const VESSEL_CHAIN_VERDICTS = ["verified", "withdrawn", "incomplete", "forked", "invalid"] as const;
+export type VesselChainVerdict =
+  | { readonly verdict: "verified"; readonly chain: VerifiedVesselChain }
+  /** The vessel's own history denies its key, shows two histories, or holds a gap: no session opens on it. */
+  | { readonly verdict: "withdrawn" | "incomplete" | "forked" }
+  | { readonly verdict: "invalid"; readonly refusal: FaceChainRefusal; readonly cause?: FaceProofRefusal };
+
+/**
+ * Read this vessel's own certificate against the history it holds of its face. `admitted` names the face
+ * key and the Nexus the session will wear; a certificate for any other refuses. The order of reading: the
+ * memory, the certificate, then the history: a fork first, a denial of this key, a gap.
+ */
+export function checkVesselChain(input: { admitted: FaceScope; certificate: unknown; memory: WithdrawalMemory }): VesselChainVerdict {
+  const bad = (refusal: FaceChainRefusal, cause?: FaceProofRefusal): VesselChainVerdict =>
+    Object.freeze(cause === undefined ? { verdict: "invalid", refusal } : { verdict: "invalid", refusal, cause });
+  let taken: { admitted: unknown; certificate: unknown; memory: unknown };
+  try { taken = { admitted: input.admitted, certificate: input.certificate, memory: input.memory }; }
+  catch { return bad("admitted-malformed"); }
+  const { memory } = taken;
+  if (!isWithdrawalMemory(memory)) return bad("memory-foreign");
+  const ground = readFaceScope(taken.admitted);
+  if (!own(ground, "read")) return bad("admitted-malformed", ground);
+  if (!sameFaceScope(memory.scope, ground.read)) return bad("memory-other-face");
+  const certificate = readCertificate(taken.certificate);
+  if (!own(certificate, "read")) return bad("certificate-refused", certificate);
+  if (certificate.read.scope.faceKey !== ground.read.faceKey) return bad("certificate-other-face");
+  if (certificate.read.scope.nexus !== ground.read.nexus) return bad("certificate-other-nexus");
+  if (memory.fork !== null) return Object.freeze({ verdict: "forked" });
+  if (memory.denied.includes(withdrawnKeyDigest(ground.read, certificate.read.vesselFaceKey))) return Object.freeze({ verdict: "withdrawn" });
+  if (memory.loose.length > 0) return Object.freeze({ verdict: "incomplete" });
+  const chain: VerifiedVesselChain = Object.freeze({
+    scope: certificate.read.scope, vesselFaceKey: certificate.read.vesselFaceKey, certificate: certificate.read, frontier: memory.frontier,
+  });
+  VESSEL_CHAINS.add(chain);
+  return Object.freeze({ verdict: "verified", chain });
+}

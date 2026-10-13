@@ -13,7 +13,7 @@ import { hex } from "../src/crypto.js";
 import { acceptEd25519Key } from "../src/ed25519-door.js";
 import {
   FACE_CHAIN_VERDICTS, FACE_PROOF_CUSTODY_ROWS, WITHDRAWAL_HISTORY_BOUND,
-  checkFaceChain, foldWithdrawals, heldWithdrawals, isVerifiedFaceChain, isWithdrawalMemory, issueCertificate,
+  checkFaceChain, checkVesselChain, isVerifiedVesselChain, foldWithdrawals, heldWithdrawals, isVerifiedFaceChain, isWithdrawalMemory, issueCertificate,
   learnWithdrawals, mintFaceProofKey, mintVesselFaceKey, readOwnStanding, requestCertificate, withdrawKey,
   type FaceChainVerdict, type FaceKeyCustody, type VesselFaceKeyCustody, type WithdrawalMemory,
 } from "../src/face-authority.js";
@@ -556,3 +556,57 @@ async function chainUnder(of: Chain, vessel: Pair): Promise<Pick<Chain, "session
     signature: await signHex(sessionCertificateImage(of.scope, vesselFaceKey, sessionKey, "face"), vessel),
   } };
 }
+
+describe("the vessel's own chain: what a session opens on, before any session key exists", () => {
+  test("CONTROL: a certificate under the admitted face key, with no learned denial, verifies and carries its minter's mark", async () => {
+    const c = await chain("vessel-chain", NEXUS_A);
+    const verdict = checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: memoryOf(c.scope) });
+    if (verdict.verdict !== "verified") throw new Error(verdict.verdict);
+    expect(verdict.chain).toEqual({ scope: c.scope, vesselFaceKey: c.vessel.key, certificate: c.certificate, frontier: genesisFrontier(c.scope) });
+    expect(isVerifiedVesselChain(verdict.chain)).toBe(true);
+    expect(Object.isFrozen(verdict.chain)).toBe(true);
+    // No session key and no session certificate stands anywhere in it.
+    expect(stringLeaves(verdict.chain)).not.toContain(c.session.key);
+  });
+
+  test("RED: a chain spelled by hand, a copy, and a chain the gate's own check minted carry no vessel mark", async () => {
+    const c = await chain("vessel-mark", NEXUS_A);
+    const memory = memoryOf(c.scope);
+    const real = checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory });
+    if (real.verdict !== "verified") throw new Error(real.verdict);
+    const gates = checkFaceChain({ admitted: c.scope, certificate: c.certificate, sessionCertificate: c.sessionCertificate, frontier: memory.frontier, carried: [], memory });
+    if (gates.verdict !== "verified") throw new Error(gates.verdict);
+    for (const impostor of [{ ...real.chain }, structuredClone({ ...real.chain }), gates.chain, real, null]) expect(isVerifiedVesselChain(impostor)).toBe(false);
+    expect(isVerifiedFaceChain(real.chain)).toBe(false);                 // nor does a vessel chain pass for a gate's
+  });
+
+  test("RED: a denied key reads withdrawn, a fork reads forked, a gap reads incomplete, and none mints a chain", async () => {
+    const c = await chain("vessel-states", NEXUS_A);
+    const other = await vesselOf(c, "vessel-states other");
+    const denied = await history(c, [c.vessel.key]);
+    expect(checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: memoryOf(c.scope, denied) })).toEqual({ verdict: "withdrawn" });
+    const genesis = genesisFrontier(c.scope).head;
+    const fork = [await withdrawal(c.scope, 1, genesis, other.vessel.key, c.face), await withdrawal(c.scope, 1, genesis, (await pair("vessel-states third")).key, c.face)];
+    expect(checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: memoryOf(c.scope, fork) })).toEqual({ verdict: "forked" });
+    const two = await history(c, [other.vessel.key, (await pair("vessel-states fourth")).key]);
+    expect(checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: memoryOf(c.scope, [two[1]!]) })).toEqual({ verdict: "incomplete" });
+    // CONTROL: the same vessel under a history that denies only its sibling verifies, at that history's frontier.
+    const sound = checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: memoryOf(c.scope, two) });
+    expect(sound.verdict === "verified" && sound.chain.frontier.position).toBe(2);
+  });
+
+  test("RED: another face, another Nexus, a forged certificate and a foreign memory each read invalid by name", async () => {
+    const c = await chain("vessel-invalid", NEXUS_A);
+    const elsewhere = await chain("vessel-invalid", NEXUS_B);
+    const stranger = await chain("vessel-invalid stranger", NEXUS_A);
+    const memory = memoryOf(c.scope);
+    const refusal = (input: Parameters<typeof checkVesselChain>[0]): string => { const v = checkVesselChain(input); return v.verdict === "invalid" ? v.refusal : v.verdict; };
+    expect(refusal({ admitted: c.scope, certificate: stranger.certificate, memory })).toBe("certificate-other-face");
+    expect(refusal({ admitted: c.scope, certificate: elsewhere.certificate, memory })).toBe("certificate-other-nexus");
+    expect(refusal({ admitted: c.scope, certificate: { ...c.certificate, signature: stranger.certificate.signature }, memory })).toBe("certificate-refused");
+    expect(refusal({ admitted: c.scope, certificate: c.certificate, memory: { ...memory } as WithdrawalMemory })).toBe("memory-foreign");
+    expect(refusal({ admitted: c.scope, certificate: c.certificate, memory: memoryOf(stranger.scope) })).toBe("memory-other-face");
+    expect(refusal({ admitted: { faceKey: "zz", nexus: NEXUS_A } as never, certificate: c.certificate, memory })).toBe("admitted-malformed");
+    expect(refusal({ admitted: c.scope, certificate: c.certificate, memory })).toBe("verified");   // CONTROL
+  });
+});
