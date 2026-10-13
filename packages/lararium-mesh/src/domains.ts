@@ -249,6 +249,30 @@ export const SEALED_ENROLMENT_INFO = mint("sealed-enrolment-box");
 /** The repo PEER ID a sibling stands under: a hash under this name of the device key it proved over the sibling
  *  session. Derived, never chosen, so a sibling can name no peer another adapter carries. */
 export const SIBLING_PEER_ID_INFO = mint("sibling-peer-id");
+// ── THE FACE PROOF: face key → the vessel's face-scoped key → session key ───────────────────────
+// Canon: lar:///ha.ka.ba/lares/api/pono/face-proof. Each image leads with its own name, so no link of the
+// chain verifies as another link, and no digest of one purpose equals a digest of another.
+/** A joining vessel's REQUEST: its own face-scoped key signs for itself, proving it holds the key it asks
+ *  the face key to certify. Apart from the certificate: a request never reads as the face key's word. */
+export const FACE_CERTIFICATE_REQUEST_DOMAIN = mint("face-certificate-request");
+/** The CERTIFICATE the face key signs once, at the join, over one vessel's face-scoped key at one Nexus. */
+export const FACE_CERTIFICATE_DOMAIN = mint("face-certificate");
+/** A WITHDRAWAL event of the face's deny-only history, signed by the face key. */
+export const FACE_WITHDRAWAL_DOMAIN = mint("face-withdrawal");
+/** The GENESIS head a face's withdrawal history starts from: a digest name, signed by nobody. */
+export const FACE_WITHDRAWAL_GENESIS_DOMAIN = mint("face-withdrawal-genesis");
+/** The digest a denial names a withdrawn key by, bound to its face key and Nexus. */
+export const FACE_WITHDRAWN_KEY_DOMAIN = mint("face-withdrawn-key");
+/** The reference a local session carries for its face's proof subject: a digest name. */
+export const FACE_PROOF_SUBJECT_DOMAIN = mint("face-proof-subject");
+/** A SESSION's certificate: the vessel's face-scoped key signs one session key and its hand's profile. */
+export const SESSION_CERTIFICATE_DOMAIN = mint("session-certificate");
+/** What a session signer signs, one name per purpose: the dial's signed FINISH, an ordinary ACT, and an act
+ *  that changes who holds AUTHORITY. Three names, so a finish never verifies as an act, and a profile barred
+ *  from authority holds no signature that reads as one. */
+export const SESSION_FINISH_DOMAIN = mint("session-finish");
+export const SESSION_ACT_DOMAIN = mint("session-act");
+export const SESSION_AUTHORITY_DOMAIN = mint("session-authority");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");
