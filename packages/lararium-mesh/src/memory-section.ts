@@ -77,19 +77,21 @@ function unbox(bytes: unknown, recipientSecret: unknown, info: Uint8Array): Uint
   });
 }
 
-/** Read a list: an image with an empty name and any count of members. Null where the bytes hold another shape. */
+/** Read a list: an image with an empty name and any count of members. Null where the bytes hold another shape,
+ *  and then every member it cut zero-fills before it returns. */
 function readList(bytes: Uint8Array): Uint8Array[] | null {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const parts: Uint8Array[] = [];
+  const refuse = (): null => { for (const part of parts) part.fill(0); return null; };
   let at = 0;
   while (at < bytes.length) {
-    if (at + 4 > bytes.length) return null;
+    if (at + 4 > bytes.length) return refuse();
     const size = view.getUint32(at, false);
-    if (at + 4 + size > bytes.length) return null;
+    if (at + 4 + size > bytes.length) return refuse();
     parts.push(bytes.slice(at + 4, at + 4 + size));
     at += 4 + size;
   }
-  return parts.length >= 1 && parts[0]!.length === 0 ? parts.slice(1) : null;
+  return parts.length >= 1 && parts[0]!.length === 0 ? parts.slice(1) : refuse();
 }
 
 /**

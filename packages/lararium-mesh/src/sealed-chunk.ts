@@ -135,25 +135,27 @@ export function sealedImage(name: string, ...fields: readonly Uint8Array[]): Uin
 }
 
 /** Read an image back into its fields: the name must lead, and exactly `count` fields must follow with no
- *  byte left over. Null otherwise. */
+ *  byte left over. Null otherwise. An image may carry a key, so a reading that answers null zero-fills every
+ *  field it cut before it returns: a refused image leaves no copy of its bytes behind. */
 export function readSealedImage(name: string, bytes: unknown, count: number): Uint8Array[] | null {
+  const parts: Uint8Array[] = [];
+  const refuse = (): null => { for (const part of parts) part.fill(0); return null; };
   try {
     if (!(bytes instanceof Uint8Array)) return null;
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    const parts: Uint8Array[] = [];
     let at = 0;
     while (at < bytes.length) {
-      if (at + 4 > bytes.length) return null;
+      if (at + 4 > bytes.length) return refuse();
       const size = view.getUint32(at, false);
-      if (at + 4 + size > bytes.length) return null;
+      if (at + 4 + size > bytes.length) return refuse();
       parts.push(bytes.slice(at + 4, at + 4 + size));
       at += 4 + size;
     }
-    if (parts.length !== count + 1) return null;
+    if (parts.length !== count + 1) return refuse();
     const lead = utf8Bytes(name);
-    if (!bytesEqual(parts[0]!, lead)) return null;
+    if (!bytesEqual(parts[0]!, lead)) return refuse();
     return parts.slice(1);
-  } catch { return null; }
+  } catch { return refuse(); }
 }
 
 /** The four facts every sealed value binds. A reader supplies all four before any byte opens. */
