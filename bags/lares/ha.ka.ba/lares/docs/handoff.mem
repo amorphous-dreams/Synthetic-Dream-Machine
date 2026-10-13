@@ -4,18 +4,20 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/handoff.mem"
-hydrate   = true
-l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
-role      = "live handoff — the next vector and the ground it stands on; updated at each phase boundary, never archived in place; history lives in git, research in pattern-integrities, law in api/ memes"
-title     = "lar:///ha.ka.ba/lares/docs/handoff"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/docs/handoff"
-written   = "2026-06-19"
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/handoff.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 14
+manao      = 14
+manaoio    = 13
+role       = "live handoff — the next vector and the ground it stands on; updated at each phase boundary, never archived in place; history lives in git, research in pattern-integrities, law in api/ memes"
+status-why = "RETIRING: the operator's word unsaid this carrier's own \"never archived in place\". Folded to `lar:///ha.ka.ba/lares/api/pono/working-procedures` (procedures, instruments, working agreements), `lar:///ha.ka.ba/lares/docs/pono/grammar-watch` (the grammar watch) and `lar:///ha.ka.ba/lares/docs/stable-founding-road` (burrs, the lattice's law line, rulings owed), welded, no carrier points here"
+tags       = ["docs/handoff", "lifecycle/retiring"]
+title      = "lar:///ha.ka.ba/lares/docs/handoff"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/handoff"
+written    = "2026-06-19"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -450,6 +452,6 @@ hours. The eight red-first moves and the first instrument list read in #/shift-f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8VE8KVu4hGslzAMsIJirm4TWOo54cxiaUJ1htNAANmQ
+<<^ code="&#x0003;">>ni:///sha-256;oDpn3h3zb14VDRGfMFkjQb17mTrILhn7qlCDhd4vN8g
 
 <<^ code="&#x0004;" -> to="?">>
