@@ -8,7 +8,7 @@ export type {
   PeerDID, KeyhiveAccess, EventStoreRef,
 } from "./capability-provider.js";
 
-export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes } from "./keyhive-provider.js";
+export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
 export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";
 export type { LockboxProvider } from "./keyhive-lockbox.js";
 export { seatContentKeys } from "./content-key-seat.js";

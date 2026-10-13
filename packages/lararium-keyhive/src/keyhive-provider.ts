@@ -36,14 +36,43 @@ import type {
   ProviderChunkRest,
 } from "./capability-provider.js";
 
-/** setPanicHook installs a global Rust→JS error translator. Calling it twice
- *  panics ("a global default trace dispatcher has already been set"). Guard
- *  with a module-level flag so multiple providers in one process play nice. */
-let panicHookInstalled = false;
+/**
+ * KEYHIVE'S TRACE STAYS OFF UNLESS A PERSON ASKS BY NAME.
+ *
+ * `setPanicHook` installs TWO things in one call: the Rust→JS panic translator, and a global trace
+ * dispatcher at TRACE level (`keyhive_wasm/src/lib.rs`). The dispatcher prints every step of Keyhive's
+ * own work to the console: document ids, digests, signature bytes. Around an act a person asked for,
+ * those lines bury the one answer. The package offers no way to take the translator without the
+ * dispatcher, so the hook installs only where this name asks for it: `LAR_KEYHIVE_TRACE=1` (or `true`)
+ * in the environment of the process that stands the provider. The CLI's `--keyhive-trace` flag sets it
+ * for its own process and for a vessel it stands.
+ *
+ * With the hook unset a Rust panic still surfaces as a thrown wasm error; it names no Rust source line.
+ * A hand that chases one asks for the trace by name and reads both.
+ */
+export const KEYHIVE_TRACE_ENV = "LAR_KEYHIVE_TRACE";
+
+/**
+ * True where a person asked for Keyhive's trace by name: `1` or `true`, and nothing else. A process reads
+ * its environment; a browser realm, which holds none, reads a global of the same name that a hand sets
+ * before the vessel stands. The provider reads this ONCE, when its first instance stands: the hook
+ * installs once per wasm instance and never comes off.
+ */
+export function keyhiveTraceAsked(env?: Readonly<Record<string, string | undefined>>): boolean {
+  const scope = globalThis as { process?: { env?: Record<string, string | undefined> }; [KEYHIVE_TRACE_ENV]?: unknown };
+  const asked = env !== undefined ? env[KEYHIVE_TRACE_ENV] : scope.process?.env?.[KEYHIVE_TRACE_ENV] ?? scope[KEYHIVE_TRACE_ENV];
+  return asked === "1" || asked === "true" || asked === true;
+}
+
+/** The hook installs at most once per wasm instance: a second call panics ("a global default trace
+ *  dispatcher has already been set"). Guard with a module-level flag so several providers in one
+ *  process share the one decision. */
+let panicHookDecided = false;
 function ensurePanicHook(): void {
-  if (panicHookInstalled) return;
+  if (panicHookDecided) return;
+  panicHookDecided = true;
+  if (!keyhiveTraceAsked()) return;
   try { (KH as unknown as { setPanicHook?: () => void }).setPanicHook?.(); } catch { /* already installed */ }
-  panicHookInstalled = true;
 }
 
 /** The keyhive WASM must instantiate before ANY KH call (including setPanicHook). The slim

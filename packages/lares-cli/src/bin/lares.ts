@@ -104,9 +104,29 @@ export interface Command {
 
 /**
  * Names every command reads: `--json`/`--no-json` (render.ts), `--help`/`--meme` (the dispatcher), `--yes`
- * (the confirmation gate), and `--skip-build`, which `freshBuildGate` appends when it re-execs the line.
+ * (the confirmation gate), `--skip-build`, which `freshBuildGate` appends when it re-execs the line, and
+ * `--keyhive-trace`, which asks for Keyhive's own tracing by name ({@link askKeyhiveTrace}).
  */
-export const GLOBAL_FLAGS: readonly string[] = ["json", "help", "meme", "yes", "skip-build"];
+export const GLOBAL_FLAGS: readonly string[] = ["json", "help", "meme", "yes", "skip-build", "keyhive-trace"];
+
+/**
+ * The environment name that asks for Keyhive's trace (`@lararium/keyhive`, `KEYHIVE_TRACE_ENV`; the CLI
+ * holds no dependency on that package, so `tests/keyhive-trace-flag.test.ts` welds the two spellings).
+ */
+export const KEYHIVE_TRACE_ENV = "LAR_KEYHIVE_TRACE";
+
+/**
+ * KEYHIVE'S TRACE STAYS OFF UNLESS A PERSON ASKS BY NAME. Keyhive's tracing prints every step of its own
+ * work (document ids, digests) and buries the answer a person asked for, so no process turns it on by
+ * default. `--keyhive-trace` asks: it sets the toggle in THIS process's environment before any command
+ * runs, so an act in this process traces, and a vessel this command stands inherits the ask. The
+ * environment toggle alone asks the same, for a daemon a person starts another way.
+ */
+export function askKeyhiveTrace(flags: Readonly<Record<string, unknown>>, env: Record<string, string | undefined> = process.env): boolean {
+  if (flags["keyhive-trace"] !== true) return false;
+  env[KEYHIVE_TRACE_ENV] = "1";
+  return true;
+}
 
 /** Edit distance, for naming the nearest accepted spelling of a refused flag. */
 function distance(a: string, b: string): number {
@@ -227,7 +247,9 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
   console.log("Global flags:");
   console.log(`  ${"--json".padEnd(14)} Emit a deterministic JSON result (ok|error + requestId) for agents/pipes.`);
   console.log(`  ${"--no-json".padEnd(14)} Force human prose even when stdout is not a TTY.`);
-  console.log(`  ${"--yes".padEnd(14)} Skip confirmation prompts (required for non-interactive/agent runs).\n`);
+  console.log(`  ${"--yes".padEnd(14)} Skip confirmation prompts (required for non-interactive/agent runs).`);
+  console.log(`  ${"--keyhive-trace".padEnd(14)} Print Keyhive's own DEBUG/TRACE lines (document ids, digests). Off unless asked;`);
+  console.log(`  ${"".padEnd(14)} ${KEYHIVE_TRACE_ENV}=1 in the environment asks the same, for a daemon too.\n`);
   console.log("Output renders by audience: prose on a TTY, JSON off-TTY or under --json.");
   console.log("Run `lares <command> --help` for a command's own examples-first help.");
 }
@@ -240,6 +262,8 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
     console.error(`lares: ${err.message}`);
     return 2;
   }
+  // Keyhive's trace, asked by name: set before any command stands a provider or a vessel.
+  askKeyhiveTrace(args.flags);
   // Global help: bare `lares`, `lares help`, or `lares --help` with no command.
   //
   // A NAME THAT DOES NOT ANSWER MUST NOT ANSWER SOFTLY. Routing an unknown command to the global menu
