@@ -90,21 +90,46 @@ const BUILD_LOCK  = join(repoRoot, "node_modules", ".lares-build", "build.lock")
  * which copy of itself is running, so one absolute join holds from either depth with no hard-coded
  * climb.
  */
-export async function sourceDigest(dir: string): Promise<string> {
-  const stampBuildUrl = pathToFileURL(join(repoRoot, "tools", "stamp-build.mjs")).href;
+export async function sourceDigest(dir: string, root: string = repoRoot): Promise<string> {
+  const stampBuildUrl = pathToFileURL(stampToolPath(root)).href;
   const { sourceDigest: stampSourceDigest } = await import(stampBuildUrl);
   return stampSourceDigest(dir) as string;
 }
 
+/** The stamp tool: the one implementation of the digest, and the first link of the build chain. */
+function stampToolPath(root: string): string {
+  return join(root, "tools", "stamp-build.mjs");
+}
+
+/**
+ * Did this tree ARRIVE BUILT, holding no source and no build chain?
+ *
+ * A CHECKOUT holds sources, the stamp tool and the workspace build. The product image holds each package's `dist`
+ * and neither `tools/` nor any package `src/`: nothing there can drift from a source the tree never held, and
+ * nothing there could rebuild. The gate's question ("does dist come from the source this tree holds?") has one
+ * answer in such a tree: no source stands to compare, so the dist reads current. Measured in the image:
+ * `lares vessel seed` died `ERR_MODULE_NOT_FOUND … /app/tools/stamp-build.mjs` before its handler ran.
+ *
+ * BOTH absences together name the built tree. A tree that holds the CLI's source and lost its stamp tool (a
+ * sparse or partial checkout) still holds source its dist may trail, so it never reads as arrived built.
+ */
+export function treeArrivedBuilt(root: string = repoRoot): boolean {
+  return !existsSync(stampToolPath(root)) && !existsSync(join(root, "packages", "lares-cli", "src"));
+}
+
 /**
  * Does the built dist come from THESE bytes? Fresh when the recorded digest matches what the tree
- * currently holds; stale on any mismatch, and stale when no build has ever stamped one.
+ * currently holds; stale on any mismatch, and stale when no build has ever stamped one. A tree that
+ * arrived built holds no source to differ from, and reads fresh. A tree that holds source and no stamp
+ * tool cannot prove its dist and reads stale.
  */
-async function isWorkspaceStale(): Promise<boolean> {
-  if (!existsSync(BUILT_LARES_BIN)) return true;
-  const digest = await sourceDigest(join(repoRoot, "packages"));
+export async function isWorkspaceStale(root: string = repoRoot): Promise<boolean> {
+  if (treeArrivedBuilt(root)) return false;
+  if (!existsSync(join(root, "packages", "lares-cli", "dist", "src", "bin", "lares.js"))) return true;
+  if (!existsSync(stampToolPath(root))) return true;
+  const digest = await sourceDigest(join(root, "packages"), root);
   let stamped: string | null = null;
-  try { stamped = readFileSync(BUILD_STAMP, "utf8").trim(); } catch { stamped = null; }
+  try { stamped = readFileSync(join(root, "node_modules", ".lares-build", "source-digest"), "utf8").trim(); } catch { stamped = null; }
   return stamped !== digest;
 }
 
@@ -139,7 +164,7 @@ export interface FreshBuildDeps {
 
 const REAL_DEPS: FreshBuildDeps = {
   alive: () => udsAlive(),
-  stale: isWorkspaceStale,
+  stale: () => isWorkspaceStale(),
   build: () => {
     const build = spawnSync("pnpm", ["-r", "build"], {
       cwd:   repoRoot,
