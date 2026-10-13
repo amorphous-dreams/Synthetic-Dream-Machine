@@ -25,6 +25,7 @@ import {
   selectPluginBlobs, selectedPluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
+  GatedSyncLeg, oneWayDocumentsGate,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
   leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
@@ -47,7 +48,7 @@ import {
   type WalkRecord, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
-import { admittedCanonDocs, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
+import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
@@ -812,7 +813,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
     // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
     fedGate = crossing.gate;
-    repo.networkSubsystem.addNetworkAdapter(adapter);
+    // CANON CROSSES HEARTH TO LEAF ALONE. The gate above decides which documents this leaf FETCHES from its
+    // hearth; it says nothing about which way a change travels. The leg reads every sync message this Repo
+    // sends toward the hearth and keeps back any that carries a change to a canon document the admit named.
+    const canonIds = hearthCanonDocIds(hearthCanon);
+    repo.networkSubsystem.addNetworkAdapter(
+      canonIds.size > 0 ? new GatedSyncLeg(adapter, oneWayDocumentsGate({ receiveOnly: canonIds })) : adapter,
+    );
   }
 
   // ── Catalog ────────────────────────────────────────────────────────────────

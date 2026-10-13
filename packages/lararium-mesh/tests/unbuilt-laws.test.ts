@@ -371,9 +371,14 @@ describe("⑪ one face's sessions", () => {
     expect(browser).toMatch(/resolveRecipePluginCids\(/);
   });
 
-  test.skip("AN ADMITTED LEAF NEVER SENDS A CHANGE TO ITS HEARTH'S CANON — DEFERRED: the one-way gate stands in mesh (`oneWayDocumentsGate`, `gated-sync-leg.ts`) and no vessel wears it: the leaf's relay adapter reaches its Repo bare (`open-browser-vessel.ts`), so sync still carries a leaf's change to a canon document toward the hearth. Lands with the compose hunk that wraps the leaf's relay adapter, and its twin on the hearth's socket.", () => {
+  test("an admitted leaf wears the one-way gate over its hearth's canon", () => {
     const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
-    expect(browser).toMatch(/oneWayDocumentsGate\(/);
+    expect(browser).toMatch(/new GatedSyncLeg\(adapter, oneWayDocumentsGate\(\{ receiveOnly: canonIds \}\)\)/);
+  });
+
+  test.skip("A HEARTH TAKES NO CHANGE TO ITS CANON FROM A LEAF — DEFERRED: the leaf wears the one-way gate over its hearth's canon (`open-browser-vessel.ts`), which keeps an honest leaf from sending a change. The hearth's own socket still takes one: no `sendOnly` twin wraps its adapter (`open-node-vessel.ts`), so a leaf that drops its gate still writes the hearth's canon. Lands when the hearth knows which peers stand as its admitted leaves at the adapter (the share verdict's peer classes) and wraps its socket with `oneWayDocumentsGate({ sendOnly })`.", () => {
+    const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
+    expect(node).toMatch(/oneWayDocumentsGate\(/);
   });
 });
 

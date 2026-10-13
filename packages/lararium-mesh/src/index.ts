@@ -210,6 +210,8 @@ export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-pla
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads } from "./island-repo.js";
+export { GatedSyncLeg, oneWayDocumentsGate } from "./gated-sync-leg.js";
+export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
 export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
 export type { VesselKeel, VesselBootstrap, VesselCoreAssembly, MountManifest, MountEntry } from "./open-vessel-core.js";
