@@ -370,10 +370,12 @@ carry the cost (`admission-on-a-lineage#the-standing`).
 !! The walker's carriage ~ carried sealed, reclaimed by the guest's own rhythm, never a backup
 
 ''THE HEARTH CARRIES A WALKER'S OWN DOCUMENTS AS SEALED CIPHERTEXT — CARRY ⊥ READ'' (operator-ruled). The
-walker seals each document under a secret its own per-Nexus leaf derives (`walk-carry-seal`) and hands the
-hearth only ciphertext and its content address. The hearth verifies the address, which needs no key,
-stores the bytes, and can never open them or confirm a guessed plaintext. The read-cap stays in the
-walker's own receipt.
+walker seals each document as one sealed value under a key of that document's own, which its per-Nexus
+leaf's carry secret and the document's plaintext digest derive (`walk-carry-document`;
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). It hands the hearth only the sealed bytes
+and their address. The hearth verifies the address, which needs no key, stores the bytes, and can never open
+them or confirm a guessed plaintext: two seals of one document share no address. The document's key, its
+digest and the address stay in the walker's own receipt, and one exposed receipt opens one document.
 
 ''ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF.'' The hearth files a guest's
 carriage under a key it derives from the guest's PROVEN per-Nexus leaf under its own leaf seed
@@ -504,6 +506,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lLOLbyfEVBGurtC2xA0XptqslUrHqLAxJ-QUgSuz0xs
+<<^ code="&#x0003;">>ni:///sha-256;pkeB_UYwdHzC7F6ecfQ0miATlepyKFvhZtnA8kuNGIM
 
 <<^ code="&#x0004;" -> to="?">>
