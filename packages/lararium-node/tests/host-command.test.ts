@@ -14,7 +14,7 @@
  *     counts one redemption;
  *   · REFUSALS write nothing: no charter, a Nexus this hearth does not carry, an invite before any roll.
  */
-import { NEXUS_DOC_DOMAIN, HOSTING_ACT_DOMAIN, writeHostingAct } from "@lararium/mesh";
+import { NEXUS_DOC_DOMAIN, HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -174,6 +174,23 @@ describe("lares host — roll, invite, state", () => {
     } finally { await repo.shutdown().catch(() => {}); }
     const rolled = await direct(runHostRoll)({ sealHome: sealHome() });
     expect(rolled.act.hearthLeaf).toBe(leaf);
+  });
+
+  it("an act this leaf signed for ANOTHER Nexus, copied onto this doc, blocks nothing", async () => {
+    const { aid } = await seatAndWear();
+    const url = hostingDocUrl(aid, await loadVesselVerifyingKey());
+    const held = (await heldNexusLeaves(aid))[0]!;
+    // A genuine act, signed by this very leaf, naming another Nexus: the signature verifies and the Nexus does not match.
+    const elsewhere = await mintHostingAct({ leafSeed: held.seed, nexusAid: `epoch0-${"e7".repeat(32)}`, prev: null, cap: 3 });
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    try {
+      const handle = await materializeSharedLarDoc(repo, url, "hosting");
+      handle.change((d) => writeHostingAct(d, elsewhere.act));
+      await repo.flush();
+      expect(hostingActsFromBoard(handle.doc(), held.verifyingKey).length, "KNOWN POSITIVE: the copied act reads by shape and by leaf").toBe(1);
+    } finally { await repo.shutdown().catch(() => {}); }
+    const rolled = await direct(runHostRoll)({ sealHome: sealHome() });
+    expect(rolled.act.nexusAid).toBe(aid);
   });
 
   it("RED: an act this face signed on the hosting doc that no local state holds refuses the first roll, writing nothing", async () => {

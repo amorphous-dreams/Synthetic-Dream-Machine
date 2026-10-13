@@ -30,10 +30,13 @@ import {
   verifyHostingAct, type HostingAct, type LarDoc,
 } from "@lararium/mesh";
 
-/** The acts on a hosting doc that `hearthLeaf` itself signed. `hostingActsFromBoard` reads shape alone. */
-async function signedActsOf(doc: LarDoc | undefined | null, hearthLeaf: string): Promise<HostingAct[]> {
+/** The acts on a hosting doc that `hearthLeaf` itself signed FOR this Nexus. `hostingActsFromBoard` reads shape
+ *  alone, and an act the leaf signed for another Nexus, copied here, says nothing about this one. */
+async function signedActsOf(doc: LarDoc | undefined | null, hearthLeaf: string, nexusAid: string): Promise<HostingAct[]> {
   const signed: HostingAct[] = [];
-  for (const act of hostingActsFromBoard(doc, hearthLeaf)) if (await verifyHostingAct(act)) signed.push(act);
+  for (const act of hostingActsFromBoard(doc, hearthLeaf)) {
+    if (act.nexusAid.toLowerCase() === nexusAid.toLowerCase() && (await verifyHostingAct(act))) signed.push(act);
+  }
   return signed;
 }
 import { larDataDir } from "../vessel-paths.js";
@@ -124,7 +127,7 @@ export async function runHostRoll(opts: {
     // surfaces, aloud, and nothing is written.
     // Only an act this face's own leaf SIGNED says so: the board reads by shape, and a planted act under this
     // leaf with a signature nobody made must never stop a lawful host from rolling.
-    if (!readHostingState(storageDir, aid) && (await signedActsOf(handle.doc(), leaf.verifyingKey)).length > 0) {
+    if (!readHostingState(storageDir, aid) && (await signedActsOf(handle.doc(), leaf.verifyingKey, aid)).length > 0) {
       throw new HostRefusal("this face already hosts in this Nexus from another store — its act stands on the hosting doc and no local state holds it; nothing was written");
     }
     const rolled = await rollHosting({ storageDir, nexusAid: aid, leafSeed: leaf.seed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}) });
