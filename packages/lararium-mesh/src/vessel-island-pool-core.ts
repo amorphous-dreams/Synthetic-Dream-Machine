@@ -302,6 +302,8 @@ const MOUNT_FAILURE_WINDOW_MS     = 60_000;
 
 export class VesselIslandPoolCore {
   private readonly _slots = new Map<string, Slot>();
+  /** The one teardown handshake in flight per island; a call that arrives while it waits reads it. */
+  private readonly _ending = new Map<string, Promise<IslandEnd>>();
   // Single-flight activation latch — one in-flight mount Promise per grain. The
   // single-owner gate: concurrent references to one cold grain fold into ONE
   // activation, so no stream ever spawns two sovereign workers (no safe epsilon).
@@ -718,10 +720,24 @@ export class VesselIslandPoolCore {
    *  the island ACKED its own teardown, or this door CUT it past the handshake timeout
    *  (H3/M4) — never silently folded into "torn down", so a caller's own shutdown report
    *  can name the cut honestly. */
-  async unmountWiki(wikiId: string): Promise<IslandEnd> {
+  /**
+   * THE TEARDOWN HANDSHAKE RUNS ONCE PER ISLAND. `disposeAll` and `unmountWiki` can both reach one island
+   * while its handshake stands waiting. Every call that arrives then reads the one handshake in flight: a
+   * call that sent its own `teardown` would wait on its own ack, and where the first call ended on its
+   * bound and terminated the worker, the second would wait out a second bound for an ack no island stood
+   * to give.
+   */
+  unmountWiki(wikiId: string): Promise<IslandEnd> {
+    const inFlight = this._ending.get(wikiId);
+    if (inFlight) return inFlight;
     const slot = this._slots.get(wikiId);
-    if (!slot || slot.temperature === "anu") return { wikiId, acked: true };
+    if (!slot || slot.temperature === "anu") return Promise.resolve({ wikiId, acked: true });
+    const ending = this._unmountOnce(wikiId, slot).finally(() => { this._ending.delete(wikiId); });
+    this._ending.set(wikiId, ending);
+    return ending;
+  }
 
+  private async _unmountOnce(wikiId: string, slot: Extract<Slot, { temperature: "wela" }>): Promise<IslandEnd> {
     const workerSlot = slot;
     // The island takes no placement from here on: a verb placed after its settle would write past what
     // `settled` vouches for.

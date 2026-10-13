@@ -389,6 +389,8 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `G22` The projecting leg with no base: a disk file that says something else than the records gets overwritten (`never-projected`, `projection-gate.ts`), while the ingest leg adopts that same file. A standoff reading stands open. House. G.
 * `G23` A siting rule that moves a carrier unlinks the earlier path before the gate reads a hand edit standing there (`disk-projector.ts`, `_unlinkSited`). G.
 * `G24` A carrier a hand deleted from disk gets written back by `absent-on-disk` before the ingest leg tombstones it; a cure wants the base keyed by path, since a re-siting leaves the new path absent under a standing base (`projection-gate.ts`). G.
+* `G25` A mount that arrives while its island's teardown handshake waits reports success for a slot that then leaves (`vessel-island-pool-core.ts`, `mountWiki`, `mountSurface`). G.
+* `G26` `vessel stand` answers `ok: true` beside an `EngineHeldByHost` error where the host must perform the re-stand; the host shim reads `standing.act` (`stand.ts`). G or A.
 * `G21` The crossroads mirror projects a boot's WHO-board pointer with no filter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>); a scratch `LAR_ROOT` keeps it off the tracked tree. Lean: project the pointer for a charter island alone. Operator. G.
 
 !!! SUBSTRATE (its state reads in #/the-road's own block)
@@ -776,6 +778,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m8pNuweRGLmQLdaJx2lGEXvwqsThCTK-ZIv5eeRAxnA
+<<^ code="&#x0003;">>ni:///sha-256;1VviN76PrQG62JJhjJ1LyLNVd3YN0WZV_GXNTUU4oic
 
 <<^ code="&#x0004;" -> to="?">>

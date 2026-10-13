@@ -326,6 +326,11 @@ export interface DaemonVmCore {
   onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => void;
 }
 
+/** The marker a hard `dispose` hands a teardown handshake that stands waiting. */
+class DisposedMidHandshake extends Error {
+  constructor() { super("the daemon VM got disposed while its teardown handshake stood waiting"); }
+}
+
 export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions): DaemonVmCore {
   const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
 
@@ -341,6 +346,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // Projection-frame forwarding — set via onProjection() after the boot sink exists.
   let _projectionHandler: ((frame: { html: string; css: string; rev: number }) => void) | null = null;
   // Verb OUT-path forwarding — set via onVerbEvent() after the vessel's placeVerb exists.
+  /** The one teardown handshake this VM runs: the first `shutdown` (or a hard `dispose`) settles it. */
+  let _down: Promise<{ acked: boolean }> | null = null;
+  /** Ends a handshake that stands waiting; set while one waits, null otherwise. */
+  let _cutDown: (() => void) | null = null;
   let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) | null = null;
 
   // ── Vessel composite (cap-event + receipt writes) ──────────────────────────
@@ -740,7 +749,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       worker.post(mkWikiDomEvent({ renderId, eventType, fields })),
     sendDomInput: (renderId: string, eventType: string, value: string) =>
       worker.post(mkWikiDomInput({ renderId, eventType, value })),
-    shutdown: async (budgetMs = 10_000): Promise<{ acked: boolean }> => {
+    // A SHUTDOWN RUNS ONCE, and every later call reads its answer. A composition's teardown reaches this
+    // VM by more than one road (its own dispose, then the list of what it stood). The first call runs the
+    // handshake and terminates the worker; a call that sent `teardown` again would ask a terminated worker
+    // and wait out its whole bound for an ack no island stands to give.
+    shutdown: (budgetMs = 10_000): Promise<{ acked: boolean }> => (_down ??= (async () => {
       // Post teardown, await the island's teardown:ack (it flushes its docs +
       // capture state before acking). On timeout (jammed worker) terminate anyway.
       let acked = true;
@@ -749,19 +762,29 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
           expectedType:   "teardown:ack",
           timeoutMs:      budgetMs,
           subscribe:      (h) => worker.listen(h),
-          subscribeError: (h) => worker.onError(h),
+          // A hard `dispose` while this wait stands ends it at once, through the same door a worker
+          // error takes: the wait drops its bound with it, and the handshake answers unacked.
+          subscribeError: (h) => {
+            const off = worker.onError(h);
+            _cutDown = () => h(new DisposedMidHandshake());
+            return () => { off(); _cutDown = null; };
+          },
           send:           () => worker.post(mkTeardown()),
         });
       } catch (err) {
         acked = false;
-        console.warn(`[daemon-vm] graceful shutdown ack failed — ${String(err)}; terminating anyway`);
+        if (!(err instanceof DisposedMidHandshake)) console.warn(`[daemon-vm] graceful shutdown ack failed — ${String(err)}; terminating anyway`);
       }
       detachOwned?.();
       detachPrimary();
       worker.terminate();
       return { acked };
-    },
+    })()),
     dispose: () => {
+      // A hard stop runs no handshake: a shutdown asked afterward reads that no island acked, and one
+      // that stands waiting ends now, unacked.
+      _down ??= Promise.resolve({ acked: false });
+      _cutDown?.();
       detachOwned?.();
       detachPrimary();
       worker.terminate();

@@ -91,6 +91,8 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 | `admin:wiki-alert` | Admin computes "affected by content"; main delivers a `system-alert` verb to the affected LIVE island (fire-and-forget; unmounted wikis skipped). |
 | `wiki:verb-result` | Wiki island result for a job the vessel awaits. |
 
+''The teardown handshake runs once per island.'' A composition reaches its daemon island's shutdown by more than one road (its own dispose, then the list of what it stood). The first call sends `teardown`, hears `teardown:ack` and terminates the worker; every later call reads that first answer and sends nothing, since a terminated worker can answer no second `teardown`. A hard dispose runs no handshake: it settles the answer as unacked, and it ends a handshake that stands waiting at once. The handshake's bound stays a bound for an island that never answers (`packages/lararium-tw5/src/daemon-vm-core.ts`, `shutdown`; `packages/lararium-node/tests/daemon-vm-shutdown-runs-once.test.ts`; `tools/two-phase-boot.test.mjs`, T5). The wiki islands' pool holds the same law: `unmountWiki` and `disposeAll` that reach one island while its handshake waits read that one handshake (`packages/lararium-mesh/src/vessel-island-pool-core.ts`; `packages/lararium-mesh/tests/pool-teardown-runs-once.test.ts`).
+
 !!! Factories
 
 `mkManifest` · `mkEa` · `mkBreath` · `mkReady` · `mkTeardown` · `mkTeardownAck` · `mkFault` ·
@@ -113,6 +115,6 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hhp0G4ANIulJrf8xZl_LX9zYLu4MMd0ysJ8qHn9q_lQ
+<<^ code="&#x0003;">>ni:///sha-256;MCRuGxw-P_gtHUEbEawiqnBjHM4u_EbeysWg5ao9uCI
 
 <<^ code="&#x0004;" -> to="?">>

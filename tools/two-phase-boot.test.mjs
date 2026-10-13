@@ -18,6 +18,9 @@
 //                                                                 against a second claim
 //   T4  a teardown leaves the caller's WebSocket server with the listeners it had before. control: a standing
 //       composition adds some
+//   T5  every teardown completes on its daemon island's ack: the composition reaches the island's shutdown by two
+//       roads, the handshake runs once, and no road waits out its bound on a worker already terminated.
+//                                                                 control: the capture reads this process's warnings
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
@@ -147,8 +150,15 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     onPhase: (p) => phases.push(p), ...extra,
   });
   let floor = null;
+  // T5 reads what this process WARNS: a teardown that asked a terminated island again says so there.
+  const warned = [];
+  const warn = console.warn;
+  console.warn = (...a) => { warned.push(a.map(String).join(" ")); warn(...a); };
+  const unackedTeardowns = () => warned.filter((line) => line.includes("graceful shutdown ack failed"));
   try {
     assert.equal(typeof node.standNodeFloor, "function", "the node package exports the floor");
+    console.warn("two-phase-boot: capture probe");
+    assert.equal(warned.at(-1), "two-phase-boot: capture probe", "T5 control: the capture reads this process's warnings");
     const baseline = wss.listenerCount("connection");
     floor = await node.standNodeFloor(storageDir);
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "the floor's name answers before any composition");
@@ -179,6 +189,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     const reached = [...new Set(atFloor.seen.map(privateRow).filter(Boolean))];
     assert.deepEqual(reached, [], "T2: the floor reads, probes and writes no hot or cold row");
     await zero.teardown();
+    assert.deepEqual(unackedTeardowns(), [], "T5: the floor composition's teardown completes on its island's ack");
     assert.deepEqual(privateRows(), before, "T2: the floor leaves every private row byte-identical and mints none");
     assert.equal(wss.listenerCount("connection"), baseline);
 
@@ -219,6 +230,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
 
     // ── T1 / T4: tear down; the floor still answers; the server holds its listeners as before ─────────────────
     await one.teardown();
+    assert.deepEqual(unackedTeardowns(), [], "T5: the sovereign composition's teardown completes on its island's ack");
     assert.equal(wss.listenerCount("connection"), baseline, "T4: the teardown removes every listener it added");
     assert.equal(existsSync(floor.storeClaim.socketPath), true, "T1: the floor's name stands between compositions");
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "T1: the floor's name answers between compositions");
@@ -227,6 +239,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     const three = await open({ floor, sovereign: null });
     await three.daemon.workerEa;
     await three.teardown();
+    assert.deepEqual(unackedTeardowns(), [], "T5: a third composition's teardown completes on its island's ack");
     assert.equal(wss.listenerCount("connection"), baseline);
 
     // ── T3: a refusal while the prep stands the Repo frees the store name ────────────────────────────────────
@@ -252,6 +265,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     console.error(`TWO-PHASE-BOOT FAILED: ${e?.stack ?? e}`);
     throw e;
   } finally {
+    console.warn = warn;
     await floor?.release();
     httpServer.close();
     if (prior.root === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior.root;
