@@ -665,7 +665,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 * ''The small sweep.'' The memetic-wikitext plugin still ships `$:/config/ResilientRender`, a flag nothing reads; retiring it rebuilds the plugin and takes a labelled genesis re-bake. Two e2e files read the first `gate key:` line of a log (`tests/e2e/meme-realm-bag.test.ts`, `tests/e2e/arrival-surfaces.e2e.test.ts`), and the `awaitRendezvous` docblock in `tests/harness/instance.ts` describes an earlier boot order. Three source comments name a carrier that left (`packages/lararium-keyhive/src/face-grant-record.ts`, `packages/lararium-keyhive/tests/archive-floor-write.test.ts`, `tests/e2e/meme-realm-bag.test.ts`); its law rests at <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>. Five `Meme:` headers and two package notes name the shift ledger, which left (`packages/lares-cli/src/commands/watch.ts`, `commands/ingest.ts`, `packages/lares-cli/src/ingest-core.ts`, `packages/lararium-tw5/src/delete-gate.ts`, `packages/lararium-node/tests/ingest-verb.test.ts`, `packages/SPRINT-01-GENESIS-MESH.md`, `packages/.shelf/HANDOFF.md`); its procedures rest at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>.
 * ''Band-ladder residue'': one five-band ladder, the measure-servo aliases in `ffz-project.ts`, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
-* ''Sealed-store step 1'': after the seal (#/the-road, the sealed store).
+* ''Sealed-store step 2'': the durable lockbox store and chunk index, the Keyhive wrap of a content key, and the content-key holder that `cad-seal` and the key roll ask (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>).
 
 !!! Off this road, held by name
 * ''Grammar'': tangle, the putback law and the tongue fold wait on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` against the released grammar; that regeneration also unlocks publication. A relay-stream profile (the SYN-framed batch), a carrier seal with a computed check, and EOT targeting stay held in reserve. The grammar watch reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>.
@@ -763,6 +763,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qW1tLzepZj7aFMpgimyJdrjkUoyeSSmPg0b_VXOKPbA
+<<^ code="&#x0003;">>ni:///sha-256;FdK13Cs3fnqbPqxrXpi8IF32pok20rPKQhRMyFrBeUc
 
 <<^ code="&#x0004;" -> to="?">>
