@@ -486,11 +486,14 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
+export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason } from "./sealed-acts.js";
 export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow, custodyVeilKeys } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
+// The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
+export { serveUdsFront, type UdsFront } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";
 export { VkSealedCarrierRefusal } from "./archive-passphrase.js";

@@ -42,7 +42,7 @@
 
 import { readFileSync } from "node:fs";
 import {
-  runNexusAcceptCarriage, runNexusCarryFor, NexusContractError,
+  runNexusCarryFor, NexusContractError, SealedActRefused,
   AdmitBundleError, type NexusContractResult, type NexusMembersListResult,
 } from "@lararium/node";
 import { presentationFindingLine } from "@lararium/mesh";
@@ -52,6 +52,7 @@ import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { storeVerb, StoreDoorRefusal, pokeSealHomeRefold } from "../store-door.js";
+import { sealedAct } from "../sealed-act-door.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
@@ -333,7 +334,9 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
   }
   try {
     const aid = args.options["nexus"];
-    const r = await runNexusAcceptCarriage({ handleIndex, sealHome: larSealHome(), ...(aid !== undefined ? { aid } : {}) });
+    // The consent signs under a leaf of a persona root, which rests sealed: the act rides the custody door.
+    const r = await sealedAct<{ aid: string; nym: string; sealEpochCid: string; contractSig: string }>(
+      "carriage.accept", { handleIndex, ...(aid !== undefined ? { aid } : {}) });
     // H2: the consent just written sits beside the seal home, never on this vessel's Repo — poke a standing
     // vessel to refold at once rather than leave its live readings stale until some later board write does.
     // L3: the answer rides the JSON rather than vanishing into a log line nobody downstream can read.
@@ -354,7 +357,7 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusContractError ? "refused" : "error";
+    const code = err instanceof NexusContractError || (err instanceof SealedActRefused && err.reason === "act-refused") ? "refused" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus accept-carriage: ${msg}`) });
     return exitFor("error");
   }

@@ -30,15 +30,14 @@
  */
 import {
   readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath,
-  listPersonaRoots, loadPersonaGroupRootVerifyingKey, makeNodePersonaDeclarationStore,
-  loadPersonaGroupRootSeed, importCarriedCharter, carriedReadings, CarriedCharterError,
+  importCarriedCharter, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
   NexusContractError, type NexusRollAnchorResult,
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
-  defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
+  defaultCryptoProvider, federationPostureFromDoc,
   GUARDIAN_SLOT_CUSTODIAN, assembleQuorum, reconstructFromQuorum,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats,
   type QuorumSignature, type CharterSealState, seatFingerprint,
@@ -51,8 +50,8 @@ import { rosterStanding } from "../roster-standing.js";
 import { nexusPhase } from "../nexus-phase.js";
 import { sealImportVerdict, foreignSeats } from "../seal-import.js";
 import {
-  reserveTransitionCidOf, verifyReserveTransition, witnessSignBytes,
-  reserveTransitionBytes, transitionSignerFromSeed,
+  reserveTransitionCidOf, verifyReserveTransition,
+  reserveTransitionBytes,
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "../reserve-transition.js";
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
@@ -63,6 +62,8 @@ import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
+import { sealedAct } from "../sealed-act-door.js";
+import { readPersonaRoots, sealedDeclarationStore, sealHand } from "../sealed-rows.js";
 
 /** A refusal the operator can fix by retyping — rendered as `usage`, never as an internal error. */
 class UsageError extends Error {}
@@ -272,9 +273,10 @@ async function seatKahuFromVault(
   // who the founding kahu are, leaving the operator to confirm a legitimacy call somebody else made.
   //
   // The chair name reads the local private chair label; exports replace it with a fingerprint.
-  const held = new Set(await listPersonaRoots());
+  const roots = await readPersonaRoots();
+  const held = new Set(roots.roots.map((r) => r.handleIndex));
   // The seat claim and private chair label stay local to this node.
-  const localDeclarations = await makeNodePersonaDeclarationStore();
+  const localDeclarations = sealedDeclarationStore();
   const fleetDid = await fleetPeerDid();
   const declarations = fleetDid === null
     ? localDeclarations                                                  // no vessel key = no fleet to read
@@ -290,7 +292,7 @@ async function seatKahuFromVault(
 
   for (const [index, chair] of standing) {
     if (!held.has(index)) continue;             // a declaration without a held root seats nothing here
-    const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);   // a read; never a mint
+    const verifyingKey = roots.roots.find((r) => r.handleIndex === index)?.verifyingKey;
     if (!verifyingKey) continue;
     hands.push({ handleIndex: index, verifyingKey });
     const at = chairAt.get(norm(chair));
@@ -346,8 +348,8 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   // charter in her own seal home — she cannot consent to one she has never seen — and seats her own
   // there too. Seating onto his MERGES the quorums: measured, six seated kahu at threshold two, so the
   // partner holds quorum over her Nexus using his own keys with no further act by her.
-  const heldKeys = (await Promise.all((await listPersonaRoots()).map((i) => loadPersonaGroupRootVerifyingKey(i))))
-    .filter((k): k is string => k !== undefined);
+  const roots = await readPersonaRoots();
+  const heldKeys = roots.roots.map((r) => r.verifyingKey);
   const foreign = foreignSeats(doc.kahu ?? [], heldKeys);
   if (!foreign.ok) throw new UsageError(foreign.why);
 
@@ -513,7 +515,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
       const core = p && boundCoreOf(p);
       if (!p || !core) throw new UsageError("no bound crossing stands — `grow open`, rotate, `grow bind` first");
       const idx = Number(args.options["index"] ?? "0");
-      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(idx));
+      const hand = await sealHand(idx);
       const inOld = p.oldKeys.some((k) => k.toLowerCase() === hand.signer.toLowerCase());
       const inNew = (p.newKeys ?? []).some((k) => k.toLowerCase() === hand.signer.toLowerCase());
       if (!inOld && !inNew) throw new UsageError("this hand sits in neither set — it may `grow witness`, never sign");
@@ -532,10 +534,10 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
       const idx = Number(args.options["index"] ?? "0");
       const note = args.options["note"];
       if (!note) throw new UsageError("a witness mark carries a note — what stood observed (--note)");
-      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(idx));
+      const hand = await sealHand(idx);
       const holders = new Set([...p.oldKeys, ...(p.newKeys ?? [])].map((k) => k.toLowerCase()));
       if (holders.has(hand.signer.toLowerCase())) throw new UsageError("a keyholder attests as a party — `grow sign`, never witness");
-      const mark: TransitionWitness = { witness: hand.signer, note, sig: await hand.sign(witnessSignBytes(core, note)) };
+      const mark: TransitionWitness = { witness: hand.signer, note, sig: await hand.signWitness(reserveTransitionBytes(core), note) };
       writePending({ ...p, witnesses: [...p.witnesses.filter((w) => w.witness.toLowerCase() !== mark.witness.toLowerCase()), mark] });
       emit(args, { ok: true, data: { witnessed: { by: hand.signer } }, human: () => console.log(`witnessed by ${hand.signer.slice(0, 16)}… — "${note}"`) });
       return 0;
@@ -626,7 +628,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const seatedSet = new Set(seatedKeys.map((k) => k.toLowerCase()));
   const signers = await Promise.all(hands
     .filter((h) => seatedSet.has(h.verifyingKey.toLowerCase()))
-    .map(async (h) => ({ signer: h.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(h.handleIndex)) })));
+    .map(async (h) => ({ signer: h.verifyingKey, sign: (await sealHand(h.handleIndex)).sign })));
   const result = await rotateSealEpoch(head, { keys: seatedKeys, threshold }, nextKeyCommit, signers);
   if (!result.ok) {
     // A CHANGED ROSTER lands here too, and reads as the same refusal for the same reason: the reveal must
@@ -880,14 +882,15 @@ async function sealShow(args: ParsedArgs): Promise<number> {
   const chainDepth = doc?.sealLineage?.length ?? 0;
   const reserve = readCharterReserveState();
   const reserveArmed = isReserveArmed(head?.nextKeyCommit, reserve?.nextKeyCommit);
-  const heldKeys = (await Promise.all((await listPersonaRoots()).map((i) => loadPersonaGroupRootVerifyingKey(i))))
-    .filter((k): k is string => k !== undefined);
+  const roots = await readPersonaRoots();
+  const heldKeys = roots.roots.map((r) => r.verifyingKey);
   const foreign = doc ? foreignSeats(doc.kahu, heldKeys).foreign.length : 0;
   const seatedInDoc = doc?.kahu.filter((k) => typeof k.verifyingKey === "string" && k.verifyingKey.length > 0).length ?? 0;
   const ownSeats = Math.max(0, seatedInDoc - foreign);
   // THE CARRIED SET. One reading per charter this vessel holds, primary first. A Nexus stands in the set by a
   // consent verified at its held head or by a seated chair; a consent behind the head counts for nothing.
-  const carried = await carriedReadings(sealHome);
+  // A reading folds the held persona roots and their leaves, which rest sealed: it rides the custody door.
+  const { readings: carried } = await sealedAct<{ readings: ReadonlyArray<{ aid: string; primary: boolean; sealEpochCid: string; consented: boolean; seated: boolean; carried: boolean }> }>("carriage.readings");
 
   emit(args, {
     ok: true,

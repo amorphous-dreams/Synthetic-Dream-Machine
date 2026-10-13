@@ -21,7 +21,7 @@
  */
 import { readFileSync } from "node:fs";
 import type { ParsedArgs } from "../parse-args.js";
-import { loadNodeHandleBook } from "@lararium/node";
+import { loadHandleBook } from "../sealed-rows.js";
 import {
   verifyAttestation, normalizeHandleClaim, handleClaimFrom, handleClaimSubject, HANDLE_CLAIM_SURFACES,
   type HandleAttestation, type HandleKelEvent, type HandleCard,
@@ -140,7 +140,7 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
     chain = card.chain as HandleKelEvent[];
     chainSource = "card";
   } else {
-    const book = await loadNodeHandleBook();
+    const book = await loadHandleBook();
     const record = book.get(statement.prefix);
     if (!record) {
       emit(args, {

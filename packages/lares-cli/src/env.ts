@@ -22,7 +22,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { larDataDir, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey, runtimeCasOverride } from "@lararium/node";
+import { larDataDir, loadVesselVerifyingKey, runtimeCasOverride } from "@lararium/node";
 
 // The vessel runtime-state resolvers — defined once in @lararium/node, surfaced here.
 export {
@@ -148,7 +148,10 @@ export async function vesselDid(): Promise<string> {
 export async function personaRootDid(handleIndex = 0): Promise<string> {
   // A custody refusal (a locked vessel key, a roster that stands and does not open) keeps its own name: only a
   // roster that holds no line here reads as no root.
-  const vk = await loadPersonaGroupRootVerifyingKey(handleIndex);
+  // The roster rests sealed, so the read rides the custody door (`sealed-rows`). It loads here, at the call:
+  // this module stands under the store door, and the store door stands under that one.
+  const { personaRootKey } = await import("./sealed-rows.js");
+  const vk = await personaRootKey(handleIndex);
   if (!vk) {
     throw new Error(
       `no persona root h${handleIndex} under ${larDataDir()} — this vessel custodies no operator root ` +

@@ -35,23 +35,20 @@
  */
 
 import { createInterface } from "node:readline";
-import { ed25519SignerFromSeed, type PersonaRef } from "@lararium/mesh";
-import {
-  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
-  listAdmittedPersonas, clearPersonaAdmitPending,
-  loadVesselSigningSeed, loadVesselVerifyingKey,
-  loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
-  withdrawOfferFlow, withdrawGrantFlow,
-} from "@lararium/node";
+import { SealedActRefused } from "@lararium/node";
+import { sealedAct } from "../sealed-act-door.js";
 import { emit, exitFor, wantsJson } from "../render.js";
-import { storeVerb } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
 
-/** One `persona-kel-head` door read — the head op-key and its KEL seq, off ONE board materialize. */
-const readPersonaKelHead = async (prefix: string): Promise<Readonly<Record<string, unknown>>> =>
-  (await storeVerb("persona-kel-head", { prefix })).output;
+async function admitAct<T>(act: "admit.offer" | "admit.grant" | "admit.open" | "admit.accept" | "admit.list" | "admit.reset" | "admit.withdraw-offer" | "admit.withdraw-grant", args: Record<string, unknown> = {}): Promise<T> {
+  try { return await sealedAct<T>(act, args); }
+  catch (err) {
+    if (err instanceof SealedActRefused && err.reason === "act-refused") throw new UsageError(err.message);
+    throw err;
+  }
+}
 
 /**
  * L11 — ONE door read per verification, never two. `openPersonaGrant` asks for the head first, then (advisory)
@@ -194,10 +191,9 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
   try {
     switch (op) {
       case "offer": {
-        const deviceVerifyingKey = await loadVesselVerifyingKey();
         const detach = args.flags["detach"] === true;
         const patienceMs = parsePatienceMs(args.options["patience"], DEFAULT_PATIENCE_MS);
-        const hop = await offerAdmitFlow({ deviceVerifyingKey });
+        const hop = await admitAct<{ offer: { ephemeralPubkey: string }; carriage: string; terminalQr: string; qrEcc: string | null; qrOversized: boolean }>("admit.offer");
         printHop(args, "enrollment offer (hand QR#1 to the granting vessel)", hop);
         if (detach) {
           emit(args, {
@@ -216,7 +212,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           console.error(`awaiting the granter's QR#2 — paste the grant carriage and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
           const pasted = await awaitNextHopOrPatience(patienceMs, aborted);
           if (!pasted) {
-            const withdrawn = await withdrawOfferFlow(hop.offer.ephemeralPubkey);
+            const { withdrawn } = await admitAct<{ withdrawn: number }>("admit.withdraw-offer", { target: hop.offer.ephemeralPubkey });
             emit(args, {
               ok: true,
               data: { withdrawn: withdrawn > 0, ephemeralPubkey: hop.offer.ephemeralPubkey },
@@ -230,16 +226,10 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           // leave the offer pending indefinitely (bounded only by the pending-set's own count eviction).
           let consumed = false;
           try {
-            const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
-            const { resolveHeadOpKey, resolveHeadSeq } = kelHeadResolvers(readPersonaKelHead);
             // M8 — scope the match search to THIS session's own offer: without `onlyEphemeral`, a paste
             // could match (and consume) a DIFFERENT pending offer entirely (a detached sibling, say),
             // leaving THIS session believing it failed while quietly having spent someone else's secret.
-            const r = await openAdmitFlow({
-              grantCarriage: pasted.trim(), resolveHeadOpKey, deviceSigner, resolveHeadSeq,
-              onlyEphemeral: hop.offer.ephemeralPubkey,
-            });
-            if ("error" in r) throw new UsageError(r.error);
+            const r = await admitAct<{ carriage: string; joinRecord: { personaRef: { prefix: string } }; terminalQr: string; qrEcc: string | null; qrOversized: boolean }>("admit.open", { grantCarriage: pasted.trim(), onlyEphemeral: hop.offer.ephemeralPubkey });
             consumed = true;
             emit(args, {
               ok: true,
@@ -251,7 +241,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
             });
             return 0;
           } finally {
-            if (!consumed) await withdrawOfferFlow(hop.offer.ephemeralPubkey);
+            if (!consumed) await admitAct("admit.withdraw-offer", { target: hop.offer.ephemeralPubkey });
           }
         } finally {
           disarm();
@@ -266,14 +256,9 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         if (!prefix) throw new UsageError("grant needs --prefix <persona-kel-aid> (the persona's stable identifier)");
         if (!Number.isInteger(index) || index < 0) throw new UsageError(`--index must be a non-negative integer (got "${idxRaw}")`);
         // A grant SIGNS with a held root; it never stands one up. An index this vessel holds no root for refuses.
-        const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);
-        if (!verifyingKey) throw new UsageError(`this vessel holds no persona root at h${index} — a grant signs only as a persona it carries`);
-        const personaRef: PersonaRef = { prefix, verifyingKey };
-        const personaSigner = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(index));
         const detach = args.flags["detach"] === true;
         const patienceMs = parsePatienceMs(args.options["patience"], DEFAULT_PATIENCE_MS);
-        const r = await grantAdmitFlow({ offerCarriage, personaRef, personaSigner });
-        if ("error" in r) throw new UsageError(r.error);
+        const r = await admitAct<{ carriage: string; qrOversized: boolean; terminalQr: string; qrEcc: string | null; sealed: { nonceA: string } }>("admit.grant", { offerCarriage, prefix, handleIndex: index });
         printHop(args, "sealed grant (hand QR#2 back to the target vessel)", r);
         if (detach) {
           emit(args, {
@@ -292,7 +277,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           console.error(`awaiting the target's QR#3 (the ACK) — paste it and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
           const pasted = await awaitNextHopOrPatience(patienceMs, aborted);
           if (!pasted) {
-            const withdrawn = await withdrawGrantFlow(r.sealed.nonceA);
+            const { withdrawn } = await admitAct<{ withdrawn: boolean }>("admit.withdraw-grant", { nonceA: r.sealed.nonceA });
             emit(args, {
               ok: true,
               data: { withdrawn, nonceA: r.sealed.nonceA },
@@ -306,8 +291,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           // `finally` then decides the memo should not outlive THIS held session, and withdraws it.
           let consumed = false;
           try {
-            const closeR = await acceptAdmitFlow({ ackCarriage: pasted.trim() });
-            if ("error" in closeR) throw new UsageError(closeR.error);
+            const closeR = await admitAct<{ joinRecord: { personaRef: { prefix: string }; targetVesselId: string } }>("admit.accept", { ackCarriage: pasted.trim() });
             consumed = true;
             emit(args, {
               ok: true,
@@ -319,7 +303,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
             });
             return 0;
           } finally {
-            if (!consumed) await withdrawGrantFlow(r.sealed.nonceA);
+            if (!consumed) await admitAct("admit.withdraw-grant", { nonceA: r.sealed.nonceA });
           }
         } finally {
           disarm();
@@ -328,12 +312,9 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
       case "open": {
         const grantCarriage = String(args.options["grant"] ?? "");
         if (!grantCarriage) throw new UsageError("open needs --grant <carriage> (the granter's QR#2)");
-        const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
         // The head reads off the store's one holder — the standing vessel's replica when one stands. M12′/L11 —
         // the SAME board read carries the head's KEL seq; ADVISORY ONLY, `openPersonaGrant` never gates on it.
-        const { resolveHeadOpKey, resolveHeadSeq } = kelHeadResolvers(readPersonaKelHead);
-        const r = await openAdmitFlow({ grantCarriage, resolveHeadOpKey, deviceSigner, resolveHeadSeq });
-        if ("error" in r) throw new UsageError(r.error);
+        const r = await admitAct<{ carriage: string; joinRecord: { personaRef: { prefix: string } }; terminalQr: string; qrEcc: string | null; qrOversized: boolean }>("admit.open", { grantCarriage });
         emit(args, {
           ok: true,
           data: { carriage: r.carriage, personaPrefix: r.joinRecord.personaRef.prefix },
@@ -347,8 +328,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
       case "accept": {
         const ackCarriage = String(args.options["ack"] ?? "");
         if (!ackCarriage) throw new UsageError("accept needs --ack <carriage> (the target's QR#3)");
-        const r = await acceptAdmitFlow({ ackCarriage });
-        if ("error" in r) throw new UsageError(r.error);
+        const r = await admitAct<{ joinRecord: { personaRef: { prefix: string }; targetVesselId: string } }>("admit.accept", { ackCarriage });
         emit(args, {
           ok: true,
           data: { personaPrefix: r.joinRecord.personaRef.prefix, targetVesselId: r.joinRecord.targetVesselId },
@@ -360,7 +340,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         return 0;
       }
       case "list": {
-        const admitted = await listAdmittedPersonas();
+        const { admitted } = await admitAct<{ admitted: Array<{ personaRef: { prefix: string }; targetVesselId: string; granterKey: string }> }>("admit.list");
         emit(args, {
           ok: true,
           data: { admitted: admitted.map((j) => ({ prefix: j.personaRef.prefix, targetVesselId: j.targetVesselId })) },
@@ -373,7 +353,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         return 0;
       }
       case "reset": {
-        await clearPersonaAdmitPending();
+        await admitAct("admit.reset");
         emit(args, { ok: true, data: { reset: true }, human: () => console.log("dropped any in-flight pending enrollment / grant secrets.") });
         return 0;
       }
@@ -381,7 +361,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const all = args.flags["all"] === true;
         const ephemeral = String(args.options["ephemeral"] ?? "");
         if (!all && !ephemeral) throw new UsageError("withdraw-offer needs --ephemeral <pubkey> or --all");
-        const dropped = await withdrawOfferFlow(all ? "all" : ephemeral);
+        const { withdrawn: dropped } = await admitAct<{ withdrawn: number }>("admit.withdraw-offer", { target: all ? "all" : ephemeral });
         emit(args, {
           ok: true,
           data: { withdrawn: dropped },
@@ -392,7 +372,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
       case "withdraw-grant": {
         const nonceA = String(args.options["nonce"] ?? "");
         if (!nonceA) throw new UsageError("withdraw-grant needs --nonce <nonceA> (the sent grant's own nonce)");
-        const withdrawn = await withdrawGrantFlow(nonceA);
+        const { withdrawn } = await admitAct<{ withdrawn: boolean }>("admit.withdraw-grant", { nonceA });
         emit(args, {
           ok: true,
           data: { withdrawn },

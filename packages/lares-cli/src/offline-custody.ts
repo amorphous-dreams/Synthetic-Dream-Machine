@@ -12,6 +12,12 @@
  * one. With no terminal the session refuses by name and says where to run the command. The key lives in this
  * process for the command's own act and leaves with it; nothing about the session touches disk.
  *
+ * ── NEVER BESIDE A STANDING VESSEL ──────────────────────────────────────────────────────────────
+ * One key session opens a vessel's rows. Where a vessel's custody door answers at the socket, this session
+ * refuses by name and opens nothing: a locked vessel names `lares vault unlock`, and an unlocked one already
+ * holds the session, so a command's sealed act rides its custody door (`sealed-act-door`). A command that
+ * reached this refusal read a sealed row in its own process beside a standing vessel, which no command may.
+ *
  * ── THE TEST ROUTE ──────────────────────────────────────────────────────────────────────────────
  * A root that carries the harness's scratch marker (`.lar-test-scratch`, written only by
  * `tools/test-scratch-marker.mjs` at stage time) opens under the PUBLISHED test passphrase, and says so on stderr.
@@ -56,6 +62,20 @@ function refusal(reading: string): OfflineCustodyRefused {
 
 /** Open `holder` for this command: the test route under a staged root, else a terminal prompt, up to the holder's bound. */
 export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
+  // ONE KEY SESSION PER VESSEL. A custody door that answers names a standing vessel: it holds the session, or
+  // rests locked until a person opens it. Either way this process opens none beside it.
+  // (The door's module loads here, at the first sealed row, so seating a session reaches for no socket.)
+  const { vesselStanding } = await import("./custody-door.js");
+  const standing = await vesselStanding();
+  if (standing.reading === "vessel") {
+    throw new OfflineCustodyRefused(standing.unlocked
+      ? "a vessel stands on this store and holds the key session, and this command read a sealed row in its own process beside it. " +
+        "A sealed act rides the vessel's custody door; this command took another road, which the build refuses. Stop the vessel to run it alone."
+      : "a vessel stands on this store and rests locked. Open it with `lares vault unlock`, then run the command again.");
+  }
+  if (standing.reading === "silent") {
+    throw new OfflineCustodyRefused("something holds this store's socket and gives no answer, so no second key session opens beside it. Check `lares vessel read`, then run the command again.");
+  }
   if (testScratchRoot()) {
     process.stderr.write("[custody] TEST SCRATCH ROOT: opening the vessel key under the published test route\n");
     const u = await holder.unlock([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);

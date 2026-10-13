@@ -10,12 +10,24 @@
  *   F7  an unlock frame with no usable credential refuses before the holder hears of it.
  *   F8  an unlock whose composition lands at the floor drops the key again: held and standing never disagree.
  *   F9  the door holds a short line: past it a frame refuses at once, and an act whose caller left never runs.
+ *
+ * The `act` frame: one act of the sealed-act table, run against the key a person already opened.
+ *   A1  an act at an unlocked holder runs with NO credential: the holder hears no second unlock.   control: the unlock it rode on
+ *   A2  an act at a locked holder refuses `custody-locked` and never runs.                           control: unlocked, it runs
+ *   A3  an act the table does not name refuses `unknown-act` by name, and the caller's text reaches no log.
+ *   A4  a frame that carries any key beside `op`, `act` and `args` (a credential, say) refuses whole, and nothing runs.
+ *   A5  arguments outside an act's own shape refuse `bad-args` before any row opens.
+ *   A6  the door logs an act's name and how it ended, and never an argument, an answer or a refusal's words.
+ *   A7  an act's fault answers its caller by name (a row that reads torn carries its home, file and reading) and the
+ *       door serves the next frame.
+ *   A8  an act waits its turn behind an unlock in flight, and a lock that follows waits behind the act.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { describe, expect, test } from "vitest";
 import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
-import type { CustodyHolder, HolderUnlock } from "../src/custody-holder.js";
+import { CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "../src/custody-holder.js";
+import { runSealedAct } from "../src/sealed-acts.js";
 
 const RIGHT = "frames-test-passphrase-right";
 
@@ -26,7 +38,7 @@ function fakeSock(): { sock: Socket; answer: Promise<Record<string, unknown>> } 
   return { sock, answer };
 }
 
-function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; slowMs?: number } = {}) {
+function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; slowMs?: number; runAct?: (act: string, args: unknown) => Promise<Record<string, unknown>> } = {}) {
   let unlocked = false;
   let spent = 0;
   const heard: unknown[] = [];
@@ -61,6 +73,7 @@ function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; 
       return { standing: sovereign ? "hearth" : "herm" };
     },
     onLog: (line) => logs.push(line),
+    ...(opts.runAct ? { runAct: opts.runAct } : {}),
   });
   const send = (frame: unknown, gone = false): { consumed: boolean; answer: Promise<Record<string, unknown>> } => {
     const { sock, answer } = fakeSock();
@@ -159,5 +172,111 @@ describe("the custody door", () => {
     void gone;
     expect(h.recomposed, "the departed caller's lock never ran").toEqual([true]);
     expect(h.holder.isUnlocked()).toBe(true);
+  });
+});
+
+describe("the custody door's act frame", () => {
+  /** A door whose acts get counted and answered by a stand-in: the frame's own law, apart from any row. */
+  function acting(run?: (act: string, args: unknown) => Promise<Record<string, unknown>>) {
+    const ran: Array<{ act: string; args: unknown }> = [];
+    const h = harness({ runAct: async (act, args) => { ran.push({ act, args }); return run ? run(act, args) : { held: "ANSWER-CANARY" }; } });
+    return { ...h, ran };
+  }
+
+  test("A1 — an act at an unlocked holder runs with no credential: the holder hears no second unlock", async () => {
+    const h = acting();
+    await h.send(unlockFrame(RIGHT)).answer;
+    expect(h.heard.length).toBe(1);                                    // CONTROL: the one unlock a person performed
+    expect(await h.send({ op: "act", act: "persona.roots", args: {} }).answer).toEqual({ op: "act", act: "persona.roots", result: { held: "ANSWER-CANARY" } });
+    expect(await h.send({ op: "act", act: "persona.roots" }).answer).toMatchObject({ op: "act", result: { held: "ANSWER-CANARY" } });
+    expect(h.heard.length, "an act never asks the holder to open").toBe(1);
+    expect(h.recomposed).toEqual([true]);                              // and never recomposes
+    expect(h.ran.length).toBe(2);
+  });
+
+  test("A2 — an act at a locked holder refuses custody-locked and never runs", async () => {
+    const h = acting();
+    const a = await h.send({ op: "act", act: "persona.roots", args: {} }).answer;
+    expect(a).toMatchObject({ op: "act", status: "error", refusal: { reason: "custody-locked" } });
+    expect(String(a["errorMessage"])).toContain("lares vault unlock");
+    expect(h.ran).toEqual([]);
+    expect(h.heard).toEqual([]);                                       // a refused act opens nothing
+    await h.send(unlockFrame(RIGHT)).answer;
+    expect(await h.send({ op: "act", act: "persona.roots", args: {} }).answer).toMatchObject({ op: "act", act: "persona.roots" });   // CONTROL
+    await h.send({ op: "lock" }).answer;
+    expect(await h.send({ op: "act", act: "persona.roots", args: {} }).answer).toMatchObject({ refusal: { reason: "custody-locked" } });
+    expect(h.ran.length).toBe(1);
+  });
+
+  test("A3 — an act the table does not name refuses by name, and the caller's text reaches no log", async () => {
+    const h = harness({ runAct: (act, args) => runSealedAct(act, args, { kelHead: null }) });
+    await h.send(unlockFrame(RIGHT)).answer;
+    const a = await h.send({ op: "act", act: "vault.export-everything-CALLER-TEXT", args: {} }).answer;
+    expect(a).toMatchObject({ op: "act", status: "error", refusal: { reason: "unknown-act" } });
+    expect(String(a["errorMessage"])).toContain("vault.export-everything-CALLER-TEXT");            // the caller reads the name it sent
+    expect(h.logs.join("\n")).not.toContain("CALLER-TEXT");
+    expect(h.logs.at(-1)).toBe("act (an act the table does not name): refused (unknown-act)");
+  });
+
+  test("A4 — a frame that carries a key beside op, act and args refuses whole, and nothing runs", async () => {
+    const h = acting();
+    await h.send(unlockFrame(RIGHT)).answer;
+    for (const stray of [
+      { op: "act", act: "persona.roots", args: {}, credentials: [{ kind: "passphrase", passphrase: "a-credential-on-an-act" }] },
+      { op: "act", act: "persona.roots", args: {}, requestedBy: "did:key:x" },
+      { op: "act", args: {} },
+      { op: "act", act: 7, args: {} },
+    ]) {
+      expect(await h.send(stray).answer).toMatchObject({ op: "act", status: "error", refusal: { reason: "bad-custody-frame" } });
+    }
+    expect(h.ran).toEqual([]);
+    expect(h.heard.length).toBe(1);                                    // the stray credential reached no holder
+    expect(h.logs.join("\n")).not.toContain("a-credential-on-an-act");
+  });
+
+  test("A5 — arguments outside an act's own shape refuse bad-args before any row opens", async () => {
+    const h = harness({ runAct: (act, args) => runSealedAct(act, args, { kelHead: null }) });
+    await h.send(unlockFrame(RIGHT)).answer;
+    for (const args of [{ handleIndex: 0, petname: "x", passphrase: "an-argument-no-row-named" }, { handleIndex: -1, petname: "x" }, { handleIndex: 0 }, "not-a-record", [1]]) {
+      expect(await h.send({ op: "act", act: "petname.set", args }).answer).toMatchObject({ op: "act", status: "error", refusal: { reason: "bad-args" } });
+    }
+    // The harness holder answers every row `locked`: a refusal that reached a row would read otherwise.
+    expect(await h.send({ op: "act", act: "petname.set", args: { handleIndex: 0, petname: "x" } }).answer).not.toMatchObject({ refusal: { reason: "bad-args" } });   // CONTROL: a sound shape passes the table
+  });
+
+  test("A6 — the door logs an act's name and how it ended, never an argument, an answer or a refusal's words", async () => {
+    const h = acting(async (act) => {
+      if (act === "petname.set") throw new Error("REFUSAL-WORDS that quote a pet-name");
+      return { held: "ANSWER-CANARY" };
+    });
+    await h.send(unlockFrame(RIGHT)).answer;
+    await h.send({ op: "act", act: "petname.entries", args: { note: "ARG-CANARY" } }).answer;
+    const refused = await h.send({ op: "act", act: "petname.set", args: { handleIndex: 0, petname: "ARG-CANARY-2" } }).answer;
+    expect(refused).toMatchObject({ status: "error", errorMessage: "REFUSAL-WORDS that quote a pet-name", refusal: { reason: "act-failed" } });   // the caller hears the words
+    const logged = h.logs.join("\n");
+    for (const secret of ["ANSWER-CANARY", "ARG-CANARY", "REFUSAL-WORDS"]) expect(logged).not.toContain(secret);
+    expect(h.logs.slice(-2)).toEqual(["act petname.entries: done", "act petname.set: refused (act-failed)"]);   // CONTROL: the door did log both
+  });
+
+  test("A7 — an act's fault answers by name with the row it met, and the door serves the next frame", async () => {
+    const h = acting(async () => { throw new CustodyRowUnavailable("identity", ".persona-roster.json", "torn"); });
+    await h.send(unlockFrame(RIGHT)).answer;
+    expect(await h.send({ op: "act", act: "persona.roots", args: {} }).answer).toMatchObject({
+      op: "act", status: "error", refusal: { reason: "row-unavailable", home: "identity", file: ".persona-roster.json", reading: "torn" },
+    });
+    expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: true });
+  });
+
+  test("A8 — an act waits behind an unlock in flight, and a lock that follows waits behind the act", async () => {
+    const order: string[] = [];
+    const h = harness({ slowMs: 30, runAct: async () => { order.push("act-start"); await new Promise((r) => setTimeout(r, 20)); order.push("act-end"); return {}; } });
+    const unlocking = h.send(unlockFrame(RIGHT));
+    const act = h.send({ op: "act", act: "persona.roots", args: {} });
+    const locking = h.send({ op: "lock" });
+    expect(await act.answer).toMatchObject({ op: "act", act: "persona.roots" });   // sent while locked; ran once the unlock stood
+    await unlocking.answer;
+    expect(await locking.answer).toMatchObject({ op: "lock", was: "unlocked" });
+    expect(order).toEqual(["act-start", "act-end"]);
+    expect(h.recomposed).toEqual([true, false]);                                      // the lock recomposed after the act ended
   });
 });

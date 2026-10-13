@@ -1,0 +1,213 @@
+/**
+ * sealed-act-door — a command's sealed act rides the standing vessel's custody door, and no second key session opens.
+ *
+ * A vessel stands here as its main thread composes it: a store claim, the verb socket's front, and the custody
+ * door ahead of every verb. Its acts answer from a stand-in table, so nothing this "vessel" answers touches the
+ * command's own custody seat: whatever opens that seat, the COMMAND opened.
+ *
+ *   D1  RED: `lares persona list` beside a standing, unlocked vessel opens NO key session of its own: the
+ *       published test route never fires, the command's seat stays locked, and the roster it prints came through
+ *       act frames.               control: with no vessel standing the same command opens its own session once
+ *   D2  RED: a sealed row read in the command's own process beside a standing vessel refuses by name and opens
+ *       nothing: an unlocked vessel "holds the key session", a locked one names `lares vault unlock`.
+ *                                 control: with no vessel standing the same read opens by the test route
+ *   D3  a vessel's refusal returns under the class the same act throws in process (`CustodyLocked`,
+ *       `CustodyRowUnavailable`, `SealedActRefused`), and the frame a command sends holds `op`, `act` and `args`
+ *       alone.
+ *   D4  another command holding the store for one act answers no custody door: the act runs in this process.
+ *   D5  RED: a root split never rides a standing vessel: `persona new --split-root` beside one, unlocked or locked,
+ *       refuses before anything founds, and the vessel hears a `custody` probe and nothing else.
+ *                                 control: the table names no act that answers a share
+ */
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import type { Socket } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  CustodyLocked, CustodyRowUnavailable, FsCustodyIo, SEALED_ACT_NAMES, SealedActRefused, claimStore, custodyFrameHandler, foundCustody,
+  larDataDir, loadIdentityAnchors, makeCustodyHolder, persistIdentityAnchors, seatCustody, seatedCustody, serveUdsFront,
+  vesselCustodyHomes, type CustodyHolder,
+} from "@lararium/node";
+import { dispatch } from "../src/bin/lares.js";
+import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
+import { sealedActVia } from "../src/sealed-act-door.js";
+
+vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
+
+const ANCHORS = { personaGroupDocIdHex: "aa11", meshCabalDocIdHex: "bb22", personaGroupAgentIdHex: "cc33" };
+const KEY = "ab".repeat(32);
+const downs: Array<() => Promise<void>> = [];
+let priorRoot: string | undefined;
+
+/** A marked scratch root with custody founded under the published test route and one sealed row; nothing stays seated. */
+async function stage(): Promise<string> {
+  const root = mkdtempSync(join(tmpdir(), "lar-sealed-act-door-"));
+  downs.push(async () => { rmSync(root, { recursive: true, force: true }); });
+  process.env["LAR_ROOT"] = root;
+  writeFileSync(join(root, TEST_SCRATCH_MARKER), "staged by sealed-act-door.test\n");
+  const homes = vesselCustodyHomes();
+  mkdirSync(homes.identity, { recursive: true, mode: 0o700 });
+  const io = new FsCustodyIo(homes);
+  const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }] }] });
+  const holder = makeCustodyHolder({ io, homes });
+  await holder.adopt(founded.vk);
+  seatCustody(holder);
+  await persistIdentityAnchors(ANCHORS);
+  await holder.lock();
+  seatCustody(null);
+  return root;
+}
+
+/** A vessel on this root's store: claim, front, custody door. Its acts answer from `table`, or refuse as `table` throws. */
+async function standVessel(opts: { unlocked: boolean; table?: (act: string, args: unknown) => Record<string, unknown> }) {
+  const frames: unknown[] = [];
+  const acts: string[] = [];
+  const holder = { isUnlocked: () => opts.unlocked, openedSlot: () => (opts.unlocked ? "slot-1" : null), attemptsLeft: () => 3 } as unknown as CustodyHolder;
+  const door = custodyFrameHandler({
+    holder, testScratch: true, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
+    runAct: async (act, args) => { acts.push(act); return (opts.table ?? answers)(act, args); },
+  });
+  mkdirSync(larDataDir(), { recursive: true });
+  const claim = await claimStore(larDataDir(), { holder: "vessel" });
+  const front = serveUdsFront({ claim, onFrame: (parsed: unknown, sock: Socket) => { frames.push(parsed); return door(parsed, sock); } });
+  for (let i = 0; i < 200 && !existsSync(claim.socketPath); i++) await new Promise((r) => setTimeout(r, 10));
+  const down = async (): Promise<void> => { front.close(); await claim.release(); };
+  downs.push(down);
+  return { frames, acts, down };
+}
+
+/** What the stand-in vessel answers: one face, named and worn. */
+function answers(act: string): Record<string, unknown> {
+  if (act === "persona.roots") return { roots: [{ handleIndex: 0, verifyingKey: KEY }], active: 0, orphans: [] };
+  if (act === "petname.entries") return { entries: [[0, "the-face-the-vessel-holds"]] };
+  if (act === "declaration.entries") return { entries: [] };
+  return {};
+}
+
+beforeEach(() => { priorRoot = process.env["LAR_ROOT"]; seatCustody(null); });
+afterEach(async () => {
+  const held = seatedCustody();
+  if (held) await held.lock();
+  seatCustody(null);
+  vi.restoreAllMocks();
+  for (const down of downs.splice(0).reverse()) await down().catch(() => {});
+  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+});
+
+/** Run one command through the dispatcher, capturing what it prints. */
+async function run(argv: string[]): Promise<{ code: number; out: string; err: string }> {
+  const out: string[] = [], err: string[] = [];
+  vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
+  vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { err.push(a.map(String).join(" ")); });
+  vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => { err.push(String(chunk)); return true; });
+  vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
+  const code = await dispatch(argv);
+  vi.restoreAllMocks();
+  return { code, out: out.join("\n"), err: err.join("\n") };
+}
+
+describe("a command beside a standing vessel", () => {
+  test("D1 — persona list opens no key session of its own: its roster rides act frames", async () => {
+    await stage();
+    const vessel = await standVessel({ unlocked: true });
+    const beside = await run(["persona", "list"]);
+    expect(beside.err).not.toContain("opening the vessel key");               // the published test route never fired
+    expect(beside.err).not.toContain("TEST SCRATCH ROOT");
+    expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
+    expect(beside.code).toBe(0);
+    expect(beside.out).toContain("the-face-the-vessel-holds");                // what it printed came from the vessel
+    expect(vessel.acts).toEqual(expect.arrayContaining(["persona.roots", "petname.entries", "declaration.entries"]));
+    // The command asked for nothing beside acts, and each frame held `op`, `act` and `args` alone.
+    for (const frame of vessel.frames) expect(Object.keys(frame as object).sort()).toEqual(["act", "args", "op"]);
+
+    // CONTROL: the vessel leaves, and the same command opens its own session once, by the test route.
+    await vessel.down();
+    seatCustody(null);
+    const alone = await run(["persona", "list"]);
+    expect(alone.code).toBe(0);
+    expect(alone.err).toContain("TEST SCRATCH ROOT");
+    expect(alone.out).not.toContain("the-face-the-vessel-holds");             // it read its own (empty) rows
+    expect(seatedCustody()!.isUnlocked()).toBe(true);
+  });
+
+  test("D2 — a sealed row read in the command's own process beside a vessel refuses by name and opens nothing", async () => {
+    await stage();
+    const unlocked = await standVessel({ unlocked: true });
+    seatOfflineCustody();
+    const beside = await loadIdentityAnchors().catch((e: unknown) => e);
+    expect(beside).toBeInstanceOf(OfflineCustodyRefused);
+    expect((beside as Error).message).toContain("holds the key session");
+    expect(seatedCustody()!.isUnlocked()).toBe(false);
+    await unlocked.down();
+
+    seatCustody(null);
+    const locked = await standVessel({ unlocked: false });
+    seatOfflineCustody();
+    const atFloor = await loadIdentityAnchors().catch((e: unknown) => e);
+    expect(atFloor).toBeInstanceOf(OfflineCustodyRefused);
+    expect((atFloor as Error).message).toContain("lares vault unlock");
+    expect(seatedCustody()!.isUnlocked()).toBe(false);
+    await locked.down();
+
+    // CONTROL: no vessel stands, and the same read opens by the test route.
+    seatCustody(null);
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    seatOfflineCustody();
+    expect(await loadIdentityAnchors()).toEqual(ANCHORS);
+    expect(seatedCustody()!.isUnlocked()).toBe(true);
+  });
+
+  test("D3 — a vessel's refusal returns under its own class", async () => {
+    await stage();
+    const locked = await standVessel({ unlocked: false });
+    await expect(sealedActVia("persona.roots")).rejects.toBeInstanceOf(CustodyLocked);
+    expect(locked.acts).toEqual([]);                                          // a locked vessel ran nothing
+    await locked.down();
+
+    const vessel = await standVessel({ unlocked: true, table: (act) => {
+      if (act === "persona.roots") throw new CustodyRowUnavailable("identity", ".persona-roster.json", "torn");
+      if (act === "persona.wear") throw new SealedActRefused("act-refused", "this vessel holds no persona root there");
+      if (act === "admit.reset") throw new Error("a plain fault");
+      return { ran: act };
+    } });
+    const torn = await sealedActVia("persona.roots").catch((e: unknown) => e);
+    expect(torn).toBeInstanceOf(CustodyRowUnavailable);
+    expect(torn).toMatchObject({ home: "identity", file: ".persona-roster.json", reading: "torn" });
+    const refused = await sealedActVia("persona.wear", { handleIndex: 4 }).catch((e: unknown) => e);
+    expect(refused).toBeInstanceOf(SealedActRefused);
+    expect(refused).toMatchObject({ reason: "act-refused", message: "this vessel holds no persona root there" });
+    await expect(sealedActVia("admit.reset")).rejects.toThrow("a plain fault");
+    expect(await sealedActVia("petname.entries")).toEqual({ result: { ran: "petname.entries" }, via: "vessel" });   // CONTROL
+    for (const frame of vessel.frames) expect(Object.keys(frame as object).sort()).toEqual(["act", "args", "op"]);
+  });
+
+  test("D4 — a command that holds the store for one act answers no custody door: the act runs here", async () => {
+    await stage();
+    mkdirSync(larDataDir(), { recursive: true });
+    const direct = await claimStore(larDataDir(), { holder: "direct" });
+    downs.push(() => direct.release());
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    seatOfflineCustody();
+    const ran = await sealedActVia("petname.entries");
+    expect(ran).toEqual({ result: { entries: [] }, via: "direct" });
+    expect(seatedCustody()!.isUnlocked()).toBe(true);                         // this process opened its own session, once
+  });
+
+  test("D5 — a root split never rides a standing vessel", async () => {
+    await stage();
+    for (const unlocked of [true, false]) {
+      const vessel = await standVessel({ unlocked });
+      const r = await run(["persona", "new", "0", "--name", "a-synthetic-face", "--split-root"]);
+      expect(r.code).not.toBe(0);
+      expect(r.out + r.err).toContain("never rides a standing vessel");
+      expect(r.out + r.err).not.toMatch(/recorded-code|escrow-carrier/);          // no share printed
+      expect(vessel.acts).toEqual([]);                                             // nothing ran inside the vessel
+      expect(vessel.frames).toEqual([{ op: "custody" }]);                          // it heard the probe and nothing else: no verb founded a face
+      expect(seatedCustody()?.isUnlocked() ?? false).toBe(false);                  // and the command opened no session
+      await vessel.down();
+      seatCustody(null);
+    }
+    expect(SEALED_ACT_NAMES.filter((n) => /recover|share|split/i.test(n))).toEqual([]);   // CONTROL: no act could have answered one
+  });
+});

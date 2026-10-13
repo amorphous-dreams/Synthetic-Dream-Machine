@@ -61,7 +61,7 @@ export class CustodyLocked extends Error {
 /** A cold row that stands and does not open: the act never runs over anything but the row's own plaintext. */
 export class CustodyRowUnavailable extends Error {
   override readonly name = "CustodyRowUnavailable";
-  constructor(home: CustodyHome, file: string, readonly reading: string) {
+  constructor(readonly home: CustodyHome, readonly file: string, readonly reading: string) {
     super(`custody row ${home}/${file} reads ${reading}`);
   }
 }

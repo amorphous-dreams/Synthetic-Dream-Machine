@@ -26,8 +26,6 @@
  */
 
 import {
-  loadPersonaGroupRootVerifyingKey, wearPersona, listPersonaRoots, loadActivePersonaIndex, orphanPersonaRoots,
-  makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
   faceStands, armRecoveryAtFounding, type FoundFaceResult,
 } from "@lararium/node";
 import {
@@ -36,8 +34,11 @@ import {
   refuseSlot, personaSlotCeiling, defaultChairLabel, type VesselClass,
 } from "@lararium/mesh";
 import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
-import { larDataDir } from "../env.js";
 import { storeVerb } from "../store-door.js";
+import { sealedAct } from "../sealed-act-door.js";
+import { vesselStanding } from "../custody-door.js";
+import { larDataDir } from "../env.js";
+import { readPersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, fleetPeerDid,
 } from "../daemon-persona-store.js";
@@ -117,13 +118,13 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
  * fleet. The `seat` claim stays local by construction — the declaration store splits it out.
  */
 async function fleetStores(): Promise<{
-  petnames: Awaited<ReturnType<typeof makeNodePersonaPetnameStore>>;
-  declarations: Awaited<ReturnType<typeof makeNodePersonaDeclarationStore>>;
+  petnames: ReturnType<typeof sealedPetnameStore>;
+  declarations: ReturnType<typeof sealedDeclarationStore>;
   did: string | null;
 }> {
   const did = await fleetPeerDid();
-  const petnames     = await makeNodePersonaPetnameStore();
-  const declarations = await makeNodePersonaDeclarationStore();
+  const petnames     = sealedPetnameStore();
+  const declarations = sealedDeclarationStore();
   // No vessel key = no place = no fleet. The pure local floor stands, and `persona sync` carries the names up
   // once the vessel does.
   if (did === null) return { petnames, declarations, did };
@@ -142,6 +143,15 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const stands = args.flags["seat"] === true;
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
   const splitRoot = args.flags["split-root"] === true;
+  // A ROOT SPLIT NEVER RIDES A STANDING VESSEL. Its two off-device shares rebuild the root, so no door hands them
+  // to a caller: the split runs in a person's own process, under a key session that person opens. Beside a
+  // standing vessel the command refuses here, before anything founds.
+  if (splitRoot && (await vesselStanding()).reading !== "none") {
+    throw new UsageError(
+      "--split-root hands out shares that rebuild this persona's root, so it never rides a standing vessel. " +
+      "Stop the vessel (`lares vessel stop`), run this command again, then stand the vessel.",
+    );
+  }
   const { petnames, declarations, did } = await fleetStores();
   if (!stands && chair.length > 0 && (await declarations.get(index))?.seat !== true) {
     throw new UsageError("--chair labels a seat claim: pass it with --seat");
@@ -166,11 +176,13 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   }
   const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
 
+  // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
+  // print to the person at this terminal and ride no door.
   const recovery = splitRoot ? await armRecoveryAtFounding(larDataDir(), index) : null;
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
   // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.
-  const verifyingKey = await loadPersonaGroupRootVerifyingKey(index);
+  const verifyingKey = await personaRootKey(index);
   if (!verifyingKey) throw new UsageError(`the face h${index} stands here with no persona root held — re-found it`);
   const root = { verifyingKey, created: !founded.alreadyStood };
   await renameOwnPersona(petnames, index, name);
@@ -229,7 +241,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
 async function personaWear(args: ParsedArgs): Promise<number> {
   const index = parseIndex(args.positional[1]);
   // The custody wall lives in the core: wearing REQUIRES a held root — an unheld index throws there.
-  await wearPersona(index);
+  await sealedAct("persona.wear", { handleIndex: index });
   emit(args, {
     ok: true,
     data: { active: index },
@@ -242,11 +254,10 @@ async function personaWear(args: ParsedArgs): Promise<number> {
 }
 
 async function personaList(args: ParsedArgs): Promise<number> {
-  const held = await listPersonaRoots();
-  const active = await loadActivePersonaIndex();
-  // A root row the roster never recorded: an act stopped between its two writes. No reader holds it, so it reads
-  // here by name, with the act that adopts it.
-  const orphans = await orphanPersonaRoots();
+  const roster = await readPersonaRoots();
+  const held = roster.roots.map(({ handleIndex }) => handleIndex);
+  const active = roster.active;
+  const orphans = roster.orphans;
   const { petnames, declarations } = await fleetStores();
 
   const rows = await Promise.all(
@@ -278,7 +289,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
         const declares = `${r.handle ? `  ->  "${r.handle}"` : ""}${r.seat ? ` [stands for a Kahu seat as "${r.chair}"]` : ""}`;
         console.log(`  ${r.active ? "*" : " "} h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
       }
-      console.log(`  (* = active${active === undefined ? "; none worn yet" : ""})`);
+      console.log(`  (* = active${active === null ? "; none worn yet" : ""})`);
     },
   });
   return 0;
@@ -304,8 +315,8 @@ async function personaSync(args: ParsedArgs): Promise<number> {
   if (!read.reached) {
     throw new UsageError(`the fleet did not answer (${read.why}) — start the node (\`lares vessel stand --foreground\`) so the persona plane can carry these names`);
   }
-  const localPetnames     = await makeNodePersonaPetnameStore();
-  const localDeclarations = await makeNodePersonaDeclarationStore();
+  const localPetnames     = sealedPetnameStore();
+  const localDeclarations = sealedDeclarationStore();
   const petnames     = makeFleetPetnameStore(localPetnames, did);
   const declarations = makeFleetDeclarationStore(localDeclarations, did);
 

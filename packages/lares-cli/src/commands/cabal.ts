@@ -32,7 +32,7 @@
 
 import { realmStanding } from "@lararium/mesh";
 import {
-  CabalVouchError, CabalJoinError, loadPersonaGroupRootVerifyingKey, listPersonaRoots,
+  CabalVouchError, CabalJoinError,
   type CabalVouchResult, type CabalJoinResult,
 } from "@lararium/node";
 import { storeVerb } from "../store-door.js";
@@ -42,6 +42,7 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { readPersonaRoots, personaRootKey } from "../sealed-rows.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "cabal", helpLines("cabal"), detail);
@@ -77,7 +78,7 @@ function realmOf(args: ParsedArgs): string {
  * nobody can stand behind.
  */
 async function actingFace(args: ParsedArgs): Promise<string> {
-  const held = await listPersonaRoots();
+  const held = (await readPersonaRoots()).roots.map(({ handleIndex }) => handleIndex);
   if (held.length === 0) {
     throw new CabalUsageError("no persona root held on this vessel — a realm is fed by a face, and this vessel holds none.");
   }
@@ -85,7 +86,7 @@ async function actingFace(args: ParsedArgs): Promise<string> {
   const index = asRaw === undefined ? held[0]! : Number(asRaw);
   if (!Number.isInteger(index)) throw new CabalUsageError(`--as expects a persona-root index, got "${asRaw}"`);
   if (!held.includes(index)) throw new CabalUsageError(`persona root ${index} is not held here (held: ${held.join(", ")}).`);
-  const did = await loadPersonaGroupRootVerifyingKey(index);
+  const did = await personaRootKey(index);
   if (!did) throw new CabalUsageError(`persona root ${index} surfaces no usable verifying key — nothing to feed with.`);
   return did.toLowerCase();
 }
