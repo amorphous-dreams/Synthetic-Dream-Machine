@@ -782,6 +782,7 @@ export type VesselToIslandMsg =
   | WikiMsg_DomInput
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
+  | IslandMsg_DyadRead
   | IslandMsg_DocRested
   | IslandMsg_CustodyWritten
   | IslandMsg_ViewCatalogResult
@@ -974,6 +975,23 @@ export interface IslandMsg_CustodyWrite { schema_version: ProtocolVersion; type:
 /** Vessel → island: the custody write door's answer: the bytes rest sealed, or `why` they do not. */
 export interface IslandMsg_CustodyWritten { schema_version: ProtocolVersion; type: "custody:written"; requestId: string; written: boolean; why?: string; }
 
+/** Vessel → island: the fleet-edge standing the vessel read for an island's dyad ask. */
+export interface IslandMsg_DyadRead {
+  schema_version: ProtocolVersion;
+  type: "dyad:read";
+  requestId: string;
+  standing: "clear" | "aside" | "owing" | "returned";
+}
+
+/** Island → vessel: ask the vessel's live fleet board for this device's standing. */
+export interface IslandMsg_DyadAsk {
+  schema_version: ProtocolVersion;
+  type: "dyad:ask";
+  requestId: string;
+  fleetRoot: string;
+  deviceKey: string;
+}
+
 /**
  * Vessel → island: place a wiki-scope verb invocation into a wiki island's TW5 wiki.
  *
@@ -1099,6 +1117,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
   | IslandMsg_CasWant
+  | IslandMsg_DyadAsk
   | IslandMsg_DocRest
   | IslandMsg_CustodyWrite
   | IslandMsg_ViewCatalog
@@ -1122,13 +1141,13 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
   // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
   if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasVersion(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as IslandToVesselMsg["type"],
   );
 }

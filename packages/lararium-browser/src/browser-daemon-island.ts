@@ -17,6 +17,7 @@ import { runBrowserSovereignWorker } from "./browser-sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountProjection } from "@lararium/tw5";
 import { HULLS_TS_ONLY } from "@lararium/mesh";
+import { browserDyadAsker } from "./browser-dyad-door.js";
 
 // The daemon INHERITS the wiki render cap (hasProjection). Mount its projection DORMANT at island-boot —
 // exactly as a pool wiki mounts its camera — so summoning the daemon is a pure active-surface gate flip,
@@ -24,6 +25,8 @@ import { HULLS_TS_ONLY } from "@lararium/mesh";
 // frames ride onProjection to the boot; the boot's active-surface gate decides whether they paint #projection.
 runBrowserSovereignWorker((manifest) =>
   makeOperatorDaemonBehavior(manifest, {
+    // The island asks through its worker shore; the vessel folds the live fleet edge.
+    dyadReading: browserDyadAsker(self),
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
     // passes HULLS_TS_ONLY → it seeds crystal alone, and its onBoot carries the projection mount.

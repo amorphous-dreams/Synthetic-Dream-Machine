@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten } from "@lararium/mesh";
+import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type EdgeStanding, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten } from "@lararium/mesh";
 
 /** The vessel's answer to a worker's `cas:want` — verified bytes, or null (a miss stays a miss). */
 export type CasDoor = (cid: string) => Promise<Uint8Array | null>;
@@ -62,6 +62,35 @@ export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "
 /** The vessel's answer to a worker's `custody:write` — seals the bytes under the vessel key. */
 export type CustodyWriteDoor = (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void>;
 
+/** The vessel's reading of one device edge on one fleet root. */
+export type DyadDoor = (fleetRoot: string, deviceKey: string) => EdgeStanding | Promise<EdgeStanding>;
+let dyadDoor: DyadDoor | null = null;
+
+/** Stand (or drop) the vessel's dyad reading door. */
+export function setDyadDoor(door: DyadDoor | null): void { dyadDoor = door; }
+
+/** Answer one dyad ask through the vessel's live board, failing closed on missing or malformed readings. */
+export async function answerDyadAsk(ask: Pick<IslandMsg_DyadAsk, "requestId" | "fleetRoot" | "deviceKey">): Promise<IslandMsg_DyadRead> {
+  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read" as const, requestId: ask.requestId };
+  if (typeof ask.fleetRoot !== "string" || typeof ask.deviceKey !== "string") return { ...base, standing: "aside" };
+  const door = dyadDoor;
+  if (!door) return { ...base, standing: "aside" };
+  try {
+    const standing = await door(ask.fleetRoot, ask.deviceKey);
+    return { ...base, standing: standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" ? standing : "aside" };
+  } catch { return { ...base, standing: "aside" }; }
+}
+
+function attachDyadDoor(w: Worker): void {
+  w.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_DyadAsk> | null;
+    if (!m || m.type !== "dyad:ask" || typeof m.requestId !== "string") return;
+    void answerDyadAsk({ requestId: m.requestId, fleetRoot: m.fleetRoot as string, deviceKey: m.deviceKey as string }).then((reply) => {
+      try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
+    });
+  });
+}
+
 // THE CUSTODY WRITE DOOR, vessel side. The daemon island holds bytes but never the vessel key; the main thread seals
 // them. The DAEMON island's channel alone carries the ask (`IslandClass`): a wiki island's ask refuses by name.
 let custodyWriteDoor: CustodyWriteDoor | null = null;
@@ -105,14 +134,17 @@ function attachRestDoor(w: Worker): void {
 /**
  * THE CLASS OF ISLAND A WORKER STANDS AS, named at its spawn. Each class reaches the vessel doors it owns and no other:
  *
- *   daemon   the vessel's own immune core. It reaches all three: the fetch door, the rest door (it mints the
- *            binding documents the vessel's store saves) and the custody write door (its keyhive archive exports
- *            cross to the main thread, which alone holds the vessel key and seals them).
+ *   daemon   the vessel's own immune core. It reaches all four: the fetch door, the rest door (it mints the
+ *            binding documents the vessel's store saves), the custody write door (its keyhive archive exports
+ *            cross to the main thread, which alone holds the vessel key and seals them) and the dyad door (its
+ *            gates ask what one device's edge reads on the fleet board the main thread folds; no door standing,
+ *            a door that faults and a malformed ask each read `aside`).
  *   wiki     an island that runs a wiki's content and plugins. It reaches the fetch door alone, for the blobs its
  *            own tiddlers name. Its custody write and its rest ask each refuse BY NAME on the same request id, and
  *            each refusal logs once per worker: code a wiki loads never writes a row under the vessel key and
- *            never drives the vessel's store.
- *   session  a session's island. It reaches none of the three and draws no answer: it asks through its scoped
+ *            never drives the vessel's store. Its dyad ask draws `aside` and logs the same way: a wiki never
+ *            learns what a device's edge reads.
+ *   session  a session's island. It reaches none of the four and draws no answer: it asks through its scoped
  *            view alone.
  *
  * The class binds at the spawn and never moves: a worker carries no way to name itself another class.
@@ -145,6 +177,12 @@ function attachRefusals(w: Worker): void {
         why: "RestDoorRefused: only the daemon island reaches the rest door",
       };
       reply(refused);
+    } else if (m.type === "dyad:ask") {
+      once("DyadDoorRefused", "dyad door");
+      const refused: IslandMsg_DyadRead = {
+        schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read", requestId: m.requestId, standing: "aside",
+      };
+      reply(refused);
     }
   });
 }
@@ -153,6 +191,7 @@ function attachRefusals(w: Worker): void {
 export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass }): VesselWorkerHandle {
   if (opts.island === "daemon") {
     attachCasDoor(w);
+    attachDyadDoor(w);
     attachRestDoor(w);
     attachCustodyWriteDoor(w);
   } else if (opts.island === "wiki") {

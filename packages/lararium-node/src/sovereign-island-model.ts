@@ -36,6 +36,9 @@ import {
   type IslandToVesselMsg,
   type IslandMsg_CasWant,
   type IslandMsg_CasBlock,
+  type IslandMsg_DyadAsk,
+  type IslandMsg_DyadRead,
+  type EdgeStanding,
   type IslandMsg_DocRest,
   type IslandMsg_DocRested,
   type CustodyWriteCarrier,
@@ -82,6 +85,32 @@ function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", 
 
 /** A worker's rest ask waits this long on the vessel before it reads as unrested; the mint then records no pointer. */
 const DOC_REST_PATIENCE_MS = 60_000;
+
+/** THE DYAD DOOR, worker side. The vessel's live board answers each fleet/device pair; silence reads aside. */
+export function vesselDyadAsker(
+  port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void },
+  patienceMs: number = DOC_REST_PATIENCE_MS,
+): (fleetRoot: string, deviceKey: string) => Promise<EdgeStanding> {
+  const pending = new Map<string, (standing: EdgeStanding) => void>();
+  port.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_DyadRead> | null;
+    if (!m || m.type !== "dyad:read" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    const standing = m.standing;
+    settle(standing === "clear" || standing === "aside" || standing === "owing" || standing === "returned" ? standing : "aside");
+  });
+  let seq = 0;
+  return (fleetRoot, deviceKey) => new Promise<EdgeStanding>((resolve) => {
+    const requestId = `dyad-${process.pid}-${++seq}`;
+    const timer = setTimeout(() => { pending.delete(requestId); resolve("aside"); }, patienceMs);
+    timer.unref?.();
+    pending.set(requestId, (standing) => { clearTimeout(timer); resolve(standing); });
+    const ask: IslandMsg_DyadAsk = { schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:ask", requestId, fleetRoot, deviceKey };
+    try { port.postMessage(ask); } catch { pending.delete(requestId); clearTimeout(timer); resolve("aside"); }
+  });
+}
 
 /**
  * THE REST DOOR, worker side. A worker's Repo keeps no store for a document it mints beside its own bag; the

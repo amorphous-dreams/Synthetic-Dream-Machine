@@ -22,6 +22,7 @@ import {
   type WikiRecipe,
 } from "@lararium/mesh";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
+import { refuseBrowserDyadAsks } from "./browser-dyad-door.js";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 export interface BrowserVesselIslandPoolOptions {
@@ -60,7 +61,10 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
               "Pass workerScriptUrl when constructing the pool (requires genesis island for TW5 core bytes).",
             );
           }
-          return browserSpawnWorker(workerUrl);
+          // A wiki island reaches no dyad door: its ask draws `aside` and one named warning.
+          const handle = browserSpawnWorker(workerUrl);
+          refuseBrowserDyadAsks(handle);
+          return handle;
         },
         newSyncChannel: browserNewSyncChannel,
         storage: () => undefined,

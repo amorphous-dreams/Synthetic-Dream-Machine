@@ -50,7 +50,7 @@ describe("the real attach points a real wiki's saves at the working document", (
       };
       wiki.addEventListener("change", onChange);
     });
-    const kh = await operatorDaemonOptions({ daemonAuth: st.daemonAuth } as never).verifierFactory!(st.ctx);
+    const kh = await operatorDaemonOptions({ daemonAuth: st.daemonAuth } as never, { dyadReading: () => "clear" }).verifierFactory!(st.ctx);
     teardown.push(() => { void (kh as { dispose?: () => Promise<void> }).dispose?.(); });
     await pointerLands;
     expect(composite.defaultWritableBagId()).toBe(working);

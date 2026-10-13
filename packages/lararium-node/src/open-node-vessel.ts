@@ -94,7 +94,7 @@ import {
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
-import { setCasDoor, setRestDoor, setCustodyWriteDoor } from "./worker-handle.js";
+import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
@@ -1036,18 +1036,23 @@ async function prepareNodeBootOn(
   // The ring reads this vessel's own faces as fleet roots, the realm of its charter, and every realm its ledger
   // notes. A board that changes (a peer's act arriving by sync) refolds it, and the Repo re-reads its verdicts.
   // THE FLEET ROOTS REST SEALED. The roots this vessel serves read off the persona roster, a row under the vessel
-  // key, so a composition at the floor cannot name one. It folds no fleet board and, below, reads EVERY device as
-  // set aside: a floor serves no fleet lane, and the first unlock stands a composition that reads the roster.
+  // key, so a composition at the floor names none of them and, below, reads EVERY device as set aside: a floor
+  // serves no fleet lane, and the first unlock stands a composition that reads the roster.
+  // THE FLEET THIS VESSEL'S OWN DEVICE EDGE NAMES reads off the daemon document, in the clear, so a floor names
+  // it too. The ring folds that one board at every standing: the Binding Gate asks what this vessel's own seat
+  // reads there (the dyad door, below), and a device its fleet root set aside binds nothing even at the floor.
+  // The lanes a floor serves stay shut whatever that board reads (`floor-fleet-lanes`).
+  let wornFleetRoot: string | null = null;
   const builtRing = makeEdgeShadowRing({
     repo, vesselKey: vesselIdentity.verifyingKey, sealHome,
     fleetRoots: async () => {
-      if (!sovereign) return [];
-      const roots: string[] = [];
-      for (const index of await sovereign.personaRoots()) {
+      const roots = new Set<string>();
+      if (wornFleetRoot) roots.add(wornFleetRoot);
+      for (const index of sovereign ? await sovereign.personaRoots() : []) {
         const key = await loadPersonaGroupRootVerifyingKey(index);
-        if (key) roots.push(key);
+        if (key) roots.add(key.trim().toLowerCase().replace(/^0x/, ""));
       }
-      return roots;
+      return [...roots];
     },
     charterRealm:    () => realmIdOfCharter(readNexusDoc(sealHome)),
     vesselKeyOfPeer: (peerId) => peerIdentifierMap.get(peerId)?.slice(-64).toLowerCase() ?? null,
@@ -1559,6 +1564,26 @@ async function prepareNodeBootOn(
     // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
     const deviceEdge = wornMount?.deviceEdge ?? (plainRecordOrNull(edgeRecord)?.tiddler as unknown as DeviceDelegationTiddler | undefined);
+    // ── THE DYAD DOOR (kapae#/reach) ─────────────────────────────────────────────────────────────
+    // The daemon island's gates ask what one device's edge reads on the worn fleet's board: the Binding Gate for
+    // this vessel's own seat, the join gate for the device a summons names. The ring folds the fleet this edge
+    // names BEFORE the island boots, so the island's first ask reads a landed fold. An ask that arrives while a
+    // board's change left the reading dark waits on the next fold, never on a clock, and a fold that fails
+    // answers `aside`. The door stands with this composition and drops at its teardown.
+    const edgeFleetRoot = deviceEdge?.personaRootDid?.trim().toLowerCase().replace(/^0x/, "") ?? null;
+    if (edgeFleetRoot && edgeFleetRoot !== wornFleetRoot) {
+      wornFleetRoot = edgeFleetRoot;
+      await shadowRing.refold();
+    }
+    setDyadDoor(async (fleetRoot, deviceKey) => {
+      // A fold a board's move overtook publishes nothing, so the door asks again; three folds each overtaken
+      // leave the reading dark, and a dark reading answers `aside`.
+      for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
+        try { await shadowRing.refold(); } catch { return "aside"; }
+      }
+      return shadowRing.deviceStanding(fleetRoot, deviceKey);
+    });
+    stood.push({ what: "the dyad door", down: () => setDyadDoor(null) });
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
     // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
     // presents no dyad. The read only observes — but a FACE

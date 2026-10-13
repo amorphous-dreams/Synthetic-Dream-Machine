@@ -63,10 +63,28 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
   /** `dyadReading` — the SAME inversion for the dyad's shadow (kapae#/reach): the vessel folds its fleet's edge
    *  board, and this island asks it what one device's edge reads before it binds or seats that device. The
-   *  reader answers `aside` until its first fold lands. Absent → no reader stands composed, and the Binding
-   *  Gate and the join gate consult none. */
-  dyadReading?: (fleetRootDid: string, deviceVerifyingKey: string) => import("@lararium/mesh").EdgeStanding | Promise<import("@lararium/mesh").EdgeStanding>;
+   *  reader answers `aside` until its first fold lands. Absent → the Binding Gate refuses a persona-bound boot
+   *  and the join gate refuses a summons, each by name (`requireDyadReader`): a gate that could ask nobody
+   *  binds and seats nobody. A faceless island asks nothing and stands without one. */
+  dyadReading?: DyadReader;
 };
+
+/** The island's ask for one device's standing in one fleet, answered by the vessel's own fold of that fleet's board. */
+export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => import("@lararium/mesh").EdgeStanding | Promise<import("@lararium/mesh").EdgeStanding>;
+
+/**
+ * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
+ * device's standing first; with no reader composed it cannot read one, and it never reads the absence as `clear`.
+ */
+export function requireDyadReader(reader: DyadReader | undefined, gate: "the Binding Gate" | "the join gate"): DyadReader {
+  if (!reader) {
+    throw new Error(
+      `[daemon] DyadReaderAbsent: ${gate} reads a device's standing off the vessel's own fold of its fleet board, and this island ` +
+      "holds no door to ask through — it binds and seats nobody.",
+    );
+  }
+  return reader;
+}
 import { verifyAuthProof, verifyEdgeAgainstPersonaKel } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
@@ -644,7 +662,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // THE DYAD'S READING, asked of the vessel once for the device this summons names: the gate reads it
             // twice (before and after the card binds) and must read one answer.
             const joineeKey = typeof summons.deviceEdge?.deviceVerifyingKey === "string" ? summons.deviceEdge.deviceVerifyingKey : "";
-            const joineeDyad = dyadReading ? await dyadReading(ownEdge.personaRootDid, joineeKey) : "clear";
+            const joineeDyad = await requireDyadReader(dyadReading, "the join gate")(ownEdge.personaRootDid, joineeKey);
             const outcome = await runFaceJoin(joinProvider, summons, {
               personaRootDid:         ownEdge.personaRootDid,
               hearthTrueName:         ownEdge.hearthTrueName,
@@ -786,8 +804,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
         ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
         // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
-        ...(dyadReading && daemonAuth.deviceEdge
-          ? { dyad: await dyadReading(daemonAuth.deviceEdge.personaRootDid, daemonAuth.vesselVerifyingKey) } : {}),
+        ...(daemonAuth.deviceEdge
+          ? { dyad: await requireDyadReader(dyadReading, "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.vesselVerifyingKey) } : {}),
         ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
       });
       kh = keyhive;

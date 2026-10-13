@@ -439,11 +439,6 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     expect(provider).toMatch(/generateGroup\(/);
   });
 
-  test.skip("THE DAEMON ISLAND ASKS THE VESSEL FOR A DEVICE'S STANDING — DEFERRED: kapae#/reach. The join gate and the Binding Gate take a reading (`dyadReading`), and the face ring takes `deviceAside`; no composer hands either in, so those gates consult nothing. Lands with the composers' hunks and the island's ask door.", () => {
-    const island = readFileSync(join(import.meta.dirname, "..", "..", "lararium-node", "src", "node-daemon-island.ts"), "utf8");
-    expect(island).toMatch(/dyadReading/);
-  });
-
   test.skip("A REALM'S KEY GROUP SEATS ITS MEMBERS, AND A MEMBER EDGE MOVES A KEY — DEFERRED: kapae#/keys. The plan and the executor serve any seat; no production path seats a member in a realm's group, so only a dyad's raise moves a key. Lands with the realm's own admission act.", () => {
     expect(Object.keys(mesh)).toContain("realmSeatFacts");
   });

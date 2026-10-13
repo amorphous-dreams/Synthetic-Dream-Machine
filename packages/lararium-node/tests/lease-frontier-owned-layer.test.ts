@@ -95,7 +95,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
 }
 
 const boot = async (daemonAuth: unknown, ctx: unknown) => {
-  const opts = operatorDaemonOptions({ daemonAuth } as never);
+  const opts = operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" });
   const kh = await opts.verifierFactory!(ctx as never);
   await (kh as { dispose?: () => Promise<void> }).dispose?.();
 };
@@ -115,7 +115,7 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
   test("V3 — realm-feed and realm-clock reach the composite's daemon layer", async () => {
     const { ctx, daemonAuth, daemonHandle } = await standIsland();
     const registry = new VerbTable();
-    operatorDaemonOptions({ daemonAuth } as never).wireWorkerVerbs!(registry, ctx as never);
+    operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" }).wireWorkerVerbs!(registry, ctx as never);
     const realm = "ab".repeat(32);
     const writer = "cd".repeat(32);
     const call = (verb: string, args: Record<string, unknown>) =>

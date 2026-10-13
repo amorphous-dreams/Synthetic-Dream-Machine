@@ -38,7 +38,7 @@ import {
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
   climbNexusBoards, carryPersonaKelUpTheGradient,
-  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, type EdgeReading,
+  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, edgeStandingOf, raisesSeenThrough, type EdgeReading,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
@@ -113,6 +113,8 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks } from "./vessel-lock.js";
 import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
+import { browserSpawnWorker } from "./worker-handle.js";
+import { attachBrowserDyadDoor, type BrowserDyadDoor } from "./browser-dyad-door.js";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
@@ -471,8 +473,22 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // socket to stand empty in.
   // The fleet's shadows as this leaf last read them. Null until the first read lands: a sibling then reads as
   // aside (fail closed), and no sibling channel stands that early.
-  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading> } | null = null;
+  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string> } | null = null;
   let fleetBoardFollowed = false;
+  // THE DYAD DOOR (kapae#/reach): the daemon island's gates ask this leaf what one device's edge reads on the
+  // fleet board of the face it wears. The door answers from the leaf's own read of that board, taken before the
+  // island boots; it answers `aside` for any other fleet, and while no read stands.
+  const bareKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
+  // THE READING GOES DARK THE MOMENT THE BOARD MOVES: the last read may predate the very act that just arrived, so
+  // every consult answers closed until a fresh read lands, and a read the board's next move overtook publishes
+  // nothing. An ask that meets a dark reading waits on the read in flight, never on a clock.
+  let fleetRead: Promise<void> | null = null;
+  let fleetMoves = 0;
+  const dyadDoor: BrowserDyadDoor = async (fleetRoot, deviceKey) => {
+    if (!fleetShadows && fleetRead) await fleetRead.catch(() => undefined);
+    if (!fleetShadows || bareKey(fleetRoot) !== bareKey(fleetShadows.root)) return "aside";
+    return edgeStandingOf(fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, bareKey(deviceKey))), fleetShadows.rolled);
+  };
   const siblingAside = (peerId: string): boolean => {
     const key = siblings?.provenKeyOf(peerId as PeerId);
     if (!key) return false;                       // no sibling behind this id: the sibling lane never reads it
@@ -1151,6 +1167,33 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
       }
       const pluginCids = daemonPluginResolution.pluginCids;
+      // THE LEAF READS ITS FLEET'S BOARD BEFORE ITS ISLAND BOOTS, through the read every shore shares, so the
+      // Binding Gate's ask at the dyad door reads a landed fold, and it re-reads the board whenever it changes. A
+      // faceless leaf wears no edge, reads no board and gets asked nothing.
+      const fleetRootOfFace = daemonAuth.deviceEdge?.personaRootDid;
+      if (fleetRootOfFace) {
+        const scope = bareKey(fleetRootOfFace);
+        const readFleet = async (): Promise<void> => {
+          const startedAt = fleetMoves;
+          const read = await readLedgeredEdgeBoard({
+            repo, scope, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRootOfFace), label: "board:edge-kapae",
+            vesselKey: vesselIdentity.verifyingKey, authorityFor: fleetEdgeAuthority(fleetRootOfFace),
+          });
+          if (!fleetBoardFollowed) {
+            fleetBoardFollowed = true;
+            read.handle.on("change", () => {
+              fleetShadows = null;
+              fleetMoves += 1;
+              fleetRead = readFleet();
+              void fleetRead.then(() => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }, () => undefined);
+            });
+          }
+          if (startedAt !== fleetMoves) return;                  // overtaken: the read the move set off lands instead
+          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope) };
+        };
+        fleetRead = readFleet();
+        await fleetRead;
+      }
       daemon = await openBrowserDaemonVm({
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
@@ -1161,7 +1204,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         ...(pluginCids.length ? { pluginCids } : {}),
         workerScriptUrl: daemonWorkerUrl,
         // The holder path: the island already stands once per origin; this tab's handle IS its port.
-        ...(holder?.kind === "attached" ? { spawnWorker: () => holderWorkerHandle(holder.port) } : {}),
+        // The dyad door rides the DAEMON island's handle alone: this spawn seam stands as the one place that
+        // handle gets made, on either path.
+        spawnWorker: (url) => {
+          const handle = holder?.kind === "attached" ? holderWorkerHandle(holder.port) : browserSpawnWorker(url);
+          attachBrowserDyadDoor(handle, () => dyadDoor);
+          return handle;
+        },
         recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
         grants: {
           islandUrl: assembly.islandHandle.url,
@@ -1200,20 +1249,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         });
         if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
         // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every
-        // device; this leaf reads it through the read every shore shares, and re-reads it whenever it changes.
+        // device; this leaf read it before its island booted (above) and re-reads it whenever it changes.
         const fleetBoardUrl = fleetEdgeBoardDocUrl(ringRoot);
-        const readFleet = async (): Promise<void> => {
-          const read = await readLedgeredEdgeBoard({
-            repo, scope: ringRoot.toLowerCase().replace(/^0x/, ""), kind: "fleet", boardUrl: fleetBoardUrl, label: "board:edge-kapae",
-            vesselKey: vesselIdentity.verifyingKey, authorityFor: fleetEdgeAuthority(ringRoot),
-          });
-          fleetShadows = { root: ringRoot, readings: read.readings };
-          if (!fleetBoardFollowed) {
-            fleetBoardFollowed = true;
-            read.handle.on("change", () => { void readFleet().then(() => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }); });
-          }
-        };
-        await readFleet();
         siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, [fleetBoardUrl]));
       }
 

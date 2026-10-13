@@ -23,7 +23,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 describe("daemon VM host composite working binding", () => {
   test.each([false, true])("a receipt fact recorded on the host composite lands in the worker's working document (persona layer on the host: %s)", async (seated) => {
     const st = await standFoundedIsland(teardown);
-    const opts = operatorDaemonOptions({ daemonAuth: st.daemonAuth } as never);
+    const opts = operatorDaemonOptions({ daemonAuth: st.daemonAuth } as never, { dyadReading: () => "clear" });
     const kh = await opts.verifierFactory!(st.ctx);
     teardown.push(() => { void (kh as { dispose?: () => Promise<void> }).dispose?.(); });
     const working = wikiSlotUri("daemon", "working");

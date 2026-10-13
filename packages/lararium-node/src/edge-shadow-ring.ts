@@ -72,7 +72,8 @@ export interface EdgeShadowFold {
 }
 
 export interface EdgeShadowRing extends ShadowConsult {
-  /** Read every board again. Every gate reads the result from its next ask on. The realms read: the charter's
+  /** Read every board again. Every gate reads the result from its next ask on, unless a board moved while this
+   *  fold read: that fold publishes nothing, and the fold the move set off lands the reading. The realms read: the charter's
    *  own, and every realm this vessel noted in its ledger (a vouch, a crossing, an edge act). */
   refold(): Promise<EdgeShadowFold>;
   /** Stop following the boards' changes. */
@@ -106,6 +107,10 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
   const watched = new Map<string, { off: () => void }>();
   let chain: Promise<unknown> = Promise.resolve();
   let disposed = false;
+  // Counts the moves of every board this ring follows. A fold publishes only when no board moved while it read:
+  // a fold a move overtook read boards as they stood before that move, and the fold the move itself set off
+  // lands the reading instead.
+  let moved = 0;
   const follow = (url: string, handle: DocHandle<LarDoc>): void => {
     if (watched.has(url) || disposed) return;
     const onChange = (): void => {
@@ -114,6 +119,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
       // arrived, so every gate answers closed until the next fold lands; a peer asked in that gap draws the
       // same Mu, and the standing vessel re-reads its verdicts when the fold completes.
       last = null;
+      moved += 1;
       // `refold` leaves NO reading behind a fold that fails, so every gate answers closed until one lands again.
       chain = chain.then(() => ring.refold()).catch(() => undefined).then(() => { if (!disposed) deps.onRefold?.(); });
     };
@@ -134,8 +140,9 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
     async refold() {
       // The last reading may predate the very act that set this fold off. A fold that fails therefore leaves NO
       // reading, and the gates fail closed, where a kept one would go on admitting a relation a hand set aside.
+      const startedAt = moved;
       try { return await foldOnce(); }
-      catch (err) { last = null; throw err; }
+      catch (err) { if (startedAt === moved) last = null; throw err; }
     },
     fold: () => last,
     deviceAside,
@@ -180,6 +187,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
   return ring;
 
   async function foldOnce(): Promise<EdgeShadowFold> {
+      const startedAt = moved;
       const fleets: FleetFold[] = [];
       const urls: AutomergeUrl[] = [];
       for (const fleetRoot of (await deps.fleetRoots()).map(bare)) {
@@ -225,7 +233,9 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
           standing: lineageStanding({ realmDocIdHex: realm, roots, invites, stands }),
         });
       }
-      last = { fleets, realms };
+      const folded: EdgeShadowFold = { fleets, realms };
+      if (startedAt !== moved) return folded;                    // overtaken: the caller holds it, no gate reads it
+      last = folded;
       boards = docs;
       fleetUrls = urls;
       return last;

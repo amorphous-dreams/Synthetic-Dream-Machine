@@ -6,7 +6,7 @@
  */
 
 import { parentPort } from "worker_threads";
-import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter } from "./sovereign-island-model.js";
+import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter, vesselDyadAsker } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountDiskProjection } from "./island-behaviors.js";
 import type { IslandContext } from "@lararium/tw5";
@@ -27,6 +27,8 @@ import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 // to rest the new document and records its binding only on the vessel's acknowledgment.
 const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
 const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
+// The vessel keeps the live fleet reading on its main thread and answers the daemon through this door.
+const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
 
 runSovereignWorker((manifest) => {
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
@@ -39,6 +41,7 @@ runSovereignWorker((manifest) => {
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
     ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
+    ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     ...(sealOnVessel ? {
       persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),

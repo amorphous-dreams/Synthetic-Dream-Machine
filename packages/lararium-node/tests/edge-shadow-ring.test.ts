@@ -197,6 +197,38 @@ describe("the reading goes dark the moment a board moves", () => {
   });
 });
 
+describe("a fold a board's change overtook publishes nothing", () => {
+  it("★ a fold that started before a board moved never lands over the fold that followed the move ★", async () => {
+    const phone = await nymOf(56);
+    const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+    const vesselKey = (await loadVesselVerifyingKey())!;
+    let refolds = 0;
+    let calls = 0;
+    let release = (): void => undefined;
+    const held = new Promise<void>((r) => { release = r; });
+    await ownedStore(larDataDir(), async (repo) => {
+      const ring = makeEdgeShadowRing({
+        repo, vesselKey, sealHome: larSealHome(),
+        // The SECOND fold waits inside its first read; every other fold runs straight through.
+        fleetRoots: async () => { if (++calls === 2) await held; return [fleetRoot]; },
+        vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
+      });
+      await ring.refold();
+      const early = ring.refold();                                                 // the fold a caller started early
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+      board.change((d) => { (d.tiddlers as Record<string, unknown>)["a-foreign-row"] = { tiddler: { text: "noise" }, meta: {} }; });
+      for (let i = 0; i < 100 && refolds === 0; i++) await new Promise((r) => setTimeout(r, 20));
+      expect(refolds).toBeGreaterThan(0);
+      const fresh = ring.fold();
+      expect(fresh).not.toBeNull();                                                // CONTROL: the fold after the move landed
+      release();
+      await early;
+      expect(ring.fold()).toBe(fresh);                                             // the overtaken fold published nothing
+      ring.dispose();
+    });
+  });
+});
+
 describe("a device the fleet root set aside — the sorter, the share verdict and carriage serve", () => {
   it("★ the device never sorts same-operator, reads no document on any lane, and draws Mu at the fetch door ★", async () => {
     const phone = await nymOf(52), laptop = await nymOf(53);

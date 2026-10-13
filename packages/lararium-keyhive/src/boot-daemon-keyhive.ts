@@ -61,9 +61,10 @@ export interface BootDaemonKeyhiveInput {
   /**
    * THE DYAD'S READING for THIS vessel's own device edge, off the fleet's edge board as the vessel itself folds
    * it (kapae#/reach). `aside` HALTS a persona-bound boot: the fleet root set this device aside, so its
-   * delegation binds nothing, whatever the edge proves. `returned` and `clear` bind. Absent means no reader
-   * stands composed to ask, and the gate consults nothing; a composed reader answers `aside` until its first
-   * fold lands.
+   * delegation binds nothing, whatever the edge proves. `returned` and `clear` bind. The daemon behavior asks its
+   * vessel for this reading before every persona-bound boot and refuses the boot when it holds no door to ask
+   * through (`requireDyadReader`); a composed reader answers `aside` until its first fold lands. Absent here
+   * means a caller of this function alone handed none.
    */
   readonly dyad?: EdgeStanding;
   /** OPTIONAL prior-identity Archive (a previous `exportArchive()`), persisted encrypted-at-rest. A joinee
