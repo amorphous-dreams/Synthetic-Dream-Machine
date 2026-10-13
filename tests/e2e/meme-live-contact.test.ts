@@ -272,18 +272,31 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     const NI  = `ni:///sha-256;${Buffer.from(CID, "hex").toString("base64url")}`;
     const BLOB_PATH = "ha.ka.ba/t/witness/photo";
     const BLOB_URI  = `lar:///${BLOB_PATH}`;
-    // Laid under the daemon's working mirror so LOAD derives the loci title from the path.
-    const srcDir = join(lar.root, "wikis", "daemon", "ha.ka.ba/t/witness");
-    mkdirSync(srcDir, { recursive: true });
-    writeFileSync(join(srcDir, "photo.png"), PNG);
-    writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\ntags: witness\n");
-    const ld = await lar.cli(["act", "LOAD", "--source-uri", srcDir, "--to", DAEMON_WORKING, "--yes", "--json"]);
+    // THE SOURCE ENTERS BESIDE THE MIRROR, NEVER INSIDE IT. A hand-laid sidecar under the mirror says less
+    // than the pointer's records, and `act LOAD` pins no base, so the projector would write nothing over
+    // it and the pair would stand off for a person (`disk-projection#/projection-law`, no base and a real
+    // difference). This witness measures what the daemon's mirror WRITES and then unlinks, so the hand
+    // lays its files in a holding tree shaped as a wiki's own (LOAD derives the loci title from the path)
+    // and the projector lays every file fresh under `wikis/daemon/`.
+    const HAND_META = "type: image/png\ntags: witness\n";
+    const holding = join(scratch, "wikis", "holding", "ha.ka.ba/t/witness");
+    mkdirSync(holding, { recursive: true });
+    writeFileSync(join(holding, "photo.png"), PNG);
+    writeFileSync(join(holding, "photo.png.meta"), HAND_META);
+    const ld = await lar.cli(["act", "LOAD", "--source-uri", holding, "--to", DAEMON_WORKING, "--yes", "--json"]);
     expect(ld.json?.["ok"], `the LOAD refused — ${said(ld)}`).toBe(true);
     // the pointer landed: the CID over the RAW bytes, the projected sidecar carries it
+    const srcDir  = join(lar.root, "wikis", "daemon", "ha.ka.ba/t/witness");
     const srcMeta = join(srcDir, "photo.png.meta");
+    const projected = (): string => (existsSync(srcMeta) ? readFileSync(srcMeta, "utf8") : "");
     const deadline = Date.now() + 30_000;
-    while (Date.now() < deadline && !readFileSync(srcMeta, "utf8").includes("_is_skinny")) await new Promise((r) => setTimeout(r, 500));
-    expect(readFileSync(srcMeta, "utf8")).toContain(`textCid: ${CID}`);
+    while (Date.now() < deadline && !projected().includes("_is_skinny")) await new Promise((r) => setTimeout(r, 500));
+    expect(projected(), `the daemon's mirror never projected ${srcMeta}`).toContain(`textCid: ${CID}`);
+    expect(await awaitFileState(join(srcDir, "photo.png"), true, 30_000), "the daemon's mirror never projected the pointer's bytes").toBe(true);
+    expect(readFileSync(join(srcDir, "photo.png")).equals(PNG)).toBe(true);
+    // CONTROL: the hand's own files stand as laid; the island wrote nothing back into the holding tree.
+    expect(readFileSync(join(holding, "photo.png")).equals(PNG)).toBe(true);
+    expect(readFileSync(join(holding, "photo.png.meta"), "utf8")).toBe(HAND_META);
 
     const mv = await lar.cli(["act", "MOVE", "--title", BLOB_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
     expect(mv.json?.["ok"], `the MOVE of the pointer refused — ${said(mv)}`).toBe(true);

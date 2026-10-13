@@ -52,6 +52,10 @@ function carrierBody(slug: string): string {
   return tickTemplate.replaceAll("pono/tick", `pono/${slug}`);
 }
 
+/** A carrier's check stamp, and the carrier's words with that stamp set aside. */
+const CHECK_STAMP = /ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}/;
+const unstamped = (text: string): string => text.replace(new RegExp(CHECK_STAMP.source, "g"), "ni:///sha-256;");
+
 function writeCarrier(slug: string): void {
   const p = carrierPath(slug);
   mkdirSync(dirname(p), { recursive: true });
@@ -124,8 +128,8 @@ beforeAll(async () => {
     expect(landed, `carrier ${slug} must ingest cleanly`).toContain(carrierUri(slug));
   }
 
-  // Let the projection settle so each carrier's disk bytes read canonical
-  // (diskHash == syncedHash) — the watcher's baseline for "unchanged".
+  // Let the projection settle so each carrier's base pins (the file stands in the framing the hand
+  // laid, beside the records' render) — the watcher's baseline for "unchanged".
   await sleep(2_500);
   const r2 = await cli(["ingest", "--source", SRC, "--to", LARES_URI, "--json"]);
   const d2 = r2.json?.["data"] as Record<string, unknown>;
@@ -243,7 +247,14 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
 
       const restored = await cli(["shore", "restore", "--all", "--count", String(pending.length), "--yes", "--json"]);
       expect(restored.json?.["ok"], JSON.stringify(restored.json)).toBe(true);
-      for (const slug of slugs) expect(readFileSync(carrierPath(slug), "utf8")).toBe(bytes.get(slug));
+      // `restore` writes the RECORDS' RENDER back. A hand-laid carrier stands in its own framing while it
+      // says what the records say (an unchanged carrier takes no write), so the render differs from the
+      // bytes that vanished in the check stamp alone: every other byte returns.
+      for (const slug of slugs) {
+        const back = readFileSync(carrierPath(slug), "utf8");
+        expect(unstamped(back)).toBe(unstamped(bytes.get(slug)!));
+        expect(back, `${slug} came back with no check stamp`).toMatch(CHECK_STAMP);
+      }
       expect(await pendingUris()).toEqual([]);
     } finally {
       await w.stop();
