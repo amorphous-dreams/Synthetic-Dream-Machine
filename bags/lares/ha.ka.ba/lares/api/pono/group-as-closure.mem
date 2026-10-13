@@ -140,7 +140,7 @@ The closure model carries directly onto the existing identity architecture
   differ in ''what the edges name'' — a `handle ↔ DID` binding versus a maintenance/charter
   edge — and in ''how many ordering authorities'' the closure spans. Nothing else. Both
   resolve as the reciprocal-edge fan, evaluated locally, instantiating no central object
-  (`persona-circle`: //"a Circle IS what mutual bindings declare"//; `cabal-realm`:
+  (`persona-circle`: //"a Circle CONSISTS OF what mutual bindings declare"//; `cabal-realm`:
   //"authority is the closure of mutual maintenance edges"//). The single ⊥ multi principal
   count names no KIND difference — it decides exactly one thing: whether a ''tie-break'' is
   owed (single-principal takes none, //you// standing as the one ordering authority;
@@ -200,6 +200,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BSJ9-GBiCQsNLkSZ4mwBSEaFBleomZlQgTXTLFVnq2c
+<<^ code="&#x0003;">>ni:///sha-256;_9RY4e1Xw_Yo3cmGWu7cvN9wgugfND5k_8XjmxKC8eI
 
 <<^ code="&#x0004;" -> to="?">>
