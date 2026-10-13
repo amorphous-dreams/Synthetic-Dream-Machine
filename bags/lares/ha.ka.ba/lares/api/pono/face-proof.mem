@@ -77,12 +77,12 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 # ''The gate answers the upgrade only after that flight decrypts.'' A flight that decrypts shows the dialer knows the gate's pinned key, which silence toward strangers protects. The gate then sends its 101 and selects the fixed protocol name alone. A wrong knock or a flight that fails to decrypt draws no answer.
 # ''The first flight buys provisional work and nothing more.'' IK's first flight can replay, so the gate performs no application operation on its strength.
 # ''The gate completes the handshake.'' Its reply carries no verdict.
-# ''The presentation follows in the first encrypted frames.'' It carries the face's public key, the vessel's face-scoped key with its certificate, the session key with its certificate, ONE presentation arm (an admit, a hosting grant, or an invite claim) and that arm's causal lineage. An admit's `nym` MUST equal the face key. No ContactCard, no vessel key, no persona root, no root edge, no identifier shared across faces, and by default no Handle rides it.
+# ''The presentation follows in the first encrypted frames.'' It carries the face's public key, the vessel's face-scoped key with its certificate, the session key with its certificate, ONE presentation arm (an admit, a hosting grant, or an invite claim) and that arm's causal lineage, and the presenter's withdrawal frontier with any events the gate may lack (#/the-withdrawal-proof). An admit's `nym` MUST equal the face key. No ContactCard, no vessel key, no persona root, no root edge, no identifier shared across faces, and by default no Handle rides it.
 
 ''The admit's signed bytes carry its canon-document list and gate key.'' The signature MUST bind both fields, and verification MUST check them before accepting either value. A canon title names a carried canon document, never a derivable system plane (`packages/lararium-browser/src/hearth-canon.ts`). The device-admit command adds `hearthGatePubKey` and `hearthCanonDocs` after `runDeviceAdmitEdge` returns the signed edge (`packages/lararium-node/src/commands/device-admit.ts`); the signing and verification path owes these fields.
 # ''The gate checks, still provisionally.'' It checks the pinned route and audience, the chain, the presentation's signatures, the quorum's signatures, the causal parents, the deny events and withdrawals it has learned (#/causal-withdrawal), and the roll anchors. Where the asked planes need it, the ring checks the PersonaGroup grant. Missing required history, a known fork or an incomplete board brings abstention. The gate reveals no differentiated refusal.
 # ''The signed finish.'' The session signer signs the COMPLETED handshake hash, the gate bundle's digest, the face key, the presentation, the audience and the session key. A recorder of the first flight lacks the dial's secrets and cannot produce it.
-# ''The verdict comes after the finish, and never before.'' The gate verifies the finish, attaches the socket to application sync, and returns its signed verdict inside the encrypted channel.
+# ''The verdict comes after the finish, and never before.'' The gate verifies the finish and returns its signed verdict inside the encrypted channel. Only a `verified` chain attaches the socket to application sync (#/the-withdrawal-proof).
 # ''Both ends close the dial'' and discard its transport and herm-dial keys. The daemon drops the session signer when its session ends or switches.
 
 ''What retires together, in one cutover'': the `lar:challenge` frame, the ContactCard proof, and every gate proof under a vessel key. No second wire protocol runs beside this one.
@@ -106,7 +106,9 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 !! The leaks, named
 
 * ''The gate can count the vessel keys it has OBSERVED under one face.'' A second vessel presenting under the same `nym` tells that gate at least two vessels wore the face there. It learns no total unless every vessel presents. A gate MUST NOT keep an inventory of a face's current vessels: that inventory would stand as a roster.
-* ''A gate that has not learned a withdrawal may still accept.'' No clock repairs that (#/causal-withdrawal).
+* ''A gate that has not learned a withdrawal may still accept.'' No clock repairs that (#/causal-withdrawal), and no proof without a clock, a roster or an online responder bounds it.
+* ''A withdrawal history's length tells each gate the face dials how many keys that face has withdrawn there.'' A gate that never met a withdrawn vessel learns the count and nothing of the key.
+* ''A session's certificate names its hand's profile'', so a gate tells a spirit's seat from a person's tab. It names no spirit and no Mask.
 * ''A replayed first flight draws provisional work'', and tells its sender whether that flight still earns the upgrade. The signed finish still blocks every application effect.
 * ''A terminating proxy reads the subprotocol token'' and may log it. A passive observer of an encrypted connection reads neither the path nor the header.
 * ''The knock tests offline'' for an observer holding candidate gate keys.
@@ -119,10 +121,89 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 !! Causal withdrawal ~ deny-only, learned, never timed
 
 * ''Closing one session'' drops its signer and its capabilities and closes its links.
-* ''Removing one vessel withdraws ONE certificate.'' The issuer signs a causal withdrawal into a ''deny-only withdrawal history''. A gate checks a presented chain against the withdrawals it has learned. It never consults a positive list of current vessels, and it never asks an online service whether a key still belongs. The PersonaGroup's own membership withdrawal, its rekey and the re-sealing of standing content run beside it. No face-key roll and no fresh Nexus admit follows from one vessel's removal.
+* ''Removing one vessel withdraws ONE certificate.'' The face key signs a causal withdrawal into a ''deny-only withdrawal history'' (#/the-withdrawal-proof). A gate checks a presented chain against the withdrawals it has learned. It never consults a positive list of current vessels, and it never asks an online service whether a key still belongs. The PersonaGroup's own membership withdrawal, its rekey and the re-sealing of standing content run beside it. No face-key roll and no fresh Nexus admit follows from one vessel's removal.
 * ''A gate enforces what it has learned.'' A gate that has received a withdrawal refuses the withdrawn chain. A gate that knows of missing or competing required history abstains. A partitioned gate that has learned nothing may accept against its last verified view. No wall clock and no quiet period supplies the knowledge it lacks (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>).
 * ''A wiped device stands as a new vessel.'' It mints new roots, joins again and takes a new certificate. No earlier key reaches it, and no other vessel's key rolls.
 * ''A face-key roll'' answers a compromise of the root-held face key itself: a private causal authorization, then the affected Nexus boards' revoke and admit. No clock lapses either relation.
+
+<<~/ahu>>
+
+<<~ ahu #/the-withdrawal-proof>>
+
+!! The withdrawal proof ~ one history per face key, carried by the face's own presenters
+
+> ''Register.'' The house wrote this shape under the operator's standing grant, after one round against the field's prior art: KERI's receipts and watchers, SPKI's online tests, certificate transparency and its gossip, Matrix device lists, Signal's Sesame, MLS removal and Keyhive's revocation. The whole section reads as a house reading the operator may overturn. The round found no construction that bounds an uninformed gate without a clock, a roster or an online responder, and this proof claims none.
+
+''The face key alone authors the history.'' One history stands per face key, so one per (PersonaGroup, Nexus). Each event carries the face key, the Nexus, its position, the head of the event before it, and a digest of the withdrawn vessel's face-scoped key. The face key signs it under the withdrawal's own domain. The first event names a genesis head derived from the face key and the Nexus. No quorum signs and no board carries the history: the Nexus admitted the face key once, and a vessel's certificate stands as a delegate beneath it.
+
+''A denial names a key by digest.'' The digest binds the face key and the Nexus, so a gate that never met the vessel learns nothing of its key, and no two histories share a value. The denial covers every certificate the face key ever signs for that key. Every denial the face key signed counts wherever a reader verified it, whether or not the reader holds the events before it. ''A withdrawn key never returns'': a vessel that joins again mints a fresh key and takes a fresh certificate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/re-admission">>).
+
+''The frontier names how much history a party holds'': a position and the head at that position. Every presentation carries its presenter's frontier, and the signed finish covers it, so a presenter cannot later disown the frontier it showed. A presenter ahead of the gate carries the events the gate lacks.
+
+''The history travels with the face's own presenters, and with nobody else.'' Each vessel of the face brings the history to every gate it dials. A gate keeps the events of the faces that presented to it. It hands them to a presenter whose chain verified under that same face key, and to no other party: no board, no shelf and no other gate receives them from it. The gate keeps denials and never the certificates it saw, so it holds no inventory of a face's vessels (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter#/the-test">>).
+
+!!! What a gate answers, state by state
+
+|! State |! When the gate reads it |! What the gate answers |! What the presenting vessel does |
+| `verified` | every signature and binding holds, the presenter's frontier meets the gate's own, and no learned denial names the key | it attaches the session, and keeps any events the presenter carried | it acts |
+| `unconfirmed` | the chain holds and no learned denial names the key, and the gate holds a later frontier than the presenter showed | it attaches nothing and hands over the events the presenter lacks | it acts on nothing shared, folds the events, and presents again under the later frontier |
+| `withdrawn` | a learned denial names the key | it refuses and hands over the denial | it stands withdrawn, says so, and leaves every channel of that face |
+| `incomplete` | the presenter names a frontier the gate cannot join to its own: a later one with events missing, or another head at a position the gate holds | it abstains and asks for the history from its genesis | it carries the whole history |
+| `forked` | two different events the face key signed stand at one position, or an event names a predecessor the gate's line never held | it refuses every certificate under that face key, keeps the events that prove it, and keeps counting every denial on every branch | nothing clears it but a face-key roll (#/causal-withdrawal) |
+| `invalid` | a key, a signature, a scope or a binding fails | silence, the answer a stranger draws | |
+
+''An answer that names a state goes only to a presenter whose three signatures verified under the admitted face key'', inside the encrypted channel and after the signed finish. That presenter holds a certificate the face key signed, so the answer tells it nothing a vessel of that face may not read. Every other failure draws the undifferentiated silence of #/the-gate-exchange.
+
+''A gate's learned state only accretes.'' Learning reads as a union of verified events, whatever order they arrive in. An older frontier never replaces a later one, a denial once counted keeps counting through a fork and after it, and a fork once proven stays proven. A presentation that carries one event the gate cannot verify teaches the gate nothing.
+
+''Only the face key can fork its history.'' A fork takes two events under the face key's own signature, so no vessel, relay or gate forges one, and a thief of one vessel's key gains no such power.
+
+''One face key's history holds a bounded count of events'', 1024 by the house's reading. The root holder signs no withdrawal past it and rolls the face key before it reaches it; a gate keeps no more for one face key and answers a longer history with silence. The bound caps what one admitted face can make a gate hold.
+
+''The vessel's own reading follows the same history.'' A vessel folds the events it receives against its own key: it reads //standing//, //withdrawn// or //forked//, and between a gate's ask and its own fold it reads `unconfirmed` and acts on nothing shared.
+
+!!! What a partition costs
+
+|! Who stands cut off |! What it costs |! What ends it |
+| a gate that learned nothing newer, facing the withdrawn vessel | that gate accepts the withdrawn vessel under the admitted face | the first honest vessel of that face to dial the gate; nothing else in this proof |
+| a withdrawn vessel that shows an older frontier | nothing at a gate that holds the denial: the denial names its key whatever frontier it claims. At a gate that never learned, the row above | the same |
+| a relay or a herm that withholds | nothing: the history rides inside the encrypted exchange between a presenter and the gate | |
+| a gate that withholds the events it owes a presenter | that vessel stays behind until another gate or a sibling hands them over | any second gate, or the sibling channel |
+| a vessel long silent | one more round: it reads `unconfirmed` until it folds the later events | the gate's own answer |
+| the root holder | no withdrawal gets signed at all (#/the-offline-root) | the root holder's return |
+
+''A withheld withdrawal buys a delay and never a lift.'' The delay lasts at each gate until an honest vessel of the face dials it. The PersonaGroup's own rekey closes the private planes beside this proof and waits on no gate.
+
+!!! The seam with the dyad marker
+
+''Two acts remove a vessel, and each answers to its own readers.'' The dyad marker sets a device aside inside its fleet: it rides the fleet's edge board, closes the sibling lane and device sync, and moves the PersonaGroup's keys (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/four-edges">>). The certificate withdrawal denies that vessel's face-scoped key at one Nexus's gates, and rides the face's own presentations. One removal signs the dyad raise once, and one withdrawal for each face key the vessel held a certificate under. The root-holding vessel signs both, each with one signature.
+
+* ''Neither act rides a Nexus board.'' A gate reads the withdrawal and never the dyad; a sibling reads both.
+* ''A dyad marker lowers; a withdrawal never lifts.'' A lowered dyad restores standing alone. The vessel then mints a fresh face-scoped key and takes a fresh certificate, as a lift restores standing and never keys.
+* ''A standing dyad shadow with no withdrawal'' leaves the vessel shut out of its fleet and still accepted at a gate. A removal door therefore signs both acts or reports the one it could not sign.
+
+!!! No key serves two scopes
+
+''A key's bytes never say whether it served before.'' So the law rests with the two hands that sign. A joining vessel names every key it holds for anything else (its roots, its other faces' keys) and its request refuses over any of them before its key signs. The root holder names its own other face keys, and every vessel key it certified under another face, and its face key signs no certificate over any of them. The three keys of one chain read pairwise distinct at every reader.
+
+!!! What a session's key signs
+
+''A session's certificate names its hand's profile, and the profile bounds the key.'' A session key signs under three purposes, each with its own domain: the dial's signed finish, an ordinary act, and an act that changes who holds authority. A person's tab and a person's CLI run sign all three. The disk watcher and a spirit's seat sign the first two, and no verifier reads an authority act under their key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). The watcher's row reads as the house's own: the ruling names the seat.
+
+''A signer serves one session at one generation.'' It mints at random when the session opens, its certificate carries no session id and no owner epoch, and it drops when the session closes or switches. It asks the owner's own table before every signature and again before a signature leaves, so a record kept from before a close proves nothing and a close that lands mid-signature releases none.
+
+''A session's face names one PersonaGroup at ONE Nexus'' (house reading). The proof subject and the admit both stand per Nexus, and the session contract's face carries one of each. A face that works at two Nexuses holds one signer for each (#/the-key-hierarchy); whether one session carries both or two sessions carry one each stays the session contract's word to give.
+
+!!! Keyhive carries the private membership, and the house keeps this chain
+
+''Measured on Keyhive 0.3.0-alpha.1'' (`packages/lararium-keyhive/tests/face-chain-substrate.probe.test.ts`), four readings, and each breaks a law above:
+
+* a delegation hands out its signature and its key and never the bytes they cover, so no Keyhive signature can pass the house's one signature door;
+* a revocation handed alone to an outsider applies nowhere, so a gate cannot hold a denial alone;
+* the history that lets the revocation apply lists every remaining member by a stable identifier, so a gate that could read the denial would hold a directory;
+* one Keyhive instance wears one identifier inside every group it joins, so two faces of one vessel would share it.
+
+Keyhive keeps the PersonaGroup's private membership and its content keys. The face chain, the session signer and the withdrawal history stand as the house's own signed bytes.
 
 <<~/ahu>>
 
@@ -146,6 +227,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 * a joined vessel keeps using the certificate it holds, under the face key the Nexus already admitted;
 * ''nobody new joins'': no certificate issues, and a wiped device cannot return;
+* ''nobody leaves at a gate'': the face key signs every withdrawal, so no withdrawal gets signed, and a vessel set aside keeps the certificate a gate accepts;
 * no authority expires by the passage of time, and absence supplies none.
 
 The design names that unavailability and does not cure it. A recovery authority that could act for an absent root holder would take its own ruling.
@@ -158,19 +240,32 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 ''What stands in code'': the leaf identity loads the vessel's seed and ContactCard (`packages/lararium-node/src/leaf-identity.ts`); the auth wire binds a presentation to the vessel key (`packages/lararium-mesh/src/auth-wire.ts`); the node gate sends `lar:challenge` before any proof (`packages/lararium-node/src/daemon-auth-gate.ts`); the PersonaGroup ring looks up grants by vessel key, and its own-hand path skips the check (`packages/lararium-mesh/src/persona-group-ring.ts`); the sibling proof sends a device edge inside its sealed box (`packages/lararium-mesh/src/leaf-peer-proof.ts`).
 
+''What stands specified in code.'' Each names a module and its vectors, and no production path calls any of them, so none reads as built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module">>). Each stays out of its package's barrel until its caller lands.
+
+* ''The subjects'' (`packages/lararium-mesh/src/face-proof-subjects.ts`): the typed keys, the scope, the certificate and its request, the withdrawal event, the frontier, the session certificate, every signed image, and a reader for each. Every key and signature passes the one door (`ed25519-door.ts`); the purposes stand in the domain table (`domains.ts`).
+* ''Private authority'' (`packages/lararium-mesh/src/face-authority.ts`): minting, the request, the certificate, the withdrawal, the fold of a reader's memory, and the chain check with its six verdicts. Its callers: the fleet-join door, the removal door and the gate.
+* ''The session signer'' (`packages/lararium-mesh/src/session-signer.ts`). Its callers: the node's session open on the local socket, and the browser holder.
+* ''The session face supplier'' (`packages/lararium-mesh/src/session-face.ts`): it joins a verified chain, this vessel's own key for the face, the admit's verdict and the private grant into the face a session wears, and verifies none of the last three itself (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries">>). Its callers: the same two.
+
+''What those modules need that nothing supplies yet'':
+
+* ''Two custody rows.'' The face proof key rests cold with the root holder, one per (PersonaGroup, Nexus); a vessel's face-scoped key rests hot on its own vessel, one per (PersonaGroup, Nexus). Each holds 32 secret bytes and reads whole or refuses by name. The modules name the rows and the two signing doors they ask of the custody seat, and write no row.
+* ''The admit's own mark.'' The supplier reads the presenter-verifier's verdict over an admit and checks it against the chain. That verdict carries no mark a caller cannot spell by hand until the admit signs what it carries. A chain another vessel presented verifies as well as this vessel's own, so the session opener also owes the supplier the key its own custody row names.
+* ''The private grant's reader.'' The record that binds a face key to its PersonaGroup at one Nexus rests in the group's private causal state, and the ring reads it by vessel key today.
+* ''Where a gate's memory rests'', and where a face's own history rests on its vessels: the first with the gate's store, the second in the face's private causal state.
+
 ''Unproven, and each blocks the part that rests on it'':
 
-* ''The deny-only withdrawal proof's exact shape.'' How a gate verifies a causal certificate withdrawal while holding only the denials it needs, and never a member directory; and whether the root holder publishes those withdrawals through the causal boards with no per-vessel quorum act. The gate cutover waits on this proof.
 * ''The header's size budget through real proxies.'' The largest minimal first flight the house's browsers, server and proxies accept in `Sec-WebSocket-Protocol`, the token's syntax, and where logs redact it. Unmeasured.
-* ''Keyhive 0.3 as the private-authority substrate.'' The runtime takes the 0.1 line; the 0.3 line's delegation and revocation objects stand as a candidate for private membership state. They supply no face or session signing contract, no chain verification at a gate, and no gate-readable withdrawal; the house builds those. Upstream marks the line pre-alpha, and nothing here treats it as a security boundary.
-* ''The byte layout of the browser's exchange'': the token's encoding, and the frame that carries the gate's handshake reply.
+* ''The byte layout of the browser's exchange'': the token's encoding, the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it.
+* ''The withdrawal proof under a live partition.'' The fold and the six verdicts stand proven as pure functions over synthetic histories. No two gates and no real herm have yet carried one.
 
 ''OWED ~ seven debts, each resting on the one before it.''
 
-# ''The subjects.'' Typed face proof subject, vessel face-scoped key, certificate, withdrawal event, session signer, purpose domains and canonical proof bytes.
-# ''Private authority.'' The face key rests with the root holder; each joined vessel's key gets certified at the join; the withdrawal event and its gate verification get defined.
-# ''Local sessions.'' Each session's signer chains beneath its own vessel's face-scoped key.
-# ''The gate, behind interfaces.'' The handshake, the finish, the face admit, the chain check and learned withdrawals, tested against a partitioned gate with stale and incomplete histories.
+# ''The subjects.'' Specified in code.
+# ''Private authority.'' Specified in code, with the two custody rows owed.
+# ''Local sessions.'' The signer and the face supplier stand specified in code. The debt closes when the node's session open and the browser holder call them.
+# ''The gate, behind interfaces.'' The handshake, the finish and the face admit around the chain check, tested against a partitioned gate with stale and incomplete histories.
 # ''One wire cutover.'' Node and browser dialers, gate, sorter and ring lookup move together, and the vessel-key proof paths retire in the same step.
 # ''Sibling carriage.'' The herm dial, the inner proof and the sibling peer id move to face scope.
 # ''The road's re-cut.'' The founding road's charter, wire and face slices state this shape.
@@ -191,6 +286,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;efY-8T5l_aFFvK4tDsvgC2SuSiw_D4xPyhUR-ths818
+<<^ code="&#x0003;">>ni:///sha-256;FLMLvjWsR3trwbGCjLntG_xmM5Se9PpDADSxbtzXahs
 
 <<^ code="&#x0004;" -> to="?">>
