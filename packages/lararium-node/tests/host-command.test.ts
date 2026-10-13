@@ -28,19 +28,21 @@ import { Repo } from "@automerge/automerge-repo";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
-import { larDataDir } from "../src/vessel-paths.js";
+import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldNexusLeaves, nexusLeafFor } from "../src/nexus-leaf.js";
-import { runHostRoll, runHostInvite, runHostState, HostRefusal } from "../src/commands/host.js";
-import { storeDoorReactors, storeDoorDirect } from "../src/store-door-verbs.js";
-import { readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
+import { runHostRoll, runHostInvite, runHostState, landEveryHostingAct, HostRefusal } from "../src/commands/host.js";
+import { ownedStore } from "../src/owned-store.js";
+import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
+import { readHostingState, rollHosting, liveEpochs, hostingDir } from "../src/hosting-store.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { direct } from "./direct-store.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
-const sealHome = (): string => join(root, "state", "nexus");
+// The seal home the vessel's own resolver names: the custody door's host acts read the charter there.
+const sealHome = (): string => larSealHome();
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), "lares-host-"));
@@ -95,21 +97,59 @@ describe("lares host — roll, invite, state", () => {
     expect((await docActs(doc)).map(hostingActCid).sort()).toEqual([first.epoch, second.epoch].sort());
   });
 
-  it("RED: the door served inside a running vessel lands the act on its live replica at once; CONTROL: the direct door lands it on disk", async () => {
+  it("RED: the act served inside a running vessel lands on its live replica at once and tells the refold; CONTROL: a command's own act lands it on disk", async () => {
     const { aid } = await seatAndWear();
     const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
     // The running vessel holds its store and already carries its hosting doc in its replica.
     const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const told: string[] = [];
+    const beside = (hosting: SealedActContext["hosting"]): SealedActContext => ({ kelHead: null, personaSelves: null, walk: null, hosting });
     try {
       const held = await materializeSharedLarDoc(live, doc, "hosting");
-      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live });
-      const rolled = await doors["host-roll"]({}, {} as never);
-      expect(rolled["refused"]).toBeUndefined();
+      const rolled = await runSealedAct("host.roll", {}, beside({ withRepo: (act) => act(live), rolled: async (nexusAid) => { told.push(nexusAid); } }));
       expect(hostingActsFromBoard(held.doc()).map(hostingActCid)).toEqual([rolled["epoch"]]);
+      expect(told).toEqual([aid]);
+      // The state and the invite answer off the sealed rows through the same door.
+      expect(await runSealedAct("host.state", {}, beside(null))).toEqual({ nexuses: [expect.objectContaining({ nexusAid: aid, epoch: rolled["epoch"], redeemed: 0 })] });
+      const minted = await runSealedAct("host.invite", { relay: "ws://hearth:8080/ws" }, beside(null));
+      expect(decodeInvite(String(minted["invite"]))).toMatchObject({ nexusAid: aid, relay: "ws://hearth:8080/ws" });
     } finally { await live.shutdown().catch(() => {}); }
-    // CONTROL: no vessel stands — the CLI's own door opens the store, and the next opener reads both acts.
-    const ran = await storeDoorDirect("host-roll", {}, { sealHome: sealHome() });
+    // No store lent: the roll refuses before any row moves. A hosting door's own refusal crosses with its words.
+    const reason = async (act: Promise<unknown>): Promise<string> => act.then(() => "ran", (e: { reason?: string; message?: string }) => `${e.reason}: ${e.message}`);
+    expect(await reason(runSealedAct("host.roll", {}, beside(null)))).toMatch(/^act-refused: no store stands here/);
+    expect(await reason(runSealedAct("host.roll", { nexusAid: "epoch0-" + "b".repeat(64) }, beside({ withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} })))).toMatch(/^act-refused: .*does not carry/);
+    expect(await reason(runSealedAct("host.roll", { storageDir: "/elsewhere" }, beside(null)))).toMatch(/^bad-args/);   // no frame names a directory
+    // CONTROL: no vessel stands — the command's own act holds the store for the roll, and the next opener reads both acts.
+    const ran = await runSealedAct("host.roll", {}, beside({ withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} }));
     expect((await docActs(doc)).map(hostingActCid)).toContain(ran["epoch"]);
+    expect(ran["previous"]).toBe((await docActs(doc)).map(hostingActCid).find((cid) => cid !== ran["epoch"]));
+  });
+
+  it("RED: a roll that sealed its state and stopped before its act reached the doc lands that act at the next roll, and at a stand", async () => {
+    const { aid } = await seatAndWear();
+    const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
+    const leaf = (await heldNexusLeaves(aid))[0]!;
+    // The state row commits; the process stops before the hosting doc carries the act. Twice over: the state
+    // then holds a previous act and a current one, and the doc carries neither.
+    const first = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed });
+    const stranded = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed });
+    expect(await docActs(doc)).toEqual([]);
+    // A sovereign composition lands what the sealed state holds as it stands; a second pass lands nothing.
+    expect(await direct(landEveryHostingAct)({})).toBe(2);
+    expect((await docActs(doc)).map(hostingActCid).sort()).toEqual([first.act, stranded.act].map(hostingActCid).sort());
+    expect(await direct(landEveryHostingAct)({})).toBe(0);
+    // Stranded again, one epoch on: the next roll lands the stranded act first and chains from it.
+    const strandedAgain = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed });
+    expect((await docActs(doc)).map(hostingActCid)).not.toContain(hostingActCid(strandedAgain.act));
+    const next = await direct(runHostRoll)({});
+    expect(next.previous).toBe(hostingActCid(strandedAgain.act));
+    expect((await docActs(doc)).map(hostingActCid).sort()).toEqual([first.act, stranded.act, strandedAgain.act, next.act].map(hostingActCid).sort());
+    // Two rolls that start together on one store: the second met a state the first moved, and refuses as the door's own refusal.
+    const together = await ownedStore(larDataDir(), (repo) => Promise.allSettled([runHostRoll({ sealHome: sealHome(), repo }), runHostRoll({ sealHome: sealHome(), repo })]));
+    expect(together.map((o) => o.status).sort()).toEqual(["fulfilled", "rejected"]);
+    const overtaken = together.find((o): o is PromiseRejectedResult => o.status === "rejected")!;
+    expect(overtaken.reason).toBeInstanceOf(HostRefusal);
+    expect(String(overtaken.reason.message)).toMatch(/moved under this roll/);
   });
 
   it("an invite the hearth mints redeems through its own sorter, and the state counts it", async () => {
@@ -120,7 +160,7 @@ describe("lares host — roll, invite, state", () => {
     expect(carried).toMatchObject({ nexusAid: aid, gatePubKey: await loadVesselVerifyingKey(), relay: "ws://hearth:8080/ws" });
     expect(carried.token.purpose).toBe("host-invite");
     const leaf = (await heldNexusLeaves(aid))[0]!;
-    const live = liveEpochs(readHostingState(larDataDir(), aid)!, leaf.seed)!;
+    const live = liveEpochs((await readHostingState(aid))!, leaf.seed)!;
     expect(live.current.cid).toBe(epoch);
     expect(tokenVerifiesAt(live.current, carried.token)).toBe(true);
 
@@ -134,7 +174,7 @@ describe("lares host — roll, invite, state", () => {
     const reading: CarriedNexusReading = { nexus: aid, aid, revision: "fixture", via: "seat", island: aid, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
     const sort = makeSocketSorter({
       readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
-      hosting: { storageDir: larDataDir(), leafSeedFor: async (a) => (await heldNexusLeaves(a))[0]?.seed ?? null },
+      hosting: { leafSeedFor: async (a) => (await heldNexusLeaves(a))[0]?.seed ?? null },
     });
     const verdict = await sort({
       identifier: `0x${vesselKey}`, vesselKey, sameOperator: false,
@@ -157,7 +197,7 @@ describe("lares host — roll, invite, state", () => {
   it("RED: a vessel wearing no face hosts no one — the roll refuses and writes nothing", async () => {
     const { aid } = await seatOwnCharter();
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toThrow(/wears no face/);
-    expect(existsSync(hostingDir(larDataDir(), aid))).toBe(false);
+    expect(existsSync((await hostingDir(aid)))).toBe(false);
   });
 
   it("★ a FORGED act naming this face blocks nothing: only an act the face's own leaf signed counts as hosting elsewhere ★", async () => {
@@ -199,9 +239,9 @@ describe("lares host — roll, invite, state", () => {
     const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
     const first = await direct(runHostRoll)({ sealHome: sealHome() });
     // The local hosting state is gone — as on a second store hosting under the same face — while the doc keeps the act.
-    rmSync(hostingDir(larDataDir(), aid), { recursive: true, force: true });
+    rmSync((await hostingDir(aid)), { recursive: true, force: true });
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toThrow(/already hosts in this Nexus from another store/);
-    expect(existsSync(hostingDir(larDataDir(), aid))).toBe(false);
+    expect(existsSync((await hostingDir(aid)))).toBe(false);
     expect((await docActs(doc)).map(hostingActCid)).toEqual([first.epoch]);
   });
 
@@ -211,6 +251,6 @@ describe("lares host — roll, invite, state", () => {
     const { aid } = await seatAndWear();
     await expect(direct(runHostRoll)({ sealHome: sealHome(), nexusAid: "epoch0-" + "b".repeat(64) })).rejects.toThrow(/does not carry/);
     await expect(runHostInvite({ sealHome: sealHome() })).rejects.toThrow(/hosts no one here yet/);
-    expect(existsSync(hostingDir(larDataDir(), aid))).toBe(false);
+    expect(existsSync((await hostingDir(aid)))).toBe(false);
   });
 });

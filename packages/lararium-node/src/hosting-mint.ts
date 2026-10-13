@@ -32,7 +32,7 @@ const POINT_RE = /^[0-9a-f]{64}$/;
 /** Serve walkers' blind mints on `gate`'s authenticated sessions. Returns the unsubscribe. */
 export function serveHostingMint(
   gate: Pick<DaemonAuthGate, "onSession" | "sendSession" | "getClassForSocket" | "getGrantForSocket">,
-  deps: { readonly storageDir: string; readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null> },
+  deps: { readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null> },
 ): () => void {
   return gate.onSession((socket, msg) => {
     if (msg.kind !== HOSTING_MINT_SESSION_KIND) return;
@@ -41,13 +41,13 @@ export function serveHostingMint(
       const grant = gate.getGrantForSocket(socket);
       const blinded = (msg.body as { blinded?: unknown } | null)?.blinded;
       if (!grant || !Array.isArray(blinded) || blinded.length === 0 || !blinded.every((b) => typeof b === "string" && POINT_RE.test(b))) return;
-      const state = readHostingState(deps.storageDir, grant.nexusAid);
+      const state = await readHostingState(grant.nexusAid);
       const seed = state ? await deps.leafSeedFor(grant.nexusAid) : null;
       const live = state && seed ? liveEpochs(state, seed) : null;
       if (!live || !grantVerifiesAt(live.current, grant)) return;
       if (blinded.length > allowance(grant, live.current.act.cap)) return;
       const outcome = await spendMintMarker({
-        storageDir: deps.storageDir, nexusAid: grant.nexusAid, epochCid: live.current.cid,
+        nexusAid: grant.nexusAid, epochCid: live.current.cid,
         marker: mintMarker(grant.lineage, live.current.cid), batchDigest: batchDigest(blinded as string[]),
       });
       if (outcome === "spent-other") return;

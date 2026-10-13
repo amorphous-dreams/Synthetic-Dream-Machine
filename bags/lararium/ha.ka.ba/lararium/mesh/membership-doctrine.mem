@@ -320,9 +320,11 @@ infrastructure graph; compartments outrank admission control.
 PURPOSE label (`host-invite` or `walker-invite`), carried as one `lar-invite:` string with the hearth's
 gate key and Nexus. It names no guest, and its nonce runs random. The newcomer presents it AT THE HOST'S OWN
 GATE, inside the authenticated handshake, together with a CLAIM its own leaf seed derives from the nonce.
-The host burns the nonce in its per-epoch spent-set (`hosting-spend`): random nonces and claim digests,
-about no one, fsynced before the verdict. Each digest binds the claim to the leaf that proved over the
-redeeming socket. The same claim under the same leaf reads as a retry and earns the identical grant
+The host burns the nonce in its per-epoch spent-set (`hosting-spend`): one row per spend, sealed under the
+vessel key and at rest before the verdict, holding a random nonce and a claim digest about no one. Each digest
+binds the claim to the leaf that proved over the redeeming socket. The spend row commits the redemption: the
+grant derives again from the epoch, the leaf, the nonce and the claim, and the operator's count reads the rows
+standing, so nothing rides ahead of a row that a crash could strand. The same claim under the same leaf reads as a retry and earns the identical grant
 (refuse-before-destroy). A different claim, or the same claim under another leaf, meets silence, and the
 burn reads before it writes, so a captured `{token, claim}` replayed under a thief's leaf destroys nothing.
 The host then pushes a GRANT (`hosting-grant`): a keyed PRF tag over the Nexus, the walker's leaf, the
@@ -355,9 +357,13 @@ presentation recovers a lost grant by its token.
 ''NO ONE CAN COMPUTE WHO INVITED WHOM.'' The blinded batch stays unlinkable to the tokens it becomes, so the
 hearth learns that some walker it hosts minted some number of invites this epoch, and never whose invite
 a newcomer redeemed. The operator sees a redemption COUNT per epoch: a number, never a row. The CLI keeps the
-three hosting verbs: `lares host` (the state and the count), `lares host roll`, `lares host invite`. While
-the vessel stands, each runs inside it, against the replica its walkers sync, so a roll reaches them with
-no restart; with no vessel standing, the CLI runs the same door and owns the store for that moment.
+three hosting verbs: `lares host` (the state and the count), `lares host roll`, `lares host invite`. The
+hosting state, the spend rows and the carriage rest sealed under the vessel key, so each verb rides the
+custody door as one act (`host.state` · `host.roll` · `host.invite`), and a minted invite reaches no store
+verb's outcome. While the vessel stands unlocked, each runs inside it, against the replica its walkers sync,
+so a roll reaches them with no restart; with no vessel standing, the command runs the same act under its own
+key session and holds the store for that moment. A vessel at the floor reads no hosting row and hosts no
+walker until a person unlocks it.
 
 ''A NODE MAY WALK'' (operator-ruled). The sorter sorts by PROVEN RELATION, never by device type, so a node
 vessel holding a grant sorts as a walker exactly like a browser leaf. Walking grants it no carry duty and
@@ -440,6 +446,13 @@ It never takes a guest within its own rhythm while a long-lapsed one stands.
 * The reclaim first MARKS a taken guest pending. Its next contact hears the notice (`hosting/notice`), and a
 contact in a later epoch clears the mark. The hearth discards its bytes only once the mark has stood unrenewed
 through the guest's own threshold again.
+
+''THE CARRIAGE RESTS SEALED, AND ITS COUNT READS ITS ROWS.'' Each carried value rests as one row sealed under
+the hearth's vessel key, over the walker's own seal, and each guest's rhythm rests as one sealed row beside
+them. A row's name carries the value's address and its length, so the bytes a guest carries read off the rows
+standing: the blob row commits a deposit, and no counter rides ahead of the bytes it counts. A seized disk
+shows how many guests a hearth carries for and how much each holds, and no rhythm, no leaf and no byte of a
+document.
 
 ''THE PERSONAGROUP HOLDS THE DURABLE COPY.'' A hearth's carriage offers a convenience a walker reaches from any
 dial. The walker's own devices hold its documents. No surface may present carriage as backup.
@@ -541,6 +554,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CRG3L05p2wVZeoVgK09wF0iZwM-xmtAuhanr09l1sAI
+<<^ code="&#x0003;">>ni:///sha-256;-Wu_2-E0tw4gOBZ0I7AZCfmEqMTSaK8IovxpUL--F-w
 
 <<^ code="&#x0004;" -> to="?">>

@@ -22,7 +22,8 @@ import {
   HOSTING_NOTICE_SESSION_KIND, type HostingGrant, type LarSessionMsg, type WalkRecord, type WalkStore,
 } from "@lararium/mesh";
 import { serveHostingCarry } from "../src/hosting-carry.js";
-import { rollHosting, readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
+import { rollHosting, readHostingState, liveEpochs, hostingDir, hostingRowDir } from "../src/hosting-store.js";
+import { readCustodyRow } from "../src/custody-seat.js";
 
 const AID = "epoch0-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(71);
@@ -30,9 +31,14 @@ const GATE = "ee".repeat(32);
 // A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.
 const LEAF = { verifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", seed: new Uint8Array(32).fill(72) };
 const OTHER_LEAF = { verifyingKey: "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c", seed: new Uint8Array(32).fill(73) };
+// The hearth's hosting rows rest sealed in the custody storage home of this scratch root.
 let storageDir = "";
-beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "walker-carry-")); });
-afterEach(() => { rmSync(storageDir, { recursive: true, force: true }); });
+let priorRoot: string | undefined;
+beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "walker-carry-")); priorRoot = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = storageDir; });
+afterEach(() => {
+  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+  rmSync(storageDir, { recursive: true, force: true });
+});
 
 function memoryStore(): WalkStore & { map: Map<string, WalkRecord> } {
   const map = new Map<string, WalkRecord>();
@@ -55,7 +61,7 @@ function wire(grant: () => HostingGrant) {
     sendSession: (_s, kind, body) => { const m = { type: "lar:session" as const, kind, body }; served.push(m); for (const l of walkerListeners) l(m); return true; },
     getClassForSocket: () => "walker",
     getGrantForSocket: () => grant(),
-  }, { storageDir, leafSeedFor: async () => HEARTH });
+  }, { leafSeedFor: async () => HEARTH });
   const transport = {
     onSession: (l: (m: LarSessionMsg) => void) => { walkerListeners.push(l); return () => { walkerListeners.splice(walkerListeners.indexOf(l), 1); }; },
     sendSession: (kind: string, body: unknown) => { for (const l of gateListeners) l(socket, { type: "lar:session", kind, body }); return true; },
@@ -64,13 +70,13 @@ function wire(grant: () => HostingGrant) {
 }
 
 async function grantAtCurrent(lineage: string, leaf: string = LEAF.verifyingKey): Promise<HostingGrant> {
-  const live = liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!;
+  const live = liveEpochs((await readHostingState(AID))!, HEARTH)!;
   return issueGrant(live.current, { leaf, lineage, survived: 0, from: "host" });
 }
 
 describe("the walker's carriage over the session verbs", () => {
   test("a carried document comes back under the walker's receipt; the hearth served only ciphertext and named no record", async () => {
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
     const grant = await grantAtCurrent("1".repeat(64));
     const store = memoryStore();
     await store.update(GATE, () => ({ nexusAid: AID, grant }));
@@ -87,7 +93,7 @@ describe("the walker's carriage over the session verbs", () => {
   });
 
   test("RED: the same leaf on a fresh lineage reaches its carriage by proof; CONTROL: another leaf holding the receipt reaches nothing", async () => {
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
     let grant = await grantAtCurrent("1".repeat(64));
     const store = memoryStore();
     await store.update(GATE, () => ({ nexusAid: AID, grant }));
@@ -95,9 +101,9 @@ describe("the walker's carriage over the session verbs", () => {
     const plaintext = utf8Bytes("kept across a lapse");
     const carried = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
     // The grant lapses past two rolls; the walker walks back in on a fresh invite — a new lineage, the same leaf.
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
-    const invite = encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current) });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
+    const invite = encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs((await readHostingState(AID))!, HEARTH)!.current) });
     await takeInvite(store, invite);
     grant = await grantAtCurrent("2".repeat(64));
     await store.update(GATE, (held) => ({ ...held!, grant }));
@@ -112,17 +118,27 @@ describe("the walker's carriage over the session verbs", () => {
     expect(await fetchDocument({ transport, store: thiefStore, gatePubKey: GATE, cid: carried!.cid, withinMs: 300 })).toBeNull();
   });
 
-  /** Every file under the hearth's hosting dir that holds carried bytes: path and bytes. */
-  function carriedFiles(): { path: string; bytes: Uint8Array }[] {
-    const out: { path: string; bytes: Uint8Array }[] = [];
-    const walk = (d: string, inBlobs: boolean) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p, f === "blobs"); else if (inBlobs) out.push({ path: p, bytes: new Uint8Array(readFileSync(p)) }); } };
-    walk(hostingDir(storageDir, AID), false);
+  /**
+   * Every carried value the hearth holds: its row's path, its file name, and the bytes the hearth's own fetch door
+   * opens there (the walker's ciphertext; the row rests sealed again under the hearth's vessel key).
+   */
+  async function carriedFiles(): Promise<{ path: string; name: string; bytes: Uint8Array }[]> {
+    const out: { path: string; name: string; bytes: Uint8Array }[] = [];
+    const base = await hostingDir(AID);
+    const walk = async (d: string, rel: string, inBlobs: boolean): Promise<void> => {
+      for (const f of readdirSync(d)) {
+        const p = join(d, f);
+        if (statSync(p).isDirectory()) await walk(p, `${rel}/${f}`, f === "blobs");
+        else if (inBlobs) out.push({ path: p, name: f, bytes: (await readCustodyRow("storage", `${rel}/${f}`))! });
+      }
+    };
+    await walk(base, hostingRowDir(AID), false);
     return out;
   }
-  /** The hearth names a carried file by its address's hex. */
+  /** The hearth names a carried value's row by its address's hex, then its length. */
   const fileOf = (cid: string): string => cid.replace(/^blake3:/, "");
   async function walkerAtHearth() {
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
     const grant = await grantAtCurrent("1".repeat(64));
     const store = memoryStore();
     await store.update(GATE, () => ({ nexusAid: AID, grant }));
@@ -142,10 +158,10 @@ describe("the walker's carriage over the session verbs", () => {
     expect(receipts).toEqual([{ cid: carried!.cid, ref, key: documentKey }]);
     expect(documentKey).not.toBe(hex(walkCarrySecret(LEAF.seed, AID)));
     expect(sent.length).toBeGreaterThan(0);                                   // the setup took: the carry crossed this transport
-    const wire = JSON.stringify(sent) + JSON.stringify(served) + carriedFiles().map((f) => hex(f.bytes)).join("");
+    const wire = JSON.stringify(sent) + JSON.stringify(served) + (await carriedFiles()).map((f) => hex(f.bytes)).join("");
     expect(wire).not.toContain(receipts[0]!.ref);
     expect(wire).not.toContain(receipts[0]!.key);
-    expect(carriedFiles().length).toBe(1);                                    // the setup took: the hearth holds the value
+    expect((await carriedFiles()).length).toBe(1);                                    // the setup took: the hearth holds the value
   });
 
   test("ORDER: the receipt rests before the sealed value leaves", async () => {
@@ -163,8 +179,8 @@ describe("the walker's carriage over the session verbs", () => {
     const [r1, r2] = (await store.read(GATE))!.carried!;
     expect(r1!.key).not.toBe(r2!.key);
     // A holder of the first receipt alone, handed the second document's address and bytes, opens nothing.
-    const held = carriedFiles();
-    const secondBytes = held.find((f) => f.path.endsWith(fileOf(second!.cid)))!.bytes;
+    const held = (await carriedFiles());
+    const secondBytes = held.find((f) => f.name.startsWith(fileOf(second!.cid)))!.bytes;
     const thief = memoryStore();
     await thief.update(GATE, () => ({ nexusAid: AID, carried: [{ cid: second!.cid, ref: r2!.ref, key: r1!.key }] }));
     expect(await openCarried(thief, GATE, { cid: second!.cid, ciphertext: base64UrlEncode(secondBytes) })).toBeNull();
@@ -180,7 +196,7 @@ describe("the walker's carriage over the session verbs", () => {
     expect(outcomes.every((o) => o !== null && "held" in o)).toBe(true);
     const receipts = (await store.read(GATE))!.carried!;
     expect(receipts.map((r) => r.cid).sort()).toEqual(outcomes.map((o) => o!.cid).sort());
-    expect(carriedFiles().length).toBe(3);
+    expect((await carriedFiles()).length).toBe(3);
     for (const [i, o] of outcomes.entries()) {
       const back = await fetchDocument({ transport, store, gatePubKey: GATE, cid: o!.cid, withinMs: 2_000 });
       expect(back && hex(back)).toBe(hex(pages[i]!));
@@ -189,7 +205,7 @@ describe("the walker's carriage over the session verbs", () => {
     const twin = utf8Bytes("handed over twice at once");
     const [a, b] = await Promise.all([0, 1].map(() => carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: twin, withinMs: 2_000 })));
     expect(a!.cid).toBe(b!.cid);
-    expect(carriedFiles().length).toBe(4);
+    expect((await carriedFiles()).length).toBe(4);
     expect((await store.read(GATE))!.carried!.length).toBe(4);
   });
 
@@ -197,9 +213,9 @@ describe("the walker's carriage over the session verbs", () => {
     const { store, transport } = await walkerAtHearth();
     const first = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("pay the gardener forty"), withinMs: 2_000 });
     const second = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("pay the gardener ninety"), withinMs: 2_000 });
-    const held = carriedFiles();
+    const held = (await carriedFiles());
     expect(held.length).toBe(2);
-    const bytesOf = (cid: string): Uint8Array => held.find((f) => f.path.endsWith(fileOf(cid)))!.bytes;
+    const bytesOf = (cid: string): Uint8Array => held.find((f) => f.name.startsWith(fileOf(cid)))!.bytes;
     const answer = (cid: string, bytes: Uint8Array) => ({ cid, ciphertext: base64UrlEncode(bytes) });
     // CONTROL: the true bytes under the true address open.
     expect(hex((await openCarried(store, GATE, answer(first!.cid, bytesOf(first!.cid))))!)).toBe(hex(utf8Bytes("pay the gardener forty")));
@@ -225,7 +241,7 @@ describe("the walker's carriage over the session verbs", () => {
     await crossed.update(GATE, () => ({ nexusAid: AID, carried: [{ ...receipts[0]!, ref: receipts[1]!.ref }] }));
     expect(await openCarried(crossed, GATE, answer(first!.cid, bytesOf(first!.cid)))).toBeNull();
     // The stored file altered on the hearth's own disk: the fetch door answers nothing that opens.
-    const victim = held.find((f) => f.path.endsWith(fileOf(first!.cid)))!;
+    const victim = held.find((f) => f.name.startsWith(fileOf(first!.cid)))!;
     writeFileSync(victim.path, altered);
     expect(await fetchDocument({ transport, store, gatePubKey: GATE, cid: first!.cid, withinMs: 300 })).toBeNull();
     expect(base64UrlDecode(base64UrlEncode(altered)).length).toBe(altered.length);
@@ -237,10 +253,10 @@ describe("the walker's carriage over the session verbs", () => {
     const first = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
     const again = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
     expect(again).toEqual({ cid: first!.cid, held: true });
-    expect(carriedFiles().length).toBe(1);
+    expect((await carriedFiles()).length).toBe(1);
     expect((await store.read(GATE))!.carried!.length).toBe(1);
     // The hearth loses the value: the next carry seals afresh under a new address, and one receipt stands.
-    rmSync(carriedFiles()[0]!.path);
+    rmSync((await carriedFiles())[0]!.path);
     const third = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 300 });
     expect(third).toMatchObject({ held: true });
     expect(third!.cid).not.toBe(first!.cid);
@@ -252,8 +268,8 @@ describe("the walker's carriage over the session verbs", () => {
   test("walking back in keeps the receipts", async () => {
     const store = memoryStore();
     await store.update(GATE, () => ({ nexusAid: AID, carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] }));
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
-    await takeInvite(store, encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current) }));
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
+    await takeInvite(store, encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs((await readHostingState(AID))!, HEARTH)!.current) }));
     expect(await store.read(GATE)).toMatchObject({ carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] });
   });
 

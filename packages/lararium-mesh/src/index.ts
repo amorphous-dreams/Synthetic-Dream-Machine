@@ -439,7 +439,7 @@ export type { KeyClass } from "./key-class.js";
 // The VK custody spine: the keyslot tree that commits to its VK, and the ONE writer of VK-sealed carriers, which
 // proves every VK in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {
-  writeSealedCarrier, updateSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation,
+  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation,
   CustodyRefusal, TreeVkRefusal, CensusRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
 } from "./sealed-writer.js";
 export type {

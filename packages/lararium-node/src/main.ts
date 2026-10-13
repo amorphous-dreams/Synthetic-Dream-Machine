@@ -433,6 +433,7 @@ async function main(): Promise<void> {
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
       kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
+      hosting: composition?.hosting ?? null,
     }),
     standing: () => composition?.standing ?? "recomposing",
     onLog: (line) => console.log(`[custody] ${line}`),
@@ -498,6 +499,8 @@ interface StandingComposition {
   readonly personaSelves?: PersonaSelvesPlane | null;
   /** The hearth dial this composition stands, for a custody act that keeps a carried invite. */
   readonly walk?: SealedActContext["walk"];
+  /** The store this composition lends a hosting roll, and the refold a landed roll owes. */
+  readonly hosting?: SealedActContext["hosting"];
 }
 
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
@@ -655,6 +658,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     teardown: async () => { await front.detach(); await herm.teardown(); },
     personaSelves: herm.personaSelves,
     walk: herm.walkDial,
+    hosting: herm.hostingDoor,
   };
 }
 
@@ -928,6 +932,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,
+    hosting: result.hostingDoor,
   };
 }
 

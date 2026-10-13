@@ -8,13 +8,17 @@
  * verb channel instead of opening the store beside it.
  *
  * Proven:
- *   · CONTROL: with no vessel standing, `lares host` runs `via: direct`;
- *   · RED: six `lares host` loops hammer the store, three from the spawn of the daemon and three from the instant
+ *   · CONTROL: with no vessel standing, `lares nexus kapae --list` runs `via: direct`;
+ *   · RED: six `lares nexus kapae --list` loops hammer the store, three from the spawn of the daemon and three from the instant
  *     its boot begins (`phase → boot`, the step before the vessel's Repo opens), until well after `live`. An act
  *     that began before the boot may hold the store (the vessel waits that act out); not one act that began once
  *     the boot did runs `via: direct`, every act after `live` runs `via: daemon`, and the rendezvous name still
  *     answers the live vessel when the loops end. The window reads off the boot's own phase, never off the
  *     claim's log line, so a claim taken late reads red.
+ *
+ * THE PROBE RIDES THE STORE DOOR. `lares nexus kapae --list` reads the antigen board through the store's door
+ * table and opens no sealed row, so it answers at the floor too. `lares host` and `lares walk` ride the custody
+ * door, a second channel that proves nothing about who holds the store.
  */
 import { afterAll, describe, expect, test } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
@@ -35,7 +39,10 @@ afterAll(async () => {
   if (root) rmSync(root, { recursive: true, force: true });
 });
 
-/** Where one `lares host` act ran: `daemon`, `direct`, or the refusal it met. */
+/** The store-door read every loop sends. */
+const PROBE = ["nexus", "kapae", "--list", "--json"] as const;
+
+/** Where one store-door read ran: `daemon`, `direct`, or the refusal it met. */
 function via(r: { json?: Record<string, unknown> | null; stderr: string }): string {
   const data = r.json?.["data"] as { via?: string } | undefined;
   if (data?.via) return data.via;
@@ -52,7 +59,7 @@ describe("a booting vessel holds its store", () => {
     expect((await cli(["persona", "new", "0", "--name", "staged"])).code).toBe(0);
 
     // CONTROL: no vessel stands, so the command holds the store itself for its act.
-    const alone = await cli(["host", "--json"]);
+    const alone = await cli(PROBE);
     expect(via(alone)).toBe("direct");
 
     let bootLog = "";
@@ -68,7 +75,7 @@ describe("a booting vessel holds its store", () => {
       while (liveAt === null || performance.now() - liveAt < AFTER_LIVE_MS) {
         if (daemon?.exitCode !== null) return;
         const stage = liveAt !== null ? "live" : bootLog.includes(BOOTING) ? "booting" : "spawned";
-        const r = await cli(["host", "--json"]);
+        const r = await cli(PROBE);
         const k = `${stage}:${via(r)}`;
         tally[k] = (tally[k] ?? 0) + 1;
       }
@@ -104,6 +111,6 @@ describe("a booting vessel holds its store", () => {
     expect(live.filter(([k]) => k !== "live:daemon")).toEqual([]);
     // The rendezvous name still answers the live vessel.
     expect(existsSync(rendezvousSocket({ root } as unknown as LarInstance))).toBe(true);
-    expect(via(await cli(["host", "--json"]))).toBe("daemon");
+    expect(via(await cli(PROBE))).toBe("daemon");
   }, 400_000);
 });

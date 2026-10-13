@@ -9,7 +9,6 @@
  * no vessel standing, the command runs the same row itself through `storeDoorDirect`, which holds the store for
  * the moment of the act (`ownedStore`). One table, two holders, never both at once.
  *
- *   host-state · host-roll · host-invite         the hearth's hosting (`commands/host`)
  *   nexus-kapae · nexus-kapae-list               the antigen board (`commands/nexus-kapae`)
  *   nexus-contract · nexus-roll-anchor · nexus-members-list
  *                                                the carriage board's writer, its roll anchor and its reader
@@ -56,7 +55,6 @@ import type { Repo } from "@automerge/automerge-repo";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
-import { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
@@ -84,7 +82,7 @@ export interface StoreDoorDeps {
   /** The store's one holder — the running vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:       Repo;
   /**
-   * A write just counted. `nexusAid` names the hosting doc a roll opened (host-roll only); every other caller
+   * A write just counted. `nexusAid` names the Nexus whose reading a row moved (a carried charter's take); every other caller
    * passes nothing. Absent on `storeDoorDirect` — a direct act has no live reading to refold.
    *
    * A caller MAY resolve `true` to claim it re-presented this write live, synchronously or through a promise.
@@ -105,7 +103,7 @@ export const ON_ROLLED_BUDGET_MS = Number(process.env["LAR_ON_ROLLED_BUDGET_MS"]
  * budget (including a throw) reads `false`; a promise still unsettled past the budget reads `"pending"` — the
  * hook keeps running, this call simply stops waiting on it and never lets its eventual rejection surface here.
  */
-async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Promise<boolean | "pending"> {
+export async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Promise<boolean | "pending"> {
   if (!(call instanceof Promise)) return call === true;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const pending = new Promise<"pending">((resolve) => { timer = setTimeout(() => resolve("pending"), ON_ROLLED_BUDGET_MS); });
@@ -122,7 +120,6 @@ async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Pr
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
-  "host-state", "host-roll", "host-invite",
   "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "device-admit",
@@ -135,7 +132,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  HostRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError,
+  NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
 ] as const;
 
@@ -166,16 +163,6 @@ function need(verb: string, args: Readonly<Record<string, unknown>>, key: string
 function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const { storageDir, sealHome, repo } = deps;
   return {
-    "host-state": () => answer("host-state", async () => ({ nexuses: await runHostState({ sealHome, storageDir }) })),
-    "host-roll": (args) => answer("host-roll", async () => {
-      const r = await runHostRoll({ sealHome, storageDir, repo, ...opt("nexusAid", str(args["nexusAid"])), ...opt("cap", int(args["cap"])) });
-      await awaitOnRolled(deps.onRolled?.(r.nexusAid));
-      return { ...r };
-    }),
-    "host-invite": (args) => answer("host-invite", async () => ({
-      ...(await runHostInvite({ sealHome, storageDir, ...opt("nexusAid", str(args["nexusAid"])), ...opt("relay", str(args["relay"])) })),
-    })),
-
     "nexus-kapae": (args) => answer("nexus-kapae", async () => {
       const action = args["action"] === "un_kapae" ? "un_kapae" : "kapae";
       const r = await runNexusKapae({ action, nym: need("nexus-kapae", args, "nym"), sealHome, repo, ...opt("reason", str(args["reason"])) });

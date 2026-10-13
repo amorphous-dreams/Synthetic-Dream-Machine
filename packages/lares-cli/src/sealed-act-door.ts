@@ -22,7 +22,7 @@
  *                                           another command holds the store for one act): the act runs here.
  */
 import {
-  CustodyLocked, CustodyRowUnavailable, SealedActRefused, runSealedAct, readHearthDialPin, larBootstrapPath,
+  CustodyLocked, CustodyRowUnavailable, SealedActRefused, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
   type SealedActContext, type SealedActName, type SealedActRefusalReason,
 } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
@@ -34,13 +34,16 @@ export type SealedActVia = "vessel" | "direct";
 /**
  * What an act reads from its surroundings when it runs in this process: the KEL head comes off the store's one
  * holder, no persona plane stands (a command mounts no face's plane, so a name stays on its sealed row until a
- * vessel carries it), and the hearth dial reads as the pin a stopped vessel would dial by.
+ * vessel carries it), the hearth dial reads as the pin a stopped vessel would dial by, and a hosting roll lands
+ * on the store this command holds for the moment of its act.
  */
 const directContext: SealedActContext = {
   personaSelves: null,
   // The gate key a stopped vessel's hearth dial would pin at its next stand (an admit's pin, or `LAR_JOIN_GATE`);
   // no walk dial stands in a command's own process, so a kept invite waits for the next stand.
   walk: { dialGate: () => process.env["LAR_JOIN_GATE"] ?? readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null, represent: null },
+  // A roll with no vessel standing holds the store for the moment of its act, and no live reading stands to refold.
+  hosting: { withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} },
   kelHead: async (prefix) => {
     const out = (await storeVerb("persona-kel-head", { prefix })).output;
     return { head: typeof out["head"] === "string" ? out["head"] : null, seq: typeof out["seq"] === "number" ? out["seq"] : null };

@@ -140,11 +140,11 @@ describe("the walk and hosting stores stand owner-only", () => {
     mkdirSync(join(larDataDir(), "hosting"), { recursive: true });
     chmodSync(join(larDataDir(), "hosting"), 0o755);
     await runWalkTake({ carried: await invite() });
-    await rollHosting({ storageDir: larDataDir(), nexusAid: AID, leafSeed: HEARTH });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH });
     const mode = (p: string): number => statSync(p).mode & 0o777;
     expect(mode(walkDirOf())).toBe(0o700);
     expect(mode(join(larDataDir(), "hosting"))).toBe(0o700);
-    expect(mode(hostingDir(larDataDir(), AID))).toBe(0o700);
+    expect(mode(await hostingDir(AID))).toBe(0o700);
     expect(readdirSync(walkDirOf())).toHaveLength(1);                     // CONTROL: the record landed
   });
 });

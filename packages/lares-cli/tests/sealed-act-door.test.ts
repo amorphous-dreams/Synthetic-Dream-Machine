@@ -37,6 +37,11 @@
  *       A vessel's refusal of a take reads as the walk door's own refusal (exit code and words).
  *                                 control: the take's act frame holds the carried invite, and the command
  *                                 prints `via: daemon` as every store door does
+ *   D10 RED: A HOST INVITE RIDES NO VERB. `lares host`, `host roll` and `host invite` beside a standing vessel send
+ *       act frames alone (`host.state`, `host.roll`, `host.invite`); the invite the hearth mints appears in no
+ *       frame, and the command opens no key session. A vessel's refusal of a roll reads as the hosting door's own
+ *       refusal (exit code and words).
+ *                                 control: the roll's act frame holds its Nexus and its cap, and nothing else
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -357,6 +362,41 @@ describe("a command beside a standing vessel", () => {
     // A vessel's refusal of a take crosses as the walk door's own refusal.
     const refusing = await standVessel({ unlocked: true, table: () => { throw new SealedActRefused("act-refused", "this vessel wears no face — a walker walks as a person"); } });
     const refused = await run(["walk", "take", CARRIED, "--json"]);
+    expect(refused.code).not.toBe(0);
+    expect(refused.out + refused.err).toContain("wears no face");
+    expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });
+    await refusing.down();
+  });
+
+  test("D10 — the host commands send act frames alone, and a minted invite rides no verb", async () => {
+    await stage();
+    const MINTED = `lar-invite:a-synthetic-host-invite-${Math.random().toString(36).slice(2)}`;
+    const AID = "a-synthetic-nexus";
+    const vessel = await standVessel({ unlocked: true, table: (act) => {
+      if (act === "host.state") return { nexuses: [{ nexusAid: AID, epoch: "e".repeat(64), previousEpoch: null, cap: 3, redeemed: 2, redeemedPrevious: 0 }] };
+      if (act === "host.roll") return { nexusAid: AID, epoch: "f".repeat(64), previous: "e".repeat(64), cap: 5, docUrl: "automerge:a-synthetic-doc", act: {}, unswept: 0 };
+      if (act === "host.invite") return { nexusAid: AID, epoch: "f".repeat(64), invite: MINTED };
+      return {};
+    } });
+    const state = await run(["host", "--json"]);
+    const roll = await run(["host", "roll", "--nexus", AID, "--cap", "5", "--json"]);
+    const invite = await run(["host", "invite", "--relay", "ws://a-synthetic-hearth/ws", "--json"]);
+    for (const r of [state, roll, invite]) expect(r.code, r.out + r.err).toBe(0);
+    const frames = vessel.frames as Array<Record<string, unknown>>;
+    for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id
+    expect(frames.map((f) => f["act"])).toEqual(["host.state", "host.roll", "host.invite"]);
+    expect(frames[1]!["args"]).toEqual({ nexusAid: AID, cap: 5 });                                  // CONTROL: the roll's own frame
+    expect(frames[2]!["args"]).toEqual({ relay: "ws://a-synthetic-hearth/ws" });
+    expect(JSON.stringify(frames).includes("lar-invite:")).toBe(false);
+    expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
+    expect(JSON.parse(state.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { nexuses: [{ nexusAid: AID, redeemed: 2 }], via: "daemon" } });
+    expect(JSON.parse(roll.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { epoch: "f".repeat(64), cap: 5, via: "daemon" } });
+    expect(JSON.parse(invite.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { invite: MINTED, via: "daemon" } });
+    await vessel.down();
+
+    // A vessel's refusal of a roll crosses as the hosting door's own refusal.
+    const refusing = await standVessel({ unlocked: true, table: () => { throw new SealedActRefused("act-refused", "this vessel wears no face — a hearth hosts as the face it wears") ; } });
+    const refused = await run(["host", "roll", "--json"]);
     expect(refused.code).not.toBe(0);
     expect(refused.out + refused.err).toContain("wears no face");
     expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });

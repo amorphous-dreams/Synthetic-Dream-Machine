@@ -26,6 +26,8 @@
  *   `updateCustodyRow` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
  *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
  *                      and every other reading refuses before it runs, so it decides over the row itself or not at all.
+ *   `removeCustodyRow` a removal under ONE custody holder, of a row the seat's key opens; any other standing row
+ *                      refuses and stays.
  *   `openColdCustodyRow` / `updateColdCustodyRow`  the same two doors for a COLD row: its plaintext lives for one
  *                      act and zero-fills when the act settles.
  * No reader folds a refusal to empty, so no caller mints over a row it could not read.
@@ -133,6 +135,15 @@ export async function updateCustodyRow<T>(
     if (r.reading === "locked") throw new CustodyLocked();
     throw new CustodyRowUnavailable(home, file, r.why);
   });
+}
+
+/**
+ * Remove one sealed row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
+ * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays, so a removal never
+ * destroys bytes this vessel's key did not seal.
+ */
+export async function removeCustodyRow(home: CustodyHome, file: string): Promise<boolean> {
+  return (await openedCustody()).removeRow(home, file);
 }
 
 /**

@@ -4,13 +4,13 @@
  *
  * The inspection runs as a door row (`nexus-offering-inspect`) inside the standing vessel, against the Repo that
  * vessel holds: the Repo its worker islands and its dial to the hearth sync through. A read that shut its Repo down
- * on the way out would take the vessel's whole verb channel with it, so even `host-state` would stop answering.
+ * on the way out would take the vessel's whole verb channel with it, so every later store-door read would stop answering.
  *
  * Proven, on a joinee B whose dial asks for A's Crossroads board (the board A published an offering onto):
- *   · CONTROL: B's `host-state` answers through its door before the inspection;
+ *   · CONTROL: B's store door answers a read (`nexus kapae --list`, `via: daemon`) before the inspection;
  *   · the inspection answers through B's door — a verified gift, or a refusal B's own row names — and never the
  *     direct holder's refusal, which only a store with no vessel answering could meet;
- *   · RED: B stays live after it — `host-state` answers `via: daemon` three times over, promptly.
+ *   · RED: B stays live after it — the store-door read answers `via: daemon` three times over, promptly.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { join } from "node:path";
@@ -59,15 +59,20 @@ beforeAll(async () => {
 
 afterAll(async () => { await fleet?.stop(); });
 
-async function hostState(v: LarInstance): Promise<{ via: string | undefined; ms: number }> {
+/**
+ * One read through `v`'s STORE door: `lares nexus kapae --list`, a row of the store's door table that opens no
+ * sealed row and says where it ran. (`lares host` and `lares walk` ride the custody door, a second channel that
+ * would answer beside a verb channel that had died.)
+ */
+async function storeDoorRead(v: LarInstance): Promise<{ via: string | undefined; ms: number }> {
   const t0 = performance.now();
-  const r = await v.cli(["host", "--json"]);
+  const r = await v.cli(["nexus", "kapae", "--list", "--json"]);
   return { via: (r.json?.["data"] as { via?: string } | undefined)?.via, ms: performance.now() - t0 };
 }
 
 describe("a joinee's door serves `nexus offering inspect`", () => {
   test("the inspection reads through B's door, and B stays live after it", async () => {
-    const before = await hostState(B);
+    const before = await storeDoorRead(B);
     expect(before.via).toBe("daemon");
 
     const inspected = await B.cli(["nexus", "offering", "inspect", offeringCid, "--json"]);
@@ -81,7 +86,7 @@ describe("a joinee's door serves `nexus offering inspect`", () => {
     }
 
     for (let i = 0; i < 3; i++) {
-      const after = await hostState(B);
+      const after = await storeDoorRead(B);
       expect(after.via).toBe("daemon");
       expect(after.ms).toBeLessThan(PROMPT_MS);
     }

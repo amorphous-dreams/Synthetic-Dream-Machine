@@ -10,7 +10,7 @@
  *   · walker        — it presented THIS hearth's hosting grant for a Nexus the hearth carries and hosts in, its
  *                     tag verifying at the current or previous epoch (a previous-epoch grant is renewed and the
  *                     renewal pushed after the verdict); or it redeemed an invite token here: the token verifies
- *                     at a live epoch under its own class, its nonce burns in that epoch's spent-set (fsynced
+ *                     at a live epoch under its own class, its nonce burns as a sealed spend row of that epoch (at rest
  *                     BEFORE the verdict, bound to the leaf that proved; the same claim under the same leaf is a
  *                     retry and earns the identical grant, and under any other leaf it is silence), and the new
  *                     grant is pushed after the verdict. Either way the presenting leaf proves over this
@@ -36,11 +36,13 @@ import type { SocketSorter, SortInput, SortVerdict } from "./daemon-auth-gate.js
 import { leafReadingFor, type CarriedNexusReading, type SocketBinding } from "./nexus-carriage.js";
 import { readHostingState, liveEpochs, spendToken, redeemedCount } from "./hosting-store.js";
 import { noteContact } from "./hosting-carry.js";
+import { CustodyLocked, CustodyRowUnavailable } from "./custody-holder.js";
 
-/** What the walker arms read: the hearth's hosting store and its own per-Nexus leaf. */
+/**
+ * What the walker arms read: the hearth's hosting rows (sealed, resolved through the custody seat) and its own
+ * per-Nexus leaf. A vessel at the floor reads no hosting row, so no socket stands as a walker there.
+ */
 export interface HostingSorterDeps {
-  /** The vessel store the hosting state lives under. */
-  readonly storageDir:  string;
   /** The hearth's own per-Nexus leaf seed for N — the seed its hosting keys derive from — or null (no face). */
   readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null>;
   /** The operator's count event: a token redeemed in N, and how many this epoch. A count, never a row. */
@@ -109,7 +111,7 @@ async function walkerStanding(
   if (!(await verifyLeafProof({ presented, nonce: input.challenge.nonce, gatePubKey: input.challenge.gatePubKey, vesselKey: input.vesselKey }))) return null;
   const leaf = presentedSigner(presented);
   if (await antigenHolds(reading, leaf)) return null;
-  const state = readHostingState(hosting.storageDir, aid);
+  const state = await readHostingState(aid);
   if (!state) return null;                                                       // this hearth hosts nobody in N
   const seed = await hosting.leafSeedFor(aid);
   const live = seed ? liveEpochs(state, seed) : null;
@@ -119,7 +121,7 @@ async function walkerStanding(
   // EVERY DIAL ON THE LEAF IS A CONTACT. It folds the guest's own rhythm into the carriage its PROVEN leaf keys,
   // whichever arm it rode and whichever lineage it stands on; a carriage marked pending under pressure hears the
   // notice on this contact, and a later epoch's contact clears it. Called only once the arm has stood.
-  const contact = (): SortVerdict["push"] => noteContact(hosting.storageDir, aid, carryRecordKey(seed!, aid, leaf), state.depth).notice
+  const contact = async (): Promise<SortVerdict["push"]> => (await noteContact(aid, carryRecordKey(seed!, aid, leaf), state.depth)).notice
     ? [{ kind: HOSTING_NOTICE_SESSION_KIND, body: { pending: true } }] : [];
 
   if (presented.kind === "grant") {
@@ -127,7 +129,7 @@ async function walkerStanding(
     const current = grantVerifiesAt(live.current, grant) ? grant
       : live.previous && grantVerifiesAt(live.previous, grant) ? renewGrant(live.current, grant) : null;
     if (!current) return null;                                                   // two rolls back, or never this hearth's
-    const frames = [...(current === grant ? [] : push(current) ?? []), ...(contact() ?? [])];
+    const frames = [...(current === grant ? [] : push(current) ?? []), ...((await contact()) ?? [])];
     return { standing, grant: current, ...(frames.length > 0 ? { push: frames } : {}) };
   }
 
@@ -135,14 +137,14 @@ async function walkerStanding(
   const at = tokenVerifiesAt(live.current, token) ? live.current
     : live.previous && tokenVerifiesAt(live.previous, token) ? live.previous : null;
   if (!at) return null;
-  const outcome = await spendToken({ storageDir: hosting.storageDir, nexusAid: aid, epochCid: at.cid, n: token.n, claimDigest: claimDigest(presented.claim, leaf) });
+  const outcome = await spendToken({ nexusAid: aid, epochCid: at.cid, n: token.n, claimDigest: claimDigest(presented.claim, leaf) });
   if (outcome === "spent-other") return null;
-  if (outcome === "fresh") hosting.onRedeemed?.(aid, redeemedCount(hosting.storageDir, aid, at.cid));
+  if (outcome === "fresh") hosting.onRedeemed?.(aid, await redeemedCount(aid, at.cid));
   const grant = issueGrant(live.current, {
     leaf, lineage: lineageOf(token.n, presented.claim), survived: 0,
     from: token.purpose === "host-invite" ? "host" : "walker",
   });
-  return { standing, grant, push: [...(push(grant) ?? []), ...(contact() ?? [])] };
+  return { standing, grant, push: [...(push(grant) ?? []), ...((await contact()) ?? [])] };
 }
 
 /**
@@ -169,7 +171,17 @@ export function makeSocketSorter(deps: SocketSorterDeps): SocketSorter {
     const presented = input.presented;
     let walker: Awaited<ReturnType<typeof walkerStanding>> = null;
     if ((presented?.kind === "grant" || presented?.kind === "token") && deps.hosting) {
-      walker = await walkerStanding(presented, input, readings, deps.hosting);
+      // THE HOSTING ROWS REST SEALED. A vessel whose key rests locked hosts no walker, and a hosting row that
+      // stands and does not open hosts none either: the socket meets what a hearth that hosts nobody answers.
+      // The row's name reaches this vessel's own log; nothing of it reaches the socket.
+      walker = await walkerStanding(presented, input, readings, deps.hosting).catch((err: unknown) => {
+        if (err instanceof CustodyLocked) return null;
+        if (err instanceof CustodyRowUnavailable) {
+          console.warn(`[lar-seat] a walker's arm met a hosting row that does not open (${err.home}/${err.file} reads ${err.reading}); it sorts as no walker`);
+          return null;
+        }
+        throw err;
+      });
     }
     if (presented?.kind === "admit") {
       const binding: SocketBinding = {

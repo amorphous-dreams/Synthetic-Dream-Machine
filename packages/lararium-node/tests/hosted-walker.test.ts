@@ -69,6 +69,7 @@ async function newcomer(fill: number): Promise<{ base: LeafIdentity; leaf: { ver
 
 describe("a newcomer walks in at the hearth's own gate", () => {
   let storageDir = "";
+  let priorRoot: string | undefined;
   let http: Server;
   let wss: WebSocketServer;
   let port = 0;
@@ -77,8 +78,11 @@ describe("a newcomer walks in at the hearth's own gate", () => {
   const repos: Repo[] = [];
 
   beforeEach(async () => {
+    // The hearth's hosting rows rest sealed in the custody storage home of this scratch root.
     storageDir = mkdtempSync(join(tmpdir(), "hosted-walker-"));
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH_LEAF });
+    priorRoot = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = storageDir;
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
     gatePub = await pubOf(GATE_SEED);
     const keys = await Promise.all(SEEDS.map(pubOf));
     const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
@@ -89,9 +93,9 @@ describe("a newcomer walks in at the hearth's own gate", () => {
     const key: GateKey = { pubKey: gatePub, sign: ed25519SignerFromSeed(GATE_SEED) };
     armGate(gate, { gate: key, aud: AUD, sort: makeSocketSorter({
       readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
-      hosting: { storageDir, leafSeedFor: async () => HEARTH_LEAF },
+      hosting: { leafSeedFor: async () => HEARTH_LEAF },
     }), shore: provingShore(gatePub) });
-    serveHostingMint(gate, { storageDir, leafSeedFor: async () => HEARTH_LEAF });
+    serveHostingMint(gate, { leafSeedFor: async () => HEARTH_LEAF });
     // The hearth's own Repo answers each admitted socket's join, so a verified dial meets a proven peer.
     repos.push(new Repo({ network: [new NodeWSServerAdapter(gate as unknown as WebSocketServer)], peerId: "hearth" as PeerId }));
     await new Promise<void>((r) => http.listen(0, "127.0.0.1", r));
@@ -103,6 +107,7 @@ describe("a newcomer walks in at the hearth's own gate", () => {
     for (const r of repos.splice(0)) await r.shutdown().catch(() => {});
     for (const c of wss.clients) c.terminate();
     await new Promise<void>((r) => wss.close(() => http.close(() => r())));
+    if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
     rmSync(storageDir, { recursive: true, force: true });
   });
 
@@ -117,12 +122,12 @@ describe("a newcomer walks in at the hearth's own gate", () => {
 
   /** The hearth's signed act for an epoch — the act a walker reads off the Nexus's board. */
   const actFor = async (cid: string): Promise<HostingAct | null> => {
-    const state = readHostingState(storageDir, AID);
+    const state = (await readHostingState(AID));
     return [state?.current, state?.previous].find((a): a is HostingAct => !!a && hostingActCid(a) === cid) ?? null;
   };
 
   async function hostInvite(): Promise<string> {
-    const live = liveEpochs(readHostingState(storageDir, AID)!, HEARTH_LEAF)!;
+    const live = liveEpochs((await readHostingState(AID))!, HEARTH_LEAF)!;
     return encodeInvite({ nexusAid: AID, gatePubKey: gatePub, token: mintHostToken(live.current) });
   }
 
@@ -212,7 +217,7 @@ describe("a newcomer walks in at the hearth's own gate", () => {
     expect(answered).toBe(false);
 
     // The household consents to grow: the hearth rolls. B's next dial renews (survived 1) and fills one invite.
-    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH_LEAF });
+    await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
     const bAgain = await dial(walkIdentity(b.base, storeB.records.get(gatePub)!, b.leaf)!, { store: storeB, leaf: b.leaf, base: b.base });
     for (let i = 0; i < 200 && !(storeB.records.get(gatePub)?.wallet?.length); i++) await sleep(25);
     expect(storeB.records.get(gatePub)?.grant).toMatchObject({ from: "walker", survived: 1 });

@@ -45,6 +45,8 @@ import {
   provisionCharterReserve, readCharterReserveState, readReserveShare, readReserveState,
   type SealReserveState,
 } from "./seal-reserve-store.js";
+import type { Repo } from "@automerge/automerge-repo";
+import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { larSealHome } from "./vessel-paths.js";
 
@@ -67,6 +69,16 @@ export interface SealedActContext {
    * re-presents the standing walk dial on a fresh invite; null where no walk dial stands.
    */
   readonly walk: { readonly dialGate: () => string | null; readonly represent: (() => Promise<void>) | null } | null;
+  /**
+   * The store a hosting roll lands its act on. `withRepo` runs one act against the store's one holder: the
+   * standing vessel's own Repo (the replica its walkers sync), or the one a command holds for the moment of its
+   * act. `rolled` tells the composition a roll landed in a Nexus, so its live reading refolds. `null` where no
+   * store stands to land on.
+   */
+  readonly hosting: {
+    readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
+    readonly rolled:   (nexusAid: string) => Promise<void>;
+  } | null;
 }
 
 /** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
@@ -221,6 +233,12 @@ async function walkOrRefuse<T>(run: Promise<T>): Promise<T> {
   catch (err) { if (err instanceof WalkRefusal) throw refuse(err.message); throw err; }
 }
 
+/** A hosting door's own refusal keeps its words and crosses as the act's refusal. */
+async function hostOrRefuse<T>(run: Promise<T>): Promise<T> {
+  try { return await run; }
+  catch (err) { if (err instanceof HostRefusal) throw refuse(err.message); throw err; }
+}
+
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
 function orRefuse<T extends object>(r: T | { readonly error: string }): T {
   if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
@@ -246,6 +264,9 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   walk.state            where this vessel walks: per hearth, the Nexus, the grant it holds and its wallet's count
  *   walk.take             keep a carried invite on the walk record of the hearth it names
  *   walk.invite           hand the newest invite out of the wallet of the hearth this vessel walks at
+ *   host.state            what this hearth hosts: per Nexus, the live epochs, the cap and the redemption counts
+ *   host.roll             roll the hosting epoch in one Nexus and land the new act on this hearth's hosting doc
+ *   host.invite           mint this hearth's own invite at the current epoch; the answer returns to the one caller
  *   reserve.state         the charter reserve's state: the pre-rotation commit and the guardian labels
  *   reserve.provision     seal ONE share of a reserve seed (the operator's own) and the state that commits it. The
  *                         command splits the seed in its own process; the seed and the two guardian shares never
@@ -360,6 +381,25 @@ export const SEALED_ACTS = Object.freeze({
     return { ...taken, dialing: represent ? "now" : "next-stand" };
   }),
   "walk.invite": act({}, async () => ({ ...(await walkOrRefuse(runWalkInvite())) })),
+
+  // THE HEARTH'S HOSTING. Its state, its spend rows and its carriage rest sealed (`hosting-store`,
+  // `hosting-carry`), so its three doors ride this door: a bearer invite as a verb's outcome would rest in the
+  // daemon's document in the clear. A roll lands its act on the store the composition lends, and tells it so.
+  "host.state": act({}, async () => ({ nexuses: (await runHostState({ sealHome: larSealHome() })).map((n) => ({ ...n })) })),
+  "host.roll": act({ nexusAid: optional(text), cap: optional(count) }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to land a hosting act on");
+    const rolled = await hostOrRefuse(store.withRepo((repo) => runHostRoll({
+      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.cap !== undefined ? { cap: a.cap } : {}),
+    })));
+    await store.rolled(rolled.nexusAid);
+    return { ...rolled };
+  }),
+  "host.invite": act({ nexusAid: optional(text), relay: optional(text) }, async (a) => ({
+    ...(await hostOrRefuse(runHostInvite({
+      sealHome: larSealHome(), ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.relay !== undefined ? { relay: a.relay } : {}),
+    }))),
+  })),
 
   // THE CHARTER RESERVE. Its two rows rest under the vessel key (`seal-reserve-store`). A reserve's seed gets
   // forged and split in the command's own process, where its three cards print to the person; the door takes

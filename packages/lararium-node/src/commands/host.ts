@@ -5,7 +5,7 @@
  *   · `runHostState`  — per Nexus this hearth hosts in: the current and previous epochs (act CIDs), the cap, and
  *     how many tokens were redeemed this epoch and the last — counts, never a row.
  *   · `runHostRoll`   — sign the hearth's next hosting act in N with its per-Nexus leaf, keep the old act as the
- *     previous epoch, delete every older spent-set, and LAND the act on this hearth's HOSTING DOC in N
+ *     previous epoch, remove the spend rows of every older epoch, and LAND the act on this hearth's HOSTING DOC in N
  *     (`hostingDocUrl(N, gate key)`, the one doc its walkers read and N's carriers replicate). Rolling twice
  *     kills every grant and token two epochs back — the hard roll is a roll done twice.
  *   · `runHostInvite` — mint a `host-invite` token at the current epoch, in process (the hearth IS the minter,
@@ -16,10 +16,11 @@
  * face its walks present. A vessel wearing no face hosts no one, and says so. Before its first act in N, a roll
  * reads the hosting doc: an act this face signed there that no local state holds refuses the roll.
  *
- * ONE STORE, ONE HOLDER. When the vessel stands, these doors run INSIDE it (`host-*` verbs over the local socket)
- * and the roll lands on the running Repo — the replica its walkers sync — so a walker's next dial reads the act
- * with no restart. When it does not stand, the CLI owns the store and opens it itself; either way one process
- * holds the store at a time.
+ * THE CUSTODY DOOR. The hosting rows rest sealed under the vessel key, so these doors run as acts of the sealed-act
+ * table (`host.state`, `host.roll`, `host.invite`): an invite as a store verb's outcome would rest in the daemon's
+ * document in the clear. When the vessel stands unlocked the roll lands on the running Repo — the replica its
+ * walkers sync — so a walker's next dial reads the act with no restart. When none stands, the command holds the
+ * store for the moment of the act; either way one process holds the store at a time.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
@@ -39,13 +40,40 @@ async function signedActsOf(doc: LarDoc | undefined | null, hearthLeaf: string, 
   }
   return signed;
 }
-import { larDataDir } from "../vessel-paths.js";
 import { primaryNexusAid, carriedSet, charterHomeFor } from "../carried-set.js";
 import { wornNexusLeaf, type NexusLeaf } from "../nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import {
-  readHostingState, rollHosting, liveEpochs, redeemedCount, type HostingState,
+  readHostingState, rollHosting, liveEpochs, redeemedCount, HostingStateMoved, type HostingState,
 } from "../hosting-store.js";
+
+/**
+ * LAND what the sealed state holds on the hosting doc: the current act and the previous one, each written only
+ * where the doc lacks it. THE STATE ROW COMMITS A ROLL, and the doc re-derives from it: a roll that sealed its
+ * state and stopped before its act reached the doc leaves an epoch no walker can read, and this lands it. The
+ * next roll runs it first, and a sovereign composition runs it for every Nexus it hosts in as it stands. Answers
+ * how many acts it landed.
+ */
+export async function landHostingActs(opts: { readonly nexusAid: string; readonly repo: Repo }): Promise<number> {
+  const state = await readHostingState(opts.nexusAid);
+  if (!state) return 0;
+  const handle = await materializeSharedLarDoc(opts.repo, hostingDocUrl(opts.nexusAid, await loadVesselVerifyingKey()), "hosting");
+  const standing = new Set(hostingActsFromBoard(handle.doc()).map(hostingActCid));
+  const owed = [state.previous, state.current].filter((act): act is HostingAct => act !== null && !standing.has(hostingActCid(act)));
+  if (owed.length === 0) return 0;
+  handle.change((d) => { for (const act of owed) writeHostingAct(d, act); });
+  await opts.repo.flush();
+  return owed.length;
+}
+
+/** Land the sealed state's acts for every Nexus this hearth carries and hosts in. Answers how many acts it landed. */
+export async function landEveryHostingAct(opts: { readonly sealHome: string; readonly repo: Repo }): Promise<number> {
+  let landed = 0;
+  for (const aid of [...(await carriedSet(opts.sealHome).catch(() => new Set<string>()))].sort()) {
+    landed += await landHostingActs({ nexusAid: aid, repo: opts.repo });
+  }
+  return landed;
+}
 
 /** A refusal a hosting door names, with nothing written. */
 export class HostRefusal extends Error {}
@@ -79,18 +107,17 @@ export interface HostedNexusReading {
 }
 
 /** Every Nexus this hearth carries and hosts in, with its live epochs and its redemption counts. */
-export async function runHostState(opts: { readonly sealHome: string; readonly storageDir?: string }): Promise<readonly HostedNexusReading[]> {
-  const storageDir = opts.storageDir ?? larDataDir();
+export async function runHostState(opts: { readonly sealHome: string }): Promise<readonly HostedNexusReading[]> {
   const out: HostedNexusReading[] = [];
   for (const aid of [...(await carriedSet(opts.sealHome).catch(() => new Set<string>()))].sort()) {
-    const state = readHostingState(storageDir, aid);
+    const state = await readHostingState(aid);
     if (!state) continue;
     const epoch = hostingActCid(state.current);
     const previousEpoch = state.previous ? hostingActCid(state.previous) : null;
     out.push({
       nexusAid: aid, epoch, previousEpoch, cap: state.current.cap,
-      redeemed: redeemedCount(storageDir, aid, epoch),
-      redeemedPrevious: previousEpoch ? redeemedCount(storageDir, aid, previousEpoch) : 0,
+      redeemed: await redeemedCount(aid, epoch),
+      redeemedPrevious: previousEpoch ? await redeemedCount(aid, previousEpoch) : 0,
     });
   }
   return out;
@@ -105,6 +132,8 @@ export interface HostRollResult {
   readonly cap:      number;
   /** The hearth's hosting doc in N — the doc the act landed on. */
   readonly docUrl:   string;
+  /** How many spend rows of dead epochs refused their removal (bytes this vessel's key does not open); they stay. */
+  readonly unswept:  number;
 }
 
 /**
@@ -113,39 +142,42 @@ export interface HostRollResult {
  * the direct holder's (`ownedStore`) when none stands.
  */
 export async function runHostRoll(opts: {
-  readonly sealHome: string; readonly storageDir?: string; readonly nexusAid?: string; readonly cap?: number; readonly repo: Repo;
+  readonly sealHome: string; readonly nexusAid?: string; readonly cap?: number; readonly repo: Repo;
 }): Promise<HostRollResult> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
   if (!charterHomeFor(opts.sealHome, aid)) throw new HostRefusal(`no charter for ${aid.slice(0, 18)}… stands here`);
   const leaf = await hostingLeaf(aid);
   const docUrl = hostingDocUrl(aid, await loadVesselVerifyingKey());
-  const land = async (repo: Repo): Promise<{ act: HostingAct; state: HostingState }> => {
+  const land = async (repo: Repo): Promise<{ act: HostingAct; state: HostingState; unswept: readonly string[] }> => {
     const handle = await materializeSharedLarDoc(repo, docUrl, "hosting");
     // THE FIRST ACT READS BEFORE IT WRITES. An act this face signed on the doc that no local state holds means
     // the face already hosts here from another store; a second chain would split one face's spent-sets. It
     // surfaces, aloud, and nothing is written.
     // Only an act this face's own leaf SIGNED says so: the board reads by shape, and a planted act under this
     // leaf with a signature nobody made must never stop a lawful host from rolling.
-    if (!readHostingState(storageDir, aid) && (await signedActsOf(handle.doc(), leaf.verifyingKey, aid)).length > 0) {
+    // A state an earlier roll sealed lands its acts first, so this roll chains from an act the doc carries.
+    await landHostingActs({ nexusAid: aid, repo });
+    if (!(await readHostingState(aid)) && (await signedActsOf(handle.doc(), leaf.verifyingKey, aid)).length > 0) {
       throw new HostRefusal("this face already hosts in this Nexus from another store — its act stands on the hosting doc and no local state holds it; nothing was written");
     }
-    const rolled = await rollHosting({ storageDir, nexusAid: aid, leafSeed: leaf.seed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}) });
+    const rolled = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}) }).catch((err: unknown) => {
+      if (err instanceof HostingStateMoved) throw new HostRefusal(err.message);
+      throw err;
+    });
     handle.change((d) => writeHostingAct(d, rolled.act));
     await repo.flush();
     return rolled;
   };
-  const { act, state } = await land(opts.repo);
-  return { nexusAid: aid, act, epoch: hostingActCid(act), previous: state.previous ? hostingActCid(state.previous) : null, cap: act.cap, docUrl };
+  const { act, state, unswept } = await land(opts.repo);
+  return { nexusAid: aid, act, epoch: hostingActCid(act), previous: state.previous ? hostingActCid(state.previous) : null, cap: act.cap, docUrl, unswept: unswept.length };
 }
 
 /** Mint the hearth's own invite at the current epoch in N: the one carried string, and nothing kept. */
 export async function runHostInvite(opts: {
-  readonly sealHome: string; readonly storageDir?: string; readonly nexusAid?: string; readonly relay?: string;
+  readonly sealHome: string; readonly nexusAid?: string; readonly relay?: string;
 }): Promise<{ readonly nexusAid: string; readonly epoch: string; readonly invite: string }> {
-  const storageDir = opts.storageDir ?? larDataDir();
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
-  const state: HostingState | null = readHostingState(storageDir, aid);
+  const state: HostingState | null = await readHostingState(aid);
   if (!state) throw new HostRefusal("this hearth hosts no one here yet — `lares host roll` opens its first epoch");
   const live = liveEpochs(state, (await hostingLeaf(aid)).seed);
   if (!live) throw new HostRefusal("the hosting act names a key this face's leaf does not derive — roll again");

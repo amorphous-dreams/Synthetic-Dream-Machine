@@ -158,6 +158,8 @@ import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
 /** The hearth dial a custody act reads: `SealedActContext.walk`, lent by the standing composition. */
 export type WalkDialReading = NonNullable<SealedActContext["walk"]>;
+/** The store a hosting roll lands on: `SealedActContext.hosting`, lent by the standing composition. */
+export type HostingDoor = NonNullable<SealedActContext["hosting"]>;
 import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
@@ -169,8 +171,9 @@ import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers, ownPlacePo
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { serveHostingMint }                       from "./hosting-mint.js";
 import { serveHostingCarry, DEFAULT_CARRY_LIMITS } from "./hosting-carry.js";
+import { landEveryHostingAct }                    from "./commands/host.js";
 import { nodeWalkStore, listWalkRecords }        from "./node-walk-store.js";
-import { storeDoorReactors }                      from "./store-door-verbs.js";
+import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { carriedSet }                             from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
@@ -444,6 +447,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   personaSelves: PersonaSelvesPlane | null;
   /** The hearth dial as the custody door's `walk` acts read it. */
   walkDial: WalkDialReading;
+  /** This vessel's own Repo and its after-roll refold, for the custody door's `host` acts. */
+  hostingDoor: HostingDoor;
   /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
    *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
    *  above); `pending` entries carried NO log line at all until this field threaded them out here for
@@ -474,6 +479,8 @@ export interface NodeHermResult {
   personaSelves:    PersonaSelvesPlane | null;
   /** The hearth dial as the custody door's `walk` acts read it. */
   walkDial:         WalkDialReading;
+  /** This vessel's own Repo and its after-roll refold, for the custody door's `host` acts. */
+  hostingDoor:      HostingDoor;
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -506,6 +513,8 @@ interface NodeBootPrep {
   personaSelves:    () => PersonaSelvesPlane | null;
   /** The hearth dial as a custody act reads it: the gate key it pins, and the standing walk dial's re-presentation. */
   walkDial:         WalkDialReading;
+  /** The store a hosting roll lands on, and the refold a landed roll owes. */
+  hostingDoor:      HostingDoor;
   /** This PLACE's own 32-byte signing seed — the substrate key, never the human's. The two-key atom keeps it
    *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
   vesselSeed:     Uint8Array;
@@ -990,7 +999,7 @@ async function prepareNodeBootOn(
    * carries (a same-process write landed in it directly; a remote peer's write arrived by CRDT sync): it
    * re-folds the antigen and the membership leaf map, re-stands a realm freshly imported, re-verdicts the
    * Repo's cached share answers for every peer, and re-derives this vessel's own dial presentation.
-   * `nexusAid` names the hosting doc a host-roll just opened; every other caller passes nothing.
+   * `nexusAid` names the hosting doc a hosting roll just opened; every other caller passes nothing.
    *
    * H2 — AWAITED, SERIALIZED, AND TRUTHFUL (never fire-and-forget). Every caller (`store-door-verbs`'s
    * `onRolled` hook, both `onReconnect` sites below) now awaits this call's own `Promise<boolean>`
@@ -1007,10 +1016,15 @@ async function prepareNodeBootOn(
    * run without throwing — because that is exactly what `represented`/`refolded` claim; an earlier
    * stage's fault is logged and never silently swallows a later stage's own true answer.
    */
+  // THE HOSTING DOC RE-DERIVES FROM THE SEALED STATE (set where the walkers' session verbs stand, below). While a
+  // landing stays owed, every refold tries it again, so one failed landing never leaves an epoch off the doc for
+  // the vessel's life.
+  let landOwedHostingActs: (() => Promise<void>) | null = null;
   let afterRollChain: Promise<boolean> = Promise.resolve(true);
   const afterRoll = (nexusAid?: string): Promise<boolean> => {
     if (nexusAid) ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(nexusAid, vesselIdentity.verifyingKey)) as DocumentId);
     const runOneRoll = async (): Promise<boolean> => {
+      await landOwedHostingActs?.();
       try {
         await antigenHolder.refold();
         await membershipHolder.refold();
@@ -1127,7 +1141,6 @@ async function prepareNodeBootOn(
     deviceAside:    (vesselKey) => shadowRing.deviceAside(vesselKey),
     // THE WALKER ARMS read this hearth's hosting store and the leaf its hosting keys derive from.
     hosting: {
-      storageDir,
       leafSeedFor: hostingLeafSeedFor,
       onRedeemed:  (aid, count) => console.log(`[hosting] a token redeemed in ${aid.slice(0, 18)}… — ${count} this epoch`),
     },
@@ -2444,10 +2457,10 @@ async function prepareNodeBootOn(
     });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
 
-    // THE STORE'S DOOR TABLE — `lares host`, `lares nexus kapae/posture/admit-take`, and every other
-    // store-touching verb run here while this vessel stands, against the Repo its peers sync, so a roll reaches
-    // its walkers with no restart and no second Repo ever writes beside this one. (`lares walk` rides the custody
-    // door: a walk record rests sealed, and its acts read the dial this composition lends them.) `afterRoll`
+    // THE STORE'S DOOR TABLE — `lares nexus kapae/posture/admit-take`, and every other store-touching verb run
+    // here while this vessel stands, against the Repo its peers sync, so no second Repo ever writes beside this
+    // one. (`lares host` and `lares walk` ride the custody door: their rows rest sealed, and their acts read the
+    // store and the dial this composition lends them, so a roll still reaches its walkers with no restart.) `afterRoll`
     // (above) serves as the one after-write hook every row that lands a board or a practice joint fires; the
     // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
@@ -2638,8 +2651,26 @@ async function prepareNodeBootOn(
     // THE WALKERS' SESSION VERBS — the blind mint of the epoch's allowance and the sealed carriage, on walker sockets alone.
     if (!mintServed) {
       mintServed = true;
-      serveHostingMint(authGate, { storageDir, leafSeedFor: hostingLeafSeedFor });
-      serveHostingCarry(authGate, { storageDir, leafSeedFor: hostingLeafSeedFor, limits: hostingCarryLimits(loadLaresConfig(), DEFAULT_CARRY_LIMITS) });
+      serveHostingMint(authGate, { leafSeedFor: hostingLeafSeedFor });
+      serveHostingCarry(authGate, { leafSeedFor: hostingLeafSeedFor, limits: hostingCarryLimits(loadLaresConfig(), DEFAULT_CARRY_LIMITS) });
+    }
+    // THE HOSTING DOC RE-DERIVES FROM THE SEALED STATE. A roll commits at its state row; an act that sealed there
+    // and never reached the doc lands as this sovereign composition stands, so its walkers can read the epoch.
+    // A floor reads no hosting row and lands nothing.
+    if (sovereign && landOwedHostingActs === null) {
+      let owed = true;
+      landOwedHostingActs = async (): Promise<void> => {
+        if (!owed) return;
+        try {
+          const landed = await landEveryHostingAct({ sealHome, repo });
+          owed = false;
+          if (landed > 0) console.log(`[hosting] landed ${landed} hosting act(s) the sealed state held and the hosting doc lacked`);
+        } catch (err) {
+          console.warn(`[hosting] the sealed hosting state did not land on its doc, and stays owed to the next refold: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      };
+      // Started here and settled on its own: the landing catches its own fault and stays owed to the next refold.
+      void landOwedHostingActs();
     }
     // THE KNOCK. The relay answers an upgrade only on the path its gate key derives; the dispatcher destroys
     // every other upgrade before any HTTP 101. Registered once — a re-armed gate keeps its key and its path.
@@ -2818,6 +2849,8 @@ async function prepareNodeBootOn(
       : null),
     // Thunks: the dial's gate key settles before any act runs, and the walk dial stands only once the daemon reads its doc.
     walkDial: { dialGate: () => joinGatePubKey?.toLowerCase() ?? null, get represent() { return representWalk; } },
+    // A roll lands on THIS Repo, the replica this hearth's walkers sync, and the refold serves the hosting doc it opened.
+    hostingDoor: { withRepo: (act) => act(repo), rolled: async (nexusAid) => { await awaitOnRolled(afterRoll(nexusAid)); } },
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
@@ -2916,6 +2949,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     hearthDaemonUrl:  p.hearthDaemonUrl(),
     personaSelves:    p.personaSelves(),
     walkDial:         p.walkDial,
+    hostingDoor:      p.hostingDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase: "live",
@@ -3040,6 +3074,7 @@ async function composeNodeHermOn(
     storeClaim:       p.storeClaim,
     personaSelves:    p.personaSelves(),
     walkDial:         p.walkDial,
+    hostingDoor:      p.hostingDoor,
     mountManifest:    herm.assembly.mountManifest,
     dispose,
     teardown: async () => {

@@ -84,12 +84,14 @@ async function kapaeRaise(args: ParsedArgs, action: "kapae" | "un_kapae", nym: s
 
 async function kapaeList(args: ParsedArgs): Promise<number> {
   try {
-    const r = (await storeVerb("nexus-kapae-list", {}, NexusKapaeError)).output as unknown as NexusKapaeListResult;
+    // `via` says where the row ran: inside the standing vessel (`daemon`), or here, holding the store (`direct`).
+    const { output, via } = await storeVerb("nexus-kapae-list", {}, NexusKapaeError);
+    const r = output as unknown as NexusKapaeListResult;
     emit(args, {
       ok: true,
       data: {
         sealEpochCid: r.sealEpochCid || null, threshold: r.threshold,
-        seatedKeys: r.seatedKeys, kapaed: r.kapaed, entries: r.entries,
+        seatedKeys: r.seatedKeys, kapaed: r.kapaed, entries: r.entries, via,
       },
       human: () => {
         console.log(`nexus kapae — the antigen board fold:`);

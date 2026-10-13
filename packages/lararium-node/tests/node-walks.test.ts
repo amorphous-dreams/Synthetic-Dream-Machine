@@ -53,15 +53,16 @@ afterEach(() => {
 });
 
 async function hearth(): Promise<{ sort: ReturnType<typeof makeSocketSorter>; invite: () => string }> {
-  await rollHosting({ storageDir: hearthStore, nexusAid: AID, leafSeed: HEARTH_LEAF });
+  await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
   const keys = await Promise.all(SEEDS.map(pubOf));
   const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
   const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
   const sort = makeSocketSorter({
     readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
-    hosting: { storageDir: hearthStore, leafSeedFor: async () => HEARTH_LEAF },
+    hosting: { leafSeedFor: async () => HEARTH_LEAF },
   });
-  const invite = () => encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs(readHostingState(hearthStore, AID)!, HEARTH_LEAF)!.current) });
+  const live = liveEpochs((await readHostingState(AID))!, HEARTH_LEAF)!;
+  const invite = () => encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(live.current) });
   return { sort, invite };
 }
 

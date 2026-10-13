@@ -229,6 +229,26 @@ export async function updateSealedCarrier<T>(args: Omit<WriteSealedCarrierArgs, 
   });
 }
 
+/**
+ * Remove one sealed carrier, as ONE custody holder. The tree at `treePath` must commit to `vk`, and the carrier
+ * must hold nothing or bytes `vk` opens: a holder removes only what its own key sealed, so bytes another key
+ * sealed, torn bytes and bare bytes each refuse `CustodyRefusal` and stay. A stray sidecar of the carrier leaves
+ * with it. Answers whether a carrier stood.
+ */
+export async function removeSealedCarrier(args: Omit<WriteSealedCarrierArgs, "plaintext" | "rng">): Promise<boolean> {
+  const { io, vk, carrier } = args;
+  return io.exclusive(async () => {
+    await proveAgainstTree(io, args.treePath, vk);
+    const standing = openUnderVk(vk, carrier.name, await io.read(carrier.path));
+    if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
+    if (standing.reading === "opens") standing.plaintext.fill(0);
+    await io.remove(`${carrier.path}${SEALING_SUFFIX}`);
+    if (standing.reading === "absent") return false;
+    await io.remove(carrier.path);
+    return true;
+  });
+}
+
 export interface WriteSealedCarrierArgs {
   readonly io:        CustodyIo;
   readonly vk:        VesselKey;

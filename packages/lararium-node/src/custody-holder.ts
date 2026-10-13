@@ -29,7 +29,7 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  openSealedCarrier, writeSealedCarrier, updateSealedCarrier,
+  openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal,
   type Credential, type CustodyIo, type VesselKey,
 } from "@lararium/mesh";
 import { custodyDerive, custodyRootFromBytes, custodyVeil, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
@@ -91,6 +91,11 @@ export interface CustodyHolder {
    * read and the write. `decide` answers the row's next plaintext, or `null` to leave it as it stands.
    */
   updateRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
+  /**
+   * Remove one hot row as ONE custody holder; answers whether a row stood. The holder removes only a row its own
+   * key opens: a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
+   */
+  removeRow(home: CustodyHome, file: string): Promise<boolean>;
   openColdRow<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
   /**
    * Read a cold row, decide, and write it as ONE custody holder, for a cold row whose mint must never land over a
@@ -226,6 +231,19 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
             : standing.reading === "absent" ? { reading: "absent" }
               : { reading: "unavailable", why: standing.reading }),
       }));
+    },
+    async removeRow(home, file) {
+      if (vk === null || !accepting) throw new CustodyLocked();
+      const { row, path, name } = address(home, file, false);
+      const key = vk;
+      return operation(async () => {
+        try {
+          return await removeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass } });
+        } catch (err) {
+          if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
+          throw err;
+        }
+      });
     },
     async updateColdRow(home, file, decide) {
       if (vk === null || !accepting) throw new CustodyLocked();

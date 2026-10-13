@@ -15,17 +15,32 @@
  * Without `--nexus` a door acts on this hearth's own charter. A hearth hosts only in a Nexus it carries, and
  * only as the face this vessel wears.
  *
- * ONE STORE DOOR. While the vessel stands, each door runs inside it (`host-*` verbs over the local socket), so a
- * roll lands on the replica its walkers sync; with no vessel standing, the door runs here (`store-door`).
+ * THE CUSTODY DOOR. The hosting state, its spend rows and its carriage rest sealed under the vessel key, so each
+ * door here sends one `act` frame (`host.state`, `host.roll`, `host.invite`): an invite as a verb's outcome would
+ * rest in the daemon's document in the clear. While the vessel stands unlocked the act runs inside it, so a roll
+ * lands on the replica its walkers sync; with no vessel standing it runs here, under this command's own key
+ * session, and holds the store for the moment of the roll.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { HostRefusal } from "@lararium/node";
+import { HostRefusal, SealedActRefused } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { storeVerb } from "../store-door.js";
+import { sealedActVia } from "../sealed-act-door.js";
 import type { ParsedArgs } from "../parse-args.js";
+
+/** Run a host act on the custody door; the door's own refusal comes back as a `HostRefusal`, on either path. */
+async function hostDoor(act: "host.state" | "host.roll" | "host.invite", args: Record<string, unknown> = {}): Promise<{ output: Record<string, unknown>; via: string }> {
+  try {
+    const r = await sealedActVia(act, args);
+    // The command's own word for where a door ran stays what every store door says: `daemon` inside the standing vessel.
+    return { output: r.result, via: r.via === "vessel" ? "daemon" : "direct" };
+  } catch (err) {
+    if (err instanceof SealedActRefused && err.reason === "act-refused") throw new HostRefusal(err.message);
+    throw err;
+  }
+}
 
 function nexusOf(args: ParsedArgs): string | undefined {
   const v = args.options["nexus"];
@@ -51,7 +66,7 @@ interface HostedRow { nexusAid: string; epoch: string; previousEpoch: string | n
 
 async function hostState(args: ParsedArgs): Promise<number> {
   try {
-    const { output, via } = await storeVerb("host-state", {}, HostRefusal);
+    const { output, via } = await hostDoor("host.state");
     const hosted = (output["nexuses"] ?? []) as HostedRow[];
     emit(args, {
       ok: true,
@@ -79,7 +94,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
   try {
     const nexusAid = nexusOf(args);
     const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(cap !== undefined ? { cap } : {}) };
-    const { output: r, via } = await storeVerb("host-roll", vargs, HostRefusal);
+    const { output: r, via } = await hostDoor("host.roll", vargs);
     emit(args, {
       ok: true,
       data: { nexusAid: r["nexusAid"], epoch: r["epoch"], previous: r["previous"], cap: r["cap"], docUrl: r["docUrl"], act: r["act"], via },
@@ -90,6 +105,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
         console.log(`  cap:       ${String(r["cap"])}`);
         console.log(`  act on:    ${String(r["docUrl"])}  (${via === "daemon" ? "the standing vessel's replica" : "this vessel's store"})`);
         console.log("  every grant and token two epochs back is now dead; roll again to end the previous epoch too.");
+        if (Number(r["unswept"]) > 0) console.log(`  ${String(r["unswept"])} spend row(s) of dead epochs refused removal (bytes this vessel's key does not open); they stay on disk.`);
       },
     });
     return 0;
@@ -102,7 +118,7 @@ async function hostInvite(args: ParsedArgs): Promise<number> {
   try {
     const nexusAid = nexusOf(args);
     const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(relay ? { relay } : {}) };
-    const { output: r, via } = await storeVerb("host-invite", vargs, HostRefusal);
+    const { output: r, via } = await hostDoor("host.invite", vargs);
     emit(args, {
       ok: true,
       data: { nexusAid: r["nexusAid"], epoch: r["epoch"], invite: r["invite"], via },
