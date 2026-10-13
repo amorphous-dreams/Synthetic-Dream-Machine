@@ -149,7 +149,7 @@ The ruling names three, and they differ by ''what holds the presenting key'', ne
 
 ''So the cure runs as one clause on the realm leg, the narrowest one available.'' `RealmCharterConsult` carries a `carrierPeer(peerId)` question answered off the vessel's OWN carrier fold; `RealmBagGate.mayFederate` opens for such a peer ''only when the document's own registration declares PUBLIC'' — `rec.readTier === "public"`, read off `#byDocId` the gate already keeps (`realm-bag.ts:423, 489`). ''A CONTRACT-tier pointer still 404s through the Herm'' — that reads as the CONTROL, and it holds at TWO independent shores: the gate never federates the doc, and the shore would skip it even if it did (`bulb-read-face.ts:99`).
 
-''And carry ⊥ read survives untouched.'' The Herm gains BYTES a pointer in a world-readable book names, which the world may already ask any hearth for. It gains no keyring, no `@cad` secret, no BeeKEM cap; the read-floor stays a causal-island-local FACT rather than a policy (`identity-classes.mem` #/the-mesh-breathes, quote license). ''The Herm holds the HINT, never the read-cap'' — the great-grandchild's sentence the operator already wrote (`scale-stories-basket-one.mem` #/the-shared-bag, moʻolelo clause 3).
+''And carry ⊥ read survives untouched.'' The Herm gains BYTES a pointer in a world-readable book names, which the world may already ask any hearth for. It gains no content key, no lockbox, no BeeKEM cap; the read-floor stays a causal-island-local FACT rather than a policy (`identity-classes.mem` #/the-mesh-breathes, quote license). ''The Herm holds the HINT, never the read-cap'' — the great-grandchild's sentence the operator already wrote (`scale-stories-basket-one.mem` #/the-shared-bag, moʻolelo clause 3).
 
 <<~/ahu>>
 
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i9NHHHsG5otE8cfJ9jopW07C-WSmnuC0a2XzVo-0qYE
+<<^ code="&#x0003;">>ni:///sha-256;6u5bnBBWoxprt6OAlkZqjhGMhzxN9oRIZFsfrHvGwEI
 
 <<^ code="&#x0004;" -> to="?">>

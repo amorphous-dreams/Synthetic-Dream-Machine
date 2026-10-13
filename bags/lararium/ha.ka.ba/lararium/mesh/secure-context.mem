@@ -240,7 +240,7 @@ It bears on the standing finding that no shipped guardianship design gives its s
 
 !! Admit inertness ~ SAS, not a proximity radio
 
-The QR admit ceremony (`persona-circle.mem`) stays ''photograph-inert by construction'': the offer carries the target vessel's device key, an ephemeral pubkey and a nonce, the grant rides ECDH-sealed to a secret that never leaves the joinee, and the keyring rides bound into the persona-signed transcript (#cap-tier, #keyring-delivery). ''Under camera-to-screen, the ceremony needs nothing more'' — nonce consumption, local session patience and who-scans-whom carry it.
+The QR admit ceremony (`persona-circle.mem`) stays ''photograph-inert by construction'': the offer carries the target vessel's device key, an ephemeral pubkey and a nonce, the grant rides ECDH-sealed to a secret that never leaves the joinee, and whatever travels beside the grant binds by a digest into the persona-signed transcript (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>). ''Under camera-to-screen, the ceremony needs nothing more'' — nonce consumption, local session patience and who-scans-whom carry it.
 
 FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tunnel-SERVER relay (the QR opens no channel itself) — so a photographed / remote QR could drive auth from afar, and BLE re-adds the proximity the relay threw away. ''Our QR carries the channel'', so the property BLE restores never left; and BLE runs beacon-relayable (~150m) and platform-broken for our surfaces (no Web Bluetooth on Safari/Firefox/iOS; no Web NFC on any desktop/home-node). ''The one residual'' — an active relay over a MODIFIABLE channel (the admit surface accepts paste; a relayed 3-hop to a distant victim) — wants a ''short-authentication-string'' (SAS), never a radio: derive a short compare (Vaudenay CRYPTO-2005; Matrix/Signal) by HKDF over material already in the signed transcript — ''bind it to the TRANSCRIPT HASH, not raw DH'', or a same-DH-different-payload substitution slips under it — render ~5-7 emoji / 3×4-digit, one human glance, gated to the relayed case only. Zero new dependency, web3-native. Skip rotating-QR (nonce consumption and local session patience bound the ceremony) and NFC (Android-only). ''NOT built'' — a flagged follow; the SAS length + whether the relayed path stays in-scope read as operator rulings.
 
@@ -296,6 +296,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JWv5KD9NxUdSXGzV0v3SAsK9peLJzJI5GkdXYDU9kl8
+<<^ code="&#x0003;">>ni:///sha-256;sw433aFInZxj-j-sTex2nemKfO2_JBBoF7-JSqDlHdI
 
 <<^ code="&#x0004;" -> to="?">>

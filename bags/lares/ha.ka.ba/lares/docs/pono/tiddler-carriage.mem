@@ -104,9 +104,9 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 !! The private plane ~ what `@cad` ciphertext means for a fleet peer's fetch
 
-''Verify-cap ⊥ read-cap.'' `installSealedBody` (`packages/lararium-node/src/ciphertext-cas-seal.ts:66-78`) message-locks the plaintext to the per-Nexus epoch secret, content-addresses the CIPHERTEXT (`cid = blake3:<hex>`), writes it to the `cad/` tier, and registers `docIdForCiphertextCid(cid)` into the live `SealedPlaneRegistry` AS A SIDE-EFFECT — the only door into the sealed set, so a cleartext body never registers. It returns the `readCap` (32 bytes) to the caller alone; the relay serves + verifies secret-free (`verifyCiphertextCid`, `cas-wire.ts`). FAIL-CLOSED with no keyring (`keyring.current()` throws; the body stays cleartext-local — the #51 Fix=B ruling: cas-stage = CLEARTEXT LOCAL vs `@cad` seal = CIPHERTEXT FEDERATION).
+''Verify-cap ⊥ read-cap.'' `installSealedBody` (`packages/lararium-node/src/ciphertext-cas-seal.ts`) seals the plaintext as one sealed value under its bag's content key (randomized, authenticated, bound to the bag, the key version and the body's plaintext digest), content-addresses the CIPHERTEXT (`cid = blake3:<hex>`), writes it to the `cad/` tier, and registers `docIdForCiphertextCid(cid)` into the live `SealedPlaneRegistry` AS A SIDE-EFFECT — the only door into the sealed set, so a cleartext body never registers. No key enters its answer; the relay serves + verifies key-free (`verifyCiphertextCid`, `cas-wire.ts`). FAIL-CLOSED: a seal that refuses throws before any byte lands, and the body stays cleartext-local (cas-stage = CLEARTEXT LOCAL vs `@cad` seal = CIPHERTEXT FEDERATION). The format's law stands at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>.
 
-''What a fleet peer fetches.'' A same-operator peer full-syncs the record; for the BYTES it holds the read-cap by construction (the keyring rides the fleet) and would carry the ciphertext over Socket B's `cas-want-block` — the ONE blob wire that stands — then decrypt locally. A cross-operator MEMBER carries the same ciphertext and reads nothing (carry ⊥ read); a STRANGER draws the byte-identical Mu (denial ≡ satiety, `cas-wire.ts`). ''Measured:'' `packages/lararium-node/tests/cas-wire.test.ts` + `ciphertext-cas-seal.test.ts` stand green in the node suite (150 files); `cas-transit.test.ts` in mesh. ''Named, not measured:'' no live vessel wires `makeCidResolver` over the carriage channel — the sealed fetch and the cleartext fetch attach at the SAME seam (#/the-seam 1).
+''What a fleet peer fetches.'' A same-operator peer full-syncs the record; for the BYTES it reads through the bag's content key, which a lockbox carries to the bag's key group (the durable lockbox store stands owed), and it would carry the ciphertext over Socket B's `cas-want-block` — the ONE blob wire that stands — then open it locally. A cross-operator MEMBER carries the same ciphertext and reads nothing (carry ⊥ read); a STRANGER draws the byte-identical Mu (denial ≡ satiety, `cas-wire.ts`). ''Measured:'' `packages/lararium-node/tests/cas-wire.test.ts` + `ciphertext-cas-seal.test.ts` stand green in the node suite (150 files); `cas-transit.test.ts` in mesh. ''Named, not measured:'' no live vessel wires `makeCidResolver` over the carriage channel — the sealed fetch and the cleartext fetch attach at the SAME seam (#/the-seam 1).
 
 <<~/ahu>>
 
@@ -136,6 +136,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VyDPobQ-WmhZmVds68KfLwuH02LzdmqKoksggvWFw3I
+<<^ code="&#x0003;">>ni:///sha-256;XvhM4Qc7HRfSuW5vLggMvO8KDmwdKYOxUFU_mFCDJ5s
 
 <<^ code="&#x0004;" -> to="?">>

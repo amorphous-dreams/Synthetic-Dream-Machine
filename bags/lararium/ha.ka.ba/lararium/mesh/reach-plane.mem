@@ -117,9 +117,9 @@ Of the surfaces a foreign identity protocol offers, take the ''resolvable-identi
 
 !! The truncated chain ~ where a credential may travel
 
-A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the ''same'' delivery mechanism (keyring-delivery to a recipient set). It differs in one structural way: ''the chain truncates.''
+A reach credential rides the ''same'' chain a bag rides (`cap-tier.mem`) and the ''same'' delivery mechanism (a key delivered to a recipient set). It differs in one structural way: ''the chain truncates.''
 
-<<~ scale reach "veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · keyring-delivered so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match">>
+<<~ scale reach "veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · delivered to the fleet, so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match">>
 
 ''THE TYPE REFUSES PUBLIC.'' A world-readable credential loses the confidentiality that makes it a reach credential. The reach plane therefore carries a ''ceiling at CONTRACT'' where the content chain carries none — the one place the two planes' orders differ, and the difference comes from a definition, not a policy.
 
@@ -167,7 +167,7 @@ That asymmetry reads as honest rather than broken — it names precisely what ho
 
 The vessel already holds two at-rest secret carriers under a two-file ratify discipline, and both stay ''per-device by design'' — the archive and the device-share never replicate. A reach credential declared PERSONAGROUP must reach the ''fleet'', so it cannot ride that discipline at all.
 
-Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-on-the-wire already runs universal, the declared∧floor gate already stands, keyring-delivery to a recipient set already delivers, fleet-sync already syncs.
+Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-on-the-wire already runs universal, the declared∧floor gate already stands, a bag's key reaches its recipient set by one mechanism (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>), fleet-sync already syncs.
 
 ''THE TRUNCATION FALLS OUT OF A FLOOR, NEVER A CEILING'' — which reads as the tell that the framing lands right. The keystone already computes `meet(declared, floor)`, so a credential bag floored at CONTRACT meets any PUBLIC declaration back down on its own. Publishing a credential becomes ''mechanically impossible'' rather than merely forbidden, and no new enforcement carries it.
 
@@ -217,7 +217,7 @@ Three consequences follow directly:
 * ''Per-app separation outgrows hygiene.'' With this many credentials under one vessel, the per-app HKDF `info` becomes the thing standing between one compromise and all of them.
 * ''A wrong-persona post breaks two things at once.'' Posting as the wrong face crosses a veil the identity model exists to hold — and in a shared setting it also breaks the fiction, in front of other people's characters. The binding wants to hold STRUCTURALLY, never by interface convention, because a UI slip should reach no wrong credential at all.
 
-''THE SHARED-CHARACTER CASE ENACTS THE LIVE CONTRACT TIER.'' A character several people voice matches exactly the credential held at CONTRACT — the same keyring-delivery to a set, with the blast radius the tier names. Not a hypothetical: it arrives with the first shared cast.
+''THE SHARED-CHARACTER CASE ENACTS THE LIVE CONTRACT TIER.'' A character several people voice matches exactly the credential held at CONTRACT — the same delivery to a set, with the blast radius the tier names. Not a hypothetical: it arrives with the first shared cast.
 
 !!! Many-to-many ~ the pet-names ALIGN, they never bind
 
@@ -283,6 +283,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OkKZbZqc3LUfbPbL5vhwZdI5tE5gNo516TBZeCu65Vs
+<<^ code="&#x0003;">>ni:///sha-256;mrhB1LKt-Wv4C5nMpptPDF4IvpwH7hWoaDyXMvkvdYA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -377,7 +377,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 # ''Provider-independent security'': Confidentiality and integrity hold even if every storage server acts maliciously; trust rides the caps, never the servers.
 
 ''Contrast with DreamNet:''
-* DreamNet's `@cad` key = `hash(per-operator convergence-secret + plaintext)` lifts Tahoe's scoped-convergence secret verbatim — dedup within one operator's `@cad`, zero cross-operator leak, beating both global-convergent (leaks) and random-key (no dedup). And ciphertext-addressing (`cid = BLAKE3(ciphertext)`) enacts verify-cap ⊥ read-cap: an untrusted peer verifies/pins/repairs against the cid without the decryption key (node routes ciphertext, never decrypts — the MLS Delivery-Service keel). <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+* DreamNet's private tier refuses the convergent key: any insider who holds the scoped secret can confirm a guessed plaintext, so a private body takes a random content key for its bag and gives up deduplication (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>). Ciphertext-addressing (`cid = BLAKE3(ciphertext)`) enacts verify-cap ⊥ read-cap: an untrusted peer verifies/pins/repairs against the cid without the decryption key (node routes ciphertext, never decrypts — the MLS Delivery-Service keel). <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 ''Named Patterns:''
 * Convergence secret (scoped) — dedup without a confirmation oracle
@@ -670,6 +670,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
-<<^ code="&#x0003;">>ni:///sha-256;8PlLckGmLQ9uab5wfwBiTfk8lefsVcElb_CQtqRrxog
+<<^ code="&#x0003;">>ni:///sha-256;VrHSCWqADuENgPcqH-PsJ3PcUuTDwxMhrrTQc9JJOxg
 
 <<^ code="&#x0004;" -> to="?">>
