@@ -121,3 +121,11 @@ test("the shard lane's push door ends on the line that names this reader", async
   const push = src.slice(src.indexOf("async function cliPush("), src.indexOf("\n}\n", src.indexOf("async function cliPush(")));
   assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} /, "the push door stopped printing where the other half of green gets read");
 });
+
+test("the shard lane names a run whose verdict it could not read, and the command that reads it", async () => {
+  const { unreadVerdict } = await import("./e2e-shards.mjs");
+  assert.match(unreadVerdict(42), /^UNREAD: run 42 .*gh run view 42 --json status,conclusion,url,jobs$/);
+  const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
+  const watch = src.slice(src.indexOf("const watch = spawnSync("), src.indexOf("function deleteBranch("));
+  assert.match(watch, /catch \(err\) \{[\s\S]*throw new Error\(`\$\{unreadVerdict\(runId\)\}/, "a failed read of the run stopped naming the run as unread");
+});

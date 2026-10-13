@@ -342,6 +342,11 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
     verdictLines = log.split("\n").filter((l) => l.includes("MERGE-VERIFY"));
     verdictLine = verdictLines.find((l) => l.includes("MERGE-VERIFY:")) ?? null;
     viewed = JSON.parse(run("gh", ["run", "view", String(runId), "--json", "conclusion,createdAt,updatedAt,url"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] }));
+  } catch (err) {
+    // A READ THAT FAILED SAYS NOTHING ABOUT THE RUN. `gh` refuses under the shared API rate limit, and a watch
+    // that died of it returns before the run ends: the run goes on and may well read green. The refusal names
+    // the run and the one command that reads it, so nobody takes this exit for a red.
+    throw new Error(`${unreadVerdict(runId)}\n  cause: ${String(err?.message ?? err).split("\n")[0]}`);
   } finally {
     deleteBranch(repoRoot, branch);
   }
@@ -349,6 +354,11 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   const ok = watchOk && viewed.conclusion === "success";
   return { ok, runId, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
 }
+
+/** What `push` says when it pushed a run and could not read its verdict: neither green nor red. */
+export const unreadVerdict = (runId) =>
+  `UNREAD: run ${runId} stands pushed and its verdict went unread; it may still run. Read it by hand: `
+  + `gh run view ${runId} --json status,conclusion,url,jobs`;
 
 function deleteBranch(repoRoot, branch) {
   // Best-effort: a branch already gone (deleted by a retry, or never actually pushed because the
