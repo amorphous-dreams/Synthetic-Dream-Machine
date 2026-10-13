@@ -194,7 +194,8 @@ export function readGateSignature(pin: GateBundlePin, image: Uint8Array, signatu
 
 /**
  * The custody seat's derive door, as a bundle asks it: one child of the root, under one registered name.
- * The seat's holder answers it (`derive(domain)`), and a locked seat throws its own refusal.
+ * The seat's holder answers it (`derive(domain)`), and a locked seat throws its own refusal. The door
+ * answers a FRESH buffer each time, which its caller owns: the bundle overwrites the child it received.
  */
 export interface GateBundleRoot {
   derive(domain: string): Uint8Array;
@@ -223,10 +224,9 @@ export function deriveGateBundle(root: GateBundleRoot, nexusAid: Uint8Array, rou
   if (!(nexusAid instanceof Uint8Array) || nexusAid.length === 0 || nexusAid.length > NEXUS_AID_MAX_BYTES) throw new GateBundleRefused("nexus-malformed");
   if (!routeReads(route)) throw new GateBundleRefused("route-malformed");
   const aid = Uint8Array.from(nexusAid);
-  const answered = root.derive(GATE_BUNDLE_INFO);
-  if (!(answered instanceof Uint8Array) || answered.length !== 32) throw new GateBundleRefused("root-astray");
-  // A copy this function owns and overwrites: the root's own buffer stays the root's.
-  const seed = Uint8Array.from(answered);
+  // The door answers a child the caller owns: this function overwrites it once both keys derive.
+  const seed = root.derive(GATE_BUNDLE_INFO);
+  if (!(seed instanceof Uint8Array) || seed.length !== 32) throw new GateBundleRefused("root-astray");
   let transportSecret: Uint8Array, signingSeed: Uint8Array;
   try {
     transportSecret = hkdf(sha256, seed, new Uint8Array(0), gateFields(GATE_TRANSPORT_KEY_INFO, aid, utf8Bytes(route)), 32);
@@ -241,25 +241,25 @@ export function deriveGateBundle(root: GateBundleRoot, nexusAid: Uint8Array, rou
   if (!("pin" in read)) { transportSecret.fill(0); signingSeed.fill(0); throw new GateBundleRefused(read.refusal); }
   const pin = read.pin;
   const prologue = gatePrologue(pin);
-  let dropped = false;
+  // A bundle stands dropped exactly when both secrets read all zero: the flag and the erasure never part.
+  const isDropped = (): boolean => transportSecret.every((byte) => byte === 0) && signingSeed.every((byte) => byte === 0);
   return Object.freeze({
     pin,
     digest: gateBundleDigest(pin),
     knock: gateKnock(pin),
     respond(message1: Uint8Array): NoiseResponderPending {
-      if (dropped) throw new GateBundleRefused("bundle-dropped");
+      if (isDropped()) throw new GateBundleRefused("bundle-dropped");
       return noiseRespond({ prologue, s: { secretKey: transportSecret, publicKey: transportPublic }, message1 });
     },
     async sign(image: Uint8Array): Promise<Uint8Array> {
-      if (dropped) throw new GateBundleRefused("bundle-dropped");
+      if (isDropped()) throw new GateBundleRefused("bundle-dropped");
       if (!gateSigns(image)) throw new GateBundleRefused("purpose-foreign");
       return ed25519.sign(Uint8Array.from(image), signingSeed);
     },
     drop(): void {
       transportSecret.fill(0);
       signingSeed.fill(0);
-      dropped = true;
     },
-    get dropped(): boolean { return dropped; },
+    get dropped(): boolean { return isDropped(); },
   });
 }

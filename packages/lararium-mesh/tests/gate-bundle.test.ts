@@ -108,6 +108,10 @@ describe("the gate bundle derives, and never rests", () => {
     expect(() => deriveGateBundle({ derive: () => { throw new Error("custody locked"); } }, AID_A, "/ws")).toThrow(/custody locked/);
     // CONTROL: a root that answers 32 bytes derives.
     expect(deriveGateBundle({ derive: () => new Uint8Array(32).fill(3) }, AID_A, "/ws").pin.route).toBe("/ws");
+    // The bundle overwrites the child it received: nothing of the custody root's child outlives the derivation.
+    const handed = new Uint8Array(32).fill(3);
+    deriveGateBundle({ derive: () => handed }, AID_A, "/ws");
+    expect([...handed]).toEqual(new Array(32).fill(0));
   });
 
   test("the Nexus rides as opaque bytes within a bound, and a route holds one spelling", () => {
