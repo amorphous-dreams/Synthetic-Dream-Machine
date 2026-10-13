@@ -318,7 +318,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "writes nothing, exits 1 naming each pair whose source moved or vanished, or whose bytes drifted",
     ],
     next: ["lares meme check <file.mem>", "lares meme sitting bags/   # what the fire could take; it BURNS NOTHING"],
-    meme: "lar:///ha.ka.ba/lares/docs/handoff",
+    meme: "lar:///ha.ka.ba/lares/api/pono/meme",
   },
 
   library: {

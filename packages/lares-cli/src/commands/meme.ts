@@ -74,7 +74,7 @@
  * naming each pair whose source moved (`source-check` disagrees), vanished, or whose bytes drifted from
  * a hand edit. Local, read-alone — it writes nothing, exactly like `check` over a `.mem` file.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/handoff
+ * Meme: lar:///ha.ka.ba/lares/api/pono/meme
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";

@@ -9,7 +9,7 @@
  * A DOOR THAT NAMES NO MEME SAYS SO AND EXITS CLEAN. Naming no record describes the registry, not a fault:
  * refusing with an error code would teach an operator that `--meme` broke when nothing did.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/handoff
+ * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
 
 import { memeForDoor } from "./command-help.js";
