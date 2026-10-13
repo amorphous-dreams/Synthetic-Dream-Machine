@@ -37,9 +37,9 @@ const only = (c: Chain): WriterStanding => ({ holdsWrite: ({ certificate, bagId 
 const reader = (key: ContentKey, standing: WriterStanding = everyone) => ({ bagId: BAG, locator: LOCATOR, key, standing });
 
 const foundingBody: KeyVersionBody = { bag: LOCATOR, keyVersion: v1, parents: [], span: v1 };
-const foundingPrivate: KeyVersionPrivate = { cause: { kind: "founding" }, history: "shareable", joinProofs: [] };
+const foundingPrivate: KeyVersionPrivate = { cause: { kind: "founding" }, history: "shareable", joinProofs: [], unserved: [] };
 const removalBody: KeyVersionBody = { bag: LOCATOR, keyVersion: v2, parents: [v1], span: v1 };
-const removalPrivate: KeyVersionPrivate = { cause: { kind: "removal", acts: ["raise-0001"] }, history: "shareable", joinProofs: [] };
+const removalPrivate: KeyVersionPrivate = { cause: { kind: "removal", acts: ["raise-0001"] }, history: "shareable", joinProofs: [], unserved: [] };
 
 async function sign<K extends RecordKind>(kind: K, body: SealedRecord<K>["body"], secret: VerifiedRecord<K>["private"], key: ContentKey, c: Chain): Promise<SealedRecord<K>> {
   const r = await signRecord({ kind, body, private: secret, bagId: BAG, key, signer: signerOf(c) });
@@ -56,6 +56,65 @@ function value(key: ContentKey, role: SealContext["role"], ref: string, text: st
   const entry: ManifestEntry = { role, address: r.chunk.address, locator: entryLocatorOf(key, context), parents: [...parents].sort() };
   return { context, chunk: r.chunk, entry };
 }
+
+describe("the hand-over record", async () => {
+  const writer = await chain("writer", NEXUS);
+  const body = { bag: LOCATOR, keyVersion: v2, span: v1, versions: [v1, v2].sort() as KeyVersionId[] };
+  const READER = "ab".repeat(32);
+  const sealedPartOf = async (secret: { reader: string }, of = body) => {
+    const real = await sign("hand-over", of, secret, k2, writer);
+    const opened = openChunk({ key: k2, context: { bagId: BAG, keyVersion: v2, role: "record", logicalRef: hexToBytes(recordIdOf("hand-over", of)) }, sealed: real.sealed, authorized: authorizeAddress(sealedAddressOf(real.sealed), "record-part")! });
+    if (!("plaintext" in opened)) throw new Error(opened.refusal);
+    return { real, part: JSON.parse(new TextDecoder().decode(opened.plaintext)) as { private: { reader: string }; certificate: unknown; signature: unknown } };
+  };
+  const craft = (part: unknown, of = body): SealedRecord<"hand-over"> => {
+    const r = sealChunk({ key: k2, context: { bagId: BAG, keyVersion: v2, role: "record", logicalRef: hexToBytes(recordIdOf("hand-over", of)) }, plaintext: utf8Bytes(canonicalJson(part)) });
+    if (!("chunk" in r)) throw new Error(r.refusal);
+    return { kind: "hand-over", body: of, sealed: r.chunk.sealed };
+  };
+
+  it("CONTROL: a hand-over record signs, reads back, and seals its reader's name", async () => {
+    const { real } = await sealedPartOf({ reader: READER });
+    const r = readRecord("hand-over", real, reader(k2));
+    if (!("record" in r)) throw new Error(refusalOf(r));
+    expect(r.record.private).toEqual({ reader: READER });
+    expect(r.record.body).toEqual(body);
+    expect(hex(real.sealed).includes(hex(utf8Bytes(READER)))).toBe(false);
+    expect(canonicalJson(real.body).includes(READER)).toBe(false);
+    expect(Object.keys(real.body).sort()).toEqual(["bag", "keyVersion", "span", "versions"]);
+  });
+
+  it("THE SIGNATURE COVERS THE READER: a reader's name changed under a kept signature refuses", async () => {
+    const { part } = await sealedPartOf({ reader: READER });
+    expect(refusalOf(readRecord("hand-over", craft(part), reader(k2)))).toBe("READ");                 // CONTROL: the hand-built part reads
+    const renamed = { ...part, private: { reader: "cd".repeat(32) } };
+    expect(refusalOf(readRecord("hand-over", craft(renamed), reader(k2)))).toBe("signature-refused:signature-refused");
+  });
+
+  it("the clear part binds the versions handed: a list edited by a carrier breaks the record", async () => {
+    const { real } = await sealedPartOf({ reader: READER });
+    const edited = { ...real, body: { ...body, versions: [v2] } };
+    expect(recordIdOf("hand-over", edited.body)).not.toBe(recordIdOf("hand-over", body));
+    expect(refusalOf(readRecord("hand-over", edited, reader(k2)))).toBe("sealed-part-refused:context-mismatch");
+    expect(refusalOf(readRecord("hand-over", { ...real, body: { ...body, span: v2 } }, reader(k2)))).toBe("sealed-part-refused:context-mismatch");
+  });
+
+  it("a hand-over with no version, unsorted or repeated versions, no reader or a stray field reads as no record", async () => {
+    const { part } = await sealedPartOf({ reader: READER });
+    for (const versions of [[], [v2, v1].sort().reverse(), [v1, v1]]) {
+      expect(() => recordIdOf("hand-over", { ...body, versions: versions as KeyVersionId[] })).toThrow(/malformed/);
+      expect(await signRecord({ kind: "hand-over", body: { ...body, versions: versions as KeyVersionId[] }, private: { reader: READER }, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
+    }
+    expect(() => recordIdOf("hand-over", { ...body, stray: 1 } as never)).toThrow(/malformed/);
+    expect(await signRecord({ kind: "hand-over", body, private: { reader: "" }, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
+    expect(refusalOf(readRecord("hand-over", craft({ ...part, private: {} }), reader(k2)))).toBe("authorship-malformed");
+    expect(refusalOf(readRecord("hand-over", craft({ ...part, private: { reader: READER, stray: 1 } }), reader(k2)))).toBe("authorship-malformed");
+    // A record of one kind never reads as another.
+    const { real } = await sealedPartOf({ reader: READER });
+    expect(refusalOf(readRecord("key-version", real, reader(k2)))).toBe("record-malformed");
+    expect(refusalOf(readRecord("hand-over", await sign("key-version", removalBody, removalPrivate, k2, writer), reader(k2)))).toBe("record-malformed");
+  });
+});
 
 describe("a record reads whole, or refuses by name", async () => {
   const writer = await chain("writer", NEXUS);
@@ -89,7 +148,7 @@ describe("a record reads whole, or refuses by name", async () => {
   });
 
   it("a sealed part moved from another record opens nothing", async () => {
-    const other = await sign("key-version", { ...removalBody, span: v2 }, { cause: { kind: "admission", act: "admit-0001" }, history: "closed", joinProofs: [] }, k2, writer);
+    const other = await sign("key-version", { ...removalBody, span: v2 }, { cause: { kind: "admission", act: "admit-0001" }, history: "closed", joinProofs: [], unserved: [] }, k2, writer);
     expect(hex(other.sealed)).not.toBe(hex(removal.sealed));
     expect(refusalOf(readRecord("key-version", { ...removal, sealed: other.sealed }, reader(k2)))).toBe("sealed-part-refused:context-mismatch");
   });
@@ -147,6 +206,17 @@ describe("a record reads whole, or refuses by name", async () => {
       const reopened = { ...a, private: { ...a.private, history: "closed" } };
       expect(refusalOf(readRecord("key-version", craft(reopened), reader(k2)))).toBe("signature-refused:signature-refused");
     });
+    it("THE SIGNATURE COVERS THE READERS A MINT COULD NOT SERVE: an unserved list changed under a kept signature refuses, and an unsorted or repeated list reads as no record", async () => {
+      const owed: KeyVersionPrivate = { ...removalPrivate, unserved: ["reader-a", "reader-b"] };
+      const a = await authorshipOf(writer, owed);
+      expect(refusalOf(readRecord("key-version", craft(a), reader(k2)))).toBe("READ");               // CONTROL
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, unserved: ["reader-a"] } }), reader(k2)))).toBe("signature-refused:signature-refused");
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, unserved: [] } }), reader(k2)))).toBe("signature-refused:signature-refused");
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, unserved: ["reader-b", "reader-a"] } }), reader(k2)))).toBe("authorship-malformed");
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, unserved: ["reader-a", "reader-a"] } }), reader(k2)))).toBe("authorship-malformed");
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { cause: a.private.cause, history: a.private.history, joinProofs: [] } }), reader(k2)))).toBe("authorship-malformed");
+      expect(await signRecord({ kind: "key-version", body: removalBody, private: { ...removalPrivate, unserved: ["b", "a"] }, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
+    });
     it("a signature lifted from another record of the same writer refuses", async () => {
       const elsewhere = await authorshipOf(writer, removalPrivate, { ...removalBody, parents: [] });
       expect(refusalOf(readRecord("key-version", craft(elsewhere), reader(k2)))).toBe("signature-refused:signature-refused");
@@ -161,13 +231,13 @@ describe("a record reads whole, or refuses by name", async () => {
       expect(refusalOf(readRecord("key-version", craft({ ...a, certificate: forgedCertificate }), reader(k2)))).toBe("certificate-refused:signature-refused");
     });
     it("an act id of ill-formed text never signs: two unlike ids would share one signed image", async () => {
-      const lone = { cause: { kind: "removal" as const, acts: ["raise-\ud800"] }, history: "shareable" as const, joinProofs: [] };
+      const lone = { cause: { kind: "removal" as const, acts: ["raise-\ud800"] }, history: "shareable" as const, joinProofs: [], unserved: [] };
       expect(await signRecord({ kind: "key-version", body: removalBody, private: lone, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
       // An admission's act id and a checkpoint's frontier ids take the same rule.
-      const admitted = { cause: { kind: "admission" as const, act: "admit-\ud800" }, history: "closed" as const, joinProofs: [] };
+      const admitted = { cause: { kind: "admission" as const, act: "admit-\ud800" }, history: "closed" as const, joinProofs: [], unserved: [] };
       expect(await signRecord({ kind: "key-version", body: { ...removalBody, span: v2 }, private: admitted, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
       expect(await signRecord({ kind: "key-version", body: { ...removalBody, span: v2 }, private: { ...admitted, cause: { kind: "admission", act: "admit-0001" } }, bagId: BAG, key: k2, signer: signerOf(writer) })).toHaveProperty("record");
-      const a = await authorshipOf(writer, { cause: { kind: "removal", acts: ["raise-\ufffd"] }, history: "shareable", joinProofs: [] });
+      const a = await authorshipOf(writer, { cause: { kind: "removal", acts: ["raise-\ufffd"] }, history: "shareable", joinProofs: [], unserved: [] });
       // The signature covers the well-formed id; the same signature under the ill-formed twin reads as no record.
       expect(refusalOf(readRecord("key-version", craft(a), reader(k2)))).toBe("READ");
       expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, cause: { kind: "removal", acts: ["raise-\ud800"] } } }), reader(k2)))).toBe("authorship-malformed");
@@ -176,7 +246,7 @@ describe("a record reads whole, or refuses by name", async () => {
     it("a sealed part of another shape refuses `authorship-malformed`", async () => {
       const a = await authorshipOf(writer, removalPrivate);
       expect(refusalOf(readRecord("key-version", craft({ ...a, note: "extra" }), reader(k2)))).toBe("authorship-malformed");
-      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, joinProofs: ["00".repeat(32)] } }), reader(k2)))).toBe("authorship-malformed");
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, joinProofs: ["00".repeat(32)], unserved: [] } }), reader(k2)))).toBe("authorship-malformed");
       expect(refusalOf(readRecord("key-version", craft("not a record"), reader(k2)))).toBe("authorship-malformed");
     });
   });
@@ -204,7 +274,7 @@ describe("a record reads whole, or refuses by name", async () => {
     const v4 = keyVersionIdOf(k4, BAG);
     const parents = [v2, v3].sort() as KeyVersionId[];
     const proofs = parents.map((p) => joinProofOf(p === v2 ? k2 : k3, v4));
-    const join = await sign("key-version", { bag: LOCATOR, keyVersion: v4, parents, span: v1 }, { cause: { kind: "join" }, history: "shareable", joinProofs: proofs }, k4, writer);
+    const join = await sign("key-version", { bag: LOCATOR, keyVersion: v4, parents, span: v1 }, { cause: { kind: "join" }, history: "shareable", joinProofs: proofs, unserved: [] }, k4, writer);
     const read = <T extends SealedRecord<"key-version">>(record: T, key: ContentKey): VerifiedRecord<"key-version"> => {
       const r = readRecord("key-version", record, reader(key));
       if (!("record" in r)) throw new Error(refusalOf(r));
@@ -226,10 +296,10 @@ describe("a record reads whole, or refuses by name", async () => {
     expect(joinProven(joined, new Map([[v2, k3]]))).toBe(false);
     expect(joinProven(joined, new Map([[v2, k2], [v3, k3]]))).toBe(true);
     // A join whose minter held only one parent carries one true proof and one guess.
-    const guessed = await sign("key-version", { bag: LOCATOR, keyVersion: v4, parents, span: v1 }, { cause: { kind: "join" }, history: "shareable", joinProofs: parents.map((p) => (p === v2 ? joinProofOf(k2, v4) : "ab".repeat(32))) }, k4, writer);
+    const guessed = await sign("key-version", { bag: LOCATOR, keyVersion: v4, parents, span: v1 }, { cause: { kind: "join" }, history: "shareable", joinProofs: parents.map((p) => (p === v2 ? joinProofOf(k2, v4) : "ab".repeat(32))), unserved: [] }, k4, writer);
     expect(joinProven(read(guessed, k4), new Map([[v3, k3]]))).toBe(false);
     // A join with a proof missing reads as no record.
-    expect(await signRecord({ kind: "key-version", body: { bag: LOCATOR, keyVersion: v4, parents, span: v1 }, private: { cause: { kind: "join" }, history: "shareable", joinProofs: [proofs[0]!] }, bagId: BAG, key: k4, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
+    expect(await signRecord({ kind: "key-version", body: { bag: LOCATOR, keyVersion: v4, parents, span: v1 }, private: { cause: { kind: "join" }, history: "shareable", joinProofs: [proofs[0]!], unserved: [] }, bagId: BAG, key: k4, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
     // Only a verified record states a fact.
     expect(() => factOfRecord({ ...joined } as VerifiedRecord<"key-version">)).toThrow(/verified/);
   });

@@ -317,6 +317,109 @@ describe("the roll", () => {
   });
 });
 
+describe("a reader counts a version whose parents it holds no key for, as a base of its own reading", () => {
+  const no: TransitionEvidence = { raiseCounts: () => false, admissionVerifies: () => false, joinProven: () => false };
+  const baseOf = (lineage: KeyLineage, fact: KeyVersionFact, unheld: KeyVersionId[], evidence = yes): string => {
+    const r = lineage.count(fact, evidence, unheld);
+    return "refusal" in r ? r.refusal : "COUNTED";
+  };
+
+  it("CONTROL: with no parent named unheld, an unknown parent refuses as before", () => {
+    expect(refusalOf(KeyLineage.empty(), removal(bb, [aa]))).toBe("parent-unknown");
+    expect(baseOf(KeyLineage.empty(), removal(bb, [aa]), [])).toBe("parent-unknown");
+    expect(baseOf(KeyLineage.empty(), removal(bb, [aa]), [cc])).toBe("parent-unknown");   // another id named: not this parent
+  });
+
+  it("a removal, an admission and a join each count over unheld parents, stand as heads, and read as a base", () => {
+    const r = KeyLineage.empty().count(removal(bb, [aa]), yes, [aa]);
+    if (!("lineage" in r)) throw new Error(r.refusal);
+    expect(r.lineage.heads()).toEqual([bb]);
+    expect(r.lineage.base(bb)).toBe(true);
+    expect(r.lineage.has(aa)).toBe(false);
+    expect(r.lineage.historyOfSpan(aa)).toBe("shareable");          // the span reads as its member declared it
+    expect(baseOf(KeyLineage.empty(), admission(cc, [aa]), [aa])).toBe("COUNTED");
+    expect(baseOf(KeyLineage.empty(), joinOf(dd, [bb, cc], dd, "closed"), [bb, cc])).toBe("COUNTED");
+    expect(baseOf(KeyLineage.empty(), joinOf(dd, [bb, cc], aa, "shareable"), [bb, cc])).toBe("COUNTED");
+    // CONTROL: a version counted over counted parents reads as no base.
+    expect(count(founded(), removal(bb, [aa])).base(bb)).toBe(false);
+  });
+
+  it("THE EVIDENCE STILL DECIDES A BASE: an uncounted raise, an unverified admission and an unproven join each refuse", () => {
+    expect(baseOf(KeyLineage.empty(), removal(bb, [aa]), [aa], no)).toBe("cause-unverified");
+    expect(baseOf(KeyLineage.empty(), admission(cc, [aa]), [aa], no)).toBe("cause-unverified");
+    expect(baseOf(KeyLineage.empty(), joinOf(dd, [bb, cc], dd, "closed"), [bb, cc], no)).toBe("join-unproven");
+  });
+
+  it("A BASE KEEPS EVERY RULE ITS COUNTED VERSIONS LET IT CHECK: a removal never opens a span, and a span keeps the declaration this reader already counted", () => {
+    // A removal that claims to open its own span.
+    expect(baseOf(KeyLineage.empty(), removal(bb, [aa], "raise-1", bb), [aa])).toBe("span-rule-broken");
+    // This reader counted the opener of span aa as shareable: a base that calls the span closed refuses.
+    const opener = founded();
+    expect(baseOf(opener, removal(cc, [bb], "raise-2", aa, "closed"), [bb])).toBe("span-rule-broken");
+    expect(baseOf(opener, removal(cc, [bb], "raise-2", aa, "shareable"), [bb])).toBe("COUNTED");
+    // A counted parent of another span than the one the removal names.
+    const two = count(founded(), admission(cc, [aa]));
+    expect(baseOf(two, removal(dd, [bb, cc], "raise-2", aa), [bb])).toBe("span-rule-broken");
+    // A join whose counted parents sit in unlike spans must open a span.
+    const spans = unlikeSpans();
+    expect(baseOf(spans, joinOf(ee, [bb, cc, dd], aa, "shareable"), [dd])).toBe("span-rule-broken");
+    expect(baseOf(spans, joinOf(ee, [bb, cc, dd], ee, "closed"), [dd])).toBe("COUNTED");
+    // An admission and a founding keep their shapes.
+    expect(baseOf(KeyLineage.empty(), { ...admission(cc, [aa]), span: aa }, [aa])).toBe("span-rule-broken");
+    expect(baseOf(founded(), founding(bb), [aa])).toBe("second-founding");
+    expect(baseOf(KeyLineage.empty(), joinOf(dd, [bb], dd, "closed"), [bb])).toBe("join-too-few");
+  });
+
+  it("A PARENT THE LINEAGE COUNTED OR HOLDS CONFLICTED NEVER READS AS UNHELD: naming one changes nothing", () => {
+    // aa stands counted and conflicted-free; bb's parent cc stays unknown while cc is NOT named.
+    const l = count(founded(), removal(bb, [aa]));
+    expect(baseOf(l, removal(dd, [cc], "raise-2"), [])).toBe("parent-unknown");
+    // A conflicted parent: naming it unheld does not launder its child.
+    const clash = l.count({ ...removal(bb, [aa]), history: "closed" }, yes);
+    if (clash.refusal !== "version-conflict") throw new Error("setup");
+    expect(clash.conflicted.conflicted(bb)).toBe(true);
+    expect(baseOf(clash.conflicted, removal(cc, [bb], "raise-2"), [bb])).toBe("parent-unknown");
+    // A parent counted and not standing (its own parent conflicted) reads the same.
+    const deep = count(l, removal(cc, [bb], "raise-2"));
+    const fell = deep.count({ ...removal(bb, [aa]), history: "closed" }, yes);
+    if (fell.refusal !== "version-conflict") throw new Error("setup");
+    expect(fell.conflicted.has(cc)).toBe(false);
+    expect(baseOf(fell.conflicted, removal(dd, [cc], "raise-3"), [cc])).toBe("parent-unknown");
+  });
+
+  it("a base leaves the readings when a conflict lands on the parent it skipped, in either arrival order", () => {
+    // The reader counted bb over the unheld aa; later it counts aa twice, unlike: aa conflicts, and bb leaves.
+    const base = KeyLineage.empty().count(removal(bb, [aa]), yes, [aa]);
+    if (!("lineage" in base)) throw new Error(base.refusal);
+    // aa arrives: it counts beside the base (the reader would count afresh; the lineage itself stays sound).
+    const withParent = base.lineage.count(founding(), yes);
+    expect("refusal" in withParent ? withParent.refusal : "COUNTED").toBe("second-founding");
+    // A lineage built parent-first counts the same child with no base.
+    expect(count(founded(), removal(bb, [aa])).base(bb)).toBe(false);
+    // A base whose skipped parent later stands conflicted stops standing.
+    const child = KeyLineage.empty().count(removal(cc, [bb], "raise-2"), yes, [bb]);
+    if (!("lineage" in child)) throw new Error(child.refusal);
+    const one = child.lineage.count(removal(bb, [aa]), yes, [aa]);
+    if (!("lineage" in one)) throw new Error(one.refusal);
+    expect(one.lineage.has(cc)).toBe(true);
+    expect(one.lineage.base(cc)).toBe(true);                         // counted as a base; its parent now stands beside it
+    const clash = one.lineage.count({ ...removal(bb, [aa]), history: "closed" }, yes, [aa]);
+    if (clash.refusal !== "version-conflict") throw new Error("setup");
+    expect(clash.conflicted.has(cc)).toBe(false);                    // the conflict on bb takes its child with it
+    expect(clash.conflicted.heads()).toEqual([]);
+  });
+
+  it("a name that reads as no id names nothing, an iterable that throws refuses, and a repeat of one base changes nothing", () => {
+    expect(baseOf(KeyLineage.empty(), removal(bb, [aa]), ["not-an-id" as KeyVersionId])).toBe("parent-unknown");
+    const throwing = { [Symbol.iterator]() { throw new Error("no list"); } } as unknown as KeyVersionId[];
+    expect(baseOf(KeyLineage.empty(), removal(bb, [aa]), throwing)).toBe("version-malformed");
+    const once = KeyLineage.empty().count(removal(bb, [aa]), yes, [aa]);
+    if (!("lineage" in once)) throw new Error(once.refusal);
+    const twice = once.lineage.count(removal(bb, [aa]), yes, []);
+    expect("lineage" in twice && twice.lineage === once.lineage).toBe(true);
+  });
+});
+
 describe("the content-key roll a seat roll feeds", () => {
   const SCOPE = "fleet:test-scope";
   function vessel(start: KeyLineage, mints: (KeyVersionId | "fail" | "throw")[], over: { shadowed?: boolean; bags?: string[] } = {}) {
@@ -324,10 +427,9 @@ describe("the content-key roll a seat roll feeds", () => {
     const rolls = new ScriptedSeatRolls();
     const stop = rolls.subscribe(contentKeyRollSink({
       bagsOf: (scope) => (scope === SCOPE ? (over.bags ?? ["bag-one"]) : []),
-      lineageOf: (bagId) => (bagId === "bag-one" ? state.lineage : null),
-      heldOf: () => state.held,
+      lineagesOf: (bagId) => (bagId === "bag-one" ? [{ founding: "founding-one", lineage: state.lineage, held: state.held }] : null),
       ownEdgeShadowed: () => over.shadowed === true,
-      mint: async (_bag, plan) => {
+      mint: async (_bag, _founding, plan) => {
         await Promise.resolve();
         state.plans.push({ parents: plan.parents, acts: plan.cause.kind === "removal" ? plan.cause.acts : [] });
         const next = mints.shift();
@@ -348,7 +450,7 @@ describe("the content-key roll a seat roll feeds", () => {
   it("one seat roll rolls each bag once; the same roll again owes nothing", async () => {
     const { state, rolls } = vessel(founded(), [bb]);
     await rolls.announce(roll(["raise-1"]));
-    expect(state.reports).toEqual([{ scope: SCOPE, bagId: "bag-one", raises: ["raise-1"], result: "rolled", keyVersion: bb }]);
+    expect(state.reports).toEqual([{ scope: SCOPE, bagId: "bag-one", founding: "founding-one", raises: ["raise-1"], result: "rolled", keyVersion: bb }]);
     expect(state.lineage.heads()).toEqual([bb]);
     await rolls.announce(roll(["raise-1"]));
     expect(results(state.reports)).toEqual([`bag-one:rolled:${bb}`, "bag-one:not-owed:"]);

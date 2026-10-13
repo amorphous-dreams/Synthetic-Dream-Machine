@@ -163,8 +163,8 @@ export type {
 // The sealed value: the one private-byte format (`lar:///ha.ka.ba/lararium/mesh/sealed-store`).
 export {
   sealChunk, openChunk, authorizeAddress, sealedAddressOf, keyVersionIdOf, contextDigest, mintContentKey,
-  readContentKey, readKeyVersionId, readSealedAddress, isChunkRole,
-  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN,
+  readContentKey, readKeyVersionId, readSealedAddress, isChunkRole, sealedImage, readSealedImage, isWellFormedText,
+  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN, SEALED_CHUNK_MARK, SEALED_MARK_LEN,
 } from "./sealed-chunk.js";
 export type {
   ContentKey, KeyVersionId, SealedAddress, ChunkRole, SealContext, AuthorizedAddress, AddressSource,
@@ -454,3 +454,11 @@ export {
   inceptVesselKel, mintVesselKelInception, verifyVesselKelInception, nextKeyCommitted, decodeVesselKelInception,
 } from "./vessel-kel.js";
 export type { VesselKelInception } from "./vessel-kel.js";
+// ── The sealed store's records, lineage, lockboxes, rest and content-key holder ────────────────────────
+// Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store. The key shore (`@lararium/keyhive`) and the node's
+// seal producer consume them.
+export * from "./sealed-records.js";
+export * from "./content-key-lineage.js";
+export * from "./sealed-store-rest.js";
+export * from "./lockbox-wrap.js";
+export * from "./content-key-holder.js";

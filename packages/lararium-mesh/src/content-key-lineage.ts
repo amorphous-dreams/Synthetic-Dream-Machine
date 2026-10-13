@@ -18,6 +18,12 @@
  * THE LINEAGE COUNTS A SUCCESSOR ONLY WHERE ITS TRANSITION VERIFIES. The caller supplies the evidence: the
  * reader's own ledger for a raise, its own reading of an admission act, and the proofs of a join.
  *
+ * A READER THAT HOLDS NO KEY FOR A PARENT COUNTS THE VERSION AS A BASE OF ITS OWN READING. A newcomer admitted
+ * from now, a reader handed one span, and a reader a sibling's mint never served each hold a version whose
+ * parents they cannot open. The caller names those parents (`unheld`): the count skips them, and checks every
+ * rule the counted versions still let it check. A parent the lineage counted or holds conflicted never reads
+ * as unheld, so naming one changes nothing.
+ *
  * TWO UNLIKE FACTS UNDER ONE ID REFUSE BOTH, AND THEIR DESCENDANTS LEAVE THE READINGS WITH THEM. A version
  * STANDS only where every version in its causal past stands. The rule holds whatever order the facts arrived
  * in, so two readers that met the same facts end at the same heads; a first-seen winner would let them part
@@ -151,23 +157,41 @@ export class KeyLineage {
   /** Every fact counted whose own id stands unconflicted. */
   readonly #counted: ReadonlyMap<KeyVersionId, KeyVersionFact>;
   readonly #conflicted: ReadonlySet<KeyVersionId>;
+  /** For a version counted as a base: the parents its reader held no key for when it counted. */
+  readonly #unheld: ReadonlyMap<KeyVersionId, ReadonlySet<KeyVersionId>>;
   /** The counted facts whose whole causal past stands: what every reading and every plan reads. */
   readonly #facts: ReadonlyMap<KeyVersionId, KeyVersionFact>;
 
-  private constructor(counted: ReadonlyMap<KeyVersionId, KeyVersionFact>, conflicted: ReadonlySet<KeyVersionId>) {
+  private constructor(counted: ReadonlyMap<KeyVersionId, KeyVersionFact>, conflicted: ReadonlySet<KeyVersionId>, unheld: ReadonlyMap<KeyVersionId, ReadonlySet<KeyVersionId>>) {
     this.#counted = counted;
     this.#conflicted = conflicted;
-    // A fact enters only after its parents (a count checks them), so one pass in insertion order settles standing.
+    this.#unheld = unheld;
+    // A version stands where each parent stands, or where its reader held no key for that parent and the
+    // lineage still holds neither a fact nor a conflict under that parent's id. A parent may enter after the
+    // version that cites it, so the reading settles by passes until none adds a version.
     const standing = new Map<KeyVersionId, KeyVersionFact>();
-    for (const [id, fact] of counted) if (fact.parents.every((parent) => standing.has(parent))) standing.set(id, fact);
+    const rests = (id: KeyVersionId, parent: KeyVersionId): boolean =>
+      standing.has(parent) || (unheld.get(id)?.has(parent) === true && !counted.has(parent) && !conflicted.has(parent));
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const [id, fact] of counted) {
+        if (standing.has(id) || !fact.parents.every((parent) => rests(id, parent))) continue;
+        standing.set(id, fact);
+        grew = true;
+      }
+    }
     this.#facts = standing;
     Object.freeze(this);
   }
 
-  static empty(): KeyLineage { return new KeyLineage(new Map(), new Set()); }
+  static empty(): KeyLineage { return new KeyLineage(new Map(), new Set(), new Map()); }
 
-  /** Count one fact. The checks run: shape, conflict, parents, the cause's own shape, the span rule, the evidence. */
-  count(input: unknown, evidence: TransitionEvidence): CountResult {
+  /**
+   * Count one fact. The checks run: shape, conflict, parents, the cause's own shape, the span rule, the evidence.
+   * `unheld` names the parents this reader holds no key for: the count skips each one the lineage holds neither
+   * a fact nor a conflict under, and the version then stands as a base of this reader's own reading.
+   */
+  count(input: unknown, evidence: TransitionEvidence, unheld?: Iterable<KeyVersionId>): CountResult {
     const fact = readFact(input);
     if (fact === null) return { refusal: "version-malformed" };
     if (this.#conflicted.has(fact.keyVersion)) return { refusal: "version-conflict", conflicted: this };
@@ -176,32 +200,47 @@ export class KeyLineage {
       if (sameFact(counted, fact)) return { lineage: this };
       const rest = new Map(this.#counted);
       rest.delete(fact.keyVersion);
-      return { refusal: "version-conflict", conflicted: new KeyLineage(rest, new Set([...this.#conflicted, fact.keyVersion])) };
+      const bases = new Map(this.#unheld);
+      bases.delete(fact.keyVersion);
+      return { refusal: "version-conflict", conflicted: new KeyLineage(rest, new Set([...this.#conflicted, fact.keyVersion]), bases) };
     }
+    const named = new Set<KeyVersionId>();
+    // A name that reads as no id equals no parent, so it names nothing here.
+    try { for (const id of unheld ?? []) named.add(id); } catch { return { refusal: "version-malformed" }; }
     const parents: KeyVersionFact[] = [];
+    const skipped = new Set<KeyVersionId>();
     for (const id of fact.parents) {
       const parent = this.#facts.get(id);
-      if (parent === undefined) return { refusal: "parent-unknown" };
-      parents.push(parent);
+      if (parent !== undefined) { parents.push(parent); continue; }
+      // A parent this lineage counted, or holds conflicted, never reads as unheld: its fate decides the version's.
+      if (!named.has(id) || this.#counted.has(id) || this.#conflicted.has(id)) return { refusal: "parent-unknown" };
+      skipped.add(id);
     }
+    const cited = fact.parents.length;
     const spans = new Set(parents.map((parent) => parent.span));
     const opensSpan = fact.span === fact.keyVersion;
-    /** The version continues the one span all its parents share, under that span's own declaration. */
-    const continues = (): boolean => spans.size === 1 && fact.span === parents[0]!.span && fact.history === this.historyOfSpan(fact.span);
+    /** The declaration `span` already carries here, where any counted version names it. */
+    const declared = this.historyOfSpan(fact.span);
+    /** The version continues one span: every parent this reader counted sits in it, and it carries that
+     *  span's declaration wherever this reader already counted a version of the span. */
+    const continues = (): boolean => !opensSpan && spans.size <= 1 && parents.every((parent) => parent.span === fact.span) && (declared === null || fact.history === declared);
     switch (fact.cause.kind) {
       case "founding":
         if (!this.unfounded) return { refusal: "second-founding" };
-        if (parents.length > 0 || !opensSpan) return { refusal: "founding-shape" };
+        if (cited > 0 || !opensSpan) return { refusal: "founding-shape" };
         break;
       case "removal":
-        if (parents.length < 1 || !continues()) return { refusal: "span-rule-broken" };
+        if (cited < 1 || !continues()) return { refusal: "span-rule-broken" };
         break;
       case "admission":
-        if (parents.length < 1 || !opensSpan) return { refusal: "span-rule-broken" };
+        if (cited < 1 || !opensSpan) return { refusal: "span-rule-broken" };
         break;
       case "join":
-        if (parents.length < 2) return { refusal: "join-too-few" };
-        if (spans.size === 1 ? !continues() : !opensSpan) return { refusal: "span-rule-broken" };
+        if (cited < 2) return { refusal: "join-too-few" };
+        // Parents this reader counted in unlike spans force a new span. Where it counted fewer than two, the
+        // version may open a span or continue the one it names.
+        if (spans.size > 1 ? !opensSpan : !(opensSpan || continues())) return { refusal: "span-rule-broken" };
+        if (skipped.size === 0 && spans.size === 1 && opensSpan) return { refusal: "span-rule-broken" };
         break;
     }
     const cause = fact.cause;
@@ -210,8 +249,12 @@ export class KeyLineage {
     if (cause.kind === "join" && !answers(() => evidence.joinProven(fact))) return { refusal: "join-unproven" };
     const next = new Map(this.#counted);
     next.set(fact.keyVersion, fact);
-    return { lineage: new KeyLineage(next, this.#conflicted) };
+    const bases = new Map(this.#unheld);
+    if (skipped.size > 0) bases.set(fact.keyVersion, skipped);
+    return { lineage: new KeyLineage(next, this.#conflicted, bases) };
   }
+  /** Did this reader count `id` as a base: over one or more parents it held no key for? */
+  base(id: KeyVersionId): boolean { return this.#facts.has(id) && (this.#unheld.get(id)?.size ?? 0) > 0; }
 
   /** Does the version stand: counted, unconflicted, with its whole causal past standing? */
   has(id: KeyVersionId): boolean { return this.#facts.has(id); }
@@ -408,27 +451,40 @@ export function writeHead(lineage: KeyLineage, held: ReadonlySet<KeyVersionId>, 
 
 // ── The seat roll and the content-key roll that follows it ──────────────────────────────────────
 export type RollOutcomeName = "rolled" | "not-owed" | "unknown-bag" | "mint-failed" | RollRefusalName;
-/** What one bag did with one seat roll. */
+/** What one founding of one bag did with one seat roll. */
 export interface RollOutcome {
   readonly scope:  string;
   readonly bagId:  string;
+  /** The founding the outcome speaks for, by its opaque locator; absent where the bag held none to name. */
+  readonly founding?: string;
   /** The raises the roll named, as the vessel handed them over. */
   readonly raises: readonly string[];
   readonly result: RollOutcomeName;
   readonly keyVersion?: KeyVersionId;
 }
 
+/** One founding of one bag, as the rolling vessel holds it: two vessels may each found one bag before either
+ *  reads the other, and each founding keeps a lineage of its own under a locator of its own. */
+export interface BagLineage {
+  /** The founding's opaque locator. */
+  readonly founding: string;
+  readonly lineage:  KeyLineage;
+  /** The versions this vessel may mint from: counted, with the key in hand. */
+  readonly held:     ReadonlySet<KeyVersionId>;
+}
+
 /** What the content-key roll needs from its vessel. */
 export interface RollerPorts {
   /** The bags whose key group `scope` names, as this vessel holds them. */
-  bagsOf(scope: string): readonly string[];
-  /** Null: this vessel holds no such bag. */
-  lineageOf(bagId: string): KeyLineage | null;
-  heldOf(bagId: string): ReadonlySet<KeyVersionId>;
+  bagsOf(scope: string): readonly string[] | Promise<readonly string[]>;
+  /** One reading for each founding of the bag this vessel holds a lineage for. Empty: no key ever served the
+   *  bag here, so it owes no roll. Null: this vessel cannot read the bag now, and the roll stays owed. */
+  lineagesOf(bagId: string): readonly BagLineage[] | null | Promise<readonly BagLineage[] | null>;
   /** Does this vessel read a shadow over its own edge in `scope`? Such a vessel mints nothing there. */
-  ownEdgeShadowed(scope: string): boolean;
-  /** Mint the key, sign the record, wrap the lockboxes, and answer the fact it counted; null where it could not. */
-  mint(bagId: string, plan: KeyRollPlan): Promise<KeyVersionFact | null>;
+  ownEdgeShadowed(scope: string, bagId: string): boolean | Promise<boolean>;
+  /** Mint the key, sign the record, wrap the lockboxes for the readers that remain (the seat `roll` names
+   *  never among them), and answer the fact it counted; null where it could not. */
+  mint(bagId: string, founding: string, plan: KeyRollPlan, roll: SeatRoll): Promise<KeyVersionFact | null>;
   report(outcome: RollOutcome): void;
 }
 
@@ -439,13 +495,14 @@ const COMES_AGAIN: ReadonlySet<RollOutcomeName> = new Set(["mint-failed", "no-he
 
 /**
  * The subscriber a vessel hands its seat rolls to. For one roll it visits every bag the scope reaches, in turn
- * and one at a time per bag: it skips a bag that owes no roll for these raises, plans one successor for each
- * span the vessel holds a head in, mints each and reports. It proceeds on every answer the key group gave
- * (`revoked`, `gone`, `no-authority`): the content key rolls whether or not the seat left.
+ * and one at a time per bag, and every founding of that bag the vessel holds a lineage for: it skips a founding
+ * that owes no roll for these raises, plans one successor for each span the vessel holds a head in, mints each
+ * and reports. It proceeds on every answer the key group gave (`revoked`, `gone`, `no-authority`): the content
+ * key rolls whether or not the seat left.
  *
- * It REJECTS the roll where any bag could not finish (a mint that failed, a bag with no head key in hand, a
- * bag it could not read), so the raises stay unmarked and the same roll comes again; a repeat settles what
- * finished as `not-owed`. A vessel under its own shadow mints nothing and lets the roll settle: it performs
+ * It REJECTS the roll where any founding could not finish (a mint that failed, a founding with no head key in
+ * hand, a bag it could not read), so the raises stay unmarked and the same roll comes again; a repeat settles
+ * what finished as `not-owed`. A vessel under its own shadow mints nothing and lets the roll settle: it performs
  * no key act in that scope. A port that throws counts as a mint that failed.
  */
 export function contentKeyRollSink(ports: RollerPorts): SeatRollSink {
@@ -457,32 +514,40 @@ export function contentKeyRollSink(ports: RollerPorts): SeatRollSink {
     void tail.then(() => { if (tails.get(bagId) === tail) tails.delete(bagId); });
     return run;
   };
-  const rollBag = async (roll: SeatRoll, bagId: string): Promise<RollOutcomeName> => {
-    const say = (result: RollOutcomeName, keyVersion?: KeyVersionId): RollOutcomeName => {
-      try { ports.report({ scope: roll.scope, bagId, raises: roll.raiseCids, result, ...(keyVersion !== undefined ? { keyVersion } : {}) }); } catch { /* a report that throws loses only itself */ }
+  const rollBag = async (roll: SeatRoll, bagId: string): Promise<RollOutcomeName[]> => {
+    const say = (result: RollOutcomeName, founding?: string, keyVersion?: KeyVersionId): RollOutcomeName => {
+      try { ports.report({ scope: roll.scope, bagId, ...(founding !== undefined ? { founding } : {}), raises: roll.raiseCids, result, ...(keyVersion !== undefined ? { keyVersion } : {}) }); } catch { /* a report that throws loses only itself */ }
       return result;
     };
-    try {
-      const lineage = ports.lineageOf(bagId);
-      if (lineage === null) return say("unknown-bag");
-      const choice = planRemovalRolls(lineage, { acts: roll.raiseCids, held: ports.heldOf(bagId), ownEdgeShadowed: ports.ownEdgeShadowed(roll.scope) });
-      if ("refusal" in choice) return say(choice.refusal === "already-rolled" ? "not-owed" : choice.refusal);
-      for (const plan of choice.plans) {
-        const fact = await ports.mint(bagId, plan);
-        if (fact === null) return say("mint-failed");
-        say("rolled", fact.keyVersion);
-      }
-      return "rolled";
-    } catch { return say("mint-failed"); }
+    let lineages: readonly BagLineage[] | null;
+    try { lineages = await ports.lineagesOf(bagId); } catch { return [say("mint-failed")]; }
+    if (lineages === null) return [say("unknown-bag")];
+    if (lineages.length === 0) return [say("bag-unfounded")];
+    const results: RollOutcomeName[] = [];
+    for (const { founding, lineage, held } of lineages) {
+      try {
+        const choice = planRemovalRolls(lineage, { acts: roll.raiseCids, held, ownEdgeShadowed: await ports.ownEdgeShadowed(roll.scope, bagId) });
+        if ("refusal" in choice) { results.push(say(choice.refusal === "already-rolled" ? "not-owed" : choice.refusal, founding)); continue; }
+        let failed = false;
+        for (const plan of choice.plans) {
+          const fact = await ports.mint(bagId, founding, plan, roll);
+          if (fact === null) { failed = true; break; }
+          say("rolled", founding, fact.keyVersion);
+        }
+        results.push(failed ? say("mint-failed", founding) : "rolled");
+      } catch { results.push(say("mint-failed", founding)); }
+    }
+    return results;
   };
   return async (roll) => {
     let bags: readonly string[];
-    try { bags = [...new Set(ports.bagsOf(roll.scope))]; }
+    try { bags = [...new Set(await ports.bagsOf(roll.scope))]; }
     catch { throw new Error("content-key roll: this vessel could not name the scope's bags, so the roll stays owed"); }
     const unfinished: string[] = [];
     for (const bagId of bags) {
-      const result = await inTurn(bagId, () => rollBag(roll, bagId));
-      if (COMES_AGAIN.has(result)) unfinished.push(`${bagId} (${result})`);
+      const results = await inTurn(bagId, () => rollBag(roll, bagId));
+      const owed = results.filter((result) => COMES_AGAIN.has(result));
+      if (owed.length > 0) unfinished.push(`${bagId} (${[...new Set(owed)].join(", ")})`);
     }
     if (unfinished.length > 0) throw new Error(`content-key roll: ${unfinished.length} bag(s) did not roll — ${unfinished.join(", ")} — the roll stays owed`);
   };

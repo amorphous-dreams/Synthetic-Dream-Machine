@@ -1,6 +1,6 @@
 /**
  * sealed-records — the records that name and order sealed values: the key version, the manifest, the
- * checkpoint, and the lockbox payload.
+ * checkpoint, the hand-over, and the lockbox payload.
  *
  * EACH SIGNED RECORD HOLDS A CLEAR PART AND A SEALED PART. The clear part carries what a carrier needs to
  * index and nothing that names a person: opaque ids, addresses and links. The sealed part carries the record's
@@ -29,7 +29,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJson, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import {
   CONTENT_KEY_JOIN_PROOF_INFO, CONTENT_KEY_VERSION_DOMAIN, SEALED_BAG_LOCATOR_INFO, SEALED_CHECKPOINT_DOMAIN,
-  SEALED_ENTRY_LOCATOR_INFO, SEALED_LOCKBOX_DOMAIN, SEALED_MANIFEST_DOMAIN, SEALED_RECORD_AUTHORSHIP_DOMAIN,
+  SEALED_ENTRY_LOCATOR_INFO, SEALED_HAND_OVER_DOMAIN, SEALED_LOCKBOX_DOMAIN, SEALED_MANIFEST_DOMAIN, SEALED_RECORD_AUTHORSHIP_DOMAIN,
 } from "./domains.js";
 import {
   own, readSessionCertificate, readSessionSignature,
@@ -56,10 +56,11 @@ const isHex64 = (value: unknown): value is string => typeof value === "string" &
 export const readBagLocator = (value: unknown): BagLocator | null => (isHex64(value) ? (value as BagLocator) : null);
 export const readRecordId = (value: unknown): RecordId | null => (isHex64(value) ? (value as RecordId) : null);
 
-export const RECORD_KINDS = ["key-version", "manifest", "checkpoint"] as const;
+export const RECORD_KINDS = ["key-version", "manifest", "checkpoint", "hand-over"] as const;
 export type RecordKind = (typeof RECORD_KINDS)[number];
 const KIND_DOMAINS: Readonly<Record<RecordKind, string>> = Object.freeze({
   "key-version": CONTENT_KEY_VERSION_DOMAIN, manifest: SEALED_MANIFEST_DOMAIN, checkpoint: SEALED_CHECKPOINT_DOMAIN,
+  "hand-over": SEALED_HAND_OVER_DOMAIN,
 });
 
 // ── Keyed derivations ───────────────────────────────────────────────────────────────────────────
@@ -119,7 +120,16 @@ export interface CheckpointBody {
   /** The values whose changes the state includes: unique, sorted ascending. */
   readonly covers:     readonly SealedAddress[];
 }
-export interface RecordBodies { "key-version": KeyVersionBody; manifest: ManifestBody; checkpoint: CheckpointBody }
+/** A hand-over: one holder handed one span's keys to one reader. It rides under the head the holder held. */
+export interface HandOverBody {
+  readonly bag:        BagLocator;
+  /** The head the record seals under: every reader of that head verifies it. */
+  readonly keyVersion: KeyVersionId;
+  readonly span:       KeyVersionId;
+  /** The versions handed: unique, sorted ascending, never empty. */
+  readonly versions:   readonly KeyVersionId[];
+}
+export interface RecordBodies { "key-version": KeyVersionBody; manifest: ManifestBody; checkpoint: CheckpointBody; "hand-over": HandOverBody }
 
 // ── The private parts ───────────────────────────────────────────────────────────────────────────
 export interface KeyVersionPrivate {
@@ -127,13 +137,20 @@ export interface KeyVersionPrivate {
   readonly history:    HistoryDeclaration;
   /** One proof per parent on a `join`, in the parents' order; empty otherwise. */
   readonly joinProofs: readonly string[];
+  /** The readers this version's mint could not serve, by their identifiers on the key shore: unique, sorted
+   *  ascending. Sealed, so every reader of the version reads the debt and no carrier does. */
+  readonly unserved:   readonly string[];
 }
 export type ManifestPrivate = Readonly<Record<string, never>>;
 export interface CheckpointPrivate {
   /** The causal frontier in the document engine's own ids: unique, sorted ascending. */
   readonly frontier: readonly string[];
 }
-export interface RecordPrivates { "key-version": KeyVersionPrivate; manifest: ManifestPrivate; checkpoint: CheckpointPrivate }
+export interface HandOverPrivate {
+  /** The reader that received the span: its identifier on the key shore. Sealed, since it names a party. */
+  readonly reader: string;
+}
+export interface RecordPrivates { "key-version": KeyVersionPrivate; manifest: ManifestPrivate; checkpoint: CheckpointPrivate; "hand-over": HandOverPrivate }
 
 /** A record as it travels and rests: the clear part and the sealed part. */
 export interface SealedRecord<K extends RecordKind = RecordKind> {
@@ -216,9 +233,17 @@ function readCheckpointBody(value: unknown): CheckpointBody | null {
   if (base !== "fresh" && base !== "continuation") return null;
   return { bag, keyVersion, span, base, address, covers };
 }
+function readHandOverBody(value: unknown): HandOverBody | null {
+  if (!isRecord(value) || !exactKeys(value, ["bag", "keyVersion", "span", "versions"])) return null;
+  const bag = readBagLocator(value["bag"]), keyVersion = readKeyVersionId(value["keyVersion"]), span = readKeyVersionId(value["span"]);
+  const versions = sortedUnique(value["versions"], readKeyVersionId);
+  if (bag === null || keyVersion === null || span === null || versions === null || versions.length === 0) return null;
+  return { bag, keyVersion, span, versions };
+}
 function readBody<K extends RecordKind>(kind: K, value: unknown): RecordBodies[K] | null {
   try {
-    const read = kind === "key-version" ? readKeyVersionBody(value) : kind === "manifest" ? readManifestBody(value) : kind === "checkpoint" ? readCheckpointBody(value) : null;
+    const read = kind === "key-version" ? readKeyVersionBody(value) : kind === "manifest" ? readManifestBody(value) : kind === "checkpoint" ? readCheckpointBody(value)
+      : kind === "hand-over" ? readHandOverBody(value) : null;
     return read as RecordBodies[K] | null;
   } catch { return null; }
 }
@@ -238,19 +263,27 @@ function readCause(value: unknown): KeyCause | null {
   return null;
 }
 function readKeyVersionPrivate(value: unknown, body: KeyVersionBody): KeyVersionPrivate | null {
-  if (!isRecord(value) || !exactKeys(value, ["cause", "history", "joinProofs"])) return null;
+  if (!isRecord(value) || !exactKeys(value, ["cause", "history", "joinProofs", "unserved"])) return null;
   const cause = readCause(value["cause"]);
   const history = value["history"];
   const proofs = value["joinProofs"];
   if (cause === null || (history !== "shareable" && history !== "closed") || !Array.isArray(proofs) || !proofs.every(isHex64)) return null;
   // A join carries one proof per parent; no other cause carries any.
   if (proofs.length !== (cause.kind === "join" ? body.parents.length : 0)) return null;
-  return { cause, history, joinProofs: proofs as string[] };
+  const unserved = sortedUnique(value["unserved"], nonEmptyText);
+  if (unserved === null) return null;
+  return { cause, history, joinProofs: proofs as string[], unserved };
 }
 function readPrivate<K extends RecordKind>(kind: K, value: unknown, body: RecordBodies[K]): RecordPrivates[K] | null {
   try {
     if (kind === "key-version") return readKeyVersionPrivate(value, body as KeyVersionBody) as RecordPrivates[K] | null;
     if (kind === "manifest") return (isRecord(value) && exactKeys(value, []) ? {} : null) as RecordPrivates[K] | null;
+    if (kind === "hand-over") {
+      if (!isRecord(value) || !exactKeys(value, ["reader"])) return null;
+      const reader = nonEmptyText(value["reader"]);
+      return (reader === null ? null : { reader }) as RecordPrivates[K] | null;
+    }
+    if (kind !== "checkpoint") return null;
     if (!isRecord(value) || !exactKeys(value, ["frontier"])) return null;
     const frontier = sortedUnique(value["frontier"], nonEmptyText);
     return (frontier === null ? null : { frontier }) as RecordPrivates[K] | null;
@@ -273,6 +306,10 @@ function bodyImage<K extends RecordKind>(kind: K, body: RecordBodies[K]): Uint8A
     const entries = b.entries.map((e) => sealedImage("", utf8Bytes(e.role), addressBytes(e.address), hexToBytes(e.locator), listField(e.parents.map(addressBytes))));
     return sealedImage(KIND_DOMAINS[kind], hexToBytes(b.bag), hexToBytes(b.keyVersion), hexList(b.parents), listField(entries));
   }
+  if (kind === "hand-over") {
+    const b = body as HandOverBody;
+    return sealedImage(KIND_DOMAINS[kind], hexToBytes(b.bag), hexToBytes(b.keyVersion), hexToBytes(b.span), hexList(b.versions));
+  }
   const b = body as CheckpointBody;
   return sealedImage(KIND_DOMAINS[kind], hexToBytes(b.bag), hexToBytes(b.keyVersion), hexToBytes(b.span), utf8Bytes(b.base), addressBytes(b.address), listField(b.covers.map(addressBytes)));
 }
@@ -280,9 +317,10 @@ function privateImage<K extends RecordKind>(kind: K, value: RecordPrivates[K]): 
   if (kind === "key-version") {
     const p = value as KeyVersionPrivate;
     const acts = p.cause.kind === "removal" ? p.cause.acts : p.cause.kind === "admission" ? [p.cause.act] : [];
-    return sealedImage("", utf8Bytes(p.cause.kind), listField(acts.map((act) => utf8Bytes(act))), utf8Bytes(p.history), hexList(p.joinProofs));
+    return sealedImage("", utf8Bytes(p.cause.kind), listField(acts.map((act) => utf8Bytes(act))), utf8Bytes(p.history), hexList(p.joinProofs), listField(p.unserved.map((reader) => utf8Bytes(reader))));
   }
   if (kind === "manifest") return sealedImage("");
+  if (kind === "hand-over") return sealedImage("", utf8Bytes((value as HandOverPrivate).reader));
   return sealedImage("", listField((value as CheckpointPrivate).frontier.map((id) => utf8Bytes(id))));
 }
 
@@ -444,17 +482,20 @@ export function encodeLockboxPayload(payload: LockboxPayload): Uint8Array {
   return sealedImage(SEALED_LOCKBOX_DOMAIN, utf8Bytes(payload.bagId), hexToBytes(payload.locator), hexToBytes(payload.keyVersion), key);
 }
 /**
- * Read an unwrapped lockbox payload against what the reader expects: the bag always, and the locator and the
- * key version where it already holds them. The key must recompute to the version the payload names.
+ * Read an unwrapped lockbox payload against what the reader expects: the bag, the locator and the key version,
+ * each where it already holds one. A reader that opens every lockbox its seat opens holds no bag to expect: it
+ * expects the locator and the key version the lockbox's clear part names, and learns the bag from the payload.
+ * The key must recompute to the version the payload names under the bag the payload names.
  */
-export function readLockboxPayload(bytes: unknown, expect: { readonly bagId: string; readonly locator?: BagLocator; readonly keyVersion?: KeyVersionId }): { readonly payload: LockboxPayload } | { readonly refusal: LockboxRefusalName } {
+export function readLockboxPayload(bytes: unknown, expect: { readonly bagId?: string; readonly locator?: BagLocator; readonly keyVersion?: KeyVersionId }): { readonly payload: LockboxPayload } | { readonly refusal: LockboxRefusalName } {
   try {
     const fields = readSealedImage(SEALED_LOCKBOX_DOMAIN, bytes, 4);
     if (fields === null || fields[1]!.length !== 32 || fields[2]!.length !== 32 || fields[3]!.length !== CONTENT_KEY_LEN) return { refusal: "lockbox-malformed" };
     let bagId: string;
     try { bagId = new TextDecoder("utf-8", { fatal: true }).decode(fields[0]!); } catch { return { refusal: "lockbox-malformed" }; }
     const locator = hex(fields[1]!) as BagLocator, keyVersion = hex(fields[2]!) as KeyVersionId, key = readContentKey(fields[3]!)!;
-    if (bagId.length === 0 || bagId !== expect.bagId) return { refusal: "lockbox-other-bag" };
+    if (!isWellFormedText(bagId)) return { refusal: "lockbox-malformed" };
+    if (expect.bagId !== undefined && bagId !== expect.bagId) return { refusal: "lockbox-other-bag" };
     if (expect.locator !== undefined && locator !== expect.locator) return { refusal: "lockbox-other-locator" };
     if (expect.keyVersion !== undefined && keyVersion !== expect.keyVersion) return { refusal: "lockbox-other-version" };
     if (keyVersionIdOf(key, bagId) !== keyVersion) return { refusal: "key-mismatch" };

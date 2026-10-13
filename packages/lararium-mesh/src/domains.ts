@@ -223,6 +223,20 @@ export const SEALED_CHECKPOINT_DOMAIN = mint("sealed-checkpoint");
 export const SEALED_RECORD_AUTHORSHIP_DOMAIN = mint("sealed-record-authorship");
 /** A LOCKBOX PAYLOAD's image: the bag's id, its locator, the key version id and the content key. */
 export const SEALED_LOCKBOX_DOMAIN = mint("sealed-lockbox");
+/** A LOCKBOX as it rests and travels: its clear part (locator, key version id, wrap) and its box. */
+export const SEALED_LOCKBOX_RECORD_DOMAIN = mint("sealed-lockbox-record");
+/** A lockbox's BOX: the wrap document's id and the Keyhive ciphertext, and nothing else. */
+export const SEALED_LOCKBOX_BOX_DOMAIN = mint("sealed-lockbox-box");
+/** The CONTENT REFERENCE a wrap hands Keyhive for one lockbox: it cites no predecessor and names nothing. */
+export const SEALED_LOCKBOX_REF_INFO = mint("sealed-lockbox-ref");
+/** A signed RECORD as it rests and travels: its kind, its clear part and its sealed part. */
+export const SEALED_RECORD_REST_DOMAIN = mint("sealed-record-rest");
+/** One ROW of the chunk index as it rests. */
+export const SEALED_INDEX_ROW_DOMAIN = mint("sealed-index-row");
+/** A HAND-OVER RECORD: its clear part hashes to the record id under this name. */
+export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
+/** A KEY PARCEL: one lockbox, its key version record and the wrap's public operations, for one reader. */
+export const SEALED_KEY_PARCEL_DOMAIN = mint("sealed-key-parcel");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and
