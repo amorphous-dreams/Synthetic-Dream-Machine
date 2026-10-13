@@ -11,7 +11,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2695;"
-revised-on = "2026-10-11"
+revised-on = "2026-10-13"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
@@ -95,7 +95,7 @@ Synthetic examples below use `operator-one`, `Operator One`, and `hearth.home.ex
 
 !! 4 · Rehearse in an isolated Docker project
 
-The harbor witness gives each leg fresh scratch state and workspace, chooses its own Compose project, and removes only its own containers and scratch directories. It builds the local image if that tag does not exist. Give the project a unique name if another rehearsal already uses the default.
+The harbor witness gives each leg fresh scratch state and workspace, chooses its own Compose project, and removes only its own containers and scratch directories. It builds the local image if that tag does not exist. Give the project a unique name if another rehearsal already uses the default. Every boot rests at the floor holding no vessel key, so the witness opens each scratch vessel through the test custody door (`tools/unlock-staged-container.sh`); that door refuses any state directory a harness did not stage, and a household vessel opens on a terminal alone.
 
 ''Do'': run the harbor container walk.
 
@@ -103,7 +103,7 @@ The harbor witness gives each leg fresh scratch state and workspace, chooses its
 HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 ```
 
-''See'': `PASS` lines for both face-before-up and face-after-up legs, workspace projection, recipe resolution, and a final `PASS harbor walk`.
+''See'': `PASS` lines for both legs: the floor that holds no key, the unlock that composes a Lararium, the face lit after `up` with the shim's own restart, workspace projection, recipe resolution, and a final `PASS harbor walk`.
 
 ''Proves'': the shim routes a TTY-safe founding, persona, and corpus walk through the image under review. This rehearsal creates no keeper state.
 
@@ -130,7 +130,9 @@ tools/lares-container.sh meme list --recipe default --json
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key and composes with what the key opens. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag. `vessel rite founding` composes found, stand, and seed, but it does not create or wear the operator's persona, so this walk uses the shim's documented order.
 
-''See'': `vessel seed` reports its bag holdings; `vessel read` reports the live node; `persona list` marks index zero active; the daemon recipe list returns seeded wiki entries.
+▢ ''OWED — the seed's fixed point.'' A first `vessel seed` re-renders some tracked carriers in the workspace checkout: the key order of a meta block, a blank line after the meta fence, a `[reference]` table flattened to `reference-*` keys, and two submission files renamed from `.md` to `.txt`. `git status` in the checkout then lists them. Leave those files uncommitted; the tracked carriers and the projection owe one fixed point.
+
+''See'': `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; the daemon recipe list returns seeded wiki entries.
 
 ''Proves'': the vessel mints its identity and persona root, seeds its corpus from the tracked bags, and serves as the first operator's live node.
 
@@ -336,6 +338,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q46NRVjgWMB9JaNlOjeYp8pvW9v_vFWkk0ywoQUsfMU
+<<^ code="&#x0003;">>ni:///sha-256;h7HdXq1bici5DzHDiu_-51paMvRxdJ5cF9h4k4FlwmU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -134,6 +134,8 @@ The terminator, the resolver and the issuer attach through profiles in the compo
 
 A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code. A browser runner needs a browser engine the product image lacks, so it runs from a browser image. The mesh's browser vessels still read their code from the product image, through a volume that image fills. One exception stands declared: the browser CI runner reads the repository read-only. A harness run names its own compose project, so two runs on one host share no container, network or volume.
 
+Every boot rests at the floor holding no vessel key, and a harness holds no terminal. A harness opens a vessel it staged through the test custody door alone (`tools/unlock-test-custody.mjs`; `tools/unlock-staged-container.sh` carries that door into a standing container), and the door refuses any root that carries no scratch marker. A harness reads a hearth as stood only once that door answered an open key.
+
 <<~/ahu>>
 
 <<~ ahu #/the-release-manifest>>
@@ -167,6 +169,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VXSWmZ5Iksh4HND_zosd0bmACX4Uh3lz0czBNMEoAYk
+<<^ code="&#x0003;">>ni:///sha-256;11XLRK4fp9v1iI8eCHw-3Y4lx6vaE4Jl-M-Gc2yDOFY
 
 <<^ code="&#x0004;" -> to="?">>
