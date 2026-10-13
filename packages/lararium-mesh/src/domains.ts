@@ -327,6 +327,12 @@ export const GATE_BUNDLE_PIN_DOMAIN = mint("gate-bundle-pin");
 /** The handshake's PROLOGUE: both ends mix the pin's digest under this name, so a first flight decrypts only
  *  at the gate whose pin its dialer held. */
 export const GATE_HANDSHAKE_DOMAIN = mint("gate-handshake");
+/** The digest of a PRESENTATION's own bytes, as the signed finish binds it. A digest name. */
+export const GATE_PRESENTATION_DOMAIN = mint("gate-presentation");
+/** The payload of the signed FINISH: the completed handshake's hash, the bundle's digest, the presentation's
+ *  digest and the audience. It rides inside the session key's `session-finish` image and leads with its own
+ *  name, so no other finish payload reads as a dial's. */
+export const GATE_FINISH_DOMAIN = mint("gate-finish");
 /** The gate's VERDICT: its signing key signs the handshake's hash, the bundle's digest and a digest of its
  *  answer under this name, so a dialer reads an answer only from the gate it pinned, for the dial it made. */
 export const GATE_VERDICT_DOMAIN = mint("gate-verdict");

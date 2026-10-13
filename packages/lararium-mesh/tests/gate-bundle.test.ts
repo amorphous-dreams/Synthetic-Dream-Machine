@@ -112,6 +112,9 @@ describe("the gate bundle derives, and never rests", () => {
     const handed = new Uint8Array(32).fill(3);
     deriveGateBundle({ derive: () => handed }, AID_A, "/ws");
     expect([...handed]).toEqual(new Array(32).fill(0));
+    const astray = new Uint8Array(31).fill(3);
+    expect(() => deriveGateBundle({ derive: () => astray }, AID_A, "/ws")).toThrow(GateBundleRefused);
+    expect([...astray]).toEqual(new Array(31).fill(0));                       // a child of the wrong width gets overwritten too
   });
 
   test("the Nexus rides as opaque bytes within a bound, and a route holds one spelling", () => {

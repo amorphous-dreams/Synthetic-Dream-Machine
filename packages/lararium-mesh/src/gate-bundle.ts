@@ -226,7 +226,10 @@ export function deriveGateBundle(root: GateBundleRoot, nexusAid: Uint8Array, rou
   const aid = Uint8Array.from(nexusAid);
   // The door answers a child the caller owns: this function overwrites it once both keys derive.
   const seed = root.derive(GATE_BUNDLE_INFO);
-  if (!(seed instanceof Uint8Array) || seed.length !== 32) throw new GateBundleRefused("root-astray");
+  if (!(seed instanceof Uint8Array) || seed.length !== 32) {
+    if (seed instanceof Uint8Array) seed.fill(0);
+    throw new GateBundleRefused("root-astray");
+  }
   let transportSecret: Uint8Array, signingSeed: Uint8Array;
   try {
     transportSecret = hkdf(sha256, seed, new Uint8Array(0), gateFields(GATE_TRANSPORT_KEY_INFO, aid, utf8Bytes(route)), 32);

@@ -87,6 +87,23 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 ''What retires together, in one cutover'': the `lar:challenge` frame, the ContactCard proof, and every gate proof under a vessel key. No second wire protocol runs beside this one.
 
+> ''House readings, marked as such; the operator may overturn each.'' The gate and the dialer that stand specified in code (#/owed) read the exchange above this way.
+
+* ''The knock derives from the bundle's digest'', and the handshake's prologue holds that digest. So a gate's knock, its pin, its verdict and its posture all read per Nexus exactly, and a first flight decrypts only at the gate whose pin its dialer held.
+* ''The first flight carries an empty payload.'' A flight that carries more draws no answer.
+* ''No collaborator hears of a dial before its finish verifies.'' The admit reader, the rings, the sorter and the gate's memory act on no first flight.
+* ''Every arm's subject key names the face key, and an arm that does not hold draws silence.'' A presenter never falls to a lower class over an arm that failed.
+* ''The sorter runs once, after the shadow ring and before any answer of any kind'', a named state included. A class never outgrows the arm that earned it, and the session's profile comes from its certificate alone.
+* ''A gate learns and keeps withdrawal events only under a face key whose admit it just read held'', and a named state goes to no other presenter. A face no quorum admitted makes a gate hold nothing.
+* ''An OPEN gate answers a stranger.'' A sound chain under a face no quorum admitted, presenting no arm, sorts as a stranger where this Nexus reads OPEN: the gate answers `verified`, seats it at the public shelf and keeps nothing of that face's history. Where the Nexus reads PRIVATE the same presenter draws silence. The four states that refuse (`unconfirmed`, `withdrawn`, `incomplete`, `forked`) go to a presenter of an admitted face alone.
+* ''The session table takes the session before the verdict leaves, and opens it after.'' A dialer never holds a verdict for a session the gate did not seat.
+* ''A refused socket holds its pending place until the deadline'', however early its check ended, so a refusal and a wait weigh alike on the gate's bound.
+* ''A dial draws a deadline of its own.'' A gate that answers a flight and then waits forever holds no dial open.
+* ''Whether a hosting grant or an invite claim holds stays the sorter's own reading.'' The gate binds the arm to the face key and the Nexus, and attaches a walker only where the sorter read one.
+* ''One presentation rides one dial.'' A presenter that reads `unconfirmed` or `incomplete` folds what it received and dials again.
+* ''A dialer carries its whole line unless its caller names less'', so the first honest vessel of a face ends a gate's partition in one dial.
+* ''A refused socket gets cut when the gate's one deadline lapses, and never before.'' The gate draws that deadline at accept, before it reads a byte.
+
 <<~/ahu>>
 
 <<~ ahu #/who-learns-what>>
@@ -245,6 +262,10 @@ The design names that unavailability and does not cure it. A recovery authority 
 * ''The subjects'' (`packages/lararium-mesh/src/face-proof-subjects.ts`): the typed keys, the scope, the certificate and its request, the withdrawal event, the frontier, the session certificate, every signed image, and a reader for each. Every key and signature passes the one door (`ed25519-door.ts`); the purposes stand in the domain table (`domains.ts`).
 * ''Private authority'' (`packages/lararium-mesh/src/face-authority.ts`): minting, the request, the certificate, the withdrawal, the fold of a reader's memory, and the chain check with its six verdicts. Its callers: the fleet-join door, the removal door and the gate.
 * ''The session signer'' (`packages/lararium-mesh/src/session-signer.ts`). Its callers: the node's session open on the local socket, and the browser holder.
+* ''The gate bundle'' (`packages/lararium-mesh/src/gate-bundle.ts`): the pin, its digest, the knock, the prologue, and the transport and signing keys one gate derives per (Nexus, route) from one child of a root it never reads. Nothing rests. Its caller: the vessel's gate composer.
+* ''The exchange's subjects'' (`packages/lararium-mesh/src/gate-exchange.ts`): the presentation and the answer with their readers, the image of the finish, the image of the verdict, and a provisional frame layout.
+* ''The gate'' (`packages/lararium-mesh/src/face-gate.ts`): the whole exchange against a socket and the collaborators it asks: a deadline source, an admit reader over the one presenter-verifier, the shadow ring, the grant ring, the sorter, a withdrawal memory and a session table. Its caller: the socket cutover.
+* ''The dialer'' (`packages/lararium-mesh/src/face-dial.ts`): the other half of the exchange, one function for a node and a browser. Its callers: both client transports, at the cutover.
 * ''The session face supplier'' (`packages/lararium-mesh/src/session-face.ts`): it joins a verified chain, this vessel's own key for the face, the admit's verdict and the private grant into the face a session wears, and verifies none of the last three itself (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries">>). Its callers: the same two.
 
 ''What those modules need that nothing supplies yet'':
@@ -252,20 +273,24 @@ The design names that unavailability and does not cure it. A recovery authority 
 * ''Two custody rows.'' The face proof key rests cold with the root holder, one per (PersonaGroup, Nexus); a vessel's face-scoped key rests hot on its own vessel, one per (PersonaGroup, Nexus). Each holds 32 secret bytes and reads whole or refuses by name. The modules name the rows and the two signing doors they ask of the custody seat, and write no row.
 * ''The admit's own mark.'' The supplier reads the presenter-verifier's verdict over an admit and checks it against the chain. That verdict carries no mark a caller cannot spell by hand until the admit signs what it carries. A chain another vessel presented verifies as well as this vessel's own, so the session opener also owes the supplier the key its own custody row names.
 * ''The private grant's reader.'' The record that binds a face key to its PersonaGroup at one Nexus rests in the group's private causal state, and the ring reads it by vessel key today.
-* ''Where a gate's memory rests'', and where a face's own history rests on its vessels: the first with the gate's store, the second in the face's private causal state.
+* ''Where a gate's memory rests'', and where a face's own history rests on its vessels: the first with the gate's store, the second in the face's private causal state. Until then the gate holds what it learned in memory, and a restart forgets it.
+* ''The bundle's root.'' The bundle asks one derive door for one child. The road names the sealed custody root behind that door (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>); the floor's announcement names the vessel seed (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement">>), and a vessel at its floor holds no opened custody. Which root answers at the floor stays open; the bundle reads whichever door its composer hands it.
+* ''A held Nexus root per gate'': the roster, the charter lineage, the deny board and the antigen that the admit reader folds, with the causal position it read them at. A gate that holds no root refuses every admit by name.
+* ''The rings by face key.'' The shadow ring owes a reading over one presenter (set aside at this gate; set aside from this vessel's own fleet), and the grant ring owes the private record by face key. Both read by vessel key today.
+* ''The sorter over proven facts'': a class from a held admit, a private grant, the fleet reading and the arm as presented, over ONE Nexus's posture.
 
 ''Unproven, and each blocks the part that rests on it'':
 
 * ''The header's size budget through real proxies.'' The largest minimal first flight the house's browsers, server and proxies accept in `Sec-WebSocket-Protocol`, the token's syntax, and where logs redact it. Unmeasured.
-* ''The byte layout of the browser's exchange'': the token's encoding, the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it.
-* ''The withdrawal proof under a live partition.'' The fold and the six verdicts stand proven as pure functions over synthetic histories. No two gates and no real herm have yet carried one.
+* ''The byte layout of the browser's exchange'': the token's encoding, the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it. A provisional layout stands in `gate-exchange.ts`; no proxy has measured it, and the cutover may move it.
+* ''The withdrawal proof under a live partition.'' The fold and the six verdicts stand proven as pure functions over synthetic histories, and the six answers stand proven at one gate against a dialer in the same process, partitioned by hand. No two gates and no real herm have yet carried one.
 
 ''OWED ~ seven debts, each resting on the one before it.''
 
 # ''The subjects.'' Specified in code.
 # ''Private authority.'' Specified in code, with the two custody rows owed.
 # ''Local sessions.'' The signer and the face supplier stand specified in code. The debt closes when the node's session open and the browser holder call them.
-# ''The gate, behind interfaces.'' The handshake, the finish and the face admit around the chain check, tested against a partitioned gate with stale and incomplete histories.
+# ''The gate, behind interfaces.'' Specified in code, with the bundle's root, the held Nexus root, the rings by face key and the sorter over proven facts owed.
 # ''One wire cutover.'' Node and browser dialers, gate, sorter and ring lookup move together, and the vessel-key proof paths retire in the same step.
 # ''Sibling carriage.'' The herm dial, the inner proof and the sibling peer id move to face scope.
 # ''The road's re-cut.'' The founding road's charter, wire and face slices state this shape.
@@ -286,6 +311,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FLMLvjWsR3trwbGCjLntG_xmM5Se9PpDADSxbtzXahs
+<<^ code="&#x0003;">>ni:///sha-256;czraYL2E38mpeDVffYv0Olc7n688POLiYeSzoGf_E28
 
 <<^ code="&#x0004;" -> to="?">>

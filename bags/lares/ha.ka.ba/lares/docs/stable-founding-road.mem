@@ -431,9 +431,9 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `P16` Re-anchoring sorts dwellings by an injected `epochOrder` (`re-anchoring.ts`); it should keep `epochCid` as a fence and surface concurrent records. May follow.
 
 !!! THE WIRE
-* `W1` A per-Nexus gate key, one gate per (Nexus, route). W.
-* `W2` Noise IK, proof first; `lar:challenge` retires (`auth-wire.ts`). House (byte layout). W.
-* `W3` The dialer's ContactCard rides the clear (`LarAuthMsg`). W.
+* `W1` A per-Nexus gate key, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): two keys per (Nexus, route), derived from one child of the custody seat's derive door, resting nowhere. Owed: the composer that stands one gate per bundle, the dispatcher's knock per bundle, and which root answers at the floor (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>). W.
+* `W2` Noise IK, proof first; `lar:challenge` retires (`auth-wire.ts`). The gate and the dialer stand specified in code behind interfaces (`face-gate.ts`, `face-dial.ts`), proven against each other in one process. Owed: the cutover that wires them. House (byte layout, provisional in `gate-exchange.ts`). W.
+* `W3` The dialer's ContactCard rides the clear (`LarAuthMsg`). The specified exchange carries no card at all; the leak closes at the cutover. W.
 * `W4` The face-scoped proof chain: face key, the vessel's face key, the session key. The subjects, private authority, the session signer and the session face supplier stand specified in code, and the withdrawal proof reads as a house model the operator may overturn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). Owed: the two custody rows the chain's keys rest in, the gate around the chain check, and the callers. House. W.
 * `W5` The admit signature covers the canon list and the gate key (`device-admit.ts` carries them beside it). W.
 * `W6` One fleet-join door replaces `device-admit` and `persona admit`. W.
@@ -571,9 +571,8 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 ''Riskiest'': the steward signer, proven by the docker `meme` scenario by hand as well as by a shard.
 
 !!! W ~ the wire and the face proof, one socket cutover (waits on K; its pure steps may start early)
-# ''Landed ahead'', each a pure module out of the barrel, specified in code and reached by no production caller: Noise IK (`noise-ik.ts`); the proof subjects (`face-proof-subjects.ts`); private authority with the withdrawal fold and the chain check (`face-authority.ts`); the session signer (`session-signer.ts`); the session face supplier (`session-face.ts`).
-# The handshake funnel: every test that speaks the handshake goes through one helper.
-# The gate bundle per Nexus; the gate behind interfaces, around the chain check and its six verdicts.
+# ''Landed ahead'', each a pure module out of the barrel, specified in code and reached by no production caller: Noise IK (`noise-ik.ts`); the proof subjects (`face-proof-subjects.ts`); private authority with the withdrawal fold and the chain check (`face-authority.ts`); the session signer (`session-signer.ts`); the session face supplier (`session-face.ts`); the gate bundle (`gate-bundle.ts`); the exchange's subjects (`gate-exchange.ts`); the gate behind interfaces, around the chain check and its six verdicts (`face-gate.ts`); the dialer (`face-dial.ts`).
+# ''Landed ahead'': the handshake funnel. Every test that speaks the handshake goes through one helper (`gate-dial-fixture.ts`, in mesh and in node), and `gate-dial-funnel.test.ts` holds the line; the cutover edits that helper and the old wire's own vectors.
 # ''Live'': the admit signs what it carries (after N's cosign door, which shares `nexus-contract.ts`).
 # ''Live'': the fleet-join door; add-a-face; the bare seal import goes.
 # ''Live, THE SOCKET CUTOVER'', one assembled commit: both dialers, the gate, the sorter, the ring's lookup by face subject; `lar:challenge`, the ContactCard proof and every vessel-key gate proof leave; the floor announcement signs under the wire key; the gate verifies a hand-over.
@@ -763,6 +762,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FdK13Cs3fnqbPqxrXpi8IF32pok20rPKQhRMyFrBeUc
+<<^ code="&#x0003;">>ni:///sha-256;rggAJB6pgWT0NuRWZwezgzsZizOwMDhQALTNs5dgds0
 
 <<^ code="&#x0004;" -> to="?">>
