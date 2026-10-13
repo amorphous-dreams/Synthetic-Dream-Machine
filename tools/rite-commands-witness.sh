@@ -24,7 +24,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
-import re, json, pathlib, subprocess, sys
+import os, re, json, pathlib, subprocess, sys
 
 # EVERY RITE, not only the founding one. A rite states commands as CLAIMS a reader resolves the next
 # move from, and that property belongs to the tending rite too — it asks to be walked end to end, each
@@ -127,15 +127,29 @@ blob = "".join(q.read_text(errors="replace") for q in pathlib.Path("packages").r
                if "/dist/" not in str(q) and "/src/" in str(q))
 blob += "".join(q.read_text(errors="replace") for q in pathlib.Path("packages").rglob("*.py")
                 if "/node_modules/" not in str(q))
+# A GONE SUBMODULE READS AS UNREAD, NEVER AS A GHOST. `mempalace/` stands as a submodule; a checkout without
+# it (a fresh worktree) holds none of the python half, and a symbol that lives there would read "defined
+# nowhere" — a true citation named as a stale one. Such a checkout names the absent root and calls no symbol
+# a ghost that the scanned half does not settle. A CI runner checks submodules out, so absence there reads as
+# the checkout's own fault.
+unscanned = []
 for _root in ("mempalace/mempalace", "mempalace/tests"):
     _p = pathlib.Path(_root)
     if _p.exists():
         blob += "".join(q.read_text(errors="replace") for q in _p.rglob("*.py"))
+    else:
+        unscanned.append(_root)
+if unscanned and os.environ.get("GITHUB_ACTIONS") == "true":
+    fail.append(f"{', '.join(unscanned)} — absent on a runner that checks submodules out; the python half went unscanned")
 cited = sorted({m for m in re.findall(r'`([a-zA-Z_][a-zA-Z0-9_]*(?:#[a-zA-Z][a-zA-Z0-9_]*)?)`', rite)
                 if re.search(r'[a-z][A-Z]|#', m)})
 ghosts = [c for c in cited if c.split("#")[-1] not in blob]
 for g in ghosts:
-    fail.append(f"`{g}` — cited by the rite, defined nowhere in source")
+    if unscanned:
+        print(f"[rite-commands] UNREAD `{g}` — found in no scanned source, and {', '.join(unscanned)} "
+              "stands absent from this checkout (the submodule went unscanned)")
+    else:
+        fail.append(f"`{g}` — cited by the rite, defined nowhere in source")
 
 # ── THE SURFACE READS AT THE VERB, NEVER AT THE DOOR ────────────────────────────────────────────
 # A door count reports a collapse an operator cannot feel: the fan-out lives one level below the
@@ -155,5 +169,6 @@ if fail:
     for f in fail: print(f"    {f}")
     print("  The rite is the operator-instruction source — fix the RITE, or restore the door.")
     sys.exit(1)
-print("  every instructed command resolves to a door that answers, and every cited symbol exists")
+print("  every instructed command resolves to a door that answers, and every cited symbol "
+      + ("the scan reached exists" if unscanned else "exists"))
 PY
