@@ -18,7 +18,6 @@ import { isSealedEnvelope, decodeEnvelope } from "@lararium/mesh";
 import { scryptKek, unsealBytes, ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { deviceSharePath, persistRecoveryDeviceShare } from "../src/recovery-share-store.js";
-import { reserveMineSharePath, sealReserveMineShare } from "../src/seal-reserve-store.js";
 import {
   archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
   repairSplitKek, runVaultVerb, weakPassphraseWarning,
@@ -82,7 +81,7 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     const before = readFileSync(deviceSharePath(0));
     const r2 = sealArchiveWithPassphrase(PASS_A);
     expect(r2.sealed).toEqual([]);                   // nothing re-sealed
-    expect(r2.skipped).toEqual(["device-share-h0", "reserve-share"]);
+    expect(r2.skipped).toEqual(["device-share-h0"]);
     expect([...readFileSync(deviceSharePath(0))]).toEqual([...before]);
   });
 
@@ -125,9 +124,9 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     writeCleartextShares();
     let s = archiveSealStatus();
     expect(s.carriers["device-share-h0"]!.state).toBe("cleartext");
-    // The reserve share never stood: its singleton row reads absent. A device share that never stood names no
-    // carrier at all (the family reads the disk).
-    expect(s.carriers["reserve-share"]!.state).toBe("absent");
+    // A device share that never stood names no carrier at all (the family reads the disk), and the reserve share
+    // rides the vessel key, so this lifecycle names no carrier for it.
+    expect((s.carriers as Record<string, unknown>)["reserve-share"]).toBeUndefined();
     expect(s.carriers["device-share-h1"]).toBeUndefined();
 
     // Seal h0 under PASS_A, then add and seal h1 under PASS_B to create a split.
@@ -184,29 +183,24 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     expect(weakPassphraseWarning(PASS_A)).toBeNull();
   });
 
-  // The second device-share handle and the reserve share remain on the lifecycle through rotation.
-  test("rotate carries every device share and the reserve share — no carrier stays behind", { timeout: 120_000 }, () => {
+  // The second device-share handle remains on the lifecycle through rotation.
+  test("rotate carries every device share — no carrier stays behind", { timeout: 120_000 }, () => {
     writeCleartextShares();
-    const MINE_PLAIN = new TextEncoder().encode(JSON.stringify({ x: 55, ys: [56, 57, 58], custodian: "device", recoveryEpoch: 1 }));
     persistRecoveryDeviceShare({ bytes: { x: 45, ys: new Uint8Array([46, 47, 48]) }, custodian: "device", recoveryEpoch: 1 }, 1);
-    sealReserveMineShare({ bytes: { x: 55, ys: new Uint8Array([56, 57, 58]) }, custodian: "device", recoveryEpoch: 1 });
 
     const sealed = sealArchiveWithPassphrase(PASS_A);
-    expect(sealed.sealed.sort()).toEqual(["device-share-h0", "device-share-h1", "reserve-share"]);
+    expect(sealed.sealed.sort()).toEqual(["device-share-h0", "device-share-h1"]);
     expect(isSealedEnvelope(readFileSync(deviceSharePath(1)))).toBe(true);
-    expect(isSealedEnvelope(readFileSync(reserveMineSharePath()))).toBe(true);
 
     const rotated = rotateArchivePassphrase(PASS_A, PASS_B);
-    expect(rotated.rotated.sort()).toEqual(["device-share-h0", "device-share-h1", "reserve-share"]);
+    expect(rotated.rotated.sort()).toEqual(["device-share-h0", "device-share-h1"]);
     expect(opensUnder(readFileSync(deviceSharePath(1)), PASS_B)).toBe(true);
     expect(opensUnder(readFileSync(deviceSharePath(1)), PASS_A)).toBe(false);
     expect(Array.from(plainUnder(readFileSync(deviceSharePath(0)), PASS_B))).toEqual(Array.from(DEVICE_SHARE_PLAIN));
     expect(Array.from(plainUnder(readFileSync(deviceSharePath(1)), PASS_B))).toEqual(Array.from(SECOND_SHARE_PLAIN));
-    expect(Array.from(plainUnder(readFileSync(reserveMineSharePath()), PASS_B))).toEqual(Array.from(MINE_PLAIN));
 
     const status = archiveSealStatus({ probe: PASS_B });
     expect(status.carriers["device-share-h1"]).toMatchObject({ state: "sealed", opensUnderProbe: true });
-    expect(status.carriers["reserve-share"]).toMatchObject({ state: "sealed", opensUnderProbe: true });
     expect(status.split).toBe(false);
   });
 });

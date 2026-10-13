@@ -8,9 +8,9 @@
  *                                     persona's founding). The enumeration READS THE DISK for them —
  *                                     a family spelled as a single path is a family that escapes rotate,
  *                                     repair and status (see `deviceShareCarriers`).
- *   · seal-reserve-mine-share.bin   — the vessel's one share of the Nexus reserve seed; written at the seal rite.
- * The keyhive archive and the veil archives rest under the vessel key (`identity-anchors`); this lifecycle
- * governs neither, and refuses any carrier it meets sealed that way.
+ * The keyhive archive, the veil archives and the charter reserve's two rows rest under the vessel key
+ * (`identity-anchors`, `seal-reserve-store`); this lifecycle governs none of them, and refuses any carrier it
+ * meets sealed that way.
  *
  * ONE RULE NAMES THE SET: every file a boot opens through `openArchiveBytes` under the resolved seal policy
  * rides this lifecycle. A carrier sealed under the policy and left out of a rotate stays under the OLD

@@ -21,7 +21,7 @@
  *
  * ── ONE TABLE, EVERY READER DERIVES ─────────────────────────────────────────────────────────────
  * The key census (`key-class`), the passphrase seal lifecycle (`vaultCarriers`, read by `archive-passphrase`; it
- * governs the share rows alone)
+ * governs the device share rows alone)
  * and the custody shape reader (`custody-shape`) all read these rows. A second list of filenames anywhere
  * else would drift from this one, and the drift costs in both directions: a carrier a sweep omits stays
  * unsealed while the sweep reports success; a carrier a sweep invents gets written over by an act nobody
@@ -77,12 +77,12 @@ export function vesselCustodyHomes(): CustodyHomes {
 }
 
 /**
- * A passphrase seal lifecycle carrier's name. One is a singleton and one names a family: a vessel wearing
- * several personas splits each persona-root on its own, so every handle-index's device share is its own
- * carrier. The name carries the index because h0's quorum leg and h1's are different secrets.
+ * A passphrase seal lifecycle carrier's name. It names one family: a vessel wearing several personas splits each
+ * persona-root on its own, so every handle-index's device share is its own carrier. The name carries the index
+ * because h0's quorum leg and h1's are different secrets.
  */
 export type DeviceShareName = `device-share-h${number}`;
-export type CarrierName = "reserve-share" | DeviceShareName;
+export type CarrierName = DeviceShareName;
 
 /** Whose a carrier is: one face's own (its handle-index), or the vessel's (every face, or none). */
 export type CarrierFace = number | "vessel";
@@ -242,7 +242,7 @@ function buildTable(): readonly CarrierRow[] {
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf,
          lifecycle: (m) => (Number.isSafeInteger(Number(m[1])) ? deviceShareName(Number(m[1])) : null) }),
     id({ row: "reserve-share", match: exact(reserveMineSharePath()), custody: "cold", keyClass: "seed",
-         writer: "seal-reserve-store", name: () => "seal-reserve-mine-share", lifecycle: () => "reserve-share" }),
+         writer: "seal-reserve-store", name: () => "seal-reserve-mine-share" }),
   ]);
 }
 
@@ -373,10 +373,7 @@ export function deviceShareCarriers(): readonly VaultCarrier[] {
     .map((index) => ({ name: deviceShareName(index), path: deviceSharePath(index) }));
 }
 
-/** The passphrase-sealed carriers, in a FIXED order (the rename sequence the ratify flow commits in). */
+/** The passphrase-sealed carriers, in a FIXED order (the rename sequence the ratify flow commits in): the device shares. */
 export function vaultCarriers(): readonly VaultCarrier[] {
-  return [
-    ...deviceShareCarriers(),
-    { name: "reserve-share", path: reserveMineSharePath() },
-  ];
+  return [...deviceShareCarriers()];
 }

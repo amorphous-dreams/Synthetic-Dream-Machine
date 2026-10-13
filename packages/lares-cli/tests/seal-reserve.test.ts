@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larIdentityDir } from "../src/env.js";
-import { assembleQuorum, reconstructFromQuorum, sealKeySetHash } from "@lararium/mesh";
+import { assembleQuorum, readVkCarrier, reconstructFromQuorum, sealKeySetHash } from "@lararium/mesh";
 import { reserveShareFromCard, type ReserveCard } from "../src/seal-reserve.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -103,10 +103,20 @@ describe("lares nexus seal reserve — the pre-rotation custody ceremony (CLI, r
       expect(bytes.toString("utf8")).not.toContain(seedHex);   // nor the seed's hex spelling
     }
 
-    // The public reserve-state file carries the commit but neither the seed nor a share code.
-    const stateRaw = readFileSync(join(idDir, "seal-reserve-state.json"), "utf8");
-    expect(stateRaw).toContain(commit);
-    for (const c of cards) expect(stateRaw).not.toContain(c.shareCode);
+    // BOTH ROWS REST UNDER THE VESSEL KEY: each file reads as a sealed frame, and neither spells the commit, a
+    // guardian's label or a share code in the clear.
+    for (const name of ["seal-reserve-state.json", "seal-reserve-mine-share.bin"]) {
+      const raw = readFileSync(join(idDir, name));
+      expect(readVkCarrier(raw), name).toBe("sealed");
+      const text = raw.toString("latin1");
+      expect(text).not.toContain(commit);
+      expect(text).not.toContain("Alice");
+      for (const c of cards) expect(text).not.toContain(c.shareCode);
+    }
+    // CONTROL: the state the row holds carries the commit, read back through the command's own door.
+    writes.length = 0;
+    expect(await cmdNexus(args(["seal", "reserve", "show"]))).toBe(0);
+    expect(lastJson().data["nextKeyCommit"]).toBe(commit);
   });
 
   test("the printed commit matches sealKeySetHash over the reserve's derived keys (rotate round-trip)", async () => {

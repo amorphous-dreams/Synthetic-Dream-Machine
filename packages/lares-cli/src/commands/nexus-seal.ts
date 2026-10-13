@@ -31,7 +31,7 @@
 import {
   readNexusDoc, parseNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath,
   importCarriedCharter, CarriedCharterError,
-  sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
+  atomicWriteFileSync, reserveStands,
   NexusContractError, type NexusRollAnchorResult,
 } from "@lararium/node";
 import {
@@ -62,7 +62,7 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
-import { readPersonaRoots, sealedDeclarationStore, sealHand } from "../sealed-rows.js";
+import { readPersonaRoots, sealedDeclarationStore, sealHand, readReserveState, provisionReserve } from "../sealed-rows.js";
 
 /** A refusal the operator can fix by retyping — rendered as `usage`, never as an internal error. */
 class UsageError extends Error {}
@@ -169,8 +169,8 @@ async function quorumRiteSteps(rest: ParsedArgs): Promise<number> {
 
   // The digest crosses in memory rather than through a human. Absent state here names a reserve that
   // reported success and persisted nothing, which is worth refusing loudly rather than seating unarmed.
-  const state = readCharterReserveState();
-  const commit = state?.nextKeyCommit;
+  const state = (await readReserveState());
+  const commit = reserveStands(state) ? state.nextKeyCommit : undefined;
   if (!commit) {
     console.error("lares nexus rite quorum: the reserve wrote no next-key commit — refusing to seat unarmed.");
     console.error("  an unarmed genesis epoch cannot pre-commit its successor, so the chain could never rotate.");
@@ -376,6 +376,8 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   const next: NexusDoc = sealLineage
     ? { kind: doc.kind, threshold, sealEpochCid, sealLineage, kahu }
     : { kind: doc.kind, threshold, sealEpochCid, kahu };
+  // THE RESERVE READS BEFORE ANYTHING MOVES: a reserve row that refuses stops the seat with the charter untouched.
+  const reserveState = (await readReserveState());
   // A seat moves TWO joints — the roster it seats and the genesis epoch it establishes — so it writes both
   // narrowly rather than re-emitting the practice dials it never touched.
   writeNexusKahu(sealHome, { threshold: next.threshold, kahu: next.kahu }, next);
@@ -383,8 +385,8 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     sealLineage ? { kind: next.kind, sealEpochCid, sealLineage } : { kind: next.kind, sealEpochCid }, next);
   const quorum = foundingQuorumSeated(next);
   const armed = Boolean(sealLineage) && nextKeyCommit.length > 0;
-  const reserveState = readCharterReserveState();
-  const reserveArmed = Boolean(sealLineage) && isReserveArmed(nextKeyCommit, reserveState?.nextKeyCommit);
+  // A reserve in flight (its share not yet sealed) arms nothing.
+  const reserveArmed = Boolean(sealLineage) && reserveStands(reserveState) && isReserveArmed(nextKeyCommit, reserveState.nextKeyCommit);
 
   emit(args, {
     ok: true,
@@ -573,7 +575,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const { doc, head } = sealedCharterOrRefuse(sealHome, "rotate");
   const depth = doc.sealLineage?.length ?? 0;
   const nextKeyCommit = normHex(args.options["next-key-commit"]);
-  const reserveState = readCharterReserveState();
+  const reserveState = (await readReserveState());
 
   // A RESERVE COMMIT CANNOT ARM A ROLL: no verb reveals a reserve key-set, so a rotated head would freeze.
   if (isReserveArmed(nextKeyCommit, reserveState?.nextKeyCommit)) {
@@ -874,8 +876,8 @@ async function sealShow(args: ParsedArgs): Promise<number> {
   const quorum = foundingQuorumSeated(doc);
   const head = sealLineageHead(doc);
   const chainDepth = doc?.sealLineage?.length ?? 0;
-  const reserve = readCharterReserveState();
-  const reserveArmed = isReserveArmed(head?.nextKeyCommit, reserve?.nextKeyCommit);
+  const reserve = (await readReserveState());
+  const reserveArmed = reserveStands(reserve) && isReserveArmed(head?.nextKeyCommit, reserve.nextKeyCommit);
   const roots = await readPersonaRoots();
   const heldKeys = roots.roots.map((r) => r.verifyingKey);
   const foreign = doc ? foreignSeats(doc.kahu, heldKeys).foreign.length : 0;
@@ -1015,7 +1017,7 @@ async function sealReserveProvision(args: ParsedArgs, mode: "provision" | "refre
 
   // The reserve epoch advances on refresh; founding provision seats epoch 1. A refresh with no prior state
   // still seats epoch 1 (nothing to advance) — surfaced in the human head below.
-  const prior = readCharterReserveState();
+  const prior = (await readReserveState());
   const reserveEpoch = mode === "refresh" ? (prior?.reserveEpoch ?? 0) + 1 : 1;
 
   // Read the charter chain to name the reconciliation route (below) — this command NEVER mutates the charter.
@@ -1029,9 +1031,10 @@ async function sealReserveProvision(args: ParsedArgs, mode: "provision" | "refre
     const nextKeyCommit = reserveNextKeyCommit(verifyingKeys);      // sealKeySetHash(3 keys, threshold 2)
     const { cards, mineShare } = splitReserveSeed(reserveSeed, guardianA, guardianB, reserveEpoch, rng);
 
-    // Seal ONLY the "mine" share; record the PUBLIC state (commit + guardians). The seed reaches neither.
-    sealReserveMineShare(mineShare);
-    writeCharterReserveState({
+    // Seal ONLY the "mine" share, then the state that commits it (the commit and the guardian labels). Both rows
+    // rest under the vessel key, written by the node's own reserve store behind the custody door; the seed and
+    // the two guardian shares reach neither row and never leave this process but as the cards printed below.
+    await provisionReserve(mineShare, {
       reserveEpoch, nextKeyCommit, threshold: RESERVE_THRESHOLD, kahuCount: RESERVE_KAHU_COUNT,
       guardianA, guardianB, mineShareSealed: true, issuedAt: new Date().toISOString(),
     });
@@ -1079,7 +1082,7 @@ async function sealReserveProvision(args: ParsedArgs, mode: "provision" | "refre
 }
 
 async function sealReserveShow(args: ParsedArgs): Promise<number> {
-  const state = readCharterReserveState();
+  const state = (await readReserveState());
   emit(args, {
     ok: true,
     data: state
@@ -1099,7 +1102,7 @@ async function sealReserveShow(args: ParsedArgs): Promise<number> {
       console.log(`  commit:     ${state.nextKeyCommit}   (${state.threshold}-of-${state.kahuCount})`);
       console.log(`  epoch:      ${state.reserveEpoch}   (issued ${state.issuedAt})`);
       console.log(`  guardians:  A=${state.guardianA ?? "unassigned"}  B=${state.guardianB ?? "unassigned"}`);
-      console.log(`  mine share: ${state.mineShareSealed ? "SEALED on this vessel" : "NOT sealed"}`);
+      console.log(`  mine share: ${state.mineShareSealed ? "SEALED on this vessel" : "NOT sealed — a provision stopped before its share rested, so this reserve arms nothing; run \`lares nexus seal reserve refresh\`"}`);
       console.log(`  (the seed and the full share-set are NEVER shown — only the public commit + labels)`);
     },
   });
@@ -1153,7 +1156,7 @@ async function sealReserveRehearse(args: ParsedArgs): Promise<number> {
 
   // THE GENERATION RIDES THE CARD'S LABEL, never its share code: the reader types it, or the vessel's reserve state names it.
   const typed = args.options["generation"];
-  const generation = typed === undefined ? readCharterReserveState()?.reserveEpoch : Number(typed);
+  const generation = typed === undefined ? (await readReserveState())?.reserveEpoch : Number(typed);
   if (generation === undefined || !Number.isInteger(generation) || generation < 0) {
     return refuse("rehearsal-no-generation", "no generation stands for these cards — type the one each card prints: --generation <n>.");
   }
@@ -1185,7 +1188,7 @@ async function sealReserveRehearse(args: ParsedArgs): Promise<number> {
   }
 
   const headCommit = normHex(sealLineageHead(readNexusDoc(larSealHome()))?.nextKeyCommit) || null;
-  const reserveCommit = normHex(readCharterReserveState()?.nextKeyCommit);
+  const reserveCommit = normHex((await readReserveState())?.nextKeyCommit);
   const matchesHead = headCommit !== null && derivedCommit === headCommit;
   const matchesReserveState = reserveCommit.length > 0 && derivedCommit === reserveCommit;
   const data = { rehearsed: true, generation, derivedCommit, headCommit, matchesHead, matchesReserveState, wrote: null, rolls: false };

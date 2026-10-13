@@ -30,7 +30,6 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { persistRecoveryDeviceShare, loadRecoveryDeviceShare, deviceSharePath } from "../src/recovery-share-store.js";
-import { sealReserveMineShare, loadReserveMineShare, reserveMineSharePath } from "../src/seal-reserve-store.js";
 import {
   sealArchiveWithPassphrase, rotateArchivePassphrase, repairSplitKek,
   archiveSealStatus,
@@ -230,30 +229,8 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
     expect(loadRecoveryDeviceShare()?.bytes.x).toBe(11);
   });
 
-  // ── ATTACK 5 · THE RESERVE "MINE" SHARE ─────────────────────────────────────────────────────────
-  // `seal-reserve-store.ts:50`, the same shape. This carrier holds the vessel's ONE share of the Nexus
-  // reserve seed.
-  // AND THE AUDIT'S OWN WARD FAILS HERE — its verdict rested on "founding/seal-rite are their only
-  // callers". `lares nexus seal reserve REFRESH` (nexus-seal.ts: `sealReserveProvision(args,"refresh")`)
-  // re-runs `sealReserveMineShare` UNCONDITIONALLY, with no idempotence check of any kind. So this carrier
-  // is re-written in ordinary operator life, not once at a rite — full severity, and the guard must stand
-  // BEFORE the write rather than beside it.
-  test("★ CURED — the reserve MINE share REFUSES a write under a non-opening passphrase ★", () => {
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    sealReserveMineShare(share(3));
-    const sealed = readFileSync(reserveMineSharePath());
-    expect(isSealedEnvelope(sealed)).toBe(true);
-
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
-    expect(() => sealReserveMineShare(share(42))).toThrow(/does not open it/);
-    expect(readFileSync(reserveMineSharePath()).equals(sealed)).toBe(true);
-
-    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    expect(loadReserveMineShare()?.bytes.x).toBe(3);
-    // CONTROL — the refresh rite under the LIVE passphrase still re-splits and re-seals.
-    sealReserveMineShare(share(42));
-    expect(loadReserveMineShare()?.bytes.x).toBe(42);
-  });
+  // ── ATTACK 5 · THE RESERVE "MINE" SHARE rests under the vessel key: its wrong-key refusal reads in
+  // `seal-reserve-store.test.ts` (V2), where a refresh under another key lands nothing over the standing share.
 
   // ── ATTACK 6 · `vault rotate` UNDER A WRONG OLD PASSPHRASE ──────────────────────────────────────
   // The commit asserts rotate "stages its own atomic writes and never passes through" the guard. TRUE —

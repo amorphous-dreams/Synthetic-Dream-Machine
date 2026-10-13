@@ -326,9 +326,9 @@ export {
 } from "./nexus-doc.js";
 export { loadLeafIdentity } from "./leaf-identity.js";
 export type { LeafIdentity } from "./leaf-identity.js";
-// The seal-reserve node adapter — seals the operator's "mine" share + records the PUBLIC reserve state.
+// The charter reserve's two rows, sealed under the vessel key: the operator's own share and the state that commits it.
 export {
-  sealReserveMineShare, loadReserveMineShare, writeCharterReserveState, readCharterReserveState,
+  sealReserveMineShare, loadReserveMineShare, writeCharterReserveState, readCharterReserveState, provisionCharterReserve, reserveStands,
   reserveMineSharePath, reserveStatePath,
 } from "./seal-reserve-store.js";
 export type { SealReserveState } from "./seal-reserve-store.js";

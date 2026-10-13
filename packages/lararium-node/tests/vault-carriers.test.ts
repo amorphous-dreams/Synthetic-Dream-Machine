@@ -217,8 +217,8 @@ describe("the carrier table", () => {
       sow(homes, SOWN);
       const lifecycle = carrierCensus(homes).filter((e) => e.lifecycle !== null);
       expect(new Set(lifecycle.map((e) => e.file))).toEqual(vaultCarrierFiles(homes.identity));
-      expect(lifecycle.map((e) => e.lifecycle).sort()).toEqual(["device-share-h0", "reserve-share"]);
-      expect(carrierCensus(homes).filter((e) => e.row === "keyhive-archive" || e.row === "veil-archive")
+      expect(lifecycle.map((e) => e.lifecycle).sort()).toEqual(["device-share-h0"]);
+      expect(carrierCensus(homes).filter((e) => e.row === "keyhive-archive" || e.row === "veil-archive" || e.row === "reserve-share" || e.row === "reserve-state")
         .every((e) => e.lifecycle === null)).toBe(true);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
@@ -235,7 +235,7 @@ describe("the carrier table", () => {
         "identity/keyhive-archive.bin": "x",
         "identity/veil-archive-h0.bin": "x",
       });
-      expect(vaultCarriers().map((carrier) => carrier.name).sort()).toEqual(["device-share-h0", "reserve-share"]);
+      expect(vaultCarriers().map((carrier) => carrier.name).sort()).toEqual(["device-share-h0"]);
     } finally {
       if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
       rmSync(root, { recursive: true, force: true });

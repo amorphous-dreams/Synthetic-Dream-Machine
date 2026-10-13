@@ -60,7 +60,7 @@ describe("the device share mints at the face founding", () => {
 
     // CONTROL: one leg, not two.
     expect(existsSync(reserveMineSharePath())).toBe(false);
-    expect(archiveSealStatus().carriers["reserve-share"].state).toBe("absent");
+    expect((archiveSealStatus().carriers as Record<string, unknown>)["reserve-share"]).toBeUndefined();   // the reserve rides the vessel key
   });
 
   test("under the seal policy the share lands sealed (passphrase), the same policy the veil rides", async () => {

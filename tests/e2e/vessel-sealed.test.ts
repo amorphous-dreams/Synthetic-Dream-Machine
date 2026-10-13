@@ -198,7 +198,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   test("⑥ the passphrase lifecycle seals the device share alone and names no archive", async () => {
     const before = await cli(NO_PASS, ["vault", "status", "--json"]);
     const carriers = (dataOf(before)["carriers"] ?? {}) as Record<string, { state: string }>;
-    expect(Object.keys(carriers).sort()).toEqual(["device-share-h0", "reserve-share"]);
+    expect(Object.keys(carriers).sort()).toEqual(["device-share-h0"]);   // the reserve share rides the vessel key
     expect(carriers["device-share-h0"]?.state).toBe("cleartext");
 
     const sealed = await cli({ ...NO_PASS, LARES_ARCHIVE_PASSPHRASE_NEW: SHARE_PASS }, ["vault", "seal", "--yes", "--json"]);

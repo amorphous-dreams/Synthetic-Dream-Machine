@@ -101,10 +101,12 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       // …and CUSTODY DIFFERS. This is what a `class`-only census could not say.
       expect(root!.atRest).toBe("cleartext");
       expect(share!.atRest).toBe("sealed");
-      expect(mine!.atRest).toBe("sealed");
+      // The reserve share rides the vessel key: the passphrase lifecycle governs it no more, and these sown bytes
+      // carry no VK frame, so the census reads them as the bare file they stand as.
+      expect(mine!.atRest).toBe("cleartext");
       // The sweep that costs the story now has a predicate that cannot skip-and-claim.
       const sealedSeeds = keys.filter((k) => k.class === "seed" && k.atRest === "sealed").map((k) => k.name);
-      expect(sealedSeeds).toEqual(["recovery-device-share-h0", "seal-reserve-mine-share"]);
+      expect(sealedSeeds).toEqual(["recovery-device-share-h0"]);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
@@ -113,7 +115,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
     try {
       const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k]));
       expect(byName["recovery-device-share-h0"]!.carrier).toBe("device-share-h0");
-      expect(byName["seal-reserve-mine-share"]!.carrier).toBe("reserve-share");
+      expect(byName["seal-reserve-mine-share"]!.carrier).toBeNull();          // a row under the vessel key names no lifecycle carrier
       expect(byName["keyhive-archive"]!.carrier).toBeNull();
       expect(byName["veil-archive-h0"]!.carrier).toBeNull();
       expect(byName["keyhive-archive"]!.atRest).toBe("cleartext");
@@ -136,7 +138,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       //   write over a file no rotate owns). `vault status` naming `recovery-device-share-h1` under `keys`
       //   while omitting it from `carriers` was this disagreement, one direction, in the field.
       for (const f of censusSealed) expect(governed.has(f), `the census calls ${f} sealed; the vault governs no carrier there`).toBe(true);
-      expect(governed.size).toBe(2);   // device-share-h0 · reserve-share
+      expect(governed.size).toBe(1);   // device-share-h0
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 

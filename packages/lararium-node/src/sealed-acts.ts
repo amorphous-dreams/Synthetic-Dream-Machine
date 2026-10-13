@@ -28,7 +28,7 @@
  */
 import {
   HandleBook, RESERVE_TRANSITION_DOMAIN, SEAL_ROLL_DOMAIN, canonicalJsonBytes, ed25519SignerFromSeed,
-  type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef,
+  type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef, type RecoveryShare,
 } from "@lararium/mesh";
 import { carriedReadings } from "./carried-set.js";
 import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
@@ -41,6 +41,10 @@ import {
   listPersonaRosterLines, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadVesselSigningSeed,
   loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
 } from "./node-vessel-identity.js";
+import {
+  provisionCharterReserve, readCharterReserveState, readReserveShare, readReserveState,
+  type SealReserveState,
+} from "./seal-reserve-store.js";
 import { larSealHome } from "./vessel-paths.js";
 
 /** What an act reads from the composition it runs beside. */
@@ -147,6 +151,21 @@ const selfName: Kind<PersonaSelfNameKind> = {
   label: `one of the two names that ride a face's plane ("petname" or "handle")`,
   read: (v) => (v === "petname" || v === "handle" ? v : undefined),
 };
+const reserveShare: Kind<RecoveryShare> = {
+  label: "one share of a reserve seed { x, ys, custodian, recoveryEpoch }",
+  read: (v) => {
+    if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+    for (const k of Object.keys(v)) if (k !== "x" && k !== "ys" && k !== "custodian" && k !== "recoveryEpoch") return undefined;
+    return readReserveShare(v) ?? undefined;
+  },
+};
+const reserveState: Kind<SealReserveState> = {
+  label: "a reserve state { reserveEpoch, nextKeyCommit, threshold, kahuCount, guardianA, guardianB, mineShareSealed, issuedAt }",
+  read: (v) => {
+    if (!v || typeof v !== "object" || Array.isArray(v) || Object.keys(v).length !== 8) return undefined;
+    return readReserveState(v) ?? undefined;
+  },
+};
 const flag: Kind<boolean> = { label: "true or false", read: (v) => (typeof v === "boolean" ? v : undefined) };
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
 
@@ -211,6 +230,10 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *                         names the face and which name, and never the name itself, so a plane takes only what a
  *                         sealed row holds. `fill` lands it only where the plane never held that name
  *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
+ *   reserve.state         the charter reserve's state: the pre-rotation commit and the guardian labels
+ *   reserve.provision     seal ONE share of a reserve seed (the operator's own) and the state that commits it. The
+ *                         command splits the seed in its own process; the seed and the two guardian shares never
+ *                         cross this door, and one share alone rebuilds nothing
  *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
  */
@@ -306,6 +329,15 @@ export const SEALED_ACTS = Object.freeze({
     const { written, plane: stands } = await plane.write(a.handleIndex, a.name, "");
     if (!stands) throw refuse(`this vessel carries no persona plane for h${a.handleIndex}, so nothing clears beyond it`);
     return { cleared: written };
+  }),
+
+  // THE CHARTER RESERVE. Its two rows rest under the vessel key (`seal-reserve-store`). A reserve's seed gets
+  // forged and split in the command's own process, where its three cards print to the person; the door takes
+  // the operator's ONE share and the state that commits it, answers nothing, and hands out no share.
+  "reserve.state": act({}, async () => ({ state: await readCharterReserveState() })),
+  "reserve.provision": act({ share: reserveShare, state: reserveState }, async (a) => {
+    await provisionCharterReserve(a.share, a.state);
+    return {};
   }),
 
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({

@@ -8,7 +8,9 @@
  */
 import {
   HandleBook, type HandleBookSnapshot, type OwnPersonaPetnameStore, type PersonaDeclaration, type PersonaDeclarationStore,
+  type RecoveryShare,
 } from "@lararium/mesh";
+import type { SealReserveState } from "@lararium/node";
 import { sealedAct } from "./sealed-act-door.js";
 
 /** The roster as one read: each held root's index and public key, the worn index, and every orphan root. */
@@ -59,6 +61,22 @@ export async function loadHandleBook(): Promise<HandleBook> {
 /** Seal the recogniser's handle-book as it stands. */
 export async function saveHandleBook(book: HandleBook): Promise<void> {
   await sealedAct("handle-book.save", { snapshot: book.snapshot() });
+}
+
+/** The charter reserve's state: the pre-rotation commit and the guardian labels. Null where no reserve stands. */
+export async function readReserveState(): Promise<SealReserveState | null> {
+  return (await sealedAct<{ state: SealReserveState | null }>("reserve.state")).state;
+}
+
+/**
+ * Seal the operator's own share of a reserve seed and the state that commits it. The frame carries ONE share,
+ * which alone rebuilds nothing; the seed and the two guardian shares stay in the command's own process.
+ */
+export async function provisionReserve(share: RecoveryShare, state: SealReserveState): Promise<void> {
+  await sealedAct("reserve.provision", {
+    share: { x: share.bytes.x, ys: [...share.bytes.ys], custodian: share.custodian, recoveryEpoch: share.recoveryEpoch },
+    state: { ...state },
+  });
 }
 
 /**
